@@ -63,7 +63,7 @@ def react(*spcTuples):
 
     return reactions
 
-def reactSpecies(speciesTuple):
+def reactSpecies(speciesTuple, accurateDegeneracies = False):
     """
     given one species tuple, will find the reactions and remove degeneracy
     from them.
@@ -76,8 +76,8 @@ def reactSpecies(speciesTuple):
 
     reactions = map(reactMolecules,combos)
     reactions = list(itertools.chain.from_iterable(reactions))
-    # remove reverse reaction
-    reactions = findDegeneracies(reactions)
+    # reduce number of reactions by finding degenerate rxns.
+    reactions = findDegeneracies(reactions, accurateDegeneracies)
     # add reverse attribute to families with ownReverse
     for rxn in reactions:
         family = getDB('kinetics').families[rxn.family]
@@ -85,8 +85,9 @@ def reactSpecies(speciesTuple):
             family.addReverseAttribute(rxn)
     # fix the degneracy of (not ownReverse) reactions found in the backwards
     # direction
-    correctDegeneracyOfReverseReactions(reactions, list(speciesTuple))
-    reduceSameReactantDegeneracy(reactions)
+    if accurateDegeneracies:
+        correctDegeneracyOfReverseReactions(reactions, list(speciesTuple))
+        reduceSameReactantDegeneracy(reactions)
     # get a molecule list with species indexes
     zippedList = []
     for spec in speciesTuple:
@@ -148,11 +149,11 @@ def getMoleculeTuples(speciesTuple):
 
 def reactMolecules(moleculeTuples):
     """
-    Performs a reaction between
-    the resonance isomers.
+    Finds reactions between the resonance isomers of species.
 
     The parameter contains a list of tuples with each tuple:
     (Molecule, index of the core species it belongs to)
+    This is meant to help with deflating
     """
 
     families = getDB('kinetics').families
@@ -169,13 +170,16 @@ def reactMolecules(moleculeTuples):
 
     return reactionList
 
-def findDegeneracies(rxnList, useSpeciesReaction = True):
+def findDegeneracies(rxnList, accurate = True):
     """
     given a list of Reaction object with Molecule objects, this method 
     removes degenerate reactions and increments the degeneracy of the 
     reaction object. For multiple transition states, this method adds
-    them as separate duplicate reactions. This method modifies
-    rxnList in place and does not return anything.
+    them as separate duplicate reactions. This method returns a list of
+    reactions using species objects with degeneracies modified.
+
+    The optional argument `accurate` will make the method find robust values
+    of degeneracy, which increases runtime significantly.
 
     This algorithm used to exist in family.__generateReactions, but was moved
     here because it didn't have any family dependence.
@@ -186,7 +190,7 @@ def findDegeneracies(rxnList, useSpeciesReaction = True):
     rxnSorted = []
     for rxn0 in rxnList:
         # find resonance structures for rxn0
-        convertToSpeciesObjects(rxn0)
+        convertToSpeciesObjects(rxn0, make_resonance_structures = accurate)
         if len(rxnSorted) == 0:
             # This is the first reaction, so create a new sublist
             rxnSorted.append([rxn0])
@@ -222,13 +226,20 @@ def findDegeneracies(rxnList, useSpeciesReaction = True):
                 else:
                     # We did not break, so this is the right sublist, but there is no identical reaction
                     # This means that we should add rxn0 to the sublist as a degenerate rxn
-                    rxnList1.append(rxn0)
+                    # if accuracy is not required, we will ignore this entry & increment degeneracy
+                    if accurate:
+                        rxnList1.append(rxn0)
+                    else:
+                        rxnList1[0].degeneracy +=1
                 if isomorphic and sameTemplate:
                     # We already found the right sublist, so we can move on to the next rxn
                     break
             else:
                 # We did not break, which means that there was no isomorphic sublist, so create a new one
                 rxnSorted.append([rxn0])
+
+    if not accurate:
+        return [rxnList[0] for rxnList in rxnSorted]
 
     rxnList = []
     for rxnList1 in rxnSorted:
@@ -240,41 +251,52 @@ def findDegeneracies(rxnList, useSpeciesReaction = True):
         
     return rxnList
 
-def convertToSpeciesObjects(reaction):
+def convertToSpeciesObjects(reaction, make_resonance_structures = True):
     """
     modifies a reaction holding Molecule objects to a reaction holding
-    Species objects, with generated resonance isomers.
+    Species objects, with generated resonance isomers, if `make_resonance_structures`
+    is True.
     """
     # if already species' objects, return none
     if isinstance(reaction.reactants[0],Species):
         return None
+
+    # map reactants and reaction paris before conversion
+    pair_indexes = []
+    for reactant, product in reaction.pairs:
+        newPair = []
+        for r_index, reactant0 in enumerate(reaction.reactants):
+            if id(reactant0) == id(reactant):
+                newPair.append(r_index)
+                break
+        for p_index, product0 in enumerate(reaction.products):
+            if id(product0) == id(product):
+                newPair.append(p_index)
+                break
+        if len(newPair) != 2:
+            raise ReactionError('Unable to find reaction pairs for {}'.format(reaction))
+        pair_indexes.append(newPair)
+
     # obtain species with all resonance isomers
     for i, mol in enumerate(reaction.reactants):
         spec = Species(molecule = [mol])
-        spec.generateResonanceIsomers(keepIsomorphic=True)
+        if make_resonance_structures:
+            spec.generateResonanceIsomers(keepIsomorphic=True)
         reaction.reactants[i] = spec
     for i, mol in enumerate(reaction.products):
         spec = Species(molecule = [mol])
-        spec.generateResonanceIsomers(keepIsomorphic=True)
+        if make_resonance_structures:
+            spec.generateResonanceIsomers(keepIsomorphic=True)
         reaction.products[i] = spec
 
-    # convert reaction.pairs object to species
+    # convert reaction.pairs object to contain species objects
     newPairs=[]
-    for reactant, product in reaction.pairs:
-        newPair = []
-        for reactant0 in reaction.reactants:
-            if reactant0.isIsomorphic(reactant):
-                newPair.append(reactant0)
-                break
-        for product0 in reaction.products:
-            if product0.isIsomorphic(product):
-                newPair.append(product0)
-                break
-        newPairs.append(newPair)
+    for r_index, p_index in pair_indexes:
+        newPairs.append([reaction.reactants[r_index],reaction.products[p_index]])
     reaction.pairs = newPairs
 
     try:
-        convertToSpeciesObjects(reaction.reverse)
+        convertToSpeciesObjects(reaction.reverse, make_resonance_structures)
     except AttributeError:
         pass
 

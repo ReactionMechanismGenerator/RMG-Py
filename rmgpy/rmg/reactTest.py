@@ -47,9 +47,10 @@ TESTFAMILY = 'H_Abstraction'
 
 class TestReact(unittest.TestCase):
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(self):
         """
-        A method that is run before each unit test in this class.
+        A method that is run before this class.
         """
         # set-up RMG object
         self.rmg = RMG()
@@ -221,8 +222,53 @@ class TestReact(unittest.TestCase):
         for spc in rxn.products:
             self.assertTrue(isinstance(spc, Species))
 
+    def testconvertToSpeciesObjects(self):
+        """
+        Test that convertToSpeciesObjects returns all resonance structures
+        """
+        molA = Molecule().fromSMILES('C=C[CH]C')
+        molB = Molecule().fromSMILES('C=CC')
+        molC = Molecule().fromSMILES('C=CCC')
+        molD = Molecule().fromSMILES('C=C[CH2]')
+        rxn = Reaction(reactants=[molA, molB], products=[molC,molD],
+        pairs=[(molA, molC), (molB, molD)])
 
-    def tearDown(self):
+        convertToSpeciesObjects(rxn, make_resonance_structures=True)
+
+        resonance_structure_list = [2,1,1,2]
+
+        for index, spec in enumerate(rxn.reactants + rxn.products):
+            self.assertEqual(len(spec.molecule), resonance_structure_list[index])
+
+    def testconvertToSpeciesObjects2(self):
+        """
+        Test that convertToSpeciesObjects returns same molecule objects
+        """
+        molA = Molecule().fromSMILES('C=C[CH]C')
+        molB = Molecule().fromSMILES('C=CC')
+        molC = Molecule().fromSMILES('C=CCC')
+        molD = Molecule().fromSMILES('C=C[CH2]')
+        rxn = Reaction(reactants=[molA, molB], products=[molC,molD],
+        pairs=[(molA, molC), (molB, molD)])
+
+        idA = id(molA)
+        idB = id(molB)
+        idC = id(molC)
+        idD = id(molD)
+        convertToSpeciesObjects(rxn, make_resonance_structures=False)
+
+        self.assertEqual(idA, id(rxn.reactants[0].molecule[0]))
+        self.assertEqual(idB, id(rxn.reactants[1].molecule[0]))
+        self.assertEqual(idC, id(rxn.products[0].molecule[0]))
+        self.assertEqual(idD, id(rxn.products[1].molecule[0]))
+
+        resonance_structure_list = [1,1,1,1]
+
+        for index, spec in enumerate(rxn.reactants + rxn.products):
+            self.assertEqual(len(spec.molecule), resonance_structure_list[index])
+
+    @classmethod
+    def tearDownClass(self):
         """
         Reset the loaded database
         """

@@ -402,12 +402,12 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
 
         # make species' objects
         spcA = Species().fromSMILES('[H]')
-        spcB = Species().fromSMILES('C=C[CH2]C')
-        spcC = Species().fromSMILES('C=C=CC')
+        spcB = Species().fromSMILES('C=CCC')
+        spcC = Species().fromSMILES('C=C[CH]C')
         spcD = Species().fromSMILES('[H][H]')
         spcA.label = '[H]'
-        spcB.label = 'C=C[CH2]C'
-        spcC.label = 'C=C=CC'
+        spcB.label = 'C=CCC'
+        spcC.label = 'C=C[CH]C'
         spcD.label = '[H][H]'
         spcB.generateResonanceIsomers()
 
@@ -419,14 +419,15 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         reaction_in_model = TemplateReaction(reactants=[spcA,spcB],
                                              products = [spcC, spcD],
                                                 family = 'H_Abstraction',
-                                                template = ['Csd','H'])
+                                                template = ['X_H', 'Y_rad'])
         reaction_in_model.reactants.sort()
         reaction_in_model.products.sort()
 
         reaction_to_add = TemplateReaction(reactants=[spcA,spcB],
                                              products = [spcC, spcD],
                                                 family = 'H_Abstraction',
-                                                template = ['Csd','H'])
+                                                template = ['X_H', 'Y_rad'])
+
         cerm.addReactionToCore(reaction_in_model)
         cerm.registerReaction(reaction_in_model)
 
@@ -444,11 +445,11 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         # make species' objects
         spcA = Species().fromSMILES('[H]')
         spcB = Species().fromSMILES('C=C[CH2]C')
-        spcC = Species().fromSMILES('C=C=CC')
+        spcC = Species().fromSMILES('C=[C][CH]C')
         spcD = Species().fromSMILES('[H][H]')
         spcA.label = '[H]'
         spcB.label = 'C=C[CH2]C'
-        spcC.label = 'C=C=CC'
+        spcC.label = 'C=[C][CH]C'
         spcD.label = '[H][H]'
         spcB.generateResonanceIsomers()
 
@@ -486,11 +487,11 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         # make species' objects
         spcA = Species().fromSMILES('[H]')
         spcB = Species().fromSMILES('C=C[CH2]C')
-        spcC = Species().fromSMILES('C=C=CC')
+        spcC = Species().fromSMILES('C=[C][CH]C')
         spcD = Species().fromSMILES('[H][H]')
         spcA.label = '[H]'
         spcB.label = 'C=C[CH2]C'
-        spcC.label = 'C=C=CC'
+        spcC.label = 'C=[C][CH]C'
         spcD.label = '[H][H]'
         spcB.generateResonanceIsomers()
 
@@ -520,19 +521,21 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
     def test_checkForExistingReaction_keeps_different_template_reactions(self):
         """
         Test that checkForExistingReaction keeps reactions with different templates
+
+        This reaction is a real rxn with multiple TS which we expect to be kept.
         """
         from rmgpy.data.kinetics.family import TemplateReaction
         cerm = CoreEdgeReactionModel()
 
         # make species' objects
-        spcA = Species().fromSMILES('[H]')
-        spcB = Species().fromSMILES('C=C[CH2]C')
-        spcC = Species().fromSMILES('C=C=CC')
-        spcD = Species().fromSMILES('[H][H]')
-        spcA.label = '[H]'
-        spcB.label = 'C=C[CH2]C'
-        spcC.label = 'C=C=CC'
-        spcD.label = '[H][H]'
+        spcA = Species().fromSMILES('CCC[CH2]')
+        spcB = Species().fromSMILES('C[CH]CC')
+        spcC = Species().fromSMILES('CCCC')
+        spcD = Species().fromSMILES('[CH2]C[CH]C')
+        spcA.label = 'CCC[CH2]'
+        spcB.label = 'C[CH]CC'
+        spcC.label = 'CCCC'
+        spcD.label = '[CH2]C[CH]C'
         spcB.generateResonanceIsomers()
 
         cerm.addSpeciesToCore(spcA)
@@ -543,14 +546,14 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         reaction_in_model = TemplateReaction(reactants=[spcA,spcB],
                                              products = [spcC, spcD],
                                                 family = 'H_Abstraction',
-                                                template = ['Csd','H'])
+                                                template = ['X_H', 'Y_rad'])
         reaction_in_model.reactants.sort()
         reaction_in_model.products.sort()
 
         reaction_to_add = TemplateReaction(reactants=[spcA,spcB],
                                              products = [spcC, spcD],
                                                 family = 'H_Abstraction',
-                                                template = ['Cs12345','H'])
+                                                template = ['C/H3/Cs', 'Y_rad'])
         cerm.addReactionToCore(reaction_in_model)
         cerm.registerReaction(reaction_in_model)
 
@@ -578,7 +581,7 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
 
         rxn_f = TemplateReaction(reactants = [s1, s2],
                                     products = [s3, s4],
-                                    template = ['C/H3/Cs\H3','H_rad'],
+                                    template = ['C/H3/Cs', 'Y_rad'],
                                     degeneracy = 6,
                                     family = 'H_Abstraction',
                                     reverse = TemplateReaction(reactants = [s3, s4],
@@ -596,7 +599,7 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
                                     family = 'H_Abstraction',
                                     reverse = TemplateReaction(reactants = [s1, s2],
                                                             products = [s3, s4],
-                                                            template = ['C/H3/Cs\H3','H_rad'],
+                                                            template = ['C/H3/Cs', 'Y_rad'],
                                                             degeneracy = 6,
                                                             family = 'H_Abstraction',
                                                             )
