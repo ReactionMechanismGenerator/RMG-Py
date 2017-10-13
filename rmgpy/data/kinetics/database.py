@@ -417,7 +417,9 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
         # of the second one so we can independently manipulate both of them 
         # This is for the case where A + A --> products
         if len(reactants) == 2 and reactants[0] == reactants[1] and reactants[0].props == reactants[1].props:
-            reactants[1] = reactants[1].copy(deep=True)
+            copy_reactant = reactants[1].copy(deep=True)
+            copy_reactant.props = reactants[1].props
+            reactants[1] = copy_reactant
         
         reactionList = []
         for label, family in self.families.iteritems():
