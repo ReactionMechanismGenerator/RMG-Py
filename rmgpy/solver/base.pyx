@@ -499,7 +499,7 @@ cdef class ReactionSystem(DASx):
     @cython.boundscheck(False)
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, 
         list edgeReactions,list surfaceSpecies, list surfaceReactions,
-        list pdepNetworks=None, bool prune=False, bool sensitivity=False, list sensWorksheet=None, object modelSettings=None,
+        list pdepNetworks=None, bool reduction = False, bool prune=False, bool sensitivity=False, list sensWorksheet=None, object modelSettings=None,
         object simulatorSettings=None):
         """
         Simulate the reaction system with the provided reaction model,

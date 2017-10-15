@@ -114,7 +114,7 @@ cdef class ReactionSystem(DASx):
 
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, 
         list edgeReactions,list surfaceSpecies, list surfaceReactions,
-        list pdepNetworks=?, bool prune=?, bool sensitivity=?, list sensWorksheet=?, object modelSettings=?,
+        list pdepNetworks=?, bool reduction=?, bool prune=?, bool sensitivity=?, list sensWorksheet=?, object modelSettings=?,
         object simulatorSettings=?)
 
     cpdef logRates(self, double charRate, object species, double speciesRate, double maxDifLnAccumNum, object network, double networkRate)
