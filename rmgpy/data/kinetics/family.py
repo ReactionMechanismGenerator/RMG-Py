@@ -57,10 +57,18 @@ from rmgpy.exceptions import InvalidActionError, ReactionPairsError, KineticsErr
 
 class TemplateReaction(Reaction):
     """
-    A Reaction object generated from a reaction family template. In addition to
-    the usual attributes, this class includes a `family` attribute to store the
-    family that it was created from, as well as a `estimator` attribute to indicate
-    whether it came from a rate rules or a group additivity estimate.
+    A Reaction object generated from a reaction family template. In addition
+    to attributes inherited from :class:`Reaction`, this class includes the
+    following attributes:
+
+    =========== ========================= =====================================
+    Attribute   Type                      Description
+    =========== ========================= =====================================
+    `family`    ``str``                   The kinetics family that the reaction was created from.
+    `estimator` ``str``                   Whether the kinetics came from rate rules or group additivity.
+    `reverse`   :class:`TemplateReaction` The reverse reaction, for families that are their own reverse.
+    `isForward` ``bool``                  Whether the reaction was generated in the forward direction of the family.
+    =========== ========================= =====================================
     """
 
     def __init__(self,
@@ -77,7 +85,8 @@ class TemplateReaction(Reaction):
                 family=None,
                 template=None,
                 estimator=None,
-                reverse=None
+                reverse=None,
+                isForward=None,
                 ):
         Reaction.__init__(self,
                           index=index,
@@ -95,6 +104,7 @@ class TemplateReaction(Reaction):
         self.template = template
         self.estimator = estimator
         self.reverse = reverse
+        self.isForward = isForward
 
     def __reduce__(self):
         """
@@ -114,6 +124,7 @@ class TemplateReaction(Reaction):
                                    self.template,
                                    self.estimator,
                                    self.reverse,
+                                   self.isForward
                                    ))
 
     def __repr__(self):
@@ -174,6 +185,7 @@ class TemplateReaction(Reaction):
         other.template = self.template
         other.estimator = self.estimator
         other.reverse = self.reverse
+        other.isForward = self.isForward
         
         return other
 
@@ -1391,6 +1403,7 @@ class KineticsFamily(Database):
             degeneracy = 1,
             reversible = True,
             family = self.label,
+            isForward = isForward,
         )
         
         # Store the labeled atoms so we can recover them later
@@ -1448,18 +1461,17 @@ class KineticsFamily(Database):
         For rxn (with species' objects) from families with ownReverse, this method adds a `reverse`
         attribute that contains the reverse reaction information (like degeneracy)
         """
-        from rmgpy.rmg.react import findDegeneracies, getMoleculeTuples
+        from rmgpy.rmg.react import findDegeneracies
 
         if self.ownReverse:
-            # make sure to react all resonance structures.
-            tuples = getMoleculeTuples(rxn.products)
-            reactionList = []
-            for tup in tuples:
-                moltup = [mol_and_index[0] for mol_and_index in tup]
-                reactionList.extend(self.__generateReactions(moltup,
-                                                             products=rxn.reactants,
-                                                             forward=True))
-            reactions = findDegeneracies(reactionList)
+            # Check if the reactants are the same
+            sameReactants = False
+            if len(rxn.products) == 2 and rxn.products[0].isIsomorphic(rxn.products[1]):
+                sameReactants = True
+
+            reactionList = self.__generateReactions([spc.molecule for spc in rxn.products],
+                                                    products=rxn.reactants, forward=True)
+            reactions = findDegeneracies(reactionList, sameReactants)
             if len(reactions) == 0:
                 logging.error("Expecting one matching reverse reaction, not zero in reaction family {0} for forward reaction {1}.\n".format(self.label, str(rxn)))
                 logging.error("There is likely a bug in the RMG-database kinetics reaction family involving a missing group, missing atomlabels, forbidden groups, etc.")
@@ -1488,7 +1500,7 @@ class KineticsFamily(Database):
                     # Delete this reaction, since it should probably also be forbidden in the initial direction
                     # Hack fix for now
                     del rxn
-            elif len(reactions) > 1 and not all([reactions[0].isIsomorphic(other) for other in reactions]):
+            elif len(reactions) > 1 and not all([reactions[0].isIsomorphic(other, checkTemplateRxnProducts=True) for other in reactions]):
                 logging.error("Expecting one matching reverse reaction. Recieved {0} reactions with multiple non-isomorphic ones in reaction family {1} for forward reaction {2}.\n".format(len(reactions), self.label, str(rxn)))
                 logging.info("Found the following reverse reactions")
                 for rxn0 in reactions:
@@ -1503,7 +1515,7 @@ class KineticsFamily(Database):
             else:
                 rxn.reverse = reactions[0]
 
-    def calculateDegeneracy(self, reaction, ignoreSameReactants=False):
+    def calculateDegeneracy(self, reaction):
         """
         For a `reaction`  with `Molecule` or `Species` objects given in the direction in which
         the kinetics are defined, compute the reaction-path degeneracy.
@@ -1514,7 +1526,7 @@ class KineticsFamily(Database):
         `ignoreSameReactants= True` to this method.
         """
         reaction.degeneracy = 1
-        from rmgpy.rmg.react import findDegeneracies, reduceSameReactantDegeneracy, getMoleculeTuples
+        from rmgpy.rmg.react import findDegeneracies, getMoleculeTuples
 
         # find combinations of resonance isomers
         specReactants = []
@@ -1534,10 +1546,13 @@ class KineticsFamily(Database):
             comboOnlyMols = [tup[0] for tup in combo]
             reactions.extend(self.__generateReactions(comboOnlyMols, products=reaction.products, forward=True))
 
+        # Check if the reactants are the same
+        sameReactants = False
+        if len(specReactants) == 2 and specReactants[0].isIsomorphic(specReactants[1]):
+            sameReactants = True
+
         # remove degenerate reactions
-        reactions = findDegeneracies(reactions)
-        if not ignoreSameReactants:
-            reduceSameReactantDegeneracy(reactions)
+        reactions = findDegeneracies(reactions, sameReactants)
 
         # remove reactions with different templates (only for TemplateReaction)
         if isinstance(reaction, TemplateReaction):
@@ -1660,6 +1675,8 @@ class KineticsFamily(Database):
             if isinstance(products[0],Molecule):
                 products = [product.generateResonanceIsomers() for product in products]
             elif isinstance(products[0],Species):
+                for product in products:
+                    product.generateResonanceIsomers(keepIsomorphic=False)
                 products = [product.molecule for product in products]
             else:
                 raise TypeError('products input to __generateReactions must be Species or Molecule Objects')
