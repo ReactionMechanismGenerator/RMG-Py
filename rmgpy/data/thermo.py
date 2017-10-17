@@ -46,6 +46,7 @@ from rmgpy.thermo import NASAPolynomial, NASA, ThermoData, Wilhoit
 from rmgpy.molecule import Molecule, Atom, Bond, Group
 import rmgpy.molecule
 from rmgpy.species import Species
+import rmgpy.quantity
 
 
 #: This dictionary is used to add multiplicity to species label
@@ -846,6 +847,17 @@ class ThermoDatabase(object):
         
         Returns a :class:`ThermoData` object, with no Cp0 or CpInf
         """
+
+        # this depends on the two metal surfaces, the reference one
+        # used in the database of adsorption energies, and the desired surface
+        deltaAtomicAdosrptionEnergy = {
+            'C': rmgpy.quantity.Energy(-3.0, 'kJ/mol'), # would be nice to use eV
+            'H': rmgpy.quantity.Energy(-4.0, 'kJ/mol'),
+            'O': rmgpy.quantity.Energy(-5.0, 'kJ/mol'),
+            'N': rmgpy.quantity.Energy(-6.0, 'kJ/mol'),
+        }
+
+
         assert not species.isSurfaceSite(), "Can't estimate thermo of vacant site. Should be in library (and should be 0)"
 
         logging.debug(("Trying to generate thermo for surface species"
@@ -858,6 +870,8 @@ class ThermoDatabase(object):
         for atom in dummyMolecule.atoms:
             if atom.isSurfaceSite():
                 sitesToRemove.append(atom)
+        normalizedBonds = {'C':0., 'O':0., 'N':0., 'H':0.}
+        maxBondOrder = {'C':4., 'O':2., 'N':5., 'H':1.}
         for site in sitesToRemove:
             numbonds = len(site.bonds)
             if numbonds == 0:
@@ -870,20 +884,28 @@ class ThermoDatabase(object):
                 dummyMolecule.removeBond(bond)
                 if bond.isSingle():
                     bondedAtom.incrementRadical()
+                    bondOrder = 1.
                 elif bond.isDouble():
                     bondedAtom.incrementRadical()
                     bondedAtom.incrementRadical()
+                    bondOrder = 2.
                 elif bond.isTriple():
                     bondedAtom.incrementRadical()
                     bondedAtom.incrementLonePairs()
+                    bondOrder = 3.
                 else:
                     raise NotImplementedError("Can't remove surface bond of type {}".format(bond.order))
+
+                normalizedBonds[bondedAtom.symbol] += bondOrder / maxBondOrder[bondedAtom.symbol]
+
+
             dummyMolecule.removeAtom(site)
 
         dummyMolecule.update()
 
         logging.debug("Before removing from surface:\n" + molecule.toAdjacencyList())
         logging.debug("After removing from surface:\n" + dummyMolecule.toAdjacencyList())
+        logging.debug("Normalized bond orders:\n" + str(normalizedBonds))
 
         dummySpecies = Species()
         dummySpecies.molecule.append(dummyMolecule)
@@ -896,13 +918,30 @@ class ThermoDatabase(object):
         if not isinstance(thermo, ThermoData):
             thermo = thermo.toThermoData()
 
+        ## Get the adsorption energy
+        # Create the ThermoData object
+        adsorptionThermo = ThermoData(
+            Tdata = ([300,400,500,600,800,1000,1500],"K"),
+            Cpdata = ([0.0,0.0,0.0,0.0,0.0,0.0,0.0],"J/(mol*K)"),
+            H298 = (0.0,"kJ/mol"),
+            S298 = (0.0,"J/(mol*K)"),
+        )
         try:
-            self.__addGroupThermoData(thermo, self.groups['adsorption'], molecule, {})
+            self.__addGroupThermoData(adsorptionThermo, self.groups['adsorption'], molecule, {})
         except KeyError:
             logging.error("Couldn't find in adsorption thermo database:")
             logging.error(molecule)
             logging.error(molecule.toAdjacencyList())
             raise
+
+        ## now edit the adsorptionThermo using LSR
+        for element in 'CHON':
+            changeInBindingEnergy = deltaAtomicAdosrptionEnergy[element].value_si * normalizedBonds[element]
+            adsorptionThermo.H298.value_si += changeInBindingEnergy
+        # (groupAdditivity=True means it appends the comments)
+        addThermoData(thermo, adsorptionThermo, groupAdditivity=True)
+
+
         thermo.Cp0 = None
         thermo.CpInf = None
         return thermo
