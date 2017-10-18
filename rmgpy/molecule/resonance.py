@@ -184,7 +184,7 @@ def generateResonanceStructures(mol, clarStructures=True, keepIsomorphic=False):
                     pass
             else:
                 _generateResonanceStructures(newMolList, [generateKekuleStructure,
-                                                          generateOppositeKekuleStructure]), keepIsomorphic
+                                                          generateOppositeKekuleStructure], keepIsomorphic)
                 _generateResonanceStructures(newMolList, [generateAdjacentResonanceStructures], keepIsomorphic)
         elif features['isPolycyclicAromatic']:
             if clarStructures:
