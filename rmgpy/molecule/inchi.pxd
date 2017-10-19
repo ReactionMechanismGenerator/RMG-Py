@@ -27,33 +27,40 @@
 
 from .molecule cimport Atom, Bond, Molecule
 
-cpdef tuple decompose(string)
+cpdef tuple decompose_aug_inchi(str string)
 
-cpdef str ignore_prefix(str string)
+cpdef str remove_inchi_prefix(str string)
 
 cpdef str compose_aug_inchi(str inchi, str ulayer=*, str player=*)
 
 cpdef str compose_aug_inchi_key(str inchi_key, str ulayer=*, str player=*)
 
-cpdef list parse_H_layer(str inchi)
+cpdef list _parse_H_layer(str inchi)
 
-cpdef list parse_E_layer(str auxinfo)
+cpdef list _parse_E_layer(str auxinfo)
 
-cpdef list parse_N_layer(str auxinfo)
+cpdef list _parse_N_layer(str auxinfo)
 
-cpdef str create_U_layer(Molecule mol, str auxinfo)
+cpdef bint _has_unexpected_lone_pairs(Molecule mol)
 
-cpdef bint is_valid_combo(list combo, Molecule mol, list distances)
+cpdef list _get_unpaired_electrons(Molecule mol)
 
-cpdef list find_lowest_u_layer(Molecule mol, list u_layer, list equivalent_atoms)
+cpdef Molecule _generate_minimum_resonance_isomer(Molecule mol)
 
-cpdef Molecule generate_minimum_resonance_isomer(Molecule mol)
+cpdef list _compute_agglomerate_distance(list agglomerates, Molecule mol)
 
-cpdef list get_unpaired_electrons(Molecule mol)
+cpdef bint _is_valid_combo(list combo, Molecule mol, list distances)
 
-cpdef list compute_agglomerate_distance(list agglomerates, Molecule mol)
+cpdef list _find_lowest_u_layer(Molecule mol, list u_layer, list equivalent_atoms)
 
-cpdef str create_P_layer(Molecule mol, str auxinfo)
+cpdef str _create_U_layer(Molecule mol, str auxinfo)
+
+cpdef Molecule _find_lowest_p_layer(Molecule minmol, list p_layer, list equivalent_atoms)
+
+cpdef str _create_P_layer(Molecule mol, str auxinfo)
+
+cpdef tuple create_augmented_layers(Molecule mol)
+
 
 cpdef _fix_triplet_to_singlet(Molecule mol, list p_indices)
 
