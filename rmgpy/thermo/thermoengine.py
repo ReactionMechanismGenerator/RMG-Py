@@ -37,7 +37,7 @@ from rmgpy.statmech import Conformer
 from rmgpy.thermo import Wilhoit, NASA, ThermoData
 import rmgpy.data.rmg
 
-def processThermoData(spc, thermo0, thermoClass=NASA):
+def processThermoData(spc, thermo0, thermoClass=NASA, solventName = ''):
     """
     Converts via Wilhoit into required `thermoClass` and sets `E0`.
     
@@ -57,11 +57,17 @@ def processThermoData(spc, thermo0, thermoClass=NASA):
         wilhoit = thermo0.toWilhoit()
 
     # Add on solvation correction
-    if Species.solventData and not "Liquid thermo library" in thermo0.comment:
+    solvationdatabase = getDB('solvation')
+    if not solventName or solvationdatabase is None:
+        logging.debug('Solvent database or solventName not found. Solvent effect was not utilized')
+        solventData = None
+    else:
+        solventData = solvationdatabase.getSolventData(solventName)
+    if solventData and not "Liquid thermo library" in thermo0.comment:
         solvationdatabase = getDB('solvation')
         #logging.info("Making solvent correction for {0}".format(Species.solventName))
         soluteData = solvationdatabase.getSoluteData(spc)
-        solvation_correction = solvationdatabase.getSolvationCorrection(soluteData, Species.solventData)
+        solvation_correction = solvationdatabase.getSolvationCorrection(soluteData, solventData)
         # correction is added to the entropy and enthalpy
         wilhoit.S0.value_si = (wilhoit.S0.value_si + solvation_correction.entropy)
         wilhoit.H0.value_si = (wilhoit.H0.value_si + solvation_correction.enthalpy)
@@ -75,7 +81,7 @@ def processThermoData(spc, thermo0, thermoClass=NASA):
     if thermoClass is Wilhoit:
         thermo = wilhoit
     elif thermoClass is NASA:
-        if Species.solventData:
+        if solventData:
             #if liquid phase simulation keep the nasa polynomial if it comes from a liquid phase thermoLibrary. Otherwise convert wilhoit to NASA
             if "Liquid thermo library" in thermo0.comment and isinstance(thermo0, NASA):
                 thermo = thermo0
@@ -106,7 +112,7 @@ def processThermoData(spc, thermo0, thermoClass=NASA):
     return thermo
     
 
-def generateThermoData(spc, thermoClass=NASA):
+def generateThermoData(spc, thermoClass=NASA, solventName=''):
     """
     Generates thermo data, first checking Libraries, then using either QM or Database.
     
@@ -145,10 +151,10 @@ def generateThermoData(spc, thermoClass=NASA):
         
         thermoCentralDatabase.registerInCentralThermoDB(spc)
         
-    return processThermoData(spc, thermo0, thermoClass)    
+    return processThermoData(spc, thermo0, thermoClass, solventName)
 
 
-def evaluator(spc):
+def evaluator(spc, solventName = ''):
     """
     Module-level function passed to workers.
 
@@ -162,11 +168,11 @@ def evaluator(spc):
     logging.debug("Evaluating spc %s ", spc)
 
     spc.generateResonanceIsomers()
-    thermo = generateThermoData(spc)
+    thermo = generateThermoData(spc,solventName=solventName)
 
     return thermo
 
-def submit(spc):
+def submit(spc, solventName = ''):
     """
     Submits a request to calculate chemical data for the Species object.
 
@@ -176,4 +182,4 @@ def submit(spc):
     the result.
 
     """
-    spc.thermo = submit_(evaluator, spc)
+    spc.thermo = submit_(evaluator, spc, solventName= solventName)

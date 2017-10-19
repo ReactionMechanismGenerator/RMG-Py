@@ -84,12 +84,6 @@ class TestWilhoit(unittest.TestCase):
         """
         import rmgpy.data.rmg
         rmgpy.data.rmg.database = None
-        
-        from rmgpy.rmg.model import Species as DifferentSpecies
-        DifferentSpecies.solventData = None
-        DifferentSpecies.solventName = None
-        DifferentSpecies.solventStructure = None
-        DifferentSpecies.solventViscosity = None
 
     def test_Cp0(self):
         """

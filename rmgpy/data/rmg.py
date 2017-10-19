@@ -42,7 +42,7 @@ from transport import TransportDatabase
 from rmgpy.data.kinetics.database import KineticsDatabase
 from statmech import StatmechDatabase
 from solvation import SolvationDatabase
-
+from rmgpy.exceptions import DatabaseError
 from rmgpy.scoop_framework.util import get, broadcast
 
 # Module-level variable to store the (only) instance of RMGDatabase in use.
@@ -265,9 +265,9 @@ def getDB(name):
             if db:
                 return db
             else:
-                raise Exception
-        except Exception, e:
+                raise DatabaseError
+        except DatabaseError, e:
             logging.debug("Did not find a way to obtain the broadcasted database for {}.".format(name))
             raise e
 
-    raise Exception('Could not get database with name: {}'.format(name))
+    raise DatabaseError('Could not get database with name: {}'.format(name))

@@ -43,7 +43,7 @@ from rmgpy.display import display
 import rmgpy.constants as constants
 from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.quantity import Quantity
-import rmgpy.species
+from rmgpy.species import Species
 from rmgpy.thermo.thermoengine import submit
 from rmgpy.reaction import Reaction
 from rmgpy.exceptions import ForbiddenStructureException
@@ -56,31 +56,8 @@ import rmgpy.data.rmg
 from .react import reactAll
 
 from pdep import PDepReaction, PDepNetwork
+
 # generateThermoDataFromQM under the Species class imports the qm package
-
-################################################################################
-
-class Species(rmgpy.species.Species):
-    solventName = None
-    solventData = None
-    # solventStructure is the instance of species class whose molecule attribute corresponds to the solvent SMILES.
-    # If the solvent library does not contain the SMILES of the solvent, then the solventStructure is None
-    solventStructure = None
-    solventViscosity = None
-    isSolvent = False # returns True if the species is the solvent and False if not
-    diffusionTemp = None
-
-    def __init__(self, index=-1, label='', thermo=None, conformer=None, 
-                 molecule=None, transportData=None, molecularWeight=None, 
-                 energyTransferModel=None, reactive=True, props=None, creationIteration=0):
-        rmgpy.species.Species.__init__(self, index, label, thermo, conformer, molecule, transportData, molecularWeight, energyTransferModel, reactive, props)
-        self.creationIteration = creationIteration
-
-    def __reduce__(self):
-        """
-        A helper function used when pickling an object.
-        """
-        return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.transportData, self.molecularWeight, self.energyTransferModel, self.reactive, self.props,self.creationIteration),)
 
 ################################################################################
 
@@ -196,6 +173,7 @@ class CoreEdgeReactionModel:
     `networkList`              A list of pressure-dependent reaction networks (:class:`Network` objects)
     `networkCount`             A counter for the number of pressure-dependent networks created
     `indexSpeciesDict`         A dictionary with a unique index pointing to the species objects
+    `solventName`              String describing solvent name for liquid reactions. Empty for non-liquid estimation
     =========================  ==============================================================
 
 
@@ -249,7 +227,8 @@ class CoreEdgeReactionModel:
         self.newSurfaceRxnsAdd = set()
         self.newSurfaceSpcsLoss = set()
         self.newSurfaceRxnsLoss = set()
-    
+        self.solventName = ''
+
     def checkForExistingSpecies(self, molecule):
         """
         Check to see if an existing species contains the same
@@ -338,7 +317,7 @@ class CoreEdgeReactionModel:
         spec.generateResonanceIsomers()
         spec.molecularWeight = Quantity(spec.molecule[0].getMolecularWeight()*1000.,"amu")
         
-        submit(spec)
+        submit(spec,self.solventName)
         
         if spec.label == '':
             if spec.thermo and spec.thermo.label != '': #check if thermo libraries have a name for it
@@ -1448,7 +1427,7 @@ class CoreEdgeReactionModel:
 
         for spec in self.newSpeciesList:            
             if spec.reactive:
-                submit(spec)
+                submit(spec,self.solventName)
 
             self.addSpeciesToCore(spec)
 
@@ -1458,7 +1437,7 @@ class CoreEdgeReactionModel:
                 # we need to make sure the barrier is positive.
                 # ...but are Seed Mechanisms run through PDep? Perhaps not.
                 for spec in itertools.chain(rxn.reactants, rxn.products):
-                    submit(spec)
+                    submit(spec,self.solventName)
 
                 rxn.fixBarrierHeight(forcePositive=True)
             self.addReactionToCore(rxn)
@@ -1514,7 +1493,7 @@ class CoreEdgeReactionModel:
 
         for spec in self.newSpeciesList:
             if spec.reactive: 
-                submit(spec)
+                submit(spec,self.solventName)
 
             self.addSpeciesToEdge(spec)
 

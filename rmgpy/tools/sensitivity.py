@@ -117,8 +117,6 @@ def simulate(rmg, diffusionLimited=True):
             if diffusionLimited:
                 rmg.loadDatabase()
                 Species.solventData = rmg.database.solvation.getSolventData(rmg.solvent)
-                Species.solventName = rmg.solvent
-                Species.solventStructure = rmg.database.solvation.getSolventStructure(rmg.solvent)
                 diffusionLimiter.enable(Species.solventData, rmg.database.solvation)
 
             # Store constant species indices

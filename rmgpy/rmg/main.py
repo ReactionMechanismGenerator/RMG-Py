@@ -211,6 +211,8 @@ class RMG(util.Subject):
         if self.pressureDependence:
             self.pressureDependence.outputFile = self.outputDirectory
             self.reactionModel.pressureDependence = self.pressureDependence
+        if self.solvent:
+            self.reactionModel.solventName = self.solvent
 
         self.reactionModel.verboseComments = self.verboseComments
         self.reactionModel.saveEdgeSpecies = self.saveEdgeSpecies
@@ -393,10 +395,8 @@ class RMG(util.Subject):
         
         # Do all liquid-phase startup things:
         if self.solvent:
-            Species.solventData = self.database.solvation.getSolventData(self.solvent)
-            Species.solventName = self.solvent
-            Species.solventStructure = self.database.solvation.getSolventStructure(self.solvent)
-            diffusionLimiter.enable(Species.solventData, self.database.solvation)
+            solventData = self.database.solvation.getSolventData(self.solvent)
+            diffusionLimiter.enable(solventData, self.database.solvation)
             logging.info("Setting solvent data for {0}".format(self.solvent))
 
         try:
@@ -447,7 +447,8 @@ class RMG(util.Subject):
 
             # For liquidReactor, checks whether the solvent is listed as one of the initial species.
             if self.solvent:
-                self.database.solvation.checkSolventinInitialSpecies(self,Species.solventStructure)
+                solventStructure = self.database.solvation.getSolventStructure(self.solvent)
+                self.database.solvation.checkSolventinInitialSpecies(self,solventStructure)
 
             #Check to see if user has input Singlet O2 into their input file or libraries
             #This constraint is special in that we only want to check it once in the input instead of every time a species is made
@@ -470,7 +471,7 @@ class RMG(util.Subject):
                         """.format(spec.label))
 
             for spec in self.initialSpecies:
-                submit(spec)
+                submit(spec,self.solvent)
                 
             # Add nonreactive species (e.g. bath gases) to core first
             # This is necessary so that the PDep algorithm can identify the bath gas            
