@@ -221,7 +221,7 @@ def __lookup(mol, identifier, type_identifier):
         except KeyError:
             return None
 
-def check(mol, aug_inchi) :
+def check(mol, aug_inchi):
     """
     Check if the molecular structure is correct.
 
@@ -237,6 +237,8 @@ def check(mol, aug_inchi) :
                    )
 
     ConsistencyChecker.check_multiplicity(mol.getRadicalCount(), mol.multiplicity)
+    inchi, u_indices, p_indices = inchiutil.decompose(str(aug_inchi))
+    assert(mol.getRadicalCount() == len(u_indices))
     
     for at in mol.atoms:
         ConsistencyChecker.check_partial_charge(at)

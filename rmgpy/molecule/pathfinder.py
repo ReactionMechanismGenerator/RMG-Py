@@ -263,28 +263,24 @@ def findAllDelocalizationPaths(atom1):
 def findAllDelocalizationPathsLonePairRadical(atom1):
     """
     Find all the delocalization paths of lone electron pairs next to the radical center indicated
-    by `atom1`. Used to generate resonance isomers.
+    by `atom1`. Used to generate resonance isomers for species such as RN[O], RO[NH], RO[O], RN[NH].
+    (currently only N and O are considered, will soon include S as well)
     """
     cython.declare(paths=list)
     cython.declare(atom2=Atom, bond12=Bond)
-    
-    # No paths if atom1 is not a radical
-    if atom1.radicalElectrons <= 0:
-        return []
-    
-    # In a first step we only consider nitrogen and oxygen atoms as possible radical centers
-    if not ((atom1.lonePairs == 0 and atom1.isNitrogen()) or(atom1.lonePairs == 2 and atom1.isOxygen())):
-        return []
-    
-    # Find all delocalization paths
+
     paths = []
-    for atom2, bond12 in atom1.edges.items():
-        # Only single bonds are considered
-        if bond12.isSingle():
-            # Neighboring atom must posses a lone electron pair to loose it
-            if ((atom2.lonePairs == 1 and atom2.isNitrogen()) or (atom2.lonePairs == 3 and atom2.isOxygen())) and (atom2.radicalElectrons == 0):
-                paths.append([atom1, atom2])
-                
+    # In a first step we only consider nitrogen and oxygen atoms as possible radical centers
+    if ((atom1.isNitrogen() and atom1.lonePairs in [0,1])
+            or (atom1.isOxygen() and atom1.lonePairs in [1,2]))\
+            and atom1.radicalElectrons > 0:
+        for atom2, bond12 in atom1.edges.items():
+            if bond12.isSingle():  # Only single bonds are considered
+                # Neighboring atom must posses a lone electron pair to loose it
+                if ((atom2.isNitrogen() and atom2.lonePairs in [1,2])
+                        or (atom2.isOxygen() and atom2.lonePairs in [2,3]))\
+                        and atom2.radicalElectrons == 0:
+                    paths.append([atom1, atom2])
     return paths
 
 def findAllDelocalizationPathsN5dd_N5ts(atom1):
