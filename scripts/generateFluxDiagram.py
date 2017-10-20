@@ -24,6 +24,7 @@ def parse_arguments():
     parser.add_argument('dictionary', metavar='DICTIONARY', type=str, help='RMG dictionary file')
     parser.add_argument('species', metavar='SPECIES', type=str, nargs='?', default=None, help='Path to species images')
     parser.add_argument('--java', action='store_true', help='process RMG-Java model')
+    parser.add_argument('--no-dlim', dest='dlim', action='store_false', help='Turn off diffusion-limited rates')
 
     args = parser.parse_args()
 
@@ -32,13 +33,14 @@ def parse_arguments():
     dictFile = os.path.abspath(args.dictionary)
     speciesPath = os.path.abspath(args.species) if args.species is not None else None
     useJava = args.java
+    dflag = args.dlim
     
-    return inputFile, chemkinFile, dictFile, speciesPath, useJava
+    return inputFile, chemkinFile, dictFile, speciesPath, useJava, dflag
 
 def main():
-    inputFile, chemkinFile, dictFile, speciesPath, useJava = parse_arguments()
+    inputFile, chemkinFile, dictFile, speciesPath, useJava, dflag = parse_arguments()
 
-    createFluxDiagram(inputFile, chemkinFile, dictFile, speciesPath=speciesPath, java=useJava)
+    createFluxDiagram(inputFile, chemkinFile, dictFile, speciesPath=speciesPath, java=useJava, diffusionLimited=dflag)
 
 if __name__ == '__main__':
     main()
