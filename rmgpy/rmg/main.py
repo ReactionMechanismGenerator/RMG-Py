@@ -595,14 +595,13 @@ class RMG(util.Subject):
                 
                 self.reactionModel.iterationNum += 1
                 self.done = True
-                objectsToEnlarge = []
                 
                 allTerminated = True
                 numCoreSpecies = len(self.reactionModel.core.species)
-
-                notResurrectedVec = [True for i in xrange(len(self.reactionSystems))]
                 
                 for index, reactionSystem in enumerate(self.reactionSystems):
+                    reactorDone = True
+                    objectsToEnlarge = []
                     self.reactionSystem = reactionSystem
                     # Conduct simulation
                     logging.info('Conducting simulation of reaction system %s...' % (index+1))
@@ -639,12 +638,10 @@ class RMG(util.Subject):
                             self.makeSeedMech(firstTime=True)
                         raise
                     
-                    notResurrectedVec[index] = not resurrected
-                    
                     if self.generateSeedEachIteration:
                         self.makeSeedMech()
                         
-                    self.done = self.reactionModel.addNewSurfaceObjects(obj,newSurfaceSpecies,newSurfaceReactions,reactionSystem)
+                    reactorDone = self.reactionModel.addNewSurfaceObjects(obj,newSurfaceSpecies,newSurfaceReactions,reactionSystem)
                     
                     allTerminated = allTerminated and terminated
                     logging.info('')
@@ -652,28 +649,9 @@ class RMG(util.Subject):
                     # If simulation is invalid, note which species should be added to
                     # the core
                     if obj != [] and not (obj is None):
-                        objects = self.processToSpeciesNetworks(obj)
-                        for ob in objects:
-                            if not (ob in objectsToEnlarge):
-                                if isinstance(ob,Species): #keep Species before PDepNetworks
-                                    objectsToEnlarge.insert(0,ob)
-                                elif isinstance(ob[0],PDepNetwork):
-                                    objectsToEnlarge.append(ob)
-                                else:
-                                    raise TypeError('processed object not recognized')
+                        objectsToEnlarge = self.processToSpeciesNetworks(obj)
 
-                        self.done = False
-                        
-                if not self.done: # There is something that needs exploring/enlarging
-
-                    # If we reached our termination conditions, then try to prune
-                    # species from the edge
-                    if allTerminated:
-                        self.reactionModel.prune(self.reactionSystems, modelSettings.fluxToleranceKeepInEdge, modelSettings.maximumEdgeSpecies, modelSettings.minSpeciesExistIterationsForPrune)
-                        # Perform garbage collection after pruning
-                        collected = gc.collect()
-                        logging.info('Garbage collector: collected %d objects.' % (collected))
-        
+                        reactorDone = False
                     # Enlarge objects identified by the simulation for enlarging
                     # These should be Species or Network objects
                     logging.info('')
@@ -686,15 +664,14 @@ class RMG(util.Subject):
                         
                     if len(self.reactionModel.core.species) > numCoreSpecies:
                         tempModelSettings = deepcopy(modelSettings)
-                        tempModelSettings.toleranceKeepInEdge = 0
+                        tempModelSettings.fluxToleranceKeepInEdge = 0
                         # If there were core species added, then react the edge
                         # If there were no new core species, it means the pdep network needs be updated through another enlarge core step
                         if modelSettings.filterReactions:
                             # Run a raw simulation to get updated reaction system threshold values
-                            for index, reactionSystem in enumerate(self.reactionSystems):
-                                # Run with the same conditions as with pruning off
-                                if notResurrectedVec[index]:
-                                    reactionSystem.simulate(
+                            # Run with the same conditions as with pruning off
+                            if not resurrected:
+                                reactionSystem.simulate(
                                         coreSpecies = self.reactionModel.core.species,
                                         coreReactions = self.reactionModel.core.reactions,
                                         edgeSpecies = [],
@@ -705,11 +682,12 @@ class RMG(util.Subject):
                                         modelSettings = tempModelSettings,
                                         simulatorSettings = simulatorSettings,
                                     )
-                                    self.updateReactionThresholdAndReactFlags(
+                                self.updateReactionThresholdAndReactFlags(
                                         rxnSysUnimolecularThreshold = reactionSystem.unimolecularThreshold,
                                         rxnSysBimolecularThreshold = reactionSystem.bimolecularThreshold)
-                                else:
-                                    logging.warn('Reaction thresholds/flags for Reaction System {0} was not updated due to resurrection'.format(index+1))
+                            else:
+                                logging.warn('Reaction thresholds/flags for Reaction System {0} was not updated due to resurrection'.format(index+1))
+
         
                             logging.info('')    
                         else:
@@ -733,7 +711,20 @@ class RMG(util.Subject):
                     if maxNumSpcsHit: #breaks the while loop 
                         break
                     
-                self.saveEverything()
+                    if not reactorDone:
+                        self.done = False
+                        
+                    self.saveEverything()
+                    
+                if not self.done: # There is something that needs exploring/enlarging
+
+                    # If we reached our termination conditions, then try to prune
+                    # species from the edge
+                    if allTerminated and modelSettings.fluxToleranceKeepInEdge>0.0:
+                        self.reactionModel.prune(self.reactionSystems, modelSettings.fluxToleranceKeepInEdge, modelSettings.maximumEdgeSpecies, modelSettings.minSpeciesExistIterationsForPrune)
+                        # Perform garbage collection after pruning
+                        collected = gc.collect()
+                        logging.info('Garbage collector: collected %d objects.' % (collected))
     
                 # Consider stopping gracefully if the next iteration might take us
                 # past the wall time
