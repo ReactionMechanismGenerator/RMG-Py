@@ -38,17 +38,15 @@ import cython
 import itertools
 import logging
 
-# Assume that OB is not installed by default
-INSTALLED_BACKENDS = {
-    'OB': False,
-}
-
+# Assume that rdkit is installed
+from rdkit import Chem
+# Test if openbabel is installed
 try:
     import openbabel
-    INSTALLED_BACKENDS['OB'] = True
-except:
-    pass
-from rdkit import Chem
+except ImportError:
+    BACKENDS = ['rdkit']
+else:
+    BACKENDS = ['openbabel', 'rdkit']
 
 from .molecule import Atom
 from rmgpy.molecule.converter import toRDKitMol, fromRDKitMol, toOBMol, fromOBMol
@@ -57,13 +55,6 @@ import rmgpy.molecule.inchi as inchiutil
 import rmgpy.molecule.util as util
 
 # constants
-
-BACKENDS = [
-    'rdkit',
-]
-
-if INSTALLED_BACKENDS['OB']:
-    BACKENDS.insert(0, 'openbabel')
 
 INCHI_LOOKUPS = {
     'H': '[H]',  # RDkit was improperly handling the Hydrogen radical from InChI

@@ -30,7 +30,6 @@ cimport element as elements
 cimport inchi as inchiutil
 
 cpdef list BACKENDS
-cpdef dict INSTALLED_BACKENDS
 cpdef dict INCHI_LOOKUPS
 cpdef dict SMILES_LOOKUPS
 

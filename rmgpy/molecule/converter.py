@@ -35,9 +35,17 @@ import logging
 import sys
 
 import cython
-import openbabel
+# Assume that rdkit is installed
 from rdkit import Chem
+# Test if openbabel is installed
+try:
+    import openbabel
+except ImportError:
+    OB_INSTALLED = False
+else:
+    OB_INSTALLED = True
 
+from rmgpy.exceptions import DependencyError
 from rmgpy.molecule import element as elements
 from rmgpy.molecule.molecule import Atom, Bond
 
@@ -191,6 +199,8 @@ def toOBMol(mol, returnMapping=False):
     Convert a molecular structure to an OpenBabel OBMol object. Uses
     `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
     """
+    if not OB_INSTALLED:
+        raise DependencyError('OpenBabel is not installed. Please install or use RDKit.')
 
     # Sort the atoms to ensure consistent output
     mol.sortAtoms()
@@ -229,6 +239,8 @@ def fromOBMol(mol, obmol):
     # cython.declare(i=cython.int)
     # cython.declare(radicalElectrons=cython.int, charge=cython.int, lonePairs=cython.int)
     # cython.declare(atom=Atom, atom1=Atom, atom2=Atom, bond=Bond)
+    if not OB_INSTALLED:
+        raise DependencyError('OpenBabel is not installed. Please install or use RDKit.')
 
     mol.vertices = []
 
