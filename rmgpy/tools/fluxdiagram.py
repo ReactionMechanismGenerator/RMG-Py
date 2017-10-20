@@ -41,8 +41,7 @@ import numpy
 import pydot
 
 from rmgpy.solver.base import TerminationTime, TerminationConversion
-from rmgpy.solver.simple import SimpleReactor
-import rmgpy.util as util
+from rmgpy.solver.liquid import LiquidReactor
 from rmgpy.rmg.settings import SimulatorSettings
 from .loader import loadRMGJob
 
@@ -284,29 +283,20 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
     
 ################################################################################
 
-def simulate(reactionModel, reactionSystem, settings = None):
+def simulate(reactionModel, reactionSystem, settings=None):
     """
     Generate and return a set of core and edge species and reaction fluxes
     by simulating the given `reactionSystem` using the given `reactionModel`.
     """
-    global maximumNodeCount, maximumEdgeCount, timeStep, concentrationTolerance, speciesRateTolerance
+    global timeStep
     # Allow user defined settings for flux diagram generation if given
     if settings:
-        maximumNodeCount = settings['maximumNodeCount']       
-        maximumEdgeCount = settings['maximumEdgeCount']  
-        timeStep = settings['timeStep']
-        concentrationTolerance = settings['concentrationTolerance']   
-        speciesRateTolerance = settings['speciesRateTolerance']
+        timeStep = settings.get('timeStep', timeStep)
     
     coreSpecies = reactionModel.core.species
     coreReactions = reactionModel.core.reactions
     edgeSpecies = reactionModel.edge.species
     edgeReactions = reactionModel.edge.reactions
-    
-#    numCoreSpecies = len(coreSpecies)
-#    numCoreReactions = len(coreReactions)
-#    numEdgeSpecies = len(edgeSpecies)
-#    numEdgeReactions = len(edgeReactions)
     
     speciesIndex = {}
     for index, spec in enumerate(coreSpecies):
@@ -314,9 +304,14 @@ def simulate(reactionModel, reactionSystem, settings = None):
     
     simulatorSettings = SimulatorSettings(atol=absoluteTolerance,rtol=relativeTolerance)
 
-    reactionSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions, [], [], [], 
-                                   atol=simulatorSettings.atol,rtol=simulatorSettings.rtol,
-                                   sens_atol=simulatorSettings.sens_atol,sens_rtol=simulatorSettings.sens_rtol)
+    # Enable constant species for LiquidReactor
+    if isinstance(reactionSystem, LiquidReactor):
+        if reactionSystem.constSPCNames is not None:
+            reactionSystem.get_constSPCIndices(coreSpecies)
+
+    reactionSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions,
+                                   atol=simulatorSettings.atol, rtol=simulatorSettings.rtol,
+                                   sens_atol=simulatorSettings.sens_atol, sens_rtol=simulatorSettings.sens_rtol)
 
     # Copy the initial conditions to use in evaluating conversions
     y0 = reactionSystem.y.copy()
@@ -327,12 +322,10 @@ def simulate(reactionModel, reactionSystem, settings = None):
     edgeReactionRates = []
 
     nextTime = initialTime
-    terminated = False; iteration = 0
+    terminated = False
     while not terminated:
         # Integrate forward in time to the next time point
         reactionSystem.advance(nextTime)
-
-        iteration += 1
         
         time.append(reactionSystem.t)
         coreSpeciesConcentrations.append(reactionSystem.coreSpeciesConcentrations)
