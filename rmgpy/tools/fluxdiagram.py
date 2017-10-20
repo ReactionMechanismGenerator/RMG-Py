@@ -42,7 +42,6 @@ import pydot
 
 from rmgpy.solver.base import TerminationTime, TerminationConversion
 from rmgpy.solver.liquid import LiquidReactor
-from rmgpy.rmg.model import Species
 from rmgpy.kinetics.diffusionLimited import diffusionLimiter
 from rmgpy.rmg.settings import SimulatorSettings
 from .loader import loadRMGJob
@@ -485,10 +484,8 @@ def createFluxDiagram(inputFile, chemkinFile, speciesDict, savePath=None, specie
             # Enable diffusion-limited rates
             if diffusionLimited and isinstance(reactionSystem, LiquidReactor):
                 rmg.loadDatabase()
-                Species.solventData = rmg.database.solvation.getSolventData(rmg.solvent)
-                Species.solventName = rmg.solvent
-                Species.solventStructure = rmg.database.solvation.getSolventStructure(rmg.solvent)
-                diffusionLimiter.enable(Species.solventData, rmg.database.solvation)
+                solventData = rmg.database.solvation.getSolventData(rmg.solvent)
+                diffusionLimiter.enable(solventData, rmg.database.solvation)
 
             # If there is no termination time, then add one to prevent jobs from
             # running forever
