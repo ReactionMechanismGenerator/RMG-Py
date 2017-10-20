@@ -599,7 +599,14 @@ class RMG(util.Subject):
                 allTerminated = True
                 numCoreSpecies = len(self.reactionModel.core.species)
                 
+                prunableSpecies = self.reactionModel.edge.species[:]
+                prunableNetworks = self.reactionModel.networkList[:]
+                
                 for index, reactionSystem in enumerate(self.reactionSystems):
+                    
+                    reactionSystem.prunableSpecies = prunableSpecies
+                    reactionSystem.prunableNetworks = prunableNetworks
+                    
                     reactorDone = True
                     objectsToEnlarge = []
                     self.reactionSystem = reactionSystem
