@@ -446,20 +446,28 @@ def loadChemkinOutput(outputFile, reactionModel):
 
 ################################################################################
 
-def createFluxDiagram(savePath, inputFile, chemkinFile, speciesDict, java = False, settings = None, chemkinOutput = '', centralSpecies = None):
+def createFluxDiagram(inputFile, chemkinFile, speciesDict, savePath=None, speciesPath=None, java=False, settings=None, chemkinOutput='', centralSpecies=None):
     """
     Generates the flux diagram based on a condition 'inputFile', chemkin.inp chemkinFile,
     a speciesDict txt file, plus an optional chemkinOutput file.
     """
 
-    rmg = loadRMGJob(inputFile, chemkinFile, speciesDict, generateImages=True, useJava=java)
+    if speciesPath is None:
+        speciesPath = os.path.join(os.path.dirname(inputFile), 'species')
+        generateImages = True
+    else:
+        generateImages = False
 
-    speciesPath = os.path.join(os.path.dirname(inputFile), 'species')
+    rmg = loadRMGJob(inputFile, chemkinFile, speciesDict, generateImages=generateImages, useJava=java)
+
+    if savePath is None:
+        savePath = os.path.join(rmg.outputDirectory, 'flux')
     
     # if you have a chemkin output, then you only have one reactionSystem
     if chemkinOutput:
+        outDir = os.path.join(savePath, '1')
         try:
-            os.makedirs(os.path.join(savePath,'1'))
+            os.makedirs(outDir)
         except OSError:
             pass
 
@@ -467,18 +475,17 @@ def createFluxDiagram(savePath, inputFile, chemkinFile, speciesDict, java = Fals
         time, coreSpeciesConcentrations, coreReactionRates, edgeReactionRates = loadChemkinOutput(chemkinOutput, rmg.reactionModel)
 
         print 'Generating flux diagram for chemkin output...'
-        generateFluxDiagram(rmg.reactionModel, time, coreSpeciesConcentrations, coreReactionRates, os.path.join(savePath, '1'), centralSpecies, speciesPath, settings)
+        generateFluxDiagram(rmg.reactionModel, time, coreSpeciesConcentrations, coreReactionRates, outDir, centralSpecies, speciesPath, settings)
 
     else:
         # Generate a flux diagram video for each reaction system
         for index, reactionSystem in enumerate(rmg.reactionSystems):
+            outDir = os.path.join(savePath, '{0:d}'.format(index+1))
             try:
-                os.makedirs(os.path.join(savePath,'{0:d}'.format(index+1)))
+                os.makedirs(outDir)
             except OSError:
             # Fail silently on any OS errors
                 pass
-
-            #util.makeOutputSubdirectory('flux/{0:d}'.format(index+1))
 
             # If there is no termination time, then add one to prevent jobs from
             # running forever
@@ -489,35 +496,5 @@ def createFluxDiagram(savePath, inputFile, chemkinFile, speciesDict, java = Fals
             time, coreSpeciesConcentrations, coreReactionRates, edgeReactionRates = simulate(rmg.reactionModel, reactionSystem, settings)
 
             print 'Generating flux diagram for reaction system {0:d}...'.format(index+1)
-            generateFluxDiagram(rmg.reactionModel, time, coreSpeciesConcentrations, coreReactionRates, os.path.join(savePath, '{0:d}'.format(index+1)), 
+            generateFluxDiagram(rmg.reactionModel, time, coreSpeciesConcentrations, coreReactionRates, outDir,
                                 centralSpecies, speciesPath, settings)
-
-def run(inputFile, speciesPath=None, useJava=False):
-    
-    rmg = loadRMGJob(inputFile, useJava=useJava)
-    
-    if speciesPath is None:
-        speciesPath = os.path.join(os.path.dirname(inputFile), 'species')
-    
-    # Generate a flux diagram video for each reaction system
-    util.makeOutputSubdirectory(rmg.outputDirectory, 'flux')
-    for index, reactionSystem in enumerate(rmg.reactionSystems):
-        
-        util.makeOutputSubdirectory(rmg.outputDirectory, 'flux/{0:d}'.format(index+1))
-        
-        # If there is no termination time, then add one to prevent jobs from
-        # running forever
-        if not any([isinstance(term, TerminationTime) for term in reactionSystem.termination]):
-            reactionSystem.termination.append(TerminationTime((1e10,'s')))
-        
-        
-        print 'Conducting simulation of reaction system {0:d}...'.format(index+1)
-        time, coreSpeciesConcentrations, coreReactionRates, edgeReactionRates =\
-        simulate(rmg.reactionModel, reactionSystem)
-        
-        centralSpecies = None
-        print 'Generating flux diagram for reaction system {0:d}...'.format(index+1)
-        generateFluxDiagram(
-            rmg.reactionModel, time, coreSpeciesConcentrations, coreReactionRates,\
-            os.path.join(rmg.outputDirectory, 'flux', '{0:d}'.format(index+1)), centralSpecies, speciesPath
-            )    
