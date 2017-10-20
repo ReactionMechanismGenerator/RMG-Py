@@ -332,15 +332,11 @@ multiplicity 2
     #         aug_inchi = 'InChI=1S/C6H5/c1-2-4-6-5-3-1/h1-5H/u1'
     #         self.compare(adjlist, aug_inchi)
 
-    @work_in_progress
     def test_C5H6_triplet_singlet(self):
         """
         n-C5 chain with 2 unpaired electrons at the terminal carbon atoms,
         and 2 carbon atoms with each a lone pair, next to a terminal
         carbon atom.
-
-        InChI generation currently generates:
-        "InChI=1S/C5H10/c1-3-5-4-2/h1-5H2/u1,2/lp4,5"
         """
 
         adjlist = """

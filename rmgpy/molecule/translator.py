@@ -48,7 +48,8 @@ except ImportError:
 else:
     BACKENDS = ['openbabel', 'rdkit']
 
-from .molecule import Atom
+from rmgpy.exceptions import DependencyError
+from .molecule import Atom, Molecule
 from rmgpy.molecule.converter import toRDKitMol, fromRDKitMol, toOBMol, fromOBMol
 
 import rmgpy.molecule.inchi as inchiutil
@@ -138,7 +139,7 @@ RADICAL_LOOKUPS = {
 }
 
 
-def toInChI(mol):
+def toInChI(mol, backend='try-all'):
     """
     Convert a molecular structure to an InChI string. Uses
     `RDKit <http://rdkit.org/>`_ to perform the conversion.
@@ -149,19 +150,7 @@ def toInChI(mol):
     Convert a molecular structure to an InChI string. Uses
     `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
     """
-    try:
-        if not Chem.inchi.INCHI_AVAILABLE:
-            return "RDKitInstalledWithoutInChI"
-        rdkitmol = toRDKitMol(mol)
-        return Chem.inchi.MolToInchi(rdkitmol, options='-SNon')
-    except:
-        pass
-
-    obmol = toOBMol(mol)
-    obConversion = openbabel.OBConversion()
-    obConversion.SetOutFormat('inchi')
-    obConversion.SetOptions('w', openbabel.OBConversion.OUTOPTIONS)
-    return obConversion.WriteString(obmol).strip()
+    return _write(mol, 'inchi', backend)
 
 
 def toAugmentedInChI(mol):
@@ -171,7 +160,6 @@ def toAugmentedInChI(mol):
 
     Two additional layers are added to the InChI:
     - unpaired electrons layer: the position of the unpaired electrons in the molecule
-
     """
 
     cython.declare(
@@ -188,7 +176,7 @@ def toAugmentedInChI(mol):
     return aug_inchi
 
 
-def toInChIKey(mol):
+def toInChIKey(mol, backend='try-all'):
     """
     Convert a molecular structure to an InChI Key string. Uses
     `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
@@ -197,26 +185,8 @@ def toInChIKey(mol):
 
     Convert a molecular structure to an InChI Key string. Uses
     `RDKit <http://rdkit.org/>`_ to perform the conversion.
-
-    Removes check-sum dash (-) and character so that only
-    the 14 + 9 characters remain.
     """
-    try:
-        if not Chem.inchi.INCHI_AVAILABLE:
-            return "RDKitInstalledWithoutInChI"
-        inchi = toInChI(mol)
-        return Chem.inchi.InchiToInchiKey(inchi)[:-2]
-    except:
-        pass
-
-    # for atom in mol.vertices:
-    #           if atom.isNitrogen():
-    obmol = toOBMol(mol)
-    obConversion = openbabel.OBConversion()
-    obConversion.SetOutFormat('inchi')
-    obConversion.SetOptions('w', openbabel.OBConversion.OUTOPTIONS)
-    obConversion.SetOptions('K', openbabel.OBConversion.OUTOPTIONS)
-    return obConversion.WriteString(obmol).strip()[:-2]
+    return _write(mol, 'inchikey', backend)
 
 
 def toAugmentedInChIKey(mol):
@@ -237,18 +207,16 @@ def toAugmentedInChIKey(mol):
     return inchiutil.compose_aug_inchi_key(key, ulayer, player)
 
 
-def toSMARTS(mol):
+def toSMARTS(mol, backend='rdkit'):
     """
     Convert a molecular structure to an SMARTS string. Uses
     `RDKit <http://rdkit.org/>`_ to perform the conversion.
     Perceives aromaticity and removes Hydrogen atoms.
     """
-    rdkitmol = toRDKitMol(mol)
-
-    return Chem.MolToSmarts(rdkitmol)
+    return _write(mol, 'sma', backend)
 
 
-def toSMILES(mol):
+def toSMILES(mol, backend='default'):
     """
     Convert a molecular structure to an SMILES string.
 
@@ -261,175 +229,25 @@ def toSMILES(mol):
     While converting to an RDMolecule it will perceive aromaticity
     and removes Hydrogen atoms.
     """
-
     # If we're going to have to check the formula anyway,
     # we may as well shortcut a few small known molecules.
-    # Dictionary lookups are O(1) so this should be fast:
+    # Dictionary lookups are O(1) so this should be fast.
     # The dictionary is defined at the top of this file.
-
-    cython.declare(
-        atom=Atom,
-        # obmol=,
-        # rdkitmol=,
-    )
-
     try:
         if mol.isRadical():
-            return RADICAL_LOOKUPS[mol.getFormula()]
+            output = RADICAL_LOOKUPS[mol.getFormula()]
         else:
-            return MOLECULE_LOOKUPS[mol.getFormula()]
+            output = MOLECULE_LOOKUPS[mol.getFormula()]
     except KeyError:
-        # It wasn't in the above list.
-        pass
-    for atom in mol.vertices:
-        if atom.isNitrogen():
-            obmol = toOBMol(mol)
-            try:
-                SMILEwriter = openbabel.OBConversion()
-                SMILEwriter.SetOutFormat('smi')
-                SMILEwriter.SetOptions("i",
-                                       SMILEwriter.OUTOPTIONS)  # turn off isomer and stereochemistry information (the @ signs!)
-            except:
-                pass
-            return SMILEwriter.WriteString(obmol).strip()
-
-    rdkitmol = toRDKitMol(mol, sanitize=False)
-    if not mol.isAromatic():
-        return Chem.MolToSmiles(rdkitmol, kekuleSmiles=True)
-    return Chem.MolToSmiles(rdkitmol)
-
-
-
-def __fromSMILES(mol, smilesstr, backend):
-    """Replace the Molecule `mol` with that given by the SMILES `smilesstr`
-       using the backend `backend`"""
-    if backend.lower() == 'rdkit':
-        rdkitmol = Chem.MolFromSmiles(smilesstr)
-        if rdkitmol is None:
-            raise ValueError("Could not interpret the SMILES string {0!r}".format(smilesstr))
-        fromRDKitMol(mol, rdkitmol)
-        return mol
-    elif backend.lower() == 'openbabel':
-        parse_openbabel(mol, smilesstr, 'smi')
-        return mol
-    else:
-        raise NotImplementedError('Unrecognized backend for SMILES parsing: {0}'.format(backend))
-
-
-def __fromInChI(mol, inchistr, backend):
-    """Replace the Molecule `mol` with that given by the InChI `inchistr`
-       using the backend `backend`"""
-    if backend.lower() == 'rdkit':
-        rdkitmol = Chem.inchi.MolFromInchi(inchistr, removeHs=False)
-        mol = fromRDKitMol(mol, rdkitmol)
-        return mol
-    elif backend.lower() == 'openbabel':
-        return parse_openbabel(mol, inchistr, 'inchi')
-    else:
-        raise NotImplementedError('Unrecognized backend for InChI parsing: {0}'.format(backend))
-
-
-def __fromSMARTS(mol, smartsstr, backend):
-    """Replace the Molecule `mol` with that given by the SMARTS `smartsstr`
-       using the backend `backend`"""
-    if backend.lower() == 'rdkit':
-        rdkitmol = Chem.MolFromSmarts(smartsstr)
-        if rdkitmol is None:
-            raise ValueError("Could not interpret the SMARTS string {0!r}".format(smartsstr))
-        fromRDKitMol(mol, rdkitmol)
-        return mol
-    else:
-        raise NotImplementedError('Unrecognized backend for SMARTS parsing: {0}'.format(backend))
-
-
-def __parse(mol, identifier, type_identifier, backend):
-    """
-    Parses the identifier based on the type of identifier (inchi/smi/sma)
-    and the backend used.
-
-    First, look up the identifier in a dictionary to see if it can be processed
-    this way.
-
-    If not in the dictionary, parse it through the specified backed,
-    or try all backends.
-
-    """
-
-    if __lookup(mol, identifier, type_identifier) is not None:
-        if isCorrectlyParsed(mol, identifier):
-            mol.updateAtomTypes()
-            return mol
-
-    for _backend in (BACKENDS if backend == 'try-all' else [backend]):
-        if type_identifier == 'smi':
-            __fromSMILES(mol, identifier, _backend)
-        elif type_identifier == 'inchi':
-            __fromInChI(mol, identifier, _backend)
-        elif type_identifier == 'sma':
-            __fromSMARTS(mol, identifier, _backend)
+        if backend == 'default':
+            for atom in mol.atoms:
+                if atom.isNitrogen():
+                    return _write(mol, 'smi', backend='openbabel')
+            return _write(mol, 'smi', backend='rdkit')
         else:
-            raise NotImplementedError("Unknown identifier type {0}".format(type_identifier))
-
-        if isCorrectlyParsed(mol, identifier):
-            mol.updateAtomTypes()
-            return mol
-        else:
-            logging.debug('Backend %s is not able to parse identifier %s', _backend, identifier)
-
-    logging.error("Unable to correctly parse %s with backend %s", identifier, backend)
-    raise Exception("Couldn't parse {0}".format(identifier))
-
-
-def parse_openbabel(mol, identifier, type_identifier):
-    """Converts the identifier to a Molecule using Openbabel."""
-    obConversion = openbabel.OBConversion()
-    obConversion.SetInAndOutFormats(type_identifier, "smi")  # SetInFormat(identifier) does not exist.
-    obmol = openbabel.OBMol()
-    obConversion.ReadString(obmol, identifier)
-    obmol.AddHydrogens()
-    obmol.AssignSpinMultiplicity(True)
-    fromOBMol(mol, obmol)
-    # mol.updateAtomTypes()
-    return mol
-
-
-def isCorrectlyParsed(mol, identifier):
-    """Check if molecule object has been correctly parsed."""
-    conditions = []
-
-    if mol.atoms:
-        conditions.append(True)
+            return _write(mol, 'smi', backend=backend)
     else:
-        conditions.append(False)
-
-    if 'InChI' in identifier:
-        inchi_elementcount = util.retrieveElementCount(identifier)
-        mol_elementcount = util.retrieveElementCount(mol)
-        conditions.append(inchi_elementcount == mol_elementcount)
-
-    return all(conditions)
-
-
-def __lookup(mol, identifier, type_identifier):
-    """
-    Looks up the identifier and parses it the way we think is best.
-
-    For troublesome inchis, we look up the smiles, and parse smiles.
-    For troublesome smiles, we look up the adj list, and parse the adj list.
-
-    """
-    if type_identifier.lower() == 'inchi':
-        try:
-            smi = INCHI_LOOKUPS[identifier.split('/', 1)[1]]
-            return mol.fromSMILES(smi)
-        except KeyError:
-            return None
-    elif type_identifier.lower() == 'smi':
-        try:
-            adjList = SMILES_LOOKUPS[identifier]
-            return mol.fromAdjacencyList(adjList)
-        except KeyError:
-            return None
+        return output
 
 
 def fromInChI(mol, inchistr, backend='try-all'):
@@ -438,13 +256,12 @@ def fromInChI(mol, inchistr, backend='try-all'):
     a user-specified backend for conversion, currently supporting
     rdkit (default) and openbabel.
     """
-
     mol.InChI = inchistr
 
     if inchiutil.INCHI_PREFIX in inchistr:
-        return __parse(mol, inchistr, 'inchi', backend)
+        return _read(mol, inchistr, 'inchi', backend)
     else:
-        return __parse(mol, inchiutil.INCHI_PREFIX + '/' + inchistr, 'inchi', backend)
+        return _read(mol, inchiutil.INCHI_PREFIX + '/' + inchistr, 'inchi', backend)
 
 
 def fromAugmentedInChI(mol, aug_inchi):
@@ -476,22 +293,224 @@ def fromAugmentedInChI(mol, aug_inchi):
     return mol
 
 
-def fromSMILES(mol, smilesstr, backend='try-all'):
-    """
-    Convert a SMILES string `smilesstr` to a molecular structure. Uses
-    a user-specified backend for conversion, currently supporting
-    rdkit (default) and openbabel.
-    """
-    return __parse(mol, smilesstr, 'smi', backend)
-
-
 def fromSMARTS(mol, smartsstr, backend='rdkit'):
     """
     Convert a SMARTS string `smartsstr` to a molecular structure. Uses
     `RDKit <http://rdkit.org/>`_ to perform the conversion.
     This Kekulizes everything, removing all aromatic atom types.
     """
+    return _read(mol, smartsstr, 'sma', backend)
 
-    return __parse(mol, smartsstr, 'sma', backend)
+
+def fromSMILES(mol, smilesstr, backend='try-all'):
+    """
+    Convert a SMILES string `smilesstr` to a molecular structure. Uses
+    a user-specified backend for conversion, currently supporting
+    rdkit (default) and openbabel.
+    """
+    return _read(mol, smilesstr, 'smi', backend)
 
 
+def _rdkit_translator(input_object, identifier_type, mol=None):
+    """
+    Converts between formats using RDKit. If input is a :class:`Molecule`,
+    the identifier_type is used to determine the output type. If the input is
+    a `str`, then the identifier_type is used to identify the input, and the
+    desired output is assumed to be a :class:`Molecule` object.
+
+    Args:
+        input_object: either molecule or string identifier
+        identifier_type: format of string identifier
+            'inchi'    -> InChI
+            'inchikey' -> InChI Key
+            'sma'      -> SMARTS
+            'smi'      -> SMILES
+        mol: molecule object for output (optional)
+    """
+    if identifier_type == 'inchi' and not Chem.inchi.INCHI_AVAILABLE:
+        raise DependencyError("RDKit installed without InChI. Please reinstall to read and write InChI strings.")
+
+    if isinstance(input_object, str):
+        # We are converting from a string identifier to a molecule
+        if identifier_type == 'inchi':
+            rdkitmol = Chem.inchi.MolFromInchi(input_object, removeHs=False)
+        elif identifier_type == 'sma':
+            rdkitmol = Chem.MolFromSmarts(input_object)
+        elif identifier_type == 'smi':
+            rdkitmol = Chem.MolFromSmiles(input_object)
+        else:
+            raise ValueError('Identifier type {0} is not supported for reading using RDKit.'.format(identifier_type))
+        if rdkitmol is None:
+            raise ValueError("Could not interpret the identifier {0!r}".format(input_object))
+        output = fromRDKitMol(mol, rdkitmol)
+    elif isinstance(input_object, Molecule):
+        # We are converting from a molecule to a string identifier
+        rdkitmol = toRDKitMol(input_object, sanitize=False)
+        if identifier_type == 'inchi':
+            output = Chem.inchi.MolToInchi(rdkitmol, options='-SNon')
+        elif identifier_type == 'inchikey':
+            inchi = toInChI(mol)
+            output = Chem.inchi.InchiToInchiKey(inchi)
+        elif identifier_type == 'sma':
+            output = Chem.MolToSmarts(rdkitmol)
+        elif identifier_type == 'smi':
+            if input_object.isAromatic():
+                output = Chem.MolToSmiles(rdkitmol)
+            else:
+                output = Chem.MolToSmiles(rdkitmol, kekuleSmiles=True)
+        else:
+            raise ValueError('Identifier type {0} is not supported for writing using RDKit.'.format(identifier_type))
+    else:
+        raise ValueError('Unexpected input format. Should be a Molecule or a string.')
+
+    return output
+
+
+def _openbabel_translator(input_object, identifier_type, mol=None):
+    """
+    Converts between formats using OpenBabel. If input is a :class:`Molecule`,
+    the identifier_type is used to determine the output type. If the input is
+    a `str`, then the identifier_type is used to identify the input, and the
+    desired output is assumed to be a :class:`Molecule` object.
+
+    Args:
+        input_object: either molecule or string identifier
+        identifier_type: format of string identifier
+            'inchi'    -> InChI
+            'inchikey' -> InChI Key
+            'smi'      -> SMILES
+        mol: molecule object for output (optional)
+    """
+    ob_conversion = openbabel.OBConversion()
+
+    if isinstance(input_object, str):
+        # We are converting from a string identifier to a Molecule
+        ob_conversion.SetInFormat(identifier_type)
+        obmol = openbabel.OBMol()
+        ob_conversion.ReadString(obmol, input_object)
+        obmol.AddHydrogens()
+        obmol.AssignSpinMultiplicity(True)
+        if mol is None:
+            mol = Molecule()
+        output = fromOBMol(mol, obmol)
+    elif isinstance(input_object, Molecule):
+        # We are converting from a Molecule to a string identifier
+        if identifier_type == 'inchi':
+            ob_conversion.SetOutFormat('inchi')
+            ob_conversion.AddOption('w')
+        elif identifier_type == 'inchikey':
+            ob_conversion.SetOutFormat('inchi')
+            ob_conversion.AddOption('w')
+            ob_conversion.AddOption('K')
+        elif identifier_type == 'smi':
+            ob_conversion.SetOutFormat('smi')
+            # turn off isomer and stereochemistry information
+            ob_conversion.AddOption('i')
+        else:
+            raise ValueError('Unexpected identifier type {0}.'.format(identifier_type))
+        obmol = toOBMol(input_object)
+        output = ob_conversion.WriteString(obmol).strip()
+    else:
+        raise ValueError('Unexpected input format. Should be a Molecule or a string.')
+
+    return output
+
+
+def _lookup(mol, identifier, identifier_type):
+    """
+    Looks up the identifier and parses it the way we think is best.
+
+    For troublesome inchis, we look up the smiles, and parse smiles.
+    For troublesome smiles, we look up the adj list, and parse the adj list.
+
+    """
+    if identifier_type.lower() == 'inchi':
+        try:
+            smi = INCHI_LOOKUPS[identifier.split('/', 1)[1]]
+            return mol.fromSMILES(smi)
+        except KeyError:
+            return None
+    elif identifier_type.lower() == 'smi':
+        try:
+            adjList = SMILES_LOOKUPS[identifier]
+            return mol.fromAdjacencyList(adjList)
+        except KeyError:
+            return None
+
+
+def _is_correctly_parsed(mol, identifier):
+    """Check if molecule object has been correctly parsed."""
+    conditions = []
+
+    if mol.atoms:
+        conditions.append(True)
+    else:
+        conditions.append(False)
+
+    if 'InChI' in identifier:
+        inchi_elementcount = util.retrieveElementCount(identifier)
+        mol_elementcount = util.retrieveElementCount(mol)
+        conditions.append(inchi_elementcount == mol_elementcount)
+
+    return all(conditions)
+
+
+def _read(mol, identifier, identifier_type, backend):
+    """
+    Parses the identifier based on the type of identifier (inchi/smi/sma)
+    and the backend used.
+
+    First, look up the identifier in a dictionary to see if it can be processed
+    this way.
+
+    If not in the dictionary, parse it through the specified backed,
+    or try all backends.
+    """
+
+    if _lookup(mol, identifier, identifier_type) is not None:
+        if _is_correctly_parsed(mol, identifier):
+            mol.updateAtomTypes()
+            return mol
+
+    for backend in (BACKENDS if backend == 'try-all' else [backend]):
+        if backend == 'rdkit':
+            mol = _rdkit_translator(identifier, identifier_type, mol)
+        elif backend == 'openbabel':
+            mol = _openbabel_translator(identifier, identifier_type, mol)
+        else:
+            raise NotImplementedError("Unrecognized backend {0}".format(backend))
+
+        if _is_correctly_parsed(mol, identifier):
+            mol.updateAtomTypes()
+            return mol
+        else:
+            logging.debug('Backend %s is not able to parse identifier %s', backend, identifier)
+
+    raise ValueError("Unable to correctly parse {0} with backend {1}.".format(identifier, backend))
+
+
+def _write(mol, identifier_type, backend):
+    """
+    Converts the input molecule to the specified identifier type.
+
+    Uses backends as specified by the `backend` argument.
+
+    Returns a string identifier of the requested type.
+    """
+    for backend in (BACKENDS if backend == 'try-all' else [backend]):
+        if backend == 'rdkit':
+            try:
+                output = _rdkit_translator(mol, identifier_type)
+            except ValueError:
+                continue
+        elif backend == 'openbabel':
+            try:
+                output = _openbabel_translator(mol, identifier_type)
+            except ValueError:
+                continue
+        else:
+            raise NotImplementedError("Unrecognized backend {0}".format(backend))
+
+        return output
+
+    raise ValueError("Unable to generate identifier type {0} with backend {1}.".format(identifier_type, backend))

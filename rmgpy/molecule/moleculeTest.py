@@ -1240,7 +1240,7 @@ class TestMolecule(unittest.TestCase):
         """
         molecule = Molecule().fromInChI('InChI=1S/C7H12/c1-2-7-4-3-6(1)5-7/h6-7H,1-5H2')
         key = molecule.toInChIKey()
-        self.assertEqual(key, 'UMRZSTCPUPJPOJ-UHFFFAOYSA')
+        self.assertEqual(key, 'UMRZSTCPUPJPOJ-UHFFFAOYSA-N')
         
     def testAugmentedInChI(self):
         """
@@ -1262,7 +1262,7 @@ class TestMolecule(unittest.TestCase):
             2     C     u1 p0 c0 {1,S}
         """, saturateH=True)
         
-        self.assertEqual(mol.toAugmentedInChIKey(), 'VGGSQFUCUMXWEO-UHFFFAOYSA-u1,2')
+        self.assertEqual(mol.toAugmentedInChIKey(), 'VGGSQFUCUMXWEO-UHFFFAOYSA-N-u1,2')
 
     def testLinearMethane(self):
         """

@@ -1431,9 +1431,6 @@ class Molecule(Graph):
         
         Convert a molecular structure to an InChI Key string. Uses
         `RDKit <http://rdkit.org/>`_ to perform the conversion.
-        
-        Removes check-sum dash (-) and character so that only 
-        the 14 + 9 characters remain.
         """
         return translator.toInChIKey(self)
     
