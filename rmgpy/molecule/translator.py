@@ -87,7 +87,7 @@ SMILES_LOOKUPS = {
 }
 
 #: This dictionary is used to shortcut lookups of a molecule's SMILES string from its chemical formula.
-_known_smiles_molecules = {
+MOLECULE_LOOKUPS = {
     'N2': 'N#N',
     'CH4': 'C',
     'CH2O': 'C=O',
@@ -113,7 +113,7 @@ _known_smiles_molecules = {
     'HI': 'I',
 }
 
-_known_smiles_radicals = {
+RADICAL_LOOKUPS = {
     'CH3': '[CH3]',
     'HO': '[OH]',
     'C2H5': 'C[CH2]',
@@ -275,9 +275,9 @@ def toSMILES(mol):
 
     try:
         if mol.isRadical():
-            return _known_smiles_radicals[mol.getFormula()]
+            return RADICAL_LOOKUPS[mol.getFormula()]
         else:
-            return _known_smiles_molecules[mol.getFormula()]
+            return MOLECULE_LOOKUPS[mol.getFormula()]
     except KeyError:
         # It wasn't in the above list.
         pass
