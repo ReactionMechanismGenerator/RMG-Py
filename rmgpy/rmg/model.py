@@ -1156,6 +1156,45 @@ class CoreEdgeReactionModel:
                     del(self.networkDict[source])
                 self.networkList.remove(network)
                     
+    def findNeglectableCoreReactionIndices(self,reactionSystems,toleranceNeglectCoreReaction):
+        """
+        finds the indices of all core reactions with dynamics number smaller than toleranceNeglectCoreReaction
+        for all reactionSystems
+        """
+        numCoreReactions = len(self.core.reactions)
+        numRxnSys = len(reactionSystems)
+        maxCoreDynNums = numpy.zeros((numCoreReactions,numRxnSys),numpy.float64)
+        
+        for index,rsys in enumerate(reactionSystems):
+            maxCoreDynNums[:,index] = rsys.maxCoreDivLnAccumNums
+            
+        maxCoreDynNums.max(axis=1)
+        
+        inds = numpy.nonzero(maxCoreDynNums < toleranceNeglectCoreReaction)
+        
+        return inds
+    
+    def removeNeglectableReactions(self,reactionSystems,toleranceNeglectCoreReaction):
+        """
+        removes all core reactions with maximum dynamics numbers less than toleranceNeglectCoreReaction
+        """
+        inds = self.findNeglectableCoreReactionIndices(reactionSystems,toleranceNeglectCoreReaction)
+        
+        inds = inds[::-1]
+        for ind in inds:
+            self.core.reactions.pop(ind)
+        
+    def getNonNegligibleReactions(self,reactionSystems,toleranceNeglectCoreReaction):
+        """
+        returns all core reactions with maximum dynamics numbers greater than toleranceNeglectReaction
+        """
+        numCoreReactions = len(self.core.reactions)
+        coreReactions = self.core.reactions
+        
+        negInds = self.findNeglectableCoreReactionIndices(reactionSystems,toleranceNeglectCoreReaction)
+        rxns = [coreReactions[ind] for ind in xrange(numCoreReactions) if ind not in negInds]
+        return rxns
+        
     def prune(self, reactionSystems, toleranceKeepInEdge, maximumEdgeSpecies, minSpeciesExistIterationsForPrune):
         """
         Remove species from the model edge based on the simulation results from

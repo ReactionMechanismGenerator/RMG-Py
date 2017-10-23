@@ -150,7 +150,8 @@ cdef class ReactionSystem(DASx):
         self.maxNetworkLeakRates = None
         self.maxEdgeSpeciesRateRatios = None
         self.maxNetworkLeakRateRatios = None
-
+        self.maxCoreDivLnAccumNums = None
+        
         # sensitivity variables
         self.sensmethod = 2 # sensmethod = 1 for staggered corrector sensitivities, 0 (simultaneous corrector), 2 (staggered direct)
         self.sensitivityCoefficients = None    
@@ -232,7 +233,8 @@ cdef class ReactionSystem(DASx):
         self.sensitivityCoefficients = numpy.zeros((self.numCoreSpecies, self.numCoreReactions), numpy.float64)
         self.unimolecularThreshold = numpy.zeros((self.numCoreSpecies), bool)
         self.bimolecularThreshold = numpy.zeros((self.numCoreSpecies, self.numCoreSpecies), bool)
-
+        self.maxCoreDivLnAccumNums = numpy.zeros(self.numCoreReactions,numpy.float64)
+        
         surfaceSpecies,surfaceReactions = self.initialize_surface(coreSpecies,coreReactions,surfaceSpecies,surfaceReactions)
         
         
@@ -497,7 +499,7 @@ cdef class ReactionSystem(DASx):
     @cython.boundscheck(False)
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, 
         list edgeReactions,list surfaceSpecies, list surfaceReactions,
-        list pdepNetworks=None, bool prune=False, bool sensitivity=False, list sensWorksheet=None, object modelSettings=None,
+        list pdepNetworks=None, bool reduction = False, bool prune=False, bool sensitivity=False, list sensWorksheet=None, object modelSettings=None,
         object simulatorSettings=None):
         """
         Simulate the reaction system with the provided reaction model,
@@ -510,7 +512,7 @@ cdef class ReactionSystem(DASx):
         ``None`` is returned.
         """
         cdef double toleranceKeepInEdge,toleranceMoveToCore,toleranceMoveEdgeReactionToCore,toleranceInterruptSimulation
-        cdef double toleranceMoveEdgeReactionToCoreInterrupt,toleranceMoveEdgeReactionToSurface
+        cdef double toleranceMoveEdgeReactionToCoreInterrupt,toleranceMoveEdgeReactionToSurface, toleranceNeglectCoreReaction
         cdef double toleranceMoveSurfaceSpeciesToCore,toleranceMoveSurfaceReactionToCore
         cdef double toleranceMoveEdgeReactionToSurfaceInterrupt
         cdef bool ignoreOverallFluxCriterion, filterReactions
@@ -523,7 +525,7 @@ cdef class ReactionSystem(DASx):
         cdef double stepTime, charRate, maxSpeciesRate, maxNetworkRate, maxEdgeReactionAccum, stdan
         cdef numpy.ndarray[numpy.float64_t, ndim=1] y0 #: Vector containing the number of moles of each species
         cdef numpy.ndarray[numpy.float64_t, ndim=1] coreSpeciesRates, edgeSpeciesRates, networkLeakRates, coreSpeciesProductionRates, coreSpeciesConsumptionRates, totalDivAccumNums
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] maxCoreSpeciesRates, maxEdgeSpeciesRates, maxNetworkLeakRates,maxEdgeSpeciesRateRatios, maxNetworkLeakRateRatios
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] maxCoreSpeciesRates, maxEdgeSpeciesRates, maxNetworkLeakRates,maxEdgeSpeciesRateRatios, maxNetworkLeakRateRatios, coreDivLnAccumNums, maxCoreDivLnAccumNums
         cdef bint terminated
         cdef object maxSpecies, maxNetwork
         cdef int i, j, k
@@ -566,6 +568,7 @@ cdef class ReactionSystem(DASx):
         toleranceMoveSurfaceSpeciesToCore = modelSettings.toleranceMoveSurfaceSpeciesToCore
         toleranceMoveSurfaceReactionToCore = modelSettings.toleranceMoveSurfaceReactionToCore
         toleranceMoveEdgeReactionToSurfaceInterrupt = modelSettings.toleranceMoveEdgeReactionToSurfaceInterrupt
+        toleranceNeglectCoreReaction = modelSettings.toleranceNeglectCoreReaction
         ignoreOverallFluxCriterion=modelSettings.ignoreOverallFluxCriterion
         absoluteTolerance = simulatorSettings.atol
         relativeTolerance = simulatorSettings.rtol
@@ -611,6 +614,7 @@ cdef class ReactionSystem(DASx):
         forwardRateCoefficients = self.kf
         unimolecularThreshold = self.unimolecularThreshold
         bimolecularThreshold = self.bimolecularThreshold
+        maxCoreDivLnAccumNums = self.maxCoreDivLnAccumNums
         
         # Copy the initial conditions to use in evaluating conversions
         y0 = self.y.copy()
@@ -712,6 +716,27 @@ cdef class ReactionSystem(DASx):
                 invalidObjects.append(maxSpecies)
                 break
             
+            if reduction and toleranceNeglectCoreReaction > 0.0:
+                coreDivLnAccumNums = numpy.ones(numCoreReactions)
+                for index in xrange(numCoreReactions):
+                    reactionRate = coreReactionRates[index]
+                    for spcIndex in self.reactantIndices[index,:]:
+                        if spcIndex != -1:
+                            consumption = coreSpeciesConsumptionRates[spcIndex]
+                            if consumption != 0:
+                                coreDivLnAccumNums[index] *= (reactionRate+consumption)/consumption
+                    for spcIndex in self.productIndices[index,:]:
+                        if spcIndex != -1:
+                            production = coreSpeciesProductionRates[spcIndex]
+                            if production != 0:
+                                coreDivLnAccumNums[index] *= (reactionRate+production)/production
+                                
+                coreDivLnAccumNums = numpy.log(coreDivLnAccumNums)
+                
+                for index in xrange(numCoreReactions):
+                    if maxCoreDivLnAccumNums[index] < coreDivLnAccumNums[index]:
+                        maxCoreDivLnAccumNums[index] = coreDivLnAccumNums[index]
+                
             if useDynamics:
                 #######################################################
                 # Calculation of dynamics criterion for edge reactions#
