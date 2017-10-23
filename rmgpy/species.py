@@ -666,7 +666,10 @@ class Species(object):
 
         if self.conformer is None:
             self.conformer = Conformer()
-        self.setE0WithThermo()
+
+        if self.conformer.E0 is None:
+            self.setE0WithThermo()
+
         self.conformer.modes = conformer.modes
         self.conformer.spinMultiplicity = conformer.spinMultiplicity
         if self.conformer.E0 is None or not self.hasStatMech():
