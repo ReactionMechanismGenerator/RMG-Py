@@ -550,7 +550,7 @@ def _removeLineBreaks(comments):
                                 'dGrxn(298 K) = ','Both directions are estimates',
                                 'Other direction matched ','Both directions matched ',
                                 'This direction matched an entry in ', 'From training reaction',
-                                'This reaction matched rate rule',
+                                'This reaction matched rate rule','family: ',
                                 ]
     for indicator in new_statement_indicators:
         comments = comments.replace(' ' + indicator, '\n' + indicator,1)
