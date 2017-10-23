@@ -51,8 +51,12 @@ This module contains settings classes for manipulation of RMG run parameters
     `ignoreOverallFluxCriterion`                    flag indicating that the ordinary flux criterion should be ignored except for pdep purposes
     `maxNumSpecies`                                 Number of core species at which a stage/job will terminate
     `maxNumObjPerIter`                              Maximum number of objects that can be sent for enlargement from a single simulation
-==================================================================================================================================================
+    `useFluxRatioInWeights`                         flag indicating if species weights for the dynamics criterion should be multiplied by their rate ratios
+    `speciesWeights`                                dictionary mapping species labels to weights
+    `radicalChangeWeight`                           power to which the change in number of radicals is taken to and mulitplied by the reaction weight
+===========================================================================================================================================================
 """
+
 import numpy
 
 class ModelSettings(object):
@@ -63,7 +67,7 @@ class ModelSettings(object):
           toleranceMoveEdgeReactionToSurface=numpy.inf, toleranceMoveSurfaceSpeciesToCore=numpy.inf, toleranceMoveSurfaceReactionToCore=numpy.inf,
           toleranceMoveEdgeReactionToSurfaceInterrupt=None,toleranceMoveEdgeReactionToCoreInterrupt=None, maximumEdgeSpecies=1000000, minCoreSizeForPrune=50, 
           minSpeciesExistIterationsForPrune=2, filterReactions=False, ignoreOverallFluxCriterion=False, maxNumSpecies=None, maxNumObjsPerIter=1,
-          terminateAtMaxObjects=False,toleranceThermoKeepSpeciesInEdge=numpy.inf):
+          terminateAtMaxObjects=False,toleranceThermoKeepSpeciesInEdge=numpy.inf,useFluxRatioInWeights=False, speciesWeights={}, radicalChangeWeight=0.0):
         
         self.fluxToleranceKeepInEdge = toleranceKeepInEdge
         self.fluxToleranceMoveToCore = toleranceMoveToCore
@@ -79,7 +83,10 @@ class ModelSettings(object):
         self.toleranceMoveSurfaceReactionToCore = toleranceMoveSurfaceReactionToCore
         self.toleranceThermoKeepSpeciesInEdge = toleranceThermoKeepSpeciesInEdge
         self.terminateAtMaxObjects = terminateAtMaxObjects
-
+        self.useFluxRatioInWeights = useFluxRatioInWeights
+        self.speciesWeights = speciesWeights
+        self.radicalChangeWeightBase = numpy.exp(radicalChangeWeight)
+        
         if toleranceInterruptSimulation:
             self.fluxToleranceInterrupt = toleranceInterruptSimulation
         else:

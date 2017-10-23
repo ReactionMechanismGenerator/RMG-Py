@@ -134,6 +134,141 @@ class ReactionSystemTest(unittest.TestCase):
         
         self.assertEqual(set(surfaceSpecies),set(edgeSpecies)) #all edge species should now be in the surface
         self.assertEqual(set(surfaceReactions),set(edgeReactions)) #all edge reactions should now be in the surface
+    
+    def testGenerateWeights(self):
+        """
+        test that proper weight vectors are generated
+        """
+        reactionSystem = self.rmg.reactionSystems[0]
+        reactionSystem.attach(self.listener)
+        reactionModel = self.rmg.reactionModel
+        species = reactionModel.core.species
+        reactions = reactionModel.core.reactions
+        
+        coreSpecies = species
+        coreReactions = reactions
+        surfaceSpecies = []
+        surfaceReactions = []
+        edgeSpecies = []
+        edgeReactions = []
+        
+        reactionSystem.modelSettings = ModelSettings()
+        
+        reactionSystem.modelSettings.speciesWeights = {species[0].label:2.0}
+        reactionSystem.modelSettings.radicalChangeWeightBase = 2.0
+        
+        reactionSystem.initializeModel(coreSpecies,coreReactions,
+                                       edgeSpecies,edgeReactions,surfaceSpecies,surfaceReactions)
+        
+        spcWts = numpy.ones(reactionSystem.numCoreSpecies)
+        spcWts[0] = 2.0
+        
+        for ind,rxn in enumerate(coreReactions):
+            rdif = 0
+            for reactant in rxn.reactants:
+                rdif += reactant.getRadicalCount()
+            for prod in rxn.products:
+                rdif -= prod.getRadicalCount()
+            rdif = abs(rdif)
+            self.assertEqual(2.0**rdif,reactionSystem.reactionWeightVec[ind])
+        
+        self.assertSequenceEqual(spcWts.tolist(),reactionSystem.speciesWeightVec.tolist())
+        
+        
+    def testEdgeDynamicsNumberCalculations(self):
+        """
+        test an edge dynamics number calculation
+        """
+        reactionSystem = self.rmg.reactionSystems[0]
+        reactionSystem.attach(self.listener)
+        reactionModel = self.rmg.reactionModel
+        species = reactionModel.core.species
+        reactions = reactionModel.core.reactions
+        
+        coreSpecies = species[0:6]
+        coreReactions = [reactions[0]]
+        surfaceSpecies = []
+        surfaceReactions = []
+        edgeSpecies = species[6:]
+        edgeReactions = reactions[1:]
+        
+        reactionSystem.initializeModel(coreSpecies,coreReactions,
+                                       edgeSpecies,edgeReactions,surfaceSpecies,surfaceReactions)
+        
+        reactionSystem.modelSettings = ModelSettings()
+        reactionSystem.simulatorSettings = SimulatorSettings()
+        
+        reactionSystem.step(1.0e-15)
+        
+        logging.info('core spcs was {0}'.format(len(reactionSystem.coreSpeciesProductionRates)))
+        logging.info(reactionSystem.reactantIndices)
+        logging.info(reactionSystem.productIndices)
+        
+        dynNums = reactionSystem.calculateEdgeDynamicsNumbers()
+        
+        #the selected reaction (first edge reaction) has 4 and 5 from the core as reactants
+        #and 6 and 8 for products
+        
+        rate = reactionSystem.edgeReactionRates[0]
+        
+        prod5 = reactionSystem.coreSpeciesProductionRates[5]
+        prod4 = reactionSystem.coreSpeciesProductionRates[4]
+        loss5 = reactionSystem.coreSpeciesConsumptionRates[5]
+        loss4 = reactionSystem.coreSpeciesConsumptionRates[4]
+        logging.info((prod5,prod4,loss5,loss4,rate))
+        
+        lnDyn5 = numpy.log(prod5/loss5)
+        lnDyn5r = numpy.log(prod5/(loss5+rate))
+        
+        lnDyn4 = numpy.log(prod4/loss4)
+        lnDyn4r = numpy.log(prod4/(rate+loss4))
+        logging.info((lnDyn5,lnDyn5r,lnDyn4,lnDyn4r))
+        
+        Dyn = abs(lnDyn5-lnDyn5r) + abs(lnDyn4-lnDyn4r)
+        
+        self.assertAlmostEqual(Dyn,dynNums[0],5)
+    
+    def testSurfaceDynamicsNumberCalculations(self):
+        """
+        test a surface dynamics number calculation
+        """
+        reactionSystem = self.rmg.reactionSystems[0]
+        reactionSystem.attach(self.listener)
+        reactionModel = self.rmg.reactionModel
+        species = reactionModel.core.species
+        reactions = reactionModel.core.reactions
+        
+        coreSpecies = species
+        coreReactions = reactions
+        surfaceSpecies = species[5:]
+        surfaceReactions = reactions
+        edgeSpecies = []
+        edgeReactions = []
+        
+        reactionSystem.initializeModel(coreSpecies,coreReactions,
+                                       edgeSpecies,edgeReactions,surfaceSpecies,surfaceReactions)
+        
+        reactionSystem.modelSettings = ModelSettings()
+        reactionSystem.simulatorSettings = SimulatorSettings()
+        
+        reactionSystem.step(1.0e-15)
+        
+        dynNums = reactionSystem.calculateSurfaceDynamicsNumbers()
+        
+        #the selected reaction (first core reaction) has 6 + 7 from the core as reactants
+        #and 4 as a product, the rate is negative
+        #6 and 7 are in the surface so they are ignored
+        
+        rate = reactionSystem.coreReactionRates[2]
+        prod4 = reactionSystem.coreSpeciesProductionRates[4]
+        loss4 = reactionSystem.coreSpeciesConsumptionRates[4]
+   
+        lnDyn4 = numpy.log(prod4) - numpy.log(loss4)
+        lnDyn4r = numpy.log(prod4) - numpy.log(loss4-rate)
+        
+        Dyn = abs(lnDyn4-lnDyn4r)
+        
+        self.assertAlmostEqual(Dyn,dynNums[2],5)
         
     def testAttachDetach(self):
         """
