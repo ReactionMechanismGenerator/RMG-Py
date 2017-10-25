@@ -1060,7 +1060,7 @@ class KineticsFamily(Database):
                 shortDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.shortDesc,
                 longDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.longDesc,
             )
-            new_entry.data.comment = "{0} from training reaction {1}".format(';'.join([g.label for g in template]), entry.index)
+            new_entry.data.comment = "From training reaction {1} for rate rule {0}".format(';'.join([g.label for g in template]), entry.index)
 
             new_entry.data.A.value_si /= entry.item.degeneracy
             try:
@@ -1108,7 +1108,7 @@ class KineticsFamily(Database):
                 shortDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.shortDesc,
                 longDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.longDesc,
             )
-            new_entry.data.comment = "{0} from training reaction {1}".format(';'.join([g.label for g in template]), entry.index)
+            new_entry.data.comment = "From training reaction {1} for rate rule {0}".format(';'.join([g.label for g in template]), entry.index)
 
             new_entry.data.A.value_si /= new_degeneracy
             try:
@@ -2139,8 +2139,8 @@ class KineticsFamily(Database):
         templateLabels = templateLabel.split()[-1].split(';')
         template = self.retrieveTemplate(templateLabels)
         rule = self.getRateRule(template)
-        if 'from training reaction' in rule.data.comment:
-            trainingIndex = int(rule.data.comment.split()[-1])
+        if 'From training reaction' in rule.data.comment:
+            trainingIndex = int(rule.data.comment.split()[3])
             trainingDepository = self.getTrainingDepository()
             return rule, trainingDepository.entries[trainingIndex]
         else:
@@ -2192,7 +2192,7 @@ class KineticsFamily(Database):
             # The last line is 'Estimated using ... for rate rule (originalTemplate)'
             #if from training reaction is in the first line append it to the end of the second line and skip the first line
             if not 'Average of' in kinetics.comment:
-                if 'from training reaction' in lines[0]:
+                if 'From training reaction' in lines[0]:
                     comment = lines[1]
                 else:
                     comment = lines[0]
@@ -2226,8 +2226,8 @@ class KineticsFamily(Database):
                 training = {}
                 
                 for tokenTemplateLabel, weight in weightedEntries:
-                    if 'from training reaction' in tokenTemplateLabel:
-                        tokenTemplateLabel = tokenTemplateLabel.split()[0]
+                    if 'From training reaction' in tokenTemplateLabel:
+                        tokenTemplateLabel = tokenTemplateLabel.split()[-1]
                     ruleEntry, trainingEntry = self.retrieveOriginalEntry(tokenTemplateLabel)
                     if trainingEntry:
                         if (ruleEntry, trainingEntry) in training:
