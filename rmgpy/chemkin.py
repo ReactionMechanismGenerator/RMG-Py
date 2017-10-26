@@ -550,7 +550,8 @@ def _removeLineBreaks(comments):
                                 'dGrxn(298 K) = ','Both directions are estimates',
                                 'Other direction matched ','Both directions matched ',
                                 'This direction matched an entry in ', 'From training reaction',
-                                'This reaction matched rate rule','family: ',
+                                'This reaction matched rate rule','family: ','Warning:',
+                                'Chemkin file stated explicit reverse rate:'
                                 ]
     for indicator in new_statement_indicators:
         comments = comments.replace(' ' + indicator, '\n' + indicator,1)
