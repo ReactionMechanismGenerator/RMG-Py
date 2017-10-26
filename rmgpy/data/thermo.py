@@ -871,7 +871,7 @@ class ThermoDatabase(object):
             if atom.isSurfaceSite():
                 sitesToRemove.append(atom)
         normalizedBonds = {'C':0., 'O':0., 'N':0., 'H':0.}
-        maxBondOrder = {'C':4., 'O':2., 'N':5., 'H':1.}
+        maxBondOrder = {'C':4., 'O':2., 'N':3., 'H':1.}
         for site in sitesToRemove:
             numbonds = len(site.bonds)
             if numbonds == 0:
