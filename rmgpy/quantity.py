@@ -684,8 +684,8 @@ DipoleMoment = UnitType('C*m', extraDimensionality={
 
 "We have to allow 'energies' to be created in units of Kelvins, because Chemkin does so"
 Energy = Enthalpy = FreeEnergy = UnitType('J/mol',
-    commonUnits=['kJ/mol', 'cal/mol', 'kcal/mol'],
     extraDimensionality={'K': constants.R },
+    commonUnits=['kJ/mol', 'cal/mol', 'kcal/mol', 'eV/molecule'],
 )
 
 
