@@ -732,8 +732,12 @@ class ThermoDatabase(object):
             assert len(thermo0) == 3, "thermo0 should be a tuple at this point: (thermoData, library, entry)"
             thermo0 = thermo0[0]
 
+            if species.containsSurfaceSite():
+                thermo0 = self.correctBindingEnergy(thermo0, species)
+
         elif species.containsSurfaceSite():
             thermo0 = self.getThermoDataForSurfaceSpecies(species, quantumMechanics=quantumMechanics)
+            thermo0 = self.correctBindingEnergy(thermo0, species)
             
         elif quantumMechanics:
             original_molecule = species.molecule[0]
@@ -859,12 +863,64 @@ class ThermoDatabase(object):
             deltaAtomicAdosrptionEnergy[element].value_si =  bindingEnergies[element].value_si - deltaAtomicAdosrptionEnergy[element].value_si
         self.deltaAtomicAdsorptionEnergy = deltaAtomicAdosrptionEnergy
 
+    def correctBindingEnergy(self, thermo, species):
+        """
+        Changes the provided thermo, by applying a linear scaling relation
+        to correct the adsorption energy.
+
+        :param thermo: starting thermo data
+        :param species: the species (which is an adsorbate)
+        :return: corrected thermo
+        """
+        molecule = species.molecule[0]
+        # only want/need to do one resonance structure
+        surfaceSites = []
+        for atom in molecule.atoms:
+            if atom.isSurfaceSite():
+                surfaceSites.append(atom)
+        normalizedBonds = {'C':0., 'O':0., 'N':0., 'H':0.}
+        maxBondOrder = {'C':4., 'O':2., 'N':3., 'H':1.}
+        for site in surfaceSites:
+            numbonds = len(site.bonds)
+            if numbonds == 0:
+                #vanDerWaals
+                pass
+            else:
+                assert len(site.bonds) == 1, "Each surface site can only be bonded to 1 atom"
+                bondedAtom = site.bonds.keys()[0]
+                bond = site.bonds[bondedAtom]
+                if bond.isSingle():
+                    bondOrder = 1.
+                elif bond.isDouble():
+                    bondOrder = 2.
+                elif bond.isTriple():
+                    bondOrder = 3.
+                elif bond.isQuadruple():
+                    bondOrder = 4.
+                else:
+                    raise NotImplementedError("Can't remove surface bond of type {}".format(bond.order))
+
+                normalizedBonds[bondedAtom.symbol] += bondOrder / maxBondOrder[bondedAtom.symbol]
+
+        if not isinstance(thermo, ThermoData):
+            thermo = thermo.toThermoData()
+
+        ## now edit the adsorptionThermo using LSR
+        for element in 'CHO':
+            changeInBindingEnergy = self.deltaAtomicAdsorptionEnergy[element].value_si * normalizedBonds[element]
+            thermo.H298.value_si += changeInBindingEnergy
+        thermo.comment += " Binding energy corrected by LSR."
+        return thermo
+
+
+
     def getThermoDataForSurfaceSpecies(self, species, quantumMechanics=None):
         """
         Get the thermo data for an adsorbed species,
         by desorbing it, finding the thermo of the gas-phase
         species, then adding an adsorption correction that
         is found from the groups/adsorption tree.
+        Does not apply linear scaling relationship.
         
         Returns a :class:`ThermoData` object, with no Cp0 or CpInf
         """
@@ -881,8 +937,6 @@ class ThermoDatabase(object):
         for atom in dummyMolecule.atoms:
             if atom.isSurfaceSite():
                 sitesToRemove.append(atom)
-        normalizedBonds = {'C':0., 'O':0., 'N':0., 'H':0.}
-        maxBondOrder = {'C':4., 'O':2., 'N':3., 'H':1.}
         for site in sitesToRemove:
             numbonds = len(site.bonds)
             if numbonds == 0:
@@ -895,28 +949,20 @@ class ThermoDatabase(object):
                 dummyMolecule.removeBond(bond)
                 if bond.isSingle():
                     bondedAtom.incrementRadical()
-                    bondOrder = 1.
                 elif bond.isDouble():
                     bondedAtom.incrementRadical()
                     bondedAtom.incrementRadical()
-                    bondOrder = 2.
                 elif bond.isTriple():
                     bondedAtom.incrementRadical()
                     bondedAtom.incrementLonePairs()
-                    bondOrder = 3.
                 else:
                     raise NotImplementedError("Can't remove surface bond of type {}".format(bond.order))
 
-                normalizedBonds[bondedAtom.symbol] += bondOrder / maxBondOrder[bondedAtom.symbol]
-
-
             dummyMolecule.removeAtom(site)
-
         dummyMolecule.update()
 
         logging.debug("Before removing from surface:\n" + molecule.toAdjacencyList())
         logging.debug("After removing from surface:\n" + dummyMolecule.toAdjacencyList())
-        logging.debug("Normalized bond orders:\n" + str(normalizedBonds))
 
         dummySpecies = Species()
         dummySpecies.molecule.append(dummyMolecule)
@@ -945,13 +991,8 @@ class ThermoDatabase(object):
             logging.error(molecule.toAdjacencyList())
             raise
 
-        ## now edit the adsorptionThermo using LSR
-        for element in 'CHO':
-            changeInBindingEnergy = self.deltaAtomicAdsorptionEnergy[element].value_si * normalizedBonds[element]
-            adsorptionThermo.H298.value_si += changeInBindingEnergy
         # (groupAdditivity=True means it appends the comments)
         addThermoData(thermo, adsorptionThermo, groupAdditivity=True)
-
 
         thermo.Cp0 = None
         thermo.CpInf = None
