@@ -61,7 +61,7 @@ cdef class Reaction:
 
     cpdef bint hasTemplate(self, list reactants, list products)
     
-    cpdef bint matchesMolecules(self, list reactants)
+    cpdef bint matchesSpecies(self, list reactants)
 
     cpdef bint isIsomorphic(self, Reaction other, bint eitherDirection=?, bint checkIdentical=?, bint checkOnlyLabel=?, bint checkTemplateRxnProducts=?)
 

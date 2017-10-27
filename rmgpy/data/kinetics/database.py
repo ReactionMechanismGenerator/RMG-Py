@@ -45,7 +45,7 @@ from rmgpy.data.base import LogicNode
 
 from .family import  KineticsFamily
 from .library import LibraryReaction, KineticsLibrary
-from .common import filterReactions
+from .common import filterReactions, ensure_species
 from rmgpy.exceptions import DatabaseError
 
 ################################################################################
@@ -369,9 +369,9 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
 
     def generateReactionsFromLibraries(self, reactants, products):
         """
-        Generate all reactions between the provided list of one or two
-        `reactants`, which should be :class:`Molecule` objects. This method
-        searches the depository.
+        Find all reactions from all loaded kinetics library involving the
+        provided `reactants`, which can be either :class:`Molecule` objects or
+        :class:`Species` objects.
         """
         reactionList = []
         for label, libraryType in self.libraryOrder:
@@ -382,13 +382,15 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
 
     def generateReactionsFromLibrary(self, reactants, products, library):
         """
-        Generate all reactions between the provided list of one or two
-        `reactants`, which should be :class:`Molecule` objects. This method
-        searches the depository.
+        Find all reactions from the specified kinetics library involving the
+        provided `reactants`, which can be either :class:`Molecule` objects or
+        :class:`Species` objects.
         """
+        reactants = ensure_species(reactants)
+
         reactionList = []
         for entry in library.entries.values():
-            if entry.item.matchesMolecules(reactants):
+            if entry.item.matchesSpecies(reactants):
                 reaction = LibraryReaction(
                     reactants = entry.item.reactants[:],
                     products = entry.item.products[:],
