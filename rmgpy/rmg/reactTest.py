@@ -67,33 +67,6 @@ class TestReact(unittest.TestCase):
                                        reactionLibraries=[]
                                        )
 
-    def testReactMolecules(self):
-        """
-        Test that reaction generation for Molecule objects works.
-        """
-        
-        moleculeTuple = (Molecule(SMILES='CC'), Molecule(SMILES='[CH3]'))
-
-        reactionList = self.rmg.database.kinetics.react_molecules(moleculeTuple)
-        
-        self.assertIsNotNone(reactionList)
-        self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in reactionList]))
-
-    def test_labelListofSpecies(self):
-        """
-        Ensure labelListofSpecies modifies atomlabels
-        """
-        from rmgpy.data.kinetics import label_list_of_species
-        s1 = Species().fromSMILES('CCC')
-        s2 = Species().fromSMILES('C=C[CH]C')
-        self.assertEqual(s2.molecule[0].atoms[0].id, -1)
-
-        label_list_of_species([s1, s2])
-        # checks atom id
-        self.assertNotEqual(s2.molecule[0].atoms[0].id, -1)
-        # checks second resonance structure id
-        self.assertNotEqual(s2.molecule[1].atoms[0].id, -1)
-
     def testReact(self):
         """
         Test that reaction generation from the available families works.
