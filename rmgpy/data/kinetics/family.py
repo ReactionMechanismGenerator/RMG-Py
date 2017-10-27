@@ -45,7 +45,7 @@ from rmgpy.kinetics import Arrhenius
 from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.species import Species
 
-from .common import saveEntry, ensure_species
+from .common import saveEntry, ensure_species, find_degenerate_reactions, generate_molecule_combos
 from .depository import KineticsDepository
 from .groups import KineticsGroups
 from .rules import KineticsRules
@@ -1464,8 +1464,6 @@ class KineticsFamily(Database):
         Returns `True` if successful and `False` if the reverse reaction is forbidden.
         Will raise a `KineticsError` if unsuccessful for other reasons.
         """
-        from rmgpy.data.kinetics import findDegeneracies
-
         if self.ownReverse:
             # Check if the reactants are the same
             sameReactants = False
@@ -1474,7 +1472,7 @@ class KineticsFamily(Database):
 
             reactionList = self.__generateReactions([spc.molecule for spc in rxn.products],
                                                     products=rxn.reactants, forward=True)
-            reactions = findDegeneracies(reactionList, sameReactants)
+            reactions = find_degenerate_reactions(reactionList, sameReactants, kinetics_family=self)
             if len(reactions) == 0:
                 logging.error("Expecting one matching reverse reaction, not zero in reaction family {0} for forward reaction {1}.\n".format(self.label, str(rxn)))
                 logging.error("There is likely a bug in the RMG-database kinetics reaction family involving a missing group, missing atomlabels, forbidden groups, etc.")
@@ -1494,7 +1492,7 @@ class KineticsFamily(Database):
                 try:
                     reactionList = self.__generateReactions([spc.molecule for spc in rxn.products],
                                                             products=rxn.reactants, forward=True)
-                    reactions = findDegeneracies(reactionList)
+                    reactions = find_degenerate_reactions(reactionList, sameReactants, kinetics_family=self)
                 finally:
                     self.forbidden = tempObject
                 if len(reactions) == 1 or (len(reactions) > 1 and all([reactions[0].isIsomorphic(other, checkTemplateRxnProducts=True) for other in reactions])):
@@ -1531,7 +1529,6 @@ class KineticsFamily(Database):
         `ignoreSameReactants= True` to this method.
         """
         reaction.degeneracy = 1
-        from rmgpy.data.kinetics import findDegeneracies, generate_molecule_combos
 
         # find combinations of resonance isomers
         specReactants = ensure_species(reaction.reactants, resonance=True, keepIsomorphic=True)
@@ -1547,7 +1544,7 @@ class KineticsFamily(Database):
             sameReactants = True
 
         # remove degenerate reactions
-        reactions = findDegeneracies(reactions, sameReactants)
+        reactions = find_degenerate_reactions(reactions, sameReactants, kinetics_family=self)
 
         # remove reactions with different templates (only for TemplateReaction)
         if isinstance(reaction, TemplateReaction):
@@ -1580,8 +1577,8 @@ class KineticsFamily(Database):
         be a list of :class:`Molecule` objects, each representing a resonance
         isomer of the species of interest.
         
-        This method returns degenerate reactions, and `react.findDegeneracies`
-        can be used to find the degenerate reactions.
+        This method returns all reactions, and degenerate reactions can then be
+        found using `rmgpy.data.kinetics.common.find_degenerate_reactions`.
         """
 
         rxnList = []; speciesList = []

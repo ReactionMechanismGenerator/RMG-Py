@@ -79,16 +79,16 @@ class TestReact(unittest.TestCase):
         self.assertIsNotNone(reactionList)
         self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in reactionList]))
 
-    def test_labelListofSpecies(self):
+    def test_ensure_independent_atom_ids(self):
         """
-        Ensure labelListofSpecies modifies atomlabels
+        Ensure ensure_independent_atom_ids modifies atomlabels
         """
-        from rmgpy.data.kinetics.common import _labelListOfSpecies
+        from rmgpy.data.kinetics import ensure_independent_atom_ids
         s1 = Species().fromSMILES('CCC')
         s2 = Species().fromSMILES('C=C[CH]C')
         self.assertEqual(s2.molecule[0].atoms[0].id, -1)
-        
-        _labelListOfSpecies([s1, s2])
+
+        ensure_independent_atom_ids([s1, s2])
         # checks atom id
         self.assertNotEqual(s2.molecule[0].atoms[0].id, -1)
         # checks second resonance structure id
