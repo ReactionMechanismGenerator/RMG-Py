@@ -32,6 +32,7 @@
 This module contains classes and functions that are used by multiple modules
 in this subpackage.
 """
+import itertools
 
 from rmgpy.data.base import LogicNode
 from rmgpy.reaction import Reaction
@@ -210,3 +211,16 @@ def ensure_species(input_list, resonance=False, keepIsomorphic=False):
 
     return output_list
 
+
+def generate_molecule_combos(input_species):
+    """
+    Generate combinations of molecules from the given species objects.
+    """
+    if len(input_species) == 1:
+        combos = [(mol,) for mol in input_species[0].molecule]
+    elif len(input_species) == 2:
+        combos = itertools.product(input_species[0].molecule, input_species[1].molecule)
+    else:
+        raise ValueError('Reaction generation can be done for 1 or 2 species, not {0}.'.format(len(input_species)))
+
+    return combos

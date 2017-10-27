@@ -45,7 +45,7 @@ from rmgpy.data.base import LogicNode
 
 from .family import  KineticsFamily
 from .library import LibraryReaction, KineticsLibrary
-from .common import filterReactions, ensure_species
+from .common import filterReactions, ensure_species, generate_molecule_combos
 from rmgpy.exceptions import DatabaseError
 
 ################################################################################
@@ -407,32 +407,72 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
             reactionList = filterReactions(reactants, products, reactionList)
         return reactionList
 
-    def generateReactionsFromFamilies(self, reactants, products, only_families=None):
+    def generateReactionsFromFamilies(self, reactants, products=None, only_families=None):
         """
-        Generate all reactions between the provided list of one or two
-        `reactants`, which should be :class:`Molecule` objects. This method
-        applies the reaction family.
+        Generate all reactions between the provided list or tuple of one or two
+        `reactants`, which can be either :class:`Molecule` objects or :class:`Species`
+        objects. This method applies all of the loaded reaction families.
+
         If `only_families` is a list of strings, only families with those labels
         are used.
         """
-        # If there are two structures and they are the same, then make a copy
-        # of the second one so we can independently manipulate both of them 
-        # This is for the case where A + A --> products
-        if len(reactants) == 2 and reactants[0] == reactants[1]:
-            reactants[1] = reactants[1].copy(deep=True)
-        
-        reactionList = []
+        from rmgpy.rmg.react import findDegeneracies, _labelListOfSpecies
+
+        # Check if the reactants are the same
+        # If they refer to the same memory address, then make a deep copy so
+        # they can be manipulated independently
+        same_reactants = False
+        if len(reactants) == 2:
+            if reactants[0] is reactants[1]:
+                reactants[1] = reactants[1].copy(deep=True)
+                same_reactants = True
+            elif reactants[0].isIsomorphic(reactants[1]):
+                same_reactants = True
+
+        # Convert to Species objects if necessary
+        reactants = ensure_species(reactants)
+
+        # Label reactant atoms for proper degeneracy calculation
+        _labelListOfSpecies(reactants)
+
+        combos = generate_molecule_combos(reactants)
+
+        reaction_list = []
+        for combo in combos:
+            reaction_list.extend(self.react_molecules(combo, only_families=only_families))
+
+        # Calculate reaction degeneracy
+        reaction_list = findDegeneracies(reaction_list, same_reactants)
+        # Add reverse attribute to families with ownReverse
+        to_delete = []
+        for i, rxn in enumerate(reaction_list):
+            family = self.families[rxn.family]
+            if family.ownReverse:
+                successful = family.addReverseAttribute(rxn)
+                if not successful:
+                    to_delete.append(i)
+        # Delete reactions which we could not find a reverse reaction for
+        for i in reversed(to_delete):
+            del reaction_list[i]
+
+        if products:
+            reaction_list = filterReactions(reactants, products, reaction_list)
+
+        return reaction_list
+
+    def react_molecules(self, molecules, only_families=None):
+        """
+        Generate reactions from all families for the input molecules.
+        """
+        reaction_list = []
         for label, family in self.families.iteritems():
             if only_families is None or label in only_families:
-                try:
-                    reactionList.extend(family.generateReactions(reactants))
-                except:
-                    logging.error("Problem family: {}".format(label))
-                    logging.error("Problem reactants: {}".format(reactants))
-                    raise
-        if products:
-            reactionList = filterReactions(reactants, products, reactionList)
-        return reactionList
+                reaction_list.extend(family.generateReactions(molecules))
+
+        for reactant in molecules:
+            reactant.clearLabeledAtoms()
+
+        return reaction_list
 
     def getForwardReactionForFamilyEntry(self, entry, family, thermoDatabase):
         """
