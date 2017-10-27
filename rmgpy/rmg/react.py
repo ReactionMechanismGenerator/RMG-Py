@@ -68,32 +68,10 @@ def reactSpecies(speciesTuple):
     given one species tuple, will find the reactions and remove degeneracy
     from them.
     """
-    # Check if the reactants are the same
-    sameReactants = False
-    if len(speciesTuple) == 2 and speciesTuple[0].isIsomorphic(speciesTuple[1]):
-        sameReactants = True
-
     speciesTuple = tuple([spc.copy(deep=True) for spc in speciesTuple])
 
-    _labelListOfSpecies(speciesTuple)
+    reactions = getDB('kinetics').generateReactionsFromFamilies(speciesTuple)
 
-    combos = getMoleculeTuples(speciesTuple)
-
-    reactions = map(reactMolecules,combos)
-    reactions = list(itertools.chain.from_iterable(reactions))
-    # remove reverse reaction
-    reactions = findDegeneracies(reactions, sameReactants)
-    # add reverse attribute to families with ownReverse
-    toDelete = []
-    for i, rxn in enumerate(reactions):
-        family = getDB('kinetics').families[rxn.family]
-        if family.ownReverse:
-            successful = family.addReverseAttribute(rxn)
-            if not successful:
-                toDelete.append(i)
-    # delete reactions which we could not find a reverse reaction for
-    for i in reversed(toDelete):
-        del reactions[i]
     # get a molecule list with species indexes
     zippedList = []
     for spec in speciesTuple:
