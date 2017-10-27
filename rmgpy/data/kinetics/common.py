@@ -35,7 +35,7 @@ in this subpackage.
 
 from rmgpy.data.base import LogicNode
 from rmgpy.reaction import Reaction
-from rmgpy.molecule import Group
+from rmgpy.molecule import Group, Molecule
 from rmgpy.species import Species
 from rmgpy.exceptions import DatabaseError, KineticsError
 
@@ -205,3 +205,24 @@ def filterReactions(reactants, products, reactionList):
         if not forward and not reverse:
             reactions.remove(reaction)
     return reactions
+
+
+def ensure_species(input_list, resonance=False, keepIsomorphic=False):
+    """
+    Given an input list of molecules or species, return a list with only
+    species objects.
+    """
+    output_list = []
+    for item in input_list:
+        if isinstance(item, Molecule):
+            new_item = Species(molecule=[item])
+        elif isinstance(item, Species):
+            new_item = item
+        else:
+            raise TypeError('Only Molecule or Species objects can be handled.')
+        if resonance:
+            new_item.generateResonanceIsomers(keepIsomorphic=keepIsomorphic)
+        output_list.append(new_item)
+
+    return output_list
+
