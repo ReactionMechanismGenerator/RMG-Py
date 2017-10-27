@@ -25,20 +25,24 @@
 #
 ################################################################################
 
-import os
-import unittest 
 import itertools
+import os
+import unittest
+
 import numpy
 
 from rmgpy import settings
 from rmgpy.chemkin import loadChemkinFile
-from rmgpy.data.kinetics.database import KineticsDatabase
 from rmgpy.data.base import Entry, DatabaseError, ForbiddenStructures
+from rmgpy.data.kinetics.common import saveEntry, filter_reactions, find_degenerate_reactions, ensure_independent_atom_ids
+from rmgpy.data.kinetics.database import KineticsDatabase
+from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.rmg import RMGDatabase
-from rmgpy.rmg.react import react, reactSpecies
-from rmgpy.data.kinetics import find_degenerate_reactions
 from rmgpy.molecule.molecule import Molecule
+from rmgpy.rmg.react import react, reactSpecies
 from rmgpy.species import Species
+
+
 ###################################################
 
 def setUpModule():
@@ -827,14 +831,12 @@ class TestKinetics(unittest.TestCase):
                                              os.path.join(settings['test_data.directory'], 'parsing_data','species_dictionary.txt')
                                                     )
         
-    def testFilterReactions(self):
+    def test_filter_reactions(self):
         """
         tests that filter reactions removes reactions that are missing
         any reactants or products
         """
         
-        from rmgpy.data.kinetics.common import filter_reactions
-
         reactions=self.reactions
         
         reactants = []
@@ -867,14 +869,37 @@ class TestKinetics(unittest.TestCase):
             
         for i, iset in enumerate(outsets): #test that all the reactions left in aren't missing any reactants or products
             self.assertTrue(iset & lrset == set(),msg='reaction {0} left in improperly, should have removed in based on presence of {1}'.format(out[i],iset & lrset))
-        
-        
+
+    def test_react_molecules(self):
+        """
+        Test that reaction generation for Molecule objects works.
+        """
+
+        moleculeTuple = (Molecule(SMILES='CC'), Molecule(SMILES='[CH3]'))
+
+        reactionList = self.database.kinetics.react_molecules(moleculeTuple)
+
+        self.assertIsNotNone(reactionList)
+        self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in reactionList]))
+
+    def test_ensure_independent_atom_ids(self):
+        """
+        Ensure ensure_independent_atom_ids modifies atomlabels
+        """
+        s1 = Species().fromSMILES('CCC')
+        s2 = Species().fromSMILES('C=C[CH]C')
+        self.assertEqual(s2.molecule[0].atoms[0].id, -1)
+
+        ensure_independent_atom_ids([s1, s2])
+        # checks atom id
+        self.assertNotEqual(s2.molecule[0].atoms[0].id, -1)
+        # checks second resonance structure id
+        self.assertNotEqual(s2.molecule[1].atoms[0].id, -1)
+
     def testSaveEntry(self):
         """
         tests that save entry can run
         """
-        from rmgpy.data.kinetics.common import saveEntry
-        
         reactions=self.reactions
         
         fname  = 'testfile.txt'
