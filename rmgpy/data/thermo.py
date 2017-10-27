@@ -837,7 +837,28 @@ class ThermoDatabase(object):
 
         # Return the resulting thermo parameters
         return thermo0
-    
+
+
+    def setDeltaAtomicAdsorptionEnergies(self, bindingEnergies):
+        """
+        Sets and stores the change in atomic binding energy between
+        the desired and the Ni(111) default.
+
+        :param bindingEnergies: the required binding energies
+        :return: None (stores result in self.deltaAtomicAdsorptionEnergy)
+        """
+        # this depends on the two metal surfaces, the reference one
+        # used in the database of adsorption energies, and the desired surface
+        # These are the reference ones, Ni(111), from Blaylock's supplementary material
+        deltaAtomicAdosrptionEnergy = {
+            'C': rmgpy.quantity.Energy(-5.997, 'eV/molecule'),
+            'H': rmgpy.quantity.Energy(-2.778, 'eV/molecule'),
+            'O': rmgpy.quantity.Energy(-4.485, 'eV/molecule')
+        }
+        for element in 'CHO':
+            deltaAtomicAdosrptionEnergy[element].value_si =  bindingEnergies[element].value_si - deltaAtomicAdosrptionEnergy[element].value_si
+        self.deltaAtomicAdsorptionEnergy = deltaAtomicAdosrptionEnergy
+
     def getThermoDataForSurfaceSpecies(self, species, quantumMechanics=None):
         """
         Get the thermo data for an adsorbed species,
@@ -847,16 +868,6 @@ class ThermoDatabase(object):
         
         Returns a :class:`ThermoData` object, with no Cp0 or CpInf
         """
-
-        # this depends on the two metal surfaces, the reference one
-        # used in the database of adsorption energies, and the desired surface
-        deltaAtomicAdosrptionEnergy = {
-            'C': rmgpy.quantity.Energy(-3.0, 'kJ/mol'), # would be nice to use eV
-            'H': rmgpy.quantity.Energy(-4.0, 'kJ/mol'),
-            'O': rmgpy.quantity.Energy(-5.0, 'kJ/mol'),
-            'N': rmgpy.quantity.Energy(-6.0, 'kJ/mol'),
-        }
-
 
         assert not species.isSurfaceSite(), "Can't estimate thermo of vacant site. Should be in library (and should be 0)"
 
@@ -935,8 +946,8 @@ class ThermoDatabase(object):
             raise
 
         ## now edit the adsorptionThermo using LSR
-        for element in 'CHON':
-            changeInBindingEnergy = deltaAtomicAdosrptionEnergy[element].value_si * normalizedBonds[element]
+        for element in 'CHO':
+            changeInBindingEnergy = self.deltaAtomicAdsorptionEnergy[element].value_si * normalizedBonds[element]
             adsorptionThermo.H298.value_si += changeInBindingEnergy
         # (groupAdditivity=True means it appends the comments)
         addThermoData(thermo, adsorptionThermo, groupAdditivity=True)

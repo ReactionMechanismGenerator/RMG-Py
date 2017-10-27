@@ -6,6 +6,11 @@ database(
     kineticsDepositories = ['training'],
     kineticsFamilies = 'default',
     kineticsEstimator = 'rate rules',
+    bindingEnergies = {
+                       'C':(-5., 'eV/molecule'),
+                       'H':(-2., 'eV/molecule'),
+                       'O':(-4., 'eV/molecule'),
+                       },
 )
 
 species(
@@ -30,7 +35,6 @@ species(
     reactive=False,
     structure=SMILES("N#N"),
 )
-
 
 #-------
 species(

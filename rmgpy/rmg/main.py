@@ -302,7 +302,10 @@ class RMG(util.Subject):
         
         #check libraries
         self.checkLibraries()
-        
+
+        if self.bindingEnergies:
+            self.database.thermo.setDeltaAtomicAdsorptionEnergies(self.bindingEnergies)
+
         #set global variable solvent
         if self.solvent:
             global solvent
