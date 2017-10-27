@@ -45,7 +45,8 @@ from rmgpy.data.base import LogicNode
 
 from .family import  KineticsFamily
 from .library import LibraryReaction, KineticsLibrary
-from .common import filterReactions, ensure_species, generate_molecule_combos
+from .common import filter_reactions, ensure_species, generate_molecule_combos, \
+                    find_degenerate_reactions, label_list_of_species
 from rmgpy.exceptions import DatabaseError
 
 ################################################################################
@@ -404,7 +405,7 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
                 )
                 reactionList.append(reaction)
         if products:
-            reactionList = filterReactions(reactants, products, reactionList)
+            reactionList = filter_reactions(reactants, products, reactionList)
         return reactionList
 
     def generateReactionsFromFamilies(self, reactants, products=None, only_families=None):
@@ -416,8 +417,6 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
         If `only_families` is a list of strings, only families with those labels
         are used.
         """
-        from rmgpy.data.kinetics.common import findDegeneracies, _labelListOfSpecies
-
         # Check if the reactants are the same
         # If they refer to the same memory address, then make a deep copy so
         # they can be manipulated independently
@@ -433,7 +432,7 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
         reactants = ensure_species(reactants)
 
         # Label reactant atoms for proper degeneracy calculation
-        _labelListOfSpecies(reactants)
+        label_list_of_species(reactants)
 
         combos = generate_molecule_combos(reactants)
 
@@ -442,7 +441,7 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
             reaction_list.extend(self.react_molecules(combo, only_families=only_families))
 
         # Calculate reaction degeneracy
-        reaction_list = findDegeneracies(reaction_list, same_reactants)
+        reaction_list = find_degenerate_reactions(reaction_list, same_reactants, kinetics_database=self)
         # Add reverse attribute to families with ownReverse
         to_delete = []
         for i, rxn in enumerate(reaction_list):
@@ -456,7 +455,7 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
             del reaction_list[i]
 
         if products:
-            reaction_list = filterReactions(reactants, products, reaction_list)
+            reaction_list = filter_reactions(reactants, products, reaction_list)
 
         return reaction_list
 

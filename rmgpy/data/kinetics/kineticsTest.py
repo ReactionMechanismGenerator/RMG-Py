@@ -36,7 +36,7 @@ from rmgpy.data.kinetics.database import KineticsDatabase
 from rmgpy.data.base import Entry, DatabaseError, ForbiddenStructures
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.rmg.react import react, reactSpecies
-from rmgpy.data.kinetics import findDegeneracies
+from rmgpy.data.kinetics import find_degenerate_reactions
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.species import Species
 ###################################################
@@ -123,7 +123,7 @@ class TestReactionDegeneracy(unittest.TestCase):
         for combi in combinations:
             reactionList.extend(self.database.kinetics.families[family].generateReactions(combi))
 
-        reactionList = findDegeneracies(reactionList)
+        reactionList = find_degenerate_reactions(reactionList)
 
         self.assertEqual(len(reactionList), 1)
         for rxn in reactionList:
@@ -156,7 +156,7 @@ class TestReactionDegeneracy(unittest.TestCase):
                 if product.isIsomorphic(spc):
                     targetReactions.append(rxn)
 
-        targetReactions = findDegeneracies(targetReactions)
+        targetReactions = find_degenerate_reactions(targetReactions)
 
         self.assertEqual(len(targetReactions), 1)
         for rxn in targetReactions:
@@ -181,7 +181,7 @@ class TestReactionDegeneracy(unittest.TestCase):
         for combi in combinations:
             reactionList.extend(self.database.kinetics.families[family].generateReactions(combi))
 
-        reactionList = findDegeneracies(reactionList)
+        reactionList = find_degenerate_reactions(reactionList)
 
         self.assertEqual(len(reactionList), 1)
         for rxn in reactionList:
@@ -198,7 +198,7 @@ class TestReactionDegeneracy(unittest.TestCase):
 
         reactionList = self.database.kinetics.families[family].generateReactions(reactants)
 
-        reactionList = findDegeneracies(reactionList)
+        reactionList = find_degenerate_reactions(reactionList)
 
         self.assertEqual(len(reactionList), 1)
         self.assertEqual(reactionList[0].degeneracy, 0.5)
@@ -353,7 +353,7 @@ class TestReactionDegeneracy(unittest.TestCase):
 
         for reactant in reactants: reactant.assignAtomIDs()
         reactions = family.generateReactions(reactants)
-        reactions = findDegeneracies(reactions)
+        reactions = find_degenerate_reactions(reactions)
         self.assertEqual(len(reactions), num_independent_reactions,'only {1} reaction(s) should be produced. Produced reactions {0}'.format(reactions,num_independent_reactions))
 
         return sum([reaction.degeneracy for reaction in reactions]), reactions
@@ -692,8 +692,8 @@ class TestReactionDegeneracy(unittest.TestCase):
         forward_reactions = family._KineticsFamily__generateReactions([molA, molB], products=[molC, molD], forward=True)
         reverse_reactions = family._KineticsFamily__generateReactions([molC, molD], products=[molA, molB], forward=False)
 
-        forward_reactions = findDegeneracies(forward_reactions)
-        reverse_reactions = findDegeneracies(reverse_reactions)
+        forward_reactions = find_degenerate_reactions(forward_reactions)
+        reverse_reactions = find_degenerate_reactions(reverse_reactions)
 
         self.assertEqual(forward_reactions[0].degeneracy, reverse_reactions[0].degeneracy,
                          'the kinetics from forward and reverse directions had different degeneracies, {} and {} respectively'.format(forward_reactions[0].degeneracy, reverse_reactions[0].degeneracy))
@@ -833,7 +833,7 @@ class TestKinetics(unittest.TestCase):
         any reactants or products
         """
         
-        from rmgpy.data.kinetics.common import filterReactions
+        from rmgpy.data.kinetics.common import filter_reactions
 
         reactions=self.reactions
         
@@ -854,7 +854,7 @@ class TestKinetics(unittest.TestCase):
         newmreactants = list(mreactants-mlrset)
         newmproducts = list(mproducts-mlrset)
 
-        out = filterReactions(newmreactants,newmproducts,reactions)
+        out = filter_reactions(newmreactants, newmproducts, reactions)
             
         rset = list(set(reactions) - set(out))
 

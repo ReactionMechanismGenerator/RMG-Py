@@ -83,12 +83,12 @@ class TestReact(unittest.TestCase):
         """
         Ensure labelListofSpecies modifies atomlabels
         """
-        from rmgpy.data.kinetics.common import _labelListOfSpecies
+        from rmgpy.data.kinetics import label_list_of_species
         s1 = Species().fromSMILES('CCC')
         s2 = Species().fromSMILES('C=C[CH]C')
         self.assertEqual(s2.molecule[0].atoms[0].id, -1)
-        
-        _labelListOfSpecies([s1, s2])
+
+        label_list_of_species([s1, s2])
         # checks atom id
         self.assertNotEqual(s2.molecule[0].atoms[0].id, -1)
         # checks second resonance structure id
