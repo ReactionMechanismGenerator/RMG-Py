@@ -45,7 +45,7 @@ from rmgpy.kinetics import Arrhenius
 from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.species import Species
 
-from .common import saveEntry
+from .common import saveEntry, ensure_species
 from .depository import KineticsDepository
 from .groups import KineticsGroups
 from .rules import KineticsRules
@@ -1534,16 +1534,7 @@ class KineticsFamily(Database):
         from rmgpy.rmg.react import findDegeneracies, getMoleculeTuples
 
         # find combinations of resonance isomers
-        specReactants = []
-        if isinstance(reaction.reactants[0], Molecule):
-            for mol in reaction.reactants:
-                spec = Species(molecule=[mol])
-                spec.generateResonanceIsomers(keepIsomorphic=True)
-                specReactants.append(spec)
-        elif isinstance(reaction.reactants[0], Species):
-            specReactants = reaction.reactants
-        else:
-            raise TypeError('Reactants must be either Species or Molecule Objects')
+        specReactants = ensure_species(reaction.reactants, resonance=True, keepIsomorphic=True)
         molecule_combos = getMoleculeTuples(specReactants)
 
         reactions = []
@@ -1677,18 +1668,10 @@ class KineticsFamily(Database):
         # If products is given, remove reactions from the reaction list that
         # don't generate the given products
         if products is not None:
-            if isinstance(products[0],Molecule):
-                products = [product.generateResonanceIsomers() for product in products]
-            elif isinstance(products[0],Species):
-                for product in products:
-                    product.generateResonanceIsomers(keepIsomorphic=False)
-                products = [product.molecule for product in products]
-            else:
-                raise TypeError('products input to __generateReactions must be Species or Molecule Objects')
-            
+            products = ensure_species(products, resonance=True)
+
             rxnList0 = rxnList[:]
             rxnList = []
-            index = 0
             for reaction in rxnList0:
             
                 products0 = reaction.products if forward else reaction.reactants
@@ -1697,19 +1680,13 @@ class KineticsFamily(Database):
                 match = False
 
                 if len(products) == len(products0) == 1:
-                    for product in products[0]:
-                        if products0[0].isIsomorphic(product):
-                            match = True
-                            break
+                    if products[0].isIsomorphic(products0[0]):
+                        match = True
                 elif len(products) == len(products0) == 2:
-                    for productA in products[0]:
-                        for productB in products[1]:
-                            if products0[0].isIsomorphic(productA) and products0[1].isIsomorphic(productB):
-                                match = True
-                                break
-                            elif products0[0].isIsomorphic(productB) and products0[1].isIsomorphic(productA):
-                                match = True
-                                break
+                    if products[0].isIsomorphic(products0[0]) and products[1].isIsomorphic(products0[1]):
+                        match = True
+                    elif products[0].isIsomorphic(products0[1]) and products[1].isIsomorphic(products0[0]):
+                        match = True
                 elif len(products) == len(products0):
                     raise NotImplementedError("Can't yet filter reactions with {} products".format(len(products)))
                     
