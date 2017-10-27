@@ -152,24 +152,8 @@ def filterReactions(reactants, products, reactionList):
     """
     
     # Convert from molecules to species and generate resonance isomers.
-    reactant_species = []
-    for mol in reactants:
-        if isinstance(mol,Species):
-            s = mol
-        else:
-            s = Species(molecule=[mol])
-        s.generateResonanceIsomers()
-        reactant_species.append(s)
-    reactants = reactant_species
-    product_species = []
-    for mol in products:
-        if isinstance(mol,Species):
-            s = mol
-        else:
-            s = Species(molecule=[mol])
-        s.generateResonanceIsomers()
-        product_species.append(s)
-    products = product_species
+    reactants = ensure_species(reactants, resonance=True)
+    products = ensure_species(products, resonance=True)
     
     reactions = reactionList[:]
     
