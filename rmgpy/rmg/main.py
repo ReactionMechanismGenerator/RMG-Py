@@ -693,6 +693,9 @@ class RMG(util.Subject):
                                         rxnSysUnimolecularThreshold = reactionSystem.unimolecularThreshold,
                                         rxnSysBimolecularThreshold = reactionSystem.bimolecularThreshold)
                             else:
+                                self.updateReactionThresholdAndReactFlags(
+                                        rxnSysUnimolecularThreshold = reactionSystem.unimolecularThreshold,
+                                        rxnSysBimolecularThreshold = reactionSystem.bimolecularThreshold, skipUpdate=True)
                                 logging.warn('Reaction thresholds/flags for Reaction System {0} was not updated due to resurrection'.format(index+1))
 
         
@@ -1054,8 +1057,11 @@ class RMG(util.Subject):
             self.unimolecularReact = numpy.ones((numCoreSpecies),bool)
             self.bimolecularReact = numpy.ones((numCoreSpecies, numCoreSpecies),bool)
             # No need to initialize reaction threshold arrays in this case
-
-    def updateReactionThresholdAndReactFlags(self, rxnSysUnimolecularThreshold=None, rxnSysBimolecularThreshold=None):
+    
+    def updateReactionThresholdAndReactFlags(self, rxnSysUnimolecularThreshold=None, rxnSysBimolecularThreshold=None,skipUpdate=False):
+        """
+        updates the length and boolean value of the unimolecular and bimolecular react and threshold flags
+        """
         numCoreSpecies = len(self.reactionModel.core.species)
         prevNumCoreSpecies = len(self.unimolecularReact)
         stale = True if numCoreSpecies > prevNumCoreSpecies else False
@@ -1075,6 +1081,10 @@ class RMG(util.Subject):
                 bimolecularThreshold[:prevNumCoreSpecies,:prevNumCoreSpecies] = self.bimolecularThreshold
                 self.unimolecularThreshold = unimolecularThreshold
                 self.bimolecularThreshold = bimolecularThreshold
+                
+            if skipUpdate:
+                return
+            
             # Always update the react and threshold arrays
             for i in xrange(numCoreSpecies):
                 if not self.unimolecularThreshold[i] and rxnSysUnimolecularThreshold[i]:
