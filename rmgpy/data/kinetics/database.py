@@ -416,7 +416,7 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
         If `only_families` is a list of strings, only families with those labels
         are used.
         """
-        from rmgpy.rmg.react import findDegeneracies, _labelListOfSpecies
+        from rmgpy.data.kinetics.common import findDegeneracies, _labelListOfSpecies
 
         # Check if the reactants are the same
         # If they refer to the same memory address, then make a deep copy so

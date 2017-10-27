@@ -37,9 +37,10 @@ from rmgpy.data.kinetics import TemplateReaction
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.molecule import Molecule
 from rmgpy.reaction import Reaction
+from rmgpy.species import Species
 
 from rmgpy.rmg.main import RMG
-from rmgpy.rmg.react import *
+from rmgpy.rmg.react import react, reactAll, deflate, deflateReaction
 
 ###################################################
 
@@ -71,9 +72,9 @@ class TestReact(unittest.TestCase):
         Test that reaction generation for Molecule objects works.
         """
         
-        moleculeTuples = [(Molecule(SMILES='CC'), -1), (Molecule(SMILES='[CH3]'), -1)]
+        moleculeTuple = (Molecule(SMILES='CC'), Molecule(SMILES='[CH3]'))
 
-        reactionList = reactMolecules(moleculeTuples)
+        reactionList = self.rmg.database.kinetics.react_molecules(moleculeTuple)
         
         self.assertIsNotNone(reactionList)
         self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in reactionList]))
@@ -82,7 +83,7 @@ class TestReact(unittest.TestCase):
         """
         Ensure labelListofSpecies modifies atomlabels
         """
-        from rmgpy.rmg.react import _labelListOfSpecies
+        from rmgpy.data.kinetics.common import _labelListOfSpecies
         s1 = Species().fromSMILES('CCC')
         s2 = Species().fromSMILES('C=C[CH]C')
         self.assertEqual(s2.molecule[0].atoms[0].id, -1)

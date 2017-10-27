@@ -1464,7 +1464,7 @@ class KineticsFamily(Database):
         Returns `True` if successful and `False` if the reverse reaction is forbidden.
         Will raise a `KineticsError` if unsuccessful for other reasons.
         """
-        from rmgpy.rmg.react import findDegeneracies
+        from rmgpy.data.kinetics import findDegeneracies
 
         if self.ownReverse:
             # Check if the reactants are the same
@@ -1531,16 +1531,15 @@ class KineticsFamily(Database):
         `ignoreSameReactants= True` to this method.
         """
         reaction.degeneracy = 1
-        from rmgpy.rmg.react import findDegeneracies, getMoleculeTuples
+        from rmgpy.data.kinetics import findDegeneracies, generate_molecule_combos
 
         # find combinations of resonance isomers
         specReactants = ensure_species(reaction.reactants, resonance=True, keepIsomorphic=True)
-        molecule_combos = getMoleculeTuples(specReactants)
+        molecule_combos = generate_molecule_combos(specReactants)
 
         reactions = []
         for combo in molecule_combos:
-            comboOnlyMols = [tup[0] for tup in combo]
-            reactions.extend(self.__generateReactions(comboOnlyMols, products=reaction.products, forward=True))
+            reactions.extend(self.__generateReactions(combo, products=reaction.products, forward=True))
 
         # Check if the reactants are the same
         sameReactants = False
