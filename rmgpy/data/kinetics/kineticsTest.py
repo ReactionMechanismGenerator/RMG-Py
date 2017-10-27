@@ -35,7 +35,8 @@ from rmgpy.chemkin import loadChemkinFile
 from rmgpy.data.kinetics.database import KineticsDatabase
 from rmgpy.data.base import Entry, DatabaseError, ForbiddenStructures
 from rmgpy.data.rmg import RMGDatabase
-from rmgpy.rmg.react import findDegeneracies, react, reactSpecies
+from rmgpy.rmg.react import react, reactSpecies
+from rmgpy.data.kinetics import findDegeneracies
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.species import Species
 ###################################################
