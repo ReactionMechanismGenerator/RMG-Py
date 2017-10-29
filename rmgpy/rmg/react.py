@@ -71,14 +71,6 @@ def reactSpecies(speciesTuple):
 
     reactions = getDB('kinetics').generateReactionsFromFamilies(speciesTuple)
 
-    # get a molecule list with species indexes
-    zippedList = []
-    for spec in speciesTuple:
-        for mol in spec.molecule:
-            zippedList.append((mol,spec.index))
-
-    molecules, reactantIndices = zip(*zippedList)
-
     deflate(reactions,
             [spec for spec in speciesTuple],
             [spec.index for spec in speciesTuple])
