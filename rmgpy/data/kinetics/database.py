@@ -408,7 +408,7 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
             reactionList = filter_reactions(reactants, products, reactionList)
         return reactionList
 
-    def generateReactionsFromFamilies(self, reactants, products=None, only_families=None):
+    def generateReactionsFromFamilies(self, reactants, products=None, only_families=None, resonance=True):
         """
         Generate all reactions between the provided list or tuple of one or two
         `reactants`, which can be either :class:`Molecule` objects or :class:`Species`
@@ -432,7 +432,7 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
         reactants = ensure_species(reactants)
 
         # Label reactant atoms for proper degeneracy calculation
-        ensure_independent_atom_ids(reactants)
+        ensure_independent_atom_ids(reactants, resonance=resonance)
 
         combos = generate_molecule_combos(reactants)
 

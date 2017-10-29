@@ -227,10 +227,11 @@ def generate_molecule_combos(input_species):
     return combos
 
 
-def ensure_independent_atom_ids(input_species):
+def ensure_independent_atom_ids(input_species, resonance=True):
     """
     Given a list or tuple of :class:`Species` objects, ensure that atom ids are
-    independent across all of the species.
+    independent across all of the species. Optionally, the `resonance` argument
+    can be set to False to not generate resonance structures.
 
     Modifies the input species in place, nothing is returned.
     """
@@ -251,8 +252,13 @@ def ensure_independent_atom_ids(input_species):
         for species in input_species:
             mol = species.molecule[0]
             mol.assignAtomIDs()
-            # Remake resonance isomers with new labels
             species.molecule = [mol]
+            # Remake resonance structures with new labels
+            if resonance:
+                species.generateResonanceIsomers(keepIsomorphic=True)
+    elif resonance:
+        # IDs are already independent, generate resonance structures if needed
+        for species in input_species:
             species.generateResonanceIsomers(keepIsomorphic=True)
 
 
