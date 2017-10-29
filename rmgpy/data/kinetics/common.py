@@ -227,10 +227,11 @@ def generate_molecule_combos(input_species):
     return combos
 
 
-def label_list_of_species(input_species):
+def label_list_of_species(input_species, resonance=True):
     """
     Given a list or tuple of :class:`Species` objects, ensure that atom ids are
-    independent across all of the species.
+    independent across all of the species. Optionally, the `resonance` argument
+    can be set to False to not generate resonance structures.
 
     Modifies the input species in place, nothing is returned.
     """
@@ -251,9 +252,10 @@ def label_list_of_species(input_species):
         for species in input_species:
             mol = species.molecule[0]
             mol.assignAtomIDs()
-            # Remake resonance isomers with new labels
             species.molecule = [mol]
-            species.generateResonanceIsomers(keepIsomorphic=True)
+            # Remake resonance isomers with new labels
+            if resonance:
+                species.generateResonanceIsomers(keepIsomorphic=True)
 
 
 def find_degenerate_reactions(rxnList, same_reactants=None, kinetics_database=None, kinetics_family=None):
