@@ -615,13 +615,10 @@ class TestKinetics(unittest.TestCase):
         global database
         self.database = database
         
-        for family in self.database.kinetics.families.values():
-            family.addKineticsRulesFromTrainingSet(thermoDatabase=self.database.thermo)    
-            family.fillKineticsRulesByAveragingUp(verbose=True)
-    
-        self.species, self.reactions = loadChemkinFile(os.path.join(settings['test_data.directory'], 'parsing_data','chem_annotated.inp'),
-                                             os.path.join(settings['test_data.directory'], 'parsing_data','species_dictionary.txt')
-                                                    )
+        self.species, self.reactions = loadChemkinFile(
+            os.path.join(settings['test_data.directory'], 'parsing_data', 'chem_annotated.inp'),
+            os.path.join(settings['test_data.directory'], 'parsing_data', 'species_dictionary.txt')
+        )
         
     def test_filter_reactions(self):
         """
@@ -789,3 +786,36 @@ class TestKinetics(unittest.TestCase):
         family.addReverseAttribute(rxn)
         
         self.assertEqual(rxn.reverse.degeneracy, 6)
+
+    def test_generate_reactions_from_families_with_resonance(self):
+        """Test that we can generate reactions from families with resonance structures"""
+        reactants = [
+            Molecule().fromSMILES('CC=C[CH2]'),
+            Molecule().fromSMILES('[OH]'),
+        ]
+        expected_product_1 = Molecule().fromSMILES('CC=CCO')
+        expected_product_2 = Molecule().fromSMILES('CC(O)C=C')
+
+        reaction_list = self.database.kinetics.generateReactionsFromFamilies(reactants, only_families=['R_Recombination'], resonance=True)
+
+        self.assertEqual(len(reaction_list), 2)
+
+        case_1 = reaction_list[0].products[0].isIsomorphic(expected_product_1) and reaction_list[1].products[0].isIsomorphic(expected_product_2)
+        case_2 = reaction_list[0].products[0].isIsomorphic(expected_product_2) and reaction_list[1].products[0].isIsomorphic(expected_product_1)
+
+        # Only one case should be true
+        self.assertTrue(case_1 ^ case_2)
+
+    def test_generate_reactions_from_families_no_resonance(self):
+        """Test that we can generate reactions from families without resonance structures"""
+        reactants = [
+            Molecule().fromSMILES('CC=C[CH2]'),
+            Molecule().fromSMILES('[OH]'),
+        ]
+        expected_product = Molecule().fromSMILES('CC=CCO')
+
+        reaction_list = self.database.kinetics.generateReactionsFromFamilies(reactants, only_families=['R_Recombination'], resonance=False)
+
+        self.assertEqual(len(reaction_list), 1)
+
+        self.assertTrue(reaction_list[0].products[0].isIsomorphic(expected_product))
