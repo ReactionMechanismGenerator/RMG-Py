@@ -1605,7 +1605,7 @@ class Molecule(Graph):
 
     def generate_resonance_structures(self, keepIsomorphic=False):
         """Returns a list of resonance structures of the molecule."""
-        return resonance.generateResonanceStructures(self, keepIsomorphic=keepIsomorphic)
+        return resonance.generate_resonance_structures(self, keepIsomorphic=keepIsomorphic)
 
     def getURL(self):
         """
