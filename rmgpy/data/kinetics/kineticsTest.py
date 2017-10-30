@@ -136,8 +136,8 @@ class TestReactionDegeneracy(unittest.TestCase):
 
         families = [family_label] if family_label is not None else None
 
-        reaction_list = self.database.kinetics.generateReactionsFromFamilies(reactants, products,
-                                                                             only_families=families)
+        reaction_list = self.database.kinetics.generate_reactions_from_families(reactants, products,
+                                                                                only_families=families)
 
         self.assertEqual(len(reaction_list), expected_rxn_num,
                          'Expected {0} reactions, not {1} for {2} in {3}.'.format(expected_rxn_num,
@@ -796,7 +796,7 @@ class TestKinetics(unittest.TestCase):
         expected_product_1 = Molecule().fromSMILES('CC=CCO')
         expected_product_2 = Molecule().fromSMILES('CC(O)C=C')
 
-        reaction_list = self.database.kinetics.generateReactionsFromFamilies(reactants, only_families=['R_Recombination'], resonance=True)
+        reaction_list = self.database.kinetics.generate_reactions_from_families(reactants, only_families=['R_Recombination'], resonance=True)
 
         self.assertEqual(len(reaction_list), 2)
 
@@ -814,7 +814,7 @@ class TestKinetics(unittest.TestCase):
         ]
         expected_product = Molecule().fromSMILES('CC=CCO')
 
-        reaction_list = self.database.kinetics.generateReactionsFromFamilies(reactants, only_families=['R_Recombination'], resonance=False)
+        reaction_list = self.database.kinetics.generate_reactions_from_families(reactants, only_families=['R_Recombination'], resonance=False)
 
         self.assertEqual(len(reaction_list), 1)
 
@@ -831,10 +831,10 @@ class TestKinetics(unittest.TestCase):
             Molecule().fromSMILES('[H][H]'),
         ]
 
-        reaction_list = self.database.kinetics.generateReactionsFromLibraries(reactants)
+        reaction_list = self.database.kinetics.generate_reactions_from_libraries(reactants)
 
         self.assertEqual(len(reaction_list), 3)
 
-        reaction_list_2 = self.database.kinetics.generateReactionsFromLibraries(reactants, products)
+        reaction_list_2 = self.database.kinetics.generate_reactions_from_libraries(reactants, products)
 
         self.assertEqual(len(reaction_list_2), 1)
