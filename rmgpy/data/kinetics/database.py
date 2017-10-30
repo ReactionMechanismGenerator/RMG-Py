@@ -357,15 +357,16 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
                 onoff = 'on ' if self.recommendedFamilies[label] else 'off'
                 f.write("{num:<2d}    {onoff}     {label}\n".format(num=number, label=label, onoff=onoff))
     
-    def generate_reactions(self, reactants, products=None):
+    def generate_reactions(self, reactants, products=None, only_families=None, resonance=True):
         """
         Generate all reactions between the provided list of one or two
         `reactants`, which should be :class:`Molecule` objects. This method
         searches the depository, libraries, and groups, in that order.
         """
         reactionList = []
-        reactionList.extend(self.generate_reactions_from_libraries(reactants, products))
-        reactionList.extend(self.generate_reactions_from_families(reactants, products))
+        if only_families is None:
+            reactionList.extend(self.generate_reactions_from_libraries(reactants, products))
+        reactionList.extend(self.generate_reactions_from_families(reactants, products, only_families=None, resonance=True))
         return reactionList
 
     def generate_reactions_from_libraries(self, reactants, products=None):
