@@ -368,20 +368,20 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
         reactionList.extend(self.generateReactionsFromFamilies(reactants, products))
         return reactionList
 
-    def generateReactionsFromLibraries(self, reactants, products):
+    def generateReactionsFromLibraries(self, reactants, products=None):
         """
         Find all reactions from all loaded kinetics library involving the
         provided `reactants`, which can be either :class:`Molecule` objects or
         :class:`Species` objects.
         """
-        reactionList = []
-        for label, libraryType in self.libraryOrder:
+        reaction_list = []
+        for label, library_type in self.libraryOrder:
             # Generate reactions from reaction libraries (no need to generate them from seeds)
-            if libraryType == "Reaction Library":
-                reactionList.extend(self.generateReactionsFromLibrary(reactants, products, self.libraries[label]))
-        return reactionList
+            if library_type == "Reaction Library":
+                reaction_list.extend(self.generateReactionsFromLibrary(self.libraries[label], reactants, products=products))
+        return reaction_list
 
-    def generateReactionsFromLibrary(self, reactants, products, library):
+    def generateReactionsFromLibrary(self, library, reactants, products=None):
         """
         Find all reactions from the specified kinetics library involving the
         provided `reactants`, which can be either :class:`Molecule` objects or
@@ -389,7 +389,7 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
         """
         reactants = ensure_species(reactants)
 
-        reactionList = []
+        reaction_list = []
         for entry in library.entries.values():
             if entry.item.matchesSpecies(reactants):
                 reaction = LibraryReaction(
@@ -403,10 +403,10 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
                     library = library,
                     entry = entry,
                 )
-                reactionList.append(reaction)
+                reaction_list.append(reaction)
         if products:
-            reactionList = filter_reactions(reactants, products, reactionList)
-        return reactionList
+            reaction_list = filter_reactions(reactants, products, reaction_list)
+        return reaction_list
 
     def generateReactionsFromFamilies(self, reactants, products=None, only_families=None, resonance=True):
         """
