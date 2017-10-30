@@ -819,3 +819,22 @@ class TestKinetics(unittest.TestCase):
         self.assertEqual(len(reaction_list), 1)
 
         self.assertTrue(reaction_list[0].products[0].isIsomorphic(expected_product))
+
+    def test_generate_reactions_from_libraries(self):
+        """Test that we can generate reactions from libraries"""
+        reactants = [
+            Molecule().fromSMILES('CC=O'),
+            Molecule().fromSMILES('[H]'),
+        ]
+        products = [
+            Molecule().fromSMILES('[CH2]C=O'),
+            Molecule().fromSMILES('[H][H]'),
+        ]
+
+        reaction_list = self.database.kinetics.generateReactionsFromLibraries(reactants)
+
+        self.assertEqual(len(reaction_list), 3)
+
+        reaction_list_2 = self.database.kinetics.generateReactionsFromLibraries(reactants, products)
+
+        self.assertEqual(len(reaction_list_2), 1)
