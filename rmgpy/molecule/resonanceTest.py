@@ -1073,7 +1073,7 @@ multiplicity 2
         """Test that keepIsomorphic works for resonance structure generation when True."""
         mol = Molecule(SMILES='C=C[CH2]')
         mol.assignAtomIDs()
-        out = mol.generateResonanceIsomers(keepIsomorphic=True)
+        out = mol.generate_resonance_structures(keepIsomorphic=True)
 
         self.assertEqual(len(out), 2)
         self.assertTrue(out[0].isIsomorphic(out[1]))
@@ -1083,14 +1083,14 @@ multiplicity 2
         """Test that keepIsomorphic works for resonance structure generation when False."""
         mol = Molecule(SMILES='C=C[CH2]')
         mol.assignAtomIDs()
-        out = mol.generateResonanceIsomers(keepIsomorphic=False)
+        out = mol.generate_resonance_structures(keepIsomorphic=False)
 
         self.assertEqual(len(out), 1)
 
     def testFalseNegativeAromaticityPerception(self):
         """Test that we obtain the correct aromatic structure for a monocyclic aromatic that RDKit mis-identifies."""
         mol = Molecule(SMILES='[CH2]C=C1C=CC(=C)C=C1')
-        out = mol.generateResonanceIsomers()
+        out = mol.generate_resonance_structures()
 
         aromatic = Molecule().fromAdjacencyList("""
 multiplicity 2
@@ -1120,7 +1120,7 @@ multiplicity 2
     def testFalseNegativePolycyclicAromaticityPerception(self):
         """Test that we generate proper structures for a polycyclic aromatic that RDKit mis-identifies."""
         mol = Molecule(SMILES='C=C1C=CC=C2C=C[CH]C=C12')
-        out = mol.generateResonanceIsomers()
+        out = mol.generate_resonance_structures()
 
         clar = Molecule().fromAdjacencyList("""
 multiplicity 2
@@ -1152,7 +1152,7 @@ multiplicity 2
     def testFalseNegativePolycylicAromaticityPerception2(self):
         """Test that we obtain the correct aromatic structure for a polycylic aromatic that RDKit mis-identifies."""
         mol = Molecule(SMILES='[CH2]C=C1C=CC(=C)C2=C1C=CC=C2')
-        out = mol.generateResonanceIsomers()
+        out = mol.generate_resonance_structures()
 
         aromatic = Molecule().fromAdjacencyList("""
 multiplicity 2

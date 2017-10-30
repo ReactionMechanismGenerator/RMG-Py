@@ -86,7 +86,7 @@ class TestRMGWorkFlow(unittest.TestCase):
 
         # react
         spc = Species().fromSMILES("O=C[C]=C")
-        spc.generateResonanceIsomers()
+        spc.generate_resonance_structures()
         newReactions = []		
         newReactions.extend(react((spc,)))
 
@@ -122,7 +122,7 @@ class TestRMGWorkFlow(unittest.TestCase):
         rmg_test = RMG()
         rmg_test.reactionModel = CoreEdgeReactionModel()
         DPP = Species().fromSMILES('C1=CC=C(C=C1)CCCC1C=CC=CC=1')
-        DPP.generateResonanceIsomers()
+        DPP.generate_resonance_structures()
         formula = DPP.molecule[0].getFormula()
         if formula in rmg_test.reactionModel.speciesDict:
             rmg_test.reactionModel.speciesDict[formula].append(DPP)

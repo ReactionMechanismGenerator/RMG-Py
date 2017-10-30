@@ -1221,7 +1221,7 @@ class TestGroup(unittest.TestCase):
         group2 = Group().fromAdjacencyList(adjlist2)
         result2 = group2.makeSampleMolecule()
         naphthaleneMolecule = Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1')
-        resonanceList2=naphthaleneMolecule.generateResonanceIsomers()
+        resonanceList2=naphthaleneMolecule.generate_resonance_structures()
         self.assertTrue(any([result2.isIsomorphic(x) for x in resonanceList2]))
 
         #test the creation of a positively charged species

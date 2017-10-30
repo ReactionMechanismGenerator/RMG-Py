@@ -1603,7 +1603,8 @@ class Molecule(Graph):
 
         return total == aryl
 
-    def generateResonanceIsomers(self, keepIsomorphic=False):
+    def generate_resonance_structures(self, keepIsomorphic=False):
+        """Returns a list of resonance structures of the molecule."""
         return resonance.generateResonanceStructures(self, keepIsomorphic=keepIsomorphic)
 
     def getURL(self):

@@ -537,12 +537,12 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
             reaction = Reaction(reactants=[], products=[])
             for molecule in entry.item.reactants:
                 reactant = Species(molecule=[molecule])
-                reactant.generateResonanceIsomers()
+                reactant.generate_resonance_structures()
                 reactant.thermo = thermoDatabase.getThermoData(reactant)
                 reaction.reactants.append(reactant)
             for molecule in entry.item.products:
                 product = Species(molecule=[molecule])
-                product.generateResonanceIsomers()
+                product.generate_resonance_structures()
                 product.thermo = thermoDatabase.getThermoData(product)
                 reaction.products.append(product)
 
