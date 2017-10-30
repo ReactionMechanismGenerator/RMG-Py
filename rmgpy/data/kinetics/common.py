@@ -158,7 +158,7 @@ def filter_reactions(reactants, products, reactionList):
     # Convert from molecules to species and generate resonance isomers.
     reactants = ensure_species(reactants, resonance=True)
     products = ensure_species(products, resonance=True)
-    
+
     reactions = reactionList[:]
     
     for reaction in reactionList:
@@ -209,7 +209,7 @@ def ensure_species(input_list, resonance=False, keepIsomorphic=False):
         else:
             raise TypeError('Only Molecule or Species objects can be handled.')
         if resonance:
-            new_item.generateResonanceIsomers(keepIsomorphic=keepIsomorphic)
+            new_item.generate_resonance_structures(keepIsomorphic=keepIsomorphic)
         output_list.append(new_item)
 
     return output_list
@@ -257,11 +257,11 @@ def ensure_independent_atom_ids(input_species, resonance=True):
             species.molecule = [mol]
             # Remake resonance structures with new labels
             if resonance:
-                species.generateResonanceIsomers(keepIsomorphic=True)
+                species.generate_resonance_structures(keepIsomorphic=True)
     elif resonance:
         # IDs are already independent, generate resonance structures if needed
         for species in input_species:
-            species.generateResonanceIsomers(keepIsomorphic=True)
+            species.generate_resonance_structures(keepIsomorphic=True)
 
 
 def find_degenerate_reactions(rxnList, same_reactants=None, kinetics_database=None, kinetics_family=None):

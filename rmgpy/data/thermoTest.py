@@ -233,7 +233,7 @@ class TestThermoDatabase(unittest.TestCase):
 
         Ensure that molecule list is only reordered, and not changed after matching library value"""
         spec = Species().fromSMILES('C[CH]c1ccccc1')
-        spec.generateResonanceIsomers()
+        spec.generate_resonance_structures()
         initial = list(spec.molecule)  # Make a copy of the list
         thermo = self.database.getThermoData(spec)
 
@@ -246,7 +246,7 @@ class TestThermoDatabase(unittest.TestCase):
 
         Ensure that molecule list is only reordered, and not changed after group additivity"""
         spec = Species().fromSMILES('C[CH]c1ccccc1')
-        spec.generateResonanceIsomers()
+        spec.generate_resonance_structures()
         initial = list(spec.molecule)  # Make a copy of the list
         thermo = self.databaseWithoutLibraries.getThermoData(spec)
 
@@ -283,7 +283,7 @@ multiplicity 2
 20 H u0 p0 c0 {11,S}
 21 H u0 p0 c0 {12,S}
 """)
-        spec.generateResonanceIsomers()
+        spec.generate_resonance_structures()
 
         self.assertTrue(arom.isIsomorphic(spec.molecule[1]))  # The aromatic structure should be the second one
 
@@ -301,7 +301,7 @@ multiplicity 2
         previous_enthalpy = poly_root.data.getEnthalpy(298)/4184.0
         smiles = 'C1C2CC1C=CC=C2'
         spec = Species().fromSMILES(smiles)
-        spec.generateResonanceIsomers()
+        spec.generate_resonance_structures()
 
         thermo_gav = self.database.getThermoDataFromGroups(spec)
         _, polycyclicGroups = self.database.getRingGroupsFromComments(thermo_gav)
@@ -364,7 +364,7 @@ class TestThermoAccuracy(unittest.TestCase):
         for smiles, symm, H298, S298, Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500 in self.testCases:
             Cplist = [Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500]
             species = Species().fromSMILES(smiles)
-            species.generateResonanceIsomers()
+            species.generate_resonance_structures()
             thermoData = self.database.getThermoDataFromGroups(species)
             molecule = species.molecule[0]
             for mol in species.molecule[1:]:
@@ -393,7 +393,7 @@ class TestThermoAccuracy(unittest.TestCase):
         """
         for smiles, symm, H298, S298, Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500 in self.testCases:
             species = Species().fromSMILES(smiles)
-            species.generateResonanceIsomers()
+            species.generate_resonance_structures()
             thermoData = self.database.getThermoDataFromGroups(species)
             # pick the molecule with lowest H298
             molecule = species.molecule[0]
@@ -432,7 +432,7 @@ class TestThermoAccuracyAromatics(TestThermoAccuracy):
         Test long distance interaction is properly caculated for aromatic molecule.
         """
         spec = Species().fromSMILES('c(O)1c(O)c(C=O)c(C=O)c(O)c(C=O)1')
-        spec.generateResonanceIsomers()
+        spec.generate_resonance_structures()
         thermo = self.database.getThermoDataFromGroups(spec)
 
         self.assertIn('o_OH_OH', thermo.comment)
@@ -448,7 +448,7 @@ class TestThermoAccuracyAromatics(TestThermoAccuracy):
         Test long distance interaction is properly caculated for aromatic radical.
         """
         spec = Species().fromSMILES('c([O])1c(C=O)c(C=O)c(OC)cc1')
-        spec.generateResonanceIsomers()
+        spec.generate_resonance_structures()
         thermo = self.database.getThermoDataFromGroups(spec)
 
         self.assertNotIn('o_OH_CHO', thermo.comment)
@@ -464,7 +464,7 @@ class TestThermoAccuracyAromatics(TestThermoAccuracy):
         Test long distance interaction is properly caculated for aromatic biradical.
         """
         spec = Species().fromSMILES('c([O])1c([C]=O)cc(C=O)cc1')
-        spec.generateResonanceIsomers()
+        spec.generate_resonance_structures()
         thermo = self.database.getThermoDataFromGroups(spec)
 
         thermo = self.database.getThermoDataFromGroups(spec)
@@ -491,7 +491,7 @@ class TestCyclicThermo(unittest.TestCase):
         give two different corrections accordingly. 
         """
         spec = Species().fromSMILES('CCCCCCCCCCCC(CC=C1C=CC=CC1)c1ccccc1')
-        spec.generateResonanceIsomers()
+        spec.generate_resonance_structures()
         thermo = self.database.getThermoDataFromGroups(spec)
 
         ringGroups, polycyclicGroups = self.database.getRingGroupsFromComments(thermo)
@@ -508,7 +508,7 @@ class TestCyclicThermo(unittest.TestCase):
         Test a molecule that has both a polycyclic and a monocyclic ring in the same molecule
         """
         spec = Species().fromSMILES('C(CCC1C2CCC1CC2)CC1CCC1')
-        spec.generateResonanceIsomers()
+        spec.generate_resonance_structures()
         thermo = self.database.getThermoDataFromGroups(spec)
         ringGroups, polycyclicGroups = self.database.getRingGroupsFromComments(thermo)
         self.assertEqual(len(ringGroups),1)
@@ -625,7 +625,7 @@ class TestCyclicThermo(unittest.TestCase):
         # then saturate it.
         smiles = 'C1C=C2C=CC=C3C=CC4=CC=CC=1C4=C23'
         spe = Species().fromSMILES(smiles)
-        spe.generateResonanceIsomers()
+        spe.generate_resonance_structures()
         mols = []
         for mol in spe.molecule:
             sssr0 = mol.getSmallestSetOfSmallestRings()
@@ -668,11 +668,11 @@ class TestCyclicThermo(unittest.TestCase):
         #
         # creating it seems not natural in RMG, that's because
         # RMG cannot parse the adjacencyList of that isomer correctly
-        # so here we start with kekulized version and generateResonanceIsomers
+        # so here we start with kekulized version and generate_resonance_structures
         # and pick the one with two aromatic rings
         smiles = 'C1=CC2C=CC=C3C=CC(=C1)C=23'
         spe = Species().fromSMILES(smiles)
-        spe.generateResonanceIsomers()
+        spe.generate_resonance_structures()
         for mol in spe.molecule:
             sssr0 = mol.getSmallestSetOfSmallestRings()
             aromaticRingNum = 0
@@ -1027,7 +1027,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
 
         smiles = "C1=CC=C2C=CC=CC2=C1"
         spe = Species().fromSMILES(smiles)
-        spe.generateResonanceIsomers()
+        spe.generate_resonance_structures()
         mol = spe.molecule[1]
 
         # get two SSSRs
@@ -1054,7 +1054,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         # then saturate it.
         smiles = 'C1C=C2C=CC=C3C=CC4=CC=CC=1C4=C23'
         spe = Species().fromSMILES(smiles)
-        spe.generateResonanceIsomers()
+        spe.generate_resonance_structures()
         for mol in spe.molecule:
             sssr0 = mol.getSmallestSetOfSmallestRings()
             aromaticRingNum = 0
@@ -1098,11 +1098,11 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         #
         # creating it seems not natural in RMG, that's because
         # RMG cannot parse the adjacencyList of that isomer correctly
-        # so here we start with kekulized version and generateResonanceIsomers
+        # so here we start with kekulized version and generate_resonance_structures
         # and pick the one with two aromatic rings
         smiles = 'C1=CC2C=CC=C3C=CC(=C1)C=23'
         spe = Species().fromSMILES(smiles)
-        spe.generateResonanceIsomers()
+        spe.generate_resonance_structures()
         for mol in spe.molecule:
             sssr0 = mol.getSmallestSetOfSmallestRings()
             aromaticRingNum = 0
@@ -1276,14 +1276,14 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         """
         smiles = 'C1=CC=C2CCCCC2=C1'
         spe = Species().fromSMILES(smiles)
-        spe.generateResonanceIsomers()
+        spe.generate_resonance_structures()
         mol = spe.molecule[1]
         ring_submol = convertRingToSubMolecule(mol.getDisparateRings()[1][0])[0]
 
         saturated_ring_submol, alreadySaturated = saturateRingBonds(ring_submol)
 
         expected_spe = Species().fromSMILES('C1=CC=C2CCCCC2=C1')
-        expected_spe.generateResonanceIsomers()
+        expected_spe.generate_resonance_structures()
         expected_saturated_ring_submol = expected_spe.molecule[1]
         # remove hydrogen
         expected_saturated_ring_submol.deleteHydrogens()
@@ -1301,14 +1301,14 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         """
         smiles = 'C1=CC=C2CC=CCC2=C1'
         spe = Species().fromSMILES(smiles)
-        spe.generateResonanceIsomers()
+        spe.generate_resonance_structures()
         mol = spe.molecule[1]
         ring_submol = convertRingToSubMolecule(mol.getDisparateRings()[1][0])[0]
 
         saturated_ring_submol, alreadySaturated = saturateRingBonds(ring_submol)
 
         expected_spe = Species().fromSMILES('C1=CC=C2CCCCC2=C1')
-        expected_spe.generateResonanceIsomers()
+        expected_spe.generate_resonance_structures()
         expected_saturated_ring_submol = expected_spe.molecule[1]
         # remove hydrogen
         expected_saturated_ring_submol.deleteHydrogens()

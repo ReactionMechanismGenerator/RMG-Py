@@ -409,7 +409,7 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         spcB.label = 'C=C[CH2]C'
         spcC.label = 'C=C=CC'
         spcD.label = '[H][H]'
-        spcB.generateResonanceIsomers()
+        spcB.generate_resonance_structures()
 
         cerm.addSpeciesToCore(spcA)
         cerm.addSpeciesToCore(spcB)
@@ -450,7 +450,7 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         spcB.label = 'C=C[CH2]C'
         spcC.label = 'C=C=CC'
         spcD.label = '[H][H]'
-        spcB.generateResonanceIsomers()
+        spcB.generate_resonance_structures()
 
         cerm.addSpeciesToCore(spcA)
         cerm.addSpeciesToCore(spcB)
@@ -492,7 +492,7 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         spcB.label = 'C=C[CH2]C'
         spcC.label = 'C=C=CC'
         spcD.label = '[H][H]'
-        spcB.generateResonanceIsomers()
+        spcB.generate_resonance_structures()
 
         cerm.addSpeciesToCore(spcA)
         cerm.addSpeciesToCore(spcB)
@@ -533,7 +533,7 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         spcB.label = 'C=C[CH2]C'
         spcC.label = 'C=C=CC'
         spcD.label = '[H][H]'
-        spcB.generateResonanceIsomers()
+        spcB.generate_resonance_structures()
 
         cerm.addSpeciesToCore(spcA)
         cerm.addSpeciesToCore(spcB)

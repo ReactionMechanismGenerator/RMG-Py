@@ -162,17 +162,17 @@ class Species(object):
         self._molecularWeight = quantity.Mass(value)
     molecularWeight = property(getMolecularWeight, setMolecularWeight, """The molecular weight of the species. (Note: value_si is in kg/molecule not kg/mole)""")
 
-    def generateResonanceIsomers(self, keepIsomorphic=True):
+    def generate_resonance_structures(self, keepIsomorphic=True):
         """
-        Generate all of the resonance isomers of this species. The isomers are
+        Generate all of the resonance structures of this species. The isomers are
         stored as a list in the `molecule` attribute. If the length of
         `molecule` is already greater than one, it is assumed that all of the
-        resonance isomers have already been generated.
+        resonance structures have already been generated.
         """
         if len(self.molecule) == 1:
             if not self.molecule[0].atomIDValid():
                 self.molecule[0].assignAtomIDs()
-            self.molecule = self.molecule[0].generateResonanceIsomers(keepIsomorphic)
+            self.molecule = self.molecule[0].generate_resonance_structures(keepIsomorphic)
     
     def isIsomorphic(self, other):
         """
@@ -422,7 +422,7 @@ class Species(object):
         of all the resonance structures.
         """
         # get labeled resonance isomers
-        self.generateResonanceIsomers(keepIsomorphic=True)
+        self.generate_resonance_structures(keepIsomorphic=True)
 
         # return if no resonance
         if len(self.molecule) == 1:
@@ -530,7 +530,7 @@ class Species(object):
 
     def generate_aug_inchi(self):
         candidates = []
-        self.generateResonanceIsomers()
+        self.generate_resonance_structures()
         for mol in self.molecule:
             try:
                 cand = [mol.toAugmentedInChI(),mol]

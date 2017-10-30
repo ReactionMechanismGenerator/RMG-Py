@@ -289,7 +289,7 @@ class SolventLibrary(Database):
                 except:
                     logging.error("Can't understand '{0}' in solute library '{1}'".format(molecule, self.name))
                     raise
-            spc.generateResonanceIsomers()
+            spc.generate_resonance_structures()
 
         self.entries[label] = Entry(
             index = index,

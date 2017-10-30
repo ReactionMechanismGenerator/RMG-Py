@@ -314,7 +314,7 @@ class CoreEdgeReactionModel:
             spec = Species(index=speciesIndex, label=label, molecule=[molecule], reactive=reactive)
         
         spec.creationIteration = self.iterationNum
-        spec.generateResonanceIsomers()
+        spec.generate_resonance_structures()
         spec.molecularWeight = Quantity(spec.molecule[0].getMolecularWeight()*1000.,"amu")
         
         submit(spec,self.solventName)

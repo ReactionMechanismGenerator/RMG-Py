@@ -32,7 +32,7 @@
 This module contains methods for generation of resonance structures of molecules.
 
 The main function to generate all relevant resonance structures for a given
-Molecule object is ``generateResonanceStructures``. It calls the necessary
+Molecule object is ``generate_resonance_structures``. It calls the necessary
 functions for generating each type of resonance structure.
 
 Currently supported resonance types:

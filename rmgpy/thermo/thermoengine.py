@@ -167,7 +167,7 @@ def evaluator(spc, solventName = ''):
     """
     logging.debug("Evaluating spc %s ", spc)
 
-    spc.generateResonanceIsomers()
+    spc.generate_resonance_structures()
     thermo = generateThermoData(spc,solventName=solventName)
 
     return thermo

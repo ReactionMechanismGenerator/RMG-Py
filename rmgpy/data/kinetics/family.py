@@ -1081,10 +1081,10 @@ class KineticsFamily(Database):
             item = Reaction(reactants=[Species(molecule=[m.molecule[0].copy(deep=True)], label=m.label) for m in entry.item.reactants],
                              products=[Species(molecule=[m.molecule[0].copy(deep=True)], label=m.label) for m in entry.item.products])
             for reactant in item.reactants:
-                reactant.generateResonanceIsomers()
+                reactant.generate_resonance_structures()
                 reactant.thermo = thermoDatabase.getThermoData(reactant, trainingSet=True) 
             for product in item.products:
-                product.generateResonanceIsomers()
+                product.generate_resonance_structures()
                 product.thermo = thermoDatabase.getThermoData(product,trainingSet=True)
             # Now that we have the thermo, we can get the reverse k(T)
             item.kinetics = data
