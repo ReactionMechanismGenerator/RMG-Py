@@ -357,18 +357,18 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
                 onoff = 'on ' if self.recommendedFamilies[label] else 'off'
                 f.write("{num:<2d}    {onoff}     {label}\n".format(num=number, label=label, onoff=onoff))
     
-    def generateReactions(self, reactants, products=None):
+    def generate_reactions(self, reactants, products=None):
         """
         Generate all reactions between the provided list of one or two
         `reactants`, which should be :class:`Molecule` objects. This method
         searches the depository, libraries, and groups, in that order.
         """
         reactionList = []
-        reactionList.extend(self.generateReactionsFromLibraries(reactants, products))
-        reactionList.extend(self.generateReactionsFromFamilies(reactants, products))
+        reactionList.extend(self.generate_reactions_from_libraries(reactants, products))
+        reactionList.extend(self.generate_reactions_from_families(reactants, products))
         return reactionList
 
-    def generateReactionsFromLibraries(self, reactants, products=None):
+    def generate_reactions_from_libraries(self, reactants, products=None):
         """
         Find all reactions from all loaded kinetics library involving the
         provided `reactants`, which can be either :class:`Molecule` objects or
@@ -378,10 +378,10 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
         for label, library_type in self.libraryOrder:
             # Generate reactions from reaction libraries (no need to generate them from seeds)
             if library_type == "Reaction Library":
-                reaction_list.extend(self.generateReactionsFromLibrary(self.libraries[label], reactants, products=products))
+                reaction_list.extend(self.generate_reactions_from_library(self.libraries[label], reactants, products=products))
         return reaction_list
 
-    def generateReactionsFromLibrary(self, library, reactants, products=None):
+    def generate_reactions_from_library(self, library, reactants, products=None):
         """
         Find all reactions from the specified kinetics library involving the
         provided `reactants`, which can be either :class:`Molecule` objects or
@@ -408,7 +408,7 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
             reaction_list = filter_reactions(reactants, products, reaction_list)
         return reaction_list
 
-    def generateReactionsFromFamilies(self, reactants, products=None, only_families=None, resonance=True):
+    def generate_reactions_from_families(self, reactants, products=None, only_families=None, resonance=True):
         """
         Generate all reactions between the provided list or tuple of one or two
         `reactants`, which can be either :class:`Molecule` objects or :class:`Species`
@@ -542,7 +542,7 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
                 reaction.products.append(product)
 
             # Generate all possible reactions involving the reactant species
-            generatedReactions = self.generateReactionsFromFamilies([reactant.molecule for reactant in reaction.reactants], [], only_families=[family])
+            generatedReactions = self.generate_reactions_from_families([reactant.molecule for reactant in reaction.reactants], [], only_families=[family])
 
             # Remove from that set any reactions that don't produce the desired reactants and products
             forward = []; reverse = []

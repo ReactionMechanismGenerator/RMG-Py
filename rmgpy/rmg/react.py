@@ -69,7 +69,7 @@ def reactSpecies(speciesTuple):
     """
     speciesTuple = tuple([spc.copy(deep=True) for spc in speciesTuple])
 
-    reactions = getDB('kinetics').generateReactionsFromFamilies(speciesTuple)
+    reactions = getDB('kinetics').generate_reactions_from_families(speciesTuple)
 
     deflate(reactions,
             [spec for spec in speciesTuple],
