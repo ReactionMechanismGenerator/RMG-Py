@@ -152,6 +152,7 @@ def filter_reactions(reactants, products, reactionList):
     
     reactants and products can be either molecule or species objects
     """
+    logging.warning("The filter_reactions method is deprecated and may be removed in a future version.")
     
     # Convert from molecules to species and generate resonance isomers.
     reactants = ensure_species(reactants, resonance=True)
