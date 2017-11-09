@@ -439,7 +439,7 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
 
         reaction_list = []
         for combo in combos:
-            reaction_list.extend(self.react_molecules(combo, only_families=only_families))
+            reaction_list.extend(self.react_molecules(combo, products=products, only_families=only_families))
 
         # Calculate reaction degeneracy
         reaction_list = find_degenerate_reactions(reaction_list, same_reactants, kinetics_database=self)
@@ -455,19 +455,16 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
         for i in reversed(to_delete):
             del reaction_list[i]
 
-        if products:
-            reaction_list = filter_reactions(reactants, products, reaction_list)
-
         return reaction_list
 
-    def react_molecules(self, molecules, only_families=None):
+    def react_molecules(self, molecules, products=None, only_families=None):
         """
         Generate reactions from all families for the input molecules.
         """
         reaction_list = []
         for label, family in self.families.iteritems():
             if only_families is None or label in only_families:
-                reaction_list.extend(family.generateReactions(molecules))
+                reaction_list.extend(family.generateReactions(molecules, products=products))
 
         for reactant in molecules:
             reactant.clearLabeledAtoms()
