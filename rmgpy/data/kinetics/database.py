@@ -45,7 +45,7 @@ from rmgpy.data.base import LogicNode
 
 from .family import  KineticsFamily
 from .library import LibraryReaction, KineticsLibrary
-from .common import filter_reactions, ensure_species, generate_molecule_combos, \
+from .common import ensure_species, generate_molecule_combos, \
                     find_degenerate_reactions, ensure_independent_atom_ids
 from rmgpy.exceptions import DatabaseError
 
@@ -392,7 +392,7 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
 
         reaction_list = []
         for entry in library.entries.values():
-            if entry.item.matchesSpecies(reactants):
+            if entry.item.matchesSpecies(reactants, products=products):
                 reaction = LibraryReaction(
                     reactants = entry.item.reactants[:],
                     products = entry.item.products[:],
@@ -405,8 +405,7 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
                     entry = entry,
                 )
                 reaction_list.append(reaction)
-        if products:
-            reaction_list = filter_reactions(reactants, products, reaction_list)
+
         return reaction_list
 
     def generate_reactions_from_families(self, reactants, products=None, only_families=None, resonance=True):
