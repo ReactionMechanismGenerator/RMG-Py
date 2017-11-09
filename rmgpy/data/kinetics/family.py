@@ -1435,7 +1435,7 @@ class KineticsFamily(Database):
         else:
             raise NotImplementedError("Not expecting template of type {}".format(type(struct)))
 
-    def generateReactions(self, reactants):
+    def generateReactions(self, reactants, products=None):
         """
         Generate all reactions between the provided list of one or two
         `reactants`, which should be either single :class:`Molecule` objects
@@ -1448,11 +1448,11 @@ class KineticsFamily(Database):
         reactionList = []
         
         # Forward direction (the direction in which kinetics is defined)
-        reactionList.extend(self.__generateReactions(reactants, forward=True))
+        reactionList.extend(self.__generateReactions(reactants, products=products, forward=True))
         
         if not self.ownReverse:
             # Reverse direction (the direction in which kinetics is not defined)
-            reactionList.extend(self.__generateReactions(reactants, forward=False))
+            reactionList.extend(self.__generateReactions(reactants, products=products, forward=False))
 
         return reactionList
 
