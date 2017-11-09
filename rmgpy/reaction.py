@@ -360,17 +360,29 @@ class Reaction:
             (all([spec in self.products for spec in reactants]) and
             all([spec in self.reactants for spec in products])))
 
-    def matchesSpecies(self, reactants):
+    def matchesSpecies(self, reactants, products=None):
         """
         Return ``True`` if the given ``reactants`` represent the total set of
         reactants or products for the current ``reaction``, or ``False`` if not.
         The reactants should be :class:`Molecule` objects.
+
+        If ``products`` are provided, then they must match as well.
         """
         # Check forward direction
         if _isomorphicSpeciesList(self.reactants, reactants):
-            return True
+            if products is None:
+                return True
+            elif _isomorphicSpeciesList(self.products, products):
+                return True
+            else:
+                return False
         elif _isomorphicSpeciesList(self.products, reactants):
-            return True
+            if products is None:
+                return True
+            elif _isomorphicSpeciesList(self.reactants, products):
+                return True
+            else:
+                return False
         else:
             return False
 
