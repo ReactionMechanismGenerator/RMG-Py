@@ -1069,6 +1069,8 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         polyring = mol.getDisparateRings()[1][0]
 
         bicyclicList, ringOccurancesDict = bicyclicDecompositionForPolyring(polyring)
+        for bicyclic in bicyclicList:
+            bicyclic.deleteHydrogens()
 
         # 1st test: number of cores
         self.assertEqual(len(bicyclicList), 5)
@@ -1117,6 +1119,8 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         polyring = mol.getDisparateRings()[1][0]
 
         bicyclicList, ringOccurancesDict = bicyclicDecompositionForPolyring(polyring)
+        for bicyclic in bicyclicList:
+            bicyclic.deleteHydrogens()
 
         # 1st test: number of cores
         self.assertEqual(len(bicyclicList), 3)
@@ -1151,6 +1155,8 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         polyring = mol.getDisparateRings()[1][0]
 
         bicyclicList, ringOccurancesDict = bicyclicDecompositionForPolyring(polyring)
+        for bicyclic in bicyclicList:
+            bicyclic.deleteHydrogens()
 
         # 1st test: number of cores
         self.assertEqual(len(bicyclicList), 3)
