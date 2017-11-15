@@ -1435,7 +1435,7 @@ class KineticsFamily(Database):
         else:
             raise NotImplementedError("Not expecting template of type {}".format(type(struct)))
 
-    def generateReactions(self, reactants, products=None):
+    def generateReactions(self, reactants, products=None, clear_labels=True):
         """
         Generate all reactions between the provided list of one or two
         `reactants`, which should be either single :class:`Molecule` objects
@@ -1448,11 +1448,11 @@ class KineticsFamily(Database):
         reactionList = []
         
         # Forward direction (the direction in which kinetics is defined)
-        reactionList.extend(self.__generateReactions(reactants, products=products, forward=True))
+        reactionList.extend(self.__generateReactions(reactants, products=products, forward=True, clear_labels=clear_labels))
         
         if not self.ownReverse:
             # Reverse direction (the direction in which kinetics is not defined)
-            reactionList.extend(self.__generateReactions(reactants, products=products, forward=False))
+            reactionList.extend(self.__generateReactions(reactants, products=products, forward=False, clear_labels=clear_labels))
 
         return reactionList
 
@@ -1568,7 +1568,7 @@ class KineticsFamily(Database):
                                  'but generated {2}').format(reaction, self.label, len(reactions)))
         return reactions[0].degeneracy
         
-    def __generateReactions(self, reactants, products=None, forward=True):
+    def __generateReactions(self, reactants, products=None, forward=True, clear_labels=True):
         """
         Generate a list of all of the possible reactions of this family between
         the list of `reactants`. The number of reactants provided must match
@@ -1693,7 +1693,7 @@ class KineticsFamily(Database):
         # Also store the reaction template (useful so we can easily get the kinetics later)
         for reaction in rxnList:
             
-            # Restore the labeled atoms long enough to generate some metadata
+            # Restore the labeled atoms to generate some metadata
             for reactant in reaction.reactants:
                 reactant.clearLabeledAtoms()
             for label, atom in reaction.labeledAtoms:
@@ -1703,9 +1703,10 @@ class KineticsFamily(Database):
             reaction.pairs = self.getReactionPairs(reaction)
             reaction.template = self.getReactionTemplateLabels(reaction)
 
-            # Unlabel the atoms
-            for label, atom in reaction.labeledAtoms:
-                atom.label = ''
+            # Clear atom labels unless otherwise specified
+            if clear_labels:
+                for reactant in reaction.reactants:
+                    reactant.clearLabeledAtoms()
             
             # We're done with the labeled atoms, so delete the attribute
             del reaction.labeledAtoms
