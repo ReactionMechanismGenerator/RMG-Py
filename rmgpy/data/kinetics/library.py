@@ -150,7 +150,8 @@ class KineticsLibrary(Database):
                  )
             elif entry._longDesc and 'rate rule' in entry._longDesc: #template reaction
                 c = entry._longDesc.split('\n')
-                familyname = c[-1].replace('family: ','')
+                family_comments = [i for i in c if 'family: ' in i]
+                familyname = family_comments[0].replace('family: ','')
                 logging.info(familyname)
                 tstring = c[0]
                 ind = tstring.find('rate rule')
