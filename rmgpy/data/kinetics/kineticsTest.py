@@ -820,6 +820,57 @@ class TestKinetics(unittest.TestCase):
 
         self.assertTrue(reaction_list[0].products[0].isIsomorphic(expected_product))
 
+    def test_generate_reactions_from_families_product_resonance(self):
+        """Test that we can specify the product resonance structure when generating reactions"""
+        reactants = [
+            Molecule().fromSMILES('CCC=C'),
+            Molecule().fromSMILES('[H]'),
+        ]
+        products = [
+            Molecule().fromSMILES('CC=C[CH2]'),
+            Molecule().fromSMILES('[H][H]'),
+        ]
+
+        reaction_list = self.database.kinetics.generate_reactions_from_families(reactants, products, only_families=['H_Abstraction'], resonance=True)
+
+        self.assertEqual(len(reaction_list), 1)
+        self.assertEqual(reaction_list[0].degeneracy, 2)
+
+        reaction_list = self.database.kinetics.generate_reactions_from_families(reactants, products, only_families=['H_Abstraction'], resonance=False)
+
+        self.assertEqual(len(reaction_list), 0)
+
+    def test_generate_reactions_from_families_clear_labels(self):
+        """Test that we can clear or keep atom labels when generating reactions"""
+        reactants = [
+            Molecule().fromSMILES('C'),
+            Molecule().fromSMILES('[H]'),
+        ]
+        products = [
+            Molecule().fromSMILES('[CH3]'),
+            Molecule().fromSMILES('[H][H]'),
+        ]
+
+        reaction_list = self.database.kinetics.generate_reactions_from_families(reactants, products, only_families=['H_Abstraction'], clear_labels=True)
+
+        self.assertEqual(len(reaction_list), 1)
+
+        for spc in reaction_list[0].reactants:
+            for atom in spc.molecule[0].atoms:
+                if atom.label:
+                    self.fail('Found atom with label even though labels should have been cleared.')
+
+        reaction_list = self.database.kinetics.generate_reactions_from_families(reactants, products, only_families=['H_Abstraction'], clear_labels=False)
+
+        self.assertEqual(len(reaction_list), 1)
+
+        labels = set()
+        for spc in reaction_list[0].reactants:
+            for atom in spc.molecule[0].atoms:
+                if atom.label:
+                    labels.add(atom.label)
+        self.assertEqual(labels, {'*1', '*2', '*3'})
+
     def test_generate_reactions_from_libraries(self):
         """Test that we can generate reactions from libraries"""
         reactants = [
