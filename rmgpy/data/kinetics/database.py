@@ -412,10 +412,18 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
         """
         Generate all reactions between the provided list or tuple of one or two
         `reactants`, which can be either :class:`Molecule` objects or :class:`Species`
-        objects. This method applies all of the loaded reaction families.
+        objects. This method can apply all kinetics families or a selected subset.
 
-        If `only_families` is a list of strings, only families with those labels
-        are used.
+        Args:
+            reactants:      Molecules or Species to react
+            products:       List of Molecules or Species of desired product structures (optional)
+            only_families:  List of family labels to generate reactions from (optional)
+                            Default is to generate reactions from all families
+            resonance:      Flag to generate resonance structures for reactants and products (optional)
+                            Default is True, resonance structures will be generated
+
+        Returns:
+            List of reactions containing Species objects with the specified reactants and products.
         """
         # Check if the reactants are the same
         # If they refer to the same memory address, then make a deep copy so
