@@ -1444,15 +1444,29 @@ class KineticsFamily(Database):
         using :class:`Molecule` objects for both reactants and products
         The reactions are constructed such that the forward direction is
         consistent with the template of this reaction family.
+
+        Args:
+            reactants:      List of Molecules to react
+            products:       Desired product structures (optional)
+            prod_resonance: Flag to generate resonance structures for product checking (optional)
+                            Defaults to True, resonance structures are compared
+            clear_labels:   Flag to clear atom labels from reactants after reaction generation (optional)
+                            Default is True, labels will be cleared
+
+        Returns:
+            List of all reactions with the specified reactants and products within this family.
+            Degenerate reactions are returned as separate reactions.
         """
         reactionList = []
         
         # Forward direction (the direction in which kinetics is defined)
-        reactionList.extend(self.__generateReactions(reactants, products=products, forward=True, prod_resonance=prod_resonance, clear_labels=clear_labels))
+        reactionList.extend(self.__generateReactions(reactants, products=products, forward=True,
+                                                     prod_resonance=prod_resonance, clear_labels=clear_labels))
         
         if not self.ownReverse:
             # Reverse direction (the direction in which kinetics is not defined)
-            reactionList.extend(self.__generateReactions(reactants, products=products, forward=False, prod_resonance=prod_resonance, clear_labels=clear_labels))
+            reactionList.extend(self.__generateReactions(reactants, products=products, forward=False,
+                                                         prod_resonance=prod_resonance, clear_labels=clear_labels))
 
         return reactionList
 
@@ -1579,6 +1593,20 @@ class KineticsFamily(Database):
         
         This method returns all reactions, and degenerate reactions can then be
         found using `rmgpy.data.kinetics.common.find_degenerate_reactions`.
+
+        Args:
+            reactants:      List of Molecules to react
+            products:       Desired product structures (optional)
+            forward:        Flag to indicate whether the forward or reverse template should be applied (optional)
+                            Default is True, forward template is used
+            prod_resonance: Flag to generate resonance structures for product checking (optional)
+                            Default is True, resonance structures are compared
+            clear_labels:   Flag to clear atom labels from reactants after reaction generation (optional)
+                            Default is True, labels will be cleared
+
+        Returns:
+            List of all reactions with the specified reactants and products within this family.
+            Degenerate reactions are returned as separate reactions.
         """
 
         rxnList = []; speciesList = []

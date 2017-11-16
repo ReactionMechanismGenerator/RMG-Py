@@ -412,10 +412,20 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
         """
         Generate all reactions between the provided list or tuple of one or two
         `reactants`, which can be either :class:`Molecule` objects or :class:`Species`
-        objects. This method applies all of the loaded reaction families.
+        objects. This method can apply all kinetics families or a selected subset.
 
-        If `only_families` is a list of strings, only families with those labels
-        are used.
+        Args:
+            reactants:      Molecules or Species to react
+            products:       Desired product structures (optional)
+            only_families:  List of family labels to generate reactions from (optional)
+                            Default is to generate reactions from all families
+            resonance:      Flag to generate resonance structures for reactants and products (optional)
+                            Default is True, resonance structures will be generated
+            clear_labels:   Flag to clear atom labels from reactants after reaction generation (optional)
+                            Default is True, labels will be cleared
+
+        Returns:
+            List of reactions with the specified reactants and products.
         """
         # Check if the reactants are the same
         # If they refer to the same memory address, then make a deep copy so
@@ -438,7 +448,10 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
 
         reaction_list = []
         for combo in combos:
-            reaction_list.extend(self.react_molecules(combo, products=products, only_families=only_families, prod_resonance=resonance, clear_labels=clear_labels))
+            reaction_list.extend(self.react_molecules(combo, products=products,
+                                                      only_families=only_families,
+                                                      prod_resonance=resonance,
+                                                      clear_labels=clear_labels))
 
         # Calculate reaction degeneracy
         reaction_list = find_degenerate_reactions(reaction_list, same_reactants, kinetics_database=self)
@@ -463,7 +476,9 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
         reaction_list = []
         for label, family in self.families.iteritems():
             if only_families is None or label in only_families:
-                reaction_list.extend(family.generateReactions(molecules, products=products, prod_resonance=prod_resonance, clear_labels=clear_labels))
+                reaction_list.extend(family.generateReactions(molecules, products=products,
+                                                              prod_resonance=prod_resonance,
+                                                              clear_labels=clear_labels))
 
         return reaction_list
 
