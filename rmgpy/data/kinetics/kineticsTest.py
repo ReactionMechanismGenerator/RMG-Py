@@ -820,6 +820,26 @@ class TestKinetics(unittest.TestCase):
 
         self.assertTrue(reaction_list[0].products[0].isIsomorphic(expected_product))
 
+    def test_generate_reactions_from_families_product_resonance(self):
+        """Test that we can specify the product resonance structure when generating reactions"""
+        reactants = [
+            Molecule().fromSMILES('CCC=C'),
+            Molecule().fromSMILES('[H]'),
+        ]
+        products = [
+            Molecule().fromSMILES('CC=C[CH2]'),
+            Molecule().fromSMILES('[H][H]'),
+        ]
+
+        reaction_list = self.database.kinetics.generate_reactions_from_families(reactants, products, only_families=['H_Abstraction'], resonance=True)
+
+        self.assertEqual(len(reaction_list), 1)
+        self.assertEqual(reaction_list[0].degeneracy, 2)
+
+        reaction_list = self.database.kinetics.generate_reactions_from_families(reactants, products, only_families=['H_Abstraction'], resonance=False)
+
+        self.assertEqual(len(reaction_list), 0)
+
     def test_generate_reactions_from_libraries(self):
         """Test that we can generate reactions from libraries"""
         reactants = [
