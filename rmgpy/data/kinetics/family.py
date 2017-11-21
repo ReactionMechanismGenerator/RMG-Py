@@ -2029,7 +2029,7 @@ class KineticsFamily(Database):
         If RMG cannot find appropriate labels, (None, None) will be returned.
         """
         template = self.forwardTemplate
-        reactants0 = [reactant.copy(deep=True) for reactant in reactants]
+        reactants0 = [reactant.molecule[0].copy(deep=True) for reactant in reactants]
         if len(reactants0) == 1:
             molecule = reactants0[0]
             mappings = self.__matchReactantToTemplate(molecule, template.reactants[0])
