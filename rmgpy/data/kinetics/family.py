@@ -1435,7 +1435,7 @@ class KineticsFamily(Database):
         else:
             raise NotImplementedError("Not expecting template of type {}".format(type(struct)))
 
-    def generateReactions(self, reactants):
+    def generateReactions(self, reactants, unlabel_atoms=True):
         """
         Generate all reactions between the provided list of one or two
         `reactants`, which should be either single :class:`Molecule` objects
@@ -1448,11 +1448,11 @@ class KineticsFamily(Database):
         reactionList = []
         
         # Forward direction (the direction in which kinetics is defined)
-        reactionList.extend(self.__generateReactions(reactants, forward=True))
+        reactionList.extend(self.__generateReactions(reactants, forward=True,unlabel_atoms=unlabel_atoms))
         
         if not self.ownReverse:
             # Reverse direction (the direction in which kinetics is not defined)
-            reactionList.extend(self.__generateReactions(reactants, forward=False))
+            reactionList.extend(self.__generateReactions(reactants, forward=False,unlabel_atoms=unlabel_atoms))
 
         return reactionList
 
@@ -1581,7 +1581,7 @@ class KineticsFamily(Database):
                                  'but generated {2}').format(reaction, self.label, len(reactions)))
         return reactions[0].degeneracy
         
-    def __generateReactions(self, reactants, products=None, forward=True):
+    def __generateReactions(self, reactants, products=None, forward=True,unlabel_atoms=True):
         """
         Generate a list of all of the possible reactions of this family between
         the list of `reactants`. The number of reactants provided must match
@@ -1731,8 +1731,9 @@ class KineticsFamily(Database):
             reaction.template = self.getReactionTemplateLabels(reaction)
 
             # Unlabel the atoms
-            for label, atom in reaction.labeledAtoms:
-                atom.label = ''
+            if unlabel_atoms:
+                for label, atom in reaction.labeledAtoms:
+                    atom.label = ''
             
             # We're done with the labeled atoms, so delete the attribute
             del reaction.labeledAtoms
