@@ -46,7 +46,7 @@ from rmgpy.statmech.rotation cimport *
 from rmgpy.statmech.vibration cimport *
 from rmgpy.statmech.torsion cimport *
 import logging
-
+from rmgpy.exceptions import StatmechError
 ################################################################################
 
 cdef class Conformer:
@@ -198,6 +198,8 @@ cdef class Conformer:
         cdef Mode mode
         for mode in self.modes:
             densStates = mode.getDensityOfStates(Elist, densStates)
+        if any(numpy.isnan(densStates)):
+            raise StatmechError("Obtained NaN for some of the density of states")
         return densStates * self.spinMultiplicity * self.opticalIsomers
 
     cpdef double getTotalMass(self, atoms=None) except -1:

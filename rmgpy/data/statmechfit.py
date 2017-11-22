@@ -174,6 +174,10 @@ def fitStatmechDirect(Tlist, Cvlist, Nvib, Nrot, molecule=None):
         raise StatmechFitError('Returned solution vector is nonsensical: x = {0}.'.format(x))
     if igo == 8:
         logging.warning('Maximum number of iterations reached when fitting spectral data for {0}.'.format(molecule.toSMILES()))
+    elif igo > 8:
+        logging.warning('A solver error occured when fitting spectral data for {0}.'.format(molecule.toSMILES()))
+    logging.debug('Fitting remaining heat capacity to {0} vibrations and {1} rotations'.format(Nvib,Nrot))
+    logging.debug('The residuals for heat capacity values is {}'.format(fit.evaluate(x)[0]))
 
     # Postprocess optimization results
     vib = list(x[0:Nvib])
@@ -225,6 +229,10 @@ def fitStatmechPseudoRotors(Tlist, Cvlist, Nvib, Nrot, molecule=None):
         raise StatmechFitError('Returned solution vector is nonsensical: x = {0}.'.format(x))
     if igo == 8:
         logging.warning('Maximum number of iterations reached when fitting spectral data for {0}.'.format(molecule.toSMILES()))
+    if igo > 8:
+        logging.warning('A solver error occured when fitting spectral data for {0}.'.format(molecule.toSMILES()))
+    logging.debug('Fitting remaining heat capacity to {0} vibrations and {1} rotations'.format(Nvib,Nrot))
+    logging.debug('The residuals for heat capacity values is {}'.format(fit.evaluate(x)[0]))
 
     # Postprocess optimization results
     vib = list(x[0:Nvib])
@@ -281,6 +289,10 @@ def fitStatmechPseudo(Tlist, Cvlist, Nvib, Nrot, molecule=None):
         raise StatmechFitError('Returned solution vector is nonsensical: x = {0}.'.format(x))
     if igo == 8:
         logging.warning('Maximum number of iterations reached when fitting spectral data for {0}.'.format(molecule.toSMILES()))
+    if igo > 8:
+        logging.warning('A solver error occured when fitting spectral data for {0}.'.format(molecule.toSMILES()))
+    logging.debug('Fitting remaining heat capacity to {0} vibrations and {1} rotations'.format(Nvib,Nrot))
+    logging.debug('The residuals for heat capacity values is {}'.format(fit.evaluate(x)[0]))
 
     # Postprocess optimization results
     Nvib2 = int(round(x[1]))

@@ -89,6 +89,7 @@ def species(label, *args, **kwargs):
         # The argument is a path to a conformer input file
         path = args[0]
         job = StatMechJob(species=spec, path=path)
+        logging.info('Added species {0} to a stat mech job.'.format(label))
         jobList.append(job)
     
     if len(kwargs) > 0:

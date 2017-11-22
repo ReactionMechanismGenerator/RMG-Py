@@ -30,6 +30,7 @@
 
 import math
 import numpy
+import os.path
 import logging
 import rmgpy.constants as constants
 
@@ -326,10 +327,11 @@ class MolproLog:
                 line=f.readline()
 
         f.close()
-        
+        logging.debug('Molpro energy found is {0} hartree'.format(E0))
         #multiply E0 by correct constants
         if E0 is not None:
             E0 = E0 * constants.E_h * constants.Na
+            logging.debug('Molpro energy found is {0} J/mol'.format(E0))
             return E0
         else: raise Exception('Unable to find energy in Molpro log file.')
 
