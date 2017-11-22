@@ -923,6 +923,8 @@ class Database:
         group = node.item
         if isinstance(group, LogicNode):
             return group.matchToStructure(self, structure, atoms, strict)
+        elif isinstance(group, Molecule):
+            return structure.isIsomorphic(group)
         else:
             # try to pair up labeled atoms
             centers = group.getLabeledAtoms()
