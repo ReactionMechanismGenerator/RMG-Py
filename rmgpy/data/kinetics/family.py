@@ -1572,7 +1572,7 @@ class KineticsFamily(Database):
         else:
             raise NotImplementedError("Not expecting template of type {}".format(type(struct)))
 
-    def generateReactions(self, reactants, products=None, prod_resonance=True):
+    def generateReactions(self, reactants, products=None, prod_resonance=True, unlabel_atoms=True):
         """
         Generate all reactions between the provided list of one, two, or three
         `reactants`, which should be either single :class:`Molecule` objects
@@ -1597,13 +1597,20 @@ class KineticsFamily(Database):
 
         # Forward direction (the direction in which kinetics is defined)
         reactionList.extend(
-            self.__generateReactions(reactants, products=products, forward=True, prod_resonance=prod_resonance))
+            self.__generateReactions(reactants, 
+            						 products=products, 
+            						 forward=True, 
+            						 prod_resonance=prod_resonance,
+            						 unlabel_atoms=unlabel_atoms))
 
         if not self.ownReverse and self.reversible:
             # Reverse direction (the direction in which kinetics is not defined)
             reactionList.extend(
-                self.__generateReactions(reactants, products=products, forward=False, prod_resonance=prod_resonance))
-
+                self.__generateReactions(reactants, 
+                						 products=products, 
+                						 forward=False, 
+                						 prod_resonance=prod_resonance,
+                						 unlabel_atoms=unlabel_atoms))
         return reactionList
 
     def addReverseAttribute(self, rxn, react_non_reactive=True):
@@ -1748,9 +1755,9 @@ class KineticsFamily(Database):
                                  'in reaction family {1}. Expected 1 reaction '
                                  'but generated {2}').format(reaction, self.label, len(reactions)))
         return reactions[0].degeneracy
-        
-    def __generateReactions(self, reactants, products=None, forward=True, prod_resonance=True,
-                            react_non_reactive=False):
+
+    def __generateReactions(self, reactants, products=None, forward=True, prod_resonance=True, unlabel_atoms=True,
+                                react_non_reactive=False):
         """
         Generate a list of all the possible reactions of this family between
         the list of `reactants`. The number of reactants provided must match
@@ -1962,8 +1969,9 @@ class KineticsFamily(Database):
             reaction.template = self.getReactionTemplateLabels(reaction)
 
             # Unlabel the atoms
-            for label, atom in reaction.labeledAtoms:
-                atom.label = ''
+            if unlabel_atoms:
+                for label, atom in reaction.labeledAtoms:
+                    atom.label = ''
             
             # We're done with the labeled atoms, so delete the attribute
             del reaction.labeledAtoms
