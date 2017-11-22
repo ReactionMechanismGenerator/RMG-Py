@@ -713,7 +713,7 @@ class Molecule(Graph):
         """
         cython.declare(multiplicity=cython.int)
         multiplicity = self.multiplicity
-        if not self.containsLabeledAtom():
+        if len(self.getLabeledAtoms())==0:
             try:
                 if multiplicity != self.getRadicalCount() + 1:
                     return 'Molecule(SMILES="{0}", multiplicity={1:d})'.format(self.toSMILES(), multiplicity)
@@ -722,7 +722,7 @@ class Molecule(Graph):
                 logging.warning('Could not generate SMILES for this molecule object.'+\
                             ' Likely due to a keyerror when converting to RDKit'+\
                             ' Here is molecules AdjList: {}'.format(self.toAdjacencyList()))
-        return 'Molecule().fromAdjacencyList"""{}"""'.format(self.toAdjacencyList())
+        return 'Molecule().fromAdjacencyList("""{}""")'.format(self.toAdjacencyList())
 
     def __reduce__(self):
         """
