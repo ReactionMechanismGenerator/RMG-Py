@@ -372,29 +372,30 @@ class StatMechJob(object):
         conformer.mass = (mass,"amu")
 
         logging.debug('    Reading energy...')
-        # The E0 that is read from the log file is without the ZPE and corresponds to E_elec
-        if E0 is None:
-            E0 = energyLog.loadEnergy(self.frequencyScaleFactor)
-        else:
-            E0 = E0 * constants.E_h * constants.Na         # Hartree/particle to J/mol
-        if not self.applyAtomEnergyCorrections:
-            logging.warning('Atom corrections are not being used. Do not trust energies and thermo.')
-        E0 = applyEnergyCorrections(E0,
-                                    self.modelChemistry,
-                                    atoms,
-                                    bonds,
-                                    atomEnergies=self.atomEnergies,
-                                    applyAtomEnergyCorrections=self.applyAtomEnergyCorrections,
-                                    applyBondEnergyCorrections=self.applyBondEnergyCorrections)
-        ZPE = statmechLog.loadZeroPointEnergy() * self.frequencyScaleFactor
+        if E0_withZPE is None:
+            # The E0 that is read from the log file is without the ZPE and corresponds to E_elec
+            if E0 is None:
+                E0 = energyLog.loadEnergy(self.frequencyScaleFactor)
+            else:
+                E0 = E0 * constants.E_h * constants.Na         # Hartree/particle to J/mol
+            if not self.applyAtomEnergyCorrections:
+                logging.warning('Atom corrections are not being used. Do not trust energies and thermo.')
+            E0 = applyEnergyCorrections(E0,
+                                        self.modelChemistry,
+                                        atoms,
+                                        bonds,
+                                        atomEnergies=self.atomEnergies,
+                                        applyAtomEnergyCorrections=self.applyAtomEnergyCorrections,
+                                        applyBondEnergyCorrections=self.applyBondEnergyCorrections)
+            ZPE = statmechLog.loadZeroPointEnergy() * self.frequencyScaleFactor
+            logging.debug('Corrected minimum energy is {0} J/mol'.format(E0))
+            # The E0_withZPE at this stage contains the ZPE
+            E0_withZPE = E0 + ZPE
 
-        # The E0_withZPE at this stage contains the ZPE
-        E0_withZPE = E0 + ZPE
-        
-        logging.debug('         Scaling factor used = {0:g}'.format(self.frequencyScaleFactor))
-        logging.debug('         ZPE (0 K) = {0:g} kcal/mol'.format(ZPE / 4184.))
-        logging.debug('         E0 (0 K) = {0:g} kcal/mol'.format(E0_withZPE / 4184.))
-
+            logging.debug('         Scaling factor used = {0:g}'.format(self.frequencyScaleFactor))
+            logging.debug('         ZPE (0 K) = {0:g} kcal/mol'.format(ZPE / 4184.))
+            logging.debug('         E0 (0 K) = {0:g} kcal/mol'.format(E0_withZPE / 4184.))
+       
         conformer.E0 = (E0_withZPE*0.001,"kJ/mol")
         
         # If loading a transition state, also read the imaginary frequency

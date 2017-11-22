@@ -225,6 +225,8 @@ cdef class Configuration:
         cdef list modes
         cdef int i
         
+        logging.debug('calculating density of states for {}'.format(self.__str__()))
+
         self.Elist = Elist
         self.activeJRotor = activeJRotor
         self.activeKRotor = activeKRotor

@@ -424,8 +424,13 @@ class Species(object):
         Return the density of states :math:`\\rho(E) \\ dE` at the specified
         energies `Elist` in J/mol above the ground state.
         """
+        from rmgpy.exceptions import StatmechError
         if self.hasStatMech():
-            return self.conformer.getDensityOfStates(Elist)
+            try:
+                return self.conformer.getDensityOfStates(Elist)
+            except StatmechError:
+                logging.error('StatmechError raised for species {0}'.format(self.label))
+                raise
         else:
             raise Exception('Unable to calculate density of states for species {0!r}: no statmech data available.'.format(self.label))
 
@@ -647,7 +652,7 @@ class Species(object):
         have already provided a thermodynamics model using e.g.
         :meth:`generateThermoData()`.
         """
-
+        logging.debug("Generating statmech for species {}".format(self.label))
         from rmgpy.data.rmg import getDB
         try:
             statmechDB = getDB('statmech')        
@@ -664,6 +669,7 @@ class Species(object):
         self.conformer.E0 = self.getThermoData().E0
         self.conformer.modes = conformer.modes
         self.conformer.spinMultiplicity = conformer.spinMultiplicity
+        assert self.conformer.E0 is not None
         
     def generateEnergyTransferModel(self):
         """
@@ -735,7 +741,7 @@ class TransitionState():
         if self.conformer is not None and len(self.conformer.modes) > 0:
             Q = self.conformer.getPartitionFunction(T)
         else:
-            raise Exception('Unable to calculate partition function for transition state {0!r}: no statmech data available.'.format(self.label))
+            raise SpeciesError('Unable to calculate partition function for transition state {0!r}: no statmech data available.'.format(self.label))
         return Q
         
     def getHeatCapacity(self, T):
