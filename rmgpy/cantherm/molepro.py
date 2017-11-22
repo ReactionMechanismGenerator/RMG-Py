@@ -66,14 +66,17 @@ class MoleProLog:
         E0=None
         if f12a:
             while line!='':
-                #first one is for radicals second is for non radicals
-                if 'RHF-UCCSD(T)-F12a energy' in line or 'CCSD(T)-F12a total energy  ' in line:
+                if ('RHF-UCCSD(T)-F12a energy' in line
+                    or 'RHF-RCCSD(T)-F12a energy' in line
+                    or 'CCSD(T)-F12a total energy  ' in line):
                     E0=float(line.split()[-1])
                     break
                 line=f.readline()
         else:
             while line!='':
-                if 'RHF-UCCSD(T)-F12b energy' in line or 'CCSD(T)-F12b total energy  ' in line:
+                if ('RHF-UCCSD(T)-F12b energy' in line
+                    or 'RHF-RCCSD(T)-F12b energy' in line
+                    or 'CCSD(T)-F12b total energy  ' in line):
                     E0=float(line.split()[-1])
                     break
                 line=f.readline()
