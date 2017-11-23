@@ -25,8 +25,8 @@ entry(
     label = "singlet",
     group =
 """
-1 *1 [Od,Sd] u0 p2 c0 {2,D}
-2 *2 [Od,Sd] u0 p2 c0 {1,D}
+1 *1 [O2d,S2d] u0 p2 c0 {2,D}
+2 *2 [O2d,S2d] u0 p2 c0 {1,D}
 """,
     kinetics = None,
 )
@@ -36,8 +36,8 @@ entry(
     label = "O2",
     group =
 """
-1 *1 Od u0 p2 c0 {2,D}
-2 *2 Od u0 p2 c0 {1,D}
+1 *1 O2d u0 p2 c0 {2,D}
+2 *2 O2d u0 p2 c0 {1,D}
 """,
     kinetics = None,
 )
@@ -47,8 +47,8 @@ entry(
     label = "S2",
     group =
 """
-1 *1 Sd u0 p2 c0 {2,D}
-2 *2 Sd u0 p2 c0 {1,D}
+1 *1 S2d u0 p2 c0 {2,D}
+2 *2 S2d u0 p2 c0 {1,D}
 """,
     kinetics = None,
 )
@@ -58,8 +58,8 @@ entry(
     label = "SO",
     group =
 """
-1 *1 Sd u0 p2 c0 {2,D}
-2 *2 Od u0 p2 c0 {1,D}
+1 *1 S2d u0 p2 c0 {2,D}
+2 *2 O2d u0 p2 c0 {1,D}
 """,
     kinetics = None,
 )

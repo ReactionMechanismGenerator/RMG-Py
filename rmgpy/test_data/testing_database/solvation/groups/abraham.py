@@ -62,7 +62,7 @@ entry(
     label = "O",
     group = 
 """
-1 * [O2s,O2d,O2tc] u0
+1 * [O2s,O2d] u0
 """,
     solute = None,
     shortDesc = u"""""",
