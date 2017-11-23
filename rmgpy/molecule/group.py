@@ -1976,12 +1976,6 @@ class Group(Graph):
 
         newMolecule.update()
 
-        #hard-coded exception for carbonMonoxide with default (but incorrect) charges/lone pairs
-        #Not the best solution, but because solubility expects this we need to allow it for now
-        falseCarbonMonoxide = mol.Molecule().fromSMILES("C#[O-]")
-        if newMolecule.isIsomorphic(falseCarbonMonoxide):
-            return newMolecule
-
         #Check that the charge of atoms is expected
         for atom in newMolecule.atoms:
             if abs(atom.charge) > 0:
