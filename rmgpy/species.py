@@ -666,6 +666,18 @@ class Species(object):
 
         if self.conformer is None:
             self.conformer = Conformer()
+        self.setE0WithThermo()
+        self.conformer.modes = conformer.modes
+        self.conformer.spinMultiplicity = conformer.spinMultiplicity
+        if self.conformer.E0 is None or not self.hasStatMech():
+            from rmgpy.exceptions import StatmechError
+            logging.error('The conformer in question is {}'.format(self.conformer))
+            raise StatmechError('Species {0} does not have stat mech after generateStatMech called'.format(self.label))
+
+    def setE0WithThermo(self):
+        """
+        Helper method that sets species' E0 using the species' thermo data
+        """
         if self.getThermoData().E0 is not None:
             self.conformer.E0 = self.getThermoData().E0
         else:
@@ -674,14 +686,7 @@ class Species(object):
                 from rmgpy.data.thermo import findCp0andCpInf
                 findCp0andCpInf(self, self.thermo)
             self.conformer.E0 = self.getThermoData().toWilhoit().E0
-        self.conformer.modes = conformer.modes
-        self.conformer.spinMultiplicity = conformer.spinMultiplicity
-        assert self.conformer.E0 is not None
-        if not self.hasStatMech():
-            from rmgpy.exceptions import StatmechError
-            logging.error('The conformer in question is {}'.format(self.conformer))
-            raise StatmechError('species {0} does not have stat mech after generateStatMech called'.format(self.label))
-        
+
     def generateEnergyTransferModel(self):
         """
         Generate the collisional energy transfer model parameters for the
