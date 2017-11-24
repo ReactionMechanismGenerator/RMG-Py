@@ -364,6 +364,9 @@ def network(label, isomers=None, reactants=None, products=None, pathReactions=No
         # Only add reactions that match reactants and/or isomers
         pathReactions = []
         for rxn in reactionDict.values():
+            if not rxn.isUnimolecular():
+                # this reaction is not pressure dependent
+                continue
             reactant_is_isomer = len(rxn.reactants) == 1 and rxn.reactants[0] in isomers
             product_is_isomer  = len(rxn.products)  == 1 and rxn.products[0]  in isomers
             reactant_is_reactant = any([frozenset(rxn.reactants) == frozenset(reactant_pair) for reactant_pair in reactants])
