@@ -38,7 +38,7 @@ class FluxDiagramTest(unittest.TestCase):
     def test_avi_simple(self):
         folder = os.path.join(os.path.dirname(rmgpy.__file__),'tools','data','flux')
         
-        inputFile = os.path.join(folder,'input.py')
+        inputFile = os.path.join(folder,'input_simple.py')
         chemkinFile = os.path.join(folder, 'chemkin', 'chem.inp')
         dictFile = os.path.join(folder, 'chemkin', 'species_dictionary.txt')
         createFluxDiagram(inputFile, chemkinFile, dictFile)
@@ -50,6 +50,24 @@ class FluxDiagramTest(unittest.TestCase):
 
         self.assertTrue(os.path.isfile(simfile))
         
+        shutil.rmtree(outputdir)
+        shutil.rmtree(speciesdir)
+
+    def test_avi_liquid(self):
+        folder = os.path.join(os.path.dirname(rmgpy.__file__), 'tools', 'data', 'flux')
+
+        inputFile = os.path.join(folder, 'input_liquid.py')
+        chemkinFile = os.path.join(folder, 'chemkin', 'chem.inp')
+        dictFile = os.path.join(folder, 'chemkin', 'species_dictionary.txt')
+        createFluxDiagram(inputFile, chemkinFile, dictFile, diffusionLimited=False)
+
+        outputdir = os.path.join(folder, 'flux')
+        simfile = os.path.join(outputdir, '1', 'flux_diagram.avi')
+
+        speciesdir = os.path.join(folder, 'species')
+
+        self.assertTrue(os.path.isfile(simfile))
+
         shutil.rmtree(outputdir)
         shutil.rmtree(speciesdir)
 
