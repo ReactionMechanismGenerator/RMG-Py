@@ -55,7 +55,7 @@ cdef class Species:
 
     cpdef generate_resonance_structures(self,bint keep_isomorphic=?)
     
-    cpdef bint isIsomorphic(self, other) except -2
+    cpdef bint isIsomorphic(self, other, bint generate_res=?) except -2
 
     cpdef bint isIdentical(self, other) except -2
     
