@@ -176,13 +176,19 @@ def reactMolecules(moleculeTuples):
 
     return reactionList
 
-def findDegeneracies(rxnList, sameReactants=None):
+def findDegeneracies(rxnList, sameReactants=None,correct_reverse_degeneracy=True):
     """
     given a list of Reaction object with Molecule objects, this method 
     removes degenerate reactions and increments the degeneracy of the 
     reaction object. For multiple transition states, this method adds
     them as separate duplicate reactions. This method modifies
     rxnList in place and does not return anything.
+
+    Optional arguments:
+    sameReactants - this boolean identifies the two reactants as having the same structure.
+                    their degeneracy will be halved
+    correct_reverse_degeneracy - if True, this method will recalculate the degeneracy of
+                    reactions which were originally found in the reverse direction.
 
     This algorithm used to exist in family.__generateReactions, but was moved
     here because it didn't have any family dependence.
@@ -248,7 +254,7 @@ def findDegeneracies(rxnList, sameReactants=None):
     for rxn in rxnList:
         if rxn.isForward:
             reduceSameReactantDegeneracy(rxn, sameReactants)
-        else:
+        elif correct_reverse_degeneracy:
             # fix the degeneracy of (not ownReverse) reactions found in the backwards direction
             correctDegeneracyOfReverseReaction(rxn)
 
