@@ -350,6 +350,13 @@ class Atom(Vertex):
         """
         return self.element.number == 53
 
+    def isNOS(self):
+        """
+        Return ``True`` if the atom represent either nitrogen, sulfur, or oxygen
+        ``False`` if it does not.
+        """
+        return self.element.number in [7, 8, 16]
+
     def incrementRadical(self):
         """
         Update the atom pattern as a result of applying a GAIN_RADICAL action,

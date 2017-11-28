@@ -70,6 +70,8 @@ cdef class Atom(Vertex):
     cpdef bint isChlorine(self)
 
     cpdef bint isIodine(self)
+
+    cpdef bint isNOS(self)
     
     cpdef incrementRadical(self)
 
