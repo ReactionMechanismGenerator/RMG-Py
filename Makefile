@@ -80,14 +80,14 @@ ifneq ($(OS),Windows_NT)
 	mkdir -p testing/coverage
 	rm -rf testing/coverage/*
 endif
-	nosetests --nocapture --nologcapture --all-modules -A 'not functional' --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy
+	nosetests --nocapture --nologcapture --all-modules -A 'not functional and not helper' --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy
 
 test test-unittests-non-auth:
 ifneq ($(OS),Windows_NT)
 	mkdir -p testing/coverage
 	rm -rf testing/coverage/*
 endif
-	nosetests --nocapture --nologcapture --all-modules -A 'not functional and not auth' --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy
+	nosetests --nocapture --nologcapture --all-modules -A 'not functional and not auth  and not helper' --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy
 
 test-functional:
 ifneq ($(OS),Windows_NT)
