@@ -204,7 +204,7 @@ class TestNetwork(unittest.TestCase):
         net = Network()
         net.Elist = [1]*10000
         net.E0 = 1.0
-        niso = 100000000
+        niso = 10000
         net.isomers = niso*[1]
         try:
             net.calculateCollisionModel()
