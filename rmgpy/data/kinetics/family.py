@@ -1550,6 +1550,12 @@ class KineticsFamily(Database):
             for label, atom in reactant.getLabeledAtoms().items():
                 labeledAtoms.append((label, atom))
         reaction.labeledAtoms = labeledAtoms
+
+        labeledAtoms = []
+        for product in reaction.products:
+            for label, atom in product.getLabeledAtoms().items():
+                labeledAtoms.append((label, atom))
+        reaction.labeledProductAtoms = labeledAtoms
         
         return reaction
 
@@ -1957,7 +1963,6 @@ class KineticsFamily(Database):
         # Determine the reactant-product pairs to use for flux analysis
         # Also store the reaction template (useful so we can easily get the kinetics later)
         for reaction in rxnList:
-            
             # Restore the labeled atoms long enough to generate some metadata
             for reactant in reaction.reactants:
                 reactant.clearLabeledAtoms()
@@ -1972,13 +1977,22 @@ class KineticsFamily(Database):
             if unlabel_atoms:
                 for label, atom in reaction.labeledAtoms:
                     atom.label = ''
+            else:
+                # to have proper labelings, the reactant molecules must
+                # be duplicated so they can have different labels
+                for product in reaction.products:
+                    product.clearLabeledAtoms()
+                for label, atom in reaction.labeledProductAtoms:
+                    atom.label = label
+                reaction.products = [p.copy(deep=True) for p in reaction.products]
             
             # We're done with the labeled atoms, so delete the attribute
             del reaction.labeledAtoms
+            del reaction.labeledProductAtoms
 
             # Mark reaction reversibility
             reaction.reversible = self.reversible
-            
+
         # This reaction list has only checked for duplicates within itself, not
         # with the global list of reactions
         return rxnList
