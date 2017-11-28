@@ -80,7 +80,6 @@ def reactSpecies(speciesTuple):
 
     return reactions
 
-
 def deflate(rxns, species, reactantIndices):
     """
     The purpose of this function is to replace the reactants and
