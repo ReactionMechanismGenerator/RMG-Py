@@ -46,7 +46,7 @@ from rmgpy.data.base import LogicNode
 from .family import  KineticsFamily
 from .library import LibraryReaction, KineticsLibrary
 from .common import ensure_species, generate_molecule_combos, \
-                    find_degenerate_reactions, label_list_of_species
+                    find_degenerate_reactions, ensure_independent_atom_ids
 from rmgpy.exceptions import DatabaseError
 
 ################################################################################
@@ -442,7 +442,7 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
         reactants = ensure_species(reactants)
 
         # Label reactant atoms for proper degeneracy calculation
-        label_list_of_species(reactants, resonance=resonance)
+        ensure_independent_atom_ids(reactants, resonance=resonance)
 
         combos = generate_molecule_combos(reactants)
 

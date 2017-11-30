@@ -34,7 +34,7 @@ import numpy
 from rmgpy import settings
 from rmgpy.chemkin import loadChemkinFile
 from rmgpy.data.base import Entry, DatabaseError, ForbiddenStructures
-from rmgpy.data.kinetics.common import saveEntry, filter_reactions, find_degenerate_reactions, label_list_of_species
+from rmgpy.data.kinetics.common import saveEntry, filter_reactions, find_degenerate_reactions, ensure_independent_atom_ids
 from rmgpy.data.kinetics.database import KineticsDatabase
 from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.rmg import RMGDatabase
@@ -671,15 +671,15 @@ class TestKinetics(unittest.TestCase):
         self.assertIsNotNone(reactionList)
         self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in reactionList]))
 
-    def test_label_list_of_species(self):
+    def test_ensure_independent_atom_ids(self):
         """
-        Ensure label_list_of_species modifies atomlabels
+        Test that ensure_independent_atom_ids modifies atom ids
         """
         s1 = Species().fromSMILES('CCC')
         s2 = Species().fromSMILES('C=C[CH]C')
         self.assertEqual(s2.molecule[0].atoms[0].id, -1)
 
-        label_list_of_species([s1, s2])
+        ensure_independent_atom_ids([s1, s2])
         # checks atom id
         self.assertNotEqual(s2.molecule[0].atoms[0].id, -1)
         # checks second resonance structure id

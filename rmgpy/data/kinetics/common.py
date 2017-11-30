@@ -228,7 +228,7 @@ def generate_molecule_combos(input_species):
     return combos
 
 
-def label_list_of_species(input_species, resonance=True):
+def ensure_independent_atom_ids(input_species, resonance=True):
     """
     Given a list or tuple of :class:`Species` objects, ensure that atom ids are
     independent across all of the species. Optionally, the `resonance` argument
