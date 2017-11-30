@@ -364,7 +364,7 @@ class Reaction:
         """
         Compares the provided reactants and products against the reactants
         and products of this reaction. Both directions are checked.
-        
+
         Args:
             reactants   List of Species required on one side of the reaction
             products    List of Species required on the other side (optional)

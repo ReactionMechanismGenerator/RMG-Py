@@ -64,8 +64,10 @@ def react(*spcTuples):
 
 def reactSpecies(speciesTuple):
     """
-    given one species tuple, will find the reactions and remove degeneracy
-    from them.
+    Given a tuple of Species objects, generates all possible reactions
+    from the loaded reaction families and combines degenerate reactions.
+
+    The generated reactions are deflated.
     """
     speciesTuple = tuple([spc.copy(deep=True) for spc in speciesTuple])
 
