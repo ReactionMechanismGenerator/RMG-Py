@@ -71,6 +71,12 @@ def tearDownModule():
 
 class IsotopesTest(unittest.TestCase):
 
+    @classmethod
+    def setUpClass(self):
+        global database
+        self.database = database
+        self.family = database.kinetics.families.values()[0]
+
     def testClusterWithSpecies(self):
         """
         Test that isotope partitioning algorithm work with Reaction Objects.
@@ -774,6 +780,84 @@ multiplicity 2
                             family = 'H_Abstraction')
                             
         self.assertFalse(is_enriched(bareReaction))
+
+    def testGetLabeledReactants(self):
+        """
+        tests to ensure that get_labeled_reactants returns labeled reactants
+        """
+        reactant_pair = [Species().fromSMILES("C"), Species().fromSMILES("[H]")]
+        product_pair = [Species().fromSMILES("[H][H]"), Species().fromSMILES("[CH3]")]
+        rxn = TemplateReaction(reactants = reactant_pair,
+                              products = product_pair,
+                              family = 'H_Abstraction')
+        labeled_reactants = get_labeled_reactants(rxn, self.family)
+        r1_labels = labeled_reactants[0].getLabeledAtoms()
+        self.assertIn("*1", r1_labels.keys())
+        self.assertIn("*2", r1_labels.keys())
+        r2_labels = labeled_reactants[1].getLabeledAtoms()
+        self.assertIn("*3", r2_labels.keys())
+
+    def testGetReducedMass(self):
+        """
+        tests that get_reduced_mass returns the proper value for H_abstraction
+        """
+        labels = ['*1','*3']
+        reactants = [Molecule().fromAdjacencyList("""1 *1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 *2 H u0 p0 c0 {1,S}
+3    H u0 p0 c0 {1,S}
+4    H u0 p0 c0 {1,S}
+5    H u0 p0 c0 {1,S}
+"""),Molecule().fromAdjacencyList("""multiplicity 2
+1 *3 H u1 p0 c0
+""")]
+        reduced_mass = get_reduced_mass(reactants,labels,True)
+        self.assertAlmostEqual(reduced_mass,1/(1/1.008+1/(1.008+12.01))/1000,places=6)
+
+    def testGetReducedMass2(self):
+        """
+        tests that get_reduced_mass returns proper value when isotopes are labeled
+        """
+        labels = ['*1','*3']
+        reactants = [Molecule().fromAdjacencyList("""1 *1 C u0 p0 c0 i13 {2,S} {3,S} {4,S} {5,S}
+2 *2 H u0 p0 c0 {1,S}
+3    H u0 p0 c0 {1,S}
+4    H u0 p0 c0 {1,S}
+5    H u0 p0 c0 {1,S}
+"""),Molecule().fromAdjacencyList("""multiplicity 2
+1 *3 H u1 p0 c0
+""")]
+        reduced_mass = get_reduced_mass(reactants,labels,True)
+        self.assertAlmostEqual(reduced_mass,1/(1/1.008+1/(1.008+13.01))/1000,places=6)
+
+    def testGetKineticIsotopeEffectSimple(self):
+        reactant_pair = [Species().fromSMILES("C"), Species().fromSMILES("[H]")]
+        product_pair = [Species().fromSMILES("[H][H]"), Species().fromSMILES("[CH3]")]
+        rxn_unlabeled = TemplateReaction(reactants = reactant_pair,
+                              products = product_pair,
+                              family = 'H_Abstraction',
+                              kinetics = Arrhenius(A=(1e5,'cm^3/(mol*s)'),Ea=(0,'J/mol')))
+        rxn_labeled = TemplateReaction(reactants = [Species().fromAdjacencyList("""1 C u0 p0 c0 i13 {2,S} {3,S} {4,S} {5,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+5 H u0 p0 c0 {1,S}
+"""),Species().fromAdjacencyList("""multiplicity 2
+1 H u1 p0 c0
+""")],
+                              products = [Species().fromAdjacencyList("""1 H u0 p0 c0 {2,S}
+2 H u0 p0 c0 {1,S}
+"""),Species().fromAdjacencyList("""multiplicity 2
+1 C u1 p0 c0 i13 {2,S} {3,S} {4,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+""")],
+                              family = 'H_Abstraction',
+                              kinetics = Arrhenius(A=(1e5,'cm^3/(mol*s)'),Ea=(0,'J/mol')))
+        rxn_cluster = [[rxn_labeled,rxn_unlabeled]]
+        apply_kinetic_isotope_effect_simple(rxn_cluster,self.database.kinetics)
+        expected_KIE = ((1/1.008+ 1/(13.01+1.008))/(1/1.008+ 1/(12.01+1.008)))**0.5
+        self.assertAlmostEqual(rxn_cluster[0][0].kinetics.A.value,1e5*expected_KIE,places=-1)
 
     def testGenerateIsotopeReactions(self):
         """
