@@ -52,7 +52,7 @@ from .groups import KineticsGroups
 from .rules import KineticsRules
 from rmgpy.exceptions import InvalidActionError, ReactionPairsError, KineticsError,\
                              UndeterminableKineticsError, ForbiddenStructureException,\
-                             KekulizationError, ActionError
+                             KekulizationError, ActionError, DatabaseError
 
 ################################################################################
 
@@ -2059,7 +2059,7 @@ class KineticsFamily(Database):
             # if there're some mapping available but cannot match the provided products
             # raise exception
             if len(mappings) > 0:
-                raise Exception('Something wrong with products that RMG cannot find a match!')
+                raise ActionError('Something wrong with products that RMG cannot find a match!')
             return (None, None)
         elif len(reactants0) == 2:
             moleculeA = reactants0[0]
@@ -2091,10 +2091,10 @@ class KineticsFamily(Database):
             # if there're some mapping available but cannot match the provided products
             # raise exception
             if len(mappingsA)*len(mappingsB) > 0:
-                raise Exception('Something wrong with products that RMG cannot find a match!')
+                raise ActionError('Something wrong with products that RMG cannot find a match!')
             return (None, None)
         else:
-            raise Exception('You have {0} reactants, which is unexpected!'.format(len(reactants)))
+            raise IndexError('You have {0} reactants, which is unexpected!'.format(len(reactants)))
         
     def addAtomLabelsForReaction(self, reaction):
         """
@@ -2111,7 +2111,7 @@ class KineticsFamily(Database):
                 # Check for swapped reactants if there are more than 1
                 labeledReactants, labeledProducts = self.getLabeledReactantsAndProducts(list(reversed(reactants)), products)
         if not labeledReactants and not labeledProducts:
-            raise Exception("RMG could not label atoms for this reaction in {}.".format(self.label))
+            raise ActionError("RMG could not label atoms for this reaction in {}.".format(self.label))
         
         labeledProducts_spcs = []
         labeledReactants_spcs = []
@@ -2130,7 +2130,7 @@ class KineticsFamily(Database):
             if depository.label.endswith('training'):
                 return depository
         else:
-            raise Exception('Could not find training depository in family {0}.'.format(self.label))
+            raise DatabaseError('Could not find training depository in family {0}.'.format(self.label))
         
     def retrieveOriginalEntry(self, templateLabel):
         """
@@ -2210,7 +2210,7 @@ class KineticsFamily(Database):
                     else:
                         rules.append((ruleEntry,1))
                 else:
-                    raise Exception('Could not parse unexpected line found in kinetics comment: {}'.format(comment))
+                    raise ValueError('Could not parse unexpected line found in kinetics comment: {}'.format(comment))
             else:
                 comment = ' '.join(lines[:-1])
                 # Clean up line for exec
@@ -2291,7 +2291,7 @@ class KineticsFamily(Database):
                 trainingEntry = depository.entries[trainingReactionIndex]
                 # Perform sanity check that the training reaction's label matches that of the comments
                 if trainingEntry.label not in line:
-                    raise Exception('Reaction {0} uses kinetics from training reaction {1} but does not match the training reaction {1} from the {2} family.'.format(reaction,trainingReactionIndex,self.label))
+                    raise AssertionError('Reaction {0} uses kinetics from training reaction {1} but does not match the training reaction {1} from the {2} family.'.format(reaction,trainingReactionIndex,self.label))
                 
                 # Sometimes the matched kinetics could be in the reverse direction..... 
                 if reaction.isIsomorphic(trainingEntry.item, eitherDirection=False):
@@ -2318,7 +2318,7 @@ class KineticsFamily(Database):
         
 
         if not template:
-            raise Exception('Could not extract kinetics source from comments for reaction {}.'.format(reaction))
+            raise ValueError('Could not extract kinetics source from comments for reaction {}.'.format(reaction))
         
         sourceDict = {'template':template, 'degeneracy':degeneracy, 'exact':exact, 
                        'rules':rules,'training':trainingEntries }
