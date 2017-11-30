@@ -590,7 +590,7 @@ class TestGenerateReactions(unittest.TestCase):
             path=os.path.join(settings['test_data.directory'], 'testing_database'),
             thermoLibraries=[],
             reactionLibraries=[],
-            kineticsFamilies=['H_Abstraction'],
+            kineticsFamilies=['H_Abstraction', 'R_Addition_MultipleBond'],
             depository=False,
             solvation=False,
             testing=True,
@@ -622,3 +622,54 @@ class TestGenerateReactions(unittest.TestCase):
         mock_logging.error.assert_has_calls([
             mock.call('Error was fixed, the product is a forbidden structure when used as a reactant in the reverse direction.'),
         ])
+
+    def test_addAtomLabelsForReaction(self):
+        """Test that we can add atom labels to an existing reaction"""
+        reactants = [Species().fromSMILES('C=C'), Species().fromSMILES('[OH]')]
+        products = [Species().fromSMILES('[CH2]CO')]
+
+        reaction = TemplateReaction(reactants=reactants, products=products)
+
+        self.database.kinetics.families['R_Addition_MultipleBond'].addAtomLabelsForReaction(reaction)
+
+        expected_reactants = [
+            Molecule().fromAdjacencyList("""
+1 *1 C u0 p0 c0 {2,D} {3,S} {4,S}
+2 *2 C u0 p0 c0 {1,D} {5,S} {6,S}
+3    H u0 p0 c0 {1,S}
+4    H u0 p0 c0 {1,S}
+5    H u0 p0 c0 {2,S}
+6    H u0 p0 c0 {2,S}
+"""),
+            Molecule().fromAdjacencyList("""
+multiplicity 2
+1 *3 O u1 p2 c0 {2,S}
+2    H u0 p0 c0 {1,S}
+""")]
+
+        expected_products = [
+            Molecule().fromAdjacencyList("""
+multiplicity 2
+1 *1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 *2 C u1 p0 c0 {1,S} {6,S} {7,S}
+3 *3 O u0 p2 c0 {1,S} {8,S}
+4    H u0 p0 c0 {1,S}
+5    H u0 p0 c0 {1,S}
+6    H u0 p0 c0 {2,S}
+7    H u0 p0 c0 {2,S}
+8    H u0 p0 c0 {3,S}
+""")]
+
+        for i, reactant in enumerate(reaction.reactants):
+            mapping = {}
+            for label, atom in expected_reactants[i].getLabeledAtoms().iteritems():
+                mapping[atom] = reactant.molecule[0].getLabeledAtom(label)
+
+            self.assertTrue(expected_reactants[i].isIsomorphic(reactant.molecule[0], mapping))
+
+        for i, product in enumerate(reaction.products):
+            mapping = {}
+            for label, atom in expected_products[i].getLabeledAtoms().iteritems():
+                mapping[atom] = product.molecule[0].getLabeledAtom(label)
+
+            self.assertTrue(expected_products[i].isIsomorphic(product.molecule[0], mapping))
