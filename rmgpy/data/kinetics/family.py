@@ -1447,14 +1447,15 @@ class KineticsFamily(Database):
 
         Args:
             reactants:      List of Molecules to react
-            products:       Desired product structures (optional)
+            products:       List of Molecules or Species of desired product structures (optional)
             prod_resonance: Flag to generate resonance structures for product checking (optional)
                             Defaults to True, resonance structures are compared
             clear_labels:   Flag to clear atom labels from reactants after reaction generation (optional)
                             Default is True, labels will be cleared
 
         Returns:
-            List of all reactions with the specified reactants and products within this family.
+            List of all reactions containing Species objects with the
+                specified reactants and products within this family.
             Degenerate reactions are returned as separate reactions.
         """
         reactionList = []
@@ -1596,7 +1597,7 @@ class KineticsFamily(Database):
 
         Args:
             reactants:      List of Molecules to react
-            products:       Desired product structures (optional)
+            products:       List of Molecules or Species of desired product structures (optional)
             forward:        Flag to indicate whether the forward or reverse template should be applied (optional)
                             Default is True, forward template is used
             prod_resonance: Flag to generate resonance structures for product checking (optional)
@@ -1605,7 +1606,8 @@ class KineticsFamily(Database):
                             Default is True, labels will be cleared
 
         Returns:
-            List of all reactions with the specified reactants and products within this family.
+            List of all reactions containing Species objects with the
+                specified reactants and products within this family.
             Degenerate reactions are returned as separate reactions.
         """
 

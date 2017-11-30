@@ -416,7 +416,7 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
 
         Args:
             reactants:      Molecules or Species to react
-            products:       Desired product structures (optional)
+            products:       List of Molecules or Species of desired product structures (optional)
             only_families:  List of family labels to generate reactions from (optional)
                             Default is to generate reactions from all families
             resonance:      Flag to generate resonance structures for reactants and products (optional)
@@ -425,7 +425,7 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
                             Default is True, labels will be cleared
 
         Returns:
-            List of reactions with the specified reactants and products.
+            List of reactions containing Species objects with the specified reactants and products.
         """
         # Check if the reactants are the same
         # If they refer to the same memory address, then make a deep copy so
