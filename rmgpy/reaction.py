@@ -370,16 +370,12 @@ class Reaction:
         """
         # Check forward direction
         if _isomorphicSpeciesList(self.reactants, reactants):
-            if products is None:
-                return True
-            elif _isomorphicSpeciesList(self.products, products):
+            if products is None or _isomorphicSpeciesList(self.products, products):
                 return True
             else:
                 return False
         elif _isomorphicSpeciesList(self.products, reactants):
-            if products is None:
-                return True
-            elif _isomorphicSpeciesList(self.reactants, products):
+            if products is None or _isomorphicSpeciesList(self.reactants, products):
                 return True
             else:
                 return False
