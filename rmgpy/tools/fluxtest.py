@@ -41,7 +41,14 @@ class FluxDiagramTest(unittest.TestCase):
         inputFile = os.path.join(folder,'input_simple.py')
         chemkinFile = os.path.join(folder, 'chemkin', 'chem.inp')
         dictFile = os.path.join(folder, 'chemkin', 'species_dictionary.txt')
-        createFluxDiagram(inputFile, chemkinFile, dictFile)
+        settings = {'maximumNodeCount': 50,
+                    'maximumEdgeCount': 50,
+                    'concentrationTolerance': 1e-6,
+                    'speciesRateTolerance': 1e-6,
+                    'maximumNodePenWidth': 10.0,
+                    'maximumEdgePenWidth': 10.0,
+                    'timeStep': 10**0.1}
+        createFluxDiagram(inputFile, chemkinFile, dictFile, centralSpecies='ethane', settings=settings)
 
         outputdir = os.path.join(folder,'flux')
         simfile = os.path.join(outputdir,'1','flux_diagram.avi')

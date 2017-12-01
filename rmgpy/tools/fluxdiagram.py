@@ -81,13 +81,15 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
     a movie. The individual frames and the final movie are saved on disk at
     `outputDirectory.`
     """
-    global maximumNodeCount, maximumEdgeCount, concentrationTolerance, speciesRateTolerance
+    global maximumNodeCount, maximumEdgeCount, concentrationTolerance, speciesRateTolerance, maximumNodePenWidth, maximumEdgePenWidth
     # Allow user defined settings for flux diagram generation if given
     if settings:
         maximumNodeCount = settings.get('maximumNodeCount', maximumNodeCount)
         maximumEdgeCount = settings.get('maximumEdgeCount', maximumEdgeCount)
         concentrationTolerance = settings.get('concentrationTolerance', concentrationTolerance)
         speciesRateTolerance = settings.get('speciesRateTolerance', speciesRateTolerance)
+        maximumNodePenWidth = settings.get('maximumNodePenWidth', maximumNodePenWidth)
+        maximumEdgePenWidth= settings.get('maximumEdgePenWidth', maximumEdgePenWidth)
     
     # Get the species and reactions corresponding to the provided concentrations and reaction rates
     speciesList = reactionModel.core.species[:]
