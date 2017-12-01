@@ -894,41 +894,46 @@ class Reaction:
         
         There are a number of ways of determining the correct pairing for 
         bimolecular reactions. Here we try a simple similarity analysis by comparing
-        the number of heavy atoms (carbons and oxygens at the moment). This should
+        the number of heavy atoms (C/O/N/S at the moment). This should
         work most of the time, but a more rigorous algorithm may be needed for
         some cases.
         """
         self.pairs = []
-        
+
         if len(self.reactants) == 1 or len(self.products) == 1:
             # Pair each reactant with each product
             for reactant in self.reactants:
                 for product in self.products:
                     self.pairs.append((reactant, product))
             
-        else:
-                
+        else:  # this is the bimolecular case
             reactants = self.reactants[:]
             products = self.products[:]
+
+            reactantCarbons   = [sum([1 for atom in reactant.molecule[0].atoms if atom.isCarbon()])   for reactant in reactants]
+            productCarbons    = [sum([1 for atom in  product.molecule[0].atoms if atom.isCarbon()])   for product  in products ]
+            reactantOxygens   = [sum([1 for atom in reactant.molecule[0].atoms if atom.isOxygen()])   for reactant in reactants]
+            productOxygens    = [sum([1 for atom in  product.molecule[0].atoms if atom.isOxygen()])   for product  in products ]
+            reactantNitrogens = [sum([1 for atom in reactant.molecule[0].atoms if atom.isNitrogen()]) for reactant in reactants]
+            productNitrogens  = [sum([1 for atom in  product.molecule[0].atoms if atom.isNitrogen()]) for product  in products ]
+            reactantSulfurs   = [sum([1 for atom in reactant.molecule[0].atoms if atom.isSulfur()])   for reactant in reactants]
+            productSulfurs    = [sum([1 for atom in  product.molecule[0].atoms if atom.isSulfur()])   for product  in products ]
             
-            reactantCarbons = [sum([1 for atom in reactant.molecule[0].atoms if atom.isCarbon()]) for reactant in reactants]
-            productCarbons  = [sum([1 for atom in  product.molecule[0].atoms if atom.isCarbon()]) for product  in products ]
-            reactantOxygens = [sum([1 for atom in reactant.molecule[0].atoms if atom.isOxygen()]) for reactant in reactants]
-            productOxygens  = [sum([1 for atom in  product.molecule[0].atoms if atom.isOxygen()]) for product  in products ]
-            
-            # Sort the reactants and products by carbon number, then by oxygen number
-            reactants = [(carbon, oxygen, reactant) for carbon, oxygen, reactant in zip(reactantCarbons,reactantOxygens,reactants)]
+            # Sort the reactants and products by C/O/N/S numbers
+            reactants = [(carbon, oxygen, nitrogen, sulfur, reactant) for carbon, oxygen, nitrogen, sulfur, reactant
+                         in zip(reactantCarbons,reactantOxygens,reactantNitrogens,reactantSulfurs,reactants)]
             reactants.sort()
-            products = [(carbon, oxygen, product) for carbon, oxygen, product in zip(productCarbons,productOxygens,products)]
+            products = [(carbon, oxygen, nitrogen, sulfur, product) for carbon, oxygen, nitrogen, sulfur, product
+                        in zip(productCarbons,productOxygens,productNitrogens,productSulfurs,products)]
             products.sort()
             
             while len(reactants) > 1 and len(products) > 1:
-                self.pairs.append((reactants[-1][2], products[-1][2]))
+                self.pairs.append((reactants[-1][4], products[-1][4]))
                 reactants.pop()
                 products.pop()
             for reactant in reactants:
                 for product in products:
-                    self.pairs.append((reactant[2], product[2]))
+                    self.pairs.append((reactant[4], product[4]))
     
     def draw(self, path):
         """
