@@ -246,6 +246,7 @@ class TestReaction(unittest.TestCase):
         self.reaction.kinetics.comment = '''
         Multiplied by reaction path degeneracy 2.0
         '''
+
         # CC(=O)O[O]
         acetylperoxy = Species(
             label='acetylperoxy',
@@ -276,6 +277,15 @@ class TestReaction(unittest.TestCase):
                 Tmax = (2000, 'K'),
             ),
         )
+
+        oxygen_atom = Species().fromSMILES('[O]')
+        SO2 = Species().fromSMILES('O=S=O')
+        SO3 = Species().fromSMILES('O=S(=O)=O')
+
+        self.reaction3 = Reaction(
+            reactants=[oxygen_atom, SO2],
+            products=[SO3],
+            kinetics = Arrhenius(A=(3.7e+11, 'cm^3/(mol*s)'), n=0, Ea=(1689, 'cal/mol'), T0=(1, 'K')))
         
     def testIsIsomerization(self):
         """
@@ -1037,6 +1047,15 @@ class TestReaction(unittest.TestCase):
         newDegeneracy = 8
         self.reaction.degeneracy = newDegeneracy
         self.assertIn('Multiplied by reaction path degeneracy 8.0', self.reaction.kinetics.comment)
+
+    def testSulfurReactionPairs(self):
+        """
+        This method tests that reaction pairs are being generated for sulfur species
+        """
+
+        self.reaction3.generatePairs()
+        self.assertEqual(len(self.reaction3.pairs[0]), 2)
+        self.assertEqual(len(self.reaction3.pairs[1]), 2)
 
 
 class TestReactionToCantera(unittest.TestCase):
