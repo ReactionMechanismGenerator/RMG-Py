@@ -1691,6 +1691,28 @@ class KineticsFamily(Database):
                                     if productStructures is not None:
                                         rxn = self.__createReaction(reactantStructures, productStructures, forward)
                                         if rxn: rxnList.append(rxn)
+        
+        # Determine the reactant-product pairs to use for flux analysis
+        # Also store the reaction template (useful so we can easily get the kinetics later)
+        for reaction in rxnList:
+            
+            # Restore the labeled atoms long enough to generate some metadata
+            for reactant in reaction.reactants:
+                reactant.clearLabeledAtoms()
+            for label, atom in reaction.labeledAtoms:
+                atom.label = label
+            
+            # Generate metadata about the reaction that we will need later
+            reaction.pairs = self.getReactionPairs(reaction)
+            reaction.template = self.getReactionTemplateLabels(reaction)
+
+            # Unlabel the atoms
+            for label, atom in reaction.labeledAtoms:
+                atom.label = ''
+            
+            # We're done with the labeled atoms, so delete the attribute
+            del reaction.labeledAtoms
+
         # If products is given, remove reactions from the reaction list that
         # don't generate the given products
         if products is not None:
@@ -1708,38 +1730,32 @@ class KineticsFamily(Database):
                 if len(products) == len(products0) == 1:
                     if products[0].isIsomorphic(products0[0]):
                         match = True
+                        if forward:
+                            reaction.products[0].props['label'] = products[0].label
+                        else:
+                            reaction.reactants[0].props['label'] = products[0].label
                 elif len(products) == len(products0) == 2:
                     if products[0].isIsomorphic(products0[0]) and products[1].isIsomorphic(products0[1]):
                         match = True
+                        if forward:
+                            reaction.products[0].props['label'] = products[0].label
+                            reaction.products[1].props['label'] = products[1].label
+                        else:
+                            reaction.reactants[0].props['label'] = products[0].label
+                            reaction.reactants[1].props['label'] = products[1].label
                     elif products[0].isIsomorphic(products0[1]) and products[1].isIsomorphic(products0[0]):
                         match = True
+                        if forward:
+                            reaction.products[1].props['label'] = products[0].label
+                            reaction.products[0].props['label'] = products[1].label
+                        else:
+                            reaction.reactants[1].props['label'] = products[0].label
+                            reaction.reactants[0].props['label'] = products[1].label
                 elif len(products) == len(products0):
                     raise NotImplementedError("Can't yet filter reactions with {} products".format(len(products)))
                     
                 if match: 
                     rxnList.append(reaction)
-
-        # Determine the reactant-product pairs to use for flux analysis
-        # Also store the reaction template (useful so we can easily get the kinetics later)
-        for reaction in rxnList:
-            
-            # Restore the labeled atoms to generate some metadata
-            for reactant in reaction.reactants:
-                reactant.clearLabeledAtoms()
-            for label, atom in reaction.labeledAtoms:
-                atom.label = label
-            
-            # Generate metadata about the reaction that we will need later
-            reaction.pairs = self.getReactionPairs(reaction)
-            reaction.template = self.getReactionTemplateLabels(reaction)
-
-            # Clear atom labels unless otherwise specified
-            if clear_labels:
-                for reactant in reaction.reactants:
-                    reactant.clearLabeledAtoms()
-            
-            # We're done with the labeled atoms, so delete the attribute
-            del reaction.labeledAtoms
             
         # This reaction list has only checked for duplicates within itself, not
         # with the global list of reactions

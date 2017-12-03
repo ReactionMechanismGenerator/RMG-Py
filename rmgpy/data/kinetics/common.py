@@ -204,6 +204,8 @@ def ensure_species(input_list, resonance=False, keepIsomorphic=False):
     for item in input_list:
         if isinstance(item, Molecule):
             new_item = Species(molecule=[item])
+            if 'label' in item.props:
+                new_item.label = item.props['label']
         elif isinstance(item, Species):
             new_item = item
         else:
