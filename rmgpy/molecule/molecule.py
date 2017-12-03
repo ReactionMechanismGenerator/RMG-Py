@@ -923,6 +923,7 @@ class Molecule(Graph):
         g = Graph.copy(self, deep)
         other = Molecule(g.vertices)
         other.multiplicity = self.multiplicity
+        other.props = self.props
         return other
 
     def merge(self, other):
