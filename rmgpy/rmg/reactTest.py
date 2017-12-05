@@ -37,9 +37,10 @@ from rmgpy.data.kinetics import TemplateReaction
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.molecule import Molecule
 from rmgpy.reaction import Reaction
+from rmgpy.species import Species
 
 from rmgpy.rmg.main import RMG
-from rmgpy.rmg.react import *
+from rmgpy.rmg.react import react, reactAll, deflate, deflateReaction
 
 ###################################################
 
@@ -65,33 +66,6 @@ class TestReact(unittest.TestCase):
                                        kineticsFamilies=[TESTFAMILY],
                                        reactionLibraries=[]
                                        )
-
-    def testReactMolecules(self):
-        """
-        Test that reaction generation for Molecule objects works.
-        """
-        
-        moleculeTuples = [(Molecule(SMILES='CC'), -1), (Molecule(SMILES='[CH3]'), -1)]
-
-        reactionList = reactMolecules(moleculeTuples)
-        
-        self.assertIsNotNone(reactionList)
-        self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in reactionList]))
-
-    def test_labelListofSpecies(self):
-        """
-        Ensure labelListofSpecies modifies atomlabels
-        """
-        from rmgpy.rmg.react import _labelListOfSpecies
-        s1 = Species().fromSMILES('CCC')
-        s2 = Species().fromSMILES('C=C[CH]C')
-        self.assertEqual(s2.molecule[0].atoms[0].id, -1)
-        
-        _labelListOfSpecies([s1, s2])
-        # checks atom id
-        self.assertNotEqual(s2.molecule[0].atoms[0].id, -1)
-        # checks second resonance structure id
-        self.assertNotEqual(s2.molecule[1].atoms[0].id, -1)
 
     def testReact(self):
         """
