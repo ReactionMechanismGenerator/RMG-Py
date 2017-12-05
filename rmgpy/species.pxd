@@ -53,7 +53,7 @@ cdef class Species:
     cdef public bint isSolvent
     cdef public int creationIteration
 
-    cpdef generate_resonance_structures(self,bint keep_isomorphic=?)
+    cpdef generate_resonance_structures(self, bint keep_isomorphic=?, bint filter_structures=?)
     
     cpdef bint isIsomorphic(self, other, bint generate_res=?) except -2
 
