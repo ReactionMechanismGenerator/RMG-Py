@@ -128,6 +128,7 @@ cdef class Molecule(Graph):
     cdef public bint implicitHydrogens
     cdef public float symmetryNumber
     cdef public int multiplicity
+    cdef public bint reactive
     cdef public object rdMol
     cdef public int rdMolConfId
     cdef str _fingerprint
