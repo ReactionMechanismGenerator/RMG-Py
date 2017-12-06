@@ -43,6 +43,7 @@ from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStruct
 from rmgpy.reaction import Reaction
 from rmgpy.kinetics import Arrhenius
 from rmgpy.molecule import Bond, GroupBond, Group, Molecule
+from rmgpy.molecule.resonance import generate_aromatic_resonance_structures
 from rmgpy.species import Species
 
 from .common import saveEntry, ensure_species, find_degenerate_reactions, generate_molecule_combos
@@ -1694,8 +1695,16 @@ class KineticsFamily(Database):
             rxnList = []
             for reaction in rxnList0:
             
-                products0 = reaction.products if forward else reaction.reactants
-                    
+                products0 = reaction.products[:] if forward else reaction.reactants[:]
+
+                # For aromatics, generate aromatic resonance structures to accurately identify isomorphic species
+                if prod_resonance:
+                    for i, product in enumerate(products0):
+                        if product.isCyclic:
+                            aromaticStructs = generate_aromatic_resonance_structures(product)
+                            if aromaticStructs:
+                                products0[i] = aromaticStructs[0]
+
                 # Skip reactions that don't match the given products
                 match = False
 
