@@ -468,7 +468,8 @@ class CoreEdgeReactionModel:
         # Determine the proper species objects for all reactants and products
         reactants = [self.makeNewSpecies(reactant)[0] for reactant in forward.reactants]
         products  = [self.makeNewSpecies(product)[0]  for product  in forward.products ]
-        if forward.specificCollider is not None: forward.specificCollider = self.makeNewSpecies(forward.specificCollider)[0]
+        if forward.specificCollider is not None:
+            forward.specificCollider = self.makeNewSpecies(forward.specificCollider)[0]
 
         if forward.pairs is not None:
             for pairIndex in range(len(forward.pairs)):
@@ -1930,7 +1931,8 @@ def areIdenticalSpeciesReferences(rxn1, rxn2):
     Checks if the references of the reactants and products of the two reactions
     are identical, in either direction.
     """
-
-    return any([rxn1.reactants == rxn2.reactants and rxn1.products == rxn2.products, \
-            rxn1.reactants == rxn2.products and rxn1.products == rxn2.reactants
-            ])
+    identical_same_direction = rxn1.reactants == rxn2.reactants and rxn1.products == rxn2.products
+    identical_opposite_directions = rxn1.reactants == rxn2.products and rxn1.products == rxn2.reactants
+    identical_collider = rxn1.specificCollider == rxn2.specificCollider
+    
+    return (identical_same_direction or identical_opposite_directions) and identical_collider
