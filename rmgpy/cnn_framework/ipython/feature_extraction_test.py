@@ -2,7 +2,7 @@ import numpy as np
 from feature_extraction import *
 import unittest
 from rmgpy.molecule.molecule import Molecule
-from rmgpy.molecule.resonance import generateAromaticResonanceStructures
+from rmgpy.molecule.resonance import generate_aromatic_resonance_structures
 
 
 class Test_MolecularFeatureExtractor(unittest.TestCase):
@@ -125,7 +125,7 @@ class Test_MolecularFeatureExtractor(unittest.TestCase):
 		self.assertEqual(benzene_count0, 0)
 
 		mol1 = Molecule().fromSMILES('c1ccccc1CC')
-		mol_aro = generateAromaticResonanceStructures(mol1)[0]
+		mol_aro = generate_aromatic_resonance_structures(mol1)[0]
 		benzene_count1 = self.feature_extractor.get_benzene_ring_count(mol_aro)
 
 		self.assertEqual(benzene_count1, 1)
