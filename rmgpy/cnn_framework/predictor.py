@@ -42,7 +42,9 @@ class Predictor(object):
 	def kfcv_train(self, folds, lr_func, save_model_path):
 
 		# prepare data for training
-		(X, y) = get_data_from_db('sdata134k', 'polycyclic_ff_table')
+		(X, y) = get_data_from_db('sdata134k', 'polycyclic_ff_table',
+									self.add_extra_atom_attribute,
+									self.add_extra_bond_attribute)
 		(folded_Xs, folded_ys) = prepare_folded_data(X, y, folds)
 
 		losses = []
