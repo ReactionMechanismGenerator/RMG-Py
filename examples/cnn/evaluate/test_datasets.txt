@@ -1,0 +1,17 @@
+rmg.sdata134k.small_cyclic_table_test
+
+rmg.sdata134k.large_linear_polycyclic_table_test
+
+rmg.sdata134k.large_fused_polycyclic_table_test
+
+rmg.sdata134k.small_O_only_cyclic_table_test
+
+rmg.sdata134k.large_linear_O_only_polycyclic_table_test
+
+rmg.sdata134k.large_fused_O_only_polycyclic_table_test
+
+rmg.sdata134k.zb_bicyclics_195_table_test
+
+rmg.sdata134k.kh_tricyclic_table_test
+
+rmg.sdata134k.N_cyclics_table_test
