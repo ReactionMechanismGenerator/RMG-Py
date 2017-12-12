@@ -5,39 +5,6 @@ from rmgpy.molecule.molecule import Molecule
 from .molecule_tensor import get_molecule_tensor
 from pymongo import MongoClient
 
-def get_HC_polycyclics_data_from_db(db_name, collection_name):
-
-	# connect to db and query
-	client = MongoClient('localhost', 27017)
-	db =  getattr(client, db_name)
-	collection = getattr(db, collection_name)
-	db_cursor = collection.find()
-
-	# collect data
-	logging.info('Collecting polycyclic data...')
-	X = []
-	y = []
-	for db_mol in db_cursor:
-		smile = str(db_mol["SMILES_output"])
-		try:
-			atom_list = db_mol['atom_list']
-		except KeyError:
-			mol = Molecule().fromSMILES(smile)
-			atom_list = [a.element.symbol for a in mol.atoms]
-		
-		if 'N' not in atom_list and 'O' not in atom_list and 'F' not in atom_list:
-			mol = Molecule().fromSMILES(smile)
-			monorings, polyrings = mol.getDisparateRings()
-			if len(polyrings)>0:
-			    mol_tensor = get_molecule_tensor(mol)
-			    hf298_qm = float(db_mol["Hf298"])
-			    X.append(mol_tensor)
-			    y.append(hf298_qm)
-
-	logging.info('Done collecting data: {0} points...'.format(len(X)))
-	
-	return (X, y)
-
 def get_data_from_db(db_name, collection_name):
 
 	# connect to db and query
