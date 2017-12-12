@@ -16,6 +16,26 @@ def get_host_info(host):
 
 	return host_list[host]['host_connection_url'], host_list[host]['port']
 
+def get_db_mols(host, db_name, collection_name):
+
+	# connect to db and query
+	host_connection_url, port = get_host_info(host)
+	client = MongoClient(host_connection_url, port)
+	db =  getattr(client, db_name)
+	collection = getattr(db, collection_name)
+	db_cursor = collection.find()
+
+	# collect data
+	logging.info('Collecting data: {0}.{1}...'.format(db_name, collection_name))
+	db_mols = []
+	for db_mol in db_cursor:
+		db_mols.append(db_mol)
+
+	logging.info('Done collecting data: {0} points...'.format(len(db_mols)))
+	
+	return db_mols
+
+
 def get_data_from_db(host, db_name, collection_name, 
 					add_extra_atom_attribute=True, 
 					add_extra_bond_attribute=True,
