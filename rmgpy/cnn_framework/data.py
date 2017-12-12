@@ -5,7 +5,8 @@ from rmgpy.molecule.molecule import Molecule
 from .molecule_tensor import get_molecule_tensor
 from pymongo import MongoClient
 
-def get_data_from_db(db_name, collection_name):
+def get_data_from_db(db_name, collection_name, 
+					add_extra_atom_attribute=True, add_extra_bond_attribute=True):
 
 	# connect to db and query
 	client = MongoClient('mongodb://user:user@rmg.mit.edu/admin', 27018)
@@ -20,7 +21,8 @@ def get_data_from_db(db_name, collection_name):
 	for db_mol in db_cursor:
 		smile = str(db_mol["SMILES_input"])
 		mol = Molecule().fromSMILES(smile)
-		mol_tensor = get_molecule_tensor(mol)
+		mol_tensor = get_molecule_tensor(mol, add_extra_atom_attribute, 
+										 add_extra_bond_attribute)
 		hf298_qm = float(db_mol["Hf298"])
 		X.append(mol_tensor)
 		y.append(hf298_qm)
