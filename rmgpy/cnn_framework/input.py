@@ -8,7 +8,7 @@ predictor = None
 
 def predictor_model(embedding_size=512, attribute_vector_size=None, depth=2, 
                 add_extra_atom_attribute=True, add_extra_bond_attribute=True,
-                scale_output=0.05, padding=False, 
+                scale_output=0.05, padding=False, padding_final_size=20,
                 hidden=0, hidden_activation='tanh',
                 output_activation='linear', output_size=1, 
                 lr=0.01, optimizer='adam', loss='mse'):
@@ -26,6 +26,8 @@ def predictor_model(embedding_size=512, attribute_vector_size=None, depth=2,
     predictor.model = model
     predictor.add_extra_atom_attribute = add_extra_atom_attribute
     predictor.add_extra_bond_attribute = add_extra_bond_attribute
+    predictor.padding = padding
+    predictor.padding_final_size = padding_final_size
 
 def read_input_file(path, predictor0):
 

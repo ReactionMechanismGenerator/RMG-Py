@@ -2,11 +2,14 @@
 import logging
 import numpy as np
 from rmgpy.molecule.molecule import Molecule
-from .molecule_tensor import get_molecule_tensor
+from .molecule_tensor import get_molecule_tensor, pad_molecule_tensor
 from pymongo import MongoClient
 
 def get_data_from_db(db_name, collection_name, 
-					add_extra_atom_attribute=True, add_extra_bond_attribute=True):
+					add_extra_atom_attribute=True, 
+					add_extra_bond_attribute=True,
+					padding=True,
+					padding_final_size=20):
 
 	# connect to db and query
 	client = MongoClient('mongodb://user:user@rmg.mit.edu/admin', 27018)
@@ -18,27 +21,45 @@ def get_data_from_db(db_name, collection_name,
 	logging.info('Collecting polycyclic data: {0}.{1}...'.format(db_name, collection_name))
 	X = []
 	y = []
+	db_mols = []
 	for db_mol in db_cursor:
+		db_mols.append(db_mol)
+
+	logging.info('Done collecting data: {0} points...'.format(len(db_mols)))
+
+	logging.info('Generating molecular tensor data...')
+
+	for db_mol in db_mols:
 		smile = str(db_mol["SMILES_input"])
 		mol = Molecule().fromSMILES(smile)
 		mol_tensor = get_molecule_tensor(mol, add_extra_atom_attribute, 
 										 add_extra_bond_attribute)
+		if padding:
+			mol_tensor = pad_molecule_tensor(mol_tensor, padding_final_size)
 		hf298_qm = float(db_mol["Hf298"])
 		X.append(mol_tensor)
 		y.append(hf298_qm)
 
-	logging.info('Done collecting data: {0} points...'.format(len(X)))
-	
+	logging.info('Done: generated {0} tensors with padding={1}'.format(len(X), padding))
+
 	return (X, y)
 
-def prepare_folded_data_from_multiple_datasets(datasets, folds, add_extra_atom_attribute, 
-												add_extra_bond_attribute):
+def prepare_folded_data_from_multiple_datasets(datasets, 
+												folds, 
+												add_extra_atom_attribute, 
+												add_extra_bond_attribute,
+												padding=True,
+												padding_final_size=20):
 
 	folded_datasets = []
 	test_data_datasets = []
 	for db, table in datasets:
-		(X, y) = get_data_from_db(db, table, add_extra_atom_attribute, \
-									add_extra_bond_attribute)
+		(X, y) = get_data_from_db(db, 
+								table, 
+								add_extra_atom_attribute, 
+								add_extra_bond_attribute,
+								padding,
+								padding_final_size)
 
 		(X_test, y_test, X_train_and_val, y_train_and_val) = split_tst_from_train_and_val(X, y, shuffle_seed=0)
 		test_data_datasets.append((X_test, y_test))
