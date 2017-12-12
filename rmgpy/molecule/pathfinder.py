@@ -240,13 +240,12 @@ def compute_atom_distance(atom_indices, mol):
     return distances  
 
 
-def findAllDelocalizationPaths(atom1):
+def find_allyl_delocalization_paths(atom1):
     """
     Find all the delocalization paths allyl to the radical center indicated
     by `atom1`. Used to generate resonance isomers.
     """
-    cython.declare(paths=list)
-    cython.declare(atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
+    cython.declare(paths=list, atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
     
     # No paths if atom1 is not a radical
     if atom1.radicalElectrons <= 0:
@@ -256,67 +255,203 @@ def findAllDelocalizationPaths(atom1):
     paths = []
     for atom2, bond12 in atom1.edges.items():
         # Vinyl bond must be capable of gaining an order
-        if (bond12.isSingle() or bond12.isDouble()) and (atom1.radicalElectrons in [1,2,3]):
+        if (bond12.isSingle() or bond12.isDouble()) and atom1.radicalElectrons:
             for atom3, bond23 in atom2.edges.items():
                 # Allyl bond must be capable of losing an order without breaking
                 if atom1 is not atom3 and (bond23.isDouble() or bond23.isTriple()):
                     paths.append([atom1, atom2, atom3, bond12, bond23])
     return paths
 
-def findAllDelocalizationPathsLonePairRadical(atom1):
+
+def find_lone_pair_radical_delocalization_paths(atom1):
     """
     Find all the delocalization paths of lone electron pairs next to the radical center indicated
-    by `atom1`. Used to generate resonance isomers in adjacent N and O as in NO2.
+    by `atom1`. Used to generate resonance isomers in adjacent N/O/S atoms.
+    Two adjacent O atoms are not allowed since (a) currently RMG has no good thermo/kinetics for R[:O+.][:::O-] which
+    could have been generated as a resonance structure of R[::O][::O.].
+    The radical site (atom1) could be either:
+    - `N u1 p0`, eg O=[N.+][:::O-]
+    - `N u1 p1`, eg R[:NH][:NH.]
+    - `O u1 p1`, eg [:O.+]=[::N-]; not allowed when adjacent to another O atom
+    - `O u1 p2`, eg O=N[::O.]; not allowed when adjacent to another O atom
+    - `S u1 p0`, eg O[S.+]([O-])=O
+    - `S u1 p1`, eg O[:S.+][O-]
+    - `S u1 p2`, eg O=N[::S.]
+    - any of the above with more than 1 radical where possible
+    The non-radical site (atom2) could respectively be:
+    - `N u0 p1`
+    - `N u0 p2`
+    - `O u0 p2`
+    - `O u0 p3`
+    - `S u0 p1`
+    - `S u0 p2`
+    - `S u0 p3`
+    (where ':' denotes a lone pair, '.' denotes a radical, '-' not in [] denotes a single bond, '-'/'+' denote charge)
+    The bond between the sites does not have to be single, e.g.: [:O.+]=[::N-] <=> [::O]=[:N.]
     """
-    cython.declare(paths=list)
-    cython.declare(atom2=Atom, bond12=Bond)
+    cython.declare(paths=list, atom2=Atom, bond12=Bond)
 
     paths = []
-    if atom1.isNitrogen() and atom1.radicalElectrons >= 1 and atom1.lonePairs == 0:
-        for atom2, bond12 in atom1.edges.items():
-            if atom2.isOxygen() and atom2.radicalElectrons == 0 and atom2.lonePairs == 3 and bond12.isSingle():
-                paths.append([atom1, atom2])
-    elif atom1.isOxygen() and atom1.radicalElectrons >= 1 and atom1.lonePairs == 2:
-        for atom2, bond12 in atom1.edges.items():
-            if atom2.isNitrogen() and atom2.radicalElectrons == 0 and atom2.lonePairs == 1 and bond12.isSingle():
-                paths.append([atom1, atom2])
+    if atom1.isNOS():
+        if ((atom1.isNitrogen() and atom1.radicalElectrons >= 1 and atom1.lonePairs in [0, 1])
+                or (atom1.isOxygen() and atom1.radicalElectrons >= 1 and atom1.lonePairs in [1, 2])
+                or (atom1.isSulfur() and atom1.radicalElectrons >= 1 and atom1.lonePairs in [0, 1, 2])):
+            for atom2 in atom1.edges.keys():
+                if ((atom2.isNitrogen() and atom2.lonePairs in [1, 2])
+                        or (atom2.isOxygen() and atom2.lonePairs in [2, 3] and not atom1.isOxygen())  #avoid RO[::O.] <-> R[:O.+][:::O-], see RMG-Py #1223
+                        or (atom2.isSulfur() and atom2.lonePairs in [1, 2, 3])):
+                    paths.append([atom1, atom2])
     return paths
 
-def findAllDelocalizationPathsN5dd_N5ts(atom1):
+
+def find_lone_pair_multiple_bond_delocalization_paths(atom1):
     """
-    Find all the resonance structures of nitrogen atoms with two double bonds (N5dd)
-    and nitrogen atoms with one triple and one single bond (N5ts)
+    Find all the delocalization paths of a N/O/S atom1 which either:
+    - Has a lonePair and is bonded by a single/double bond (e.g., [::NH-]-[CH2+], [::N-]=[CH+]) -- direction 1
+    - Can obtain a lonePair and is bonded by a double/triple bond (e.g., [:NH]=[CH2], [:N]#[CH]) -- direction 2
+    Giving the following resonance transitions, for example:
+    - [::NH-]-[CH2+] <=> [:NH]=[CH2]
+    - [:N]#[CH] <=> [::N-]=[CH+]
+    - N#[N+][O-] <=> <=> [N-]=[N+]=O
+    - C[N+](=O)[NH-] <=> <=> C[N+]([O-])=[NH]
+    - other examples: S#N, N#[S], O=S([O])=O, [NH]=[N+]=[N-]
+    Direction "1" is the direction <increasing> the bond order as in [::NH-]-[CH2+] <=> [:NH]=[CH2]
+    Direction "2" is the direction <decreasing> the bond order as in [:NH]=[CH2] <=> [::NH-]-[CH2+]
+    (where ':' denotes a lone pair, '.' denotes a radical, '-' not in [] denotes a single bond, '-'/'+' denote charge)
+    (In direction 1 atom1 <losses> a lone pair, in direction 2 atom1 <gains> a lone pair)
     """
-    cython.declare(paths=list)
-    cython.declare(atom2=Atom, bond12=Bond)
-    
-    # No paths if atom1 is not nitrogen
-    if not (atom1.isNitrogen()):
-        return []
-    
-    # Find all delocalization paths
+    cython.declare(paths=list, atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
+
     paths = []
-    index_atom_2 = 0
-    index_atom_3 = 0
-    
+    if atom1.isNOS():
+        for atom2, bond12 in atom1.edges.items():
+            if atom2.isNonHydrogen():  # don't bother with hydrogen atoms.
+                # Find paths in the direction <increasing> the bond order,
+                # atom1 must posses at least one lone pair to loose it
+                if ((bond12.isSingle() or bond12.isDouble())
+                        and is_NOS_able_to_lose_lone_pair(atom1)):
+                    paths.append([atom1, atom2, bond12, 1])  # direction = 1
+                # Find paths in the direction <decreasing> the bond order,
+                # atom1 gains a lone pair, hence cannot already have more than two lone pairs
+                if ((bond12.isDouble() or bond12.isTriple())
+                        and is_NOS_able_to_gain_lone_pair(atom1)):
+                    paths.append([atom1, atom2, bond12, 2])  # direction = 2
+    return paths
+
+
+def find_lone_pair_radical_multiple_bond_delocalization_paths(atom1):
+    """
+    Find all the delocalization paths of a N/O/S atom1 which either:
+    - Has a lonePair and is bonded by a single/double bond to a radical atom (e.g., [::N]-[.CH2])
+    - Can obtain a lonePair, has a radical, and is bonded by a double/triple bond (e.g., [:N.]=[CH2])
+    Giving the following resonance transitions, for example:
+    - [::N]-[.CH2] <=> [:N.]=[CH2]
+    - O[:S](=O)[::O.] <=> O[S.](=O)=[::O]
+    Direction "1" is the direction <increasing> the bond order as in [::N]-[.CH2] <=> [:N.]=[CH2]
+    Direction "2" is the direction <decreasing> the bond order as in [:N.]=[CH2] <=> [::N]-[.CH2]
+    (where ':' denotes a lone pair, '.' denotes a radical, '-' not in [] denotes a single bond, '-'/'+' denote charge)
+    (In direction 1 atom1 <losses> a lone pair, gains a radical, and atom2 looses a radical.
+    In direction 2 atom1 <gains> a lone pair, looses a radical, and atom2 gains a radical)
+    """
+    cython.declare(paths=list, atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
+
+    paths = []
+    if atom1.isNOS():
+        for atom2, bond12 in atom1.edges.items():
+            # Find paths in the direction <increasing> the bond order
+            # atom1 must posses at least one lone pair to loose it, atom2 must be a radical
+            if (atom2.radicalElectrons and (bond12.isSingle() or bond12.isDouble())
+                    and is_NOS_able_to_lose_lone_pair(atom1)):
+                paths.append([atom1, atom2, bond12, 1])  # direction = 1
+            # Find paths in the direction <decreasing> the bond order
+            # atom1 gains a lone pair, hence cannot already have more than two lone pairs, and is also a radical
+            if (atom1.radicalElectrons and (bond12.isDouble() or bond12.isTriple())
+                    and is_NOS_able_to_gain_lone_pair(atom1)):
+                paths.append([atom1, atom2, bond12, 2])  # direction = 2
+    return paths
+
+
+def find_N5ddc_N5tc_delocalization_paths(atom1):
+    """
+    Find all the resonance structures of nitrogen atoms with two double bonds (atomType N5ddc)
+    and nitrogen atoms with one triple and one single bond (atomType N5tc).
+    Examples:
+    - N2O (N#[N+][O-] <-> [N-]=[N+]=O)
+    - Azide (N#[N+][NH-] <-> [N-]=[N+]=N <-> [N-2][N+]#[NH+])
+    - N#N group on sulfur (O[S-](O)[N+]#N <-> OS(O)=[N+]=[N-] <-> O[S+](O)#[N+][N-2])
+    In this transition atom1 is the middle N+ (N5ddc or N5tc)
+    A "if atom.atomType.label in ['N5ddc','N5tc']" check should be done before calling this function
+    """
+    cython.declare(paths=list, atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
+
+    paths = []
+
     for atom2, bond12 in atom1.edges.items():
-        index_atom_2 = index_atom_2 + 1
-        # Only double bonds are considered
-        if bond12.isDouble() and not atom2.isCarbon():
-            for atom3, bond13 in atom1.edges.items():
-                index_atom_3 = index_atom_3 + 1
-                # Only double bonds are considered, at the moment we only consider non-radical nitrogen and oxygen atoms
-                if (bond13.isDouble() and atom3.radicalElectrons == 0 and atom3.lonePairs > 0 and not atom3.isOxygen()
-                        and not atom3.isCarbon() and (index_atom_2 != index_atom_3)):
-                    paths.append([atom1, atom2, atom3, bond12, bond13, 1])
-    
+        if atom2.isNOS():
+            for atom3, bond23 in atom1.edges.items():
+                if atom2 is not atom3:
+                    # Find this transitions from the N5tc side.
+                    # atom2 is single-bonded to atom1 and looses a lone pair
+                    # atom3 is triple-bonded to atom1 and gains a lone pair (atom3 cannot be oxygen)
+                    # bond12 is incremented, bond23 is decremented
+                    if (((atom2.isNitrogen() and atom2.lonePairs in [2, 3])
+                            or (atom2.isOxygen() and atom2.lonePairs == 3)
+                            or (atom2.isSulfur() and atom2.lonePairs in [1, 2, 3]))
+                            and ((atom3.isNitrogen() or atom3.isSulfur()) and atom3.lonePairs in [0, 1])
+                            and bond12.isSingle() and bond23.isTriple()):
+                        paths.append([atom1, atom2, atom3, bond12, bond23])
+                    # Find this transitions from the N5ddc side.
+                    # atom2 looses a lone pair and ends up with a triple bond to atom1 (atom2 cannot be oxygen)
+                    # atom3 gains a lone pair and ends up with a single bond to atom1
+                    # bond12 is incremented, bond23 is decremented (same actions as above under these definitions)
+                    elif (((atom2.isNitrogen() or atom2.isSulfur()) and atom2.lonePairs in [1, 2])
+                            and ((atom3.isNitrogen() and atom3.lonePairs in [1, 2])
+                            or (atom3.isOxygen() and atom3.lonePairs == 2)
+                            or (atom3.isSulfur() and atom3.lonePairs in [0, 1, 2]))
+                            and bond12.isDouble() and bond23.isDouble()):
+                        paths.append([atom1, atom2, atom3, bond12, bond23])
+    return paths
+
+
+def find_N5dc_delocalization_paths(atom1):
+    """
+    Find all the resonance structures of an N5dc nitrogen atom with a single bond to a radical N/O/S site, another
+    single bond to a negatively charged N/O/S site, and one double bond (not participating in this transformation)
+    Example:
+    - N=[N+]([O])([O-]) <=> N=[N+]([O-])([O]), these structures are isomorphic but not identical, the transition is
+    important for correct degeneracy calculations
+    In this transition atom1 is the middle N+ (N5dc), atom2 is the radical site, and atom3 is negatively charged
+    A "if atom1.atomType.label == 'N5dc'" check should be done before calling this function
+    """
+    cython.declare(paths=list, atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
+
+    paths = []
+
     for atom2, bond12 in atom1.edges.items():
-        # Only triple bonds are considered
-        if bond12.isTriple() and not atom2.isCarbon():
-            for atom3, bond13 in atom1.edges.items():
-                # Only single bonds are considered, at the moment we only consider negatively charged nitrogen and oxygen
-                if (bond13.isSingle() and ((atom3.isNitrogen() and atom3.lonePairs >= 2) or (atom3.isOxygen()
-                            and atom3.lonePairs >= 3))):
-                    paths.append([atom1, atom2, atom3, bond12, bond13, 2])
-    
-    return paths    
+        if atom2.radicalElectrons and bond12.isSingle() and not atom2.charge and is_NOS_able_to_gain_lone_pair(atom2):
+            for atom3, bond23 in atom1.edges.items():
+                if (atom2 is not atom3 and bond23.isSingle() and atom3.charge < 0
+                        and is_NOS_able_to_lose_lone_pair(atom3)):
+                    paths.append([atom2, atom3])
+                    return paths  # there could only be one such path per atom1, return if found
+    return paths
+
+
+def is_NOS_able_to_gain_lone_pair(atom):
+    """
+    Helper function
+    Returns True if atom is N/O/S and is able to <gain> an additional lone pair, False otherwise
+    We don't allow O to remain with no lone pairs
+    """
+    return (((atom.isNitrogen() or atom.isSulfur()) and atom.lonePairs in [0, 1, 2])
+                        or (atom.isOxygen() and atom.lonePairs in [1, 2]))
+
+
+def is_NOS_able_to_lose_lone_pair(atom):
+    """
+    Helper function
+    Returns True if atom is N/O/S and is able to <loose> a lone pair, False otherwise
+    We don't allow O to remain with no lone pairs
+    """
+    return (((atom.isNitrogen() or atom.isSulfur()) and atom.lonePairs in [1, 2, 3])
+                        or (atom.isOxygen() and atom.lonePairs in [2, 3]))
