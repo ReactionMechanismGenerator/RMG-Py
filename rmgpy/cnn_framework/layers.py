@@ -75,59 +75,45 @@ class MoleculeConv(Layer):
 		(output, updates) = theano.scan(lambda x_one: self.get_output_singlesample(x_one), sequences = x)
 		return output
 
-	def get_output_singlesample(self, original_graph):
-		'''For a 3D tensor, get the output. Avoids the need for even more complicated vectorization'''
-		# Check padding
+	def get_output_singlesample(self, M):
+		"""
+		Given a molecule tensor M, calcualte its fingerprint
+		"""
+
+		# if incoming tensor M has padding 
+		# remove padding first 
 		if self.padding:
-			rowsum = original_graph.sum(axis = 0) # add across
-			trim = rowsum[:, -1] # last feature == bond flag
+			rowsum = M.sum(axis = 0) 
+			trim = rowsum[:, -1] 
 			trim_to = T.eq(trim, 0).nonzero()[0][0] # first index with no bonds
-			original_graph = original_graph[:trim_to, :trim_to, :] # reduced graph
+			M = M[:trim_to, :trim_to, :] # reduced graph
 
-		# Get attribute values for r=1
-		# where attributes is a 2D tensor and attributes[#, :] is the vector of
-		# concatenated node and edge attributes. In the first layer (depth r=1), the 
-		# edge attribute section is initialized to zeros. After increasing depth, howevevr,
-		# this part of the vector will become non-zero.
-
-		# The first attributes matrix is just graph_tensor[i, i, :], but we can't use that 
-		# kind of advanced indexing
-		# Want to extract tensor diagonal as matrix, but can't do that directly...
-		# Want to loop over third dimension, so need to dimshuffle
-		(attributes, updates) = theano.scan(lambda x: x.diagonal(), sequences = original_graph.dimshuffle((2, 0, 1)))
-		attributes.name = 'attributes'
+		# dimshuffle to get diagonal items to
+		# form atom matrix A
+		(A_tmp, updates) = theano.scan(lambda x: x.diagonal(), sequences = M[:,:,:-1].dimshuffle((2, 0, 1)))
 		# Now the attributes is (N_features x N_atom), so we need to transpose
-		attributes = attributes.T
-		attributes.name = 'attributes post-transpose'
-
-		# get atom matrix: N_atom * (N_features-1)
-		A = attributes[:, :-1]
+		A = A_tmp.T
 
 		# get connectivity matrix: N_atom * N_atom
-		C = original_graph[:, :, -1] + T.identity_like(original_graph[:, :, -1])
+		C = M[:, :, -1] + T.identity_like(M[:, :, -1])
 
 		# get bond tensor: N_atom * N_atom * (N_features-1) 
-		B_tmp = original_graph[:, :, :-1] - A
-
-		coeff = K.concatenate([original_graph[:, :, -1:]]*self.inner_dim, axis = 2)
-
+		B_tmp = M[:, :, :-1] - A
+		coeff = K.concatenate([M[:, :, -1:]]*self.inner_dim, axis = 2)
 		B = merge([B_tmp, coeff], mode="mul")
-
-		A_new = A
 
 		# Get initial fingerprint
 		presum_fp = self.attributes_to_fp_contribution(A, 0)
 		fp = K.sum(presum_fp, axis = 0) # sum across atom contributions
-		fp.name = 'initial fingerprint'
 
-		# Iterate through different depths, updating attributes each time
+		# Iterate through different depths, updating atom matrix each time
+		A_new = A
 		for depth in range(self.depth):
 			A_new = self.activation_inner(K.dot(K.dot(C, A_new) + K.sum(B, axis=1), 
 												self.W_inner[depth+1, :, :]) 
 										+ self.b_inner[depth+1, 0, :])
 
 			presum_fp_new = self.attributes_to_fp_contribution(A_new, depth + 1)
-			presum_fp_new.name = 'presum_fp_new contribution'
 			fp = fp + K.sum(presum_fp_new, axis = 0) 
 
 		return fp
