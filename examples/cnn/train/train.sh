@@ -12,5 +12,6 @@ DATA_FILE='datasets.txt'
 TRAIN_MODE='full_train'
 BATCH_SIZE=1
 source activate rmg_env
+export KERAS_BACKEND=theano
 python $RMGPy/train_cnn.py -i $INPUT -d ${DATA_FILE} -t ${TRAIN_MODE} -bs ${BATCH_SIZE}
 source deactivate
