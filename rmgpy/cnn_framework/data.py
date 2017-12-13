@@ -5,14 +5,26 @@ from rmgpy.molecule.molecule import Molecule
 from .molecule_tensor import get_molecule_tensor, pad_molecule_tensor
 from pymongo import MongoClient
 
-def get_data_from_db(db_name, collection_name, 
+def get_host_info(host):
+
+	host_list = {"rmg": 
+					{"host_connection_url": "mongodb://user:user@rmg.mit.edu/admin",
+					"port": 27018},
+				"erebor":
+					{"host_connection_url": "mongodb://user:user@erebor.mit.edu/admin",
+					"port": 27017}}
+
+	return host_list[host]['host_connection_url'], host_list[host]['port']
+
+def get_data_from_db(host, db_name, collection_name, 
 					add_extra_atom_attribute=True, 
 					add_extra_bond_attribute=True,
 					padding=True,
 					padding_final_size=20):
 
 	# connect to db and query
-	client = MongoClient('mongodb://user:user@rmg.mit.edu/admin', 27018)
+	host_connection_url, port = get_host_info(host)
+	client = MongoClient(host_connection_url, port)
 	db =  getattr(client, db_name)
 	collection = getattr(db, collection_name)
 	db_cursor = collection.find()
@@ -55,8 +67,9 @@ def prepare_folded_data_from_multiple_datasets(datasets,
 
 	folded_datasets = []
 	test_data_datasets = []
-	for db, table, testing_ratio in datasets:
-		X, y, _ = get_data_from_db(db, 
+	for host, db, table, testing_ratio in datasets:
+		X, y, _ = get_data_from_db(host,
+								db, 
 								table, 
 								add_extra_atom_attribute, 
 								add_extra_bond_attribute,
@@ -111,13 +124,15 @@ def prepare_full_train_data_from_multiple_datasets(datasets,
 
 	test_data_datasets = []
 	train_datasets = []
-	for db, table, testing_ratio in datasets:
-		(X, y, smis) = get_data_from_db(db, 
-								table, 
-								add_extra_atom_attribute, 
-								add_extra_bond_attribute,
-								padding,
-								padding_final_size)
+	for host, db, table, testing_ratio in datasets:
+		(X, y, smis) = get_data_from_db(host,
+										db, 
+										table, 
+										add_extra_atom_attribute, 
+										add_extra_bond_attribute,
+										padding,
+										padding_final_size)
+
 		logging.info('Splitting dataset with testing ratio of {0}...'.format(testing_ratio))
 		split_data = split_tst_from_train_and_val(X, 
 												y, 
