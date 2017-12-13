@@ -22,7 +22,7 @@ def build_model(embedding_size=512, attribute_vector_size=33, depth=5,
 				lr=0.01, optimizer='adam', loss='mse'):
 
 	"""
-	build generic cnn model that takes molecule tensor and predict output 
+	build generic cnn model that takes molecule tensor and predicts output 
 	with size of output_size.
 	"""
 	
@@ -54,7 +54,6 @@ def build_model(embedding_size=512, attribute_vector_size=33, depth=5,
 		logging.info('Can only handle adam or rmsprop optimizers currently')
 		quit(1)
 
-	# Custom loss to filter out NaN values in multi-task predictions
 	if loss == 'custom':
 		loss = mse_no_NaN
 
@@ -100,8 +99,6 @@ def train_model(model,
 	exec lr_func_string
 
 	# Fit (allows keyboard interrupts in the middle)
-	# Because molecular graph tensors are different sizes based on N_atoms, can only do one at a time
-	# (alternative is to pad with zeros and try to add some masking feature to MoleculeConv)
 	try:
 		loss = []
 		inner_val_loss = []
@@ -200,8 +197,10 @@ def evaluate_mean_tst_loss(model, X_test, y_test):
 	return mean_test_loss
 
 def reset_model(model):
-	'''Given a Keras model consisting only of MoleculeConv, Dense, and Dropout layers,
-	this function will reset the trainable weights to save time for CV tests.'''
+	"""
+	Given a Keras model consisting only of MoleculeConv, Dense, and Dropout layers,
+	this function will reset the trainable weights to save time for CV tests.
+	"""
 
 	for layer in model.layers:
 		# Note: these are custom depending on the layer type
@@ -235,7 +234,8 @@ def reset_model(model):
 	return model
 
 def save_model(model, loss, inner_val_loss, mean_outer_val_loss, mean_test_loss, fpath):
-	'''Saves NN model object and associated information.
+	"""
+	Saves NN model object and associated information.
 
 	inputs:
 		model - a Keras model
@@ -245,7 +245,8 @@ def save_model(model, loss, inner_val_loss, mean_outer_val_loss, mean_test_loss,
 		mean_test_loss - mean loss on test set
 		fpath - root filepath to save everything to (with .json, h5, png, info 
 		config - the configuration dictionary that defined this model 
-		tstamp - current timestamp to log in info file'''
+		tstamp - current timestamp to log in info file
+	"""
 
 	# Dump data
 	with open(fpath + '.json', 'w') as structure_fpath:
@@ -274,8 +275,10 @@ def save_model(model, loss, inner_val_loss, mean_outer_val_loss, mean_test_loss,
 	logging.info('...saved model to {}.[json, h5, png]'.format(fpath))
 
 def save_model_history_manual(loss, val_loss, fpath):
-	''''This function saves the history returned by model.fit to a tab-
-	delimited file, where model is a keras model'''
+	"""
+	This function saves the history returned by model.fit to a tab-
+	delimited file, where model is a keras model
+	"""
 
 	# Open file
 	fid = open(fpath, 'a')
