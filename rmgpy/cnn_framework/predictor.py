@@ -18,22 +18,12 @@ class Predictor(object):
 		self.model = None
 		if input_file:
 			self.input_file = input_file
-		else:
-			self.input_file = os.path.join(os.path.dirname(rmgpy.__file__),
-										'cnn_framework',
-										'data',  
-										'predictor_input.py'
-										)
+			read_input_file(self.input_file, self)
 
 		if datasets_file:
 			self.datasets_file = datasets_file
-		else:
-			self.datasets_file = os.path.join(os.path.dirname(rmgpy.__file__),
-										'cnn_framework',
-										'data',  
-										'datasets.txt'
-										)
-		self.specify_datasets(self.datasets_file)
+			self.specify_datasets(self.datasets_file)
+	
 	def build_model(self):
 		"""
 		This method is intended to provide a way to build default model 
@@ -41,15 +31,14 @@ class Predictor(object):
 
 		self.model = build_model()
 
-	def load_input(self, path=None):
+	def load_input(self, input_file):
 		"""
 		This method is intended to provide a way to build model from an input file
 		"""
+		if input_file:
+			self.input_file = input_file
 		
-		if path is None: 
-			path = self.input_file
-			print path
-		read_input_file(path, self)
+		read_input_file(self.input_file, self)
 
 	def specify_datasets(self, datasets_file_path=None):
 		"""
