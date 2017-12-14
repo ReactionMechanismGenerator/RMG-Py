@@ -28,6 +28,7 @@
 ################################################################################
 import numpy
 import cython
+import logging
 
 from libc.math cimport sqrt, log
 
@@ -303,6 +304,11 @@ cdef class ThermoData(HeatCapacityModel):
             slope = (Cphigh - Cplow) / (Thigh - Tlow)
             intercept = (Cplow * Thigh - Cphigh * Tlow) / (Thigh - Tlow)
             if slope > 0:
+                if CpInf < Cphigh:
+                    logging.warning("Cphigh is above the theoretical CpInf value for ThermoData object\n{0}."
+                    "\nThe thermo for this species is probably wrong! Setting CpInf = Cphigh for Entropy calculation"
+                    "at T = {1} K...".format(self,T))
+                    CpInf = Cphigh
                 T0 = (CpInf - Cphigh) / slope + Thigh
                 if T <= T0:
                     S += slope * (T - Thigh) + intercept * log(T / Thigh)
