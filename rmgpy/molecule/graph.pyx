@@ -673,68 +673,83 @@ cdef class Graph:
     
     cpdef tuple getDisparateRings(self):
         """
-        Return a list of distinct polycyclic and monocyclic rings within the graph.
-        There is some code duplication in this function in order to maximize speed up
-        so as to call `self.getSmallestSetOfSmallestRings()` only once.
+        Get all disjoint monocyclic and polycyclic cycle clusters in the molecule.
+        Takes the RC and recursively merges all cycles which share vertices.
         
-        Returns: monocyclicRingsList, polycyclicRingsList
+        Returns: monocyclic_cycles, polycyclic_cycles
         """
-        
-        cdef set polycyclicCycle
-        cdef Vertex vertex
-        cdef list SSSR, vertices, polycyclicVertices, continuousCycles
-        
-        SSSR = self.getSmallestSetOfSmallestRings()
-        if not SSSR:
+        cdef list rc, cycle_list, cycle_sets, monocyclic_cycles, polycyclic_cycles
+        cdef set cycle_set
+
+        rc = self.getRelevantCycles()
+
+        if not rc:
             return [], []
+
+        # Convert cycles to sets
+        cycle_sets = [set(cycle_list) for cycle_list in rc]
+
+        # Merge connected cycles
+        monocyclic_cycles, polycyclic_cycles = self._merge_cycles(cycle_sets)
+
+        # Convert cycles back to lists
+        monocyclic_cycles = [list(cycle_set) for cycle_set in monocyclic_cycles]
+        polycyclic_cycles = [list(cycle_set) for cycle_set in polycyclic_cycles]
+
+        return monocyclic_cycles, polycyclic_cycles
+
+    cpdef tuple _merge_cycles(self, list cycle_sets):
+        """
+        Recursively merges cycles that share common atoms.
         
-        polycyclicVertices = []
-        if SSSR:            
-            vertices = []
-            for cycle in SSSR:
-                for vertex in cycle:
-                    if vertex not in vertices:
-                        vertices.append(vertex)
-                    else:
-                        if vertex not in polycyclicVertices:
-                            polycyclicVertices.append(vertex)     
-        
-        if not polycyclicVertices:
-            # no polycyclic vertices detected
-            return SSSR, []
-        else: 
-            # polycyclic vertices found, merge cycles together and store them in continuousCycles list.
-            # that have common polycyclic vertices
-            
-            continuousCycles = []
-            polycyclicSSSR = []
-            for vertex in polycyclicVertices:
-                # First check if it is in any existing continuous cycles
-                for cycle in continuousCycles:
-                    if vertex in cycle:
-                        polycyclicCycle = cycle
-                        break
-                else:
-                    # Otherwise create a new cycle
-                    polycyclicCycle = set()
-                    continuousCycles.append(polycyclicCycle)
-                    
-                for cycle in SSSR:
-                    if vertex in cycle:
-                        polycyclicCycle.update(cycle)
-                        if cycle not in polycyclicSSSR:
-                            polycyclicSSSR.append(cycle)
-                            
-            # convert each polycyclic set to a list
-            continuousCycles = [list(cycle) for cycle in continuousCycles]
-            
-            monocyclicCycles = SSSR
-            # remove the polycyclic cycles from the list of SSSR, leaving behind just the monocyclics
-            for cycle in polycyclicSSSR:
-                monocyclicCycles.remove(cycle)
-                    
-            return monocyclicCycles, continuousCycles
-       
+        Returns one list with unmerged cycles and one list with merged cycles.
+        """
+        cdef list unmerged_cycles, merged_cycles, matched, u, m
+        cdef set cycle, m_cycle, u_cycle
+        cdef bint merged, new
+
+        unmerged_cycles = []
+        merged_cycles = []
+
+        # Loop through each cycle
+        for cycle in cycle_sets:
+            merged = False
+            new = False
+
+            # Check if it's attached to an existing merged cycle
+            for m_cycle in merged_cycles:
+                if not m_cycle.isdisjoint(cycle):
+                    m_cycle.update(cycle)
+                    merged = True
+                    # It should only match one merged cycle, so we can break here
+                    break
+            else:
+                # If it doesn't match any existing merged cycles, initiate a new one
+                m_cycle = cycle.copy()
+                new = True
+
+            # Check if the new merged cycle is attached to any of the unmerged cycles
+            matched = []
+            for i, u_cycle in enumerate(unmerged_cycles):
+                if not m_cycle.isdisjoint(u_cycle):
+                    m_cycle.update(u_cycle)
+                    matched.append(i)
+                    merged = True
+            # Remove matched cycles from list of unmerged cycles
+            for i in reversed(matched):
+                del unmerged_cycles[i]
+
+            if merged and new:
+                merged_cycles.append(m_cycle)
+            elif not merged:
+                unmerged_cycles.append(cycle)
+
+        # If any rings were successfully merged, try to merge further
+        if len(merged_cycles) > 1:
+            u, m = self._merge_cycles(merged_cycles)
+            merged_cycles = u + m
+
+        return unmerged_cycles, merged_cycles
        
     cpdef list getAllCycles(self, Vertex startingVertex):
         """

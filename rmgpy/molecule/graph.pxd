@@ -131,6 +131,8 @@ cdef class Graph:
     
     cpdef tuple getDisparateRings(self)
 
+    cpdef tuple _merge_cycles(self, list cycle_sets)
+
     cpdef list getAllCycles(self, Vertex startingVertex)
 
     cpdef list getAllCyclesOfSize(self, int size)
