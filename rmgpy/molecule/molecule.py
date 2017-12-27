@@ -1790,10 +1790,17 @@ class Molecule(Graph):
         Iterate through the atoms in the structure and calculate the net charge
         on the overall molecule.
         """
-        charge = 0
-        for atom in self.vertices:
-            charge += atom.charge
-        return charge
+        return sum([atom.charge for atom in self.vertices])
+
+    def getChargeSpan(self):
+        """
+        Iterate through the atoms in the structure and calculate the charge span
+        on the overall molecule.
+        The charge span is a measure of the number of charge separations in a molecule.
+        """
+        abs_net_charge = abs(self.getNetCharge())
+        sum_of_abs_charges = sum([abs(atom.charge) for atom in self.vertices])
+        return (sum_of_abs_charges - abs_net_charge) / 2
 
     def saturate_unfilled_valence(self, update = True):
         """
