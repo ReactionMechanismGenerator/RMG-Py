@@ -213,6 +213,30 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         self.assertEquals(len(cerm.speciesDict), len(spcs) - 1)    
         self.assertEquals(len(cerm.indexSpeciesDict), len(spcs) - 1)
 
+    def test_append_unreactive_structure(self):
+        """
+        Test that the CoreEdgeReactionModel.makeNewSpecies method correctly appends a non-representative resonance
+        structure to the correct Species containing the representative resonance structures.
+        The non-representative structure should be marked as `.reactive=False`.
+        """
+
+        cerm = CoreEdgeReactionModel()
+
+        spcs = [Species().fromSMILES('CCO'),  # a control species
+                Species().fromSMILES('[N]=O'),
+                Species().fromAdjacencyList("""1 O u1 p2 c0 {2,S}
+                                               2 N u0 p2 c0 {1,S}"""),  # a non-representative structure of '[N]=O'
+                ]
+
+        for spc in spcs:
+            cerm.makeNewSpecies(spc)
+
+        self.assertEquals(len(cerm.speciesDict), 2)
+        self.assertEquals(len(cerm.indexSpeciesDict), 2)
+        self.assertTrue(cerm.indexSpeciesDict[1].molecule[0].reactive)
+        self.assertNotEquals(cerm.indexSpeciesDict[2].molecule[0].reactive,
+                             cerm.indexSpeciesDict[2].molecule[1].reactive)  # only one should be reactive
+
     def testMakeNewReaction(self):
         """
         Test that CoreEdgeReactionModel.makeNewReaction method correctly works.
