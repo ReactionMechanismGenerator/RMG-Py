@@ -288,6 +288,33 @@ class TestGetAtomType(unittest.TestCase):
         self.assertEqual(self.atomType(self.mol7, 0), 'He')
         self.assertEqual(self.atomType(self.mol8, 0), 'Ne')
 
+class TestAtomTypeTree(unittest.TestCase):
+    """
+    Contains unit tests of atomtype tree structure
+    """
+    
+    def setUp(self):
+        self.atomTypes = rmgpy.molecule.atomTypes
+    
+    def testDescendence(self):
+        """
+        test that all atomTypes that could be descendents of each other are
+        """
+        for atm1 in self.atomTypes.itervalues():
+            for atm2 in self.atomTypes.itervalues():
+                if atm1 is atm2:
+                    continue
+                if atm1.isSpecificCaseOf(atm2):
+                    if not atm1 in atm2.specific:
+                        self.fail('atomType {0} should be in the specific attribute of atomType {1}, specific was {2}'.format(atm1.label,atm2.label,atm2.specific))
+                    elif not atm2 in atm1.generic:
+                        self.fail('atomType {0} should be in the generic attribute of atomType {1}, generic was {2}'.format(atm2.label,atm1.label,atm1.generic))
+                elif atm2.isSpecificCaseOf(atm1):
+                    if not atm2 in atm1.specific:
+                        self.fail('atomType {0} should be in the specific attribute of atomType {1}, specific was {2}'.format(atm2.label,atm1.label,atm1.specific))
+                    elif not atm1 in atm2.generic:
+                        self.fail('atomType {0} should be in the generic attribute of atomType {1}, generic was {2}'.format(atm1.label,atm2.label,atm2.generic))
+                    
 ################################################################################
 
 if __name__ == '__main__':
