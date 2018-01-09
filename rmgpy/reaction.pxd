@@ -105,4 +105,6 @@ cdef class Reaction:
     
     cpdef copy(self)
 
+    cpdef ensure_species(self)
+
 cpdef bint _isomorphicSpeciesList(list list1, list list2, bint checkIdentical=?, bint checkOnlyLabel=?)

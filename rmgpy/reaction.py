@@ -1049,6 +1049,48 @@ class Reaction:
         
         return other
 
+    def ensure_species(self):
+        """
+        Ensure the reaction contains species objects in its reactant and product
+        attributes. If the reaction is found to hold molecule objects, it
+        modifies the reactant, product and pairs to hold
+        Species objects.
+
+        Generates resonance structures for reaction products.
+        """
+        from rmgpy.data.kinetics.common import ensure_species
+        # if already species' objects, return none
+        if isinstance(self.reactants[0], Species):
+            return None
+        # obtain species with all resonance isomers
+        if self.isForward:
+            self.reactants = ensure_species(self.reactants, resonance=False)
+            self.products = ensure_species(self.products, resonance=True, keepIsomorphic=True)
+        else:
+            self.reactants = ensure_species(self.reactants, resonance=True, keepIsomorphic=True)
+            self.products = ensure_species(self.products, resonance=False)
+
+        # convert reaction.pairs object to species
+        if self.pairs:
+            new_pairs = []
+            for reactant, product in self.pairs:
+                new_pair = []
+                for reactant0 in self.reactants:
+                    if reactant0.isIsomorphic(reactant):
+                        new_pair.append(reactant0)
+                        break
+                for product0 in self.products:
+                    if product0.isIsomorphic(product):
+                        new_pair.append(product0)
+                        break
+                new_pairs.append(new_pair)
+            self.pairs = new_pairs
+
+        try:
+            self.reverse.ensure_species()
+        except AttributeError:
+            pass
+
 def _isomorphicSpeciesList(list1, list2, checkIdentical=False, checkOnlyLabel = False):
     """
     This method compares whether lists of species or molecules are isomorphic
