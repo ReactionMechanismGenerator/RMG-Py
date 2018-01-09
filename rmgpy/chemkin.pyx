@@ -1808,7 +1808,12 @@ def saveSpeciesDictionary(path, species, oldStyle=False):
                     f.write("\n// " + "\n// ".join(newAdjList.splitlines()) + '\n')
             else:
                 try:
-                    f.write(spec.molecule[0].toAdjacencyList(label=getSpeciesIdentifier(spec), removeH=False))
+                    for mol in spec.molecule:
+                        if mol.reactive:
+                            f.write(mol.toAdjacencyList(label=getSpeciesIdentifier(spec), removeH=False))
+                            break
+                    else:
+                        raise AssertionError('No reactive structures were found for species {0}.'.format(getSpeciesIdentifier(spec)))
                 except:
                     raise ChemkinError('Ran into error saving dictionary for species {0}. Please check your files.'.format(getSpeciesIdentifier(spec)))
             f.write('\n')
