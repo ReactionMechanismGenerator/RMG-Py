@@ -1881,6 +1881,7 @@ class KineticsFamily(Database):
                                                       entry.label, 
                                                       depository.label,
                                                       '[{0}]'.format(';'.join([g.label for g in template])))
+                kinetics.comment += "\nfamily: {}".format(self.label)
         return kineticsList
     
     def __selectBestKinetics(self, kineticsList):
