@@ -1622,7 +1622,7 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
     string += '{0!s:<51} '.format(reaction_string)
 
     if isinstance(kinetics, _kinetics.Arrhenius):
-        string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
+        string += '{0:<9.6e} {1:<9.3f} {2:<9.3f}'.format(
             kinetics.A.value_si/ (kinetics.T0.value_si ** kinetics.n.value_si) * 1.0e6 ** (numReactants - 1),
             kinetics.n.value_si,
             kinetics.Ea.value_si / 4184.
@@ -1686,7 +1686,7 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
         for P, arrhenius in zip(kinetics.pressures.value_si, kinetics.arrhenius):
             if isinstance(arrhenius, _kinetics.MultiArrhenius):
                 for arrh in arrhenius.arrhenius:
-                    string += '    PLOG/ {0:<9.3f} {1:<9.3e} {2:<9.3f} {3:<9.3f}/\n'.format(P / 101325.,
+                    string += '    PLOG/ {0:<9.6f} {1:<9.3e} {2:<9.3f} {3:<9.3f}/\n'.format(P / 101325.,
                     arrh.A.value_si / (arrh.T0.value_si ** arrh.n.value_si) * 1.0e6 ** (numReactants - 1),
                     arrh.n.value_si,
                     arrh.Ea.value_si / 4184.

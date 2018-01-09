@@ -47,6 +47,8 @@ cdef class NASAPolynomial(HeatCapacityModel):
     
     cpdef changeBaseEnthalpy(self, double deltaH)
 
+    cpdef changeBaseEntropy(self, double deltaS)
+
     cdef double integral2_T0(self, double T)
     
     cdef double integral2_TM1(self, double T)
@@ -70,3 +72,5 @@ cdef class NASA(HeatCapacityModel):
     cpdef Wilhoit toWilhoit(self)
     
     cpdef NASA changeBaseEnthalpy(self, double deltaH)
+
+    cpdef NASA changeBaseEntropy(self, double deltaS)

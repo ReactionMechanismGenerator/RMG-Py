@@ -135,7 +135,11 @@ class Atom(Vertex):
             'atomType': self.atomType.label if self.atomType else None,
             'lonePairs': self.lonePairs,
         }
-        return (Atom, (self.element.symbol, self.radicalElectrons, self.charge, self.label), d)
+        if self.element.isotope == -1:
+            element2pickle = self.element.symbol
+        else:
+            element2pickle = self.element
+        return (Atom, (element2pickle, self.radicalElectrons, self.charge, self.label), d)
 
     def __setstate__(self, d):
         """
