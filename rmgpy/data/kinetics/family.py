@@ -2105,31 +2105,44 @@ class KineticsFamily(Database):
         else:
             raise IndexError('You have {0} reactants, which is unexpected!'.format(len(reactants)))
         
-    def addAtomLabelsForReaction(self, reaction):
+    def addAtomLabelsForReaction(self, reaction, output_with_species = True):
         """
-        Apply atom labels on a reaction using the appropriate atom labels from this this reaction family.  
-        The reaction's reactants and products must be lists of Molecule objects.
-        The reaction is modified to use Species objects containing the labeled molecules after this function.
+        Apply atom labels on a reaction using the appropriate atom labels from
+        this reaction family.
+
+        The reaction is modified in place, containing species objects if
+        output_with_species is True and containing molecule objects, which
+        are the exact resonance structures used for the reaction, if
+        output_with_species is False. None is returned.
         """
-        reactants = reaction.reactants[:]
-        products = reaction.products[:]
-       
-        labeledReactants, labeledProducts = self.getLabeledReactantsAndProducts(reactants, products)
-        if not labeledReactants and not labeledProducts:
-            if len(reactants) > 1:
-                # Check for swapped reactants if there are more than 1
-                labeledReactants, labeledProducts = self.getLabeledReactantsAndProducts(list(reversed(reactants)), products)
-        if not labeledReactants and not labeledProducts:
-            raise ActionError("RMG could not label atoms for this reaction in {}.".format(self.label))
-        
-        labeledProducts_spcs = []
-        labeledReactants_spcs = []
-        for labeledProduct in labeledProducts:
-            labeledProducts_spcs.append(Species(molecule=[labeledProduct]))
-        reaction.products = labeledProducts_spcs
-        for labeledReactant in labeledReactants:
-            labeledReactants_spcs.append(Species(molecule=[labeledReactant]))
-        reaction.reactants = labeledReactants_spcs
+        # make sure we start with reaction with species objects
+        reaction.ensure_species(reactant_resonance=False, product_resonance=False)
+
+        # get all possible pairs of resonance structures
+        reactant_pairs = list(itertools.product(*[s.molecule for s in reaction.reactants]))
+        product_pairs = list(itertools.product(*[s.molecule for s in reaction.products]))
+
+        labeled_reactants, labeled_products = None, None
+        # go through each combination of possible pairs
+        for reactant_pair, product_pair in itertools.product(reactant_pairs, product_pairs):
+            try:
+                # see if we obtain proper labeling
+                labeled_reactants, labeled_products = self.getLabeledReactantsAndProducts(reactant_pair, product_pair)
+                if labeled_reactants is not None:
+                    break
+            except ActionError:
+                # must have gotten the wrong pair
+                pass
+        if labeled_reactants is None or labeled_products is None:
+            raise ActionError("Could not find labeled reactants for reaction {} from family {}.".format(reaction,self.label))
+
+        # place the molecules in reaction object
+        reaction.products = labeled_products
+        reaction.reactants = labeled_reactants
+
+        if output_with_species:
+            # convert the molecules to species objects with resonance structures
+            reaction.ensure_species(reactant_resonance=True)
 
     def getTrainingDepository(self):
         """
