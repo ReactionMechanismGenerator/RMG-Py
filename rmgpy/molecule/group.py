@@ -37,7 +37,7 @@ reaction sites).
 import cython
 
 from .graph import Vertex, Edge, Graph
-from .atomtype import atomTypes, allElements, nonSpecifics, getFeatures
+from .atomtype import atomTypes, allElements, nonSpecifics, getFeatures, AtomType
 from .element import PeriodicSystem
 import rmgpy.molecule.molecule as mol
 import rmgpy.molecule.element as elements
@@ -62,6 +62,9 @@ class GroupAtom(Vertex):
     `lonePairs`         ``list``            The number of lone electron pairs
     'charge'            ''list''            The partial charge of the atom
     `props`             ``dict``            Dictionary for storing additional atom properties
+    `reg_dim_atm`       ``boolean``         Flag indicating that the atom type is a free dimension in tree optimization
+    `reg_dim_u`         ``boolean``         Flag indicating that the number of unpaired electrons is a free dimension in tree optimization
+    `reg_dim_ext`       ``boolean``         Flag indicating that an external bond extension to this atom is a free dimension in tree optimization
     =================== =================== ====================================
 
     Each list represents a logical OR construct, i.e. an atom will match the
@@ -82,6 +85,9 @@ class GroupAtom(Vertex):
         self.label = label
         self.lonePairs = lonePairs or []
         self.props = props or {}
+        self.reg_dim_atm = False
+        self.reg_dim_u = False
+
 
     def __reduce__(self):
         """
@@ -596,6 +602,7 @@ class GroupBond(Edge):
     Attribute           Type                Description
     =================== =================== ====================================
     `order`             ``list``            The allowed bond orders (as character strings)
+    `reg_dim`           ``Boolean``         Indicates if this is a regularization dimension during tree generation
     =================== =================== ====================================
 
     Each list represents a logical OR construct, i.e. a bond will match the
@@ -610,6 +617,8 @@ class GroupBond(Edge):
             raise ActionError('order list given {} does not consist of only strings or only numbers'.format(order))
         else:
             self.order = order or []
+        
+        self.reg_dim = False
 
     def __str__(self):
         """
@@ -1095,6 +1104,244 @@ class Group(Graph):
             molecule = Group(atoms=g.vertices)
             molecules.append(molecule)
         return molecules
+                
+                               
+    def getExtensions(self,R=None,basename='',atmInd=None, atmInd2=None):
+        """
+        generate all allowed group extensions and their complements
+        note all atomtypes except for elements and R/R!H's must be removed
+        """
+        cython.declare(atoms=list,atm=GroupAtom,atm2=GroupAtom,bd=GroupBond,i=int,j=int,
+                       extents=list,RnH=list,typ=list)
+        
+        extents = []
+        
+        Nsplits = len(self.split())
+        #generate appropriate R and R!H
+        if R is None:
+            R = ['H','C','N','O','Si','S'] #set of possible R elements/atoms
+            R = [atomTypes[x] for x in R]
+        
+        Rbonds = [1,2,3,1.5]
+        Run = [0,1,2,3]
+        
+        RnH = R[:]
+        RnH.remove(atomTypes['H'])
+        
+        
+        atoms = self.atoms
+        if atmInd is None:
+            for i,atm in enumerate(atoms):
+                typ = atm.atomType
+                if not atm.reg_dim_atm:
+                    if len(typ) == 1:
+                        if typ[0].label == 'R':
+                            extents.extend(self.specifyAtomExtensions(i,basename,R)) #specify types of atoms
+                        elif typ[0].label == 'R!H':
+                            extents.extend(self.specifyAtomExtensions(i,basename,RnH))
+                    else:
+                        extents.extend(self.specifyAtomExtensions(i,basename,typ))
+                if not atm.reg_dim_u:
+                    if len(atm.radicalElectrons) != 1:
+                        if len(atm.radicalElectrons) == 0:
+                            extents.extend(self.specifyUnpairedExtensions(i,basename,Run))
+                        else:
+                            extents.extend(self.specifyUnpairedExtensions(i,basename,atm.radicalElectrons))
+                extents.extend(self.specifyExternalNewBondExtensions(i,basename,Rbonds))
+                for j,atm2 in enumerate(atoms):
+                    if j<i and not self.hasBond(atm,atm2):
+                        extents.extend(self.specifyInternalNewBondExtensions(i,j,Nsplits,basename,Rbonds))
+                    if self.hasBond(atm,atm2):
+                        bd = self.getBond(atm,atm2)
+                        if len(bd.order) > 1 and not bd.reg_dim:
+                            extents.extend(self.specifyBondExtensions(i,j,basename,bd.order))
+        
+        elif atmInd is not None and atmInd2 is not None: #if both atmInd and atmInd2 are defined only look at the bonds between them
+            i = atmInd
+            j = atmInd2
+            atm = atoms[i]
+            atm2 = atoms[j]
+            if j<i and not self.hasBond(atm,atm2):
+                extents.extend(self.specifyInternalNewBondExtensions(i,j,Nsplits,basename,Rbonds))
+            if self.hasBond(atm,atm2):
+                bd = self.getBond(atm,atm2)
+                if len(bd.order) > 1 and not bd.reg_dim:
+                    extents.extend(self.specifyBondExtensions(i,j,basename,bd.order))
+                    
+        elif atmInd is not None: #look at the atom at atmInd
+            i = atmInd
+            atm = atoms[i]
+            typ = atm.atomType
+            if not atm.reg_dim_atm:
+                if len(typ) == 1:
+                    if typ[0].label == 'R':
+                        extents.extend(self.specifyAtomExtensions(i,basename,R)) #specify types of atoms
+                    elif typ[0].label == 'R!H':
+                        extents.extend(self.specifyAtomExtensions(i,basename,RnH))
+            if not atm.reg_dim_u:
+                if len(atm.radicalElectrons) != 1:
+                    if len(atm.radicalElectrons) == 0:
+                        extents.extend(self.specifyUnpairedExtensions(i,basename,Run))
+                    else:
+                        extents.extend(self.specifyUnpairedExtensions(i,basename,atm.radicalElectrons))
+            extents.extend(self.specifyExternalNewBondExtensions(i,basename,Rbonds))
+            for j,atm2 in enumerate(atoms):
+                if j<i and not self.hasBond(atm,atm2):
+                    extents.extend(self.specifyInternalNewBondExtensions(i,j,Nsplits,basename,Rbonds))
+                if self.hasBond(atm,atm2):
+                    bd = self.getBond(atm,atm2)
+                    if len(bd.order) > 1 and not bd.reg_dim:
+                        extents.extend(self.specifyBondExtensions(i,j,basename,bd.order))
+        
+        else:
+            raise ValueError('atmInd must be defined if atmInd2 is defined')
+            
+        return extents
+    
+    def specifyAtomExtensions(self,i,basename,R):
+        """
+        generates extensions for specification of the type of atom defined by a given atomtype
+        or set of atomtypes
+        """
+        cython.declare(grps=list,Rset=set,item=AtomType,grp=Group,grpc=Group)
+        
+        grps = []
+        
+        Rset = set(R)
+        for item in R:
+            grp = deepcopy(self)
+            grpc = deepcopy(self)
+            old_atom_type = grp.atoms[i].atomType
+            grp.atoms[i].atomType = [item]
+            grpc.atoms[i].atomType = list(Rset-{item})
+            
+            
+            if len(old_atom_type ) > 1:
+                old_atom_type_str = ''
+                for k in old_atom_type:
+                    old_atom_type_str += k.label
+            else:
+                old_atom_type_str = old_atom_type[0].label
+
+            grps.append((grp,grpc,basename+'_'+old_atom_type_str+'->'+item.label,'atomExt',(i,)))
+            
+        return grps
+    
+    def specifyUnpairedExtensions(self,i,basename,Run):
+        """
+        generates extensions for specification of the number of electrons on a given atom
+        """
+        
+        grps = []
+        
+        Rset = set(Run)
+        for item in Run:
+            grp = deepcopy(self)
+            grpc = deepcopy(self)
+            grp.atoms[i].radicalElectrons = [item]
+            grpc.atoms[i].radicalElectrons = list(Rset-{item})
+            
+            atom_type = grp.atoms[i].atomType
+            
+            if len(atom_type ) > 1:
+                atom_type_str = ''
+                for k in atom_type:
+                    atom_type_str += k.label
+            else:
+                atom_type_str = atom_type[0].label
+            
+            grps.append((grp,grpc,basename+'_'+atom_type_str+'-u'+str(item),'elExt',(i,)))
+            
+        return grps
+    
+    def specifyInternalNewBondExtensions(self,i,j,Nsplits,basename,Rbonds):
+        """
+        generates extensions for creation of a bond (of undefined order)
+        between two atoms indexed i,j that already exist in the group and are unbonded
+        """
+        cython.declare(newgrp=Group)
+        
+        newgrp = deepcopy(self)
+        newgrp.addBond(GroupBond(newgrp.atoms[i],newgrp.atoms[j],Rbonds))
+        
+        atom_type_i = newgrp.atoms[i].atomType
+        atom_type_j = newgrp.atoms[j].atomType
+        
+        if len(atom_type_i) > 1:
+            atom_type_i_str = ''
+            for k in atom_type_i:
+                atom_type_i_str += k.label
+        else:
+            atom_type_i_str = atom_type_i[0].label
+        if len(atom_type_j) > 1:
+            atom_type_j_str = ''
+            for k in atom_type_j:
+                atom_type_j_str += k.label
+        else:
+            atom_type_j_str = atom_type_j[0].label
+                
+        if len(newgrp.split()) != Nsplits: #if this formed a bond between two seperate groups in the 
+            return []
+        else:
+            return [(newgrp,None,basename+'_Int-'+atom_type_i_str+'-'+atom_type_j_str,'intNewBondExt',(i,j))]
+    
+    def specifyExternalNewBondExtensions(self,i,basename,Rbonds):
+        """
+        generates extensions for the creation of a bond (of undefined order) between
+        an atom and a new atom that is not H
+        """
+        cython.declare(GA=GroupAtom,newgrp=Group,j=int)
+        
+        GA = GroupAtom([atomTypes['R!H']])
+        newgrp = deepcopy(self)
+        newgrp.addAtom(GA)
+        j = newgrp.atoms.index(GA)
+        newgrp.addBond(GroupBond(newgrp.atoms[i],newgrp.atoms[j],Rbonds))
+        atom_type = newgrp.atoms[i].atomType
+        if len(atom_type ) > 1:
+            atom_type_str = ''
+            for k in atom_type:
+                atom_type_str += k.label
+        else:
+            atom_type_str = atom_type[0].label
+        
+        return [(newgrp,None,basename+'_Ext-'+atom_type_str+'-R','extNewBondExt',(len(newgrp.atoms)-1,))]
+    
+    def specifyBondExtensions(self,i,j,basename,Rbonds):
+        """
+        generates extensions for the specification of bond order for a given bond
+        """
+        cython.declare(grps=list,Rbset=set,bd=float,grp=Group,grpc=Group)
+        grps = []
+        Rbset = set(Rbonds)
+        bdict = {1:'-',2:'=',3:'#',1.5:'-='}
+        for bd in Rbonds:
+            grp = deepcopy(self)
+            grpc = deepcopy(self)
+            grp.atoms[i].bonds[grp.atoms[j]].order = [bd]
+            grp.atoms[j].bonds[grp.atoms[i]].order = [bd]
+            grpc.atoms[i].bonds[grpc.atoms[j]].order = list(Rbset-{bd})
+            grpc.atoms[j].bonds[grpc.atoms[i]].order = list(Rbset-{bd})
+            
+            atom_type_i = grp.atoms[i].atomType
+            atom_type_j = grp.atoms[j].atomType
+            
+            if len(atom_type_i) > 1:
+                atom_type_i_str = ''
+                for k in atom_type_i:
+                    atom_type_i_str += k.label
+            else:
+                atom_type_i_str = atom_type_i[0].label
+            if len(atom_type_j) > 1:
+                atom_type_j_str = ''
+                for k in atom_type_j:
+                    atom_type_j_str += k.label
+            else:
+                atom_type_j_str = atom_type_j[0].label
+            
+            grps.append((grp,grpc,basename+'_Sp-'+atom_type_i_str+bdict[bd]+atom_type_j_str,'bondExt',(i,j)))
+        
+        return grps
 
     def clearLabeledAtoms(self):
         """
