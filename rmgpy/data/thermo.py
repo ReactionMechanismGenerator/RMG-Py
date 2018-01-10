@@ -796,9 +796,6 @@ class ThermoDatabase(object):
         self.loadLibraries(os.path.join(path, 'libraries'), libraries)
         self.loadGroups(os.path.join(path, 'groups'))
 
-        self.recordRingGenericNodes()
-        self.recordPolycylicGenericNodes()
-        
     def loadDepository(self, path):
         """
         Load the thermo database from the given `path` on disk, where `path`
@@ -858,6 +855,9 @@ class ThermoDatabase(object):
         self.groups['other']   =   ThermoGroups(label='other').load(os.path.join(path, 'other.py'  ), self.local_context, self.global_context)
         self.groups['longDistanceInteraction_cyclic']   =   ThermoGroups(label='longDistanceInteraction_cyclic').load(os.path.join(path, 'longDistanceInteraction_cyclic.py'  ), self.local_context, self.global_context)
         self.groups['longDistanceInteraction_noncyclic']   =   ThermoGroups(label='longDistanceInteraction_noncyclic').load(os.path.join(path, 'longDistanceInteraction_noncyclic.py'  ), self.local_context, self.global_context)
+
+        self.recordRingGenericNodes()
+        self.recordPolycylicGenericNodes()
 
     def save(self, path):
         """
