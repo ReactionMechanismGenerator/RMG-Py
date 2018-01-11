@@ -796,9 +796,6 @@ class ThermoDatabase(object):
         self.loadLibraries(os.path.join(path, 'libraries'), libraries)
         self.loadGroups(os.path.join(path, 'groups'))
 
-        self.recordRingGenericNodes()
-        self.recordPolycylicGenericNodes()
-        
     def loadDepository(self, path):
         """
         Load the thermo database from the given `path` on disk, where `path`
@@ -850,14 +847,22 @@ class ThermoDatabase(object):
         points to the top-level folder of the thermo database.
         """
         logging.info('Loading thermodynamics group database from {0}...'.format(path))
-        self.groups = {}
-        self.groups['group']   =   ThermoGroups(label='group').load(os.path.join(path, 'group.py'  ), self.local_context, self.global_context)
-        self.groups['ring']    =    ThermoGroups(label='ring').load(os.path.join(path, 'ring.py'   ), self.local_context, self.global_context)
-        self.groups['radical'] = ThermoGroups(label='radical').load(os.path.join(path, 'radical.py'), self.local_context, self.global_context)
-        self.groups['polycyclic'] = ThermoGroups(label='polycyclic').load(os.path.join(path, 'polycyclic.py'), self.local_context, self.global_context)
-        self.groups['other']   =   ThermoGroups(label='other').load(os.path.join(path, 'other.py'  ), self.local_context, self.global_context)
-        self.groups['longDistanceInteraction_cyclic']   =   ThermoGroups(label='longDistanceInteraction_cyclic').load(os.path.join(path, 'longDistanceInteraction_cyclic.py'  ), self.local_context, self.global_context)
-        self.groups['longDistanceInteraction_noncyclic']   =   ThermoGroups(label='longDistanceInteraction_noncyclic').load(os.path.join(path, 'longDistanceInteraction_noncyclic.py'  ), self.local_context, self.global_context)
+        categories = [
+            'group',
+            'ring',
+            'radical',
+            'polycyclic',
+            'other',
+            'longDistanceInteraction_cyclic',
+            'longDistanceInteraction_noncyclic',
+        ]
+        self.groups = {
+            category: ThermoGroups(label=category).load(os.path.join(path, category + '.py'), self.local_context, self.global_context)
+            for category in categories
+        }
+
+        self.recordRingGenericNodes()
+        self.recordPolycylicGenericNodes()
 
     def save(self, path):
         """
@@ -1056,22 +1061,35 @@ class ThermoDatabase(object):
         )
 
     def recordPolycylicGenericNodes(self):
+        """
+        Identify generic nodes in tree for polycyclic groups.
+        Saves them as a list in the `genericNodes` attribute
+        in the polycyclic :class:`ThermoGroups` object, which
+        must be pre-loaded.
 
+        Necessary for polycyclic heuristic.
+        """
         self.groups['polycyclic'].genericNodes = ['PolycyclicRing']
         for label, entry in self.groups['polycyclic'].entries.iteritems():
-
             if isinstance(entry.data, ThermoData): 
                 continue
             self.groups['polycyclic'].genericNodes.append(label)
 
     def recordRingGenericNodes(self):
+        """
+        Identify generic nodes in tree for ring groups.
+        Saves them as a list in the `genericNodes` attribute
+        in the ring :class:`ThermoGroups` object, which
+        must be pre-loaded.
 
+        Necessary for polycyclic heuristic.
+        """
         self.groups['ring'].genericNodes = ['Ring']
         for label, entry in self.groups['ring'].entries.iteritems():
-
             if isinstance(entry.data, ThermoData): 
                 continue
             self.groups['ring'].genericNodes.append(label)
+
     def getThermoData(self, species, trainingSet=None):
         """
         Return the thermodynamic parameters for a given :class:`Species`
