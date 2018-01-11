@@ -17,5 +17,5 @@ for RMG to generate reactions between.  An example file is placed in ``$RMGPy/ex
 This method will produce an ``output.html`` file in the directory of ``input.py`` which contains the all the reactions produced between the species.  
 
 
-This method is also available to use with a web browser from the RMG website: `Populate Reactions <http://rmg.mit.edu/simulate/populate_reactions>`_.
+This method is also available to use with a web browser from the RMG website: `Populate Reactions <http://rmg.mit.edu/tools/populate_reactions>`_.
 

@@ -1,3 +1,31 @@
+################################################################################
+#
+#   RMG - Reaction Mechanism Generator
+#
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
+#
+#   Permission is hereby granted, free of charge, to any person obtaining a
+#   copy of this software and associated documentation files (the 'Software'),
+#   to deal in the Software without restriction, including without limitation
+#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#   and/or sell copies of the Software, and to permit persons to whom the
+#   Software is furnished to do so, subject to the following conditions:
+#
+#   The above copyright notice and this permission notice shall be included in
+#   all copies or substantial portions of the Software.
+#
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+#   DEALINGS IN THE SOFTWARE.
+#
+################################################################################
+
+
 # global imports
 
 import cython
@@ -16,7 +44,7 @@ from .molecule import Atom, Bond, Molecule
 from .pathfinder import compute_atom_distance
 from .util import partition, agglomerate, generate_combo
 
-import rmgpy.molecule.adjlist as adjlist
+import rmgpy.molecule.element as element
 import rmgpy.molecule.inchi as inchiutil
 import rmgpy.molecule.resonance as resonance
 # global variables:
@@ -36,7 +64,8 @@ _known_smiles_molecules = {
                  'CO2': 'O=C=O',
                  'CO': '[C-]#[O+]',
                  'C2H4': 'C=C',
-                 'O2': 'O=O'
+                 'O2': 'O=O',
+                 'C': '[C]',  # for this to be in the "molecule" list it must be singlet with 2 lone pairs
              }
 
 _known_smiles_radicals = {
@@ -47,7 +76,7 @@ _known_smiles_radicals = {
                  'HO2': '[O]O',
                  'CH': '[CH]',
                  'H': '[H]',
-                 'C': '[C]',
+                 'C': '[C]',  # this, in the radical list, could be triplet or quintet.
                  #'CO2': it could be [O][C][O] or O=[C][O]
                  #'CO': '[C]=O', could also be [C][O]
                  #'C2H4': could  be [CH3][CH] or [CH2][CH2]
@@ -260,20 +289,24 @@ def toSMILES(mol):
         return Chem.MolToSmiles(rdkitmol, kekuleSmiles=True)
     return Chem.MolToSmiles(rdkitmol)
 
-def toOBMol(mol):
+def toOBMol(mol, returnMapping=False):
     """
     Convert a molecular structure to an OpenBabel OBMol object. Uses
     `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
     """
 
+    # Sort the atoms to ensure consistent output
+    mol.sortAtoms()
     atoms = mol.vertices
 
+    obAtomIds = {}  # dictionary of OB atom IDs
     obmol = openbabel.OBMol()
     for atom in atoms:
         a = obmol.NewAtom()
         a.SetAtomicNum(atom.number)
         a.SetFormalCharge(atom.charge)
-    orders = {'S': 1, 'D': 2, 'T': 3, 'B': 5}
+        obAtomIds[atom] = a.GetId()
+    orders = {1: 1, 2: 2, 3: 3, 1.5: 5}
     for atom1 in mol.vertices:
         for atom2, bond in atom1.edges.iteritems():
             index1 = atoms.index(atom1)
@@ -283,6 +316,9 @@ def toOBMol(mol):
                 obmol.AddBond(index1+1, index2+1, order)
 
     obmol.AssignSpinMultiplicity(True)
+
+    if returnMapping:
+        return obmol, obAtomIds
 
     return obmol
 
@@ -347,7 +383,8 @@ def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
             index1 = atoms.index(atom1)
             index2 = atoms.index(atom2)
             if index1 < index2:
-                order = orders[bond.order]
+                order_string = bond.getOrderStr()
+                order = orders[order_string]
                 rdkitmol.AddBond(index1, index2, order)
     
     # Make editable mol into a mol and rectify the molecule
@@ -472,7 +509,7 @@ def generate_minimum_resonance_isomer(mol):
         )
 
 
-    candidates = resonance.generate_isomorphic_isomers(mol)
+    candidates = resonance.generateIsomorphicResonanceStructures(mol)
     
     sel = candidates[0]
     metric_sel = get_unpaired_electrons(sel)
@@ -539,11 +576,11 @@ def has_unexpected_lone_pairs(mol):
 
     for at in mol.atoms:
         try:
-            exp = adjlist.PeriodicSystem.lone_pairs[at.symbol]
+            exp = element.PeriodicSystem.lone_pairs[at.symbol]
         except KeyError:
             raise Exception("Unrecognized element: {}".format(at.symbol))
         else:
-            if at.lonePairs != adjlist.PeriodicSystem.lone_pairs[at.symbol]: return True 
+            if at.lonePairs != element.PeriodicSystem.lone_pairs[at.symbol]: return True 
 
     return False
 
@@ -616,11 +653,11 @@ def create_P_layer(mol, auxinfo):
     p_layer = []
     for i, at in enumerate(mol.atoms):
         try:
-            exp = adjlist.PeriodicSystem.lone_pairs[at.symbol]
+            exp = element.PeriodicSystem.lone_pairs[at.symbol]
         except KeyError:
             raise Exception("Unrecognized element: {}".format(at.symbol))
         else:
-            if at.lonePairs != adjlist.PeriodicSystem.lone_pairs[at.symbol]:
+            if at.lonePairs != element.PeriodicSystem.lone_pairs[at.symbol]:
                 if at.lonePairs == 0:
                     p_layer.append('{}{}'.format(i, '(0)'))
                 else:

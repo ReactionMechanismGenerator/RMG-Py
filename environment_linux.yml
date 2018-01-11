@@ -8,11 +8,12 @@ dependencies:
   - numpy >=1.10.0
   - cantera >=2.2
   - coolprop
-  - cython ==0.21
+  - cython >=0.25.2
   - matplotlib >=1.5
   - rdkit >=2015.09.2
   - pydas >=1.0.1
   - pydqed >=1.0.0
+  - lpsolve55
   - quantities
   - scipy
   - xlwt
@@ -23,7 +24,6 @@ dependencies:
   - pydot ==1.2.2
   - nose
   - coverage
-  - guppy
   - gprof2dot
   - cairo
   - cairocffi
@@ -33,5 +33,10 @@ dependencies:
   - mopac
   - graphviz
   - scoop
-  - libgfortran ==1.0 # You may need to comment this out for mac osx
+  - libgfortran >=1.0 # You may need to comment this out for mac osx
   - ffmpeg
+  - jupyter
+  - networkx
+  - mock
+  - muq
+  - pymongo

@@ -5,11 +5,11 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2009 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the "Software"),
+#   copy of this software and associated documentation files (the 'Software'),
 #   to deal in the Software without restriction, including without limitation
 #   the rights to use, copy, modify, merge, publish, distribute, sublicense,
 #   and/or sell copies of the Software, and to permit persons to whom the
@@ -18,10 +18,10 @@
 #   The above copyright notice and this permission notice shall be included in
 #   all copies or substantial portions of the Software.
 #
-#   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 #   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-#   THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 #   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #   DEALINGS IN THE SOFTWARE.
@@ -555,6 +555,8 @@ class TestLength(unittest.TestCase):
 class TestMass(unittest.TestCase):
     """
     Contains unit tests of the Mass unit type object.
+    
+    Note that value_si is always kg (per molecule), not kg/mol.
     """
             
     def test_kg(self):
@@ -568,8 +570,8 @@ class TestMass(unittest.TestCase):
 
     def test_gpermol(self):
         """
-        Test the creation of a mass quantity with units of g/mol. Note that
-        g/mol is automatically coerced to amu.
+        Test the creation of a mass quantity with units of g/mol.
+        Note that g/mol is automatically coerced to amu.
         """
         q = quantity.Mass(1.0,"g/mol")
         self.assertAlmostEqual(q.value, 1.0, 6)
@@ -578,8 +580,8 @@ class TestMass(unittest.TestCase):
 
     def test_kgpermol(self):
         """
-        Test the creation of a mass quantity with units of kg/mol. Note that
-        kg/mol is automatically coerced to amu.
+        Test the creation of a mass quantity with units of kg/mol.
+        Note that kg/mol is automatically coerced to amu.
         """
         q = quantity.Mass(1.0,"kg/mol")
         self.assertAlmostEqual(q.value, 1000.0, 3)

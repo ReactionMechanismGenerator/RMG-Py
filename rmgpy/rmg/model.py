@@ -3,28 +3,28 @@
 
 ################################################################################
 #
-#	RMG - Reaction Mechanism Generator
+#   RMG - Reaction Mechanism Generator
 #
-#	Copyright (c) 2002-2009 Prof. William H. Green (whgreen@mit.edu) and the
-#	RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
-#	Permission is hereby granted, free of charge, to any person obtaining a
-#	copy of this software and associated documentation files (the 'Software'),
-#	to deal in the Software without restriction, including without limitation
-#	the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#	and/or sell copies of the Software, and to permit persons to whom the
-#	Software is furnished to do so, subject to the following conditions:
+#   Permission is hereby granted, free of charge, to any person obtaining a
+#   copy of this software and associated documentation files (the 'Software'),
+#   to deal in the Software without restriction, including without limitation
+#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#   and/or sell copies of the Software, and to permit persons to whom the
+#   Software is furnished to do so, subject to the following conditions:
 #
-#	The above copyright notice and this permission notice shall be included in
-#	all copies or substantial portions of the Software.
+#   The above copyright notice and this permission notice shall be included in
+#   all copies or substantial portions of the Software.
 #
-#	THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#	FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#	DEALINGS IN THE SOFTWARE.
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+#   DEALINGS IN THE SOFTWARE.
 #
 ################################################################################
 
@@ -252,8 +252,8 @@ class CoreEdgeReactionModel:
         # within the list of isomers for a species object describing a unique aromatic compound
         if molecule.isCyclic():
             obj = Species(molecule=[molecule])
-            from rmgpy.molecule.resonance import generateAromaticResonanceIsomers
-            aromaticIsomers = generateAromaticResonanceIsomers(molecule)
+            from rmgpy.molecule.resonance import generateAromaticResonanceStructures
+            aromaticIsomers = generateAromaticResonanceStructures(molecule)
             obj.molecule.extend(aromaticIsomers)
 
         # First check cache and return if species is found
@@ -386,20 +386,35 @@ class CoreEdgeReactionModel:
         for rxn0 in shortlist:
             rxn_id0 = generateReactionId(rxn0)
 
-            if (rxn_id == rxn_id0):
-                if isinstance(familyObj, KineticsLibrary):
-                    # If the reaction comes from a kinetics library, then we can retain duplicates if they are marked
-                    if areIdenticalSpeciesReferences(rxn, rxn0):
-                        if not rxn.duplicate:
+            if (rxn_id == rxn_id0) and isinstance(familyObj, KineticsLibrary):
+                # If the reaction comes from a kinetics library, then we can 
+                # retain duplicates if they are marked
+                if areIdenticalSpeciesReferences(rxn, rxn0) and not rxn.duplicate:
+                    return True, rxn0
+            elif ((rxn_id == rxn_id0) or (rxn_id == rxn_id0[::-1])) and \
+                        isinstance(familyObj, KineticsFamily):
+                # ensure TemplateReactions have the same templates and families in order
+                # to classify this as existing reaction. Also checks for reverse
+                # direction matching. Marks duplicate if identical species and different
+                # templates or families
+                if areIdenticalSpeciesReferences(rxn, rxn0):
+                    if rxn.family == rxn0.family:
+                        equal_templates = frozenset(rxn.template) == frozenset(rxn0.template)
+                        # check reverse template
+                        if not equal_templates and familyObj.ownReverse and \
+                                    rxn.reverse is not None:
+                            equal_templates = frozenset(rxn.reverse.template) == frozenset(rxn0.template)
+                        if equal_templates:
                             return True, rxn0
-                else:
-                    if areIdenticalSpeciesReferences(rxn, rxn0):
-                        return True, rxn0
-            
-            if isinstance(familyObj, KineticsFamily) and familyObj.ownReverse:
-                if (rxn_id == rxn_id0[::-1]):
-                    if areIdenticalSpeciesReferences(rxn, rxn0):
-                        return True, rxn0
+                        else:
+                            rxn.duplicate = True
+                            rxn0.duplicate = True
+                    else:
+                        rxn.duplicate = True
+                        rxn0.duplicate = True
+            elif (rxn_id == rxn_id0):
+                if areIdenticalSpeciesReferences(rxn, rxn0):
+                    return True, rxn0
 
         # Now check seed mechanisms
         # We want to check for duplicates in *other* seed mechanisms, but allow
@@ -636,24 +651,10 @@ class CoreEdgeReactionModel:
         # Generate kinetics of new reactions
         logging.info('Generating kinetics for new reactions...')
         for reaction in self.newReactionList:
-            family = getFamilyLibraryObject(reaction.family)
-
             # If the reaction already has kinetics (e.g. from a library),
             # assume the kinetics are satisfactory
             if reaction.kinetics is None:
-                # Set the reaction kinetics
-                kinetics, source, entry, isForward = self.generateKinetics(reaction)
-                reaction.kinetics = kinetics
-                # Flip the reaction direction if the kinetics are defined in the reverse direction
-                if not isForward:
-                    reaction.reactants, reaction.products = reaction.products, reaction.reactants
-                    reaction.pairs = [(p,r) for r,p in reaction.pairs]
-                if family.ownReverse and hasattr(reaction,'reverse'):
-                    if reaction.reverse:
-                        if not isForward:
-                            reaction.template = reaction.reverse.template
-                        # We're done with the "reverse" attribute, so delete it to save a bit of memory
-                        delattr(reaction,'reverse')
+                self.applyKineticsToReaction(reaction)
                     
         # For new reactions, convert ArrheniusEP to Arrhenius, and fix barrier heights.
         # self.newReactionList only contains *actually* new reactions, all in the forward direction.
@@ -780,6 +781,28 @@ class CoreEdgeReactionModel:
                     if rxn in self.edge.reactions:
                         self.edge.reactions.remove(rxn)
 
+    def applyKineticsToReaction(self, reaction):
+        """
+        retrieve the best kinetics for the reaction and apply it towards the forward 
+        or reverse direction (if reverse, flip the direaction).
+        """
+        from rmgpy.data.rmg import getDB
+        # Find the reaction kinetics
+        kinetics, source, entry, isForward = self.generateKinetics(reaction)
+        # Flip the reaction direction if the kinetics are defined in the reverse direction
+        if not isForward:
+            family = getDB('kinetics').families[reaction.family]
+            reaction.reactants, reaction.products = reaction.products, reaction.reactants
+            reaction.pairs = [(p,r) for r,p in reaction.pairs]
+            if family.ownReverse and hasattr(reaction,'reverse'):
+                if reaction.reverse:
+                    reaction.template = reaction.reverse.template
+                    # replace degeneracy
+                    reaction.degeneracy = reaction.reverse.degeneracy
+                # We're done with the "reverse" attribute, so delete it to save a bit of memory
+                reaction.reverse = None
+        reaction.kinetics = kinetics
+
     def generateKinetics(self, reaction):
         """
         Generate best possible kinetics for the given `reaction` using the kinetics database.
@@ -790,32 +813,32 @@ class CoreEdgeReactionModel:
         family = getFamilyLibraryObject(reaction.family)
 
         # Get the kinetics for the reaction
-        kinetics, source, entry, isForward = family.getKinetics(reaction, template=reaction.template, degeneracy=reaction.degeneracy, estimator=self.kineticsEstimator, returnAllKinetics=False)
-        # Get the enthalpy of reaction at 298 K
-        H298 = reaction.getEnthalpyOfReaction(298)
+        kinetics, source, entry, isForward = family.getKinetics(reaction, templateLabels=reaction.template, degeneracy=reaction.degeneracy, estimator=self.kineticsEstimator, returnAllKinetics=False)
+        # Get the gibbs free energy of reaction at 298 K
         G298 = reaction.getFreeEnergyOfReaction(298)
-        
+        gibbsIsPositive = G298 > -1e-8
         
         if family.ownReverse and hasattr(reaction,'reverse'):
             if reaction.reverse:
                 # The kinetics family is its own reverse, so we could estimate kinetics in either direction
                 
                 # First get the kinetics for the other direction
-                rev_kinetics, rev_source, rev_entry, rev_isForward = family.getKinetics(reaction.reverse, template=reaction.reverse.template, degeneracy=reaction.reverse.degeneracy, estimator=self.kineticsEstimator, returnAllKinetics=False)
+                rev_kinetics, rev_source, rev_entry, rev_isForward = family.getKinetics(reaction.reverse, templateLabels=reaction.reverse.template, degeneracy=reaction.reverse.degeneracy, estimator=self.kineticsEstimator, returnAllKinetics=False)
                 # Now decide which direction's kinetics to keep
                 keepReverse = False
                 if (entry is not None and rev_entry is None):
-                    # Only the forward has a source - use forward.
+                    # Only the forward has an entry, meaning an exact match in a depository or template
+                    # the reverse must have used an averaged estimated node - so use forward.
                     reason = "This direction matched an entry in {0}, the other was just an estimate.".format(reaction.family)
                 elif (entry is None and rev_entry is not None):
-                    # Only the reverse has a source - use reverse.
+                    # Only the reverse has an entry (see above) - use reverse.
                     keepReverse = True
                     reason = "This direction matched an entry in {0}, the other was just an estimate.".format(reaction.family)
                 elif (entry is not None and rev_entry is not None 
                       and entry is rev_entry):
                     # Both forward and reverse have the same source and entry
-                    # Use the one for which the kinetics is the forward kinetics          
-                    keepReverse = G298 > 0 and isForward and rev_isForward
+                    # Use the one for which the kinetics is the forward kinetics
+                    keepReverse = gibbsIsPositive and isForward and rev_isForward
                     reason = "Both directions matched the same entry in {0}, but this direction is exergonic.".format(reaction.family)
                 elif self.kineticsEstimator == 'group additivity' and (kinetics.comment.find("Fitted to 1 rate")>0
                       and not rev_kinetics.comment.find("Fitted to 1 rate")>0) :
@@ -832,31 +855,30 @@ class CoreEdgeReactionModel:
                     # Keep the direction with the lower (but nonzero) rank
                     if entry.rank < rev_entry.rank and entry.rank != 0:
                         keepReverse = False
-                        reason = "Both directions matched explicit rate rules, but this direction has a rule with a lower rank."
+                        reason = "Both directions matched explicit rate rules, but this direction has a rule with a lower rank ({0} vs {1}).".format(entry.rank, rev_entry.rank)
                     elif rev_entry.rank < entry.rank and rev_entry.rank != 0:
                         keepReverse = True
-                        reason = "Both directions matched explicit rate rules, but this direction has a rule with a lower rank."
+                        reason = "Both directions matched explicit rate rules, but this direction has a rule with a lower rank ({0} vs {1}).".format(rev_entry.rank, entry.rank)
                     # Otherwise keep the direction that is exergonic at 298 K
                     else:
-                        keepReverse = G298 > 0 and isForward and rev_isForward
+                        keepReverse = gibbsIsPositive and isForward and rev_isForward
                         reason = "Both directions matched explicit rate rules, but this direction is exergonic."
                 else:
                     # Keep the direction that is exergonic at 298 K
                     # This must be done after the thermo generation step
-                    keepReverse = G298 > 0 and isForward and rev_isForward
+                    keepReverse = gibbsIsPositive and isForward and rev_isForward
                     reason = "Both directions are estimates, but this direction is exergonic."
-                
+
                 if keepReverse:
                     kinetics = rev_kinetics
                     source = rev_source
                     entry = rev_entry
                     isForward = not rev_isForward
-                    H298 = -H298
                     G298 = -G298
                 
                 if self.verboseComments:
                     kinetics.comment += "\nKinetics were estimated in this direction instead of the reverse because:\n{0}".format(reason)
-                    kinetics.comment += "\ndHrxn(298 K) = {0:.2f} kJ/mol, dGrxn(298 K) = {1:.2f} kJ/mol".format(H298 / 1000., G298 / 1000.)
+                    kinetics.comment += "\ndGrxn(298 K) = {0:.2f} kJ/mol".format( G298 / 1000.)
             
         # The comments generated by the database for estimated kinetics can
         # be quite long, and therefore not very useful
@@ -1036,13 +1058,13 @@ class CoreEdgeReactionModel:
             for index, spec in speciesToPrune[0:pruneDueToRateCounter]:
                 logging.info('Pruning species {0:<56}'.format(spec))
                 logging.debug('    {0:<56}    {1:10.4e}'.format(spec, maxEdgeSpeciesRateRatios[index]))
-                self.removeSpeciesFromEdge(spec)
+                self.removeSpeciesFromEdge(reactionSystems, spec)
         if len(speciesToPrune) - pruneDueToRateCounter > 0:
             logging.info('Pruning {0:d} species to obtain an edge size of {1:d} species'.format(len(speciesToPrune) - pruneDueToRateCounter, maximumEdgeSpecies))
             for index, spec in speciesToPrune[pruneDueToRateCounter:]:
                 logging.info('Pruning species {0:<56}'.format(spec))
                 logging.debug('    {0:<56}    {1:10.4e}'.format(spec, maxEdgeSpeciesRateRatios[index]))
-                self.removeSpeciesFromEdge(spec)
+                self.removeSpeciesFromEdge(reactionSystems, spec)
 
         # Delete any networks that became empty as a result of pruning
         if self.pressureDependence:
@@ -1064,13 +1086,29 @@ class CoreEdgeReactionModel:
 
         logging.info('')
 
-    def removeSpeciesFromEdge(self, spec):
+
+    def removeSpeciesFromEdge(self, reactionSystems, spec):
         """
         Remove species `spec` from the reaction model edge.
         """
 
         # remove the species
         self.edge.species.remove(spec)
+        self.indexSpeciesDict.pop(spec.index)
+
+        # clean up species references in reactionSystems
+        for reactionSystem in reactionSystems:
+            reactionSystem.speciesIndex.pop(spec)
+
+            # identify any reactions it's involved in
+            rxnList = []
+            for rxn in reactionSystem.reactionIndex:
+                if spec in rxn.reactants or spec in rxn.products:
+                    rxnList.append(rxn)
+
+            for rxn in rxnList:
+                reactionSystem.reactionIndex.pop(rxn)
+
         # identify any reactions it's involved in
         rxnList = []
         for rxn in self.edge.reactions:
@@ -1283,14 +1321,15 @@ class CoreEdgeReactionModel:
         logging.info('Adding reaction library {0} to model edge...'.format(reactionLibrary))
         reactionLibrary = database.kinetics.libraries[reactionLibrary]
 
+        # Load library reactions, keep reversibility as is
         for entry in reactionLibrary.entries.values():
             rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],\
             library=reactionLibrary.label, kinetics=entry.data,\
-            duplicate=entry.item.duplicate, reversible=entry.item.reversible
+            duplicate=entry.item.duplicate, reversible=entry.item.reversible if rmg.keepIrreversible else True
             )
             r, isNew = self.makeNewReaction(rxn) # updates self.newSpeciesList and self.newReactionlist
             if not isNew: logging.info("This library reaction was not new: {0}".format(rxn))
-            
+
         # Perform species constraints and forbidden species checks
         for spec in self.newSpeciesList:
             if database.forbiddenStructures.isMoleculeForbidden(spec.molecule[0]):
@@ -1445,7 +1484,7 @@ class CoreEdgeReactionModel:
                         index += 1
 
         count = sum([1 for network in self.networkList if not network.valid and not (len(network.explored) == 0 and len(network.source) > 1)])
-        logging.info('Updating {0:d} modified unimolecular reaction networks...'.format(count))
+        logging.info('Updating {0:d} modified unimolecular reaction networks (out of {1:d})...'.format(count, len(self.networkList)))
         
         # Iterate over all the networks, updating the invalid ones as necessary
         # self = reactionModel object
@@ -1461,13 +1500,12 @@ class CoreEdgeReactionModel:
         # direction from the list of core reactions
         # Note that well-skipping reactions may not have a reverse if the well
         # that they skip over is not itself in the core
-        for network in updatedNetworks:
-            for reaction in network.netReactions:
-                try:
-                    index = self.core.reactions.index(reaction)
-                except ValueError:
-                    continue
-                for index2, reaction2 in enumerate(self.core.reactions):
+        index = 0
+        coreReactionCount = len(self.core.reactions)
+        while index < coreReactionCount:
+            reaction = self.core.reactions[index]
+            if isinstance(reaction, PDepReaction):
+                for reaction2 in self.core.reactions[index+1:]:
                     if isinstance(reaction2, PDepReaction) and reaction.reactants == reaction2.products and reaction.products == reaction2.reactants:
                         # We've found the PDepReaction for the reverse direction
                         dGrxn = reaction.getFreeEnergyOfReaction(300.)
@@ -1494,10 +1532,13 @@ class CoreEdgeReactionModel:
                             self.core.reactions.remove(reaction2)
                             self.core.reactions.insert(index, reaction2)
                             reaction2.reversible = True
+                        coreReactionCount -= 1
                         # There should be only one reverse, so we can stop searching once we've found it
                         break
                 else:
                     reaction.reversible = True
+            # Move to the next core reaction
+            index += 1
 
 
     def markChemkinDuplicates(self):
@@ -1574,7 +1615,7 @@ class CoreEdgeReactionModel:
             
         family = getFamilyLibraryObject(family_label)       
         # if the family is its own reverse (H-Abstraction) then check the other direction
-        if isinstance(family,KineticsFamily) and family.ownReverse: # (family may be a KineticsLibrary)
+        if isinstance(family,KineticsFamily): 
 
             # Get the short-list of reactions with the same family, product1 and product2
             family_label, r1_rev, r2_rev = generateReactionKey(rxn, useProducts=True)
@@ -1664,6 +1705,7 @@ class CoreEdgeReactionModel:
         for obj in itertools.chain(deflatedRxn.reactants, deflatedRxn.products):
             if isinstance(obj, int):
                 return self.getSpecies(obj)
+        raise Exception("No core species were found in either reactants or products of {0}!".format(deflatedRxn))
 
 
 def generateReactionKey(rxn, useProducts=False):

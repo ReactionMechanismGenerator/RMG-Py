@@ -4,9 +4,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2012 Prof. Richard H. West (r.west@neu.edu),
-#                           Prof. William H. Green (whgreen@mit.edu)
-#                           and the RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -202,11 +201,17 @@ class ExecutionStatsWriter(object):
 
         fig = plt.figure()
         ax1 = fig.add_subplot(111)
-        ax1.loglog(rmg.execTime, self.edgeSpeciesCount, 'o-b')
+        if any(self.edgeSpeciesCount):
+            ax1.loglog(rmg.execTime, self.edgeSpeciesCount, 'o-b')
+        else:
+            ax1.semilogx(rmg.execTime, self.edgeSpeciesCount, 'o-b')
         ax1.set_xlabel('Execution time (s)')
         ax1.set_ylabel('Number of edge species')
         ax2 = ax1.twinx()
-        ax2.loglog(rmg.execTime, self.edgeReactionCount, 'o-r')
+        if any(self.edgeReactionCount):
+            ax2.loglog(rmg.execTime, self.edgeReactionCount, 'o-r')
+        else:
+            ax2.semilogx(rmg.execTime, self.edgeReactionCount, 'o-r')
         ax2.set_ylabel('Number of edge reactions')
         plt.savefig(os.path.join(rmg.outputDirectory, 'plot/edgeSize.svg'))
         plt.clf()

@@ -1,5 +1,33 @@
+################################################################################
+#
+#   RMG - Reaction Mechanism Generator
+#
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
+#
+#   Permission is hereby granted, free of charge, to any person obtaining a
+#   copy of this software and associated documentation files (the 'Software'),
+#   to deal in the Software without restriction, including without limitation
+#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#   and/or sell copies of the Software, and to permit persons to whom the
+#   Software is furnished to do so, subject to the following conditions:
+#
+#   The above copyright notice and this permission notice shall be included in
+#   all copies or substantial portions of the Software.
+#
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+#   DEALINGS IN THE SOFTWARE.
+#
+################################################################################
+
 import cython
 import re
+import logging
 
 # search for (*) PARENTHESES
 PARENTHESES = re.compile( r'\((.[^\(\)]*)\)')
@@ -10,7 +38,7 @@ INCHI_PREFIX = 'InChI=1'
 """
 The prefix with the information on the distribution of unpaired electrons across the atoms.
 
-For example, a triplet biradical with unpaired electrons on atom 1 and atom 3 
+For example, a triplet biradical with unpaired electrons on atom 1 and atom 3
 will have the following unpaired electron layer in the augmented InChI:
 
 InChI=1/.../u1,3
@@ -26,7 +54,7 @@ U_LAYER_SEPARATOR = ','
 
 
 """
-The prefix with the information on the distribution of the atoms 
+The prefix with the information on the distribution of the atoms
 with an unexpected number of lone pairs.
 
 For example, a singlet methylene with a lone pair on atom 1
@@ -48,13 +76,13 @@ player_pattern = re.compile(P_LAYER_PREFIX + r'(.*)')
 
 def decompose(string):
     """
-    Converts an augmented inchi into 
-    - an inchi, 
+    Converts an augmented inchi into
+    - an inchi,
     - indices array for the atoms bearing unpaired electrons.
     - indices array for the atoms bearing (unexpected) lone pairs.
 
     Atoms that unexpectedly bear zero lone pairs will be mentioned as follows:
-    "x(0)", with x the index of the atom, and (0) denoting that the atom does not 
+    "x(0)", with x the index of the atom, and (0) denoting that the atom does not
     bear any lone pairs.
 
     The "x(0)" will be parsed into a tuple (x, 0).
@@ -114,7 +142,7 @@ def compose_aug_inchi(inchi, ulayer=None, player=None):
 
     aug_inchi = INCHI_PREFIX + '/' if not INCHI_PREFIX in inchi else ''
     aug_inchi += inchi
-    
+
     for layer in filter(None, [ulayer, player]):
         aug_inchi += layer
 
@@ -135,15 +163,15 @@ def compose_aug_inchi_key(inchi_key, ulayer=None, player=None):
     for layer in filter(None, [ulayer, player]):
         aug_inchi_key += '-' + layer[1:]#cut off the '/'
 
-    return aug_inchi_key 
+    return aug_inchi_key
 
 def parse_H_layer(inchi):
     """
-    Converts the Mobile H layer of an inchi string into a 
+    Converts the Mobile H layer of an inchi string into a
     list of atom indices couples that carry a mobile hydrogen.
 
     Example:
-    The hydrogen of the hydroxyl group can migrate to the carbonyl 
+    The hydrogen of the hydroxyl group can migrate to the carbonyl
     oxygen.
 
     O=C-O
@@ -172,7 +200,7 @@ def parse_H_layer(inchi):
         if piece.startswith('h'):
             h_layer = piece
             break
-    else: 
+    else:
         raise Exception('Could not find the hydrogen layer in the inchi: {}'.format(inchi))
 
     couples = []
@@ -184,17 +212,17 @@ def parse_H_layer(inchi):
 
 def parse_E_layer(auxinfo):
     """
-    Converts the layer with equivalence information (E-layer) 
+    Converts the layer with equivalence information (E-layer)
     on atoms into a list of lists of equivalent atom indices.
 
     Example:
     Auxiliary info of InChI=1S/C8H14/c1-5-7(3)8(4)6-2/h5-8H,1-2H2,3-4H3:
     AuxInfo=1/0/N:1,8,4,6,2,7,3,5/E:(1,2)(3,4)(5,6)(7,8)/rA:8C.2C.2CCCCCC/rB:s1;s2;s3;s3;s5;s5;d7;/rC:;;;;;;;;
-    E-layer: 
+    E-layer:
 
     /E:(1,2)(3,4)(5,6)(7,8)/
 
-    denotes that atoms (1,2), (3,4), (5,6), (7,8) are equivalent and cannot be distinguished based on the 
+    denotes that atoms (1,2), (3,4), (5,6), (7,8) are equivalent and cannot be distinguished based on the
     implemented canonicalization algorithm.
 
     Returned object:
@@ -230,10 +258,10 @@ def parse_E_layer(auxinfo):
 
     return equivalent_atoms
 
- 
+
 def parse_N_layer(auxinfo):
     """
-    Parses the layer with atom ordering information (N-layer) 
+    Parses the layer with atom ordering information (N-layer)
     and returns a list of atom indices that reflect how the atoms of the original
     molecule should be ordered according to the InChI algorithm.
 
@@ -242,11 +270,11 @@ def parse_N_layer(auxinfo):
     Auxiliary info of SMILES OCCC (InChI=1S/C3H8O/c1-2-3-4/h4H,2-3H2,1H3):
     AuxInfo=1/0/N:4,3,2,1/rA:4OCCC/rB:s1;s2;s3;/rC:;;;;
 
-    N-layer: 
+    N-layer:
     /N:4,3,2,1
 
     The original number of an atom with identification number n is given as the
-    n-th member of this list for a component; the lists are separated with “;”. 
+    n-th member of this list for a component; the lists are separated with “;”.
 
     Raises an exception when the N-layer could not be found.
     """
@@ -268,10 +296,14 @@ def parse_N_layer(auxinfo):
     else:
         raise Exception('Could not find the N-layer in the auxiliary info: {}'.format(auxinfo))
 
-    indices = map(int, atom_numbers.split(','))
+    try:
+        indices = map(int, atom_numbers.replace(';', ',').split(','))
+    except Exception:
+        logging.error("Problematic auxinfo: {!r}".format(auxinfo))
+        raise
 
     return indices
-        
+
 class InchiException(Exception):
     pass
 
@@ -295,4 +327,3 @@ class AugmentedInChI(InChI):
         # default to None
         self.u_indices = u_indices or None
         self.p_indices = p_indices or None
-        

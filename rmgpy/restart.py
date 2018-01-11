@@ -5,8 +5,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2010 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -37,14 +37,14 @@ import time
 def save(rmg):
     # Save the restart file if desired
     if rmg.saveRestartPeriod or rmg.done:
-        saveRestartFile( os.path.join(rmg.outputDirectory,'restart.pkl'),
-                              rmg.reactionModel,
+        saveRestartFile( os.path.join(rmg.outputDirectory, 'restart.pkl'),
+                              rmg,
                               delay=0 if rmg.done else rmg.saveRestartPeriod.value_si
                             )
 
         
         
-def saveRestartFile(path, reactionModel, delay=0):
+def saveRestartFile(path, rmg, delay=0):
     """
     Save a restart file to `path` on disk containing the contents of the
     provided `reactionModel`. The `delay` parameter is a time in seconds; if
@@ -61,8 +61,18 @@ def saveRestartFile(path, reactionModel, delay=0):
     # Pickle the reaction model to the specified file
     # We also compress the restart file to save space (and lower the disk read/write time)
     logging.info('Saving restart file...')
+
+    from rmgpy.rmg.main import RMG
+    rmg_restart = RMG()
+    rmg_restart.reactionModel = rmg.reactionModel
+    rmg_restart.unimolecularReact = rmg.unimolecularReact
+    rmg_restart.bimolecularReact = rmg.bimolecularReact
+    if rmg.filterReactions:
+        rmg_restart.unimolecularThreshold = rmg.unimolecularThreshold
+        rmg_restart.bimolecularThreshold = rmg.bimolecularThreshold
+    
     f = open(path, 'wb')
-    cPickle.dump(reactionModel, f, cPickle.HIGHEST_PROTOCOL)
+    cPickle.dump(rmg_restart, f, cPickle.HIGHEST_PROTOCOL)
     f.close()
 
 class RestartWriter(object):

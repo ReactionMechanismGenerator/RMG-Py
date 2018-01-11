@@ -5,8 +5,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2010 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -209,6 +209,10 @@ class KineticsDatabase(object):
                     library.load(library_file, self.local_context, self.global_context)
                     self.libraries[library.label] = library
                 else:
+                    if library_name == "KlippensteinH2O2":
+                        logging.info("""\n** Note: The KlippensteinH2O2 library was replaced and is no longer available in RMG.
+For H2 combustion chemistry consider using either the BurkeH2inN2 or BurkeH2inArHe
+library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n""")
                     raise IOError("Couldn't find kinetics library {0}".format(library_file))
             # library order should've been set prior to this, with the given seed mechs and reaction libraries
             assert (len(self.libraryOrder) == len(libraries))
@@ -416,7 +420,12 @@ class KineticsDatabase(object):
         reactionList = []
         for label, family in self.families.iteritems():
             if only_families is None or label in only_families:
-                reactionList.extend(family.generateReactions(reactants))
+                try:
+                    reactionList.extend(family.generateReactions(reactants))
+                except:
+                    logging.error("Problem family: {}".format(label))
+                    logging.error("Problem reactants: {}".format(reactants))
+                    raise
         if products:
             reactionList = filterReactions(reactants, products, reactionList)
         return reactionList
@@ -534,4 +543,136 @@ class KineticsDatabase(object):
         assert reaction is not None
         assert template is not None
         return reaction, template
+    
+    def extractSourceFromComments(self, reaction):
+        """
+        `reaction`: A reaction object containing kinetics data and kinetics data comments.  
+            Should be either a PDepReaction, LibraryReaction, or TemplateReaction object
+            as loaded from the rmgpy.chemkin.loadChemkinFile function
+        
+        Parses the verbose string of comments from the thermo data of the species object,
+        and extracts the thermo sources.
 
+        Returns a dictionary with keys of either 'Rate Rules', 'Training', 'Library', or 'PDep'.
+        A reaction can only be estimated using one of these methods.
+        
+        source = {'RateRules': (Family_Label, OriginalTemplate, RateRules),
+                  'Library': String_Name_of_Library_Used,
+                  'PDep': Network_Index,
+                  'Training':  (Family_Label, Training_Reaction_Entry),
+                  }
+        """
+        from rmgpy.rmg.pdep import PDepReaction
+        from rmgpy.data.kinetics.library import LibraryReaction
+        from rmgpy.data.kinetics.family import TemplateReaction
+        
+        source = {}
+        
+        if isinstance(reaction, TemplateReaction):
+            # This reaction comes from rate rules
+            training, dataSource = self.families[reaction.family].extractSourceFromComments(reaction)
+            if training:
+                source['Training'] = dataSource
+            else:
+                source['Rate Rules'] = dataSource
+        elif isinstance(reaction, LibraryReaction):
+            # This reaction comes from a reaction library or seed mechanism
+            source['Library'] = reaction.library
+            
+        elif isinstance(reaction, PDepReaction):
+            # This reaction is a pressure-dependent reaction
+            source['PDep'] = reaction.network.index
+        
+        else:
+            raise Exception('Reaction {} must be either a TemplateReaction, LibraryReaction, or PDepReaction object for source data to be extracted.'.format(reaction))
+            
+        return source
+    
+    def reconstructKineticsFromSource(self, reaction, source, fixBarrierHeight=False, forcePositiveBarrier=False):
+        """
+        Reaction is the original reaction with original kinetics.
+        Note that for Library and PDep reactions this function does not do anything other than return the original kinetics...
+        
+        You must enter source data in the appropriate format such as returned from returned from self.extractSourceFromComments, 
+        self-constructed.  
+        fixBarrierHeight and forcePositiveBarrier will change the kinetics based on the Reaction.fixBarrierHeight function.
+        Return Arrhenius form kinetics if the source is from training reaction or rate rules.
+        """
+        from rmgpy.data.thermo import findCp0andCpInf
+        from rmgpy.thermo import Wilhoit
+        if 'Library' in source:
+            return reaction.kinetics
+        elif 'PDep' in source:
+            return reaction.kinetics
+        else:
+            rxnCopy = deepcopy(reaction)
+            if 'Training' in source:
+                trainingEntry = source['Training'][1]
+                reverse = source['Training'][2]
+                if reverse:
+                    reverseKinetics = trainingEntry.data
+                    rxnCopy.kinetics = reverseKinetics
+                    forwardKinetics = rxnCopy.generateReverseRateCoefficient()
+                    kinetics = forwardKinetics
+                else:
+                    kinetics = trainingEntry.data
+            elif 'Rate Rules' in source:
+    
+                sourceDict = source['Rate Rules'][1]
+                rules = sourceDict['rules']
+                training = sourceDict['training']
+                degeneracy = sourceDict['degeneracy']
+    
+                logA = 0
+                n = 0
+                alpha = 0
+                E0 = 0
+                for ruleEntry, weight in rules:
+                    logA += numpy.log10(ruleEntry.data.A.value_si)*weight
+                    n += ruleEntry.data.n.value_si*weight
+                    alpha +=ruleEntry.data.alpha.value_si*weight
+                    E0 +=ruleEntry.data.E0.value_si*weight
+                for ruleEntry, trainingEntry, weight in training:
+                    logA += numpy.log10(ruleEntry.data.A.value_si)*weight
+                    n += ruleEntry.data.n.value_si*weight
+                    alpha +=ruleEntry.data.alpha.value_si*weight
+                    E0 +=ruleEntry.data.E0.value_si*weight
+                
+                Aunits = ruleEntry.data.A.units 
+                if Aunits == 'cm^3/(mol*s)' or Aunits == 'cm^3/(molecule*s)' or Aunits == 'm^3/(molecule*s)':
+                    Aunits = 'm^3/(mol*s)'
+                elif Aunits == 'cm^6/(mol^2*s)' or Aunits == 'cm^6/(molecule^2*s)' or Aunits == 'm^6/(molecule^2*s)':
+                    Aunits = 'm^6/(mol^2*s)'
+                elif Aunits == 's^-1' or Aunits == 'm^3/(mol*s)' or Aunits == 'm^6/(mol^2*s)':
+                    pass
+                else:
+                    raise Exception('Invalid units {0} for averaging kinetics.'.format(Aunits))
+                kinetics = ArrheniusEP(
+                    A = (degeneracy*10**logA, Aunits),
+                    n = n,
+                    alpha = alpha,
+                    E0 = (E0*0.001,"kJ/mol"),
+                )
+            else:
+                raise Exception("Source data must be either 'Library', 'PDep','Training', or 'Rate Rules'.")
+                
+            
+            # Convert ArrheniusEP to Arrhenius
+            if fixBarrierHeight:
+                for spc in rxnCopy.reactants + rxnCopy.products:
+                    # Need wilhoit to do this
+                    if not isinstance(spc.thermo, Wilhoit):
+                        findCp0andCpInf(spc, spc.thermo)
+                        wilhoit = spc.thermo.toWilhoit()
+                        spc.thermo = wilhoit
+                        
+                rxnCopy.kinetics = kinetics
+                rxnCopy.fixBarrierHeight(forcePositive=forcePositiveBarrier)
+                
+                return rxnCopy.kinetics
+            else:
+                
+                H298 = rxnCopy.getEnthalpyOfReaction(298)
+                if isinstance(kinetics, ArrheniusEP):
+                    kinetics = kinetics.toArrhenius(H298)
+                return kinetics

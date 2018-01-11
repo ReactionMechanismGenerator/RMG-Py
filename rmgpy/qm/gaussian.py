@@ -1,3 +1,30 @@
+################################################################################
+#
+#   RMG - Reaction Mechanism Generator
+#
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
+#
+#   Permission is hereby granted, free of charge, to any person obtaining a
+#   copy of this software and associated documentation files (the 'Software'),
+#   to deal in the Software without restriction, including without limitation
+#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#   and/or sell copies of the Software, and to permit persons to whom the
+#   Software is furnished to do so, subject to the following conditions:
+#
+#   The above copyright notice and this permission notice shall be included in
+#   all copies or substantial portions of the Software.
+#
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+#   DEALINGS IN THE SOFTWARE.
+#
+################################################################################
+
 import os
 
 import distutils.spawn
@@ -7,9 +34,7 @@ import logging
 import re
 import math
 import numpy
-import itertools
 from subprocess import Popen
-import re
 import collections
 from copy import deepcopy
 
@@ -87,7 +112,8 @@ class Gaussian:
         # submits the input file to Gaussian
         process = Popen([self.executablePath, self.inputFilePath, self.outputFilePath])
         process.communicate()# necessary to wait for executable termination!
-
+        if process.returncode:
+            logging.warning("Gaussian finished with return code {}".format(process.returncode))
         return self.verifyOutputFile()
 
 
@@ -187,6 +213,7 @@ class Gaussian:
         Using the :class:`Geometry` object, write the input file
         for the `attmept`th attempt.
         """
+        logging.info("Writing gaussian input file {}".format(inputFilePath))
         if not top_keys:
             top_keys = self.inputFileKeywords(attempt)
         if scf:
@@ -261,10 +288,11 @@ class GaussianMol(QMMolecule, Gaussian):
         """
         for atom in self.molecule.vertices:
             if atom.atomType.label in ('N5s', 'N5d', 'N5dd', 'N5t', 'N5b'):
+                logging.warning("Skipping species that contains nitrogen: {}".format(self.molecule.toSMILES()))
                 return None
 
         if self.verifyOutputFile():
-            logging.info("Found a successful output file already; using that.")
+            logging.info("Found a successful output file; using that.")
             source = "QM {0} calculation found from previous run.".format(self.__class__.__name__)
         else:
             self.createGeometry()
@@ -481,6 +509,7 @@ class GaussianTS(QMReaction, Gaussian):
         for the `attmept`th attempt.
         fromInt are files written after an internal coordinate error (switch to cartesian).
         """
+        logging.info("Creating input file")
         output = ['', self.uniqueID, '' ]
         output.append("{charge}   {mult}".format(charge=0, mult=self.reactantGeom.molecule.multiplicity ))
 
@@ -511,6 +540,7 @@ class GaussianTS(QMReaction, Gaussian):
         IRC calculation on the transition state. The geometry is taken
         from the checkpoint file created during the geometry search.
         """
+        logging.info("Creating IRC file")
         output = ['', "{charge}   {mult}".format(charge=0, mult=self.reactantGeom.molecule.multiplicity )]
         if os.path.exists(self.getFilePath('.chk')):
             top_keys = self.inputFileKeywords(0, irc=True)
@@ -529,94 +559,114 @@ class GaussianTS(QMReaction, Gaussian):
         Writes and runs a loose optimization of the transition state estimate with frozen reaction
         center distances.
         """
+        logging.info("Running loose optimization of TS with frozen center")
 
         inputFilePath = self.getFilePath('Est{0}'.format(self.inputFileExtension))
         outputFilePath = self.getFilePath('Est{0}'.format(self.outputFileExtension))
 
-        if not os.path.exists(outputFilePath):
-            attempt = 1
-
-            output = ['', self.uniqueID, '' ]
-            output.append("{charge}   {mult}".format(charge=0, mult=self.reactantGeom.molecule.multiplicity ))
-
-            # molfile = self.reactantGeom.getRefinedMolFilePath()
-            molfile = self.reactantGeom.getCrudeMolFilePath()
-
-            assert os.path.exists(molfile)
-            atomsymbols, atomcoords = self.reactantGeom.parseMOL(molfile)
-
-            output, atomCount = self.geomToString(atomsymbols, atomcoords, outputString=output)
-
-            assert atomCount == len(self.reactantGeom.molecule.atoms)
-
-            output.append('')
-
-            if self.basisSet:
-                top_keys = '# {0}/{1} Opt=(ModRedun,Loose) Int(Grid=SG1)'.format(self.method, self.basisSet)
+        if os.path.exists(outputFilePath):
+            logging.info("Output file {} exists.".format(outputFilePath))
+            if self.checkComplete(outputFilePath):
+                logging.info("Existing output file looks complete, so using it instead of re-running.")
+                return outputFilePath
             else:
-                top_keys = '# {0} Opt=(ModRedun,Loose) Int(Grid=SG1)'.format(self.method)
+                logging.info("Existing output file looks like it was interrupted, so deleting and retrying.")
+                os.remove(outputFilePath)
 
-            dist_combo_it = itertools.combinations(labels, 2)
-            dist_combo_l = list(dist_combo_it)
-            bottomKeys = ''
-            for combo in dist_combo_l:
-                bottomKeys = bottomKeys + '{0} {1} F\n'.format(combo[0] + 1, combo[1] + 1)
+        attempt = 1
 
-            self.writeInputFile(output, attempt, top_keys=top_keys, numProcShared=20, memory='5GB', bottomKeys=bottomKeys, inputFilePath=inputFilePath)
+        output = ['', self.uniqueID, '' ]
+        output.append("{charge}   {mult}".format(charge=0, mult=self.reactantGeom.molecule.multiplicity))
 
-            outputFilePath = self.runAlt(inputFilePath)
+        # molfile = self.reactantGeom.getRefinedMolFilePath()
+        molfile = self.reactantGeom.getCrudeMolFilePath()
+
+        assert os.path.exists(molfile)
+        atomsymbols, atomcoords = self.reactantGeom.parseMOL(molfile)
+
+        output, atomCount = self.geomToString(atomsymbols, atomcoords, outputString=output)
+
+        assert atomCount == len(self.reactantGeom.molecule.atoms)
+
+        output.append('')
+
+        if self.basisSet:
+            top_keys = '# {0}/{1} Opt=(ModRedun,Loose) Int(Grid=SG1)'.format(self.method, self.basisSet)
+        else:
+            top_keys = '# {0} Opt=(ModRedun,Loose) Int(Grid=SG1)'.format(self.method)
+
+        dist_combo_it = itertools.combinations(labels, 2)
+        dist_combo_l = list(dist_combo_it)
+        bottomKeys = ''
+        for combo in dist_combo_l:
+            bottomKeys = bottomKeys + '{0} {1} F\n'.format(combo[0] + 1, combo[1] + 1)
+
+        self.writeInputFile(output, attempt, top_keys=top_keys, numProcShared=20, memory='5GB', bottomKeys=bottomKeys, inputFilePath=inputFilePath)
+
+        outputFilePath = self.runAlt(inputFilePath)
 
         return outputFilePath
-    
+
     def optRxnCenter(self, labels):
         """
         Writes and runs a ts optimization of the transition state estimate with everything frozen
         except the reaction center distances.
+        
+        Takes its geometry from the, presumed, log file of the previous step, which ends "Est.log"
         """
+        logging.info("Optimization of TS reaction center distances")
 
         inputFilePath = self.getFilePath('RxnC{0}'.format(self.inputFileExtension))
         outputFilePath = self.getFilePath('RxnC{0}'.format(self.outputFileExtension))
 
-        if not os.path.exists(outputFilePath):
-            # Get the geometry from the OptEst file
-            readFilePath = self.getFilePath('Est{0}'.format(self.outputFileExtension))
-            assert os.path.exists(readFilePath)
-            atomsymbols, atomcoords = self.reactantGeom.parseLOG(readFilePath)
-            
-            attempt = 1
-
-            output = ['', self.uniqueID, '' ]
-            output.append("{charge}   {mult}".format(charge=0, mult=self.reactantGeom.molecule.multiplicity ))
-            
-            output, atomCount = self.geomToString(atomsymbols, atomcoords, outputString=output)
-
-            assert atomCount == len(self.reactantGeom.molecule.atoms)
-
-            output.append('')
-
-            if self.basisSet:
-                top_keys = '# {0}/{1} opt=(ts,calcfc,noeigentest)'.format(self.method, self.basisSet)
+        if os.path.exists(outputFilePath):
+            logging.info("Output file {} exists.".format(outputFilePath))
+            if self.checkComplete(outputFilePath):
+                logging.info("Existing output file looks complete, so using it instead of re-running.")
+                return outputFilePath
             else:
-                top_keys = '# {0} opt=(ts,calcfc,noeigentest)'.format(self.method)
-            
-            # Get list of all distances
-            dist_combo_it = itertools.combinations(range(atomCount), 2)
-            dist_combo_all = list(dist_combo_it)
-                
-            # Get list of things we want unfrozen
-            dist_combo_it = itertools.combinations(labels, 2)
-            dist_combo_part = list(dist_combo_it)
-            
-            # Get list of things we want frozen
-            freezeList = [x for x in dist_combo_all if x not in dist_combo_part]
-            
-            bottomKeys = ''
-            for combo in freezeList:
-                bottomKeys = bottomKeys + '{0} {1} F\n'.format(combo[0] + 1, combo[1] + 1)
+                logging.info("Existing output file looks like it was interrupted, so deleting and retrying.")
+                os.remove(outputFilePath)
 
-            self.writeInputFile(output, attempt, top_keys=top_keys, numProcShared=20, memory='5GB', bottomKeys=bottomKeys, inputFilePath=inputFilePath)
+        # Get the geometry from the OptEst file
+        readFilePath = self.getFilePath('Est{0}'.format(self.outputFileExtension))
+        assert os.path.exists(readFilePath), "Expected gaussian output file {} doesn't exist".format(readFilePath)
+        atomsymbols, atomcoords = self.reactantGeom.parseLOG(readFilePath)
 
-            outputFilePath = self.runAlt(inputFilePath)
+        attempt = 1
+
+        output = ['', self.uniqueID, '' ]
+        output.append("{charge}   {mult}".format(charge=0, mult=self.reactantGeom.molecule.multiplicity))
+
+        output, atomCount = self.geomToString(atomsymbols, atomcoords, outputString=output)
+
+        assert atomCount == len(self.reactantGeom.molecule.atoms)
+
+        output.append('')
+
+        if self.basisSet:
+            top_keys = '# {0}/{1} opt=(ts,calcfc,noeigentest)'.format(self.method, self.basisSet)
+        else:
+            top_keys = '# {0} opt=(ts,calcfc,noeigentest)'.format(self.method)
+
+        # Get list of all distances
+        dist_combo_it = itertools.combinations(range(atomCount), 2)
+        dist_combo_all = list(dist_combo_it)
+
+        # Get list of things we want unfrozen
+        dist_combo_it = itertools.combinations(labels, 2)
+        dist_combo_part = list(dist_combo_it)
+
+        # Get list of things we want frozen
+        freezeList = [x for x in dist_combo_all if x not in dist_combo_part]
+
+        bottomKeys = ''
+        for combo in freezeList:
+            bottomKeys = bottomKeys + '{0} {1} F\n'.format(combo[0] + 1, combo[1] + 1)
+
+        self.writeInputFile(output, attempt, top_keys=top_keys, numProcShared=20, memory='5GB', bottomKeys=bottomKeys, inputFilePath=inputFilePath)
+
+        outputFilePath = self.runAlt(inputFilePath)
 
         return outputFilePath
 
@@ -624,6 +674,8 @@ class GaussianTS(QMReaction, Gaussian):
         """
         Calculate the QM data and return a QMData object.
         """
+        logging.info("Calculating (or loading) the QM kinetics data")
+
         self.createGeometry()
         if self.verifyOutputFile():
             logging.info("Found a successful output file already; using that.")
@@ -634,7 +686,7 @@ class GaussianTS(QMReaction, Gaussian):
                 self.createIRCFile()
                 success = self.run()
                 if success:
-                    logging.info('Attempt {0} of {1} on species {2} succeeded.'.format(attempt, self.maxAttempts, self.molecule.toAugmentedInChI()))
+                    logging.info('Attempt {0} of {1} on {2} succeeded.'.format(attempt, self.maxAttempts, self.molecule.toAugmentedInChI()))
                     break
             else:
                 logging.error('QM thermo calculation failed for {0}.'.format(self.molecule.toAugmentedInChI()))
@@ -643,43 +695,51 @@ class GaussianTS(QMReaction, Gaussian):
         return result
 
     def runAlt(self, inputFilePath):
+        """
+        Run the provided `inputFilePath` through gaussian, and return 
+        the resulting `logFilePath`. Does no processing.
+        """
         self.testReady()
         # submits the input file to Gaussian
         process = Popen([self.executablePath, inputFilePath])
         process.communicate()# necessary to wait for executable termination!
-
+        if process.returncode:
+            logging.warning("Gaussian finished with return code {}".format(process.returncode))
         logFilePath = os.path.splitext(inputFilePath)[0]+self.outputFileExtension
-
         return logFilePath
 
     def runIRC(self):
+        logging.info("Running IRC")
         self.testReady()
         # submits the input file to Gaussian
         process = Popen([self.executablePath, self.ircInputFilePath, self.ircOutputFilePath])
         process.communicate()# necessary to wait for executable termination!
-
+        if process.returncode:
+            logging.warning("Gaussian finished with return code {}".format(process.returncode))
         return self.verifyIRCOutputFile()
-            
+
     def checkComplete(self, filePath):
         """
-        Check that an IRC output file is complete.
-        
+        Check that a output file is complete.
+
         Incomplete IRC files may exist from previous runs, due to the job being prematurely terminated.
-        This checks to ensure the job has been completed.
+        This checks to ensure the job has been completed without interruption,
+        irrespective of whether or not it successfully converged.
         """
+        logging.info("Checking file {} is complete".format(filePath))
         convergenceFailure = False
         complete = False
-        
+
         f = open(filePath, 'r')
         allLines = f.readlines()
-        
+
         lastlines = allLines[-4:]
         convergence_failed_keys = {"scf": False}
         finished_keys = {
             " Job cpu time": False,
             "termination": False,
         }
-        
+
         for line in lastlines:
             if line.startswith(' Job cpu time'):
                 finished_keys[" Job cpu time"] = True
@@ -687,15 +747,15 @@ class GaussianTS(QMReaction, Gaussian):
                 finished_keys["termination"] = True
             elif line.startswith(' Convergence failure -- run terminated.'):
                 convergence_failed_keys["scf"] = True
-        
+
         if not all(convergence_failed_keys):
             convergenceFailure = True
-            
+
         if all(finished_keys):
             complete = True
-        
+        logging.info("IRC file {} is {}complete".format(filePath, '' if complete else 'NOT '))
         return complete, convergenceFailure
-    
+
     def verifyOutputFile(self):
         """
         Check's that an output file exists and was successful.
@@ -712,6 +772,7 @@ class GaussianTS(QMReaction, Gaussian):
         will be initiated. The second boolean flag indicates if there was a failure in the internal coordinate system.
         This will initiate a subsequent calculation in cartesian coordinates.
         """
+        logging.info("Verifying output file {}".format(self.outputFilePath))
         if not os.path.exists(self.outputFilePath):
             logging.info("Output file {0} does not exist.".format(self.outputFilePath))
             return False
@@ -762,8 +823,10 @@ class GaussianTS(QMReaction, Gaussian):
         will be initiated. The second boolean flag indicates if there was a failure in the internal coordinate system.
         This will initiate a subsequent calculation in cartesian coordinates.
         """
+
         inputFilePath = self.getFilePath('Est{0}'.format(self.inputFileExtension))
         outputFilePath = self.getFilePath('Est{0}'.format(self.outputFileExtension))
+        logging.info("Verifying the Optimization output file {}".format(outputFilePath))
 
         if not os.path.exists(outputFilePath):
             logging.info("Output file {0} does not exist.".format(outputFilePath))
@@ -803,6 +866,8 @@ class GaussianTS(QMReaction, Gaussian):
         """
         Compares IRC geometries to input geometries.
         """
+
+        logging.info("Verifying the IRC output file {}".format(self.ircOutputFilePath))
         if not os.path.exists(self.ircOutputFilePath):
             logging.info("Output file {0} does not exist.".format(self.ircOutputFilePath))
             return False
@@ -837,6 +902,7 @@ class GaussianTS(QMReaction, Gaussian):
                     steps.append(numStp)
 
         # Check that ALL 'success' keywords were found in the file.
+        logging.info("Checking if all the success keywords are found in the file.")
         if not successKeysFound['Normal termination of Gaussian']:
             logging.error('Not all of the required keywords for success were found in the IRC output file!')
             return False
@@ -909,6 +975,7 @@ class GaussianTS(QMReaction, Gaussian):
         point. This would be valueable as it would prevent the need for an IRC in these cases, saving
         on the computational cost.
         """
+        logging.info("Running testTSGeometry which has a confusing docstring")
         labeledList = reactant.getLabeledAtoms()
         labeledAtoms = labeledList.values()
         labels = labeledList.keys()
@@ -930,6 +997,7 @@ class GaussianTS(QMReaction, Gaussian):
         """
         Takes an output file, and extracts the geometry from it to ensure it has the same structure as the molecule provided.
         """
+        logging.info("Checking geometry is the expected molecule {}".format(molecule.toSMILES()))
         parser = cclib.parser.Gaussian(outputFilePath)
         parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
         cclibData = parser.parse()
@@ -940,12 +1008,14 @@ class GaussianTS(QMReaction, Gaussian):
         if mol.isIsomorphic(molecule.toSingleBonds()):
             return True
         else:
+            logging.info("(It wasn't)")
             return False
 
     def parse(self):
         """
         Parses the results of the Gaussian calculation, and returns a CCLibData object.
         """
+        logging.info("Parsing the gaussian output {}".format(self.outputFilePath))
         parser = cclib.parser.Gaussian(self.outputFilePath)
         parser.logger.setLevel(logging.ERROR) #cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
         cclibData = parser.parse()
@@ -961,6 +1031,7 @@ class GaussianTS(QMReaction, Gaussian):
         return self.qmData
 
     def parseTS(self, labels):
+        logging.info("Parsing the TS to get interatomic distances.")
 
         def getDistance(coordinates1, coordinates2):
             """
@@ -984,9 +1055,9 @@ class GaussianTS(QMReaction, Gaussian):
         atomDist = [at12, at23, at13]
 
         return atomDist
-        
+
     def duplicate(self, entry):
-        
+
         newItem = deepcopy(entry)
         newDist = deepcopy(newItem.data.distances)
         # for H_abstraction
@@ -998,20 +1069,20 @@ class GaussianTS(QMReaction, Gaussian):
             newDist['d13'] = entry.data.distances['d23']
         else:
             raise ValueError("We don't know how to duplicate this reaction family.")
-	              
+
         newItem.data.distances = newDist
-        
+
         newProd = deepcopy(entry.item.reactants)
         newReact = deepcopy(entry.item.products)
         reaction = Reaction(reactants=newReact, products=newProd)
-        
+
         newLabel = entry.label.split('<=>')
         newLabel = [string.strip() for string in newLabel]
         newLabel.reverse()
         newLabel = " <=> ".join(newLabel)
-        
+
         reaction.label = newLabel
-        
+
         entry = Entry(
             index = entry.index + 1,
             label = newLabel,
@@ -1023,23 +1094,28 @@ class GaussianTS(QMReaction, Gaussian):
             longDesc = entry.longDesc.strip(),
             rank = entry.rank,
         )
-        
+
         return entry
-    
+
     def appendSpeciesDict(self, folder, mol, label):
         # Update the species dictionary
         with open('{0}/TS_training/dictionary.txt'.format(folder), 'a') as f:
             f.write(mol.toAdjacencyList(label=label, removeH=False))
             f.write('\n')
-    
+
     def updateTSData(self, entry):
         """
         Take a TS data entry and checks if it already exists in the TS database. If it does not,
         add the label to the entry, and add it to the database.
+        
+        ToDo: This is currently broken, because we switched from reactions containing Species 
+        to containing Molecules, which don't have a label attribute, so can't be used this way.
         """
+        logging.info("Updating the TS distance training database")
+        # What kind of object is entry?
         tsData_folder = os.path.abspath(os.path.join(rmgpy.getPath(), '../../RMG-database/input/kinetics/families/{0}'.format(self.reaction.family)))
         speciesDict = self.tsDatabase.getSpecies(os.path.join(tsData_folder, 'TS_training/dictionary.txt'))
-        
+
         # Check if self reaction is already in the TS database
         exists = False
         for value in self.tsDatabase.depository.entries.values():
@@ -1050,25 +1126,26 @@ class GaussianTS(QMReaction, Gaussian):
             if entry.item.isIsomorphic(testR):
                 exists = True
                 break
-                
+
         if exists:
             # Return and don't add anything to the database
             return False
         else:
             entry.index = len(self.tsDatabase.depository.entries.values()) + 1
-        
+
         # Now figure out the label
         labeledAtoms = {}
         rxnLabel = ""
+        
         for k, reactant in enumerate(entry.item.reactants):
             if k>0:
                 rxnLabel += ' + '
-                
-            label = reactant.molecule[0].getFingerprint()
-            labeledAtoms[label] = reactant.molecule[0].getLabeledAtoms()
+
+            label = reactant.getFingerprint()
+            labeledAtoms[label] = reactant.getLabeledAtoms()
             if label not in speciesDict.keys():
-                speciesDict[label] = reactant.molecule[0]
-                self.appendSpeciesDict(tsData_folder, reactant.molecule[0], label)
+                speciesDict[label] = reactant
+                self.appendSpeciesDict(tsData_folder, reactant, label)
                 reactant.label = label
                 rxnLabel += label
             else:
@@ -1085,37 +1162,37 @@ class GaussianTS(QMReaction, Gaussian):
                         mol = speciesDict[label]
                     try:
                         for atomLabel in labeledAtoms[label]:
-                            initialMap[reactant.molecule[0].getLabeledAtom(atomLabel)] = mol.getLabeledAtom(atomLabel)
+                            initialMap[reactant.getLabeledAtom(atomLabel)] = mol.getLabeledAtom(atomLabel)
                     except ValueError:
                         # atom labels did not match, therefore not a match
-                        label = reactant.molecule[0].getFingerprint() + '-' + str(num)
+                        label = reactant.getFingerprint() + '-' + str(num)
                         valErr = True
-                                
+
                     if not valErr:
-                        if reactant.molecule[0].isIsomorphic(mol, initialMap):
+                        if reactant.isIsomorphic(mol, initialMap):
                             # It's already in the species dict
                             rxnLabel += label
                             reactant.label = label
                             label = None
                         else:
-                            label = reactant.molecule[0].getFingerprint() + '-' + str(num)
+                            label = reactant.getFingerprint() + '-' + str(num)
                 if label and label not in speciesDict:
-                    speciesDict[label] = reactant.molecule[0]
-                    labeledAtoms[label] = reactant.molecule[0].getLabeledAtoms()
-                    self.appendSpeciesDict(tsData_folder, reactant.molecule[0], label)
+                    speciesDict[label] = reactant
+                    labeledAtoms[label] = reactant.getLabeledAtoms()
+                    self.appendSpeciesDict(tsData_folder, reactant, label)
                     reactant.label = label
                     rxnLabel += label
-        
-        rxnLabel += ' <=> '            
+
+        rxnLabel += ' <=> '
         for k, product in enumerate(entry.item.products):
             if k>0:
                 rxnLabel += ' + '
-            
-            label = product.molecule[0].getFingerprint()
-            labeledAtoms[label] = product.molecule[0].getLabeledAtoms()
+
+            label = product.getFingerprint()
+            labeledAtoms[label] = product.getLabeledAtoms()
             if label not in speciesDict:
-                speciesDict[label] = product.molecule[0]
-                self.appendSpeciesDict(tsData_folder, product.molecule[0], label)
+                speciesDict[label] = product
+                self.appendSpeciesDict(tsData_folder, product, label)
                 product.label = label
                 rxnLabel += label
             else:
@@ -1127,57 +1204,58 @@ class GaussianTS(QMReaction, Gaussian):
                     num += 1
                     initialMap = {}
                     if isinstance(speciesDict[label], Species):
-                        mol = speciesDict[label].molecule[0]
+                        mol = speciesDict[label]
                     else:
                         mol = speciesDict[label]
                     try:
                         for atomLabel in labeledAtoms[label]:
-                            initialMap[product.molecule[0].getLabeledAtom(atomLabel)] = mol.getLabeledAtom(atomLabel)
+                            initialMap[product.getLabeledAtom(atomLabel)] = mol.getLabeledAtom(atomLabel)
                     except ValueError:
                         # atom labels did not match, therefore not a match
-                        label = product.molecule[0].getFingerprint() + '-' + str(num)
+                        label = product.getFingerprint() + '-' + str(num)
                         valErr = True
                     if not valErr:
-                        if product.molecule[0].isIsomorphic(mol, initialMap):
+                        if product.isIsomorphic(mol, initialMap):
                             # It's already in the species dict
                             product.label = label
                             rxnLabel += label
                             label = None
                         else:
-                            label = product.molecule[0].getFingerprint() + '-' + str(num)
+                            label = product.getFingerprint() + '-' + str(num)
                 if label and label not in speciesDict:
-                    speciesDict[label] = product.molecule[0]
-                    labeledAtoms[label] = product.molecule[0].getLabeledAtoms()
-                    self.appendSpeciesDict(tsData_folder, product.molecule[0], label)
+                    speciesDict[label] = product
+                    labeledAtoms[label] = product.getLabeledAtoms()
+                    self.appendSpeciesDict(tsData_folder, product, label)
                     product.label = label
                     rxnLabel += label
-        
+
         # Fix the labels
         entry.label = rxnLabel
         entry.item.label = entry.label
-        
+
         # Check if we can use the reverse reaction (reactions that are their own reverse)
         entry2 = None
         dupFam = self.duplicateFam
         if dupFam[self.reaction.family]:
             entry2 = self.duplicate(entry)
-        
+
         # Update the training data
         with open('{0}/TS_training/reactions.py'.format(tsData_folder), 'a') as f:
             saveEntry(f, entry)
             if entry2:
                 saveEntry(f, entry2)
-        
+
         return True
 
     def writeRxnOutputFile(self, labels):
-        
-        atomDist = self.parseTS(labels)
+        """
+        ToDo: doesn't do anything, because the function it calls at the end is broken
+        """
+        return  # ToDo: fix this
 
+        atomDist = self.parseTS(labels)
         distances = {'d12':float(atomDist[0]), 'd23':float(atomDist[1]), 'd13':float(atomDist[2])}
-        user = "Pierre Bhoorasingh <bhoorasingh.p@husky.neu.edu>"
-        description = "Found via group additive estimation by the automatic transition state generator"
-        
+
         label = ''
         entry = Entry(
             index = 1,
@@ -1186,8 +1264,9 @@ class GaussianTS(QMReaction, Gaussian):
             data = DistanceData(distances=distances, method='{method}/{basis}'.format(method=self.method, basis=self.basisSet)),
             shortDesc = "M06-2X/6-311+G(2df,2p) calculation via group additive TS generator.",
         )
-        
+
         # Check if this entry is in the TS database. If not, create the label, add it, and saveEntry
+        # ToDo: Enable this.
         newData = self.updateTSData(entry)
 
 class GaussianTSM062X(GaussianTS):

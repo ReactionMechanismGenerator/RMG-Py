@@ -5,7 +5,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2009-2011 by the RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -38,9 +39,10 @@ from .loader import loadRMGJob
 import rmgpy.util as util 
 from rmgpy.tools.plot import ReactionSensitivityPlot, ThermoSensitivityPlot
 
-def plotSensitivity(outputDirectory, reactionSystemIndex, sensitiveSpeciesList):
+def plotSensitivity(outputDirectory, reactionSystemIndex, sensitiveSpeciesList, number=10, fileformat='.png'):
     """
-    A function for plotting the top 10 reaction and top 10 thermo sensitivities in bar plot format.
+    A function for plotting the top reaction thermo sensitivities (the number is 
+    inputted as the variable `number`) in bar plot format.
     To be called after running a simulation on a particular reactionSystem.
     """
     
@@ -56,21 +58,21 @@ def plotSensitivity(outputDirectory, reactionSystemIndex, sensitiveSpeciesList):
         reactionPlotFile = os.path.join(
             outputDirectory,
             'solver',
-            'sensitivity_{0}_SPC_{1}_reactions.png'.format(
+            'sensitivity_{0}_SPC_{1}_reactions'.format(
                 reactionSystemIndex + 1, species.index
-                )
+                ) + fileformat
             )
         
         thermoPlotFile = os.path.join(
             outputDirectory,
             'solver',
-            'sensitivity_{0}_SPC_{1}_thermo.png'.format(
+            'sensitivity_{0}_SPC_{1}_thermo'.format(
                 reactionSystemIndex + 1, species.index
-                )
+                ) + fileformat
             )
 
-        ReactionSensitivityPlot(csvFile=csvFile, numReactions=10).barplot(reactionPlotFile)
-        ThermoSensitivityPlot(csvFile=csvFile, numSpecies=10).barplot(thermoPlotFile)
+        ReactionSensitivityPlot(csvFile=csvFile, numReactions=number).barplot(reactionPlotFile)
+        ThermoSensitivityPlot(csvFile=csvFile, numSpecies=number).barplot(thermoPlotFile)
 
 
 

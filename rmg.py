@@ -84,23 +84,14 @@ def parseCommandLineArguments():
     parser.add_argument('-t', '--walltime', type=str, nargs=1, default='0',
         metavar='HH:MM:SS', help='set the maximum execution time')
 
+    #Add option to output a folder that stores the details of each kinetic database entry source
+    parser.add_argument('-k', '--kineticsdatastore', action='store_true', help='output a folder, kinetics_database, that contains a .txt file for each reaction family listing the source(s) for each entry')
+
     return parser.parse_args()
 
 ################################################################################
 
 if __name__ == '__main__':
-
-    """ GUPPY PROFILING DISABLED FOR NOW
-    # Initialize the memory profiler
-    # It works best if we do this as the very first thing
-    # If the memory profiler package is not installed then carry on
-    try:
-        from guppy import hpy
-        hp = hpy()
-        hp.heap()
-    except ImportError:
-        pass
-    """
 
     # Parse the command-line arguments (requires the argparse module)
     args = parseCommandLineArguments()
@@ -109,6 +100,9 @@ if __name__ == '__main__':
     # to match the input file location
     import os.path
     inputFile = args.file[0]
+
+    if args.output_directory != '':
+        args.output_directory = args.output_directory[0]
 
     inputDirectory = os.path.abspath(os.path.dirname(inputFile))
     if args.output_directory == '':
@@ -134,6 +128,7 @@ if __name__ == '__main__':
         'scratch_directory': args.scratch_directory,
         'restart': args.restart,
         'walltime': args.walltime,
+        'kineticsdatastore': args.kineticsdatastore
         }
 
     if args.profile:

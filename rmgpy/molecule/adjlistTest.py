@@ -50,8 +50,8 @@ class TestGroupAdjLists(unittest.TestCase):
         self.assertTrue(atom3.atomType[0].label == 'R!H')
         self.assertTrue(atom3.radicalElectrons == [0, 1])
 
-        self.assertTrue(bond12.order == ['S', 'D'])
-        self.assertTrue(bond13.order == ['S'])
+        self.assertTrue(bond12.order == [1,2])
+        self.assertTrue(bond13.isSingle())
 
 
     def testFromAdjacencyList(self):
@@ -86,8 +86,8 @@ class TestGroupAdjLists(unittest.TestCase):
         self.assertTrue(atom3.atomType[0].label == 'R!H')
         self.assertTrue(atom3.radicalElectrons == [0])
 
-        self.assertTrue(bond12.order == ['S', 'D'])
-        self.assertTrue(bond13.order == ['S'])
+        self.assertTrue(bond12.order == [1, 2])
+        self.assertTrue(bond13.isSingle())
 
     def testFromAdjacencyList_multiplicity(self):
         gp = Group().fromAdjacencyList(
@@ -349,6 +349,55 @@ class TestMoleculeAdjLists(unittest.TestCase):
         self.assertTrue(bond21.isSingle())
         self.assertTrue(bond23.isSingle())
         self.assertTrue(bond24.isDouble())
+
+    def testFromAdjacencyList5(self):
+        """
+        adjlist: Test if fromAdjacencyList works when saturateH is turned on 
+        and test molecule is fused aromatics.
+        """
+        # molecule 5
+        adjlist = """
+1  * C u0 p0 c0 {2,B} {3,B} {4,B}
+2    C u0 p0 c0 {1,B} {5,B} {6,B}
+3    C u0 p0 c0 {1,B} {8,B} {13,S}
+4    C u0 p0 c0 {1,B} {9,B}
+5    C u0 p0 c0 {2,B} {10,B}
+6    C u0 p0 c0 {2,B} {7,B}
+7    C u0 p0 c0 {6,B} {8,B} {11,S}
+8    C u0 p0 c0 {3,B} {7,B} {12,S}
+9    C u0 p0 c0 {4,B} {10,B}
+10   C u0 p0 c0 {5,B} {9,B}
+11   H u0 p0 c0 {7,S}
+12   H u0 p0 c0 {8,S}
+13   H u0 p0 c0 {3,S}
+            """
+        molecule = Molecule().fromAdjacencyList(adjlist, saturateH=True)
+        
+        self.assertTrue(molecule.multiplicity == 1)
+        
+        atom1 = molecule.atoms[0]
+        atom2 = molecule.atoms[1]
+        atom3 = molecule.atoms[2]
+        atom7 = molecule.atoms[6]
+        atom11 = molecule.atoms[10]
+        bond21 = atom2.bonds[atom1]
+        bond13 = atom1.bonds[atom3]
+        bond7_11 = atom7.bonds[atom11]
+
+        self.assertTrue(atom1.label == '*')
+        self.assertTrue(atom1.element.symbol == 'C')
+        self.assertTrue(atom1.radicalElectrons == 0)
+        self.assertTrue(atom1.charge == 0)
+
+        self.assertTrue(atom2.label == '')
+        self.assertTrue(atom2.element.symbol == 'C')
+        self.assertTrue(atom2.radicalElectrons == 0)
+        self.assertTrue(atom2.charge == 0)
+
+        self.assertTrue(bond21.isBenzene())
+        self.assertTrue(bond13.isBenzene())
+        self.assertTrue(bond7_11.isSingle())
+        
     
     def testVariousSpinAdjlists(self):
         """
@@ -525,6 +574,45 @@ class TestMoleculeAdjLists(unittest.TestCase):
         newMolecule = Molecule().fromAdjacencyList(adjlist_1)
         self.assertTrue(molecule.isIsomorphic(newMolecule))
         
+    def testToAdjacencyListForNonIntegerBonds(self):
+        """
+        Test the adjacency list can be created for molecules with bond orders
+        that don't fit into single, double, triple, or benzene
+        """
+        from rmgpy.molecule.molecule import Atom, Bond, Molecule
+        atom1 = Atom(element='H',lonePairs=0)
+        atom2 = Atom(element='H',lonePairs=0)
+        bond = Bond(atom1, atom2, 0.5)
+        mol = Molecule(multiplicity=1)
+        mol.addAtom(atom1)
+        mol.addAtom(atom2)
+        mol.addBond(bond)
+        adjlist = mol.toAdjacencyList()
+        self.assertIn('H', adjlist)
+        self.assertIn('{1,0.5}',adjlist)
+
+    @work_in_progress
+    def testFromAdjacencyListForNonIntegerBonds(self):
+        """
+        Test molecule can be created from the adjacency list for molecules with bond orders
+        that don't fit into single, double, triple, or benzene.
+
+        This test is a work in progress since currently reading one of these
+        objects thows an `InvalidAdjacencyListError`. Since the number radical
+        electrons is an integer, having fractional bonds leads to this error.
+        Fixing it would require switching radical electrons to floats.
+        """
+        from rmgpy.molecule.molecule import Molecule
+        adjlist = """
+        1 H u1 p2 c0 {2,0.5}
+        2 H u1 p2 c0 {1,0.5}
+        """
+        mol = Molecule().fromAdjacencyList(adjlist)
+        atom0 = mol.atoms[0]
+        atoms, bonds = atom0.bonds.items()
+
+        self.assertAlmostEqual(bonds[0].getOrderNum(), 0.5)
+
     def testFromIntermediateAdjacencyList1(self):
         """
         Test we can read an intermediate style adjacency list with implicit hydrogens 1
@@ -651,6 +739,17 @@ class TestMoleculeAdjLists(unittest.TestCase):
         molecule2 = Molecule().fromSMILES('C=CC=C[CH]C')
         self.assertTrue(molecule1.isIsomorphic(molecule2))
         self.assertTrue(molecule2.isIsomorphic(molecule1))
+
+        #Test that charges are correctly stored and written with adjacency lists
+        adjlist3 = """
+1 C u0 p1 c-1 {2,T}
+2 O u0 p1 c+1 {1,T}
+"""
+        molecule3 = Molecule().fromAdjacencyList(adjlist3)
+        self.assertEquals(molecule3.atoms[0].charge, -1)
+        self.assertEquals(molecule3.atoms[1].charge, 1)
+        adjlist4 = molecule3.toAdjacencyList()
+        self.assertEquals(adjlist3.strip(), adjlist4.strip())
         
     def testGroupAdjacencyList(self):
         """
@@ -685,6 +784,7 @@ class TestConsistencyChecker(unittest.TestCase):
             multiplicity 1
             1 C u2 p0 c0
             """, saturateH=True)
+
     def test_check_hund_rule_success(self):
         try:
             Molecule().fromAdjacencyList("""
@@ -693,7 +793,50 @@ class TestConsistencyChecker(unittest.TestCase):
             """, saturateH=True)
         except InvalidAdjacencyListError:
             self.fail('InvalidAdjacencyListError thrown unexpectedly!')
-    
+
+    def test_check_multiplicity(self):
+        """
+        adjlist: Check that RMG allows different electron spins in the same molecule with multiplicity = 2s + 1
+        """
+        # [N] radical:
+        try:
+            Molecule().fromAdjacencyList('''multiplicity 4
+                                            1 N u3 p1 c0''')
+        except InvalidAdjacencyListError:
+            self.fail('InvalidAdjacencyListError thrown unexpectedly for N tri-rad!')
+
+        # A general molecule with 4 radicals, multiplicity 5:
+        try:
+            Molecule().fromAdjacencyList('''multiplicity 5
+                                            1 O u1 p2 c0 {2,S}
+                                            2 C u1 p0 c0 {1,S} {3,S} {4,S}
+                                            3 H u0 p0 c0 {2,S}
+                                            4 N u1 p1 c0 {2,S} {5,S}
+                                            5 O u1 p2 c0 {4,S}''')
+        except InvalidAdjacencyListError:
+            self.fail('InvalidAdjacencyListError thrown unexpectedly for a molecule with 4 radicals, multiplicity 5')
+
+        # A general molecule with 4 radicals, multiplicity 3:
+        try:
+            Molecule().fromAdjacencyList('''multiplicity 3
+                                            1 O u1 p2 c0 {2,S}
+                                            2 C u1 p0 c0 {1,S} {3,S} {4,S}
+                                            3 H u0 p0 c0 {2,S}
+                                            4 N u1 p1 c0 {2,S} {5,S}
+                                            5 O u1 p2 c0 {4,S}''')
+        except InvalidAdjacencyListError:
+            self.fail('InvalidAdjacencyListError thrown unexpectedly for a molecule with 4 radicals, multiplicity 3')
+
+        # [N]=C=[N] singlet:
+        try:
+            Molecule().fromAdjacencyList('''multiplicity 1
+                                            1 N u1 p1 c0 {2,D}
+                                            2 C u0 p0 c0 {1,D} {3,D}
+                                            3 N u1 p1 c0 {2,D}''')
+        except InvalidAdjacencyListError:
+            self.fail('InvalidAdjacencyListError thrown unexpectedly for singlet [N]=C=[N]!')
+
 if __name__ == '__main__':
 
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=3))
+

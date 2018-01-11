@@ -5,8 +5,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2010 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -79,6 +79,21 @@ class TestReact(unittest.TestCase):
         self.assertIsNotNone(reactionList)
         self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in reactionList]))
 
+    def test_labelListofSpecies(self):
+        """
+        Ensure labelListofSpecies modifies atomlabels
+        """
+        from rmgpy.rmg.react import _labelListOfSpecies
+        s1 = Species().fromSMILES('CCC')
+        s2 = Species().fromSMILES('C=C[CH]C')
+        self.assertEqual(s2.molecule[0].atoms[0].id, -1)
+        
+        _labelListOfSpecies([s1, s2])
+        # checks atom id
+        self.assertNotEqual(s2.molecule[0].atoms[0].id, -1)
+        # checks second resonance structure id
+        self.assertNotEqual(s2.molecule[1].atoms[0].id, -1)
+
     def testReact(self):
         """
         Test that reaction generation from the available families works.
@@ -95,9 +110,9 @@ class TestReact(unittest.TestCase):
         """
         Test that reaction deflate function works.
         """
-        molA = Molecule().fromSMILES('[OH]')
-        molB = Molecule().fromSMILES('CC')
-        molC = Molecule().fromSMILES('[CH3]')
+        molA = Species().fromSMILES('[OH]')
+        molB = Species().fromSMILES('CC')
+        molC = Species().fromSMILES('[CH3]')
 
         reactants = [molA, molB]
 
@@ -174,15 +189,15 @@ class TestReact(unittest.TestCase):
         Test if the deflateReaction function works.
         """
 
-        molA = Molecule().fromSMILES('[OH]')
-        molB = Molecule().fromSMILES('CC')
-        molC = Molecule().fromSMILES('[CH3]')
+        molA = Species().fromSMILES('[OH]')
+        molB = Species().fromSMILES('CC')
+        molC = Species().fromSMILES('[CH3]')
 
         reactants = [molA, molB]
 
         # both reactants were already part of the core:
         reactantIndices = [1, 2]
-        molDict = {molA: 1, molB: 2}
+        molDict = {molA.molecule[0]: 1, molB.molecule[0]: 2}
 
         rxn = Reaction(reactants=[molA, molB], products=[molC],
         pairs=[(molA, molC), (molB, molC)])
@@ -197,7 +212,7 @@ class TestReact(unittest.TestCase):
 
         # one of the reactants was not yet part of the core:
         reactantIndices = [-1, 2]
-        molDict = {molA: Species(molecule=[molA]), molB: 2}
+        molDict = {molA.molecule[0]: molA, molB.molecule[0]: 2}
 
         rxn = Reaction(reactants=[molA, molB], products=[molC],
                 pairs=[(molA, molC), (molB, molC)])
@@ -205,7 +220,7 @@ class TestReact(unittest.TestCase):
         deflateReaction(rxn, molDict)
 
         for spc, t in zip(rxn.reactants, [Species, int]):
-            self.assertTrue(isinstance(spc, t))
+            self.assertTrue(isinstance(spc, t), 'Species {} is not of type {}'.format(spc,t))
         for spc in rxn.products:
             self.assertTrue(isinstance(spc, Species))
 

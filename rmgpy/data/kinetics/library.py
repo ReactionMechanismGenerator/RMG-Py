@@ -5,8 +5,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2010 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -294,7 +294,7 @@ class KineticsLibrary(Database):
 #        if not rxn.isBalanced():
 #            raise DatabaseError('Reaction {0} in kinetics library {1} was not balanced! Please reformulate.'.format(rxn, self.label))        
 #        label = str(rxn)
-        assert index not in self.entries, "Reaction {0} already present!".format(label)
+        assert index not in self.entries, "Index of reaction {0} is not unique!".format(label)
         self.entries[index] = Entry(
             index = index,
             label = label,

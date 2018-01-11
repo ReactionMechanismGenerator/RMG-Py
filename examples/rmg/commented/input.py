@@ -4,17 +4,20 @@ database(
 	#libraries found at http://rmg.mit.edu/database/thermo/libraries/
 	#if species exist in multiple libraries, the earlier libraries overwrite the 
 	#previous values
-    thermoLibraries = ['KlippensteinH2O2','primaryThermoLibrary','DFT_QCI_thermo','CBS_QB3_1dHR'],
+    thermoLibraries = ['BurkeH2O2','primaryThermoLibrary','DFT_QCI_thermo','CBS_QB3_1dHR'],
 	#overrides RMG kinetics estimation if needed in the core of RMG. 
 	#list of libraries found at http://rmg.mit.edu/database/kinetics/libraries/
-	#input each library as a ('library_name',True/False) where a True means that all 
-	#unused reactions will be automatically added to the chemkin file
-    reactionLibraries = [],
+	#libraries can be input as either a string or tuple of form ('library_name',True/False) 
+     #where a `True` indicates that all unused reactions will be automatically added 
+	#to the chemkin file at the end of the simulation. Placing just string values
+     #defaults the tuple to `False`. The string input is sufficient in almost
+     #all situations
+    reactionLibraries = [('C3', False)],
 	#seed mechanisms are reactionLibraries that are forced into the initial mechanism 
 	#in addition to species listed in this input file.  
 	#This is helpful for reducing run time for species you know will appear in 
 	#the mechanism.  
-    seedMechanisms = ['KlippensteinH2O2','ERC-FoundationFuelv0.9'],
+    seedMechanisms = ['BurkeH2O2inN2','ERC-FoundationFuelv0.9'],
 	#this is normally not changed in general RMG runs.  Usually used for testing with 
 	#outside kinetics databases
     kineticsDepositories = 'default', 
@@ -121,7 +124,7 @@ simulator(
 #all relative values are normalized by a characteristic flux at that time point
 model(
 	#determines the relative flux to put a species into the core.  
-	#A higher value will result in a larger, more complex model
+	#A smaller value will result in a larger, more complex model
 	#when running a new model, it is recommended to start with higher values and then decrease to converge on the model
     toleranceMoveToCore=0.1,
     #comment out the next three terms to disable pruning
@@ -167,7 +170,10 @@ options(
     saveEdgeSpecies=False,
     #Sets a time limit in the form DD:HH:MM:SS after which the RMG job will stop. Useful for profiling on jobs that
     #do not converge.
-    #wallTime = '00:00:00',
+    #wallTime = '00:00:00', 
+    keepIrreversible=False,
+    #Forces RMG to import library reactions as reversible (default). Otherwise, if set to True, RMG will import library
+    #reactions while keeping the reversibility as as.
 )
 
 # optional module allows for correction to unimolecular reaction rates at low pressures and/or temperatures.

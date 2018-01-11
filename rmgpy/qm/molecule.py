@@ -1,3 +1,30 @@
+################################################################################
+#
+#   RMG - Reaction Mechanism Generator
+#
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
+#
+#   Permission is hereby granted, free of charge, to any person obtaining a
+#   copy of this software and associated documentation files (the 'Software'),
+#   to deal in the Software without restriction, including without limitation
+#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#   and/or sell copies of the Software, and to permit persons to whom the
+#   Software is furnished to do so, subject to the following conditions:
+#
+#   The above copyright notice and this permission notice shall be included in
+#   all copies or substantial portions of the Software.
+#
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+#   DEALINGS IN THE SOFTWARE.
+#
+################################################################################
+
 import os
 import logging
 import re
@@ -122,7 +149,7 @@ class Geometry:
         """
         Embed the RDKit molecule and create the crude molecule file.
         """
-        if bm is None:
+        if bm is None: #bm = bounds matrix?
             AllChem.EmbedMultipleConfs(rdmol, numConfAttempts,randomSeed=1)
             crude = Chem.Mol(rdmol.ToBinary())
             rdmol, minEid = self.optimize(rdmol)
@@ -137,12 +164,12 @@ class Geometry:
                     Pharm3D.EmbedLib.EmbedMol(rdmol, bm, atomMatch=match)
                     break
                 except ValueError:
-                    print("RDKit failed to embed on attemt {0} of {1}".format(i+1, numConfAttempts))
+                    logging.info("RDKit failed to embed on attempt {0} of {1}".format(i + 1, numConfAttempts))
                     # What to do next (what if they all fail?) !!!!!
                 except RuntimeError:
                     raise RDKitFailedError()
             else:
-                print("RDKit failed all attempts to embed")
+                logging.error("RDKit failed all attempts to embed")
                 return None, None
 
             """
@@ -161,6 +188,17 @@ class Geometry:
         return rdmol, minEid
 
     def optimize(self, rdmol, boundsMatrix=None, atomMatch=None):
+        """
+
+        Optimizes the rdmol object using UFF.
+        Determines the energy level for each of the conformers identified in rdmol.GetConformer.
+
+
+        :param rdmol:
+        :param boundsMatrix:
+        :param atomMatch:
+        :return rdmol, minEid (index of the lowest energy conformer)
+        """
 
         energy=0.0
         minEid=0;
@@ -290,9 +328,17 @@ class Geometry:
         return dist
 
     def saveCoordinatesFromRDMol(self, rdmol, minEid, rdAtIdx):
-        # Save xyz coordinates on each atom in molecule ****
+
+        """
+        Save xyz coordinates on each atom in molecule from RDMol using the conformer ID given by minEid.
+        Uses rdAtIdx to map the RMG atoms onto RDKit atoms.
+
+        :param rdmol:
+        :param minEid:
+        :param rdAtIdx:
+        """
         for atom in self.molecule.atoms:
-            point = rdmol.GetConformer(minEid).GetAtomPosition(atom.sortingLabel)
+            point = rdmol.GetConformer(minEid).GetAtomPosition(rdAtIdx[atom])
             atom.coords = numpy.array([point.x, point.y, point.z])
 
     def saveCoordinatesFromQMData(self, qmdata):
@@ -465,7 +511,7 @@ class QMMolecule:
 
     def generateQMData(self):
         """
-        Calculate the QM data somehow and return a CCLibData object, or None if it fails.
+        Calculate the QM data using a defined level of theory and return a CCLibData object, or None if it fails.
         """
         raise NotImplementedError("This should be defined in a subclass that inherits from QMMolecule")
         return qmdata.QMData() or None

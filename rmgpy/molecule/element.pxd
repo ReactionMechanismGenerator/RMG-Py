@@ -32,5 +32,6 @@ cdef class Element:
     cdef public float mass
     cdef public float covRadius
     cdef public int isotope
+    cdef public str chemkinName
 
 cpdef Element getElement(value, int isotope=?)

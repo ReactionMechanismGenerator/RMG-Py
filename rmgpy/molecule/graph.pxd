@@ -89,6 +89,8 @@ cdef class Graph:
     
     cpdef Graph copy(self, bint deep=?)
 
+    cpdef dict copyAndMap(self)
+
     cpdef Graph merge(self, Graph other)
 
     cpdef list split(self)
@@ -125,8 +127,14 @@ cdef class Graph:
 
     cpdef list getAllCycles(self, Vertex startingVertex)
 
+    cpdef list getAllCyclesOfSize(self, int size)
+
+    cpdef list getAllSimpleCyclesOfSize(self, int size)
+
     cpdef list __exploreCyclesRecursively(self, list chain, list cycles)
 
     cpdef list getSmallestSetOfSmallestRings(self)
+    
+    cpdef list getLargestRing(self, Vertex vertex)
     
     cpdef bint isMappingValid(self, Graph other, dict mapping) except -2
