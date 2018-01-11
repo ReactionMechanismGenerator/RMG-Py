@@ -45,7 +45,7 @@ cdef class Reaction:
     cdef public TransitionState transitionState
     cdef public KineticsModel kinetics
     cdef public bint duplicate
-    cdef public int degeneracy
+    cdef public float _degeneracy
     cdef public list pairs
     cdef public dict k_effective_cache
     
@@ -61,7 +61,7 @@ cdef class Reaction:
     
     cpdef bint matchesMolecules(self, list reactants)
 
-    cpdef bint isIsomorphic(self, Reaction other, bint eitherDirection=?)
+    cpdef bint isIsomorphic(self, Reaction other, bint eitherDirection=?, bint checkIdentical=?)
 
     cpdef double getEnthalpyOfReaction(self, double T) except? -1
 
@@ -102,4 +102,5 @@ cdef class Reaction:
     cpdef generatePairs(self)
     
     cpdef copy(self)
-    
+
+cpdef bint _isomorphicSpeciesList(list list1, list list2, bint checkIdentical=?)

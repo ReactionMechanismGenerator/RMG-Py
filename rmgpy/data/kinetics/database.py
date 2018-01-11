@@ -5,8 +5,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2010 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -209,6 +209,10 @@ class KineticsDatabase(object):
                     library.load(library_file, self.local_context, self.global_context)
                     self.libraries[library.label] = library
                 else:
+                    if library_name == "KlippensteinH2O2":
+                        logging.info("""\n** Note: The KlippensteinH2O2 library was replaced and is no longer available in RMG.
+For H2 combustion chemistry consider using either the BurkeH2inN2 or BurkeH2inArHe
+library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n""")
                     raise IOError("Couldn't find kinetics library {0}".format(library_file))
             # library order should've been set prior to this, with the given seed mechs and reaction libraries
             assert (len(self.libraryOrder) == len(libraries))
@@ -416,7 +420,12 @@ class KineticsDatabase(object):
         reactionList = []
         for label, family in self.families.iteritems():
             if only_families is None or label in only_families:
-                reactionList.extend(family.generateReactions(reactants))
+                try:
+                    reactionList.extend(family.generateReactions(reactants))
+                except:
+                    logging.error("Problem family: {}".format(label))
+                    logging.error("Problem reactants: {}".format(reactants))
+                    raise
         if products:
             reactionList = filterReactions(reactants, products, reactionList)
         return reactionList

@@ -26,12 +26,13 @@
 
 from .graph cimport Vertex, Edge, Graph
 from .atomtype cimport AtomType
-from .group cimport GroupAtom, GroupBond, Group
+cimport rmgpy.molecule.group as gr
 from .element cimport Element
 cimport rmgpy.constants as constants
 cimport numpy
 
 ################################################################################
+cdef dict bond_orders 
 
 cdef class Atom(Vertex):
 
@@ -42,6 +43,8 @@ cdef class Atom(Vertex):
     cdef public AtomType atomType
     cdef public numpy.ndarray coords
     cdef public short lonePairs
+    cdef public int id
+
     
     cpdef bint equivalent(self, Vertex other) except -2
 
@@ -72,18 +75,30 @@ cdef class Atom(Vertex):
     cpdef updateCharge(self)
     
     cpdef setSpinMultiplicity(self, int spinMultiplicity)
+
+    cpdef getBondOrdersForAtom(self)
     
 ################################################################################
     
 cdef class Bond(Edge):
 
-    cdef public str order
+    cdef public float order
 
     cpdef bint equivalent(self, Edge other) except -2
 
     cpdef bint isSpecificCaseOf(self, Edge other) except -2
 
+    cpdef str getOrderStr(self)
+    
+    cpdef setOrderStr(self, str newOrder)
+    
+    cpdef float getOrderNum(self)
+    
+    cpdef setOrderNum(self, float newOrder)
+
     cpdef Edge copy(self)
+    
+    cpdef bint isOrder(self, float otherOrder)
 
     cpdef bint isSingle(self) except -2
 
@@ -137,8 +152,6 @@ cdef class Molecule(Graph):
     cpdef double getMolecularWeight(self)
 
     cpdef int getNumAtoms(self, str element=?)
-
-    cpdef int getNumberOfRadicalElectrons(self)
 
     cpdef Graph copy(self, bint deep=?)
 
@@ -194,10 +207,26 @@ cdef class Molecule(Graph):
 
     cpdef double calculateCpInf(self) except -1
     
-    cpdef updateAtomTypes(self)
+    cpdef updateAtomTypes(self, bint logSpecies=?, bint raiseException=?)
     
     cpdef bint isRadical(self) except -2
 
+    cpdef bint isArylRadical(self, list aromaticRings=?) except -2
+
     cpdef int calculateSymmetryNumber(self) except -1
 
-    cpdef list generateResonanceIsomers(self)
+    cpdef list generateResonanceIsomers(self, bint keepIsomorphic=?)
+
+    cpdef tuple getAromaticRings(self, list rings=?)
+
+    cpdef list getDeterministicSmallestSetOfSmallestRings(self)
+
+    cpdef kekulize(self)
+
+    cpdef assignAtomIDs(self)
+
+    cpdef bint atomIDValid(self)
+
+    cpdef bint isIdentical(self, Molecule other) except -2
+
+cdef atom_id_counter

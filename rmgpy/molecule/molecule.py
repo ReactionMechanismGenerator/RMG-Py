@@ -5,7 +5,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2009-2011 by the RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -42,6 +43,7 @@ import re
 import numpy
 import urllib
 from collections import OrderedDict
+import itertools
 
 import element as elements
 try:
@@ -50,15 +52,21 @@ except:
     pass
 from rdkit import Chem
 from .graph import Vertex, Edge, Graph, getVertexConnectivityValue
-from .group import GroupAtom, GroupBond, Group, ActionError
-from .atomtype import AtomType, atomTypes, getAtomType
+import rmgpy.molecule.group as gr
+from .atomtype import AtomType, atomTypes, getAtomType, AtomTypeError
 import rmgpy.constants as constants
 import rmgpy.molecule.parser as parser
 import rmgpy.molecule.generator as generator
 import rmgpy.molecule.resonance as resonance
-from rmgpy.molecule.group import GroupAtom, GroupBond, Group
+from .kekulize import kekulize
 
 ################################################################################
+
+bond_orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
+
+globals().update({
+    'bond_orders': bond_orders,
+})
 
 class Atom(Vertex):
     """
@@ -74,6 +82,7 @@ class Atom(Vertex):
     `label`             ``str``             A string label that can be used to tag individual atoms
     `coords`            ``numpy array``     The (x,y,z) coordinates in Angstrom
     `lonePairs`         ``short``           The number of lone electron pairs
+    `id`                ``int``             Number assignment for atom tracking purposes
     =================== =================== ====================================
 
     Additionally, the ``mass``, ``number``, and ``symbol`` attributes of the
@@ -81,7 +90,7 @@ class Atom(Vertex):
     e.g. ``atom.symbol`` instead of ``atom.element.symbol``.
     """
 
-    def __init__(self, element=None, radicalElectrons=0, charge=0, label='', lonePairs=-100, coords=numpy.array([])):
+    def __init__(self, element=None, radicalElectrons=0, charge=0, label='', lonePairs=-100, coords=numpy.array([]), id=-1):
         Vertex.__init__(self)
         if isinstance(element, str):
             self.element = elements.__dict__[element]
@@ -93,6 +102,7 @@ class Atom(Vertex):
         self.atomType = None
         self.lonePairs = lonePairs
         self.coords = coords
+        self.id = id
 
     def __str__(self):
         """
@@ -157,20 +167,21 @@ class Atom(Vertex):
         """
         Return ``True`` if `other` is indistinguishable from this atom, or
         ``False`` otherwise. If `other` is an :class:`Atom` object, then all
-        attributes except `label` must match exactly. If `other` is an
+        attributes except `label` and 'ID' must match exactly. If `other` is an
         :class:`GroupAtom` object, then the atom must match any of the
         combinations in the atom pattern.
         """
-        cython.declare(atom=Atom, ap=GroupAtom)
+        cython.declare(atom=Atom, ap=gr.GroupAtom)
         if isinstance(other, Atom):
             atom = other
             return (
                 self.element                is atom.element and
                 self.radicalElectrons       == atom.radicalElectrons   and
                 self.lonePairs              == atom.lonePairs           and
-                self.charge                 == atom.charge
+                self.charge                 == atom.charge and
+                self.atomType              is atom.atomType
                 )
-        elif isinstance(other, GroupAtom):
+        elif isinstance(other, gr.GroupAtom):
             cython.declare(a=AtomType, radical=cython.short, lp=cython.short, charge=cython.short)
             ap = other
             for a in ap.atomType:
@@ -210,8 +221,8 @@ class Atom(Vertex):
         """
         if isinstance(other, Atom):
             return self.equivalent(other)
-        elif isinstance(other, GroupAtom):
-            cython.declare(atom=GroupAtom, a=AtomType, radical=cython.short, lp = cython.short, charge=cython.short)
+        elif isinstance(other, gr.GroupAtom):
+            cython.declare(atom=gr.GroupAtom, a=AtomType, radical=cython.short, lp = cython.short, charge=cython.short)
             atom = other
             if self.atomType is None:
                 return False
@@ -252,8 +263,8 @@ class Atom(Vertex):
         a.label = self.label
         a.atomType = self.atomType
         a.lonePairs = self.lonePairs
-        if self.coords is not None:
-            a.coords = self.coords[:]
+        a.coords = self.coords[:]
+        a.id = self.id
         return a
 
     def isHydrogen(self):
@@ -266,9 +277,9 @@ class Atom(Vertex):
     def isNonHydrogen(self):
         """
         Return ``True`` if the atom does not represent a hydrogen atom or
-        ``False`` if not.
+        ``False`` if it does.
         """
-        return self.element.number > 1
+        return self.element.number != 1
 
     def isCarbon(self):
         """
@@ -313,7 +324,7 @@ class Atom(Vertex):
         # Set the new radical electron count
         self.radicalElectrons += 1
         if self.radicalElectrons <= 0:
-            raise ActionError('Unable to update Atom due to GAIN_RADICAL action: Invalid radical electron set "{0}".'.format(self.radicalElectrons))
+            raise gr.ActionError('Unable to update Atom due to GAIN_RADICAL action: Invalid radical electron set "{0}".'.format(self.radicalElectrons))
 
     def decrementRadical(self):
         """
@@ -324,7 +335,7 @@ class Atom(Vertex):
         # Set the new radical electron count
         radicalElectrons = self.radicalElectrons = self.radicalElectrons - 1
         if radicalElectrons  < 0:
-            raise ActionError('Unable to update Atom due to LOSE_RADICAL action: Invalid radical electron set "{0}".'.format(self.radicalElectrons))
+            raise gr.ActionError('Unable to update Atom due to LOSE_RADICAL action: Invalid radical electron set "{0}".'.format(self.radicalElectrons))
 
     def setLonePairs(self,lonePairs):
         """
@@ -333,7 +344,7 @@ class Atom(Vertex):
         # Set the number of electron pairs
         self.lonePairs = lonePairs
         if self.lonePairs < 0:
-            raise ActionError('Unable to update Atom due to setLonePairs : Invalid lone electron pairs set "{0}".'.format(self.setLonePairs))
+            raise gr.ActionError('Unable to update Atom due to setLonePairs : Invalid lone electron pairs set "{0}".'.format(self.setLonePairs))
         self.updateCharge()
 
     def incrementLonePairs(self):
@@ -343,7 +354,7 @@ class Atom(Vertex):
         # Set the new lone electron pairs count
         self.lonePairs += 1
         if self.lonePairs <= 0:
-            raise ActionError('Unable to update Atom due to GAIN_PAIR action: Invalid lone electron pairs set "{0}".'.format(self.lonePairs))
+            raise gr.ActionError('Unable to update Atom due to GAIN_PAIR action: Invalid lone electron pairs set "{0}".'.format(self.lonePairs))
         self.updateCharge()
 
     def decrementLonePairs(self):
@@ -353,25 +364,18 @@ class Atom(Vertex):
         # Set the new lone electron pairs count
         self.lonePairs -= 1
         if self.lonePairs  < 0:
-            raise ActionError('Unable to update Atom due to LOSE_PAIR action: Invalid lone electron pairs set "{0}".'.format(self.lonePairs))
+            raise gr.ActionError('Unable to update Atom due to LOSE_PAIR action: Invalid lone electron pairs set "{0}".'.format(self.lonePairs))
         self.updateCharge()
-        
+
     def updateCharge(self):
         """
-        Update self.charge, according to the valence, and the 
+        Update self.charge, according to the valence, and the
         number and types of bonds, radicals, and lone pairs.
         """
-        valences = {'H': 1, 'C': 4, 'O': 2, 'N': 3, 'S': 2, 'Si': 4, 'He': 0, 'Ne': 0, 'Ar': 0, 'Cl': 1}
-        orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
-        valence = valences[self.symbol]
-        order = 0
-        for atom2, bond in self.bonds.items():
-            order += orders[bond.order]
-        if self.symbol == 'H' or self.symbol == 'He':
-            self.charge = 2 - valence - order - self.radicalElectrons - 2*self.lonePairs
-        else:
-            self.charge = 8 - valence - order - self.radicalElectrons - 2*self.lonePairs
-        
+        valence_electron = elements.PeriodicSystem.valence_electrons[self.symbol]
+        order = self.getBondOrdersForAtom()
+        self.charge = valence_electron - order - self.radicalElectrons - 2*self.lonePairs
+
     def applyAction(self, action):
         """
         Update the atom pattern as a result of applying `action`, a tuple
@@ -395,8 +399,8 @@ class Atom(Vertex):
         elif action[0].upper() == 'LOSE_PAIR':
             for i in range(abs(action[2])): self.decrementLonePairs()
         else:
-            raise ActionError('Unable to update Atom: Invalid action {0}".'.format(action))
-        
+            raise gr.ActionError('Unable to update Atom: Invalid action {0}".'.format(action))
+
     def setSpinMultiplicity(self,spinMultiplicity):
         """
         Set the spin multiplicity.
@@ -405,9 +409,32 @@ class Atom(Vertex):
         # Set the spin multiplicity
         self.spinMultiplicity = spinMultiplicity
         if self.spinMultiplicity < 0:
-            raise ActionError('Unable to update Atom due to spin multiplicity : Invalid spin multiplicity set "{0}".'.format(self.spinMultiplicity))
+            raise gr.ActionError('Unable to update Atom due to spin multiplicity : Invalid spin multiplicity set "{0}".'.format(self.spinMultiplicity))
         self.updateCharge()
-        
+
+    def getBondOrdersForAtom(self):
+        """
+        This helper function is to help calculate total bond orders for an
+        input atom.
+
+        Some special consideration for the order `B` bond. For atoms having 
+        three `B` bonds, the order for each is 4/3.0, while for atoms having other
+        than three `B` bonds, the order for  each is 3/2.0
+        """
+        num_B_bond = 0
+        order = 0
+        for _, bond in self.bonds.iteritems():
+            if bond.isBenzene():
+                num_B_bond += 1
+            else:
+                order += bond.order
+
+        if num_B_bond == 3:
+            order += num_B_bond * 4/3.0
+        else:
+            order += num_B_bond * 3/2.0
+
+        return order
 
 ################################################################################
 
@@ -418,20 +445,23 @@ class Bond(Edge):
     =================== =================== ====================================
     Attribute           Type                Description
     =================== =================== ====================================
-    `order`             ``str``             The :ref:`bond type <bond-types>`
+    `order`             ``float``             The :ref:`bond type <bond-types>`
     =================== =================== ====================================
 
     """
 
-    def __init__(self, atom1, atom2, order='S'):
+    def __init__(self, atom1, atom2, order=1):
         Edge.__init__(self, atom1, atom2)
-        self.order = order
+        if isinstance(order, str):
+            self.setOrderStr(order)
+        else:
+            self.order = order
 
     def __str__(self):
         """
         Return a human-readable string representation of the object.
         """
-        return self.order
+        return self.getOrderStr()
 
     def __repr__(self):
         """
@@ -459,13 +489,13 @@ class Bond(Edge):
         ``False`` otherwise. `other` can be either a :class:`Bond` or a
         :class:`GroupBond` object.
         """
-        cython.declare(bond=Bond, bp=GroupBond)
+        cython.declare(bond=Bond, bp=gr.GroupBond)
         if isinstance(other, Bond):
             bond = other
-            return (self.order == bond.order)
-        elif isinstance(other, GroupBond):
+            return self.isOrder(bond.getOrderNum())
+        elif isinstance(other, gr.GroupBond):
             bp = other
-            return (self.order in bp.order)
+            return any([self.isOrder(otherOrder) for otherOrder in bp.getOrderNum()])
 
     def isSpecificCaseOf(self, other):
         """
@@ -476,6 +506,55 @@ class Bond(Edge):
         # There are no generic bond types, so isSpecificCaseOf is the same as equivalent
         return self.equivalent(other)
 
+    def getOrderStr(self):
+        """
+        returns a string representing the bond order
+        """
+        if self.isSingle():
+            return 'S'
+        elif self.isBenzene():
+            return 'B'
+        elif self.isDouble():
+            return 'D'
+        elif self.isTriple():
+            return 'T'
+        else:
+            raise ValueError("Bond order {} does not have string representation.".format(self.order))
+        
+    def setOrderStr(self, newOrder):
+        """
+        set the bond order using a valid bond-order character
+        """
+        if newOrder == 'S':
+            self.order = 1
+        elif newOrder == 'D':
+            self.order = 2
+        elif newOrder == 'T':
+            self.order = 3
+        elif newOrder == 'B':
+            self.order = 1.5
+        else:
+            # try to see if an float disguised as a string was input by mistake
+            try:
+                self.order = float(newOrder)
+            except ValueError:
+                raise TypeError('Bond order {} is not hardcoded into this method'.format(newOrder))
+            
+            
+    def getOrderNum(self):
+        """
+        returns the bond order as a number
+        """
+        
+        return self.order
+            
+    def setOrderNum(self, newOrder):
+        """
+        change the bond order with a number
+        """
+        
+        self.order = newOrder
+        
     def copy(self):
         """
         Generate a deep copy of the current bond. Modifying the
@@ -489,72 +568,76 @@ class Bond(Edge):
         b.order = self.order
         return b
 
+    def isOrder(self, otherOrder):
+        """
+        Return ``True`` if the bond represents a single bond or ``False`` if
+        not. This compares floats that takes into account floating point error
+        
+        NOTE: we can replace the absolute value relation with math.isclose when
+        we swtich to python 3.5+
+        """
+        return abs(self.order - otherOrder) <= 1e-6
+
+        
     def isSingle(self):
         """
         Return ``True`` if the bond represents a single bond or ``False`` if
         not.
         """
-        return self.order == 'S'
+        return abs(self.order-1) <= 1e-6
 
     def isDouble(self):
         """
         Return ``True`` if the bond represents a double bond or ``False`` if
         not.
         """
-        return self.order == 'D'
+        return abs(self.order-2) <= 1e-6
 
     def isTriple(self):
         """
         Return ``True`` if the bond represents a triple bond or ``False`` if
         not.
         """
-        return self.order == 'T'
+        return abs(self.order-3) <= 1e-6
 
     def isBenzene(self):
         """
         Return ``True`` if the bond represents a benzene bond or ``False`` if
         not.
         """
-        return self.order == 'B'
+        return abs(self.order-1.5) <= 1e-6
 
     def incrementOrder(self):
         """
         Update the bond as a result of applying a CHANGE_BOND action to
         increase the order by one.
         """
-        if self.order == 'S': self.order = 'D'
-        elif self.order == 'D': self.order = 'T'
+        if self.order <=2: 
+            self.order += 1
         else:
-            raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "{0}".'.format(self.order))
-        
+            raise gr.ActionError('Unable to increment Bond due to CHANGE_BOND action: '+\
+            'Bond order "{0}" is greater than 2.'.format(self.order))
+
     def decrementOrder(self):
         """
         Update the bond as a result of applying a CHANGE_BOND action to
         decrease the order by one.
         """
-        if self.order == 'D': self.order = 'S'
-        elif self.order == 'T': self.order = 'D'
+        if self.order >=1: 
+            self.order -= 1
         else:
-            raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "{0}".'.format(self.order))
-        
+            raise gr.ActionError('Unable to decrease Bond due to CHANGE_BOND action: '+\
+            'bond order "{0}" is less than 1.'.format(self.order))
+
     def __changeBond(self, order):
         """
         Update the bond as a result of applying a CHANGE_BOND action,
         where `order` specifies whether the bond is incremented or decremented
-        in bond order, and should be 1 or -1.
+        in bond order, and can be any real number.
         """
-        if order == 1:
-            if self.order == 'S': self.order = 'D'
-            elif self.order == 'D': self.order = 'T'
-            else:
-                raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "{0}".'.format(self.order))
-        elif order == -1:
-            if self.order == 'D': self.order = 'S'
-            elif self.order == 'T': self.order = 'D'
-            else:
-                raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid bond order "{0}".'.format(self.order))
-        else:
-            raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid order "{0}".'.format(order))
+        self.order += order
+        if self.order < 0 or self.order >3:
+            raise gr.ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid resulting order "{0}".'.format(self.order))
 
     def applyAction(self, action):
         """
@@ -564,19 +647,20 @@ class Bond(Edge):
         :ref:`here <reaction-recipe-actions>`.
         """
         if action[0].upper() == 'CHANGE_BOND':
-            if action[2] == 1:
-                self.incrementOrder()
-            elif action[2] == -1:
-                self.decrementOrder()
-            elif action[2] == 'B':
-                self.order = 'B'
+            if isinstance(action[2],str):
+                self.setOrderStr(action[2])
             else:
-                raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid order "{0}".'.format(action[2]))
+                try: # try to see if addable
+                   self.__changeBond(action[2])
+                except TypeError:
+                    raise gr.ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid order "{0}".'.format(action[2]))
         else:
-            raise ActionError('Unable to update GroupBond: Invalid action {0}.'.format(action))
+            raise gr.ActionError('Unable to update GroupBond: Invalid action {0}.'.format(action))
+        
 
 #################################################################################
     
+
 class Molecule(Graph):
     """
     A representation of a molecular structure using a graph data type, extending
@@ -588,6 +672,7 @@ class Molecule(Graph):
     ======================= =========== ========================================
     `symmetryNumber`        ``int``     The (estimated) external + internal symmetry number of the molecule
     `multiplicity`          ``int``     The multiplicity of this species, multiplicity = 2*total_spin+1
+    `props`                 ``dict``    A list of properties describing the state of the molecule.
     ======================= =========== ========================================
 
     A new molecule object can be easily instantiated by passing the `SMILES` or
@@ -637,9 +722,15 @@ class Molecule(Graph):
         """
         cython.declare(multiplicity=cython.int)
         multiplicity = self.multiplicity
-        if multiplicity != self.getRadicalCount() + 1:
-            return 'Molecule(SMILES="{0}", multiplicity={1:d})'.format(self.toSMILES(), multiplicity)
-        return 'Molecule(SMILES="{0}")'.format(self.toSMILES())
+        try:
+            if multiplicity != self.getRadicalCount() + 1:
+                return 'Molecule(SMILES="{0}", multiplicity={1:d})'.format(self.toSMILES(), multiplicity)
+            return 'Molecule(SMILES="{0}")'.format(self.toSMILES())
+        except KeyError:
+            logging.warning('Could not generate SMILES for this molecule object.'+\
+                        ' Likely due to a keyerror when converting to RDKit'+\
+                        ' Here is molecules AdjList: {}'.format(self.toAdjacencyList()))
+            return 'Molecule().fromAdjacencyList"""{}"""'.format(self.toAdjacencyList())
 
     def __reduce__(self):
         """
@@ -668,7 +759,7 @@ class Molecule(Graph):
 
     def getBonds(self, atom):
         """
-        Return a list of the bonds involving the specified `atom`.
+        Return a dictionary of the bonds involving the specified `atom`.
         """
         return self.getEdges(atom)
 
@@ -727,6 +818,9 @@ class Molecule(Graph):
         self.updateMultiplicity()
         self.sortVertices()
 
+        for atom in self.atoms:
+            atom.updateCharge()
+
     def getFormula(self):
         """
         Return the molecular formula for the molecule.
@@ -735,7 +829,6 @@ class Molecule(Graph):
         cython.declare(hasCarbon=cython.bint, hasHydrogen=cython.bint)
         
         # Count the number of each element in the molecule
-        hasCarbon = False; hasHydrogen = False
         elements = {}
         for atom in self.vertices:
             symbol = atom.element.symbol
@@ -745,11 +838,11 @@ class Molecule(Graph):
         formula = ''
         
         # Carbon and hydrogen always come first if carbon is present
-        if hasCarbon:
+        if 'C' in elements.keys():
             count = elements['C']
             formula += 'C{0:d}'.format(count) if count > 1 else 'C'
             del elements['C']
-            if hasHydrogen:
+            if 'H' in elements.keys():
                 count = elements['H']
                 formula += 'H{0:d}'.format(count) if count > 1 else 'H'
                 del elements['H']
@@ -776,7 +869,9 @@ class Molecule(Graph):
     
     def getRadicalCount(self):
         """
-        Return the number of unpaired electrons.
+        Return the total number of radical electrons on all atoms in the
+        molecule. In this function, monoradical atoms count as one, biradicals
+        count as two, etc.
         """
         cython.declare(atom=Atom, radicals=cython.short)
         radicals = 0
@@ -798,18 +893,6 @@ class Molecule(Graph):
                 if atom.element.symbol == element:
                     numAtoms += 1
             return numAtoms
-
-    def getNumberOfRadicalElectrons(self):
-        """
-        Return the total number of radical electrons on all atoms in the
-        molecule. In this function, monoradical atoms count as one, biradicals
-        count as two, etc. 
-        """
-        cython.declare(numRadicals=cython.int, atom=Atom)
-        numRadicals = 0
-        for atom in self.vertices:
-            numRadicals += atom.radicalElectrons
-        return numRadicals
 
     def copy(self, deep=False):
         """
@@ -907,19 +990,30 @@ class Molecule(Graph):
                 if distanceSquared > criticalDistance or distanceSquared < 0.40:
                     continue
                 else:
-                    # groupBond = GroupBond(atom1, atom2, ['S','D','T','B'])
-                    bond = Bond(atom1, atom2, 'S')
+                    # groupBond = GroupBond(atom1, atom2, [1,2,3,1.5])
+                    bond = Bond(atom1, atom2, 1)
                     self.addBond(bond)
         self.updateAtomTypes()
         
-    def updateAtomTypes(self):
+    def updateAtomTypes(self, logSpecies=True, raiseException=True):
         """
         Iterate through the atoms in the structure, checking their atom types
         to ensure they are correct (i.e. accurately describe their local bond
         environment) and complete (i.e. are as detailed as possible).
+        
+        If `raiseException` is `False`, then the generic atomType 'R' will
+        be prescribed to any atom when getAtomType fails. Currently used for
+        resonance hybrid atom types.
         """
         for atom in self.vertices:
-            atom.atomType = getAtomType(atom, atom.edges)
+            try:
+                atom.atomType = getAtomType(atom, atom.edges)
+            except AtomTypeError:
+                if logSpecies:
+                    logging.error("Could not update atomtypes for {0}.\n{1}".format(self, self.toAdjacencyList()))
+                if raiseException:
+                    raise
+                atom.atomType = atomTypes['R']
             
     def updateMultiplicity(self):
         """
@@ -1045,12 +1139,12 @@ class Molecule(Graph):
         while the atoms of `other` are the values). The `other` parameter must
         be a :class:`Group` object, or a :class:`TypeError` is raised.
         """
-        cython.declare(group=Group, atom=Atom)
+        cython.declare(group=gr.Group, atom=Atom)
         cython.declare(carbonCount=cython.short, nitrogenCount=cython.short, oxygenCount=cython.short, sulfurCount=cython.short, radicalCount=cython.short)
         
         # It only makes sense to compare a Molecule to a Group for subgraph
         # isomorphism, so raise an exception if this is not what was requested
-        if not isinstance(other, Group):
+        if not isinstance(other, gr.Group):
             raise TypeError('Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
         group = other
         
@@ -1095,12 +1189,12 @@ class Molecule(Graph):
         The `other` parameter must be a :class:`Group` object, or a
         :class:`TypeError` is raised.
         """
-        cython.declare(group=Group, atom=Atom)
+        cython.declare(group=gr.Group, atom=Atom)
         cython.declare(carbonCount=cython.short, nitrogenCount=cython.short, oxygenCount=cython.short, sulfurCount=cython.short, radicalCount=cython.short)
 
         # It only makes sense to compare a Molecule to a Group for subgraph
         # isomorphism, so raise an exception if this is not what was requested
-        if not isinstance(other, Group):
+        if not isinstance(other, gr.Group):
             raise TypeError('Got a {0} object for parameter "other", when a Group object is required.'.format(other.__class__))
         group = other
                 # Count the number of carbons, oxygens, and radicals in the molecule
@@ -1157,7 +1251,7 @@ class Molecule(Graph):
         """
         from .draw import MoleculeDrawer
         format = os.path.splitext(path)[-1][1:].lower()
-        MoleculeDrawer().draw(self, format, path=path)
+        MoleculeDrawer().draw(self, format, target=path)
     
     def _repr_png_(self):
         """
@@ -1253,7 +1347,7 @@ class Molecule(Graph):
     
         for atom1 in atoms:
             for atom2 in atom1.bonds:
-                bond = Bond(mapping[atom1], mapping[atom2], 'S')
+                bond = Bond(mapping[atom1], mapping[atom2], 1)
                 newMol.addBond(bond)
         newMol.updateAtomTypes()
         return newMol
@@ -1510,6 +1604,7 @@ class Molecule(Graph):
         includes both external and internal modes.
         """
         from rmgpy.molecule.symmetry import calculateSymmetryNumber
+        self.updateConnectivityValues() # for consistent results
         self.symmetryNumber = calculateSymmetryNumber(self)
         return self.symmetryNumber
     
@@ -1524,8 +1619,23 @@ class Molecule(Graph):
                 return True
         return False
 
-    def generateResonanceIsomers(self):
-        return resonance.generateResonanceIsomers(self)
+    def isArylRadical(self, aromaticRings=None):
+        """
+        Return ``True`` if the molecule only contains aryl radicals,
+        ie. radical on an aromatic ring, or ``False`` otherwise.
+        """
+        cython.declare(atom=Atom, radList=list)
+        if aromaticRings is None:
+            aromaticRings = self.getAromaticRings()[0]
+
+        total = self.getRadicalCount()
+        aromaticAtoms = set([atom for atom in itertools.chain.from_iterable(aromaticRings)])
+        aryl = sum([atom.radicalElectrons for atom in aromaticAtoms])
+
+        return total == aryl
+
+    def generateResonanceIsomers(self, keepIsomorphic=False):
+        return resonance.generateResonanceStructures(self, keepIsomorphic=keepIsomorphic)
 
     def getURL(self):
         """
@@ -1555,22 +1665,11 @@ class Molecule(Graph):
         """
         cython.declare(atom1=Atom, atom2=Atom, bond12=Bond, order=float)
         for atom1 in self.vertices:
-            order = 0
             if not atom1.isHydrogen():
-                for atom2, bond12 in atom1.edges.items():
-                    if bond12.isSingle():
-                        order = order + 1
-                    if bond12.isDouble():
-                        order = order + 2
-                    if bond12.isTriple():
-                        order = order + 3
-                    if bond12.isBenzene():
-                        order = order + 1.5
-
-                if atom1.isSilicon() or atom1.isCarbon():
-                    atom1.lonePairs = (4 - atom1.radicalElectrons - int(order)) / 2
-                else:     
-                    atom1.lonePairs = 4 - atom1.radicalElectrons - int(order)
+                order = atom1.getBondOrdersForAtom()
+                atom1.lonePairs = (elements.PeriodicSystem.valence_electrons[atom1.symbol] - atom1.radicalElectrons - atom1.charge - int(order)) / 2.0
+                if atom1.lonePairs % 1 > 0 or atom1.lonePairs > 4:
+                    logging.error("Unable to determine the number of lone pairs for element {0} in {1}".format(atom1,self))
             else:
                 atom1.lonePairs = 0
                 
@@ -1593,7 +1692,7 @@ class Molecule(Graph):
         for atom in self.atoms:
             for i in range(atom.radicalElectrons):
                 H = Atom('H', radicalElectrons=0, lonePairs=0, charge=0)
-                bond = Bond(atom, H, 'S')
+                bond = Bond(atom, H, 1)
                 self.addAtom(H)
                 self.addBond(bond)
                 if atom not in added:
@@ -1620,21 +1719,299 @@ class Molecule(Graph):
         # Create GroupAtom object for each atom in the molecule
         groupAtoms = OrderedDict()# preserver order of atoms in original container
         for atom in self.atoms:
-            groupAtoms[atom] = GroupAtom(atomType=[atom.atomType],
+            groupAtoms[atom] = gr.GroupAtom(atomType=[atom.atomType],
                                          radicalElectrons=[atom.radicalElectrons],
                                          charge=[atom.charge],
                                          lonePairs=[atom.lonePairs]
                                          )
                     
-        group = Group(atoms=groupAtoms.values(), multiplicity=[self.multiplicity])            
+        group = gr.Group(atoms=groupAtoms.values(), multiplicity=[self.multiplicity])
         
         # Create GroupBond for each bond between atoms in the molecule
         for atom in self.atoms:
             for bondedAtom, bond in atom.edges.iteritems():
-                group.addBond(GroupBond(groupAtoms[atom],groupAtoms[bondedAtom], order=[bond.order]))
+                group.addBond(gr.GroupBond(groupAtoms[atom],groupAtoms[bondedAtom], order=[bond.order]))
             
         group.update()
         
         return group
 
+    def getAromaticRings(self, rings=None):
+        """
+        Returns all aromatic rings as a list of atoms and a list of bonds.
 
+        Identifies rings using `Graph.getSmallestSetOfSmallestRings()`, then uses RDKit to perceive aromaticity.
+        RDKit uses an atom-based pi-electron counting algorithm to check aromaticity based on Huckel's Rule.
+        Therefore, this method identifies "true" aromaticity, rather than simply the RMG bond type.
+
+        The method currently restricts aromaticity to six-membered carbon-only rings. This is a limitation imposed
+        by RMG, and not by RDKit.
+        """
+        cython.declare(rdAtomIndices=dict, obAtomIds=dict, aromaticRings=list, aromaticBonds=list)
+        cython.declare(ring0=list, i=cython.int, atom1=Atom, atom2=Atom)
+
+        from rdkit.Chem.rdchem import BondType
+        AROMATIC = BondType.AROMATIC
+
+        if rings is None:
+            rings = self.getAllSimpleCyclesOfSize(6)
+        if not rings:
+            return [], []
+
+        try:
+            rdkitmol, rdAtomIndices = generator.toRDKitMol(self, removeHs=False, returnMapping=True)
+        except ValueError:
+            logging.warning('Unable to check aromaticity by converting to RDKit Mol.')
+        else:
+            aromaticRings = []
+            aromaticBonds = []
+            for ring0 in rings:
+                aromaticBondsInRing = []
+                # Figure out which atoms and bonds are aromatic and reassign appropriately:
+                for i, atom1 in enumerate(ring0):
+                    if not atom1.isCarbon():
+                        # all atoms in the ring must be carbon in RMG for our definition of aromatic
+                        break
+                    for atom2 in ring0[i + 1:]:
+                        if self.hasBond(atom1, atom2):
+                            if rdkitmol.GetBondBetweenAtoms(rdAtomIndices[atom1],
+                                                            rdAtomIndices[atom2]).GetBondType() is AROMATIC:
+                                aromaticBondsInRing.append(self.getBond(atom1, atom2))
+                else:  # didn't break so all atoms are carbon
+                    if len(aromaticBondsInRing) == 6:
+                        aromaticRings.append(ring0)
+                        aromaticBonds.append(aromaticBondsInRing)
+
+            return aromaticRings, aromaticBonds
+
+        logging.info('Trying to use OpenBabel to check aromaticity.')
+        try:
+            obmol, obAtomIds = generator.toOBMol(self, returnMapping=True)
+        except ImportError:
+            logging.warning('Unable to check aromaticity by converting for OB Mol.')
+            return [], []
+        else:
+            aromaticRings = []
+            aromaticBonds = []
+            for ring0 in rings:
+                aromaticBondsInRing = []
+                # Figure out which atoms and bonds are aromatic and reassign appropriately:
+                for i, atom1 in enumerate(ring0):
+                    if not atom1.isCarbon():
+                        # all atoms in the ring must be carbon in RMG for our definition of aromatic
+                        break
+                    for atom2 in ring0[i + 1:]:
+                        if self.hasBond(atom1, atom2):
+                            if obmol.GetBond(obmol.GetAtomById(obAtomIds[atom1]),
+                                             obmol.GetAtomById(obAtomIds[atom2])).IsAromatic():
+                                aromaticBondsInRing.append(self.getBond(atom1, atom2))
+                else:  # didn't break so all atoms are carbon
+                    if len(aromaticBondsInRing) == 6:
+                        aromaticRings.append(ring0)
+                        aromaticBonds.append(aromaticBondsInRing)
+
+            return aromaticRings, aromaticBonds
+
+    def getDeterministicSmallestSetOfSmallestRings(self):
+        """
+        Modified `Graph` method `getSmallestSetOfSmallestRings` by sorting calculated cycles
+        by short lenth and then high atomic number instead of just short length (for cases where
+        multiple cycles with same length are found, `getSmallestSetOfSmallestRings` outputs 
+        non-determinstically ). 
+        
+        For instance, molecule with this SMILES: C1CC2C3CSC(CO3)C2C1, will have non-deterministic
+        output from `getSmallestSetOfSmallestRings`, which leads to non-deterministic bycyclic decomposition
+        Using this new method can effectively prevent this situation.
+        """
+        cython.declare(vertices=list, verticesToRemove=list, rootCandidates_tups=list, graphs=list)
+        cython.declare(cycleList=list, cycleCandidate_tups=list, cycles=list, cycle0=list, originConnDict=dict)
+
+        cython.declare(graph=Molecule, graph0=Molecule, vertex=Atom, rootVertex=Atom)
+        
+        # Make a copy of the graph so we don't modify the original
+        graph = self.copy(deep=True)
+        vertices = graph.vertices[:]
+        
+        # Step 1: Remove all terminal vertices
+        done = False
+        while not done:
+            verticesToRemove = []
+            for vertex in graph.vertices:
+                if len(vertex.edges) == 1: verticesToRemove.append(vertex)
+            done = len(verticesToRemove) == 0
+            # Remove identified vertices from graph
+            for vertex in verticesToRemove:
+                graph.removeVertex(vertex)
+
+        graph.updateConnectivityValues()
+        # get original connectivity values
+        originConnDict = {}
+        for v in graph.vertices:
+            originConnDict[v] = getVertexConnectivityValue(v)
+
+        # Step 2: Remove all other vertices that are not part of cycles
+        verticesToRemove = []
+        for vertex in graph.vertices:
+            found = graph.isVertexInCycle(vertex)
+            if not found:
+                verticesToRemove.append(vertex)
+        # Remove identified vertices from graph
+        for vertex in verticesToRemove:
+            graph.removeVertex(vertex)
+
+        # Step 3: Split graph into remaining subgraphs
+        graphs = graph.split()
+
+        # Step 4: Find ring sets in each subgraph
+        cycleList = []
+        for graph0 in graphs:
+
+            while len(graph0.vertices) > 0:
+
+                # Choose root vertex as vertex with smallest number of edges
+                rootVertex = None
+                graph0.updateConnectivityValues()
+
+                rootCandidates_tups = []
+                for vertex in graph0.vertices:
+                    tup = (vertex, getVertexConnectivityValue(vertex), -originConnDict[vertex])
+                    rootCandidates_tups.append(tup)
+
+                rootVertex = sorted(rootCandidates_tups, key=lambda tup0: tup0[1:], reverse=True)[0][0]
+
+                # Get all cycles involving the root vertex
+                cycles = graph0.getAllCycles(rootVertex)
+                if len(cycles) == 0:
+                    # This vertex is no longer in a ring, so remove it
+                    graph0.removeVertex(rootVertex)
+                    continue
+
+                # Keep the smallest of the cycles found above
+                cycleCandidate_tups = []
+                for cycle0 in cycles:
+                    tup = (cycle0, len(cycle0), -sum([originConnDict[v] for v in cycle0]), -sum([v.element.number for v in cycle0]))
+                    cycleCandidate_tups.append(tup)
+                
+                cycle = sorted(cycleCandidate_tups, key=lambda tup0: tup0[1:])[0][0]
+
+                cycleList.append(cycle)
+
+                # Remove the root vertex to create single edges, note this will not
+                # function properly if there is no vertex with 2 edges (i.e. cubane)
+                graph0.removeVertex(rootVertex)
+
+                # Remove from the graph all vertices in the cycle that have only one edge
+                loneCarbon = True
+                while loneCarbon:
+                    loneCarbon = False
+                    verticesToRemove = []
+
+                    for vertex in cycle:
+                        if len(vertex.edges) == 1:
+                            loneCarbon = True
+                            verticesToRemove.append(vertex)
+                    else:
+                        for vertex in verticesToRemove:
+                            graph0.removeVertex(vertex)
+
+        # Map atoms in cycles back to atoms in original graph
+        for i in range(len(cycleList)):
+            cycleList[i] = [self.vertices[vertices.index(v)] for v in cycleList[i]]
+
+        return cycleList
+
+    def kekulize(self):
+        """
+        Kekulizes an aromatic molecule.
+        """
+        kekulize(self)
+
+    def assignAtomIDs(self):
+        """
+        Assigns an index to every atom in the molecule for tracking purposes.
+        Uses entire range of cython's integer values to reduce chance of duplicates
+        """
+
+        global atom_id_counter
+
+        for i, atom in enumerate(self.atoms):
+            atom.id = atom_id_counter
+            atom_id_counter += 1
+            if atom_id_counter == 2**15:
+                atom_id_counter = -2**15
+
+    def atomIDValid(self):
+        """
+        Checks to see if the atom IDs are valid in this structure
+        """
+        num_atoms = len(self.atoms)
+        num_IDs = len(set([atom.id for atom in self.atoms]))
+
+        if num_atoms == num_IDs:
+            # all are unique
+            return True
+        return False
+
+    def isIdentical(self, other):
+        """
+        Performs isomorphism checking, with the added constraint that atom IDs must match.
+
+        Primary use case is tracking atoms in reactions for reaction degeneracy determination.
+
+        Returns :data:`True` if two graphs are identical and :data:`False` otherwise.
+        """
+        cython.declare(atomIndicies=set, otherIndices=set, atomList=list, otherList=list, mapping = dict)
+
+        if not isinstance(other, Molecule):
+            raise TypeError('Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
+
+        # Get a set of atom indices for each molecule
+        atomIDs = set([atom.id for atom in self.atoms])
+        otherIDs = set([atom.id for atom in other.atoms])
+
+        if atomIDs == otherIDs:
+            # If the two molecules have the same indices, then they might be identical
+            # Sort the atoms by ID
+            atomList = sorted(self.atoms, key=lambda x: x.id)
+            otherList = sorted(other.atoms, key=lambda x: x.id)
+
+            # If matching atom indices gives a valid mapping, then the molecules are fully identical
+            mapping = {}
+            for atom1, atom2 in itertools.izip(atomList, otherList):
+                mapping[atom1] = atom2
+
+            return self.isMappingValid(other, mapping)
+        else:
+            # The molecules don't have the same set of indices, so they are not identical
+            return False
+
+    def getNthNeighbor(self, startingAtoms, distanceList, ignoreList = None, n=1):
+        '''
+        Recursively get the Nth nonHydrogen neighbors of the startingAtoms, and return them in a list.
+        `startingAtoms` is a list of :class:Atom for which we will get the nth neighbor.
+        `distanceList` is a list of intergers, corresponding to the desired neighbor distances.
+        `ignoreList` is a list of :class:Atom that have been counted in (n-1)th neighbor, and will not be returned.
+        `n` is an interger, corresponding to the distance to be calculated in the current iteration.
+        '''
+        if ignoreList is None:
+            ignoreList = []
+
+        neighbors = []
+        for atom in startingAtoms:
+            newNeighbors = [neighbor for neighbor in self.getBonds(atom) if neighbor.isNonHydrogen()]
+            neighbors.extend(newNeighbors)
+
+        neighbors = list(set(neighbors)-set(ignoreList))
+        for atom in startingAtoms:
+            ignoreList.append(atom)
+        if n < max(distanceList):
+            if n in distanceList:
+                neighbors += self.getNthNeighbor(neighbors, distanceList, ignoreList, n+1)
+            else:
+                neighbors = self.getNthNeighbor(neighbors, distanceList, ignoreList, n+1)
+        return neighbors
+
+
+# this variable is used to name atom IDs so that there are as few conflicts by 
+# using the entire space of integer objects
+atom_id_counter = -2**15

@@ -1,3 +1,30 @@
+################################################################################
+#
+#   RMG - Reaction Mechanism Generator
+#
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
+#
+#   Permission is hereby granted, free of charge, to any person obtaining a
+#   copy of this software and associated documentation files (the 'Software'),
+#   to deal in the Software without restriction, including without limitation
+#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#   and/or sell copies of the Software, and to permit persons to whom the
+#   Software is furnished to do so, subject to the following conditions:
+#
+#   The above copyright notice and this permission notice shall be included in
+#   all copies or substantial portions of the Software.
+#
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+#   DEALINGS IN THE SOFTWARE.
+#
+################################################################################
+
 import sys
 import os.path
 import numpy as np
@@ -219,14 +246,14 @@ class Cantera:
         Load a cantera Solution model from the job's own speciesList and reactionList attributes
         """
 
-        ctSpecies =[spec.toCantera() for spec in self.speciesList]
+        ctSpecies =[spec.toCantera(useChemkinIdentifier = True) for spec in self.speciesList]
 
         self.reactionMap = {}
         ctReactions = []
         for rxn in self.reactionList:
             index = len(ctReactions)
 
-            convertedReactions = rxn.toCantera(self.speciesList)
+            convertedReactions = rxn.toCantera(self.speciesList, useChemkinIdentifier = True)
 
             if isinstance(convertedReactions, list):
                 indices = range(index, index+len(convertedReactions))
@@ -279,20 +306,20 @@ class Cantera:
         is generated directly from rmg objects and not from a chemkin file)
         """
         indices = self.reactionMap[rmgReactionIndex]
-        modified_ctReactions = rmgReaction.toCantera(self.speciesList)
+        modified_ctReactions = rmgReaction.toCantera(self.speciesList, useChemkinIdentifier = True)
         if not isinstance(modified_ctReactions, list):
             modified_ctReactions = [modified_ctReactions]
 
         for i in range(len(indices)):
             self.model.modify_reaction(indices[i], modified_ctReactions[i])
 
-    def modifySpeciesThermo(self, rmgSpeciesIndex, rmgSpecies):
+    def modifySpeciesThermo(self, rmgSpeciesIndex, rmgSpecies, useChemkinIdentifier = False):
         """
         Modify the corresponding cantera species thermo to match that of a
         `rmgSpecies` object, given the `rmgSpeciesIndex` which indicates the
         index at which this species appears in the `speciesList`
         """
-        modified_ctSpecies = rmgSpecies.toCantera()
+        modified_ctSpecies = rmgSpecies.toCantera(useChemkinIdentifier = useChemkinIdentifier)
         ctSpecies = self.model.species(rmgSpeciesIndex)
         ctSpecies.thermo = modified_ctSpecies.thermo
 

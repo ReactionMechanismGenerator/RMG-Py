@@ -82,7 +82,10 @@ are to be used in addition to the Glarborg C3 library::
 	reactionLibraries = [('Glarborg/C3',False)],
 	 	
 The keyword False/True permits user to append all unused reactions (= kept in the edge) from this library to the chemkin file.
-True means those reactions will be appended.
+True means those reactions will be appended. Using just the string inputs would lead to
+a default value of `False`. In the previous example, this would look like::
+
+	reactionLibraries = ['Glarborg/C3'],
 
 The reaction libraries are stored in :file:`$RMG-database/input/kinetics/libraries/`
 and the `Location:` should be specified relative to this path.
@@ -513,6 +516,8 @@ plese refer to the :class:`rmgpy.kinetics.Chebyshev` documentation.
 The number of pressures and temperature coefficents should always be smaller 
 than the respective number of user-specified temperatures and pressures. 
 
+.. _miscellaneousoptions:
+
 Miscellaneous Options
 ===================== 
 
@@ -542,6 +547,8 @@ Setting ``saveSimulationProfiles`` to ``True`` will make RMG save csv files of t
 Setting ``verboseComments`` to ``True`` will make RMG generate chemkin files with complete verbose commentary for the kinetic and thermo parameters.  This will be helpful in debugging what values are being averaged for the kinetics.  Note that this may produce very large files.  
 
 Setting ``saveEdgeSpecies`` to ``True`` will make RMG generate chemkin files of the edge reactions in addition to the core model in files such as ``chem_edge.inp`` and ``chem_edge_annotated.inp`` files located inside the ``chemkin`` folder.  These files will be helpful in viewing RMG's estimate for edge reactions and seeing if certain reactions one expects are actually in the edge or not.  
+
+Setting ``keepIrreversible`` to ``True`` will make RMG import library reactions as is, whether they are reversible or irreversible in the library. Otherwise, if ``False`` (default value), RMG will force all library reactions to be reversible, and will assign the forward rate from the relevant library.
 
 
 Species Constraints

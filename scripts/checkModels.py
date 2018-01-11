@@ -88,7 +88,7 @@ def check(name, benchChemkin, benchSpeciesDict, testChemkin, testSpeciesDict):
         }
 
     testThermo, benchThermo = None, None
-    commonSpecies, uniqueSpeciesTest, uniqueSpeciesOrig, commonReactions, uniqueReactionsTest, uniqueReactionsOrig = \
+    commonSpecies, uniqueSpeciesOrig, uniqueSpeciesTest, commonReactions, uniqueReactionsOrig, uniqueReactionsTest = \
     execute(benchChemkin, benchSpeciesDict, benchThermo, testChemkin, testSpeciesDict, testThermo, **kwargs)
 
     errorModel = checkModel(commonSpecies, uniqueSpeciesTest, uniqueSpeciesOrig, commonReactions, uniqueReactionsTest, uniqueReactionsOrig)
@@ -145,8 +145,8 @@ def checkSpecies(commonSpecies, uniqueSpeciesTest, uniqueSpeciesOrig):
                     error = True
                     logger.error('')
                     logger.error('Non-identical thermo!')
-                    logger.error('tested:\t{}'.format(spec1.label))
-                    logger.error('original:\t{}'.format(spec2.label))
+                    logger.error('original:\t{}'.format(spec1.label))
+                    logger.error('tested:\t{}'.format(spec2.label))
                     logger.error("{0:10}|{1:10}|{2:10}|{3:10}|{4:10}|{5:10}|{6:10}|{7:10}|{8:10}"
                         .format('Hf(300K)','S(300K)','Cp(300K)','Cp(400K)','Cp(500K)','Cp(600K)','Cp(800K)','Cp(1000K)','Cp(1500K)')
                         )
@@ -193,9 +193,9 @@ def checkReactions(commonReactions, uniqueReactionsTest, uniqueReactionsOrig):
                     error = True
                     logger.error('')
                     logger.error('Non-identical kinetics!')
-                    logger.error('tested:')
+                    logger.error('original:')
                     printReaction(rxn1)
-                    logger.error('benchm:')
+                    logger.error('tested:')
                     printReaction(rxn2)
                     
                     logger.error("{0:7}|{1:7}|{2:7}|{3:7}|{4:7}|{5:7}|{6:7}|{7:7}|{8:7}"

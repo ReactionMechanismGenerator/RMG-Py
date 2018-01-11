@@ -5,8 +5,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2010 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -76,7 +76,11 @@ def parseCommandLineArguments():
         metavar='DIR', help='use DIR as scratch directory')
     parser.add_argument('-l', '--library-directory', type=str, nargs=1, default='',
         metavar='DIR', help='use DIR as library directory')
-    
+
+    # Add option to output a folder that stores the details of each kinetic database entry source
+    parser.add_argument('-k', '--kineticsdatastore', action='store_true',
+                        help='output a folder, kinetics_database, that contains a .txt file for each reaction family listing the source(s) for each entry')
+
     args = parser.parse_args()
     args.walltime = '0'
     args.restart = False
@@ -113,7 +117,8 @@ def main():
             'restart': args.restart,
             'walltime': args.walltime,
             'log': level,
-            }
+            'kineticsdatastore': args.kineticsdatastore
+    }
 
     initializeLog(level, os.path.join(args.output_directory,'RMG.log'))
 

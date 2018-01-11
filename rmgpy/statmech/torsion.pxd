@@ -76,3 +76,18 @@ cdef class HinderedRotor(Torsion):
     cpdef fitFourierPotentialToData(self, numpy.ndarray angle, numpy.ndarray V)
     
     cpdef fitCosinePotentialToData(self, numpy.ndarray angle, numpy.ndarray V)
+
+cdef class FreeRotor(Torsion):
+    
+    cdef public ScalarQuantity _inertia
+    cdef public int symmetry
+    
+    cdef double getRotationalConstantEnergy(self)
+    
+    cpdef double getPartitionFunction(self, double T) except -1
+        
+    cpdef double getHeatCapacity(self, double T) except -100000000
+
+    cpdef double getEnthalpy(self, double T) except 100000000
+
+    cpdef double getEntropy(self, double T) except -100000000

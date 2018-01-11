@@ -1,15 +1,43 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+################################################################################
+#
+#   RMG - Reaction Mechanism Generator
+#
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
+#
+#   Permission is hereby granted, free of charge, to any person obtaining a
+#   copy of this software and associated documentation files (the 'Software'),
+#   to deal in the Software without restriction, including without limitation
+#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#   and/or sell copies of the Software, and to permit persons to whom the
+#   Software is furnished to do so, subject to the following conditions:
+#
+#   The above copyright notice and this permission notice shall be included in
+#   all copies or substantial portions of the Software.
+#
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+#   DEALINGS IN THE SOFTWARE.
+#
+################################################################################
+
 import unittest
 import numpy
 from external.wip import work_in_progress
-from .molecule import Atom, Bond, Molecule, ActionError
-from .group import Group
+from .molecule import Atom, Bond, Molecule
+from .group import Group, ActionError
 from .element import getElement, elementList
+from .resonance import generateAromaticResonanceStructures
+
 
 ################################################################################
-
 class TestAtom(unittest.TestCase):
     """
     Contains unit tests of the Atom class.
@@ -59,7 +87,7 @@ class TestAtom(unittest.TestCase):
             if element.symbol == 'H':
                 self.assertFalse(atom.isNonHydrogen())
             else:
-                self.assertTrue(atom.isNonHydrogen())
+                self.assertTrue(atom.isNonHydrogen(), "Atom {0!r} isn't reporting isNonHydrogen()".format(atom))
 
     def testIsCarbon(self):
         """
@@ -103,7 +131,7 @@ class TestAtom(unittest.TestCase):
         """
         Test the Atom.applyAction() method for a BREAK_BOND action.
         """
-        action = ['BREAK_BOND', '*1', 'S', '*2']
+        action = ['BREAK_BOND', '*1', 1, '*2']
         for element in elementList:
             atom0 = Atom(element=element, radicalElectrons=1, charge=0, label='*1', lonePairs=0)
             atom = atom0.copy()
@@ -117,7 +145,7 @@ class TestAtom(unittest.TestCase):
         """
         Test the Atom.applyAction() method for a FORM_BOND action.
         """
-        action = ['FORM_BOND', '*1', 'S', '*2']
+        action = ['FORM_BOND', '*1', 1, '*2']
         for element in elementList:
             atom0 = Atom(element=element, radicalElectrons=1, charge=0, label='*1', lonePairs=0)
             atom = atom0.copy()
@@ -247,6 +275,19 @@ class TestAtom(unittest.TestCase):
         self.assertFalse(atom1.equivalent(atom2))
         self.assertTrue(atom1.equivalent(atom3))
 
+    def testGetBondOrdersForAtom(self):
+        """
+        Test Atom.getBondOrdersForAtom for all carbons in naphthalene
+        """
+        
+        m = Molecule().fromSMILES('C12C(C=CC=C1)=CC=CC=2')
+        isomers = m.generateResonanceIsomers()
+        for isomer in isomers:
+            for atom in isomer.atoms:
+                if atom.symbol == 'C':
+                    self.assertEqual(atom.getBondOrdersForAtom(), 4.0)
+
+
 ################################################################################
 
 class TestBond(unittest.TestCase):
@@ -258,27 +299,77 @@ class TestBond(unittest.TestCase):
         """
         A method called before each unit test in this class.
         """
-        self.bond = Bond(atom1=None, atom2=None, order='D')
-        self.orderList = ['S','D','T','B']
+        self.bond = Bond(atom1=None, atom2=None, order=2)
+        self.orderList = [1,2,3,1.5, 0.30000000000000004]
     
+    def testGetOrderStr(self):
+        """
+        test the Bond.getOrderStr() method
+        """
+        
+        self.assertEqual(self.bond.getOrderStr(),'D')
+        
+    def testSetOrderStr(self):
+        """
+        test the Bond.setOrderStr() method
+        """
+        
+        self.bond.setOrderStr("B")
+        self.assertEqual(self.bond.order, 1.5)
+    
+    def testGetOrderNum(self):
+        """
+        test the Bond.getOrderNum() method
+        """
+        self.assertEqual(self.bond.getOrderNum(),2)
+        
+    def testSetOrderNum(self):
+        """
+        test the Bond.setOrderNum() method
+        """
+        
+        self.bond.setOrderNum(3)
+        self.assertEqual(self.bond.getOrderStr(),'T')
+    
+        
+    def testIsOrder(self):
+        """
+        Test the Bond.isOrder() method.
+        """
+        for order in self.orderList:
+            bond = Bond(None, None, order=order)
+            self.assertTrue(bond.isOrder(round(order,2)))
+        
+        
     def testIsSingle(self):
         """
         Test the Bond.isSingle() method.
         """
         for order in self.orderList:
             bond = Bond(None, None, order=order)
-            if order == 'S':
+            if order == 1:
                 self.assertTrue(bond.isSingle())
             else:
                 self.assertFalse(bond.isSingle())
     
+    def testIsSingleCanTakeFloatingPointAddition(self):
+        """
+        Test the Bond.isSingle() method with taking floating point addition
+        roundoff errors
+        """
+        new_order = 0.1 + 0.3*3
+        self.assertNotEqual(new_order, 1)
+        
+        self.bond.setOrderNum(new_order)
+        self.assertTrue(self.bond.isSingle())
+        
     def testIsDouble(self):
         """
         Test the Bond.isDouble() method.
         """
         for order in self.orderList:
             bond = Bond(None, None, order=order)
-            if order == 'D':
+            if order == 2:
                 self.assertTrue(bond.isDouble())
             else:
                 self.assertFalse(bond.isDouble())
@@ -289,7 +380,7 @@ class TestBond(unittest.TestCase):
         """
         for order in self.orderList:
             bond = Bond(None, None, order=order)
-            if order == 'T':
+            if order == 3:
                 self.assertTrue(bond.isTriple())
             else:
                 self.assertFalse(bond.isTriple())
@@ -300,7 +391,7 @@ class TestBond(unittest.TestCase):
         """
         for order in self.orderList:
             bond = Bond(None, None, order=order)
-            if order == 'B':
+            if order == 1.5:
                 self.assertTrue(bond.isBenzene())
             else:
                 self.assertFalse(bond.isBenzene())
@@ -313,12 +404,12 @@ class TestBond(unittest.TestCase):
             bond = Bond(None, None, order=order)
             try:
                 bond.incrementOrder()
-                if order == 'S': 
+                if order == 1: 
                     self.assertTrue(bond.isDouble())
-                elif order == 'D': 
+                elif order == 2: 
                     self.assertTrue(bond.isTriple())
             except ActionError:
-                self.assertTrue(order in ['T','B'])
+                self.assertTrue(order >= 3)
         
     def testDecrementOrder(self):
         """
@@ -328,18 +419,18 @@ class TestBond(unittest.TestCase):
             bond = Bond(None, None, order=order)
             try:
                 bond.decrementOrder()
-                if order == 'D': 
+                if order == 2: 
                     self.assertTrue(bond.isSingle())
-                elif order == 'T': 
+                elif order == 3: 
                     self.assertTrue(bond.isDouble())
             except ActionError:
-                self.assertTrue(order in ['S','B'])
+                self.assertTrue(order < 1)
                 
     def testApplyActionBreakBond(self):
         """
         Test the Bond.applyAction() method for a BREAK_BOND action.
         """
-        action = ['BREAK_BOND', '*1', 'S', '*2']
+        action = ['BREAK_BOND', '*1', 1, '*2']
         for order0 in self.orderList:
             bond0 = Bond(None, None, order=order0)
             bond = bond0.copy()
@@ -353,7 +444,7 @@ class TestBond(unittest.TestCase):
         """
         Test the Bond.applyAction() method for a FORM_BOND action.
         """
-        action = ['FORM_BOND', '*1', 'S', '*2']
+        action = ['FORM_BOND', '*1', 1, '*2']
         for order0 in self.orderList:
             bond0 = Bond(None, None, order=order0)
             bond = bond0.copy()
@@ -374,7 +465,7 @@ class TestBond(unittest.TestCase):
             try:
                 bond.applyAction(action)
             except ActionError:
-                self.assertTrue('T' == order0 or 'B' == order0)
+                self.assertTrue(3 <= order0)
                 
     def testApplyActionDecrementBond(self):
         """
@@ -387,7 +478,7 @@ class TestBond(unittest.TestCase):
             try:
                 bond.applyAction(action)
             except ActionError:
-                self.assertTrue('S' == order0 or 'B' == order0)
+                self.assertTrue(order0 < 1)
             
     def testApplyActionGainRadical(self):
         """
@@ -949,12 +1040,12 @@ class TestMolecule(unittest.TestCase):
 
     def testRadicalCH(self):
         """
-        Test that the species [CH] has three radical electrons and a spin multiplicity of 4.
+        Test that the species [CH] has one radical electrons and a spin multiplicity of 2.
         """
         molecule = Molecule().fromSMILES('[CH]')
-        self.assertEqual(molecule.atoms[0].radicalElectrons, 3)
-        self.assertEqual(molecule.multiplicity, 4)
-        self.assertEqual(molecule.getRadicalCount(), 3)
+        self.assertEqual(molecule.atoms[0].radicalElectrons, 1)
+        self.assertEqual(molecule.multiplicity, 2)
+        self.assertEqual(molecule.getRadicalCount(), 1)
 
     def testRadicalCH2(self):
         """
@@ -1330,7 +1421,6 @@ multiplicity 2
         saturated_molecule.saturate()
         self.assertTrue(saturated_molecule.isIsomorphic(indene))
         
-
     def testMalformedAugmentedInChI(self):
         """Test that augmented inchi without InChI layer raises Exception."""
         from .inchi import InchiException
@@ -1633,6 +1723,98 @@ multiplicity 2
         sssr5_sizes_expected = [6, 6, 6]
         self.assertEqual(sssr5_sizes, sssr5_sizes_expected)
     
+    def testGetDeterministicSmallestSetOfSmallestRingsCase1(self):
+        """
+        Test fused tricyclic can be decomposed into single rings more 
+        deterministically
+        """
+        smiles = 'C1C2C3C=CCCC2C13'
+
+        previous_num_shared_atoms_list = None
+        # repeat 100 time to test non-deterministic behavior
+        for _ in range(100):
+            mol =  Molecule().fromSMILES(smiles)
+            sssr_det = mol.getDeterministicSmallestSetOfSmallestRings()
+
+            
+            num_shared_atoms_list = []
+            for i, ring_i in enumerate(sssr_det):
+                for j in range(i+1, len(sssr_det)):
+                    ring_j = sssr_det[j]
+                    num_shared_atoms = len(set(ring_i).intersection(ring_j))
+
+                    num_shared_atoms_list.append(num_shared_atoms)
+
+            num_shared_atoms_list = sorted(num_shared_atoms_list)
+            
+            if previous_num_shared_atoms_list is None:
+                previous_num_shared_atoms_list = num_shared_atoms_list
+                continue
+            self.assertEqual(num_shared_atoms_list, previous_num_shared_atoms_list)
+            previous_num_shared_atoms_list = num_shared_atoms_list
+
+    def testGetDeterministicSmallestSetOfSmallestRingsCase2(self):
+        """
+        Test if two possible smallest rings can join the smallest set
+        the method can pick one of them deterministically using sum of 
+        atomic numbers along the rings.
+        In this test case and with currect method setup, ring (CCSCCCCC)
+        will be picked rather than ring(CCCOCC).
+        """
+
+        smiles = 'C1=CC2C3CSC(CO3)C2C1'
+
+        previous_atom_symbols_list = None
+        # repeat 100 time to test non-deterministic behavior
+        for _ in range(100):
+            mol =  Molecule().fromSMILES(smiles)
+            sssr_det = mol.getDeterministicSmallestSetOfSmallestRings()
+
+            atom_symbols_list = []
+            for ring in sssr_det:
+                atom_symbols = sorted([a.element.symbol for a in ring])
+                atom_symbols_list.append(atom_symbols)
+
+            atom_symbols_list = sorted(atom_symbols_list)
+
+            if previous_atom_symbols_list is None:
+                previous_atom_symbols_list = atom_symbols_list
+                continue
+            self.assertEqual(atom_symbols_list, previous_atom_symbols_list)
+            previous_atom_symbols_list = atom_symbols_list
+
+    @work_in_progress
+    def testGetDeterministicSmallestSetOfSmallestRingsCase3(self):
+        """
+        Test if two possible smallest rings can join the smallest set
+        the method can pick one of them deterministically when their
+        sum of atomic numbers along the rings are also equal to each other.
+        
+        To break the tie, one option we have is to consider adding contributions
+        from other parts of the molecule, such as atomic number weighted connectivity
+        value and differentiate bond orders when calculating connectivity values.
+        """
+        smiles = 'C=1CC2C3CSC(O[Si]3)C2C1'
+
+        previous_atom_symbols_list = None
+        # repeat 100 time to test non-deterministic behavior
+        for _ in range(100):
+            mol =  Molecule().fromSMILES(smiles)
+            sssr_det = mol.getDeterministicSmallestSetOfSmallestRings()
+
+            atom_symbols_list = []
+            for ring in sssr_det:
+                atom_symbols = sorted([a.element.symbol for a in ring])
+                atom_symbols_list.append(atom_symbols)
+
+            atom_symbols_list = sorted(atom_symbols_list)
+
+            if previous_atom_symbols_list is None:
+                previous_atom_symbols_list = atom_symbols_list
+                continue
+            self.assertEqual(atom_symbols_list, previous_atom_symbols_list)
+            previous_atom_symbols_list = atom_symbols_list
+
     def testToGroup(self):
         """
         Test if we can convert a Molecule object into a Group object.
@@ -1761,6 +1943,147 @@ multiplicity 2
         calc = Molecule().fromAdjacencyList(adjlistCalc)
         
         self.assertTrue(exp.isIsomorphic(calc))
+
+    def testAromaticityPerceptionBenzene(self):
+        """Test aromaticity perception via getAromaticRings for benzene."""
+        mol = Molecule(SMILES='c1ccccc1')
+        aromaticAtoms, aromaticBonds = mol.getAromaticRings()
+        self.assertEqual(len(aromaticAtoms), 1)
+        self.assertEqual(len(aromaticBonds), 1)
+        for bond in aromaticBonds[0]:
+            self.assertTrue(bond.atom1 in aromaticAtoms[0] and bond.atom2 in aromaticAtoms[0])
+
+    def testAromaticityPerceptionTetralin(self):
+        """Test aromaticity perception via getAromaticRings for tetralin."""
+        mol = Molecule(SMILES='c1ccc2c(c1)CCCC2')
+        aromaticAtoms, aromaticBonds = mol.getAromaticRings()
+        self.assertEqual(len(aromaticAtoms), 1)
+        self.assertEqual(len(aromaticBonds), 1)
+        for bond in aromaticBonds[0]:
+            self.assertTrue(bond.atom1 in aromaticAtoms[0] and bond.atom2 in aromaticAtoms[0])
+
+    def testAromaticityPerceptionBiphenyl(self):
+        """Test aromaticity perception via getAromaticRings for biphenyl."""
+        mol = Molecule(SMILES='c1ccc(cc1)c2ccccc2')
+        aromaticAtoms, aromaticBonds = mol.getAromaticRings()
+        self.assertEqual(len(aromaticAtoms), 2)
+        self.assertEqual(len(aromaticBonds), 2)
+        for index in range(len(aromaticAtoms)):
+            for bond in aromaticBonds[index]:
+                self.assertTrue(bond.atom1 in aromaticAtoms[index] and bond.atom2 in aromaticAtoms[index])
+
+    def testAromaticityPerceptionAzulene(self):
+        """Test aromaticity perception via getAromaticRings for azulene."""
+        mol = Molecule(SMILES='c1cccc2cccc2c1')
+        aromaticAtoms, aromaticBonds = mol.getAromaticRings()
+        self.assertEqual(len(aromaticAtoms), 0)
+        self.assertEqual(len(aromaticBonds), 0)
+
+    def testAromaticityPerceptionFuran(self):
+        """Test aromaticity perception via getAromaticRings for furan."""
+        mol = Molecule(SMILES='c1ccoc1')
+        aromaticAtoms, aromaticBonds = mol.getAromaticRings()
+        self.assertEqual(len(aromaticAtoms), 0)
+        self.assertEqual(len(aromaticBonds), 0)
+
+    def testArylRadicalTrue(self):
+        """Test aryl radical perception for phenyl radical."""
+        mol = Molecule(SMILES='[c]1ccccc1')
+        self.assertTrue(mol.isArylRadical())
+
+    def testArylRadicalFalse(self):
+        """Test aryl radical perception for benzyl radical."""
+        mol = Molecule(SMILES='[CH2]c1ccccc1')
+        self.assertFalse(mol.isArylRadical())
+
+    def testArylRadicalBirad(self):
+        """Test aryl radical perception for biradical species.
+
+        This is a case that is not properly handled right now, since a single boolean cannot
+        characterize multiple radicals. In such cases, the method will return false if
+        any of the radicals is not an aryl radical."""
+        mol = Molecule(SMILES='[CH2]c1c[c]ccc1')
+        self.assertFalse(mol.isArylRadical())
+
+    def testIdenticalTrue(self):
+        """Test that the isIdentical returns True with butane"""
+        mol = Molecule(SMILES='CCCC')
+        mol.assignAtomIDs()
+        molCopy = mol.copy(deep=True)
+        self.assertTrue(mol.isIsomorphic(molCopy))
+        self.assertTrue(mol.isIdentical(molCopy))
+
+    def testIdenticalFalse(self):
+        """Test that the isIdentical returns False with butane"""
+        mol = Molecule(SMILES='CCCC')
+        mol.assignAtomIDs()
+        molCopy = mol.copy(deep=True)
+        # Remove a hydrogen from mol
+        a = mol.atoms[-1]
+
+        mol.removeAtom(a)
+        # Remove a different hydrogen from molCopy
+        b = molCopy.atoms[-2]
+
+        molCopy.removeAtom(b)
+
+        self.assertTrue(mol.isIsomorphic(molCopy))
+        self.assertFalse(mol.isIdentical(molCopy))
+
+    def testIdenticalFalse2(self):
+        """Test that the isIdentical method returns False with ethene"""
+        # Manually test addition of H radical to ethene
+        reactant1 = Molecule(SMILES='C=C')
+        carbons = [atom for atom in reactant1.atoms if atom.symbol == 'C']
+        carbons[0].label = '*1'
+        carbons[1].label = '*2'
+        reactant2 = Molecule(SMILES='[H]')
+        reactant2.atoms[0].label = '*3'
+        # Merge reactants
+        mol = reactant1.merge(reactant2)
+        mol.assignAtomIDs()
+        molCopy = mol.copy(deep=True)
+        # Manually perform R_Addition_MultipleBond of *3 to *1
+        labeledAtoms = mol.getLabeledAtoms()
+        mol.getBond(labeledAtoms['*1'], labeledAtoms['*2']).decrementOrder()
+        mol.addBond(Bond(labeledAtoms['*1'], labeledAtoms['*3'], order='S'))
+        labeledAtoms['*2'].incrementRadical()
+        labeledAtoms['*3'].decrementRadical()
+        # Manually perform R_Addition_MultipleBond of *3 to *2
+        labeledAtoms = molCopy.getLabeledAtoms()
+        molCopy.getBond(labeledAtoms['*1'], labeledAtoms['*2']).decrementOrder()
+        molCopy.addBond(Bond(labeledAtoms['*2'], labeledAtoms['*3'], order='S'))
+        labeledAtoms['*1'].incrementRadical()
+        labeledAtoms['*3'].decrementRadical()
+
+        self.assertTrue(mol.isIsomorphic(molCopy))
+        self.assertFalse(mol.isIdentical(molCopy))
+
+    def testatomidvalid(self):
+        """see if the atomIDVvalid method properly returns True"""
+        mol = Molecule(SMILES='CCCC')
+        for index, atom in enumerate(mol.atoms):
+            atom.id =index
+        self.assertTrue(mol.atomIDValid())
+
+    def testatomidvalid2(self):
+        """see if the atomIDVvalid method properly returns False"""
+        mol = Molecule(SMILES='CCCC')
+        for index, atom in enumerate(mol.atoms):
+            atom.index =index
+        mol.atoms[3].index = 4
+        self.assertFalse(mol.atomIDValid())
+
+    def testatomidvalid2(self):
+        """see if the atomIDVvalid method properly returns False"""
+        mol = Molecule(SMILES='CCCC')
+        self.assertFalse(mol.atomIDValid())
+
+    def testassignatomid(self):
+        """see if the assignAtomID method properly labels molecule"""
+        mol = Molecule(SMILES='CCCC')
+        mol.assignAtomIDs()
+        self.assertTrue(mol.atomIDValid())
 
 ################################################################################
 

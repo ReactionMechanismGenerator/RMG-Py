@@ -1,6 +1,33 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+################################################################################
+#
+#   RMG - Reaction Mechanism Generator
+#
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
+#
+#   Permission is hereby granted, free of charge, to any person obtaining a
+#   copy of this software and associated documentation files (the 'Software'),
+#   to deal in the Software without restriction, including without limitation
+#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#   and/or sell copies of the Software, and to permit persons to whom the
+#   Software is furnished to do so, subject to the following conditions:
+#
+#   The above copyright notice and this permission notice shall be included in
+#   all copies or substantial portions of the Software.
+#
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+#   DEALINGS IN THE SOFTWARE.
+#
+################################################################################
+
 import unittest
 import numpy
 import os
@@ -263,23 +290,17 @@ class LiquidReactorCheck(unittest.TestCase):
         From input file reading to information storage in liquid reactor object.
         """
         rmg = RMG()
-
-        ##use the liquid phase example to load every input parameters
-        inp = os.path.join("examples","rmg","liquid_phase_constSPC","input.py") #In order to work on every system, use of os.path
-        rmg.inputFile = inp
-
+        rmg.inputFile = os.path.join('rmgpy', 'solver', 'files', 'liquid_phase_constSPC', 'input.py')
         rmg.initialize()
             
-        if rmg.solvent is not None:
-            ##call the function to identify indices in the solver
-            for index, reactionSystem in enumerate(rmg.reactionSystems):
-                    if reactionSystem.constSPCNames is not None: #if no constant species provided do nothing
-                        reactionSystem.get_constSPCIndices(rmg.reactionModel.core.species)        
-                   
         for index, reactionSystem in enumerate(rmg.reactionSystems):
-            self.assertIsNotNone(reactionSystem.constSPCNames,"""this input \"{0} \" contain constant SPC, reactor should contain its name and its indices after few steps""")
-            self.assertIsNotNone(reactionSystem.constSPCIndices,"""this input \"{0} \" contain constant SPC, reactor should contain its corresponding indices in the core species array""")
-            self.assertIs(reactionSystem.constSPCNames[0],rmg.reactionModel.core.species[reactionSystem.constSPCIndices[0]].label,"The constant species name from reaction model and constantSPCnames has to be equals")            
+            self.assertIsNotNone(reactionSystem.constSPCNames,
+                                 'Reactor should contain constant species name and indices after few steps')
+            self.assertIsNotNone(reactionSystem.constSPCIndices,
+                                 'Reactor should contain constant species indices in the core species array')
+            self.assertIs(reactionSystem.constSPCNames[0],
+                          rmg.reactionModel.core.species[reactionSystem.constSPCIndices[0]].label,
+                          'The constant species name from the reaction model and constantSPCnames should be equal')
             
     def test_corespeciesRate(self):
         "Test if a specific core species rate is equal to 0 over time"    
@@ -314,7 +335,7 @@ class LiquidReactorCheck(unittest.TestCase):
         
     def tearDown(self):
         """
-        Reset the database
+        Reset the database & liquid parameters for solution
         """
         global diffusionLimiter        
         from rmgpy.kinetics.diffusionLimited import diffusionLimiter
@@ -323,4 +344,8 @@ class LiquidReactorCheck(unittest.TestCase):
         import rmgpy.data.rmg
         rmgpy.data.rmg.database = None
 
-        
+        from rmgpy.rmg.model import Species as DifferentSpecies
+        DifferentSpecies.solventData = None
+        DifferentSpecies.solventName = None
+        DifferentSpecies.solventStructure = None
+        DifferentSpecies.solventViscosity = None

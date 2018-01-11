@@ -46,7 +46,6 @@ QM Data
 Class/Function          Description
 ======================= ========================================================
 :class:`QMData`         General class for data extracted from a QM calculation
-:class:`CCLibData`      QM Data extracted from a cclib data object
 ======================= ========================================================
 
 

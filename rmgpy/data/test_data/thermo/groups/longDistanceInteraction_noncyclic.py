@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-name = "1,5-Interaction Corrections"
+name = "Correction for interaction distance 1"
 shortDesc = u""
 longDesc = u"""
 """

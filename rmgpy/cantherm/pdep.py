@@ -5,11 +5,11 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2009 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the "Software"),
+#   copy of this software and associated documentation files (the 'Software'),
 #   to deal in the Software without restriction, including without limitation
 #   the rights to use, copy, modify, merge, publish, distribute, sublicense,
 #   and/or sell copies of the Software, and to permit persons to whom the
@@ -18,10 +18,10 @@
 #   The above copyright notice and this permission notice shall be included in
 #   all copies or substantial portions of the Software.
 #
-#   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 #   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-#   THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 #   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #   DEALINGS IN THE SOFTWARE.
@@ -46,6 +46,7 @@ from rmgpy.reaction import Reaction
 from rmgpy.kinetics.tunneling import Wigner, Eckart
 
 from rmgpy.cantherm.output import prettify
+from rmgpy.chemkin import writeKineticsEntry
 
 ################################################################################
 
@@ -315,7 +316,7 @@ class PressureDependenceJob(object):
         Pcount = self.Pcount
         if self.Plist is not None:
             pass
-        if self.interpolationModel[0].lower() == 'chebyshev':
+        elif self.interpolationModel[0].lower() == 'chebyshev':
             # Distribute pressures on a Gauss-Chebyshev grid
             Plist = numpy.zeros(Pcount, numpy.float64)
             for i in range(Pcount):
@@ -445,42 +446,8 @@ class PressureDependenceJob(object):
             for reac in range(Nreac):
                 if reac == prod: continue
                 reaction = self.network.netReactions[count]
-                kinetics = reaction.kinetics
                 count += 1
-                
-                string = '{0!s:51} 1.0 0.0 0.0\n'.format(reaction)
-                
-                if isinstance(kinetics, PDepArrhenius):
-                    for P, arrhenius in zip(kinetics.pressures.value_si, kinetics.arrhenius):
-                        string += 'PLOG/ {0:<9.3f} {1:<11.3e} {2:<8.2f} {3:<8.2f}/\n'.format(P / 101325.,
-                            arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * 1e6 ** (len(reaction.reactants) - 1),
-                            arrhenius.n.value_si,
-                            arrhenius.Ea.value_si / 4184.
-                        )
-                        
-                elif isinstance(kinetics, Chebyshev):
-                    coeffs = kinetics.coeffs.value_si.copy()
-                    coeffs[0,0] += 6 * (len(reaction.reactants) - 1)
-                    string += 'TCHEB/ {0:<9.3f} {1:<9.3f}/\n'.format(kinetics.Tmin.value_si, kinetics.Tmax.value_si)
-                    string += 'PCHEB/ {0:<9.3f} {1:<9.3f}/\n'.format(kinetics.Pmin.value_si / 101325., kinetics.Pmax.value_si / 101325.)
-                    string += 'CHEB/ {0:d} {1:d}/\n'.format(kinetics.degreeT, kinetics.degreeP)
-                    if kinetics.degreeP < 6:
-                        for i in range(kinetics.degreeT):
-                            string += 'CHEB/'
-                            for j in range(kinetics.degreeP):
-                                string += ' {0:<12.3e}'.format(coeffs[i,j])
-                            string += '/\n'
-                    else:
-                        coeffs_list = []
-                        for i in range(kinetics.degreeT):
-                            for j in range(kinetics.degreeP):
-                                coeffs_list.append(coeffs[i,j])
-                        coeffs_list[0] += 6 * (numReactants - 1)
-                        for i in range(len(coeffs_list)):
-                            if i % 5 == 0: string += '    CHEB/'
-                            string += ' {0:<12.3e}'.format(coeffs_list[i])
-                            if i % 5 == 4: string += '/\n'  
-
+                string = writeKineticsEntry(reaction, speciesList=None, verbose=False)
                 f.write('{0}\n'.format(string))
             
         f.close()

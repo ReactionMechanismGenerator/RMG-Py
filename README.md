@@ -1,6 +1,5 @@
 # <img align="top" src="https://raw.githubusercontent.com/ReactionMechanismGenerator/RMG-Py/master/documentation/source/_static/rmg-logo-small.png"> Reaction Mechanism Generator (RMG)
 
-[![Join the chat at https://gitter.im/ReactionMechanismGenerator/RMG-Py](https://badges.gitter.im/ReactionMechanismGenerator/RMG-Py.svg)](https://gitter.im/ReactionMechanismGenerator/RMG-Py?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ## Description
 This repository contains the Python version of **Reaction Mechanism Generator (RMG)**,
@@ -18,7 +17,8 @@ Gaussian, MOPAC, QChem, and MOLPRO.
 - [RMG-database Github Repository](https://github.com/ReactionMechanismGenerator/RMG-database): contains source code for the latest version of the database
 
 ## Latest Stable Release
-**RMG v1.0.3**
+**RMG v2.1.0**
+[![Anaconda-Server Badge](https://anaconda.org/rmg/rmg/badges/version.svg)](https://anaconda.org/rmg/rmg)
 
 View the [Release Notes](http://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/releaseNotes.html).
 
@@ -42,7 +42,8 @@ Alternatively, PDF versions of all the documentation can also be found in the `d
 ## How to Give Feedback
 
 Please post any issues you may have to the [issues page](https://github.com/ReactionMechanismGenerator/RMG-Py/issues/)
-or email [rmg_dev@mit.edu](mailto:rmg_dev@mit.edu) if you have questions.  
+or drop in to the [chat room](https://gitter.im/ReactionMechanismGenerator/RMG-Py) or email [rmg_dev@mit.edu](mailto:rmg_dev@mit.edu) if you have questions.  
+[![Join the chat at https://gitter.im/ReactionMechanismGenerator/RMG-Py](https://badges.gitter.im/ReactionMechanismGenerator/RMG-Py.svg)](https://gitter.im/ReactionMechanismGenerator/RMG-Py?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ## Useful Links
 

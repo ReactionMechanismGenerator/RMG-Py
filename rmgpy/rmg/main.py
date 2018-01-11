@@ -5,8 +5,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2010 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -55,6 +55,7 @@ from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
 from rmgpy.kinetics.diffusionLimited import diffusionLimiter
 
 from model import Species, CoreEdgeReactionModel
+from rmgpy.reaction import Reaction
 from pdep import PDepNetwork
 import rmgpy.util as util
 
@@ -66,6 +67,7 @@ from rmgpy.qm.main import QMDatabaseWriter
 from rmgpy.stats import ExecutionStatsWriter
 from rmgpy.thermo.thermoengine import submit
 from rmgpy.tools.sensitivity import plotSensitivity
+from cantera import ck2cti
 
 ################################################################################
 
@@ -122,9 +124,11 @@ class RMG(util.Subject):
     `generatePlots`                     ``True`` to generate plots of the job execution statistics after each iteration, ``False`` otherwise
     `verboseComments`                   ``True`` to keep the verbose comments for database estimates, ``False`` otherwise
     `saveEdgeSpecies`                   ``True`` to save chemkin and HTML files of the edge species, ``False`` otherwise
+    `keepIrreversible`                  ``True`` to keep ireversibility of library reactions as is ('<=>' or '=>'). ``False`` (default) to force all library reactions to be reversible ('<=>')
     `pressureDependence`                Whether to process unimolecular (pressure-dependent) reaction networks
     `quantumMechanics`                  Whether to apply quantum mechanical calculations instead of group additivity to certain molecular types.
     `wallTime`                          The maximum amount of CPU time in the form DD:HH:MM:SS to expend on this job; used to stop gracefully so we can still get profiling information
+    `kineticsdatastore`                 ``True`` if storing details of each kinetic database entry in text file, ``False`` otherwise
     ----------------------------------- ------------------------------------------------
     `initializationTime`                The time at which the job was initiated, in seconds since the epoch (i.e. from time.time())
     `done`                              Whether the job has completed (there is nothing new to add)
@@ -161,6 +165,10 @@ class RMG(util.Subject):
         self.fluxToleranceKeepInEdge = 0.0
         self.fluxToleranceMoveToCore = 1.0
         self.fluxToleranceInterrupt = 1.0
+        self.reactionToleranceMoveToCore = numpy.inf
+        self.reactionToleranceInterrupt = numpy.inf
+        self.ignoreOverallFluxCriterion=False
+        
         self.absoluteTolerance = 1.0e-8
         self.relativeTolerance = 1.0e-4
         self.sensitivityAbsoluteTolerance = 1.0e-6
@@ -169,8 +177,8 @@ class RMG(util.Subject):
         self.minCoreSizeForPrune = 50
         self.minSpeciesExistIterationsForPrune = 2
         self.filterReactions=False
-        self.unimoelcularReact = None
-        self.bimoleculaReact = None
+        self.unimolecularReact = None
+        self.bimolecularReact = None
         self.unimolecularThreshold = None
         self.bimolecularThreshold = None
         self.termination = []
@@ -185,11 +193,15 @@ class RMG(util.Subject):
         self.saveSimulationProfiles = None
         self.verboseComments = None
         self.saveEdgeSpecies = None
+        self.keepIrreversible = None
         self.pressureDependence = None
         self.quantumMechanics = None
         self.speciesConstraints = {}
         self.wallTime = '00:00:00:00'
         self.initializationTime = 0
+        self.kineticsdatastore = None
+
+        self.thermoCentralDatabase = None
 
         self.execTime = []
     
@@ -317,6 +329,19 @@ class RMG(util.Subject):
                 self.speciesConstraints={}
                 for family in self.database.kinetics.families.values():
                     family.addKineticsRulesFromTrainingSet(thermoDatabase=self.database.thermo)
+
+                    #If requested by the user, write a text file for each kinetics family detailing the source of each entry
+                    if self.kineticsdatastore:
+                        logging.info('Writing sources of kinetic entries in family {0} to text file'.format(family.label))
+                        path = os.path.join(self.outputDirectory, 'kinetics_database', family.label + '.txt')
+                        with open(path, 'w') as f:
+                            for template_label, entries in family.rules.entries.iteritems():
+                                f.write("Template [{0}] uses the {1} following source(s):\n".format(template_label,str(len(entries))))
+                                for entry_index, entry in enumerate(entries):
+                                    f.write(str(entry_index+1) + ". " + entry.shortDesc + "\n" + entry.longDesc + "\n")
+                                f.write('\n')
+                            f.write('\n')
+
                 self.speciesConstraints=copySpeciesConstraints
             else:
                 logging.info('Training set explicitly not added to rate rules in kinetics families...')
@@ -365,6 +390,13 @@ class RMG(util.Subject):
         # Make output subdirectories
         util.makeOutputSubdirectory(self.outputDirectory, 'pdep')
         util.makeOutputSubdirectory(self.outputDirectory, 'solver')
+        util.makeOutputSubdirectory(self.outputDirectory, 'kinetics_database')
+
+        # Specifies if details of kinetic database entries should be stored according to user
+        try:
+            self.kineticsdatastore = kwargs['kineticsdatastore']
+        except KeyError:
+            self.kineticsdatastore = False
 
         # Load databases
         self.loadDatabase()
@@ -384,7 +416,7 @@ class RMG(util.Subject):
 
         # Initialize reaction model
         if restart:
-            self.loadRestartFile(os.path.join(self.outputDirectory,'restart.pkl'))
+            self.initializeRestartRun(os.path.join(self.outputDirectory,'restart.pkl'))
         else:
     
             # Seed mechanisms: add species and reactions from seed mechanism
@@ -549,19 +581,30 @@ class RMG(util.Subject):
                     # Turn pruning off if we haven't reached minimum core size.
                     prune = False
                     
-                terminated, obj = reactionSystem.simulate(
+                try: terminated, obj = reactionSystem.simulate(
                     coreSpecies = self.reactionModel.core.species,
                     coreReactions = self.reactionModel.core.reactions,
                     edgeSpecies = self.reactionModel.edge.species,
                     edgeReactions = self.reactionModel.edge.reactions,
                     toleranceKeepInEdge = self.fluxToleranceKeepInEdge if prune else 0,
                     toleranceMoveToCore = self.fluxToleranceMoveToCore,
+                    toleranceReactionMoveToCore = self.reactionToleranceMoveToCore,
                     toleranceInterruptSimulation = self.fluxToleranceInterrupt if prune else self.fluxToleranceMoveToCore,
+                    toleranceReactionInterruptSimulation = self.reactionToleranceInterrupt if prune else self.reactionToleranceMoveToCore,
                     pdepNetworks = self.reactionModel.networkList,
+                    ignoreOverallFluxCriterion=self.ignoreOverallFluxCriterion,
                     absoluteTolerance = self.absoluteTolerance,
                     relativeTolerance = self.relativeTolerance,
                     filterReactions=False,
                 )
+                except:
+                    logging.error("Model core reactions:")
+                    if len(self.reactionModel.core.reactions) > 5:
+                        logging.error("Too many to print in detail")
+                    else:
+                        from rmgpy.cantherm.output import prettify
+                        logging.error(prettify(repr(self.reactionModel.core.reactions)))
+                    raise
                 allTerminated = allTerminated and terminated
                 logging.info('')
                 
@@ -573,7 +616,18 @@ class RMG(util.Subject):
                         # We do this here because we need a temperature and pressure
                         # Store the maximum leak species along with the associated network
                         obj = (obj, obj.getMaximumLeakSpecies(reactionSystem.T.value_si, reactionSystem.P.value_si))
-                    objectsToEnlarge.append(obj)
+                        objectsToEnlarge.append(obj)
+                    elif isinstance(obj, Species):
+                        objectsToEnlarge.append(obj)
+                        assert len(objectsToEnlarge)>0
+                    elif isinstance(obj,Reaction):
+                        potentialSpcs = obj.reactants+obj.products
+                        #remove species already in core
+                        neededSpcs = [x for x in potentialSpcs if x not in self.reactionModel.core.species]
+                        for i in range(len(neededSpcs)): #remove duplicate species
+                            if neededSpcs.index(neededSpcs[i]) != i:
+                                del neededSpcs[i]
+                        objectsToEnlarge.extend(neededSpcs)
                     self.done = False
     
     
@@ -613,8 +667,11 @@ class RMG(util.Subject):
                                 edgeReactions = [],
                                 toleranceKeepInEdge = 0,
                                 toleranceMoveToCore = self.fluxToleranceMoveToCore,
+                                toleranceReactionMoveToCore = self.reactionToleranceMoveToCore,
                                 toleranceInterruptSimulation = self.fluxToleranceMoveToCore,
+                                toleranceReactionInterruptSimulation = self.reactionToleranceInterrupt,
                                 pdepNetworks = self.reactionModel.networkList,
+                                ignoreOverallFluxCriterion=self.ignoreOverallFluxCriterion,
                                 absoluteTolerance = self.absoluteTolerance,
                                 relativeTolerance = self.relativeTolerance,
                                 filterReactions=True,
@@ -668,8 +725,11 @@ class RMG(util.Subject):
                     edgeReactions = self.reactionModel.edge.reactions,
                     toleranceKeepInEdge = self.fluxToleranceKeepInEdge,
                     toleranceMoveToCore = self.fluxToleranceMoveToCore,
-                    toleranceInterruptSimulation = self.fluxToleranceInterrupt,
+                    toleranceReactionMoveToCore = self.reactionToleranceMoveToCore,
+                    toleranceInterruptSimulation = self.fluxToleranceMoveToCore,
+                    toleranceReactionInterruptSimulation = self.reactionToleranceInterrupt,
                     pdepNetworks = self.reactionModel.networkList,
+                    ignoreOverallFluxCriterion=self.ignoreOverallFluxCriterion,
                     absoluteTolerance = self.absoluteTolerance,
                     relativeTolerance = self.relativeTolerance,
                     sensitivity = True,
@@ -679,6 +739,13 @@ class RMG(util.Subject):
                 )
                 
                 plotSensitivity(self.outputDirectory, index, reactionSystem.sensitiveSpecies)
+
+        # generate Cantera files chem.cti & chem_annotated.cti in a designated `cantera` output folder
+        try:
+            self.generateCanteraFiles(os.path.join(self.outputDirectory, 'chemkin', 'chem.inp'))
+            self.generateCanteraFiles(os.path.join(self.outputDirectory, 'chemkin', 'chem_annotated.inp'))
+        except EnvironmentError:
+            logging.error('Could not generate Cantera files due to EnvironmentError. Check read\write privileges in output directory.')
                 
         # Write output file
         logging.info('')
@@ -689,6 +756,25 @@ class RMG(util.Subject):
         logging.info('The final model edge has %s species and %s reactions' % (edgeSpec, edgeReac))
         
         self.finish()
+
+    def generateCanteraFiles(self, chemkinFile, **kwargs):
+        """
+        Convert a chemkin mechanism chem.inp file to a cantera mechanism file chem.cti
+        and save it in the cantera directory
+        """
+        transportFile = os.path.join(os.path.dirname(chemkinFile), 'tran.dat')
+        fileName = os.path.splitext(os.path.basename(chemkinFile))[0] + '.cti'
+        outName = os.path.join(self.outputDirectory, 'cantera', fileName)
+        canteraDir = os.path.dirname(outName)
+        try:
+            os.makedirs(canteraDir)
+        except OSError:
+            if not os.path.isdir(canteraDir):
+                raise
+        if os.path.exists(outName):
+            os.remove(outName)
+        parser = ck2cti.Parser()
+        parser.convertMech(chemkinFile, transportFile=transportFile, outName=outName, quiet=True, permissive=True, **kwargs)
 
     def initializeReactionThresholdAndReactFlags(self):
         numCoreSpecies = len(self.reactionModel.core.species)
@@ -838,20 +924,13 @@ class RMG(util.Subject):
                 logging.log(level, databaseCondaPackage)
                 logging.log(level,'')
 
-    
-    def loadRestartFile(self, path):
-        """
-        Load a restart file at `path` on disk.
-        """
-    
-        import cPickle
-    
-        # Unpickle the reaction model from the specified restart file
-        logging.info('Loading previous restart file...')
-        f = open(path, 'rb')
-        self.reactionModel = cPickle.load(f)
-        f.close()
-    
+    def initializeRestartRun(self, path):
+
+        from rmgpy.rmg.model import getFamilyLibraryObject
+
+        # read restart file
+        self.loadRestartFile(path)
+
         # A few things still point to the species in the input file, so update
         # those to point to the equivalent species loaded from the restart file
     
@@ -873,44 +952,64 @@ class RMG(util.Subject):
         # The reactions and reactionDict still point to the old reaction families
         reactionDict = {}
         oldFamilies = self.reactionModel.reactionDict.keys()
-        for family0 in self.reactionModel.reactionDict:
+        for family0_label in self.reactionModel.reactionDict:
     
             # Find the equivalent library or family in the newly-loaded kinetics database
-            family = None
-            if isinstance(family0, KineticsLibrary):
+            family_label = None
+            family0_obj = getFamilyLibraryObject(family0_label)
+            if isinstance(family0_obj, KineticsLibrary):
                 for label, database in self.database.kinetics.libraries.iteritems():
-                    if database.label == family0.label:
-                        family = database
+                    if database.label == family0_label:
+                        family_label = database.label
                         break
-            elif isinstance(family0, KineticsFamily):
+            elif isinstance(family0_obj, KineticsFamily):
                 for label, database in self.database.kinetics.families.iteritems():
-                    if database.label == family0.label:
-                        family = database
+                    if database.label == family0_label:
+                        family_label = database.label
                         break    
             else:
                 import pdb; pdb.set_trace()
-            if family is None:
-                raise Exception("Unable to find matching reaction family for %s" % family0.label)
+            if family_label is None:
+                raise Exception("Unable to find matching reaction family for %s" % family0_label)
     
             # Update each affected reaction to point to that new family
             # Also use that new family in a duplicate reactionDict
-            reactionDict[family] = {}
-            for reactant1 in self.reactionModel.reactionDict[family0]:
-                reactionDict[family][reactant1] = {}
-                for reactant2 in self.reactionModel.reactionDict[family0][reactant1]:
-                    reactionDict[family][reactant1][reactant2] = []
-                    if isinstance(family0, KineticsLibrary):
-                        for rxn in self.reactionModel.reactionDict[family0][reactant1][reactant2]:
+            reactionDict[family_label] = {}
+            for reactant1 in self.reactionModel.reactionDict[family0_label]:
+                reactionDict[family_label][reactant1] = {}
+                for reactant2 in self.reactionModel.reactionDict[family0_label][reactant1]:
+                    reactionDict[family_label][reactant1][reactant2] = []
+                    if isinstance(family0_obj, KineticsLibrary):
+                        for rxn in self.reactionModel.reactionDict[family0_label][reactant1][reactant2]:
                             assert isinstance(rxn, LibraryReaction)
-                            rxn.library = family.label
-                            reactionDict[family][reactant1][reactant2].append(rxn)
-                    elif isinstance(family0, KineticsFamily):
-                        for rxn in self.reactionModel.reactionDict[family0][reactant1][reactant2]:
+                            rxn.library = family_label
+                            reactionDict[family_label][reactant1][reactant2].append(rxn)
+                    elif isinstance(family0_obj, KineticsFamily):
+                        for rxn in self.reactionModel.reactionDict[family0_label][reactant1][reactant2]:
                             assert isinstance(rxn, TemplateReaction)
-                            rxn.family = family.label
-                            reactionDict[family][reactant1][reactant2].append(rxn)
+                            rxn.family_label = family_label
+                            reactionDict[family_label][reactant1][reactant2].append(rxn)
         
         self.reactionModel.reactionDict = reactionDict
+    
+    def loadRestartFile(self, path):
+        """
+        Load a restart file at `path` on disk.
+        """
+        import cPickle
+    
+        # Unpickle the reaction model from the specified restart file
+        logging.info('Loading previous restart file...')
+        f = open(path, 'rb')
+        rmg_restart = cPickle.load(f)
+        f.close()
+
+        self.reactionModel = rmg_restart.reactionModel
+        self.unimolecularReact = rmg_restart.unimolecularReact
+        self.bimolecularReact = rmg_restart.bimolecularReact
+        if self.filterReactions:
+            self.unimolecularThreshold = rmg_restart.unimolecularThreshold
+            self.bimolecularThreshold = rmg_restart.bimolecularThreshold
         
     def loadRMGJavaInput(self, path):
         """

@@ -1,3 +1,29 @@
+################################################################################
+#
+#   RMG - Reaction Mechanism Generator
+#
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
+#
+#   Permission is hereby granted, free of charge, to any person obtaining a
+#   copy of this software and associated documentation files (the 'Software'),
+#   to deal in the Software without restriction, including without limitation
+#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#   and/or sell copies of the Software, and to permit persons to whom the
+#   Software is furnished to do so, subject to the following conditions:
+#
+#   The above copyright notice and this permission notice shall be included in
+#   all copies or substantial portions of the Software.
+#
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+#   DEALINGS IN THE SOFTWARE.
+#
+################################################################################
 
 import numpy
 import math
@@ -101,6 +127,23 @@ def generateThermoData(spc, thermoClass=NASA):
         return None
     
     thermo0 = thermodb.getThermoData(spc) 
+
+    # 1. maybe only submit cyclic core
+    # 2. to help radical prediction, HBI should also
+    #    look up centrailThermoDB for its saturated version
+    #    currently it only looks up libraries or estimates via GAV 
+    from rmgpy.rmg.input import getInput
+    
+    try:
+        thermoCentralDatabase = getInput('thermoCentralDatabase')
+    except Exception, e:
+        logging.debug('thermoCentralDatabase could not be found.')
+        thermoCentralDatabase = None
+    
+    if thermoCentralDatabase and thermoCentralDatabase.client \
+        and thermoCentralDatabase.satisfyRegistrationRequirements(spc, thermo0, thermodb):
+        
+        thermoCentralDatabase.registerInCentralThermoDB(spc)
         
     return processThermoData(spc, thermo0, thermoClass)    
 

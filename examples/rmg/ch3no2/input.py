@@ -1,6 +1,6 @@
 # Data sources
 database(
-    thermoLibraries = ['KlippensteinH2O2', 'primaryThermoLibrary','DFT_QCI_thermo','CH','CHN','CHO','CHON','CN','NISTThermoLibrary','thermo_DFT_CCSDTF12_BAC','GRI-Mech3.0-N'],
+    thermoLibraries = ['BurkeH2O2', 'primaryThermoLibrary','DFT_QCI_thermo','CH','CHN','CHO','CHON','CN','NISTThermoLibrary','thermo_DFT_CCSDTF12_BAC','GRI-Mech3.0-N'],
     reactionLibraries = [('Nitrogen_Dean_and_Bozzelli',False)], 
     seedMechanisms = ['ERC-FoundationFuelv0.9'],
     kineticsDepositories = ['training'],

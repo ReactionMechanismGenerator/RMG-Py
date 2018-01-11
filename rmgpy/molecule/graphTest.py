@@ -1,6 +1,33 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
+################################################################################
+#
+#   RMG - Reaction Mechanism Generator
+#
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
+#
+#   Permission is hereby granted, free of charge, to any person obtaining a
+#   copy of this software and associated documentation files (the 'Software'),
+#   to deal in the Software without restriction, including without limitation
+#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#   and/or sell copies of the Software, and to permit persons to whom the
+#   Software is furnished to do so, subject to the following conditions:
+#
+#   The above copyright notice and this permission notice shall be included in
+#   all copies or substantial portions of the Software.
+#
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+#   DEALINGS IN THE SOFTWARE.
+#
+################################################################################
+
 import unittest
 
 from rmgpy.molecule.graph import Edge, Graph, Vertex 
@@ -160,6 +187,36 @@ class TestGraph(unittest.TestCase):
             for v2 in v1.edges:
                 self.assertTrue(graph2.hasEdge(v1, v2))
                 self.assertTrue(graph2.hasEdge(v2, v1))
+        self.assertTrue(graph2.isIsomorphic(graph))
+        self.assertTrue(graph.isIsomorphic(graph2))
+
+    def test_copyAndMap(self):
+        """
+        Test the returned dictionary points toward equivaalent vertices and edges
+        """
+
+        vertices = [Vertex() for i in range(6)]
+        edges = [
+            Edge(vertices[0], vertices[1]),
+            Edge(vertices[1], vertices[2]),
+            Edge(vertices[2], vertices[3]),
+            Edge(vertices[3], vertices[4]),
+            Edge(vertices[4], vertices[5]),
+        ]
+
+        graph = Graph()
+        for vertex in vertices: graph.addVertex(vertex)
+        for edge in edges: graph.addEdge(edge)
+
+        graphDict = graph.copyAndMap()
+        graph2 = Graph(vertices = graphDict.values())
+
+        for vertex in graph.vertices:
+            self.assertTrue(graph2.hasVertex(graphDict[vertex]))
+        for v1 in graph.vertices:
+            for v2 in v1.edges:
+                self.assertTrue(graph2.hasEdge(graphDict[v1], graphDict[v2]))
+                self.assertTrue(graph2.hasEdge(graphDict[v2], graphDict[v1]))
         self.assertTrue(graph2.isIsomorphic(graph))
         self.assertTrue(graph.isIsomorphic(graph2))
 
@@ -499,7 +556,39 @@ class TestGraph(unittest.TestCase):
         self.assertEqual(len(cycleList), 2)
         self.assertEqual(len(cycleList[0]), 4)
         self.assertEqual(len(cycleList[1]), 4)
+
+    def test_getAllCyclesOfSize(self):
+        """
+        Test the Graph.getRingsOfSize() method
+        """
+        cycleList = self.graph.getAllCyclesOfSize(6)
+        self.assertEqual(len(cycleList), 0)
+        edge = Edge(self.graph.vertices[0], self.graph.vertices[3])
+        self.graph.addEdge(edge) # To create a cycle of length 4
+        edge = Edge(self.graph.vertices[0], self.graph.vertices[5])
+        self.graph.addEdge(edge) # To create a cycle of length 6 and another cycle of length 4
+        cycleList = self.graph.getAllCyclesOfSize(4)
+        self.assertEqual(len(cycleList), 2)
+        self.assertEqual(len(cycleList[0]), 4)
+        self.assertEqual(len(cycleList[1]), 4)
         
+    def test_getAllSimpleCyclesOfSize(self):
+        """
+        Test the Graph.getAllSimpleCyclesOfSize() method.
+        """
+        cycleList = self.graph.getAllCyclesOfSize(6)
+        self.assertEqual(len(cycleList), 0)
+        edge = Edge(self.graph.vertices[0], self.graph.vertices[3])
+        self.graph.addEdge(edge)  # To create a cycle of length 4
+        edge = Edge(self.graph.vertices[0], self.graph.vertices[5])
+        self.graph.addEdge(edge)  # To create a cycle of length 6 and another cycle of length 4
+        cycleList = self.graph.getAllSimpleCyclesOfSize(4)
+        self.assertEqual(len(cycleList), 2)
+        self.assertEqual(len(cycleList[0]), 4)
+        self.assertEqual(len(cycleList[1]), 4)
+        cycleList = self.graph.getAllSimpleCyclesOfSize(6)
+        self.assertEqual(len(cycleList), 0)
+
     def test_getSmallestSetOfSmallestRings(self):
         """
         Test the Graph.getSmallestSetOfSmallestRings() method.
@@ -511,7 +600,7 @@ class TestGraph(unittest.TestCase):
         cycleList = self.graph.getSmallestSetOfSmallestRings()
         self.assertEqual(len(cycleList), 1)
         self.assertEqual(len(cycleList[0]), 4)
-        
+
     def test_getPolycyclicRings(self):
         """
         Test that the Graph.getPolycyclicRings() method returns only polycyclic rings.
@@ -578,6 +667,64 @@ class TestGraph(unittest.TestCase):
         for ring in expectedContinuousRings:
             self.assertTrue(ring in continuousRings)
 
+
+    def test_getLargestRing(self):
+        """
+        Test that the Graph.getPolycyclicRings() method returns only polycyclic rings.
+        """
+        vertices = [Vertex() for i in range(27)]
+        bonds = [
+                 (0,1),
+                 (1,2),
+                 (2,3),
+                 (3,4),
+                 (4,5),
+                 (5,6),
+                 (6,7),
+                 (9,10),
+                 (10,11),
+                 (11,12),
+                 (12,13),
+                 (13,14),
+                 (14,15),
+                 (12,16),
+                 (10,17),
+                 (17,18),
+                 (18,19),
+                 (9,20),
+                 (20,21),
+                 (6,22),
+                 (22,23),
+                 (22,8),
+                 (8,4),
+                 (23,3),
+                 (23,24),
+                 (24,25),
+                 (25,1)
+                 ]
+        edges = []
+        for bond in bonds:
+            edges.append(Edge(vertices[bond[0]], vertices[bond[1]]))
+
+        graph = Graph()
+        for vertex in vertices: graph.addVertex(vertex)
+        for edge in edges: graph.addEdge(edge)
+        graph.updateConnectivityValues()
+        
+        rings = graph.getPolycyclicRings()
+        self.assertEqual(len(rings), 1)
+        
+        #ensure the last ring doesn't include vertex 8, since it isn't in the
+        #longest ring. Try two different items since one might contain the vertex 8
+        long_ring = graph.getLargestRing(rings[0][0])
+        long_ring2 = graph.getLargestRing(rings[0][1])
+        
+        if len(long_ring) > len(long_ring2):
+            longest_ring = long_ring
+        else:
+            longest_ring = long_ring2
+        
+        self.assertEqual(len(longest_ring), len(rings[0]) - 1)
 ################################################################################
 
 if __name__ == '__main__':

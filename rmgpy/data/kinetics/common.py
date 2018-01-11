@@ -5,8 +5,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2010 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -95,7 +95,7 @@ def saveEntry(f, entry):
                                                     "but reaction {0!s} has label {1!r}".format(
                                                      entry.item, entry.label))
             # Add degeneracy if the reaction is coming from a depository or kinetics library
-            f.write('    degeneracy = {0:d},\n'.format(entry.item.degeneracy))
+            f.write('    degeneracy = {0:.1f},\n'.format(entry.item.degeneracy))
             if entry.item.duplicate:
                 f.write('    duplicate = {0!r},\n'.format(entry.item.duplicate))
             if not entry.item.reversible:
@@ -172,18 +172,26 @@ def filterReactions(reactants, products, reactionList):
     not involve all the given `reactants` or whose products do not involve 
     all the given `products`. This method checks both forward and reverse
     directions, and only filters out reactions that don't match either.
+    
+    reactants and products can be either molecule or species objects
     """
     
     # Convert from molecules to species and generate resonance isomers.
     reactant_species = []
     for mol in reactants:
-        s = Species(molecule=[mol])
+        if isinstance(mol,Species):
+            s = mol
+        else:
+            s = Species(molecule=[mol])
         s.generateResonanceIsomers()
         reactant_species.append(s)
     reactants = reactant_species
     product_species = []
     for mol in products:
-        s = Species(molecule=[mol])
+        if isinstance(mol,Species):
+            s = mol
+        else:
+            s = Species(molecule=[mol])
         s.generateResonanceIsomers()
         product_species.append(s)
     products = product_species

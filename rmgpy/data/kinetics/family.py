@@ -5,8 +5,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2010 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -36,13 +36,16 @@ import os.path
 import logging
 import codecs
 from copy import deepcopy
+import itertools
+import numpy as np
 
 from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStructures,\
                             ForbiddenStructureException, getAllCombinations
 from rmgpy.reaction import Reaction
 from rmgpy.kinetics import Arrhenius, ArrheniusEP
-from rmgpy.molecule import Bond, GroupBond, Group, Molecule
+from rmgpy.molecule import Bond, GroupBond, Group, Molecule, ActionError
+from rmgpy.molecule.kekulize import KekulizationError
 from rmgpy.species import Species
 
 from .common import KineticsError, UndeterminableKineticsError, saveEntry
@@ -50,6 +53,8 @@ from .depository import KineticsDepository
 from .groups import KineticsGroups
 from .rules import KineticsRules
 from .transitionstates import TSGroups, TransitionStates, TransitionStateDepository
+
+
 
 ################################################################################
 
@@ -133,6 +138,36 @@ class TemplateReaction(Reaction):
         TemplateReaction this should be a KineticsGroups object.
         """
         return self.family
+        
+    def copy(self):
+        """
+        creates a new instance of TemplateReaction
+        """
+        other = TemplateReaction.__new__(TemplateReaction)
+        
+        # this was copied from Reaction.copy class
+        other.index = self.index
+        other.label = self.label
+        other.reactants = []
+        for reactant in self.reactants:
+            other.reactants.append(reactant.copy(deep=True))
+        other.products = []
+        for product in self.products:
+            other.products.append(product.copy(deep=True))
+        other.degeneracy = self.degeneracy
+        other.kinetics = deepcopy(self.kinetics)
+        other.reversible = self.reversible
+        other.transitionState = deepcopy(self.transitionState)
+        other.duplicate = self.duplicate
+        other.pairs = deepcopy(self.pairs)
+        
+        # added for TemplateReaction information
+        other.family = self.family
+        other.template = self.template
+        other.estimator = self.estimator
+        other.reverse = self.reverse
+        
+        return other
 
 ################################################################################
 
@@ -204,6 +239,7 @@ class ReactionRecipe:
         """
 
         pattern = isinstance(struct, Group)
+        struct.props['validAromatic'] = True
 
         for action in self.actions:
             if action[0] in ['CHANGE_BOND', 'FORM_BOND', 'BREAK_BOND']:
@@ -225,6 +261,8 @@ class ReactionRecipe:
                 if action[0] == 'CHANGE_BOND':
                     info = int(info)
                     bond = struct.getBond(atom1, atom2)
+                    if bond.isBenzene():
+                        struct.props['validAromatic'] = False
                     if doForward:
                         atom1.applyAction(['CHANGE_BOND', label1, info, label2])
                         atom2.applyAction(['CHANGE_BOND', label1, info, label2])
@@ -236,7 +274,7 @@ class ReactionRecipe:
                 elif (action[0] == 'FORM_BOND' and doForward) or (action[0] == 'BREAK_BOND' and not doForward):
                     if struct.hasBond(atom1, atom2):
                         raise InvalidActionError('Attempted to create an existing bond.')
-                    bond = GroupBond(atom1, atom2, order=['S']) if pattern else Bond(atom1, atom2, order='S')
+                    bond = GroupBond(atom1, atom2, order=[1]) if pattern else Bond(atom1, atom2, order=1)
                     struct.addBond(bond)
                     atom1.applyAction(['FORM_BOND', label1, info, label2])
                     atom2.applyAction(['FORM_BOND', label1, info, label2])
@@ -318,6 +356,8 @@ class KineticsFamily(Database):
     `reverseRecipe`     :class:`ReactionRecipe`         The steps to take when applying the reverse reaction to a set of reactants
     `forbidden`         :class:`ForbiddenStructures`    (Optional) Forbidden product structures in either direction
     `ownReverse`        `Boolean`                       It's its own reverse?
+    'boundaryAtoms'     list                            Labels which define the boundaries of end groups in backbone/end families
+    `treeDistances`     dict                            The default distance from parent along each tree, if not set default is 1 for every tree
     ------------------- ------------------------------- ------------------------
     `groups`            :class:`KineticsGroups`         The set of kinetics group additivity values
     `rules`             :class:`KineticsRules`          The set of kinetics rate rules from RMG-Java
@@ -341,7 +381,9 @@ class KineticsFamily(Database):
                  forwardRecipe=None,
                  reverseTemplate=None,
                  reverseRecipe=None,
-                 forbidden=None
+                 forbidden=None,
+                 boundaryAtoms = None,
+                 treeDistances = None
                  ):
         Database.__init__(self, entries, top, label, name, shortDesc, longDesc)
         self.reverse = reverse
@@ -351,6 +393,9 @@ class KineticsFamily(Database):
         self.reverseRecipe = reverseRecipe
         self.forbidden = forbidden
         self.ownReverse = forwardTemplate is not None and reverseTemplate is None
+        self.boundaryAtoms = boundaryAtoms
+        self.treeDistances = treeDistances
+        
         # Kinetics depositories of training and test data
         self.groups = None
         self.rules = None
@@ -515,7 +560,26 @@ class KineticsFamily(Database):
         ftemp.write('\n')
         
         ftemp.close()
-    
+        
+    def distributeTreeDistances(self):
+        """
+        fills in nodalDistance (the distance between an entry and its parent)
+        if not already entered with the value from treeDistances associated
+        with the tree the entry comes from
+        """
+        treeDistances = self.treeDistances
+        toplabels = [i.label for i in self.groups.top]
+        
+        assert len(toplabels) == len(treeDistances), 'treeDistances does not have the same number of entries as there are top nodes in the family'
+
+        for entryName,entry in self.groups.entries.iteritems():
+            topentry = entry
+            while not (topentry.parent is None): #get the top for the tree entry is in
+                topentry = topentry.parent
+            if topentry.label in toplabels: #filtering out product nodes
+                if entry.nodalDistance is None:
+                    entry.nodalDistance = treeDistances[topentry.label]
+                
     def load(self, path, local_context=None, global_context=None, depositoryLabels=None):
         """
         Load a kinetics database from a file located at `path` on disk.
@@ -533,10 +597,15 @@ class KineticsFamily(Database):
         local_context['forbidden'] = self.loadForbidden
         local_context['True'] = True
         local_context['False'] = False
+        local_context['reverse'] = None
+        local_context['boundaryAtoms'] = None
+        local_context['treeDistances'] = None
         self.groups = KineticsGroups(label='{0}/groups'.format(self.label))
         logging.debug("Loading kinetics family groups from {0}".format(os.path.join(path, 'groups.py')))
         Database.load(self.groups, os.path.join(path, 'groups.py'), local_context, global_context)
         self.name = self.label
+        self.boundaryAtoms = local_context.get('boundaryAtoms', None)
+        self.treeDistances = local_context.get('treeDistances',None)
         
         # Generate the reverse template if necessary
         self.forwardTemplate.reactants = [self.groups.entries[label] for label in self.forwardTemplate.reactants]
@@ -545,9 +614,8 @@ class KineticsFamily(Database):
             self.reverseTemplate = None
             self.reverseRecipe = None
         else:
-            try:
-                self.reverse = local_context['reverse']
-            except KeyError:
+            self.reverse = local_context.get('reverse', None)
+            if self.reverse is None:
                 self.reverse = '{0}_reverse'.format(self.label)
             self.forwardTemplate.products = self.generateProductTemplate(self.forwardTemplate.reactants)
             self.reverseTemplate = Reaction(reactants=self.forwardTemplate.products, products=self.forwardTemplate.reactants)
@@ -558,6 +626,7 @@ class KineticsFamily(Database):
         self.rules = KineticsRules(label='{0}/rules'.format(self.label))
         logging.debug("Loading kinetics family rules from {0}".format(os.path.join(path, 'rules.py')))
         self.rules.load(os.path.join(path, 'rules.py'), local_context, global_context)
+        
         # load the groups indicated in the entry label
         for label, entries in self.rules.entries.iteritems():
             nodes = label.split(';')
@@ -567,6 +636,12 @@ class KineticsFamily(Database):
                 entry.item = reaction
         self.depositories = []
         
+        toplabels = [i.label for i in self.groups.top]
+        if self.treeDistances is None:
+            self.treeDistances = {topentry:1 for topentry in toplabels}
+
+        self.distributeTreeDistances()
+            
         if depositoryLabels=='all':
             # Load everything. This option is generally used for working with the database
             # load all the remaining depositories, in order returned by os.walk
@@ -581,6 +656,7 @@ class KineticsFamily(Database):
                     logging.debug("Loading kinetics family depository from {0}".format(fpath))
                     depository.load(fpath, local_context, global_context)
                     self.depositories.append(depository)
+                    
             return
                     
         if not depositoryLabels:
@@ -608,6 +684,7 @@ class KineticsFamily(Database):
             logging.debug("Loading kinetics family depository from {0}".format(fpath))
             depository.load(fpath, local_context, global_context)
             self.depositories.append(depository)
+            
         
         if depositoryLabels is None:
             # load all the remaining depositories, in order returned by os.walk
@@ -822,6 +899,10 @@ class KineticsFamily(Database):
             f.write('    {0!r},\n'.format(action))
         f.write('])\n\n')
 
+        if self.boundaryAtoms:
+            f.write('boundaryAtoms = ["{0}", "{1}"]'.format(self.boundaryAtoms[0], self.boundaryAtoms[1]))
+            f.write('\n\n')
+
         # Save the entries
         for entry in entries:
             self.saveEntry(f, entry)
@@ -889,7 +970,8 @@ class KineticsFamily(Database):
         productStructures = []
         for reactantStructure in reactantStructures:
             productStructure = self.applyRecipe(reactantStructure, forward=True, unique=False)
-            productStructures.append(productStructure)
+            if productStructure:
+                productStructures.append(productStructure)
 
         # Fourth, remove duplicates from the lists
         productStructureList = [[] for i in range(len(productStructures[0]))]
@@ -897,7 +979,7 @@ class KineticsFamily(Database):
             for i, struct in enumerate(productStructure):
                 for s in productStructureList[i]:
                     try:
-                        if s.isIsomorphic(struct): break
+                        if s.isIdentical(struct): break
                     except KeyError:
                         print struct.toAdjacencyList()
                         print s.toAdjacencyList()
@@ -1041,10 +1123,13 @@ class KineticsFamily(Database):
             item.kinetics = data
             data = item.generateReverseRateCoefficient()
             
-            item = Reaction(reactants=[m.molecule[0].copy(deep=True) for m in entry.item.products], products=[m.molecule[0].copy(deep=True) for m in entry.item.reactants])
+            item = TemplateReaction(reactants=[m.molecule[0].copy(deep=True) for m in entry.item.products], 
+                                               products=[m.molecule[0].copy(deep=True) for m in entry.item.reactants])
             template = self.getReactionTemplate(item)
-            item.degeneracy = self.calculateDegeneracy(item)
-            
+
+            item.template = self.getReactionTemplateLabels(item)
+            new_degeneracy = self.calculateDegeneracy(item)
+
             new_entry = Entry(
                 index = index,
                 label = ';'.join([g.label for g in template]),
@@ -1064,7 +1149,7 @@ class KineticsFamily(Database):
                 shortDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.shortDesc,
                 longDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.longDesc,
             )
-            new_entry.data.A.value_si /= item.degeneracy
+            new_entry.data.A.value_si /= new_degeneracy
             try:
                 self.rules.entries[new_entry.label].append(new_entry)
             except KeyError:
@@ -1140,6 +1225,15 @@ class KineticsFamily(Database):
             self.forwardRecipe.applyForward(reactantStructure, unique)
         else:
             self.reverseRecipe.applyForward(reactantStructure, unique)
+        if not reactantStructure.props['validAromatic']:
+            if isinstance(reactantStructure, Molecule):
+                # For molecules, kekulize the product to redistribute bonds appropriately
+                reactantStructure.kekulize()
+            else:
+                # For groups, we ignore the product template for a purely aromatic group
+                # If there is an analagous aliphatic group in the family, then the product template will be identical
+                # There should NOT be any families that consist solely of aromatic reactant templates
+                return []
         productStructure = reactantStructure
         
         if getTS:
@@ -1260,7 +1354,7 @@ class KineticsFamily(Database):
             else:
                 productStructures = self.applyRecipe(reactantStructures, forward=forward)
             if not productStructures: return None
-        except InvalidActionError:
+        except (InvalidActionError, KekulizationError):
 #            logging.error('Unable to apply reaction recipe!')
 #            logging.error('Reaction family is {0} in {1} direction'.format(self.label, 'forward' if forward else 'reverse'))
 #            logging.error('Reactant structures are:')
@@ -1268,6 +1362,14 @@ class KineticsFamily(Database):
 #                logging.error(struct.toAdjacencyList())
             # If unable to apply the reaction recipe, then return no product structures
             return None
+        except ActionError:
+            logging.error(
+                'Could not generate product structures for reaction family {0} in {1} direction'.format(
+                    self.label, 'forward' if forward else 'reverse'))
+            logging.info('Reactant structures:')
+            for struct in reactantStructures:
+                logging.info('{0}\n{1}\n'.format(struct, struct.toAdjacencyList()))
+            raise
 
         # If there are two product structures, place the one containing '*1' first
         if len(productStructures) == 2:
@@ -1340,9 +1442,8 @@ class KineticsFamily(Database):
 
     def __matchReactantToTemplate(self, reactant, templateReactant):
         """
-        Return ``True`` if the provided reactant matches the provided
-        template reactant and ``False`` if not, along with a complete list of the
-        mappings.
+        Return a complete list of the mappings if the provided reactant 
+        matches the provided template reactant, or an empty list if not.
         """
 
         if isinstance(templateReactant, list): templateReactant = templateReactant[0]
@@ -1355,6 +1456,8 @@ class KineticsFamily(Database):
             return mappings
         elif isinstance(struct, Group):
             return reactant.findSubgraphIsomorphisms(struct)
+        else:
+            raise NotImplementedError("Not expecting template of type {}".format(type(struct)))
 
     def generateReactions(self, reactants):
         """
@@ -1371,60 +1474,125 @@ class KineticsFamily(Database):
         # Forward direction (the direction in which kinetics is defined)
         reactionList.extend(self.__generateReactions(reactants, forward=True))
         
-        if self.ownReverse:
-            # for each reaction, make its reverse reaction and store in a 'reverse' attribute
-            for rxn in reactionList:
-                reactions = self.__generateReactions(rxn.products, products=rxn.reactants, forward=True)
-                if len(reactions) != 1:
-                    logging.error("Expecting one matching reverse reaction, not {0} in reaction family {1} for forward reaction {2}.\n".format(len(reactions), self.label, str(rxn)))
-                    logging.error("There is likely a bug in the RMG-database kinetics reaction family involving a missing group, missing atomlabels, forbidden groups, etc.")
-                    for reactant in rxn.reactants:
-                        logging.info("Reactant")
-                        logging.info(reactant.toAdjacencyList())
-                    for product in rxn.products:
-                        logging.info("Product")
-                        logging.info(product.toAdjacencyList())
-                    logging.error("Debugging why no reaction was found...")
-                    logging.error("Checking whether the family's forbidden species have affected reaction generation...")
-                    # Set family's forbidden structures to empty for now to see if reaction gets generated...
-                    # Note that it is not necessary to check global forbidden structures, because this reaction would not have
-                    # been formed in the first place.
-                    tempObject = self.forbidden
-                    self.forbidden = ForbiddenStructures()  # Initialize with empty one
-                    try:
-                        reactions = self.__generateReactions(rxn.products, products=rxn.reactants, forward=True)
-                    finally:
-                        self.forbidden = tempObject
-                    if len(reactions) != 1:
-                        logging.error("Still experiencing error: Expecting one matching reverse reaction, not {0} in reaction family {1} for forward reaction {2}.\n".format(len(reactions), self.label, str(rxn)))
-                        raise KineticsError("Did not find reverse reaction in reaction family {0} for reaction {1}.".format(self.label, str(rxn)))
-                    else:
-                        logging.error("Error was fixed, the product is a forbidden structure when used as a reactant in the reverse direction.")
-                        # Delete this reaction, since it should probably also be forbidden in the initial direction
-                        # Hack fix for now
-                        del rxn
-                else:
-                    rxn.reverse = reactions[0]
-
-
-            
-        else: # family is not ownReverse
+        if not self.ownReverse:
             # Reverse direction (the direction in which kinetics is not defined)
             reactionList.extend(self.__generateReactions(reactants, forward=False))
-            
+
         return reactionList
-    
-    def calculateDegeneracy(self, reaction):
+
+    def addReverseAttribute(self, rxn):
         """
-        For a `reaction` given in the direction in which the kinetics are
-        defined, compute the reaction-path degeneracy.
+        For rxn (with species' objects) from families with ownReverse, this method adds a `reverse`
+        attribute that contains the reverse reaction information (like degeneracy)
         """
-        reactions = self.__generateReactions(reaction.reactants, products=reaction.products, forward=True)
+        from rmgpy.rmg.react import findDegeneracies, getMoleculeTuples
+
+        if self.ownReverse:
+            # make sure to react all resonance structures.
+            tuples = getMoleculeTuples(rxn.products)
+            reactionList = []
+            for tup in tuples:
+                moltup = [mol_and_index[0] for mol_and_index in tup]
+                reactionList.extend(self.__generateReactions(moltup,
+                                                             products=rxn.reactants,
+                                                             forward=True))
+            reactions = findDegeneracies(reactionList)
+            if len(reactions) == 0:
+                logging.error("Expecting one matching reverse reaction, not zero in reaction family {0} for forward reaction {1}.\n".format(self.label, str(rxn)))
+                logging.error("There is likely a bug in the RMG-database kinetics reaction family involving a missing group, missing atomlabels, forbidden groups, etc.")
+                for reactant in rxn.reactants:
+                    logging.info("Reactant")
+                    logging.info(reactant.toAdjacencyList())
+                for product in rxn.products:
+                    logging.info("Product")
+                    logging.info(product.toAdjacencyList())
+                logging.error("Debugging why no reaction was found...")
+                logging.error("Checking whether the family's forbidden species have affected reaction generation...")
+                # Set family's forbidden structures to empty for now to see if reaction gets generated...
+                # Note that it is not necessary to check global forbidden structures, because this reaction would not have
+                # been formed in the first place.
+                tempObject = self.forbidden
+                self.forbidden = ForbiddenStructures()  # Initialize with empty one
+                try:
+                    reactions = self.__generateReactions(rxn.products, products=rxn.reactants, forward=True)
+                finally:
+                    self.forbidden = tempObject
+                if len(reactions) != 1:
+                    logging.error("Still experiencing error: Expecting one matching reverse reaction, not {0} in reaction family {1} for forward reaction {2}.\n".format(len(reactions), self.label, str(rxn)))
+                    raise KineticsError("Did not find reverse reaction in reaction family {0} for reaction {1}.".format(self.label, str(rxn)))
+                else:
+                    logging.error("Error was fixed, the product is a forbidden structure when used as a reactant in the reverse direction.")
+                    # Delete this reaction, since it should probably also be forbidden in the initial direction
+                    # Hack fix for now
+                    del rxn
+            elif len(reactions) > 1 and not all([reactions[0].isIsomorphic(other) for other in reactions]):
+                logging.error("Expecting one matching reverse reaction. Recieved {0} reactions with multiple non-isomorphic ones in reaction family {1} for forward reaction {2}.\n".format(len(reactions), self.label, str(rxn)))
+                logging.info("Found the following reverse reactions")
+                for rxn0 in reactions:
+                    logging.info(str(rxn0))
+                    for reactant in rxn0.reactants:
+                        logging.info("Reactant")
+                        logging.info(reactant.toAdjacencyList())
+                    for product in rxn0.products:
+                        logging.info("Product")
+                        logging.info(product.toAdjacencyList())
+                raise KineticsError("Found multiple reverse reactions in reaction family {0} for reaction {1}, likely due to inconsistent resonance structure generation".format(self.label, str(rxn)))
+            else:
+                rxn.reverse = reactions[0]
+
+    def calculateDegeneracy(self, reaction, ignoreSameReactants=False):
+        """
+        For a `reaction`  with `Molecule` or `Species` objects given in the direction in which
+        the kinetics are defined, compute the reaction-path degeneracy.
+
+        This method by default adjusts for double counting of identical reactants. 
+        This should only be adjusted once per reaction. To not adjust for 
+        identical reactants (since you will be reducing them later in the algorithm), add
+        `ignoreSameReactants= True` to this method.
+        """
+        reaction.degeneracy = 1
+        from rmgpy.rmg.react import findDegeneracies, reduceSameReactantDegeneracy, getMoleculeTuples
+
+        # find combinations of resonance isomers
+        specReactants = []
+        if isinstance(reaction.reactants[0], Molecule):
+            for mol in reaction.reactants:
+                spec = Species(molecule=[mol])
+                spec.generateResonanceIsomers(keepIsomorphic=True)
+                specReactants.append(spec)
+        elif isinstance(reaction.reactants[0], Species):
+            specReactants = reaction.reactants
+        else:
+            raise TypeError('Reactants must be either Species or Molecule Objects')
+        molecule_combos = getMoleculeTuples(specReactants)
+
+        reactions = []
+        for combo in molecule_combos:
+            comboOnlyMols = [tup[0] for tup in combo]
+            reactions.extend(self.__generateReactions(comboOnlyMols, products=reaction.products, forward=True))
+
+        # remove degenerate reactions
+        reactions = findDegeneracies(reactions)
+        if not ignoreSameReactants:
+            reduceSameReactantDegeneracy(reactions)
+
+        # remove reactions with different templates (only for TemplateReaction)
+        if isinstance(reaction, TemplateReaction):
+            index = 0
+            while index < len(reactions):
+                if reaction.template and \
+                        frozenset(reactions[index].template) != frozenset(reaction.template):
+                    # remove reaction with different template
+                    del reactions[index]
+                    continue
+                index += 1
+            
+        # log issues
         if len(reactions) != 1:
             for reactant in reaction.reactants:
-                logging.error(reactant)
+                logging.error("Reactant: {0!r}".format(reactant))
             for product in reaction.products:
-                logging.error(product)
+                logging.error("Product: {0!r}".format(product))
             raise KineticsError(('Unable to calculate degeneracy for reaction {0} '
                                  'in reaction family {1}. Expected 1 reaction '
                                  'but generated {2}').format(reaction, self.label, len(reactions)))
@@ -1438,6 +1606,9 @@ class KineticsFamily(Database):
         will return an empty list. Each item in the list of reactants should
         be a list of :class:`Molecule` objects, each representing a resonance
         isomer of the species of interest.
+        
+        This method returns degenerate reactions, and `react.findDegeneracies`
+        can be used to find the degenerate reactions.
         """
         
         ## This would make all calls to __generateProductStructures() also return
@@ -1453,13 +1624,6 @@ class KineticsFamily(Database):
         # original
         reactants = [reactant if isinstance(reactant, list) else [reactant] for reactant in reactants]
 
-        sameReactants = False
-        if len(reactants) == 2 and len(reactants[0]) == len(reactants[1]):
-            reactantA = reactants[0][0]
-            for reactantB in reactants[1]:
-                if reactantA.isIsomorphic(reactantB):
-                    sameReactants = True
-                    break
                     
         if forward:
             template = self.forwardTemplate
@@ -1535,8 +1699,12 @@ class KineticsFamily(Database):
         # If products is given, remove reactions from the reaction list that
         # don't generate the given products
         if products is not None:
-            
-            products = [product.generateResonanceIsomers() for product in products]
+            if isinstance(products[0],Molecule):
+                products = [product.generateResonanceIsomers() for product in products]
+            elif isinstance(products[0],Species):
+                products = [product.molecule for product in products]
+            else:
+                raise TypeError('products input to __generateReactions must be Species or Molecule Objects')
             
             rxnList0 = rxnList[:]
             rxnList = []
@@ -1562,64 +1730,12 @@ class KineticsFamily(Database):
                             elif products0[0].isIsomorphic(productB) and products0[1].isIsomorphic(productA):
                                 match = True
                                 break
+                elif len(products) == len(products0):
+                    raise NotImplementedError("Can't yet filter reactions with {} products".format(len(products)))
                     
                 if match: 
                     rxnList.append(reaction)
-            
-        # The reaction list may contain duplicates of the same reaction
-        # These duplicates should be combined (by increasing the degeneracy of
-        # one of the copies and removing the others)
-        index0 = 0
-        while index0 < len(rxnList):
-            reaction0 = rxnList[index0]
-            
-            products0 = reaction0.products if forward else reaction0.reactants
-            products0 = [product.generateResonanceIsomers() for product in products0]
-            
-            # Remove duplicates from the reaction list
-            index = index0 + 1
-            while index < len(rxnList):
-                reaction = rxnList[index]
-            
-                products = reaction.products if forward else reaction.reactants
-                
-                # We know the reactants are the same, so we only need to compare the products
-                match = False
-                if len(products) == len(products0) == 1:
-                    for product in products0[0]:
-                        if products[0].isIsomorphic(product):
-                            match = True
-                            break
-                elif len(products) == len(products0) == 2:
-                    for productA in products0[0]:
-                        for productB in products0[1]:
-                            if products[0].isIsomorphic(productA) and products[1].isIsomorphic(productB):
-                                match = True
-                                break
-                            elif products[0].isIsomorphic(productB) and products[1].isIsomorphic(productA):
-                                match = True
-                                break
-                    
-                # If we found a match, remove it from the list
-                # Also increment the reaction path degeneracy of the remaining reaction
-                if match:
-                    rxnList.remove(reaction)
-                    reaction0.degeneracy += 1
-                else:
-                    index += 1
-            
-            index0 += 1
-        
-        # For R_Recombination reactions, the degeneracy is twice what it should
-        # be, so divide those by two
-        # This is hardcoding of reaction families!
-        # For reactions of the form A + A -> products, the degeneracy is twice
-        # what it should be, so divide those by two
-        if sameReactants or self.label.lower().startswith('r_recombination'):
-            for rxn in rxnList:
-                assert(rxn.degeneracy % 2 == 0)
-                rxn.degeneracy /= 2
-                
+
         # Determine the reactant-product pairs to use for flux analysis
         # Also store the reaction template (useful so we can easily get the kinetics later)
         for reaction in rxnList:
@@ -1633,8 +1749,6 @@ class KineticsFamily(Database):
             # Generate metadata about the reaction that we will need later
             reaction.pairs = self.getReactionPairs(reaction)
             reaction.template = self.getReactionTemplateLabels(reaction)
-            if not forward:
-                reaction.degeneracy = self.calculateDegeneracy(reaction)
 
             # Unlabel the atoms
             for label, atom in reaction.labeledAtoms:
@@ -1682,9 +1796,9 @@ class KineticsFamily(Database):
                     pairs.append([reaction.reactants[1],reaction.products[0]])
                 else:
                     error = True
-        elif self.label.lower() == 'disproportionation':
-            # Hardcoding for disproportionation: pair the reactant containing
-            # *1 with the product containing *1
+        elif self.label.lower() in ['disproportionation', 'co_disproportionation']:
+            # Hardcoding for disproportionation and co_disproportionation: pair
+            # the reactant containing *1 with the product containing *1
             assert len(reaction.reactants) == len(reaction.products) == 2
             if reaction.reactants[0].containsLabeledAtom('*1'):
                 if reaction.products[0].containsLabeledAtom('*1'):
@@ -1746,8 +1860,14 @@ class KineticsFamily(Database):
         """
         Return an estimate of the kinetics for a reaction with the given
         `template` and reaction-path `degeneracy`. There are two possible methods
-        to use: 'group additivity' (new RMG-Py behavior) and 'rate rules' (old
-        RMG-Java behavior).
+        to use: 'group additivity' (new possible RMG-Py behavior) and 'rate rules' (old
+        RMG-Java behavior, and default RMG-Py behavior).
+        
+        Returns a tuple (kinetics, entry):
+        If it's estimated via 'rate rules' and an exact match is found in the tree,
+        then the entry is returned as the second element of the tuple.
+        But if an average is used, or the 'group additivity' method, then the tuple
+        returned is (kinetics, None).
         """
         if method.lower() == 'group additivity':
             return self.estimateKineticsUsingGroupAdditivity(template, degeneracy), None
@@ -1778,29 +1898,36 @@ class KineticsFamily(Database):
         """
         For a given set of kinetics `kineticsList`, return the kinetics deemed
         to be the "best". This is determined to be the one with the lowest
-        non-zero rank that occurs first.
+        non-zero rank that occurs first (has the lowest index).
         """
         if any([x[1].rank == 0 for x in kineticsList]) and not all([x[1].rank == 0 for x in kineticsList]):
             kineticsList = [x for x in kineticsList if x[1].rank != 0]
         kineticsList.sort(key=lambda x: (x[1].rank, x[1].index))
         return kineticsList[0]
         
-    def getKinetics(self, reaction, template, degeneracy=1, estimator='', returnAllKinetics=True):
+    def getKinetics(self, reaction, templateLabels, degeneracy=1, estimator='', returnAllKinetics=True):
         """
         Return the kinetics for the given `reaction` by searching the various
         depositories as well as generating a result using the user-specified `estimator`
-        of either 'group additivity' or 'rate rules.'  Unlike
+        of either 'group additivity' or 'rate rules'.  Unlike
         the regular :meth:`getKinetics()` method, this returns a list of
-        results, with each result comprising the kinetics, the source, and
-        the entry. If it came from a template estimate, the source and entry
-        will both be `None`.
+        results, with each result comprising of
+
+        1. the kinetics
+        2. the source - this will be `None` if from a template estimate
+        3. the entry  - this will be `None` if from a template estimate
+        4. isForward a boolean denoting whether the matched entry is in the same
+        direction as the inputted reaction. This will always be True if using
+        rates rules or group additivity. This can be `True` or `False` if using
+        a depository
+
         If returnAllKinetics==False, only the first (best?) matching kinetics is returned.
         """
         kineticsList = []
         
         depositories = self.depositories[:]
 
-        template = self.retrieveTemplate(template)
+        template = self.retrieveTemplate(templateLabels)
         
         # Check the various depositories for kinetics
         for depository in depositories:
@@ -1854,15 +1981,20 @@ class KineticsFamily(Database):
         """
         Determine the appropriate kinetics for a reaction with the given
         `template` using group additivity.
+        
+        Returns just the kinetics, or None.
         """
         # Start with the generic kinetics of the top-level nodes
         kinetics = None
-        for entry in self.forwardTemplate.reactants:
-            if kinetics is None and entry.data is not None:
-                kinetics = entry.data
+        root = self.getRootTemplate()
+        kinetics = self.getKineticsForTemplate(root)
+        
         if kinetics is None:
             #raise UndeterminableKineticsError('Cannot determine group additivity kinetics estimate for template "{0}".'.format(','.join([e.label for e in template])))
             return None
+        else:
+            kinetics = kinetics[0]
+            
         # Now add in more specific corrections if possible
         return self.groups.estimateKineticsUsingGroupAdditivity(template, kinetics, degeneracy)        
         
@@ -1870,6 +2002,10 @@ class KineticsFamily(Database):
         """
         Determine the appropriate kinetics for a reaction with the given
         `template` using rate rules.
+        
+        Returns a tuple (kinetics, entry) where `entry` is the database
+        entry used to determine the kinetics only if it is an exact match,
+        and is None if some averaging or use of a parent node took place.
         """    
         kinetics, entry  = self.rules.estimateKinetics(template, degeneracy)
                 
@@ -2152,7 +2288,7 @@ class KineticsFamily(Database):
         trainingEntries = None
         degeneracy = 1
 
-        regex = "\((.*)\)" # only hit outermost parentheses
+        regex = "\[(.*)\]" # only hit outermost brackets
         for line in lines:
             if line.startswith('Matched'):
                 # Source of the kinetics is from training reaction
@@ -2195,3 +2331,42 @@ class KineticsFamily(Database):
 
         # Source of the kinetics is from rate rules
         return False, [self.label, sourceDict]
+
+    def getBackboneRoots(self):
+        """
+        Returns: the top level backbone node in a unimolecular family.
+        """
+
+        backboneRoots = [entry for entry in self.groups.top if entry in self.forwardTemplate.reactants]
+        return backboneRoots
+
+    def getEndRoots(self):
+        """
+        Returns: A list of top level end nodes in a unimolecular family
+        """
+
+        endRoots = [entry for entry in self.groups.top if entry not in self.forwardTemplate.reactants]
+        return endRoots
+
+    def getTopLevelGroups(self, root):
+        """
+        Returns a list of group nodes that are the highest in the tree starting at node "root".
+        If "root" is a group node, then it will return a single-element list with "root".
+        Otherwise, for every child of root, we descend until we find no nodes with logic
+        nodes. We then return a list of all group nodes found along the way.
+        """
+
+        groupList = [root]
+        allGroups = False
+
+        while not allGroups:
+            newGroupList = []
+            for entry in groupList:
+                if isinstance(entry.item,Group):
+                    newGroupList.append(entry)
+                else:
+                    newGroupList.extend(entry.children)
+            groupList = newGroupList
+            allGroups = all([isinstance(entry.item, Group) for entry in groupList])
+
+        return groupList

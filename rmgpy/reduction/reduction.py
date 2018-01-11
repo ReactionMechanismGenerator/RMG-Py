@@ -5,8 +5,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2010 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -268,8 +268,11 @@ def searchTargetIndex(targetLabel, reactionModel):
     """
     Searches for the Species object in the core species
     of the reaction that has the same label as the parameter string.
-    """
+    reactionModel must be of class CoreEdgeReactionModel
 
+    Has known issues dealing with duplicate labels. See reductionTest.py
+    for a unittest of this issue.
+    """
     for i, spc in enumerate(reactionModel.core.species):
         if spc.label == targetLabel:
             return i
