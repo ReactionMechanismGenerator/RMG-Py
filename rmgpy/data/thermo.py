@@ -1061,22 +1061,35 @@ class ThermoDatabase(object):
         )
 
     def recordPolycylicGenericNodes(self):
+        """
+        Identify generic nodes in tree for polycyclic groups.
+        Saves them as a list in the `genericNodes` attribute
+        in the polycyclic :class:`ThermoGroups` object, which
+        must be pre-loaded.
 
+        Necessary for polycyclic heuristic.
+        """
         self.groups['polycyclic'].genericNodes = ['PolycyclicRing']
         for label, entry in self.groups['polycyclic'].entries.iteritems():
-
             if isinstance(entry.data, ThermoData): 
                 continue
             self.groups['polycyclic'].genericNodes.append(label)
 
     def recordRingGenericNodes(self):
+        """
+        Identify generic nodes in tree for ring groups.
+        Saves them as a list in the `genericNodes` attribute
+        in the ring :class:`ThermoGroups` object, which
+        must be pre-loaded.
 
+        Necessary for polycyclic heuristic.
+        """
         self.groups['ring'].genericNodes = ['Ring']
         for label, entry in self.groups['ring'].entries.iteritems():
-
             if isinstance(entry.data, ThermoData): 
                 continue
             self.groups['ring'].genericNodes.append(label)
+
     def getThermoData(self, species, trainingSet=None):
         """
         Return the thermodynamic parameters for a given :class:`Species`
