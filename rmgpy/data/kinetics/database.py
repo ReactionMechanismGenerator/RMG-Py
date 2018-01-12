@@ -200,7 +200,6 @@ class KineticsDatabase(object):
         The `path` points to the folder of kinetics libraries in the database,
         and the libraries should be in files like :file:`<path>/<library>.py`.
         """
-        self.libraries = {}
         
         if libraries is not None:
             for library_name in libraries:
@@ -216,8 +215,7 @@ class KineticsDatabase(object):
 For H2 combustion chemistry consider using either the BurkeH2inN2 or BurkeH2inArHe
 library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n""")
                     raise IOError("Couldn't find kinetics library {0}".format(library_file))
-            # library order should've been set prior to this, with the given seed mechs and reaction libraries
-            assert (len(self.libraryOrder) == len(libraries))
+
         else:# load all the libraries you can find (this cannot be activated in a normal RMG job.  Only activated when loading the database for other purposes)
             self.libraryOrder = []
             for (root, dirs, files) in os.walk(os.path.join(path)):

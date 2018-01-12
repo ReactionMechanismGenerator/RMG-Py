@@ -37,9 +37,10 @@ import math
 import numpy
 import itertools
 import gc
+import os
 
 from rmgpy.display import display
-#import rmgpy.chemkin
+from rmgpy import settings
 import rmgpy.constants as constants
 from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.quantity import Quantity
@@ -1397,6 +1398,8 @@ class CoreEdgeReactionModel:
         if react: raise NotImplementedError("react=True doesn't work yet")
         database = rmgpy.data.rmg.database
 
+        libraryNames = database.kinetics.libraries.keys()
+        path = os.path.join(settings['database.directory'],'kinetics','libraries')
         from rmgpy.rmg.input import rmg
         
         self.newReactionList = []; self.newSpeciesList = []
@@ -1410,6 +1413,10 @@ class CoreEdgeReactionModel:
         
         rxns = seedMechanism.getLibraryReactions()
         for rxn in rxns:
+            if isinstance(rxn,LibraryReaction) and not (rxn.library in libraryNames): #if one of the reactions in the library is from another library load that library
+                database.kinetics.libraryOrder.append((rxn.library,'Internal'))
+                database.kinetics.loadLibraries(path=path,libraries=[rxn.library])
+                libraryNames = database.kinetics.libraries.keys()
             r, isNew = self.makeNewReaction(rxn) # updates self.newSpeciesList and self.newReactionlist
             if not isNew: logging.info("This library reaction was not new: {0}".format(rxn))
             
@@ -1463,7 +1470,9 @@ class CoreEdgeReactionModel:
         """
 
         database = rmgpy.data.rmg.database
-
+        libraryNames = database.kinetics.libraries.keys()
+        path = os.path.join(settings['database.directory'],'kinetics','libraries')
+        
         from rmgpy.rmg.input import rmg
 
         self.newReactionList = []
@@ -1477,6 +1486,10 @@ class CoreEdgeReactionModel:
 
         rxns = reactionLibrary.getLibraryReactions()
         for rxn in rxns:
+            if isinstance(rxn,LibraryReaction) and not (rxn.library in libraryNames): #if one of the reactions in the library is from another library load that library
+                database.kinetics.libraryOrder.append((rxn.library,'Internal'))
+                database.kinetics.loadLibraries(path=path,libraries=[rxn.library])
+                libraryNames = database.kinetics.libraries.keys()
             r, isNew = self.makeNewReaction(rxn) # updates self.newSpeciesList and self.newReactionlist
             if not isNew: logging.info("This library reaction was not new: {0}".format(rxn))
 
