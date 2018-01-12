@@ -5,8 +5,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2010 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -44,18 +44,9 @@ except ImportError:
     logging.warning("Upgrade to Python 2.7 or later to ensure your database entries are read and written in the same order each time!")
     OrderedDict = dict
 from rmgpy.molecule import Molecule, Group
-from rmgpy.molecule.adjlist import InvalidAdjacencyListError
 
 from reference import Reference, Article, Book, Thesis
-
-################################################################################
-
-class DatabaseError(Exception):
-    """
-    A exception that occurs when working with an RMG database. Pass a string
-    giving specifics about the exceptional behavior.
-    """
-    pass
+from rmgpy.exceptions import DatabaseError, ForbiddenStructureException, InvalidAdjacencyListError
 
 ################################################################################
 
@@ -82,6 +73,7 @@ class Entry(object):
     `shortDesc`         A brief (one-line) description of the data
     `longDesc`          A long, verbose description of the data
     `rank`              An integer indicating the degree of confidence in the entry data, or ``None`` if not used
+    `nodalDistance`     A float representing the distance of a given entry from it's parent entry
     =================== ========================================================
 
     """
@@ -98,6 +90,7 @@ class Entry(object):
                  shortDesc='',
                  longDesc='',
                  rank=None,
+                 nodalDistance=None,
                  ):
         self.index = index
         self.label = label
@@ -110,6 +103,7 @@ class Entry(object):
         self._shortDesc = unicode(shortDesc)
         self._longDesc = unicode(longDesc)
         self.rank = rank
+        self.nodalDistance=nodalDistance
 
     def __str__(self):
         return self.label
@@ -228,7 +222,7 @@ class Database:
         f = open(path, 'r')
         try:
             exec f in global_context, local_context
-        except Exception, e:
+        except Exception:
             logging.error('Error while reading database {0!r}.'.format(path))
             raise
         f.close()
@@ -246,6 +240,8 @@ class Database:
         """
         Return a sorted list of the entries in this database that should be
         saved to the output file.
+
+        Then renumber the entry indexes so that we never have any duplicate indexes.
         """
         entries = self.top[:]
         if len(self.top) > 0:
@@ -268,6 +264,10 @@ class Database:
             # Otherwise save the entries sorted by index, if defined
             entries = self.entries.values()
             entries.sort(key=lambda x: (x.index))
+
+        for index, entry in enumerate(entries):
+            entry.index = index
+
         return entries
     
     def getSpecies(self, path):
@@ -282,7 +282,7 @@ class Database:
                 if line.strip() == '' and adjlist.strip() != '':
                     # Finish this adjacency list
                     species = Species().fromAdjacencyList(adjlist)
-                    species.generateResonanceIsomers()
+                    species.generate_resonance_structures()
                     label = species.label
                     if label in speciesDict:
                         raise DatabaseError('Species label "{0}" used for multiple species in {1}.'.format(label, str(self)))
@@ -290,6 +290,16 @@ class Database:
                     adjlist = ''
                 else:
                     adjlist += line
+            else: #reached end of file
+                if adjlist.strip() != '':
+                    # Finish this adjacency list
+                    species = Species().fromAdjacencyList(adjlist)
+                    species.generate_resonance_structures()
+                    label = species.label
+                    if label in speciesDict:
+                        raise DatabaseError('Species label "{0}" used for multiple species in {1}.'.format(label, str(self)))
+                    speciesDict[label] = species
+
         
         return speciesDict
     
@@ -451,7 +461,7 @@ class Database:
 
     def __loadTree(self, tree):
         """
-        Parse an old-style RMG tree located at `tree`. An RMG tree is an n-ary
+        Parse an group tree located at `tree`. An RMG tree is an n-ary
         tree representing the hierarchy of items in the dictionary.
         """
 
@@ -498,7 +508,10 @@ class Database:
                 else:
                     entry.parent = None
                     self.top.append(entry)
-
+                    
+                # Save the level of the tree into the entry
+                entry.level = level
+                
                 # Add node to list of parents for subsequent iteration
                 parents.append(label)
 
@@ -869,16 +882,16 @@ class Database:
         """
         
         if isinstance(parentNode.item, Group) and isinstance(childNode.item, Group):
-            if self.matchNodeToStructure(parentNode,childNode.item, atoms=childNode.item.getLabeledAtoms()) is True:
-                if self.matchNodeToStructure(childNode,parentNode.item, atoms=parentNode.item.getLabeledAtoms()) is False:
+            if self.matchNodeToStructure(parentNode,childNode.item, atoms=childNode.item.getLabeledAtoms(), strict=True) is True:
+                if self.matchNodeToStructure(childNode,parentNode.item, atoms=parentNode.item.getLabeledAtoms(), strict=True) is False:
                     return True                
             return False
         
         #If the parentNode is a Group and the childNode is a LogicOr there is nothing to check,
-        #so it gets an automatic pass. However, we do need to check that everything down this
+        #except that the parent is listed in the attributes. However, we do need to check that everything down this
         #family line is consistent, which is done in the databaseTest unitTest
         elif isinstance(parentNode.item, Group) and isinstance(childNode.item, LogicOr):
-            return True
+            return childNode.parent is parentNode
         
         elif isinstance(parentNode.item,LogicOr):
             return childNode.label in parentNode.item.components
@@ -1003,7 +1016,48 @@ class Database:
             #logging.warning('For {0}, a node {1} with overlapping children {2} was encountered in tree with top level nodes {3}. Assuming the first match is the better one.'.format(structure, root, next, self.top))
             return self.descendTree(structure, atoms, next[0], strict)
 
-################################################################################
+    def areSiblings(self, node, nodeOther):
+        """
+        Return `True` if `node` and `nodeOther` have the same parent node.  Otherwise, return `False`.
+        Both `node` and `nodeOther` must be Entry types with items containing Group or LogicNode types.
+        """
+        if node.parent is nodeOther.parent: return True
+        else: return False
+
+    def removeGroup(self, groupToRemove):
+        """
+        Removes a group that is in a tree from the database. In addition to deleting from self.entries,
+        it must also update the parent/child relationships
+
+        Returns the removed group
+        """
+        #Don't remove top nodes or LogicOrs as this will cause lots of problems
+        if groupToRemove in self.top:
+            raise Exception("Cannot remove top node: {0} from {1} because it is a top node".format(groupToRemove, self))
+        elif isinstance(groupToRemove.item, LogicOr):
+            raise Exception ("Cannot remove top node: {0} from {1} because it is a LogicOr".format(groupToRemove, self))
+        #Remove from entryToRemove from entries
+        self.entries.pop(groupToRemove.label)
+
+        #If there is a parent, then the group exists in a tree and we should edit relatives
+        parentR=groupToRemove.parent
+        if not parentR is None:
+            #Remove from parent's children attribute
+            parentR.children.remove(groupToRemove)
+
+            #change children's parent attribute to former grandparent
+            for child in groupToRemove.children:
+                child.parent = parentR
+
+            #extend parent's children attribute with new children
+            parentR.children.extend(groupToRemove.children)
+
+            #A few additional changes needed if parentR is a LogicOr node
+            if isinstance(parentR.item, LogicOr):
+                parentR.item.components.remove(groupToRemove.label)
+                parentR.item.components.extend([child.label for child in groupToRemove.children])
+
+        return groupToRemove
 
 class LogicNode:
     """
@@ -1200,12 +1254,6 @@ def getAllCombinations(nodeLists):
     return items
 
 ################################################################################
-
-class ForbiddenStructureException(Exception):
-    """
-    Made a forbidden structure.
-    """
-    pass
 
 class ForbiddenStructures(Database):
     """

@@ -6,7 +6,8 @@ from __builtin__ import True
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2009-2011 by the RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -58,18 +59,8 @@ from rmgpy.kinetics import KineticsData, ArrheniusEP, ThirdBody, Lindemann, Troe
             PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, getRateCoefficientUnitsFromReactionOrder, \
             StickingCoefficient, SurfaceArrhenius, SurfaceArrheniusBEP, StickingCoefficientBEP  #PyDev: @UnresolvedImport
 from rmgpy.pdep.reaction import calculateMicrocanonicalRateCoefficient
-
+from rmgpy.exceptions import ReactionError
 from rmgpy.kinetics.diffusionLimited import diffusionLimiter
-
-################################################################################
-
-class ReactionError(Exception):
-    """
-    An exception class for exceptional behavior involving :class:`Reaction`
-    objects. Pass a string describing the circumstances that caused the
-    exceptional behavior.
-    """
-    pass
 
 ################################################################################
 
@@ -84,12 +75,14 @@ class Reaction:
     `label`             ``str``                     A descriptive string label
     `reactants`         :class:`list`               The reactant species (as :class:`Species` objects)
     `products`          :class:`list`               The product species (as :class:`Species` objects)
+    'specificCollider'  :class:`Species`            The collider species (as a :class:`Species` object)
     `kinetics`          :class:`KineticsModel`      The kinetics model to use for the reaction
     `reversible`        ``bool``                    ``True`` if the reaction is reversible, ``False`` if not
     `transitionState`   :class:`TransitionState`    The transition state
     `duplicate`         ``bool``                    ``True`` if the reaction is known to be a duplicate, ``False`` if not
     `degeneracy`        :class:`double`             The reaction path degeneracy for the reaction
     `pairs`             ``list``                    Reactant-product pairings to use in converting reaction flux to species flux
+    `comment`           ``str``                     A description of the reaction source (optional)
     =================== =========================== ============================
     
     """
@@ -99,26 +92,28 @@ class Reaction:
                  label='',
                  reactants=None,
                  products=None,
+                 specificCollider=None,
                  kinetics=None,
                  reversible=True,
                  transitionState=None,
                  duplicate=False,
                  degeneracy=1,
-                 pairs=None
+                 pairs=None,
+                 comment=''
                  ):
         self.index = index
         self.label = label
         self.reactants = reactants
         self.products = products
+        self.specificCollider = specificCollider
+        self._degeneracy = degeneracy
         self.kinetics = kinetics
         self.reversible = reversible
         self.transitionState = transitionState
         self.duplicate = duplicate
-        self.degeneracy = degeneracy
         self.pairs = pairs
-        
-        if diffusionLimiter.enabled:
-            self.k_effective_cache = {}
+        self.comment = comment
+        self.k_effective_cache = {}
 
     def __repr__(self):
         """
@@ -130,22 +125,36 @@ class Reaction:
         if self.label != '': string += 'label={0!r}, '.format(self.label)
         if self.reactants is not None: string += 'reactants={0!r}, '.format(self.reactants)
         if self.products is not None: string += 'products={0!r}, '.format(self.products)
+        if self.specificCollider is not None: string += 'specificCollider={0!r}, '.format(self.specificCollider)
         if self.kinetics is not None: string += 'kinetics={0!r}, '.format(self.kinetics)
         if not self.reversible: string += 'reversible={0}, '.format(self.reversible)
         if self.transitionState is not None: string += 'transitionState={0!r}, '.format(self.transitionState)
         if self.duplicate: string += 'duplicate={0}, '.format(self.duplicate)
-        if self.degeneracy != 1: string += 'degeneracy={0:d}, '.format(self.degeneracy)
+        if self.degeneracy != 1: string += 'degeneracy={0:.1f}, '.format(self.degeneracy)
         if self.pairs is not None: string += 'pairs={0}, '.format(self.pairs)
+        if self.comment != '': string += 'comment={0!r}, '.format(self.comment)
         string = string[:-2] + ')'
         return string
 
     def __str__(self):
         """
         Return a string representation of the reaction, in the form 'A + B <=> C + D'.
+        If a specificCollider exists, the srting representation is 'A + B (+S) <=> C + D (+S)'.
+        """
+        return self.toLabeledStr(use_index=True)
+    
+    def toLabeledStr(self, use_index=False):
+        """
+        the same as __str__ except that the labels are assumed to exist and used for reactant and products rather than 
+        the labels plus the index in parentheses
         """
         arrow = ' <=> '
         if not self.reversible: arrow = ' => '
-        return arrow.join([' + '.join([str(s) for s in self.reactants]), ' + '.join([str(s) for s in self.products])])
+        
+        if self.specificCollider:
+            return arrow.join([' + '.join([str(s) if use_index else s.label for s in self.reactants])+' (+'+str(self.specificCollider)+')', ' + '.join([str(s) if use_index else s.label for s in self.products])+' (+'+str(self.specificCollider)+')'])
+        else:
+            return arrow.join([' + '.join([str(s) if use_index else s.label for s in self.reactants]), ' + '.join([str(s) if use_index else s.label for s in self.products])])
 
     def __reduce__(self):
         """
@@ -155,13 +164,36 @@ class Reaction:
                            self.label,
                            self.reactants,
                            self.products,
+                           self.specificCollider,
                            self.kinetics,
                            self.reversible,
                            self.transitionState,
                            self.duplicate,
                            self.degeneracy,
-                           self.pairs
+                           self.pairs,
+                           self.comment
                            ))
+
+    def __getDegneneracy(self):
+        return self._degeneracy
+    def __setDegeneracy(self, new):
+        # modify rate if kinetics exists
+        if self.kinetics is not None:
+            if self._degeneracy < 2:
+                degeneracyRatio = new
+            else:
+                degeneracyRatio = (new*1.0) / self._degeneracy
+            # fix kinetics comment with new degeneracy
+            if 'Multiplied by reaction path degeneracy {}'.format(self._degeneracy) in self.kinetics.comment:
+                self.kinetics.comment = self.kinetics.comment.replace(
+                                                  'Multiplied by reaction path degeneracy {}'.format(self._degeneracy),
+                                                  'Multiplied by reaction path degeneracy {}'.format(float(new)))
+            elif self.kinetics.comment:
+                self.kinetics.comment += 'Multiplied by reaction path degeneracy {}'.format(float(new))
+            self.kinetics.changeRate(degeneracyRatio)
+        # set new degeneracy
+        self._degeneracy = new
+    degeneracy = property(__getDegneneracy, __setDegeneracy)
 
     def toChemkin(self, speciesList=None, kinetics=True):
         """
@@ -177,31 +209,46 @@ class Reaction:
         else:
             return rmgpy.chemkin.writeReactionString(self)
     
-    def toCantera(self, speciesList=[]):
+    def toCantera(self, speciesList=None, useChemkinIdentifier = False):
         """
         Converts the RMG Reaction object to a Cantera Reaction object
         with the appropriate reaction class.
+
+        If useChemkinIdentifier is set to False, the species label is used
+        instead. Be sure that species' labels are unique when setting it False.
         """
         from rmgpy.kinetics import Arrhenius, ArrheniusEP, MultiArrhenius, PDepArrhenius, MultiPDepArrhenius, Chebyshev, ThirdBody, Lindemann, Troe
                     
         import cantera as ct
         
+        if speciesList is None:
+            speciesList = []
+        
         # Create the dictionaries containing species strings and their stoichiometries
         # for initializing the cantera reaction object
         ctReactants = {}
+        ctCollider = {}
         for reactant in self.reactants:
-            reactantName = reactant.toChemkin()  # Use the chemkin name for the species
+            if useChemkinIdentifier:
+                reactantName = reactant.toChemkin()
+            else:
+                reactantName = reactant.label
             if reactantName in ctReactants:
                 ctReactants[reactantName] += 1
             else:
                 ctReactants[reactantName] = 1
         ctProducts = {}
         for product in self.products:
-            productName = product.toChemkin()  # Use the chemkin name for the species
+            if useChemkinIdentifier:
+                productName = product.toChemkin()
+            else:
+                productName = product.label
             if productName in ctProducts:
                 ctProducts[productName] += 1
             else:
                 ctProducts[productName] = 1
+        if self.specificCollider:              # add a specific collider if exists
+            ctCollider[self.specificCollider.toChemkin() if useChemkinIdentifier else self.specificCollider.label] = 1
                 
         if self.kinetics:
             if isinstance(self.kinetics, Arrhenius):
@@ -222,12 +269,18 @@ class Reaction:
                 ctReaction = ct.ChebyshevReaction(reactants=ctReactants, products=ctProducts)
             
             elif isinstance(self.kinetics, ThirdBody):
-                ctReaction = ct.ThreeBodyReaction(reactants=ctReactants, products=ctProducts)
+                if ctCollider is not None:
+                    ctReaction = ct.ThreeBodyReaction(reactants=ctReactants, products=ctProducts, tbody=ctCollider)
+                else:
+                    ctReaction = ct.ThreeBodyReaction(reactants=ctReactants, products=ctProducts)
                 
             elif isinstance(self.kinetics, Lindemann) or isinstance(self.kinetics, Troe):
-                ctReaction = ct.FalloffReaction(reactants=ctReactants, products=ctProducts)
+                if ctCollider is not None:
+                    ctReaction = ct.FalloffReaction(reactants=ctReactants, products=ctProducts, tbody=ctCollider)
+                else:
+                    ctReaction = ct.FalloffReaction(reactants=ctReactants, products=ctProducts)
             else:
-                raise NotImplementedError('Not able to set cantera kinetics for {0}'.format(self.kinetics))
+                raise NotImplementedError('Unable to set cantera kinetics for {0}'.format(self.kinetics))
             
             
             # Set reversibility, duplicate, and ID attributes
@@ -322,204 +375,91 @@ class Reaction:
             (all([spec in self.products for spec in reactants]) and
             all([spec in self.reactants for spec in products])))
 
-    def matchesMolecules(self, reactants):
+    def matchesSpecies(self, reactants, products=None):
         """
-        Return ``True`` if the given ``reactants`` represent the total set of
-        reactants or products for the current ``reaction``, or ``False`` if not.
-        The reactants should be :class:`Molecule` objects.
+        Compares the provided reactants and products against the reactants
+        and products of this reaction. Both directions are checked.
+
+        Args:
+            reactants   List of Species required on one side of the reaction
+            products    List of Species required on the other side (optional)
         """
-        assert all([isinstance(reactant, Molecule) for reactant in reactants])
         # Check forward direction
-        if len(reactants) == len(self.reactants) == 1:
-            if self.reactants[0].isIsomorphic(reactants[0]): 
+        if _isomorphicSpeciesList(self.reactants, reactants):
+            if products is None or _isomorphicSpeciesList(self.products, products):
                 return True
-        elif len(reactants) == len(self.reactants) == 2:
-            if self.reactants[0].isIsomorphic(reactants[0]) and self.reactants[1].isIsomorphic(reactants[1]):
+            else:
+                return False
+        elif _isomorphicSpeciesList(self.products, reactants):
+            if products is None or _isomorphicSpeciesList(self.reactants, products):
                 return True
-            elif self.reactants[0].isIsomorphic(reactants[1]) and self.reactants[1].isIsomorphic(reactants[0]):
-                return True
-        # Check reverse direction
-        if len(reactants) == len(self.products) == 1:
-            if self.products[0].isIsomorphic(reactants[0]): 
-                return True
-        elif len(reactants) == len(self.products) == 2:
-            if self.products[0].isIsomorphic(reactants[0]) and self.products[1].isIsomorphic(reactants[1]):
-                return True
-            elif self.products[0].isIsomorphic(reactants[1]) and self.products[1].isIsomorphic(reactants[0]):
-                return True
-        if len(reactants) > 2:
-            raise NotImplementedError("Can't check isomorphism of reactions with {0} reactants".format(len(reactants)))
-        # If we're here then neither direction matched, so return false
-        return False
-        
-    def isIsomorphic(self, other, eitherDirection=True):
+            else:
+                return False
+        else:
+            return False
+
+    def isIsomorphic(self, other, eitherDirection=True, checkIdentical = False,
+                     checkOnlyLabel = False, checkTemplateRxnProducts=False):
         """
         Return ``True`` if this reaction is the same as the `other` reaction,
-        or ``False`` if they are different. 
+        or ``False`` if they are different. The comparison involves comparing
+        isomorphism of reactants and products, and doesn't use any kinetic
+        information.
+
         If `eitherDirection=False` then the directions must match.
+
+        `checkIdentical` indicates that atom ID's must match and is used in
+                        checking degeneracy
+        `checkOnlyLabel` indicates that the string representation will be 
+                        checked, ignoring the molecular structure comparisons
+        `checkTemplateRxnProducts` indicates that only the products of the
+                        reaction are checked for isomorphism. This is used when
+                        we know the reactants are identical, i.e. in generating
+                        reactions.
         """
-        
+        if checkTemplateRxnProducts:
+            try:
+                species1 = self.products if self.isForward else self.reactants
+                species2 = other.products if other.isForward else other.reactants
+            except AttributeError:
+                raise TypeError('Only use checkTemplateRxnProducts flag for TemplateReactions.')
+
+            return _isomorphicSpeciesList(species1, species2,
+                                          checkIdentical=checkIdentical,
+                                          checkOnlyLabel=checkOnlyLabel)
+
         # Compare reactants to reactants
-        forwardReactantsMatch = False
-        if len(self.reactants) == len(other.reactants) == 1:
-            if self.reactants[0].isIsomorphic(other.reactants[0]):
-                forwardReactantsMatch = True
-        elif len(self.reactants) == len(other.reactants) == 2:
-            if self.reactants[0].isIsomorphic(other.reactants[0]) and self.reactants[1].isIsomorphic(other.reactants[1]):
-                forwardReactantsMatch = True
-            elif self.reactants[0].isIsomorphic(other.reactants[1]) and self.reactants[1].isIsomorphic(other.reactants[0]):
-                forwardReactantsMatch = True
-        elif len(self.reactants) == len(other.reactants) == 3:
-            if (    self.reactants[0].isIsomorphic(other.reactants[0]) and
-                    self.reactants[1].isIsomorphic(other.reactants[1]) and
-                    self.reactants[2].isIsomorphic(other.reactants[2]) ):
-                forwardReactantsMatch = True
-            elif (  self.reactants[0].isIsomorphic(other.reactants[0]) and
-                    self.reactants[1].isIsomorphic(other.reactants[2]) and
-                    self.reactants[2].isIsomorphic(other.reactants[1]) ):
-                forwardReactantsMatch = True
-            elif (  self.reactants[0].isIsomorphic(other.reactants[1]) and
-                    self.reactants[1].isIsomorphic(other.reactants[0]) and
-                    self.reactants[2].isIsomorphic(other.reactants[2]) ):
-                forwardReactantsMatch = True
-            elif (  self.reactants[0].isIsomorphic(other.reactants[2]) and
-                    self.reactants[1].isIsomorphic(other.reactants[0]) and
-                    self.reactants[2].isIsomorphic(other.reactants[1]) ):
-                forwardReactantsMatch = True
-            elif (  self.reactants[0].isIsomorphic(other.reactants[1]) and
-                    self.reactants[1].isIsomorphic(other.reactants[2]) and
-                    self.reactants[2].isIsomorphic(other.reactants[0]) ):
-                forwardReactantsMatch = True
-            elif (  self.reactants[0].isIsomorphic(other.reactants[2]) and
-                    self.reactants[1].isIsomorphic(other.reactants[1]) and
-                    self.reactants[2].isIsomorphic(other.reactants[0]) ):
-                forwardReactantsMatch = True
-        elif len(self.reactants) == len(other.reactants):
-            raise NotImplementedError("Can't check isomorphism of reactions with {0} reactants".format(len(self.reactants)))
+        forwardReactantsMatch = _isomorphicSpeciesList(self.reactants, 
+                                    other.reactants,checkIdentical = checkIdentical,
+                                    checkOnlyLabel = checkOnlyLabel)
         
         # Compare products to products
-        forwardProductsMatch = False
-        if len(self.products) == len(other.products) == 1:
-            if self.products[0].isIsomorphic(other.products[0]):
-                forwardProductsMatch = True
-        elif len(self.products) == len(other.products) == 2:
-            if self.products[0].isIsomorphic(other.products[0]) and self.products[1].isIsomorphic(other.products[1]):
-                forwardProductsMatch = True
-            elif self.products[0].isIsomorphic(other.products[1]) and self.products[1].isIsomorphic(other.products[0]):
-                forwardProductsMatch = True
-        elif len(self.products) == len(other.products) == 3:
-            if (    self.products[0].isIsomorphic(other.products[0]) and
-                    self.products[1].isIsomorphic(other.products[1]) and
-                    self.products[2].isIsomorphic(other.products[2]) ):
-                forwardProductsMatch = True
-            elif (  self.products[0].isIsomorphic(other.products[0]) and
-                    self.products[1].isIsomorphic(other.products[2]) and
-                    self.products[2].isIsomorphic(other.products[1]) ):
-                forwardProductsMatch = True
-            elif (  self.products[0].isIsomorphic(other.products[1]) and
-                    self.products[1].isIsomorphic(other.products[0]) and
-                    self.products[2].isIsomorphic(other.products[2]) ):
-                forwardProductsMatch = True
-            elif (  self.products[0].isIsomorphic(other.products[2]) and
-                    self.products[1].isIsomorphic(other.products[0]) and
-                    self.products[2].isIsomorphic(other.products[1]) ):
-                forwardProductsMatch = True
-            elif (  self.products[0].isIsomorphic(other.products[1]) and
-                    self.products[1].isIsomorphic(other.products[2]) and
-                    self.products[2].isIsomorphic(other.products[0]) ):
-                forwardProductsMatch = True
-            elif (  self.products[0].isIsomorphic(other.products[2]) and
-                    self.products[1].isIsomorphic(other.products[1]) and
-                    self.products[2].isIsomorphic(other.products[0]) ):
-                forwardProductsMatch = True
-        elif len(self.products) == len(other.products):
-            raise NotImplementedError("Can't check isomorphism of reactions with {0} products".format(len(self.products)))
-        
+        forwardProductsMatch = _isomorphicSpeciesList(self.products, 
+                                    other.products,checkIdentical = checkIdentical,
+                                    checkOnlyLabel = checkOnlyLabel)
+
+        # Compare specificCollider to specificCollider
+        ColliderMatch = (self.specificCollider == other.specificCollider)
+
         # Return now, if we can
-        if (forwardReactantsMatch and forwardProductsMatch):
+        if (forwardReactantsMatch and forwardProductsMatch and ColliderMatch):
             return True
         if not eitherDirection:
             return False
         
         # Compare reactants to products
-        reverseReactantsMatch = False
-        if len(self.reactants) == len(other.products) == 1:
-            if self.reactants[0].isIsomorphic(other.products[0]):
-                reverseReactantsMatch = True
-        elif len(self.reactants) == len(other.products) == 2:
-            if self.reactants[0].isIsomorphic(other.products[0]) and self.reactants[1].isIsomorphic(other.products[1]):
-                reverseReactantsMatch = True
-            elif self.reactants[0].isIsomorphic(other.products[1]) and self.reactants[1].isIsomorphic(other.products[0]):
-                reverseReactantsMatch = True
-        elif len(self.reactants) == len(other.products) == 3:
-            if (    self.reactants[0].isIsomorphic(other.products[0]) and
-                    self.reactants[1].isIsomorphic(other.products[1]) and
-                    self.reactants[2].isIsomorphic(other.products[2]) ):
-                reverseReactantsMatch = True
-            elif (  self.reactants[0].isIsomorphic(other.products[0]) and
-                    self.reactants[1].isIsomorphic(other.products[2]) and
-                    self.reactants[2].isIsomorphic(other.products[1]) ):
-                reverseReactantsMatch = True
-            elif (  self.reactants[0].isIsomorphic(other.products[1]) and
-                    self.reactants[1].isIsomorphic(other.products[0]) and
-                    self.reactants[2].isIsomorphic(other.products[2]) ):
-                reverseReactantsMatch = True
-            elif (  self.reactants[0].isIsomorphic(other.products[2]) and
-                    self.reactants[1].isIsomorphic(other.products[0]) and
-                    self.reactants[2].isIsomorphic(other.products[1]) ):
-                reverseReactantsMatch = True
-            elif (  self.reactants[0].isIsomorphic(other.products[1]) and
-                    self.reactants[1].isIsomorphic(other.products[2]) and
-                    self.reactants[2].isIsomorphic(other.products[0]) ):
-                reverseReactantsMatch = True
-            elif (  self.reactants[0].isIsomorphic(other.products[2]) and
-                    self.reactants[1].isIsomorphic(other.products[1]) and
-                    self.reactants[2].isIsomorphic(other.products[0]) ):
-                reverseReactantsMatch = True
-        elif len(self.reactants) == len(other.products):
-            raise NotImplementedError("Can't check isomorphism of reactions with {0} reactants".format(len(self.reactants)))
+        reverseReactantsMatch = _isomorphicSpeciesList(self.reactants, 
+                                    other.products,checkIdentical = checkIdentical,
+                                    checkOnlyLabel = checkOnlyLabel)
 
         # Compare products to reactants
-        reverseProductsMatch = False
-        if len(self.products) == len(other.reactants) == 1:
-            if self.products[0].isIsomorphic(other.reactants[0]):
-                reverseProductsMatch = True
-        elif len(self.products) == len(other.reactants) == 2:
-            if self.products[0].isIsomorphic(other.reactants[0]) and self.products[1].isIsomorphic(other.reactants[1]):
-                reverseProductsMatch = True
-            elif self.products[0].isIsomorphic(other.reactants[1]) and self.products[1].isIsomorphic(other.reactants[0]):
-                reverseProductsMatch = True
-        elif len(self.products) == len(other.reactants) == 3:
-            if (    self.products[0].isIsomorphic(other.reactants[0]) and
-                    self.products[1].isIsomorphic(other.reactants[1]) and
-                    self.products[2].isIsomorphic(other.reactants[2]) ):
-                reverseProductsMatch = True
-            elif (  self.products[0].isIsomorphic(other.reactants[0]) and
-                    self.products[1].isIsomorphic(other.reactants[2]) and
-                    self.products[2].isIsomorphic(other.reactants[1]) ):
-                reverseProductsMatch = True
-            elif (  self.products[0].isIsomorphic(other.reactants[1]) and
-                    self.products[1].isIsomorphic(other.reactants[0]) and
-                    self.products[2].isIsomorphic(other.reactants[2]) ):
-                reverseProductsMatch = True
-            elif (  self.products[0].isIsomorphic(other.reactants[2]) and
-                    self.products[1].isIsomorphic(other.reactants[0]) and
-                    self.products[2].isIsomorphic(other.reactants[1]) ):
-                reverseProductsMatch = True
-            elif (  self.products[0].isIsomorphic(other.reactants[1]) and
-                    self.products[1].isIsomorphic(other.reactants[2]) and
-                    self.products[2].isIsomorphic(other.reactants[0]) ):
-                reverseProductsMatch = True
-            elif (  self.products[0].isIsomorphic(other.reactants[2]) and
-                    self.products[1].isIsomorphic(other.reactants[1]) and
-                    self.products[2].isIsomorphic(other.reactants[0]) ):
-                reverseProductsMatch = True
-        elif len(self.products) == len(other.reactants):
-            raise NotImplementedError("Can't check isomorphism of reactions with {0} products".format(len(self.products)))
-        
+        reverseProductsMatch = _isomorphicSpeciesList(self.products, 
+                                    other.reactants,checkIdentical = checkIdentical,
+                                    checkOnlyLabel = checkOnlyLabel)
+
         # should have already returned if it matches forwards, or we're not allowed to match backwards
-        return  (reverseReactantsMatch and reverseProductsMatch)
-    
+        return  (reverseReactantsMatch and reverseProductsMatch and ColliderMatch)
+
     def getEnthalpyOfReaction(self, T):
         """
         Return the enthalpy of reaction in J/mol evaluated at temperature
@@ -556,7 +496,7 @@ class Reaction:
         for reactant in self.reactants:
             try:
                 dGrxn -= reactant.getFreeEnergy(T)
-            except Exception as e:
+            except Exception:
                 logging.error("Problem with reactant {!r} in reaction {!s}".format(reactant, self))
                 raise
         for product in self.products:
@@ -748,14 +688,28 @@ class Reaction:
 
     def fixDiffusionLimitedA(self, T):
         """
-        Decrease the pre-exponential factor (A) by a factor of getDiffusionFactor
-        to account for the diffusion limit.
+        Decrease the pre-exponential factor (A) by the diffusion factor
+        to account for the diffusion limit at the specified temperature.
         """
-        # Decrease self.kinetics.A (if Arrhenius or ArrheniusEP)
-        self.kinetics.A = self.kinetics.A * self.getDiffusionFactor(T)
+        if not diffusionLimiter.enabled:
+            return
+        # Obtain effective rate
+        try:
+            k = self.k_effective_cache[T]
+        except KeyError:
+            k = diffusionLimiter.getEffectiveRate(self, T)
+            self.k_effective_cache[T] = k
+
+        # calculate diffusion factor
+        diffusionFactor = k / self.kinetics.getRateCoefficient(T, P=0)
+        # update preexponential factor
+        self.kinetics.A = self.kinetics.A * diffusionFactor
         # Add a comment to self.kinetics.comment
-        self.kinetics.comment.append("Pre-exponential factor A has been decreased by the diffusion factor.")
-    
+        self.kinetics.comment.append(
+            ("Pre-exponential factor A has been decreased by the "
+             "diffusion factor {0.2g} evaluated at {1} K.").format(
+                diffusionFactor, T))
+
     def fixBarrierHeight(self, forcePositive=False):
         """
         Turns the kinetics into Arrhenius (if they were ArrheniusEP)
@@ -767,24 +721,27 @@ class Reaction:
         """
         cython.declare(H0=cython.double, H298=cython.double, Ea=cython.double, kineticsType=type)
         H298 = self.getEnthalpyOfReaction(298)
-        H0 = sum([spec.thermo.E0.value_si for spec in self.products]) - sum([spec.thermo.E0.value_si for spec in self.reactants])
+        H0 = sum([spec.getThermoData().E0.value_si for spec in self.products]) \
+            - sum([spec.getThermoData().E0.value_si for spec in self.reactants])
         if isinstance(self.kinetics, (ArrheniusEP, SurfaceArrheniusBEP, StickingCoefficientBEP)):
             Ea = self.kinetics.E0.value_si # temporarily using Ea to store the intrinsic barrier height E0
             self.kinetics = self.kinetics.toArrhenius(H298)
-
-            if Ea > 0 and self.kinetics.Ea.value_si < 0:
-                self.kinetics.comment += "\nEa raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si/1000)
-                logging.info("For reaction {1!s} Ea raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si/1000, self))
-                self.kinetics.Ea.value_si = 0
+            if self.kinetics.Ea.value_si < 0.0 and self.kinetics.Ea.value_si < Ea:
+                # Calculated Ea (from Evans-Polanyi) is negative AND below than the intrinsic E0
+                Ea = min(0.0,Ea) # (the lowest we want it to be)
+                self.kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol.".format(self.kinetics.Ea.value_si/1000., Ea/1000.)
+                logging.info("For reaction {0!s} Ea raised from {1:.1f} to {2:.1f} kJ/mol.".format(self, self.kinetics.Ea.value_si/1000., Ea/1000.))
+                self.kinetics.Ea.value_si = Ea
         if isinstance(self.kinetics, (Arrhenius, StickingCoefficient)):  # SurfaceArrhenius is a subclass of Arrhenius
             Ea = self.kinetics.Ea.value_si
-            if H0 > 0 and Ea < H0:
+            if H0 >= 0 and Ea < H0:
                 self.kinetics.Ea.value_si = H0
-                self.kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of reaction.".format(Ea/1000,H0/1000)
-                logging.info("For reaction {2!s}, Ea raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of reaction.".format(Ea/1000, H0/1000, self))
+                self.kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of reaction.".format(Ea/1000.,H0/1000.)
+                logging.info("For reaction {2!s}, Ea raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of reaction.".format(Ea/1000., H0/1000., self))
         if forcePositive and isinstance(self.kinetics, (Arrhenius, StickingCoefficient)) and self.kinetics.Ea.value_si < 0:
-            self.kinetics.comment += "\nEa raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si/1000)
-            logging.info("For reaction {1!s} Ea raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si/1000, self))
+            self.kinetics.comment += "\nEa raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si/1000.)
+            logging.info("For reaction {1!s} Ea raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si/1000., self))
+
             self.kinetics.Ea.value_si = 0
 
 
@@ -798,10 +755,7 @@ class Reaction:
         cython.declare(Tlist=numpy.ndarray, klist=numpy.ndarray, i=cython.int)
         kf = kForward
         assert isinstance(kf, Arrhenius), "Only reverses Arrhenius rates"
-        if kf.Tmin is not None and kf.Tmax is not None:
-            Tlist = 1.0/numpy.linspace(1.0/kf.Tmax.value_si, 1.0/kf.Tmin.value_si, 50)
-        else:
-            Tlist = 1.0 / numpy.arange(0.0005, 0.0034, 0.0001)  # 294 K to 2000 K
+        Tlist = 1.0 / numpy.arange(0.0005, 0.0034, 0.0001)  # 294 K to 2000 K
         # Determine the values of the reverse rate coefficient k_r(T) at each temperature
         klist = numpy.zeros_like(Tlist)
         for i in range(len(Tlist)):
@@ -1185,17 +1139,81 @@ class Reaction:
         other.products = []
         for product in self.products:
             other.products.append(product.copy(deep=True))
+        other.degeneracy = self.degeneracy
+        other.specificCollider = self.specificCollider
         other.kinetics = deepcopy(self.kinetics)
         other.reversible = self.reversible
         other.transitionState = deepcopy(self.transitionState)
         other.duplicate = self.duplicate
-        other.degeneracy = self.degeneracy
         other.pairs = deepcopy(self.pairs)
+        other.comment = deepcopy(self.comment)
         
         return other
 
+def _isomorphicSpeciesList(list1, list2, checkIdentical=False, checkOnlyLabel = False):
+    """
+    This method compares whether lists of species or molecules are isomorphic
+    or identical. It is used for the 'isIsomorphic' method of Reaction class.
+    It likely can be useful elswehere as well:
+        
+        list1 - list of species/molecule objects of reaction1
+        list2 - list of species/molecule objects of reaction2
+        checkIdentical - if true, uses the 'isIdentical' comparison
+                         if false, uses the 'isIsomorphic' comparison
+        checkOnlyLabel - only look at species' labels, no isomorphism checks
+                         
+    Returns True if the lists are isomorphic/identical & false otherwise
+    """
                 
 ################################################################################
+
+    def comparison_method(other1, other2, checkIdentical=checkIdentical, checkOnlyLabel=checkOnlyLabel):
+        if checkOnlyLabel:
+            return str(other1) == str(other2)
+        elif checkIdentical:
+            return other1.isIdentical(other2)
+        else:
+            return other1.isIsomorphic(other2)
+
+    if len(list1) == len(list2) == 1:
+        if comparison_method(list1[0], list2[0]):
+            return True
+    elif len(list1) == len(list2) == 2:
+        if comparison_method(list1[0], list2[0]) \
+                    and comparison_method(list1[1], list2[1]):
+            return True
+        elif comparison_method(list1[0], list2[1]) \
+                    and comparison_method(list1[1], list2[0]):
+            return True
+    elif len(list1) == len(list2) == 3:
+        if (    comparison_method(list1[0], list2[0]) and
+                comparison_method(list1[1], list2[1]) and
+                comparison_method(list1[2], list2[2]) ):
+            return True
+        elif (  comparison_method(list1[0], list2[0]) and
+                comparison_method(list1[1], list2[2]) and
+                comparison_method(list1[2], list2[1]) ):
+            return True
+        elif (  comparison_method(list1[0], list2[1]) and
+                comparison_method(list1[1], list2[0]) and
+                comparison_method(list1[2], list2[2]) ):
+            return True
+        elif (  comparison_method(list1[0], list2[2]) and
+                comparison_method(list1[1], list2[0]) and
+                comparison_method(list1[2], list2[1]) ):
+            return True
+        elif (  comparison_method(list1[0], list2[1]) and
+                comparison_method(list1[1], list2[2]) and
+                comparison_method(list1[2], list2[0]) ):
+            return True
+        elif (  comparison_method(list1[0], list2[2]) and
+                comparison_method(list1[1], list2[1]) and
+                comparison_method(list1[2], list2[0]) ):
+            return True
+    elif len(list1) == len(list2):
+        raise NotImplementedError("Can't check isomorphism of lists with {0} species/molecules".format(len(list1)))
+    # nothing found
+    return False
 
 
 class ReactionModel:
@@ -1281,7 +1299,6 @@ class ReactionModel:
         
         # Determine which species in other are already in self
         commonSpecies = {}; uniqueSpecies = []
-        for spec in other.species:
             for spec0 in finalModel.species:
                 if spec.isIsomorphic(spec0):
                     commonSpecies[spec] = spec0
@@ -1333,3 +1350,5 @@ class ReactionModel:
     
         # Return the merged model
         return finalModel
+
+        for spec in other.species:

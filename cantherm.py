@@ -63,7 +63,7 @@ cantherm.execute()
 try:
     import psutil
     process = psutil.Process(os.getpid())
-    rss, vms = process.memory_info()
-    logging.info('Memory used: %.2f MB' % (rss / 1024.0 / 1024.0))
+    memory_info = process.memory_info()
+    logging.info('Memory used: %.2f MB' % (memory_info.rss / 1024.0 / 1024.0))
 except ImportError:
     logging.info('Optional package dependency "psutil" not found; memory profiling information will not be saved.')

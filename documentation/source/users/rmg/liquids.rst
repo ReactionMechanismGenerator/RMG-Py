@@ -26,6 +26,18 @@ Your reaction system will also be different (liquidReactor rather than simpleRea
 
     )
 
+To simulate the liquidReactor, one of the initial species / concentrations must be the solvent. If the solvent species does
+not appear as the initial species, RMG run will stop and raise error. The solvent can be either reactive, or nonreactive.
+
+In order for RMG to recognize the species as the solvent, it is important to use the latest version of the RMG-database, whose
+solvent library contains solvent SMILES. If the latest database is used,  RMG can determine whether the species is the
+solvent by looking at its molecular structure (SMILES or adjacency list).
+If the old version of RMG-database without the solvent SMILES is used, then RMG can recognize the species as the solvent
+only by its string name. This means that if the solvent is named "octane" in the solvation block and it is named "n-octane"
+in the species and initialConcentrations blocks, RMG will not be able to recognize them as the same solvent species and raise
+error because the solvent is not listed as one of the initial species.
+
+
 For liquid phase generation, you can provide a list of species for which one concentration is held constant over time
 (Use the keyword ``constantSpecies=[]`` with species labels separated by ``","``). To generate meaningful liquid phase oxidation mechanism, it is 
 highly recommended to consider O2 as a constant species. To consider pyrolysis cases, it is still possible to obtain a mechanism without this option.
@@ -202,7 +214,7 @@ To build accurate models of liquid phase chemical reactions you will also want t
 .. _exampleLiquidPhase:
 
 Example liquid-phase input file, no constant species
-===============================
+=====================================================
 This is an example of an input file for a liquid-phase system::
 
     # Data sources
@@ -263,7 +275,7 @@ This is an example of an input file for a liquid-phase system::
     )
 
 Example liquid-phase input file, with constant species
-===============================
+=======================================================
 This is an example of an input file for a liquid-phase system with constant species::
 
     # Data sources

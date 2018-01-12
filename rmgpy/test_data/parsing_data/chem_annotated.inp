@@ -1,0 +1,161 @@
+ELEMENTS H C O N Ne Ar He Si S Cl END
+
+SPECIES
+    O(2)                ! O(2)
+    OH(5)               ! OH(5)
+    HO2(6)              ! HO2(6)
+    H2O2(8)             ! H2O2(8)
+    CH(9)               ! CH(9)
+    CH2(11)             ! CH2(11)
+    CH2O(15)            ! CH2O(15)
+    CH2OH(18)           ! CH2OH(18)
+    C2H(21)             ! C2H(21)
+    C2H2(22)            ! C2H2(22)
+    HCCO(23)            ! HCCO(23)
+    C2H4(26)            ! C2H4(26)
+    C2H5(27)            ! C2H5(27)
+    H2O(28)             ! H2O(28)
+END
+
+
+
+THERM ALL
+    300.000  1000.000  5000.000
+
+! Thermo library: primaryThermoLibrary
+O(2)                    O 1                 G100.000   5000.000  4563.27       1
+ 2.50166659E+00-1.43051434E-06 4.60249725E-10-6.57825717E-14 3.52412298E-18    2
+ 2.92286915E+04 4.08043797E+00 2.50000000E+00-1.91242771E-12 2.45328669E-15    3
+-1.02376750E-18 1.31368730E-22 2.92302441E+04 4.09104286E+00                   4
+
+! Thermo library: primaryThermoLibrary
+OH(5)                   H 1  O 1            G100.000   5000.000  1145.75       1
+ 3.07193980E+00 6.04015713E-04-1.39783018E-08-2.13446076E-11 2.48065640E-15    2
+ 3.57938677E+03 4.57800016E+00 3.51456804E+00 2.92773498E-05-5.32163319E-07    3
+ 1.01949022E-09-3.85945156E-13 3.41425420E+03 2.10434883E+00                   4
+
+! Thermo group additivity estimation: group(Os-OsH) + gauche(Os(RR)) + other(R) + group(Os-OsH) + gauche(Os(RR)) + other(R) + radical(HOOJ)
+HO2(6)                  H 1  O 2            G100.000   5000.000  932.15        1
+ 3.21023935E+00 3.67941856E-03-1.27701493E-06 2.18045069E-10-1.46337776E-14    2
+-9.10368814E+02 8.18291444E+00 4.04594462E+00-1.73464464E-03 1.03766401E-05    3
+-1.02202360E-08 3.34907846E-12-9.86754234E+02 4.63581384E+00                   4
+
+! Thermo group additivity estimation: group(Os-OsH) + gauche(Os(RR)) + other(R) + group(Os-OsH) + gauche(Os(RR)) + other(R)
+H2O2(8)                 H 2  O 2            G100.000   5000.000  908.87        1
+ 5.41578744E+00 2.61008075E-03-4.39891651E-07 4.91086730E-11-3.35187902E-15    2
+-1.83029525E+04-4.02248376E+00 3.73135815E+00 3.35070798E-03 9.35033486E-06    3
+-1.52099663E-08 6.41585465E-12-1.77211708E+04 5.45910791E+00                   4
+
+! Thermo library: primaryThermoLibrary + radical(CJ3)
+CH(9)                   C 1  H 1            G100.000   5000.000  1260.74       1
+ 3.26553953E+00 2.29802890E-04 1.03511042E-07-7.93822825E-12-2.40394362E-16    2
+ 7.05274319E+04 3.38007948E+00 4.17630358E+00-3.39736167E-03 5.29654094E-06    3
+-3.21797659E-09 7.28310223E-13 7.03564002E+04-9.92389058E-01                   4
+
+! Thermo library: primaryThermoLibrary
+CH2(11)                 C 1  H 2            G100.000   5000.000  1104.56       1
+ 3.14983429E+00 2.96674181E-03-9.76055366E-07 1.54115162E-10-9.50337108E-15    2
+ 4.60581389E+04 4.77807433E+00 4.01192396E+00-1.54979585E-04 3.26298064E-06    3
+-2.40422065E-09 5.69497558E-13 4.58676802E+04 5.33200179E-01                   4
+
+! Thermo group additivity estimation: group(Cds-OdHH) + other(R) + group(Od-Cd) + other(R)
+CH2O(15)                C 1  H 2  O 1       G100.000   5000.000  1402.28       1
+ 3.17998023E+00 9.55594710E-03-6.27299411E-06 1.33554065E-09-9.68406708E-14    2
+-1.50752410E+04 4.31059821E+00 4.32289428E+00-5.06325488E-03 2.15155105E-05    3
+-1.76520951E-08 4.31813541E-12-1.42789564E+04 2.39243158E+00                   4
+
+! Thermo group additivity estimation: group(Cs-OsHHH) + gauche(Cs(RRRR)) + other(R) + group(Os-CsH) + gauche(Os(CsR)) + other(R) + radical(CsJOH)
+CH2OH(18)               C 1  H 3  O 1       G100.000   5000.000  942.75        1
+ 5.64921982E+00 4.70036956E-03-1.29327597E-06 2.29278472E-10-1.75698332E-14    2
+-4.00097631E+03-4.98835942E+00 3.74243729E+00 1.07475480E-03 2.31164231E-05    3
+-3.02140457E-08 1.15510502E-11-3.12080888E+03 6.85964989E+00                   4
+
+! Thermo group additivity estimation: group(Ct-CtH) + other(R) + group(Ct-CtH) + other(R) + radical(Acetyl)
+C2H(21)                 C 2  H 1            G100.000   5000.000  1076.57       1
+ 4.00850641E+00 2.06808341E-03 6.05417866E-08-1.17717886E-10 1.29289602E-14    2
+ 6.65294994E+04 2.79626339E+00 3.03852311E+00 1.15450060E-02-2.13266937E-05    3
+ 1.81936425E-08-5.41604736E-12 6.63980144E+04 5.96678301E+00                   4
+
+! Thermo group additivity estimation: group(Ct-CtH) + other(R) + group(Ct-CtH) + other(R)
+C2H2(22)                C 2  H 2            G100.000   5000.000  888.62        1
+ 5.76202856E+00 2.37161710E-03-1.49600059E-07-2.19112819E-11 2.21743975E-15    2
+ 2.50944567E+04-9.82599242E+00 3.03575393E+00 7.71230690E-03 2.53524979E-06    3
+-1.08137715E-08 5.50778751E-12 2.58526440E+04 4.54458975E+00                   4
+
+! Thermo group additivity estimation: group(Cds-(Cdd-Od)HH) + gauche(CsOsCdSs) + other(ketene) + group(Cdd-CdsOd) + other(R) + group(Od-Cd) + other(R) +
+! radical(Cds_P)
+HCCO(23)                C 2  H 1  O 1       G100.000   5000.000  936.07        1
+ 5.99810697E+00 3.14479416E-03-9.57800755E-07 1.55621070E-10-1.04308277E-14    2
+ 2.19694638E+04-5.80237171E+00 3.45647220E+00 1.05728706E-02-7.35997913E-06    3
+ 7.97486346E-10 8.64479001E-13 2.25956881E+04 7.09496628E+00                   4
+
+! Thermo group additivity estimation: group(Cds-CdsHH) + gauche(CsOsCdSs) + other(R) + group(Cds-CdsHH) + gauche(CsOsCdSs) + other(R)
+C2H4(26)                C 2  H 4            G100.000   5000.000  940.45        1
+ 5.20299632E+00 7.82442041E-03-2.12683157E-06 3.79689949E-10-2.94670208E-14    2
+ 3.93628030E+03-6.62412284E+00 3.97974364E+00-7.57558938E-03 5.52972884E-05    3
+-6.36221202E-08 2.31766977E-11 5.07746089E+03 4.04623036E+00                   4
+
+! Thermo group additivity estimation: group(Cs-CsHHH) + gauche(Cs(CsRRR)) + other(R) + group(Cs-CsHHH) + gauche(Cs(CsRRR)) + other(R) + radical(CCJ)
+C2H5(27)                C 2  H 5            G100.000   5000.000  900.30        1
+ 5.15604989E+00 9.43150524E-03-1.81962522E-06 2.21235507E-10-1.43514698E-14    2
+ 1.20641464E+04-2.91009792E+00 3.82189596E+00-3.43435978E-03 5.09286045E-05    3
+-6.20252478E-08 2.37092466E-11 1.30660104E+04 7.61622156E+00                   4
+
+! Thermo library: primaryThermoLibrary
+H2O(28)                 H 2  O 1            G100.000   5000.000  1130.24       1
+ 2.84325239E+00 2.75108232E-03-7.81029741E-07 1.07243238E-10-5.79388975E-15    2
+-2.99586136E+04 5.91040889E+00 4.05763556E+00-7.87932752E-04 2.90876476E-06    3
+-1.47517649E-09 2.12838250E-13-3.02815866E+04-3.11363065E-01                   4
+
+END
+
+
+
+REACTIONS    KCAL/MOLE   MOLES
+
+! Reaction index: Chemkin #1; RMG #3
+! Library reaction: GRI-Mech3.0
+! Flux pairs: H2O2(8), HO2(6); O(2), OH(5); 
+O(2)+H2O2(8)=OH(5)+HO2(6)                           9.630e+06 2.000     4.000    
+
+! Reaction index: Chemkin #2; RMG #211
+! Template reaction: Disproportionation
+! Flux pairs: OH(5), H2O(28); C2H5(27), C2H4(26); 
+! Exact match found for rate rule [O_pri_rad;Cmethyl_Csrad]
+! Multiplied by reaction path degeneracy 3
+OH(5)+C2H5(27)=H2O(28)+C2H4(26)                     7.230e+13 0.000     0.000    
+
+! Reaction index: Chemkin #3; RMG #243
+! Template reaction: Disproportionation
+! Flux pairs: CH(9), CH2(11); CH2OH(18), CH2O(15); 
+! Average of [Average of [O2b;O_Csrad] + Average of [O_atom_triplet;O_Csrad + CH2_triplet;O_Csrad] + Average of [Average of [Ct_rad/Ct;O_Csrad from
+! training reaction 0] + Average of [O_pri_rad;O_Csrad + Average of [O_rad/NonDeC;O_Csrad + O_rad/NonDeO;O_Csrad]] + Average of [Cd_pri_rad;O_Csrad] +
+! Average of [CO_pri_rad;O_Csrad] + Average of [C_methyl;O_Csrad + Average of [C_rad/H2/Cs;O_Csrad + C_rad/H2/Cd;O_Csrad + C_rad/H2/O;O_Csrad] + Average
+! of [C_rad/H/NonDeC;O_Csrad] + Average of [Average of [C_rad/Cs3;O_Csrad]]] + H_rad;O_Csrad]]
+! Estimated using template [Y_rad_birad_trirad_quadrad;O_Csrad] for rate rule [CH_quartet;O_Csrad]
+CH(9)+CH2OH(18)=CH2(11)+CH2O(15)                    1.286e+13 -0.010    0.000    
+
+! Reaction index: Chemkin #4; RMG #303
+! Template reaction: Disproportionation
+! Flux pairs: CH2OH(18), CH2O(15); C2H(21), C2H2(22); 
+! Matched reaction 0 C2H + CH3O <=> C2H2 + CH2O in Disproportionation/training
+CH2OH(18)+C2H(21)=CH2O(15)+C2H2(22)                 3.610e+13 0.000     0.000    
+
+! Reaction index: Chemkin #5; RMG #364
+! PDep reaction: PDepNetwork #7
+! Flux pairs: HCCO(23), O(2); HCCO(23), C2H(21); 
+HCCO(23)(+M)=O(2)+C2H(21)(+M)                       1.000e+00 0.000     0.000    
+    TCHEB/ 300.000   2500.000 /
+    PCHEB/ 0.001     98.692   /
+    CHEB/ 5 8/
+    CHEB/ -5.220e+01   2.500e+00    -2.484e-06   -7.620e-07   -3.453e-07  /
+    CHEB/ -4.517e-14   3.453e-07    7.620e-07    4.607e+01    2.816e-06   /
+    CHEB/ 2.109e-06    6.470e-07    2.932e-07    3.888e-14    -2.932e-07  /
+    CHEB/ -6.470e-07   -2.650e-01   1.956e-07    1.465e-07    4.494e-08   /
+    CHEB/ 2.036e-08    -2.236e-16   -2.036e-08   -4.494e-08   -1.172e-01  /
+    CHEB/ -4.446e-09   -3.330e-09   -1.022e-09   -4.629e-10   -9.893e-17  /
+    CHEB/ 4.629e-10    1.022e-09    -4.203e-02   -9.845e-09   -7.374e-09  /
+    CHEB/ -2.262e-09   -1.025e-09   -3.546e-17   1.025e-09    2.262e-09   /
+
+END
+

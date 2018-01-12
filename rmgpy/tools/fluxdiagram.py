@@ -5,7 +5,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2009-2011 by the RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -40,9 +41,9 @@ import numpy
 import pydot
 
 from rmgpy.solver.base import TerminationTime, TerminationConversion
-from rmgpy.solver.simple import SimpleReactor
-import rmgpy.util as util
-
+from rmgpy.solver.liquid import LiquidReactor
+from rmgpy.kinetics.diffusionLimited import diffusionLimiter
+from rmgpy.rmg.settings import SimulatorSettings
 from .loader import loadRMGJob
 
 ################################################################################
@@ -80,14 +81,15 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
     a movie. The individual frames and the final movie are saved on disk at
     `outputDirectory.`
     """
-    global maximumNodeCount, maximumEdgeCount, timeStep, concentrationTolerance, speciesRateTolerance
+    global maximumNodeCount, maximumEdgeCount, concentrationTolerance, speciesRateTolerance, maximumNodePenWidth, maximumEdgePenWidth
     # Allow user defined settings for flux diagram generation if given
     if settings:
-        maximumNodeCount = settings['maximumNodeCount']       
-        maximumEdgeCount = settings['maximumEdgeCount']  
-        timeStep = settings['timeStep']
-        concentrationTolerance = settings['concentrationTolerance']   
-        speciesRateTolerance = settings['speciesRateTolerance']
+        maximumNodeCount = settings.get('maximumNodeCount', maximumNodeCount)
+        maximumEdgeCount = settings.get('maximumEdgeCount', maximumEdgeCount)
+        concentrationTolerance = settings.get('concentrationTolerance', concentrationTolerance)
+        speciesRateTolerance = settings.get('speciesRateTolerance', speciesRateTolerance)
+        maximumNodePenWidth = settings.get('maximumNodePenWidth', maximumNodePenWidth)
+        maximumEdgePenWidth= settings.get('maximumEdgePenWidth', maximumEdgePenWidth)
     
     # Get the species and reactions corresponding to the provided concentrations and reaction rates
     speciesList = reactionModel.core.species[:]
@@ -165,6 +167,7 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
     graph.set_rankdir('LR')
     graph.set_fontname('sans')
     graph.set_fontsize('10')
+    
     # Add a node for each species
     for index in nodes:
         species = speciesList[index]
@@ -194,7 +197,7 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
             graph.add_edge(edge) 
     
     # Generate the coordinates for all of the nodes using the specified program
-    graph = pydot.graph_from_dot_data(graph.create_dot(prog=program))
+    graph = pydot.graph_from_dot_data(graph.create_dot(prog=program))[0]
     
     # Now iterate over the time points, setting the pen widths appropriately
     # This should preserve the coordinates of the nodes from frame to frame
@@ -267,54 +270,50 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
             graph.write_png(os.path.join(outputDirectory, 'flux_diagram_{0:04d}.png'.format(frameNumber)))
             frameNumber += 1
     
-    # Use mencoder to stitch the PNG images together into a movie
+    # Use ffmpeg to stitch the PNG images together into a movie
     import subprocess
-    command = ('mencoder',
-        'mf://*.png',
-        '-mf',
-        'type=png:fps={0:d}'.format(framesPerSecond),
-        '-ovc',
-        'lavc',
-        '-lavcopts',
-        'vcodec=mpeg4',
-        '-oac',
-        'copy',
-        '-o',
-        'flux_diagram.avi',
-    )
+    
+    command = ['ffmpeg',
+               '-framerate', '{0:d}'.format(framesPerSecond), # Duration of each image
+               '-i', 'flux_diagram_%04d.png',                 # Input file format
+               '-c:v', 'mpeg4',                               # Encoder
+               '-r', '30',                                    # Video framerate
+               '-pix_fmt', 'yuv420p',                         # Pixel format
+               'flux_diagram.avi']                            # Output filename
+    
     subprocess.check_call(command, cwd=outputDirectory)
     
 ################################################################################
 
-def simulate(reactionModel, reactionSystem, settings = None):
+def simulate(reactionModel, reactionSystem, settings=None):
     """
     Generate and return a set of core and edge species and reaction fluxes
     by simulating the given `reactionSystem` using the given `reactionModel`.
     """
-    global maximumNodeCount, maximumEdgeCount, timeStep, concentrationTolerance, speciesRateTolerance
+    global timeStep
     # Allow user defined settings for flux diagram generation if given
     if settings:
-        maximumNodeCount = settings['maximumNodeCount']       
-        maximumEdgeCount = settings['maximumEdgeCount']  
-        timeStep = settings['timeStep']
-        concentrationTolerance = settings['concentrationTolerance']   
-        speciesRateTolerance = settings['speciesRateTolerance']
+        timeStep = settings.get('timeStep', timeStep)
     
     coreSpecies = reactionModel.core.species
     coreReactions = reactionModel.core.reactions
     edgeSpecies = reactionModel.edge.species
     edgeReactions = reactionModel.edge.reactions
     
-#    numCoreSpecies = len(coreSpecies)
-#    numCoreReactions = len(coreReactions)
-#    numEdgeSpecies = len(edgeSpecies)
-#    numEdgeReactions = len(edgeReactions)
-    
     speciesIndex = {}
     for index, spec in enumerate(coreSpecies):
         speciesIndex[spec] = index
     
-    reactionSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions, [], absoluteTolerance, relativeTolerance)
+    simulatorSettings = SimulatorSettings(atol=absoluteTolerance,rtol=relativeTolerance)
+
+    # Enable constant species for LiquidReactor
+    if isinstance(reactionSystem, LiquidReactor):
+        if reactionSystem.constSPCNames is not None:
+            reactionSystem.get_constSPCIndices(coreSpecies)
+
+    reactionSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions,
+                                   atol=simulatorSettings.atol, rtol=simulatorSettings.rtol,
+                                   sens_atol=simulatorSettings.sens_atol, sens_rtol=simulatorSettings.sens_rtol)
 
     # Copy the initial conditions to use in evaluating conversions
     y0 = reactionSystem.y.copy()
@@ -325,12 +324,10 @@ def simulate(reactionModel, reactionSystem, settings = None):
     edgeReactionRates = []
 
     nextTime = initialTime
-    terminated = False; iteration = 0
+    terminated = False
     while not terminated:
         # Integrate forward in time to the next time point
         reactionSystem.advance(nextTime)
-
-        iteration += 1
         
         time.append(reactionSystem.t)
         coreSpeciesConcentrations.append(reactionSystem.coreSpeciesConcentrations)
@@ -444,20 +441,29 @@ def loadChemkinOutput(outputFile, reactionModel):
 
 ################################################################################
 
-def createFluxDiagram(savePath, inputFile, chemkinFile, speciesDict, java = False, settings = None, chemkinOutput = '', centralSpecies = None):
+def createFluxDiagram(inputFile, chemkinFile, speciesDict, savePath=None, speciesPath=None, java=False, settings=None,
+                      chemkinOutput='', centralSpecies=None, diffusionLimited=True):
     """
     Generates the flux diagram based on a condition 'inputFile', chemkin.inp chemkinFile,
     a speciesDict txt file, plus an optional chemkinOutput file.
     """
 
-    rmg = loadRMGJob(inputFile, chemkinFile, speciesDict, java)
+    if speciesPath is None:
+        speciesPath = os.path.join(os.path.dirname(inputFile), 'species')
+        generateImages = True
+    else:
+        generateImages = False
 
-    speciesPath = os.path.join(os.path.dirname(inputFile), 'species')
+    rmg = loadRMGJob(inputFile, chemkinFile, speciesDict, generateImages=generateImages, useJava=java)
+
+    if savePath is None:
+        savePath = os.path.join(rmg.outputDirectory, 'flux')
     
     # if you have a chemkin output, then you only have one reactionSystem
     if chemkinOutput:
+        outDir = os.path.join(savePath, '1')
         try:
-            os.makedirs(os.path.join(savePath,'1'))
+            os.makedirs(outDir)
         except OSError:
             pass
 
@@ -465,18 +471,23 @@ def createFluxDiagram(savePath, inputFile, chemkinFile, speciesDict, java = Fals
         time, coreSpeciesConcentrations, coreReactionRates, edgeReactionRates = loadChemkinOutput(chemkinOutput, rmg.reactionModel)
 
         print 'Generating flux diagram for chemkin output...'
-        generateFluxDiagram(rmg.reactionModel, time, coreSpeciesConcentrations, coreReactionRates, os.path.join(savePath, '1'), centralSpecies, speciesPath, settings)
+        generateFluxDiagram(rmg.reactionModel, time, coreSpeciesConcentrations, coreReactionRates, outDir, centralSpecies, speciesPath, settings)
 
     else:
         # Generate a flux diagram video for each reaction system
         for index, reactionSystem in enumerate(rmg.reactionSystems):
+            outDir = os.path.join(savePath, '{0:d}'.format(index+1))
             try:
-                os.makedirs(os.path.join(savePath,'{0:d}'.format(index+1)))
+                os.makedirs(outDir)
             except OSError:
             # Fail silently on any OS errors
                 pass
 
-            #util.makeOutputSubdirectory('flux/{0:d}'.format(index+1))
+            # Enable diffusion-limited rates
+            if diffusionLimited and isinstance(reactionSystem, LiquidReactor):
+                rmg.loadDatabase()
+                solventData = rmg.database.solvation.getSolventData(rmg.solvent)
+                diffusionLimiter.enable(solventData, rmg.database.solvation)
 
             # If there is no termination time, then add one to prevent jobs from
             # running forever
@@ -487,32 +498,5 @@ def createFluxDiagram(savePath, inputFile, chemkinFile, speciesDict, java = Fals
             time, coreSpeciesConcentrations, coreReactionRates, edgeReactionRates = simulate(rmg.reactionModel, reactionSystem, settings)
 
             print 'Generating flux diagram for reaction system {0:d}...'.format(index+1)
-            generateFluxDiagram(rmg.reactionModel, time, coreSpeciesConcentrations, coreReactionRates, os.path.join(savePath, '{0:d}'.format(index+1)), 
+            generateFluxDiagram(rmg.reactionModel, time, coreSpeciesConcentrations, coreReactionRates, outDir,
                                 centralSpecies, speciesPath, settings)
-
-def run(inputFile, speciesPath=None, useJava=False):
-    
-    rmg = loadRMGJob(inputFile, useJava)
-        
-    # Generate a flux diagram video for each reaction system
-    util.makeOutputSubdirectory('flux')
-    for index, reactionSystem in enumerate(rmg.reactionSystems):
-        
-        util.makeOutputSubdirectory('flux/{0:d}'.format(index+1))
-        
-        # If there is no termination time, then add one to prevent jobs from
-        # running forever
-        if not any([isinstance(term, TerminationTime) for term in reactionSystem.termination]):
-            reactionSystem.termination.append(TerminationTime((1e10,'s')))
-        
-        
-        print 'Conducting simulation of reaction system {0:d}...'.format(index+1)
-        time, coreSpeciesConcentrations, coreReactionRates, edgeReactionRates =\
-        simulate(rmg.reactionModel, reactionSystem)
-        
-        centralSpecies = None
-        print 'Generating flux diagram for reaction system {0:d}...'.format(index+1)
-        generateFluxDiagram(
-            rmg.reactionModel, time, coreSpeciesConcentrations, coreReactionRates,\
-            os.path.join(rmg.outputDirectory, 'flux', '{0:d}'.format(index+1)), centralSpecies, speciesPath
-            )    

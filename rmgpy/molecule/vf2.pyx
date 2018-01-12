@@ -2,7 +2,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2009-2011 by the RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -30,25 +31,37 @@ algorithm of Vento and Foggia.  http://dx.doi.org/10.1109/TPAMI.2004.75
 """
 
 cimport cython
+from rmgpy.molecule.graph import Graph
+from rmgpy.exceptions import VF2Error
 
 ################################################################################
-
-class VF2Error(Exception):
-    """
-    An exception raised if an error occurs within the VF2 graph isomorphism
-    algorithm. Pass a string describing the error.
-    """
-    pass
 
 cdef class VF2:
     """
     An implementation of the second version of the Vento-Foggia (VF2) algorithm
     for graph and subgraph isomorphism.
     """
-    
-    def __init__(self):
-        self.graph1 = None
-        self.graph2 = None
+    def __init__(self, graphA = None, graphB = None):
+        self.graph1 = graphA
+        self.graph2 = graphB
+
+    @property
+    def graphA(self):
+        return self.graph1
+
+    @graphA.setter
+    def graphA(self, value):
+        self.graph1 = value
+        self.graph1.sortVertices()
+
+    @property
+    def graphB(self):
+        return self.graph2
+
+    @graphB.setter
+    def graphB(self, value):
+        self.graph2 = value
+        self.graph2.sortVertices()
 
     cpdef bint isIsomorphic(self, Graph graph1, Graph graph2, dict initialMapping) except -2:
         """
@@ -238,7 +251,7 @@ cdef class VF2:
         # None of the proposed matches led to a complete isomorphism, so return False
         return False     
         
-    cdef bint feasible(self, Vertex vertex1, Vertex vertex2) except -2:
+    cpdef bint feasible(self, Vertex vertex1, Vertex vertex2) except -2:
         """
         Return ``True`` if vertex `vertex1` from the first graph is a feasible
         match for vertex `vertex2` from the second graph, or ``False`` if not.

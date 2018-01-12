@@ -5,8 +5,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2010 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -41,6 +41,7 @@ import logging
 import rmgpy.constants as constants
 from rmgpy.statmech import HarmonicOscillator, HinderedRotor
 from pydqed import DQED
+from rmgpy.exceptions import StatmechFitError
 
 ################################################################################
 
@@ -64,16 +65,6 @@ hrBarrUpperBound = 10000.0
 
 # The maximum number of iterations for the optimization solver to use
 maxIter = 200
-
-################################################################################
-
-class StatmechFitError(Exception):
-    """
-    An exception used when attempting to fit molecular degrees of freedom to
-    heat capacity data. Pass a string describing the circumstances of the
-    exceptional behavior.
-    """
-    pass
 
 ################################################################################
 

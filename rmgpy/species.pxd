@@ -31,6 +31,7 @@ from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
 from rmgpy.thermo.model cimport HeatCapacityModel
 from rmgpy.statmech.conformer cimport Conformer
 from rmgpy.kinetics.model cimport TunnelingModel
+from rmgpy.molecule.molecule cimport Atom, Bond, Molecule
 
 ################################################################################
 
@@ -38,7 +39,7 @@ cdef class Species:
     
     cdef public int index
     cdef public str label
-    cdef public HeatCapacityModel thermo
+    cdef public object thermo
     cdef public Conformer conformer
     cdef public object transportData
     cdef public list molecule
@@ -47,10 +48,15 @@ cdef class Species:
     cdef public object energyTransferModel
     cdef public dict props
     cdef public str aug_inchi
+    cdef public float symmetryNumber
+    cdef public bint isSolvent
+    cdef public int creationIteration
+
+    cpdef generate_resonance_structures(self,bint keepIsomorphic=?)
     
-    cpdef generateResonanceIsomers(self)
-    
-    cpdef bint isIsomorphic(self, other)
+    cpdef bint isIsomorphic(self, other) except -2
+
+    cpdef bint isIdentical(self, other) except -2
     
     cpdef fromAdjacencyList(self, adjlist)
     cpdef fromSMILES(self, smiles)

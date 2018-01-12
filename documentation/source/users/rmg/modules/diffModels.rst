@@ -24,5 +24,5 @@ Running the script without any optional flags looks like::
 Output of each comparison is printed, and the method then produces a html file (``diff.html``)
 for easy viewing of the comparison.  
 
-This method is also available to use with a web browser from the RMG website: `Model Comparison Tool <http://rmg.mit.edu/simulate/compare>`_.
+This method is also available to use with a web browser from the RMG website: `Model Comparison Tool <http://rmg.mit.edu/tools/compare>`_.
 

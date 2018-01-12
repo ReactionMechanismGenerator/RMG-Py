@@ -63,7 +63,7 @@ cdef class Conformer:
 
     cpdef getPrincipalMomentsOfInertia(self)
 
-    cpdef double getInternalReducedMomentOfInertia(self, pivots, top1) except -1
+    cpdef double getInternalReducedMomentOfInertia(self, pivots, top1, option=?) except -1
 
     cpdef getSymmetricTopRotors(self)
 

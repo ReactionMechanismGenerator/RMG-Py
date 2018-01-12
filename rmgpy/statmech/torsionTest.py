@@ -5,11 +5,11 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2009 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the "Software"),
+#   copy of this software and associated documentation files (the 'Software'),
 #   to deal in the Software without restriction, including without limitation
 #   the rights to use, copy, modify, merge, publish, distribute, sublicense,
 #   and/or sell copies of the Software, and to permit persons to whom the
@@ -18,10 +18,10 @@
 #   The above copyright notice and this permission notice shall be included in
 #   all copies or substantial portions of the Software.
 #
-#   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 #   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-#   THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 #   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #   DEALINGS IN THE SOFTWARE.
@@ -36,7 +36,7 @@ import unittest
 import math
 import numpy
 
-from rmgpy.statmech.torsion import HinderedRotor
+from rmgpy.statmech.torsion import HinderedRotor, FreeRotor
 import rmgpy.constants as constants
 
 ################################################################################
@@ -61,6 +61,10 @@ class TestHinderedRotor(unittest.TestCase):
             fourier = ([ [4.58375, 0.841648, -5702.71, 6.02657, 4.7446], [0.726951, -0.677255, 0.207032, 0.553307, -0.503303] ],"J/mol"),
             quantum = self.quantum,
         )
+        self.freemode = FreeRotor(
+            inertia = (self.inertia,"amu*angstrom^2"), 
+            symmetry = self.symmetry,
+        )
         
     def test_getRotationalConstant(self):
         """
@@ -69,6 +73,8 @@ class TestHinderedRotor(unittest.TestCase):
         Bexp = 10.7535
         Bact = self.mode.rotationalConstant.value_si
         self.assertAlmostEqual(Bexp, Bact, 4)
+        Bact2 = self.freemode.rotationalConstant.value_si
+        self.assertAlmostEqual(Bexp,Bact2,4)
         
     def test_setRotationalConstant(self):
         """
@@ -77,9 +83,12 @@ class TestHinderedRotor(unittest.TestCase):
         B = self.mode.rotationalConstant
         B.value_si *= 2
         self.mode.rotationalConstant = B
+        self.freemode.rotationalConstant = B
         Iexp = 0.5 * self.inertia
         Iact = self.mode.inertia.value_si * constants.Na * 1e23
+        Iact2 = self.freemode.inertia.value_si * constants.Na * 1e23
         self.assertAlmostEqual(Iexp, Iact, 4)
+        self.assertAlmostEqual(Iexp, Iact2, 4)
     
     def test_getPotential_cosine(self):
         """
@@ -100,7 +109,17 @@ class TestHinderedRotor(unittest.TestCase):
         V = numpy.zeros_like(phi)
         for i in range(phi.shape[0]):
             V[i] = self.mode.getPotential(phi[i])
-
+    
+    def test_getPartitionFunction_free(self):
+        """
+        Test the FreeRotor.getPartitionFunction() method 
+        """
+        Tlist = numpy.array([300,500,1000,1500,2000])
+        Qexplist = numpy.sqrt(8*numpy.pi**3*constants.kB*Tlist*self.freemode.inertia.value_si)/(self.symmetry*constants.h)
+        for T, Qexp in zip(Tlist,Qexplist):
+            Qact = self.freemode.getPartitionFunction(T)
+            self.assertAlmostEqual(Qexp,Qact,delta=1e-4*Qexp)
+            
     def test_getPartitionFunction_classical_cosine(self):
         """
         Test the HinderedRotor.getPartitionFunction() method for a cosine
@@ -150,7 +169,17 @@ class TestHinderedRotor(unittest.TestCase):
         for T, Qexp in zip(Tlist, Qexplist):
             Qact = self.mode.getPartitionFunction(T)
             self.assertAlmostEqual(Qexp, Qact, delta=5e-4*Qexp)
-
+    
+    def test_getHeatCapacity_free(self):
+        """
+        Test the FreeRotor.getHeatCapacity() method 
+        """
+        Cvexp = constants.R/2.0
+        Tlist = numpy.array([300,500,1000,1500,2000])
+        for T in Tlist:
+            Cvact = self.freemode.getHeatCapacity(T)
+            self.assertAlmostEqual(Cvexp,Cvact,delta=1e-4*Cvexp)
+            
     def test_getHeatCapacity_classical_cosine(self):
         """
         Test the HinderedRotor.getHeatCapacity() method using a cosine
@@ -201,6 +230,16 @@ class TestHinderedRotor(unittest.TestCase):
             Cvact = self.mode.getHeatCapacity(T)
             self.assertAlmostEqual(Cvexp, Cvact, delta=1e-3*Cvexp)
  
+    def test_getEnthalpy_free(self):
+        """
+        Test the FreeRotor.getEnthalpy() method
+        """
+        Tlist = numpy.array([300,500,1000,1500,2000])
+        Hexplist = constants.R*Tlist/2.0
+        for T, Hexp in zip(Tlist, Hexplist):
+            Hact = self.freemode.getEnthalpy(T)
+            self.assertAlmostEqual(Hexp, Hact, delta=1e-4*Hexp)
+            
     def test_getEnthalpy_classical_cosine(self):
         """
         Test the HinderedRotor.getEnthalpy() method using a cosine potential
@@ -251,6 +290,14 @@ class TestHinderedRotor(unittest.TestCase):
             Hact = self.mode.getEnthalpy(T)
             self.assertAlmostEqual(Hexp, Hact, delta=1e-3*Hexp)
 
+    def test_getEntropy_free(self):
+        Tlist = numpy.array([300,500,1000,1500,2000])
+        Q = numpy.array([self.freemode.getPartitionFunction(T) for T in Tlist])
+        Sexplist = constants.R*(numpy.log(Q)+.5)
+        for T, Sexp in zip(Tlist, Sexplist):
+            Sact = self.freemode.getEntropy(T)
+            self.assertAlmostEqual(Sexp, Sact, delta=1e-4*Sexp)
+            
     def test_getEntropy_classical_cosine(self):
         """
         Test the HinderedRotor.getEntropy() method using a cosine potential
@@ -351,7 +398,7 @@ class TestHinderedRotor(unittest.TestCase):
         densStates = self.mode.getDensityOfStates(Elist)
         for n in range(10, len(Elist)):
             self.assertTrue(0.8 < numpy.sum(densStates[0:n]) / sumStates[n-1] < 1.25, '{0} != {1}'.format(numpy.sum(densStates[0:n]), sumStates[n]))
-
+        
     def test_getDensityOfStates_classical_cosine(self):
         """
         Test the HinderedRotor.getDensityOfStates() method using a classical

@@ -5,11 +5,11 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2009 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the "Software"),
+#   copy of this software and associated documentation files (the 'Software'),
 #   to deal in the Software without restriction, including without limitation
 #   the rights to use, copy, modify, merge, publish, distribute, sublicense,
 #   and/or sell copies of the Software, and to permit persons to whom the
@@ -18,10 +18,10 @@
 #   The above copyright notice and this permission notice shall be included in
 #   all copies or substantial portions of the Software.
 #
-#   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 #   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-#   THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 #   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #   DEALINGS IN THE SOFTWARE.
@@ -72,6 +72,8 @@ class TestConverter(unittest.TestCase):
             Tmin = (10,"K"),
             Tmax = (3000,"K"),
             E0 = (-93.6077,'kJ/mol'),
+            Cp0 = (4.0*constants.R,"J/(mol*K)"),
+            CpInf = (21.5*constants.R,"J/(mol*K)"),
             comment = 'C2H6',
         )
         self.thermodata = ThermoData(
@@ -131,7 +133,7 @@ class TestConverter(unittest.TestCase):
         Test the conversion of a NASA model to a Wilhoit model.
         """
         nasa = self.nasa
-        wilhoit = nasa.toWilhoit(Cp0=self.wilhoit.Cp0.value_si, CpInf=self.wilhoit.CpInf.value_si)
+        wilhoit = nasa.toWilhoit()
         Tlist = numpy.arange(10, 3000, 10)
         for T in Tlist:
             Cp_wilhoit = wilhoit.getHeatCapacity(T)
@@ -150,7 +152,7 @@ class TestConverter(unittest.TestCase):
         Test the conversion of a NASA model to a ThermoData model.
         """
         nasa = self.nasa
-        thermodata = nasa.toThermoData(Cp0=self.thermodata.Cp0.value_si, CpInf=self.thermodata.CpInf.value_si)
+        thermodata = nasa.toThermoData()
         Tlist = numpy.array([300,400,500,600,800,1000,1500])
         for T in Tlist:
             Cp_thermodata = thermodata.getHeatCapacity(T)
@@ -211,7 +213,7 @@ class TestConverter(unittest.TestCase):
         """
         wilhoit1 = self.wilhoit
         nasa = wilhoit1.toNASA(Tmin=10, Tmax=3000, Tint=1000)
-        wilhoit2 = nasa.toWilhoit(Cp0=self.wilhoit.Cp0.value_si, CpInf=self.wilhoit.CpInf.value_si)
+        wilhoit2 = nasa.toWilhoit()
         Tlist = numpy.arange(10, 3000, 10)
         for T in Tlist:
             Cp_1 = wilhoit1.getHeatCapacity(T)

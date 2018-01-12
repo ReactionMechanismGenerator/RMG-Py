@@ -5,8 +5,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2010 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -43,7 +43,7 @@ def failsSpeciesConstraints(species):
 
     try:
         speciesConstraints = getInput('speciesConstraints')
-    except Exception, e:
+    except Exception:
         logging.debug('Species constraints could not be found.')
         speciesConstraints = {}
     
@@ -90,7 +90,17 @@ def failsSpeciesConstraints(species):
 
     maxRadicals = speciesConstraints.get('maximumRadicalElectrons', -1)
     if maxRadicals != -1:
-        if (struct.getNumberOfRadicalElectrons() > maxRadicals):
+        if (struct.getRadicalCount() > maxRadicals):
+            return True
+
+    maxCarbenes = speciesConstraints.get('maximumSingletCarbenes', 1)
+    if maxRadicals != -1:
+        if struct.getSingletCarbeneCount() > maxCarbenes:
+            return True
+
+    maxCarbeneRadicals = speciesConstraints.get('maximumCarbeneRadicals', 0)
+    if maxCarbeneRadicals != -1:
+        if struct.getSingletCarbeneCount() > 0 and struct.getRadicalCount() > maxCarbeneRadicals:
             return True
 
     maxIsotopes = speciesConstraints.get('maximumIsotopicAtoms', -1)

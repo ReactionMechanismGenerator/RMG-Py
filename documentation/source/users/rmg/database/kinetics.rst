@@ -10,7 +10,7 @@ Pressure independent reaction rates in RMG are calculated using a modified
 Arrhenius equation, designating the reaction coefficient as :math:`k(T)` at 
 temperature :math:`T`.
 
-.. math:: k(T) = A\left(\frac{T}{T_0}\right)^ne^{-(E_a + \alpha \Delta H_{rxn})/(RT)}
+.. math:: k(T) = A\left(\frac{T}{T_0}\right)^ne^{-(E_0 + \alpha \Delta H_{rxn})/(RT)}
 
 :math:`R` is the universal gas constant. The **kinetic parameters** determining 
 the rate coefficient are:
@@ -21,14 +21,16 @@ the rate coefficient are:
 
 * :math:`n`:	the temperature exponent
 
-* :math:`E_a`:	the activation energy 
+* :math:`E_0`:	the activation energy for a thermoneutral reaction (a barrier height intrinsic to the kinetics family)
 
-* :math:`\alpha`:	the Evans-Polanyi coefficient
+* :math:`\alpha`:	the Evans-Polanyi coefficient (characterizes the position of the transition state along the reaction coordinate, :math:`0 \le \alpha \le 1`)
 
 * :math:`\Delta H_{rxn}`: the enthalpy of reaction
 
 When Evans-Polanyi corrections are used, :math:`\Delta H_{rxn}` is calculated
-using RMG's thermo database, instead of being specified in the kinetic database.  
+using RMG's thermo database, instead of being specified in the kinetic database.
+When Evans-Polanyi corrections are not used, :math:`\Delta H_{rxn}` and :math:`\alpha`
+are set to zero, and :math:`E_0` is the activation energy of the reaction.
 
 Libraries
 =========
@@ -37,8 +39,9 @@ RMG always chooses to use kinetics from libraries over families. If multiple lib
 contain the same reaction, then precedence is given to whichever library is
 listed first in the input.py file.
 
-For combustion mechanisms, you should always use *one* small-molecule 
-combustion library, such as the pre-packaged ERC-Foundation Fuel. 
+For combustion mechanisms, you should always use at least one small-molecule 
+combustion library, such as the pre-packaged *BurkeH2O2* and/or *FFCM1*
+for natural gas.
 The reactions contained in these libraries are poorly estimated by kinetic 
 families and are universally important to combustion systems.
 
@@ -48,6 +51,137 @@ Kinetic libraries should also be used in the cases where:
 * You know the reaction rate is not generalizable to similar species (perhaps due to catalysis or aromatic structures)
 * No family exists for the class of reaction
 * You are not confident about the accuracy of kinetic parameters
+
+Below is a list of pre-packaged kinetics library reactions in RMG:
+
+
+
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Library                                                      |Description                                                                               |
++=============================================================+==========================================================================================+
+|1989_Stewart_2CH3_to_C2H5_H                                  |Chemically Activated Methyl Recombination to Ethyl (2CH3 -> C2H5 + H)                     |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|2001_Tokmakov_H_Toluene_to_CH3_Benzene                       |H + Toluene = CH3 + Benzene                                                               |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|2005_Senosiain_OH_C2H2                                       |pathways on the OH + acetylene surface                                                    |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|2006_Joshi_OH_CO                                             |pathways on OH + CO = HOCO = H + CO2 surface                                              |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|2009_Sharma_C5H5_CH3_highP                                   |Cyclopentadienyl + CH3 in high-P limit                                                    |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|2015_Buras_C2H3_C4H6_highP                                   |Vinyl + 1,3-Butadiene and other C6H9 reactions in high-P limit                            |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|biCPD_H_shift                                                |Sigmatropic 1,5-H shifts on biCPD PES                                                     |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|BurkeH2O2inArHe                                              |Comprehensive H2/O2 kinetic model in Ar or He atmosphere                                  |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|BurkeH2O2inN2                                                |Comprehensive H2/O2 kinetic model in N2 atmosphere                                        |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|C2H4+O_Klipp2017                                             |C2H4 + O intersystem crossing reactions, probably important for all C/H/O combustion      |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|C10H11                                                       |Cyclopentadiene pyrolysis in the presence of ethene                                       |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|C3                                                           |Cyclopentadiene pyrolysis in the presence of ethene                                       |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|C6H5_C4H4_Mebel                                              |Formation Mechanism of Naphthalene and Indene                                             |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Chernov                                                      |Soot Formation with C1 and C2 Fuels (aromatic reactions only)                             |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|CurranPentane                                                |Ignition of pentane isomers                                                               |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Dooley                                                       |Methyl formate (contains several mechanisms)                                              |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|ERC-FoundationFuelv0.9                                       |Small molecule combustio (natural gas)                                                    |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Ethylamine                                                   |Ethylamine pyrolysis and oxidation                                                        |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|FFCM1(-)                                                     |Foundational Fuel Chemistry Model Version 1.0 (excited species removed)                   |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|First_to_Second_Aromatic_Ring/2005_Ismail_C6H5_C4H6_highP    |Phenyl + 1,3-Butadiene and other C10H11 reactions in high-P limit                         |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|First_to_Second_Aromatic_Ring/2012_Matsugi_C3H3_C7H7_highP   |Propargyl + Benzyl and other C10H10 reactions in high-P limit                             |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|First_to_Second_Aromatic_Ring/2016_Mebel_C9H9_highP          |C9H9 reactions in high-P limit                                                            |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|First_to_Second_Aromatic_Ring/2016_Mebel_C10H9_highP         |C10H9 reactions in high-P limit                                                           |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|First_to_Second_Aromatic_Ring/2016_Mebel_Indene_CH3_highP    |CH3 + Indene in high-P limit                                                              |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|First_to_Second_Aromatic_Ring/2017_Buras_C6H5_C3H6_highP     |Phenyl + Propene and other C9H11 reactions in high-P limit                                |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|First_to_Second_Aromatic_Ring/2017_Mebel_C6H4C2H_C2H2_highP  |C10H7 HACA reactions in high-P limit                                                      |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|First_to_Second_Aromatic_Ring/2017_Mebel_C6H5_C2H2_highP     |C8H7 HACA reactions in high-P limit                                                       |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|First_to_Second_Aromatic_Ring/2017_Mebel_C6H5_C4H4_highP     |Phenyl + Vinylacetylene and other C10H9  reactions in high-P limit                        |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|First_to_Second_Aromatic_Ring/2017_Mebel_C6H5C2H2_C2H2_highP |C10H9 HACA reactions in high-P limit                                                      |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|First_to_Second_Aromatic_Ring/phenyl_diacetylene_effective   |Effective Phenyl + Diacetylene rates to Benzofulvenyl and 2-Napthyl                       |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Fulvene_H                                                    |Cyclopentadiene pyrolysis in the presence of ethene                                       |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|GRI-HCO                                                      |The `HCO <=> H + CO` reaction                                                             |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|GRI-Mech3.0                                                  |Gas Research Institute natural gas mechanism optimized for 1 atm (discountinued Feb. 2000)|
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|GRI-Mech3.0-N                                                |GRI-Mech3.0 including nitrogen chemistry (NOx from N2)                                    |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Glarborg                                                     |Mechanisms by P. Glarborg, assorted by carbon number                                      |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|JetSurF2.0                                                   |Jet Surrogate Fuel model up tp C12 (excited species removed)                              |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Klippenstein_Glarborg2016                                    |Methane oxidation at high pressures and intermediate temperatures                         |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Mebel_C6H5_C2H2                                              |Pathways from benzene to naphthalene                                                      |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Mebel_Naphthyl                                               |Reactions of naphthyl-1 and naphthyl-2                                                    |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Methylformate                                                |Methyl formate                                                                            |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Narayanaswamy                                                |Oxidation of substituted aromatic species (aromatic reactions only)                       |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Nitrogen_Dean_and_Bozzelli                                   |Combustion Chemistry of Nitrogen                                                          |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Nitrogen_Glarborg_Gimenez_et_al                              |High pressure C2H4 oxidation with nitrogen chemistry                                      |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Nitrogen_Glarborg_Lucassen_et_al                             |Fuel-nitrogen conversion in the combustion of small amines                                |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Nitrogen_Glarborg_Zhang_et_al                                |Premixed nitroethane flames at low pressure                                               |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|OxygenSingTrip                                               |Reactions of singlet and triplet oxygen                                                   |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Sulfur/DMDS                                                  |Dimethyl disulfide (CH3SSCH3)                                                             |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Sulfur/DMS                                                   |Dimethyl disulfide (CH3SSCH3)                                                             |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Sulfur/DTBS                                                  |Di-tert-butyl Sulfide (C4H9SSC4H9)                                                        |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Sulfur/Hexanethial_nr                                        |Hexyl sulfide (C6H13SC6H13) + hexadecane (C16H34)                                         |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Sulfur/Sendt                                                 |Small sulfur molecule                                                                     |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Sulfur/TP_Song                                               |Thiophene (C4H4S, aromatic)                                                               |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Sulfur/Thial_Hydrolysis                                      |Thioformaldehyde (CH2S) and thioacetaldehyde (C2H4S) to COS and CO2                       |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|TEOS                                                         |Organic oxidized silicone                                                                 |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|c-C5H5_CH3_Sharma                                            |Cyclopentadienyl + CH3                                                                    |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|combustion_core                                              |Leeds University natural gas mechanism (contains versions 2-5)                            |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|fascella                                                     |Cyclopentadienyl + acetyl                                                                 |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|kislovB                                                      |Formation of indene in combustion                                                         |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|naphthalene_H                                                |Cyclopentadiene pyrolysis in the presence of ethene Part 1                                |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|vinylCPD_H                                                   |Cyclopentadiene pyrolysis in the presence of ethene Part 2                                |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+
+
+
 
 .. _kineticsFamilies:
 
@@ -343,6 +477,14 @@ of decreasing reliability are:
 #. Reaction match from training set
 #. Node template exact match using either training set or rules
 #. Node template estimate averaged from children nodes
+
+Both training sets and reaction libraries use the observed rate, but rules must
+first be divided by the degeneracy of the reaction. For example, the reaction
+CH4 + OH --> H2O + CH3 has a reaction degeneracy of 4. If one performed an
+experiment or obtained this reaction rate using Cantherm (applying the correct 
+symmetry), the resultant rate parameters would be entered into libraries and
+training sets unmodified. However a kinetic rule created for this reaction must
+have its A-factor divided by 4 before being entered into the database. 
 
 The reaction match from training set is accurate within the documented uncertainty for that
 reaction. A template exact match is usually accurate within about one order

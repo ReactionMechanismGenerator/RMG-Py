@@ -5,8 +5,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2010 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -42,7 +42,7 @@ from transport import TransportDatabase
 from rmgpy.data.kinetics.database import KineticsDatabase
 from statmech import StatmechDatabase
 from solvation import SolvationDatabase
-
+from rmgpy.exceptions import DatabaseError
 from rmgpy.scoop_framework.util import get, broadcast
 
 # Module-level variable to store the (only) instance of RMGDatabase in use.
@@ -83,24 +83,28 @@ class RMGDatabase:
              statmechLibraries=None,
              depository=True,
              solvation=True,
-             ):
+             testing = False):
         """
         Load the RMG database from the given `path` on disk, where `path`
         points to the top-level folder of the RMG database. If none of the
         optional arguments are provided, then the entire database will be
         loaded. You can use the optional arguments to specify that only certain
         components of the database be loaded.
+
+        Argument testing will load a lighter version of the database used for unit-tests
         """
         self.loadThermo(os.path.join(path, 'thermo'), thermoLibraries, depository)
-        self.loadTransport(os.path.join(path, 'transport'), transportLibraries)
-        self.loadForbiddenStructures(os.path.join(path, 'forbiddenStructures.py'))
+        if not testing:
+            self.loadTransport(os.path.join(path, 'transport'), transportLibraries)
+            self.loadForbiddenStructures(os.path.join(path, 'forbiddenStructures.py'))
         self.loadKinetics(os.path.join(path, 'kinetics'),
                           reactionLibraries,
                           seedMechanisms,
                           kineticsFamilies,
                           kineticsDepositories
                           )
-        self.loadStatmech(os.path.join(path, 'statmech'), statmechLibraries, depository)
+        if not testing:
+            self.loadStatmech(os.path.join(path, 'statmech'), statmechLibraries, depository)
         
         if solvation:
             self.loadSolvation(os.path.join(path, 'solvation'))
@@ -123,13 +127,16 @@ class RMGDatabase:
         self.transport.load(path, transportLibraries)
         broadcast(self.transport, 'transport')
         
-    def loadForbiddenStructures(self, path):
+    def loadForbiddenStructures(self, path = None):
         """
         Load the RMG forbidden structures from the given `path` on disk, where
         `path` points to the forbidden structures file.
+
+        If no path is given, a blank forbidden structures object is created.
         """
         self.forbiddenStructures = ForbiddenStructures()
-        self.forbiddenStructures.load(path)
+        if path is not None:
+            self.forbiddenStructures.load(path)
         broadcast(self.forbiddenStructures, 'forbidden')
 
     def loadKinetics(self,
@@ -258,9 +265,9 @@ def getDB(name):
             if db:
                 return db
             else:
-                raise Exception
-        except Exception, e:
-            logging.error("Did not find a way to obtain the broadcasted database for {}.".format(name))
+                raise DatabaseError
+        except DatabaseError, e:
+            logging.debug("Did not find a way to obtain the broadcasted database for {}.".format(name))
             raise e
 
-    raise Exception('Could not get database with name: {}'.format(name))
+    raise DatabaseError('Could not get database with name: {}'.format(name))

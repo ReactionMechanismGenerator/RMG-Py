@@ -5,8 +5,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2010 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -38,12 +38,12 @@ import math
 import numpy
 from copy import deepcopy
 
-from rmgpy.data.base import Database, DatabaseError, Entry, Group, LogicNode, getAllCombinations, makeLogicNode
+from rmgpy.data.base import Database, Entry, Group, LogicNode, getAllCombinations, makeLogicNode
 
 from rmgpy.kinetics import Arrhenius, ArrheniusEP, KineticsData
 from rmgpy.species import Species
 from rmgpy.quantity import constants
-from .common import KineticsError, UndeterminableKineticsError
+from rmgpy.exceptions import KineticsError, UndeterminableKineticsError, DatabaseError
 
 ################################################################################
 
@@ -71,7 +71,10 @@ class KineticsGroups(Database):
     def __repr__(self):
         return '<KineticsGroups "{0}">'.format(self.label)
 
-    def loadEntry(self, index, label, group, kinetics, reference=None, referenceType='', shortDesc='', longDesc=''):
+    def loadEntry(self, index, label, group, kinetics, reference=None, referenceType='', shortDesc='', longDesc='',nodalDistance=None):
+        """
+        nodalDistance is the distance between a given entry and its parent specified by a float
+        """
         if group[0:3].upper() == 'OR{' or group[0:4].upper() == 'AND{' or group[0:7].upper() == 'NOT OR{' or group[0:8].upper() == 'NOT AND{':
             item = makeLogicNode(group)
         else:
@@ -88,6 +91,7 @@ class KineticsGroups(Database):
             referenceType = referenceType,
             shortDesc = shortDesc,
             longDesc = longDesc.strip(),
+            nodalDistance=nodalDistance
         )
 
     def getReactionTemplate(self, reaction):
@@ -168,6 +172,8 @@ class KineticsGroups(Database):
         """
         Determine the appropriate kinetics for a reaction with the given
         `template` using group additivity.
+        
+        Returns just the kinetics.
         """
 
         # Start with the generic kinetics of the top-level nodes
@@ -190,12 +196,9 @@ class KineticsGroups(Database):
             kinetics.comment += comment_line + '\n'
 
         # Also include reaction-path degeneracy
-        if isinstance(kinetics, KineticsData):
-            kinetics.kdata.value_si *= degeneracy
-        elif isinstance(kinetics, Arrhenius):
-            kinetics.A.value_si *= degeneracy
-        elif kinetics is not None:
-            raise KineticsError('Unexpected kinetics type "{0}" encountered while generating kinetics from group values.'.format(kinetics.__class__))
+
+        kinetics.changeRate(degeneracy)
+
         kinetics.comment += "Multiplied by reaction path degeneracy {0}".format(degeneracy)
         
         return kinetics
@@ -204,7 +207,7 @@ class KineticsGroups(Database):
         """
         Multiply two kinetics objects `kinetics1` and `kinetics2` of the same
         class together, returning their product as a new kinetics object of 
-        that class. Currently this only works for :class:`KineticsData` or
+        that class. Currently this only works for :class:`KineticsData`, :class:`ArrheniusEP` or
         :class:`Arrhenius` objects.
         """
         if isinstance(kinetics1, KineticsData) and isinstance(kinetics2, KineticsData):
@@ -216,14 +219,41 @@ class KineticsGroups(Database):
             )
         elif isinstance(kinetics1, Arrhenius) and isinstance(kinetics2, Arrhenius):
             assert kinetics1.A.units == kinetics2.A.units
-            assert kinetics1.Ea.units == kinetics2.Ea.units
             assert kinetics1.T0.units == kinetics2.T0.units
             assert kinetics1.T0.value == kinetics2.T0.value
             kinetics = Arrhenius(
                 A = (kinetics1.A.value * kinetics2.A.value, kinetics1.A.units),
                 n = (kinetics1.n.value + kinetics2.n.value, kinetics1.n.units),
-                Ea = (kinetics1.Ea.value + kinetics2.Ea.value, kinetics1.Ea.units),
+                Ea = (kinetics1.Ea.value_si + kinetics2.Ea.value_si, 'J/mol'),
                 T0 = (kinetics1.T0.value, kinetics1.T0.units),
+            )
+        elif isinstance(kinetics1,ArrheniusEP) and isinstance(kinetics2,ArrheniusEP):
+            assert kinetics1.A.units == kinetics2.A.units
+            kinetics = ArrheniusEP(
+                A = (kinetics1.A.value * kinetics2.A.value, kinetics1.A.units),
+                n = (kinetics1.n.value + kinetics2.n.value, kinetics1.n.units),
+                alpha = kinetics1.alpha+kinetics2.alpha,
+                E0 = (kinetics1.E0.value_si + kinetics2.E0.value_si, 'J/mol'),
+            )
+        elif isinstance(kinetics1,Arrhenius) and isinstance(kinetics2,ArrheniusEP):
+            assert kinetics1.A.units == kinetics2.A.units
+            assert kinetics1.T0.units == 'K'
+            assert kinetics1.T0.value == 1.0
+            kinetics = ArrheniusEP(
+                A = (kinetics1.A.value * kinetics2.A.value, kinetics1.A.units),
+                n = (kinetics1.n.value + kinetics2.n.value, kinetics1.n.units),
+                alpha = kinetics2.alpha,
+                E0 = (kinetics1.Ea.value_si + kinetics2.E0.value_si, 'J/mol'),
+            )
+        elif isinstance(kinetics1,ArrheniusEP) and isinstance(kinetics2,Arrhenius):
+            assert kinetics1.A.units == kinetics2.A.units
+            assert 'K' == kinetics2.T0.units
+            assert 1.0 == kinetics2.T0.value
+            kinetics = ArrheniusEP(
+                A = (kinetics1.A.value * kinetics2.A.value, kinetics1.A.units),
+                n = (kinetics1.n.value + kinetics2.n.value, kinetics1.n.units),
+                alpha = kinetics1.alpha,
+                E0 = (kinetics1.E0.value_si + kinetics2.Ea.value_si, 'J/mol'),
             )
         else:
             raise KineticsError('Unable to multiply kinetics types "{0}" and "{1}".'.format(kinetics1.__class__, kinetics2.__class__))

@@ -18,22 +18,22 @@ rmg_dev@mit.edu.
     :includehidden:
 
     introduction
-    releaseNotes
     features
     installation/index
     input
     examples
     running    
     output
+    guidelines
+    modules/index
     species
     group
     database/index
     thermo
     kinetics
     liquids 
-    guidelines
-    modules/index
     faq
+    releaseNotes
     credits
     
 * :ref:`genindex`
