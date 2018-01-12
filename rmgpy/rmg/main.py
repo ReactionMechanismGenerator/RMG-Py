@@ -909,9 +909,9 @@ class RMG(util.Subject):
                     data = reaction.kinetics,
                 )
             try:
-        	    entry.longDesc = 'Originally from reaction library: ' + reaction.library + "\n" + reaction.kinetics.comment
-    	    except AttributeError:
-        	    entry.longDesc = reaction.kinetics.comment
+                entry.longDesc = 'Originally from reaction library: ' + reaction.library + "\n" + reaction.kinetics.comment
+            except AttributeError:
+                entry.longDesc = reaction.kinetics.comment
             edgeKineticsLibrary.entries[i+1] = entry
         
         #save in database
