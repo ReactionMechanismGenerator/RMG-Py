@@ -1299,6 +1299,7 @@ class ReactionModel:
         
         # Determine which species in other are already in self
         commonSpecies = {}; uniqueSpecies = []
+        for spec in other.species:
             for spec0 in finalModel.species:
                 if spec.isIsomorphic(spec0):
                     commonSpecies[spec] = spec0
@@ -1350,5 +1351,3 @@ class ReactionModel:
     
         # Return the merged model
         return finalModel
-
-        for spec in other.species:
