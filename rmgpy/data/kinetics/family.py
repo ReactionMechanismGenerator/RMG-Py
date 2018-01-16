@@ -1395,11 +1395,14 @@ class KineticsFamily(Database):
         
         forbidden_structures = getDB('forbidden')
 
-        if self.forbidden is not None and self.forbidden.isMoleculeForbidden(molecule):
-            return True
-        if forbidden_structures.isMoleculeForbidden(molecule):
-            return True
-        return False
+        if forbidden_structures is not None:
+            if self.forbidden is not None and self.forbidden.isMoleculeForbidden(molecule):
+                return True
+            if forbidden_structures.isMoleculeForbidden(molecule):
+                return True
+
+        else:
+            return False
 
     def __createReaction(self, reactants, products, isForward):
         """
