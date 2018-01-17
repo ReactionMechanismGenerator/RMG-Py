@@ -183,8 +183,8 @@ cdef class ReactionSystem(DASx):
         """
         return (self.__class__, (self.termination,))
 
-    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list surfaceSpecies=None,
-                          list surfaceReactions=None, list pdepNetworks=None, atol=1e-16, rtol=1e-8, sensitivity=False, 
+    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list speciesOnSurface=None,
+                          list reactionsOnSurface=None, list pdepNetworks=None, atol=1e-16, rtol=1e-8, sensitivity=False,
                           sens_atol=1e-6, sens_rtol=1e-4, filterReactions=False):
         """
         Initialize a simulation of the reaction system using the provided
@@ -192,10 +192,10 @@ cdef class ReactionSystem(DASx):
         method in the derived class; don't forget to also call the base class
         version, too.
         """
-        if surfaceSpecies is None:
-            surfaceSpecies = []
-        if surfaceReactions is None:
-            surfaceReactions = []
+        if speciesOnSurface is None:
+            speciesOnSurface = []
+        if reactionsOnSurface is None:
+            reactionsOnSurface = []
             
 
         self.numCoreSpecies = len(coreSpecies)
@@ -233,14 +233,14 @@ cdef class ReactionSystem(DASx):
         self.unimolecularThreshold = numpy.zeros((self.numCoreSpecies), bool)
         self.bimolecularThreshold = numpy.zeros((self.numCoreSpecies, self.numCoreSpecies), bool)
 
-        surfaceSpecies,surfaceReactions = self.initialize_surface(coreSpecies,coreReactions,surfaceSpecies,surfaceReactions)
+        speciesOnSurface,reactionsOnSurface = self.initialize_surface(coreSpecies,coreReactions,speciesOnSurface,reactionsOnSurface)
         
         
     def initialize_solver(self):
         DASx.initialize(self, self.t0, self.y0, self.dydt0, self.senpar, self.atol_array, self.rtol_array)
     
     @cython.boundscheck(False)
-    cpdef initialize_surface(self,list coreSpecies,list coreReactions,list surfaceSpecies,list surfaceReactions):
+    cpdef initialize_surface(self,list coreSpecies,list coreReactions,list speciesOnSurface,list reactionsOnSurface):
         """
         removes surfaceSpecies and surfaceReactions from  until they are self consistent: 
             1) every reaction has one species in the surface
@@ -263,10 +263,10 @@ cdef class ReactionSystem(DASx):
         possibleSpeciesIndices = set()
         removeInds = []
         
-        for obj in surfaceSpecies:
+        for obj in speciesOnSurface:
             surfaceSpeciesIndices.append(coreSpecies.index(obj))
             
-        for obj in surfaceReactions:
+        for obj in reactionsOnSurface:
             surfaceReactionIndices.append(coreReactions.index(obj))
        
         for i in surfaceReactionIndices: #remove surface reactions whose species have been moved to the bulk core
@@ -281,7 +281,7 @@ cdef class ReactionSystem(DASx):
                     notInSurface = False
             if notInSurface:
                 logging.info('removing disconnected reaction from surface: {0}'.format(str(coreReactions[i])))
-                surfaceReactions.remove(coreReactions[i])
+                reactionsOnSurface.remove(coreReactions[i])
                 surfaceReactionIndices.remove(i)
         
         possibleSpeciesIndices -= {-1} #remove the -1 indexes that indicate there is no third/second reactant/product
@@ -292,7 +292,7 @@ cdef class ReactionSystem(DASx):
                 removeInds.append(i)
         
         for i in removeInds:
-            surfaceSpecies.remove(coreSpecies[i])
+            speciesOnSurface.remove(coreSpecies[i])
             surfaceSpeciesIndices.remove(i)
         
         self.surfaceSpeciesIndices = numpy.array(surfaceSpeciesIndices,dtype=numpy.int)
@@ -300,12 +300,12 @@ cdef class ReactionSystem(DASx):
         
         self.validLayeringIndices = self.getLayeringIndices()
         
-        surfaceSpecies = [coreSpecies[i] for i in surfaceSpeciesIndices]
-        surfaceReactions = [coreReactions[i] for i in surfaceReactionIndices]
+        speciesOnSurface = [coreSpecies[i] for i in surfaceSpeciesIndices]
+        reactionsOnSurface = [coreReactions[i] for i in surfaceReactionIndices]
         
         logging.info('surface initialization complete')
 
-        return surfaceSpecies,surfaceReactions
+        return speciesOnSurface,reactionsOnSurface
         
     def initiate_tolerances(self, atol=1e-16, rtol=1e-8, sensitivity=False, sens_atol=1e-6, sens_rtol=1e-4):
         """
@@ -466,7 +466,7 @@ cdef class ReactionSystem(DASx):
         
         return numpy.array(validIndices)
     
-    cpdef addReactionsToSurface(self,list newSurfaceReactions,list newSurfaceReactionInds,list surfaceSpecies,list surfaceReactions,list edgeSpecies):
+    cpdef addReactionsToSurface(self,list newSurfaceReactions,list newSurfaceReactionInds,list speciesOnSurface,list reactionsOnSurface,list edgeSpecies):
         """
         moves new surface reactions to the surface
         done after the while loop before the simulate call ends
@@ -483,20 +483,20 @@ cdef class ReactionSystem(DASx):
         for k in xrange(len(newSurfaceReactions)):
             srxn = newSurfaceReactions[k]
             sind = newSurfaceReactionInds[k]
-            surfaceReactions.append(srxn) #add to surface trackers
+            reactionsOnSurface.append(srxn) #add to surface trackers
                         
             for i in productIndices[sind+numCoreReactions]:
                 if i >= numCoreSpecies:
-                    surfaceSpecies.append(edgeSpecies[i-numCoreSpecies])
+                    speciesOnSurface.append(edgeSpecies[i-numCoreSpecies])
             for i in reactantIndices[sind+numCoreReactions]:
                 if i >= numCoreSpecies:
-                    surfaceSpecies.append(edgeSpecies[i-numCoreSpecies])
+                    speciesOnSurface.append(edgeSpecies[i-numCoreSpecies])
                     
-        return surfaceSpecies,surfaceReactions
+        return speciesOnSurface,reactionsOnSurface
 
     @cython.boundscheck(False)
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, 
-        list edgeReactions,list surfaceSpecies, list surfaceReactions,
+        list edgeReactions,list speciesOnSurface, list reactionsOnSurface,
         list pdepNetworks=None, bool prune=False, bool sensitivity=False, list sensWorksheet=None, object modelSettings=None,
         object simulatorSettings=None):
         """
@@ -554,8 +554,8 @@ cdef class ReactionSystem(DASx):
         numPdepNetworks = len(pdepNetworks)
         numCoreReactions = len(coreReactions)
 
-        assert set(coreReactions) >= set(surfaceReactions), 'given surface reactions are not a subset of core reactions'
-        assert set(coreSpecies) >= set(surfaceSpecies), 'given surface species are not a subset of core species' 
+        assert set(coreReactions) >= set(reactionsOnSurface), 'given surface reactions are not a subset of core reactions'
+        assert set(coreSpecies) >= set(speciesOnSurface), 'given surface species are not a subset of core species'
 
         toleranceKeepInEdge = modelSettings.fluxToleranceKeepInEdge if prune else 0
         toleranceMoveToCore = modelSettings.fluxToleranceMoveToCore
@@ -563,7 +563,7 @@ cdef class ReactionSystem(DASx):
         toleranceInterruptSimulation = modelSettings.fluxToleranceInterrupt
         toleranceMoveEdgeReactionToCoreInterrupt= modelSettings.toleranceMoveEdgeReactionToCore
         toleranceMoveEdgeReactionToSurface = modelSettings.toleranceMoveEdgeReactionToSurface
-        toleranceMoveSurfaceSpeciesToCore = modelSettings.toleranceMoveSurfaceSpeciesToCore
+        toleranceMovespeciesOnSurfaceToCore = modelSettings.toleranceMovespeciesOnSurfaceToCore
         toleranceMoveSurfaceReactionToCore = modelSettings.toleranceMoveSurfaceReactionToCore
         toleranceMoveEdgeReactionToSurfaceInterrupt = modelSettings.toleranceMoveEdgeReactionToSurfaceInterrupt
         ignoreOverallFluxCriterion=modelSettings.ignoreOverallFluxCriterion
@@ -585,7 +585,7 @@ cdef class ReactionSystem(DASx):
         for index, spec in enumerate(coreSpecies):
             speciesIndex[spec] = index
         
-        self.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions, surfaceSpecies, surfaceReactions, 
+        self.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions, speciesOnSurface, reactionsOnSurface,
                              pdepNetworks, absoluteTolerance, relativeTolerance, sensitivity, sensitivityAbsoluteTolerance, 
                              sensitivityRelativeTolerance, filterReactions)
         
@@ -666,7 +666,7 @@ cdef class ReactionSystem(DASx):
                             invalidObjects.append(obj)
                     
                     if invalidObjects != []:
-                        return False,True,invalidObjects,surfaceSpecies,surfaceReactions
+                        return False,True,invalidObjects,speciesOnSurface,reactionsOnSurface
                     else:
                         logging.error('Model Resurrection has failed')
                         logging.error("Core species names: {!r}".format([getSpeciesIdentifier(s) for s in coreSpecies]))
@@ -828,7 +828,7 @@ cdef class ReactionSystem(DASx):
                     RR = max(abs(surfaceSpeciesProduction[i]),abs(surfaceSpeciesConsumption[i]))/charRate
                     surfaceSpeciesRateRatios[i] = RR
 
-                    if RR > toleranceMoveSurfaceSpeciesToCore:
+                    if RR > toleranceMovespeciesOnSurfaceToCore:
                         sind = surfaceSpeciesIndices[i]
                         surfaceObjectIndices.append(sind)
                         surfaceObjects.append(coreSpecies[sind])
@@ -840,13 +840,13 @@ cdef class ReactionSystem(DASx):
                     for ind,obj in enumerate(surfaceObjects):
                         if isinstance(obj,Reaction):
                             logging.info('Moving reaction {0} from surface to core'.format(obj))
-                            surfaceReactions.remove(obj)
+                            reactionsOnSurface.remove(obj)
                         elif isinstance(obj,Species):
                             logging.info('Moving species {0} from surface to core'.format(obj))
-                            surfaceSpecies.remove(obj)
+                            speciesOnSurface.remove(obj)
                         else:
                             raise ValueError
-                    surfaceSpecies,surfaceReactions = self.initialize_surface(coreSpecies,coreReactions,surfaceSpecies,surfaceReactions)
+                    speciesOnSurface,reactionsOnSurface = self.initialize_surface(coreSpecies,coreReactions,speciesOnSurface,reactionsOnSurface)
                     logging.info('Surface now has {0} Species and {1} Reactions'.format(len(self.surfaceSpeciesIndices),len(self.surfaceReactionIndices)))
                     
             if filterReactions:
@@ -1001,7 +1001,7 @@ cdef class ReactionSystem(DASx):
                 invalidObjects += newObjects
                 
             if schanged: #reinitialize surface
-                surfaceSpecies,surfaceReactions = self.initialize_surface(coreSpecies,coreReactions,surfaceSpecies,surfaceReactions)
+                speciesOnSurface,reactionsOnSurface = self.initialize_surface(coreSpecies,coreReactions,speciesOnSurface,reactionsOnSurface)
                 schanged = False
 
             if firstTime: #turn off firstTime
@@ -1032,7 +1032,7 @@ cdef class ReactionSystem(DASx):
                 stepTime *= 10.0
         
         #change surface species and reactions based on what will be added to the surface
-        surfaceSpecies,surfaceReactions=self.addReactionsToSurface(newSurfaceReactions,newSurfaceReactionInds,surfaceSpecies,surfaceReactions,edgeSpecies)
+        speciesOnSurface,reactionsOnSurface=self.addReactionsToSurface(newSurfaceReactions,newSurfaceReactionInds,speciesOnSurface,reactionsOnSurface,edgeSpecies)
         
         # notify reaction system listeners
         self.notify()
@@ -1069,7 +1069,7 @@ cdef class ReactionSystem(DASx):
 
         # Return the invalid object (if the simulation was invalid) or None
         # (if the simulation was valid)
-        return terminated, False, invalidObjects, surfaceSpecies, surfaceReactions
+        return terminated, False, invalidObjects, speciesOnSurface, reactionsOnSurface
 
     cpdef logRates(self, double charRate, object species, double speciesRate, double maxDifLnAccumNum, object network, double networkRate):
         """
