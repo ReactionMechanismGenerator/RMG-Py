@@ -121,11 +121,11 @@ cdef class SurfaceReactor(ReactionSystem):
         # This initializes the attributes declared in the base class
         ReactionSystem.initializeModel(self, coreSpecies, coreReactions, edgeSpecies, edgeReactions, pdepNetworks, atol, rtol, sensitivity, sens_atol, sens_rtol)
 
-        cdef numpy.ndarray[numpy.int_t, ndim=1] surfaceSpecies, surfaceReactions
+        cdef numpy.ndarray[numpy.int_t, ndim=1] speciesOnSurface, reactionsOnSurface
         cdef int index
         #: 1 if it's on a surface, 0 if it's in the gas phase
-        surfaceReactions = numpy.zeros((self.numCoreReactions + self.numEdgeReactions), numpy.int)
-        surfaceSpecies = numpy.zeros((self.numCoreSpecies), numpy.int)
+        reactionsOnSurface = numpy.zeros((self.numCoreReactions + self.numEdgeReactions), numpy.int)
+        speciesOnSurface = numpy.zeros((self.numCoreSpecies), numpy.int)
         for spec, index in self.speciesIndex.iteritems():
             if index >= self.numCoreSpecies:
                 continue
@@ -134,8 +134,8 @@ cdef class SurfaceReactor(ReactionSystem):
         for rxn, index in self.reactionIndex.iteritems():
             if rxn.isSurfaceReaction():
                 surfaceReactions[index] = 1
-        self.surfaceSpecies = surfaceSpecies
-        self.surfaceReactions = surfaceReactions
+        self.speciesOnSurface = speciesOnSurface
+        self.reactionsOnSurface = reactionsOnSurface
         
         # Set initial conditions
         self.set_initial_conditions()
