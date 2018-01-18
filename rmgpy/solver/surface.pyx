@@ -264,7 +264,7 @@ cdef class SurfaceReactor(ReactionSystem):
             i = self.get_species_index(spec)
             self.y0[i] = totalSurfaceSites * coverage # moles in reactor
         
-        for j, isSurfaceSpecies in enumerate(self.surfaceSpecies): # should only go up to core species
+        for j, isSurfaceSpecies in enumerate(self.speciesOnSurface): # should only go up to core species
             if isSurfaceSpecies:
                 self.coreSpeciesConcentrations[j] = self.y0[j] / V / surfaceVolumeRatio_si # moles per m2 of surface
             else:
@@ -288,7 +288,7 @@ cdef class SurfaceReactor(ReactionSystem):
         simple reaction system.
         """
         cdef numpy.ndarray[numpy.int_t, ndim=2] ir, ip, inet
-        cdef numpy.ndarray[numpy.int_t, ndim=1] surfaceReactions, surfaceSpecies
+        cdef numpy.ndarray[numpy.int_t, ndim=1] reactionsOnSurface, speciesOnSurface
         cdef numpy.ndarray[numpy.float64_t, ndim=1] res, kf, kr, knet, delta, equilibriumConstants
         cdef int numCoreSpecies, numCoreReactions, numEdgeSpecies, numEdgeReactions, numPdepNetworks
         cdef int i, j, z, first, second, third
