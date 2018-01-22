@@ -46,6 +46,8 @@ cdef class ReactionSystem(DASx):
     cdef public int numCoreSpecies
     cdef public int numCoreReactions
     cdef public int numEdgeSpecies
+    cdef public int numspeciesOnSurface
+    cdef public int numreactionsOnSurface
     cdef public int numEdgeReactions
     cdef public int numPdepNetworks
     cdef public int neq
@@ -108,11 +110,23 @@ cdef class ReactionSystem(DASx):
     cdef public numpy.ndarray bimolecularThreshold
 
     # methods
-    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list speciesOnSurface=?,
-        list reactionsOnSurface=?, list pdepNetworks=?, atol=?, rtol=?, sensitivity=?, sens_atol=?, sens_rtol=?, filterReactions=?)
+    cpdef initializeModel(self,
+                          list coreSpecies,
+                          list coreReactions,
+                          list edgeSpecies,
+                          list edgeReactions,
+                          list surfaceSpecies=?,
+                          list surfaceReactions=?,
+                          list pdepNetworks=?,
+                          atol=?,
+                          rtol=?,
+                          sensitivity=?,
+                          sens_atol=?,
+                          sens_rtol=?,
+                          filterReactions=?)
 
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, 
-        list edgeReactions,list speciesOnSurface, list reactionsOnSurface,
+        list edgeReactions,list surfaceSpecies, list surfaceReactions,
         list pdepNetworks=?, bool prune=?, bool sensitivity=?, list sensWorksheet=?, object modelSettings=?,
         object simulatorSettings=?)
 
@@ -122,6 +136,6 @@ cdef class ReactionSystem(DASx):
     
     cpdef getLayeringIndices(self)
     
-    cpdef initialize_surface(self,list coreSpecies,list coreReactions,list speciesOnSurface,list reactionsOnSurface)
+    cpdef initialize_surface(self,list coreSpecies,list coreReactions,list surfaceSpecies,list surfaceReactions)
     
-    cpdef addReactionsToSurface(self,list newSurfaceReactions,list newSurfaceReactionInds,list speciesOnSurface,list reactionsOnSurface,list edgeSpecies)
+    cpdef addReactionsToSurface(self,list newSurfaceReactions,list newSurfaceReactionInds,list surfaceSpecies,list surfaceReactions,list edgeSpecies)

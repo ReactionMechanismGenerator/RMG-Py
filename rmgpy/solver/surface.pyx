@@ -59,8 +59,8 @@ cdef class SurfaceReactor(ReactionSystem):
     cdef public dict initialSurfaceCoverages
     cdef public ScalarQuantity surfaceVolumeRatio
     cdef public ScalarQuantity surfaceSiteDensity
-    cdef public numpy.ndarray reactionsOnSurface
-    cdef public numpy.ndarray speciesOnSurface
+    cdef public numpy.ndarray surfaceReactions
+    cdef public numpy.ndarray surfaceSpecies
 
     def __init__(self, 
                  T, 
@@ -106,6 +106,8 @@ cdef class SurfaceReactor(ReactionSystem):
                           list coreReactions,
                           list edgeSpecies,
                           list edgeReactions,
+                          list surfaceSpecies=None,
+                          list surfaceReactions=None,
                           list pdepNetworks=None,
                           atol=1e-16,
                           rtol=1e-8,
@@ -122,21 +124,21 @@ cdef class SurfaceReactor(ReactionSystem):
         # This initializes the attributes declared in the base class
         ReactionSystem.initializeModel(self, coreSpecies, coreReactions, edgeSpecies, edgeReactions, pdepNetworks, atol, rtol, sensitivity, sens_atol, sens_rtol)
 
-        cdef numpy.ndarray[numpy.int_t, ndim=1] speciesOnSurface, reactionsOnSurface
+        cdef numpy.ndarray[numpy.int_t, ndim=1] surfaceSpecies, surfaceReactions
         cdef int index
         #: 1 if it's on a surface, 0 if it's in the gas phase
-        reactionsOnSurface = numpy.zeros((self.numCoreReactions + self.numEdgeReactions), numpy.int)
-        speciesOnSurface = numpy.zeros((self.numCoreSpecies), numpy.int)
+        surfaceReactions = numpy.zeros((self.numCoreReactions + self.numEdgeReactions), numpy.int)
+        surfaceSpecies = numpy.zeros((self.numCoreSpecies), numpy.int)
         for spec, index in self.speciesIndex.iteritems():
             if index >= self.numCoreSpecies:
                 continue
             if spec.containsSurfaceSite():
-                speciesOnSurface[index] = 1
+                surfaceSpecies[index] = 1
         for rxn, index in self.reactionIndex.iteritems():
             if rxn.isSurfaceReaction():
-                reactionsOnSurface[index] = 1
-        self.speciesOnSurface = speciesOnSurface
-        self.reactionsOnSurface = reactionsOnSurface
+                surfaceReactions[index] = 1
+        self.surfaceSpecies = surfaceSpecies
+        self.surfaceReactions = surfaceReactions
         
         # Set initial conditions
         self.set_initial_conditions()
@@ -264,7 +266,7 @@ cdef class SurfaceReactor(ReactionSystem):
             i = self.get_species_index(spec)
             self.y0[i] = totalSurfaceSites * coverage # moles in reactor
         
-        for j, isSurfaceSpecies in enumerate(self.speciesOnSurface): # should only go up to core species
+        for j, isSurfaceSpecies in enumerate(self.surfaceSpecies): # should only go up to core species
             if isSurfaceSpecies:
                 self.coreSpeciesConcentrations[j] = self.y0[j] / V / surfaceVolumeRatio_si # moles per m2 of surface
             else:
@@ -288,7 +290,7 @@ cdef class SurfaceReactor(ReactionSystem):
         simple reaction system.
         """
         cdef numpy.ndarray[numpy.int_t, ndim=2] ir, ip, inet
-        cdef numpy.ndarray[numpy.int_t, ndim=1] reactionsOnSurface, speciesOnSurface
+        cdef numpy.ndarray[numpy.int_t, ndim=1] surfaceReactions, surfaceSpecies
         cdef numpy.ndarray[numpy.float64_t, ndim=1] res, kf, kr, knet, delta, equilibriumConstants
         cdef int numCoreSpecies, numCoreReactions, numEdgeSpecies, numEdgeReactions, numPdepNetworks
         cdef int i, j, z, first, second, third
@@ -323,15 +325,15 @@ cdef class SurfaceReactor(ReactionSystem):
         edgeReactionRates = numpy.zeros_like(self.edgeReactionRates)
         networkLeakRates = numpy.zeros_like(self.networkLeakRates)
         
-        reactionsOnSurface = self.reactionsOnSurface
-        speciesOnSurface = self.speciesOnSurface
+        surfaceReactions = self.surfaceReactions
+        surfaceSpecies = self.surfaceSpecies
         surfaceVolumeRatio_si = self.surfaceVolumeRatio.value_si
 
         C = numpy.zeros_like(self.coreSpeciesConcentrations)
         V =  self.V # constant volume reactor
 
         for j in xrange(numCoreSpecies):
-            if speciesOnSurface[j]:
+            if surfaceSpecies[j]:
                 C[j] = (N[j] / V) / surfaceVolumeRatio_si
             else:
                 C[j] = N[j] / V
