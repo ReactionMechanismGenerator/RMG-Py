@@ -58,6 +58,8 @@ cdef class Species:
     cpdef bint isIsomorphic(self, other, bint generate_res=?) except -2
 
     cpdef bint isIdentical(self, other) except -2
+
+    cpdef bint is_structure_in_list(self, list species_list) except -2
     
     cpdef fromAdjacencyList(self, adjlist)
     cpdef fromSMILES(self, smiles)
