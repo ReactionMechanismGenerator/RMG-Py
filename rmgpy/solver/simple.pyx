@@ -143,8 +143,8 @@ cdef class SimpleReactor(ReactionSystem):
                           list coreReactions,
                           list edgeSpecies,
                           list edgeReactions,
-                          list speciesOnSurface=None,
-                          list reactionsOnSurface=None,
+                          list surfaceSpecies,
+                          list surfaceReactions,
                           list pdepNetworks=None,
                           atol=1e-16,
                           rtol=1e-8,
@@ -156,17 +156,17 @@ cdef class SimpleReactor(ReactionSystem):
         Initialize a simulation of the simple reactor using the provided kinetic
         model.
         """
-        if speciesOnSurface is None:
-            speciesOnSurface = []
-        if reactionsOnSurface is None:
-            reactionsOnSurface = []
+        if surfaceSpecies is None:
+            surfaceSpecies = []
+        if surfaceReactions is None:
+            surfaceReactions = []
             
         # First call the base class version of the method
         # This initializes the attributes declared in the base class
         ReactionSystem.initializeModel(self, coreSpecies=coreSpecies, coreReactions=coreReactions, edgeSpecies=edgeSpecies, 
-                                       edgeReactions=edgeReactions, speciesOnSurface=speciesOnSurface, reactionsOnSurface=reactionsOnSurface,
+                                       edgeReactions=edgeReactions, surfaceSpecies=surfaceSpecies, surfaceReactions=surfaceReactions,
                                        pdepNetworks=pdepNetworks, atol=atol, rtol=rtol, sensitivity=sensitivity, sens_atol=sens_atol, 
-                                       sens_rtol=sens_rtol)
+                                       sens_rtol=sens_rtol, filterReactions=filterReactions)
         
         # Set initial conditions
         self.set_initial_conditions()
