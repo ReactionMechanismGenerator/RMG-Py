@@ -185,8 +185,7 @@ cdef class ReactionSystem(DASx):
         """
         return (self.__class__, (self.termination,))
 
-    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list surfaceSpecies=None,
-                          list surfaceReactions=None, list pdepNetworks=None, atol=1e-16, rtol=1e-8, sensitivity=False,
+    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list surfaceSpecies, list surfaceReactions, list pdepNetworks=None, atol=1e-16, rtol=1e-8, sensitivity=False,
                           sens_atol=1e-6, sens_rtol=1e-4, filterReactions=False):
         """
         Initialize a simulation of the reaction system using the provided
@@ -587,7 +586,7 @@ cdef class ReactionSystem(DASx):
         for index, spec in enumerate(coreSpecies):
             speciesIndex[spec] = index
         
-        self.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions, surfaceSpecies, surfaceReactions,
+        self.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions,
                              pdepNetworks, absoluteTolerance, relativeTolerance, sensitivity, sensitivityAbsoluteTolerance, 
                              sensitivityRelativeTolerance, filterReactions)
         
