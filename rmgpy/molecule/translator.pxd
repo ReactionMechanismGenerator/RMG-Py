@@ -36,13 +36,9 @@ cpdef dict SMILES_LOOKUPS
 cpdef dict MOLECULE_LOOKUPS
 cpdef dict RADICAL_LOOKUPS
 
-cpdef str toInChI(Molecule mol, backend=?)
+cpdef str toInChI(Molecule mol, str backend=?, int aug_level=?)
 
-cpdef str toAugmentedInChI(Molecule mol)
-
-cpdef str toInChIKey(Molecule mol, backend=?)
-
-cpdef str toAugmentedInChIKey(Molecule mol)
+cpdef str toInChIKey(Molecule mol, str backend=?, int aug_level=?)
 
 cpdef str toSMARTS(Molecule mol, backend=?)
 

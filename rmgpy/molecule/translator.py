@@ -139,72 +139,76 @@ RADICAL_LOOKUPS = {
 }
 
 
-def toInChI(mol, backend='try-all'):
+def toInChI(mol, backend='try-all', aug_level=0):
     """
-    Convert a molecular structure to an InChI string. Uses
-    `RDKit <http://rdkit.org/>`_ to perform the conversion.
-    Perceives aromaticity.
+    Convert a molecular structure to an InChI string.
+    For aug_level=0, generates the canonical InChI.
+    For aug_level=1, appends the molecule multiplicity.
+    For aug_level=2, appends positions of unpaired and paired electrons.
 
-    or
+    Uses RDKit or OpenBabel for conversion.
 
-    Convert a molecular structure to an InChI string. Uses
-    `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
+    Args:
+        backend     choice of backend, 'try-all', 'rdkit', or 'openbabel'
+        aug_level   level of augmentation, 0, 1, or 2
     """
-    return _write(mol, 'inchi', backend)
+    cython.declare(inchi=str, ulayer=str, player=str, mlayer=str)
+
+    if aug_level == 0:
+        return _write(mol, 'inchi', backend)
+
+    elif aug_level == 1:
+        inchi = toInChI(mol, backend=backend)
+
+        mlayer = '/mult{0}'.format(mol.multiplicity) if mol.multiplicity != 0 else ''
+
+        return inchi + mlayer
+
+    elif aug_level == 2:
+        inchi = toInChI(mol, backend=backend)
+
+        ulayer, player = inchiutil.create_augmented_layers(mol)
+
+        return inchiutil.compose_aug_inchi(inchi, ulayer, player)
+
+    else:
+        raise ValueError("Implemented values for aug_level are 0, 1, or 2.")
 
 
-def toAugmentedInChI(mol):
+def toInChIKey(mol, backend='try-all', aug_level=0):
     """
-    This function generates the augmented InChI canonical identifier, and that allows for the differentiation
-    between structures with spin states and multiple unpaired electrons.
+    Convert a molecular structure to an InChI Key string.
+    For aug_level=0, generates the canonical InChI.
+    For aug_level=1, appends the molecule multiplicity.
+    For aug_level=2, appends positions of unpaired and paired electrons.
 
-    Two additional layers are added to the InChI:
-    - unpaired electrons layer: the position of the unpaired electrons in the molecule
+    Uses RDKit or OpenBabel for conversion.
+
+    Args:
+        backend     choice of backend, 'try-all', 'rdkit', or 'openbabel'
+        aug_level   level of augmentation, 0, 1, or 2
     """
+    cython.declare(key=str, ulayer=str, player=str, mlayer=str)
 
-    cython.declare(
-        inchi=str,
-        ulayer=str,
-        aug_inchi=str,
-    )
-    inchi = toInChI(mol)
+    if aug_level == 0:
+        return _write(mol, 'inchikey', backend)
 
-    ulayer, player = inchiutil.create_augmented_layers(mol)
+    elif aug_level == 1:
+        key = toInChIKey(mol, backend=backend)
 
-    aug_inchi = inchiutil.compose_aug_inchi(inchi, ulayer, player)
+        mlayer = '-mult{0}'.format(mol.multiplicity) if mol.multiplicity != 0 else ''
 
-    return aug_inchi
+        return key + mlayer
 
+    elif aug_level == 2:
+        key = toInChIKey(mol, backend=backend)
 
-def toInChIKey(mol, backend='try-all'):
-    """
-    Convert a molecular structure to an InChI Key string. Uses
-    `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
+        ulayer, player = inchiutil.create_augmented_layers(mol)
 
-    or
+        return inchiutil.compose_aug_inchi_key(key, ulayer, player)
 
-    Convert a molecular structure to an InChI Key string. Uses
-    `RDKit <http://rdkit.org/>`_ to perform the conversion.
-    """
-    return _write(mol, 'inchikey', backend)
-
-
-def toAugmentedInChIKey(mol):
-    """
-    Adds additional layers to the InChIKey,
-    generating the "augmented" InChIKey.
-    """
-
-    cython.declare(
-        key=str,
-        ulayer=str
-    )
-
-    key = toInChIKey(mol)
-
-    ulayer, player = inchiutil.create_augmented_layers(mol)
-
-    return inchiutil.compose_aug_inchi_key(key, ulayer, player)
+    else:
+        raise ValueError("Implemented values for aug_level are 0, 1, or 2.")
 
 
 def toSMARTS(mol, backend='rdkit'):
