@@ -539,7 +539,7 @@ class Bond(Edge):
         elif newOrder == 'Q':
             self.order = 4
         elif newOrder == 'vdW':
-            self.newOrder = 0
+            self.order = 0
         else:
             # try to see if an float disguised as a string was input by mistake
             try:
