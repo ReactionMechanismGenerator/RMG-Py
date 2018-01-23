@@ -76,8 +76,6 @@ cdef class ReactionSystem(DASx):
         self.numCoreReactions = -1
         self.numEdgeSpecies = -1
         self.numEdgeReactions = -1
-        self.numsurfaceSpecies = -1
-        self.numsurfaceReactions = -1
         self.numPdepNetworks = -1
         
         """
