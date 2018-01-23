@@ -631,6 +631,8 @@ class GroupBond(Edge):
                 values.append('D')
             elif value == 3:
                 values.append('T')
+            elif value == 4:
+                values.append('Q')
             elif value == 1.5:
                 values.append('B')
             else:
@@ -650,6 +652,10 @@ class GroupBond(Edge):
                 values.append(2)
             elif value == 'T':
                 values.append(3)
+            elif value == 'Q':
+                values.append(4)
+            elif value == 'vdW':
+                values.append(0)
             elif value == 'B':
                 values.append(1.5)
             else:
@@ -720,6 +726,37 @@ class GroupBond(Edge):
             else: return False
         else:
             return abs(self.order[0]-3) <= 1e-9 and len(self.order) == 1
+
+    def isQuadruple(self, wildcards = False):
+        """
+        Return ``True`` if the bond represents a triple bond or ``False`` if
+        not. If `wildcards` is ``False`` we return False anytime there is more
+        than one bond order, otherwise we return ``True`` if any of the options
+        are triple.
+        """
+        if wildcards:
+            for order in self.order:
+                if abs(order-4) <= 1e-9:
+                    return True
+            else: return False
+        else:
+            return abs(self.order[0]-4) <= 1e-9 and len(self.order) == 1
+
+    def isVanDerWaals(self, wildcards = False):
+        """
+        Return ``True`` if the bond represents a triple bond or ``False`` if
+        not. If `wildcards` is ``False`` we return False anytime there is more
+        than one bond order, otherwise we return ``True`` if any of the options
+        are triple.
+        """
+        if wildcards:
+            for order in self.order:
+                if abs(order-0 or 'vdW') <= 1e-9:  # todo: remove 'vdW'
+                    return True
+            else:
+                return False
+        else:
+            return abs(self.order[0] - 4) <= 1e-9 and len(self.order) == 1
 
     def isBenzene(self, wildcards = False):
         """

@@ -517,6 +517,10 @@ class Bond(Edge):
             return 'D'
         elif self.isTriple():
             return 'T'
+        elif self.isQuadruple():
+            return 'Q'
+        elif self.isVanDerWaals():
+            return 'vdW'
         else:
             raise ValueError("Bond order {} does not have string representation.".format(self.order))
         
@@ -532,6 +536,10 @@ class Bond(Edge):
             self.order = 3
         elif newOrder == 'B':
             self.order = 1.5
+        elif newOrder == 'Q':
+            self.order = 4
+        elif newOrder == 'vdW':
+            self.newOrder = 0
         else:
             # try to see if an float disguised as a string was input by mistake
             try:
@@ -612,7 +620,7 @@ class Bond(Edge):
         Return ``True`` if the bond represents a quadruple bond or ``False`` if
         not.
         """
-        return self.order == 'Q'
+        return self.order == 'Q'  # todo: maybe change into self.isOrder(4)? it doesnt like it now
 
     def isBenzene(self):
         """
