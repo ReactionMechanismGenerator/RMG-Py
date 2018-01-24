@@ -470,6 +470,11 @@ def _read(mol, identifier, identifier_type, backend):
     If not in the dictionary, parse it through the specified backed,
     or try all backends.
     """
+    # Check for potential mistakes in input arguments
+    if 'InChIKey' in identifier:
+        raise ValueError('InChIKey is a write-only format and cannot be parsed.')
+    elif 'InChI' in identifier and identifier_type != 'inchi':
+        raise ValueError('Improper identifier type "{0}". The provided identifier appears to be an InChI.'.format(identifier_type))
 
     if _lookup(mol, identifier, identifier_type) is not None:
         if _is_correctly_parsed(mol, identifier):

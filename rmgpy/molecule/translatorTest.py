@@ -32,6 +32,7 @@
 This module contains unit test for the translator module.
 """
 
+import mock
 import re
 import unittest
 from external.wip import work_in_progress
@@ -973,6 +974,20 @@ class ParsingTest(unittest.TestCase):
                                                                     rdAtomIndices[connectedAtom]).GetBondType())
                         rdkitBondOrder = bondOrderDict[bondType]
                         self.assertEqual(bond.order, rdkitBondOrder)
+
+    def test_incorrect_identifier_type(self):
+        """Test that the appropriate error is raised for identifier/type mismatch."""
+        with self.assertRaises(ValueError) as cm:
+            Molecule().fromSMILES('InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H')
+
+        self.assertTrue('Improper identifier type' in cm.exception.message)
+
+    def test_read_inchikey_error(self):
+        """Test that the correct error is raised when reading an InChIKey"""
+        with self.assertRaises(ValueError) as cm:
+            Molecule().fromInChI('InChIKey=UHOVQNZJYSORNB-UHFFFAOYSA-N')
+
+        self.assertTrue('InChIKey is a write-only format' in cm.exception.message)
 
 
 class InChIParsingTest(unittest.TestCase):
