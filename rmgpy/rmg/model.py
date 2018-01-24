@@ -1116,19 +1116,20 @@ class CoreEdgeReactionModel:
             ind = 0
             removeSpcs = []
             
-            
+            rInds = []
             while ind < len(inds) and numToRemove > 0: #find the species we can remove and collect indices for removal     
                 i = inds[ind]
                 spc = spcs[i]
                 if iteration - spc.creationIteration >= minSpeciesExistIterationsForPrune:
                     removeSpcs.append(spc)
+                    rInds.append(i)
                     numToRemove -= 1
                 ind += 1
             
             logging.debug('found {0} eligible species for filtering'.format(len(removeSpcs)))
             
-            for spc in removeSpcs:
-                logging.info('Removing species {0} from edge to meet maximum number of edge species, Gibbs number is {1}'.format(spc,Gns[i]))
+            for i,spc in enumerate(removeSpcs):
+                logging.info('Removing species {0} from edge to meet maximum number of edge species, Gibbs number is {1}'.format(spc,Gns[rInds[i]]))
                 self.removeSpeciesFromEdge(self.reactionSystems,spc)
             
             # Delete any networks that became empty as a result of pruning
