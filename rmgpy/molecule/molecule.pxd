@@ -137,10 +137,11 @@ cdef class Molecule(Graph):
     cdef public bint reactive
     cdef public object rdMol
     cdef public int rdMolConfId
-    cdef str _fingerprint
-    cdef public str InChI
     cdef public dict props
-    
+    cdef str _fingerprint
+    cdef str _inchi
+    cdef str _smiles
+
     cpdef addAtom(self, Atom atom)
 
     cpdef addBond(self, Bond bond)
