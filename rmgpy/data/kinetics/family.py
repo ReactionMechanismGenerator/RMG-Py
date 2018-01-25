@@ -1830,7 +1830,8 @@ class KineticsFamily(Database):
             error = True
             
         if error:
-            raise ReactionPairsError('Unable to determine reaction pairs for {0!s} reaction {1!s}.'.format(self.label, reaction))
+            logging.debug('Preset mapping missing for determining reaction pairs for family {0!s}, falling back to Reaction.generatePairs'.format(self.label))
+            return []
         else:
             return pairs
         
