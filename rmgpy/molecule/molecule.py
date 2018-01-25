@@ -835,23 +835,37 @@ class Molecule(Graph):
         """
         return (Molecule, (self.vertices, self.symmetryNumber, self.multiplicity, self.reactive, self.props))
 
-    def __getAtoms(self): return self.vertices
-    def __setAtoms(self, atoms): self.vertices = atoms
-    atoms = property(__getAtoms, __setAtoms)
-
-    def __getFingerprint(self):
+    @property
+    def atoms(self):
         """
-        Return a string containing the "fingerprint" used to accelerate graph
-        isomorphism comparisons with other molecules. The fingerprint is a
-        short string containing a summary of selected information about the 
-        molecule. Two fingerprint strings matching is a necessary (but not
-        sufficient) condition for the associated molecules to be isomorphic.
+        List of atoms contained in the current molecule.
+
+        Renames the inherited vertices attribute of :class:`Graph`.
+        """
+        return self.vertices
+
+    @atoms.setter
+    def atoms(self, atoms):
+        self.vertices = atoms
+
+    @property
+    def fingerprint(self):
+        """
+        Fingerprint used to accelerate graph isomorphism comparisons with
+        other molecules. The fingerprint is a short string containing a
+        summary of selected information about the molecule. Two fingerprint
+        strings matching is a necessary (but not sufficient) condition for
+        the associated molecules to be isomorphic.
+
+        Currently, the fingerprint is simply the chemical formula.
         """
         if self._fingerprint is None:
             self.fingerprint = self.getFormula()
         return self._fingerprint
-    def __setFingerprint(self, fingerprint): self._fingerprint = fingerprint
-    fingerprint = property(__getFingerprint, __setFingerprint)
+
+    @fingerprint.setter
+    def fingerprint(self, fingerprint):
+        self._fingerprint = fingerprint
 
     def addAtom(self, atom):
         """
