@@ -260,8 +260,6 @@ def fromInChI(mol, inchistr, backend='try-all'):
     a user-specified backend for conversion, currently supporting
     rdkit (default) and openbabel.
     """
-    mol.InChI = inchistr
-
     if inchiutil.INCHI_PREFIX in inchistr:
         return _read(mol, inchistr, 'inchi', backend)
     else:
