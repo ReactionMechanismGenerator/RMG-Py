@@ -53,6 +53,7 @@ cdef class Species:
     cdef public bint isSolvent
     cdef public int creationIteration
     cdef public bint explicitlyAllowed
+    cdef str _inchi
 
     cpdef generate_resonance_structures(self, bint keep_isomorphic=?, bint filter_structures=?)
     

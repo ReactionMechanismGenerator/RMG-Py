@@ -106,6 +106,7 @@ class Species(object):
         self.isSolvent = False
         self.creationIteration = creationIteration
         self.explicitlyAllowed = explicitlyAllowed
+        self._inchi = None
         # Check multiplicity of each molecule is the same
         if molecule is not None and len(molecule)>1:
             mult = molecule[0].multiplicity
@@ -153,6 +154,14 @@ class Species(object):
         A helper function used when pickling an object.
         """
         return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.transportData, self.molecularWeight, self.energyTransferModel, self.reactive, self.props))
+
+    @property
+    def InChI(self):
+        """InChI string representation of this species. Read-only."""
+        if self._inchi is None:
+            if self.molecule:
+                self._inchi = self.molecule[0].InChI
+        return self._inchi
 
     @property
     def molecularWeight(self):
