@@ -781,11 +781,14 @@ class TransitionState():
         """
         return (TransitionState, (self.label, self.conformer, self.frequency, self.tunneling, self.degeneracy))
 
-    def getFrequency(self):
+    @property
+    def frequency(self):
+        """The negative frequency of the first-order saddle point."""
         return self._frequency
-    def setFrequency(self, value):
+
+    @frequency.setter
+    def frequency(self, value):
         self._frequency = quantity.Frequency(value)
-    frequency = property(getFrequency, setFrequency, """The negative frequency of the first-order saddle point.""")
 
     def getPartitionFunction(self, T):
         """

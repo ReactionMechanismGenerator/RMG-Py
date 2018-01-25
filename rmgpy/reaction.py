@@ -200,10 +200,19 @@ class Reaction:
                            self.comment
                            ))
 
-    def __getDegneneracy(self):
+    @property
+    def degeneracy(self):
+        """
+        The reaction path degeneracy for this reaction.
+
+        If the reaction has kinetics, changing the degeneracy
+        will adjust the reaction rate by a ratio of the new
+        degeneracy to the old degeneracy.
+        """
         return self._degeneracy
 
-    def __setDegeneracy(self, new):
+    @degeneracy.setter
+    def degeneracy(self, new):
         # modify rate if kinetics exists
         if self.kinetics is not None:
             if self._degeneracy < 2:
@@ -220,7 +229,6 @@ class Reaction:
             self.kinetics.changeRate(degeneracyRatio)
         # set new degeneracy
         self._degeneracy = new
-    degeneracy = property(__getDegneneracy, __setDegeneracy)
 
     def toChemkin(self, speciesList=None, kinetics=True):
         """

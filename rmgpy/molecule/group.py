@@ -1010,9 +1010,18 @@ class Group(Graph):
         img = graph.create(prog='neato', format=format)
         return img
 
-    def __getAtoms(self): return self.vertices
-    def __setAtoms(self, atoms): self.vertices = atoms
-    atoms = property(__getAtoms, __setAtoms)
+    @property
+    def atoms(self):
+        """
+        List of atoms contained in the current molecule.
+
+        Renames the inherited vertices attribute of :class:`Graph`.
+        """
+        return self.vertices
+
+    @atoms.setter
+    def atoms(self, atoms):
+        self.vertices = atoms
 
     def addAtom(self, atom):
         """
