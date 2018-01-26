@@ -1232,7 +1232,7 @@ class Molecule(Graph):
         result = Graph.findIsomorphism(self, other, initialMap)
         return result
 
-    def isSubgraphIsomorphic(self, other, initialMap=None):
+    def isSubgraphIsomorphic(self, other, initialMap=None, generateInitialMap=False):
         """
         Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
         otherwise. The `initialMap` attribute can be used to specify a required
@@ -1242,13 +1242,13 @@ class Molecule(Graph):
         """
         cython.declare(group=gr.Group, atom=Atom)
         cython.declare(carbonCount=cython.short, nitrogenCount=cython.short, oxygenCount=cython.short, sulfurCount=cython.short, radicalCount=cython.short)
-        
+        cython.declare(L=list)
         # It only makes sense to compare a Molecule to a Group for subgraph
         # isomorphism, so raise an exception if this is not what was requested
         if not isinstance(other, gr.Group):
             raise TypeError('Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
         group = other
-
+        
         # Check multiplicity
         if group.multiplicity:
             if self.multiplicity not in group.multiplicity: return False
@@ -1256,7 +1256,7 @@ class Molecule(Graph):
         # Compare radical counts
         if self.getRadicalCount() < group.radicalCount:
             return False
-
+        
         # Compare element counts
         element_count = self.get_element_count()
         for element, count in group.elementCount.iteritems():
@@ -1264,7 +1264,16 @@ class Molecule(Graph):
                 return False
             elif element_count[element] < count:
                 return False
-
+        
+        if generateInitialMap:
+            initialMap = dict()
+            for atom in self.atoms:
+                if atom.label and atom.label != '':
+                    L = [a for a in other.atoms if a.label == atom.label]
+                    initialMap[atom] = L[0]
+            if not self.isMappingValid(other,initialMap):
+                return False
+            
         # Do the isomorphism comparison
         result = Graph.isSubgraphIsomorphic(self, other, initialMap)
         return result
@@ -1308,7 +1317,7 @@ class Molecule(Graph):
         # Do the isomorphism comparison
         result = Graph.findSubgraphIsomorphisms(self, other, initialMap)
         return result
-
+    
     def isAtomInCycle(self, atom):
         """
         Return :data:`True` if `atom` is in one or more cycles in the structure,

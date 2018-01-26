@@ -1489,7 +1489,7 @@ class Group(Graph):
         # Do the isomorphism comparison
         return Graph.findIsomorphism(self, other, initialMap)
 
-    def isSubgraphIsomorphic(self, other, initialMap=None):
+    def isSubgraphIsomorphic(self, other, initialMap=None, generateInitialMap=False):
         """
         Returns ``True`` if `other` is subgraph isomorphic and ``False``
         otherwise. In other words, return ``True`` if self is more specific than other.
@@ -1500,12 +1500,22 @@ class Group(Graph):
         """        
         cython.declare(group=Group)
         cython.declare(mult1=cython.short, mult2=cython.short)
+        cython.declare(a=GroupAtom,L=list)
         # It only makes sense to compare a Group to a Group for subgraph
         # isomorphism, so raise an exception if this is not what was requested
         if not isinstance(other, Group):
             raise TypeError('Got a {0} object for parameter "other", when a Group object is required.'.format(other.__class__))
         group = other
         
+        if generateInitialMap:
+            initialMap = dict()
+            for atom in self.atoms:
+                if atom.label and atom.label != '':
+                    L = [a for a in other.atoms if a.label == atom.label]
+                    initialMap[atom] = L[0]
+            if not self.isMappingValid(other,initialMap):
+                return False
+                
         if self.multiplicity:
             for mult1 in self.multiplicity:
                 if group.multiplicity:
@@ -1573,7 +1583,7 @@ class Group(Graph):
             return False
         else:
             return True
-
+    
     def isAromaticRing(self):
         """
         This method returns a boolean telling if the group has a 5 or 6 cyclic with
