@@ -2105,15 +2105,15 @@ class KineticsFamily(Database):
         else:
             raise IndexError('You have {0} reactants, which is unexpected!'.format(len(reactants)))
         
-    def addAtomLabelsForReaction(self, reaction, output_with_species = True):
+    def addAtomLabelsForReaction(self, reaction, output_with_resonance = True):
         """
         Apply atom labels on a reaction using the appropriate atom labels from
         this reaction family.
 
-        The reaction is modified in place, containing species objects if
-        output_with_species is True and containing molecule objects, which
-        are the exact resonance structures used for the reaction, if
-        output_with_species is False. None is returned.
+        The reaction is modified in place containing species objects with the
+        atoms labeled. If output_with_resonance is True, all resonance structures
+        are generated with labels. If false, only the first resonance structure
+        sucessfully able to map to the reaction is used. None is returned.
         """
         # make sure we start with reaction with species objects
         reaction.ensure_species(reactant_resonance=False, product_resonance=False)
@@ -2136,13 +2136,27 @@ class KineticsFamily(Database):
         if labeled_reactants is None or labeled_products is None:
             raise ActionError("Could not find labeled reactants for reaction {} from family {}.".format(reaction,self.label))
 
-        # place the molecules in reaction object
-        reaction.products = labeled_products
-        reaction.reactants = labeled_reactants
+        # place the molecules in reaction's species object
+        # this prevents overwriting of attributes of species objects by this method
+        for species in reaction.products:
+            for labeled_molecule in labeled_products:
+                if species.isIsomorphic(labeled_molecule):
+                    species.molecule = [labeled_molecule]
+                    break
+            else:
+                raise ActionError('Could not find isomorphic molecule to fit the original product {}'.format(species))
+        for species in reaction.reactants:
+            for labeled_molecule in labeled_reactants:
+                if species.isIsomorphic(labeled_molecule):
+                    species.molecule = [labeled_molecule]
+                    break
+            else:
+                raise ActionError('Could not find isomorphic molecule to fit the original reactant {}'.format(species))
 
-        if output_with_species:
+        if output_with_resonance:
             # convert the molecules to species objects with resonance structures
-            reaction.ensure_species(reactant_resonance=True)
+            for species in reaction.reactants + reaction.products:
+                species.generate_resonance_structures()
 
     def getTrainingDepository(self):
         """
