@@ -181,7 +181,7 @@ cdef class Molecule(Graph):
 
     cpdef list findIsomorphism(self, Graph other, dict initialMap=?)
 
-    cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?) except -2
+    cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?, generateInitialMap=?) except -2
 
     cpdef list findSubgraphIsomorphisms(self, Graph other, dict initialMap=?)
 
