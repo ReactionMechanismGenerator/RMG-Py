@@ -1049,6 +1049,50 @@ class Reaction:
         
         return other
 
+    def ensure_species(self, reactant_resonance=False, product_resonance=True):
+        """
+        Ensure the reaction contains species objects in its reactant and product
+        attributes. If the reaction is found to hold molecule objects, it
+        modifies the reactant, product and pairs to hold
+        Species objects.
+
+        Generates resonance structures for Molecules if the corresponding options,
+        reactant_resonance and/or product_resonance, are True. Does not generate
+        resonance for reactants or products that start as Species objects.
+        """
+        from rmgpy.data.kinetics.common import ensure_species
+        # if already species' objects, return none
+        if isinstance(self.reactants[0], Species):
+            return None
+        # obtain species with all resonance isomers
+        if self.isForward:
+            self.reactants = ensure_species(self.reactants, resonance=reactant_resonance, keepIsomorphic=True)
+            self.products = ensure_species(self.products, resonance=product_resonance, keepIsomorphic=True)
+        else:
+            self.reactants = ensure_species(self.reactants, resonance=product_resonance, keepIsomorphic=True)
+            self.products = ensure_species(self.products, resonance=reactant_resonance, keepIsomorphic=True)
+
+        # convert reaction.pairs object to species
+        if self.pairs:
+            new_pairs = []
+            for reactant, product in self.pairs:
+                new_pair = []
+                for reactant0 in self.reactants:
+                    if reactant0.isIsomorphic(reactant):
+                        new_pair.append(reactant0)
+                        break
+                for product0 in self.products:
+                    if product0.isIsomorphic(product):
+                        new_pair.append(product0)
+                        break
+                new_pairs.append(new_pair)
+            self.pairs = new_pairs
+
+        try:
+            self.reverse.ensure_species()
+        except AttributeError:
+            pass
+
 def _isomorphicSpeciesList(list1, list2, checkIdentical=False, checkOnlyLabel = False):
     """
     This method compares whether lists of species or molecules are isomorphic

@@ -139,6 +139,7 @@ CH(9)+CH2OH(18)=CH2(11)+CH2O(15)                    1.286e+13 -0.010    0.000
 ! Template reaction: Disproportionation
 ! Flux pairs: CH2OH(18), CH2O(15); C2H(21), C2H2(22); 
 ! Matched reaction 0 C2H + CH3O <=> C2H2 + CH2O in Disproportionation/training
+! This reaction matched rate rule [O_pri_rad;Cmethyl_Csrad]
 CH2OH(18)+C2H(21)=CH2O(15)+C2H2(22)                 3.610e+13 0.000     0.000    
 
 ! Reaction index: Chemkin #5; RMG #364

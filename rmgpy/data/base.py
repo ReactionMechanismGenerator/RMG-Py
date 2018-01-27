@@ -275,7 +275,7 @@ class Database:
         Load the dictionary containing all of the species in a kinetics library or depository.
         """
         from rmgpy.species import Species
-        speciesDict = {}
+        speciesDict = OrderedDict()
         with open(path, 'r') as f:
             adjlist = ''
             for line in f:

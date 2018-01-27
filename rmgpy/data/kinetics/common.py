@@ -281,7 +281,7 @@ def find_degenerate_reactions(rxnList, same_reactants=None, kinetics_database=No
     rxnSorted = []
     for rxn0 in rxnList:
         # find resonance structures for rxn0
-        ensure_species_in_reaction(rxn0)
+        rxn0.ensure_species()
         if len(rxnSorted) == 0:
             # This is the first reaction, so create a new sublist
             rxnSorted.append([rxn0])
@@ -347,44 +347,6 @@ def find_degenerate_reactions(rxnList, same_reactants=None, kinetics_database=No
                 rxn.degeneracy = family.calculateDegeneracy(rxn)
 
     return rxnList
-
-
-def ensure_species_in_reaction(reaction):
-    """
-    Modifies a reaction holding Molecule objects to a reaction holding
-    Species objects. Generates resonance structures for reaction products.
-    """
-    # if already species' objects, return none
-    if isinstance(reaction.reactants[0], Species):
-        return None
-    # obtain species with all resonance isomers
-    if reaction.isForward:
-        reaction.reactants = ensure_species(reaction.reactants, resonance=False)
-        reaction.products = ensure_species(reaction.products, resonance=True, keepIsomorphic=True)
-    else:
-        reaction.reactants = ensure_species(reaction.reactants, resonance=True, keepIsomorphic=True)
-        reaction.products = ensure_species(reaction.products, resonance=False)
-
-    # convert reaction.pairs object to species
-    new_pairs = []
-    for reactant, product in reaction.pairs:
-        new_pair = []
-        for reactant0 in reaction.reactants:
-            if reactant0.isIsomorphic(reactant):
-                new_pair.append(reactant0)
-                break
-        for product0 in reaction.products:
-            if product0.isIsomorphic(product):
-                new_pair.append(product0)
-                break
-        new_pairs.append(new_pair)
-    reaction.pairs = new_pairs
-
-    try:
-        ensure_species_in_reaction(reaction.reverse)
-    except AttributeError:
-        pass
-
 
 def reduce_same_reactant_degeneracy(reaction, same_reactants=None):
     """

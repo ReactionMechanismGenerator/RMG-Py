@@ -52,8 +52,8 @@ from .groups import KineticsGroups
 from .rules import KineticsRules
 from rmgpy.exceptions import InvalidActionError, ReactionPairsError, KineticsError,\
                              UndeterminableKineticsError, ForbiddenStructureException,\
-                             KekulizationError, ActionError
-
+                             KekulizationError, ActionError, DatabaseError
+import itertools
 ################################################################################
 
 class TemplateReaction(Reaction):
@@ -1877,7 +1877,11 @@ class KineticsFamily(Database):
                 kineticsList.append([deepcopy(entry.data), entry, entry.item.isIsomorphic(reaction, eitherDirection=False)])
         for kinetics, entry, isForward in kineticsList:
             if kinetics is not None:
-                kinetics.comment += "Matched reaction {0} {1} in {2}".format(entry.index, entry.label, depository.label)
+                kinetics.comment += "Matched reaction {0} {1} in {2}\nThis reaction matched rate rule {3}".format(entry.index, 
+                                                      entry.label, 
+                                                      depository.label,
+                                                      '[{0}]'.format(';'.join([g.label for g in template])))
+                kinetics.comment += "\nfamily: {}".format(self.label)
         return kineticsList
     
     def __selectBestKinetics(self, kineticsList):
@@ -2059,68 +2063,100 @@ class KineticsFamily(Database):
             # if there're some mapping available but cannot match the provided products
             # raise exception
             if len(mappings) > 0:
-                raise Exception('Something wrong with products that RMG cannot find a match!')
+                raise ActionError('Something wrong with products that RMG cannot find a match!')
             return (None, None)
         elif len(reactants0) == 2:
             moleculeA = reactants0[0]
             moleculeB = reactants0[1]
+            # get mappings in forward direction
             mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[0])
             mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[1])
+            mappingPairs = list(itertools.product(mappingsA,mappingsB))
+            # get mappings in the reverse direction
+            mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[1])
+            mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[0])
+            mappingPairs.extend(list(itertools.product(mappingsA,mappingsB)))
 
+            reactantStructures = [moleculeA, moleculeB]
             # Iterate over each pair of matches (A, B)
-            for mapA in mappingsA:
-                for mapB in mappingsB:
-                    reactantStructures = [moleculeA, moleculeB]
-                    try:
-                        productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB], forward=True)
-                    except ForbiddenStructureException:
-                        pass
-                    else:
-                        if productStructures is not None:
-                            if len(products) == 1 and len(productStructures) == 1:
-                                if products[0].isIsomorphic(productStructures[0]):
+            for mapA, mapB in mappingPairs:
+                try:
+                    productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB], forward=True)
+                except ForbiddenStructureException:
+                    pass
+                else:
+                    if productStructures is not None:
+                        if len(products) == 1 and len(productStructures) == 1:
+                            if products[0].isIsomorphic(productStructures[0]):
+                                return reactantStructures, productStructures
+                        elif len(products) == 2 and len(productStructures) == 2:
+                            if products[0].isIsomorphic(productStructures[0]):
+                                if products[1].isIsomorphic(productStructures[1]):
                                     return reactantStructures, productStructures
-                            elif len(products) == 2 and len(productStructures) == 2:
-                                if products[0].isIsomorphic(productStructures[0]):
-                                    if products[1].isIsomorphic(productStructures[1]):
-                                        return reactantStructures, productStructures
-                                if products[0].isIsomorphic(productStructures[1]):
-                                    if products[1].isIsomorphic(productStructures[0]):
-                                        return reactantStructures, productStructures
-                            else: continue
+                            if products[0].isIsomorphic(productStructures[1]):
+                                if products[1].isIsomorphic(productStructures[0]):
+                                    return reactantStructures, productStructures
+                        else: continue
             # if there're some mapping available but cannot match the provided products
             # raise exception
             if len(mappingsA)*len(mappingsB) > 0:
-                raise Exception('Something wrong with products that RMG cannot find a match!')
+                raise ActionError('Something wrong with products that RMG cannot find a match!')
             return (None, None)
         else:
-            raise Exception('You have {0} reactants, which is unexpected!'.format(len(reactants)))
+            raise IndexError('You have {0} reactants, which is unexpected!'.format(len(reactants)))
         
-    def addAtomLabelsForReaction(self, reaction):
+    def addAtomLabelsForReaction(self, reaction, output_with_resonance = True):
         """
-        Apply atom labels on a reaction using the appropriate atom labels from this this reaction family.  
-        The reaction's reactants and products must be lists of Molecule objects.
-        The reaction is modified to use Species objects containing the labeled molecules after this function.
+        Apply atom labels on a reaction using the appropriate atom labels from
+        this reaction family.
+
+        The reaction is modified in place containing species objects with the
+        atoms labeled. If output_with_resonance is True, all resonance structures
+        are generated with labels. If false, only the first resonance structure
+        sucessfully able to map to the reaction is used. None is returned.
         """
-        reactants = reaction.reactants[:]
-        products = reaction.products[:]
-       
-        labeledReactants, labeledProducts = self.getLabeledReactantsAndProducts(reactants, products)
-        if not labeledReactants and not labeledProducts:
-            if len(reactants) > 1:
-                # Check for swapped reactants if there are more than 1
-                labeledReactants, labeledProducts = self.getLabeledReactantsAndProducts(list(reversed(reactants)), products)
-        if not labeledReactants and not labeledProducts:
-            raise Exception("RMG could not label atoms for this reaction in {}.".format(self.label))
-        
-        labeledProducts_spcs = []
-        labeledReactants_spcs = []
-        for labeledProduct in labeledProducts:
-            labeledProducts_spcs.append(Species(molecule=[labeledProduct]))
-        reaction.products = labeledProducts_spcs
-        for labeledReactant in labeledReactants:
-            labeledReactants_spcs.append(Species(molecule=[labeledReactant]))
-        reaction.reactants = labeledReactants_spcs
+        # make sure we start with reaction with species objects
+        reaction.ensure_species(reactant_resonance=False, product_resonance=False)
+
+        # get all possible pairs of resonance structures
+        reactant_pairs = list(itertools.product(*[s.molecule for s in reaction.reactants]))
+        product_pairs = list(itertools.product(*[s.molecule for s in reaction.products]))
+
+        labeled_reactants, labeled_products = None, None
+        # go through each combination of possible pairs
+        for reactant_pair, product_pair in itertools.product(reactant_pairs, product_pairs):
+            try:
+                # see if we obtain proper labeling
+                labeled_reactants, labeled_products = self.getLabeledReactantsAndProducts(reactant_pair, product_pair)
+                if labeled_reactants is not None:
+                    break
+            except ActionError:
+                # must have gotten the wrong pair
+                pass
+        if labeled_reactants is None or labeled_products is None:
+            raise ActionError("Could not find labeled reactants for reaction {} from family {}.".format(reaction,self.label))
+
+        # place the molecules in reaction's species object
+        # this prevents overwriting of attributes of species objects by this method
+        for species in reaction.products:
+            for labeled_molecule in labeled_products:
+                if species.isIsomorphic(labeled_molecule):
+                    species.molecule = [labeled_molecule]
+                    break
+            else:
+                raise ActionError('Could not find isomorphic molecule to fit the original product {}'.format(species))
+        for species in reaction.reactants:
+            for labeled_molecule in labeled_reactants:
+                if species.isIsomorphic(labeled_molecule):
+                    species.molecule = [labeled_molecule]
+                    break
+            else:
+                raise ActionError('Could not find isomorphic molecule to fit the original reactant {}'.format(species))
+
+        if output_with_resonance:
+            # convert the molecules to species objects with resonance structures
+            for species in reaction.reactants + reaction.products:
+                species.generate_resonance_structures()
 
     def getTrainingDepository(self):
         """
@@ -2130,7 +2166,7 @@ class KineticsFamily(Database):
             if depository.label.endswith('training'):
                 return depository
         else:
-            raise Exception('Could not find training depository in family {0}.'.format(self.label))
+            raise DatabaseError('Could not find training depository in family {0}.'.format(self.label))
         
     def retrieveOriginalEntry(self, templateLabel):
         """
@@ -2210,7 +2246,7 @@ class KineticsFamily(Database):
                     else:
                         rules.append((ruleEntry,1))
                 else:
-                    raise Exception('Could not parse unexpected line found in kinetics comment: {}'.format(comment))
+                    raise ValueError('Could not parse unexpected line found in kinetics comment: {}'.format(comment))
             else:
                 comment = ' '.join(lines[:-1])
                 # Clean up line for exec
@@ -2291,7 +2327,7 @@ class KineticsFamily(Database):
                 trainingEntry = depository.entries[trainingReactionIndex]
                 # Perform sanity check that the training reaction's label matches that of the comments
                 if trainingEntry.label not in line:
-                    raise Exception('Reaction {0} uses kinetics from training reaction {1} but does not match the training reaction {1} from the {2} family.'.format(reaction,trainingReactionIndex,self.label))
+                    raise AssertionError('Reaction {0} uses kinetics from training reaction {1} but does not match the training reaction {1} from the {2} family.'.format(reaction,trainingReactionIndex,self.label))
                 
                 # Sometimes the matched kinetics could be in the reverse direction..... 
                 if reaction.isIsomorphic(trainingEntry.item, eitherDirection=False):
@@ -2318,7 +2354,7 @@ class KineticsFamily(Database):
         
 
         if not template:
-            raise Exception('Could not extract kinetics source from comments for reaction {}.'.format(reaction))
+            raise ValueError('Could not extract kinetics source from comments for reaction {}.'.format(reaction))
         
         sourceDict = {'template':template, 'degeneracy':degeneracy, 'exact':exact, 
                        'rules':rules,'training':trainingEntries }
