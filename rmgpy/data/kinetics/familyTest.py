@@ -33,8 +33,11 @@ import mock
 import os.path
 import shutil
 import unittest
+import numpy as np
+import logging
 
 from rmgpy import settings
+from rmgpy.data.thermo import ThermoDatabase
 from rmgpy.data.kinetics.database import KineticsDatabase
 from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.rmg import RMGDatabase
@@ -633,6 +636,132 @@ multiplicity 2
             shutil.rmtree(os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_copy'))
 
 
+class TestTreeGeneration(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        """A function run ONCE before all unit tests in this class."""
+        # Set up a dummy database
+        cls.database = RMGDatabase()
+        cls.database.load(
+            path=os.path.join(settings['test_data.directory'], 'testing_database'),
+            thermoLibraries=[],
+            reactionLibraries=[],
+            kineticsFamilies=[],
+            depository=False,
+            solvation=False,
+            testing=True,
+        )
+        cls.database.loadForbiddenStructures()
+        
+        cls.thermoDatabase = ThermoDatabase() #the real full Thermo Database
+        cls.thermoDatabase.load(path=os.path.join(settings['database.directory'],'thermo'),libraries=['primaryThermoLibrary'])
+        
+        cls.kineticsDatabase = KineticsDatabase()
+        cls.kineticsDatabase.loadFamilies(
+            path=os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families'),
+            families=[
+                'Singlet_Carbene_Intra_Disproportionation',
+            ],
+        )
+        cls.family = cls.kineticsDatabase.families['Singlet_Carbene_Intra_Disproportionation']
+
+    @classmethod
+    def tearDownClass(cls):
+        """A function run ONCE after all unit tests in this class."""
+        import rmgpy.data.rmg
+        rmgpy.data.rmg.database = None
+
+    
+    def test_AClearTree(self):
+        """
+        Test that the tree was properly cleared before generation
+        """
+        self.family.prepareTreeForGeneration(self.thermoDatabase)
+        ents = [ent for ent in self.family.groups.entries.itervalues() if ent.index != -1]
+        self.assertEquals(len(ents),1,'more than one relevant group left in groups after preparing tree for generation')
+        self.assertEquals(len(self.family.rules.entries),1,'more than one group in rules.entries after preparing tree for generation' )
+        root = self.family.groups.entries[self.family.rules.entries.keys()[0]]
+        self.assertEquals([root],self.family.forwardTemplate.reactants)
+        self.assertEquals([root],self.family.groups.top)
+        
+    def test_BGenerateTree(self):
+        """
+        test tree generation process
+        """
+        def objective(k1s,k2s):
+            return len(k1s)*np.std(k1s)+len(k2s)*np.std(k2s)
+        
+        self.family.generateTree(thermoDatabase=self.thermoDatabase,obj=objective) #test input objective function
+        
+        self.family.prepareTreeForGeneration(self.thermoDatabase) #reclear
+        
+        self.family.generateTree(thermoDatabase=self.thermoDatabase) #test that default objective works
+        
+    def test_CParentChild(self):
+        """
+        test that the tree is structured properly
+        """
+        for entry in self.family.groups.entries.itervalues():
+            for entry2 in entry.children:
+                self.assertTrue(entry2 in self.family.groups.entries.itervalues())
+            if entry.parent:
+                self.assertTrue(entry.parent in self.family.groups.entries.itervalues())
+        
+        self.assertTrue(self.family.groups.entries['Root'].parent is None)
+                
+    def test_DRules(self):
+        """
+        test that there are four rules and each is under a different group
+        """
+        c = 0
+        for rs in self.family.rules.entries.itervalues():
+            self.assertLess(len(rs),2,'more than one training reaction at a node')
+            if len(rs) == 1:
+                c += 1
+        
+        self.assertEquals(c,4,'incorrect number of kinetics information, expected 4 found {0}'.format(c))
+    
+    def test_ERegularizationDims(self):
+        """
+        test that appropriate regularization dimensions have been identified
+        """
+        
+        for entry in self.family.groups.entries.itervalues():
+            if entry.children == []:
+                continue
+            vioObj = set() #set of violations, one atom or one bond is allowed to be in violation (if it was just created)
+            pgrp = entry.item
+            exts = pgrp.getExtensions()
+            for grp,grpc,name,typ,indc in exts:
+                if typ == 'intNewBondExt' or typ =='extNewBondExt':
+                    continue
+                else:
+                    val,boo = self.family.evalExt(entry,grp,name)
+                    if val != np.inf:
+                        continue
+                    atms = grp.atoms
+                    if typ == 'bondExt':
+                        bd = grp.getBond(atms[indc[0]],atms[indc[1]])
+                        bds = bd.reg_dim
+                        if boo and bds != [] and not (set(bd.order) <= set(bds)):
+                            logging.error('bond regularization dimension missed')
+                            vioObj.add((tuple(indc),tuple(bds),tuple(bd.order),typ))
+                    elif typ == 'atomExt':
+                        atypes = atms[indc[0]].reg_dim_atm
+                        atype = atms[indc[0]].atomType
+                        if boo and atypes != [] and not (set(atype) <= set(atypes)):
+                            logging.error('atomtype regularization dimension missed')
+                            vioObj.add((tuple(indc),tuple(atypes),tuple(atype),typ))
+                    elif typ == 'elExt':
+                        us = atms[indc[0]].reg_dim_u
+                        u = atms[indc[0]].radicalElectrons
+                        if boo and us != [] and not (set(u) <= set(us)):
+                            logging.error('unpaired electron regularization dimension missed')
+                            vioObj.add((tuple(indc),tuple(us),tuple(u),typ))
+            self.assertTrue(len(vioObj) <= 1,'there were {0} regularization violations at, {1}'.format(len(vioObj),vioObj))
+            
+        
 class TestGenerateReactions(unittest.TestCase):
 
     @classmethod
