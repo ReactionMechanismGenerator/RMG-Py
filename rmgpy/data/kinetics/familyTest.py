@@ -590,7 +590,7 @@ class TestGenerateReactions(unittest.TestCase):
             path=os.path.join(settings['test_data.directory'], 'testing_database'),
             thermoLibraries=[],
             reactionLibraries=[],
-            kineticsFamilies=['H_Abstraction', 'R_Addition_MultipleBond'],
+            kineticsFamilies=['H_Abstraction', 'R_Addition_MultipleBond','Singlet_Val6_to_triplet'],
             depository=False,
             solvation=False,
             testing=True,
@@ -673,3 +673,10 @@ multiplicity 2
                 mapping[atom] = product.molecule[0].getLabeledAtom(label)
 
             self.assertTrue(expected_products[i].isIsomorphic(product.molecule[0], mapping))
+
+    def test_irreversible_reaction(self):
+        """Test that the Singlet_Val6_to_triplet and 1,2-Birad_to_alkene families generate irreversible reactions."""
+
+        reactant = [Molecule(SMILES='O=O')]
+        reactionList = self.database.kinetics.families['Singlet_Val6_to_triplet'].generateReactions(reactant)
+        self.assertFalse(reactionList[0].reversible)
