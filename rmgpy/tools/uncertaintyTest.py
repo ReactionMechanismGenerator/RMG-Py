@@ -56,7 +56,9 @@ class TestUncertainty(unittest.TestCase):
         cls.uncertainty.database = RMGDatabase()
         cls.uncertainty.database.load(
             data_dir,
-            kineticsFamilies='all',
+            kineticsFamilies=['1,2_shiftC','6_membered_central_C-C_shift','Disproportionation','H_Abstraction',
+                              'Intra_ene_reaction','intra_H_migration','Intra_R_Add_Exo_scission',
+                             'intra_substitutionS_isomerization','R_Addition_MultipleBond','R_Recombination'],
             kineticsDepositories=['training'],
             thermoLibraries=['primaryThermoLibrary'],
             reactionLibraries=['GRI-Mech3.0'],
