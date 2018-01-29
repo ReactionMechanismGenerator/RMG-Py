@@ -2328,6 +2328,60 @@ class KineticsFamily(Database):
         associated with a given template
         """
         return [entry.data for entry in self.rules.entries[template]]
+    
+    def splitReactions(self,rxns,oldlabel,newgrp):
+        """
+        divides the reactions in rxns between the new
+        group structure newgrp and the old structure with 
+        label oldlabel
+        returns a list of reactions associated with the new group
+        the list of reactions associated with the old group
+        and a list of the indices of all of the reactions
+        associated with the new group
+        """
+        new = []
+        comp = []
+        newInds = []
+        kinetics = self.getTemplateKinetics(oldlabel)
+        oldgrp = self.groups.entries[oldlabel].item
+        
+        for i,rxn in enumerate(rxns): #lot of potential for speed up in or related to this function
+            rmol = rxn.reactants[0].molecule[0]
+            for reactant in rxn.reactants[1:]:
+                rmol.merge(reactant.molecule[0])
+            if not rmol.isSubgraphIsomorphic(oldgrp,generateInitialMap=True):
+                rmol = rxn.products[0].molecule[0]
+                for product in rxn.products[1:]:
+                    rmol.merge(product.molecule[0])
+                if not rmol.isSubgraphIsomorphic(oldgrp,generateInitialMap=True):
+                    raise ValueError, 'cant work out training reaction direction'
+    
+            if rmol.isSubgraphIsomorphic(newgrp,generateInitialMap=True):
+                new.append(kinetics[i])
+                newInds.append(i)
+            else:
+                comp.append(kinetics[i])
+        
+        return new,comp,newInds    
+    
+    def evalExt(self,parent,ext,extname,obj=None,T=1000.0):
+        """
+        evaluates the objective function obj
+        for the extension ext with name extname to the parent entry parent
+        """
+        rxns = self.getEntriesReactions(parent.label)
+        new,old,newInds = self.splitReactions(rxns,parent.label,ext)
+        if len(new) == 0:
+            return np.inf,False
+        elif len(old) == 0:
+            return np.inf,True
+        else:
+            if obj:
+                ob,boo = getObjectiveFunction(new,old,obj,T=T)
+            else:
+                ob,boo = getObjectiveFunction(new,old,T=T)
+            return ob,True
+
         
     def retrieveOriginalEntry(self, templateLabel):
         """
