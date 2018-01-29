@@ -33,6 +33,7 @@ This module contains functionality for working with kinetics families.
 """
 
 import os.path
+import numpy as np
 import logging
 import codecs
 from copy import deepcopy
@@ -2533,3 +2534,25 @@ class KineticsFamily(Database):
             allGroups = all([isinstance(entry.item, Group) for entry in groupList])
 
         return groupList
+
+def informationGain(ks1,ks2):
+    """
+    calculates the information gain as the sum of the products of the standard deviations at each
+    node and the number of reactions at that node
+    """
+    return len(ks1)*np.std(ks1)+len(ks2)*np.std(ks2)
+ 
+def getObjectiveFunction(kinetics1,kinetics2,obj=informationGain,T=1000.0):
+    """
+    Returns the value of four potential objective functions to minimize
+    Uncertainty = N1*std(Ln(k))_1 + N1*std(Ln(k))_1
+    Mean difference: -abs(mean(Ln(k))_1-mean(Ln(k))_2)
+    Error using mean: Err_1 + Err_2
+    Split: abs(N1-N2)
+    """
+    ks1 = np.array([np.log(k.getRateCoefficient(T)) for k in kinetics1])
+    ks2 = np.array([np.log(k.getRateCoefficient(T)) for k in kinetics2])
+    N1 = len(ks1)
+    
+    return obj(ks1,ks2), N1 == 0
+
