@@ -2295,6 +2295,39 @@ class KineticsFamily(Database):
                 return depository
         else:
             raise DatabaseError('Could not find training depository in family {0}.'.format(self.label))
+
+            
+    def addEntry(self,parent,grp,name):
+        """
+        Adds a group entry with parent parent
+        group structure grp
+        and group name name
+        """
+        ind = len(self.groups.entries)-1
+        entry = Entry(index=ind,label=name,item=grp,parent=parent)
+        self.groups.entries[name] = entry
+        self.rules.entries[name] = []
+        if entry.parent:
+            entry.parent.children.append(entry)
+    
+    def getEntriesReactions(self,template):
+        """
+        retrieves all training reactions whose kinetics
+        are associated with the entry template
+        """
+        entries = self.rules.entries[template]
+        tentries = self.getTrainingDepository().entries
+        rxnEntries = []
+        for entry in entries:
+            rxnEntries.append(tentries[entry.index].item)
+        return rxnEntries
+    
+    def getTemplateKinetics(self,template):
+        """
+        retrives a list of all the kinetics objects
+        associated with a given template
+        """
+        return [entry.data for entry in self.rules.entries[template]]
         
     def retrieveOriginalEntry(self, templateLabel):
         """
