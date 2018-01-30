@@ -493,7 +493,10 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
         # First item is index for atom
         # Sometimes these have a trailing period (as if in a numbered list),
         # so remove it just in case
-        aid = int(data[0].strip('.'))
+        try:
+            aid = int(data[0].strip('.'))
+        except ValueError:
+            pass
 
         # If second item starts with '*', then atom is labeled
         label = ''; index = 1
