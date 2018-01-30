@@ -416,7 +416,7 @@ For example ::
 	model(
 		toleranceKeepInEdge=0.0,
 		toleranceMoveToCore=0.1,
-		toleranceInterruptSimulation=0.1,
+		toleranceInterruptSimulation=0.3,
 		maxNumObjsPerIter=2,
 		terminateAtMaxObjects=True,
 	)
