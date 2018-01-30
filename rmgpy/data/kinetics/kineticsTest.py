@@ -820,11 +820,8 @@ class TestKinetics(unittest.TestCase):
         p2 = Species(molecule=[Molecule().fromAdjacencyList(adjlist[3])])
         r1.generate_resonance_structures(keep_isomorphic=True)
         p1.generate_resonance_structures(keep_isomorphic=True)
-        
-        
-        rxn = TemplateReaction(reactants = [r1, r2], 
-                               products = [p1, p2]
-)
+
+        rxn = TemplateReaction(reactants=[r1, r2], products=[p1, p2])
         
         rxn.degeneracy = family.calculateDegeneracy(rxn)
         self.assertEqual(rxn.degeneracy, 6)
@@ -832,6 +829,37 @@ class TestKinetics(unittest.TestCase):
         family.addReverseAttribute(rxn)
         
         self.assertEqual(rxn.reverse.degeneracy, 6)
+
+    def test_calculate_degeneracy_for_non_reactive_molecule(self):
+        """
+        tests that the calculateDegeneracy method gets the degeneracy correct for unreactive molecules
+        and that __generateReactions work correctly with the react_non_reactive flag set to `True`.
+        """
+        from rmgpy.data.rmg import getDB
+        from rmgpy.data.kinetics.family import TemplateReaction
+
+        adjlist = ['''
+        multiplicity 2
+        1 H u1 p0 c0''',
+                   '''
+        multiplicity 2
+        1 O u1 p1 c+1 {2,D}
+        2 N u0 p2 c-1 {1,D}''',
+                   '''
+        1 O u0 p1 c+1 {2,D} {3,S}
+        2 N u0 p2 c-1 {1,D}
+        3 H u0 p0 c0 {1,S}''']
+
+        family = getDB('kinetics').families['R_Recombination']
+        r1 = Species(molecule=[Molecule().fromAdjacencyList(adjlist[0])])
+        r2 = Species(molecule=[Molecule().fromAdjacencyList(adjlist[1])])  # r2 is not the representative structure of
+        # NO, but it is the correct structure participating in this reaction
+        p1 = Species(molecule=[Molecule().fromAdjacencyList(adjlist[2])])
+        r2.generate_resonance_structures(keep_isomorphic=True)
+
+        rxn = TemplateReaction(reactants=[r1, r2], products=[p1])
+        rxn.degeneracy = family.calculateDegeneracy(rxn)
+        self.assertEqual(rxn.degeneracy, 1)
 
     def test_generate_reactions_from_families_with_resonance(self):
         """Test that we can generate reactions from families with resonance structures"""
