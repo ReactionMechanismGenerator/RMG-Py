@@ -297,7 +297,7 @@ class ReactionRecipe:
                 elif (action[0] == 'FORM_BOND' and doForward) or (action[0] == 'BREAK_BOND' and not doForward):
                     if struct.hasBond(atom1, atom2):
                         raise InvalidActionError('Attempted to create an existing bond.')
-                    if info not in (1, 0, 'vdW'): #todo: remove vdW and ensure 0 is correct replacement
+                    if info not in (1, 0, 'vdW'):  # todo: remove vdW and ensure 0 is correct replacement
                         raise InvalidActionError('Attempted to create bond of type {:!r}'.format(info))
                     bond = GroupBond(atom1, atom2, order=[info]) if pattern else Bond(atom1, atom2, order=info)
                     struct.addBond(bond)
