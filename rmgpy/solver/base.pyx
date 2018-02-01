@@ -563,7 +563,7 @@ cdef class ReactionSystem(DASx):
         # cython declations for sensitivity analysis
         cdef numpy.ndarray[numpy.int_t, ndim=1] sensSpeciesIndices
         cdef numpy.ndarray[numpy.float64_t, ndim=1] moleSens, dVdk, normSens
-        cdef list time_array, normSens_array, newSurfaceReactions, newSurfaceReactionInds, newObjects, newObjectInds
+        cdef list time_array, normSens_array, newSurfaceReactions, newSurfaceReactionInds, newObjects, newObjectInds, conversions
         
         zeroProduction = False
         zeroConsumption = False
@@ -667,6 +667,13 @@ cdef class ReactionSystem(DASx):
                     
                     logging.info('Resurrecting Model...')
                     
+                    conversions = []
+                    
+                    for term in self.termination:
+                        if isinstance(term, TerminationConversion):
+                            index = speciesIndex[term.species]
+                            conversions.append(1-(y_coreSpecies[index] / y0[index]))
+
                     if invalidObjects == []:
                         #species flux criterion
                         if len(edgeSpeciesRateRatios) > 0:
@@ -688,7 +695,7 @@ cdef class ReactionSystem(DASx):
                             invalidObjects.append(obj)
                     
                     if invalidObjects != []:
-                        return False,True,invalidObjects,surfaceSpecies,surfaceReactions
+                        return False,True,invalidObjects,surfaceSpecies,surfaceReactions,self.t,conversions
                     else:
                         logging.error('Model Resurrection has failed')
                         logging.error("Core species names: {!r}".format([getSpeciesIdentifier(s) for s in coreSpecies]))
@@ -1023,7 +1030,8 @@ cdef class ReactionSystem(DASx):
             if interrupt: #breaks while loop terminating iterations
                 logging.info('terminating simulation due to interrupt...')
                 break
-
+            
+            conversions = []
             # Finish simulation if any of the termination criteria are satisfied
             for term in self.termination:
                 if isinstance(term, TerminationTime):
@@ -1034,6 +1042,7 @@ cdef class ReactionSystem(DASx):
                         break
                 elif isinstance(term, TerminationConversion):
                     index = speciesIndex[term.species]
+                    conversions.append(1-(y_coreSpecies[index] / y0[index]))
                     if 1 - (y_coreSpecies[index] / y0[index]) > term.conversion:
                         terminated = True
                         logging.info('At time {0:10.4e} s, reached target termination conversion: {1:f} of {2}'.format(self.t,term.conversion,term.species))
@@ -1079,7 +1088,7 @@ cdef class ReactionSystem(DASx):
 
         # Return the invalid object (if the simulation was invalid) or None
         # (if the simulation was valid)
-        return terminated, False, invalidObjects, surfaceSpecies, surfaceReactions
+        return terminated, False, invalidObjects, surfaceSpecies, surfaceReactions, self.t, conversions
 
     cpdef logRates(self, double charRate, object species, double speciesRate, double maxDifLnAccumNum, object network, double networkRate):
         """
