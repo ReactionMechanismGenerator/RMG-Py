@@ -160,10 +160,20 @@ def simpleReactor(temperature,
         logging.info('Normalized mole fractions:')
         for spec, molfrac in initialMoleFractions.iteritems():
             logging.info("{0} = {1}".format(spec,molfrac))
-
-    T = Quantity(temperature)
-    P = Quantity(pressure)
     
+    if type(temperature) != list and type(pressure) != list:
+        T = Quantity(temperature)
+        P = Quantity(pressure)
+    else:
+        if type(temperature) != list:
+            temperature = list(temperature)
+        if type(pressure) != list:
+            pressure = list(pressure)
+        T = [Quantity(t) for t in temperature]
+        P = [Quantity(p) for p in pressure]
+        if len(T) > 2 or len(P) > 2:
+            raise InputError('Temperature and pressure ranges can only have one or two entries')
+        
     termination = []
     if terminationConversion is not None:
         for spec, conv in terminationConversion.iteritems():
@@ -192,7 +202,14 @@ def liquidReactor(temperature,
                   constantSpecies=None):
     
     logging.debug('Found LiquidReactor reaction system')
-    T = Quantity(temperature)
+    
+    if type(temperature) != list:
+        T = Quantity(temperature)
+    else:
+        T = [Quantity(t) for t in temperature]
+        if len(T) > 2:
+            raise InputError('Temperature ranges can only have one or two entries')
+    
     for spec,conc in initialConcentrations.iteritems():
         concentration = Quantity(conc)
         # check the dimensions are ok
