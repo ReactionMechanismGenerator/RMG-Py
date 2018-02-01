@@ -147,15 +147,21 @@ cdef class SimpleReactor(ReactionSystem):
 
     cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list surfaceSpecies=None,
                           list surfaceReactions=None, list pdepNetworks=None, atol=1e-16, rtol=1e-8, sensitivity=False, 
-                          sens_atol=1e-6, sens_rtol=1e-4, filterReactions=False):
+                          sens_atol=1e-6, sens_rtol=1e-4, filterReactions=False, T=None, P=None):
         """
         Initialize a simulation of the simple reactor using the provided kinetic
         model.
         """
+        
         if surfaceSpecies is None:
             surfaceSpecies = []
         if surfaceReactions is None:
             surfaceReactions = []
+        
+        if T:
+            self.T = T
+        if P:
+            self.P = P
             
         # First call the base class version of the method
         # This initializes the attributes declared in the base class
