@@ -371,6 +371,7 @@ class KineticsFamily(Database):
     Attribute           Type                            Description
     =================== =============================== ========================
     `reverse`           ``string``                      The name of the reverse reaction family
+    `reversible`        `Boolean`                       Is family reversible? (True by default)
     `forwardTemplate`   :class:`Reaction`               The forward reaction template
     `forwardRecipe`     :class:`ReactionRecipe`         The steps to take when applying the forward reaction to a set of reactants
     `reverseTemplate`   :class:`Reaction`               The reverse reaction template
@@ -396,6 +397,7 @@ class KineticsFamily(Database):
                  label='',
                  name='',
                  reverse='',
+                 reversible=True,
                  shortDesc='',
                  longDesc='',
                  forwardTemplate=None,
@@ -408,6 +410,7 @@ class KineticsFamily(Database):
                  ):
         Database.__init__(self, entries, top, label, name, shortDesc, longDesc)
         self.reverse = reverse
+        self.reversible = reversible
         self.forwardTemplate = forwardTemplate
         self.forwardRecipe = forwardRecipe
         self.reverseTemplate = reverseTemplate
@@ -616,6 +619,7 @@ class KineticsFamily(Database):
         local_context['True'] = True
         local_context['False'] = False
         local_context['reverse'] = None
+        local_context['reversible'] = None
         local_context['boundaryAtoms'] = None
         local_context['treeDistances'] = None
         self.groups = KineticsGroups(label='{0}/groups'.format(self.label))
@@ -633,11 +637,13 @@ class KineticsFamily(Database):
             self.reverseRecipe = None
         else:
             self.reverse = local_context.get('reverse', None)
-            if self.reverse is None:
-                self.reverse = '{0}_reverse'.format(self.label)
+            self.reversible = True if local_context.get('reversible', None) is None else local_context.get('reversible', None)
             self.forwardTemplate.products = self.generateProductTemplate(self.forwardTemplate.reactants)
-            self.reverseTemplate = Reaction(reactants=self.forwardTemplate.products, products=self.forwardTemplate.reactants)
-            self.reverseRecipe = self.forwardRecipe.getReverse()
+            if self.reversible:
+                self.reverseTemplate = Reaction(reactants=self.forwardTemplate.products, products=self.forwardTemplate.reactants)
+                self.reverseRecipe = self.forwardRecipe.getReverse()
+                if self.reverse is None:
+                    self.reverse = '{0}_reverse'.format(self.label)
         
         self.groups.numReactants = len(self.forwardTemplate.reactants)
             
@@ -1137,8 +1143,6 @@ class KineticsFamily(Database):
         """
         
         self.rules.fillRulesByAveragingUp(self.getRootTemplate(), {}, verbose)
-        
-        
 
     def applyRecipe(self, reactantStructures, forward=True, unique=True):
         """
@@ -1402,7 +1406,7 @@ class KineticsFamily(Database):
             reactants = reactants if isForward else products,
             products = products if isForward else reactants,
             degeneracy = 1,
-            reversible = True,
+            reversible = self.reversible,
             family = self.label,
             isForward = isForward,
         )
@@ -1462,7 +1466,7 @@ class KineticsFamily(Database):
         # Forward direction (the direction in which kinetics is defined)
         reactionList.extend(self.__generateReactions(reactants, products=products, forward=True, prod_resonance=prod_resonance))
         
-        if not self.ownReverse:
+        if not self.ownReverse and self.reversible:
             # Reverse direction (the direction in which kinetics is not defined)
             reactionList.extend(self.__generateReactions(reactants, products=products, forward=False, prod_resonance=prod_resonance))
 
@@ -1614,7 +1618,6 @@ class KineticsFamily(Database):
         # original
         reactants = [reactant if isinstance(reactant, list) else [reactant] for reactant in reactants]
 
-                    
         if forward:
             template = self.forwardTemplate
         elif self.reverseTemplate is None:
@@ -1742,6 +1745,9 @@ class KineticsFamily(Database):
             
             # We're done with the labeled atoms, so delete the attribute
             del reaction.labeledAtoms
+
+            # Mark reaction reversibility
+            reaction.reversible = self.reversible
             
         # This reaction list has only checked for duplicates within itself, not
         # with the global list of reactions

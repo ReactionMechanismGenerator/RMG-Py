@@ -41,6 +41,7 @@ recommendedFamilies = {
 'R_Recombination':True,
 'SubstitutionS':False,
 'Substitution_O':False,
+'Singlet_Val6_to_triplet':True,
 'intra_H_migration':True,
 'intra_NO2_ONO_conversion':True,
 'intra_OH_migration':True,
