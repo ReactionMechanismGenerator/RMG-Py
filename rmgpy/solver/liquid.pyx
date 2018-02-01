@@ -59,8 +59,14 @@ cdef class LiquidReactor(ReactionSystem):
     cdef public dict initialConcentrations
 
     def __init__(self, T, initialConcentrations, termination, sensitiveSpecies=None, sensitivityThreshold=1e-3, constSPCNames=None):
+        
         ReactionSystem.__init__(self, termination, sensitiveSpecies, sensitivityThreshold)
-        self.T = Quantity(T)
+        
+        if type(T) != list:
+            self.T = Quantity(T)
+        else:
+            self.Tlist = [Quantity(t) for t in T]
+            
         self.P = Quantity(100000.,'kPa') # Arbitrary high pressure (1000 Bar) to get reactions in the high-pressure limit!
         self.initialConcentrations = initialConcentrations # should be passed in SI
         self.V = 0 # will be set from initialConcentrations in initializeModel

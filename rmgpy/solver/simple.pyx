@@ -105,8 +105,15 @@ cdef class SimpleReactor(ReactionSystem):
 
     def __init__(self, T, P, initialMoleFractions, termination, sensitiveSpecies=None, sensitivityThreshold=1e-3):
         ReactionSystem.__init__(self, termination, sensitiveSpecies, sensitivityThreshold)
-        self.T = Quantity(T)
-        self.P = Quantity(P)
+        
+        
+        if type(T) != list and type(P) != list:
+            self.T = Quantity(T)
+            self.P = Quantity(P)
+        else:
+            self.Trange = [Quantity(t) for t in T]
+            self.Prange = [Quantity(p) for p in P]
+        
         self.initialMoleFractions = initialMoleFractions
 
         self.V = 0 # will be set in initializeModel
