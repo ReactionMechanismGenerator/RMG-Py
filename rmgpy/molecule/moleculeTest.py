@@ -1468,7 +1468,7 @@ multiplicity 2
 17 H u0 p0 c0 {6,S}
 """)
         saturated_molecule = indenyl.copy(deep=True)
-        saturated_molecule.saturate()
+        saturated_molecule.saturate_radicals()
         self.assertTrue(saturated_molecule.isIsomorphic(indene))
         
     def testMalformedAugmentedInChI(self):
@@ -2143,6 +2143,50 @@ multiplicity 2
         # Test setting fingerprint
         self.molecule[0].fingerprint = 'nitronate'
         self.assertEqual(self.molecule[0].fingerprint, 'nitronate')
+
+    def testSaturateUnfilledValence(self):
+        """
+        Test the saturateUnfilledValence for an aromatic and nonaromatic case
+        """
+        #test butane
+        expected = Molecule(SMILES='CCCC')
+        test = expected.copy(deep = True)
+        test.deleteHydrogens()
+
+        hydrogens = 0
+        for atom in test.atoms:
+            if atom.isHydrogen(): hydrogens +=1
+        self.assertEquals(hydrogens, 0)
+
+        test.saturate_unfilled_valence()
+
+        hydrogens = 0
+        for atom in test.atoms:
+            if atom.isHydrogen(): hydrogens +=1
+        self.assertEquals(hydrogens, 10)
+
+        test.update()
+        self.assertTrue(expected.isIsomorphic(test))
+
+        #test benzene
+        expected = Molecule(SMILES='c1ccccc1')
+        test = expected.copy(deep = True)
+        test.deleteHydrogens()
+        hydrogens = 0
+        for atom in test.atoms:
+            if atom.isHydrogen(): hydrogens +=1
+        self.assertEquals(hydrogens, 0)
+
+        test.saturate_unfilled_valence()
+
+        hydrogens = 0
+        for atom in test.atoms:
+            if atom.isHydrogen(): hydrogens +=1
+        self.assertEquals(hydrogens, 6)
+
+        test.update()
+        self.assertTrue(expected.isIsomorphic(test))
+
 
 ################################################################################
 

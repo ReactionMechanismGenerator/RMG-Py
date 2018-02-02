@@ -57,6 +57,7 @@ import rmgpy.molecule.parser as parser
 import rmgpy.molecule.generator as generator
 import rmgpy.molecule.resonance as resonance
 from .kekulize import kekulize
+from .adjlist import Saturator
 
 ################################################################################
 
@@ -823,12 +824,13 @@ class Molecule(Graph):
         Update multiplicity, and sort atoms using the new
         connectivity values.
         """
-        self.updateAtomTypes()
-        self.updateMultiplicity()
-        self.sortVertices()
 
         for atom in self.atoms:
             atom.updateCharge()
+
+        self.updateAtomTypes()
+        self.updateMultiplicity()
+        self.sortVertices()
 
     def getFormula(self):
         """
@@ -1027,6 +1029,10 @@ class Molecule(Graph):
         be prescribed to any atom when getAtomType fails. Currently used for
         resonance hybrid atom types.
         """
+        #Because we use lonepairs to match atomtypes and default is -100 when unspecified,
+        #we should update before getting the atomtype.
+        self.updateLonePairs()
+
         for atom in self.vertices:
             try:
                 atom.atomType = getAtomType(atom, atom.edges)
@@ -1657,7 +1663,16 @@ class Molecule(Graph):
             charge += atom.charge
         return charge
 
-    def saturate(self):
+    def saturate_unfilled_valence(self, update = True):
+        """
+        Saturate the molecule by adding H atoms to any unfilled valence
+        """
+
+        saturator = Saturator()
+        saturator.saturate(self.atoms)
+        if update: self.update()
+
+    def saturate_radicals(self):
         """
         Saturate the molecule by replacing all radicals with bonds to hydrogen atoms.  Changes self molecule object.  
         """
@@ -1680,7 +1695,6 @@ class Molecule(Graph):
         # very expensive, so will do it anyway)
         self.sortVertices()
         self.updateAtomTypes()
-        self.updateLonePairs()
         self.multiplicity = 1
 
         return added

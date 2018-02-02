@@ -85,7 +85,7 @@ class TestUncertainty(unittest.TestCase):
 
         # Check thermo sources
         grp_expected = {
-            'Os-CsH', 'Os-OsH', 'Od-Cd', 'Cds-OdHH', 'Cds-(Cdd-Od)HH', 'Ct-CtH', 'Cds-CdsHH', 'Cs-OsHHH', 'Cs-CsHHH',
+            'O2s-CsH', 'O2s-OsH', 'O2d-Cd', 'Cds-OdHH', 'Cds-(Cdd-O2d)HH', 'Ct-CtH', 'Cds-CdsHH', 'Cs-OsHHH', 'Cs-CsHHH',
             'Cdd-CdsOd'
         }
         rad_expected = {'Acetyl', 'HOOJ', 'Cds_P', 'CCJ', 'CsJOH', 'CJ3'}

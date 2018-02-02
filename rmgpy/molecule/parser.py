@@ -420,7 +420,6 @@ def fromRDKitMol(mol, rdkitmol):
     
     # Set atom types and connectivity values
     mol.update()
-    mol.updateLonePairs()
 
     # Assume this is always true
     # There are cases where 2 radicalElectrons is a singlet, but
@@ -476,7 +475,6 @@ def fromOBMol(mol, obmol):
     mol.updateConnectivityValues()
     mol.updateAtomTypes()
     mol.updateMultiplicity()
-    mol.updateLonePairs()
     
     # Assume this is always true
     # There are cases where 2 radicalElectrons is a singlet, but

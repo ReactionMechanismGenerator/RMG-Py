@@ -299,19 +299,21 @@ def findAllDelocalizationPathsN5dd_N5ts(atom1):
     for atom2, bond12 in atom1.edges.items():
         index_atom_2 = index_atom_2 + 1
         # Only double bonds are considered
-        if bond12.isDouble():
+        if bond12.isDouble() and not atom2.isCarbon():
             for atom3, bond13 in atom1.edges.items():
                 index_atom_3 = index_atom_3 + 1
                 # Only double bonds are considered, at the moment we only consider non-radical nitrogen and oxygen atoms
-                if (bond13.isDouble() and atom3.radicalElectrons == 0 and atom3.lonePairs > 0 and not atom3.isOxygen() and not atom3.isCarbon() and (index_atom_2 != index_atom_3)):
+                if (bond13.isDouble() and atom3.radicalElectrons == 0 and atom3.lonePairs > 0 and not atom3.isOxygen()
+                        and not atom3.isCarbon() and (index_atom_2 != index_atom_3)):
                     paths.append([atom1, atom2, atom3, bond12, bond13, 1])
     
     for atom2, bond12 in atom1.edges.items():
         # Only triple bonds are considered
-        if bond12.isTriple():
+        if bond12.isTriple() and not atom2.isCarbon():
             for atom3, bond13 in atom1.edges.items():
                 # Only single bonds are considered, at the moment we only consider negatively charged nitrogen and oxygen
-                if (bond13.isSingle() and ((atom3.isNitrogen() and atom3.lonePairs >= 2) or (atom3.isOxygen() and atom3.lonePairs >= 3))):
+                if (bond13.isSingle() and ((atom3.isNitrogen() and atom3.lonePairs >= 2) or (atom3.isOxygen()
+                            and atom3.lonePairs >= 3))):
                     paths.append([atom1, atom2, atom3, bond12, bond13, 2])
     
     return paths    
