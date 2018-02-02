@@ -1167,34 +1167,35 @@ class CoreEdgeReactionModel:
         """
 
         ineligibleSpecies = []     # A list of the species which are not eligible for pruning, for any reason
-
-        numEdgeSpecies = len(self.edge.species)
+        prunableSpecies = reactionSystems[0].prunableSpecies
+        prunableNetworks = reactionSystems[0].prunableNetworks
+        
+        numPrunableSpecies = len(prunableSpecies)
         iteration = self.iterationNum
         # All edge species that have not existed for more than two enlarge
         # iterations are ineligible for pruning
-        for spec in self.edge.species:
+        for spec in prunableSpecies:
             if iteration - spec.creationIteration <= minSpeciesExistIterationsForPrune:
                 ineligibleSpecies.append(spec)
 
         # Get the maximum species rates (and network leak rates)
         # across all reaction systems
-        maxEdgeSpeciesRateRatios = numpy.zeros((numEdgeSpecies), numpy.float64)
+        maxEdgeSpeciesRateRatios = numpy.zeros((numPrunableSpecies), numpy.float64)
         for reactionSystem in reactionSystems:
-            for i in range(numEdgeSpecies):
+            for i in range(numPrunableSpecies):
                 rateRatio = reactionSystem.maxEdgeSpeciesRateRatios[i]
                 if maxEdgeSpeciesRateRatios[i] < rateRatio:
                     maxEdgeSpeciesRateRatios[i] = rateRatio
 
-            for i in range(len(self.networkList)):
-                network = self.networkList[i]
+            for i,network in enumerate(prunableNetworks):
                 rateRatio = reactionSystem.maxNetworkLeakRateRatios[i]
                 # Add the fraction of the network leak rate contributed by
                 # each unexplored species to that species' rate
                 # This is to ensure we have an overestimate of that species flux
                 ratios = network.getLeakBranchingRatios(reactionSystem.T.value_si,reactionSystem.P.value_si)
                 for spec, frac in ratios.iteritems():
-                    if spec in self.edge.species:
-                        index = self.edge.species.index(spec)
+                    if spec in prunableSpecies:
+                        index = prunableSpecies.index(spec)
                         maxEdgeSpeciesRateRatios[index] += frac * rateRatio
                 # Mark any species that is explored in any partial network as ineligible for pruning
                 for spec in network.explored:
@@ -1207,15 +1208,15 @@ class CoreEdgeReactionModel:
         speciesToPrune = []
         pruneDueToRateCounter = 0
         for index in indices:
-            spec = self.edge.species[index]
-            if spec in ineligibleSpecies:
+            spec = prunableSpecies[index]
+            if spec in ineligibleSpecies or not spec in self.edge.species:
                 continue
             # Remove the species with rates below the pruning tolerance from the model edge
             if maxEdgeSpeciesRateRatios[index] < toleranceKeepInEdge:
                 speciesToPrune.append((index, spec))
                 pruneDueToRateCounter += 1
             # Keep removing species with the lowest rates until we are below the maximum edge species size
-            elif numEdgeSpecies - len(speciesToPrune) > maximumEdgeSpecies:
+            elif numPrunableSpecies - len(speciesToPrune) > maximumEdgeSpecies:
                 logging.info('Pruning species {0} to make numEdgeSpecies smaller than maximumEdgeSpecies'.format(spec)) # repeated ~15 lines below
                 speciesToPrune.append((index, spec))
             else:
