@@ -173,6 +173,14 @@ class Species(object):
         return self._inchi
 
     @property
+    def multiplicity(self):
+        """Fingerprint of this species, taken from molecule attribute. Read-only."""
+        if self.molecule:
+            return self.molecule[0].multiplicity
+        else:
+            return None
+
+    @property
     def molecularWeight(self):
         """The molecular weight of the species. (Note: value_si is in kg/molecule not kg/mol)"""
         if self._molecularWeight is None and self.molecule is not None and len(self.molecule) > 0:
