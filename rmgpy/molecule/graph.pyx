@@ -34,6 +34,7 @@ are the components of a graph.
 """
 
 import logging
+import py_rdl
 from .vf2 cimport VF2
 
 ################################################################################
@@ -198,6 +199,12 @@ cdef class Edge(object):
 
 cdef VF2 vf2 = VF2()
 
+cdef  Vertex _getEdgeVertex1(Edge edge):
+    return edge.vertex1
+
+cdef Vertex _getEdgeVertex2(Edge edge):
+    return edge.vertex2
+
 cdef class Graph:
     """
     A graph data type. The vertices of the graph are stored in a list
@@ -235,6 +242,21 @@ cdef class Graph:
         edge.vertex1.edges[edge.vertex2] = edge
         edge.vertex2.edges[edge.vertex1] = edge
         return edge
+
+    cpdef list getAllEdges(self):
+        """
+        Returns a list of all edges in the graph.
+        """
+        cdef set edgeSet
+        cdef Vertex vertex
+        cdef Edge edge
+
+        edgeSet = set()
+        for vertex in self.vertices:
+            for edge in vertex.edges.itervalues():
+                edgeSet.add(edge)
+
+        return list(edgeSet)
 
     cpdef dict getEdges(self, Vertex vertex):
         """
@@ -651,68 +673,83 @@ cdef class Graph:
     
     cpdef tuple getDisparateRings(self):
         """
-        Return a list of distinct polycyclic and monocyclic rings within the graph.
-        There is some code duplication in this function in order to maximize speed up
-        so as to call `self.getSmallestSetOfSmallestRings()` only once.
+        Get all disjoint monocyclic and polycyclic cycle clusters in the molecule.
+        Takes the RC and recursively merges all cycles which share vertices.
         
-        Returns: monocyclicRingsList, polycyclicRingsList
+        Returns: monocyclic_cycles, polycyclic_cycles
         """
-        
-        cdef set polycyclicCycle
-        cdef Vertex vertex
-        cdef list SSSR, vertices, polycyclicVertices, continuousCycles
-        
-        SSSR = self.getSmallestSetOfSmallestRings()
-        if not SSSR:
+        cdef list rc, cycle_list, cycle_sets, monocyclic_cycles, polycyclic_cycles
+        cdef set cycle_set
+
+        rc = self.getRelevantCycles()
+
+        if not rc:
             return [], []
+
+        # Convert cycles to sets
+        cycle_sets = [set(cycle_list) for cycle_list in rc]
+
+        # Merge connected cycles
+        monocyclic_cycles, polycyclic_cycles = self._merge_cycles(cycle_sets)
+
+        # Convert cycles back to lists
+        monocyclic_cycles = [list(cycle_set) for cycle_set in monocyclic_cycles]
+        polycyclic_cycles = [list(cycle_set) for cycle_set in polycyclic_cycles]
+
+        return monocyclic_cycles, polycyclic_cycles
+
+    cpdef tuple _merge_cycles(self, list cycle_sets):
+        """
+        Recursively merges cycles that share common atoms.
         
-        polycyclicVertices = []
-        if SSSR:            
-            vertices = []
-            for cycle in SSSR:
-                for vertex in cycle:
-                    if vertex not in vertices:
-                        vertices.append(vertex)
-                    else:
-                        if vertex not in polycyclicVertices:
-                            polycyclicVertices.append(vertex)     
-        
-        if not polycyclicVertices:
-            # no polycyclic vertices detected
-            return SSSR, []
-        else: 
-            # polycyclic vertices found, merge cycles together and store them in continuousCycles list.
-            # that have common polycyclic vertices
-            
-            continuousCycles = []
-            polycyclicSSSR = []
-            for vertex in polycyclicVertices:
-                # First check if it is in any existing continuous cycles
-                for cycle in continuousCycles:
-                    if vertex in cycle:
-                        polycyclicCycle = cycle
-                        break
-                else:
-                    # Otherwise create a new cycle
-                    polycyclicCycle = set()
-                    continuousCycles.append(polycyclicCycle)
-                    
-                for cycle in SSSR:
-                    if vertex in cycle:
-                        polycyclicCycle.update(cycle)
-                        if cycle not in polycyclicSSSR:
-                            polycyclicSSSR.append(cycle)
-                            
-            # convert each polycyclic set to a list
-            continuousCycles = [list(cycle) for cycle in continuousCycles]
-            
-            monocyclicCycles = SSSR
-            # remove the polycyclic cycles from the list of SSSR, leaving behind just the monocyclics
-            for cycle in polycyclicSSSR:
-                monocyclicCycles.remove(cycle)
-                    
-            return monocyclicCycles, continuousCycles
-       
+        Returns one list with unmerged cycles and one list with merged cycles.
+        """
+        cdef list unmerged_cycles, merged_cycles, matched, u, m
+        cdef set cycle, m_cycle, u_cycle
+        cdef bint merged, new
+
+        unmerged_cycles = []
+        merged_cycles = []
+
+        # Loop through each cycle
+        for cycle in cycle_sets:
+            merged = False
+            new = False
+
+            # Check if it's attached to an existing merged cycle
+            for m_cycle in merged_cycles:
+                if not m_cycle.isdisjoint(cycle):
+                    m_cycle.update(cycle)
+                    merged = True
+                    # It should only match one merged cycle, so we can break here
+                    break
+            else:
+                # If it doesn't match any existing merged cycles, initiate a new one
+                m_cycle = cycle.copy()
+                new = True
+
+            # Check if the new merged cycle is attached to any of the unmerged cycles
+            matched = []
+            for i, u_cycle in enumerate(unmerged_cycles):
+                if not m_cycle.isdisjoint(u_cycle):
+                    m_cycle.update(u_cycle)
+                    matched.append(i)
+                    merged = True
+            # Remove matched cycles from list of unmerged cycles
+            for i in reversed(matched):
+                del unmerged_cycles[i]
+
+            if merged and new:
+                merged_cycles.append(m_cycle)
+            elif not merged:
+                unmerged_cycles.append(cycle)
+
+        # If any rings were successfully merged, try to merge further
+        if len(merged_cycles) > 1:
+            u, m = self._merge_cycles(merged_cycles)
+            merged_cycles = u + m
+
+        return unmerged_cycles, merged_cycles
        
     cpdef list getAllCycles(self, Vertex startingVertex):
         """
@@ -889,100 +926,96 @@ cdef class Graph:
 
     cpdef list getSmallestSetOfSmallestRings(self):
         """
-        Return a list of the smallest set of smallest rings in the graph. The
-        algorithm implements was adapted from a description by Fan, Panaye,
-        Doucet, and Barbu (doi: 10.1021/ci00015a002)
+        Returns the smallest set of smallest rings as a list of lists.
+        Uses RingDecomposerLib for ring perception.
 
-        B. T. Fan, A. Panaye, J. P. Doucet, and A. Barbu. "Ring Perception: A
-        New Algorithm for Directly Finding the Smallest Set of Smallest Rings
-        from a Connection Table." *J. Chem. Inf. Comput. Sci.* **33**,
-        p. 657-662 (1993).
+        Kolodzik, A.; Urbaczek, S.; Rarey, M.
+        Unique Ring Families: A Chemically Meaningful Description
+        of Molecular Ring Topologies.
+        J. Chem. Inf. Model., 2012, 52 (8), pp 2013-2021
+
+        Flachsenberg, F.; Andresen, N.; Rarey, M.
+        RingDecomposerLib: An Open-Source Implementation of
+        Unique Ring Families and Other Cycle Bases.
+        J. Chem. Inf. Model., 2017, 57 (2), pp 122-126
         """
-        cdef Graph graph
-        cdef bint done, found
-        cdef list cycleList, cycles, cycle, graphs, neighbors, verticesToRemove, vertices
-        cdef Vertex vertex, rootVertex
+        cdef list sssr
+        cdef object graph, data, cycle
 
-        # Make a copy of the graph so we don't modify the original
-        graph = self.copy(deep=True)
-        vertices = graph.vertices[:]
-        
-        # Step 1: Remove all terminal vertices
-        done = False
-        while not done:
-            verticesToRemove = []
-            for vertex in graph.vertices:
-                if len(vertex.edges) == 1: verticesToRemove.append(vertex)
-            done = len(verticesToRemove) == 0
-            # Remove identified vertices from graph
-            for vertex in verticesToRemove:
-                graph.removeVertex(vertex)
+        graph = py_rdl.Graph.from_edges(
+            self.getAllEdges(),
+            _getEdgeVertex1,
+            _getEdgeVertex2,
+        )
 
-        # Step 2: Remove all other vertices that are not part of cycles
-        verticesToRemove = []
-        for vertex in graph.vertices:
-            found = graph.isVertexInCycle(vertex)
-            if not found:
-                verticesToRemove.append(vertex)
-        # Remove identified vertices from graph
-        for vertex in verticesToRemove:
-            graph.removeVertex(vertex)
+        data = py_rdl.wrapper.DataInternal(graph.get_nof_nodes(), graph.get_edges().iterkeys())
+        data.calculate()
 
-        # Step 3: Split graph into remaining subgraphs
-        graphs = graph.split()
+        sssr = []
+        for cycle in data.get_sssr():
+            sssr.append(self._sortCyclicVertices([graph.get_node_for_index(i) for i in cycle.nodes]))
 
-        # Step 4: Find ring sets in each subgraph
-        cycleList = []
-        for graph in graphs:
+        return sssr
 
-            while len(graph.vertices) > 0:
+    cpdef list getRelevantCycles(self):
+        """
+        Returns the set of relevant cycles as a list of lists.
+        Uses RingDecomposerLib for ring perception.
 
-                # Choose root vertex as vertex with smallest number of edges
-                rootVertex = None
-                graph.updateConnectivityValues()
-                for vertex in graph.vertices:
-                    if rootVertex is None:
-                        rootVertex = vertex
-                    elif getVertexConnectivityValue(vertex) > getVertexConnectivityValue(rootVertex):
-                        rootVertex = vertex
+        Kolodzik, A.; Urbaczek, S.; Rarey, M.
+        Unique Ring Families: A Chemically Meaningful Description
+        of Molecular Ring Topologies.
+        J. Chem. Inf. Model., 2012, 52 (8), pp 2013-2021
 
-                # Get all cycles involving the root vertex
-                cycles = graph.getAllCycles(rootVertex)
-                if len(cycles) == 0:
-                    # This vertex is no longer in a ring, so remove it
-                    graph.removeVertex(rootVertex)
-                    continue
+        Flachsenberg, F.; Andresen, N.; Rarey, M.
+        RingDecomposerLib: An Open-Source Implementation of
+        Unique Ring Families and Other Cycle Bases.
+        J. Chem. Inf. Model., 2017, 57 (2), pp 122-126
+        """
+        cdef list rc
+        cdef object graph, data, cycle
 
-                # Keep the smallest of the cycles found above
-                cycle = cycles[0]
-                for c in cycles[1:]:
-                    if len(c) < len(cycle):
-                        cycle = c
-                cycleList.append(cycle)
-                
-                # Remove the root vertex to create single edges, note this will not
-                # function properly if there is no vertex with 2 edges (i.e. cubane)
-                graph.removeVertex(rootVertex)
+        graph = py_rdl.Graph.from_edges(
+            self.getAllEdges(),
+            _getEdgeVertex1,
+            _getEdgeVertex2,
+        )
 
-                # Remove from the graph all vertices in the cycle that have only one edge
-                loneCarbon = True
-                while loneCarbon:
-                    loneCarbon = False
-                    verticesToRemove = []
-                    
-                    for vertex in cycle:
-                        if len(vertex.edges) == 1:
-                            loneCarbon = True
-                            verticesToRemove.append(vertex)
-                    else:
-                        for vertex in verticesToRemove:
-                            graph.removeVertex(vertex)
+        data = py_rdl.wrapper.DataInternal(graph.get_nof_nodes(), graph.get_edges().iterkeys())
+        data.calculate()
 
-        # Map atoms in cycles back to atoms in original graph
-        for i in range(len(cycleList)):
-            cycleList[i] = [self.vertices[vertices.index(v)] for v in cycleList[i]]
+        rc = []
+        for cycle in data.get_rcs():
+            rc.append(self._sortCyclicVertices([graph.get_node_for_index(i) for i in cycle.nodes]))
 
-        return cycleList
+        return rc
+
+    cpdef list _sortCyclicVertices(self, list vertices):
+        """
+        Given a list of vertices comprising a cycle, sort them such that adjacent
+        entries in the list are connected to each other.
+        Warning: Assumes that the cycle is elementary, ie. no bridges.
+        """
+        cdef list ordered
+        cdef Vertex vertex
+
+        ordered = [vertices.pop()]
+        while vertices:
+            for vertex in vertices:
+                if vertex in ordered[-1].edges:
+                    ordered.append(vertex)
+                    vertices.remove(vertex)
+                    break
+            else:
+                # No connected vertex was found
+                raise RuntimeError('Could not sort cyclic vertices because '
+                                   'not all vertices are connected to two '
+                                   'other vertices in the input list.')
+
+        if not self.hasEdge(ordered[0], ordered[-1]):
+            raise RuntimeError('Input vertices do not comprise a single cycle.')
+
+        return ordered
 
     cpdef list getLargestRing(self, Vertex vertex):
         """

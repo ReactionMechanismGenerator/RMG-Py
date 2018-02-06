@@ -1510,10 +1510,10 @@ class Molecule(Graph):
         there will be at least one 6 membered aromatic ring so this algorithm
         will not fail for fused aromatic rings.
         """
-        cython.declare(SSSR=list, vertices=list, polycyclicVertices=list)
-        SSSR = self.getSmallestSetOfSmallestRings()
-        if SSSR:
-            for cycle in SSSR:
+        cython.declare(rc=list, cycle=list, atom=Atom)
+        rc = self.getRelevantCycles()
+        if rc:
+            for cycle in rc:
                 if len(cycle) == 6:
                     for atom in cycle:
                         #print atom.atomType.label
@@ -1742,7 +1742,8 @@ class Molecule(Graph):
         AROMATIC = BondType.AROMATIC
 
         if rings is None:
-            rings = self.getAllSimpleCyclesOfSize(6)
+            rings = self.getRelevantCycles()
+            rings = [ring for ring in rings if len(ring) == 6]
         if not rings:
             return [], []
 
@@ -1810,6 +1811,13 @@ class Molecule(Graph):
         For instance, molecule with this SMILES: C1CC2C3CSC(CO3)C2C1, will have non-deterministic
         output from `getSmallestSetOfSmallestRings`, which leads to non-deterministic bycyclic decomposition
         Using this new method can effectively prevent this situation.
+
+        Important Note: This method returns an incorrect set of SSSR in certain molecules (such as cubane).
+        It is recommended to use the main `Graph.getSmallestSetOfSmallestRings` method in new applications.
+        Alternatively, consider using `Graph.getRelevantCycles` for deterministic output.
+
+        In future development, this method should ideally be replaced by some method to select a deterministic
+        set of SSSR from the set of Relevant Cycles, as that would be a more robust solution.
         """
         cython.declare(vertices=list, verticesToRemove=list, rootCandidates_tups=list, graphs=list)
         cython.declare(cycleList=list, cycleCandidate_tups=list, cycles=list, cycle0=list, originConnDict=dict)

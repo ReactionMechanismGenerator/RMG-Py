@@ -65,6 +65,10 @@ cdef class Edge(object):
 
 ################################################################################
 
+cdef Vertex _getEdgeVertex1(Edge edge)
+
+cdef Vertex _getEdgeVertex2(Edge edge)
+
 cdef class Graph:
 
     cdef public list vertices
@@ -72,6 +76,8 @@ cdef class Graph:
     cpdef Vertex addVertex(self, Vertex vertex)
 
     cpdef Edge addEdge(self, Edge edge)
+
+    cpdef list getAllEdges(self)
 
     cpdef dict getEdges(self, Vertex vertex)
 
@@ -125,6 +131,8 @@ cdef class Graph:
     
     cpdef tuple getDisparateRings(self)
 
+    cpdef tuple _merge_cycles(self, list cycle_sets)
+
     cpdef list getAllCycles(self, Vertex startingVertex)
 
     cpdef list getAllCyclesOfSize(self, int size)
@@ -134,6 +142,10 @@ cdef class Graph:
     cpdef list __exploreCyclesRecursively(self, list chain, list cycles)
 
     cpdef list getSmallestSetOfSmallestRings(self)
+
+    cpdef list getRelevantCycles(self)
+
+    cpdef list _sortCyclicVertices(self, list vertices)
     
     cpdef list getLargestRing(self, Vertex vertex)
     

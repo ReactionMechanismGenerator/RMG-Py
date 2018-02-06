@@ -354,6 +354,7 @@ def calculateCyclicSymmetryNumber(molecule):
     for ring in polycyclicRings: singleRings.append(molecule.getLargestRing(ring[0]))
     # Get symmetry number for each ring in structure & multiply
     for ring in singleRings:
+        ring = molecule._sortCyclicVertices(ring)
         size = len(ring)
         
         # look for twisting rotation

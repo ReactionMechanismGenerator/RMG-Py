@@ -21,6 +21,7 @@ dependencies:
   - pydas 
   - pydot ==1.2.2
   - pydqed
+  - pyrdl
   - nose
   - coverage
   - gprof2dot

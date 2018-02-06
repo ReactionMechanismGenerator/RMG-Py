@@ -1709,32 +1709,49 @@ multiplicity 2
         monorings, polyrings = m1.getDisparateRings()
         self.assertEqual(len(monorings), 0)
         self.assertEqual(len(polyrings), 1)
-        self.assertEqual(len(polyrings[0]),7)  # 7 carbons in cycle
-        
+        self.assertEqual(len(polyrings[0]), 7)  # 7 carbons in cycle
+
+        # norbornane + cyclobutane on chain
         m2 = Molecule(SMILES='C(CCC1C2CCC1CC2)CC1CCC1')
         monorings, polyrings = m2.getDisparateRings()
-        self.assertEqual(len(monorings),1)
-        self.assertEqual(len(polyrings),1)
-        self.assertEqual(len(monorings[0]),4)
-        self.assertEqual(len(polyrings[0]),7)
-        
-        
+        self.assertEqual(len(monorings), 1)
+        self.assertEqual(len(polyrings), 1)
+        self.assertEqual(len(monorings[0]), 4)
+        self.assertEqual(len(polyrings[0]), 7)
+
+        # spiro-octane + cyclobutane on chain
         m3 = Molecule(SMILES='C1CCC2(CC1)CC2CCCCC1CCC1')
         monorings, polyrings = m3.getDisparateRings()
         self.assertEqual(len(polyrings), 1)
-        self.assertEqual(len(monorings),1)
-        self.assertEqual(len(monorings[0]),4)
-        self.assertEqual(len(polyrings[0]),8)
-        
+        self.assertEqual(len(monorings), 1)
+        self.assertEqual(len(monorings[0]), 4)
+        self.assertEqual(len(polyrings[0]), 8)
+
+        # butane
         m4 = Molecule(SMILES='CCCC')
         monorings, polyrings = m4.getDisparateRings()
-        self.assertEqual(len(monorings),0)
-        self.assertEqual(len(polyrings),0)
-        
+        self.assertEqual(len(monorings), 0)
+        self.assertEqual(len(polyrings), 0)
+
+        # benzene + cyclopropane on chain + cyclopropane on chain
         m5 = Molecule(SMILES='C1=CC=C(CCCC2CC2)C(=C1)CCCCCC1CC1')
         monorings, polyrings = m5.getDisparateRings()
-        self.assertEqual(len(monorings),3)
-        self.assertEqual(len(polyrings),0)
+        self.assertEqual(len(monorings), 3)
+        self.assertEqual(len(polyrings), 0)
+
+        # octacene
+        m6 = Molecule(SMILES='c1ccc2cc3cc4cc5cc6cc7cc8ccccc8cc7cc6cc5cc4cc3cc2c1')
+        monorings, polyrings = m6.getDisparateRings()
+        self.assertEqual(len(monorings), 0)
+        self.assertEqual(len(polyrings), 1)
+        self.assertEqual(len(polyrings[0]), 34)
+
+        # JP-10
+        m7 = Molecule(SMILES='C1CC2C3CCC(C3)C2C1')
+        monorings, polyrings = m7.getDisparateRings()
+        self.assertEqual(len(monorings), 0)
+        self.assertEqual(len(polyrings), 1)
+        self.assertEqual(len(polyrings[0]), 10)
 
     def testGetSmallestSetOfSmallestRings(self):
         """

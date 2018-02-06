@@ -34,6 +34,7 @@ requirements:
     - pydot ==1.2.2
     - pydqed >=1.0.1
     - pyparsing
+    - pyrdl
     - python
     - pyzmq
     - quantities
@@ -71,6 +72,7 @@ requirements:
     - pydot ==1.2.2
     - pydqed >=1.0.1
     - pyparsing
+    - pyrdl
     - python
     - pyzmq
     - quantities
