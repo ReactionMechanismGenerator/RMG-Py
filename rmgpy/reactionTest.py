@@ -47,7 +47,7 @@ from rmgpy.statmech.vibration import Vibration, HarmonicOscillator
 from rmgpy.statmech.torsion import Torsion, HinderedRotor
 from rmgpy.statmech.conformer import Conformer
 from rmgpy.kinetics import Arrhenius, ArrheniusEP, SurfaceArrhenius, StickingCoefficient
-from rmgpy.thermo import Wilhoit
+from rmgpy.thermo import Wilhoit, ThermoData, NASA, NASAPolynomial
 import rmgpy.constants as constants
 
 ################################################################################
