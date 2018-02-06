@@ -11,39 +11,12 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 {% endblock %}
 
 {% block rootrellink %}
-<li><a href="{{ pathto('index') }}">Documentation {{ release }}</a> &raquo;</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="{{ pathto('index') }}">{{ release }} Documentation</a> &raquo;</li>
 {% endblock %}
-
-{%- block header %}
-<div class="header">
-&nbsp;
-</div>
-{%- endblock %}
 
 {%- block sidebarlogo %}
 <div class="sidebarlogo">
 <a href="{{ pathto('index') }}"><img src="{{ pathto('_static/rmg-logo-small.png', 1) }}" alt="RMG" /></a>
 </div>
 {%- endblock %}
-
-{%- block relbar1 %}{% endblock %}
-
-  {%- block document %}
-      <div class="documentwrapper">
-      {%- if render_sidebar %}
-        <div class="bodywrapper">
-      {%- endif %}
-          <div class="body">
-            {{ relbar() }}
-            {% block body %} {% endblock %}
-          </div>
-      {%- if render_sidebar %}
-        </div>
-      {%- endif %}
-      </div>
-  {%- endblock %}
-
-{%- block relbar2 %}{% endblock %}
-
-  </body>
-</html>

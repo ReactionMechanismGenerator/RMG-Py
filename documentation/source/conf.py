@@ -102,20 +102,43 @@ html_theme = 'classic'
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#html_theme_options = {}
+html_theme_options = {
+    'sidebarwidth':         250,
+    # 'collapsiblesidebar':   True,
+    'footerbgcolor':        '#404040',      # Background color for the footer line.
+    'footertextcolor':      '#FFFFFF',      # Text color for the footer line.
+    'sidebarbgcolor':       '#404040',      # Background color for the sidebar.
+    'sidebarbtncolor':      '#505050',      # Background color for the sidebar collapse button (used when collapsiblesidebar is True).
+    'sidebartextcolor':     '#FFFFFF',      # Text color for the sidebar.
+    'sidebarlinkcolor':     '#F04040',      # Link color for the sidebar.
+    'relbarbgcolor':        '#303030',      # Background color for the relation bar.
+    'relbartextcolor':      '#FFFFFF',      # Text color for the relation bar.
+    'relbarlinkcolor':      '#F04040',      # Link color for the relation bar.
+    'bgcolor':              '#FFFFFF',      # Body background color.
+    'textcolor':            '#000000',      # Body text color.
+    'linkcolor':            '#F04040',      # Body link color.
+    'visitedlinkcolor':     '#F02020',      # Body color for visited links.
+    'headbgcolor':          '#E0E0E0',      # Background color for headings.
+    'headtextcolor':        '#404040',      # Text color for headings.
+    'headlinkcolor':        '#F04040',      # Link color for headings.
+    'codebgcolor':          '#FAF0F0',      # Background color for code blocks.
+    'codetextcolor':        '#000000',      # Default text color for code blocks, if not set differently by the highlighting style.
+    'bodyfont':             'sans-serif',   # Font for normal text.
+    'headfont':             'sans-serif',   # Font for headings.
+}
 
 # stylesheet to use
-html_style = 'rmg.css'
+html_style = 'custom.css'
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = []
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-#html_title = None
+html_title = 'RMG-Py 2.1.0 Documentation'
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
-#html_short_title = None
+html_short_title = '2.1.0 Documentation'
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
@@ -140,7 +163,9 @@ html_static_path = ['_static']
 #html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
-html_sidebars = {'**': ['localtoc.html', 'searchbox.html', 'sourcelink.html', 'customsidebar.html']}
+html_sidebars = {
+    'index': ['globaltoc.html', 'searchbox.html'],
+}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
@@ -179,7 +204,7 @@ htmlhelp_basename = 'RMGPydoc'
 # If true, documentation source files will be copied to the build directory,
 # and a link to view the source for the current page will be available in the
 # sidebar. Default is True.
-html_copy_source = True
+#html_copy_source = True
 
 # -- Options for LaTeX output --------------------------------------------------
 

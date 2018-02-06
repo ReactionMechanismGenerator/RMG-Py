@@ -1,0 +1,12 @@
+@import url("classic.css");
+
+div.sidebarlogo {
+    text-align: center;
+    padding: 10px 15px 20px 10px;
+}
+
+pre {
+    border: 1px solid #F04040;
+    border-left: none;
+    border-right: none;
+}
