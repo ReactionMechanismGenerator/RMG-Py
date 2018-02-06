@@ -562,7 +562,7 @@ cdef class ReactionSystem(DASx):
         toleranceInterruptSimulation = modelSettings.fluxToleranceInterrupt
         toleranceMoveEdgeReactionToCoreInterrupt= modelSettings.toleranceMoveEdgeReactionToCore
         toleranceMoveEdgeReactionToSurface = modelSettings.toleranceMoveEdgeReactionToSurface
-        toleranceMovesurfaceSpeciesToCore = modelSettings.toleranceMovesurfaceSpeciesToCore
+        toleranceMoveSurfaceSpeciesToCore = modelSettings.toleranceMoveSurfaceSpeciesToCore
         toleranceMoveSurfaceReactionToCore = modelSettings.toleranceMoveSurfaceReactionToCore
         toleranceMoveEdgeReactionToSurfaceInterrupt = modelSettings.toleranceMoveEdgeReactionToSurfaceInterrupt
         ignoreOverallFluxCriterion=modelSettings.ignoreOverallFluxCriterion
