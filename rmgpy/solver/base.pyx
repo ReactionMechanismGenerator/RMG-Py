@@ -827,7 +827,7 @@ cdef class ReactionSystem(DASx):
                     RR = max(abs(surfaceSpeciesProduction[i]),abs(surfaceSpeciesConsumption[i]))/charRate
                     surfaceSpeciesRateRatios[i] = RR
 
-                    if RR > toleranceMovesurfaceSpeciesToCore:
+                    if RR > toleranceMoveSurfaceSpeciesToCore:
                         sind = surfaceSpeciesIndices[i]
                         surfaceObjectIndices.append(sind)
                         surfaceObjects.append(coreSpecies[sind])
