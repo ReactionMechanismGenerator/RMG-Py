@@ -324,16 +324,20 @@ def simulate(reactionModel, reactionSystem, settings=None):
     edgeReactionRates = []
 
     nextTime = initialTime
+    stepTime = initialTime
     terminated = False
+
     while not terminated:
         # Integrate forward in time to the next time point
-        reactionSystem.advance(nextTime)
-        
-        time.append(reactionSystem.t)
-        coreSpeciesConcentrations.append(reactionSystem.coreSpeciesConcentrations)
-        coreReactionRates.append(reactionSystem.coreReactionRates)
-        edgeReactionRates.append(reactionSystem.edgeReactionRates)
-        
+        reactionSystem.step(stepTime)
+
+        if reactionSystem.t >= 0.9999 * nextTime:
+            nextTime *= timeStep
+            time.append(reactionSystem.t)
+            coreSpeciesConcentrations.append(reactionSystem.coreSpeciesConcentrations)
+            coreReactionRates.append(reactionSystem.coreReactionRates)
+            edgeReactionRates.append(reactionSystem.edgeReactionRates)
+
         # Finish simulation if any of the termination criteria are satisfied
         for term in reactionSystem.termination:
             if isinstance(term, TerminationTime):
@@ -347,14 +351,14 @@ def simulate(reactionModel, reactionSystem, settings=None):
                     break
 
         # Increment destination step time if necessary
-        if reactionSystem.t >= 0.9999 * nextTime:
-            nextTime *= timeStep
+        if reactionSystem.t >= 0.9999 * stepTime:
+            stepTime *= 10.0
 
     time = numpy.array(time)
     coreSpeciesConcentrations = numpy.array(coreSpeciesConcentrations)
     coreReactionRates = numpy.array(coreReactionRates)
     edgeReactionRates = numpy.array(edgeReactionRates)
-    
+
     return time, coreSpeciesConcentrations, coreReactionRates, edgeReactionRates
 
 ################################################################################
