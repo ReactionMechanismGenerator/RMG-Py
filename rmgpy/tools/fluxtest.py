@@ -50,8 +50,10 @@ class FluxDiagramTest(unittest.TestCase):
                     'speciesRateTolerance': 1e-6,
                     'maximumNodePenWidth': 10.0,
                     'maximumEdgePenWidth': 10.0,
+                    'radius': 2,
                     'timeStep': 10**0.1}
-        createFluxDiagram(inputFile, chemkinFile, dictFile, centralSpecies='ethane', settings=settings)
+        createFluxDiagram(inputFile, chemkinFile, dictFile,
+                          centralSpeciesList=[1], superimpose=True, settings=settings)
 
         outputdir = os.path.join(folder,'flux')
         simfile = os.path.join(outputdir,'1','flux_diagram.avi')
