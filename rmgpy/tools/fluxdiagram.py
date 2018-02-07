@@ -321,7 +321,6 @@ def simulate(reactionModel, reactionSystem, settings=None):
     time = []
     coreSpeciesConcentrations = []
     coreReactionRates = []
-    edgeReactionRates = []
 
     nextTime = initialTime
     stepTime = initialTime
@@ -336,7 +335,6 @@ def simulate(reactionModel, reactionSystem, settings=None):
             time.append(reactionSystem.t)
             coreSpeciesConcentrations.append(reactionSystem.coreSpeciesConcentrations)
             coreReactionRates.append(reactionSystem.coreReactionRates)
-            edgeReactionRates.append(reactionSystem.edgeReactionRates)
 
         # Finish simulation if any of the termination criteria are satisfied
         for term in reactionSystem.termination:
@@ -357,9 +355,8 @@ def simulate(reactionModel, reactionSystem, settings=None):
     time = numpy.array(time)
     coreSpeciesConcentrations = numpy.array(coreSpeciesConcentrations)
     coreReactionRates = numpy.array(coreReactionRates)
-    edgeReactionRates = numpy.array(edgeReactionRates)
 
-    return time, coreSpeciesConcentrations, coreReactionRates, edgeReactionRates
+    return time, coreSpeciesConcentrations, coreReactionRates
 
 ################################################################################
 
@@ -372,13 +369,11 @@ def loadChemkinOutput(outputFile, reactionModel):
     from rmgpy.quantity import Quantity
 
     coreReactions = reactionModel.core.reactions
-    edgeReactions = reactionModel.edge.reactions    
     speciesList = reactionModel.core.species
 
     time = []
     coreSpeciesConcentrations = []
     coreReactionRates = []
-    edgeReactionRates = []
 
     with open(outputFile, 'r') as f:
 
@@ -420,28 +415,22 @@ def loadChemkinOutput(outputFile, reactionModel):
                 totalConcentration = P.value_si/constants.R/T.value_si
                 coreSpeciesConcentrations.append([molefrac*totalConcentration for molefrac in molefractions])
                 coreRates = []
-                edgeRates = []
                 for reaction in coreReactions:                    
                     rate = reaction.getRateCoefficient(T.value_si,P.value_si)
                     for reactant in reaction.reactants:
                         rate *= molefractions[speciesList.index(reactant)]*totalConcentration                    
                     coreRates.append(rate)
-                for reaction in edgeReactions:
-                    edgeRates.append(reaction.getRateCoefficient(T.value_si,P.value_si))
 
                 if coreRates:
                     coreReactionRates.append(coreRates)
-                if edgeRates:
-                    edgeReactionRates.append(edgeRates)
             
             line=f.readline()
    
     time = numpy.array(time)
     coreSpeciesConcentrations = numpy.array(coreSpeciesConcentrations)
     coreReactionRates = numpy.array(coreReactionRates)
-    edgeReactionRates = numpy.array(edgeReactionRates)
    
-    return time, coreSpeciesConcentrations, coreReactionRates, edgeReactionRates
+    return time, coreSpeciesConcentrations, coreReactionRates
 
 ################################################################################
 
@@ -473,7 +462,7 @@ def createFluxDiagram(inputFile, chemkinFile, speciesDict, savePath=None, specie
             pass
 
         print 'Extracting species concentrations and calculating reaction rates from chemkin output...'
-        time, coreSpeciesConcentrations, coreReactionRates, edgeReactionRates = loadChemkinOutput(chemkinOutput, rmg.reactionModel)
+        time, coreSpeciesConcentrations, coreReactionRates = loadChemkinOutput(chemkinOutput, rmg.reactionModel)
 
         print 'Generating flux diagram for chemkin output...'
         generateFluxDiagram(rmg.reactionModel, time, coreSpeciesConcentrations, coreReactionRates, outDir, centralSpecies, speciesPath, settings)
@@ -500,7 +489,7 @@ def createFluxDiagram(inputFile, chemkinFile, speciesDict, savePath=None, specie
                 reactionSystem.termination.append(TerminationTime((1e10,'s')))
 
             print 'Conducting simulation of reaction system {0:d}...'.format(index+1)
-            time, coreSpeciesConcentrations, coreReactionRates, edgeReactionRates = simulate(rmg.reactionModel, reactionSystem, settings)
+            time, coreSpeciesConcentrations, coreReactionRates = simulate(rmg.reactionModel, reactionSystem, settings)
 
             print 'Generating flux diagram for reaction system {0:d}...'.format(index+1)
             generateFluxDiagram(rmg.reactionModel, time, coreSpeciesConcentrations, coreReactionRates, outDir,
