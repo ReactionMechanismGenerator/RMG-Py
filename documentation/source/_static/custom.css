@@ -2,11 +2,55 @@
 
 div.sidebarlogo {
     text-align: center;
-    padding: 10px 15px 20px 10px;
+    padding: 20px;
 }
 
 pre {
     border: 1px solid #F04040;
     border-left: none;
     border-right: none;
+}
+
+div.sphinxsidebarwrapper {
+    padding: 0;
+}
+
+#sidebar .icon {
+    float: left;
+    width: 40px;
+    padding: 5px;
+}
+
+#sidebar div.menuitem {
+    padding: 5px;
+}
+
+#sidebar div.menutext {
+    text-align: left;
+    margin-left: 50px;
+    padding: 1px 5px;
+}
+
+#sidebar div.menutitle {
+    color: #F04040;
+    font-size: 125%;
+    vertical-align: bottom;
+}
+
+#sidebar div.menudesc {
+    color: #FFFFFF;
+    font-size: 90%;
+    vertical-align: top;
+}
+
+#rmgsidebar a {
+    text-decoration: none;
+}
+
+#rmgsidebar div.menuitem {
+    min-height: 50px;
+}
+
+#rmgsidebar div.menuitem:hover {
+    background-color: #606060;
 }
