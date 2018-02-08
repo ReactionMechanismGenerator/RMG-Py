@@ -126,20 +126,6 @@ Class                    Description
 ======================== =======================================================
 
 
-Exceptions
-==========
-
-.. currentmodule:: rmgpy.molecule
-
-=================================== ============================================
-Exception                           Description
-=================================== ============================================
-:exc:`ElementError`                 Raised when an error occurs while working with chemical elements
-:exc:`AtomTypeError`                Raised when an error occurs while working with atom types
-:exc:`InvalidAdjacencyListError`    Raised when an invalid adjacency list is encountered
-:exc:`ActionError`                  Raised when an error occurs while working with a reaction recipe action
-=================================== ============================================
-
 
 .. toctree::
     :hidden:

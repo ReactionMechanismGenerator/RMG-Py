@@ -79,19 +79,6 @@ Class                           Description
 
 
 
-Exceptions
-==========
-
-.. currentmodule:: rmgpy.cantherm
-
-=============================== ================================================
-Exception                       Description
-=============================== ================================================
-:exc:`GaussianError`            Raised when an error occurs while working with a Gaussian log file
-=============================== ================================================
-
-
-
 .. toctree::
     :hidden:
     
