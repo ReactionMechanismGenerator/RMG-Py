@@ -1,14 +1,10 @@
 @import url("classic.css");
 
+/* ----- sidebar styles ----- */
+
 div.sidebarlogo {
     text-align: center;
     padding: 20px;
-}
-
-pre {
-    border: 1px solid #F04040;
-    border-left: none;
-    border-right: none;
 }
 
 div.sphinxsidebarwrapper {
@@ -53,4 +49,33 @@ div.sphinxsidebarwrapper {
 
 #rmgsidebar div.menuitem:hover {
     background-color: #606060;
+}
+
+/* ----- table styles ----- */
+
+th {
+    background-color: transparent;
+}
+
+table.rmg {
+    border-top: 2px solid #000000;
+    border-bottom: 2px solid #000000;
+    border-collapse: collapse;
+    margin: 10px 10px 20px 30px;
+}
+
+table.rmg thead {
+    border-bottom: 1px solid #000000;
+}
+
+table.rmg th,
+table.rmg td {
+    padding: 5px;
+}
+
+/* ----- code block styles ----- */
+
+pre {
+    border-top: 1px solid #F04040;
+    border-bottom: 1px solid #F04040;
 }
