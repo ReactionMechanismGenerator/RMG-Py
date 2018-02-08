@@ -118,6 +118,8 @@ class LiquidReactorCheck(unittest.TestCase):
         edgeSpecies = []
         coreReactions = [rxn1]
         edgeReactions = []
+        surfaceSpecies = []
+        surfaceReactions = []
 
         c0 = {self.C2H5: 0.1, self.CH3: 0.1, self.CH4: 0.4, self.C2H6: 0.4}
 
@@ -165,6 +167,8 @@ class LiquidReactorCheck(unittest.TestCase):
         numCoreSpecies = len(coreSpecies)
         c0 = {self.CH4: 0.2, self.CH3: 0.1, self.C2H6: 0.35, self.C2H5: 0.15, self.H2: 0.2}
         edgeReactions = []
+        surfaceSpecies = []
+        surfaceReactions = []
 
         rxnList = []
         rxnList.append(Reaction(
@@ -314,6 +318,8 @@ class LiquidReactorCheck(unittest.TestCase):
         edgeSpecies = []
         coreReactions = rxnList
         edgeReactions = []
+        surfaceSpecies = []
+        surfaceReactions = []
         numCoreSpecies = len(coreSpecies)
         
         c0 = {self.CH4: 0.2, self.CH3: 0.1, self.C2H6: 0.35, self.C2H5: 0.15, self.H2: 0.2}
@@ -431,6 +437,8 @@ class LiquidReactorCheck(unittest.TestCase):
         edgeSpecies = []
         coreReactions = [rxn1]
         edgeReactions = []
+        surfaceSpecies = []
+        surfaceReactions = []
         sensitivity = []
         terminationConversion = []
         sensitivityThreshold = 0.001

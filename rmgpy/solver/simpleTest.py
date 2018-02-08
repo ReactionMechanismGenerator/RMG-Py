@@ -79,6 +79,8 @@ class SimpleReactorCheck(unittest.TestCase):
         edgeSpecies = []
         coreReactions = [rxn1]
         edgeReactions = []
+        surfaceSpecies = []
+        surfaceReactions = []
 
         T = 1000; P = 1.0e5
         rxnSystem = SimpleReactor(T, P, initialMoleFractions={C2H5: 0.1, CH3: 0.1, CH4: 0.4, C2H6: 0.4}, nSims=1, termination=[])
@@ -145,6 +147,8 @@ class SimpleReactorCheck(unittest.TestCase):
             coreSpecies = [CH4,CH3,C2H6,C2H5,H2]
             edgeSpecies = []
             coreReactions = [rxn]
+            surfaceSpecies = []
+            surfaceReactions = []
             
             rxnSystem0 = SimpleReactor(T,P,initialMoleFractions={CH4:0.2,CH3:0.1,C2H6:0.35,C2H5:0.15, H2:0.2},nSims=1,termination=[])
             rxnSystem0.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
@@ -183,6 +187,8 @@ class SimpleReactorCheck(unittest.TestCase):
         
         coreSpecies = [CH4,CH3,C2H6,C2H5,H2]
         edgeSpecies = []
+        surfaceSpecies = []
+        surfaceReactions = []
         coreReactions = rxnList
         
         rxnSystem0 = SimpleReactor(T,P,initialMoleFractions={CH4:0.2,CH3:0.1,C2H6:0.35,C2H5:0.15, H2:0.2},nSims=1,termination=[])
