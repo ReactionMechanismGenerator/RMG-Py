@@ -61,6 +61,8 @@ class SurfaceReactorCheck(unittest.TestCase):
         edgeSpecies = []
         coreReactions = [rxn1]
         edgeReactions = []
+        surfaceSpecies = []
+        surfaceReactions = []
 
         T = 1000
         initialP = 1.0e5
@@ -181,6 +183,8 @@ class SurfaceReactorCheck(unittest.TestCase):
         edgeSpecies = []
         coreReactions = [rxn1]
         edgeReactions = []
+        surfaceSpecies = []
+        surfaceReactions = []
 
         T = 800.
         initialP = 1.0e5
