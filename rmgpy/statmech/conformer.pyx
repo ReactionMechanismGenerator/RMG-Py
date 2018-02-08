@@ -337,14 +337,18 @@ cdef class Conformer:
         Finally, the reduced moment of inertia is evaluated from the moment of inertia 
         of each top via the formula (I1*I2)/(I1+I2).  
         
-        option corresponds to 3 possible ways of calculating the internal reduced moment of inertia
+        Option corresponds to 3 possible ways of calculating the internal reduced moment of inertia
         as discussed in East and Radom [2]
         
-        option = 1 -> moments of inertia of each rotating group calculated about the axis containing the twisting bond
-        option = 2 (unimplemented) -> each moment of inertia of each rotating group is calculated about an axis parallel to the 
-            twisting bond and passing through its center of mass
-        option = 3 -> moments of inertia of each rotating group calculated about the axis passing through the
-            centers of mass of both groups
+        +----------+---------------------------------------------------------------------------------------------------+
+        |option = 1|moments of inertia of each rotating group calculated about the axis containing the twisting bond   |
+        +----------+---------------------------------------------------------------------------------------------------+
+        |option = 2|(unimplemented) each moment of inertia of each rotating group is calculated about an axis parallel |
+        |          |to the twisting bond and passing through its center of mass                                        |
+        +----------+---------------------------------------------------------------------------------------------------+
+        |option = 3|moments of inertia of each rotating group calculated about the axis passing through the            |
+        |          |centers of mass of both groups                                                                     |
+        +----------+---------------------------------------------------------------------------------------------------+
         
         .. math:: \\frac{1}{I^{(2,option)}} = \\frac{1}{I_1} + \\frac{1}{I_2}
         
