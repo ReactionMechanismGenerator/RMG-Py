@@ -82,6 +82,24 @@ Class                   Description
 ======================= ========================================================
 
 
+
+Molecule Utilities
+==================
+
+.. currentmodule:: rmgpy.molecule
+
+================================ ========================================================
+Class                            Description
+================================ ========================================================
+:mod:`rmgpy.molecule.resonance`  Resonance structure generation methods
+:mod:`rmgpy.molecule.kekulize`   Kekule structure generation
+:mod:`rmgpy.molecule.pathfinder` Resonance path enumeration
+:mod:`rmgpy.molecule.generator`  Molecule string representation generator
+:mod:`rmgpy.molecule.parser`     Molecule string representation parser
+================================ ========================================================
+
+
+
 Adjacency lists
 ===============
 
@@ -143,6 +161,11 @@ Class                    Description
     groupatom
     groupbond
     group
+    resonance
+    kekulize
+    pathfinder
+    generator
+    parser
     adjlist
     symmetry
     moleculedrawer
