@@ -46,7 +46,8 @@ from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.molecule.resonance import generate_aromatic_resonance_structures
 from rmgpy.species import Species
 
-from .common import saveEntry, ensure_species, find_degenerate_reactions, generate_molecule_combos
+from .common import saveEntry, ensure_species, find_degenerate_reactions, generate_molecule_combos,\
+                    ensure_independent_atom_ids
 from .depository import KineticsDepository
 from .groups import KineticsGroups
 from .rules import KineticsRules
@@ -1545,22 +1546,28 @@ class KineticsFamily(Database):
         `ignoreSameReactants= True` to this method.
         """
         reaction.degeneracy = 1
+        # Check if the reactants are the same
+        # If they refer to the same memory address, then make a deep copy so
+        # they can be manipulated independently
+        reactants = reaction.reactants
+        same_reactants = False
+        if len(reactants) == 2:
+            if reactants[0] is reactants[1]:
+                reactants[1] = reactants[1].copy(deep=True)
+                same_reactants = True
+            elif reactants[0].isIsomorphic(reactants[1]):
+                same_reactants = True
 
-        # find combinations of resonance isomers
-        specReactants = ensure_species(reaction.reactants, resonance=True, keepIsomorphic=True)
-        molecule_combos = generate_molecule_combos(specReactants)
+        # Label reactant atoms for proper degeneracy calculation
+        ensure_independent_atom_ids(reactants, resonance=True)
+        molecule_combos = generate_molecule_combos(reactants)
 
         reactions = []
         for combo in molecule_combos:
             reactions.extend(self.__generateReactions(combo, products=reaction.products, forward=True))
 
-        # Check if the reactants are the same
-        sameReactants = False
-        if len(specReactants) == 2 and specReactants[0].isIsomorphic(specReactants[1]):
-            sameReactants = True
-
         # remove degenerate reactions
-        reactions = find_degenerate_reactions(reactions, sameReactants, kinetics_family=self)
+        reactions = find_degenerate_reactions(reactions, same_reactants, kinetics_family=self)
 
         # remove reactions with different templates (only for TemplateReaction)
         if isinstance(reaction, TemplateReaction):
