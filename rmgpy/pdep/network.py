@@ -707,9 +707,8 @@ class Network:
         Ngrains = len(self.Elist)
         NJ = 1 if self.Jlist is None else len(self.Jlist)
         
-        collFreq = numpy.zeros(Nisom, numpy.float64)
-        
         try:
+            collFreq = numpy.zeros(Nisom, numpy.float64)
             Mcoll = numpy.zeros((Nisom,Ngrains,NJ,Ngrains,NJ), numpy.float64)
         except MemoryError:
             logging.warning('Collision matrix too large to manage')
