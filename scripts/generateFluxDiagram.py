@@ -73,6 +73,8 @@ def parse_arguments():
     parser.add_argument('--super', action='store_true', help='Superimpose central species onto normal flux diagram to'
                                                              ' ensure that they appear in diagram (might result in more'
                                                              ' nodes and edges than given by maxnode and maxedge)')
+    parser.add_argument('--saveStates', action='store_true', help='Save simulation states to disk')
+    parser.add_argument('--readStates', action='store_true', help='Read simulation states from disk')
 
     args = parser.parse_args()
 
@@ -86,6 +88,8 @@ def parse_arguments():
     checkDuplicates = args.checkDuplicates
     centralSpeciesList = args.centralSpecies
     superimpose = args.super
+    saveStates = args.saveStates
+    readStates = args.readStates
 
     keys = ('maximumNodeCount',
             'maximumEdgeCount',
@@ -97,14 +101,39 @@ def parse_arguments():
     vals = (args.maxnode, args.maxedge, args.conctol, args.ratetol, args.rad, args.centralReactionCount, args.tstep)
     settings = {k: v for k, v in zip(keys, vals) if v is not None}
     
-    return inputFile, chemkinFile, dictFile, speciesPath, chemkinOutput, useJava, dflag, checkDuplicates, settings, centralSpeciesList, superimpose
+    return (inputFile,
+            chemkinFile,
+            dictFile,
+            speciesPath,
+            chemkinOutput,
+            useJava,
+            dflag,
+            checkDuplicates,
+            settings,
+            centralSpeciesList,
+            superimpose,
+            saveStates,
+            readStates)
 
 def main():
-    inputFile, chemkinFile, dictFile, speciesPath, chemkinOutput, useJava, dflag, checkDuplicates, settings, centralSpeciesList, superimpose = parse_arguments()
+    (inputFile,
+     chemkinFile,
+     dictFile,
+     speciesPath,
+     chemkinOutput,
+     useJava,
+     dflag,
+     checkDuplicates,
+     settings,
+     centralSpeciesList,
+     superimpose,
+     saveStates,
+     readStates) = parse_arguments()
 
     createFluxDiagram(inputFile, chemkinFile, dictFile, speciesPath=speciesPath, java=useJava, settings=settings,
                       chemkinOutput=chemkinOutput, diffusionLimited=dflag, centralSpeciesList=centralSpeciesList,
-                      superimpose=superimpose, checkDuplicates=checkDuplicates)
+                      superimpose=superimpose, saveStates=saveStates, readStates=readStates,
+                      checkDuplicates=checkDuplicates)
 
 if __name__ == '__main__':
     main()

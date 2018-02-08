@@ -525,8 +525,8 @@ def loadChemkinOutput(outputFile, reactionModel):
 ################################################################################
 
 def createFluxDiagram(inputFile, chemkinFile, speciesDict, savePath=None, speciesPath=None, java=False, settings=None,
-                      chemkinOutput='', centralSpeciesList=None, superimpose=False, diffusionLimited=True,
-                      checkDuplicates=True):
+                      chemkinOutput='', centralSpeciesList=None, superimpose=False, saveStates=False,
+                      readStates=False, diffusionLimited=True, checkDuplicates=True):
     """
     Generates the flux diagram based on a condition 'inputFile', chemkin.inp chemkinFile,
     a speciesDict txt file, plus an optional chemkinOutput file.
@@ -538,6 +538,7 @@ def createFluxDiagram(inputFile, chemkinFile, speciesDict, savePath=None, specie
     else:
         generateImages = False
 
+    print 'Loading RMG job...'
     rmg = loadRMGJob(inputFile, chemkinFile, speciesDict,
                      generateImages=generateImages, useJava=java, checkDuplicates=checkDuplicates)
 
@@ -576,19 +577,33 @@ def createFluxDiagram(inputFile, chemkinFile, speciesDict, savePath=None, specie
             # Fail silently on any OS errors
                 pass
 
-            # Enable diffusion-limited rates
-            if diffusionLimited and isinstance(reactionSystem, LiquidReactor):
-                rmg.loadDatabase()
-                solventData = rmg.database.solvation.getSolventData(rmg.solvent)
-                diffusionLimiter.enable(solventData, rmg.database.solvation)
-
             # If there is no termination time, then add one to prevent jobs from
             # running forever
             if not any([isinstance(term, TerminationTime) for term in reactionSystem.termination]):
                 reactionSystem.termination.append(TerminationTime((1e10,'s')))
 
-            print 'Conducting simulation of reaction system {0:d}...'.format(index+1)
-            time, coreSpeciesConcentrations, coreReactionRates = simulate(rmg.reactionModel, reactionSystem, settings)
+            statesFile = os.path.join(outDir, 'states.npz')
+            if readStates:
+                print 'Reading simulation states from file...'
+                states = numpy.load(statesFile)
+                time = states['time']
+                coreSpeciesConcentrations = states['coreSpeciesConcentrations']
+                coreReactionRates = states['coreReactionRates']
+            else:
+                # Enable diffusion-limited rates
+                if diffusionLimited and isinstance(reactionSystem, LiquidReactor):
+                    rmg.loadDatabase()
+                    solventData = rmg.database.solvation.getSolventData(rmg.solvent)
+                    diffusionLimiter.enable(solventData, rmg.database.solvation)
+
+                print 'Conducting simulation of reaction system {0:d}...'.format(index+1)
+                time, coreSpeciesConcentrations, coreReactionRates = simulate(rmg.reactionModel, reactionSystem, settings)
+
+                if saveStates:
+                    numpy.savez_compressed(statesFile,
+                                           time=time,
+                                           coreSpeciesConcentrations=coreSpeciesConcentrations,
+                                           coreReactionRates=coreReactionRates)
 
             print 'Generating flux diagram for reaction system {0:d}...'.format(index+1)
             generateFluxDiagram(rmg.reactionModel,
