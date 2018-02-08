@@ -581,7 +581,7 @@ class Bond(Edge):
         Return ``True`` if the bond represents a van der Waals bond or 
         ``False`` if not.
         """
-        return self.order == 0 or 'vdW' #todo: remove 'vdW'
+        return self.isOrder(0) or self.order == 'vdW' #todo: remove 'vdW'
 
     def isOrder(self, otherOrder):
         """
@@ -620,7 +620,7 @@ class Bond(Edge):
         Return ``True`` if the bond represents a quadruple bond or ``False`` if
         not.
         """
-        return self.order == 'Q'  # todo: maybe change into self.isOrder(4)? it doesnt like it now
+        return self.isOrder(4)
 
     def isBenzene(self):
         """

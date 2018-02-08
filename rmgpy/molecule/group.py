@@ -635,6 +635,8 @@ class GroupBond(Edge):
                 values.append('Q')
             elif value == 1.5:
                 values.append('B')
+            elif value == 0:
+                values.append('vdW')
             else:
                 raise TypeError('Bond order number {} is not hardcoded as a string'.format(value))
         return values
@@ -729,10 +731,10 @@ class GroupBond(Edge):
 
     def isQuadruple(self, wildcards = False):
         """
-        Return ``True`` if the bond represents a triple bond or ``False`` if
+        Return ``True`` if the bond represents a quadruple bond or ``False`` if
         not. If `wildcards` is ``False`` we return False anytime there is more
         than one bond order, otherwise we return ``True`` if any of the options
-        are triple.
+        are quadruple.
         """
         if wildcards:
             for order in self.order:
@@ -744,19 +746,19 @@ class GroupBond(Edge):
 
     def isVanDerWaals(self, wildcards = False):
         """
-        Return ``True`` if the bond represents a triple bond or ``False`` if
+        Return ``True`` if the bond represents a van der Waals bond or ``False`` if
         not. If `wildcards` is ``False`` we return False anytime there is more
         than one bond order, otherwise we return ``True`` if any of the options
-        are triple.
+        are van der Waals.
         """
         if wildcards:
             for order in self.order:
-                if abs(order-0 or 'vdW') <= 1e-9:  # todo: remove 'vdW'
+                if abs(order[0]) <= 1e-9:
                     return True
             else:
                 return False
         else:
-            return abs(self.order[0] - 4) <= 1e-9 and len(self.order) == 1
+            return abs(self.order[0]) <= 1e-9 and len(self.order) == 1
 
     def isBenzene(self, wildcards = False):
         """
@@ -1013,7 +1015,7 @@ class Group(Graph):
         cython.declare(atom=GroupAtom, bond=GroupBond)
         for atom in self.atoms:
             for bond in atom.edges.values():
-                if bond.order == ['vdW']:
+                if bond.isVanDerWaals(wildcards=False):
                     self.removeBond(bond)
 
     def sortAtoms(self):
