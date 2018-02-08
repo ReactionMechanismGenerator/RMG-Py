@@ -171,7 +171,7 @@ they can specify the path to a quantum chemistry calculation output file that co
 
 In this example, the ``CBS-QB3`` energy is obtained from a Gaussian log file, while the ``Klip_2`` energy is specified directly.
 The energy used will depend on what ``modelChemistry()`` was specified in the input file. CanTherm can parse the energy from
-a ``GaussianLog``, ``MoleProLog`` or ``QchemLog``.
+a ``GaussianLog``, ``MolproLog`` or ``QchemLog``.
 
 The input to the remaining parameters, ``geometry``, ``frequencies`` and ``rotors``, will depend on if hindered/free rotors are included.
 Both cases are described below.
