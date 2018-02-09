@@ -54,6 +54,7 @@ import logging
 
 from rmgpy.qm.molecule import Geometry
 from rdkit.Chem import AllChem
+from rmgpy.molecule.molecule import Molecule
 
 from numpy.linalg import LinAlgError
 
@@ -216,7 +217,7 @@ class MoleculeDrawer:
             self.molecule.removeAtom(self.molecule.atoms[-1])
             self.symbols = ['H2']
             self.coordinates = numpy.array([[0,0]], numpy.float64)
-        elif self.symbols == ['O', 'O']:
+        elif molecule.isIsomorphic(Molecule(SMILES='[O][O]')):
             # Render as O2 instead of O-O
             self.molecule.removeAtom(self.molecule.atoms[-1])
             self.molecule.atoms[0].radicalElectrons = 0
