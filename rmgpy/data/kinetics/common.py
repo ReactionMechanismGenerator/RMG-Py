@@ -228,13 +228,15 @@ def generate_molecule_combos(input_species):
 
 def ensure_independent_atom_ids(input_species, resonance=True):
     """
-    Given a list or tuple of :class:`Species` objects, ensure that atom ids are
-    independent across all of the species. Optionally, the `resonance` argument
-    can be set to False to not generate resonance structures.
+    Given a list or tuple of :class:`Species` or :class:`Molecule` objects,
+    ensure that atom ids are independent.
+    The `resonance` argument can be set to False to not generate
+    resonance structures.
 
-    Modifies the input species in place, nothing is returned.
+    Modifies the list in place (replacing :class:`Molecule` with :class:`Species`).
+    Returns None.
     """
-
+    ensure_species(input_species, resonance=resonance)
     # Method to check that all species' atom ids are different
     def independent_ids():
         num_atoms = 0

@@ -434,10 +434,9 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
             elif reactants[0].isIsomorphic(reactants[1]):
                 same_reactants = True
 
-        # Convert to Species objects if necessary
-        ensure_species(reactants)
-
-        # Label reactant atoms for proper degeneracy calculation
+        # Label reactant atoms for proper degeneracy calculation (cannot be in tuple)
+        if isinstance(reactants, tuple):
+            reactants = list(reactants)
         ensure_independent_atom_ids(reactants, resonance=resonance)
 
         combos = generate_molecule_combos(reactants)
