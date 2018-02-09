@@ -1692,7 +1692,7 @@ class KineticsFamily(Database):
         # If products is given, remove reactions from the reaction list that
         # don't generate the given products
         if products is not None:
-            products = ensure_species(products, resonance=prod_resonance)
+            ensure_species(products, resonance=prod_resonance)
 
             rxnList0 = rxnList[:]
             rxnList = []

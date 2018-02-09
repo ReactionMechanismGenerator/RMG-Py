@@ -386,7 +386,7 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
         provided `reactants`, which can be either :class:`Molecule` objects or
         :class:`Species` objects.
         """
-        reactants = ensure_species(reactants)
+        ensure_species(reactants)
 
         reaction_list = []
         for entry in library.entries.values():
@@ -435,7 +435,7 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
                 same_reactants = True
 
         # Convert to Species objects if necessary
-        reactants = ensure_species(reactants)
+        ensure_species(reactants)
 
         # Label reactant atoms for proper degeneracy calculation
         ensure_independent_atom_ids(reactants, resonance=resonance)
