@@ -28,11 +28,10 @@
 #                                                                             #
 ###############################################################################
 
-'''
-Created on Feb 26, 2013
+"""
+This module contains the TransportData class for storing transport properties.
+"""
 
-@author: Jake
-'''
 from rmgpy import quantity
 from rmgpy.quantity import DipoleMoment, Energy, Length, Volume
 import rmgpy.constants as constants

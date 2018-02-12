@@ -28,14 +28,11 @@
 #                                                                             #
 ###############################################################################
 
-'''
-Created on Sep 4, 2014
-
-@author: nickvandewiele
-
-This creates atomTypes and assignes them with the correct bond/lonePairs/charge
+"""
+This creates atomTypes and assigns them with the correct bond/lonePairs/charge
 Used in isomorphismTest.py to create group_atomtypes
-'''
+"""
+
 class AbstractAtomType(object):
     def __init__(self, element = None, label=None, double=-1, triple=-1, benzene=-1, lp=-1, chrg=-1):
         self.element = element

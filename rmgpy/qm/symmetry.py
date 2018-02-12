@@ -29,9 +29,6 @@
 ###############################################################################
 
 """
-Created on Apr 29, 2012
-@author: nmvdewie and rwest
-
 Module that collects all classes related to symmetry of molecules
 """
 

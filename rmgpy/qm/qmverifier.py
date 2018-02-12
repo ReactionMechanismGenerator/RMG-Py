@@ -29,9 +29,7 @@
 ###############################################################################
 
 """
-Created on Apr 29, 2012
-
-@author: nmvdewie
+This module contains the QMVerifier class for confirming quantum job success.
 """
 
 import os
