@@ -40,7 +40,7 @@ from rmgpy.rmg.settings import ModelSettings
 from rmgpy.solver.liquid import LiquidReactor
 from rmgpy.kinetics.diffusionLimited import diffusionLimiter
 
-def plotSensitivity(outputDirectory, reactionSystemIndex, sensitiveSpeciesList, number=10, fileformat='.png'):
+def plot_sensitivity(outputDirectory, reactionSystemIndex, sensitiveSpeciesList, number=10, fileformat='.png'):
     """
     A function for plotting the top reaction thermo sensitivities (the number is 
     inputted as the variable `number`) in bar plot format.
@@ -137,9 +137,9 @@ def simulate(rmg, diffusionLimited=True):
         )
         
         if reactionSystem.sensitiveSpecies:
-            plotSensitivity(rmg.outputDirectory, index, reactionSystem.sensitiveSpecies)
+            plot_sensitivity(rmg.outputDirectory, index, reactionSystem.sensitiveSpecies)
 
-def runSensitivity(inputFile, chemkinFile, dictFile, diffusionLimited=True):
+def run_simulation(inputFile, chemkinFile, dictFile, diffusionLimited=True):
     """
     Runs a standalone simulation of RMG.  Runs sensitivity analysis if sensitive species are given.
     diffusionLimited=True implies that if it is a liquid reactor diffusion limitations will be enforced
@@ -149,7 +149,7 @@ def runSensitivity(inputFile, chemkinFile, dictFile, diffusionLimited=True):
     rmg = loadRMGJob(inputFile, chemkinFile, dictFile, generateImages=False)    
     
     start_time = time()
-    # conduct sensitivity simulation
+    # conduct simulation
     simulate(rmg,diffusionLimited)
     end_time = time()
     time_taken = end_time - start_time

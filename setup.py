@@ -186,7 +186,7 @@ if 'minimal' in sys.argv:
                 ext_modules.append(module)
 
 scripts=['cantherm.py', 'rmg.py', 'scripts/diffModels.py', 'scripts/generateFluxDiagram.py',
-         'scripts/generateReactions.py', 'scripts/mergeModels.py','scripts/sensitivity.py', 'scripts/thermoEstimator.py',
+         'scripts/generateReactions.py', 'scripts/mergeModels.py','scripts/simulate.py', 'scripts/thermoEstimator.py',
          'testing/databaseTest.py']
 
 modules = []

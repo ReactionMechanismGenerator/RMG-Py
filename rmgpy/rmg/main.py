@@ -70,7 +70,7 @@ from rmgpy.restart import RestartWriter
 from rmgpy.qm.main import QMDatabaseWriter
 from rmgpy.stats import ExecutionStatsWriter
 from rmgpy.thermo.thermoengine import submit
-from rmgpy.tools.sensitivity import plotSensitivity
+from rmgpy.tools.simulate import plot_sensitivity
 from cantera import ck2cti
 ################################################################################
 
@@ -785,7 +785,7 @@ class RMG(util.Subject):
                     simulatorSettings = self.simulatorSettingsList[-1],
                 )
                 
-                plotSensitivity(self.outputDirectory, index, reactionSystem.sensitiveSpecies)
+                plot_sensitivity(self.outputDirectory, index, reactionSystem.sensitiveSpecies)
 
         # generate Cantera files chem.cti & chem_annotated.cti in a designated `cantera` output folder
         try:
