@@ -93,12 +93,11 @@ def simulate(rmg, diffusionLimited=True):
         
         else:
             logging.info('Conducting simulation of reaction system %s...' % (index+1))
-            
-        if rmg.saveSimulationProfiles:
-            reactionSystem.attach(SimulationProfileWriter(
-                rmg.outputDirectory, index, rmg.reactionModel.core.species))   
-            reactionSystem.attach(SimulationProfilePlotter(
-                    rmg.outputDirectory, index, rmg.reactionModel.core.species))
+
+        reactionSystem.attach(SimulationProfileWriter(
+            rmg.outputDirectory, index, rmg.reactionModel.core.species))
+        reactionSystem.attach(SimulationProfilePlotter(
+            rmg.outputDirectory, index, rmg.reactionModel.core.species))
             
         sensWorksheet = []
         for spec in reactionSystem.sensitiveSpecies:
