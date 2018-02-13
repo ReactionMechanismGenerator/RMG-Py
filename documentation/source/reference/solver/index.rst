@@ -21,6 +21,7 @@ Class                       Description
 =========================== ====================================================
 :class:`ReactionSystem`     Base class for all reaction systems
 :class:`SimpleReactor`      A simple isothermal, isobaric, well-mixed batch reactor
+:class:`LiquidReactor`      A homogeneous, isothermal, isobaric liquid batch reactor
 =========================== ====================================================
 
 
@@ -42,5 +43,6 @@ Class                           Description
     
     reactionsystem
     simplereactor
+    liquidreactor
     termination
 
