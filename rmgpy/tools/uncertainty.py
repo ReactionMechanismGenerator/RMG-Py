@@ -586,7 +586,7 @@ class Uncertainty:
         
         from rmgpy.solver import SimpleReactor, TerminationTime
         from rmgpy.quantity import Quantity
-        from rmgpy.tools.sensitivity import plotSensitivity
+        from rmgpy.tools.simulate import plot_sensitivity
         from rmgpy.rmg.listener import SimulationProfileWriter, SimulationProfilePlotter
         from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
         T = Quantity(T)
@@ -629,7 +629,7 @@ class Uncertainty:
         )
         
         
-        plotSensitivity(self.outputDirectory, reactionSystemIndex, reactionSystem.sensitiveSpecies, number=number, fileformat=fileformat)
+        plot_sensitivity(self.outputDirectory, reactionSystemIndex, reactionSystem.sensitiveSpecies, number=number, fileformat=fileformat)
     
     def localAnalysis(self, sensitiveSpecies, correlated=False, number=10, fileformat='.png'):
         """

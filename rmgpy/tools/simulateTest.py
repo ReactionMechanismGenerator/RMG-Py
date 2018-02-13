@@ -28,48 +28,50 @@
 #                                                                             #
 ###############################################################################
 
-"""
-This script runs stand-alone sensitivity analysis on an RMG job.
-"""
-
+import unittest
+import os
 import os.path
-import argparse
+import shutil
 
-from rmgpy.tools.sensitivity import runSensitivity
+from rmgpy.tools.simulate import run_simulation
+import rmgpy
 
-################################################################################
+class SimulateTest(unittest.TestCase):
 
-def parse_arguments():
+    def test_minimal(self):
+        folder = os.path.join(os.path.dirname(rmgpy.__file__), 'tools/data/sim/simple')
+        
+        inputFile = os.path.join(folder, 'input.py')
+        chemkinFile = os.path.join(folder, 'chem.inp')
+        dictFile = os.path.join(folder, 'species_dictionary.txt')
+        
+        run_simulation(inputFile, chemkinFile, dictFile)
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('input', metavar='INPUT', type=str, nargs=1,
-        help='RMG input file')
-    parser.add_argument('chemkin', metavar='CHEMKIN', type=str, nargs=1,
-        help='Chemkin file')
-    parser.add_argument('dictionary', metavar='DICTIONARY', type=str, nargs=1,
-        help='RMG dictionary file')
-    parser.add_argument('--no-dlim', dest='dlim', action='store_false',
-        help='Turn off diffusion-limited rates for LiquidReactor')
-    args = parser.parse_args()
-    
-    inputFile = os.path.abspath(args.input[0])
-    chemkinFile = os.path.abspath(args.chemkin[0])
-    dictFile = os.path.abspath(args.dictionary[0])
-    dflag = args.dlim
+        simfile = os.path.join(folder, 'solver', 'simulation_1_13.csv')
+        sensfile = os.path.join(folder, 'solver', 'sensitivity_1_SPC_1.csv')
 
-    return inputFile, chemkinFile, dictFile, dflag
+        self.assertTrue(os.path.isfile(simfile))
+        self.assertTrue(os.path.isfile(sensfile))
+        
+        shutil.rmtree(os.path.join(folder, 'solver'))
 
-def main():
-    # This might not work anymore because functions were modified for use with webserver
+    def test_liquid(self):
+        folder = os.path.join(os.path.dirname(rmgpy.__file__), 'tools/data/sim/liquid')
 
-    inputFile, chemkinFile, dictFile, dflag = parse_arguments()
+        inputFile = os.path.join(folder, 'input.py')
+        chemkinFile = os.path.join(folder, 'chem.inp')
+        dictFile = os.path.join(folder, 'species_dictionary.txt')
 
-    runSensitivity(inputFile, chemkinFile, dictFile, dflag)
+        run_simulation(inputFile, chemkinFile, dictFile, diffusionLimited=False)
 
-################################################################################
+        simfile = os.path.join(folder, 'solver', 'simulation_1_28.csv')
+        sensfile = os.path.join(folder, 'solver', 'sensitivity_1_SPC_1.csv')
 
-if __name__ == '__main__':
-    main()
+        self.assertTrue(os.path.isfile(simfile))
+        self.assertTrue(os.path.isfile(sensfile))
 
-    
-    
+        shutil.rmtree(os.path.join(folder, 'solver'))
+
+    def tearDown(self):
+        import rmgpy.data.rmg
+        rmgpy.data.rmg.database = None
