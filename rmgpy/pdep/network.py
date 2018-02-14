@@ -68,6 +68,9 @@ class Network:
     `Ngrains`               The number of energy grains
     `NJ`                    The number of angular momentum grains
     ----------------------- ----------------------------------------------------
+     `grainSize`            Maximum size of separation between energies
+     `grainCount`           Minimum number of descrete energies separated
+     `E0`                   A list of ground state energies of isomers, reactants, and products
     `activeKRotor`          ``True`` if the K-rotor is treated as active, ``False`` if treated as adiabatic
     `activeJRotor`          ``True`` if the J-rotor is treated as active, ``False`` if treated as adiabatic
     `rmgmode`               ``True`` if in RMG mode, ``False`` otherwise
