@@ -688,6 +688,21 @@ class TestKinetics(unittest.TestCase):
         # checks second resonance structure id
         self.assertNotEqual(s2.molecule[1].atoms[0].id, -1)
 
+    def test_ensure_independent_atom_ids_no_resonance(self):
+        """
+        Ensure ensure_independent_atom_ids does not generate resonance
+        """
+        s1 = Species().fromSMILES('CCC')
+        s2 = Species().fromSMILES('C=C[CH]C')
+        self.assertEqual(s2.molecule[0].atoms[0].id, -1)
+
+        ensure_independent_atom_ids([s1, s2],resonance=False)
+        # checks resonance structures
+        self.assertEqual(len(s2.molecule),1)
+        # checks that atom ids are changed
+        for atom in s2.molecule[0].atoms:
+            self.assertNotEqual(atom.id, -1)
+
     def testSaveEntry(self):
         """
         tests that save entry can run
