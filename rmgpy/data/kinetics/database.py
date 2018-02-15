@@ -364,7 +364,7 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
         reactionList = []
         if only_families is None:
             reactionList.extend(self.generate_reactions_from_libraries(reactants, products))
-        reactionList.extend(self.generate_reactions_from_families(reactants, products, only_families=None, resonance=True))
+        reactionList.extend(self.generate_reactions_from_families(reactants, products, only_families=None, resonance=resonance))
         return reactionList
 
     def generate_reactions_from_libraries(self, reactants, products=None):
