@@ -854,12 +854,38 @@ class TestKinetics(unittest.TestCase):
         self.assertEqual(len(reaction_list), 1)
         self.assertEqual(reaction_list[0].degeneracy, 2)
 
-        reaction_list = self.database.kinetics.generate_reactions_from_families(reactants, products, only_families=['H_Abstraction'], resonance=False)
 
+
+    def test_generate_reactions_from_families_product_resonance2(self):
+        """Test that we can specify the no product resonance structure when generating reactions"""
+        reactants = [
+            Molecule().fromSMILES('CCC=C'),
+            Molecule().fromSMILES('[H]'),
+        ]
+        products = [
+            Molecule().fromSMILES('CC=C[CH2]'),
+            Molecule().fromSMILES('[H][H]'),
+        ]
+
+        reaction_list = self.database.kinetics.generate_reactions_from_families(reactants, products, only_families=['H_Abstraction'], resonance=False)
         self.assertEqual(len(reaction_list), 0)
+
+        self.assertTrue(isinstance(products[0],Species))
+        self.assertEqual(len(products[0].molecule),1)
 
     def test_generate_reactions_from_libraries(self):
         """Test that we can generate reactions from libraries"""
+        reactants = [
+            Molecule().fromSMILES('CC=O'),
+            Molecule().fromSMILES('[H]'),
+        ]
+
+        reaction_list = self.database.kinetics.generate_reactions_from_libraries(reactants)
+
+        self.assertEqual(len(reaction_list), 3)
+
+    def test_generate_reactions_from_libraries2(self):
+        """Test that we can generate reactions from libraries specifying products"""
         reactants = [
             Molecule().fromSMILES('CC=O'),
             Molecule().fromSMILES('[H]'),
@@ -868,11 +894,6 @@ class TestKinetics(unittest.TestCase):
             Molecule().fromSMILES('[CH2]C=O'),
             Molecule().fromSMILES('[H][H]'),
         ]
-
-        reaction_list = self.database.kinetics.generate_reactions_from_libraries(reactants)
-
-        self.assertEqual(len(reaction_list), 3)
-
         reaction_list_2 = self.database.kinetics.generate_reactions_from_libraries(reactants, products)
 
         self.assertEqual(len(reaction_list_2), 1)
