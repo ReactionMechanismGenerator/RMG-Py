@@ -10,6 +10,7 @@ RMG Theory Guide
     
     enlarger
     prune
+    dynamics
     
 * :ref:`genindex`
 * :ref:`modindex`
