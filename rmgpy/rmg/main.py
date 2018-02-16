@@ -881,10 +881,15 @@ class RMG(util.Subject):
                     item = reaction,
                     data = reaction.kinetics,
                 )
-            try:
-                entry.longDesc = 'Originally from reaction library: ' + reaction.library + "\n" + reaction.kinetics.comment
-            except AttributeError:
+            
+            
+            if 'rate rule' in reaction.kinetics.comment:
                 entry.longDesc = reaction.kinetics.comment
+            elif hasattr(reaction,'library') and reaction.library:
+                entry.longDesc = 'Originally from reaction library: ' + reaction.library + "\n" + reaction.kinetics.comment
+            else:
+                entry.longDesc = reaction.kinetics.comment
+            
             kineticsLibrary.entries[i+1] = entry
         
         # Mark as duplicates where there are mixed pressure dependent and non-pressure dependent duplicate kinetics
