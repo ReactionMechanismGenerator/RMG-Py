@@ -60,6 +60,8 @@ speciesRateTolerance = 1e-6     # The lowest fractional species rate to show (va
 maximumNodePenWidth = 10.0      # The thickness of the border around a node at maximum concentration
 maximumEdgePenWidth = 10.0      # The thickness of the edge at maximum species rate
 radius = 1                      # The graph radius to plot around a central species
+centralReactionCount = None     # The maximum number of reactions to draw from each central species (None draws all)
+                                # If radius > 1, then this is the number of reactions from every species
 
 # Options controlling the ODE simulations:
 initialTime = 1e-12             # The time at which to initiate the simulation, in seconds
@@ -83,7 +85,7 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
     a movie. The individual frames and the final movie are saved on disk at
     `outputDirectory.`
     """
-    global maximumNodeCount, maximumEdgeCount, concentrationTolerance, speciesRateTolerance, maximumNodePenWidth, maximumEdgePenWidth, radius
+    global maximumNodeCount, maximumEdgeCount, concentrationTolerance, speciesRateTolerance, maximumNodePenWidth, maximumEdgePenWidth, radius, centralReactionCount
     # Allow user defined settings for flux diagram generation if given
     if settings:
         maximumNodeCount = settings.get('maximumNodeCount', maximumNodeCount)
@@ -93,6 +95,7 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
         maximumNodePenWidth = settings.get('maximumNodePenWidth', maximumNodePenWidth)
         maximumEdgePenWidth = settings.get('maximumEdgePenWidth', maximumEdgePenWidth)
         radius = settings.get('radius', radius)
+        centralReactionCount = settings.get('centralReactionCount', centralReactionCount)
     
     # Get the species and reactions corresponding to the provided concentrations and reaction rates
     speciesList = reactionModel.core.species[:]
@@ -125,6 +128,9 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
     maxConcentrations = numpy.max(numpy.abs(concentrations), axis=0)
     maxConcentration = numpy.max(maxConcentrations)
     
+    # Determine the maximum reaction rates
+    maxReactionRates = numpy.max(numpy.abs(reactionRates), axis=0)
+
     # Determine the maximum rate for each species-species pair and the maximum overall species-species rate
     maxSpeciesRates = numpy.max(numpy.abs(speciesRates), axis=0)
     maxSpeciesRate = numpy.max(maxSpeciesRates)
@@ -140,7 +146,9 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
                              edges,
                              speciesList,
                              reactionList,
+                             maxReactionRates,
                              maxSpeciesRates,
+                             reactionCount=centralReactionCount,
                              rad=radius)
     if centralSpeciesList is None or superimpose:
         for i in range(numSpecies*numSpecies):
@@ -153,10 +161,10 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
                 break
             if reactantIndex not in nodes and len(nodes) < maximumNodeCount: nodes.append(reactantIndex)
             if productIndex not in nodes and len(nodes) < maximumNodeCount: nodes.append(productIndex)
-            if len(nodes) > maximumNodeCount: 
-                break
             if [reactantIndex, productIndex] not in edges and [productIndex, reactantIndex] not in edges:
                 edges.append([reactantIndex, productIndex])
+            if len(nodes) > maximumNodeCount: 
+                break
             if len(edges) >= maximumEdgeCount:
                 break
     # Create the master graph
@@ -284,22 +292,34 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
     
 ################################################################################
 
-def addAdjacentNodes(targetNodeIndex, nodes, edges, speciesList, reactionList, maxSpeciesRates, rad=0):
+def addAdjacentNodes(targetNodeIndex, nodes, edges, speciesList, reactionList, maxReactionRates, maxSpeciesRates,
+                     reactionCount=None, rad=0):
     """
     Add adjacent nodes in flux diagram up to a certain radius.
     """
-    global maximumNodeCount, maximumEdgeCount
     if rad < 1:  # Base case
         return
     else:  # Recurse until all nodes up to desired radius have been added
+        # Select all reactions involving target node
+        targetReactionsIndices = []
         for index, reaction in enumerate(reactionList):
+            reactantIndices = [speciesList.index(reactant) for reactant in reaction.reactants]
+            productIndices = [speciesList.index(product) for product in reaction.products]
+            if targetNodeIndex in reactantIndices or targetNodeIndex in productIndices:
+                targetReactionsIndices.append(index)
+
+        # Sort by maximum reaction rates and only extract top reactions if desired
+        targetReactionsIndices.sort(key=lambda index: maxReactionRates[index], reverse=True)
+        if reactionCount is None:
+            targetReactionList = [reactionList[index] for index in targetReactionsIndices]
+        else:
+            targetReactionList = [reactionList[index] for i, index in enumerate(targetReactionsIndices)
+                                  if i < reactionCount]
+
+        for reaction in targetReactionList:
             for reactant, product in reaction.pairs:
                 reactantIndex = speciesList.index(reactant)
                 productIndex = speciesList.index(product)
-                if len(nodes) > maximumNodeCount or len(edges) >= maximumEdgeCount:
-                    return
-                if maxSpeciesRates[reactantIndex, productIndex] == 0:
-                    break
                 if reactantIndex == targetNodeIndex:
                     if productIndex not in nodes:
                         nodes.append(productIndex)
@@ -308,7 +328,9 @@ def addAdjacentNodes(targetNodeIndex, nodes, edges, speciesList, reactionList, m
                                          edges,
                                          speciesList,
                                          reactionList,
+                                         maxReactionRates,
                                          maxSpeciesRates,
+                                         reactionCount=reactionCount,
                                          rad=rad-1)
                     if [reactantIndex, productIndex] not in edges and [productIndex, reactantIndex] not in edges:
                         edges.append([reactantIndex, productIndex])
@@ -320,7 +342,9 @@ def addAdjacentNodes(targetNodeIndex, nodes, edges, speciesList, reactionList, m
                                          edges,
                                          speciesList,
                                          reactionList,
+                                         maxReactionRates,
                                          maxSpeciesRates,
+                                         reactionCount=reactionCount,
                                          rad=rad-1)
                     if [reactantIndex, productIndex] not in edges and [productIndex, reactantIndex] not in edges:
                         edges.append([reactantIndex, productIndex])

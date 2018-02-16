@@ -66,6 +66,9 @@ def parse_arguments():
     parser.add_argument('--centralSpecies', metavar='s1,s2,...', type=lambda s: [int(idx) for idx in s.split(',')],
                         help='List of indices of central species')
     parser.add_argument('--rad', metavar='R', type=int, help='Graph radius around a central species')
+    parser.add_argument('--centralReactionCount', metavar='N', type=int, default=1,
+                        help='Maximum number of reactions to show from each central species (default = 1).'
+                             ' If rad > 1, then this is the number of reactions from every species')
     parser.add_argument('--super', action='store_true', help='Superimpose central species onto normal flux diagram to'
                                                              ' ensure that they appear in diagram')
 
@@ -82,8 +85,14 @@ def parse_arguments():
     centralSpeciesList = args.centralSpecies
     superimpose = args.super
 
-    keys = ('maximumNodeCount', 'maximumEdgeCount', 'concentrationTolerance', 'speciesRateTolerance', 'radius', 'timeStep')
-    vals = (args.maxnode, args.maxedge, args.conctol, args.ratetol, args.rad, args.tstep)
+    keys = ('maximumNodeCount',
+            'maximumEdgeCount',
+            'concentrationTolerance',
+            'speciesRateTolerance',
+            'radius',
+            'centralReactionCount',
+            'timeStep')
+    vals = (args.maxnode, args.maxedge, args.conctol, args.ratetol, args.rad, args.centralReactionCount, args.tstep)
     settings = {k: v for k, v in zip(keys, vals) if v is not None}
     
     return inputFile, chemkinFile, dictFile, speciesPath, chemkinOutput, useJava, dflag, checkDuplicates, settings, centralSpeciesList, superimpose

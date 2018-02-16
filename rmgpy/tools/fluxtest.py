@@ -51,6 +51,7 @@ class FluxDiagramTest(unittest.TestCase):
                     'maximumNodePenWidth': 10.0,
                     'maximumEdgePenWidth': 10.0,
                     'radius': 2,
+                    'centralReactionCount': 2,
                     'timeStep': 10**0.1}
         createFluxDiagram(inputFile, chemkinFile, dictFile,
                           centralSpeciesList=[1], superimpose=True, settings=settings)
