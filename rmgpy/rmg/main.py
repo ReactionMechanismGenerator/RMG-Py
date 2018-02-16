@@ -964,12 +964,19 @@ class RMG(util.Subject):
         for spec in species:
             oldLabels.append(spec.label)
             duplicate_index = 1
-            potential_label = spec.label
+            if '+' in spec.label:
+                L = spec.molecule[0].getFormula()
+            else:
+                L = spec.label
+            potential_label = L
             while potential_label in labels:
                 duplicate_index += 1
-                potential_label = spec.label + '-{}'.format(duplicate_index)
+                potential_label = L + '-{}'.format(duplicate_index)
+
             spec.label = potential_label
             labels.add(potential_label)
+            
+            
         return oldLabels
     
     ################################################################################
