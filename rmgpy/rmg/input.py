@@ -104,6 +104,10 @@ def database(
 
 def species(label, structure, reactive=True):
     logging.debug('Found {0} species "{1}" ({2})'.format('reactive' if reactive else 'nonreactive', label, structure.toSMILES()))
+    
+    if '+' in label:
+        raise InputError('species {0} label cannot include a + sign'.format(label))
+    
     spec, isNew = rmg.reactionModel.makeNewSpecies(structure, label=label, reactive=reactive)
     if not isNew:
         raise InputError("Species {0} is a duplicate of {1}. Species in input file must be unique".format(label,spec.label))
