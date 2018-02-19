@@ -138,14 +138,14 @@ def simulate(rmg, diffusionLimited=True):
         if reactionSystem.sensitiveSpecies:
             plot_sensitivity(rmg.outputDirectory, index, reactionSystem.sensitiveSpecies)
 
-def run_simulation(inputFile, chemkinFile, dictFile, diffusionLimited=True):
+def run_simulation(inputFile, chemkinFile, dictFile, diffusionLimited=True, checkDuplicates=True):
     """
     Runs a standalone simulation of RMG.  Runs sensitivity analysis if sensitive species are given.
     diffusionLimited=True implies that if it is a liquid reactor diffusion limitations will be enforced
     otherwise they will not be in a liquid reactor
     """
     
-    rmg = loadRMGJob(inputFile, chemkinFile, dictFile, generateImages=False)    
+    rmg = loadRMGJob(inputFile, chemkinFile, dictFile, generateImages=False, checkDuplicates=checkDuplicates)
     
     start_time = time()
     # conduct simulation
