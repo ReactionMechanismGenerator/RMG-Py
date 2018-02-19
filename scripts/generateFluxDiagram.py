@@ -65,12 +65,14 @@ def parse_arguments():
                         help='Multiplicative factor to use between consecutive time points')
     parser.add_argument('--centralSpecies', metavar='s1,s2,...', type=lambda s: [int(idx) for idx in s.split(',')],
                         help='List of indices of central species')
-    parser.add_argument('--rad', metavar='R', type=int, help='Graph radius around a central species')
+    parser.add_argument('--rad', metavar='R', type=int, help='Graph radius around a central species (only useful if'
+                                                             ' not using super)')
     parser.add_argument('--centralReactionCount', metavar='N', type=int, default=1,
                         help='Maximum number of reactions to show from each central species (default = 1).'
                              ' If rad > 1, then this is the number of reactions from every species')
     parser.add_argument('--super', action='store_true', help='Superimpose central species onto normal flux diagram to'
-                                                             ' ensure that they appear in diagram')
+                                                             ' ensure that they appear in diagram (might result in more'
+                                                             ' nodes and edges than given by maxnode and maxedge)')
 
     args = parser.parse_args()
 

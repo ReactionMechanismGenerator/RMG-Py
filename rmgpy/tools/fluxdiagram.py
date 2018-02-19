@@ -138,7 +138,7 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
     
     # Determine the nodes and edges to keep
     nodes = []; edges = []
-    if centralSpeciesList is not None:
+    if not superimpose and centralSpeciesList is not None:
         for centralSpeciesIndex in centralSpeciesIndices:
             nodes.append(centralSpeciesIndex)
             addAdjacentNodes(centralSpeciesIndex,
@@ -150,7 +150,7 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
                              maxSpeciesRates,
                              reactionCount=centralReactionCount,
                              rad=radius)
-    if centralSpeciesList is None or superimpose:
+    else:
         for i in range(numSpecies*numSpecies):
             productIndex, reactantIndex = divmod(speciesIndex[-i-1], numSpecies)
             if reactantIndex > productIndex:
@@ -167,6 +167,24 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
                 break
             if len(edges) >= maximumEdgeCount:
                 break
+
+        if superimpose and centralSpeciesList is not None:
+            nodesCopy = nodes[:]
+            for centralSpeciesIndex in centralSpeciesIndices:
+                if centralSpeciesIndex not in nodes:  # Only add central species if it doesn't already exist
+                    nodes.append(centralSpeciesIndex)
+                    # Recursively add nodes until they connect with main graph
+                    addAdjacentNodes(centralSpeciesIndex,
+                                     nodes,
+                                     edges,
+                                     speciesList,
+                                     reactionList,
+                                     maxReactionRates,
+                                     maxSpeciesRates,
+                                     reactionCount=centralReactionCount,
+                                     rad=-1,  # "-1" signifies that we add nodes until they connect to the main graph
+                                     mainNodes=nodesCopy)
+
     # Create the master graph
     # First we're going to generate the coordinates for all of the nodes; for
     # this we use the thickest pen widths for all nodes and edges 
@@ -293,13 +311,17 @@ def generateFluxDiagram(reactionModel, times, concentrations, reactionRates, out
 ################################################################################
 
 def addAdjacentNodes(targetNodeIndex, nodes, edges, speciesList, reactionList, maxReactionRates, maxSpeciesRates,
-                     reactionCount=None, rad=0):
+                     reactionCount=None, rad=0, mainNodes=None):
     """
-    Add adjacent nodes in flux diagram up to a certain radius.
+    Add adjacent nodes in flux diagram up to a certain radius or
+    until they connect with the main graph. Radius should be set to a
+    negative value in the latter case.
     """
-    if rad < 1:  # Base case
+    if rad == 0:  # Base case if using radius
         return
-    else:  # Recurse until all nodes up to desired radius have been added
+    elif rad < 0 and targetNodeIndex in mainNodes:  # Base case if connecting to main graph
+        return
+    else:  # Recurse until all nodes up to desired radius have been added or until they connect to the main graph
         # Select all reactions involving target node
         targetReactionsIndices = []
         for index, reaction in enumerate(reactionList):
@@ -331,7 +353,8 @@ def addAdjacentNodes(targetNodeIndex, nodes, edges, speciesList, reactionList, m
                                          maxReactionRates,
                                          maxSpeciesRates,
                                          reactionCount=reactionCount,
-                                         rad=rad-1)
+                                         rad=rad-1,
+                                         mainNodes=mainNodes)
                     if [reactantIndex, productIndex] not in edges and [productIndex, reactantIndex] not in edges:
                         edges.append([reactantIndex, productIndex])
                 if productIndex == targetNodeIndex:
@@ -345,7 +368,8 @@ def addAdjacentNodes(targetNodeIndex, nodes, edges, speciesList, reactionList, m
                                          maxReactionRates,
                                          maxSpeciesRates,
                                          reactionCount=reactionCount,
-                                         rad=rad-1)
+                                         rad=rad-1,
+                                         mainNodes=mainNodes)
                     if [reactantIndex, productIndex] not in edges and [productIndex, reactantIndex] not in edges:
                         edges.append([reactantIndex, productIndex])
 
