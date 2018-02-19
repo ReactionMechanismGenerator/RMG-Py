@@ -841,7 +841,8 @@ def loadTransportFile(path, speciesDict):
                     comment = comment.strip(),
                 )
 
-def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments = True, thermoPath = None, useChemkinNames=False):
+def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments=True, thermoPath=None,
+                    useChemkinNames=False, checkDuplicates=True):
     """
     Load a Chemkin input file located at `path` on disk to `path`, returning lists of the species
     and reactions in the Chemkin file. The 'thermoPath' point to a separate thermo file, or, if 'None' is 
@@ -902,7 +903,8 @@ def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments 
         reaction.index = index
 
     # Process duplicate reactions
-    _process_duplicate_reactions(reactionList)
+    if checkDuplicates:
+        _process_duplicate_reactions(reactionList)
 
     # If the transport path is given, then read it to obtain the transport
     # properties
