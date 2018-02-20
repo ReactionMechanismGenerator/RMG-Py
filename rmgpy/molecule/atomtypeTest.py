@@ -303,7 +303,7 @@ class TestGetAtomType(unittest.TestCase):
         """
         Test that getAtomType() works for vacant surface sites.
         """
-        self.assertEqual(self.atomType(self.mol20, 0), 'Xv')
+        self.assertEqual(self.atomType(self.mol26, 0), 'Xv')
 
 ################################################################################
 
