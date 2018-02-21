@@ -646,7 +646,9 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
         
     elif modelChemistry in ['BMK/cbsb7', 'BMK/6-311G(2d,d,p)']:
         atomEnergies = {'H':-0.498618853119+ SOC['H'], 'N':-54.5697851544+ SOC['N'], 'O':-75.0515210278+ SOC['O'], 'C':-37.8287310027+ SOC['C'], 'P':-341.167615941+ SOC['P'], 'S': -398.001619915+ SOC['S']}
-        
+    elif modelChemistry == 'b3lyp/6-31G**':
+        atomEnergies = {'H':-0.500426155, 'C':-37.850331697831, 'O':-75.0535872748806, 'S':-398.100820107242}
+
     else:
         logging.warning('Unknown model chemistry "{0}"; not applying energy corrections.'.format(modelChemistry))
         return E0
@@ -706,7 +708,7 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
             'N-H': -0.42,  'N=O': 1.11,   'N-N': -1.87,  'N=N': -1.58, 'N-O': 0.35, #Table 2: Ashcraft R (2007) J. Phys. Chem. B; DOI: 10.1021/jp073539t
             'N#N': -2.0,   'O=O': -0.2,   'H-H': 1.1, # Unknown source
              }
-    elif modelChemistry in ['B3LYP/cbsb7', 'B3LYP/6-311G(2d,d,p)', 'DFT_G03_b3lyp','B3LYP/6-311+G(3df,2p)']:
+    elif modelChemistry in ['B3LYP/cbsb7', 'B3LYP/6-311G(2d,d,p)', 'DFT_G03_b3lyp','B3LYP/6-311+G(3df,2p)','b3lyp/6-31G**']:
         bondEnergies = { 'C-H': 0.25, 'C-C': -1.89, 'C=C': -0.40, 'C#C': -1.50,
             'O-H': -1.09, 'C-O': -1.18, 'C=O': -0.01, 'N-H': 1.36, 'C-N': -0.44, 
             'C#N': 0.22, 'C-S': -2.35, 'O=S': -5.19, 'S-H': -0.52, }    
