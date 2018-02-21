@@ -33,6 +33,7 @@ import unittest
 import os
 
 from rmgpy.cantherm.molpro import MolproLog
+from rmgpy.statmech import IdealGasTranslation, LinearRotor, NonlinearRotor, HarmonicOscillator, HinderedRotor
 import rmgpy.constants as constants
 
 ################################################################################
@@ -75,3 +76,35 @@ class MolproTest(unittest.TestCase):
         E0=log.loadEnergy()
         
         self.assertAlmostEqual(E0 / constants.Na / constants.E_h, -75.663696424380, 5)
+
+    def testLoadHOSIFromMolpro_log(self):
+        """
+        Uses a molpro log file for HOSI to test that its
+        molecular degrees of freedom can be properly read.
+        """
+
+        log = MolproLog(os.path.join(os.path.dirname(__file__),'data','HOSI_ccsd_t1.out'))
+        conformer = log.loadConformer(symfromlog=True, spinMultiplicity=1)
+        E0 = log.loadEnergy()
+
+        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode,IdealGasTranslation)]) == 1)
+        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode,NonlinearRotor)]) == 1)
+        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode,HarmonicOscillator)]) == 1)
+        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode,HinderedRotor)]) == 0)
+
+        trans = [mode for mode in conformer.modes if isinstance(mode,IdealGasTranslation)][0]
+        rot = [mode for mode in conformer.modes if isinstance(mode,NonlinearRotor)][0]
+        vib = [mode for mode in conformer.modes if isinstance(mode,HarmonicOscillator)][0]
+        Tlist = numpy.array([298.15], numpy.float64)
+
+        self.assertAlmostEqual(trans.getPartitionFunction(Tlist), 9.175364e7, delta=1e1)
+        self.assertAlmostEqual(rot.getPartitionFunction(Tlist), 1.00005557e5, delta=1e-2)
+        self.assertAlmostEqual(vib.getPartitionFunction(Tlist), 1.9734989e0, delta=1e-4)
+
+        self.assertAlmostEqual(E0 / constants.Na / constants.E_h, -768.275662, 4)
+        self.assertEqual(conformer.spinMultiplicity, 1)
+        self.assertEqual(conformer.opticalIsomers, 1)
+
+if __name__ == '__main__':
+    unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )
+
