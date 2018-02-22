@@ -76,6 +76,7 @@ Model Chemistry                                  AEC   BC   SOC
 ``'BMK/cbsb7'``                                   v    v    v
 ``'BMK/6-311G(2d,d,p)'``                          v    v    v
 ``'B3LYP/6-311+G(3df,2p)'``                            v
+``'B3LYP/6-31G**'``                               v    v
 ================================================ ===== ==== ====
 
 Notes:
