@@ -2264,7 +2264,7 @@ def process_profile_history(output_dir, cumulative=True, sort_method='time'):
     plt.savefig(os.path.join(output_dir, 'profiling', 'profile_plot_stacked.pdf'), bbox_extra_artists=[leg], bbox_inches='tight')
 
 
-def processProfileStats(stats_file, log_file):
+def process_profile_stats(stats_file, log_file):
     import pstats
     out_stream = Tee(sys.stdout,open(log_file,'a')) # print to screen AND append to RMG.log
     print >>out_stream, "="*80
@@ -2282,7 +2282,8 @@ def processProfileStats(stats_file, log_file):
     stats.print_callers(25)
     stats.print_callees(25)
 
-def makeProfileGraph(stats_file):
+
+def make_profile_graph(stats_file):
     """
     Uses gprof2dot to create a graphviz dot file of the profiling information.
     
@@ -2364,4 +2365,3 @@ def makeProfileGraph(stats_file):
         logging.info("Once you've got it, try:\n     pd2pdf {0}.ps2 {0}.pdf".format(dot_file))    
     else:
         logging.info("Graph of profile statistics saved to: \n {0}.pdf".format(dot_file))
-

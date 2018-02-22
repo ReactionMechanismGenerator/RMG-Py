@@ -37,7 +37,7 @@ import argparse
 import logging
 import rmgpy
 
-from rmgpy.rmg.main import RMG, initializeLog, processProfileStats, makeProfileGraph, process_profile_history
+from rmgpy.rmg.main import RMG, initializeLog, process_profile_stats, make_profile_graph, process_profile_history
 
 ################################################################################
 
@@ -75,13 +75,10 @@ def parse_command_line_arguments(command_line_args=None):
     parser.add_argument('-r', '--restart', action='store_true', help='restart an incomplete job')
 
     parser.add_argument('-p', '--profile', action='store_true',
-                        help='run under cProfile to gather profiling statistics, and postprocess them if job completes')
-    parser.add_argument('-P', '--postprocess', action='store_true',
-                        help='postprocess profiling statistics from previous [failed] run; does not run the simulation')
-
+                        help='run using cProfile and save profiling statistics for entire job, postprocess if job completes')
     parser.add_argument('-pi', '--profile-iterations', action='store_true',
-                        help='run under cProfile and save independent statistics for each iteration')
-    parser.add_argument('-Pi', '--postprocess-iterations', action='store_true',
+                        help='run using cProfile and save independent statistics for each iteration, postprocess if job completes')
+    parser.add_argument('-P', '--postprocess', action='store_true',
                         help='postprocess profiling statistics from previous [failed] run; does not run the simulation')
 
     parser.add_argument('-t', '--walltime', type=str, nargs=1, default='00:00:00:00',
@@ -120,11 +117,8 @@ def parse_command_line_arguments(command_line_args=None):
     else:
         args.output_directory = args.output_directory[0]
 
-    if args.profile_iterations and (args.profile or args.postprocess):
-        raise ValueError('The --profile-iterations cannot be set at the same time as --profile or --postprocess.')
-
-    if args.postprocess:
-        args.profile = True
+    if args.profile and args.profile_iterations:
+        logging.warning('Both --profile and --profile-iterations are set, only --profile will be run.')
 
     return args
 
@@ -168,29 +162,34 @@ def main():
         command = """rmg = RMG(inputFile=inputFile, outputDirectory=output_dir); rmg.execute(**kwargs)"""
 
         stats_file = os.path.join(args.output_directory, 'RMG.profile')
-        print("Running under cProfile")
-        if not args.postprocess:
-            # actually run the program!
-            cProfile.runctx(command, global_vars, local_vars, stats_file)
-        # postprocess the stats
-        log_file = os.path.join(args.output_directory, 'RMG.log')
-        processProfileStats(stats_file, log_file)
-        makeProfileGraph(stats_file)
+        logging.info('Initiating RMG run via cProfile...')
+        cProfile.runctx(command, global_vars, local_vars, stats_file)
 
     elif args.profile_iterations:
         if os.path.exists('profile.log'):
             os.remove('profile.log')
+        logging.info('Initiating RMG run with per iteration profiling using cProfile...')
         rmg = RMG(inputFile=args.file, outputDirectory=args.output_directory, profile=True)
         rmg.execute(**kwargs)
-        process_profile_history(args.output_directory)
 
-    elif args.postprocess_iterations:
-        process_profile_history(args.output_directory)
-
-    else:
-
+    elif not args.postprocess:
         rmg = RMG(inputFile=args.file, outputDirectory=args.output_directory)
         rmg.execute(**kwargs)
+
+    if args.profile or args.postprocess:
+        stats_file = os.path.join(args.output_directory, 'RMG.profile')
+        if os.path.exists(stats_file):
+            log_file = os.path.join(args.output_directory, 'RMG.log')
+            process_profile_stats(stats_file, log_file)
+            print 'Profiling statistics have been appended to RMG.log.'
+            make_profile_graph(stats_file)
+            print 'Graph of function calls can be found in the output directory.'
+
+    if args.profile_iterations or args.postprocess:
+        iter_file = os.path.join(args.output_directory, 'profiling', 'init.profile')
+        if os.path.exists(iter_file):
+            process_profile_history(args.output_directory)
+            print 'Per-iteration statistics and plots can be found in profiling subdirectory.'
 
 
 ################################################################################
