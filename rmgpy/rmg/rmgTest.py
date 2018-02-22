@@ -277,5 +277,6 @@ class TestRMGScript(unittest.TestCase):
         self.assertEqual(args.file, 'other_name.py')
         self.assertEqual(args.kineticsdatastore, True)
         self.assertEqual(args.postprocess, True)
-        self.assertEqual(args.profile, True)
+        self.assertEqual(args.profile, False)
+        self.assertEqual(args.profile_iterations, False)
         self.assertEqual(args.restart, True)
