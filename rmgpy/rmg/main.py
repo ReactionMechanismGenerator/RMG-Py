@@ -148,10 +148,11 @@ class RMG(util.Subject):
     
     """
     
-    def __init__(self, inputFile=None, outputDirectory=None):
+    def __init__(self, inputFile=None, outputDirectory=None, profile=False):
         super(RMG, self).__init__()
         self.inputFile = inputFile
         self.outputDirectory = outputDirectory
+        self.profile = profile
         self.clear()
         self.modelSettingsList = []
         self.simulatorSettingsList = []
@@ -452,6 +453,8 @@ class RMG(util.Subject):
         util.makeOutputSubdirectory(self.outputDirectory, 'pdep')
         util.makeOutputSubdirectory(self.outputDirectory, 'solver')
         util.makeOutputSubdirectory(self.outputDirectory, 'kinetics_database')
+        if self.profile:
+            util.makeOutputSubdirectory(self.outputDirectory, 'profiling')
 
         # Specifies if details of kinetic database entries should be stored according to user
         try:
@@ -620,6 +623,10 @@ class RMG(util.Subject):
         Execute an RMG job using the command-line arguments `args` as returned
         by the :mod:`argparse` package.
         """
+        if self.profile:
+            import cProfile
+            pr = cProfile.Profile()
+            pr.enable()
     
         self.initialize(**kwargs)
 
@@ -702,6 +709,12 @@ class RMG(util.Subject):
         
         if self.generateSeedEachIteration:
             self.makeSeedMech(firstTime=True)
+
+        if self.profile:
+            pr.disable()
+            save_profile_stats(pr, self.outputDirectory, name='init')
+            pr = cProfile.Profile()
+            pr.enable()
 
         maxNumSpcsHit = False #default
         
@@ -908,6 +921,12 @@ class RMG(util.Subject):
                         logging.info('The current model edge has %s species and %s reactions' % (edgeSpec, edgeReac))
                         return
                     
+                if self.profile:
+                    pr.disable()
+                    save_profile_stats(pr, self.outputDirectory)
+                    pr = cProfile.Profile()
+                    pr.enable()
+
             if maxNumSpcsHit: #resets maxNumSpcsHit and continues the settings for loop
                 logging.info('The maximum number of species ({0}) has been hit, Exiting stage {1} ...'.format(modelSettings.maxNumSpecies,q+1))
                 maxNumSpcsHit = False
@@ -943,6 +962,10 @@ class RMG(util.Subject):
         logging.info('The final model edge has %s species and %s reactions' % (edgeSpec, edgeReac))
         
         self.finish()
+
+        if self.profile:
+            pr.disable()
+            save_profile_stats(pr, self.outputDirectory, name='post')
 
     def run_model_analysis(self, number=10):
         """
@@ -2142,6 +2165,104 @@ def get_condaPackage(module):
         return '\n'.join(packages)
     except:
         return ''
+
+
+_profiling_iterations = 0
+
+
+def save_profile_stats(pr, output_dir, log_file='profile.log', name=None):
+    import pstats
+    global _profiling_iterations
+
+    # Dump stats to file
+    if name is None:
+        _profiling_iterations += 1
+        name = _profiling_iterations
+    filename = (os.path.join(output_dir, 'profiling', '{0}.profile'.format(name)))
+    pr.dump_stats(filename)
+
+    # Print stats to file
+    out_stream = Tee(sys.stdout, open(os.path.join(output_dir, 'profiling', log_file), 'a'))
+    print >>out_stream, "="*80
+    if name == 'init':
+        iter_name = 'Job Initialization'
+    elif name == 'post':
+        iter_name = 'Job Post-Processing'
+    else:
+        iter_name = 'Iteration {0}'.format(name)
+    print >>out_stream, "Profiling Data for {0}".format(iter_name).center(80)
+    print >>out_stream, "="*80
+    stats = pstats.Stats(pr, stream=out_stream)
+    stats.strip_dirs()
+    stats.sort_stats('time')
+    stats.print_stats(25)
+
+
+def process_profile_history(output_dir, cumulative=True, sort_method='time'):
+    import pstats
+    import pandas as pd
+    import matplotlib.pyplot as plt
+    from matplotlib.colors import ListedColormap
+
+    data = {}
+
+    iterations = 1
+    filename = os.path.join(output_dir, 'profiling', '{0}.profile'.format(iterations))
+    file_exists = os.path.exists(filename)
+    ps = None
+    while file_exists:
+        # Load stats
+        if cumulative and ps is not None:
+            ps.add(filename).strip_dirs().sort_stats(sort_method)
+        else:
+            ps = pstats.Stats(filename).strip_dirs().sort_stats(sort_method)
+        # Save top functions to dictionary
+        for func in ps.fcn_list[:10]:
+            if func in data:
+                data[func].append(ps.stats[func][2])
+            else:
+                data[func] = [0] * iterations + [ps.stats[func][2]]
+        # Update any functions that were are no longer in the top 10
+        for func, times in data.iteritems():
+            if len(times) == iterations:
+                try:
+                    times.append(ps.stats[func][2])
+                except KeyError:
+                    # The function was not called in this iteration
+                    times.append(0)
+        # Check for next file
+        iterations += 1
+        filename = (os.path.join(output_dir, 'profiling', '{0}.profile'.format(iterations)))
+        file_exists = os.path.exists(filename)
+
+    # Convert data to pandas DataFrame
+    df = pd.DataFrame(data)
+
+    # Save as csv
+    df.to_csv(os.path.join(output_dir, 'profiling', 'profile_summary.csv'))
+
+    # Create custom colormap
+    cm0 = plt.get_cmap('tab20')
+    n = len(df.columns)
+    cm1 = ListedColormap(cm0.colors, N=n)
+
+    # Save as plot
+    df.plot(kind='line', colormap=cm1)
+    plt.yscale('log')
+    plt.xlabel('Iteration')
+    plt.ylabel('Time (s)')
+    plt.title('{0}Total Internal Time Per Function'.format('Cumulative ' if cumulative else ''))
+    leg = plt.legend(bbox_to_anchor=(1.02, 1), loc=2, borderaxespad=0.)
+    plt.savefig(os.path.join(output_dir, 'profiling', 'profile_plot.pdf'), bbox_extra_artists=[leg], bbox_inches='tight')
+
+    # Save as stacked plot
+    df.plot(kind='area', colormap=cm1)
+    plt.xlabel('Iteration')
+    plt.ylabel('Time (s)')
+    plt.title('{0}Total Internal Time Per Function'.format('Cumulative ' if cumulative else ''))
+    leg = plt.legend(bbox_to_anchor=(1.02, 1), loc=2, borderaxespad=0.)
+    plt.savefig(os.path.join(output_dir, 'profiling', 'profile_plot_stacked.pdf'), bbox_extra_artists=[leg], bbox_inches='tight')
+
 
 def processProfileStats(stats_file, log_file):
     import pstats
