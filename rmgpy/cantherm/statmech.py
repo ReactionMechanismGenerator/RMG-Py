@@ -174,6 +174,8 @@ class StatMechJob:
         self.load()
         if outputFile is not None:
             self.save(outputFile)
+        logging.debug('Finished statmech job for species {0}.'.format(self.species))
+        logging.debug(repr(self.species))
     
     def load(self):
         """

@@ -34,21 +34,19 @@ This script contains unit tests of the :mod:`rmgpy.pdep.network` module.
 
 import unittest
 
-from rmgpy.pdep.network import Network
 from rmgpy.pdep.configuration import Configuration
 from rmgpy.transport import TransportData
-from rmgpy.statmech.translation import Translation, IdealGasTranslation
-from rmgpy.statmech.rotation import Rotation, LinearRotor, NonlinearRotor, KRotor, SphericalTopRotor
-from rmgpy.statmech.vibration import Vibration, HarmonicOscillator
-from rmgpy.statmech.torsion import Torsion, HinderedRotor
+from rmgpy.statmech.translation import IdealGasTranslation
+from rmgpy.statmech.rotation import NonlinearRotor
+from rmgpy.statmech.vibration import HarmonicOscillator
+from rmgpy.statmech.torsion import HinderedRotor
 from rmgpy.statmech.conformer import Conformer
-from rmgpy.species import Species, TransitionState
-from rmgpy.reaction import Reaction
+from rmgpy.species import Species
 from rmgpy.pdep.collision import SingleExponentialDown
 
 ################################################################################
 
-class TestNetwork(unittest.TestCase):
+class TestConfiguration(unittest.TestCase):
     """
     Contains unit tests of the :class:`Network` class.
     """
@@ -108,106 +106,22 @@ class TestNetwork(unittest.TestCase):
             ),
         )
 
-        self.N2 = Species(
-            label = 'N2',
-            molecularWeight = (28.04,"g/mol"),
-            transportData=TransportData(sigma=(3.41, "angstrom"), epsilon=(124, "K")),
-            energyTransferModel = None,
-        )
-        
-        self.TS = TransitionState(
-            label = 'TS',
-            conformer = Conformer(
-                E0 = (-42.4373,"kJ/mol"),
-                modes = [
-                    IdealGasTranslation(mass=(74.07,"g/mol")),
-                    NonlinearRotor(inertia=([40.518,232.666,246.092],"u*angstrom**2"), symmetry=1, quantum=False),
-                    HarmonicOscillator(frequencies=([134.289,302.326,351.792,407.986,443.419,583.988,699.001,766.1,777.969,829.671,949.753,994.731,1013.59,1073.98,1103.79,1171.89,1225.91,1280.67,1335.08,1373.9,1392.32,1417.43,1469.51,1481.61,1490.16,1503.73,1573.16,2972.85,2984.3,3003.67,3045.78,3051.77,3082.37,3090.44,3190.73,3708.52],"kayser")),
-                    HinderedRotor(inertia=(2.68206,"amu*angstrom^2"), symmetry=3, barrier=(3.35244,"kcal/mol")),
-                    HinderedRotor(inertia=(9.77669,"amu*angstrom^2"), symmetry=1, fourier=([[0.208938,-1.55291,-4.05398,-0.105798,-0.104752], [2.00518,-0.020767,-0.333595,0.137791,-0.274578]],"kJ/mol")),
-                ],
-                spinMultiplicity = 1,
-                opticalIsomers = 1,
-            ),
-            frequency=(-2038.34,'cm^-1'),
-        )
-        
-        self.reaction = Reaction(
-            label = 'dehydration',
-            reactants = [self.nC4H10O],
-            products = [self.nC4H8, self.H2O],
-            transitionState = self.TS,
-        )
-        
-        self.network = Network(
-            label = 'n-butanol',
-            isomers = [Configuration(self.nC4H10O)],
-            reactants = [],
-            products = [Configuration(self.nC4H8, self.H2O)],
-            pathReactions = [self.reaction],
-            bathGas = {self.N2: 1.0},
-        )
-    
-    def test_label(self):
-        """
-        Test that the network `label` property was properly set.
-        """
-        self.assertEqual('n-butanol', self.network.label)
-    
-    def test_isomers(self):
-        """
-        Test that the network `isomers` property was properly set.
-        """
-        self.assertEqual(1, len(self.network.isomers))
-        self.assertEqual(1, self.network.Nisom)
-
-    def test_reactants(self):
-        """
-        Test that the network `reactants` property was properly set.
-        """
-        self.assertEqual(0, len(self.network.reactants))
-        self.assertEqual(0, self.network.Nreac)
-
-    def test_products(self):
-        """
-        Test that the network `products` property was properly set.
-        """
-        self.assertEqual(1, len(self.network.products))
-        self.assertEqual(1, self.network.Nprod)
-    
-    def test_pathReactions(self):
-        """
-        Test that the network `pathReactions` property was properly set.
-        """
-        self.assertEqual(1, len(self.network.pathReactions))
-
-    def test_bathGas(self):
-        """
-        Test that the network `bathGas` property was properly set.
-        """
-        self.assertEqual(1, len(self.network.bathGas))
-        self.assertTrue(self.N2 in self.network.bathGas)
-            
-    def test_netReactions(self):
-        """
-        Test that the network `netReactions` property was properly set.
-        """
-        self.assertEqual(0, len(self.network.netReactions))
+        self.configuration = Configuration(self.nC4H8, self.H2O)
 
     def test_repr(self):
         """
         Test that the `repr` representation contains desired properties.
         """
-        output = repr(self.network)
+        output= repr(self.configuration)
         # ensure species strings
-        labels = ['dehydration','H2O','N2','TS','n-C4H8','n-C4H10O']
+        labels = ['H2O','n-C4H8']
         for label in labels:
             self.assertIn(label, output)
 
         # ensure classes are used as well
-        attributes = ['Configuration','Network','Species','Conformer','NonlinearRotor',
-                   'HarmonicOscillator','frequencies','TransportData',
-                   'molecularWeight','SingleExponentialDown']
+        attributes = ['Configuration','Species','Conformer','NonlinearRotor',
+                   'HarmonicOscillator','frequencies','IdealGasTranslation',
+                   'HinderedRotor','E0','mass','symmetry','fourier']
         for label in attributes:
             self.assertIn(label, output)
 
@@ -215,32 +129,20 @@ class TestNetwork(unittest.TestCase):
         """
         Test that the string representation contains desired properties.
         """
-        output = str(self.network)
+        output = str(self.configuration)
         # ensure species strings
-        labels = ['dehydration','H2O','N2','n-C4H8','n-C4H10O']
+        labels = ['H2O','n-C4H8']
         for label in labels:
             self.assertIn(label, output)
 
         # ensure this extra fluff is not in Network string
-        attributes = ['Configuration','Species','Conformer','Molecule','NonlinearRotor',
+        attributes = ['Species','Conformer','Molecule','NonlinearRotor',
                    'HarmonicOscillator','frequencies','spinMultiplicity','TransportData',
                    'molecularWeight','SingleExponentialDown']
         for label in attributes:
             self.assertNotIn(label, output)
 
-    def test_collisionMatrixMemoryHandling(self):
-        net = Network()
-        net.Elist = [1]*10000
-        net.E0 = 1.0
-        niso = 100000000
-        net.isomers = niso*[1]
-        try:
-            net.calculateCollisionModel()
-        except MemoryError:
-            raise AssertionError('Large collision matrix resulted in memory error, handling failed')
-        except:
-            pass
-        
+
 ################################################################################
 
 if __name__ == '__main__':

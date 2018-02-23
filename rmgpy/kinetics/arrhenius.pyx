@@ -32,6 +32,7 @@ from libc.math cimport exp, log, sqrt, log10
 
 cimport rmgpy.constants as constants
 import rmgpy.quantity as quantity
+from rmgpy.exceptions import KineticsError
 ################################################################################
 
 cdef class Arrhenius(KineticsModel):
@@ -140,6 +141,10 @@ cdef class Arrhenius(KineticsModel):
         """
         import numpy.linalg
         import scipy.stats
+
+        assert len(Tlist) == len(klist), "length of temperatures and rates must be the same"
+        if len(Tlist) < 3+threeParams:
+            raise KineticsError('Not enough degrees of freedom to fit this Arrhenius expression')
         if threeParams:
             A = numpy.zeros((len(Tlist),3), numpy.float64)
             A[:,0] = numpy.ones_like(Tlist)

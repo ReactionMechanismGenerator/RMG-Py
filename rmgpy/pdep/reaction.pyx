@@ -165,6 +165,8 @@ def calculateMicrocanonicalRateCoefficient(reaction,
                 if reacDensStates[r,s] != 0:
                     kf[r,s] = kr[r,s] * prodDensStates[r,s] / reacDensStates[r,s]
         kf *= C0inv**(len(reaction.reactants) - len(reaction.products))
+    logging.debug('Finished finding microcanonical rate coefficients for path reaction {}'.format(reaction))
+    logging.debug('The forward and reverse rates are found to be  {0} and {1} respectively.'.format(kf, kr))
      
     return kf, kr
 
@@ -222,7 +224,9 @@ def applyRRKMTheory(transitionState,
         for r in range(Ngrains):
             if sumStates[r,s] > 0 and densStates[r,s] > 0:
                 k[r,s] = sumStates[r,s] / densStates[r,s] * dE
-            
+    logging.debug('Finished applying RRKM for path transition state {}'.format(transitionState))
+    logging.debug('The rate constant is found to be {}'.format(k))
+
     return k
 
 @cython.boundscheck(False)
@@ -318,6 +322,8 @@ def applyInverseLaplaceTransformMethod(transitionState,
                             
     else:
         raise Exception('Unable to use inverse Laplace transform method for non-Arrhenius kinetics or for n < 0.')
+    logging.debug('Finished applying inverse lapace transform for path transition state {}'.format(transitionState))
+    logging.debug('The rate constant is found to be {}'.format(k))
     
     return k
 
@@ -383,6 +389,7 @@ def fitInterpolationModel(reaction, Tlist, Plist, K, model, Tmin, Tmax, Pmin, Pm
         logRMS = sqrt(logRMS / len(Tlist) / len(Plist))
         if logRMS > 0.5:
             logging.warning('RMS error for k(T,P) fit = {0:g} for reaction {1}.'.format(logRMS, reaction))
-    
+    logging.debug('Finished fitting model for path reaction {}'.format(reaction))
+    logging.debug('The kinetics fit is {0!r}'.format(kinetics))
     return kinetics
 
