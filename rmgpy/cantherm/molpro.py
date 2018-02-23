@@ -208,8 +208,8 @@ class MolproLog:
 
                     elif 'Rotational Constant' in line and line.split()[3]=='[GHz]':
                         inertia = float(line.split()[2])
-                        inertia[0] = constants.h / (8 * constants.pi * constants.pi * inertia[0] * 1e9) *constants.Na*1e23
-                        rotation = LinearRotor(inertia=(inertia[0],"amu*angstrom^2"), symmetry=symmetry)
+                        inertia = constants.h / (8 * constants.pi * constants.pi * inertia * 1e9) *constants.Na*1e23
+                        rotation = LinearRotor(inertia=(inertia,"amu*angstrom^2"), symmetry=symmetry)
                         modes.append(rotation)
 
                     # Read vibrational modes
