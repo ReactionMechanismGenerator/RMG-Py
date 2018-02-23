@@ -687,8 +687,7 @@ Energy = Enthalpy = FreeEnergy = UnitType('J/mol',
     commonUnits=['kJ/mol', 'cal/mol', 'kcal/mol', 'eV/molecule'],
     extraDimensionality={'K': constants.R,
                          'eV': constants.Na, # allow people to be lazy and neglect the "/molecule"
-                         },
-)
+})
 
 
 Entropy = HeatCapacity = UnitType('J/(mol*K)', commonUnits=['kJ/(mol*K)', 'cal/(mol*K)', 'kcal/(mol*K)'])
