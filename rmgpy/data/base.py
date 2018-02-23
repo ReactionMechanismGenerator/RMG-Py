@@ -1280,10 +1280,7 @@ class ForbiddenStructures(Database):
                     return True
             
         # Until we have more thermodynamic data of molecular ions we will forbid them
-        molecule_charge = 0
-        for atom in molecule.atoms:
-            molecule_charge += atom.charge
-        if molecule_charge != 0:
+        if molecule.getNetCharge() != 0:
             return True
         
         return False
