@@ -393,7 +393,7 @@ This reaction matched rate rule [C_methyl;C_methyl]
 Reaction index: Chemkin #2; RMG #4
 Template reaction: R_Recombination
 Flux pairs: [CH3], CC; [CH3], CC; 
-From training reaction 21 for rate rule [C_rad/H2/Cs;C_methyl]
+From training reaction 21 used for C_rad/H2/Cs;C_methyl
 Exact match found for rate rule [C_rad/H2/Cs;C_methyl]
 Euclidian distance = 0
 """]
