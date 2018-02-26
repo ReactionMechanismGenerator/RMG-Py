@@ -1067,7 +1067,7 @@ class KineticsFamily(Database):
                 shortDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.shortDesc,
                 longDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.longDesc,
             )
-            new_entry.data.comment = "From training reaction {1} for rate rule {0}".format(';'.join([g.label for g in template]), entry.index)
+            new_entry.data.comment = "From training reaction {1} used for {0}".format(';'.join([g.label for g in template]), entry.index)
 
             new_entry.data.A.value_si /= entry.item.degeneracy
             try:
@@ -1115,7 +1115,7 @@ class KineticsFamily(Database):
                 shortDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.shortDesc,
                 longDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.longDesc,
             )
-            new_entry.data.comment = "From training reaction {1} for rate rule {0}".format(';'.join([g.label for g in template]), entry.index)
+            new_entry.data.comment = "From training reaction {1} used for {0}".format(';'.join([g.label for g in template]), entry.index)
 
             new_entry.data.A.value_si /= new_degeneracy
             try:
@@ -2355,7 +2355,12 @@ class KineticsFamily(Database):
         
         # The rate rule string is right after the phrase 'for rate rule'
         rateRuleString = fullCommentString.split("for rate rule",1)[1].split()[0]
-        templateLabel = re.split(regex, rateRuleString)[1]
+        
+        if rateRuleString[0] == '[':
+            templateLabel = re.split(regex, rateRuleString)[1]
+        else:
+            templateLabel = rateRuleString #if has the line 'From training reaction # for rate rule node1;node2'
+            
         template = self.retrieveTemplate(templateLabel.split(';'))
         rules, trainingEntries = self.getSourcesForTemplate(template)
         
