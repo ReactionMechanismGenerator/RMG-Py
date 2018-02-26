@@ -1067,7 +1067,7 @@ class KineticsFamily(Database):
                 shortDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.shortDesc,
                 longDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.longDesc,
             )
-            new_entry.data.comment = "From training reaction {1} for rate rule {0}".format(';'.join([g.label for g in template]), entry.index)
+            new_entry.data.comment = "From training reaction {1} used for {0}".format(';'.join([g.label for g in template]), entry.index)
 
             new_entry.data.A.value_si /= entry.item.degeneracy
             try:
@@ -1115,7 +1115,7 @@ class KineticsFamily(Database):
                 shortDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.shortDesc,
                 longDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.longDesc,
             )
-            new_entry.data.comment = "From training reaction {1} for rate rule {0}".format(';'.join([g.label for g in template]), entry.index)
+            new_entry.data.comment = "From training reaction {1} used for {0}".format(';'.join([g.label for g in template]), entry.index)
 
             new_entry.data.A.value_si /= new_degeneracy
             try:
