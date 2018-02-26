@@ -658,6 +658,9 @@ class TestMolecule(unittest.TestCase):
             """
         self.molecule.append(Molecule().fromAdjacencyList(self.adjlist_2,saturateH=True))
         
+        
+        self.mHBonds = Molecule().fromSMILES('C(NC=O)OO')
+        
     def testClearLabeledAtoms(self):
         """
         Test the Molecule.clearLabeledAtoms() method.
@@ -988,7 +991,34 @@ class TestMolecule(unittest.TestCase):
         molecule2 = Molecule().fromSMILES('C=CC=C[CH]C')
         self.assertTrue(molecule1.isIsomorphic(molecule2))
         self.assertTrue(molecule2.isIsomorphic(molecule1))
-
+    
+    def test_generate_H_bonded_structures(self):
+        """
+        Test that the correct set of Hydrogen Bonded structures are generated
+        """
+        correctSet = ['1  C u0 p0 c0 {2,S} {4,S} {6,S} {7,S}\n2  N u0 p1 c0 {1,S} {3,S} {8,S}\n3  C u0 p0 c0 {2,S} {9,D} {10,S}\n4  O u0 p2 c0 {1,S} {5,S}\n5  O u0 p2 c0 {4,S} {8,H} {11,S}\n6  H u0 p0 c0 {1,S}\n7  H u0 p0 c0 {1,S}\n8  H u0 p0 c0 {2,S} {5,H}\n9  O u0 p2 c0 {3,D}\n10 H u0 p0 c0 {3,S}\n11 H u0 p0 c0 {5,S}\n',
+ '1  C u0 p0 c0 {2,S} {4,S} {6,S} {7,S}\n2  N u0 p1 c0 {1,S} {3,S} {8,S} {11,H}\n3  C u0 p0 c0 {2,S} {9,D} {10,S}\n4  O u0 p2 c0 {1,S} {5,S}\n5  O u0 p2 c0 {4,S} {11,S}\n6  H u0 p0 c0 {1,S}\n7  H u0 p0 c0 {1,S}\n8  H u0 p0 c0 {2,S}\n9  O u0 p2 c0 {3,D}\n10 H u0 p0 c0 {3,S}\n11 H u0 p0 c0 {2,H} {5,S}\n',
+ '1  C u0 p0 c0 {2,S} {4,S} {6,S} {7,S}\n2  N u0 p1 c0 {1,S} {3,S} {8,S} {11,H}\n3  C u0 p0 c0 {2,S} {9,D} {10,S}\n4  O u0 p2 c0 {1,S} {5,S}\n5  O u0 p2 c0 {4,S} {8,H} {11,S}\n6  H u0 p0 c0 {1,S}\n7  H u0 p0 c0 {1,S}\n8  H u0 p0 c0 {2,S} {5,H}\n9  O u0 p2 c0 {3,D}\n10 H u0 p0 c0 {3,S}\n11 H u0 p0 c0 {2,H} {5,S}\n',
+ '1  C u0 p0 c0 {2,S} {4,S} {6,S} {7,S}\n2  N u0 p1 c0 {1,S} {3,S} {8,S}\n3  C u0 p0 c0 {2,S} {9,D} {10,S}\n4  O u0 p2 c0 {1,S} {5,S}\n5  O u0 p2 c0 {4,S} {11,S}\n6  H u0 p0 c0 {1,S}\n7  H u0 p0 c0 {1,S}\n8  H u0 p0 c0 {2,S}\n9  O u0 p2 c0 {3,D} {11,H}\n10 H u0 p0 c0 {3,S}\n11 H u0 p0 c0 {5,S} {9,H}\n',
+ '1  C u0 p0 c0 {2,S} {4,S} {6,S} {7,S}\n2  N u0 p1 c0 {1,S} {3,S} {8,S}\n3  C u0 p0 c0 {2,S} {9,D} {10,S}\n4  O u0 p2 c0 {1,S} {5,S}\n5  O u0 p2 c0 {4,S} {8,H} {11,S}\n6  H u0 p0 c0 {1,S}\n7  H u0 p0 c0 {1,S}\n8  H u0 p0 c0 {2,S} {5,H}\n9  O u0 p2 c0 {3,D} {11,H}\n10 H u0 p0 c0 {3,S}\n11 H u0 p0 c0 {5,S} {9,H}\n']
+        
+        mols = [Molecule().fromAdjacencyList(k) for k in correctSet]
+        
+        self.assertEqual(set(mols),set(self.mHBonds.generate_H_bonded_structures()))
+    
+    def test_remove_H_bonds(self):
+        """
+        test that remove HBonds removes all hydrogen bonds from a given molecule
+        """
+        testMol = self.mHBonds.generate_H_bonded_structures()[0]
+        testMol.remove_H_bonds()
+        
+        for i,atm1 in enumerate(testMol.atoms):
+            for j,atm2 in enumerate(testMol.atoms):
+                if j<i and testMol.hasBond(atm1,atm2):
+                    bd = testMol.getBond(atm1,atm2)
+                    self.assertNotAlmostEqual(bd.order,0)
+                    
     def testSSSR(self):
         """
         Test the Molecule.getSmallestSetOfSmallestRings() method with a complex

@@ -43,6 +43,7 @@ import numpy
 import urllib
 from collections import OrderedDict
 import itertools
+from copy import deepcopy
 
 import element as elements
 try:
@@ -51,6 +52,7 @@ except:
     pass
 from .graph import Vertex, Edge, Graph, getVertexConnectivityValue
 import rmgpy.molecule.group as gr
+from rmgpy.molecule.pathfinder import find_shortest_path
 from .atomtype import AtomType, atomTypes, getAtomType, AtomTypeError
 import rmgpy.constants as constants
 import rmgpy.molecule.parser as parser
@@ -512,6 +514,8 @@ class Bond(Edge):
             return 'D'
         elif self.isTriple():
             return 'T'
+        elif self.isHydrogenBond():
+            return 'H'
         else:
             raise ValueError("Bond order {} does not have string representation.".format(self.order))
         
@@ -527,6 +531,8 @@ class Bond(Edge):
             self.order = 3
         elif newOrder == 'B':
             self.order = 1.5
+        elif newOrder == 'H':
+            self.order = 0
         else:
             # try to see if an float disguised as a string was input by mistake
             try:
@@ -564,7 +570,7 @@ class Bond(Edge):
 
     def isOrder(self, otherOrder):
         """
-        Return ``True`` if the bond represents a single bond or ``False`` if
+        Return ``True`` if the bond is of order otherOrder or ``False`` if
         not. This compares floats that takes into account floating point error
         
         NOTE: we can replace the absolute value relation with math.isclose when
@@ -600,7 +606,14 @@ class Bond(Edge):
         not.
         """
         return self.isOrder(1.5)
-
+    
+    def isHydrogenBond(self):
+        """
+        Return ``True`` if the bond represents a hydrogen bond or ``False`` if
+        not.
+        """
+        return self.isOrder(0)
+    
     def incrementOrder(self):
         """
         Update the bond as a result of applying a CHANGE_BOND action to
@@ -1455,7 +1468,78 @@ class Molecule(Graph):
         from .adjlist import toAdjacencyList
         result = toAdjacencyList(self.vertices, self.multiplicity,  label=label, group=False, removeH=removeH, removeLonePairs=removeLonePairs, oldStyle=oldStyle)
         return result
-
+    
+    def find_H_bonds(self):
+        """
+        generates a list of (new-existing H bonds ignored) possible Hbond coordinates [(i1,j1),(i2,j2),...] where i and j values
+        correspond to the indexes of the atoms involved, Hbonds are allowed if they meet
+        the following constraints:
+           1) between a H and [O,N] atoms
+           2) the hydrogen is covalently bonded to an O or N
+           3) the Hydrogen bond must complete a ring with at least 5 members
+           4) An atom can only be hydrogen bonded to one other atom
+        """
+        potBonds = []
+        
+        ONatoms = [a for a in self.atoms if a.isOxygen() or a.isNitrogen()]
+        ONinds = [n for n,a in enumerate(self.atoms) if a.isOxygen() or a.isNitrogen()]
+        
+        for i,atm1 in enumerate(self.atoms):
+            if atm1.atomType.label == 'H':
+                atm_covs = [q for q in atm1.bonds.keys()] 
+                if len(atm_covs) > 1: #H is already H bonded
+                    continue 
+                else:
+                    atm_cov = atm_covs[0]
+                if (atm_cov.isOxygen() or atm_cov.isNitrogen()): #this H can be H-bonded
+                    for k,atm2 in enumerate(ONatoms):
+                        if all([q.order != 0 for q in atm2.bonds.values()]): #atm2 not already H bonded
+                            dist = len(find_shortest_path(atm1,atm2))-1
+                            if dist > 3:
+                                j = ONinds[k]
+                                potBonds.append((i,j))
+        return potBonds
+    
+    def generate_H_bonded_structures(self):
+        """
+        generates a list of Hbonded molecular structures in addition to the
+        constraints on Hydrogen bonds applied in the find_H_Bonds function
+        the generated structures are constrained to:
+            1) An atom can only be hydrogen bonded to one other atom
+            2) Only two H-bonds can exist in a given molecule
+        the second is done to avoid explosive growth in the number of 
+        structures as without this constraint the number of possible 
+        structures grows 2^n where n is the number of possible H-bonds
+        """
+        structs = []
+        Hbonds = self.find_H_bonds()
+        for i,bd1 in enumerate(Hbonds):
+            molc = deepcopy(self)
+            molc.addBond(Bond(molc.atoms[bd1[0]],molc.atoms[bd1[1]],order=0))
+            structs.append(molc)
+            for j,bd2 in enumerate(Hbonds):
+                if j<i and bd1[0] != bd2[0] and bd1[1] != bd2[1]:
+                    molc = deepcopy(self)
+                    molc.addBond(Bond(molc.atoms[bd1[0]],molc.atoms[bd1[1]],order=0))
+                    molc.addBond(Bond(molc.atoms[bd2[0]],molc.atoms[bd2[1]],order=0))
+                    structs.append(molc)
+        
+        return structs
+    
+    def remove_H_bonds(self):
+        """
+        removes any present hydrogen bonds from the molecule
+        """
+        
+        atoms = self.atoms
+        for i,atm1 in enumerate(atoms):
+            for j,atm2 in enumerate(atoms):
+                if j<i and self.hasBond(atm1,atm2):
+                    bd = self.getBond(atm1,atm2)
+                    if bd.order == 0:
+                        self.removeBond(bd)
+        return
+    
     def isLinear(self):
         """
         Return :data:`True` if the structure is linear and :data:`False`
