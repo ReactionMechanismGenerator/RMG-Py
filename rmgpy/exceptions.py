@@ -268,6 +268,12 @@ class VF2Error(Exception):
     """
     pass
 
+class CoreError(Exception):
+    """
+    An exception raised if there is a problem within the model core
+    """
+    pass
+
 ################## move classes that extend off previous exceptions here
 
 class InvalidMicrocanonicalRateError(NetworkError):
