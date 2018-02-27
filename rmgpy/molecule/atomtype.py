@@ -404,7 +404,7 @@ atomTypes['Sibf'] = AtomType('Sibf', generic=['R', 'R!H', 'Si', 'Val4'], specifi
                              single=[], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[0], quadruple=[],
                              benzene=[3])
 atomTypes['Siq'] = AtomType('Siq', generic=['R', 'R!H', 'Si', 'Val4'], specific=[],
-                            single=[0], allDouble=[0], rDouble=[0], oDouble=[0], sDouble=[0], triple=[0], quadruple=[0],
+                            single=[0], allDouble=[0], rDouble=[0], oDouble=[0], sDouble=[0], triple=[0], quadruple=[1],
                             benzene=[0])
 
 atomTypes['S'] = AtomType('S', generic=['R', 'R!H', 'Val6'], specific=['Ss', 'Sd', 'Sa', 'St'])
