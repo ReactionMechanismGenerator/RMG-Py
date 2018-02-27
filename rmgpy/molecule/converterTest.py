@@ -34,10 +34,13 @@ This module contains unit test for the converter module.
 
 import unittest
 
-from .converter import debugRDKitMol
+from rmgpy.exceptions import AtomTypeError
+from rmgpy.molecule.converter import debugRDKitMol, toRDKitMol, fromRDKitMol
+from rmgpy.molecule.molecule import Molecule
 
 
 class RDKitTest(unittest.TestCase):
+
     def testDebugger(self):
         """
         Test the debugRDKitMol(rdmol) function doesn't crash
@@ -50,3 +53,21 @@ class RDKitTest(unittest.TestCase):
         import logging
         rdmol = rdkit.Chem.MolFromSmiles('CCC')
         message = debugRDKitMol(rdmol, level=logging.INFO)
+
+    def test_lone_pair_retention(self):
+        """Test that we don't lose any lone pairs on round trip RDKit conversion."""
+        mol = Molecule().fromAdjacencyList(
+"""
+1 C u0 p0 c0 {2,D} {3,S} {4,S}
+2 O u0 p2 c0 {1,D}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+""")
+        rdmol = toRDKitMol(mol)
+
+        try:
+            mol2 = fromRDKitMol(Molecule(), rdmol)
+        except AtomTypeError as e:
+            self.fail('Could not convert from RDKitMol: ' + e.message)
+        else:
+            self.assertTrue(mol.isIsomorphic(mol2))

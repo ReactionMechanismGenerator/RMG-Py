@@ -69,6 +69,7 @@ def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
     for index, atom in enumerate(mol.vertices):
         rdAtom = Chem.rdchem.Atom(atom.element.symbol)
         rdAtom.SetNumRadicalElectrons(atom.radicalElectrons)
+        rdAtom.SetFormalCharge(atom.charge)
         if atom.element.symbol == 'C' and atom.lonePairs == 1 and mol.multiplicity == 1: rdAtom.SetNumRadicalElectrons(2)
         rdkitmol.AddAtom(rdAtom)
         if removeHs and atom.symbol == 'H':
@@ -140,7 +141,6 @@ def fromRDKitMol(mol, rdkitmol):
 
         # Add bonds by iterating again through atoms
         for j in xrange(0, i):
-            rdkitatom2 = rdkitmol.GetAtomWithIdx(j + 1)
             rdkitbond = rdkitmol.GetBondBetweenAtoms(i, j)
             if rdkitbond is not None:
                 order = 0
@@ -155,6 +155,8 @@ def fromRDKitMol(mol, rdkitmol):
                 bond = Bond(mol.vertices[i], mol.vertices[j], order)
                 mol.addBond(bond)
 
+    # We need to update lone pairs first because the charge was set by RDKit
+    mol.updateLonePairs()
     # Set atom types and connectivity values
     mol.update()
 
