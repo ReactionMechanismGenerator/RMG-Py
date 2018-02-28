@@ -227,11 +227,20 @@ therefore the first one in the list should always be an element.
 atomTypes = {}
 
 #: Surface sites:
-atomTypes['X'] = AtomType(label='X', generic=[], specific=['Xv', 'Xo'])
+atomTypes['X'] = AtomType(label='X', generic=[], specific=['Xv', 'Xo'],
+                          single = [], allDouble = [], rDouble = [], oDouble = [], sDouble = [], triple = [],
+                          quadruple = [], benzene = [])
+
 #: Vacant surface site
-atomTypes['Xv'] = AtomType(label='Xv', generic=['X'], specific=[])
+atomTypes['Xv'] = AtomType('Xv', generic=['X'],
+                           specific=[],
+                           single=[0], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[0], quadruple=[0],
+                           benzene=[0])
 #: Occupied surface site
-atomTypes['Xo'] = AtomType(label='Xo', generic=['X'], specific=[])
+atomTypes['Xo'] = AtomType('Xo', generic=['X'],
+                           specific=[],
+                           single=[1], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[0], quadruple=[0],
+                           benzene=[0])
 
 atomTypes['R'] = AtomType(label='R', generic=[], specific=[
     'H',

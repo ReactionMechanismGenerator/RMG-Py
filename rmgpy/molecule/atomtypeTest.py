@@ -209,7 +209,7 @@ class TestGetAtomType(unittest.TestCase):
 
         self.mol25 = Molecule().fromAdjacencyList('''1  H u0 p0 {2,S}
                                                      2  X u0 {1,S}''')
-        self.mol26 = Molecule().fromAdjacencyList("1 X u0 p0")
+        self.mol26 = Molecule().fromAdjacencyList('''1 X u0 p0''')
         
     
     def atomType(self, mol, atomID):
