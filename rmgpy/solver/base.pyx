@@ -918,10 +918,12 @@ cdef class ReactionSystem(DASx):
             newObjectInds = []
             newObjects = []
             newObjectVals = []
+            newObjectType = []
             
             tempNewObjects = []
             tempNewObjectInds = []
             tempNewObjectVals = []
+            tempNewObjectType = []
             
             newSurfaceRxnInds = []
             interrupt = False
@@ -936,6 +938,7 @@ cdef class ReactionSystem(DASx):
                             tempNewObjects.append(edgeSpecies[ind])
                             tempNewObjectInds.append(ind)
                             tempNewObjectVals.append(RR)
+                            tempNewObjectType.append('RR')
                     if RR > toleranceInterruptSimulation:
                         logging.info('At time {0:10.4e} s, species {1} at {2} exceeded the minimum rate for simulation interruption of {3}'.format(self.t, obj, RR, toleranceInterruptSimulation))
                         interrupt = True
@@ -946,11 +949,37 @@ cdef class ReactionSystem(DASx):
                 newObjects.extend([tempNewObjects[q] for q in sortedInds])
                 newObjectInds.extend([tempNewObjectInds[q] for q in sortedInds])
                 newObjectVals.extend([tempNewObjectVals[q] for q in sortedInds])
+                newObjectType.extend([tempNewObjectType[q] for q in sortedInds])
                 
                 tempNewObjects = []
                 tempNewObjectInds = []
                 tempNewObjectVals = []
-                              
+                tempNewObjectType = []
+                
+            if branching and not firstTime:
+                #movement of reactions to core based on branching number
+                for ind,obj in enumerate(edgeReactions):
+                    BNum = branchingNums[ind]
+                    if BNum > 1:
+                        if not(obj in newObjects or obj in invalidObjects):
+                            tempNewObjects.append(edgeReactions[ind])
+                            tempNewObjectInds.append(ind)
+                            tempNewObjectVals.append(BNum)
+                            tempNewObjectType.append('branching')
+                    
+                
+                sortedInds = numpy.argsort(numpy.array(tempNewObjectVals)).tolist()[::-1]
+                
+                newObjects.extend([tempNewObjects[q] for q in sortedInds])
+                newObjectInds.extend([tempNewObjectInds[q] for q in sortedInds])
+                newObjectVals.extend([tempNewObjectVals[q] for q in sortedInds])
+                newObjectType.extend([tempNewObjectType[q] for q in sortedInds])
+                
+                tempNewObjects = []
+                tempNewObjectInds = []
+                tempNewObjectVals = []
+                tempNewObjectType = []
+                
             if useDynamics and not firstTime and self.t >= dynamicsTimeScale:     
                 #movement of reactions to core/surface based on dynamics number  
                 validLayeringIndices = self.validLayeringIndices
@@ -963,12 +992,14 @@ cdef class ReactionSystem(DASx):
                             tempNewObjects.append(edgeReactions[ind])
                             tempNewObjectInds.append(ind)
                             tempNewObjectVals.append(dlnaccum)
+                            tempNewObjectType.append('dyn')
                     elif dlnaccum > toleranceMoveEdgeReactionToSurface and ind in validLayeringIndices:
                         if not(obj in newObjects or obj in invalidObjects):
                             tempNewObjects.append(edgeReactions[ind])
                             tempNewObjectInds.append(ind)
                             tempNewObjectVals.append(dlnaccum)
                             tempSurfaceObjects.append(edgeReactions[ind])
+                            tempNewObjectType.append('dyn')
                     if dlnaccum > toleranceMoveEdgeReactionToCoreInterrupt:
                         logging.info('At time {0:10.4e} s, Reaction {1} at {2} exceeded the minimum difference in total log(accumulation number) for simulation interruption of {3}'.format(self.t, obj,dlnaccum,toleranceMoveEdgeReactionToCoreInterrupt))
                         interrupt = True
@@ -978,12 +1009,14 @@ cdef class ReactionSystem(DASx):
                 newObjects.extend([tempNewObjects[q] for q in sortedInds])
                 newObjectInds.extend([tempNewObjectInds[q] for q in sortedInds])
                 newObjectVals.extend([tempNewObjectVals[q] for q in sortedInds])
+                newObjectType.extend([tempNewObjectType[q] for q in sortedInds])
                 
                 newSurfaceRxnInds = [newObjects.index(obj) for obj in tempSurfaceObjects]
                 
                 tempNewObjects = []
                 tempNewObjectInds = []
                 tempNewObjectVals = []
+                tempNewObjectType = []
                 
             #Determination of pdepNetworks in need of exploring
             
@@ -995,6 +1028,7 @@ cdef class ReactionSystem(DASx):
                             tempNewObjects.append(pdepNetworks[ind])
                             tempNewObjectInds.append(ind)
                             tempNewObjectVals.append(LR)
+                            tempNewObjectType.append('pdep')
                     if LR > toleranceInterruptSimulation:
                         logging.info('At time {0:10.4e} s, PDepNetwork #{1:d} at {2} exceeded the minimum rate for simulation interruption of {3}'.format(self.t, obj.index,LR,toleranceInterruptSimulation))
                         interrupt = True
@@ -1004,10 +1038,12 @@ cdef class ReactionSystem(DASx):
                 newObjects.extend([tempNewObjects[q] for q in sortedInds])
                 newObjectInds.extend([tempNewObjectInds[q] for q in sortedInds])
                 newObjectVals.extend([tempNewObjectVals[q] for q in sortedInds])
+                newObjectType.extend([tempNewObjectType[q] for q in sortedInds])
                 
                 tempNewObjects = []
                 tempNewObjectInds = []
                 tempNewObjectVals = []
+                tempNewObjectType = []
             
             ###########################
             #Overall Object Processing#
@@ -1020,7 +1056,8 @@ cdef class ReactionSystem(DASx):
                 newObjects = newObjects[:num]
                 newObjectInds = newObjectInds[:num]
                 newObjectVals = newObjectVals[:num]
-            
+                newObjectType = newObjectType[:num]
+                
             if terminateAtMaxObjects and len(invalidObjects)+len(newObjects) >= maxNumObjsPerIter:
                 logging.info('Reached max number of objects...preparing to terminate')
                 interrupt = True
@@ -1032,12 +1069,15 @@ cdef class ReactionSystem(DASx):
                     if isinstance(obj,Species):
                         logging.info('At time {0:10.4e} s, species {1} at rate ratio {2} exceeded the minimum rate for moving to model core of {3}'.format(self.t, obj,val,toleranceMoveToCore))
                     elif isinstance(obj,Reaction):
-                        if i in newSurfaceRxnInds:
-                            logging.info('At time {0:10.4e} s, Reaction {1} at {2} exceeded the minimum difference in total log(accumulation number) for moving to model surface of {3}'.format(self.t, obj, val,toleranceMoveEdgeReactionToSurface))
-                            newSurfaceReactions.append(obj)
-                            newSurfaceReactionInds.append(ind)
-                        else:
-                            logging.info('At time {0:10.4e} s, Reaction {1} at {2} exceeded the minimum difference in total log(accumulation number) for moving to model core of {3}'.format(self.t, obj, val,toleranceMoveEdgeReactionToCore))
+                        if newObjectType[i] == 'dyn':
+                            if i in newSurfaceRxnInds:
+                                logging.info('At time {0:10.4e} s, Reaction {1} at {2} exceeded the minimum difference in total log(accumulation number) for moving to model surface of {3}'.format(self.t, obj, val,toleranceMoveEdgeReactionToSurface))
+                                newSurfaceReactions.append(obj)
+                                newSurfaceReactionInds.append(ind)
+                            else:
+                                logging.info('At time {0:10.4e} s, Reaction {1} at {2} exceeded the minimum difference in total log(accumulation number) for moving to model core of {3}'.format(self.t, obj, val,toleranceMoveEdgeReactionToCore))
+                        elif newObjectType[i] == 'branching':
+                            logging.info('At time {0:10.4e} s, Reaction {1} at a branching number of {2} exceeded the threshold of 1 for moving to model core'.format(self.t, obj, val))
                     else: 
                         logging.info('At time {0:10.4e} s, PDepNetwork #{1:d} at {2} exceeded the minimum rate for exploring of {3}'.format(self.t, obj.index, val,toleranceMoveToCore))
     
