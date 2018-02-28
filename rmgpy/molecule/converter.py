@@ -252,8 +252,6 @@ def fromOBMol(mol, obmol):
 
     # iterate through atoms in obmol
     for obatom in openbabel.OBMolAtomIter(obmol):
-        idx = obatom.GetIdx()#openbabel idx starts at 1!
-
         # Use atomic number as key for element
         number = obatom.GetAtomicNum()
         element = elements.getElement(number)

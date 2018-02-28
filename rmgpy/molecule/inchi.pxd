@@ -55,7 +55,7 @@ cpdef list _find_lowest_u_layer(Molecule mol, list u_layer, list equivalent_atom
 
 cpdef str _create_U_layer(Molecule mol, str auxinfo)
 
-cpdef Molecule _find_lowest_p_layer(Molecule minmol, list p_layer, list equivalent_atoms)
+cpdef list _find_lowest_p_layer(Molecule minmol, list p_layer, list equivalent_atoms)
 
 cpdef str _create_P_layer(Molecule mol, str auxinfo)
 

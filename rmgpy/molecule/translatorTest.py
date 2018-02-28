@@ -32,7 +32,6 @@
 This module contains unit test for the translator module.
 """
 
-import mock
 import re
 import unittest
 from external.wip import work_in_progress
@@ -75,9 +74,9 @@ class InChIGenerationTest(unittest.TestCase):
 
 
     def test_C7H8(self):
-        """Looks a lot like toluene but with 1 double bond replaced by a biradical."""
+        """Looks a lot like toluene but with 1 double bond replaced by a biradical.
 
-        """unpaired electrons on tertiary carbon, and on carbon in para position."""
+        unpaired electrons on tertiary carbon, and on carbon in para position."""
         adjlist = """
 1  C u1 p0 c0 {2,S} {3,S} {4,S}
 2  C u0 p0 c0 {1,S} {7,D} {10,S}
@@ -138,7 +137,6 @@ class InChIGenerationTest(unittest.TestCase):
 9  H u0 p0 c0 {5,S}
 10 H u0 p0 c0 {6,S}
         """
-        benzatetraene = 'InChI=1S/C6H4/c1-2-4-6-5-3-1/h1-4H'
         aug_inchi = 'InChI=1S/C6H4/c1-2-4-6-5-3-1/h1-4H'
         self.compare(adjlist, aug_inchi)
 
@@ -355,7 +353,7 @@ multiplicity 3
 11 H u0 p0 c0 {5,S}
         """
 
-        aug_inchi = 'InChI=1S/C5H6/c1-3-5-4-2/h1-3H2/u1,2/lp4,5'
+        aug_inchi = 'InChI=1S/C5H6/c1-3-5-4-2/h1-3H2/u1,2/lp3,5'
         self.compare(adjlist, aug_inchi)
 
 
@@ -943,38 +941,6 @@ class ParsingTest(unittest.TestCase):
         mol = fromSMARTS(Molecule(), smarts)
         self.assertTrue(mol.isIsomorphic(self.methane))
 
-    def test_toRDKitMol(self):
-        """
-        Test that toRDKitMol returns correct indices and atom mappings.
-        """
-        bondOrderDict = {'SINGLE': 1, 'DOUBLE': 2, 'TRIPLE': 3, 'AROMATIC': 1.5}
-        mol = fromSMILES(Molecule(), 'C1CCC=C1C=O')
-        rdkitmol, rdAtomIndices = mol.toRDKitMol(removeHs=False, returnMapping=True, sanitize=True)
-        for atom in mol.atoms:
-            # Check that all atoms are found in mapping
-            self.assertTrue(atom in rdAtomIndices)
-            # Check that all bonds are in rdkitmol with correct mapping and order
-            for connectedAtom, bond in atom.bonds.iteritems():
-                bondType = str(
-                    rdkitmol.GetBondBetweenAtoms(rdAtomIndices[atom], rdAtomIndices[connectedAtom]).GetBondType())
-                rdkitBondOrder = bondOrderDict[bondType]
-                self.assertEqual(bond.order, rdkitBondOrder)
-
-        # Test for removeHs = True
-        rdkitmol2, rdAtomIndices2 = mol.toRDKitMol(removeHs=True, returnMapping=True, sanitize=True)
-
-        for atom in mol.atoms:
-            # Check that all non-hydrogen atoms are found in mapping
-            if atom.symbol != 'H':
-                self.assertTrue(atom in rdAtomIndices)
-                # Check that all bonds connected to non-hydrogen have the correct mapping and order
-                for connectedAtom, bond in atom.bonds.iteritems():
-                    if connectedAtom.symbol != 'H':
-                        bondType = str(rdkitmol.GetBondBetweenAtoms(rdAtomIndices[atom],
-                                                                    rdAtomIndices[connectedAtom]).GetBondType())
-                        rdkitBondOrder = bondOrderDict[bondType]
-                        self.assertEqual(bond.order, rdkitBondOrder)
-
     def test_incorrect_identifier_type(self):
         """Test that the appropriate error is raised for identifier/type mismatch."""
         with self.assertRaises(ValueError) as cm:
@@ -1047,16 +1013,6 @@ class InChIParsingTest(unittest.TestCase):
         self.compare(inchi, u_indices)
 
     def testC2H3O3(self):
-        adjlist = '''
-        1 C u0 p0 c0 {2,D} {6,S} {7,S}
-        2 C u0 p0 c0 {1,D} {3,S} {5,S}
-        3 O u1 p2 c0 {2,S}
-        4 O u0 p2 c0 {5,S} {8,S}
-        5 O u0 p2 c0 {2,S} {4,S}
-        6 H u0 p0 c0 {1,S}
-        7 H u0 p0 c0 {1,S}
-        8 H u0 p0 c0 {4,S}
-        '''
         inchi = 'C2H3O3/c1-2(3)5-4/h4H,1H2'
         u_indices = [1]
         self.compare(inchi, u_indices)
@@ -1064,7 +1020,7 @@ class InChIParsingTest(unittest.TestCase):
     def testC2H2(self):
         inchi = 'C2H2/c1-2/h1-2H'
         u_indices = [1, 2]
-        mol = self.compare(inchi, u_indices)
+        self.compare(inchi, u_indices)
 
     def testO2(self):
         inchi = 'O2/c1-2'
@@ -1089,7 +1045,7 @@ class InChIParsingTest(unittest.TestCase):
     def testQuadriRadicalDoubleBondZwitterMult5(self):
         inchi = 'C8H14/c1-4-6-7-8(3)5-2/h5-6,8H,1-2,4,7H2,3H3'
         u_indices = [1, 2, 5, 6]
-        mol = self.compare(inchi, u_indices)
+        self.compare(inchi, u_indices)
 
     def testQuadri2DoubleBondMult5(self):
         inchi = 'C8H14/c1-5-7(3)8(4)6-2/h5-8H,1-2H2,3-4H3'
@@ -1117,10 +1073,10 @@ class InChIParsingTest(unittest.TestCase):
         p_indices = [1, 2]
         mol = self.compare(inchi, [], p_indices)
 
-        assert mol.atoms[1].lonePairs == 1  # Oxygen
+        self.assertEqual(mol.atoms[1].lonePairs, 1)  # Oxygen
 
-        assert mol.atoms[0].charge == -1
-        assert mol.atoms[1].charge == +1
+        self.assertEqual(mol.atoms[0].charge, -1)
+        self.assertEqual(mol.atoms[1].charge, 1)
 
     def testTripletMethylene(self):
         inchi = 'CH2/h1H2'
@@ -1145,12 +1101,12 @@ class InChIParsingTest(unittest.TestCase):
     def testC6H6(self):
         inchi = 'C6H6/c1-3-5-6-4-2/h1,6H,2,5H2'
         u_indices = [1, 3]
-        mol = self.compare(inchi, u_indices)
+        self.compare(inchi, u_indices)
 
     def testC4H6O_2(self):
         inchi = 'C4H6O/c1-2-3-4-5/h2,4H,1,3H2'
         u_indices = [4, 5]
-        mol = self.compare(inchi, u_indices)
+        self.compare(inchi, u_indices)
 
     def test_CO_triplet(self):
 
@@ -1189,7 +1145,7 @@ class InChIParsingTest(unittest.TestCase):
     def testC3H4(self):
         inchi = 'C3H4/c1-3-2/h1,3H,2H2'
         u_indices = [1, 1]
-        mol = self.compare(inchi, u_indices)
+        self.compare(inchi, u_indices)
 
     def test_C6H8O2(self):
         inchi = 'C6H8O2/c1-3-5(7)6(8)4-2/h3-6H,1-2H2'
@@ -1287,9 +1243,9 @@ class InChIParsingTest(unittest.TestCase):
         """
         inchi = 'InChI=1S/HNO3/c2-1(3)4/h(H,2,3,4)'
         p_indices = [-1, 3, 3, 3]  # ???
-        mol = self.compare(inchi, [], p_indices)
+        self.compare(inchi, [], p_indices)
 
     def test_NO(self):
         inchi = 'InChI=1S/NO/c1-2'
         u_indices = [1]
-        mol = self.compare(inchi, u_indices)
+        self.compare(inchi, u_indices)

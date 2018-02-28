@@ -35,7 +35,6 @@ representation formats, e.g. SMILES, InChI, SMARTS.
 
 
 import cython
-import itertools
 import logging
 
 # Assume that rdkit is installed
@@ -49,7 +48,7 @@ else:
     BACKENDS = ['openbabel', 'rdkit']
 
 from rmgpy.exceptions import DependencyError
-from .molecule import Atom, Molecule
+from .molecule import Molecule
 from rmgpy.molecule.converter import toRDKitMol, fromRDKitMol, toOBMol, fromOBMol
 
 import rmgpy.molecule.inchi as inchiutil

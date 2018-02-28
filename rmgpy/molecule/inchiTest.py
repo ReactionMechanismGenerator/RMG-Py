@@ -156,23 +156,23 @@ class DecomposeTest(unittest.TestCase):
     def test_inchi(self):
         string = 'InChI=1S/XXXX/cXXX/hXXX'
 
-        inchi, u_indices, p_indices = decompose_aug_inchi(string)
+        _, u_indices, _ = decompose_aug_inchi(string)
         self.assertEquals([], u_indices)
 
     def test_inchi_u_layer(self):
         string = 'InChI=1S/XXXX/cXXX/hXXX/u1,2'
     
-        inchi, u_indices, p_indices = decompose_aug_inchi(string)
+        _, u_indices, _ = decompose_aug_inchi(string)
         self.assertEquals([1,2], u_indices)
 
     def test_inchi_p_layer(self):
         string = 'InChI=1S/XXXX/cXXX/hXXX/lp1,2'
-        inchi, u_indices, p_indices = decompose_aug_inchi(string)
+        _, _, p_indices = decompose_aug_inchi(string)
         self.assertEquals([1,2], p_indices)
 
     def test_inchi_u_layer_p_layer(self):
         string = 'InChI=1S/XXXX/cXXX/hXXX/u1,2/lp3,4'
-        inchi, u_indices, p_indices = decompose_aug_inchi(string)
+        _, u_indices, p_indices = decompose_aug_inchi(string)
         self.assertEquals([1,2], u_indices)
         self.assertEquals([3,4], p_indices)
 
@@ -182,7 +182,7 @@ class DecomposeTest(unittest.TestCase):
         pairs can be read correctly.
         """
         string = 'InChI=1S/XXXX/cXXX/hXXX/lp1(0)'
-        inchi, u_indices, p_indices = decompose_aug_inchi(string)
+        _, _, p_indices = decompose_aug_inchi(string)
         self.assertEquals([(1,0)], p_indices)
 
 class CreateULayerTest(unittest.TestCase):

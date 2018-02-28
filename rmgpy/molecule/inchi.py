@@ -343,7 +343,7 @@ def _has_unexpected_lone_pairs(mol):
         except KeyError:
             raise Exception("Unrecognized element: {}".format(at.symbol))
         else:
-            if at.lonePairs != elements.PeriodicSystem.lone_pairs[at.symbol]: return True
+            if at.lonePairs != exp: return True
 
     return False
 
@@ -570,7 +570,7 @@ def _find_lowest_p_layer(minmol, p_layer, equivalent_atoms):
 
     TODO: The presence of unpaired electrons complicates stuff.
     """
-    return minmol
+    return p_layer
 
 
 def _create_P_layer(mol, auxinfo):
@@ -599,7 +599,7 @@ def _create_P_layer(mol, auxinfo):
         except KeyError:
             raise Exception("Unrecognized element: {}".format(at.symbol))
         else:
-            if at.lonePairs != elements.PeriodicSystem.lone_pairs[at.symbol]:
+            if at.lonePairs != exp:
                 if at.lonePairs == 0:
                     p_layer.append('{}{}'.format(i, '(0)'))
                 else:
@@ -609,7 +609,7 @@ def _create_P_layer(mol, auxinfo):
     equivalent_atoms = _parse_E_layer(auxinfo)
     if equivalent_atoms:
         # select lowest u-layer:
-        u_layer = _find_lowest_p_layer(minmol, p_layer, equivalent_atoms)
+        p_layer = _find_lowest_p_layer(minmol, p_layer, equivalent_atoms)
 
     if p_layer:
         return (P_LAYER_PREFIX + P_LAYER_SEPARATOR.join(map(str, p_layer)))
@@ -640,7 +640,8 @@ def create_augmented_layers(mol):
         molcopy = mol.copy(deep=True)
 
         hydrogens = filter(lambda at: at.number == 1, molcopy.atoms)
-        [molcopy.removeAtom(h) for h in hydrogens]
+        for h in hydrogens:
+            molcopy.removeAtom(h)
 
         rdkitmol = toRDKitMol(molcopy)
         _, auxinfo = Chem.MolToInchiAndAuxInfo(rdkitmol, options='-SNon')  # suppress stereo warnings
@@ -751,8 +752,6 @@ def _convert_3_atom_2_bond_path(start, mol):
                     return False
 
         return True
-
-    index = mol.atoms.index(start) + 1
 
     paths = pathfinder.find_allyl_end_with_charge(start)
 
@@ -917,7 +916,7 @@ def _fix_oxygen_unsaturated_bond(mol, u_indices):
                 for bond in bonds[1::2]:  # odd bonds
                     assert isinstance(bond, Bond)
                     bond.incrementOrder()
-                return
+                break
             else:
                 for atom2, bond in bonds.iteritems():
                     if not bond.isSingle() and atom2.charge == 0:
@@ -927,7 +926,6 @@ def _fix_oxygen_unsaturated_bond(mol, u_indices):
                             atom2.radicalElectrons += 1
                             u_indices.remove(mol.atoms.index(atom2) + 1)
                         oxygen.lonePairs += 1
-                        return
 
 
 def _is_unsaturated(mol):
@@ -939,9 +937,8 @@ def _is_unsaturated(mol):
                    atom2=Atom,
                    bonds=dict,
                    bond=Bond)
-    for atom1 in mol.atoms:
-        bonds = mol.getBonds(atom1)
-        for atom2, bond in bonds.iteritems():
+    for atom in mol.atoms:
+        for bond in atom.bonds.itervalues():
             if not bond.isSingle():
                 return True
 
@@ -1121,7 +1118,7 @@ def _check_molecule(mol, aug_inchi):
                    )
 
     ConsistencyChecker.check_multiplicity(mol.getRadicalCount(), mol.multiplicity)
-    inchi, u_indices, p_indices = decompose_aug_inchi(str(aug_inchi))
+    _, u_indices, _ = decompose_aug_inchi(str(aug_inchi))
     assert(mol.getRadicalCount() == len(u_indices))
 
     for at in mol.atoms:
@@ -1141,12 +1138,12 @@ def fix_molecule(mol, aug_inchi):
     # ignore atoms that bear already unpaired electrons:
     for i in set(u_indices[:]):
         atom = mol.atoms[i - 1]
-        [u_indices.remove(i) for _ in range(atom.radicalElectrons)]
+        for _ in range(atom.radicalElectrons): u_indices.remove(i)
 
         # ignore atoms that bear already lone pairs:
     for i in set(p_indices[:]):
         atom = mol.atoms[i - 1]
-        [p_indices.remove(i) for _ in range(atom.lonePairs)]
+        for _ in range(atom.lonePairs): p_indices.remove(i)
 
     _fix_triplet_to_singlet(mol, p_indices)
 

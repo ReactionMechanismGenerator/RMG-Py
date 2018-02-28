@@ -1527,34 +1527,6 @@ multiplicity 2
         with self.assertRaises(Exception):
             mol = Molecule().fromAugmentedInChI(malform_aug_inchi)
 
-    def testRDKitMolAtomMapping(self):
-        """
-        Test that the atom mapping returned by toRDKitMol contains the correct
-        atom indices of the atoms of the molecule when hydrogens are removed.
-        """
-        from rmgpy.molecule.converter import toRDKitMol
-
-        adjlist = '''
-1 H u0 p0 c0 {2,S}
-2 C u0 p0 c0 {1,S} {3,S} {4,S} {5,S}
-3 H u0 p0 c0 {2,S}
-4 H u0 p0 c0 {2,S}
-5 O u0 p2 c0 {2,S} {6,S}
-6 H u0 p0 c0 {5,S}
-        '''
-
-        mol = Molecule().fromAdjacencyList(adjlist)
-        rdkitmol, rdAtomIndices = toRDKitMol(mol, removeHs=True, returnMapping=True)
-
-        heavy_atoms = [at for at in mol.atoms if at.number != 1]
-        for at1 in heavy_atoms:
-            for at2 in heavy_atoms:
-                if mol.hasBond(at1, at2):
-                    try:
-                        rdkitmol.GetBondBetweenAtoms(rdAtomIndices[at1],rdAtomIndices[at2])
-                    except RuntimeError:
-                        self.fail("RDKit failed in finding the bond in the original atom!")
-    
     def testUpdateLonePairs(self):
         adjlist = """
 1 Si u0 p1 c0 {2,S} {3,S}
