@@ -208,10 +208,10 @@ class Atom(Vertex):
             return True
     
     def getDescriptor(self):
-        return (self.getAtomConnectivityValue(), self.number)
+        return self.number, self.getAtomConnectivityValue(), self.radicalElectrons, self.lonePairs, self.charge
 
     def getAtomConnectivityValue(self):
-        return -1*self.connectivity
+        return getVertexConnectivityValue(self)
 
     def isSpecificCaseOf(self, other):
         """
@@ -846,8 +846,20 @@ class Molecule(Graph):
         """
         Sort the atoms in the graph. This can make certain operations, e.g.
         the isomorphism functions, much more efficient.
+
+        This function orders atoms using several attributes in atom.getDescriptor().
+        Currently it sorts by placing heaviest atoms first and hydrogen atoms last.
+        Placing hydrogens last during sorting ensures that functions with hydrogen
+        removal work properly.
         """
-        return self.sortVertices()
+        cython.declare(vertex=Vertex, a=Atom, index=int)
+        for vertex in self.vertices:
+            if vertex.sortingLabel < 0:
+                self.updateConnectivityValues()
+                break
+        self.atoms.sort(key=lambda a: a.getDescriptor(), reverse=True)
+        for index, vertex in enumerate(self.vertices):
+            vertex.sortingLabel = index
 
     def update(self):
         """
@@ -861,7 +873,7 @@ class Molecule(Graph):
 
         self.updateAtomTypes()
         self.updateMultiplicity()
-        self.sortVertices()
+        self.sortAtoms()
 
     def getFormula(self):
         """
@@ -1795,7 +1807,7 @@ class Molecule(Graph):
         # this is necessary, because saturating with H shouldn't be
         # changing atom types, but it doesn't hurt anything and is not
         # very expensive, so will do it anyway)
-        self.sortVertices()
+        self.sortAtoms()
         self.updateAtomTypes()
         self.multiplicity = 1
 
