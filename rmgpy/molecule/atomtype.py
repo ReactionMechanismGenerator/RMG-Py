@@ -228,8 +228,8 @@ atomTypes = {}
 
 #: Surface sites:
 atomTypes['X'] = AtomType(label='X', generic=[], specific=['Xv', 'Xo'],
-                          #single=[], allDouble=[], rDouble=[], oDouble=[], sDouble=[], triple=[],
-                          #quadruple=[], benzene=[], lonePairs=[]
+                          single=[], allDouble=[], rDouble=[], oDouble=[], sDouble=[], triple=[],
+                          quadruple=[], benzene=[], lonePairs=[]
                           )
 
 #: Vacant surface site
