@@ -238,7 +238,8 @@ def model(toleranceMoveToCore=None, toleranceMoveEdgeReactionToCore=numpy.inf,to
           toleranceMoveEdgeReactionToSurfaceInterrupt=None,
           toleranceMoveEdgeReactionToCoreInterrupt=None, maximumEdgeSpecies=1000000, minCoreSizeForPrune=50, 
           minSpeciesExistIterationsForPrune=2, filterReactions=False, ignoreOverallFluxCriterion=False,
-          maxNumSpecies=None,maxNumObjsPerIter=1,terminateAtMaxObjects=False,toleranceThermoKeepSpeciesInEdge=numpy.inf,dynamicsTimeScale=(0.0,'sec')):
+          maxNumSpecies=None,maxNumObjsPerIter=1,terminateAtMaxObjects=False,toleranceThermoKeepSpeciesInEdge=numpy.inf,
+          dynamicsTimeScale=(0.0,'sec'),branching=None):
     """
     How to generate the model. `toleranceMoveToCore` must be specified. 
     toleranceMoveReactionToCore and toleranceReactionInterruptSimulation refers to an additional criterion for forcing an edge reaction to be included in the core
@@ -251,12 +252,14 @@ def model(toleranceMoveToCore=None, toleranceMoveEdgeReactionToCore=numpy.inf,to
         raise InputError("You must provide a toleranceMoveToCore value. It should be less than or equal to toleranceInterruptSimulation which is currently {0}".format(toleranceInterruptSimulation))
     if toleranceMoveToCore > toleranceInterruptSimulation:
         raise InputError("toleranceMoveToCore must be less than or equal to toleranceInterruptSimulation, which is currently {0}".format(toleranceInterruptSimulation))
-    
+    if branching and type(branching(0.5)) != float:
+        raise InputError("branching must be a function from float to float")
+        
     rmg.modelSettingsList.append(ModelSettings(toleranceMoveToCore, toleranceMoveEdgeReactionToCore,toleranceKeepInEdge, toleranceInterruptSimulation, 
           toleranceMoveEdgeReactionToSurface, toleranceMoveSurfaceSpeciesToCore, toleranceMoveSurfaceReactionToCore,
           toleranceMoveEdgeReactionToSurfaceInterrupt,toleranceMoveEdgeReactionToCoreInterrupt, maximumEdgeSpecies, minCoreSizeForPrune, 
           minSpeciesExistIterationsForPrune, filterReactions, ignoreOverallFluxCriterion, maxNumSpecies, maxNumObjsPerIter,terminateAtMaxObjects,
-          toleranceThermoKeepSpeciesInEdge,Quantity(dynamicsTimeScale)))
+          toleranceThermoKeepSpeciesInEdge,Quantity(dynamicsTimeScale),branching))
     
 def quantumMechanics(
                     software,
