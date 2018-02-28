@@ -64,7 +64,11 @@ def get_data_from_db(host, db_name, collection_name,
 
 	for db_mol in db_mols:
 		smile = str(db_mol["SMILES_input"])
-		mol = Molecule().fromSMILES(smile)
+		if 'adjacency_list' in db_mol:
+			adj = str(db_mol["adjacency_list"])
+			mol = Molecule().fromAdjacencyList(adj)
+		else:
+			mol = Molecule().fromSMILES(smile)
 		mol_tensor = get_molecule_tensor(mol, add_extra_atom_attribute, 
 										 add_extra_bond_attribute)
 		if padding:
