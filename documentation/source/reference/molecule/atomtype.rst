@@ -20,14 +20,14 @@ We define the following basic atom types:
 Atom type       Description
 =============== ==============================================================================================================================================================
 *General atom types*
---------------- --------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ``R``           any atom with any local bond structure
 ``R!H``         any non-hydrogen atom with any local bond structure
 *Hydrogen atom types*
---------------- --------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ``H``           hydrogen atom with up to one single bond
 *Carbon atom types*
---------------- --------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ``C``           carbon atom with any local bond structure
 ``Ca``          carbon atom with two lone pairs and no bonds
 ``Cs``          carbon atom with up to four single bonds
@@ -46,7 +46,7 @@ Atom type       Description
 ``C2dc``        charged carbon atom with one lone pair (valance 2), one double bond and up to one single bond
 ``C2tc``        charged carbon atom with one lone pair (valance 2), one triple bond
 *Nitrogen atom types*
---------------- --------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ``N``           nitrogen atom with any local bond structure
 ``N0sc``        charged nitrogen atom with three lone pairs (valance 0) with up to one single bond
 ``N1s``         nitrogen atom with two lone pairs (valance 1) and up to one single bond
@@ -65,7 +65,7 @@ Atom type       Description
 ``N5b``         nitrogen atom with with no lone pairs (valance 5) and two benzene bonds (one of the lone pairs also participates in the aromatic bond) and up to one single bond
 ``N5bd``        nitrogen atom with with no lone pairs (valance 5), two benzene bonds, and one double bond
 *Oxygen atom types*
---------------- --------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ``O``           oxygen atom with any local bond structure
 ``Oa``          oxygen atom with three lone pairs and no bonds
 ``O0sc``        charged oxygen with three lone pairs (valance 0) and up to one single bond
@@ -78,7 +78,7 @@ Atom type       Description
 ``O4tc``        charged oxygen atom with one one pair (valance 4) and one triple bond
 ``O4b``         oxygen atom with one one pair (valance 4) and and two benzene bonds
 *Silicon atom types*
---------------- --------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ``Si``          silicon atom with any local bond structure
 ``Sis``         silicon atom with four single bonds
 ``Sid``         silicon atom with one double bond (to carbon) and two single bonds
@@ -88,7 +88,7 @@ Atom type       Description
 ``Sib``         silicon atom with two benzene bonds and one single bond
 ``Sibf``        silicon atom with three benzene bonds
 *Sulfur atom types*
---------------- --------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ``S``           sulfur atom with any local bond structure
 ``Sa``          sulfur atom with three lone pairs and no bonds
 ``S0sc``        charged sulfur atom with three lone pairs (valance 0) and up to one single bonds

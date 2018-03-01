@@ -1451,14 +1451,14 @@ class KineticsFamily(Database):
         consistent with the template of this reaction family.
 
         Args:
-            reactants:      List of Molecules to react
-            products:       List of Molecules or Species of desired product structures (optional)
-            prod_resonance: Flag to generate resonance structures for product checking (optional)
-                            Defaults to True, resonance structures are compared
+            reactants (list):                List of Molecules to react.
+            products (list, optional):       List of Molecules or Species of desired product structures.
+            prod_resonance (bool, optional): Flag to generate resonance structures for product checking.
+                Defaults to True, resonance structures are compared.
 
         Returns:
             List of all reactions containing Molecule objects with the
-                specified reactants and products within this family.
+            specified reactants and products within this family.
             Degenerate reactions are returned as separate reactions.
         """
         reactionList = []
@@ -1914,9 +1914,9 @@ class KineticsFamily(Database):
         2. the source - this will be `None` if from a template estimate
         3. the entry  - this will be `None` if from a template estimate
         4. isForward a boolean denoting whether the matched entry is in the same
-        direction as the inputted reaction. This will always be True if using
-        rates rules or group additivity. This can be `True` or `False` if using
-        a depository
+           direction as the inputted reaction. This will always be True if using
+           rates rules or group additivity. This can be `True` or `False` if using
+           a depository
 
         If returnAllKinetics==False, only the first (best?) matching kinetics is returned.
         """
@@ -2300,21 +2300,22 @@ class KineticsFamily(Database):
         Will return the template associated with the matched rate rule.
         Returns a tuple containing (Boolean_Is_Kinetics_From_Training_reaction, Source_Data)
         
-        For a training reaction, the Source_Data returns 
-        [Family_Label, Training_Reaction_Entry, Kinetics_In_Reverse?]
+        For a training reaction, the Source_Data returns::
+
+            [Family_Label, Training_Reaction_Entry, Kinetics_In_Reverse?]
         
-        For a reaction from rate rules, the Source_Data is a tuple containing
-        [Family_Label, {'template': originalTemplate,
-            'degeneracy': degeneracy, 
-            'exact': boolean_exact?, 
-            'rules': a list of (original rate rule entry, weight in average)
-            'training': a list of (original rate rule entry associated with training entry, original training entry, weight in average)
-            }]
-        where TrainingReactions are ones that have created rules used in the estimate.
-        
-        where Exact is a boolean of whether the rate is an exact match, 
-        Template is the reaction template used,
-        and RateRules is a list of the rate rule entries containing the kinetics used
+        For a reaction from rate rules, the Source_Data is a tuple containing::
+
+            [Family_Label, {'template': originalTemplate,
+                            'degeneracy': degeneracy,
+                            'exact': boolean_exact?,
+                            'rules': a list of (original rate rule entry, weight in average)
+                            'training': a list of (original rate rule entry associated with training entry, original training entry, weight in average)}]
+
+
+        where Exact is a boolean of whether the rate is an exact match, Template is
+        the reaction template used, RateRules is a list of the rate rule entries containing
+        the kinetics used, and TrainingReactions are ones that have created rules used in the estimate.
         """
         import re
         lines = reaction.kinetics.comment.split('\n')

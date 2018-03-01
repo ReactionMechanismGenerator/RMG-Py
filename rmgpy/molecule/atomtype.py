@@ -68,8 +68,8 @@ class AtomType:
     `incrementLonePair` ``list``            The atom type(s) that result when the number of lone electron pairs is incremented
     `decrementLonePair` ``list``            The atom type(s) that result when the number of lone electron pairs is decremented
 
-    The following features are what are required in a given atomtype. Any int in the list is acceptable.
-    An empty list is a wildcard
+    The following features are what are required in a given atomtype. Any int in the list is acceptable. An empty list is a wildcard
+    ----------------------------------------------------------------------------
     'single'            ''list''            The total number of single bonds on the atom
     'allDouble'         ''list''            The total number of double bonds on the atom
     'rDouble'           ''list''            The number of double bonds to any non-oxygen, nonsulfur

@@ -366,8 +366,8 @@ class Reaction:
         and products of this reaction. Both directions are checked.
 
         Args:
-            reactants   List of Species required on one side of the reaction
-            products    List of Species required on the other side (optional)
+            reactants (list): Species required on one side of the reaction
+            products (list, optional): Species required on the other side
         """
         # Check forward direction
         if _isomorphicSpeciesList(self.reactants, reactants):

@@ -28,63 +28,50 @@
 #                                                                             #
 ###############################################################################
 
-import os.path
+import numpy
+import unittest
+import os
 
+from rmgpy.cantherm.molpro import MolproLog
 import rmgpy.constants as constants
 
-class MoleProLog:
+################################################################################
+
+class MolproTest(unittest.TestCase):
     """
-    Represents a MolePro log file. The attribute `path` refers to the
-    location on disk of the MolePro log file of interest. Methods are provided
-    to extract a variety of information into CanTherm classes and/or NumPy
-    arrays. 
+    Contains unit tests for the chempy.io.gaussian module, used for reading
+    and writing Molpro files.
     """
     
-    def __init__(self, path):
-        self.path = path
-            
-    def loadEnergy(self,frequencyScaleFactor=1.):
+    def testLoadDzFromMolproLog_F12(self):
         """
-        Return the f12 energy in J/mol from a MolePro Logfile of a CCSD(T)-f12 job. 
-        This function determines which energy (f12a or f12b) to use based on the basis set,
-        which it will parse out of the molepro file. For the vtz and dtz basis sets f12a is
-        better approximation, but for higher basis sets f12b is a better approximation
+        Uses a Molpro log file for ethylene_dz (C2H4) to test that F12a
+        energy can be properly read.
         """
-        f = open(self.path, 'r')
-        line=f.readline()
         
-        #search for basisSet
-        while line!='':
-            if 'basis' in line.lower():
-                if 'vtz' in line.lower() or'vdz' in line.lower():
-                    f12a=True
-                else: f12a=False
-                break
-            line=f.readline()
-        else: raise Exception('Could not find basis set in MolePro File')
-        #search for energy
-        E0=None
-        if f12a:
-            while line!='':
-                if ('RHF-UCCSD(T)-F12a energy' in line
-                    or 'RHF-RCCSD(T)-F12a energy' in line
-                    or 'CCSD(T)-F12a total energy  ' in line):
-                    E0=float(line.split()[-1])
-                    break
-                line=f.readline()
-        else:
-            while line!='':
-                if ('RHF-UCCSD(T)-F12b energy' in line
-                    or 'RHF-RCCSD(T)-F12b energy' in line
-                    or 'CCSD(T)-F12b total energy  ' in line):
-                    E0=float(line.split()[-1])
-                    break
-                line=f.readline()
+        log=MolproLog(os.path.join(os.path.dirname(__file__),'data','ethylene_f12_dz.out'))
+        E0=log.loadEnergy()
         
-        f.close()
+        self.assertAlmostEqual(E0 / constants.Na / constants.E_h, -78.474353559604, 5)
+    
+    def testLoadQzFromMolproLog_F12(self):
+        """
+        Uses a Molpro log file for ethylene_qz (C2H4) to test that F12b
+        energy can be properly read.
+        """
         
-        #multiply E0 by correct constants
-        if E0 is not None:
-            E0 = E0 * constants.E_h * constants.Na
-            return E0
-        else: raise Exception('Unable to find energy in MolePro log file.')
+        log=MolproLog(os.path.join(os.path.dirname(__file__),'data','ethylene_f12_qz.out'))
+        E0=log.loadEnergy()
+        
+        self.assertAlmostEqual(E0 / constants.Na / constants.E_h, -78.472682755635, 5)
+
+    def testLoadRadFromMolproLog_F12(self):
+        """
+        Uses a Molpro log file for OH (C2H4) to test that radical
+        energy can be properly read.
+        """
+        
+        log=MolproLog(os.path.join(os.path.dirname(__file__),'data','OH_f12.out'))
+        E0=log.loadEnergy()
+        
+        self.assertAlmostEqual(E0 / constants.Na / constants.E_h, -75.663696424380, 5)

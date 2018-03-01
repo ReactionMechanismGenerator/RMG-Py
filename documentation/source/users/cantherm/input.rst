@@ -123,8 +123,8 @@ Parameter               Required?                   Description
 ``externalSymmetry``    yes                         The external symmetry number for rotation
 ``spinMultiplicity``    yes                         The ground-state spin multiplicity (degeneracy)
 ``opticalIsomers``      yes                         The number of optical isomers of the species
-``energy``              yes                         The ground-state 0 K atomization energy in Hartree (without zero-point energy)
-                                                    **or**
+``energy``              yes                         The ground-state 0 K atomization energy in Hartree
+                                                    (without zero-point energy) **or**
                                                     The path to the quantum chemistry output file containing the energy
 ``geometry``            yes                         The path to the quantum chemistry output file containing the optimized geometry
 ``frequencies``         yes                         The path to the quantum chemistry output file containing the computed frequencies
@@ -171,7 +171,7 @@ they can specify the path to a quantum chemistry calculation output file that co
 
 In this example, the ``CBS-QB3`` energy is obtained from a Gaussian log file, while the ``Klip_2`` energy is specified directly.
 The energy used will depend on what ``modelChemistry()`` was specified in the input file. CanTherm can parse the energy from
-a ``GaussianLog``, ``MoleProLog`` or ``QchemLog``.
+a ``GaussianLog``, ``MolproLog`` or ``QchemLog``.
 
 The input to the remaining parameters, ``geometry``, ``frequencies`` and ``rotors``, will depend on if hindered/free rotors are included.
 Both cases are described below.
