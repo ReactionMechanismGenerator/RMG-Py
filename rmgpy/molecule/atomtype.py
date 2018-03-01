@@ -234,13 +234,13 @@ atomTypes['X'] = AtomType(label='X', generic=[], specific=['Xv', 'Xo'],
 
 #: Vacant surface site
 atomTypes['Xv'] = AtomType('Xv', generic=['X'], specific=[],
-                           #single=[0], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[0], quadruple=[0],
-                           #benzene=[0], lonePairs=[]
+                           single=[], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[0], quadruple=[0],
+                           benzene=[0], lonePairs=[0]
                            )
 #: Occupied surface site
 atomTypes['Xo'] = AtomType('Xo', generic=['X'], specific=[],
-                           single=[1], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[0], quadruple=[0],
-                           benzene=[0], lonePairs=[]
+                           single=[0, 1], allDouble=[0, 1], rDouble=[], oDouble=[], sDouble=[], triple=[0, 1], quadruple=[0, 1],
+                           benzene=[0, 1], lonePairs=[]
                            )
 
 atomTypes['R'] = AtomType(label='R', generic=[], specific=[
