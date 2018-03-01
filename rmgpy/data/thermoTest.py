@@ -345,6 +345,18 @@ multiplicity 2
         self.assertTrue(thermo_gav2.getEnthalpy(298) < thermo_gav1.getEnthalpy(298),
                         msg="Did not select the molecule with the lowest H298 as a the thermo entry for C=C[CH][O] / C=CC=O")
 
+    def testThermoForMixedReactiveAndNonreactiveMolecules(self):
+        """Test that the thermo entry of nonreactive molecules isn't selected for a species, even if it's more stable"""
+
+        smiles = '[C]=C=O'  # has H298 ~= 640 kJ/mol; has resonance structure `[C]=C=O` with H298 ~= 380 kJ/mol
+        spec = Species().fromSMILES(smiles)
+        thermo_gav1 = self.database.getThermoDataFromGroups(spec)  # thermo of the stable molecule
+        spec.generate_resonance_structures()
+        spec.molecule[0].reactive = False  # set the more stable molecule to nonreactive for this check
+        thermo_gav2 = self.database.getThermoDataFromGroups(spec)  # thermo of the speciesless stable molecule
+        self.assertTrue(thermo_gav2.getEnthalpy(298) > thermo_gav1.getEnthalpy(298),
+                        msg="Did not select the reactive molecule for thermo")
+
 class TestThermoAccuracy(unittest.TestCase):
     """
     Contains tests for accuracy of thermo estimates and symmetry calculations.
