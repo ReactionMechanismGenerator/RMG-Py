@@ -309,7 +309,7 @@ def applyInverseLaplaceTransformMethod(transitionState,
             phi0 = numpy.zeros(Ngrains, numpy.float64)
             for r in range(Ngrains):
                 E = Elist[r] - Elist[0] - Ea
-                if E > 0:
+                if E > 1:
                     phi0[r] = (E/R)**(n-1.0)
             phi0 = phi0 * (dE / R) / scipy.special.gamma(n)
             # Evaluate the convolution
