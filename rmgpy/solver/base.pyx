@@ -774,8 +774,18 @@ cdef class ReactionSystem(DASx):
                 for index in xrange(numEdgeReactions):
                     reactionRate = edgeReactionRates[index]
                     if reactionRate > 0:
+                        
                         if self.reactantIndices[index+numCoreReactions,:][1] != -1:
                             continue
+                        
+                        mults = [coreSpecies[i].molecule[0].multiplicity for i in self.productIndices if i<numCoreSpecies else edgeSpecies[i-numCoreSpecies].molecule[0].multiplicity]
+                        
+                        if max(mults) > 2:
+                            continue
+                        
+                        if sum(mults) > 3:
+                            continue
+                        
                         for spcIndex in self.reactantIndices[index+numCoreReactions,:]:
                             if spcIndex != -1 and spcIndex<numCoreSpecies:
                                 if coreSpecies[spcIndex].molecule[0].multiplicity != 2:
