@@ -774,7 +774,7 @@ cdef class ReactionSystem(DASx):
                 for index in xrange(numEdgeReactions):
                     reactionRate = edgeReactionRates[index]
                     if reactionRate > 0:
-                        if len(self.reactantIndices[index+numCoreReactions,:]) > 1:
+                        if self.reactantIndices[index+numCoreReactions,:].count(-1) != 2:
                             continue
                         for spcIndex in self.reactantIndices[index+numCoreReactions,:]:
                             if spcIndex != -1 and spcIndex<numCoreSpecies:
@@ -786,7 +786,7 @@ cdef class ReactionSystem(DASx):
                                     if BNum>branchingNums[index]:
                                         branchingNums[index] = BNum
                     else:
-                        if len(self.productIndices[index+numCoreReactions,:]) > 1:
+                        if self.productIndices[index+numCoreReactions,:].count(-1) != 2:
                             continue
                         for spcIndex in self.productIndices[index+numCoreReactions,:]:
                             if spcIndex != -1 and spcIndex<numCoreSpecies:
