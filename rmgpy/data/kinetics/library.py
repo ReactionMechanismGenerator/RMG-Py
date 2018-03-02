@@ -152,10 +152,9 @@ class KineticsLibrary(Database):
                 c = entry._longDesc.split('\n')
                 family_comments = [i for i in c if 'family: ' in i]
                 familyname = family_comments[0].replace('family: ','')
-                logging.info(familyname)
                 tstring = c[0]
                 ind = tstring.find('rate rule')
-                tstring = tstring[ind+9:]
+                tstring = tstring[ind+10:]
                 tstrings = tstring.split(';')
                 tstrings[0] = tstrings[0][1:]
                 tstrings[-1] = tstrings[-1][:-1]

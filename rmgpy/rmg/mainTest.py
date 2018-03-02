@@ -50,9 +50,7 @@ class TestMain(unittest.TestCase):
         cls.outputDir = 'output'
         cls.databaseDirectory = settings['database.directory']
 
-        cls.seedThermo = os.path.join(cls.databaseDirectory, 'thermo', 'libraries', 'testSeed.py')
         cls.seedKinetics = os.path.join(cls.databaseDirectory, 'kinetics', 'libraries', 'testSeed')
-        cls.seedThermoEdge = os.path.join(cls.databaseDirectory, 'thermo', 'libraries', 'testSeed_edge.py')
         cls.seedKineticsEdge = os.path.join(cls.databaseDirectory, 'kinetics', 'libraries', 'testSeed_edge')
 
         os.mkdir(os.path.join(cls.testDir, cls.outputDir))
@@ -73,9 +71,7 @@ class TestMain(unittest.TestCase):
         shutil.rmtree(os.path.join(cls.testDir, cls.outputDir))
 
         # Delete the seed libraries created in database
-        os.remove(cls.seedThermo)
         shutil.rmtree(cls.seedKinetics)
-        os.remove(cls.seedThermoEdge)
         shutil.rmtree(cls.seedKineticsEdge)
 
     def testRMGExecute(self):
@@ -95,7 +91,6 @@ class TestMain(unittest.TestCase):
         seedDir = os.path.join(self.testDir, self.outputDir, 'seed')
         self.assertTrue(os.path.exists)
 
-        self.assertTrue(os.path.exists(os.path.join(seedDir, self.rmg.name + '.py')))  # thermo library made
         self.assertTrue(os.path.exists(os.path.join(seedDir, self.rmg.name)))  # kinetics library folder made
 
         self.assertTrue(os.path.exists(os.path.join(seedDir, self.rmg.name, 'dictionary.txt')))  # dictionary file made
@@ -108,7 +103,6 @@ class TestMain(unittest.TestCase):
 
         name = self.rmg.name + '_edge'
 
-        self.assertTrue(os.path.exists(os.path.join(seedDir, name + '.py')))  # thermo library made
         self.assertTrue(os.path.exists(os.path.join(seedDir, name)))  # kinetics library folder made
 
         self.assertTrue(os.path.exists(os.path.join(seedDir, name, 'dictionary.txt')))  # dictionary file made
@@ -116,12 +110,10 @@ class TestMain(unittest.TestCase):
 
     def testRMGSeedLibraryCreation(self):
         """Test that seed mechanisms are created in the correct database locations."""
-        self.assertTrue(os.path.exists(self.seedThermo))
         self.assertTrue(os.path.exists(self.seedKinetics))
 
     def testRMGSeedEdgeLibraryCreation(self):
         """Test that edge seed mechanisms are created in the correct database locations."""
-        self.assertTrue(os.path.exists(self.seedThermo))
         self.assertTrue(os.path.exists(self.seedKinetics))
 
     def testRMGSeedWorks(self):
@@ -132,7 +124,7 @@ class TestMain(unittest.TestCase):
         # Load the seed libraries into the database
         self.rmg.database.load(
             path=self.databaseDirectory,
-            thermoLibraries=['testSeed', 'testSeed_edge'],
+            thermoLibraries=[],
             reactionLibraries=['testSeed', 'testSeed_edge'],
             seedMechanisms=['testSeed', 'testSeed_edge'],
             kineticsFamilies='default',

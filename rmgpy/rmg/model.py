@@ -1401,6 +1401,8 @@ class CoreEdgeReactionModel:
         database = rmgpy.data.rmg.database
 
         libraryNames = database.kinetics.libraries.keys()
+        familyNames = database.kinetics.families.keys()
+        
         path = os.path.join(settings['database.directory'],'kinetics','libraries')
         from rmgpy.rmg.input import rmg
         
@@ -1414,11 +1416,18 @@ class CoreEdgeReactionModel:
         seedMechanism = database.kinetics.libraries[seedMechanism]
         
         rxns = seedMechanism.getLibraryReactions()
+        
         for rxn in rxns:
             if isinstance(rxn,LibraryReaction) and not (rxn.library in libraryNames): #if one of the reactions in the library is from another library load that library
                 database.kinetics.libraryOrder.append((rxn.library,'Internal'))
                 database.kinetics.loadLibraries(path=path,libraries=[rxn.library])
                 libraryNames = database.kinetics.libraries.keys()
+            if isinstance(rxn,TemplateReaction) and not (rxn.family in familyNames):
+                logging.warning('loading reaction {0} originally from family {1} as a library reaction'.format(str(rxn),rxn.family))
+                rxn = LibraryReaction(reactants=rxn.reactants[:], products=rxn.products[:],
+                 library=seedMechanism.name, specificCollider=rxn.specificCollider, kinetics=rxn.kinetics, duplicate=rxn.duplicate,
+                 reversible=rxn.reversible
+                 )
             r, isNew = self.makeNewReaction(rxn) # updates self.newSpeciesList and self.newReactionlist
             if not isNew: logging.info("This library reaction was not new: {0}".format(rxn))
             
@@ -1473,6 +1482,7 @@ class CoreEdgeReactionModel:
 
         database = rmgpy.data.rmg.database
         libraryNames = database.kinetics.libraries.keys()
+        familyNames = database.kinetics.families.keys()
         path = os.path.join(settings['database.directory'],'kinetics','libraries')
         
         from rmgpy.rmg.input import rmg
@@ -1492,6 +1502,12 @@ class CoreEdgeReactionModel:
                 database.kinetics.libraryOrder.append((rxn.library,'Internal'))
                 database.kinetics.loadLibraries(path=path,libraries=[rxn.library])
                 libraryNames = database.kinetics.libraries.keys()
+            if isinstance(rxn,TemplateReaction) and not (rxn.family in familyNames):
+                logging.warning('loading reaction {0} originally from family {1} as a library reaction'.format(str(rxn),rxn.family))
+                rxn = LibraryReaction(reactants=rxn.reactants[:], products=rxn.products[:],
+                 library=reactionLibrary.name, specificCollider=rxn.specificCollider, kinetics=rxn.kinetics, duplicate=rxn.duplicate,
+                 reversible=rxn.reversible
+                 )
             r, isNew = self.makeNewReaction(rxn) # updates self.newSpeciesList and self.newReactionlist
             if not isNew: logging.info("This library reaction was not new: {0}".format(rxn))
 

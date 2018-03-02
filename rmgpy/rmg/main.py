@@ -72,6 +72,7 @@ from rmgpy.stats import ExecutionStatsWriter
 from rmgpy.thermo.thermoengine import submit
 from rmgpy.tools.simulate import plot_sensitivity
 from cantera import ck2cti
+from rmgpy.exceptions import CoreError
 ################################################################################
 
 solvent = None
@@ -793,7 +794,9 @@ class RMG(util.Subject):
             self.generateCanteraFiles(os.path.join(self.outputDirectory, 'chemkin', 'chem_annotated.inp'))
         except EnvironmentError:
             logging.error('Could not generate Cantera files due to EnvironmentError. Check read\write privileges in output directory.')
-                
+        
+        self.check_model()
+        
         # Write output file
         logging.info('')
         logging.info('MODEL GENERATION COMPLETED')
@@ -804,6 +807,40 @@ class RMG(util.Subject):
         
         self.finish()
     
+    def check_model(self):
+        """
+        Run checks on the RMG model
+        """
+        #check that no two species in core or edge are isomorphic
+        for i,spc in enumerate(self.reactionModel.core.species):
+            for j in xrange(i):
+                spc2 = self.reactionModel.core.species[j]
+                if spc.isIsomorphic(spc2):
+                    raise CoreError('Although the model has completed, species {0} is isomorphic to species {1} in the core.  Please open an issue on GitHub with the following output: \n{2}\n{3}'.format(spc.label,spc2.label,spc.toAdjacencyList(),spc2.toAdjacencyList()))
+        
+        for i,spc in enumerate(self.reactionModel.edge.species):
+            for j in xrange(i):
+                spc2 = self.reactionModel.edge.species[j]
+                if spc.isIsomorphic(spc2):
+                    logging.warning('species {0} is isomorphic to species {1} in the edge.  Note this does not affect the generated model.  If you would like to report this to help make RMG better please open a GitHub issue with the following output: \n{2}\n{3}'.format(spc.label,spc2.label,spc.toAdjacencyList(),spc2.toAdjacencyList()))
+        
+        for i,rxn1 in enumerate(self.reactionModel.core.reactions):
+            for j in xrange(i):
+                rxn2 = self.reactionModel.core.reactions[j]
+                if not(rxn1.duplicate and rxn2.duplicate) and rxn1.isIsomorphic(rxn2):
+                    logging.warning('rxn {0} in the core has duplicate reactions that are unmarked these reactions may duplicate each other:'.format(str(rxn1)))
+                    logging.warning('index: {0}, \n rxn: {1!r}'.format(i,rxn1))
+                    logging.warning('index: {0}, \n rxn: {1!r}'.format(j,rxn2))
+                    
+        for i,rxn1 in enumerate(self.reactionModel.edge.reactions):
+            for j in xrange(i):
+                rxn2 = self.reactionModel.edge.reactions[j]
+                if not(rxn1.duplicate and rxn2.duplicate) and rxn1.isIsomorphic(rxn2):
+                    logging.warning('rxn {0} in the edge has duplicate reactions that are unmarked these reactions may duplicate each other:'.format(str(rxn1)))
+                    logging.warning('index: {0}, \n rxn: {1!r}'.format(i,rxn1))
+                    logging.warning('index: {0}, \n rxn: {1!r}'.format(j,rxn2))
+                    
+        
     def makeSeedMech(self,firstTime=False):
         """
         causes RMG to make a seed mechanism out of the current chem_annotated.inp and species_dictionary.txt
@@ -845,31 +882,7 @@ class RMG(util.Subject):
         oldLabels = self.makeSpeciesLabelsIndependent(speciesList)
         edgeOldLabels = self.makeSpeciesLabelsIndependent(edgeSpeciesList)
         
-        # load thermo library entries
-        thermoLibrary = ThermoLibrary(name=name)
-        for i,species in enumerate(speciesList): 
-            if species.thermo:
-                thermoLibrary.loadEntry(index = i + 1,
-                                        label = species.label,
-                                        molecule = species.molecule[0].toAdjacencyList(),
-                                        thermo = species.thermo,
-                                        shortDesc = species.thermo.comment
-               )                
-            else:
-                logging.warning('Species {0} did not contain any thermo data and was omitted from the thermo library.'.format(str(species)))
-                      
-        edgeThermoLibrary = ThermoLibrary(name=name+'_edge')
-        for i,species in enumerate(edgeSpeciesList): 
-            if species.thermo:
-                edgeThermoLibrary.loadEntry(index = i + 1,
-                                        label = species.label,
-                                        molecule = species.molecule[0].toAdjacencyList(),
-                                        thermo = species.thermo,
-                                        shortDesc = species.thermo.comment
-               )                
-            else:
-                logging.warning('Species {0} did not contain any thermo data and was omitted from the edge thermo library.'.format(str(species)))
-                   
+    
         # load kinetics library entries                    
         kineticsLibrary = KineticsLibrary(name=name,autoGenerated=True)
         kineticsLibrary.entries = {}
@@ -881,16 +894,15 @@ class RMG(util.Subject):
                     item = reaction,
                     data = reaction.kinetics,
                 )
-            try:
-                entry.longDesc = 'Originally from reaction library: ' + reaction.library + "\n" + reaction.kinetics.comment
-            except AttributeError:
+            
+            if 'rate rule' in reaction.kinetics.comment:
                 entry.longDesc = reaction.kinetics.comment
+            elif hasattr(reaction,'library') and reaction.library:
+                entry.longDesc = 'Originally from reaction library: ' + reaction.library + "\n" + reaction.kinetics.comment
+            else:
+                entry.longDesc = reaction.kinetics.comment
+            
             kineticsLibrary.entries[i+1] = entry
-        
-        # Mark as duplicates where there are mixed pressure dependent and non-pressure dependent duplicate kinetics
-        # Even though CHEMKIN does not require a duplicate flag, RMG needs it.
-        # Using flag markDuplicates = True
-        
         
         # load kinetics library entries                    
         edgeKineticsLibrary = KineticsLibrary(name=name+'_edge',autoGenerated=True)
@@ -908,11 +920,6 @@ class RMG(util.Subject):
         	    entry.longDesc = reaction.kinetics.comment
             edgeKineticsLibrary.entries[i+1] = entry
         
-        # Mark as duplicates where there are mixed pressure dependent and non-pressure dependent duplicate kinetics
-        # Even though CHEMKIN does not require a duplicate flag, RMG needs it.
-        # Using flag markDuplicates = True
-        
-        
         #save in database
         if self.saveSeedToDatabase:
             databaseDirectory = settings['database.directory']
@@ -920,7 +927,6 @@ class RMG(util.Subject):
                 os.makedirs(os.path.join(databaseDirectory, 'kinetics', 'libraries',name))
             except:
                 pass
-            thermoLibrary.save(os.path.join(databaseDirectory, 'thermo' ,'libraries', name + '.py'))
             kineticsLibrary.save(os.path.join(databaseDirectory, 'kinetics', 'libraries', name, 'reactions.py'))
             kineticsLibrary.saveDictionary(os.path.join(databaseDirectory, 'kinetics', 'libraries', name, 'dictionary.txt'))
             
@@ -928,16 +934,13 @@ class RMG(util.Subject):
                 os.makedirs(os.path.join(databaseDirectory, 'kinetics', 'libraries',name+'_edge'))
             except:
                 pass
-            edgeThermoLibrary.save(os.path.join(databaseDirectory, 'thermo' ,'libraries', name +'_edge'+'.py'))
             edgeKineticsLibrary.save(os.path.join(databaseDirectory, 'kinetics', 'libraries', name+'_edge', 'reactions.py'))
             edgeKineticsLibrary.saveDictionary(os.path.join(databaseDirectory, 'kinetics', 'libraries', name+'_edge', 'dictionary.txt'))
 
         #save in output directory
-        thermoLibrary.save(os.path.join(seedDir, name + '.py'))
         kineticsLibrary.save(os.path.join(seedDir, name, 'reactions.py'))
         kineticsLibrary.saveDictionary(os.path.join(seedDir, name, 'dictionary.txt'))
         
-        edgeThermoLibrary.save(os.path.join(seedDir, name + '_edge'+ '.py'))
         edgeKineticsLibrary.save(os.path.join(seedDir, name+'_edge', 'reactions.py'))
         edgeKineticsLibrary.saveDictionary(os.path.join(seedDir, name+'_edge', 'dictionary.txt'))
         
@@ -959,12 +962,19 @@ class RMG(util.Subject):
         for spec in species:
             oldLabels.append(spec.label)
             duplicate_index = 1
-            potential_label = spec.label
+            if '+' in spec.label:
+                L = spec.molecule[0].getFormula()
+            else:
+                L = spec.label
+            potential_label = L
             while potential_label in labels:
                 duplicate_index += 1
-                potential_label = spec.label + '-{}'.format(duplicate_index)
+                potential_label = L + '-{}'.format(duplicate_index)
+
             spec.label = potential_label
             labels.add(potential_label)
+            
+            
         return oldLabels
     
     ################################################################################
