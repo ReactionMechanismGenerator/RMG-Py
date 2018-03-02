@@ -807,14 +807,14 @@ cdef class ReactionSystem(DASx):
                             continue
                         
                         mults = []
-                        for i in self.productIndices[index+numCoreReactions,:]:
+                        for i in self.reactantIndices[index+numCoreReactions,:]:
                             if i == -1:
                                 continue
                             elif i<numCoreSpecies:
                                 mults.append(coreSpecies[i].molecule[0].multiplicity)
                             else:
                                 mults.append(edgeSpecies[i-numCoreSpecies].molecule[0].multiplicity)
-                                
+                        
                         if max(mults) > 2:
                             continue
                         
