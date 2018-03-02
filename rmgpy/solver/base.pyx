@@ -778,8 +778,14 @@ cdef class ReactionSystem(DASx):
                         if self.reactantIndices[index+numCoreReactions,:][1] != -1:
                             continue
                         
-
-                        mults = [coreSpecies[i].molecule[0].multiplicity if i<numCoreSpecies else edgeSpecies[i-numCoreSpecies].molecule[0].multiplicity for i in self.productIndices[index+numCoreReactions,:]]
+                        mults = []
+                        for i in self.productIndices[index+numCoreReactions,:]:
+                            if i == -1:
+                                continue
+                            elif i<numCoreSpecies:
+                                mults.append(coreSpecies[i].molecule[0].multiplicity)
+                            else:
+                                mults.append(edgeSpecies[i-numCoreSpecies].molecule[0].multiplicity)
                         
                         if max(mults) > 2:
                             continue
@@ -800,8 +806,15 @@ cdef class ReactionSystem(DASx):
                         if self.productIndices[index+numCoreReactions,:][1] != -1:
                             continue
                         
-                        mults = [coreSpecies[i].molecule[0].multiplicity if i<numCoreSpecies else edgeSpecies[i-numCoreSpecies].molecule[0].multiplicity for i in self.reactantIndices[index+numCoreReactions,:]]
-                        
+                        mults = []
+                        for i in self.productIndices[index+numCoreReactions,:]:
+                            if i == -1:
+                                continue
+                            elif i<numCoreSpecies:
+                                mults.append(coreSpecies[i].molecule[0].multiplicity)
+                            else:
+                                mults.append(edgeSpecies[i-numCoreSpecies].molecule[0].multiplicity)
+                                
                         if max(mults) > 2:
                             continue
                         
