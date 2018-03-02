@@ -5,8 +5,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>rmgpy.statmech.Conformer &#8212; RMG Py 2.1.0 documentation</title>
-    <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
+    <title>rmgpy.statmech.Conformer &#8212; RMG-Py 2.1.0 Documentation</title>
+    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -36,15 +36,6 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 
   </head>
   <body>
-<div class="header">
-&nbsp;
-</div>  
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body">
-            
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -60,19 +51,25 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="schrodinger.html" title="rmgpy.statmech.schrodinger"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 2.1.0</a> &raquo;</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Statistical mechanics (<code class="docutils literal"><span class="pre">rmgpy.statmech</span></code>)</a> &#187;</li> 
       </ul>
-    </div>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
             
   <div class="section" id="rmgpy-statmech-conformer">
 <h1>rmgpy.statmech.Conformer<a class="headerlink" href="#rmgpy-statmech-conformer" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.statmech.Conformer">
 <em class="property">class </em><code class="descclassname">rmgpy.statmech.</code><code class="descname">Conformer</code><span class="sig-paren">(</span><em>E0=None</em>, <em>modes=None</em>, <em>spinMultiplicity=1</em>, <em>opticalIsomers=1</em>, <em>number=None</em>, <em>mass=None</em>, <em>coordinates=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.statmech.Conformer" title="Permalink to this definition">¶</a></dt>
-<dd><p>A representation of an individual molecular conformation. The attributes 
+<dd><p>A representation of an individual molecular conformation. The attributes
 are:</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -133,8 +130,8 @@ molecular system.</p>
 <dt id="rmgpy.statmech.Conformer.getCenterOfMass">
 <code class="descname">getCenterOfMass</code><span class="sig-paren">(</span><em>self</em>, <em>atoms=None</em><span class="sig-paren">)</span> &#x2192; ndarray<a class="headerlink" href="#rmgpy.statmech.Conformer.getCenterOfMass" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate and return the [three-dimensional] position of the center of
-mass of the conformer in m. If a list <cite>atoms</cite> of atoms is specified, 
-only those atoms will be used to calculate the center of mass. 
+mass of the conformer in m. If a list <cite>atoms</cite> of atoms is specified,
+only those atoms will be used to calculate the center of mass.
 Otherwise, all atoms will be used.</p>
 </dd></dl>
 
@@ -177,32 +174,37 @@ temperature <cite>T</cite> in K.</p>
 <dt id="rmgpy.statmech.Conformer.getInternalReducedMomentOfInertia">
 <code class="descname">getInternalReducedMomentOfInertia</code><span class="sig-paren">(</span><em>self</em>, <em>pivots</em>, <em>top1</em>, <em>option=3</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.statmech.Conformer.getInternalReducedMomentOfInertia" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate and return the reduced moment of inertia for an internal
-torsional rotation around the axis defined by the two atoms in 
+torsional rotation around the axis defined by the two atoms in
 <cite>pivots</cite>. The list <cite>top1</cite> contains the atoms that should be considered
 as part of the rotating top; this list should contain the pivot atom
 connecting the top to the rest of the molecule.    The procedure used is
 that of Pitzer <a class="footnote-reference" href="#id3" id="id1">[1]</a>, which is described as <span class="math">\(I^{(2,option)}\)</span> by East
 and Radom <a class="footnote-reference" href="#id4" id="id2">[2]</a>. In this procedure, the molecule is divided into two
 tops: those at either end of the hindered rotor bond. The moment of
-inertia of each top is evaluated using an axis determined by option. 
-Finally, the reduced moment of inertia is evaluated from the moment of inertia 
+inertia of each top is evaluated using an axis determined by option.
+Finally, the reduced moment of inertia is evaluated from the moment of inertia
 of each top via the formula (I1*I2)/(I1+I2).</p>
-<p>option corresponds to 3 possible ways of calculating the internal reduced moment of inertia
+<p>Option corresponds to 3 possible ways of calculating the internal reduced moment of inertia
 as discussed in East and Radom [2]</p>
-<p>option = 1 -&gt; moments of inertia of each rotating group calculated about the axis containing the twisting bond
-option = 2 (unimplemented) -&gt; each moment of inertia of each rotating group is calculated about an axis parallel to the</p>
-<div class="system-message">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">docstring of rmgpy.statmech.Conformer.getInternalReducedMomentOfInertia</tt>, line 18)</p>
-Unexpected indentation.</div>
-<blockquote>
-<div>twisting bond and passing through its center of mass</div></blockquote>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">docstring of rmgpy.statmech.Conformer.getInternalReducedMomentOfInertia</tt>, line 19)</p>
-Block quote ends without a blank line; unexpected unindent.</div>
-<dl class="docutils">
-<dt>option = 3 -&gt; moments of inertia of each rotating group calculated about the axis passing through the</dt>
-<dd>centers of mass of both groups</dd>
-</dl>
+<table border="1" class="docutils">
+<colgroup>
+<col width="9%" />
+<col width="91%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>option = 1</td>
+<td>moments of inertia of each rotating group calculated about the axis containing the twisting bond</td>
+</tr>
+<tr class="row-even"><td>option = 2</td>
+<td>(unimplemented) each moment of inertia of each rotating group is calculated about an axis parallel
+to the twisting bond and passing through its center of mass</td>
+</tr>
+<tr class="row-odd"><td>option = 3</td>
+<td>moments of inertia of each rotating group calculated about the axis passing through the
+centers of mass of both groups</td>
+</tr>
+</tbody>
+</table>
 <div class="math">
 \[\frac{1}{I^{(2,option)}} = \frac{1}{I_1} + \frac{1}{I_2}\]</div>
 <table class="docutils footnote" frame="void" id="id3" rules="none">
@@ -222,7 +224,7 @@ Block quote ends without a blank line; unexpected unindent.</div>
 <dl class="method">
 <dt id="rmgpy.statmech.Conformer.getMomentOfInertiaTensor">
 <code class="descname">getMomentOfInertiaTensor</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; ndarray<a class="headerlink" href="#rmgpy.statmech.Conformer.getMomentOfInertiaTensor" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate and return the moment of inertia tensor for the conformer 
+<dd><p>Calculate and return the moment of inertia tensor for the conformer
 in kg*m^2. If the coordinates are not at the center of mass, they are
 temporarily shifted there for the purposes of this calculation.</p>
 </dd></dl>
@@ -244,8 +246,8 @@ specified temperature <cite>T</cite> in K.</p>
 <dl class="method">
 <dt id="rmgpy.statmech.Conformer.getPrincipalMomentsOfInertia">
 <code class="descname">getPrincipalMomentsOfInertia</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.statmech.Conformer.getPrincipalMomentsOfInertia" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate and return the principal moments of inertia and corresponding 
-principal axes for the conformer. The moments of inertia are in 
+<dd><p>Calculate and return the principal moments of inertia and corresponding
+principal axes for the conformer. The moments of inertia are in
 kg*m^2, while the principal axes have unit length.</p>
 </dd></dl>
 
@@ -271,7 +273,7 @@ constant and the J-rotor rotational constant.</p>
 <dl class="method">
 <dt id="rmgpy.statmech.Conformer.getTotalMass">
 <code class="descname">getTotalMass</code><span class="sig-paren">(</span><em>self</em>, <em>atoms=None</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.statmech.Conformer.getTotalMass" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate and return the total mass of the atoms in the conformer in 
+<dd><p>Calculate and return the total mass of the atoms in the conformer in
 kg. If a list <cite>atoms</cite> of atoms is specified, only those atoms will
 be used to calculate the center of mass. Otherwise, all atoms will be
 used.</p>
@@ -286,7 +288,7 @@ used.</p>
 <dl class="attribute">
 <dt id="rmgpy.statmech.Conformer.modes">
 <code class="descname">modes</code><a class="headerlink" href="#rmgpy.statmech.Conformer.modes" title="Permalink to this definition">¶</a></dt>
-<dd><p>modes: list</p>
+<dd><p><em>modes</em> – list</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -298,13 +300,13 @@ used.</p>
 <dl class="attribute">
 <dt id="rmgpy.statmech.Conformer.opticalIsomers">
 <code class="descname">opticalIsomers</code><a class="headerlink" href="#rmgpy.statmech.Conformer.opticalIsomers" title="Permalink to this definition">¶</a></dt>
-<dd><p>opticalIsomers: ‘int’</p>
+<dd><p><em>opticalIsomers</em> – ‘int’</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.statmech.Conformer.spinMultiplicity">
 <code class="descname">spinMultiplicity</code><a class="headerlink" href="#rmgpy.statmech.Conformer.spinMultiplicity" title="Permalink to this definition">¶</a></dt>
-<dd><p>spinMultiplicity: ‘int’</p>
+<dd><p><em>spinMultiplicity</em> – ‘int’</p>
 </dd></dl>
 
 </dd></dl>
@@ -315,11 +317,49 @@ used.</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<div class="sidebarlogo">
-<a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
+  <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    <div class="sphinxsidebarwrapper">
+        <div class="sidebarlogo"><a href="../../index.html">
+            <img src="../../_static/rmg-logo-small.png" alt="RMG" />
+        </a></div>
+      <div id="sidebar">
+        <div id="rmgsidebar">
+          <a href="http://rmg.mit.edu">
+            <div class="menuitem">
+              <img src="../../_static/rmg-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG Website</div>
+              <div class="menutext menudesc">Interactive website for RMG-Py</div>
+            </div>
+          </a>
+          <a href="https://github.com/ReactionMechanismGenerator/RMG-Py">
+            <div class="menuitem">
+              <img src="../../_static/github-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG GitHub</div>
+              <div class="menutext menudesc">View source and post issues</div>
+            </div>
+          </a>
+        </div>
+        <div class="menuitem">
+        </div>
+        <div class="menuitem">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="schrodinger.html"
+                        title="previous chapter">rmgpy.statmech.schrodinger</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../thermo/index.html"
+                        title="next chapter">Thermodynamics (<code class="docutils literal"><span class="pre">rmgpy.thermo</span></code>)</a></p>
+        </div>
+        <div class="menuitem">
+<div role="note" aria-label="source link">
+    <h3>This Page</h3>
+        <ul class="this-page-menu">
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/statmech/conformer.rst"
+                   rel="nofollow">View Source</a></li>
+        </ul>
 </div>
+        </div>
+        <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
@@ -330,88 +370,38 @@ used.</p>
     </form>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
-
-<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/statmech/conformer.rst"
-           rel="nofollow">Edit this page</a></h4><P>
-<div class="customsidebar">
-<P>
-<table cellpadding="3">
-
-<tr><td>
-        <a href="http://reactionmechanismgenerator.github.io/RMG-Py"><img src="../../_static/documentation-icon.png" class="icon_sidebar" width="32px" alt="Documentation"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://reactionmechanismgenerator.github.io/RMG-Py">Documentation</a></div>
-        <div class="linkdesc">Learn more about the RMG software</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/database/"><img src="../../_static/database-logo-small.png" class="icon_sidebar" width="32px" alt="Database"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
-        <div class="linkdesc">Browse the RMG database of chemical and kinetic parameters</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/input">Create Input File</a></div>
-        <div class="linkdesc">Online form for making an RMG input file</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/molecule_search"><img src="../../_static/moleculedraw-logo-small.png" class="icon_sidebar" width="32px" alt="Molecule Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
-        <div class="linkdesc">Draw a molecule from its adjlist and search or estimate its properties</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/database/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/kinetics/search/">Kinetics Search</a></div>
-        <div class="linkdesc">Search or estimate kinetics of a chemical reaction</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/solvation_search"><img src="../../_static/solvation-search-logo-small.png" class="icon_sidebar" width="32px" alt="Solvation Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
-        <div class="linkdesc">Search or estimate solvation properties of solvent and a solute</div>
-</td></tr>
-
-
-<tr><td>
-        <a href="http://rmg.mit.edu/pdep/"><img src="../../_static/pdep-logo-small.png" class="icon_sidebar" width="32px" alt="Pressure Dependent Networks"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
-        <div class="linkdesc">CanTherm pdep kinetic calculations</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/tools/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/tools/">Other RMG Tools</a></div>
-        <div class="linkdesc">Additional tools to supplement RMG</div>
-</td></tr>
-
-</table>
-
-</div>
         </div>
       </div>
+    </div>
+  </div>
+
       <div class="clearer"></div>
     </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../thermo/index.html" title="Thermodynamics (rmgpy.thermo)"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="schrodinger.html" title="rmgpy.statmech.schrodinger"
+             >previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >Statistical mechanics (<code class="docutils literal"><span class="pre">rmgpy.statmech</span></code>)</a> &#187;</li> 
+      </ul>
+    </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+        &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

@@ -5,8 +5,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>rmgpy.molecule.Bond &#8212; RMG Py 2.1.0 documentation</title>
-    <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
+    <title>rmgpy.molecule.Bond &#8212; RMG-Py 2.1.0 Documentation</title>
+    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -36,15 +36,6 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 
   </head>
   <body>
-<div class="header">
-&nbsp;
-</div>  
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body">
-            
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -60,12 +51,18 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="atom.html" title="rmgpy.molecule.Atom"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 2.1.0</a> &raquo;</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
       </ul>
-    </div>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
             
   <div class="section" id="rmgpy-molecule-bond">
 <h1>rmgpy.molecule.Bond<a class="headerlink" href="#rmgpy-molecule-bond" title="Permalink to this headline">¶</a></h1>
@@ -75,9 +72,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <dd><p>A chemical bond. The attributes are:</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="26%" />
-<col width="26%" />
-<col width="49%" />
+<col width="25%" />
+<col width="25%" />
+<col width="51%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Attribute</th>
@@ -89,6 +86,14 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <tr class="row-even"><td><cite>order</cite></td>
 <td><code class="docutils literal"><span class="pre">float</span></code></td>
 <td>The <a class="reference internal" href="#id1"><span class="std std-ref">bond type</span></a></td>
+</tr>
+<tr class="row-odd"><td><cite>atom1</cite></td>
+<td><code class="docutils literal"><span class="pre">Atom</span></code></td>
+<td>An Atom object connecting to the bond</td>
+</tr>
+<tr class="row-even"><td><cite>atom2</cite></td>
+<td><code class="docutils literal"><span class="pre">Atom</span></code></td>
+<td>An Atom object connecting to the bond</td>
 </tr>
 </tbody>
 </table>
@@ -119,8 +124,8 @@ decrease the order by one.</p>
 <dt id="rmgpy.molecule.Bond.equivalent">
 <code class="descname">equivalent</code><span class="sig-paren">(</span><em>self</em>, <em>Edge other</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Bond.equivalent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if <cite>other</cite> is indistinguishable from this bond, or
-<code class="docutils literal"><span class="pre">False</span></code> otherwise. <cite>other</cite> can be either a <code class="xref py py-class docutils literal"><span class="pre">Bond</span></code> or a
-<code class="xref py py-class docutils literal"><span class="pre">GroupBond</span></code> object.</p>
+<code class="docutils literal"><span class="pre">False</span></code> otherwise. <cite>other</cite> can be either a <a class="reference internal" href="#rmgpy.molecule.Bond" title="rmgpy.molecule.Bond"><code class="xref py py-class docutils literal"><span class="pre">Bond</span></code></a> or a
+<a class="reference internal" href="groupbond.html#rmgpy.molecule.GroupBond" title="rmgpy.molecule.GroupBond"><code class="xref py py-class docutils literal"><span class="pre">GroupBond</span></code></a> object.</p>
 </dd></dl>
 
 <dl class="method">
@@ -165,9 +170,16 @@ not.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.Bond.isHydrogenBond">
+<code class="descname">isHydrogenBond</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Bond.isHydrogenBond" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the bond represents a hydrogen bond or <code class="docutils literal"><span class="pre">False</span></code> if
+not.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.Bond.isOrder">
 <code class="descname">isOrder</code><span class="sig-paren">(</span><em>self</em>, <em>float otherOrder</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Bond.isOrder" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the bond represents a single bond or <code class="docutils literal"><span class="pre">False</span></code> if
+<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the bond is of order otherOrder or <code class="docutils literal"><span class="pre">False</span></code> if
 not. This compares floats that takes into account floating point error</p>
 <p>NOTE: we can replace the absolute value relation with math.isclose when
 we swtich to python 3.5+</p>
@@ -184,8 +196,8 @@ not.</p>
 <dt id="rmgpy.molecule.Bond.isSpecificCaseOf">
 <code class="descname">isSpecificCaseOf</code><span class="sig-paren">(</span><em>self</em>, <em>Edge other</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Bond.isSpecificCaseOf" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if <cite>self</cite> is a specific case of <cite>other</cite>, or <code class="docutils literal"><span class="pre">False</span></code>
-otherwise. <cite>other</cite> can be either a <code class="xref py py-class docutils literal"><span class="pre">Bond</span></code> or a
-<code class="xref py py-class docutils literal"><span class="pre">GroupBond</span></code> object.</p>
+otherwise. <cite>other</cite> can be either a <a class="reference internal" href="#rmgpy.molecule.Bond" title="rmgpy.molecule.Bond"><code class="xref py py-class docutils literal"><span class="pre">Bond</span></code></a> or a
+<a class="reference internal" href="groupbond.html#rmgpy.molecule.GroupBond" title="rmgpy.molecule.GroupBond"><code class="xref py py-class docutils literal"><span class="pre">GroupBond</span></code></a> object.</p>
 </dd></dl>
 
 <dl class="method">
@@ -198,7 +210,7 @@ not.</p>
 <dl class="attribute">
 <dt id="rmgpy.molecule.Bond.order">
 <code class="descname">order</code><a class="headerlink" href="#rmgpy.molecule.Bond.order" title="Permalink to this definition">¶</a></dt>
-<dd><p>order: ‘float’</p>
+<dd><p><em>order</em> – ‘float’</p>
 </dd></dl>
 
 <dl class="method">
@@ -216,13 +228,13 @@ not.</p>
 <dl class="attribute">
 <dt id="rmgpy.molecule.Bond.vertex1">
 <code class="descname">vertex1</code><a class="headerlink" href="#rmgpy.molecule.Bond.vertex1" title="Permalink to this definition">¶</a></dt>
-<dd><p>vertex1: rmgpy.molecule.graph.Vertex</p>
+<dd><p><em>vertex1</em> – rmgpy.molecule.graph.Vertex</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.Bond.vertex2">
 <code class="descname">vertex2</code><a class="headerlink" href="#rmgpy.molecule.Bond.vertex2" title="Permalink to this definition">¶</a></dt>
-<dd><p>vertex2: rmgpy.molecule.graph.Vertex</p>
+<dd><p><em>vertex2</em> – rmgpy.molecule.graph.Vertex</p>
 </dd></dl>
 
 </dd></dl>
@@ -265,11 +277,29 @@ following bond types:</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<div class="sidebarlogo">
-<a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
-</div>
+  <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    <div class="sphinxsidebarwrapper">
+        <div class="sidebarlogo"><a href="../../index.html">
+            <img src="../../_static/rmg-logo-small.png" alt="RMG" />
+        </a></div>
+      <div id="sidebar">
+        <div id="rmgsidebar">
+          <a href="http://rmg.mit.edu">
+            <div class="menuitem">
+              <img src="../../_static/rmg-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG Website</div>
+              <div class="menutext menudesc">Interactive website for RMG-Py</div>
+            </div>
+          </a>
+          <a href="https://github.com/ReactionMechanismGenerator/RMG-Py">
+            <div class="menuitem">
+              <img src="../../_static/github-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG GitHub</div>
+              <div class="menutext menudesc">View source and post issues</div>
+            </div>
+          </a>
+        </div>
+        <div class="menuitem">
   <h3><a href="../../contents.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">rmgpy.molecule.Bond</a><ul>
@@ -278,6 +308,26 @@ following bond types:</p>
 </li>
 </ul>
 
+        </div>
+        <div class="menuitem">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="atom.html"
+                        title="previous chapter">rmgpy.molecule.Atom</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="molecule.html"
+                        title="next chapter">rmgpy.molecule.Molecule</a></p>
+        </div>
+        <div class="menuitem">
+<div role="note" aria-label="source link">
+    <h3>This Page</h3>
+        <ul class="this-page-menu">
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/molecule/bond.rst"
+                   rel="nofollow">View Source</a></li>
+        </ul>
+</div>
+        </div>
+        <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
@@ -288,88 +338,38 @@ following bond types:</p>
     </form>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
-
-<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/molecule/bond.rst"
-           rel="nofollow">Edit this page</a></h4><P>
-<div class="customsidebar">
-<P>
-<table cellpadding="3">
-
-<tr><td>
-        <a href="http://reactionmechanismgenerator.github.io/RMG-Py"><img src="../../_static/documentation-icon.png" class="icon_sidebar" width="32px" alt="Documentation"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://reactionmechanismgenerator.github.io/RMG-Py">Documentation</a></div>
-        <div class="linkdesc">Learn more about the RMG software</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/database/"><img src="../../_static/database-logo-small.png" class="icon_sidebar" width="32px" alt="Database"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
-        <div class="linkdesc">Browse the RMG database of chemical and kinetic parameters</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/input">Create Input File</a></div>
-        <div class="linkdesc">Online form for making an RMG input file</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/molecule_search"><img src="../../_static/moleculedraw-logo-small.png" class="icon_sidebar" width="32px" alt="Molecule Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
-        <div class="linkdesc">Draw a molecule from its adjlist and search or estimate its properties</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/database/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/kinetics/search/">Kinetics Search</a></div>
-        <div class="linkdesc">Search or estimate kinetics of a chemical reaction</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/solvation_search"><img src="../../_static/solvation-search-logo-small.png" class="icon_sidebar" width="32px" alt="Solvation Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
-        <div class="linkdesc">Search or estimate solvation properties of solvent and a solute</div>
-</td></tr>
-
-
-<tr><td>
-        <a href="http://rmg.mit.edu/pdep/"><img src="../../_static/pdep-logo-small.png" class="icon_sidebar" width="32px" alt="Pressure Dependent Networks"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
-        <div class="linkdesc">CanTherm pdep kinetic calculations</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/tools/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/tools/">Other RMG Tools</a></div>
-        <div class="linkdesc">Additional tools to supplement RMG</div>
-</td></tr>
-
-</table>
-
-</div>
         </div>
       </div>
+    </div>
+  </div>
+
       <div class="clearer"></div>
     </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="molecule.html" title="rmgpy.molecule.Molecule"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="atom.html" title="rmgpy.molecule.Atom"
+             >previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+      </ul>
+    </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+        &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

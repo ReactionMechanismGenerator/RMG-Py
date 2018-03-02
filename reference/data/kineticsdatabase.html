@@ -5,8 +5,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>rmgpy.data.kinetics.KineticsDatabase &#8212; RMG Py 2.1.0 documentation</title>
-    <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
+    <title>rmgpy.data.kinetics.KineticsDatabase &#8212; RMG-Py 2.1.0 Documentation</title>
+    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -36,15 +36,6 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 
   </head>
   <body>
-<div class="header">
-&nbsp;
-</div>  
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body">
-            
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -60,12 +51,18 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="groupfrequencies.html" title="rmgpy.data.statmech.GroupFrequencies"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 2.1.0</a> &raquo;</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Database (<code class="docutils literal"><span class="pre">rmgpy.data</span></code>)</a> &#187;</li> 
       </ul>
-    </div>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
             
   <div class="section" id="rmgpy-data-kinetics-kineticsdatabase">
 <h1>rmgpy.data.kinetics.KineticsDatabase<a class="headerlink" href="#rmgpy-data-kinetics-kineticsdatabase" title="Permalink to this headline">¶</a></h1>
@@ -77,7 +74,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <dt id="rmgpy.data.kinetics.KineticsDatabase.extractSourceFromComments">
 <code class="descname">extractSourceFromComments</code><span class="sig-paren">(</span><em>reaction</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.extractSourceFromComments" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="docutils">
-<dt><cite>reaction</cite>: A reaction object containing kinetics data and kinetics data comments.  </dt>
+<dt><cite>reaction</cite>: A reaction object containing kinetics data and kinetics data comments.</dt>
 <dd>Should be either a PDepReaction, LibraryReaction, or TemplateReaction object
 as loaded from the rmgpy.chemkin.loadChemkinFile function</dd>
 </dl>
@@ -95,37 +92,54 @@ A reaction can only be estimated using one of these methods.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.data.kinetics.KineticsDatabase.generateReactions">
-<code class="descname">generateReactions</code><span class="sig-paren">(</span><em>reactants</em>, <em>products=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.generateReactions" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.data.kinetics.KineticsDatabase.generate_reactions">
+<code class="descname">generate_reactions</code><span class="sig-paren">(</span><em>reactants</em>, <em>products=None</em>, <em>only_families=None</em>, <em>resonance=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.generate_reactions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate all reactions between the provided list of one or two
 <cite>reactants</cite>, which should be <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> objects. This method
 searches the depository, libraries, and groups, in that order.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.data.kinetics.KineticsDatabase.generateReactionsFromFamilies">
-<code class="descname">generateReactionsFromFamilies</code><span class="sig-paren">(</span><em>reactants</em>, <em>products</em>, <em>only_families=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.generateReactionsFromFamilies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate all reactions between the provided list of one or two
-<cite>reactants</cite>, which should be <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> objects. This method
-applies the reaction family.
-If <cite>only_families</cite> is a list of strings, only families with those labels
-are used.</p>
+<dt id="rmgpy.data.kinetics.KineticsDatabase.generate_reactions_from_families">
+<code class="descname">generate_reactions_from_families</code><span class="sig-paren">(</span><em>reactants</em>, <em>products=None</em>, <em>only_families=None</em>, <em>resonance=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.generate_reactions_from_families" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate all reactions between the provided list or tuple of one or two
+<cite>reactants</cite>, which can be either <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> objects or <code class="xref py py-class docutils literal"><span class="pre">Species</span></code>
+objects. This method can apply all kinetics families or a selected subset.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>reactants</strong> – Molecules or Species to react</li>
+<li><strong>products</strong> – List of Molecules or Species of desired product structures (optional)</li>
+<li><strong>only_families</strong> – List of family labels to generate reactions from (optional)
+Default is to generate reactions from all families</li>
+<li><strong>resonance</strong> – Flag to generate resonance structures for reactants and products (optional)
+Default is True, resonance structures will be generated</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">List of reactions containing Species objects with the specified reactants and products.</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.data.kinetics.KineticsDatabase.generateReactionsFromLibraries">
-<code class="descname">generateReactionsFromLibraries</code><span class="sig-paren">(</span><em>reactants</em>, <em>products</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.generateReactionsFromLibraries" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate all reactions between the provided list of one or two
-<cite>reactants</cite>, which should be <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> objects. This method
-searches the depository.</p>
+<dt id="rmgpy.data.kinetics.KineticsDatabase.generate_reactions_from_libraries">
+<code class="descname">generate_reactions_from_libraries</code><span class="sig-paren">(</span><em>reactants</em>, <em>products=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.generate_reactions_from_libraries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find all reactions from all loaded kinetics library involving the
+provided <cite>reactants</cite>, which can be either <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> objects or
+<code class="xref py py-class docutils literal"><span class="pre">Species</span></code> objects.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.data.kinetics.KineticsDatabase.generateReactionsFromLibrary">
-<code class="descname">generateReactionsFromLibrary</code><span class="sig-paren">(</span><em>reactants</em>, <em>products</em>, <em>library</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.generateReactionsFromLibrary" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate all reactions between the provided list of one or two
-<cite>reactants</cite>, which should be <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> objects. This method
-searches the depository.</p>
+<dt id="rmgpy.data.kinetics.KineticsDatabase.generate_reactions_from_library">
+<code class="descname">generate_reactions_from_library</code><span class="sig-paren">(</span><em>library</em>, <em>reactants</em>, <em>products=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.generate_reactions_from_library" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find all reactions from the specified kinetics library involving the
+provided <cite>reactants</cite>, which can be either <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> objects or
+<code class="xref py py-class docutils literal"><span class="pre">Species</span></code> objects.</p>
 </dd></dl>
 
 <dl class="method">
@@ -133,10 +147,10 @@ searches the depository.</p>
 <code class="descname">getForwardReactionForFamilyEntry</code><span class="sig-paren">(</span><em>entry</em>, <em>family</em>, <em>thermoDatabase</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.getForwardReactionForFamilyEntry" title="Permalink to this definition">¶</a></dt>
 <dd><p>For a given <cite>entry</cite> for a reaction of the given reaction <cite>family</cite> (the
 string label of the family), return the reaction with kinetics and
-degeneracy for the “forward” direction as defined by the reaction 
+degeneracy for the “forward” direction as defined by the reaction
 family. For families that are their own reverse, the direction the
-kinetics is given in will be preserved. If the entry contains 
-functional groups for the reactants, assume that it is given in the 
+kinetics is given in will be preserved. If the entry contains
+functional groups for the reactants, assume that it is given in the
 forward direction and do nothing. Returns the reaction in the direction
 consistent with the reaction family template, and the matching template.
 Note that the returned reaction will have its kinetics and degeneracy
@@ -187,12 +201,18 @@ and should contain entries for every available family (checked in loadFamilies).
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsDatabase.react_molecules">
+<code class="descname">react_molecules</code><span class="sig-paren">(</span><em>molecules</em>, <em>products=None</em>, <em>only_families=None</em>, <em>prod_resonance=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.react_molecules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate reactions from all families for the input molecules.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsDatabase.reconstructKineticsFromSource">
 <code class="descname">reconstructKineticsFromSource</code><span class="sig-paren">(</span><em>reaction</em>, <em>source</em>, <em>fixBarrierHeight=False</em>, <em>forcePositiveBarrier=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.reconstructKineticsFromSource" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reaction is the original reaction with original kinetics.
 Note that for Library and PDep reactions this function does not do anything other than return the original kinetics…</p>
-<p>You must enter source data in the appropriate format such as returned from returned from self.extractSourceFromComments, 
-self-constructed.  
+<p>You must enter source data in the appropriate format such as returned from returned from self.extractSourceFromComments,
+self-constructed.
 fixBarrierHeight and forcePositiveBarrier will change the kinetics based on the Reaction.fixBarrierHeight function.
 Return Arrhenius form kinetics if the source is from training reaction or rate rules.</p>
 </dd></dl>
@@ -228,7 +248,7 @@ points to the top-level folder of the kinetics libraries.</p>
 <dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsDatabase.saveRecommendedFamilies">
 <code class="descname">saveRecommendedFamilies</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsDatabase.saveRecommendedFamilies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save the list of recommended families in a dictionary stored at 
+<dd><p>Save the list of recommended families in a dictionary stored at
 <cite>path</cite>/recommended.py</p>
 </dd></dl>
 
@@ -240,11 +260,49 @@ points to the top-level folder of the kinetics libraries.</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<div class="sidebarlogo">
-<a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
+  <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    <div class="sphinxsidebarwrapper">
+        <div class="sidebarlogo"><a href="../../index.html">
+            <img src="../../_static/rmg-logo-small.png" alt="RMG" />
+        </a></div>
+      <div id="sidebar">
+        <div id="rmgsidebar">
+          <a href="http://rmg.mit.edu">
+            <div class="menuitem">
+              <img src="../../_static/rmg-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG Website</div>
+              <div class="menutext menudesc">Interactive website for RMG-Py</div>
+            </div>
+          </a>
+          <a href="https://github.com/ReactionMechanismGenerator/RMG-Py">
+            <div class="menuitem">
+              <img src="../../_static/github-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG GitHub</div>
+              <div class="menutext menudesc">View source and post issues</div>
+            </div>
+          </a>
+        </div>
+        <div class="menuitem">
+        </div>
+        <div class="menuitem">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="groupfrequencies.html"
+                        title="previous chapter">rmgpy.data.statmech.GroupFrequencies</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="kineticsdepository.html"
+                        title="next chapter">rmgpy.data.kinetics.KineticsDepository</a></p>
+        </div>
+        <div class="menuitem">
+<div role="note" aria-label="source link">
+    <h3>This Page</h3>
+        <ul class="this-page-menu">
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/data/kineticsdatabase.rst"
+                   rel="nofollow">View Source</a></li>
+        </ul>
 </div>
+        </div>
+        <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
@@ -255,88 +313,38 @@ points to the top-level folder of the kinetics libraries.</p>
     </form>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
-
-<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/data/kineticsdatabase.rst"
-           rel="nofollow">Edit this page</a></h4><P>
-<div class="customsidebar">
-<P>
-<table cellpadding="3">
-
-<tr><td>
-        <a href="http://reactionmechanismgenerator.github.io/RMG-Py"><img src="../../_static/documentation-icon.png" class="icon_sidebar" width="32px" alt="Documentation"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://reactionmechanismgenerator.github.io/RMG-Py">Documentation</a></div>
-        <div class="linkdesc">Learn more about the RMG software</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/database/"><img src="../../_static/database-logo-small.png" class="icon_sidebar" width="32px" alt="Database"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
-        <div class="linkdesc">Browse the RMG database of chemical and kinetic parameters</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/input">Create Input File</a></div>
-        <div class="linkdesc">Online form for making an RMG input file</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/molecule_search"><img src="../../_static/moleculedraw-logo-small.png" class="icon_sidebar" width="32px" alt="Molecule Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
-        <div class="linkdesc">Draw a molecule from its adjlist and search or estimate its properties</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/database/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/kinetics/search/">Kinetics Search</a></div>
-        <div class="linkdesc">Search or estimate kinetics of a chemical reaction</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/solvation_search"><img src="../../_static/solvation-search-logo-small.png" class="icon_sidebar" width="32px" alt="Solvation Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
-        <div class="linkdesc">Search or estimate solvation properties of solvent and a solute</div>
-</td></tr>
-
-
-<tr><td>
-        <a href="http://rmg.mit.edu/pdep/"><img src="../../_static/pdep-logo-small.png" class="icon_sidebar" width="32px" alt="Pressure Dependent Networks"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
-        <div class="linkdesc">CanTherm pdep kinetic calculations</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/tools/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/tools/">Other RMG Tools</a></div>
-        <div class="linkdesc">Additional tools to supplement RMG</div>
-</td></tr>
-
-</table>
-
-</div>
         </div>
       </div>
+    </div>
+  </div>
+
       <div class="clearer"></div>
     </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="kineticsdepository.html" title="rmgpy.data.kinetics.KineticsDepository"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="groupfrequencies.html" title="rmgpy.data.statmech.GroupFrequencies"
+             >previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >Database (<code class="docutils literal"><span class="pre">rmgpy.data</span></code>)</a> &#187;</li> 
+      </ul>
+    </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+        &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

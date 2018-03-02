@@ -1,0 +1,293 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>rmgpy.molecule.resonance &#8212; RMG-Py 2.1.0 Documentation</title>
+    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="rmgpy.molecule.kekulize" href="kekulize.html" />
+    <link rel="prev" title="rmgpy.molecule.Group" href="group.html" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+  MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+    ce: ["Extension","mhchem"],
+  });
+});
+</script>
+
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="kekulize.html" title="rmgpy.molecule.kekulize"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="group.html" title="rmgpy.molecule.Group"
+             accesskey="P">previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-rmgpy.molecule.resonance">
+<span id="rmgpy-molecule-resonance"></span><h1>rmgpy.molecule.resonance<a class="headerlink" href="#module-rmgpy.molecule.resonance" title="Permalink to this headline">¶</a></h1>
+<p>This module contains methods for generation of resonance structures of molecules.</p>
+<p>The main function to generate all relevant resonance structures for a given
+Molecule object is <code class="docutils literal"><span class="pre">generate_resonance_structures</span></code>. It calls the necessary
+functions for generating each type of resonance structure.</p>
+<p>Currently supported resonance types:</p>
+<ul class="simple">
+<li><dl class="first docutils">
+<dt>All species:</dt>
+<dd><ul class="first last">
+<li><code class="docutils literal"><span class="pre">generate_adjacent_resonance_structures</span></code>: single radical shift with double or triple bond</li>
+<li><code class="docutils literal"><span class="pre">generate_lone_pair_radical_resonance_structures</span></code>: single radical shift with lone pair</li>
+<li><code class="docutils literal"><span class="pre">generate_N5dd_N5ts_resonance_structures</span></code>: shift between nitrogen with two double bonds and single + triple bond</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Aromatic species only:</dt>
+<dd><ul class="first last">
+<li><code class="docutils literal"><span class="pre">generate_aromatic_resonance_structures</span></code>: fully delocalized structure, where all aromatic rings have benzene bonds</li>
+<li><code class="docutils literal"><span class="pre">generate_kekule_structure</span></code>: generate a single Kekule structure for an aromatic compound (single/double bond form)</li>
+<li><code class="docutils literal"><span class="pre">generate_opposite_kekule_structure</span></code>: for monocyclic aromatic species, rotate the double bond assignment</li>
+<li><code class="docutils literal"><span class="pre">generate_clar_structures</span></code>: generate all structures with the maximum number of pi-sextet assignments</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="attribute">
+<dt id="rmgpy.molecule.resonance.analyze_molecule">
+<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">analyze_molecule</code><a class="headerlink" href="#rmgpy.molecule.resonance.analyze_molecule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Identify key features of molecule important for resonance structure generation.</p>
+<p>Returns a dictionary of features.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.resonance.generate_N5dd_N5ts_resonance_structures">
+<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">generate_N5dd_N5ts_resonance_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_N5dd_N5ts_resonance_structures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate all of the resonance structures formed by shifts between N5dd and N5ts.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.resonance.generate_adjacent_resonance_structures">
+<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">generate_adjacent_resonance_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_adjacent_resonance_structures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate all of the resonance structures formed by one allyl radical shift.</p>
+<p>Biradicals on a single atom are not supported.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.resonance.generate_aromatic_resonance_structures">
+<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">generate_aromatic_resonance_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_aromatic_resonance_structures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate the aromatic form of the molecule. For radicals, generates the form with the most aromatic rings.</p>
+<p>Returns result as a list.
+In most cases, only one structure will be returned.
+In certain cases where multiple forms have the same number of aromatic rings, multiple structures will be returned.
+If there’s an error (eg. in RDKit) it just returns an empty list.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.resonance.generate_clar_structures">
+<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">generate_clar_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_clar_structures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate Clar structures for a given molecule.</p>
+<p>Returns a list of <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> objects corresponding to the Clar structures.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.resonance.generate_isomorphic_resonance_structures">
+<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">generate_isomorphic_resonance_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_isomorphic_resonance_structures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Select the resonance isomer that is isomorphic to the parameter isomer, with the lowest unpaired
+electrons descriptor.</p>
+<p>We generate over all resonance isomers (non-isomorphic as well as isomorphic) and retain isomorphic
+isomers.</p>
+<p>WIP: do not generate aromatic resonance isomers.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.resonance.generate_kekule_structure">
+<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">generate_kekule_structure</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_kekule_structure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a kekulized (single-double bond) form of the molecule.
+The specific arrangement of double bonds is non-deterministic, and depends on RDKit.</p>
+<p>Returns a single Kekule structure as an element of a list of length 1.
+If there’s an error (eg. in RDKit) then it just returns an empty list.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.resonance.generate_lone_pair_radical_resonance_structures">
+<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">generate_lone_pair_radical_resonance_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_lone_pair_radical_resonance_structures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate all of the resonance structures formed by lone electron pair - radical shifts.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.resonance.generate_opposite_kekule_structure">
+<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">generate_opposite_kekule_structure</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_opposite_kekule_structure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate the Kekule structure with opposite single/double bond arrangement
+for single ring aromatics.</p>
+<p>Returns a single Kekule structure as an element of a list of length 1.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.resonance.generate_resonance_structures">
+<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">generate_resonance_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_resonance_structures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate and return all of the resonance structures for the input molecule.</p>
+<p>Most of the complexity of this method goes into handling aromatic species, particularly to generate an accurate
+set of resonance structures that is consistent regardless of the input structure. The following considerations
+are made:</p>
+<ol class="arabic simple">
+<li>False positives from RDKit aromaticity detection can occur if a molecule has exocyclic double bonds</li>
+<li>False negatives from RDKit aromaticity detection can occur if a radical is delocalized into an aromatic ring</li>
+<li>sp2 hybridized radicals in the plane of an aromatic ring do not participate in hyperconjugation</li>
+<li>Non-aromatic resonance structures of PAHs are not important resonance contributors (assumption)</li>
+</ol>
+<p>Aromatic species are broken into the following categories for resonance treatment:</p>
+<ul class="simple">
+<li>Radical polycyclic aromatic species: Kekule structures are generated in order to generate adjacent resonance
+structures. The resulting structures are then used for Clar structure generation. After all three steps, any
+non-aromatic structures are removed, under the assumption that they are not important resonance contributors.</li>
+<li>Radical monocyclic aromatic species: Kekule structures are generated along with adjacent resonance structures.
+All are kept regardless of aromaticity because the radical is more likely to delocalize into the ring.</li>
+<li>Stable polycyclic aromatic species: Clar structures are generated</li>
+<li>Stable monocyclic aromatic species: Kekule structures are generated</li>
+</ul>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.resonance.populate_resonance_algorithms">
+<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">populate_resonance_algorithms</code><a class="headerlink" href="#rmgpy.molecule.resonance.populate_resonance_algorithms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate list of resonance structure algorithms relevant to the current molecule.</p>
+<p>Takes a dictionary of features generated by analyze_molecule().
+Returns a list of resonance algorithms.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+  <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    <div class="sphinxsidebarwrapper">
+        <div class="sidebarlogo"><a href="../../index.html">
+            <img src="../../_static/rmg-logo-small.png" alt="RMG" />
+        </a></div>
+      <div id="sidebar">
+        <div id="rmgsidebar">
+          <a href="http://rmg.mit.edu">
+            <div class="menuitem">
+              <img src="../../_static/rmg-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG Website</div>
+              <div class="menutext menudesc">Interactive website for RMG-Py</div>
+            </div>
+          </a>
+          <a href="https://github.com/ReactionMechanismGenerator/RMG-Py">
+            <div class="menuitem">
+              <img src="../../_static/github-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG GitHub</div>
+              <div class="menutext menudesc">View source and post issues</div>
+            </div>
+          </a>
+        </div>
+        <div class="menuitem">
+        </div>
+        <div class="menuitem">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="group.html"
+                        title="previous chapter">rmgpy.molecule.Group</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="kekulize.html"
+                        title="next chapter">rmgpy.molecule.kekulize</a></p>
+        </div>
+        <div class="menuitem">
+<div role="note" aria-label="source link">
+    <h3>This Page</h3>
+        <ul class="this-page-menu">
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/molecule/resonance.rst"
+                   rel="nofollow">View Source</a></li>
+        </ul>
+</div>
+        </div>
+        <div class="menuitem">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+    </div>
+  </div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="kekulize.html" title="rmgpy.molecule.kekulize"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="group.html" title="rmgpy.molecule.Group"
+             >previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+    </div>
+  </body>
+</html>

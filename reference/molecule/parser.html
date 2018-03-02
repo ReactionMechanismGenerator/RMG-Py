@@ -1,0 +1,385 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>rmgpy.molecule.parser &#8212; RMG-Py 2.1.0 Documentation</title>
+    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Adjacency Lists" href="adjlist.html" />
+    <link rel="prev" title="rmgpy.molecule.generator" href="generator.html" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+  MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+    ce: ["Extension","mhchem"],
+  });
+});
+</script>
+
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="adjlist.html" title="Adjacency Lists"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="generator.html" title="rmgpy.molecule.generator"
+             accesskey="P">previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-rmgpy.molecule.parser">
+<span id="rmgpy-molecule-parser"></span><h1>rmgpy.molecule.parser<a class="headerlink" href="#module-rmgpy.molecule.parser" title="Permalink to this headline">¶</a></h1>
+<dl class="attribute">
+<dt id="rmgpy.molecule.parser.check">
+<code class="descclassname">rmgpy.molecule.parser.</code><code class="descname">check</code><a class="headerlink" href="#rmgpy.molecule.parser.check" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the molecular structure is correct.</p>
+<p>Checks whether the multiplicity contained in the augmented inchi,
+corresponds to the number of unpaired electrons + 1 found in the molecule.</p>
+<p>Checks whether the valence of each atom is compatible with the bond order,
+number of unpaired electrons, lone pairs and charge.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.parser.check_bond_order_oxygen">
+<code class="descclassname">rmgpy.molecule.parser.</code><code class="descname">check_bond_order_oxygen</code><a class="headerlink" href="#rmgpy.molecule.parser.check_bond_order_oxygen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if total bond order of oxygen atoms is smaller than 4.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.parser.convert_3_atom_2_bond_path">
+<code class="descclassname">rmgpy.molecule.parser.</code><code class="descname">convert_3_atom_2_bond_path</code><a class="headerlink" href="#rmgpy.molecule.parser.convert_3_atom_2_bond_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Searches for 3-atom-2-bond [X=X-X+] paths paths starting from the parameter atom.
+If a correct path is found, the starting atom receives an unpaired electron while
+the bonds in the delocalization path are “inverted”. A unit of charge on the
+end atom is neutralized and a lone pair is added.</p>
+<p>If it turns out the path was invalid, the actions are reverted, and another path
+is tried instead.</p>
+<p>To facilitate reverting the changes, we use a reaction recipe and populate it
+with a number of actions that reflect the changes in bond orders and unpaired
+electrons that the molecule should undergo.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.parser.convert_4_atom_3_bond_path">
+<code class="descclassname">rmgpy.molecule.parser.</code><code class="descname">convert_4_atom_3_bond_path</code><a class="headerlink" href="#rmgpy.molecule.parser.convert_4_atom_3_bond_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Searches for 4-atom-3-bond [X=X-X=X+] paths starting from the parameter atom.
+If a path is found, the starting atom receives an unpaired electron while
+the bonds in the delocalization path are “inverted”. A unit of charge on the
+end atom is neutralized and a lone pair is added.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.parser.convert_charge_to_unpaired_electron">
+<code class="descclassname">rmgpy.molecule.parser.</code><code class="descname">convert_charge_to_unpaired_electron</code><a class="headerlink" href="#rmgpy.molecule.parser.convert_charge_to_unpaired_electron" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterates over the atoms foundin the parameter list and
+converts a unit of charge on atoms into an unpaired electron.</p>
+<p>Removes treated atoms from the parameter list.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.parser.convert_delocalized_charge_to_unpaired_electron">
+<code class="descclassname">rmgpy.molecule.parser.</code><code class="descname">convert_delocalized_charge_to_unpaired_electron</code><a class="headerlink" href="#rmgpy.molecule.parser.convert_delocalized_charge_to_unpaired_electron" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterates over the atom indices of the parameter list and searches
+a charged atom that is connected to that atom via some kind of
+delocalization path.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.parser.convert_unsaturated_bond_to_triplet">
+<code class="descclassname">rmgpy.molecule.parser.</code><code class="descname">convert_unsaturated_bond_to_triplet</code><a class="headerlink" href="#rmgpy.molecule.parser.convert_unsaturated_bond_to_triplet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decrements the bond if it is unsatured, and adds an unpaired
+electron to each of the atoms connected by the bond.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.parser.find_mobile_h_system">
+<code class="descclassname">rmgpy.molecule.parser.</code><code class="descname">find_mobile_h_system</code><a class="headerlink" href="#rmgpy.molecule.parser.find_mobile_h_system" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.parser.fix">
+<code class="descclassname">rmgpy.molecule.parser.</code><code class="descname">fix</code><a class="headerlink" href="#rmgpy.molecule.parser.fix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fixes a number of structural features of the erroneous Molecule
+parsed by the backends, based on multiplicity and unpaired electron information
+stored in the augmented inchi.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.parser.fixCharge">
+<code class="descclassname">rmgpy.molecule.parser.</code><code class="descname">fixCharge</code><a class="headerlink" href="#rmgpy.molecule.parser.fixCharge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tries to fix a number of structural features in the molecule related to charge,
+based on the information from the parameter list of atom indices with unpaired electrons.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.parser.fix_adjacent_charges">
+<code class="descclassname">rmgpy.molecule.parser.</code><code class="descname">fix_adjacent_charges</code><a class="headerlink" href="#rmgpy.molecule.parser.fix_adjacent_charges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Searches for pairs of charged atoms.
+Neutralizes one unit of charge on each atom,
+and increments the bond order of the bond in between
+the atoms.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.parser.fix_butadiene_path">
+<code class="descclassname">rmgpy.molecule.parser.</code><code class="descname">fix_butadiene_path</code><a class="headerlink" href="#rmgpy.molecule.parser.fix_butadiene_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Searches for a 1,3-butadiene path between the start and end atom.
+Adds an unpaired electron to start and end atom, and “inverts” the bonds
+in between them.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.parser.fix_mobile_h">
+<code class="descclassname">rmgpy.molecule.parser.</code><code class="descname">fix_mobile_h</code><a class="headerlink" href="#rmgpy.molecule.parser.fix_mobile_h" title="Permalink to this definition">¶</a></dt>
+<dd><p>Identifies a system of atoms bearing unpaired electrons and mobile hydrogens
+at the same time.</p>
+<p>The system will consist of a central atom that does not bear any mobile hydrogens,
+but that is bound to an atom that does bear a mobile hydrogen, called the “original atom”.</p>
+<p>The algorithm identifies the “new partner” atom that is part of the mobile hydrogen
+system.</p>
+<p>Next, the mobile hydrogen is transferred from the original atom, to the new partner,
+and a bond is removed and added respectively.</p>
+<p>Finally, the central atom and the original atom will each receive an unpaired electron,
+and the bond between them will decrease in order.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.parser.fix_oxygen_unsaturated_bond">
+<code class="descclassname">rmgpy.molecule.parser.</code><code class="descname">fix_oxygen_unsaturated_bond</code><a class="headerlink" href="#rmgpy.molecule.parser.fix_oxygen_unsaturated_bond" title="Permalink to this definition">¶</a></dt>
+<dd><p>Searches for a radical or a charged oxygen atom connected to
+a closed-shell carbon via an unsatured bond.</p>
+<p>Decrements the unsatured bond,
+transfers the unpaired electron from O to C or
+converts the charge from O to an unpaired electron on C,
+increases the lone pair count of O to 2.</p>
+<p>Only do this once per molecule.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.parser.fix_triplet_to_singlet">
+<code class="descclassname">rmgpy.molecule.parser.</code><code class="descname">fix_triplet_to_singlet</code><a class="headerlink" href="#rmgpy.molecule.parser.fix_triplet_to_singlet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterates over the atoms and checks whether atoms bearing two unpaired electrons are
+also present in the p_indices list.</p>
+<p>If so, convert to the two unpaired electrons into a lone pair, and remove that atom
+index from the p_indices list.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.parser.fix_unsaturated_bond">
+<code class="descclassname">rmgpy.molecule.parser.</code><code class="descname">fix_unsaturated_bond</code><a class="headerlink" href="#rmgpy.molecule.parser.fix_unsaturated_bond" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds unpaired electrons to the molecule by converting unsaturated bonds into triplets.</p>
+<p>It does so by converting an unsaturated bond into a triplet, and verifying whether
+the total number of unpaired electrons matches the multiplicity.</p>
+<p>Finishes when all unsaturated bonds have been tried, or when there are no pairs
+of atoms that should be unpaired electrons left.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.parser.fromAugmentedInChI">
+<code class="descclassname">rmgpy.molecule.parser.</code><code class="descname">fromAugmentedInChI</code><a class="headerlink" href="#rmgpy.molecule.parser.fromAugmentedInChI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a Molecule object from the augmented inchi.</p>
+<p>First, the inchi is converted into a Molecule using
+the backend parsers.</p>
+<p>Next, the multiplicity and unpaired electron information
+is used to fix a number of parsing errors made by the backends.</p>
+<p>Finally, the atom types of the corrected molecule are perceived.</p>
+<p>Returns a Molecule object</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.parser.fromInChI">
+<code class="descclassname">rmgpy.molecule.parser.</code><code class="descname">fromInChI</code><a class="headerlink" href="#rmgpy.molecule.parser.fromInChI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert an InChI string <cite>inchistr</cite> to a molecular structure. Uses
+a user-specified backend for conversion, currently supporting
+rdkit (default) and openbabel.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.parser.fromOBMol">
+<code class="descclassname">rmgpy.molecule.parser.</code><code class="descname">fromOBMol</code><a class="headerlink" href="#rmgpy.molecule.parser.fromOBMol" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a OpenBabel Mol object <cite>obmol</cite> to a molecular structure. Uses
+<a class="reference external" href="http://openbabel.org/">OpenBabel</a> to perform the conversion.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.parser.fromRDKitMol">
+<code class="descclassname">rmgpy.molecule.parser.</code><code class="descname">fromRDKitMol</code><a class="headerlink" href="#rmgpy.molecule.parser.fromRDKitMol" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a RDKit Mol object <cite>rdkitmol</cite> to a molecular structure. Uses
+<a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
+This Kekulizes everything, removing all aromatic atom types.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.parser.fromSMARTS">
+<code class="descclassname">rmgpy.molecule.parser.</code><code class="descname">fromSMARTS</code><a class="headerlink" href="#rmgpy.molecule.parser.fromSMARTS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a SMARTS string <cite>smartsstr</cite> to a molecular structure. Uses
+<a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
+This Kekulizes everything, removing all aromatic atom types.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.parser.fromSMILES">
+<code class="descclassname">rmgpy.molecule.parser.</code><code class="descname">fromSMILES</code><a class="headerlink" href="#rmgpy.molecule.parser.fromSMILES" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a SMILES string <cite>smilesstr</cite> to a molecular structure. Uses
+a user-specified backend for conversion, currently supporting
+rdkit (default) and openbabel.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.parser.isCorrectlyParsed">
+<code class="descclassname">rmgpy.molecule.parser.</code><code class="descname">isCorrectlyParsed</code><a class="headerlink" href="#rmgpy.molecule.parser.isCorrectlyParsed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if molecule object has been correctly parsed.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.parser.isUnsaturated">
+<code class="descclassname">rmgpy.molecule.parser.</code><code class="descname">isUnsaturated</code><a class="headerlink" href="#rmgpy.molecule.parser.isUnsaturated" title="Permalink to this definition">¶</a></dt>
+<dd><p>Does the molecule have a bond that’s not single?
+Eg. a bond that is double or triple or benzene</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.parser.parse_openbabel">
+<code class="descclassname">rmgpy.molecule.parser.</code><code class="descname">parse_openbabel</code><a class="headerlink" href="#rmgpy.molecule.parser.parse_openbabel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts the identifier to a Molecule using Openbabel.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.parser.reset_lone_pairs">
+<code class="descclassname">rmgpy.molecule.parser.</code><code class="descname">reset_lone_pairs</code><a class="headerlink" href="#rmgpy.molecule.parser.reset_lone_pairs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterates over the atoms of the molecule and
+resets the atom’s lone pair count to the value stored in the p_indices list,
+or to the default value.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+  <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    <div class="sphinxsidebarwrapper">
+        <div class="sidebarlogo"><a href="../../index.html">
+            <img src="../../_static/rmg-logo-small.png" alt="RMG" />
+        </a></div>
+      <div id="sidebar">
+        <div id="rmgsidebar">
+          <a href="http://rmg.mit.edu">
+            <div class="menuitem">
+              <img src="../../_static/rmg-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG Website</div>
+              <div class="menutext menudesc">Interactive website for RMG-Py</div>
+            </div>
+          </a>
+          <a href="https://github.com/ReactionMechanismGenerator/RMG-Py">
+            <div class="menuitem">
+              <img src="../../_static/github-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG GitHub</div>
+              <div class="menutext menudesc">View source and post issues</div>
+            </div>
+          </a>
+        </div>
+        <div class="menuitem">
+        </div>
+        <div class="menuitem">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="generator.html"
+                        title="previous chapter">rmgpy.molecule.generator</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="adjlist.html"
+                        title="next chapter">Adjacency Lists</a></p>
+        </div>
+        <div class="menuitem">
+<div role="note" aria-label="source link">
+    <h3>This Page</h3>
+        <ul class="this-page-menu">
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/molecule/parser.rst"
+                   rel="nofollow">View Source</a></li>
+        </ul>
+</div>
+        </div>
+        <div class="menuitem">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+    </div>
+  </div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="adjlist.html" title="Adjacency Lists"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="generator.html" title="rmgpy.molecule.generator"
+             >previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+    </div>
+  </body>
+</html>

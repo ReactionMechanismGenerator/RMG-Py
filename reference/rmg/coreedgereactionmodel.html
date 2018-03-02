@@ -5,8 +5,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>rmgpy.rmg.model.CoreEdgeReactionModel &#8212; RMG Py 2.1.0 documentation</title>
-    <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
+    <title>rmgpy.rmg.model.CoreEdgeReactionModel &#8212; RMG-Py 2.1.0 Documentation</title>
+    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -36,15 +36,6 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 
   </head>
   <body>
-<div class="header">
-&nbsp;
-</div>  
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body">
-            
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -60,18 +51,24 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="index.html" title="Reaction mechanism generation (rmgpy.rmg)"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 2.1.0</a> &raquo;</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Reaction mechanism generation (<code class="docutils literal"><span class="pre">rmgpy.rmg</span></code>)</a> &#187;</li> 
       </ul>
-    </div>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
             
   <div class="section" id="rmgpy-rmg-model-coreedgereactionmodel">
 <h1>rmgpy.rmg.model.CoreEdgeReactionModel<a class="headerlink" href="#rmgpy-rmg-model-coreedgereactionmodel" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.rmg.model.CoreEdgeReactionModel">
-<em class="property">class </em><code class="descclassname">rmgpy.rmg.model.</code><code class="descname">CoreEdgeReactionModel</code><span class="sig-paren">(</span><em>core=None</em>, <em>edge=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.rmg.model.</code><code class="descname">CoreEdgeReactionModel</code><span class="sig-paren">(</span><em>core=None</em>, <em>edge=None</em>, <em>surface=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represent a reaction model constructed using a rate-based screening
 algorithm. The species and reactions in the model itself are called the
 <em>core</em>; the species and reactions identified as candidates for inclusion in
@@ -105,8 +102,23 @@ the model are called the <em>edge</em>. The attributes are:</p>
 <tr class="row-odd"><td><cite>indexSpeciesDict</cite></td>
 <td>A dictionary with a unique index pointing to the species objects</td>
 </tr>
+<tr class="row-even"><td><cite>solventName</cite></td>
+<td>String describing solvent name for liquid reactions. Empty for non-liquid estimation</td>
+</tr>
 </tbody>
 </table>
+<dl class="method">
+<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.addNewSurfaceObjects">
+<code class="descname">addNewSurfaceObjects</code><span class="sig-paren">(</span><em>obj</em>, <em>newSurfaceSpecies</em>, <em>newSurfaceReactions</em>, <em>reactionSystem</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.addNewSurfaceObjects" title="Permalink to this definition">¶</a></dt>
+<dd><p>obj is the list of objects for enlargement coming from simulate
+newSurfaceSpecies and newSurfaceReactions are the current lists of surface species and surface reactions
+following simulation
+reactionSystem is the current reactor
+manages surface species and reactions being moved to and from the surface
+moves them to appropriate newSurfaceSpc/RxnsAdd/loss sets
+returns false if the surface has changed</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="rmgpy.rmg.model.CoreEdgeReactionModel.addReactionLibraryToEdge">
 <code class="descname">addReactionLibraryToEdge</code><span class="sig-paren">(</span><em>reactionLibrary</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.addReactionLibraryToEdge" title="Permalink to this definition">¶</a></dt>
@@ -155,7 +167,7 @@ network containing the new reaction.</p>
 <dl class="method">
 <dt id="rmgpy.rmg.model.CoreEdgeReactionModel.addSeedMechanismToCore">
 <code class="descname">addSeedMechanismToCore</code><span class="sig-paren">(</span><em>seedMechanism</em>, <em>react=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.addSeedMechanismToCore" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add all species and reactions from <cite>seedMechanism</cite>, a 
+<dd><p>Add all species and reactions from <cite>seedMechanism</cite>, a
 <code class="xref py py-class docutils literal"><span class="pre">KineticsPrimaryDatabase</span></code> object, to the model core. If <cite>react</cite>
 is <code class="docutils literal"><span class="pre">True</span></code>, then reactions will also be generated between the seed
 species. For large seed mechanisms this can be prohibitively expensive,
@@ -178,9 +190,19 @@ If this are any such reactions, they are returned in a list.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.adjustSurface">
+<code class="descname">adjustSurface</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.adjustSurface" title="Permalink to this definition">¶</a></dt>
+<dd><p>Here we add species intended to be added and remove any species that need to be moved out of the core.
+For now we remove reactions from the surface that have become part of a PDepNetwork by
+intersecting the set of surface reactions with the core so that all surface reactions are in the core
+thus the surface algorithm currently (June 2017) is not implemented for pdep networks
+(however it will function fine for non-pdep reactions on a pdep run)</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.rmg.model.CoreEdgeReactionModel.applyKineticsToReaction">
 <code class="descname">applyKineticsToReaction</code><span class="sig-paren">(</span><em>reaction</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.applyKineticsToReaction" title="Permalink to this definition">¶</a></dt>
-<dd><p>retrieve the best kinetics for the reaction and apply it towards the forward 
+<dd><p>retrieve the best kinetics for the reaction and apply it towards the forward
 or reverse direction (if reverse, flip the direaction).</p>
 </dd></dl>
 
@@ -194,7 +216,7 @@ reaction (if found).</p>
 as the parameter reaction.</p>
 <p>Next, the reaction ID containing an identifier (e.g. label) of the reactants
 and products is compared between the parameter reaction and the each of the
-reactions in the shortlist. If a match is found, the discovered reaction is 
+reactions in the shortlist. If a match is found, the discovered reaction is
 returned.</p>
 <p>If a match is not yet found, the Library (seed mechs, reaction libs)
 in the reaction database are iterated over to check if a reaction was overlooked
@@ -205,15 +227,21 @@ in the reaction database are iterated over to check if a reaction was overlooked
 <dt id="rmgpy.rmg.model.CoreEdgeReactionModel.checkForExistingSpecies">
 <code class="descname">checkForExistingSpecies</code><span class="sig-paren">(</span><em>molecule</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.checkForExistingSpecies" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check to see if an existing species contains the same
-<code class="xref py py-class docutils literal"><span class="pre">molecule.Molecule</span></code> as <cite>molecule</cite>. Returns <code class="docutils literal"><span class="pre">True</span></code> 
+<code class="xref py py-class docutils literal"><span class="pre">molecule.Molecule</span></code> as <cite>molecule</cite>. Returns <code class="docutils literal"><span class="pre">True</span></code>
 and the matched species (if found) or
 <code class="docutils literal"><span class="pre">False</span></code> and <code class="docutils literal"><span class="pre">None</span></code> (if not found).</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.clearSurfaceAdjustments">
+<code class="descname">clearSurfaceAdjustments</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.clearSurfaceAdjustments" title="Permalink to this definition">¶</a></dt>
+<dd><p>empties surface tracking varaibles</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.rmg.model.CoreEdgeReactionModel.enlarge">
 <code class="descname">enlarge</code><span class="sig-paren">(</span><em>newObject=None</em>, <em>reactEdge=False</em>, <em>unimolecularReact=None</em>, <em>bimolecularReact=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.enlarge" title="Permalink to this definition">¶</a></dt>
-<dd><p>Enlarge a reaction model by processing the objects in the list <cite>newObject</cite>. 
+<dd><p>Enlarge a reaction model by processing the objects in the list <cite>newObject</cite>.
 If <cite>newObject</cite> is a
 <code class="xref py py-class docutils literal"><span class="pre">rmg.species.Species</span></code> object, then the species is moved from
 the edge to the core and reactions generated for that species, reacting
@@ -293,7 +321,7 @@ the model edge and/or core.</p>
 <dl class="method">
 <dt id="rmgpy.rmg.model.CoreEdgeReactionModel.makeNewReaction">
 <code class="descname">makeNewReaction</code><span class="sig-paren">(</span><em>forward</em>, <em>checkExisting=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.makeNewReaction" title="Permalink to this definition">¶</a></dt>
-<dd><p>Make a new reaction given a <code class="xref py py-class docutils literal"><span class="pre">Reaction</span></code> object <cite>forward</cite>. 
+<dd><p>Make a new reaction given a <code class="xref py py-class docutils literal"><span class="pre">Reaction</span></code> object <cite>forward</cite>.
 The reaction is added to the global list of reactions.
 Returns the reaction in the direction that corresponds to the
 estimated kinetics, along with whether or not the reaction is new to the
@@ -355,12 +383,18 @@ existing reactions.</p>
 - reaction family
 - reactant(s) keys</p>
 <p>First, the keys are generated for the parameter reaction.</p>
-<p>Next, it is checked whether the reaction database already 
+<p>Next, it is checked whether the reaction database already
 contains similar keys. If not, a new container is created,
 either a dictionary for the family key and first reactant key,
 or a list for the second reactant key.</p>
-<p>Finally, the reaction is inserted as the first element in the 
+<p>Finally, the reaction is inserted as the first element in the
 list.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.removeEmptyPdepNetworks">
+<code class="descname">removeEmptyPdepNetworks</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.removeEmptyPdepNetworks" title="Permalink to this definition">¶</a></dt>
+<dd><p>searches for and deletes any empty pdep networks</p>
 </dd></dl>
 
 <dl class="method">
@@ -372,7 +406,7 @@ list.</p>
 <dl class="method">
 <dt id="rmgpy.rmg.model.CoreEdgeReactionModel.retrieve">
 <code class="descname">retrieve</code><span class="sig-paren">(</span><em>family_label</em>, <em>key1</em>, <em>key2</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.retrieve" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a list of reactions from the reaction database with the 
+<dd><p>Returns a list of reactions from the reaction database with the
 same keys as the parameters.</p>
 <p>Returns an empty list when one of the keys could not be found.</p>
 </dd></dl>
@@ -390,11 +424,40 @@ object that is not an integer will be a newly-generated structure.</p>
 <dl class="method">
 <dt id="rmgpy.rmg.model.CoreEdgeReactionModel.searchRetrieveReactions">
 <code class="descname">searchRetrieveReactions</code><span class="sig-paren">(</span><em>rxn</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.searchRetrieveReactions" title="Permalink to this definition">¶</a></dt>
-<dd><p>Searches through the reaction database for 
-reactions with an identical reaction key as the key of the 
+<dd><p>Searches through the reaction database for
+reactions with an identical reaction key as the key of the
 parameter reaction.</p>
 <p>Both the reaction key based on the reactants as well as on the products
 is used to search for possible candidate reactions.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.setThermodynamicFilteringParameters">
+<code class="descname">setThermodynamicFilteringParameters</code><span class="sig-paren">(</span><em>Tmax</em>, <em>toleranceThermoKeepSpeciesInEdge</em>, <em>minCoreSizeForPrune</em>, <em>maximumEdgeSpecies</em>, <em>reactionSystems</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.setThermodynamicFilteringParameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>sets parameters for thermodynamic filtering based on the current core
+Tmax is the maximum reactor temperature in K
+toleranceThermoKeepSpeciesInEdge is the Gibbs number above which species will be filtered
+minCoreSizeForPrune is the core size at which thermodynamic filtering will start
+maximumEdgeSpecies is the maximum allowed number of edge species
+reactionSystems is a list of reactionSystem objects</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.thermoFilterDown">
+<code class="descname">thermoFilterDown</code><span class="sig-paren">(</span><em>maximumEdgeSpecies</em>, <em>minSpeciesExistIterationsForPrune=0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.thermoFilterDown" title="Permalink to this definition">¶</a></dt>
+<dd><p>removes species from the edge based on their Gibbs energy until maximumEdgeSpecies
+is reached under the constraint that all removed species are older than
+minSpeciesExistIterationsForPrune iterations
+maximumEdgeSpecies is the maximum allowed number of edge species
+minSpeciesExistIterationsForPrune is the number of iterations a species must be in the edge
+before it is eligible for thermo filtering</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.thermoFilterSpecies">
+<code class="descname">thermoFilterSpecies</code><span class="sig-paren">(</span><em>spcs</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.thermoFilterSpecies" title="Permalink to this definition">¶</a></dt>
+<dd><p>checks Gibbs energy of the species in species against the
+maximum allowed Gibbs energy</p>
 </dd></dl>
 
 <dl class="method">
@@ -417,7 +480,7 @@ a list of species, and <cite>reactions</cite>, a list of reactions.</p>
 <dl class="method">
 <dt id="rmgpy.rmg.model.ReactionModel.merge">
 <code class="descname">merge</code><span class="sig-paren">(</span><em>other</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.ReactionModel.merge" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a new <code class="xref py py-class docutils literal"><span class="pre">ReactionModel</span></code> object that is the union of this
+<dd><p>Return a new <a class="reference internal" href="#rmgpy.rmg.model.ReactionModel" title="rmgpy.rmg.model.ReactionModel"><code class="xref py py-class docutils literal"><span class="pre">ReactionModel</span></code></a> object that is the union of this
 model and <cite>other</cite>.</p>
 </dd></dl>
 
@@ -429,11 +492,49 @@ model and <cite>other</cite>.</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<div class="sidebarlogo">
-<a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
+  <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    <div class="sphinxsidebarwrapper">
+        <div class="sidebarlogo"><a href="../../index.html">
+            <img src="../../_static/rmg-logo-small.png" alt="RMG" />
+        </a></div>
+      <div id="sidebar">
+        <div id="rmgsidebar">
+          <a href="http://rmg.mit.edu">
+            <div class="menuitem">
+              <img src="../../_static/rmg-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG Website</div>
+              <div class="menutext menudesc">Interactive website for RMG-Py</div>
+            </div>
+          </a>
+          <a href="https://github.com/ReactionMechanismGenerator/RMG-Py">
+            <div class="menuitem">
+              <img src="../../_static/github-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG GitHub</div>
+              <div class="menutext menudesc">View source and post issues</div>
+            </div>
+          </a>
+        </div>
+        <div class="menuitem">
+        </div>
+        <div class="menuitem">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Reaction mechanism generation (<code class="docutils literal"><span class="pre">rmgpy.rmg</span></code>)</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="input.html"
+                        title="next chapter">RMG input files</a></p>
+        </div>
+        <div class="menuitem">
+<div role="note" aria-label="source link">
+    <h3>This Page</h3>
+        <ul class="this-page-menu">
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/rmg/coreedgereactionmodel.rst"
+                   rel="nofollow">View Source</a></li>
+        </ul>
 </div>
+        </div>
+        <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
@@ -444,88 +545,38 @@ model and <cite>other</cite>.</p>
     </form>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
-
-<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/rmg/coreedgereactionmodel.rst"
-           rel="nofollow">Edit this page</a></h4><P>
-<div class="customsidebar">
-<P>
-<table cellpadding="3">
-
-<tr><td>
-        <a href="http://reactionmechanismgenerator.github.io/RMG-Py"><img src="../../_static/documentation-icon.png" class="icon_sidebar" width="32px" alt="Documentation"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://reactionmechanismgenerator.github.io/RMG-Py">Documentation</a></div>
-        <div class="linkdesc">Learn more about the RMG software</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/database/"><img src="../../_static/database-logo-small.png" class="icon_sidebar" width="32px" alt="Database"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
-        <div class="linkdesc">Browse the RMG database of chemical and kinetic parameters</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/input">Create Input File</a></div>
-        <div class="linkdesc">Online form for making an RMG input file</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/molecule_search"><img src="../../_static/moleculedraw-logo-small.png" class="icon_sidebar" width="32px" alt="Molecule Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
-        <div class="linkdesc">Draw a molecule from its adjlist and search or estimate its properties</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/database/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/kinetics/search/">Kinetics Search</a></div>
-        <div class="linkdesc">Search or estimate kinetics of a chemical reaction</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/solvation_search"><img src="../../_static/solvation-search-logo-small.png" class="icon_sidebar" width="32px" alt="Solvation Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
-        <div class="linkdesc">Search or estimate solvation properties of solvent and a solute</div>
-</td></tr>
-
-
-<tr><td>
-        <a href="http://rmg.mit.edu/pdep/"><img src="../../_static/pdep-logo-small.png" class="icon_sidebar" width="32px" alt="Pressure Dependent Networks"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
-        <div class="linkdesc">CanTherm pdep kinetic calculations</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/tools/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/tools/">Other RMG Tools</a></div>
-        <div class="linkdesc">Additional tools to supplement RMG</div>
-</td></tr>
-
-</table>
-
-</div>
         </div>
       </div>
+    </div>
+  </div>
+
       <div class="clearer"></div>
     </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="input.html" title="RMG input files"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Reaction mechanism generation (rmgpy.rmg)"
+             >previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >Reaction mechanism generation (<code class="docutils literal"><span class="pre">rmgpy.rmg</span></code>)</a> &#187;</li> 
+      </ul>
+    </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+        &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

@@ -5,8 +5,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Overview &#8212; RMG Py 2.1.0 documentation</title>
-    <link rel="stylesheet" href="_static/rmg.css" type="text/css" />
+    <title>Overview &#8212; RMG-Py 2.1.0 Documentation</title>
+    <link rel="stylesheet" href="_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -34,15 +34,6 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 
   </head>
   <body>
-<div class="header">
-&nbsp;
-</div>  
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body">
-            
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,73 +43,82 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-<li><a href="#">Documentation 2.1.0</a> &raquo;</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="#">2.1.0 Documentation</a> &raquo;</li>
  
       </ul>
-    </div>
-            
+    </div>  
 
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
   <h1>Reaction Mechanism Generator Documentation</h1>
 
-
-  
-<table class="data">
-<thead>
-<tr class="header">
-<th align="left">I want to...</th>
-<th align="left">Resource</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="left">analyze models &amp; search databases</td>
-<td align="left"><a href="http://rmg.mit.edu/">rmg website resources</a>  (no download needed)</td>
-</tr>
-<tr class="even">
-<td align="left">make transition state theory calculations</td>
-<td align="left">Run Cantherm with the Canterm User's Guide</td>
-</tr>
-<tr class="odd">
-<td align="left">create mechanisms automatically</td>
-<td align="left">Download RMG with the RMG User's Guide</td>
-</tr>
-<tr class="even">
-<td align="left">post an issue with RMG</td>
-<td align="left"><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">github issues page</a></td>
-</tr>
-<tr class="odd">
-<td align="left">contribute to RMG project</td>
-<td align="left"><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/wiki">RMG developer's wiki</a></td>
-</tr>
-</tbody>
-</table>
-
-
-  <p style="margin-top: 0px; padding-top: 12px">
-    <strong>Reaction Mechanism Generator (RMG)</strong> is an automatic chemical reaction mechanism generator 
-    that constructs kinetic models composed of elementary chemical reaction 
-    steps using a general understanding of how molecules react.
-  </p>
-  
   <p>
-    These pages describe the newer Python version of RMG that we call RMG-Py.
-    It is developed on github as <a href="https://github.com/ReactionMechanismGenerator/RMG-Py/" title="RMG-Py github project">RMG-Py</a>.
+  <strong>Reaction Mechanism Generator (RMG)</strong> is an automatic chemical reaction mechanism generator
+  that constructs kinetic models composed of elementary chemical reaction steps using a general understanding
+  of how molecules react.
   </p>
-  
+
   <p>
-    <strong>CanTherm</strong> is developed and distributed as part of RMG-Py, but can be used as a stand-alone
-    application for Thermochemistry, Transition State Theory, and Master Equation chemical kinetics
-    calculations.
+  This documentation site if for the newer Python version of RMG called RMG-Py.
+  It is developed on GitHub as <a href="https://github.com/ReactionMechanismGenerator/RMG-Py/" title="RMG-Py github project">RMG-Py</a>.
   </p>
 
-RMG is free, open-source software, and is under active and ongoing development. 
-If you are interested in assisting with or guiding its development, please let us know. Any issues,
-concerns, or comments can be posted to our <a href="http://www.github.com/ReactionMechanismGenerator/RMG-Py/issues">Github issues page</a>.
-While you are free to use/modify RMG components as you wish, we would like to 
-co-ordinate with you. Please contact <a href="mailto:whgreen@mit.edu">Professor William H. Green</a>,
-<a href="mailto:r.west@neu.edu">Professor Richard H. West</a>,
-or the <a href="mailto:rmg_dev@mit.edu">The RMG Development Team</a> for further information.
+  <p>
+  <strong>CanTherm</strong> is developed and distributed as part of RMG-Py, but can be used as a stand-alone
+  application for Thermochemistry, Transition State Theory, and Master Equation chemical kinetics
+  calculations.
+  </p>
 
+  <p>
+  RMG is free, open-source software, and is under active and ongoing development.
+  If you are interested in assisting with or guiding its development, please let us know.
+  Any issues, concerns, or comments can be posted to our
+  <a href="http://www.github.com/ReactionMechanismGenerator/RMG-Py/issues">Github issues page</a>.
+  </p>
+
+  <p>
+  While you are free to use or modify RMG components as you wish, we would like to
+  coordinate with you. Please contact <a href="mailto:whgreen@mit.edu">Professor William H. Green</a>,
+  <a href="mailto:r.west@neu.edu">Professor Richard H. West</a>,
+  or the <a href="mailto:rmg_dev@mit.edu">The RMG Development Team</a> for further information.
+  </p>
+
+  <h2>Quick reference guide:</h2>
+
+    <table class="rmg">
+      <thead>
+        <tr>
+          <th>I want to...</th>
+          <th>Resource</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>analyze models &amp; search databases</td>
+          <td><a href="http://rmg.mit.edu/">RMG website resources</a>  (no download needed)</td>
+        </tr>
+        <tr>
+          <td>make transition state theory calculations</td>
+          <td>Run Cantherm with the Canterm User's Guide</td>
+        </tr>
+        <tr>
+          <td>create mechanisms automatically</td>
+          <td>Download RMG with the RMG User's Guide</td>
+        </tr>
+        <tr>
+          <td>post an issue with RMG</td>
+          <td><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">GitHub issues page</a></td>
+        </tr>
+        <tr>
+          <td>contribute to RMG project</td>
+          <td><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/wiki">RMG developer's wiki</a></td>
+        </tr>
+      </tbody>
+    </table>
 
   <h2>Parts of the documentation:</h2>
 
@@ -140,11 +140,38 @@ or the <a href="mailto:rmg_dev@mit.edu">The RMG Development Team</a> for further
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<div class="sidebarlogo">
-<a href="#"><img src="_static/rmg-logo-small.png" alt="RMG" /></a>
-</div>
+  <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    <div class="sphinxsidebarwrapper">
+        <div class="sidebarlogo"><a href="#">
+            <img src="_static/rmg-logo-small.png" alt="RMG" />
+        </a></div>
+      <div id="sidebar">
+        <div id="rmgsidebar">
+          <a href="http://rmg.mit.edu">
+            <div class="menuitem">
+              <img src="_static/rmg-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG Website</div>
+              <div class="menutext menudesc">Interactive website for RMG-Py</div>
+            </div>
+          </a>
+          <a href="https://github.com/ReactionMechanismGenerator/RMG-Py">
+            <div class="menuitem">
+              <img src="_static/github-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG GitHub</div>
+              <div class="menutext menudesc">View source and post issues</div>
+            </div>
+          </a>
+        </div>
+        <div class="menuitem">
+<h3><a href="contents.html">Table Of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="users/index.html">User’s Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="theory/index.html">Theory Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference/index.html">RMG API Reference</a></li>
+</ul>
+
+        </div>
+        <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
@@ -154,86 +181,31 @@ or the <a href="mailto:rmg_dev@mit.edu">The RMG Development Team</a> for further
       <input type="hidden" name="area" value="default" />
     </form>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script><P>
-<div class="customsidebar">
-<P>
-<table cellpadding="3">
-
-<tr><td>
-        <a href="http://reactionmechanismgenerator.github.io/RMG-Py"><img src="_static/documentation-icon.png" class="icon_sidebar" width="32px" alt="Documentation"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://reactionmechanismgenerator.github.io/RMG-Py">Documentation</a></div>
-        <div class="linkdesc">Learn more about the RMG software</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/database/"><img src="_static/database-logo-small.png" class="icon_sidebar" width="32px" alt="Database"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
-        <div class="linkdesc">Browse the RMG database of chemical and kinetic parameters</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/input"><img src="_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/input">Create Input File</a></div>
-        <div class="linkdesc">Online form for making an RMG input file</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/molecule_search"><img src="_static/moleculedraw-logo-small.png" class="icon_sidebar" width="32px" alt="Molecule Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
-        <div class="linkdesc">Draw a molecule from its adjlist and search or estimate its properties</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/database/kinetics/search/"><img src="_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/kinetics/search/">Kinetics Search</a></div>
-        <div class="linkdesc">Search or estimate kinetics of a chemical reaction</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/solvation_search"><img src="_static/solvation-search-logo-small.png" class="icon_sidebar" width="32px" alt="Solvation Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
-        <div class="linkdesc">Search or estimate solvation properties of solvent and a solute</div>
-</td></tr>
-
-
-<tr><td>
-        <a href="http://rmg.mit.edu/pdep/"><img src="_static/pdep-logo-small.png" class="icon_sidebar" width="32px" alt="Pressure Dependent Networks"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
-        <div class="linkdesc">CanTherm pdep kinetic calculations</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/tools/"><img src="_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/tools/">Other RMG Tools</a></div>
-        <div class="linkdesc">Additional tools to supplement RMG</div>
-</td></tr>
-
-</table>
-
-</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
+    </div>
+  </div>
+
       <div class="clearer"></div>
     </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="#">2.1.0 Documentation</a> &raquo;</li>
+ 
+      </ul>
+    </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+        &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

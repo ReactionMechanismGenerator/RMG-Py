@@ -5,8 +5,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>rmgpy.thermo.Wilhoit &#8212; RMG Py 2.1.0 documentation</title>
-    <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
+    <title>rmgpy.thermo.Wilhoit &#8212; RMG-Py 2.1.0 Documentation</title>
+    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -36,15 +36,6 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 
   </head>
   <body>
-<div class="header">
-&nbsp;
-</div>  
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body">
-            
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -60,12 +51,18 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="thermodata.html" title="rmgpy.thermo.ThermoData"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 2.1.0</a> &raquo;</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Thermodynamics (<code class="docutils literal"><span class="pre">rmgpy.thermo</span></code>)</a> &#187;</li> 
       </ul>
-    </div>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
             
   <div class="section" id="rmgpy-thermo-wilhoit">
 <h1>rmgpy.thermo.Wilhoit<a class="headerlink" href="#rmgpy-thermo-wilhoit" title="Permalink to this headline">¶</a></h1>
@@ -205,31 +202,31 @@ atoms and <span class="math">\(N_\mathrm{rotors}\)</span> internal rotors.</p>
 <dl class="attribute">
 <dt id="rmgpy.thermo.Wilhoit.a0">
 <code class="descname">a0</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.a0" title="Permalink to this definition">¶</a></dt>
-<dd><p>a0: ‘double’</p>
+<dd><p><em>a0</em> – ‘double’</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.thermo.Wilhoit.a1">
 <code class="descname">a1</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.a1" title="Permalink to this definition">¶</a></dt>
-<dd><p>a1: ‘double’</p>
+<dd><p><em>a1</em> – ‘double’</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.thermo.Wilhoit.a2">
 <code class="descname">a2</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.a2" title="Permalink to this definition">¶</a></dt>
-<dd><p>a2: ‘double’</p>
+<dd><p><em>a2</em> – ‘double’</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.thermo.Wilhoit.a3">
 <code class="descname">a3</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.a3" title="Permalink to this definition">¶</a></dt>
-<dd><p>a3: ‘double’</p>
+<dd><p><em>a3</em> – ‘double’</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.thermo.Wilhoit.comment">
 <code class="descname">comment</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.comment" title="Permalink to this definition">¶</a></dt>
-<dd><p>comment: str</p>
+<dd><p><em>comment</em> – str</p>
 </dd></dl>
 
 <dl class="method">
@@ -249,15 +246,15 @@ Discrepancy of 0 means they are identical</p>
 <dl class="method">
 <dt id="rmgpy.thermo.Wilhoit.fitToData">
 <code class="descname">fitToData</code><span class="sig-paren">(</span><em>self</em>, <em>ndarray Tdata</em>, <em>ndarray Cpdata</em>, <em>double Cp0</em>, <em>double CpInf</em>, <em>double H298</em>, <em>double S298</em>, <em>double B0=500.0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.thermo.Wilhoit.fitToData" title="Permalink to this definition">¶</a></dt>
-<dd><p>Fit a Wilhoit model to the data points provided, allowing the 
+<dd><p>Fit a Wilhoit model to the data points provided, allowing the
 characteristic temperature <cite>B</cite> to vary so as to improve the fit. This
 procedure requires an optimization, using the <code class="docutils literal"><span class="pre">fminbound</span></code> function
 in the <code class="docutils literal"><span class="pre">scipy.optimize</span></code> module. The data consists of a set
-of heat capacity points <cite>Cpdata</cite> in J/mol*K at a given set of 
+of heat capacity points <cite>Cpdata</cite> in J/mol*K at a given set of
 temperatures <cite>Tdata</cite> in K, along with the enthalpy <cite>H298</cite> in kJ/mol and
-entropy <cite>S298</cite> in J/mol*K at 298 K. The linearity of the molecule, 
-number of vibrational frequencies, and number of internal rotors 
-(<cite>linear</cite>, <cite>Nfreq</cite>, and <cite>Nrotors</cite>, respectively) is used to set the 
+entropy <cite>S298</cite> in J/mol*K at 298 K. The linearity of the molecule,
+number of vibrational frequencies, and number of internal rotors
+(<cite>linear</cite>, <cite>Nfreq</cite>, and <cite>Nrotors</cite>, respectively) is used to set the
 limits at zero and infinite temperature.</p>
 </dd></dl>
 
@@ -266,9 +263,9 @@ limits at zero and infinite temperature.</p>
 <code class="descname">fitToDataForConstantB</code><span class="sig-paren">(</span><em>self</em>, <em>ndarray Tdata</em>, <em>ndarray Cpdata</em>, <em>double Cp0</em>, <em>double CpInf</em>, <em>double H298</em>, <em>double S298</em>, <em>double B</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.thermo.Wilhoit.fitToDataForConstantB" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fit a Wilhoit model to the data points provided using a specified value
 of the characteristic temperature <cite>B</cite>. The data consists of a set
-of dimensionless heat capacity points <cite>Cpdata</cite> at a given set of 
+of dimensionless heat capacity points <cite>Cpdata</cite> at a given set of
 temperatures <cite>Tdata</cite> in K, along with the dimensionless heat capacity
-at zero and infinite temperature, the dimensionless enthalpy <cite>H298</cite> at 
+at zero and infinite temperature, the dimensionless enthalpy <cite>H298</cite> at
 298 K, and the dimensionless entropy <cite>S298</cite> at 298 K.</p>
 </dd></dl>
 
@@ -319,14 +316,14 @@ range of temperatures, or <code class="docutils literal"><span class="pre">False
 <code class="descname">isTemperatureValid</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.thermo.Wilhoit.isTemperatureValid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the temperature <cite>T</cite> in K is within the valid
 temperature range of the thermodynamic data, or <code class="docutils literal"><span class="pre">False</span></code> if not. If
-the minimum and maximum temperature are not defined, <code class="docutils literal"><span class="pre">True</span></code> is 
+the minimum and maximum temperature are not defined, <code class="docutils literal"><span class="pre">True</span></code> is
 returned.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.thermo.Wilhoit.label">
 <code class="descname">label</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.label" title="Permalink to this definition">¶</a></dt>
-<dd><p>label: str</p>
+<dd><p><em>label</em> – str</p>
 </dd></dl>
 
 <dl class="method">
@@ -376,11 +373,49 @@ polynomial (rather than two).</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<div class="sidebarlogo">
-<a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
+  <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    <div class="sphinxsidebarwrapper">
+        <div class="sidebarlogo"><a href="../../index.html">
+            <img src="../../_static/rmg-logo-small.png" alt="RMG" />
+        </a></div>
+      <div id="sidebar">
+        <div id="rmgsidebar">
+          <a href="http://rmg.mit.edu">
+            <div class="menuitem">
+              <img src="../../_static/rmg-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG Website</div>
+              <div class="menutext menudesc">Interactive website for RMG-Py</div>
+            </div>
+          </a>
+          <a href="https://github.com/ReactionMechanismGenerator/RMG-Py">
+            <div class="menuitem">
+              <img src="../../_static/github-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG GitHub</div>
+              <div class="menutext menudesc">View source and post issues</div>
+            </div>
+          </a>
+        </div>
+        <div class="menuitem">
+        </div>
+        <div class="menuitem">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="thermodata.html"
+                        title="previous chapter">rmgpy.thermo.ThermoData</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="nasa.html"
+                        title="next chapter">rmgpy.thermo.NASA</a></p>
+        </div>
+        <div class="menuitem">
+<div role="note" aria-label="source link">
+    <h3>This Page</h3>
+        <ul class="this-page-menu">
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/thermo/wilhoit.rst"
+                   rel="nofollow">View Source</a></li>
+        </ul>
 </div>
+        </div>
+        <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
@@ -391,88 +426,38 @@ polynomial (rather than two).</p>
     </form>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
-
-<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/thermo/wilhoit.rst"
-           rel="nofollow">Edit this page</a></h4><P>
-<div class="customsidebar">
-<P>
-<table cellpadding="3">
-
-<tr><td>
-        <a href="http://reactionmechanismgenerator.github.io/RMG-Py"><img src="../../_static/documentation-icon.png" class="icon_sidebar" width="32px" alt="Documentation"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://reactionmechanismgenerator.github.io/RMG-Py">Documentation</a></div>
-        <div class="linkdesc">Learn more about the RMG software</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/database/"><img src="../../_static/database-logo-small.png" class="icon_sidebar" width="32px" alt="Database"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
-        <div class="linkdesc">Browse the RMG database of chemical and kinetic parameters</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/input">Create Input File</a></div>
-        <div class="linkdesc">Online form for making an RMG input file</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/molecule_search"><img src="../../_static/moleculedraw-logo-small.png" class="icon_sidebar" width="32px" alt="Molecule Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
-        <div class="linkdesc">Draw a molecule from its adjlist and search or estimate its properties</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/database/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/kinetics/search/">Kinetics Search</a></div>
-        <div class="linkdesc">Search or estimate kinetics of a chemical reaction</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/solvation_search"><img src="../../_static/solvation-search-logo-small.png" class="icon_sidebar" width="32px" alt="Solvation Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
-        <div class="linkdesc">Search or estimate solvation properties of solvent and a solute</div>
-</td></tr>
-
-
-<tr><td>
-        <a href="http://rmg.mit.edu/pdep/"><img src="../../_static/pdep-logo-small.png" class="icon_sidebar" width="32px" alt="Pressure Dependent Networks"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
-        <div class="linkdesc">CanTherm pdep kinetic calculations</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/tools/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/tools/">Other RMG Tools</a></div>
-        <div class="linkdesc">Additional tools to supplement RMG</div>
-</td></tr>
-
-</table>
-
-</div>
         </div>
       </div>
+    </div>
+  </div>
+
       <div class="clearer"></div>
     </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nasa.html" title="rmgpy.thermo.NASA"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="thermodata.html" title="rmgpy.thermo.ThermoData"
+             >previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >Thermodynamics (<code class="docutils literal"><span class="pre">rmgpy.thermo</span></code>)</a> &#187;</li> 
+      </ul>
+    </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+        &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

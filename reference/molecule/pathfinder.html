@@ -1,0 +1,254 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>rmgpy.molecule.pathfinder &#8212; RMG-Py 2.1.0 Documentation</title>
+    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="rmgpy.molecule.generator" href="generator.html" />
+    <link rel="prev" title="rmgpy.molecule.kekulize" href="kekulize.html" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+  MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+    ce: ["Extension","mhchem"],
+  });
+});
+</script>
+
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="generator.html" title="rmgpy.molecule.generator"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="kekulize.html" title="rmgpy.molecule.kekulize"
+             accesskey="P">previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-rmgpy.molecule.pathfinder">
+<span id="rmgpy-molecule-pathfinder"></span><h1>rmgpy.molecule.pathfinder<a class="headerlink" href="#module-rmgpy.molecule.pathfinder" title="Permalink to this headline">¶</a></h1>
+<p>This module provides functions for searching paths within a molecule.
+The paths generally consist of alternating atoms and bonds.</p>
+<dl class="attribute">
+<dt id="rmgpy.molecule.pathfinder.add_allyls">
+<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">add_allyls</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.add_allyls" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find all the (3-atom, 2-bond) patterns “X=X-X” starting from the
+last atom of the existing path.</p>
+<p>The bond attached to the starting atom should be non single.
+The second bond should be single.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.pathfinder.add_inverse_allyls">
+<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">add_inverse_allyls</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.add_inverse_allyls" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find all the (3-atom, 2-bond) patterns “start~atom2=atom3” starting from the
+last atom of the existing path.</p>
+<p>The second bond should be non-single.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.pathfinder.add_unsaturated_bonds">
+<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">add_unsaturated_bonds</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.add_unsaturated_bonds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find all the (2-atom, 1-bond) patterns “X=X” starting from the
+last atom of the existing path.</p>
+<p>The bond attached to the starting atom should be non single.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.pathfinder.compute_atom_distance">
+<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">compute_atom_distance</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.compute_atom_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the distances between each pair of atoms in the atom_indices.</p>
+<p>The distance between two atoms is defined as the length of the shortest path
+between the two atoms minus 1, because the start atom is part of the path.</p>
+<p>The distance between multiple atoms is defined by generating all possible
+combinations between two atoms and storing the distance between each combination
+of atoms in a dictionary.</p>
+<p>The parameter ‘atom_indices’ is a  list of 1-based atom indices.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.pathfinder.findAllDelocalizationPaths">
+<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">findAllDelocalizationPaths</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.findAllDelocalizationPaths" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find all the delocalization paths allyl to the radical center indicated
+by <cite>atom1</cite>. Used to generate resonance isomers.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.pathfinder.findAllDelocalizationPathsLonePairRadical">
+<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">findAllDelocalizationPathsLonePairRadical</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.findAllDelocalizationPathsLonePairRadical" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find all the delocalization paths of lone electron pairs next to the radical center indicated
+by <cite>atom1</cite>. Used to generate resonance isomers in adjacent N and O as in NO2.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.pathfinder.findAllDelocalizationPathsN5dd_N5ts">
+<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">findAllDelocalizationPathsN5dd_N5ts</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.findAllDelocalizationPathsN5dd_N5ts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find all the resonance structures of nitrogen atoms with two double bonds (N5dd)
+and nitrogen atoms with one triple and one single bond (N5ts)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.pathfinder.find_allyl_end_with_charge">
+<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">find_allyl_end_with_charge</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.find_allyl_end_with_charge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search for a (3-atom, 2-bond) path between start and end atom that consists of
+alternating non-single and single bonds and ends with a charged atom.</p>
+<p>Returns a list with atom and bond elements from start to end, or
+an empty list if nothing was found.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.pathfinder.find_butadiene">
+<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">find_butadiene</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.find_butadiene" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search for a path between start and end atom that consists of
+alternating non-single and single bonds.</p>
+<p>Returns a list with atom and bond elements from start to end, or
+None if nothing was found.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.pathfinder.find_butadiene_end_with_charge">
+<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">find_butadiene_end_with_charge</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.find_butadiene_end_with_charge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search for a (4-atom, 3-bond) path between start and end atom that consists of
+alternating non-single and single bonds and ends with a charged atom.</p>
+<p>Returns a list with atom and bond elements from start to end, or
+None if nothing was found.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.pathfinder.find_shortest_path">
+<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">find_shortest_path</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.find_shortest_path" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+  <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    <div class="sphinxsidebarwrapper">
+        <div class="sidebarlogo"><a href="../../index.html">
+            <img src="../../_static/rmg-logo-small.png" alt="RMG" />
+        </a></div>
+      <div id="sidebar">
+        <div id="rmgsidebar">
+          <a href="http://rmg.mit.edu">
+            <div class="menuitem">
+              <img src="../../_static/rmg-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG Website</div>
+              <div class="menutext menudesc">Interactive website for RMG-Py</div>
+            </div>
+          </a>
+          <a href="https://github.com/ReactionMechanismGenerator/RMG-Py">
+            <div class="menuitem">
+              <img src="../../_static/github-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG GitHub</div>
+              <div class="menutext menudesc">View source and post issues</div>
+            </div>
+          </a>
+        </div>
+        <div class="menuitem">
+        </div>
+        <div class="menuitem">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="kekulize.html"
+                        title="previous chapter">rmgpy.molecule.kekulize</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="generator.html"
+                        title="next chapter">rmgpy.molecule.generator</a></p>
+        </div>
+        <div class="menuitem">
+<div role="note" aria-label="source link">
+    <h3>This Page</h3>
+        <ul class="this-page-menu">
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/molecule/pathfinder.rst"
+                   rel="nofollow">View Source</a></li>
+        </ul>
+</div>
+        </div>
+        <div class="menuitem">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+    </div>
+  </div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="generator.html" title="rmgpy.molecule.generator"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="kekulize.html" title="rmgpy.molecule.kekulize"
+             >previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+    </div>
+  </body>
+</html>

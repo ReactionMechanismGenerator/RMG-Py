@@ -5,8 +5,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>rmgpy.molecule.Element &#8212; RMG Py 2.1.0 documentation</title>
-    <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
+    <title>rmgpy.molecule.Element &#8212; RMG-Py 2.1.0 Documentation</title>
+    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -36,15 +36,6 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 
   </head>
   <body>
-<div class="header">
-&nbsp;
-</div>  
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body">
-            
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -60,12 +51,18 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="vf2.html" title="rmgpy.molecule.vf2.VF2"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 2.1.0</a> &raquo;</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
       </ul>
-    </div>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
             
   <div class="section" id="rmgpy-molecule-element">
 <h1>rmgpy.molecule.Element<a class="headerlink" href="#rmgpy-molecule-element" title="Permalink to this headline">¶</a></h1>
@@ -73,66 +70,91 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <dt id="rmgpy.molecule.Element">
 <em class="property">class </em><code class="descclassname">rmgpy.molecule.</code><code class="descname">Element</code><span class="sig-paren">(</span><em>number</em>, <em>symbol</em>, <em>name</em>, <em>mass</em>, <em>isotope=-1</em>, <em>chemkinName=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Element" title="Permalink to this definition">¶</a></dt>
 <dd><p>A chemical element. The attributes are:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">docstring of rmgpy.molecule.Element</tt>, line 12)</p>
-<p>Malformed table.
-Text in column margin in table line 10.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>=========== =============== ================================================
-Attribute   Type            Description
-=========== =============== ================================================
-`number`    ``int``         The atomic number of the element
-`symbol`    ``str``         The symbol used for the element
-`name`      ``str``         The IUPAC name of the element
-`mass`      ``float``       The mass of the element in kg/mol
-`covRadius` ``float``       Covalent bond radius in Angstrom
-`isotope`   ``int``         The isotope integer of the element
-`chemkinName` ``str``       The chemkin compatible representation of the element
-=========== =============== ================================================
-</pre></div>
-</div>
-</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="16%" />
+<col width="19%" />
+<col width="65%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>number</cite></td>
+<td><code class="docutils literal"><span class="pre">int</span></code></td>
+<td>The atomic number of the element</td>
+</tr>
+<tr class="row-odd"><td><cite>symbol</cite></td>
+<td><code class="docutils literal"><span class="pre">str</span></code></td>
+<td>The symbol used for the element</td>
+</tr>
+<tr class="row-even"><td><cite>name</cite></td>
+<td><code class="docutils literal"><span class="pre">str</span></code></td>
+<td>The IUPAC name of the element</td>
+</tr>
+<tr class="row-odd"><td><cite>mass</cite></td>
+<td><code class="docutils literal"><span class="pre">float</span></code></td>
+<td>The mass of the element in kg/mol</td>
+</tr>
+<tr class="row-even"><td><cite>covRadius</cite></td>
+<td><code class="docutils literal"><span class="pre">float</span></code></td>
+<td>Covalent bond radius in Angstrom</td>
+</tr>
+<tr class="row-odd"><td><cite>isotope</cite></td>
+<td><code class="docutils literal"><span class="pre">int</span></code></td>
+<td>The isotope integer of the element</td>
+</tr>
+<tr class="row-even"><td><cite>chemkinName</cite></td>
+<td><code class="docutils literal"><span class="pre">str</span></code></td>
+<td>The chemkin compatible representation of the element</td>
+</tr>
+</tbody>
+</table>
 <p>This class is specifically for properties that all atoms of the same element
 share. Ideally there is only one instance of this class for each element.</p>
 <dl class="attribute">
 <dt id="rmgpy.molecule.Element.chemkinName">
 <code class="descname">chemkinName</code><a class="headerlink" href="#rmgpy.molecule.Element.chemkinName" title="Permalink to this definition">¶</a></dt>
-<dd><p>chemkinName: str</p>
+<dd><p><em>chemkinName</em> – str</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.Element.covRadius">
 <code class="descname">covRadius</code><a class="headerlink" href="#rmgpy.molecule.Element.covRadius" title="Permalink to this definition">¶</a></dt>
-<dd><p>covRadius: ‘float’</p>
+<dd><p><em>covRadius</em> – ‘float’</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.Element.isotope">
 <code class="descname">isotope</code><a class="headerlink" href="#rmgpy.molecule.Element.isotope" title="Permalink to this definition">¶</a></dt>
-<dd><p>isotope: ‘int’</p>
+<dd><p><em>isotope</em> – ‘int’</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.Element.mass">
 <code class="descname">mass</code><a class="headerlink" href="#rmgpy.molecule.Element.mass" title="Permalink to this definition">¶</a></dt>
-<dd><p>mass: ‘float’</p>
+<dd><p><em>mass</em> – ‘float’</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.Element.name">
 <code class="descname">name</code><a class="headerlink" href="#rmgpy.molecule.Element.name" title="Permalink to this definition">¶</a></dt>
-<dd><p>name: str</p>
+<dd><p><em>name</em> – str</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.Element.number">
 <code class="descname">number</code><a class="headerlink" href="#rmgpy.molecule.Element.number" title="Permalink to this definition">¶</a></dt>
-<dd><p>number: ‘int’</p>
+<dd><p><em>number</em> – ‘int’</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.Element.symbol">
 <code class="descname">symbol</code><a class="headerlink" href="#rmgpy.molecule.Element.symbol" title="Permalink to this definition">¶</a></dt>
-<dd><p>symbol: str</p>
+<dd><p><em>symbol</em> – str</p>
 </dd></dl>
 
 </dd></dl>
@@ -140,7 +162,7 @@ share. Ideally there is only one instance of this class for each element.</p>
 <dl class="function">
 <dt id="rmgpy.molecule.getElement">
 <code class="descclassname">rmgpy.molecule.</code><code class="descname">getElement</code><span class="sig-paren">(</span><em>value</em>, <em>int isotope=-1</em><span class="sig-paren">)</span> &#x2192; Element<a class="headerlink" href="#rmgpy.molecule.getElement" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the <code class="xref py py-class docutils literal"><span class="pre">Element</span></code> object corresponding to the given parameter
+<dd><p>Return the <a class="reference internal" href="#rmgpy.molecule.Element" title="rmgpy.molecule.Element"><code class="xref py py-class docutils literal"><span class="pre">Element</span></code></a> object corresponding to the given parameter
 <cite>value</cite>. If an integer is provided, the value is treated as the atomic
 number. If a string is provided, the value is treated as the symbol. An
 <code class="xref py py-class docutils literal"><span class="pre">ElementError</span></code> is raised if no matching element is found.</p>
@@ -152,11 +174,49 @@ number. If a string is provided, the value is treated as the symbol. An
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<div class="sidebarlogo">
-<a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
+  <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    <div class="sphinxsidebarwrapper">
+        <div class="sidebarlogo"><a href="../../index.html">
+            <img src="../../_static/rmg-logo-small.png" alt="RMG" />
+        </a></div>
+      <div id="sidebar">
+        <div id="rmgsidebar">
+          <a href="http://rmg.mit.edu">
+            <div class="menuitem">
+              <img src="../../_static/rmg-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG Website</div>
+              <div class="menutext menudesc">Interactive website for RMG-Py</div>
+            </div>
+          </a>
+          <a href="https://github.com/ReactionMechanismGenerator/RMG-Py">
+            <div class="menuitem">
+              <img src="../../_static/github-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG GitHub</div>
+              <div class="menutext menudesc">View source and post issues</div>
+            </div>
+          </a>
+        </div>
+        <div class="menuitem">
+        </div>
+        <div class="menuitem">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="vf2.html"
+                        title="previous chapter">rmgpy.molecule.vf2.VF2</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="atomtype.html"
+                        title="next chapter">rmgpy.molecule.AtomType</a></p>
+        </div>
+        <div class="menuitem">
+<div role="note" aria-label="source link">
+    <h3>This Page</h3>
+        <ul class="this-page-menu">
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/molecule/element.rst"
+                   rel="nofollow">View Source</a></li>
+        </ul>
 </div>
+        </div>
+        <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
@@ -167,88 +227,38 @@ number. If a string is provided, the value is treated as the symbol. An
     </form>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
-
-<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/molecule/element.rst"
-           rel="nofollow">Edit this page</a></h4><P>
-<div class="customsidebar">
-<P>
-<table cellpadding="3">
-
-<tr><td>
-        <a href="http://reactionmechanismgenerator.github.io/RMG-Py"><img src="../../_static/documentation-icon.png" class="icon_sidebar" width="32px" alt="Documentation"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://reactionmechanismgenerator.github.io/RMG-Py">Documentation</a></div>
-        <div class="linkdesc">Learn more about the RMG software</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/database/"><img src="../../_static/database-logo-small.png" class="icon_sidebar" width="32px" alt="Database"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
-        <div class="linkdesc">Browse the RMG database of chemical and kinetic parameters</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/input">Create Input File</a></div>
-        <div class="linkdesc">Online form for making an RMG input file</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/molecule_search"><img src="../../_static/moleculedraw-logo-small.png" class="icon_sidebar" width="32px" alt="Molecule Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
-        <div class="linkdesc">Draw a molecule from its adjlist and search or estimate its properties</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/database/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/kinetics/search/">Kinetics Search</a></div>
-        <div class="linkdesc">Search or estimate kinetics of a chemical reaction</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/solvation_search"><img src="../../_static/solvation-search-logo-small.png" class="icon_sidebar" width="32px" alt="Solvation Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
-        <div class="linkdesc">Search or estimate solvation properties of solvent and a solute</div>
-</td></tr>
-
-
-<tr><td>
-        <a href="http://rmg.mit.edu/pdep/"><img src="../../_static/pdep-logo-small.png" class="icon_sidebar" width="32px" alt="Pressure Dependent Networks"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
-        <div class="linkdesc">CanTherm pdep kinetic calculations</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/tools/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/tools/">Other RMG Tools</a></div>
-        <div class="linkdesc">Additional tools to supplement RMG</div>
-</td></tr>
-
-</table>
-
-</div>
         </div>
       </div>
+    </div>
+  </div>
+
       <div class="clearer"></div>
     </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="atomtype.html" title="rmgpy.molecule.AtomType"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="vf2.html" title="rmgpy.molecule.vf2.VF2"
+             >previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+      </ul>
+    </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+        &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

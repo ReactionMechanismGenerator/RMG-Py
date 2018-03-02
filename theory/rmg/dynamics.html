@@ -1,0 +1,250 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>3. Dynamics Criterion &#8212; RMG-Py 2.1.0 Documentation</title>
+    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Pressure-Dependence Theory Guide" href="../pdep/index.html" />
+    <link rel="prev" title="2. Prune Edge Species" href="prune.html" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+  MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+    ce: ["Extension","mhchem"],
+  });
+});
+</script>
+
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../pdep/index.html" title="Pressure-Dependence Theory Guide"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="prune.html" title="2. Prune Edge Species"
+             accesskey="P">previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >Theory Guide</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG Theory Guide</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="dynamics-criterion">
+<span id="dynamics"></span><h1>3. Dynamics Criterion<a class="headerlink" href="#dynamics-criterion" title="Permalink to this headline">¶</a></h1>
+<p>When dealing with more complex chemical mechanisms the standard RMG flux criterion
+has trouble picking up key chain branching reactions and has limited guarantees
+that it accurately represents the concentrations of all species.  The dynamics
+criterion is a measure of how much a given reaction affects core concentrations.
+This allows it to pick up key low-flux chain branching reactions and better represent
+species concentrations.</p>
+<div class="section" id="calculating-the-dynamics-criterion">
+<h2>3.1. Calculating the Dynamics Criterion<a class="headerlink" href="#calculating-the-dynamics-criterion" title="Permalink to this headline">¶</a></h2>
+<p>Let us define rates of production <span class="math">\(P_i(t)\)</span> and consumption <span class="math">\(L_i(t)\)</span> for a given species
+<span class="math">\(\frac{dc_i}{dt} = P_i(t) - L_i(t)\)</span></p>
+<p>Let us define a dimensionless concentration variable we will refer to as the
+accumulation number Ac for a given species</p>
+<p><span class="math">\(Ac_{spc,i} = \frac{P_i}{L_i} \approx \frac{\bar{c_{i}}}{c_{i0}}\)</span></p>
+<p>where <span class="math">\(\bar{c_i}\)</span> is the steady state concentration or more specifically the
+concentration at which <span class="math">\(P_i = L_i\)</span> assuming <span class="math">\(L_i\)</span> scales with <span class="math">\(c_i\)</span>
+and <span class="math">\(c_{i0}\)</span> is the current concentration.</p>
+<p>This species accumulation number is a measure of how far species i is from steady state.</p>
+<p>Since this number can only be calculated for core species, by itself it is only a
+measure of the behavior of species i within the reaction network.</p>
+<p>However if we consider models with and without some edge reaction j we can define</p>
+<p><span class="math">\(\Pi_{Ac,i,j} = \frac{Ac_{spc,i,withj}}{Ac_{spc,i,withoutj}}\)</span></p>
+<p>Which is a measure of how much the concentration of species i is impacted by
+reaction j.</p>
+<p>In order to directly compare multiple reactions we can then sum over all
+core species involved in reaction j to get our criterion the dynamics number.</p>
+<p><span class="math">\(\sum_{i\in core} |Ln(\Pi_{Ac,i,j})| = Dy &gt; \epsilon\)</span></p>
+</div>
+<div class="section" id="surface-algorithm">
+<h2>3.2. Surface Algorithm<a class="headerlink" href="#surface-algorithm" title="Permalink to this headline">¶</a></h2>
+<p>One common issue with the dynamics criterion is that it treats all core species equally.
+Because of this, if the dynamics criterion is set too low it enters a feedback loop where
+it adds species and then since it can’t get those species’ concentrations right it adds
+more species and so on. In order to avoid this feedback loop the surface algorithm was developed.
+It creates a new partition called the <em>surface</em> that is considered part of the core.  We will
+refer to the part of the core that is not part of the surface as the <em>bulk core</em>.  When
+operating without the dynamics criterion everything moves from edge to the bulk core as usual;
+however the dynamics criterion is managed differently.  When using the surface algorithm most
+reactions pulled in by the dynamics criterion enter the surface instead of the bulk core.
+However, unlike movement to bulk core a constraint is placed on movement to the surface.
+Any reaction moved to the surface must have either both reactants or both products
+in the bulk core.  This prevents the dynamics criterion from pulling in reactions
+to get the concentrations of species in the surface right avoiding the feedback loop.
+To avoid important species being trapped in the surface we also add criteria
+for movement from surface to bulk core based on flux or dynamics criterion.
+However, to avoid important species being trapped in the surface we also add criteria
+for movement from surface to bulk core based on flux or dynamics criterion.</p>
+<div class="figure">
+<img alt="../../_images/surfacediagram.png" src="../../_images/surfacediagram.png" />
+</div>
+</div>
+<div class="section" id="key-parameters-for-dynamics-criterion-and-surface-algorithm">
+<h2>3.3. Key Parameters for Dynamics Criterion and Surface Algorithm<a class="headerlink" href="#key-parameters-for-dynamics-criterion-and-surface-algorithm" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p class="first"><strong>toleranceMoveEdgeReactionToCore</strong></p>
+<p>An edge reaction will be pulled directly into the bulk core if its dynamics number
+ever exceeds this value.</p>
+</li>
+<li><p class="first"><strong>toleranceMoveEdgeReactionToSurface</strong></p>
+<p>An edge reaction will be pulled into the surface if its dynamics number
+ever exceeds this value.</p>
+</li>
+<li><p class="first"><strong>toleranceMoveEdgeReactionToCoreInterrupt</strong></p>
+<p>When any reaction’s dynamics number exceeds this value the simulation will be interrupted.</p>
+</li>
+<li><p class="first"><strong>toleranceMoveEdgeReactionToSurfaceInterrupt</strong></p>
+<p>When the dynamics number of any reaction that would be valid for movement to the surface
+exceeds this value the simulation will be interrupted</p>
+</li>
+<li><p class="first"><strong>toleranceMoveSurfaceReactionToCore</strong></p>
+<p>A surface reaction will be pulled into the bulk core if its dynamics number
+ever exceeds this value.  Note this is done on the fly during simulation.</p>
+</li>
+<li><p class="first"><strong>toleranceMoveSurfaceSpeciesToCore</strong></p>
+<p>A surface species will be pulled into the bulk core if it’s rate ratio
+ever exceeds this value.  Note this is done on the fly during simulation.</p>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+  <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    <div class="sphinxsidebarwrapper">
+        <div class="sidebarlogo"><a href="../../index.html">
+            <img src="../../_static/rmg-logo-small.png" alt="RMG" />
+        </a></div>
+      <div id="sidebar">
+        <div id="rmgsidebar">
+          <a href="http://rmg.mit.edu">
+            <div class="menuitem">
+              <img src="../../_static/rmg-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG Website</div>
+              <div class="menutext menudesc">Interactive website for RMG-Py</div>
+            </div>
+          </a>
+          <a href="https://github.com/ReactionMechanismGenerator/RMG-Py">
+            <div class="menuitem">
+              <img src="../../_static/github-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG GitHub</div>
+              <div class="menutext menudesc">View source and post issues</div>
+            </div>
+          </a>
+        </div>
+        <div class="menuitem">
+  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">3. Dynamics Criterion</a><ul>
+<li><a class="reference internal" href="#calculating-the-dynamics-criterion">3.1. Calculating the Dynamics Criterion</a></li>
+<li><a class="reference internal" href="#surface-algorithm">3.2. Surface Algorithm</a></li>
+<li><a class="reference internal" href="#key-parameters-for-dynamics-criterion-and-surface-algorithm">3.3. Key Parameters for Dynamics Criterion and Surface Algorithm</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+        <div class="menuitem">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="prune.html"
+                        title="previous chapter">2. Prune Edge Species</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../pdep/index.html"
+                        title="next chapter">Pressure-Dependence Theory Guide</a></p>
+        </div>
+        <div class="menuitem">
+<div role="note" aria-label="source link">
+    <h3>This Page</h3>
+        <ul class="this-page-menu">
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/theory/rmg/dynamics.rst"
+                   rel="nofollow">View Source</a></li>
+        </ul>
+</div>
+        </div>
+        <div class="menuitem">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+    </div>
+  </div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../pdep/index.html" title="Pressure-Dependence Theory Guide"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="prune.html" title="2. Prune Edge Species"
+             >previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >Theory Guide</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >RMG Theory Guide</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+    </div>
+  </body>
+</html>

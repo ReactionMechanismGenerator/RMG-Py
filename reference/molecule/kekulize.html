@@ -1,0 +1,271 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>rmgpy.molecule.kekulize &#8212; RMG-Py 2.1.0 Documentation</title>
+    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="rmgpy.molecule.pathfinder" href="pathfinder.html" />
+    <link rel="prev" title="rmgpy.molecule.resonance" href="resonance.html" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+  MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+    ce: ["Extension","mhchem"],
+  });
+});
+</script>
+
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pathfinder.html" title="rmgpy.molecule.pathfinder"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="resonance.html" title="rmgpy.molecule.resonance"
+             accesskey="P">previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-rmgpy.molecule.kekulize">
+<span id="rmgpy-molecule-kekulize"></span><h1>rmgpy.molecule.kekulize<a class="headerlink" href="#module-rmgpy.molecule.kekulize" title="Permalink to this headline">¶</a></h1>
+<p>This module contains functions for kekulization of a aromatic molecule.
+The only function that should be used outside of this module is the main
+<cite>kekulize()</cite> function. The remaining functions and classes are designed only
+to support the kekulization algorithm, and should not be used on their own.</p>
+<p>The basic algorithm is as follows:
+1. Identify all aromatic rings in the molecule, based on bond types.
+2. For each ring, identify endocyclic and exocyclic bonds.
+3. Determine if any bonds in the ring are already defined (not benzene bonds).
+4. For the remaining bonds, determine whether or not they can be double bonds.
+5. If a clear determination cannot be made, make heuristic based assumption.
+6. Continue until all bonds in the ring are determined.
+7. Continue until all rings in the molecule are determined.</p>
+<p>Here, <cite>endo</cite> refers to bonds that comprise a given ring, while <cite>exo</cite> refers to
+bonds that are connected to atoms in the ring, but not part of the ring itself.</p>
+<p>A key part of the algorithm is use of degree of freedom (DOF) analysis in order
+to determine the optimal order to solve the system. Rings and bonds with fewer
+DOFs have fewer ways to be to be kekulized, and are generally easier to solve.
+Each ring or bond that is fixed reduces the DOF of adjacent rings and bonds,
+and the process continues until the entire molecule can be solved.</p>
+<dl class="class">
+<dt id="rmgpy.molecule.kekulize.AromaticBond">
+<em class="property">class </em><code class="descclassname">rmgpy.molecule.kekulize.</code><code class="descname">AromaticBond</code><span class="sig-paren">(</span><em>bond=None</em>, <em>ringBonds=None</em>, <em>endoDOF=-1</em>, <em>exoDOF=-1</em>, <em>doublePossible=True</em>, <em>doubleRequired=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.kekulize.AromaticBond" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper class containing information about a single aromatic bond in a molecule.</p>
+<p>DO NOT use outside of this module. This class does not do any aromaticity perception.</p>
+<dl class="attribute">
+<dt id="rmgpy.molecule.kekulize.AromaticBond.doublePossible">
+<code class="descname">doublePossible</code><a class="headerlink" href="#rmgpy.molecule.kekulize.AromaticBond.doublePossible" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>doublePossible</em> – ‘bool’</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.kekulize.AromaticBond.doubleRequired">
+<code class="descname">doubleRequired</code><a class="headerlink" href="#rmgpy.molecule.kekulize.AromaticBond.doubleRequired" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>doubleRequired</em> – ‘bool’</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.kekulize.AromaticBond.endoDOF">
+<code class="descname">endoDOF</code><a class="headerlink" href="#rmgpy.molecule.kekulize.AromaticBond.endoDOF" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>endoDOF</em> – ‘int’</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.kekulize.AromaticBond.exoDOF">
+<code class="descname">exoDOF</code><a class="headerlink" href="#rmgpy.molecule.kekulize.AromaticBond.exoDOF" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>exoDOF</em> – ‘int’</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.kekulize.AromaticBond.update">
+<code class="descname">update</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.kekulize.AromaticBond.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the local degree of freedom information for this aromatic bond.
+The DOF counts do not include the bond itself, only its adjacent bonds.</p>
+<p><cite>endoDOF</cite> refers to the number of adjacent bonds in the ring without fixed bond orders.
+<cite>exoDOF</cite>  refers to the number of adjacent bonds outside the ring without fixed bond orders.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="rmgpy.molecule.kekulize.AromaticRing">
+<em class="property">class </em><code class="descclassname">rmgpy.molecule.kekulize.</code><code class="descname">AromaticRing</code><span class="sig-paren">(</span><em>atoms=None</em>, <em>endoBonds=None</em>, <em>exoBonds=None</em>, <em>endoDOF=-1</em>, <em>exoDOF=-1</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.kekulize.AromaticRing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper class containing information about a single aromatic ring in a molecule.</p>
+<p>DO NOT use outside of this module. This class does not do any aromaticity perception.</p>
+<dl class="attribute">
+<dt id="rmgpy.molecule.kekulize.AromaticRing.endoDOF">
+<code class="descname">endoDOF</code><a class="headerlink" href="#rmgpy.molecule.kekulize.AromaticRing.endoDOF" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>endoDOF</em> – ‘int’</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.kekulize.AromaticRing.exoDOF">
+<code class="descname">exoDOF</code><a class="headerlink" href="#rmgpy.molecule.kekulize.AromaticRing.exoDOF" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>exoDOF</em> – ‘int’</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.kekulize.AromaticRing.kekulize">
+<code class="descname">kekulize</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.kekulize.AromaticRing.kekulize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attempts to kekulize a single aromatic ring in a molecule.</p>
+<p>Returns True if successful, and False otherwise.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.kekulize.AromaticRing.processBonds">
+<code class="descname">processBonds</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; tuple<a class="headerlink" href="#rmgpy.molecule.kekulize.AromaticRing.processBonds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create AromaticBond objects for each endocyclic bond.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.kekulize.AromaticRing.update">
+<code class="descname">update</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.kekulize.AromaticRing.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the degree of freedom information for this aromatic ring.</p>
+<p><cite>endoDOF</cite> refers to the number of bonds in the ring without fixed bond orders.
+<cite>exoDOF</cite>  refers to the number of bonds outside the ring without fixed bond orders.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="rmgpy.molecule.kekulize.kekulize">
+<code class="descclassname">rmgpy.molecule.kekulize.</code><code class="descname">kekulize</code><span class="sig-paren">(</span><em>Molecule mol</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.kekulize.kekulize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Kekulize an aromatic molecule in place. If the molecule cannot be kekulized,
+an AtomTypeError will be raised. However, the molecule will be left in
+a semi-kekulized state. Therefore, if the original molecule needs to be kept,
+it is advisable to create a copy before kekulizing.</p>
+<p>Args: <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> object to be kekulized</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+  <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    <div class="sphinxsidebarwrapper">
+        <div class="sidebarlogo"><a href="../../index.html">
+            <img src="../../_static/rmg-logo-small.png" alt="RMG" />
+        </a></div>
+      <div id="sidebar">
+        <div id="rmgsidebar">
+          <a href="http://rmg.mit.edu">
+            <div class="menuitem">
+              <img src="../../_static/rmg-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG Website</div>
+              <div class="menutext menudesc">Interactive website for RMG-Py</div>
+            </div>
+          </a>
+          <a href="https://github.com/ReactionMechanismGenerator/RMG-Py">
+            <div class="menuitem">
+              <img src="../../_static/github-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG GitHub</div>
+              <div class="menutext menudesc">View source and post issues</div>
+            </div>
+          </a>
+        </div>
+        <div class="menuitem">
+        </div>
+        <div class="menuitem">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="resonance.html"
+                        title="previous chapter">rmgpy.molecule.resonance</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pathfinder.html"
+                        title="next chapter">rmgpy.molecule.pathfinder</a></p>
+        </div>
+        <div class="menuitem">
+<div role="note" aria-label="source link">
+    <h3>This Page</h3>
+        <ul class="this-page-menu">
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/molecule/kekulize.rst"
+                   rel="nofollow">View Source</a></li>
+        </ul>
+</div>
+        </div>
+        <div class="menuitem">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+    </div>
+  </div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pathfinder.html" title="rmgpy.molecule.pathfinder"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="resonance.html" title="rmgpy.molecule.resonance"
+             >previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+    </div>
+  </body>
+</html>

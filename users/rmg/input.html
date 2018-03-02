@@ -5,8 +5,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>4. Creating Input Files &#8212; RMG Py 2.1.0 documentation</title>
-    <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
+    <title>4. Creating Input Files &#8212; RMG-Py 2.1.0 Documentation</title>
+    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -36,15 +36,6 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 
   </head>
   <body>
-<div class="header">
-&nbsp;
-</div>  
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body">
-            
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -60,12 +51,18 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="installation/faq.html" title="3.5.1. FAQ collection"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 2.1.0</a> &raquo;</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG User’s Guide</a> &#187;</li> 
       </ul>
-    </div>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
             
   <div class="section" id="creating-input-files">
 <span id="input"></span><h1>4. Creating Input Files<a class="headerlink" href="#creating-input-files" title="Permalink to this headline">¶</a></h1>
@@ -264,7 +261,7 @@ the model generation will stop when either of the termination criterion is satis
         <span class="n">terminationConversion</span><span class="o">=</span><span class="p">{</span>
                 <span class="s1">&#39;CH4&#39;</span><span class="p">:</span> <span class="mf">0.9</span><span class="p">,</span>
         <span class="p">},</span>
-        <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="n">e0</span><span class="p">,</span><span class="s1">&#39;s&#39;</span><span class="p">),</span>
+        <span class="n">terminationTime</span><span class="o">=</span><span class="p">(</span><span class="mf">1e0</span><span class="p">,</span><span class="s1">&#39;s&#39;</span><span class="p">),</span>
         <span class="n">sensitivity</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;CH4&#39;</span><span class="p">,</span><span class="s1">&#39;H2&#39;</span><span class="p">],</span>
         <span class="n">sensitivityThreshold</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
 
@@ -291,10 +288,10 @@ in one final simulation (sensitivity is not performed in intermediate iterations
 <span id="simulatortolerances"></span><h2>4.5. Simulator Tolerances<a class="headerlink" href="#simulator-tolerances" title="Permalink to this headline">¶</a></h2>
 <p>The next two lines specify the absolute and relative tolerance for the ODE solver, respectively. Common values for the absolute tolerance are 1e-15 to 1e-25. Relative tolerance is usually 1e-4 to 1e-8:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">simulator</span><span class="p">(</span>
-    <span class="n">atol</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">16</span><span class="p">,</span>
-    <span class="n">rtol</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">8</span><span class="p">,</span>
-    <span class="n">sens_atol</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">6</span><span class="p">,</span>
-    <span class="n">sens_rtol</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span>
+    <span class="n">atol</span><span class="o">=</span><span class="mf">1e-16</span><span class="p">,</span>
+    <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span>
+    <span class="n">sens_atol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span>
+    <span class="n">sens_rtol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -342,9 +339,9 @@ the model does not converge with normal parameter settings.  See <a class="refer
 <p>A typical set of parameters for pruning is:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">model</span><span class="p">(</span>
     <span class="n">toleranceMoveToCore</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
-    <span class="n">toleranceInterruptSimulation</span><span class="o">=</span><span class="mi">1</span><span class="n">e8</span><span class="p">,</span>
+    <span class="n">toleranceInterruptSimulation</span><span class="o">=</span><span class="mf">1e8</span><span class="p">,</span>
     <span class="n">toleranceKeepInEdge</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
-    <span class="n">maximumEdgeSpecies</span><span class="o">=</span><span class="mi">200000</span>
+    <span class="n">maximumEdgeSpecies</span><span class="o">=</span><span class="mi">200000</span><span class="p">,</span>
     <span class="n">minCoreSizeForPrune</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
     <span class="n">minSpeciesExistIterationsForPrune</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
     <span class="p">)</span>
@@ -380,26 +377,114 @@ try increasing <code class="docutils literal"><span class="pre">toleranceInterru
 Because the ODE simulation is always interrupted, no pruning is performed.</p>
 <p>Please find more details about the theory behind pruning at <a class="reference internal" href="../../theory/rmg/prune.html#prune"><span class="std std-ref">Pruning Theory</span></a>.</p>
 </div>
+<div class="section" id="advanced-setting-thermodynamic-pruning">
+<h3>4.6.3. Advanced Setting: Thermodynamic Pruning<a class="headerlink" href="#advanced-setting-thermodynamic-pruning" title="Permalink to this headline">¶</a></h3>
+<p>Thermodynamic pruning is an alternative to flux pruning that does not require a given
+simulation to complete to remove excess species.  The thermodynamic criteria is
+calculated by determining the minimum and maximum Gibbs energies of formation (Gmin and Gmax)
+among species in the core.  If the Gibbs energy of formation of a given species is G
+the value of the criteria is (G-Gmax)/(Gmax-Gmin).  All of the Gibbs energies are evaluated
+at the highest temperature used in all of the reactor systems.  This means that a value of 0.2
+for the criterion implies that it will not add species that have Gibbs energies of formation
+greater than 20% of the core Gibbs energy range greater than the maximum Gibbs energy of
+formation within the core.</p>
+<p>For example</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">model</span><span class="p">(</span>
+    <span class="n">toleranceMoveToCore</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">toleranceInterruptSimulation</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">toleranceThermoKeepSpeciesInEdge</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">maximumEdgeSpecies</span><span class="o">=</span><span class="mi">200000</span><span class="p">,</span>
+    <span class="n">minCoreSizeForPrune</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Advantages over flux pruning</strong>:</p>
+<p>Species are removed immediately if they violate tolerance
+Completing a simulation is unnecessary for this pruning so there is no need
+to waste time setting the interrupt tolerance higher than the movement tolerance.
+Will always maintain the correct <code class="docutils literal"><span class="pre">maximumEdgeSpecies</span></code>.</p>
+<p><strong>Primary disadvantage</strong>:</p>
+<p>Since we determine whether to add species primarily based on flux, at tight tolerances
+this is more likely to kick out species RMG might otherwise have added to core.</p>
+</div>
 <div class="section" id="advanced-setting-taking-multiple-species-at-a-time">
-<h3>4.6.3. Advanced Setting: Taking Multiple Species At A Time<a class="headerlink" href="#advanced-setting-taking-multiple-species-at-a-time" title="Permalink to this headline">¶</a></h3>
+<h3>4.6.4. Advanced Setting: Taking Multiple Species At A Time<a class="headerlink" href="#advanced-setting-taking-multiple-species-at-a-time" title="Permalink to this headline">¶</a></h3>
 <p>Taking multiple objects (species, reactions or pdepNetworks) during a given simulation can often decrease your overall model generation time
-over only taking one.  For this purpose there is a maxNumObjsPerIter parameter that allows RMG to take
+over only taking one.  For this purpose there is a <code class="docutils literal"><span class="pre">maxNumObjsPerIter</span></code> parameter that allows RMG to take
 that many species, reactions or pdepNetworks from a given simulation. This is done in the order they trigger their respective criteria.</p>
+<p>You can also set <code class="docutils literal"><span class="pre">terminateAtMaxObjects=True</span></code> to cause it to terminate when it has the maximum
+number of objects allowed rather than waiting around until it hits an interrupt tolerance.  This
+avoids additional simulation time, but will also make it less likely to finish simulations, which can
+affect flux pruning.</p>
 <p>For example</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">model</span><span class="p">(</span>
         <span class="n">toleranceKeepInEdge</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
         <span class="n">toleranceMoveToCore</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
-        <span class="n">toleranceInterruptSimulation</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">toleranceInterruptSimulation</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span>
         <span class="n">maxNumObjsPerIter</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="n">terminateAtMaxObjects</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 <p>Note that this can also result in larger models, however, sometimes these larger models (from taking more than one
 object at a time) pick up chemistry that would otherwise have been missed.</p>
 </div>
+<div class="section" id="advanced-setting-dynamics-criterion">
+<span id="ontheflyquantumcalculations"></span><h3>4.6.5. Advanced Setting:  Dynamics Criterion<a class="headerlink" href="#advanced-setting-dynamics-criterion" title="Permalink to this headline">¶</a></h3>
+<p>While the flux criterion works very well for identifying new species that have high flux
+and therefore will likely be high throughput or high concentration species,
+it provides few automatic guarantees about how well a given model will accurately represent
+the concentrations of the involved species.  The dynamics criterion is more complex
+than the flux criterion, but in general it is a measure of how much impact a given
+reaction will have on the concentrations of core species.  A more detailed explanation
+is available in the theory section: <a class="reference internal" href="../../theory/rmg/dynamics.html#dynamics"><span class="std std-ref">Dynamics Criterion</span></a>.</p>
+<p>Reasonable values for the dynamics criterion range typically between 2-30.</p>
+<p>For example</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">model</span><span class="p">(</span>
+        <span class="n">toleranceMoveToCore</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">toleranceInterruptSimulation</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">toleranceMoveEdgeReactionToCore</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span>
+        <span class="n">toleranceMoveEdgeReactionToCoreInterrupt</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that it is highly recommended to use the dynamics criterion only alongside the flux
+criterion and not by itself.</p>
+</div>
+<div class="section" id="advanced-setting-surface-algorithm">
+<h3>4.6.6. Advanced Setting:  Surface Algorithm<a class="headerlink" href="#advanced-setting-surface-algorithm" title="Permalink to this headline">¶</a></h3>
+<p>One common issue with the dynamics criterion is that it treats all core species equally
+as discussed in our theory section: <a class="reference internal" href="../../theory/rmg/dynamics.html#dynamics"><span class="std std-ref">Dynamics Criterion</span></a>.  Because of this, if the dynamics
+criterion is set too low it enters a feedback loop where it adds species and then
+since it can’t get those species’ concentrations right it adds more species and so on.
+In order to avoid this feedback loop the surface algorithm was developed.  It creates
+a new partition called the <em>surface</em> that is considered part of the core.  We will
+refer to the part of the core that is not part of the surface as the <em>bulk core</em>.  When
+operating without the dynamics criterion everything moves from edge to the bulk core as usual;
+however the dynamics criterion is managed differently.  When using the surface algorithm most
+reactions pulled in by the dynamics criterion enter the surface instead of the bulk core.
+However, unlike movement to bulk core a constraint is placed on movement to the surface.
+Any reaction moved to the surface must have either both reactants or both products
+in the bulk core.  This prevents the dynamics criterion from pulling in reactions
+to get the concentrations of species in the surface right avoiding the feedback loop.
+To avoid important species being trapped in the surface we also add criteria
+for movement from surface to bulk core based on flux or dynamics criterion.</p>
+<p>For example</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">model</span><span class="p">(</span>
+        <span class="n">toleranceMoveToCore</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">toleranceInterruptSimulation</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">toleranceMoveEdgeReactionToCore</span><span class="o">=</span><span class="mf">30.0</span><span class="p">,</span>
+        <span class="n">toleranceMoveEdgeReactionToCoreInterrupt</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span>
+        <span class="n">toleranceMoveEdgeReactionToSurface</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span>
+        <span class="n">toleranceMoveSurfaceSpeciesToCore</span><span class="o">=.</span><span class="mi">01</span><span class="p">,</span>
+        <span class="n">toleranceMoveSurfaceReactionToCore</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
 </div>
 <div class="section" id="on-the-fly-quantum-calculations">
-<span id="ontheflyquantumcalculations"></span><h2>4.7. On the fly Quantum Calculations<a class="headerlink" href="#on-the-fly-quantum-calculations" title="Permalink to this headline">¶</a></h2>
+<h2>4.7. On the fly Quantum Calculations<a class="headerlink" href="#on-the-fly-quantum-calculations" title="Permalink to this headline">¶</a></h2>
 <p>This block is used when quantum mechanical calculations are desired to determine thermodynamic parameters.
 These calculations are only run if the molecule is not included in a specified thermo library.
 The <code class="docutils literal"><span class="pre">onlyCyclics</span></code> option, if <code class="docutils literal"><span class="pre">True</span></code>, only runs these calculations for cyclic species.
@@ -546,6 +631,9 @@ of atoms (16 in the above example).</p>
 <span id="miscellaneousoptions"></span><h2>4.9. Miscellaneous Options<a class="headerlink" href="#miscellaneous-options" title="Permalink to this headline">¶</a></h2>
 <p>Miscellaneous options:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">options</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Seed&#39;</span><span class="p">,</span>
+    <span class="n">generateSeedEachIteration</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">saveSeedToDatabase</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">units</span><span class="o">=</span><span class="s1">&#39;si&#39;</span><span class="p">,</span>
     <span class="n">saveRestartPeriod</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;hour&#39;</span><span class="p">),</span>
     <span class="n">generateOutputHTML</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -556,6 +644,9 @@ of atoms (16 in the above example).</p>
 <span class="p">)</span>
 </pre></div>
 </div>
+<p>The <code class="docutils literal"><span class="pre">name</span></code> field is the name of any generated seed mechanisms</p>
+<p>Setting <code class="docutils literal"><span class="pre">generateSeedEachIteration</span></code> to <code class="docutils literal"><span class="pre">True</span></code> tells RMG to save and update a seed mechanism and thermo library during the current run</p>
+<p>Setting <code class="docutils literal"><span class="pre">saveSeedToDatabase</span></code> to <code class="docutils literal"><span class="pre">True</span></code> tells RMG (if generating a seed) to also save that seed mechanism and thermo library directly into the database</p>
 <p>The <code class="docutils literal"><span class="pre">units</span></code> field is set to <code class="docutils literal"><span class="pre">si</span></code>.  Currently there are no other unit options.</p>
 <p>The <code class="docutils literal"><span class="pre">saveRestartPeriod</span></code> indictes how frequently you wish to save restart files. For very large/long RMG jobs, this process can take a significant amount of time. In such cases, the user may wish to increase the time period for saving these restart files.</p>
 <p>Setting <code class="docutils literal"><span class="pre">generateOutputHTML</span></code> to <code class="docutils literal"><span class="pre">True</span></code> will let RMG know that you want to save 2-D images (png files in the local <code class="docutils literal"><span class="pre">species</span></code> folder) of all species in the generated core model.  It will save a visualized
@@ -574,13 +665,15 @@ all of RMG’s reaction families.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">generatedSpeciesConstraints</span><span class="p">(</span>
     <span class="n">allowed</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;input species&#39;</span><span class="p">,</span><span class="s1">&#39;seed mechanisms&#39;</span><span class="p">,</span><span class="s1">&#39;reaction libraries&#39;</span><span class="p">],</span>
     <span class="n">maximumCarbonAtoms</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-    <span class="n">maximumHydrogenAtoms</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-    <span class="n">maximumOxygenAtoms</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-    <span class="n">maximumNitrogenAtoms</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-    <span class="n">maximumSiliconAtoms</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-    <span class="n">maximumSulfurAtoms</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">maximumOxygenAtoms</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">maximumNitrogenAtoms</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">maximumSiliconAtoms</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">maximumSulfurAtoms</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
     <span class="n">maximumHeavyAtoms</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-    <span class="n">maximumRadicalElectrons</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">maximumRadicalElectrons</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">maximumSingletCarbenes</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">maximumCarbeneRadicals</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">maximumIsotopicAtoms</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
     <span class="n">allowSingletO2</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
@@ -616,11 +709,29 @@ forbidden groups.</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<div class="sidebarlogo">
-<a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
-</div>
+  <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    <div class="sphinxsidebarwrapper">
+        <div class="sidebarlogo"><a href="../../index.html">
+            <img src="../../_static/rmg-logo-small.png" alt="RMG" />
+        </a></div>
+      <div id="sidebar">
+        <div id="rmgsidebar">
+          <a href="http://rmg.mit.edu">
+            <div class="menuitem">
+              <img src="../../_static/rmg-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG Website</div>
+              <div class="menutext menudesc">Interactive website for RMG-Py</div>
+            </div>
+          </a>
+          <a href="https://github.com/ReactionMechanismGenerator/RMG-Py">
+            <div class="menuitem">
+              <img src="../../_static/github-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG GitHub</div>
+              <div class="menutext menudesc">View source and post issues</div>
+            </div>
+          </a>
+        </div>
+        <div class="menuitem">
   <h3><a href="../../contents.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">4. Creating Input Files</a><ul>
@@ -640,7 +751,10 @@ forbidden groups.</p>
 <li><a class="reference internal" href="#model-tolerances">4.6. Model Tolerances</a><ul>
 <li><a class="reference internal" href="#advanced-setting-speed-up-by-filtering-reactions">4.6.1. Advanced Setting: Speed Up by Filtering Reactions</a></li>
 <li><a class="reference internal" href="#advanced-setting-speed-up-by-pruning">4.6.2. Advanced Setting: Speed Up by Pruning</a></li>
-<li><a class="reference internal" href="#advanced-setting-taking-multiple-species-at-a-time">4.6.3. Advanced Setting: Taking Multiple Species At A Time</a></li>
+<li><a class="reference internal" href="#advanced-setting-thermodynamic-pruning">4.6.3. Advanced Setting: Thermodynamic Pruning</a></li>
+<li><a class="reference internal" href="#advanced-setting-taking-multiple-species-at-a-time">4.6.4. Advanced Setting: Taking Multiple Species At A Time</a></li>
+<li><a class="reference internal" href="#advanced-setting-dynamics-criterion">4.6.5. Advanced Setting:  Dynamics Criterion</a></li>
+<li><a class="reference internal" href="#advanced-setting-surface-algorithm">4.6.6. Advanced Setting:  Surface Algorithm</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#on-the-fly-quantum-calculations">4.7. On the fly Quantum Calculations</a></li>
@@ -659,6 +773,26 @@ forbidden groups.</p>
 </li>
 </ul>
 
+        </div>
+        <div class="menuitem">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="installation/faq.html"
+                        title="previous chapter">3.5.1. FAQ collection</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="examples.html"
+                        title="next chapter">5. Example Input Files</a></p>
+        </div>
+        <div class="menuitem">
+<div role="note" aria-label="source link">
+    <h3>This Page</h3>
+        <ul class="this-page-menu">
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/input.rst"
+                   rel="nofollow">View Source</a></li>
+        </ul>
+</div>
+        </div>
+        <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
@@ -669,88 +803,38 @@ forbidden groups.</p>
     </form>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
-
-<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/input.rst"
-           rel="nofollow">Edit this page</a></h4><P>
-<div class="customsidebar">
-<P>
-<table cellpadding="3">
-
-<tr><td>
-        <a href="http://reactionmechanismgenerator.github.io/RMG-Py"><img src="../../_static/documentation-icon.png" class="icon_sidebar" width="32px" alt="Documentation"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://reactionmechanismgenerator.github.io/RMG-Py">Documentation</a></div>
-        <div class="linkdesc">Learn more about the RMG software</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/database/"><img src="../../_static/database-logo-small.png" class="icon_sidebar" width="32px" alt="Database"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
-        <div class="linkdesc">Browse the RMG database of chemical and kinetic parameters</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/input">Create Input File</a></div>
-        <div class="linkdesc">Online form for making an RMG input file</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/molecule_search"><img src="../../_static/moleculedraw-logo-small.png" class="icon_sidebar" width="32px" alt="Molecule Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
-        <div class="linkdesc">Draw a molecule from its adjlist and search or estimate its properties</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/database/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/kinetics/search/">Kinetics Search</a></div>
-        <div class="linkdesc">Search or estimate kinetics of a chemical reaction</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/solvation_search"><img src="../../_static/solvation-search-logo-small.png" class="icon_sidebar" width="32px" alt="Solvation Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
-        <div class="linkdesc">Search or estimate solvation properties of solvent and a solute</div>
-</td></tr>
-
-
-<tr><td>
-        <a href="http://rmg.mit.edu/pdep/"><img src="../../_static/pdep-logo-small.png" class="icon_sidebar" width="32px" alt="Pressure Dependent Networks"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
-        <div class="linkdesc">CanTherm pdep kinetic calculations</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/tools/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/tools/">Other RMG Tools</a></div>
-        <div class="linkdesc">Additional tools to supplement RMG</div>
-</td></tr>
-
-</table>
-
-</div>
         </div>
       </div>
+    </div>
+  </div>
+
       <div class="clearer"></div>
     </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="examples.html" title="5. Example Input Files"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="installation/faq.html" title="3.5.1. FAQ collection"
+             >previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >User’s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >RMG User’s Guide</a> &#187;</li> 
+      </ul>
+    </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+        &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

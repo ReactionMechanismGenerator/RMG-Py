@@ -1,0 +1,358 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>rmgpy.molecule.generator &#8212; RMG-Py 2.1.0 Documentation</title>
+    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="rmgpy.molecule.parser" href="parser.html" />
+    <link rel="prev" title="rmgpy.molecule.pathfinder" href="pathfinder.html" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+  MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+    ce: ["Extension","mhchem"],
+  });
+});
+</script>
+
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="parser.html" title="rmgpy.molecule.parser"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pathfinder.html" title="rmgpy.molecule.pathfinder"
+             accesskey="P">previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-rmgpy.molecule.generator">
+<span id="rmgpy-molecule-generator"></span><h1>rmgpy.molecule.generator<a class="headerlink" href="#module-rmgpy.molecule.generator" title="Permalink to this headline">¶</a></h1>
+<dl class="attribute">
+<dt id="rmgpy.molecule.generator.compute_agglomerate_distance">
+<code class="descclassname">rmgpy.molecule.generator.</code><code class="descname">compute_agglomerate_distance</code><a class="headerlink" href="#rmgpy.molecule.generator.compute_agglomerate_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterates over a list of lists containing atom indices.
+For each list the distances between the atoms is computed.
+A list of distances is returned.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.generator.create_P_layer">
+<code class="descclassname">rmgpy.molecule.generator.</code><code class="descname">create_P_layer</code><a class="headerlink" href="#rmgpy.molecule.generator.create_P_layer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a string with the positions of the atoms that bear an unexpected number of lone pairs. The string
+can be used to complement the InChI with an additional layer that allows for the differentiation
+between structures with lone pairs.</p>
+<p>The string is composed of a prefix (‘P_LAYER_PREFIX’) followed by the positions of each of the atoms with an
+unexpected number of lone pairs, sorted in numerical order.</p>
+<p>Example:
+- singlet methylene biradical ([CH2]) : ‘P_LAYER_PREFIX‘1</p>
+<p>When the molecule does not bear any atoms with an unexpected number of lone pairs,
+None is returned.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.generator.create_U_layer">
+<code class="descclassname">rmgpy.molecule.generator.</code><code class="descname">create_U_layer</code><a class="headerlink" href="#rmgpy.molecule.generator.create_U_layer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a string with the positions of the atoms that bear unpaired electrons. The string
+can be used to complement the InChI with an additional layer that allows for the differentiation
+between structures with multiple unpaired electrons.</p>
+<p>The string is composed of a prefix (‘u’) followed by the positions of each of the unpaired electrons,
+sorted in numerical order.</p>
+<p>Example:
+- methyl radical ([CH3]) : u1
+- triplet methylene biradical ([CH2]) : u1,1
+- ethane-1,2-diyl biradical ([CH2][CH2]): u1,2</p>
+<p>When the molecule does not bear any unpaired electrons, None is returned.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.generator.create_augmented_layers">
+<code class="descclassname">rmgpy.molecule.generator.</code><code class="descname">create_augmented_layers</code><a class="headerlink" href="#rmgpy.molecule.generator.create_augmented_layers" title="Permalink to this definition">¶</a></dt>
+<dd><p>The indices in the string refer to the atom indices in the molecule, according to the atom order
+obtained by sorting the atoms using the InChI canonicalization algorithm.</p>
+<p>First a deep copy is created of the original molecule and hydrogen atoms are removed from the molecule.
+Next, the molecule is converted into an InChI string, and the auxiliary information of the inchification
+procedure is retrieved.</p>
+<p>The N-layer is parsed and used to sort the atoms of the original order according
+to the order in the InChI. In case, the molecule contains atoms that cannot be distinguished
+with the InChI algorithm (‘equivalent atoms’), the position of the unpaired electrons is changed
+as to ensure the atoms with the lowest indices are used to compose the string.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.generator.debugRDKitMol">
+<code class="descclassname">rmgpy.molecule.generator.</code><code class="descname">debugRDKitMol</code><a class="headerlink" href="#rmgpy.molecule.generator.debugRDKitMol" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes an rdkit molecule object and logs some debugging information
+equivalent to calling rdmol.Debug() but uses our logging framework.
+Default logging level is INFO but can be controlled with the <cite>level</cite> parameter.
+Also returns the message as a string, should you want it for something.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.generator.find_lowest_p_layer">
+<code class="descclassname">rmgpy.molecule.generator.</code><code class="descname">find_lowest_p_layer</code><a class="headerlink" href="#rmgpy.molecule.generator.find_lowest_p_layer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Permute the equivalent atoms and return the combination with the
+lowest p-layer.</p>
+<p>TODO: The presence of unpaired electrons complicates stuff.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.generator.find_lowest_u_layer">
+<code class="descclassname">rmgpy.molecule.generator.</code><code class="descname">find_lowest_u_layer</code><a class="headerlink" href="#rmgpy.molecule.generator.find_lowest_u_layer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Searches for the “minimum” combination of indices of atoms that bear unpaired electrons.</p>
+<p>It does so by using the information on equivalent atoms to permute equivalent atoms to
+obtain a combination of atoms that is the (numerically) lowest possible combination.</p>
+<p>Each possible combination is valid if and only if the distances between the atoms of the
+combination is identical to the distances between the original combination.</p>
+<p>First, the algorithm partitions equivalent atoms that bear an unpaired electron.
+Next, the combinations are generated, and for each combination it is verified whether
+it pertains to a “valid” combination.</p>
+<p>Returns a list of indices corresponding to the lowest combination of atom indices bearing
+unpaired electrons.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.generator.generate_minimum_resonance_isomer">
+<code class="descclassname">rmgpy.molecule.generator.</code><code class="descname">generate_minimum_resonance_isomer</code><a class="headerlink" href="#rmgpy.molecule.generator.generate_minimum_resonance_isomer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Select the resonance isomer that is isomorphic to the parameter isomer, with the lowest unpaired
+electrons descriptor, unless this unnecessarily forms a charged molecule.</p>
+<p>First, we generate all isomorphic resonance isomers.
+Next, we return the candidate with the lowest unpaired electrons metric.</p>
+<p>The metric is a sorted list with indices of the atoms that bear an unpaired electron</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.generator.get_unpaired_electrons">
+<code class="descclassname">rmgpy.molecule.generator.</code><code class="descname">get_unpaired_electrons</code><a class="headerlink" href="#rmgpy.molecule.generator.get_unpaired_electrons" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a sorted list of the indices of the atoms that bear one or more
+unpaired electrons.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.generator.has_unexpected_lone_pairs">
+<code class="descclassname">rmgpy.molecule.generator.</code><code class="descname">has_unexpected_lone_pairs</code><a class="headerlink" href="#rmgpy.molecule.generator.has_unexpected_lone_pairs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterates over the atoms of the Molecule and returns whether
+at least one atom bears an unexpected number of lone pairs.</p>
+<p>E.g.
+carbon with &gt; 0 lone pairs
+nitrogen with &gt; 1 lone pairs
+oxygen with &gt; 2 lone pairs</p>
+<p>The expected number of lone pairs of an element is equal to</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.generator.is_valid_combo">
+<code class="descclassname">rmgpy.molecule.generator.</code><code class="descname">is_valid_combo</code><a class="headerlink" href="#rmgpy.molecule.generator.is_valid_combo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the combination of atom indices refers to
+atoms that are adjacent in the molecule.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.generator.toAugmentedInChI">
+<code class="descclassname">rmgpy.molecule.generator.</code><code class="descname">toAugmentedInChI</code><a class="headerlink" href="#rmgpy.molecule.generator.toAugmentedInChI" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function generates the augmented InChI canonical identifier, and that allows for the differentiation
+between structures with spin states and multiple unpaired electrons.</p>
+<p>Two additional layers are added to the InChI:
+- unpaired electrons layer: the position of the unpaired electrons in the molecule</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.generator.toAugmentedInChIKey">
+<code class="descclassname">rmgpy.molecule.generator.</code><code class="descname">toAugmentedInChIKey</code><a class="headerlink" href="#rmgpy.molecule.generator.toAugmentedInChIKey" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds additional layers to the InChIKey,
+generating the “augmented” InChIKey.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.generator.toInChI">
+<code class="descclassname">rmgpy.molecule.generator.</code><code class="descname">toInChI</code><a class="headerlink" href="#rmgpy.molecule.generator.toInChI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a molecular structure to an InChI string. Uses
+<a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
+Perceives aromaticity.</p>
+<p>or</p>
+<p>Convert a molecular structure to an InChI string. Uses
+<a class="reference external" href="http://openbabel.org/">OpenBabel</a> to perform the conversion.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.generator.toInChIKey">
+<code class="descclassname">rmgpy.molecule.generator.</code><code class="descname">toInChIKey</code><a class="headerlink" href="#rmgpy.molecule.generator.toInChIKey" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a molecular structure to an InChI Key string. Uses
+<a class="reference external" href="http://openbabel.org/">OpenBabel</a> to perform the conversion.</p>
+<p>or</p>
+<p>Convert a molecular structure to an InChI Key string. Uses
+<a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.</p>
+<p>Removes check-sum dash (-) and character so that only
+the 14 + 9 characters remain.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.generator.toOBMol">
+<code class="descclassname">rmgpy.molecule.generator.</code><code class="descname">toOBMol</code><a class="headerlink" href="#rmgpy.molecule.generator.toOBMol" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a molecular structure to an OpenBabel OBMol object. Uses
+<a class="reference external" href="http://openbabel.org/">OpenBabel</a> to perform the conversion.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.generator.toRDKitMol">
+<code class="descclassname">rmgpy.molecule.generator.</code><code class="descname">toRDKitMol</code><a class="headerlink" href="#rmgpy.molecule.generator.toRDKitMol" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a molecular structure to a RDKit rdmol object. Uses
+<a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
+Perceives aromaticity and, unless removeHs==False, removes Hydrogen atoms.</p>
+<p>If returnMapping==True then it also returns a dictionary mapping the
+atoms to RDKit’s atom indices.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.generator.toSMARTS">
+<code class="descclassname">rmgpy.molecule.generator.</code><code class="descname">toSMARTS</code><a class="headerlink" href="#rmgpy.molecule.generator.toSMARTS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a molecular structure to an SMARTS string. Uses
+<a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
+Perceives aromaticity and removes Hydrogen atoms.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.generator.toSMILES">
+<code class="descclassname">rmgpy.molecule.generator.</code><code class="descname">toSMILES</code><a class="headerlink" href="#rmgpy.molecule.generator.toSMILES" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a molecular structure to an SMILES string.</p>
+<p>If there is a Nitrogen atom present it uses
+<a class="reference external" href="http://openbabel.org/">OpenBabel</a> to perform the conversion,
+and the SMILES may or may not be canonical.</p>
+<p>Otherwise, it uses <a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the
+conversion, so it will be canonical SMILES.
+While converting to an RDMolecule it will perceive aromaticity
+and removes Hydrogen atoms.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+  <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    <div class="sphinxsidebarwrapper">
+        <div class="sidebarlogo"><a href="../../index.html">
+            <img src="../../_static/rmg-logo-small.png" alt="RMG" />
+        </a></div>
+      <div id="sidebar">
+        <div id="rmgsidebar">
+          <a href="http://rmg.mit.edu">
+            <div class="menuitem">
+              <img src="../../_static/rmg-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG Website</div>
+              <div class="menutext menudesc">Interactive website for RMG-Py</div>
+            </div>
+          </a>
+          <a href="https://github.com/ReactionMechanismGenerator/RMG-Py">
+            <div class="menuitem">
+              <img src="../../_static/github-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG GitHub</div>
+              <div class="menutext menudesc">View source and post issues</div>
+            </div>
+          </a>
+        </div>
+        <div class="menuitem">
+        </div>
+        <div class="menuitem">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pathfinder.html"
+                        title="previous chapter">rmgpy.molecule.pathfinder</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="parser.html"
+                        title="next chapter">rmgpy.molecule.parser</a></p>
+        </div>
+        <div class="menuitem">
+<div role="note" aria-label="source link">
+    <h3>This Page</h3>
+        <ul class="this-page-menu">
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/molecule/generator.rst"
+                   rel="nofollow">View Source</a></li>
+        </ul>
+</div>
+        </div>
+        <div class="menuitem">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+    </div>
+  </div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="parser.html" title="rmgpy.molecule.parser"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pathfinder.html" title="rmgpy.molecule.pathfinder"
+             >previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+    </div>
+  </body>
+</html>

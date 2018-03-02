@@ -1,0 +1,407 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>RMG Exceptions (rmgpy.exceptions) &#8212; RMG-Py 2.1.0 Documentation</title>
+    <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="rmgpy.thermo.NASAPolynomial" href="thermo/nasapolynomial.html" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+  MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+    ce: ["Extension","mhchem"],
+  });
+});
+</script>
+
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="thermo/nasapolynomial.html" title="rmgpy.thermo.NASAPolynomial"
+             accesskey="P">previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../index.html">2.1.0 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">RMG API Reference</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-rmgpy.exceptions">
+<span id="rmg-exceptions-rmgpy-exceptions"></span><h1>RMG Exceptions (<a class="reference internal" href="#module-rmgpy.exceptions" title="rmgpy.exceptions"><code class="xref py py-mod docutils literal"><span class="pre">rmgpy.exceptions</span></code></a>)<a class="headerlink" href="#module-rmgpy.exceptions" title="Permalink to this headline">¶</a></h1>
+<p>This module contains classes which extend Exception for usage in the RMG module</p>
+<dl class="exception">
+<dt id="rmgpy.exceptions.ActionError">
+<em class="property">exception </em><code class="descclassname">rmgpy.exceptions.</code><code class="descname">ActionError</code><a class="headerlink" href="#rmgpy.exceptions.ActionError" title="Permalink to this definition">¶</a></dt>
+<dd><p>An exception class for errors that occur while applying reaction recipe
+actions. Pass a string describing the circumstances that caused the
+exceptional behavior.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="rmgpy.exceptions.AtomTypeError">
+<em class="property">exception </em><code class="descclassname">rmgpy.exceptions.</code><code class="descname">AtomTypeError</code><a class="headerlink" href="#rmgpy.exceptions.AtomTypeError" title="Permalink to this definition">¶</a></dt>
+<dd><p>An exception to be raised when an error occurs while working with atom
+types. Pass a string describing the circumstances that caused the
+exceptional behavior.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="rmgpy.exceptions.ChemicallySignificantEigenvaluesError">
+<em class="property">exception </em><code class="descclassname">rmgpy.exceptions.</code><code class="descname">ChemicallySignificantEigenvaluesError</code><a class="headerlink" href="#rmgpy.exceptions.ChemicallySignificantEigenvaluesError" title="Permalink to this definition">¶</a></dt>
+<dd><p>An exception raised when the chemically significant eigenvalue method is
+unsuccessful for any reason.
+Pass a string describing the cause of the exceptional behavior.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="rmgpy.exceptions.ChemkinError">
+<em class="property">exception </em><code class="descclassname">rmgpy.exceptions.</code><code class="descname">ChemkinError</code><a class="headerlink" href="#rmgpy.exceptions.ChemkinError" title="Permalink to this definition">¶</a></dt>
+<dd><p>An exception class for exceptional behavior involving Chemkin files. Pass a
+string describing the circumstances that caused the exceptional behavior.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="rmgpy.exceptions.CollisionError">
+<em class="property">exception </em><code class="descclassname">rmgpy.exceptions.</code><code class="descname">CollisionError</code><a class="headerlink" href="#rmgpy.exceptions.CollisionError" title="Permalink to this definition">¶</a></dt>
+<dd><p>An exception class for when RMG is unable to calculate collision efficiencies
+for the single exponential down pressure dependent solver.
+Pass a string describing the circumstances that caused the exceptional behavior.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="rmgpy.exceptions.DatabaseError">
+<em class="property">exception </em><code class="descclassname">rmgpy.exceptions.</code><code class="descname">DatabaseError</code><a class="headerlink" href="#rmgpy.exceptions.DatabaseError" title="Permalink to this definition">¶</a></dt>
+<dd><p>A exception that occurs when working with an RMG database. Pass a string
+giving specifics about the exceptional behavior.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="rmgpy.exceptions.DependencyError">
+<em class="property">exception </em><code class="descclassname">rmgpy.exceptions.</code><code class="descname">DependencyError</code><a class="headerlink" href="#rmgpy.exceptions.DependencyError" title="Permalink to this definition">¶</a></dt>
+<dd><p>An exception that occurs when an error is encountered with a dependency.
+Pass a string describing the circumstances that caused the exception.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="rmgpy.exceptions.ElementError">
+<em class="property">exception </em><code class="descclassname">rmgpy.exceptions.</code><code class="descname">ElementError</code><a class="headerlink" href="#rmgpy.exceptions.ElementError" title="Permalink to this definition">¶</a></dt>
+<dd><p>An exception class for errors that occur while working with elements.
+Pass a string describing the circumstances that caused the
+exceptional behavior.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="rmgpy.exceptions.ForbiddenStructureException">
+<em class="property">exception </em><code class="descclassname">rmgpy.exceptions.</code><code class="descname">ForbiddenStructureException</code><a class="headerlink" href="#rmgpy.exceptions.ForbiddenStructureException" title="Permalink to this definition">¶</a></dt>
+<dd><p>An exception passed when RMG encounters a forbidden structure. These are usually
+caught and the reaction that created it is ignored.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="rmgpy.exceptions.ILPSolutionError">
+<em class="property">exception </em><code class="descclassname">rmgpy.exceptions.</code><code class="descname">ILPSolutionError</code><a class="headerlink" href="#rmgpy.exceptions.ILPSolutionError" title="Permalink to this definition">¶</a></dt>
+<dd><p>An exception to be raised when solving an integer linear programming problem if a solution
+could not be found or the solution is not valid. Can pass a string to indicate the reason
+that the solution is invalid.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="rmgpy.exceptions.ImplicitBenzeneError">
+<em class="property">exception </em><code class="descclassname">rmgpy.exceptions.</code><code class="descname">ImplicitBenzeneError</code><a class="headerlink" href="#rmgpy.exceptions.ImplicitBenzeneError" title="Permalink to this definition">¶</a></dt>
+<dd><p>An exception class when encountering a group with too many implicit benzene
+atoms. These groups are hard to create sample molecules and hard for users
+to interpret. Pass a string describing the limitation.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="rmgpy.exceptions.InchiException">
+<em class="property">exception </em><code class="descclassname">rmgpy.exceptions.</code><code class="descname">InchiException</code><a class="headerlink" href="#rmgpy.exceptions.InchiException" title="Permalink to this definition">¶</a></dt>
+<dd><p>An exception used when encountering a non-valid Inchi expression are encountered.
+Pass a string describing the error.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="rmgpy.exceptions.InputError">
+<em class="property">exception </em><code class="descclassname">rmgpy.exceptions.</code><code class="descname">InputError</code><a class="headerlink" href="#rmgpy.exceptions.InputError" title="Permalink to this definition">¶</a></dt>
+<dd><p>An exception raised when parsing an input file for any module in RMG:
+mechanism generation, cantherm, conformer creation, etc.
+Pass a string describing the error.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="rmgpy.exceptions.InvalidActionError">
+<em class="property">exception </em><code class="descclassname">rmgpy.exceptions.</code><code class="descname">InvalidActionError</code><a class="headerlink" href="#rmgpy.exceptions.InvalidActionError" title="Permalink to this definition">¶</a></dt>
+<dd><p>An exception to be raised when an invalid action is encountered in a
+reaction recipe.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="rmgpy.exceptions.InvalidAdjacencyListError">
+<em class="property">exception </em><code class="descclassname">rmgpy.exceptions.</code><code class="descname">InvalidAdjacencyListError</code><a class="headerlink" href="#rmgpy.exceptions.InvalidAdjacencyListError" title="Permalink to this definition">¶</a></dt>
+<dd><p>An exception used to indicate that an RMG-style adjacency list is invalid.
+Pass a string describing the reason the adjacency list is invalid</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="rmgpy.exceptions.InvalidMicrocanonicalRateError">
+<em class="property">exception </em><code class="descclassname">rmgpy.exceptions.</code><code class="descname">InvalidMicrocanonicalRateError</code><span class="sig-paren">(</span><em>message</em>, <em>k_ratio=1.0</em>, <em>Keq_ratio=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.InvalidMicrocanonicalRateError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Used in pressure dependence when the k(E) calculation does not give
+the correct kf(T) or Kc(T)</p>
+<dl class="method">
+<dt id="rmgpy.exceptions.InvalidMicrocanonicalRateError.badness">
+<code class="descname">badness</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.InvalidMicrocanonicalRateError.badness" title="Permalink to this definition">¶</a></dt>
+<dd><p>How bad is the error?</p>
+<p>Returns the max of the absolute logarithmic errors of kf and Kc</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="rmgpy.exceptions.KekulizationError">
+<em class="property">exception </em><code class="descclassname">rmgpy.exceptions.</code><code class="descname">KekulizationError</code><a class="headerlink" href="#rmgpy.exceptions.KekulizationError" title="Permalink to this definition">¶</a></dt>
+<dd><p>An exception to be raised when encountering an error while kekulizing an aromatic molecule.
+Can pass a string to indicate the reason for failure.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="rmgpy.exceptions.KineticsError">
+<em class="property">exception </em><code class="descclassname">rmgpy.exceptions.</code><code class="descname">KineticsError</code><a class="headerlink" href="#rmgpy.exceptions.KineticsError" title="Permalink to this definition">¶</a></dt>
+<dd><p>An exception class for problems with kinetics. This can be used when finding
+degeneracy in reaction generation, modifying KineticsData objects, or finding the
+kinetics of reactions. Unable Pass a string describing the problem.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="rmgpy.exceptions.ModifiedStrongCollisionError">
+<em class="property">exception </em><code class="descclassname">rmgpy.exceptions.</code><code class="descname">ModifiedStrongCollisionError</code><a class="headerlink" href="#rmgpy.exceptions.ModifiedStrongCollisionError" title="Permalink to this definition">¶</a></dt>
+<dd><p>An exception raised when the modified strong collision method is unsuccessful
+for any reason. Pass a string describing the cause of the exceptional
+behavior.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="rmgpy.exceptions.NegativeBarrierException">
+<em class="property">exception </em><code class="descclassname">rmgpy.exceptions.</code><code class="descname">NegativeBarrierException</code><a class="headerlink" href="#rmgpy.exceptions.NegativeBarrierException" title="Permalink to this definition">¶</a></dt>
+<dd><p>This Exception occurs when the energy barrier for a hindered Rotor is negative.
+This can occur if the scan or fourier fit is poor.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="rmgpy.exceptions.NetworkError">
+<em class="property">exception </em><code class="descclassname">rmgpy.exceptions.</code><code class="descname">NetworkError</code><a class="headerlink" href="#rmgpy.exceptions.NetworkError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raised when an error occurs while working with a pressure-dependent reaction network</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="rmgpy.exceptions.OutputError">
+<em class="property">exception </em><code class="descclassname">rmgpy.exceptions.</code><code class="descname">OutputError</code><a class="headerlink" href="#rmgpy.exceptions.OutputError" title="Permalink to this definition">¶</a></dt>
+<dd><p>This exception is raised whenever an error occurs while saving output
+information. Pass a string describing the circumstances of the exceptional
+behavior.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="rmgpy.exceptions.PressureDependenceError">
+<em class="property">exception </em><code class="descclassname">rmgpy.exceptions.</code><code class="descname">PressureDependenceError</code><a class="headerlink" href="#rmgpy.exceptions.PressureDependenceError" title="Permalink to this definition">¶</a></dt>
+<dd><p>An exception class to use when an error involving pressure dependence is
+encountered. Pass a string describing the circumstances of the exceptional
+behavior.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="rmgpy.exceptions.QuantityError">
+<em class="property">exception </em><code class="descclassname">rmgpy.exceptions.</code><code class="descname">QuantityError</code><a class="headerlink" href="#rmgpy.exceptions.QuantityError" title="Permalink to this definition">¶</a></dt>
+<dd><p>An exception to be raised when an error occurs while working with physical
+quantities in RMG. Pass a string describing the circumstances of the
+exceptional behavior.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="rmgpy.exceptions.ReactionError">
+<em class="property">exception </em><code class="descclassname">rmgpy.exceptions.</code><code class="descname">ReactionError</code><a class="headerlink" href="#rmgpy.exceptions.ReactionError" title="Permalink to this definition">¶</a></dt>
+<dd><p>An exception class for exceptional behavior involving <code class="xref py py-class docutils literal"><span class="pre">Reaction</span></code>
+objects. Pass a string describing the circumstances that caused the
+exceptional behavior.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="rmgpy.exceptions.ReactionPairsError">
+<em class="property">exception </em><code class="descclassname">rmgpy.exceptions.</code><code class="descname">ReactionPairsError</code><a class="headerlink" href="#rmgpy.exceptions.ReactionPairsError" title="Permalink to this definition">¶</a></dt>
+<dd><p>An exception to be raised when an error occurs while working with reaction
+pairs.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="rmgpy.exceptions.ReservoirStateError">
+<em class="property">exception </em><code class="descclassname">rmgpy.exceptions.</code><code class="descname">ReservoirStateError</code><a class="headerlink" href="#rmgpy.exceptions.ReservoirStateError" title="Permalink to this definition">¶</a></dt>
+<dd><p>An exception raised when the reservoir state method is unsuccessful for
+any reason. Pass a string describing the cause of the exceptional behavior.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="rmgpy.exceptions.SettingsError">
+<em class="property">exception </em><code class="descclassname">rmgpy.exceptions.</code><code class="descname">SettingsError</code><a class="headerlink" href="#rmgpy.exceptions.SettingsError" title="Permalink to this definition">¶</a></dt>
+<dd><p>An exception raised when dealing with settings.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="rmgpy.exceptions.SpeciesError">
+<em class="property">exception </em><code class="descclassname">rmgpy.exceptions.</code><code class="descname">SpeciesError</code><a class="headerlink" href="#rmgpy.exceptions.SpeciesError" title="Permalink to this definition">¶</a></dt>
+<dd><p>An exception class for exceptional behavior that occurs while working with
+chemical species. Pass a string describing the circumstances that caused the
+exceptional behavior.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="rmgpy.exceptions.StatmechFitError">
+<em class="property">exception </em><code class="descclassname">rmgpy.exceptions.</code><code class="descname">StatmechFitError</code><a class="headerlink" href="#rmgpy.exceptions.StatmechFitError" title="Permalink to this definition">¶</a></dt>
+<dd><p>An exception used when attempting to fit molecular degrees of freedom to
+heat capacity data. Pass a string describing the circumstances of the
+exceptional behavior.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="rmgpy.exceptions.UndeterminableKineticsError">
+<em class="property">exception </em><code class="descclassname">rmgpy.exceptions.</code><code class="descname">UndeterminableKineticsError</code><span class="sig-paren">(</span><em>reaction</em>, <em>message=''</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.UndeterminableKineticsError" title="Permalink to this definition">¶</a></dt>
+<dd><p>An exception raised when attempts to estimate appropriate kinetic parameters
+for a chemical reaction are unsuccessful.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="rmgpy.exceptions.UnexpectedChargeError">
+<em class="property">exception </em><code class="descclassname">rmgpy.exceptions.</code><code class="descname">UnexpectedChargeError</code><span class="sig-paren">(</span><em>graph</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.exceptions.UnexpectedChargeError" title="Permalink to this definition">¶</a></dt>
+<dd><p>An exception class when encountering a group/molecule with unexpected charge
+Curently in RMG, we never expect to see -2/+2 or greater magnitude charge,
+we only except +1/-1 charges on nitrogen, oxygen, sulfur or specifically
+carbon monoxide/monosulfide.</p>
+<p>Attributes:
+<cite>graph</cite> is the molecule or group object with the unexpected charge</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="rmgpy.exceptions.VF2Error">
+<em class="property">exception </em><code class="descclassname">rmgpy.exceptions.</code><code class="descname">VF2Error</code><a class="headerlink" href="#rmgpy.exceptions.VF2Error" title="Permalink to this definition">¶</a></dt>
+<dd><p>An exception raised if an error occurs within the VF2 graph isomorphism
+algorithm. Pass a string describing the error.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+  <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    <div class="sphinxsidebarwrapper">
+        <div class="sidebarlogo"><a href="../index.html">
+            <img src="../_static/rmg-logo-small.png" alt="RMG" />
+        </a></div>
+      <div id="sidebar">
+        <div id="rmgsidebar">
+          <a href="http://rmg.mit.edu">
+            <div class="menuitem">
+              <img src="../_static/rmg-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG Website</div>
+              <div class="menutext menudesc">Interactive website for RMG-Py</div>
+            </div>
+          </a>
+          <a href="https://github.com/ReactionMechanismGenerator/RMG-Py">
+            <div class="menuitem">
+              <img src="../_static/github-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG GitHub</div>
+              <div class="menutext menudesc">View source and post issues</div>
+            </div>
+          </a>
+        </div>
+        <div class="menuitem">
+        </div>
+        <div class="menuitem">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="thermo/nasapolynomial.html"
+                        title="previous chapter">rmgpy.thermo.NASAPolynomial</a></p>
+        </div>
+        <div class="menuitem">
+<div role="note" aria-label="source link">
+    <h3>This Page</h3>
+        <ul class="this-page-menu">
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/exceptions.rst"
+                   rel="nofollow">View Source</a></li>
+        </ul>
+</div>
+        </div>
+        <div class="menuitem">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+    </div>
+  </div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="thermo/nasapolynomial.html" title="rmgpy.thermo.NASAPolynomial"
+             >previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../index.html">2.1.0 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="index.html" >RMG API Reference</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+    </div>
+  </body>
+</html>

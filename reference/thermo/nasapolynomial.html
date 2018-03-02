@@ -5,8 +5,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>rmgpy.thermo.NASAPolynomial &#8212; RMG Py 2.1.0 documentation</title>
-    <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
+    <title>rmgpy.thermo.NASAPolynomial &#8212; RMG-Py 2.1.0 Documentation</title>
+    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -24,6 +24,7 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="RMG Exceptions (rmgpy.exceptions)" href="../exceptions.html" />
     <link rel="prev" title="rmgpy.thermo.NASA" href="nasa.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
@@ -35,15 +36,6 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 
   </head>
   <body>
-<div class="header">
-&nbsp;
-</div>  
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body">
-            
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -54,21 +46,30 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
+          <a href="../exceptions.html" title="RMG Exceptions (rmgpy.exceptions)"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
           <a href="nasa.html" title="rmgpy.thermo.NASA"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 2.1.0</a> &raquo;</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Thermodynamics (<code class="docutils literal"><span class="pre">rmgpy.thermo</span></code>)</a> &#187;</li> 
       </ul>
-    </div>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
             
   <div class="section" id="rmgpy-thermo-nasapolynomial">
 <h1>rmgpy.thermo.NASAPolynomial<a class="headerlink" href="#rmgpy-thermo-nasapolynomial" title="Permalink to this headline">¶</a></h1>
 <span class="target" id="thermonasapolynomial"></span><dl class="class">
 <dt id="rmgpy.thermo.NASAPolynomial">
 <em class="property">class </em><code class="descclassname">rmgpy.thermo.</code><code class="descname">NASAPolynomial</code><span class="sig-paren">(</span><em>coeffs=None</em>, <em>Tmin=None</em>, <em>Tmax=None</em>, <em>E0=None</em>, <em>label=''</em>, <em>comment=''</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial" title="Permalink to this definition">¶</a></dt>
-<dd><p>A heat capacity model based on the NASA polynomial. Both the 
+<dd><p>A heat capacity model based on the NASA polynomial. Both the
 seven-coefficient and nine-coefficient variations are supported.
 The attributes are:</p>
 <table border="1" class="docutils">
@@ -148,43 +149,43 @@ temperature range; the <a class="reference internal" href="nasa.html#rmgpy.therm
 <dl class="attribute">
 <dt id="rmgpy.thermo.NASAPolynomial.c0">
 <code class="descname">c0</code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.c0" title="Permalink to this definition">¶</a></dt>
-<dd><p>c0: ‘double’</p>
+<dd><p><em>c0</em> – ‘double’</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.thermo.NASAPolynomial.c1">
 <code class="descname">c1</code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.c1" title="Permalink to this definition">¶</a></dt>
-<dd><p>c1: ‘double’</p>
+<dd><p><em>c1</em> – ‘double’</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.thermo.NASAPolynomial.c2">
 <code class="descname">c2</code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.c2" title="Permalink to this definition">¶</a></dt>
-<dd><p>c2: ‘double’</p>
+<dd><p><em>c2</em> – ‘double’</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.thermo.NASAPolynomial.c3">
 <code class="descname">c3</code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.c3" title="Permalink to this definition">¶</a></dt>
-<dd><p>c3: ‘double’</p>
+<dd><p><em>c3</em> – ‘double’</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.thermo.NASAPolynomial.c4">
 <code class="descname">c4</code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.c4" title="Permalink to this definition">¶</a></dt>
-<dd><p>c4: ‘double’</p>
+<dd><p><em>c4</em> – ‘double’</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.thermo.NASAPolynomial.c5">
 <code class="descname">c5</code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.c5" title="Permalink to this definition">¶</a></dt>
-<dd><p>c5: ‘double’</p>
+<dd><p><em>c5</em> – ‘double’</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.thermo.NASAPolynomial.c6">
 <code class="descname">c6</code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.c6" title="Permalink to this definition">¶</a></dt>
-<dd><p>c6: ‘double’</p>
+<dd><p><em>c6</em> – ‘double’</p>
 </dd></dl>
 
 <dl class="method">
@@ -193,16 +194,22 @@ temperature range; the <a class="reference internal" href="nasa.html#rmgpy.therm
 <dd><p>Add deltaH in J/mol to the base enthalpy of formation H298.</p>
 </dd></dl>
 
+<dl class="method">
+<dt id="rmgpy.thermo.NASAPolynomial.changeBaseEntropy">
+<code class="descname">changeBaseEntropy</code><span class="sig-paren">(</span><em>self</em>, <em>double deltaS</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.changeBaseEntropy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add deltaS in J/molK to the base entropy of formation S298.</p>
+</dd></dl>
+
 <dl class="attribute">
 <dt id="rmgpy.thermo.NASAPolynomial.cm1">
 <code class="descname">cm1</code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.cm1" title="Permalink to this definition">¶</a></dt>
-<dd><p>cm1: ‘double’</p>
+<dd><p><em>cm1</em> – ‘double’</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.thermo.NASAPolynomial.cm2">
 <code class="descname">cm2</code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.cm2" title="Permalink to this definition">¶</a></dt>
-<dd><p>cm2: ‘double’</p>
+<dd><p><em>cm2</em> – ‘double’</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -214,7 +221,7 @@ temperature range; the <a class="reference internal" href="nasa.html#rmgpy.therm
 <dl class="attribute">
 <dt id="rmgpy.thermo.NASAPolynomial.comment">
 <code class="descname">comment</code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.comment" title="Permalink to this definition">¶</a></dt>
-<dd><p>comment: str</p>
+<dd><p><em>comment</em> – str</p>
 </dd></dl>
 
 <dl class="method">
@@ -247,7 +254,7 @@ in K.</p>
 <dl class="method">
 <dt id="rmgpy.thermo.NASAPolynomial.getHeatCapacity">
 <code class="descname">getHeatCapacity</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.getHeatCapacity" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the constant-pressure heat capacity in J/mol*K at the specified 
+<dd><p>Return the constant-pressure heat capacity in J/mol*K at the specified
 temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
@@ -272,14 +279,14 @@ range of temperatures, or <code class="docutils literal"><span class="pre">False
 <code class="descname">isTemperatureValid</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.isTemperatureValid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the temperature <cite>T</cite> in K is within the valid
 temperature range of the thermodynamic data, or <code class="docutils literal"><span class="pre">False</span></code> if not. If
-the minimum and maximum temperature are not defined, <code class="docutils literal"><span class="pre">True</span></code> is 
+the minimum and maximum temperature are not defined, <code class="docutils literal"><span class="pre">True</span></code> is
 returned.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.thermo.NASAPolynomial.label">
 <code class="descname">label</code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.label" title="Permalink to this definition">¶</a></dt>
-<dd><p>label: str</p>
+<dd><p><em>label</em> – str</p>
 </dd></dl>
 
 </dd></dl>
@@ -290,11 +297,49 @@ returned.</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<div class="sidebarlogo">
-<a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
+  <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    <div class="sphinxsidebarwrapper">
+        <div class="sidebarlogo"><a href="../../index.html">
+            <img src="../../_static/rmg-logo-small.png" alt="RMG" />
+        </a></div>
+      <div id="sidebar">
+        <div id="rmgsidebar">
+          <a href="http://rmg.mit.edu">
+            <div class="menuitem">
+              <img src="../../_static/rmg-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG Website</div>
+              <div class="menutext menudesc">Interactive website for RMG-Py</div>
+            </div>
+          </a>
+          <a href="https://github.com/ReactionMechanismGenerator/RMG-Py">
+            <div class="menuitem">
+              <img src="../../_static/github-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG GitHub</div>
+              <div class="menutext menudesc">View source and post issues</div>
+            </div>
+          </a>
+        </div>
+        <div class="menuitem">
+        </div>
+        <div class="menuitem">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="nasa.html"
+                        title="previous chapter">rmgpy.thermo.NASA</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../exceptions.html"
+                        title="next chapter">RMG Exceptions (<code class="docutils literal"><span class="pre">rmgpy.exceptions</span></code>)</a></p>
+        </div>
+        <div class="menuitem">
+<div role="note" aria-label="source link">
+    <h3>This Page</h3>
+        <ul class="this-page-menu">
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/thermo/nasapolynomial.rst"
+                   rel="nofollow">View Source</a></li>
+        </ul>
 </div>
+        </div>
+        <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
@@ -305,88 +350,38 @@ returned.</p>
     </form>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
-
-<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/thermo/nasapolynomial.rst"
-           rel="nofollow">Edit this page</a></h4><P>
-<div class="customsidebar">
-<P>
-<table cellpadding="3">
-
-<tr><td>
-        <a href="http://reactionmechanismgenerator.github.io/RMG-Py"><img src="../../_static/documentation-icon.png" class="icon_sidebar" width="32px" alt="Documentation"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://reactionmechanismgenerator.github.io/RMG-Py">Documentation</a></div>
-        <div class="linkdesc">Learn more about the RMG software</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/database/"><img src="../../_static/database-logo-small.png" class="icon_sidebar" width="32px" alt="Database"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
-        <div class="linkdesc">Browse the RMG database of chemical and kinetic parameters</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/input">Create Input File</a></div>
-        <div class="linkdesc">Online form for making an RMG input file</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/molecule_search"><img src="../../_static/moleculedraw-logo-small.png" class="icon_sidebar" width="32px" alt="Molecule Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
-        <div class="linkdesc">Draw a molecule from its adjlist and search or estimate its properties</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/database/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/kinetics/search/">Kinetics Search</a></div>
-        <div class="linkdesc">Search or estimate kinetics of a chemical reaction</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/solvation_search"><img src="../../_static/solvation-search-logo-small.png" class="icon_sidebar" width="32px" alt="Solvation Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
-        <div class="linkdesc">Search or estimate solvation properties of solvent and a solute</div>
-</td></tr>
-
-
-<tr><td>
-        <a href="http://rmg.mit.edu/pdep/"><img src="../../_static/pdep-logo-small.png" class="icon_sidebar" width="32px" alt="Pressure Dependent Networks"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
-        <div class="linkdesc">CanTherm pdep kinetic calculations</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/tools/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/tools/">Other RMG Tools</a></div>
-        <div class="linkdesc">Additional tools to supplement RMG</div>
-</td></tr>
-
-</table>
-
-</div>
         </div>
       </div>
+    </div>
+  </div>
+
       <div class="clearer"></div>
     </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../exceptions.html" title="RMG Exceptions (rmgpy.exceptions)"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nasa.html" title="rmgpy.thermo.NASA"
+             >previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >Thermodynamics (<code class="docutils literal"><span class="pre">rmgpy.thermo</span></code>)</a> &#187;</li> 
+      </ul>
+    </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+        &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

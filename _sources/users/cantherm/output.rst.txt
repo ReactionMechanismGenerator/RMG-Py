@@ -57,3 +57,11 @@ something unexpected has occurred.
 
 The ``examples/cantherm`` directory contains both CanTherm input files and the resulting
 output files.
+
+Species Dictionary
+==================
+
+Any species that had the ``thermo()`` method called and had the structure defined in the cantherm
+input file will also have an RMG style adjacency list representation in ``species_dictionary.txt``.
+This allows the user to input the corresponding thermo and kinetics into RMG in various ways
+described in the RMG user guide.

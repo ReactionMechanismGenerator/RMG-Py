@@ -5,8 +5,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>rmgpy.molecule.AtomType &#8212; RMG Py 2.1.0 documentation</title>
-    <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
+    <title>rmgpy.molecule.AtomType &#8212; RMG-Py 2.1.0 Documentation</title>
+    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -36,15 +36,6 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 
   </head>
   <body>
-<div class="header">
-&nbsp;
-</div>  
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body">
-            
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -60,91 +51,167 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="element.html" title="rmgpy.molecule.Element"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 2.1.0</a> &raquo;</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
       </ul>
-    </div>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
             
   <div class="section" id="rmgpy-molecule-atomtype">
 <h1>rmgpy.molecule.AtomType<a class="headerlink" href="#rmgpy-molecule-atomtype" title="Permalink to this headline">¶</a></h1>
 <span class="target" id="atom-types"></span><dl class="class">
 <dt id="rmgpy.molecule.AtomType">
-<em class="property">class </em><code class="descclassname">rmgpy.molecule.</code><code class="descname">AtomType</code><span class="sig-paren">(</span><em>label=''</em>, <em>generic=None</em>, <em>specific=None</em>, <em>single=None</em>, <em>allDouble=None</em>, <em>rDouble=None</em>, <em>oDouble=None</em>, <em>sDouble=None</em>, <em>triple=None</em>, <em>benzene=None</em>, <em>lonePairs=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.AtomType" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.molecule.</code><code class="descname">AtomType</code><span class="sig-paren">(</span><em>label=''</em>, <em>generic=None</em>, <em>specific=None</em>, <em>single=None</em>, <em>allDouble=None</em>, <em>rDouble=None</em>, <em>oDouble=None</em>, <em>sDouble=None</em>, <em>triple=None</em>, <em>benzene=None</em>, <em>lonePairs=None</em>, <em>charge=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.AtomType" title="Permalink to this definition">¶</a></dt>
 <dd><p>A class for internal representation of atom types. Using unique objects
 rather than strings allows us to use fast pointer comparisons instead of
 slow string comparisons, as well as store extra metadata. In particular,
 we store metadata describing the atom type’s hierarchy with regard to other
 atom types, and the atom types that can result when various actions
 involving this atom type are taken. The attributes are:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">docstring of rmgpy.molecule.AtomType</tt>, line 23)</p>
-<p>Malformed table.
-Text in column margin in table line 16.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>=================== =================== ====================================
-Attribute           Type                Description
-=================== =================== ====================================
-`label`             ``str``             A unique label for the atom type
-`generic`           ``list``            The atom types that are more generic than this one
-`specific`          ``list``            The atom types that are more specific than this one
-`incrementBond`     ``list``            The atom type(s) that result when an adjacent bond&#39;s order is incremented
-`decrementBond`     ``list``            The atom type(s) that result when an adjacent bond&#39;s order is decremented
-`formBond`          ``list``            The atom type(s) that result when a new single bond is formed to this atom type
-`breakBond`         ``list``            The atom type(s) that result when an existing single bond to this atom type is broken
-`incrementRadical`  ``list``            The atom type(s) that result when the number of radical electrons is incremented
-`decrementRadical`  ``list``            The atom type(s) that result when the number of radical electrons is decremented
-`incrementLonePair` ``list``            The atom type(s) that result when the number of lone electron pairs is incremented
-`decrementLonePair` ``list``            The atom type(s) that result when the number of lone electron pairs is decremented
-
-The following features are what are required in a given atomtype. Any int in the list is acceptable.
-An empty list is a wildcard
-&#39;single&#39;            &#39;&#39;list&#39;&#39;            The total number of single bonds on the atom
-&#39;allDouble&#39;         &#39;&#39;list&#39;&#39;            The total number of double bonds on the atom
-&#39;rDouble&#39;           &#39;&#39;list&#39;&#39;            The number of double bonds to any non-oxygen, nonsulfur
-&#39;oDouble&#39;           &#39;&#39;list&#39;&#39;            The number of double bonds to oxygen
-&#39;sDouble&#39;           &#39;&#39;list&#39;&#39;            The number of double bonds to sulfur
-&#39;triple&#39;            &#39;&#39;list&#39;&#39;            The total number of triple bonds on the atom
-&#39;benzene&#39;           &#39;&#39;list&#39;&#39;            The total number of benzene bonds on the atom
-&#39;lonePairs&#39;         &#39;&#39;list&#39;&#39;            The number of lone pairs on the atom
-=================== =================== ====================================
-</pre></div>
-</div>
-</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="15%" />
+<col width="15%" />
+<col width="70%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>label</cite></td>
+<td><code class="docutils literal"><span class="pre">str</span></code></td>
+<td>A unique label for the atom type</td>
+</tr>
+<tr class="row-odd"><td><cite>generic</cite></td>
+<td><code class="docutils literal"><span class="pre">list</span></code></td>
+<td>The atom types that are more generic than this one</td>
+</tr>
+<tr class="row-even"><td><cite>specific</cite></td>
+<td><code class="docutils literal"><span class="pre">list</span></code></td>
+<td>The atom types that are more specific than this one</td>
+</tr>
+<tr class="row-odd"><td><cite>incrementBond</cite></td>
+<td><code class="docutils literal"><span class="pre">list</span></code></td>
+<td>The atom type(s) that result when an adjacent bond’s order is incremented</td>
+</tr>
+<tr class="row-even"><td><cite>decrementBond</cite></td>
+<td><code class="docutils literal"><span class="pre">list</span></code></td>
+<td>The atom type(s) that result when an adjacent bond’s order is decremented</td>
+</tr>
+<tr class="row-odd"><td><cite>formBond</cite></td>
+<td><code class="docutils literal"><span class="pre">list</span></code></td>
+<td>The atom type(s) that result when a new single bond is formed to this atom type</td>
+</tr>
+<tr class="row-even"><td><cite>breakBond</cite></td>
+<td><code class="docutils literal"><span class="pre">list</span></code></td>
+<td>The atom type(s) that result when an existing single bond to this atom type is broken</td>
+</tr>
+<tr class="row-odd"><td><cite>incrementRadical</cite></td>
+<td><code class="docutils literal"><span class="pre">list</span></code></td>
+<td>The atom type(s) that result when the number of radical electrons is incremented</td>
+</tr>
+<tr class="row-even"><td><cite>decrementRadical</cite></td>
+<td><code class="docutils literal"><span class="pre">list</span></code></td>
+<td>The atom type(s) that result when the number of radical electrons is decremented</td>
+</tr>
+<tr class="row-odd"><td><cite>incrementLonePair</cite></td>
+<td><code class="docutils literal"><span class="pre">list</span></code></td>
+<td>The atom type(s) that result when the number of lone electron pairs is incremented</td>
+</tr>
+<tr class="row-even"><td><cite>decrementLonePair</cite></td>
+<td><code class="docutils literal"><span class="pre">list</span></code></td>
+<td>The atom type(s) that result when the number of lone electron pairs is decremented</td>
+</tr>
+<tr class="row-odd"><td colspan="3">The following features are what are required in a given atomtype. Any int in the list is acceptable. An empty list is a wildcard</td>
+</tr>
+<tr class="row-even"><td>‘single’</td>
+<td>‘’list’‘</td>
+<td>The total number of single bonds on the atom</td>
+</tr>
+<tr class="row-odd"><td>‘allDouble’</td>
+<td>‘’list’‘</td>
+<td>The total number of double bonds on the atom</td>
+</tr>
+<tr class="row-even"><td>‘rDouble’</td>
+<td>‘’list’‘</td>
+<td>The number of double bonds to any non-oxygen, nonsulfur</td>
+</tr>
+<tr class="row-odd"><td>‘oDouble’</td>
+<td>‘’list’‘</td>
+<td>The number of double bonds to oxygen</td>
+</tr>
+<tr class="row-even"><td>‘sDouble’</td>
+<td>‘’list’‘</td>
+<td>The number of double bonds to sulfur</td>
+</tr>
+<tr class="row-odd"><td>‘triple’</td>
+<td>‘’list’‘</td>
+<td>The total number of triple bonds on the atom</td>
+</tr>
+<tr class="row-even"><td>‘benzene’</td>
+<td>‘’list’‘</td>
+<td>The total number of benzene bonds on the atom</td>
+</tr>
+<tr class="row-odd"><td>‘lonePairs’</td>
+<td>‘’list’‘</td>
+<td>The number of lone pairs on the atom</td>
+</tr>
+<tr class="row-even"><td>‘charge’</td>
+<td>‘’list’‘</td>
+<td>The partial charge of the atom</td>
+</tr>
+</tbody>
+</table>
 <dl class="attribute">
 <dt id="rmgpy.molecule.AtomType.allDouble">
 <code class="descname">allDouble</code><a class="headerlink" href="#rmgpy.molecule.AtomType.allDouble" title="Permalink to this definition">¶</a></dt>
-<dd><p>allDouble: list</p>
+<dd><p><em>allDouble</em> – list</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.AtomType.benzene">
 <code class="descname">benzene</code><a class="headerlink" href="#rmgpy.molecule.AtomType.benzene" title="Permalink to this definition">¶</a></dt>
-<dd><p>benzene: list</p>
+<dd><p><em>benzene</em> – list</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.AtomType.breakBond">
 <code class="descname">breakBond</code><a class="headerlink" href="#rmgpy.molecule.AtomType.breakBond" title="Permalink to this definition">¶</a></dt>
-<dd><p>breakBond: list</p>
+<dd><p><em>breakBond</em> – list</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.charge">
+<code class="descname">charge</code><a class="headerlink" href="#rmgpy.molecule.AtomType.charge" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>charge</em> – list</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.AtomType.decrementBond">
 <code class="descname">decrementBond</code><a class="headerlink" href="#rmgpy.molecule.AtomType.decrementBond" title="Permalink to this definition">¶</a></dt>
-<dd><p>decrementBond: list</p>
+<dd><p><em>decrementBond</em> – list</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.AtomType.decrementLonePair">
 <code class="descname">decrementLonePair</code><a class="headerlink" href="#rmgpy.molecule.AtomType.decrementLonePair" title="Permalink to this definition">¶</a></dt>
-<dd><p>decrementLonePair: list</p>
+<dd><p><em>decrementLonePair</em> – list</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.AtomType.decrementRadical">
 <code class="descname">decrementRadical</code><a class="headerlink" href="#rmgpy.molecule.AtomType.decrementRadical" title="Permalink to this definition">¶</a></dt>
-<dd><p>decrementRadical: list</p>
+<dd><p><em>decrementRadical</em> – list</p>
 </dd></dl>
 
 <dl class="method">
@@ -158,13 +225,13 @@ e.g. <code class="docutils literal"><span class="pre">R!H</span></code> is equiv
 <dl class="attribute">
 <dt id="rmgpy.molecule.AtomType.formBond">
 <code class="descname">formBond</code><a class="headerlink" href="#rmgpy.molecule.AtomType.formBond" title="Permalink to this definition">¶</a></dt>
-<dd><p>formBond: list</p>
+<dd><p><em>formBond</em> – list</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.AtomType.generic">
 <code class="descname">generic</code><a class="headerlink" href="#rmgpy.molecule.AtomType.generic" title="Permalink to this definition">¶</a></dt>
-<dd><p>generic: list</p>
+<dd><p><em>generic</em> – list</p>
 </dd></dl>
 
 <dl class="method">
@@ -176,19 +243,19 @@ e.g. <code class="docutils literal"><span class="pre">R!H</span></code> is equiv
 <dl class="attribute">
 <dt id="rmgpy.molecule.AtomType.incrementBond">
 <code class="descname">incrementBond</code><a class="headerlink" href="#rmgpy.molecule.AtomType.incrementBond" title="Permalink to this definition">¶</a></dt>
-<dd><p>incrementBond: list</p>
+<dd><p><em>incrementBond</em> – list</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.AtomType.incrementLonePair">
 <code class="descname">incrementLonePair</code><a class="headerlink" href="#rmgpy.molecule.AtomType.incrementLonePair" title="Permalink to this definition">¶</a></dt>
-<dd><p>incrementLonePair: list</p>
+<dd><p><em>incrementLonePair</em> – list</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.AtomType.incrementRadical">
 <code class="descname">incrementRadical</code><a class="headerlink" href="#rmgpy.molecule.AtomType.incrementRadical" title="Permalink to this definition">¶</a></dt>
-<dd><p>incrementRadical: list</p>
+<dd><p><em>incrementRadical</em> – list</p>
 </dd></dl>
 
 <dl class="method">
@@ -201,31 +268,31 @@ atom type <cite>atomType2</cite> or <code class="docutils literal"><span class="
 <dl class="attribute">
 <dt id="rmgpy.molecule.AtomType.label">
 <code class="descname">label</code><a class="headerlink" href="#rmgpy.molecule.AtomType.label" title="Permalink to this definition">¶</a></dt>
-<dd><p>label: str</p>
+<dd><p><em>label</em> – str</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.AtomType.lonePairs">
 <code class="descname">lonePairs</code><a class="headerlink" href="#rmgpy.molecule.AtomType.lonePairs" title="Permalink to this definition">¶</a></dt>
-<dd><p>lonePairs: list</p>
+<dd><p><em>lonePairs</em> – list</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.AtomType.oDouble">
 <code class="descname">oDouble</code><a class="headerlink" href="#rmgpy.molecule.AtomType.oDouble" title="Permalink to this definition">¶</a></dt>
-<dd><p>oDouble: list</p>
+<dd><p><em>oDouble</em> – list</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.AtomType.rDouble">
 <code class="descname">rDouble</code><a class="headerlink" href="#rmgpy.molecule.AtomType.rDouble" title="Permalink to this definition">¶</a></dt>
-<dd><p>rDouble: list</p>
+<dd><p><em>rDouble</em> – list</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.AtomType.sDouble">
 <code class="descname">sDouble</code><a class="headerlink" href="#rmgpy.molecule.AtomType.sDouble" title="Permalink to this definition">¶</a></dt>
-<dd><p>sDouble: list</p>
+<dd><p><em>sDouble</em> – list</p>
 </dd></dl>
 
 <dl class="method">
@@ -236,19 +303,19 @@ atom type <cite>atomType2</cite> or <code class="docutils literal"><span class="
 <dl class="attribute">
 <dt id="rmgpy.molecule.AtomType.single">
 <code class="descname">single</code><a class="headerlink" href="#rmgpy.molecule.AtomType.single" title="Permalink to this definition">¶</a></dt>
-<dd><p>single: list</p>
+<dd><p><em>single</em> – list</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.AtomType.specific">
 <code class="descname">specific</code><a class="headerlink" href="#rmgpy.molecule.AtomType.specific" title="Permalink to this definition">¶</a></dt>
-<dd><p>specific: list</p>
+<dd><p><em>specific</em> – list</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.AtomType.triple">
 <code class="descname">triple</code><a class="headerlink" href="#rmgpy.molecule.AtomType.triple" title="Permalink to this definition">¶</a></dt>
-<dd><p>triple: list</p>
+<dd><p><em>triple</em> – list</p>
 </dd></dl>
 
 </dd></dl>
@@ -256,7 +323,7 @@ atom type <cite>atomType2</cite> or <code class="docutils literal"><span class="
 <dl class="function">
 <dt id="rmgpy.molecule.getAtomType">
 <code class="descclassname">rmgpy.molecule.</code><code class="descname">getAtomType</code><span class="sig-paren">(</span><em>atom</em>, <em>dict bonds</em><span class="sig-paren">)</span> &#x2192; AtomType<a class="headerlink" href="#rmgpy.molecule.getAtomType" title="Permalink to this definition">¶</a></dt>
-<dd><p>Determine the appropriate atom type for an <code class="xref py py-class docutils literal"><span class="pre">Atom</span></code> object <cite>atom</cite>
+<dd><p>Determine the appropriate atom type for an <a class="reference internal" href="atom.html#rmgpy.molecule.Atom" title="rmgpy.molecule.Atom"><code class="xref py py-class docutils literal"><span class="pre">Atom</span></code></a> object <cite>atom</cite>
 with local bond structure <cite>bonds</cite>, a <code class="docutils literal"><span class="pre">dict</span></code> containing atom-bond pairs.</p>
 </dd></dl>
 
@@ -267,8 +334,8 @@ molecular substructure patterns via an RMG-style adjacency list.</p>
 <p>We define the following basic atom types:</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="19%" />
-<col width="81%" />
+<col width="9%" />
+<col width="91%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Atom type</th>
@@ -284,50 +351,151 @@ molecular substructure patterns via an RMG-style adjacency list.</p>
 <tr class="row-even"><td><code class="docutils literal"><span class="pre">R!H</span></code></td>
 <td>any non-hydrogen atom with any local bond structure</td>
 </tr>
+<tr class="row-odd"><td colspan="2"><em>Hydrogen atom types</em></td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">H</span></code></td>
+<td>hydrogen atom with up to one single bond</td>
+</tr>
 <tr class="row-odd"><td colspan="2"><em>Carbon atom types</em></td>
 </tr>
 <tr class="row-even"><td><code class="docutils literal"><span class="pre">C</span></code></td>
 <td>carbon atom with any local bond structure</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Cs</span></code></td>
-<td>carbon atom with four single bonds</td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Ca</span></code></td>
+<td>carbon atom with two lone pairs and no bonds</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">Cs</span></code></td>
+<td>carbon atom with up to four single bonds</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Csc</span></code></td>
+<td>charged carbon atom with up to three single bonds</td>
 </tr>
 <tr class="row-even"><td><code class="docutils literal"><span class="pre">Cd</span></code></td>
-<td>carbon atom with one double bond (to carbon) and two single bonds</td>
+<td>carbon atom with one double bond (not to O or S) and up to two single bonds</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Cdd</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Cdc</span></code></td>
+<td>charged carbon atom with one double bond and up to one single bond</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">CO</span></code></td>
+<td>carbon atom with one double bond to oxygen and up to two single bonds</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">CS</span></code></td>
+<td>carbon atom with one double bond to sulfur and up to two single bonds</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">Cdd</span></code></td>
 <td>carbon atom with two double bonds</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">Ct</span></code></td>
-<td>carbon atom with one triple bond and one single bond</td>
-</tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">CO</span></code></td>
-<td>carbon atom with one double bond (to oxygen) and two single bonds</td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Ct</span></code></td>
+<td>carbon atom with one triple bond and up to one single bond</td>
 </tr>
 <tr class="row-even"><td><code class="docutils literal"><span class="pre">Cb</span></code></td>
-<td>carbon atom with two benzene bonds and one single bond</td>
+<td>carbon atom with up to two benzene bonds and up to one single bond</td>
 </tr>
 <tr class="row-odd"><td><code class="docutils literal"><span class="pre">Cbf</span></code></td>
 <td>carbon atom with three benzene bonds</td>
 </tr>
-<tr class="row-even"><td colspan="2"><em>Hydrogen atom types</em></td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">C2s</span></code></td>
+<td>carbon atom with one lone pair (valance 2) and up to two single bonds</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">H</span></code></td>
-<td>hydrogen atom with one single bond</td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">C2sc</span></code></td>
+<td>charged carbon atom with one lone pair (valance 2) and up to three single bonds</td>
 </tr>
-<tr class="row-even"><td colspan="2"><em>Oxygen atom types</em></td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">C2d</span></code></td>
+<td>carbon atom with one lone pair (valance 2) and one double bond</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">O</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">C2dc</span></code></td>
+<td>charged carbon atom with one lone pair (valance 2), one double bond and up to one single bond</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">C2tc</span></code></td>
+<td>charged carbon atom with one lone pair (valance 2), one triple bond</td>
+</tr>
+<tr class="row-odd"><td colspan="2"><em>Nitrogen atom types</em></td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">N</span></code></td>
+<td>nitrogen atom with any local bond structure</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">N0sc</span></code></td>
+<td>charged nitrogen atom with three lone pairs (valance 0) with up to one single bond</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">N1s</span></code></td>
+<td>nitrogen atom with two lone pairs (valance 1) and up to one single bond</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">N1sc</span></code></td>
+<td>charged nitrogen atom with two lone pairs (valance 1) up to two single bonds</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">N1dc</span></code></td>
+<td>charged nitrogen atom with two lone pairs (valance 1), one double bond</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">N3s</span></code></td>
+<td>nitrogen atom with one lone pair (valance 3) with up to three single bonds</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">N3d</span></code></td>
+<td>nitrogen atom with one lone pair (valance 3), one double bond and up to one single bond</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">N3t</span></code></td>
+<td>nitrogen atom with one lone pair (valance 3) and one triple bond</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">N3b</span></code></td>
+<td>nitrogen atom with one lone pair (valance 3) and two benzene bonds</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">N5sc</span></code></td>
+<td>charged nitrogen atom with no lone pairs (valance 5) with up to four single bonds</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">N5dc</span></code></td>
+<td>charged nitrogen atom with no lone pairs (valance 5), one double bond and up to two single bonds</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">N5ddc</span></code></td>
+<td>charged nitrogen atom with with no lone pairs (valance 5) and two double bonds</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">N5dddc</span></code></td>
+<td>charged nitrogen atom with with no lone pairs (valance 5) and three double bonds</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">N5t</span></code></td>
+<td>nitrogen atom with with no lone pairs (valance 5), one triple bond and up to two single bonds</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">N5tc</span></code></td>
+<td>charged nitrogen atom with with no lone pairs (valance 5), one triple bond and up to one single bond</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">N5b</span></code></td>
+<td>nitrogen atom with with no lone pairs (valance 5) and two benzene bonds (one of the lone pairs also participates in the aromatic bond) and up to one single bond</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">N5bd</span></code></td>
+<td>nitrogen atom with with no lone pairs (valance 5), two benzene bonds, and one double bond</td>
+</tr>
+<tr class="row-odd"><td colspan="2"><em>Oxygen atom types</em></td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">O</span></code></td>
 <td>oxygen atom with any local bond structure</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">Os</span></code></td>
-<td>oxygen atom with two single bonds</td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Oa</span></code></td>
+<td>oxygen atom with three lone pairs and no bonds</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Od</span></code></td>
-<td>oxygen atom with one double bond</td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">O0sc</span></code></td>
+<td>charged oxygen with three lone pairs (valance 0) and up to one single bond</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">Oa</span></code></td>
-<td>oxygen atom with no bonds</td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">O0dc</span></code></td>
+<td>charged oxygen atom with three lone pairs (valance 0) and one double bond</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">O2s</span></code></td>
+<td>oxygen atom with two lone pairs (valance 2) and up to two single bonds</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">O2sc</span></code></td>
+<td>charged oxygen atom with two lone pairs (valance 2) and up to one single bond</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">O2d</span></code></td>
+<td>oxygen atom with two lone pairs (valance 2) and one doubel bond</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">O4sc</span></code></td>
+<td>charged oxygen atom with one one pair (valance 4) and up to three single bonds</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">O4dc</span></code></td>
+<td>charged oxygen atom with one one pair (valance 4), one double bond and up to one single bond</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">O4tc</span></code></td>
+<td>charged oxygen atom with one one pair (valance 4) and one triple bond</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">O4b</span></code></td>
+<td>oxygen atom with one one pair (valance 4) and and two benzene bonds</td>
 </tr>
 <tr class="row-odd"><td colspan="2"><em>Silicon atom types</em></td>
 </tr>
@@ -340,14 +508,14 @@ molecular substructure patterns via an RMG-style adjacency list.</p>
 <tr class="row-even"><td><code class="docutils literal"><span class="pre">Sid</span></code></td>
 <td>silicon atom with one double bond (to carbon) and two single bonds</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Sidd</span></code></td>
-<td>silicon atom with two double bonds</td>
-</tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">Sit</span></code></td>
-<td>silicon atom with one triple bond and one single bond</td>
-</tr>
 <tr class="row-odd"><td><code class="docutils literal"><span class="pre">SiO</span></code></td>
 <td>silicon atom with one double bond (to oxygen) and two single bonds</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">Sidd</span></code></td>
+<td>silicon atom with two double bonds</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Sit</span></code></td>
+<td>silicon atom with one triple bond and one single bond</td>
 </tr>
 <tr class="row-even"><td><code class="docutils literal"><span class="pre">Sib</span></code></td>
 <td>silicon atom with two benzene bonds and one single bond</td>
@@ -360,14 +528,80 @@ molecular substructure patterns via an RMG-style adjacency list.</p>
 <tr class="row-odd"><td><code class="docutils literal"><span class="pre">S</span></code></td>
 <td>sulfur atom with any local bond structure</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">Ss</span></code></td>
-<td>sulfur atom with two single bonds</td>
-</tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Sd</span></code></td>
-<td>sulfur atom with one double bond</td>
-</tr>
 <tr class="row-even"><td><code class="docutils literal"><span class="pre">Sa</span></code></td>
-<td>sulfur atom with no bonds</td>
+<td>sulfur atom with three lone pairs and no bonds</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">S0sc</span></code></td>
+<td>charged sulfur atom with three lone pairs (valance 0) and up to one single bonds</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">S2s</span></code></td>
+<td>sulfur atom with two lone pairs (valance 2) and up to two single bonds</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">S2sc</span></code></td>
+<td>charged sulfur atom with two lone pairs (valance 2) and up to three single bonds</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">S2d</span></code></td>
+<td>sulfur atom with two lone pairs (valance 2) and one double bond</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">S2dc</span></code></td>
+<td>charged sulfur atom with two lone pairs (valance 2), one double bond and up to one single bond</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">S2tc</span></code></td>
+<td>charged sulfur atom with two lone pairs (valance 2) and one triple bond</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">S4s</span></code></td>
+<td>sulfur atom with one lone pair (valance 4) and up to four single bonds</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">S4sc</span></code></td>
+<td>charged sulfur atom with one lone pair (valance 4) and up to five single bonds</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">S4d</span></code></td>
+<td>sulfur atom with one lone pair (valance 4), one double bond and up to two single bonds</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">S4dd</span></code></td>
+<td>sulfur atom with one lone pair (valance 4) and two double bonds</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">S4dc</span></code></td>
+<td>charged sulfur atom with one lone pair (valance 4), one to three double bonds and up to three single bonds</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">S4b</span></code></td>
+<td>sulfur atom with one lone pair (valance 4) and two benzene bonds (one of the lone pairs also participates in the aromatic bond)</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">S4t</span></code></td>
+<td>sulfur atom with one lone pair (valance 4), one triple bond and up to one single bond</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">S4tdc</span></code></td>
+<td>charged sulfur atom with one lone pair (valance 4) one to two triple bonds, up to two double bonds, and up to three single bonds</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">S6s</span></code></td>
+<td>sulfur atom with no lone pairs (valance 6) and up to six single bonds</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">S6sc</span></code></td>
+<td>charged sulfur atom with no lone pairs (valance 6) and up to seven single bonds</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">S6d</span></code></td>
+<td>sulfur atom with no lone pairs (valance 6), one double bond and up to four single bonds</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">S6dd</span></code></td>
+<td>sulfur atom with no lone pairs (valance 6), two double bonds and up to two single bonds</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">S6ddd</span></code></td>
+<td>sulfur atom with no lone pairs (valance 6) and three double bonds</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">S6dc</span></code></td>
+<td>charged sulfur atom with no lone pairs (valance 6), one to three double bonds and up to five single bonds</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">S6t</span></code></td>
+<td>sulfur atom with no lone pairs (valance 6), one triple bond and up to three single bonds</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">S6td</span></code></td>
+<td>sulfur atom with no lone pairs (valance 6), one triple bond, one double bond and up to one single bond</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">S6tt</span></code></td>
+<td>sulfur atom with no lone pairs (valance 6) and two triple bonds</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">S6tdc</span></code></td>
+<td>charged sulfur atom with no lone pairs (valance 6), one to two triple bonds, up to two double bonds, and up to four single bonds</td>
 </tr>
 </tbody>
 </table>
@@ -377,11 +611,49 @@ molecular substructure patterns via an RMG-style adjacency list.</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<div class="sidebarlogo">
-<a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
+  <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    <div class="sphinxsidebarwrapper">
+        <div class="sidebarlogo"><a href="../../index.html">
+            <img src="../../_static/rmg-logo-small.png" alt="RMG" />
+        </a></div>
+      <div id="sidebar">
+        <div id="rmgsidebar">
+          <a href="http://rmg.mit.edu">
+            <div class="menuitem">
+              <img src="../../_static/rmg-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG Website</div>
+              <div class="menutext menudesc">Interactive website for RMG-Py</div>
+            </div>
+          </a>
+          <a href="https://github.com/ReactionMechanismGenerator/RMG-Py">
+            <div class="menuitem">
+              <img src="../../_static/github-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG GitHub</div>
+              <div class="menutext menudesc">View source and post issues</div>
+            </div>
+          </a>
+        </div>
+        <div class="menuitem">
+        </div>
+        <div class="menuitem">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="element.html"
+                        title="previous chapter">rmgpy.molecule.Element</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="recipe.html"
+                        title="next chapter">Reaction recipes</a></p>
+        </div>
+        <div class="menuitem">
+<div role="note" aria-label="source link">
+    <h3>This Page</h3>
+        <ul class="this-page-menu">
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/molecule/atomtype.rst"
+                   rel="nofollow">View Source</a></li>
+        </ul>
 </div>
+        </div>
+        <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
@@ -392,88 +664,38 @@ molecular substructure patterns via an RMG-style adjacency list.</p>
     </form>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
-
-<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/molecule/atomtype.rst"
-           rel="nofollow">Edit this page</a></h4><P>
-<div class="customsidebar">
-<P>
-<table cellpadding="3">
-
-<tr><td>
-        <a href="http://reactionmechanismgenerator.github.io/RMG-Py"><img src="../../_static/documentation-icon.png" class="icon_sidebar" width="32px" alt="Documentation"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://reactionmechanismgenerator.github.io/RMG-Py">Documentation</a></div>
-        <div class="linkdesc">Learn more about the RMG software</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/database/"><img src="../../_static/database-logo-small.png" class="icon_sidebar" width="32px" alt="Database"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
-        <div class="linkdesc">Browse the RMG database of chemical and kinetic parameters</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/input">Create Input File</a></div>
-        <div class="linkdesc">Online form for making an RMG input file</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/molecule_search"><img src="../../_static/moleculedraw-logo-small.png" class="icon_sidebar" width="32px" alt="Molecule Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
-        <div class="linkdesc">Draw a molecule from its adjlist and search or estimate its properties</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/database/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/kinetics/search/">Kinetics Search</a></div>
-        <div class="linkdesc">Search or estimate kinetics of a chemical reaction</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/solvation_search"><img src="../../_static/solvation-search-logo-small.png" class="icon_sidebar" width="32px" alt="Solvation Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
-        <div class="linkdesc">Search or estimate solvation properties of solvent and a solute</div>
-</td></tr>
-
-
-<tr><td>
-        <a href="http://rmg.mit.edu/pdep/"><img src="../../_static/pdep-logo-small.png" class="icon_sidebar" width="32px" alt="Pressure Dependent Networks"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
-        <div class="linkdesc">CanTherm pdep kinetic calculations</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/tools/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/tools/">Other RMG Tools</a></div>
-        <div class="linkdesc">Additional tools to supplement RMG</div>
-</td></tr>
-
-</table>
-
-</div>
         </div>
       </div>
+    </div>
+  </div>
+
       <div class="clearer"></div>
     </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="recipe.html" title="Reaction recipes"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="element.html" title="rmgpy.molecule.Element"
+             >previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+      </ul>
+    </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+        &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

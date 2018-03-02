@@ -55,99 +55,145 @@ Kinetic libraries should also be used in the cases where:
 Below is a list of pre-packaged kinetics library reactions in RMG:
 
 
-
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|Library                                |Description                                                                               |
-+=======================================+==========================================================================================+
-|1989_Stewart_2CH3_to_C2H5_H            |Chemically Activated Methyl Recombination to Ethyl (2CH3 -> C2H5 + H)                     |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|2001_Tokmakov_H_Toluene_to_CH3_Benzene |H + Toluene = CH3 + Benzene                                                               |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|2005_Senosiain_OH_C2H2                 |pathways on the OH + acetylene surface                                                    |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|2006_Joshi_OH_CO                       |pathways on OH + CO = HOCO = H + CO2 surface                                              |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|BurkeH2O2inArHe                        |Comprehensive H2/O2 kinetic model in Ar or He atmosphere                                  |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|BurkeH2O2inN2                          |Comprehensive H2/O2 kinetic model in N2 atmosphere                                        |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|C10H11                                 |Cyclopentadiene pyrolysis in the presence of ethene                                       |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|C3                                     |Cyclopentadiene pyrolysis in the presence of ethene                                       |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|C6H5_C4H4_Mebel                        |Formation Mechanism of Naphthalene and Indene                                             |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|Chernov                                |Soot Formation with C1 and C2 Fuels (aromatic reactions only)                             |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|CurranPentane                          |Ignition of pentane isomers                                                               |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|Dooley                                 |Methyl formate (contains several mechanisms)                                              |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|ERC-FoundationFuelv0.9                 |Small molecule combustio (natural gas)                                                    |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|Ethylamine                             |Ethylamine pyrolysis and oxidation                                                        |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|FFCM1(-)                               |Foundational Fuel Chemistry Model Version 1.0 (excited species removed)                   |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|Fulvene_H                              |Cyclopentadiene pyrolysis in the presence of ethene                                       |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|GRI-HCO                                |The `HCO <=> H + CO` reaction                                                             |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|GRI-Mech3.0                            |Gas Research Institute natural gas mechanism optimized for 1 atm (discountinued Feb. 2000)|
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|GRI-Mech3.0-N                          |GRI-Mech3.0 including nitrogen chemistry (NOx from N2)                                    |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|Glarborg                               |Mechanisms by P. Glarborg, assorted by carbon number                                      |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|JetSurF2.0                             |Jet Surrogate Fuel model up tp C12 (excited species removed)                              |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|Mebel_C6H5_C2H2                        |Pathways from benzene to naphthalene                                                      |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|Mebel_Naphthyl                         |Reactions of naphthyl-1 and naphthyl-2                                                    |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|Methylformate                          |Methyl formate                                                                            |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|Narayanaswamy                          |Oxidation of substituted aromatic species (aromatic reactions only)                       |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|Nitrogen_Dean_and_Bozzelli             |Combustion Chemistry of Nitrogen                                                          |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|Nitrogen_Glarborg_Gimenez_et_al        |High pressure C2H4 oxidation with nitrogen chemistry                                      |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|Nitrogen_Glarborg_Lucassen_et_al       |Fuel-nitrogen conversion in the combustion of small amines                                |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|Nitrogen_Glarborg_Zhang_et_al          |Premixed nitroethane flames at low pressure                                               |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|OxygenSingTrip                         |Reactions of singlet and triplet oxygen                                                   |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|Sulfur/DMDS                            |Dimethyl disulfide (CH3SSCH3)                                                             |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|Sulfur/DMS                             |Dimethyl disulfide (CH3SSCH3)                                                             |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|Sulfur/DTBS                            |Di-tert-butyl Sulfide (C4H9SSC4H9)                                                        |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|Sulfur/Hexanethial_nr                  |Hexyl sulfide (C6H13SC6H13) + hexadecane (C16H34)                                         |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|Sulfur/Sendt                           |Small sulfur molecule                                                                     |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|Sulfur/TP_Song                         |Thiophene (C4H4S, aromatic)                                                               |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|Sulfur/Thial_Hydrolysis                |Thioformaldehyde (CH2S) and thioacetaldehyde (C2H4S) to COS and CO2                       |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|TEOS                                   |Organic oxidized silicone                                                                 |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|c-C5H5_CH3_Sharma                      |Cyclopentadienyl + CH3                                                                    |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|combustion_core                        |Leeds University natural gas mechanism (contains versions 2-5)                            |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|fascella                               |Cyclopentadienyl + acetyl                                                                 |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|kislovB                                |Formation of indene in combustion                                                         |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|naphthalene_H                          |Cyclopentadiene pyrolysis in the presence of ethene Part 1                                |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-|vinylCPD_H                             |Cyclopentadiene pyrolysis in the presence of ethene Part 2                                |
-+---------------------------------------+------------------------------------------------------------------------------------------+
-
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Library                                                      |Description                                                                               |
++=============================================================+==========================================================================================+
+|1989_Stewart_2CH3_to_C2H5_H                                  |Chemically Activated Methyl Recombination to Ethyl (2CH3 -> C2H5 + H)                     |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|2001_Tokmakov_H_Toluene_to_CH3_Benzene                       |H + Toluene = CH3 + Benzene                                                               |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|2005_Senosiain_OH_C2H2                                       |pathways on the OH + acetylene surface                                                    |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|2006_Joshi_OH_CO                                             |pathways on OH + CO = HOCO = H + CO2 surface                                              |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|2009_Sharma_C5H5_CH3_highP                                   |Cyclopentadienyl + CH3 in high-P limit                                                    |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|2015_Buras_C2H3_C4H6_highP                                   |Vinyl + 1,3-Butadiene and other C6H9 reactions in high-P limit                            |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|biCPD_H_shift                                                |Sigmatropic 1,5-H shifts on biCPD PES                                                     |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|BurkeH2O2inArHe                                              |Comprehensive H2/O2 kinetic model in Ar or He atmosphere                                  |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|BurkeH2O2inN2                                                |Comprehensive H2/O2 kinetic model in N2 atmosphere                                        |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|C2H4+O_Klipp2017                                             |C2H4 + O intersystem crossing reactions, probably important for all C/H/O combustion      |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|C10H11                                                       |Cyclopentadiene pyrolysis in the presence of ethene                                       |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|C3                                                           |Cyclopentadiene pyrolysis in the presence of ethene                                       |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|C6H5_C4H4_Mebel                                              |Formation Mechanism of Naphthalene and Indene                                             |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Chernov                                                      |Soot Formation with C1 and C2 Fuels (aromatic reactions only)                             |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|CurranPentane                                                |Ignition of pentane isomers                                                               |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Dooley                                                       |Methyl formate (contains several mechanisms)                                              |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|ERC-FoundationFuelv0.9                                       |Small molecule combustio (natural gas)                                                    |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Ethylamine                                                   |Ethylamine pyrolysis and oxidation                                                        |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|FFCM1(-)                                                     |Foundational Fuel Chemistry Model Version 1.0 (excited species removed)                   |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|First_to_Second_Aromatic_Ring/2005_Ismail_C6H5_C4H6_highP    |Phenyl + 1,3-Butadiene and other C10H11 reactions in high-P limit                         |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|First_to_Second_Aromatic_Ring/2012_Matsugi_C3H3_C7H7_highP   |Propargyl + Benzyl and other C10H10 reactions in high-P limit                             |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|First_to_Second_Aromatic_Ring/2016_Mebel_C9H9_highP          |C9H9 reactions in high-P limit                                                            |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|First_to_Second_Aromatic_Ring/2016_Mebel_C10H9_highP         |C10H9 reactions in high-P limit                                                           |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|First_to_Second_Aromatic_Ring/2016_Mebel_Indene_CH3_highP    |CH3 + Indene in high-P limit                                                              |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|First_to_Second_Aromatic_Ring/2017_Buras_C6H5_C3H6_highP     |Phenyl + Propene and other C9H11 reactions in high-P limit                                |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|First_to_Second_Aromatic_Ring/2017_Mebel_C6H4C2H_C2H2_highP  |C10H7 HACA reactions in high-P limit                                                      |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|First_to_Second_Aromatic_Ring/2017_Mebel_C6H5_C2H2_highP     |C8H7 HACA reactions in high-P limit                                                       |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|First_to_Second_Aromatic_Ring/2017_Mebel_C6H5_C4H4_highP     |Phenyl + Vinylacetylene and other C10H9  reactions in high-P limit                        |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|First_to_Second_Aromatic_Ring/2017_Mebel_C6H5C2H2_C2H2_highP |C10H9 HACA reactions in high-P limit                                                      |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|First_to_Second_Aromatic_Ring/phenyl_diacetylene_effective   |Effective Phenyl + Diacetylene rates to Benzofulvenyl and 2-Napthyl                       |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Fulvene_H                                                    |Cyclopentadiene pyrolysis in the presence of ethene                                       |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|GRI-HCO                                                      |The `HCO <=> H + CO` reaction                                                             |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|GRI-Mech3.0                                                  |Gas Research Institute natural gas mechanism optimized for 1 atm (discountinued Feb. 2000)|
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|GRI-Mech3.0-N                                                |GRI-Mech3.0 including nitrogen chemistry (NOx from N2)                                    |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Glarborg                                                     |Mechanisms by P. Glarborg, assorted by carbon number                                      |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|JetSurF2.0                                                   |Jet Surrogate Fuel model up tp C12 (excited species removed)                              |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Klippenstein_Glarborg2016                                    |Methane oxidation at high pressures and intermediate temperatures                         |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Lai_Hexylbenzene                                             |Alkylaromatic reactions for hexylbenzene                                                  |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Mebel_C6H5_C2H2                                              |Pathways from benzene to naphthalene                                                      |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Mebel_Naphthyl                                               |Reactions of naphthyl-1 and naphthyl-2                                                    |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Methylformate                                                |Methyl formate                                                                            |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Narayanaswamy                                                |Oxidation of substituted aromatic species (aromatic reactions only)                       |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Nitrogen_Dean_and_Bozzelli                                   |Combustion Chemistry of Nitrogen                                                          |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Nitrogen_Glarborg_Gimenez_et_al                              |High pressure C2H4 oxidation with nitrogen chemistry                                      |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Nitrogen_Glarborg_Lucassen_et_al                             |Fuel-nitrogen conversion in the combustion of small amines                                |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Nitrogen_Glarborg_Zhang_et_al                                |Premixed nitroethane flames at low pressure                                               |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|NOx                                                          |important NOx related reactions, e.g., thermal & prompt NO, N2O                           |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|NOx/LowT                                                     |Low temperature kinetics (~<1000K) for selected reactions from the NOx library            |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|OxygenSingTrip                                               |Reactions of singlet and triplet oxygen                                                   |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|SOx                                                          |important SOx related reactions, e.g., H-S, C-S, SOx                                      |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Sulfur/DMDS                                                  |Dimethyl disulfide (CH3SSCH3)                                                             |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Sulfur/DMS                                                   |Dimethyl disulfide (CH3SSCH3)                                                             |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Sulfur/DTBS                                                  |Di-tert-butyl Sulfide (C4H9SSC4H9)                                                        |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Sulfur/GlarborgBozzelli                                      |SO2 effect on moist CO oxidation with and without NO                                      |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Sulfur/GlarborgH2S                                           |H2S oxidation at high pressures                                                           |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Sulfur/GlarborgMarshall                                      |OCS chemistry                                                                             |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Sulfur/GlarborgNS                                            |Interactions between nitrogen and sulfur species in combustion                            |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Sulfur/Hexanethial_nr                                        |Hexyl sulfide (C6H13SC6H13) + hexadecane (C16H34)                                         |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Sulfur/Sendt                                                 |Small sulfur molecule                                                                     |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Sulfur/TP_Song                                               |Thiophene (C4H4S, aromatic)                                                               |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Sulfur/Thial_Hydrolysis                                      |Thioformaldehyde (CH2S) and thioacetaldehyde (C2H4S) to COS and CO2                       |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|TEOS                                                         |Organic oxidized silicone                                                                 |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|c-C5H5_CH3_Sharma                                            |Cyclopentadienyl + CH3                                                                    |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|combustion_core                                              |Leeds University natural gas mechanism (contains versions 2-5)                            |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|fascella                                                     |Cyclopentadienyl + acetyl                                                                 |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|kislovB                                                      |Formation of indene in combustion                                                         |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|naphthalene_H                                                |Cyclopentadiene pyrolysis in the presence of ethene Part 1                                |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|vinylCPD_H                                                   |Cyclopentadiene pyrolysis in the presence of ethene Part 2                                |
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
 
 
 
@@ -165,234 +211,182 @@ Each reaction family contains the files:
 * training.py containing a training set for the family
 * rules.py containing kinetic parameters for rules
 
-There are currently 45 reaction families in RMG:
-
-**1+2_Cycloaddition**     
-
-.. image:: images/kinetics_families/1+2_Cycloaddition.png 
-	:scale: 40% 
-
-**1,2-Birad_to_alkene**     
-
-.. image:: images/kinetics_families/1,2-Birad_to_alkene.png 
-	:scale: 40% 
-
-**1,2_Insertion_carbene**     
-
-.. image:: images/kinetics_families/1,2_Insertion_carbene.png 
-	:scale: 40%  
-
-**1,2_Insertion_CO**     
-
-.. image:: images/kinetics_families/1,2_Insertion_CO.png 
-	:scale: 40% 
-
-**1,2_shiftS**     
-
-.. image:: images/kinetics_families/1,2_shiftS.png 
-	:scale: 40% 
-
-**1,3_Insertion_CO2**     
-
-.. image:: images/kinetics_families/1,3_Insertion_CO2.png 
-	:scale: 40% 
-
-**1,3_Insertion_ROR**     
-
-.. image:: images/kinetics_families/1,3_Insertion_ROR.png 
-	:scale: 40% 
-
-**1,3_Insertion_RSR**     
-
-.. image:: images/kinetics_families/1,3_Insertion_RSR.png 
-	:scale: 40% 
-
-**1,4_Cyclic_birad_scission**     
-
-.. image:: images/kinetics_families/1,4_Cyclic_birad_scission.png 
-	:scale: 40% 
-
-**1,4_Linear_birad_scission**     
-
-.. image:: images/kinetics_families/1,4_Linear_birad_scission.png 
-	:scale: 40% 
-
-**2+2_cycloaddition_CCO**     
-
-.. image:: images/kinetics_families/2+2_cycloaddition_CCO.png 
-	:scale: 40% 
-
-**2+2_cycloaddition_Cd**     
-
-.. image:: images/kinetics_families/2+2_cycloaddition_Cd.png 
-	:scale: 40% 
-
-**2+2_cycloaddition_CO**     
-
-.. image:: images/kinetics_families/2+2_cycloaddition_CO.png 
-	:scale: 40% 
-
-**Birad_recombination**     
-
-.. image:: images/kinetics_families/Birad_recombination.png 
-	:scale: 40% 
-
-**Cyclic_Ether_Formation**     
-
-.. image:: images/kinetics_families/Cyclic_Ether_Formation.png 
-	:scale: 40% 
-
-**Diels_alder_addition**     
-
-.. image:: images/kinetics_families/Diels_alder_addition.png 
-	:scale: 40% 
-
-**Disproportionation**     
-
-.. image:: images/kinetics_families/Disproportionation.png 
-	:scale: 40% 
-
-**H_Abstraction**     
-
-.. image:: images/kinetics_families/H_Abstraction.png 
-	:scale: 40% 
-
-**H_shift_cyclopentadiene**     
-
-.. image:: images/kinetics_families/H_shift_cyclopentadiene.png 
-	:scale: 40% 
-
-**HO2_Elimination_from_PeroxyRadical**     
-
-.. image:: images/kinetics_families/HO2_Elimination_from_PeroxyRadical.png 
-	:scale: 40% 
-
-**Intra_Diels_alder**     
-
-.. image:: images/kinetics_families/Intra_Diels_alder.png 
-	:scale: 40% 
-
-**Intra_Disproportionation**     
-
-.. image:: images/kinetics_families/Intra_Disproportionation.png 
-	:scale: 40% 
-
-**intra_H_migration**     
-
-.. image:: images/kinetics_families/intra_H_migration.png 
-	:scale: 40% 
-
-**intra_NO2_ONO_conversion**     
-
-.. image:: images/kinetics_families/intra_NO2_ONO_conversion.png 
-	:scale: 40% 
-
-**intra_OH_migration**     
-
-.. image:: images/kinetics_families/intra_OH_migration.png 
-	:scale: 40% 
-
-**Intra_R_Add_Endocyclic**     
-
-.. image:: images/kinetics_families/Intra_R_Add_Endocyclic.png 
-	:scale: 40% 
-
-**Intra_R_Add_Exocyclic**     
-
-.. image:: images/kinetics_families/Intra_R_Add_Exocyclic.png 
-	:scale: 40% 
-
-**Intra_R_Add_ExoTetCyclic**     
-
-.. image:: images/kinetics_families/Intra_R_Add_ExoTetCyclic.png 
-	:scale: 40% 
-
-**Intra_RH_Add_Endocyclic**     
-
-.. image:: images/kinetics_families/Intra_RH_Add_Endocyclic.png 
-	:scale: 40% 
-
-**Intra_RH_Add_Exocyclic**     
-
-.. image:: images/kinetics_families/Intra_RH_Add_Exocyclic.png 
-	:scale: 40% 
-
-**intra_substitutionCS_cyclization**     
-
-.. image:: images/kinetics_families/intra_substitutionCS_cyclization.png 
-	:scale: 40% 
-
-**intra_substitutionCS_isomerization**     
-
-.. image:: images/kinetics_families/intra_substitutionCS_isomerization.png 
-	:scale: 40% 
-
-**intra_substitutionS_cyclization**     
-
-.. image:: images/kinetics_families/intra_substitutionS_cyclization.png 
-	:scale: 40% 
-
-**intra_substitutionS_isomerization**     
-
-.. image:: images/kinetics_families/intra_substitutionS_isomerization.png 
-	:scale: 40% 
-
-**ketoenol**     
-
-.. image:: images/kinetics_families/ketoenol.png 
-	:scale: 40% 
-
-**Korcek_step1**     
-
-.. image:: images/kinetics_families/Korcek_step1.png 
-	:scale: 40% 
-
-**Korcek_step2**     
-
-.. image:: images/kinetics_families/Korcek_step2.png 
-	:scale: 40% 
-
-**lone_electron_pair_bond**     
-
-.. image:: images/kinetics_families/lone_electron_pair_bond.png 
-	:scale: 40% 
-
-**Oa_R_Recombination**     
-
-.. image:: images/kinetics_families/Oa_R_Recombination.png 
-	:scale: 40% 
-
-**R_Addition_COm**     
-
-.. image:: images/kinetics_families/R_Addition_COm.png 
-	:scale: 40% 
-
-**R_Addition_CSm**     
-
-.. image:: images/kinetics_families/R_Addition_CSm.png 
-	:scale: 40% 
-
-**R_Addition_MultipleBond**     
-
-.. image:: images/kinetics_families/R_Addition_MultipleBond.png 
-	:scale: 40% 
-
-**R_Recombination**     
-
-.. image:: images/kinetics_families/R_Recombination.png 
-	:scale: 40% 
-
-**Substitution_O**     
-
-.. image:: images/kinetics_families/Substitution_O.png 
-	:scale: 40% 
-
-**SubstitutionS**     
-
-.. image:: images/kinetics_families/SubstitutionS.png 
-	:scale: 40% 
-
-
+There are currently 58 reaction families in RMG:
+
+.. |f01| image:: images/kinetics_families/1,2-Birad_to_alkene.png
+    :scale: 25%
+.. |f02| image:: images/kinetics_families/1,2_Insertion_carbene.png
+    :scale: 25%
+.. |f03| image:: images/kinetics_families/1,2_Insertion_CO.png
+    :scale: 25%
+.. |f05| image:: images/kinetics_families/1,2_shiftS.png
+    :scale: 25%
+.. |f06| image:: images/kinetics_families/1,3_Insertion_CO2.png
+    :scale: 25%
+.. |f07| image:: images/kinetics_families/1,3_Insertion_ROR.png
+    :scale: 25%
+.. |f08| image:: images/kinetics_families/1,3_Insertion_RSR.png
+    :scale: 25%
+.. |f09| image:: images/kinetics_families/1,4_Cyclic_birad_scission.png
+    :scale: 25%
+.. |f10| image:: images/kinetics_families/1,4_Linear_birad_scission.png
+    :scale: 25%
+.. |f11| image:: images/kinetics_families/1+2_Cycloaddition.png
+    :scale: 25%
+.. |f12| image:: images/kinetics_families/2+2_cycloaddition_CCO.png
+    :scale: 25%
+.. |f13| image:: images/kinetics_families/2+2_cycloaddition_Cd.png
+    :scale: 25%
+.. |f14| image:: images/kinetics_families/2+2_cycloaddition_CO.png
+    :scale: 25%
+.. |f15| image:: images/kinetics_families/2+2_cycloaddition_CS.png
+    :scale: 25%
+.. |f16| image:: images/kinetics_families/6_membered_central_C-C_shift.png
+    :scale: 25%
+.. |f17| image:: images/kinetics_families/Birad_recombination.png
+    :scale: 25%
+.. |f18| image:: images/kinetics_families/Birad_R_Recombination.png
+    :scale: 25%
+.. |f19| image:: images/kinetics_families/CO_Disproportionation.png
+    :scale: 25%
+.. |f20| image:: images/kinetics_families/Concerted_Intra_Diels_alder_monocyclic_1,2_shiftH.png
+    :scale: 25%
+.. |f21| image:: images/kinetics_families/Cyclic_Ether_Formation.png
+    :scale: 25%
+.. |f22| image:: images/kinetics_families/Cyclic_Thioether_Formation.png
+    :scale: 25%
+.. |f23| image:: images/kinetics_families/Cyclopentadiene_scission.png
+    :scale: 25%
+.. |f24| image:: images/kinetics_families/Diels_alder_addition.png
+    :scale: 25%
+.. |f25| image:: images/kinetics_families/Disproportionation.png
+    :scale: 25%
+.. |f26| image:: images/kinetics_families/H_Abstraction.png
+    :scale: 25%
+.. |f27| image:: images/kinetics_families/HO2_Elimination_from_PeroxyRadical.png
+    :scale: 25%
+.. |f28| image:: images/kinetics_families/Intra_2+2_cycloaddition_Cd.png
+    :scale: 25%
+.. |f29| image:: images/kinetics_families/Intra_5_membered_conjugated_C=C_C=C_addition.png
+    :scale: 25%
+.. |f30| image:: images/kinetics_families/Intra_Diels_alder_monocyclic.png
+    :scale: 25%
+.. |f31| image:: images/kinetics_families/Intra_Disproportionation.png
+    :scale: 25%
+.. |f32| image:: images/kinetics_families/Intra_ene_reaction.png
+    :scale: 25%
+.. |f33| image:: images/kinetics_families/intra_H_migration.png
+    :scale: 25%
+.. |f34| image:: images/kinetics_families/intra_NO2_ONO_conversion.png
+    :scale: 25%
+.. |f35| image:: images/kinetics_families/intra_OH_migration.png
+    :scale: 25%
+.. |f36| image:: images/kinetics_families/Intra_R_Add_Endocyclic.png
+    :scale: 25%
+.. |f37| image:: images/kinetics_families/Intra_R_Add_Exocyclic.png
+    :scale: 25%
+.. |f39| image:: images/kinetics_families/Intra_R_Add_ExoTetCyclic.png
+    :scale: 25%
+.. |f40| image:: images/kinetics_families/Intra_Retro_Diels_alder_bicyclic.png
+    :scale: 25%
+.. |f41| image:: images/kinetics_families/Intra_RH_Add_Endocyclic.png
+    :scale: 25%
+.. |f42| image:: images/kinetics_families/Intra_RH_Add_Exocyclic.png
+    :scale: 25%
+.. |f43| image:: images/kinetics_families/intra_substitutionCS_cyclization.png
+    :scale: 25%
+.. |f44| image:: images/kinetics_families/intra_substitutionCS_isomerization.png
+    :scale: 25%
+.. |f45| image:: images/kinetics_families/intra_substitutionS_cyclization.png
+    :scale: 25%
+.. |f46| image:: images/kinetics_families/intra_substitutionS_isomerization.png
+    :scale: 25%
+.. |f47| image:: images/kinetics_families/ketoenol.png
+    :scale: 25%
+.. |f48| image:: images/kinetics_families/Korcek_step1.png
+    :scale: 25%
+.. |f49| image:: images/kinetics_families/Korcek_step2.png
+    :scale: 25%
+.. |f50| image:: images/kinetics_families/lone_electron_pair_bond.png
+    :scale: 25%
+.. |f51| image:: images/kinetics_families/R_Addition_COm.png
+    :scale: 25%
+.. |f52| image:: images/kinetics_families/R_Addition_CSm.png
+    :scale: 25%
+.. |f53| image:: images/kinetics_families/R_Addition_MultipleBond.png
+    :scale: 25%
+.. |f54| image:: images/kinetics_families/R_Recombination.png
+    :scale: 25%
+.. |f55| image:: images/kinetics_families/Singlet_Carbene_Intra_Disproportionation.png
+    :scale: 25%
+.. |f56| image:: images/kinetics_families/Singlet_Val6_to_triplet.png
+    :scale: 25%
+.. |f57| image:: images/kinetics_families/Substitution_O.png
+    :scale: 25%
+.. |f58| image:: images/kinetics_families/SubstitutionS.png
+    :scale: 25%
+
+.. table::
+    :widths: 50 50
+
+    ===================================================== =====
+    **1,2-Birad_to_alkene**                               |f01|
+    **1,2_Insertion_carbene**                             |f02|
+    **1,2_Insertion_CO**                                  |f03|
+    **1,2_shiftS**                                        |f05|
+    **1,3_Insertion_CO2**                                 |f06|
+    **1,3_Insertion_ROR**                                 |f07|
+    **1,3_Insertion_RSR**                                 |f08|
+    **1,4_Cyclic_birad_scission**                         |f09|
+    **1,4_Linear_birad_scission**                         |f10|
+    **1+2_Cycloaddition**                                 |f11|
+    **2+2_cycloaddition_CCO**                             |f12|
+    **2+2_cycloaddition_Cd**                              |f13|
+    **2+2_cycloaddition_CO**                              |f14|
+    **2+2_cycloaddition_CS**                              |f15|
+    **6_membered_central_C-C_shift**                      |f16|
+    **Birad_recombination**                               |f17|
+    **Birad_R_Recombination**                             |f18|
+    **CO_Disproportionation**                             |f19|
+    **Concerted_Intra_Diels_alder_monocyclic_1,2_shiftH** |f20|
+    **Cyclic_Ether_Formation**                            |f21|
+    **Cyclic_Thioether_Formation**                        |f22|
+    **Cyclopentadiene_scission**                          |f23|
+    **Diels_alder_addition**                              |f24|
+    **Disproportionation**                                |f25|
+    **H_Abstraction**                                     |f26|
+    **HO2_Elimination_from_PeroxyRadical**                |f27|
+    **Intra_2+2_cycloaddition_Cd**                        |f28|
+    **Intra_5_membered_conjugated_C=C_C=C_addition**      |f29|
+    **Intra_Diels_alder_monocyclic**                      |f30|
+    **Intra_Disproportionation**                          |f31|
+    **Intra_ene_reaction**                                |f32|
+    **intra_H_migration**                                 |f33|
+    **intra_NO2_ONO_conversion**                          |f34|
+    **intra_OH_migration**                                |f35|
+    **Intra_R_Add_Endocyclic**                            |f36|
+    **Intra_R_Add_Exocyclic**                             |f37|
+    **Intra_R_Add_ExoTetCyclic**                          |f39|
+    **Intra_Retro_Diels_alder_bicyclic**                  |f40|
+    **Intra_RH_Add_Endocyclic**                           |f41|
+    **Intra_RH_Add_Exocyclic**                            |f42|
+    **intra_substitutionCS_cyclization**                  |f43|
+    **intra_substitutionCS_isomerization**                |f44|
+    **intra_substitutionS_cyclization**                   |f45|
+    **intra_substitutionS_isomerization**                 |f46|
+    **ketoenol**                                          |f47|
+    **Korcek_step1**                                      |f48|
+    **Korcek_step2**                                      |f49|
+    **lone_electron_pair_bond**                           |f50|
+    **R_Addition_COm**                                    |f51|
+    **R_Addition_CSm**                                    |f52|
+    **R_Addition_MultipleBond**                           |f53|
+    **R_Recombination**                                   |f54|
+    **Singlet_Carbene_Intra_Disproportionation**          |f55|
+    **Singlet_Val6_to_triplet**                           |f56|
+    **Substitution_O**                                    |f57|
+    **SubstitutionS**                                     |f58|
+    ===================================================== =====
 
 
 Recipe

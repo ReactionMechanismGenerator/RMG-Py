@@ -5,8 +5,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>12.1. Introduction &#8212; RMG Py 2.1.0 documentation</title>
-    <link rel="stylesheet" href="../../../_static/rmg.css" type="text/css" />
+    <title>12.1. Introduction &#8212; RMG-Py 2.1.0 Documentation</title>
+    <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -36,15 +36,6 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 
   </head>
   <body>
-<div class="header">
-&nbsp;
-</div>  
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body">
-            
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -60,13 +51,19 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="index.html" title="12. Databases"
              accesskey="P">previous</a> |</li>
-<li><a href="../../../index.html">Documentation 2.1.0</a> &raquo;</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../../index.html">2.1.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">12. Databases</a> &#187;</li> 
       </ul>
-    </div>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
             
   <div class="section" id="introduction">
 <span id="introdatabase"></span><h1>12.1. Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
@@ -84,13 +81,13 @@ anything. An example of a primary carbon group from H-Abstraction is shown below
 The adjacency list defined on the left matches any of the three drawn structures
 on the right (the numbers correspond to the index from the adjacency list).</p>
 <a class="reference internal image-reference" href="../../../_images/Group.png"><img alt="../../../_images/Group.png" class="align-center" src="../../../_images/Group.png" style="width: 613.2px; height: 301.0px;" /></a>
-<p>New <strong>atom types</strong> are also introduced to describe atoms in group definitions. The
+<p><strong>Atom types</strong> describe atoms in group definitions. The
 table below shows all atoms types in RMG.</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="12%" />
-<col width="23%" />
-<col width="65%" />
+<col width="7%" />
+<col width="13%" />
+<col width="80%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Atom Type</th>
@@ -115,125 +112,321 @@ table below shows all atoms types in RMG.</p>
 <td>Carbon</td>
 <td>No requirements</td>
 </tr>
-<tr class="row-even"><td>Cs</td>
+<tr class="row-even"><td>Ca</td>
 <td>Carbon</td>
-<td>No double or triple bonds</td>
+<td>Atomic carbon with two lone pairs and no bonds</td>
+</tr>
+<tr class="row-odd"><td>Cs</td>
+<td>Carbon</td>
+<td>Up to four single bonds</td>
+</tr>
+<tr class="row-even"><td>Csc</td>
+<td>Carbon</td>
+<td>Up to three single bonds, charged +1</td>
 </tr>
 <tr class="row-odd"><td>Cd</td>
 <td>Carbon</td>
-<td>Exactly one double bond a non-oxygen, non-sulfur atom</td>
+<td>One double bond (to any atom other than O or S), up to two single bonds</td>
 </tr>
-<tr class="row-even"><td>Cdd</td>
+<tr class="row-even"><td>Cdc</td>
 <td>Carbon</td>
-<td>Two double bonds to any atoms</td>
+<td>One double bond, up to one single bond, charged +1</td>
 </tr>
-<tr class="row-odd"><td>Ct</td>
+<tr class="row-odd"><td>CO</td>
 <td>Carbon</td>
-<td>One triple bond</td>
+<td>One double bond to an oxygen atom, up to two single bonds</td>
 </tr>
-<tr class="row-even"><td>CO</td>
+<tr class="row-even"><td>CS</td>
 <td>Carbon</td>
-<td>Exactly one double bond to an oxygen atom</td>
+<td>One double bond to an sulfur atom, up to two single bonds</td>
 </tr>
-<tr class="row-odd"><td>CS</td>
+<tr class="row-odd"><td>Cdd</td>
 <td>Carbon</td>
-<td>Exactly one double bond to an sulfur atom</td>
+<td>Two double bonds</td>
 </tr>
-<tr class="row-even"><td>Cb</td>
+<tr class="row-even"><td>Ct</td>
 <td>Carbon</td>
-<td>Exactly two benzene bonds</td>
+<td>One triple bond, up to one single bond</td>
 </tr>
-<tr class="row-odd"><td>Cbf</td>
+<tr class="row-odd"><td>Cb</td>
 <td>Carbon</td>
-<td>Three benzene bonds (Fused aromatics)</td>
+<td>Two benzene bonds, up tp one single bond</td>
+</tr>
+<tr class="row-even"><td>Cbf</td>
+<td>Carbon</td>
+<td>Three benzene bonds (fused aromatics)</td>
+</tr>
+<tr class="row-odd"><td>C2s</td>
+<td>Carbon</td>
+<td>One lone pair, up to two single bonds</td>
+</tr>
+<tr class="row-even"><td>C2sc</td>
+<td>Carbon</td>
+<td>One lone pair, up to three single bonds, charged -1</td>
+</tr>
+<tr class="row-odd"><td>C2d</td>
+<td>Carbon</td>
+<td>One lone pair, one double bond</td>
+</tr>
+<tr class="row-even"><td>C2dc</td>
+<td>Carbon</td>
+<td>One lone pair, one double bond, up to one single bond, charge -1</td>
+</tr>
+<tr class="row-odd"><td>C2tc</td>
+<td>Carbon</td>
+<td>One lone pair, one triple bond, charged -1</td>
 </tr>
 <tr class="row-even"><td>N</td>
 <td>Nitrogen</td>
 <td>No requirements</td>
 </tr>
-<tr class="row-odd"><td>N1sc</td>
+<tr class="row-odd"><td>N0sc</td>
 <td>Nitrogen</td>
-<td>Up to one single bond, 3 lone pairs</td>
+<td>Three lone pairs, up to one single bond, charged -2</td>
 </tr>
 <tr class="row-even"><td>N1s</td>
 <td>Nitrogen</td>
-<td>Up to one single bond, 2 lone pairs</td>
+<td>Two lone pairs, up to one single bond</td>
 </tr>
-<tr class="row-odd"><td>N1d</td>
+<tr class="row-odd"><td>N1sc</td>
 <td>Nitrogen</td>
-<td>Exactly one double bond, 2 lone pairs</td>
+<td>Two lone pairs, up to two single bonds, charged -1</td>
 </tr>
-<tr class="row-even"><td>N2s</td>
+<tr class="row-even"><td>N1dc</td>
 <td>Nitrogen</td>
-<td>One ot Two single bonds, 2 lone pairs</td>
+<td>Two lone pairs, one double bond, charged -1</td>
 </tr>
 <tr class="row-odd"><td>N3s</td>
 <td>Nitrogen</td>
-<td>Up to 3 single bonds, 1 lone pair</td>
+<td>One lone pair, up to three single bonds</td>
 </tr>
 <tr class="row-even"><td>N3d</td>
 <td>Nitrogen</td>
-<td>Up to 1 single, exactly one double bond, 1 lone pair</td>
+<td>One lone pair, one double bond, up to one single bond</td>
 </tr>
 <tr class="row-odd"><td>N3t</td>
 <td>Nitrogen</td>
-<td>Exactly one triple bond, 1 lone pair</td>
+<td>One lone pair, one triple bond</td>
 </tr>
 <tr class="row-even"><td>N3b</td>
 <td>Nitrogen</td>
-<td>Exactly two benzene bonds, 1 lone pair</td>
+<td>One lone pair, two aromatic bonds</td>
 </tr>
-<tr class="row-odd"><td>N5s</td>
+<tr class="row-odd"><td>N5sc</td>
 <td>Nitrogen</td>
-<td>Up to 5 single bonds, 0 lone pairs</td>
+<td>No lone pairs, up to four single bonds, charged +1</td>
 </tr>
-<tr class="row-even"><td>N5d</td>
+<tr class="row-even"><td>N5dc</td>
 <td>Nitrogen</td>
-<td>Up to 3 single, exacly one double bond, 0 lone pairs</td>
+<td>No lone pairs, one double bond, up to two single bonds, charged +1</td>
 </tr>
-<tr class="row-odd"><td>N5dd</td>
+<tr class="row-odd"><td>N5ddc</td>
 <td>Nitrogen</td>
-<td>Exactly two double bonds, 0 lone pairs</td>
+<td>No lone pairs, two double bonds, charged +1</td>
 </tr>
-<tr class="row-even"><td>N5t</td>
+<tr class="row-even"><td>N5dddc</td>
 <td>Nitrogen</td>
-<td>Up to 1 single, exactly one triple bond, 0 lone pairs</td>
+<td>No lone pairs, three double bonds, charged -1</td>
+</tr>
+<tr class="row-odd"><td>N5t</td>
+<td>Nitrogen</td>
+<td>No lone pairs, one triple bond, up to two single bonds</td>
+</tr>
+<tr class="row-even"><td>N5tc</td>
+<td>Nitrogen</td>
+<td>No lone pairs, one triple bond, up to one single bond, charged +1</td>
 </tr>
 <tr class="row-odd"><td>N5b</td>
 <td>Nitrogen</td>
-<td>Up to 1 single, exactly two benzene bonds, 0 lone</td>
+<td>No lone pairs, two aromatic bonds, up to one single bond</td>
 </tr>
 <tr class="row-even"><td>O</td>
 <td>Oxygen</td>
 <td>No requirements</td>
 </tr>
-<tr class="row-odd"><td>Os</td>
-<td>Oxygen</td>
-<td>No double bonds</td>
-</tr>
-<tr class="row-even"><td>Od</td>
-<td>Oxygen</td>
-<td>One double bond</td>
-</tr>
 <tr class="row-odd"><td>Oa</td>
 <td>Oxygen</td>
-<td>No bonds (Oxygen atom)</td>
+<td>Atomic oxygen with three lone pairs and no bonds</td>
+</tr>
+<tr class="row-even"><td>O0sc</td>
+<td>Oxygen</td>
+<td>Three lone pairs, up to one single bond, charged -1</td>
+</tr>
+<tr class="row-odd"><td>O0dc</td>
+<td>Oxygen</td>
+<td>Three lone pairs, one double bond, charged -2</td>
+</tr>
+<tr class="row-even"><td>O2s</td>
+<td>Oxygen</td>
+<td>Two lone pairs, up to two single bonds</td>
+</tr>
+<tr class="row-odd"><td>O2sc</td>
+<td>Oxygen</td>
+<td>Two lone pairs, up to one single bond, charged +1</td>
+</tr>
+<tr class="row-even"><td>O2d</td>
+<td>Oxygen</td>
+<td>Two lone pairs, one double bond</td>
+</tr>
+<tr class="row-odd"><td>O4sc</td>
+<td>Oxygen</td>
+<td>One lone pair, up to three single bonds, charged +1</td>
+</tr>
+<tr class="row-even"><td>O4dc</td>
+<td>Oxygen</td>
+<td>One lone pair, one double bond, up to one single bond, charged +1</td>
+</tr>
+<tr class="row-odd"><td>O4tc</td>
+<td>Oxygen</td>
+<td>One lone pair, one triple bond, charged +1</td>
+</tr>
+<tr class="row-even"><td>Si</td>
+<td>Silicon</td>
+<td>No requirements</td>
+</tr>
+<tr class="row-odd"><td>Sis</td>
+<td>Silicon</td>
+<td>Up to four single bonds</td>
+</tr>
+<tr class="row-even"><td>Sid</td>
+<td>Silicon</td>
+<td>One double bond (not to O), up to two single bonds</td>
+</tr>
+<tr class="row-odd"><td>SiO</td>
+<td>Silicon</td>
+<td>One double bond to an oxygen atom, up to two single bonds</td>
+</tr>
+<tr class="row-even"><td>Sidd</td>
+<td>Silicon</td>
+<td>Two double bonds</td>
+</tr>
+<tr class="row-odd"><td>Sit</td>
+<td>Silicon</td>
+<td>One triple bond, up to one single bond</td>
+</tr>
+<tr class="row-even"><td>Sib</td>
+<td>Silicon</td>
+<td>Two benzene bonds, up tp one single bond</td>
+</tr>
+<tr class="row-odd"><td>Sibf</td>
+<td>Silicon</td>
+<td>Three benzene bonds (fused aromatics)</td>
 </tr>
 <tr class="row-even"><td>S</td>
 <td>Sulfur</td>
 <td>No requirements</td>
 </tr>
-<tr class="row-odd"><td>Ss</td>
-<td>Sulfur</td>
-<td>No double bond</td>
-</tr>
-<tr class="row-even"><td>Sd</td>
-<td>Sulfur</td>
-<td>One double bond</td>
-</tr>
 <tr class="row-odd"><td>Sa</td>
 <td>Sulfur</td>
-<td>No bonds (Sulfur atom)</td>
+<td>Atomic sulfur with three lone pairs and no bonds</td>
+</tr>
+<tr class="row-even"><td>S0sc</td>
+<td>Sulfur</td>
+<td>Three lone pairs, up to once single bond, charged -1</td>
+</tr>
+<tr class="row-odd"><td>S2s</td>
+<td>Sulfur</td>
+<td>Two lone pairs, up to two single bonds</td>
+</tr>
+<tr class="row-even"><td>S2sc</td>
+<td>Sulfur</td>
+<td>Two lone pairs, up to three single bonds, charged -1/+1</td>
+</tr>
+<tr class="row-odd"><td>S2d</td>
+<td>Sulfur</td>
+<td>Two lone pairs, one double bond</td>
+</tr>
+<tr class="row-even"><td>S2dc</td>
+<td>Sulfur</td>
+<td>Two lone pairs, one to two double bonds, up to one single bond, charged -1</td>
+</tr>
+<tr class="row-odd"><td>S2tc</td>
+<td>Sulfur</td>
+<td>Two lone pairs, one triple bond, charged -1</td>
+</tr>
+<tr class="row-even"><td>S4s</td>
+<td>Sulfur</td>
+<td>One lone pair, up to four single bonds</td>
+</tr>
+<tr class="row-odd"><td>S4sc</td>
+<td>Sulfur</td>
+<td>One lone pair, up to five single bonds, charged -1/+1</td>
+</tr>
+<tr class="row-even"><td>S4d</td>
+<td>Sulfur</td>
+<td>One lone pair, one double bond, up to two single bonds</td>
+</tr>
+<tr class="row-odd"><td>S4dd</td>
+<td>Sulfur</td>
+<td>One lone pair, two double bonds</td>
+</tr>
+<tr class="row-even"><td>S4dc</td>
+<td>Sulfur</td>
+<td>One lone pair, one to three double bonds, up to three single bonds, charged -1/+1</td>
+</tr>
+<tr class="row-odd"><td>S4b</td>
+<td>Sulfur</td>
+<td>One lone pair, two aromatic bonds</td>
+</tr>
+<tr class="row-even"><td>S4t</td>
+<td>Sulfur</td>
+<td>One lone pair, one triple bond, up to one single bond</td>
+</tr>
+<tr class="row-odd"><td>S4tdc</td>
+<td>Sulfur</td>
+<td>One lone pair, one to two triple bonds, up to two double bonds, up to two single bonds, charged -1/+1</td>
+</tr>
+<tr class="row-even"><td>S6s</td>
+<td>Sulfur</td>
+<td>No lone pairs, up to six single bonds</td>
+</tr>
+<tr class="row-odd"><td>S6sc</td>
+<td>Sulfur</td>
+<td>No lone pairs, up to seven single bonds, charged -1/+1</td>
+</tr>
+<tr class="row-even"><td>S6d</td>
+<td>Sulfur</td>
+<td>No lone pairs, one double bond, up to four single bonds</td>
+</tr>
+<tr class="row-odd"><td>S6dd</td>
+<td>Sulfur</td>
+<td>No lone pairs, two double bonds, up to two single bonds</td>
+</tr>
+<tr class="row-even"><td>S6ddd</td>
+<td>Sulfur</td>
+<td>No lone pairs, up to three double bonds</td>
+</tr>
+<tr class="row-odd"><td>S6dc</td>
+<td>Sulfur</td>
+<td>No lone pairs, one to to three double bonds, up to five single bonds, charged -1/-1</td>
+</tr>
+<tr class="row-even"><td>S6t</td>
+<td>Sulfur</td>
+<td>No lone pairs, one triple bond, up to three single bonds</td>
+</tr>
+<tr class="row-odd"><td>S6td</td>
+<td>Sulfur</td>
+<td>No lone pairs, one triple bond, one double bond, up to one single bond</td>
+</tr>
+<tr class="row-even"><td>S6tt</td>
+<td>Sulfur</td>
+<td>No lone pairs, two triple bonds</td>
+</tr>
+<tr class="row-odd"><td>S6tdc</td>
+<td>Sulfur</td>
+<td>No lone pairs, one to two triple bonds, up to two double bonds, up to four single bonds, charged -1/-1</td>
+</tr>
+<tr class="row-even"><td>He</td>
+<td>Helium</td>
+<td>No requirements, nonreactive</td>
+</tr>
+<tr class="row-odd"><td>Ne</td>
+<td>Neon</td>
+<td>No requirements, nonreactive</td>
+</tr>
+<tr class="row-even"><td>Ar</td>
+<td>Argon</td>
+<td>No requirements, nonreactive</td>
 </tr>
 </tbody>
 </table>
@@ -299,11 +492,29 @@ Templates can be filled in with kinetic parameters from the training set or rule
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<div class="sidebarlogo">
-<a href="../../../index.html"><img src="../../../_static/rmg-logo-small.png" alt="RMG" /></a>
-</div>
+  <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    <div class="sphinxsidebarwrapper">
+        <div class="sidebarlogo"><a href="../../../index.html">
+            <img src="../../../_static/rmg-logo-small.png" alt="RMG" />
+        </a></div>
+      <div id="sidebar">
+        <div id="rmgsidebar">
+          <a href="http://rmg.mit.edu">
+            <div class="menuitem">
+              <img src="../../../_static/rmg-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG Website</div>
+              <div class="menutext menudesc">Interactive website for RMG-Py</div>
+            </div>
+          </a>
+          <a href="https://github.com/ReactionMechanismGenerator/RMG-Py">
+            <div class="menuitem">
+              <img src="../../../_static/github-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG GitHub</div>
+              <div class="menutext menudesc">View source and post issues</div>
+            </div>
+          </a>
+        </div>
+        <div class="menuitem">
   <h3><a href="../../../contents.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">12.1. Introduction</a><ul>
@@ -314,6 +525,26 @@ Templates can be filled in with kinetic parameters from the training set or rule
 </li>
 </ul>
 
+        </div>
+        <div class="menuitem">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">12. Databases</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="thermo.html"
+                        title="next chapter">12.2. Thermo Database</a></p>
+        </div>
+        <div class="menuitem">
+<div role="note" aria-label="source link">
+    <h3>This Page</h3>
+        <ul class="this-page-menu">
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/database/introduction.rst"
+                   rel="nofollow">View Source</a></li>
+        </ul>
+</div>
+        </div>
+        <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../../search.html" method="get">
@@ -324,88 +555,39 @@ Templates can be filled in with kinetic parameters from the training set or rule
     </form>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
-
-<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/database/introduction.rst"
-           rel="nofollow">Edit this page</a></h4><P>
-<div class="customsidebar">
-<P>
-<table cellpadding="3">
-
-<tr><td>
-        <a href="http://reactionmechanismgenerator.github.io/RMG-Py"><img src="../../../_static/documentation-icon.png" class="icon_sidebar" width="32px" alt="Documentation"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://reactionmechanismgenerator.github.io/RMG-Py">Documentation</a></div>
-        <div class="linkdesc">Learn more about the RMG software</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/database/"><img src="../../../_static/database-logo-small.png" class="icon_sidebar" width="32px" alt="Database"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
-        <div class="linkdesc">Browse the RMG database of chemical and kinetic parameters</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/input"><img src="../../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/input">Create Input File</a></div>
-        <div class="linkdesc">Online form for making an RMG input file</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/molecule_search"><img src="../../../_static/moleculedraw-logo-small.png" class="icon_sidebar" width="32px" alt="Molecule Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
-        <div class="linkdesc">Draw a molecule from its adjlist and search or estimate its properties</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/database/kinetics/search/"><img src="../../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/kinetics/search/">Kinetics Search</a></div>
-        <div class="linkdesc">Search or estimate kinetics of a chemical reaction</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/solvation_search"><img src="../../../_static/solvation-search-logo-small.png" class="icon_sidebar" width="32px" alt="Solvation Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
-        <div class="linkdesc">Search or estimate solvation properties of solvent and a solute</div>
-</td></tr>
-
-
-<tr><td>
-        <a href="http://rmg.mit.edu/pdep/"><img src="../../../_static/pdep-logo-small.png" class="icon_sidebar" width="32px" alt="Pressure Dependent Networks"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
-        <div class="linkdesc">CanTherm pdep kinetic calculations</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/tools/"><img src="../../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/tools/">Other RMG Tools</a></div>
-        <div class="linkdesc">Additional tools to supplement RMG</div>
-</td></tr>
-
-</table>
-
-</div>
         </div>
       </div>
+    </div>
+  </div>
+
       <div class="clearer"></div>
     </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="thermo.html" title="12.2. Thermo Database"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="12. Databases"
+             >previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../../index.html">2.1.0 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User’s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="index.html" >12. Databases</a> &#187;</li> 
+      </ul>
+    </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+        &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

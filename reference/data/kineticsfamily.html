@@ -5,8 +5,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>rmgpy.data.kinetics.KineticsFamily &#8212; RMG Py 2.1.0 documentation</title>
-    <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
+    <title>rmgpy.data.kinetics.KineticsFamily &#8212; RMG-Py 2.1.0 Documentation</title>
+    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -36,15 +36,6 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 
   </head>
   <body>
-<div class="header">
-&nbsp;
-</div>  
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body">
-            
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -60,20 +51,26 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="kineticsdepository.html" title="rmgpy.data.kinetics.KineticsDepository"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 2.1.0</a> &raquo;</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Database (<code class="docutils literal"><span class="pre">rmgpy.data</span></code>)</a> &#187;</li> 
       </ul>
-    </div>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
             
   <div class="section" id="rmgpy-data-kinetics-kineticsfamily">
 <h1>rmgpy.data.kinetics.KineticsFamily<a class="headerlink" href="#rmgpy-data-kinetics-kineticsfamily" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.data.kinetics.KineticsFamily">
-<em class="property">class </em><code class="descclassname">rmgpy.data.kinetics.</code><code class="descname">KineticsFamily</code><span class="sig-paren">(</span><em>entries=None</em>, <em>top=None</em>, <em>label=''</em>, <em>name=''</em>, <em>reverse=''</em>, <em>shortDesc=''</em>, <em>longDesc=''</em>, <em>forwardTemplate=None</em>, <em>forwardRecipe=None</em>, <em>reverseTemplate=None</em>, <em>reverseRecipe=None</em>, <em>forbidden=None</em>, <em>boundaryAtoms=None</em>, <em>treeDistances=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily" title="Permalink to this definition">¶</a></dt>
-<dd><p>A class for working with an RMG kinetics family: a set of reactions with 
-similar chemistry, and therefore similar reaction rates. The attributes 
+<em class="property">class </em><code class="descclassname">rmgpy.data.kinetics.</code><code class="descname">KineticsFamily</code><span class="sig-paren">(</span><em>entries=None</em>, <em>top=None</em>, <em>label=''</em>, <em>name=''</em>, <em>reverse=''</em>, <em>reversible=True</em>, <em>shortDesc=''</em>, <em>longDesc=''</em>, <em>forwardTemplate=None</em>, <em>forwardRecipe=None</em>, <em>reverseTemplate=None</em>, <em>reverseRecipe=None</em>, <em>forbidden=None</em>, <em>boundaryAtoms=None</em>, <em>treeDistances=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class for working with an RMG kinetics family: a set of reactions with
+similar chemistry, and therefore similar reaction rates. The attributes
 are:</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -92,47 +89,51 @@ are:</p>
 <td><code class="docutils literal"><span class="pre">string</span></code></td>
 <td>The name of the reverse reaction family</td>
 </tr>
-<tr class="row-odd"><td><cite>forwardTemplate</cite></td>
+<tr class="row-odd"><td><cite>reversible</cite></td>
+<td><cite>Boolean</cite></td>
+<td>Is family reversible? (True by default)</td>
+</tr>
+<tr class="row-even"><td><cite>forwardTemplate</cite></td>
 <td><code class="xref py py-class docutils literal"><span class="pre">Reaction</span></code></td>
 <td>The forward reaction template</td>
 </tr>
-<tr class="row-even"><td><cite>forwardRecipe</cite></td>
-<td><code class="xref py py-class docutils literal"><span class="pre">ReactionRecipe</span></code></td>
+<tr class="row-odd"><td><cite>forwardRecipe</cite></td>
+<td><a class="reference internal" href="reactionrecipe.html#rmgpy.data.kinetics.ReactionRecipe" title="rmgpy.data.kinetics.ReactionRecipe"><code class="xref py py-class docutils literal"><span class="pre">ReactionRecipe</span></code></a></td>
 <td>The steps to take when applying the forward reaction to a set of reactants</td>
 </tr>
-<tr class="row-odd"><td><cite>reverseTemplate</cite></td>
+<tr class="row-even"><td><cite>reverseTemplate</cite></td>
 <td><code class="xref py py-class docutils literal"><span class="pre">Reaction</span></code></td>
 <td>The reverse reaction template</td>
 </tr>
-<tr class="row-even"><td><cite>reverseRecipe</cite></td>
-<td><code class="xref py py-class docutils literal"><span class="pre">ReactionRecipe</span></code></td>
+<tr class="row-odd"><td><cite>reverseRecipe</cite></td>
+<td><a class="reference internal" href="reactionrecipe.html#rmgpy.data.kinetics.ReactionRecipe" title="rmgpy.data.kinetics.ReactionRecipe"><code class="xref py py-class docutils literal"><span class="pre">ReactionRecipe</span></code></a></td>
 <td>The steps to take when applying the reverse reaction to a set of reactants</td>
 </tr>
-<tr class="row-odd"><td><cite>forbidden</cite></td>
+<tr class="row-even"><td><cite>forbidden</cite></td>
 <td><code class="xref py py-class docutils literal"><span class="pre">ForbiddenStructures</span></code></td>
 <td>(Optional) Forbidden product structures in either direction</td>
 </tr>
-<tr class="row-even"><td><cite>ownReverse</cite></td>
+<tr class="row-odd"><td><cite>ownReverse</cite></td>
 <td><cite>Boolean</cite></td>
 <td>It’s its own reverse?</td>
 </tr>
-<tr class="row-odd"><td>‘boundaryAtoms’</td>
+<tr class="row-even"><td>‘boundaryAtoms’</td>
 <td>list</td>
 <td>Labels which define the boundaries of end groups in backbone/end families</td>
 </tr>
-<tr class="row-even"><td><cite>treeDistances</cite></td>
+<tr class="row-odd"><td><cite>treeDistances</cite></td>
 <td>dict</td>
 <td>The default distance from parent along each tree, if not set default is 1 for every tree</td>
 </tr>
-<tr class="row-odd"><td><cite>groups</cite></td>
-<td><code class="xref py py-class docutils literal"><span class="pre">KineticsGroups</span></code></td>
+<tr class="row-even"><td><cite>groups</cite></td>
+<td><a class="reference internal" href="kineticsgroups.html#rmgpy.data.kinetics.KineticsGroups" title="rmgpy.data.kinetics.KineticsGroups"><code class="xref py py-class docutils literal"><span class="pre">KineticsGroups</span></code></a></td>
 <td>The set of kinetics group additivity values</td>
 </tr>
-<tr class="row-even"><td><cite>rules</cite></td>
-<td><code class="xref py py-class docutils literal"><span class="pre">KineticsRules</span></code></td>
+<tr class="row-odd"><td><cite>rules</cite></td>
+<td><a class="reference internal" href="kineticsrules.html#rmgpy.data.kinetics.KineticsRules" title="rmgpy.data.kinetics.KineticsRules"><code class="xref py py-class docutils literal"><span class="pre">KineticsRules</span></code></a></td>
 <td>The set of kinetics rate rules from RMG-Java</td>
 </tr>
-<tr class="row-odd"><td><cite>depositories</cite></td>
+<tr class="row-even"><td><cite>depositories</cite></td>
 <td><code class="docutils literal"><span class="pre">list</span></code></td>
 <td>A set of additional depositories used to store kinetics data from various sources</td>
 </tr>
@@ -143,10 +144,13 @@ abstraction and intramolecular hydrogen migration); for these
 <cite>reverseTemplate</cite> and <cite>reverseRecipe</cite> will both be <code class="docutils literal"><span class="pre">None</span></code>.</p>
 <dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.addAtomLabelsForReaction">
-<code class="descname">addAtomLabelsForReaction</code><span class="sig-paren">(</span><em>reaction</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.addAtomLabelsForReaction" title="Permalink to this definition">¶</a></dt>
-<dd><p>Apply atom labels on a reaction using the appropriate atom labels from this this reaction family.  
-The reaction’s reactants and products must be lists of Molecule objects.
-The reaction is modified to use Species objects containing the labeled molecules after this function.</p>
+<code class="descname">addAtomLabelsForReaction</code><span class="sig-paren">(</span><em>reaction</em>, <em>output_with_resonance=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.addAtomLabelsForReaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply atom labels on a reaction using the appropriate atom labels from
+this reaction family.</p>
+<p>The reaction is modified in place containing species objects with the
+atoms labeled. If output_with_resonance is True, all resonance structures
+are generated with labels. If false, only the first resonance structure
+sucessfully able to map to the reaction is used. None is returned.</p>
 </dd></dl>
 
 <dl class="method">
@@ -161,6 +165,8 @@ set, add a rate rule for that reaction.</p>
 <code class="descname">addReverseAttribute</code><span class="sig-paren">(</span><em>rxn</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.addReverseAttribute" title="Permalink to this definition">¶</a></dt>
 <dd><p>For rxn (with species’ objects) from families with ownReverse, this method adds a <cite>reverse</cite>
 attribute that contains the reverse reaction information (like degeneracy)</p>
+<p>Returns <cite>True</cite> if successful and <cite>False</cite> if the reverse reaction is forbidden.
+Will raise a <cite>KineticsError</cite> if unsuccessful for other reasons.</p>
 </dd></dl>
 
 <dl class="method">
@@ -188,11 +194,11 @@ Both <cite>node</cite> and <cite>nodeOther</cite> must be Entry types with items
 
 <dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.calculateDegeneracy">
-<code class="descname">calculateDegeneracy</code><span class="sig-paren">(</span><em>reaction</em>, <em>ignoreSameReactants=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.calculateDegeneracy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">calculateDegeneracy</code><span class="sig-paren">(</span><em>reaction</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.calculateDegeneracy" title="Permalink to this definition">¶</a></dt>
 <dd><p>For a <cite>reaction</cite>  with <cite>Molecule</cite> or <cite>Species</cite> objects given in the direction in which
 the kinetics are defined, compute the reaction-path degeneracy.</p>
-<p>This method by default adjusts for double counting of identical reactants. 
-This should only be adjusted once per reaction. To not adjust for 
+<p>This method by default adjusts for double counting of identical reactants.
+This should only be adjusted once per reaction. To not adjust for
 identical reactants (since you will be reducing them later in the algorithm), add
 <cite>ignoreSameReactants= True</cite> to this method.</p>
 </dd></dl>
@@ -247,26 +253,21 @@ and is None if some averaging or use of a parent node took place.</p>
 <dd><p>Returns the rate rule associated with the kinetics of a reaction by parsing the comments.
 Will return the template associated with the matched rate rule.
 Returns a tuple containing (Boolean_Is_Kinetics_From_Training_reaction, Source_Data)</p>
-<p>For a training reaction, the Source_Data returns 
-[Family_Label, Training_Reaction_Entry, Kinetics_In_Reverse?]</p>
-<p>For a reaction from rate rules, the Source_Data is a tuple containing
-[Family_Label, {‘template’: originalTemplate,</p>
-<div class="system-message">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">/home/mark/workspace/RMG-Py/rmgpy/data/kinetics/family.py:docstring of rmgpy.data.kinetics.KineticsFamily.extractSourceFromComments</tt>, line 10)</p>
-Unexpected indentation.</div>
-<blockquote>
-<div>‘degeneracy’: degeneracy, 
-‘exact’: boolean_exact?, 
-‘rules’: a list of (original rate rule entry, weight in average)
-‘training’: a list of (original rate rule entry associated with training entry, original training entry, weight in average)
-}]</div></blockquote>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/home/mark/workspace/RMG-Py/rmgpy/data/kinetics/family.py:docstring of rmgpy.data.kinetics.KineticsFamily.extractSourceFromComments</tt>, line 15)</p>
-Block quote ends without a blank line; unexpected unindent.</div>
-<p>where TrainingReactions are ones that have created rules used in the estimate.</p>
-<p>where Exact is a boolean of whether the rate is an exact match, 
-Template is the reaction template used,
-and RateRules is a list of the rate rule entries containing the kinetics used</p>
+<p>For a training reaction, the Source_Data returns:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>[Family_Label, Training_Reaction_Entry, Kinetics_In_Reverse?]
+</pre></div>
+</div>
+<p>For a reaction from rate rules, the Source_Data is a tuple containing:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>[Family_Label, {&#39;template&#39;: originalTemplate,
+                &#39;degeneracy&#39;: degeneracy,
+                &#39;exact&#39;: boolean_exact?,
+                &#39;rules&#39;: a list of (original rate rule entry, weight in average)
+                &#39;training&#39;: a list of (original rate rule entry associated with training entry, original training entry, weight in average)}]
+</pre></div>
+</div>
+<p>where Exact is a boolean of whether the rate is an exact match, Template is
+the reaction template used, RateRules is a list of the rate rule entries containing
+the kinetics used, and TrainingReactions are ones that have created rules used in the estimate.</p>
 </dd></dl>
 
 <dl class="method">
@@ -293,14 +294,33 @@ the first is used here; it is assumed to be the most generic.</p>
 
 <dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.generateReactions">
-<code class="descname">generateReactions</code><span class="sig-paren">(</span><em>reactants</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.generateReactions" title="Permalink to this definition">¶</a></dt>
+<code class="descname">generateReactions</code><span class="sig-paren">(</span><em>reactants</em>, <em>products=None</em>, <em>prod_resonance=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.generateReactions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate all reactions between the provided list of one or two
 <cite>reactants</cite>, which should be either single <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> objects
 or lists of same. Does not estimate the kinetics of these reactions
-at this time. Returns a list of <code class="xref py py-class docutils literal"><span class="pre">TemplateReaction</span></code> objects
+at this time. Returns a list of <a class="reference internal" href="templatereaction.html#rmgpy.data.kinetics.TemplateReaction" title="rmgpy.data.kinetics.TemplateReaction"><code class="xref py py-class docutils literal"><span class="pre">TemplateReaction</span></code></a> objects
 using <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> objects for both reactants and products
 The reactions are constructed such that the forward direction is
 consistent with the template of this reaction family.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>reactants</strong> (<em>list</em>) – List of Molecules to react.</li>
+<li><strong>products</strong> (<em>list</em><em>, </em><em>optional</em>) – List of Molecules or Species of desired product structures.</li>
+<li><strong>prod_resonance</strong> (<em>bool</em><em>, </em><em>optional</em>) – Flag to generate resonance structures for product checking.
+Defaults to True, resonance structures are compared.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">List of all reactions containing Molecule objects with the
+specified reactants and products within this family.
+Degenerate reactions are returned as separate reactions.</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -329,20 +349,17 @@ saved to the output file.</p>
 <dd><p>Return the kinetics for the given <cite>reaction</cite> by searching the various
 depositories as well as generating a result using the user-specified <cite>estimator</cite>
 of either ‘group additivity’ or ‘rate rules’.  Unlike
-the regular <code class="xref py py-meth docutils literal"><span class="pre">getKinetics()</span></code> method, this returns a list of
+the regular <a class="reference internal" href="#rmgpy.data.kinetics.KineticsFamily.getKinetics" title="rmgpy.data.kinetics.KineticsFamily.getKinetics"><code class="xref py py-meth docutils literal"><span class="pre">getKinetics()</span></code></a> method, this returns a list of
 results, with each result comprising of</p>
 <ol class="arabic simple">
 <li>the kinetics</li>
 <li>the source - this will be <cite>None</cite> if from a template estimate</li>
 <li>the entry  - this will be <cite>None</cite> if from a template estimate</li>
-</ol>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/home/mark/workspace/RMG-Py/rmgpy/data/kinetics/family.py:docstring of rmgpy.data.kinetics.KineticsFamily.getKinetics</tt>, line 10)</p>
-Enumerated list ends without a blank line; unexpected unindent.</div>
-<p>4. isForward a boolean denoting whether the matched entry is in the same
+<li>isForward a boolean denoting whether the matched entry is in the same
 direction as the inputted reaction. This will always be True if using
 rates rules or group additivity. This can be <cite>True</cite> or <cite>False</cite> if using
-a depository</p>
+a depository</li>
+</ol>
 <p>If returnAllKinetics==False, only the first (best?) matching kinetics is returned.</p>
 </dd></dl>
 
@@ -364,7 +381,7 @@ returned is (kinetics, None).</p>
 <dt id="rmgpy.data.kinetics.KineticsFamily.getKineticsFromDepository">
 <code class="descname">getKineticsFromDepository</code><span class="sig-paren">(</span><em>depository</em>, <em>reaction</em>, <em>template</em>, <em>degeneracy</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.getKineticsFromDepository" title="Permalink to this definition">¶</a></dt>
 <dd><p>Search the given <cite>depository</cite> in this kinetics family for kinetics
-for the given <cite>reaction</cite>. Returns a list of all of the matching 
+for the given <cite>reaction</cite>. Returns a list of all of the matching
 kinetics, the corresponding entries, and <code class="docutils literal"><span class="pre">True</span></code> if the kinetics
 match the forward direction or <code class="docutils literal"><span class="pre">False</span></code> if they match the reverse
 direction.</p>
@@ -373,9 +390,9 @@ direction.</p>
 <dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.getLabeledReactantsAndProducts">
 <code class="descname">getLabeledReactantsAndProducts</code><span class="sig-paren">(</span><em>reactants</em>, <em>products</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.getLabeledReactantsAndProducts" title="Permalink to this definition">¶</a></dt>
-<dd><p>Given <cite>reactants</cite>, a list of <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> objects, and products, a list of 
-<code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> objects, return two new lists of <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> objects with 
-atoms labeled: one for reactants, one for products. Returned molecules are totally 
+<dd><p>Given <cite>reactants</cite>, a list of <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> objects, and products, a list of
+<code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> objects, return two new lists of <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> objects with
+atoms labeled: one for reactants, one for products. Returned molecules are totally
 new entities in memory so input molecules <cite>reactants</cite> and <cite>products</cite> won’t be affected.
 If RMG cannot find appropriate labels, (None, None) will be returned.</p>
 </dd></dl>
@@ -383,7 +400,7 @@ If RMG cannot find appropriate labels, (None, None) will be returned.</p>
 <dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.getRateRule">
 <code class="descname">getRateRule</code><span class="sig-paren">(</span><em>template</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.getRateRule" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the rate rule with the given <cite>template</cite>. Raises a 
+<dd><p>Return the rate rule with the given <cite>template</cite>. Raises a
 <code class="xref py py-class docutils literal"><span class="pre">ValueError</span></code> if no corresponding entry exists.</p>
 </dd></dl>
 
@@ -406,8 +423,8 @@ describe the reaction.</p>
 <dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.getReactionTemplateLabels">
 <code class="descname">getReactionTemplateLabels</code><span class="sig-paren">(</span><em>reaction</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.getReactionTemplateLabels" title="Permalink to this definition">¶</a></dt>
-<dd><p>Retrieve the template for the reaction and 
-return the corresponding labels for each of the 
+<dd><p>Retrieve the template for the reaction and
+return the corresponding labels for each of the
 groups in the template.</p>
 </dd></dl>
 
@@ -415,8 +432,8 @@ groups in the template.</p>
 <dt id="rmgpy.data.kinetics.KineticsFamily.getRootTemplate">
 <code class="descname">getRootTemplate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.getRootTemplate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the root template for the reaction family. Most of the time this
-is the top-level nodes of the tree (as stored in the 
-<code class="xref py py-class docutils literal"><span class="pre">KineticsGroups</span></code> object), but there are a few exceptions (e.g.
+is the top-level nodes of the tree (as stored in the
+<a class="reference internal" href="kineticsgroups.html#rmgpy.data.kinetics.KineticsGroups" title="rmgpy.data.kinetics.KineticsGroups"><code class="xref py py-class docutils literal"><span class="pre">KineticsGroups</span></code></a> object), but there are a few exceptions (e.g.
 R_Recombination).</p>
 </dd></dl>
 
@@ -427,7 +444,7 @@ R_Recombination).</p>
 averaged with verbose=True for this to work.</p>
 <p>Returns a tuple of
 rules, training</p>
-<p>where rules are a list of tuples containing 
+<p>where rules are a list of tuples containing
 the [(original_entry, weight_used_in_average), … ]</p>
 <p>and training is a list of tuples containing
 the [(rate_rule_entry, training_reaction_entry, weight_used_in_average),…]</p>
@@ -457,7 +474,7 @@ nodes. We then return a list of all group nodes found along the way.</p>
 <dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.hasRateRule">
 <code class="descname">hasRateRule</code><span class="sig-paren">(</span><em>template</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.hasRateRule" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if a rate rule with the given <cite>template</cite> currently 
+<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if a rate rule with the given <cite>template</cite> currently
 exists, or <code class="docutils literal"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
@@ -561,7 +578,7 @@ correct labels, hence the <cite>atoms</cite> parameter. The <cite>atoms</cite> p
 include extra labels, and so we only require that every labeled atom in
 the functional group represented by <cite>node</cite> has an equivalent labeled
 atom in <cite>structure</cite>.</p>
-<p>Matching to structure is more strict than to node.  All labels in structure must 
+<p>Matching to structure is more strict than to node.  All labels in structure must
 be found in node.  However the reverse is not true, unless <cite>strict</cite> is set to True.</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -619,8 +636,8 @@ the template label in the form ‘group1;group2’ or ‘group1;group2;group3’
 <dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.retrieveTemplate">
 <code class="descname">retrieveTemplate</code><span class="sig-paren">(</span><em>templateLabels</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.retrieveTemplate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reconstruct the groups associated with the 
-labels of the reaction template and 
+<dd><p>Reconstruct the groups associated with the
+labels of the reaction template and
 return a list.</p>
 </dd></dl>
 
@@ -640,7 +657,7 @@ disk.</p>
 <dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.saveDictionary">
 <code class="descname">saveDictionary</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.saveDictionary" title="Permalink to this definition">¶</a></dt>
-<dd><p>Extract species from all entries associated with a kinetics library or depository and save them 
+<dd><p>Extract species from all entries associated with a kinetics library or depository and save them
 to the path given.</p>
 </dd></dl>
 
@@ -694,7 +711,7 @@ syntax.</p>
 <code class="descname">saveTrainingReactions</code><span class="sig-paren">(</span><em>reactions</em>, <em>reference=None</em>, <em>referenceType=''</em>, <em>shortDesc=''</em>, <em>rank=3</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.saveTrainingReactions" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function takes a list of reactions appends it to the training reactions file.  It ignores the existence of
 duplicate reactions.</p>
-<p>The rank for each new reaction’s kinetics is set to a default value of 3 unless the user specifies differently 
+<p>The rank for each new reaction’s kinetics is set to a default value of 3 unless the user specifies differently
 for those reactions.</p>
 <p>For each entry, the long description is imported from the kinetics comment.</p>
 </dd></dl>
@@ -707,11 +724,49 @@ for those reactions.</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<div class="sidebarlogo">
-<a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
+  <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    <div class="sphinxsidebarwrapper">
+        <div class="sidebarlogo"><a href="../../index.html">
+            <img src="../../_static/rmg-logo-small.png" alt="RMG" />
+        </a></div>
+      <div id="sidebar">
+        <div id="rmgsidebar">
+          <a href="http://rmg.mit.edu">
+            <div class="menuitem">
+              <img src="../../_static/rmg-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG Website</div>
+              <div class="menutext menudesc">Interactive website for RMG-Py</div>
+            </div>
+          </a>
+          <a href="https://github.com/ReactionMechanismGenerator/RMG-Py">
+            <div class="menuitem">
+              <img src="../../_static/github-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG GitHub</div>
+              <div class="menutext menudesc">View source and post issues</div>
+            </div>
+          </a>
+        </div>
+        <div class="menuitem">
+        </div>
+        <div class="menuitem">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="kineticsdepository.html"
+                        title="previous chapter">rmgpy.data.kinetics.KineticsDepository</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="kineticsgroups.html"
+                        title="next chapter">rmgpy.data.kinetics.KineticsGroups</a></p>
+        </div>
+        <div class="menuitem">
+<div role="note" aria-label="source link">
+    <h3>This Page</h3>
+        <ul class="this-page-menu">
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/data/kineticsfamily.rst"
+                   rel="nofollow">View Source</a></li>
+        </ul>
 </div>
+        </div>
+        <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
@@ -722,88 +777,38 @@ for those reactions.</p>
     </form>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
-
-<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/data/kineticsfamily.rst"
-           rel="nofollow">Edit this page</a></h4><P>
-<div class="customsidebar">
-<P>
-<table cellpadding="3">
-
-<tr><td>
-        <a href="http://reactionmechanismgenerator.github.io/RMG-Py"><img src="../../_static/documentation-icon.png" class="icon_sidebar" width="32px" alt="Documentation"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://reactionmechanismgenerator.github.io/RMG-Py">Documentation</a></div>
-        <div class="linkdesc">Learn more about the RMG software</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/database/"><img src="../../_static/database-logo-small.png" class="icon_sidebar" width="32px" alt="Database"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
-        <div class="linkdesc">Browse the RMG database of chemical and kinetic parameters</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/input">Create Input File</a></div>
-        <div class="linkdesc">Online form for making an RMG input file</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/molecule_search"><img src="../../_static/moleculedraw-logo-small.png" class="icon_sidebar" width="32px" alt="Molecule Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
-        <div class="linkdesc">Draw a molecule from its adjlist and search or estimate its properties</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/database/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/kinetics/search/">Kinetics Search</a></div>
-        <div class="linkdesc">Search or estimate kinetics of a chemical reaction</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/solvation_search"><img src="../../_static/solvation-search-logo-small.png" class="icon_sidebar" width="32px" alt="Solvation Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
-        <div class="linkdesc">Search or estimate solvation properties of solvent and a solute</div>
-</td></tr>
-
-
-<tr><td>
-        <a href="http://rmg.mit.edu/pdep/"><img src="../../_static/pdep-logo-small.png" class="icon_sidebar" width="32px" alt="Pressure Dependent Networks"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
-        <div class="linkdesc">CanTherm pdep kinetic calculations</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/tools/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/tools/">Other RMG Tools</a></div>
-        <div class="linkdesc">Additional tools to supplement RMG</div>
-</td></tr>
-
-</table>
-
-</div>
         </div>
       </div>
+    </div>
+  </div>
+
       <div class="clearer"></div>
     </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="kineticsgroups.html" title="rmgpy.data.kinetics.KineticsGroups"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="kineticsdepository.html" title="rmgpy.data.kinetics.KineticsDepository"
+             >previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >Database (<code class="docutils literal"><span class="pre">rmgpy.data</span></code>)</a> &#187;</li> 
+      </ul>
+    </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+        &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

@@ -78,21 +78,6 @@ Class                           Description
 
 
 
-Exceptions
-==========
-
-.. currentmodule:: rmgpy.rmg
-
-=============================== ================================================
-Exception                       Description
-=============================== ================================================
-:exc:`InputError`               Raised when an error occurs while working with an RMG input file
-:exc:`OutputError`              Raised when an error occurs while saving an RMG output file
-:exc:`PressureDependenceError`  Raised when an error occurs while computing pressure-dependent rate coefficients
-=============================== ================================================
-
-
-
 .. toctree::
     :hidden:
     

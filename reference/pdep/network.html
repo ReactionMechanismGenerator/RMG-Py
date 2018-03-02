@@ -5,8 +5,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>rmgpy.pdep.Network &#8212; RMG Py 2.1.0 documentation</title>
-    <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
+    <title>rmgpy.pdep.Network &#8212; RMG-Py 2.1.0 Documentation</title>
+    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -36,15 +36,6 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 
   </head>
   <body>
-<div class="header">
-&nbsp;
-</div>  
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body">
-            
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -60,18 +51,24 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="configuration.html" title="rmgpy.pdep.Configuration"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 2.1.0</a> &raquo;</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Pressure dependence (<code class="docutils literal"><span class="pre">rmgpy.pdep</span></code>)</a> &#187;</li> 
       </ul>
-    </div>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
             
   <div class="section" id="rmgpy-pdep-network">
 <h1>rmgpy.pdep.Network<a class="headerlink" href="#rmgpy-pdep-network" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.pdep.Network">
-<em class="property">class </em><code class="descclassname">rmgpy.pdep.</code><code class="descname">Network</code><span class="sig-paren">(</span><em>label=''</em>, <em>isomers=None</em>, <em>reactants=None</em>, <em>products=None</em>, <em>pathReactions=None</em>, <em>bathGas=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Network" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.pdep.</code><code class="descname">Network</code><span class="sig-paren">(</span><em>label=''</em>, <em>isomers=None</em>, <em>reactants=None</em>, <em>products=None</em>, <em>pathReactions=None</em>, <em>bathGas=None</em>, <em>netReactions=None</em>, <em>T=0.0</em>, <em>P=0.0</em>, <em>Elist=None</em>, <em>Jlist=None</em>, <em>Ngrains=0</em>, <em>NJ=0</em>, <em>activeKRotor=True</em>, <em>activeJRotor=True</em>, <em>grainSize=0.0</em>, <em>grainCount=0</em>, <em>E0=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Network" title="Permalink to this definition">¶</a></dt>
 <dd><p>A representation of a unimolecular reaction network. The attributes are:</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -129,13 +126,22 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <tr class="row-even"><td><cite>NJ</cite></td>
 <td>The number of angular momentum grains</td>
 </tr>
-<tr class="row-odd"><td><cite>activeKRotor</cite></td>
+<tr class="row-odd"><td><cite>grainSize</cite></td>
+<td>Maximum size of separation between energies</td>
+</tr>
+<tr class="row-even"><td><cite>grainCount</cite></td>
+<td>Minimum number of descrete energies separated</td>
+</tr>
+<tr class="row-odd"><td><cite>E0</cite></td>
+<td>A list of ground state energies of isomers, reactants, and products</td>
+</tr>
+<tr class="row-even"><td><cite>activeKRotor</cite></td>
 <td><code class="docutils literal"><span class="pre">True</span></code> if the K-rotor is treated as active, <code class="docutils literal"><span class="pre">False</span></code> if treated as adiabatic</td>
 </tr>
-<tr class="row-even"><td><cite>activeJRotor</cite></td>
+<tr class="row-odd"><td><cite>activeJRotor</cite></td>
 <td><code class="docutils literal"><span class="pre">True</span></code> if the J-rotor is treated as active, <code class="docutils literal"><span class="pre">False</span></code> if treated as adiabatic</td>
 </tr>
-<tr class="row-odd"><td><cite>rmgmode</cite></td>
+<tr class="row-even"><td><cite>rmgmode</cite></td>
 <td><code class="docutils literal"><span class="pre">True</span></code> if in RMG mode, <code class="docutils literal"><span class="pre">False</span></code> otherwise</td>
 </tr>
 </tbody>
@@ -184,10 +190,10 @@ applied to each temperature in the range of interest by interpolation.</p>
 <dt id="rmgpy.pdep.Network.calculateEquilibriumRatios">
 <code class="descname">calculateEquilibriumRatios</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Network.calculateEquilibriumRatios" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return an array containing the fraction of each isomer and reactant
-channel present at equilibrium, as determined from the Gibbs free 
-energy and using the concentration equilibrium constant 
+channel present at equilibrium, as determined from the Gibbs free
+energy and using the concentration equilibrium constant
 <span class="math">\(K_\mathrm{c}\)</span>. These values are ratios, and the absolute
-magnitude is not guaranteed; however, the implementation scales the 
+magnitude is not guaranteed; however, the implementation scales the
 elements of the array so that they sum to unity.</p>
 </dd></dl>
 
@@ -228,7 +234,7 @@ pressure-dependent rate coefficients</p>
 <dt id="rmgpy.pdep.Network.mapDensitiesOfStates">
 <code class="descname">mapDensitiesOfStates</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Network.mapDensitiesOfStates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Map the overall densities of states to the current energy grains.
-Semi-logarithmic interpolation will be used if the grain sizes of 
+Semi-logarithmic interpolation will be used if the grain sizes of
 <cite>Elist0</cite> and <cite>Elist</cite> do not match; this should not be a significant
 source of error as long as the grain sizes are sufficiently small.</p>
 </dd></dl>
@@ -250,8 +256,8 @@ default.</p>
 <dt id="rmgpy.pdep.Network.selectEnergyGrains">
 <code class="descname">selectEnergyGrains</code><span class="sig-paren">(</span><em>T</em>, <em>grainSize=0.0</em>, <em>grainCount=0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Network.selectEnergyGrains" title="Permalink to this definition">¶</a></dt>
 <dd><p>Select a suitable list of energies to use for subsequent calculations.
-This is done by finding the minimum and maximum energies on the 
-potential energy surface, then adding a multiple of 
+This is done by finding the minimum and maximum energies on the
+potential energy surface, then adding a multiple of
 <span class="math">\(k_\mathrm{B} T\)</span> onto the maximum energy.</p>
 <p>You must specify either the desired grain spacing <cite>grainSize</cite> in J/mol
 or the desired number of grains <cite>Ngrains</cite>, as well as a temperature
@@ -266,7 +272,7 @@ in J/mol is returned.</p>
 <dt id="rmgpy.pdep.Network.setConditions">
 <code class="descname">setConditions</code><span class="sig-paren">(</span><em>T</em>, <em>P</em>, <em>ymB=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Network.setConditions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the current network conditions to the temperature <cite>T</cite> in K and
-pressure <cite>P</cite> in Pa. All of the internal variables are updated 
+pressure <cite>P</cite> in Pa. All of the internal variables are updated
 accordingly if they are out of date. For example, those variables that
 depend only on temperature will not be recomputed if the temperature
 is the same.</p>
@@ -289,7 +295,7 @@ population profiles for each configuration.</p>
 <dl class="method">
 <dt id="rmgpy.pdep.Network.solveReducedME">
 <code class="descname">solveReducedME</code><span class="sig-paren">(</span><em>tlist</em>, <em>x0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Network.solveReducedME" title="Permalink to this definition">¶</a></dt>
-<dd><p>Directly solve the reduced master equation using a stiff ODE solver. 
+<dd><p>Directly solve the reduced master equation using a stiff ODE solver.
 Pass the output time points <cite>tlist</cite> in s and the initial total
 populations <cite>x0</cite>. Be sure to run one of the methods for generating
 <span class="math">\(k(T,P)\)</span> values before calling this method.
@@ -305,11 +311,49 @@ population profiles for each configuration.</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<div class="sidebarlogo">
-<a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
+  <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    <div class="sphinxsidebarwrapper">
+        <div class="sidebarlogo"><a href="../../index.html">
+            <img src="../../_static/rmg-logo-small.png" alt="RMG" />
+        </a></div>
+      <div id="sidebar">
+        <div id="rmgsidebar">
+          <a href="http://rmg.mit.edu">
+            <div class="menuitem">
+              <img src="../../_static/rmg-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG Website</div>
+              <div class="menutext menudesc">Interactive website for RMG-Py</div>
+            </div>
+          </a>
+          <a href="https://github.com/ReactionMechanismGenerator/RMG-Py">
+            <div class="menuitem">
+              <img src="../../_static/github-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG GitHub</div>
+              <div class="menutext menudesc">View source and post issues</div>
+            </div>
+          </a>
+        </div>
+        <div class="menuitem">
+        </div>
+        <div class="menuitem">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="configuration.html"
+                        title="previous chapter">rmgpy.pdep.Configuration</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="mastereqn.html"
+                        title="next chapter">The master equation</a></p>
+        </div>
+        <div class="menuitem">
+<div role="note" aria-label="source link">
+    <h3>This Page</h3>
+        <ul class="this-page-menu">
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/pdep/network.rst"
+                   rel="nofollow">View Source</a></li>
+        </ul>
 </div>
+        </div>
+        <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
@@ -320,88 +364,38 @@ population profiles for each configuration.</p>
     </form>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
-
-<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/pdep/network.rst"
-           rel="nofollow">Edit this page</a></h4><P>
-<div class="customsidebar">
-<P>
-<table cellpadding="3">
-
-<tr><td>
-        <a href="http://reactionmechanismgenerator.github.io/RMG-Py"><img src="../../_static/documentation-icon.png" class="icon_sidebar" width="32px" alt="Documentation"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://reactionmechanismgenerator.github.io/RMG-Py">Documentation</a></div>
-        <div class="linkdesc">Learn more about the RMG software</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/database/"><img src="../../_static/database-logo-small.png" class="icon_sidebar" width="32px" alt="Database"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
-        <div class="linkdesc">Browse the RMG database of chemical and kinetic parameters</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/input">Create Input File</a></div>
-        <div class="linkdesc">Online form for making an RMG input file</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/molecule_search"><img src="../../_static/moleculedraw-logo-small.png" class="icon_sidebar" width="32px" alt="Molecule Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
-        <div class="linkdesc">Draw a molecule from its adjlist and search or estimate its properties</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/database/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/kinetics/search/">Kinetics Search</a></div>
-        <div class="linkdesc">Search or estimate kinetics of a chemical reaction</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/solvation_search"><img src="../../_static/solvation-search-logo-small.png" class="icon_sidebar" width="32px" alt="Solvation Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
-        <div class="linkdesc">Search or estimate solvation properties of solvent and a solute</div>
-</td></tr>
-
-
-<tr><td>
-        <a href="http://rmg.mit.edu/pdep/"><img src="../../_static/pdep-logo-small.png" class="icon_sidebar" width="32px" alt="Pressure Dependent Networks"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
-        <div class="linkdesc">CanTherm pdep kinetic calculations</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/tools/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/tools/">Other RMG Tools</a></div>
-        <div class="linkdesc">Additional tools to supplement RMG</div>
-</td></tr>
-
-</table>
-
-</div>
         </div>
       </div>
+    </div>
+  </div>
+
       <div class="clearer"></div>
     </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="mastereqn.html" title="The master equation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="configuration.html" title="rmgpy.pdep.Configuration"
+             >previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >Pressure dependence (<code class="docutils literal"><span class="pre">rmgpy.pdep</span></code>)</a> &#187;</li> 
+      </ul>
+    </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+        &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>

@@ -5,8 +5,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>rmgpy.molecule.graph.Graph &#8212; RMG Py 2.1.0 documentation</title>
-    <link rel="stylesheet" href="../../_static/rmg.css" type="text/css" />
+    <title>rmgpy.molecule.graph.Graph &#8212; RMG-Py 2.1.0 Documentation</title>
+    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -36,15 +36,6 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 
   </head>
   <body>
-<div class="header">
-&nbsp;
-</div>  
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body">
-            
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -60,12 +51,18 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li class="right" >
           <a href="edge.html" title="rmgpy.molecule.graph.Edge"
              accesskey="P">previous</a> |</li>
-<li><a href="../../index.html">Documentation 2.1.0</a> &raquo;</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
       </ul>
-    </div>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
             
   <div class="section" id="rmgpy-molecule-graph-graph">
 <h1>rmgpy.molecule.graph.Graph<a class="headerlink" href="#rmgpy-molecule-graph-graph" title="Permalink to this headline">¶</a></h1>
@@ -73,12 +70,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <dt id="rmgpy.molecule.graph.Graph">
 <em class="property">class </em><code class="descclassname">rmgpy.molecule.graph.</code><code class="descname">Graph</code><span class="sig-paren">(</span><em>vertices=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.graph.Graph" title="Permalink to this definition">¶</a></dt>
 <dd><p>A graph data type. The vertices of the graph are stored in a list
-<cite>vertices</cite>; this provides a consistent traversal order. The edges of the
-graph are stored in a dictionary of dictionaries <cite>edges</cite>. A single edge can
-be accessed using <code class="docutils literal"><span class="pre">graph.edges[vertex1][vertex2]</span></code> or the <code class="xref py py-meth docutils literal"><span class="pre">getEdge()</span></code>
-method; in either case, an exception will be raised if the edge does not
-exist. All edges of a vertex can be accessed using <code class="docutils literal"><span class="pre">graph.edges[vertex]</span></code>
-or the <code class="xref py py-meth docutils literal"><span class="pre">getEdges()</span></code> method.</p>
+<cite>vertices</cite>; this provides a consistent traversal order. A single edge can
+be accessed using the <a class="reference internal" href="#rmgpy.molecule.graph.Graph.getEdge" title="rmgpy.molecule.graph.Graph.getEdge"><code class="xref py py-meth docutils literal"><span class="pre">getEdge()</span></code></a> method or by accessing specific
+vertices using <code class="docutils literal"><span class="pre">vertex1.edges[vertex2]</span></code>; in either case, an exception
+will be raised if the edge does not exist. All edges of a vertex can be
+accessed using the <a class="reference internal" href="#rmgpy.molecule.graph.Graph.getEdges" title="rmgpy.molecule.graph.Graph.getEdges"><code class="xref py py-meth docutils literal"><span class="pre">getEdges()</span></code></a> method or <code class="docutils literal"><span class="pre">vertex.edges</span></code>.</p>
 <dl class="method">
 <dt id="rmgpy.molecule.graph.Graph.addEdge">
 <code class="descname">addEdge</code><span class="sig-paren">(</span><em>self</em>, <em>Edge edge</em><span class="sig-paren">)</span> &#x2192; Edge<a class="headerlink" href="#rmgpy.molecule.graph.Graph.addEdge" title="Permalink to this definition">¶</a></dt>
@@ -152,6 +148,12 @@ p. 657-662 (1993).</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.graph.Graph.getAllEdges">
+<code class="descname">getAllEdges</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#rmgpy.molecule.graph.Graph.getAllEdges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all edges in the graph.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.graph.Graph.getAllPolycyclicVertices">
 <code class="descname">getAllPolycyclicVertices</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#rmgpy.molecule.graph.Graph.getAllPolycyclicVertices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return all vertices belonging to two or more cycles, fused or spirocyclic.</p>
@@ -168,10 +170,9 @@ p. 657-662 (1993).</p>
 <dl class="method">
 <dt id="rmgpy.molecule.graph.Graph.getDisparateRings">
 <code class="descname">getDisparateRings</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; tuple<a class="headerlink" href="#rmgpy.molecule.graph.Graph.getDisparateRings" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a list of distinct polycyclic and monocyclic rings within the graph.
-There is some code duplication in this function in order to maximize speed up
-so as to call <cite>self.getSmallestSetOfSmallestRings()</cite> only once.</p>
-<p>Returns: monocyclicRingsList, polycyclicRingsList</p>
+<dd><p>Get all disjoint monocyclic and polycyclic cycle clusters in the molecule.
+Takes the RC and recursively merges all cycles which share vertices.</p>
+<p>Returns: monocyclic_cycles, polycyclic_cycles</p>
 </dd></dl>
 
 <dl class="method">
@@ -205,21 +206,39 @@ in order in the ring structure.</p>
 <dt id="rmgpy.molecule.graph.Graph.getPolycyclicRings">
 <code class="descname">getPolycyclicRings</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#rmgpy.molecule.graph.Graph.getPolycyclicRings" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of cycles that are polycyclic.
-In other words, merge the cycles which are fused or spirocyclic into 
-a single polycyclic cycle, and return only those cycles. 
+In other words, merge the cycles which are fused or spirocyclic into
+a single polycyclic cycle, and return only those cycles.
 Cycles which are not polycyclic are not returned.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.graph.Graph.getRelevantCycles">
+<code class="descname">getRelevantCycles</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#rmgpy.molecule.graph.Graph.getRelevantCycles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the set of relevant cycles as a list of lists.
+Uses RingDecomposerLib for ring perception.</p>
+<p>Kolodzik, A.; Urbaczek, S.; Rarey, M.
+Unique Ring Families: A Chemically Meaningful Description
+of Molecular Ring Topologies.
+J. Chem. Inf. Model., 2012, 52 (8), pp 2013-2021</p>
+<p>Flachsenberg, F.; Andresen, N.; Rarey, M.
+RingDecomposerLib: An Open-Source Implementation of
+Unique Ring Families and Other Cycle Bases.
+J. Chem. Inf. Model., 2017, 57 (2), pp 122-126</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.graph.Graph.getSmallestSetOfSmallestRings">
 <code class="descname">getSmallestSetOfSmallestRings</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#rmgpy.molecule.graph.Graph.getSmallestSetOfSmallestRings" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a list of the smallest set of smallest rings in the graph. The
-algorithm implements was adapted from a description by Fan, Panaye,
-Doucet, and Barbu (doi: 10.1021/ci00015a002)</p>
-<p>B. T. Fan, A. Panaye, J. P. Doucet, and A. Barbu. “Ring Perception: A
-New Algorithm for Directly Finding the Smallest Set of Smallest Rings
-from a Connection Table.” <em>J. Chem. Inf. Comput. Sci.</em> <strong>33</strong>,
-p. 657-662 (1993).</p>
+<dd><p>Returns the smallest set of smallest rings as a list of lists.
+Uses RingDecomposerLib for ring perception.</p>
+<p>Kolodzik, A.; Urbaczek, S.; Rarey, M.
+Unique Ring Families: A Chemically Meaningful Description
+of Molecular Ring Topologies.
+J. Chem. Inf. Model., 2012, 52 (8), pp 2013-2021</p>
+<p>Flachsenberg, F.; Andresen, N.; Rarey, M.
+RingDecomposerLib: An Open-Source Implementation of
+Unique Ring Families and Other Cycle Bases.
+J. Chem. Inf. Model., 2017, 57 (2), pp 122-126</p>
 </dd></dl>
 
 <dl class="method">
@@ -332,7 +351,7 @@ used to accelerate the isomorphism checking.</p>
 <dl class="attribute">
 <dt id="rmgpy.molecule.graph.Graph.vertices">
 <code class="descname">vertices</code><a class="headerlink" href="#rmgpy.molecule.graph.Graph.vertices" title="Permalink to this definition">¶</a></dt>
-<dd><p>vertices: list</p>
+<dd><p><em>vertices</em> – list</p>
 </dd></dl>
 
 </dd></dl>
@@ -343,11 +362,49 @@ used to accelerate the isomorphism checking.</p>
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<div class="sidebarlogo">
-<a href="../../index.html"><img src="../../_static/rmg-logo-small.png" alt="RMG" /></a>
+  <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    <div class="sphinxsidebarwrapper">
+        <div class="sidebarlogo"><a href="../../index.html">
+            <img src="../../_static/rmg-logo-small.png" alt="RMG" />
+        </a></div>
+      <div id="sidebar">
+        <div id="rmgsidebar">
+          <a href="http://rmg.mit.edu">
+            <div class="menuitem">
+              <img src="../../_static/rmg-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG Website</div>
+              <div class="menutext menudesc">Interactive website for RMG-Py</div>
+            </div>
+          </a>
+          <a href="https://github.com/ReactionMechanismGenerator/RMG-Py">
+            <div class="menuitem">
+              <img src="../../_static/github-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG GitHub</div>
+              <div class="menutext menudesc">View source and post issues</div>
+            </div>
+          </a>
+        </div>
+        <div class="menuitem">
+        </div>
+        <div class="menuitem">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="edge.html"
+                        title="previous chapter">rmgpy.molecule.graph.Edge</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="vf2.html"
+                        title="next chapter">rmgpy.molecule.vf2.VF2</a></p>
+        </div>
+        <div class="menuitem">
+<div role="note" aria-label="source link">
+    <h3>This Page</h3>
+        <ul class="this-page-menu">
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/molecule/graph.rst"
+                   rel="nofollow">View Source</a></li>
+        </ul>
 </div>
+        </div>
+        <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
@@ -358,88 +415,38 @@ used to accelerate the isomorphism checking.</p>
     </form>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
-
-<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/molecule/graph.rst"
-           rel="nofollow">Edit this page</a></h4><P>
-<div class="customsidebar">
-<P>
-<table cellpadding="3">
-
-<tr><td>
-        <a href="http://reactionmechanismgenerator.github.io/RMG-Py"><img src="../../_static/documentation-icon.png" class="icon_sidebar" width="32px" alt="Documentation"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://reactionmechanismgenerator.github.io/RMG-Py">Documentation</a></div>
-        <div class="linkdesc">Learn more about the RMG software</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/database/"><img src="../../_static/database-logo-small.png" class="icon_sidebar" width="32px" alt="Database"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/">Database</a></div>
-        <div class="linkdesc">Browse the RMG database of chemical and kinetic parameters</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/input"><img src="../../_static/input-logo-small.png" class="icon_sidebar" width="32px" alt="Create Input File"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/input">Create Input File</a></div>
-        <div class="linkdesc">Online form for making an RMG input file</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/molecule_search"><img src="../../_static/moleculedraw-logo-small.png" class="icon_sidebar" width="32px" alt="Molecule Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/molecule_search">Molecule Search</a></div>
-        <div class="linkdesc">Draw a molecule from its adjlist and search or estimate its properties</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/database/kinetics/search/"><img src="../../_static/kinetics-search-logo-small.png" class="icon_sidebar" width="32px" alt="Kinetics Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/database/kinetics/search/">Kinetics Search</a></div>
-        <div class="linkdesc">Search or estimate kinetics of a chemical reaction</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/solvation_search"><img src="../../_static/solvation-search-logo-small.png" class="icon_sidebar" width="32px" alt="Solvation Search"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/solvation_search">Solvation Search</a></div>
-        <div class="linkdesc">Search or estimate solvation properties of solvent and a solute</div>
-</td></tr>
-
-
-<tr><td>
-        <a href="http://rmg.mit.edu/pdep/"><img src="../../_static/pdep-logo-small.png" class="icon_sidebar" width="32px" alt="Pressure Dependent Networks"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/pdep/">Pressure Dependent Networks</a></div>
-        <div class="linkdesc">CanTherm pdep kinetic calculations</div>
-</td></tr>
-
-<tr><td>
-        <a href="http://rmg.mit.edu/tools/"><img src="../../_static/tools-icon.png" class="icon_sidebar" width="32px" alt="Simulation & Tools"/></a>
-</td>
-<td>
-        <div class="biglink_sidebar"><a href="http://rmg.mit.edu/tools/">Other RMG Tools</a></div>
-        <div class="linkdesc">Additional tools to supplement RMG</div>
-</td></tr>
-
-</table>
-
-</div>
         </div>
       </div>
+    </div>
+  </div>
+
       <div class="clearer"></div>
     </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="vf2.html" title="rmgpy.molecule.vf2.VF2"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="edge.html" title="rmgpy.molecule.graph.Edge"
+             >previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+      </ul>
+    </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2002-2017, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+        &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
     </div>
   </body>
 </html>
