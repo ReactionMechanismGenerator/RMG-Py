@@ -731,6 +731,9 @@ def projectRotors(conformer, F, rotors, linear, TS):
     molecule `linear`, project out the nonvibrational modes from the force
     constant matrix and use this to determine the vibrational frequencies. The
     list of vibrational frequencies is returned in cm^-1.
+
+    Refer to Gaussian whitepaper (http://gaussian.com/vib/) for procedure to calculate 
+    harmonic oscillator vibrational frequencies using the force constant matrix.
     """
     
     Nrotors = len(rotors)
@@ -855,7 +858,9 @@ def projectRotors(conformer, F, rotors, linear, TS):
 
     logging.debug('Frequencies from internal Hessian')  
     for i in range(3*Natoms-external):
-        logging.debug(numpy.sqrt(eig[i])/(2 * math.pi * constants.c * 100))
+        with numpy.warnings.catch_warnings():
+            numpy.warnings.filterwarnings('ignore', r'invalid value encountered in sqrt')
+            logging.debug(numpy.sqrt(eig[i])/(2 * math.pi * constants.c * 100))
 
     # Now we can start thinking about projecting out the internal rotations
     Dint=numpy.zeros((3*Natoms,Nrotors), numpy.float64)
@@ -934,7 +939,9 @@ def projectRotors(conformer, F, rotors, linear, TS):
 
     logging.debug('Frequencies from projected Hessian')
     for i in range(3*Natoms):
-        logging.debug(numpy.sqrt(eig[i])/(2 * math.pi * constants.c * 100))
+        with numpy.warnings.catch_warnings():
+            numpy.warnings.filterwarnings('ignore', r'invalid value encountered in sqrt')
+            logging.debug(numpy.sqrt(eig[i])/(2 * math.pi * constants.c * 100))
         
     return numpy.sqrt(eig[-Nvib:]) / (2 * math.pi * constants.c * 100)
 
