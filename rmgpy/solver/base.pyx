@@ -799,7 +799,7 @@ cdef class ReactionSystem(DASx):
                                     continue
                                 consumption = coreSpeciesConsumptionRates[spcIndex]
                                 if consumption != 0: #if consumption = 0 ignore species
-                                    BNum = (reactionRate/consumption)/branching(coreSpeciesRateRatios[spcIndex]) 
+                                    BNum = branching(coreSpeciesRateRatios[spcIndex],reactionRate/consumption) 
                                     if BNum>branchingNums[index]:
                                         branchingNums[index] = BNum
                     else:
@@ -827,6 +827,7 @@ cdef class ReactionSystem(DASx):
                                     continue
                                 consumption = coreSpeciesConsumptionRates[spcIndex]
                                 if consumption != 0: #if production = 0 ignore species
+                                    BNum = branching(coreSpeciesRateRatios[spcIndex],reactionRate/consumption) 
                                     if BNum>branchingNums[index]:
                                         branchingNums[index] = BNum
                                 
