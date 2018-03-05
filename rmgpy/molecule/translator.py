@@ -406,7 +406,7 @@ def _openbabel_translator(input_object, identifier_type, mol=None):
             ob_conversion.AddOption('w')
             ob_conversion.AddOption('K')
         elif identifier_type == 'smi':
-            ob_conversion.SetOutFormat('smi')
+            ob_conversion.SetOutFormat('can')
             # turn off isomer and stereochemistry information
             ob_conversion.AddOption('i')
         else:
