@@ -5,16 +5,17 @@ class Test_Data(unittest.TestCase):
 
 	def setUp(self):
 
-		X, y, _ = get_data_from_db('rmg', 'sdata134k', 'polycyclic_2954_table')
+		X, y, _ = get_data_from_db('rmg', 'rmg_internal', 'kh_tricyclics_table')
 		
 		self.X = X
 		self.y = y
 
-
 	def test_get_HC_polycyclics_data_from_db(self):
 
-		self.assertEqual(len(self.X), 2954)
-		self.assertEqual(len(self.y), 2954)
+		self.assertEqual(len(self.X), 180)
+		self.assertEqual(len(self.y), 180)
+
+	def test_get_data_from_db_using_Cp_data(self):
 
 	def test_prepare_folded_data(self):
 
@@ -109,9 +110,9 @@ class Test_Data(unittest.TestCase):
 	def test_prepare_folded_data_from_multiple_datasets(self):
 
 		datasets =  [
-					('rmg','sdata134k', 'kh_tricyclic_table', 0.1), 
-					('rmg','sdata134k', 'kh_tricyclic_table', 0.1),
-					('rmg','sdata134k', 'kh_tricyclic_table', 0.1)
+					('rmg','rmg_internal', 'kh_tricyclics_table', 0.1), 
+					('rmg','rmg_internal', 'kh_tricyclics_table', 0.1),
+					('rmg','rmg_internal', 'kh_tricyclics_table', 0.1)
 					]
 
 
@@ -130,9 +131,9 @@ class Test_Data(unittest.TestCase):
 	def test_prepare_full_train_data_from_multiple_datasets(self):
 
 		datasets =  [
-					('rmg','sdata134k', 'kh_tricyclic_table', 0.1), 
-					('rmg','sdata134k', 'kh_tricyclic_table', 0.1),
-					('rmg','sdata134k', 'kh_tricyclic_table', 0.1)
+					('rmg','rmg_internal', 'kh_tricyclics_table', 0.1), 
+					('rmg','rmg_internal', 'kh_tricyclics_table', 0.1),
+					('rmg','rmg_internal', 'kh_tricyclics_table', 0.1)
 					]
 
 
@@ -154,7 +155,7 @@ class Test_Data(unittest.TestCase):
 															shuffle_seed=None, 
 															testing_ratio=0.1)
 
-		self.assertEqual(len(X_test), 295)
-		self.assertEqual(len(y_test), 295)
-		self.assertEqual(len(X_train_and_val), 2659)
-		self.assertEqual(len(y_train_and_val), 2659)
+		self.assertEqual(len(X_test), 18)
+		self.assertEqual(len(y_test), 18)
+		self.assertEqual(len(X_train_and_val), 162)
+		self.assertEqual(len(y_train_and_val), 162)
