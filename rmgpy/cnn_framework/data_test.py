@@ -156,9 +156,9 @@ class Test_Data(unittest.TestCase):
 		self.assertEqual(len(X_test), 54)
 		self.assertEqual(len(y_test), 54)
 
-	def test_split_tst_from_train_and_val(self):
+	def test_split_test_from_train_and_val(self):
 
-		X_test, y_test, X_train_and_val, y_train_and_val = split_tst_from_train_and_val(\
+		X_test, y_test, X_train_and_val, y_train_and_val = split_test_from_train_and_val(\
 															self.X, self.y, 
 															shuffle_seed=None, 
 															testing_ratio=0.1)

@@ -4,6 +4,7 @@ import numpy as np
 from rmgpy.molecule.molecule import Molecule
 from .molecule_tensor import get_molecule_tensor, pad_molecule_tensor
 from pymongo import MongoClient
+from nose.plugins.attrib import attr
 
 def get_host_info(host):
 
@@ -116,7 +117,7 @@ def prepare_folded_data_from_multiple_datasets(datasets,
 								prediction_task)
 
 		logging.info('Splitting dataset with testing ratio of {0}...'.format(testing_ratio))
-		split_data = split_tst_from_train_and_val(X, 
+		split_data = split_test_from_train_and_val(X, 
 												y, 
 												shuffle_seed=0, 
 												testing_ratio=testing_ratio)
@@ -175,7 +176,7 @@ def prepare_full_train_data_from_multiple_datasets(datasets,
 										prediction_task)
 
 		logging.info('Splitting dataset with testing ratio of {0}...'.format(testing_ratio))
-		split_data = split_tst_from_train_and_val(X, 
+		split_data = split_test_from_train_and_val(X, 
 												y, 
 												smis, 
 												shuffle_seed=0, 
@@ -211,7 +212,8 @@ def prepare_full_train_data_from_multiple_datasets(datasets,
 
 	return X_test, y_test, X_train, y_train
 
-def split_tst_from_train_and_val(X, y, extra_data=None, shuffle_seed=None, testing_ratio=0.1):
+@attr('helper')
+def split_test_from_train_and_val(X, y, extra_data=None, shuffle_seed=None, testing_ratio=0.1):
 
 	n = len(X)
 	# Feed shuffle seed
