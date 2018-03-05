@@ -40,7 +40,8 @@ def get_data_from_db(host, db_name, collection_name,
 					add_extra_atom_attribute=True, 
 					add_extra_bond_attribute=True,
 					padding=True,
-					padding_final_size=20):
+					padding_final_size=20,
+					prediction_task="Hf298(kcal/mol)"):
 
 	# connect to db and query
 	host_connection_url, port = get_host_info(host)
@@ -62,6 +63,10 @@ def get_data_from_db(host, db_name, collection_name,
 
 	logging.info('Generating molecular tensor data...')
 
+	# decide what predict task is
+	if prediction_task not in ["Hf298(kcal/mol)", "S298(cal/mol/K)", "Cp"]:
+		raise NotImplementedError("Prediction task: {0} not supported yet!".format(prediction_task))
+
 	for db_mol in db_mols:
 		smile = str(db_mol["SMILES_input"])
 		if 'adjacency_list' in db_mol:
@@ -73,9 +78,17 @@ def get_data_from_db(host, db_name, collection_name,
 										 add_extra_bond_attribute)
 		if padding:
 			mol_tensor = pad_molecule_tensor(mol_tensor, padding_final_size)
-		hf298_qm = float(db_mol["Hf298(kcal/mol)"])
+
+		if prediction_task != "Cp":
+			yi = float(db_mol[prediction_task])
+		else:
+			try:
+				yi = float(db_mol["Cp298(cal/mol/K)"])
+			except KeyError:
+				yi = float(db_mol["Cp300(cal/mol/K)"])
+
 		X.append(mol_tensor)
-		y.append(hf298_qm)
+		y.append(yi)
 		smis.append(smile)
 
 	logging.info('Done: generated {0} tensors with padding={1}'.format(len(X), padding))
@@ -87,7 +100,8 @@ def prepare_folded_data_from_multiple_datasets(datasets,
 												add_extra_atom_attribute, 
 												add_extra_bond_attribute,
 												padding=True,
-												padding_final_size=20):
+												padding_final_size=20,
+												prediction_task="Hf298(kcal/mol)"):
 
 	folded_datasets = []
 	test_data_datasets = []
@@ -98,7 +112,8 @@ def prepare_folded_data_from_multiple_datasets(datasets,
 								add_extra_atom_attribute, 
 								add_extra_bond_attribute,
 								padding,
-								padding_final_size)
+								padding_final_size,
+								prediction_task)
 
 		logging.info('Splitting dataset with testing ratio of {0}...'.format(testing_ratio))
 		split_data = split_tst_from_train_and_val(X, 
@@ -144,6 +159,7 @@ def prepare_full_train_data_from_multiple_datasets(datasets,
 													add_extra_bond_attribute,
 													padding=True,
 													padding_final_size=20,
+													prediction_task="Hf298(kcal/mol)",
 													save_meta=True):
 
 	test_data_datasets = []
@@ -155,7 +171,8 @@ def prepare_full_train_data_from_multiple_datasets(datasets,
 										add_extra_atom_attribute, 
 										add_extra_bond_attribute,
 										padding,
-										padding_final_size)
+										padding_final_size,
+										prediction_task)
 
 		logging.info('Splitting dataset with testing ratio of {0}...'.format(testing_ratio))
 		split_data = split_tst_from_train_and_val(X, 

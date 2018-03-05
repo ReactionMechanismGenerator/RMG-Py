@@ -1,4 +1,5 @@
-predictor_model(embedding_size=512, depth=2, 
+predictor_model(prediction_task="Hf298(kcal/mol)",
+				embedding_size=512, depth=2, 
 				add_extra_atom_attribute=True, add_extra_bond_attribute=False,
 				scale_output=0.05, padding=True, padding_final_size=20,
 				hidden=50, hidden_activation='tanh',

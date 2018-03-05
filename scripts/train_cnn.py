@@ -116,8 +116,8 @@ if __name__ == '__main__':
 	rmg = RMG()
 	rmg.logHeader()
 
-	h298_predictor = Predictor(datasets_file=datasets_file)
-	h298_predictor.load_input(input_file)
+	predictor = Predictor(datasets_file=datasets_file)
+	predictor.load_input(input_file)
 
 	lr_func = "float({0} * np.exp(- epoch / {1}))".format(lr0, lr1)
 	save_model_path = os.path.join(input_directory, 'saved_model')
@@ -125,15 +125,15 @@ if __name__ == '__main__':
 		os.mkdir(save_model_path)
 	
 	if train_mode == 'in_house':
-		h298_predictor.kfcv_train(folds=folds, 
-								batch_size=batch_size, 
-								lr_func=lr_func, 
-								save_model_path=save_model_path)
+		predictor.kfcv_train(folds=folds, 
+							 batch_size=batch_size, 
+							 lr_func=lr_func, 
+							 save_model_path=save_model_path)
 	elif train_mode == 'keras':
-		h298_predictor.kfcv_batch_train(folds=folds, batch_size=batch_size)
+		predictor.kfcv_batch_train(folds=folds, batch_size=batch_size)
 	elif train_mode == 'full_train':
-		h298_predictor.full_train(batch_size=batch_size, 
-								lr_func=lr_func, 
-								save_model_path=save_model_path)
+		predictor.full_train(batch_size=batch_size, 
+							 lr_func=lr_func, 
+							 save_model_path=save_model_path)
 	else:
 		raise Exception('Currently not supporting train mode: {0}'.format(train_mode))

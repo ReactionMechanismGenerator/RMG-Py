@@ -17,6 +17,13 @@ class Test_Data(unittest.TestCase):
 
 	def test_get_data_from_db_using_Cp_data(self):
 
+		X, y, _ = get_data_from_db('rmg', 'rmg_internal', 
+								   'kh_tricyclics_table', 
+								   prediction_task='Cp')
+
+		self.assertEqual(len(X), 180)
+		self.assertEqual(len(y), 180)
+
 	def test_prepare_folded_data(self):
 
 		folds = 5
@@ -119,7 +126,8 @@ class Test_Data(unittest.TestCase):
 		X_test, y_test, folded_Xs, folded_ys = prepare_folded_data_from_multiple_datasets(
 										datasets=datasets, 
 										folds=5, add_extra_atom_attribute=True, 
-										add_extra_bond_attribute=True)
+										add_extra_bond_attribute=True,
+										prediction_task="Cp")
 		self.assertEqual(len(folded_Xs), 5)
 		self.assertEqual(len(folded_ys), 5)
 

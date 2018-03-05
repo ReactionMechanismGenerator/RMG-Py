@@ -40,75 +40,87 @@ def read_datasets_file(datasets_file_path):
 
     return datasets
 
-def prepare_data(host, db_name, collection_name):
+def prepare_data(host, db_name, collection_name, prediction_task="Hf298(kcal/mol)"):
 
     # load validation data
     db_mols = get_db_mols(host, db_name, collection_name)
 
     smiles_list = []
-    hf298s_qm = []
+    ys = []
+    # decide what predict task is
+    if prediction_task not in ["Hf298(kcal/mol)", "S298(cal/mol/K)", "Cp"]:
+        raise NotImplementedError("Prediction task: {0} not supported yet!".format(prediction_task))
+
     for i, db_mol in enumerate(db_mols):
         smiles = str(db_mol["SMILES_input"])
-        hf298_qm = float(db_mol["Hf298(kcal/mol)"])
+
+        if prediction_task != "Cp":
+            y = float(db_mol[prediction_task])
+        else:
+            try:
+                y = float(db_mol["Cp298(cal/mol/K)"])
+            except KeyError:
+                y = float(db_mol["Cp300(cal/mol/K)"])
         
         smiles_list.append(smiles)
-        hf298s_qm.append(hf298_qm)
+        ys.append(y)
 
-    return smiles_list, hf298s_qm
+    return smiles_list, ys
 
 def prepare_predictor(model):
 
-    h298_predictor = Predictor()
+    predictor = Predictor()
 
     predictor_input = os.path.join(model,
                                   'predictor_input.py')
 
-    h298_predictor.load_input(predictor_input)
+    predictor.load_input(predictor_input)
 
     param_path = os.path.join(model,
                              'saved_model',
                              'full_train.h5')
-    h298_predictor.load_parameters(param_path)
+    predictor.load_parameters(param_path)
 
-    return h298_predictor
+    return predictor
 
 def make_predictions(predictor, smiles_list):
 
-    hf298s_cnn = []
+    ys_cnn = []
     for smiles in tqdm(smiles_list):
         mol = Molecule().fromSMILES(smiles)
-        hf298_cnn = predictor.predict(mol)
-        hf298s_cnn.append(hf298_cnn)
+        y_cnn = predictor.predict(mol)
+        ys_cnn.append(y_cnn)
 
-    return hf298s_cnn
+    return ys_cnn
 
-def evaluate(smiles_list, hf298s_qm, hf298s_cnn):
+def evaluate(smiles_list, ys, ys_pred, prediction_task="Hf298(kcal/mol)"):
 
-    hf298_df = pd.DataFrame(index=smiles_list)
+    result_df = pd.DataFrame(index=smiles_list)
 
-    hf298_df['Hf298_qm(kcal/mol)'] = pd.Series(hf298s_qm, index=hf298_df.index)
-    hf298_df['Hf298_cnn(kcal/mol)'] = pd.Series(hf298s_cnn, index=hf298_df.index)
+    result_df[prediction_task+"_true"] = pd.Series(ys, index=result_df.index)
+    result_df[prediction_task+"_pred"] = pd.Series(ys_pred, index=result_df.index)
 
-    qm_cnn_diff = abs(hf298_df['Hf298_qm(kcal/mol)']-hf298_df['Hf298_cnn(kcal/mol)'])
-    hf298_df['H298_qm_cnn_diff(kcal/mol)'] = pd.Series(qm_cnn_diff, index=hf298_df.index)
+    diff = abs(result_df[prediction_task+"_true"]-result_df[prediction_task+"_pred"])
+    result_df[prediction_task+"_diff"] = pd.Series(diff, index=result_df.index)
 
-    return hf298_df
+    return result_df
 
-def display_result(hf298_df):
+def display_result(result_df, prediction_task="Hf298(kcal/mol)"):
 
-    descr = hf298_df['H298_qm_cnn_diff(kcal/mol)'].describe()
+    descr = result_df[prediction_task+"_diff"].describe()
 
     count = int(descr.loc['count'])
     mean = descr.loc['mean']
     std = descr.loc['std']
 
-    display_str = 'count: {0}, error mean: {1:.02f} kcal/mol, error std: {2:.02f} kcal/mol'.format(count, mean, std) 
+    display_str = 'prediction task: {0}, count: {1}, error mean: {2:.02f}, error std: {3:.02f}'.format(prediction_task, 
+                                                                                                       count, mean, std) 
     print display_str 
 
 def validate(datasets_file, model):
 
     # load cnn predictor
-    h298_predictor = prepare_predictor(model)
+    predictor = prepare_predictor(model)
 
     datasets = read_datasets_file(datasets_file)
     for host, db_name, collection_name in datasets:
@@ -116,16 +128,17 @@ def validate(datasets_file, model):
         print "\nhost: {0}, db: {1}, collection: {2}".format(host, db_name, collection_name)
         
         # prepare data for testing
-        smiles_list, hf298s_qm = prepare_data(host, db_name, collection_name)
+        smiles_list, ys = prepare_data(host, db_name, collection_name,
+                                       prediction_task=predictor.prediction_task)
 
         # Do the predictions
-        hf298s_cnn = make_predictions(h298_predictor, smiles_list)
+        ys_pred = make_predictions(predictor, smiles_list)
 
         # evaluate performance
-        hf298_df = evaluate(smiles_list, hf298s_qm, hf298s_cnn)
+        result_df = evaluate(smiles_list, ys, ys_pred, prediction_task=predictor.prediction_task)
 
         # display result
-        display_result(hf298_df)
+        display_result(result_df, prediction_task=predictor.prediction_task)
 
 
 def main():

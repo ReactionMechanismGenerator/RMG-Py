@@ -6,15 +6,16 @@ from rmgpy.cnn_framework.molecule_tensor import get_attribute_vector_size
 
 predictor = None
 
-def predictor_model(embedding_size=512, attribute_vector_size=None, depth=2, 
-                add_extra_atom_attribute=True, add_extra_bond_attribute=True,
-                scale_output=0.05, 
-                padding=False, padding_final_size=20,
-                mol_conv_inner_activation='tanh',
-                mol_conv_outer_activation='softmax',
-                hidden=0, hidden_activation='tanh',
-                output_activation='linear', output_size=1, 
-                lr=0.01, optimizer='adam', loss='mse'):
+def predictor_model(prediction_task="Hf298(kcal/mol)",
+                    embedding_size=512, attribute_vector_size=None, depth=2, 
+                    add_extra_atom_attribute=True, add_extra_bond_attribute=True,
+                    scale_output=0.05, 
+                    padding=False, padding_final_size=20,
+                    mol_conv_inner_activation='tanh',
+                    mol_conv_outer_activation='softmax',
+                    hidden=0, hidden_activation='tanh',
+                    output_activation='linear', output_size=1, 
+                    lr=0.01, optimizer='adam', loss='mse'):
     
     if attribute_vector_size is None:
         attribute_vector_size = get_attribute_vector_size(\
@@ -29,6 +30,7 @@ def predictor_model(embedding_size=512, attribute_vector_size=None, depth=2,
                 output_activation, output_size, 
                 lr, optimizer, loss)
     
+    predictor.prediction_task = prediction_task
     predictor.model = model
     predictor.add_extra_atom_attribute = add_extra_atom_attribute
     predictor.add_extra_bond_attribute = add_extra_bond_attribute

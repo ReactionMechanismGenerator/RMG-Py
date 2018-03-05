@@ -60,7 +60,8 @@ class Predictor(object):
 																self.add_extra_atom_attribute, 
 																self.add_extra_bond_attribute,
 																self.padding,
-																self.padding_final_size)
+																self.padding_final_size,
+																self.prediction_task)
 
 		X_test, y_test, folded_Xs, folded_ys = folded_data
 
@@ -128,7 +129,8 @@ class Predictor(object):
 																self.add_extra_atom_attribute, 
 																self.add_extra_bond_attribute,
 																self.padding,
-																self.padding_final_size)
+																self.padding_final_size,
+																self.prediction_task)
 
 		X_test, y_test, X_train, y_train = folded_data
 
@@ -178,7 +180,8 @@ class Predictor(object):
 																self.add_extra_atom_attribute, 
 																self.add_extra_bond_attribute,
 																self.padding,
-																self.padding_final_size)
+																self.padding_final_size,
+																self.prediction_task)
 
 		X_test, y_test, folded_Xs, folded_ys = folded_data
 
