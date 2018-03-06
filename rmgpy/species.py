@@ -519,6 +519,13 @@ class Species(object):
         """
         return self.molecule[0].calculateCpInf()
 
+    def has_reactive_molecule(self):
+        """
+        `True` if the species has at least one reactive molecule, `False` otherwise
+        """
+        cython.declare(molecule=Molecule)
+        return any([molecule.reactive for molecule in self.molecule])
+
     def copy(self, deep=False):
         """
         Create a copy of the current species. If the 

@@ -88,6 +88,8 @@ cdef class Species:
 
     cpdef double calculateCpInf(self) except -1
 
+    cpdef bint has_reactive_molecule(self) except -1
+
     cpdef Species copy(self, bint deep=?)
     
 ################################################################################
