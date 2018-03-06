@@ -1267,17 +1267,27 @@ class ForbiddenStructures(Database):
         contains forbidden functionality, or ``False`` if not. Labeled atoms
         on the forbidden structures and the molecule are honored.
         """
+        from rmgpy.species import Species
+
         for entry in self.entries.values():
-            entryLabeledAtoms = entry.item.getLabeledAtoms()
-            moleculeLabeledAtoms = molecule.getLabeledAtoms()
-            initialMap = {}
-            for label in entryLabeledAtoms:
-                # all group labels must be present in the molecule
-                if label not in moleculeLabeledAtoms: break  
-                initialMap[moleculeLabeledAtoms[label]] = entryLabeledAtoms[label]
-            else:
-                if molecule.isMappingValid(entry.item, initialMap) and molecule.isSubgraphIsomorphic(entry.item, initialMap):
+            if isinstance(entry.item, Molecule) or isinstance(entry.item, Species):
+                # Perform an isomorphism check
+                if entry.item.isIsomorphic(molecule):
                     return True
+            elif isinstance(entry.item, Group):
+                # We need to do subgraph isomorphism
+                entryLabeledAtoms = entry.item.getLabeledAtoms()
+                moleculeLabeledAtoms = molecule.getLabeledAtoms()
+                initialMap = {}
+                for label in entryLabeledAtoms:
+                    # all group labels must be present in the molecule
+                    if label not in moleculeLabeledAtoms: break
+                    initialMap[moleculeLabeledAtoms[label]] = entryLabeledAtoms[label]
+                else:
+                    if molecule.isMappingValid(entry.item, initialMap) and molecule.isSubgraphIsomorphic(entry.item, initialMap):
+                        return True
+            else:
+                raise NotImplementedError
             
         # Until we have more thermodynamic data of molecular ions we will forbid them
         if molecule.getNetCharge() != 0:
@@ -1298,22 +1308,27 @@ class ForbiddenStructures(Database):
         """
         self.saveOldDictionary(path)
 
-    def loadEntry(self, label, molecule=None, group=None, shortDesc='', longDesc=''):
+    def loadEntry(self, label, group=None, molecule=None, species=None, shortDesc='', longDesc=''):
         """
         Load an entry from the forbidden structures database. This method is
         automatically called during loading of the forbidden structures 
         database.
         """
-        assert molecule is not None or group is not None
-        assert not (molecule is not None and group is not None)
+        from rmgpy.species import Species
+
+        if sum([bool(molecule), bool(group), bool(species)]) != 1:
+            raise DatabaseError('A forbidden group should be defined with exactly one item from '
+                                'the following options: group, molecule, or species.')
         if molecule is not None:
-            item = Molecule.fromAdjacencyList(molecule)
+            item = Molecule().fromAdjacencyList(molecule)
+        elif species is not None:
+            item = Species().fromAdjacencyList(species)
+            item.generate_resonance_structures()
         elif group is not None:
-            if ( group[0:3].upper() == 'OR{' or
-                 group[0:4].upper() == 'AND{' or
-                 group[0:7].upper() == 'NOT OR{' or
-                 group[0:8].upper() == 'NOT AND{'
-                ):
+            if (group[0:3].upper() == 'OR{' or
+                    group[0:4].upper() == 'AND{' or
+                    group[0:7].upper() == 'NOT OR{' or
+                    group[0:8].upper() == 'NOT AND{'):
                 item = makeLogicNode(group)
             else:
                 item = Group().fromAdjacencyList(group)
