@@ -1495,6 +1495,7 @@ class Molecule(Graph):
         generates a list of (new-existing H bonds ignored) possible Hbond coordinates [(i1,j1),(i2,j2),...] where i and j values
         correspond to the indexes of the atoms involved, Hbonds are allowed if they meet
         the following constraints:
+
            1) between a H and [O,N] atoms
            2) the hydrogen is covalently bonded to an O or N
            3) the Hydrogen bond must complete a ring with at least 5 members
@@ -1526,8 +1527,10 @@ class Molecule(Graph):
         generates a list of Hbonded molecular structures in addition to the
         constraints on Hydrogen bonds applied in the find_H_Bonds function
         the generated structures are constrained to:
+
             1) An atom can only be hydrogen bonded to one other atom
             2) Only two H-bonds can exist in a given molecule
+
         the second is done to avoid explosive growth in the number of 
         structures as without this constraint the number of possible 
         structures grows 2^n where n is the number of possible H-bonds
