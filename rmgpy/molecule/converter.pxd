@@ -25,13 +25,13 @@
 #                                                                             #
 ###############################################################################
 
-from .molecule cimport Atom, Bond, Molecule
+cimport rmgpy.molecule.molecule as mm
 
 
-cpdef toRDKitMol(Molecule mol, bint removeHs=*, bint returnMapping=*, bint sanitize=*)
+cpdef toRDKitMol(mm.Molecule mol, bint removeHs=*, bint returnMapping=*, bint sanitize=*)
 
-cpdef Molecule fromRDKitMol(Molecule mol, object rdkitmol)
+cpdef mm.Molecule fromRDKitMol(mm.Molecule mol, object rdkitmol)
 
-cpdef toOBMol(Molecule mol, bint returnMapping=*)
+cpdef toOBMol(mm.Molecule mol, bint returnMapping=*)
 
-cpdef Molecule fromOBMol(Molecule mol, object obmol)
+cpdef mm.Molecule fromOBMol(mm.Molecule mol, object obmol)

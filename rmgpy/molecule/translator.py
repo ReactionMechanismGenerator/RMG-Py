@@ -47,12 +47,12 @@ except ImportError:
 else:
     BACKENDS = ['openbabel', 'rdkit']
 
-from rmgpy.exceptions import DependencyError
-from .molecule import Molecule
-from rmgpy.molecule.converter import toRDKitMol, fromRDKitMol, toOBMol, fromOBMol
-
 import rmgpy.molecule.inchi as inchiutil
+import rmgpy.molecule.molecule as mm
 import rmgpy.molecule.util as util
+
+from rmgpy.exceptions import DependencyError
+from rmgpy.molecule.converter import toRDKitMol, fromRDKitMol, toOBMol, fromOBMol
 
 # constants
 
@@ -346,7 +346,7 @@ def _rdkit_translator(input_object, identifier_type, mol=None):
         if rdkitmol is None:
             raise ValueError("Could not interpret the identifier {0!r}".format(input_object))
         output = fromRDKitMol(mol, rdkitmol)
-    elif isinstance(input_object, Molecule):
+    elif isinstance(input_object, mm.Molecule):
         # We are converting from a molecule to a string identifier
         if identifier_type == 'smi':
             rdkitmol = toRDKitMol(input_object, sanitize=False)
@@ -397,9 +397,9 @@ def _openbabel_translator(input_object, identifier_type, mol=None):
         obmol.AddHydrogens()
         obmol.AssignSpinMultiplicity(True)
         if mol is None:
-            mol = Molecule()
+            mol = mm.Molecule()
         output = fromOBMol(mol, obmol)
-    elif isinstance(input_object, Molecule):
+    elif isinstance(input_object, mm.Molecule):
         # We are converting from a Molecule to a string identifier
         if identifier_type == 'inchi':
             ob_conversion.SetOutFormat('inchi')

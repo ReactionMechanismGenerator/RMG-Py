@@ -45,9 +45,10 @@ except ImportError:
 else:
     OB_INSTALLED = True
 
+import rmgpy.molecule.element as elements
+import rmgpy.molecule.molecule as mm
+
 from rmgpy.exceptions import DependencyError
-from rmgpy.molecule import element as elements
-from rmgpy.molecule.molecule import Atom, Bond
 
 
 def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
@@ -112,10 +113,10 @@ def fromRDKitMol(mol, rdkitmol):
                    lonePairs=cython.int,
                    number=cython.int,
                    order=cython.float,
-                   atom=Atom,
-                   atom1=Atom,
-                   atom2=Atom,
-                   bond=Bond)
+                   atom=mm.Atom,
+                   atom1=mm.Atom,
+                   atom2=mm.Atom,
+                   bond=mm.Bond)
 
     mol.vertices = []
 
@@ -136,7 +137,7 @@ def fromRDKitMol(mol, rdkitmol):
         charge = rdkitatom.GetFormalCharge()
         radicalElectrons = rdkitatom.GetNumRadicalElectrons()
 
-        atom = Atom(element, radicalElectrons, charge, '', 0)
+        atom = mm.Atom(element, radicalElectrons, charge, '', 0)
         mol.vertices.append(atom)
 
         # Add bonds by iterating again through atoms
@@ -152,7 +153,7 @@ def fromRDKitMol(mol, rdkitmol):
                 elif rdbondtype.name == 'TRIPLE': order = 3
                 elif rdbondtype.name == 'AROMATIC': order = 1.5
 
-                bond = Bond(mol.vertices[i], mol.vertices[j], order)
+                bond = mm.Bond(mol.vertices[i], mol.vertices[j], order)
                 mol.addBond(bond)
 
     # We need to update lone pairs first because the charge was set by RDKit
@@ -240,7 +241,7 @@ def fromOBMol(mol, obmol):
     # Below are the declared variables for cythonizing the module
     # cython.declare(i=cython.int)
     # cython.declare(radicalElectrons=cython.int, charge=cython.int, lonePairs=cython.int)
-    # cython.declare(atom=Atom, atom1=Atom, atom2=Atom, bond=Bond)
+    # cython.declare(atom=mm.Atom, atom1=mm.Atom, atom2=mm.Atom, bond=mm.Bond)
     if not OB_INSTALLED:
         raise DependencyError('OpenBabel is not installed. Please install or use RDKit.')
 
@@ -260,7 +261,7 @@ def fromOBMol(mol, obmol):
         obatom_multiplicity = obatom.GetSpinMultiplicity()
         radicalElectrons =  obatom_multiplicity - 1 if obatom_multiplicity != 0 else 0
 
-        atom = Atom(element, radicalElectrons, charge, '', 0)
+        atom = mm.Atom(element, radicalElectrons, charge, '', 0)
         mol.vertices.append(atom)
 
     # iterate through bonds in obmol
@@ -270,7 +271,7 @@ def fromOBMol(mol, obmol):
         if oborder not in [1,2,3] and obbond.IsAromatic() :
             oborder = 1.5
 
-        bond = Bond(mol.vertices[obbond.GetBeginAtomIdx() - 1], mol.vertices[obbond.GetEndAtomIdx() - 1], oborder)#python array indices start at 0
+        bond = mm.Bond(mol.vertices[obbond.GetBeginAtomIdx() - 1], mol.vertices[obbond.GetEndAtomIdx() - 1], oborder)#python array indices start at 0
         mol.addBond(bond)
 
 

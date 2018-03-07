@@ -25,9 +25,8 @@
 #                                                                             #
 ###############################################################################
 
-from .molecule cimport Atom, Molecule
-cimport element as elements
-cimport inchi as inchiutil
+cimport rmgpy.molecule.molecule as mm
+
 
 cpdef list BACKENDS
 cpdef dict INCHI_LOOKUPS
@@ -36,32 +35,32 @@ cpdef dict SMILES_LOOKUPS
 cpdef dict MOLECULE_LOOKUPS
 cpdef dict RADICAL_LOOKUPS
 
-cpdef str toInChI(Molecule mol, str backend=?, int aug_level=?)
+cpdef str toInChI(mm.Molecule mol, str backend=?, int aug_level=?)
 
-cpdef str toInChIKey(Molecule mol, str backend=?, int aug_level=?)
+cpdef str toInChIKey(mm.Molecule mol, str backend=?, int aug_level=?)
 
-cpdef str toSMARTS(Molecule mol, backend=?)
+cpdef str toSMARTS(mm.Molecule mol, backend=?)
 
-cpdef str toSMILES(Molecule mol, backend=?)
+cpdef str toSMILES(mm.Molecule mol, backend=?)
 
-cpdef Molecule fromInChI(Molecule mol, str inchistr, backend=?)
+cpdef mm.Molecule fromInChI(mm.Molecule mol, str inchistr, backend=?)
 
-cpdef Molecule fromSMILES(Molecule mol, str smilesstr, str backend=?)
+cpdef mm.Molecule fromSMILES(mm.Molecule mol, str smilesstr, str backend=?)
 
-cpdef Molecule fromSMARTS(Molecule mol, str smartsstr, str backend=?)
+cpdef mm.Molecule fromSMARTS(mm.Molecule mol, str smartsstr, str backend=?)
 
-cpdef Molecule fromAugmentedInChI(Molecule mol, aug_inchi)
+cpdef mm.Molecule fromAugmentedInChI(mm.Molecule mol, aug_inchi)
 
-cpdef object _rdkit_translator(object input_object, str identifier_type, Molecule mol=?)
+cpdef object _rdkit_translator(object input_object, str identifier_type, mm.Molecule mol=?)
 
-cpdef object _openbabel_translator(object input_object, str identifier_type, Molecule mol=?)
+cpdef object _openbabel_translator(object input_object, str identifier_type, mm.Molecule mol=?)
 
-cdef Molecule _lookup(Molecule mol, str identifier, str identifier_type)
+cdef mm.Molecule _lookup(mm.Molecule mol, str identifier, str identifier_type)
 
-cpdef _check_output(Molecule mol, str identifier)
+cpdef _check_output(mm.Molecule mol, str identifier)
 
-cdef Molecule _read(Molecule mol, str identifier, str identifier_type, str backend)
+cdef mm.Molecule _read(mm.Molecule mol, str identifier, str identifier_type, str backend)
 
-cdef str _write(Molecule mol, str identifier_type, str backend)
+cdef str _write(mm.Molecule mol, str identifier_type, str backend)
 
 cdef _get_backend_list(str backend)
