@@ -1,6 +1,7 @@
 
 import os
 import argparse
+import json
 import pandas as pd
 from tqdm import tqdm
 
@@ -115,7 +116,9 @@ def display_result(result_df, prediction_task="Hf298(kcal/mol)"):
 
     display_str = 'prediction task: {0}, count: {1}, error mean: {2:.02f}, error std: {3:.02f}'.format(prediction_task, 
                                                                                                        count, mean, std) 
-    print display_str 
+    print display_str
+
+    return (count, mean, std) 
 
 def validate(datasets_file, model):
 
@@ -123,6 +126,8 @@ def validate(datasets_file, model):
     predictor = prepare_predictor(model)
 
     datasets = read_datasets_file(datasets_file)
+
+    evaluation_results = {}
     for host, db_name, collection_name in datasets:
         
         print "\nhost: {0}, db: {1}, collection: {2}".format(host, db_name, collection_name)
@@ -138,8 +143,14 @@ def validate(datasets_file, model):
         result_df = evaluate(smiles_list, ys, ys_pred, prediction_task=predictor.prediction_task)
 
         # display result
-        display_result(result_df, prediction_task=predictor.prediction_task)
+        count, mean, std = display_result(result_df, prediction_task=predictor.prediction_task)
+        
+        table = '.'.join([host, db_name, collection_name])
+        evaluation_results[table] = {"count": count,
+                                     "MAE": mean,
+                                     "MAE std": std}
 
+    return evaluation_results
 
 def main():
 
@@ -147,6 +158,9 @@ def main():
 
     datasets_file = args.datasets
     model = args.model
-    validate(datasets_file, model)
+    evaluation_results = validate(datasets_file, model)
+
+    with open('evaluation_results.json', 'w') as f_out:
+        json.dump(evaluation_results, f_out, indent=4, sort_keys=True)
 
 main()
