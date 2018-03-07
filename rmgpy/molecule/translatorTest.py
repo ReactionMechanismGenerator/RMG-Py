@@ -356,6 +356,46 @@ multiplicity 3
         aug_inchi = 'InChI=1S/C5H6/c1-3-5-4-2/h1-3H2/u1,2/lp3,5'
         self.compare(adjlist, aug_inchi)
 
+    def test_aromatic_resonance_structures(self):
+        """Test that different resonance structures give identical InChIs."""
+        mol = Molecule().fromAdjacencyList("""
+multiplicity 2
+1  C u0 p0 c0 {2,D} {14,S} {18,S}
+2  C u0 p0 c0 {1,D} {3,S} {19,S}
+3  C u0 p0 c0 {2,S} {4,D} {20,S}
+4  C u0 p0 c0 {3,D} {5,S} {13,S}
+5  C u0 p0 c0 {4,S} {6,S} {14,D}
+6  C u0 p0 c0 {5,S} {7,D} {21,S}
+7  C u0 p0 c0 {6,D} {8,S} {22,S}
+8  C u0 p0 c0 {7,S} {9,D} {13,S}
+9  C u0 p0 c0 {8,D} {10,S} {23,S}
+10 C u0 p0 c0 {9,S} {11,D} {24,S}
+11 C u0 p0 c0 {10,D} {12,S} {25,S}
+12 C u0 p0 c0 {11,S} {13,D} {26,S}
+13 C u0 p0 c0 {4,S} {8,S} {12,D}
+14 C u0 p0 c0 {1,S} {5,D} {15,S}
+15 C u1 p0 c0 {14,S} {16,S} {17,S}
+16 H u0 p0 c0 {15,S}
+17 H u0 p0 c0 {15,S}
+18 H u0 p0 c0 {1,S}
+19 H u0 p0 c0 {2,S}
+20 H u0 p0 c0 {3,S}
+21 H u0 p0 c0 {6,S}
+22 H u0 p0 c0 {7,S}
+23 H u0 p0 c0 {9,S}
+24 H u0 p0 c0 {10,S}
+25 H u0 p0 c0 {11,S}
+26 H u0 p0 c0 {12,S}
+""")
+        res = mol.generate_resonance_structures()
+
+        inchi_list = [struct.toInChI() for struct in res]
+
+        expected_inchi = 'InChI=1S/C15H11/c1-11-5-4-8-15-13(11)10-9-12-6-2-3-7-14(12)15/h2-10H,1H2'
+
+        for inchi in inchi_list:
+            self.assertEqual(inchi, expected_inchi)
+
 
 class SMILESGenerationTest(unittest.TestCase):
     def compare(self, adjlist, smiles):
@@ -638,6 +678,71 @@ class SMILESGenerationTest(unittest.TestCase):
         '''
         smiles = '[O][O]'
         self.compare(adjlist, smiles)
+
+    def test_aromatics(self):
+        """Test that different aromatics representations returns different SMILES."""
+        mol1 = Molecule().fromAdjacencyList("""
+1  O u0 p2 c0 {6,S} {9,S}
+2  C u0 p0 c0 {3,D} {5,S} {11,S}
+3  C u0 p0 c0 {2,D} {4,S} {12,S}
+4  C u0 p0 c0 {3,S} {6,D} {13,S}
+5  C u0 p0 c0 {2,S} {7,D} {10,S}
+6  C u0 p0 c0 {1,S} {4,D} {7,S}
+7  C u0 p0 c0 {5,D} {6,S} {8,S}
+8  C u0 p0 c0 {7,S} {14,S} {15,S} {16,S}
+9  H u0 p0 c0 {1,S}
+10 H u0 p0 c0 {5,S}
+11 H u0 p0 c0 {2,S}
+12 H u0 p0 c0 {3,S}
+13 H u0 p0 c0 {4,S}
+14 H u0 p0 c0 {8,S}
+15 H u0 p0 c0 {8,S}
+16 H u0 p0 c0 {8,S}
+""")
+        mol2 = Molecule().fromAdjacencyList("""
+1  O u0 p2 c0 {6,S} {9,S}
+2  C u0 p0 c0 {3,S} {5,D} {11,S}
+3  C u0 p0 c0 {2,S} {4,D} {12,S}
+4  C u0 p0 c0 {3,D} {6,S} {13,S}
+5  C u0 p0 c0 {2,D} {7,S} {10,S}
+6  C u0 p0 c0 {1,S} {4,S} {7,D}
+7  C u0 p0 c0 {5,S} {6,D} {8,S}
+8  C u0 p0 c0 {7,S} {14,S} {15,S} {16,S}
+9  H u0 p0 c0 {1,S}
+10 H u0 p0 c0 {5,S}
+11 H u0 p0 c0 {2,S}
+12 H u0 p0 c0 {3,S}
+13 H u0 p0 c0 {4,S}
+14 H u0 p0 c0 {8,S}
+15 H u0 p0 c0 {8,S}
+16 H u0 p0 c0 {8,S}
+""")
+        mol3 = Molecule().fromAdjacencyList("""
+1  O u0 p2 c0 {6,S} {9,S}
+2  C u0 p0 c0 {3,B} {5,B} {11,S}
+3  C u0 p0 c0 {2,B} {4,B} {12,S}
+4  C u0 p0 c0 {3,B} {6,B} {13,S}
+5  C u0 p0 c0 {2,B} {7,B} {10,S}
+6  C u0 p0 c0 {1,S} {4,B} {7,B}
+7  C u0 p0 c0 {5,B} {6,B} {8,S}
+8  C u0 p0 c0 {7,S} {14,S} {15,S} {16,S}
+9  H u0 p0 c0 {1,S}
+10 H u0 p0 c0 {5,S}
+11 H u0 p0 c0 {2,S}
+12 H u0 p0 c0 {3,S}
+13 H u0 p0 c0 {4,S}
+14 H u0 p0 c0 {8,S}
+15 H u0 p0 c0 {8,S}
+16 H u0 p0 c0 {8,S}
+""")
+
+        smiles1 = mol1.toSMILES()
+        smiles2 = mol2.toSMILES()
+        smiles3 = mol3.toSMILES()
+
+        self.assertNotEqual(smiles1, smiles2)
+        self.assertNotEqual(smiles2, smiles3)
+        self.assertNotEqual(smiles1, smiles3)
 
 
 class ParsingTest(unittest.TestCase):
