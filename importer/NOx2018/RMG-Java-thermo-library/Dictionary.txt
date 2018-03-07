@@ -1,0 +1,1068 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+//  /home/alongd/Code/RMG-Py/importer/NOx2018 dictionary
+//
+////////////////////////////////////////////////////////////////////////////////
+
+H2O2
+1 O 0 {2,S}
+2 O 0 {1,S}
+
+OH
+1 O 1
+
+H2
+1 H 0 {2,S}
+2 H 0 {1,S}
+
+H
+1 H 1
+
+O
+1 O 2T
+
+H2O
+1 O 0
+
+HO2
+1 O 0 {2,S}
+2 O 1 {1,S}
+
+O2
+1 O 1 {2,S}
+2 O 1 {1,S}
+
+AR
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1 Ar u0 p4 c0
+
+N2
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1 N u0 p1 c0 {2,T}
+// 2 N u0 p1 c0 {1,T}
+
+HE
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1 He u0 p1 c0
+
+CO
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1 C u0 p1 c-1 {2,T}
+// 2 O u0 p1 c+1 {1,T}
+
+CO2
+1 C 0 {2,D} {3,D}
+2 O 0 {1,D}
+3 O 0 {1,D}
+
+CH4
+1 C 0
+
+CH3
+1 C 1
+
+CH3OH
+1 C 0 {2,S}
+2 O 0 {1,S}
+
+CH
+1 C 3Q
+
+C
+1 C 4S
+
+C2H6
+1 C 0 {2,S}
+2 C 0 {1,S}
+
+C2H5
+1 C 0 {2,S}
+2 C 1 {1,S}
+
+C2H4
+1 C 0 {2,D}
+2 C 0 {1,D}
+
+C2H
+1 C 0 {2,T}
+2 C 1 {1,T}
+
+CH3O
+1 C 0 {2,S}
+2 O 1 {1,S}
+
+CH2OH
+1 C 1 {2,S}
+2 O 0 {1,S}
+
+CH2O
+1 C 0 {2,D}
+2 O 0 {1,D}
+
+C2H3
+1 C 0 {2,D}
+2 C 1 {1,D}
+
+HCO
+1 C 1 {2,D}
+2 O 0 {1,D}
+
+C2H2
+1 C 0 {2,T}
+2 C 0 {1,T}
+
+CH2CHOO
+1 C 0 {2,D} {3,S}
+2 C 0 {1,D}
+3 O 0 {1,S} {4,S}
+4 O 1 {3,S}
+
+CH2(S)
+1 C 2T
+
+CH2CHOOH
+1 C 0 {2,D} {3,S}
+2 C 0 {1,D}
+3 O 0 {1,S} {4,S}
+4 O 0 {3,S}
+
+CH2
+1 C 2T
+
+CH2CHO
+1 C 1 {2,S}
+2 C 0 {1,S} {3,D}
+3 O 0 {2,D}
+
+HOCO
+1 C 1 {2,S} {3,D}
+2 O 0 {1,S}
+3 O 0 {1,D}
+
+CH3CHO
+1 C 0 {2,S}
+2 C 0 {1,S} {3,D}
+3 O 0 {2,D}
+
+CH2CHOH
+1 C 0 {2,D} {3,S}
+2 C 0 {1,D}
+3 O 0 {1,S}
+
+CH3CH2O
+1 C 0 {2,S}
+2 C 0 {1,S} {3,S}
+3 O 1 {2,S}
+
+CH3CHOH
+1 C 0 {2,S}
+2 C 1 {1,S} {3,S}
+3 O 0 {2,S}
+
+CHCHOH
+1 C 0 {2,D} {3,S}
+2 C 1 {1,D}
+3 O 0 {1,S}
+
+CH3CH2OH
+1 C 0 {2,S} {3,S}
+2 C 0 {1,S}
+3 O 0 {1,S}
+
+HCCOH
+1 C 0 {2,T} {3,S}
+2 C 0 {1,T}
+3 O 0 {1,S}
+
+CH2CH2OH
+1 C 0 {2,S} {3,S}
+2 C 1 {1,S}
+3 O 0 {1,S}
+
+CH3CO
+1 C 0 {2,S}
+2 C 1 {1,S} {3,D}
+3 O 0 {2,D}
+
+HOCHO
+1 C 0 {2,S} {3,D}
+2 O 0 {1,S}
+3 O 0 {1,D}
+
+CH2CO
+1 C 0 {2,D}
+2 C 0 {1,D} {3,D}
+3 O 0 {2,D}
+
+OCHO
+1 C 0 {2,S} {3,D}
+2 O 1 {1,S}
+3 O 0 {1,D}
+
+HCCO
+1 C 0 {2,T}
+2 C 0 {1,T} {3,S}
+3 O 1 {2,S}
+
+CH3CH2OO
+1 C 0 {2,S} {3,S}
+2 C 0 {1,S}
+3 O 0 {1,S} {4,S}
+4 O 1 {3,S}
+
+HOCH2CH2OO
+1 C 0 {2,S} {3,S}
+2 C 0 {1,S} {4,S}
+3 O 0 {1,S} {5,S}
+4 O 0 {2,S}
+5 O 1 {3,S}
+
+CH3CH2OOH
+1 C 0 {2,S} {3,S}
+2 C 0 {1,S}
+3 O 0 {1,S} {4,S}
+4 O 0 {3,S}
+
+OCHCHO
+1 C 0 {2,S} {3,D}
+2 C 0 {1,S} {4,D}
+3 O 0 {1,D}
+4 O 0 {2,D}
+
+CH3CHOOH
+1 C 0 {2,S}
+2 C 1 {1,S} {3,S}
+3 O 0 {2,S} {4,S}
+4 O 0 {3,S}
+
+OCHCO
+1 C 0 {2,D} {3,S}
+2 C 0 {1,D} {4,D}
+3 O 1 {1,S}
+4 O 0 {2,D}
+
+CH3OO
+1 C 0 {2,S}
+2 O 0 {1,S} {3,S}
+3 O 1 {2,S}
+
+HOCH2O
+1 C 0 {2,S} {3,S}
+2 O 0 {1,S}
+3 O 1 {1,S}
+
+CH3OOH
+1 C 0 {2,S}
+2 O 0 {1,S} {3,S}
+3 O 0 {2,S}
+
+cC2H3O
+1 C 0 {2,S} {3,S}
+2 C 1 {1,S} {3,S}
+3 O 0 {1,S} {2,S}
+
+CH2OOH
+1 C 1 {2,S}
+2 O 0 {1,S} {3,S}
+3 O 0 {2,S}
+
+cC2H4O
+1 C 0 {2,S} {3,S}
+2 C 0 {1,S} {3,S}
+3 O 0 {1,S} {2,S}
+
+CH2CH2OOH
+1 C 0 {2,S} {3,S}
+2 C 1 {1,S}
+3 O 0 {1,S} {4,S}
+4 O 0 {3,S}
+
+C2
+1 C 1 {2,T}
+2 C 1 {1,T}
+
+CH3C(O)OO
+1 C 0 {2,S}
+2 C 0 {1,S} {3,S} {4,D}
+3 O 0 {2,S} {5,S}
+4 O 0 {2,D}
+5 O 1 {3,S}
+
+C2O
+1 C 0  {2,D} {3,D}
+2 C 2T {1,D}
+3 O 0  {1,D}
+
+HCOH
+1 C 2T {2,S}
+2 O 0  {1,S}
+
+NO
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 2
+// 1 N u1 p1 c0 {2,D}
+// 2 O u0 p2 c0 {1,D}
+
+NH3
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1 N u0 p1 c0 {2,S} {3,S} {4,S}
+// 2 H u0 p0 c0 {1,S}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {1,S}
+
+NH2
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 2
+// 1 N u1 p1 c0 {2,S} {3,S}
+// 2 H u0 p0 c0 {1,S}
+// 3 H u0 p0 c0 {1,S}
+
+NH
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 3
+// 1 N u2 p1 c0 {2,S}
+// 2 H u0 p0 c0 {1,S}
+
+N
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 4
+// 1 N u3 p1 c0
+
+NNH
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 2
+// 1 N u0 p1 c0 {2,D} {3,S}
+// 2 N u1 p1 c0 {1,D}
+// 3 H u0 p0 c0 {1,S}
+
+N2H4
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1 N u0 p1 c0 {2,S} {3,S} {4,S}
+// 2 N u0 p1 c0 {1,S} {5,S} {6,S}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {2,S}
+// 6 H u0 p0 c0 {2,S}
+
+N2H3
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 2
+// 1 N u0 p1 c0 {2,S} {3,S} {4,S}
+// 2 N u1 p1 c0 {1,S} {5,S}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {2,S}
+
+HNO
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1 N u0 p1 c0 {2,D} {3,S}
+// 2 O u0 p2 c0 {1,D}
+// 3 H u0 p0 c0 {1,S}
+
+NO2
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 2
+// 1 N u0 p1 c0 {2,D} {3,S}
+// 2 O u0 p2 c0 {1,D}
+// 3 O u1 p2 c0 {1,S}
+
+N2H2
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1 N u0 p1 c0 {2,D} {3,S}
+// 2 N u0 p1 c0 {1,D} {4,S}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {2,S}
+
+HONO
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1 N u0 p1 c0 {2,S} {3,D}
+// 2 O u0 p2 c0 {1,S} {4,S}
+// 3 O u0 p2 c0 {1,D}
+// 4 H u0 p0 c0 {2,S}
+
+HNO2
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1 N u0 p0 c+1 {2,S} {3,D} {4,S}
+// 2 H u0 p0 c0 {1,S}
+// 3 O u0 p2 c0 {1,D}
+// 4 O u0 p3 c-1 {1,S}
+
+NO3
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 2
+// 1 N u0 p0 c+1 {2,D} {3,S} {4,S}
+// 2 O u0 p2 c0 {1,D}
+// 3 O u0 p3 c-1 {1,S}
+// 4 O u1 p2 c0 {1,S}
+
+C2H5NO2
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1  C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+// 2  C u0 p0 c0 {1,S} {6,S} {7,S} {8,S}
+// 3  N u0 p0 c+1 {1,S} {9,D} {10,S}
+// 4  H u0 p0 c0 {1,S}
+// 5  H u0 p0 c0 {1,S}
+// 6  H u0 p0 c0 {2,S}
+// 7  H u0 p0 c0 {2,S}
+// 8  H u0 p0 c0 {2,S}
+// 9  O u0 p2 c0 {3,D}
+// 10 O u0 p3 c-1 {3,S}
+
+CH2CH2NO2
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 2
+// 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+// 2 N u0 p0 c+1 {1,S} {6,D} {7,S}
+// 3 C u1 p0 c0 {1,S} {8,S} {9,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 O u0 p2 c0 {2,D}
+// 7 O u0 p3 c-1 {2,S}
+// 8 H u0 p0 c0 {3,S}
+// 9 H u0 p0 c0 {3,S}
+
+CH3CH2ONO
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1  C u0 p0 c0 {2,S} {3,S} {5,S} {6,S}
+// 2  C u0 p0 c0 {1,S} {7,S} {8,S} {9,S}
+// 3  O u0 p2 c0 {1,S} {4,S}
+// 4  N u0 p1 c0 {3,S} {10,D}
+// 5  H u0 p0 c0 {1,S}
+// 6  H u0 p0 c0 {1,S}
+// 7  H u0 p0 c0 {2,S}
+// 8  H u0 p0 c0 {2,S}
+// 9  H u0 p0 c0 {2,S}
+// 10 O u0 p2 c0 {4,D}
+
+HONO2
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1 N u0 p0 c+1 {2,S} {3,D} {4,S}
+// 2 O u0 p2 c0 {1,S} {5,S}
+// 3 O u0 p2 c0 {1,D}
+// 4 O u0 p3 c-1 {1,S}
+// 5 H u0 p0 c0 {2,S}
+
+CH3CHNO2
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 2
+// 1 C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
+// 2 C u1 p0 c0 {1,S} {3,S} {7,S}
+// 3 N u0 p0 c+1 {2,S} {8,D} {9,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {1,S}
+// 7 H u0 p0 c0 {2,S}
+// 8 O u0 p2 c0 {3,D}
+// 9 O u0 p3 c-1 {3,S}
+
+CH3ONO2
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1 C u0 p0 c0 {3,S} {4,S} {5,S} {6,S}
+// 2 N u0 p0 c+1 {3,S} {7,D} {8,S}
+// 3 O u0 p2 c0 {1,S} {2,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {1,S}
+// 7 O u0 p2 c0 {2,D}
+// 8 O u0 p3 c-1 {2,S}
+
+CH3CH2ONO2
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1  C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
+// 2  C u0 p0 c0 {1,S} {7,S} {8,S} {9,S}
+// 3  N u0 p0 c+1 {4,S} {10,D} {11,S}
+// 4  O u0 p2 c0 {1,S} {3,S}
+// 5  H u0 p0 c0 {1,S}
+// 6  H u0 p0 c0 {1,S}
+// 7  H u0 p0 c0 {2,S}
+// 8  H u0 p0 c0 {2,S}
+// 9  H u0 p0 c0 {2,S}
+// 10 O u0 p2 c0 {3,D}
+// 11 O u0 p3 c-1 {3,S}
+
+CH3NO2
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+// 2 N u0 p0 c+1 {1,S} {6,D} {7,S}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 O u0 p2 c0 {2,D}
+// 7 O u0 p3 c-1 {2,S}
+
+CH2NO2
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 2
+// 1 N u0 p0 c+1 {2,S} {3,D} {6,S}
+// 2 C u1 p0 c0 {1,S} {4,S} {5,S}
+// 3 O u0 p2 c0 {1,D}
+// 4 H u0 p0 c0 {2,S}
+// 5 H u0 p0 c0 {2,S}
+// 6 O u0 p3 c-1 {1,S}
+
+HNOH
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 2
+// 1 N u1 p1 c0 {2,S} {3,S}
+// 2 O u0 p2 c0 {1,S} {4,S}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {2,S}
+
+CH3ONO
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1 C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
+// 2 O u0 p2 c0 {1,S} {3,S}
+// 3 N u0 p1 c0 {2,S} {7,D}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {1,S}
+// 7 O u0 p2 c0 {3,D}
+
+CH3NO
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+// 2 N u0 p1 c0 {1,S} {6,D}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 O u0 p2 c0 {2,D}
+
+C2H5NO
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+// 2 C u0 p0 c0 {1,S} {6,S} {7,S} {8,S}
+// 3 N u0 p1 c0 {1,S} {9,D}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {2,S}
+// 7 H u0 p0 c0 {2,S}
+// 8 H u0 p0 c0 {2,S}
+// 9 O u0 p2 c0 {3,D}
+
+CH2NO
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 2
+// 1 C u1 p0 c0 {2,S} {3,S} {4,S}
+// 2 N u0 p1 c0 {1,S} {5,D}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 O u0 p2 c0 {2,D}
+
+CH3CHNO
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 2
+// 1 C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
+// 2 C u0 p0 c0 {1,S} {3,D} {7,S}
+// 3 N u0 p1 c0 {2,D} {8,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {1,S}
+// 7 H u0 p0 c0 {2,S}
+// 8 O u1 p2 c0 {3,S}
+
+HCNO
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1 N u0 p0 c+1 {2,T} {3,S}
+// 2 C u0 p0 c0 {1,T} {4,S}
+// 3 O u0 p3 c-1 {1,S}
+// 4 H u0 p0 c0 {2,S}
+
+HNCO
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1 N u0 p1 c0 {2,D} {4,S}
+// 2 C u0 p0 c0 {1,D} {3,D}
+// 3 O u0 p2 c0 {2,D}
+// 4 H u0 p0 c0 {1,S}
+
+NCO
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 2
+// 1 C u0 p0 c0 {2,D} {3,D}
+// 2 N u1 p1 c0 {1,D}
+// 3 O u0 p2 c0 {1,D}
+
+H2NN
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 3
+// 1 N u0 p1 c0 {2,S} {3,S} {4,S}
+// 2 N u2 p1 c0 {1,S}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {1,S}
+
+H2NO
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 2
+// 1 N u1 p0 c+1 {2,S} {3,S} {4,S}
+// 2 O u0 p3 c-1 {1,S}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {1,S}
+
+HON
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 3
+// 1 O u0 p2 c0 {2,S} {3,S}
+// 2 N u2 p1 c0 {1,S}
+// 3 H u0 p0 c0 {1,S}
+
+N2O
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1 N u0 p0 c+1 {2,D} {3,D}
+// 2 N u0 p2 c-1 {1,D}
+// 3 O u0 p2 c0 {1,D}
+
+CN
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 2
+// 1 C u1 p0 c0 {2,T}
+// 2 N u0 p1 c0 {1,T}
+
+HCN
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1 C u0 p0 c0 {2,T} {3,S}
+// 2 N u0 p1 c0 {1,T}
+// 3 H u0 p0 c0 {1,S}
+
+HOCN
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1 C u0 p0 c0 {2,S} {3,T}
+// 2 O u0 p2 c0 {1,S} {4,S}
+// 3 N u0 p1 c0 {1,T}
+// 4 H u0 p0 c0 {2,S}
+
+HCNH
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 2
+// 1 C u1 p0 c0 {2,D} {3,S}
+// 2 N u0 p1 c0 {1,D} {4,S}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {2,S}
+
+H2CN
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 2
+// 1 C u0 p0 c0 {2,D} {3,S} {4,S}
+// 2 N u1 p1 c0 {1,D}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {1,S}
+
+CH2NH
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1 C u0 p0 c0 {2,D} {3,S} {4,S}
+// 2 N u0 p1 c0 {1,D} {5,S}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {2,S}
+
+CH3CHN
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 2
+// 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+// 2 C u0 p0 c0 {1,S} {6,D} {7,S}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 N u1 p1 c0 {2,D}
+// 7 H u0 p0 c0 {2,S}
+
+CH3CH2NH
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 2
+// 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+// 2 C u0 p0 c0 {1,S} {6,S} {7,S} {8,S}
+// 3 N u1 p1 c0 {1,S} {9,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {2,S}
+// 7 H u0 p0 c0 {2,S}
+// 8 H u0 p0 c0 {2,S}
+// 9 H u0 p0 c0 {3,S}
+
+CH3CHNH
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1 C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
+// 2 C u0 p0 c0 {1,S} {3,D} {7,S}
+// 3 N u0 p1 c0 {2,D} {8,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {1,S}
+// 7 H u0 p0 c0 {2,S}
+// 8 H u0 p0 c0 {3,S}
+
+CH3CN
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+// 2 C u0 p0 c0 {1,S} {6,T}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 N u0 p1 c0 {2,T}
+
+CH2CHNH
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 2
+// 1 C u0 p0 c0 {2,S} {3,D} {4,S}
+// 2 C u1 p0 c0 {1,S} {5,S} {6,S}
+// 3 N u0 p1 c0 {1,D} {7,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {2,S}
+// 6 H u0 p0 c0 {2,S}
+// 7 H u0 p0 c0 {3,S}
+
+CH3CNH
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 2
+// 1 C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
+// 2 C u1 p0 c0 {1,S} {3,D}
+// 3 N u0 p1 c0 {2,D} {7,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {1,S}
+// 7 H u0 p0 c0 {3,S}
+
+CH2CNH
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1 C u0 p0 c0 {2,D} {4,S} {5,S}
+// 2 C u0 p0 c0 {1,D} {3,D}
+// 3 N u0 p1 c0 {2,D} {6,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {3,S}
+
+CH2CN
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 2
+// 1 C u1 p0 c0 {2,S} {3,S} {4,S}
+// 2 C u0 p0 c0 {1,S} {5,T}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 N u0 p1 c0 {2,T}
+
+CHCNH
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 2
+// 1 C u0 p0 c0 {2,T} {3,S}
+// 2 C u0 p0 c0 {1,T} {5,S}
+// 3 N u1 p1 c0 {1,S} {4,S}
+// 4 H u0 p0 c0 {3,S}
+// 5 H u0 p0 c0 {2,S}
+
+CH3NH
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 2
+// 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+// 2 N u1 p1 c0 {1,S} {6,S}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {2,S}
+
+CH3NCH
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 2
+// 1 C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
+// 2 N u0 p1 c0 {1,S} {3,D}
+// 3 C u1 p0 c0 {2,D} {7,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {1,S}
+// 7 H u0 p0 c0 {3,S}
+
+CH2CHN
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 3
+// 1 C u0 p0 c0 {2,S} {3,D} {6,S}
+// 2 C u1 p0 c0 {1,S} {4,S} {5,S}
+// 3 N u1 p1 c0 {1,D}
+// 4 H u0 p0 c0 {2,S}
+// 5 H u0 p0 c0 {2,S}
+// 6 H u0 p0 c0 {1,S}
+
+CHCNH2
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1 N u0 p1 c0 {2,S} {4,S} {5,S}
+// 2 C u0 p0 c0 {1,S} {3,T}
+// 3 C u0 p0 c0 {2,T} {6,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {3,S}
+
+CH2CHNH2
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1 C u0 p0 c0 {2,S} {3,D} {4,S}
+// 2 N u0 p1 c0 {1,S} {5,S} {6,S}
+// 3 C u0 p0 c0 {1,D} {7,S} {8,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {2,S}
+// 6 H u0 p0 c0 {2,S}
+// 7 H u0 p0 c0 {3,S}
+// 8 H u0 p0 c0 {3,S}
+
+CH2CHN(S)
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 3
+// 1 C u0 p0 c0 {2,S} {3,D} {6,S}
+// 2 C u1 p0 c0 {1,S} {4,S} {5,S}
+// 3 N u1 p1 c0 {1,D}
+// 4 H u0 p0 c0 {2,S}
+// 5 H u0 p0 c0 {2,S}
+// 6 H u0 p0 c0 {1,S}
+
+CH3NCH2
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1 C u0 p0 c0 {3,S} {4,S} {5,S} {6,S}
+// 2 C u0 p0 c0 {3,D} {7,S} {8,S}
+// 3 N u0 p1 c0 {1,S} {2,D}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {1,S}
+// 7 H u0 p0 c0 {2,S}
+// 8 H u0 p0 c0 {2,S}
+
+c-C2H3N
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+// 2 C u0 p0 c0 {1,S} {3,D} {6,S}
+// 3 N u0 p1 c0 {1,S} {2,D}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {2,S}
+
+NCNOH
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 2
+// 1 N u1 p1 c0 {2,S} {3,S}
+// 2 C u0 p0 c0 {1,S} {4,T}
+// 3 O u0 p2 c0 {1,S} {5,S}
+// 4 N u0 p1 c0 {2,T}
+// 5 H u0 p0 c0 {3,S}
+
+H2NCO
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 2
+// 1 N u0 p1 c0 {2,S} {3,S} {4,S}
+// 2 C u1 p0 c0 {1,S} {5,D}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 O u0 p2 c0 {2,D}
+
+CH2NCH2
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 2
+// 1 C u0 p0 c0 {3,D} {6,S} {7,S}
+// 2 C u1 p0 c0 {3,S} {4,S} {5,S}
+// 3 N u0 p1 c0 {1,D} {2,S}
+// 4 H u0 p0 c0 {2,S}
+// 5 H u0 p0 c0 {2,S}
+// 6 H u0 p0 c0 {1,S}
+// 7 H u0 p0 c0 {1,S}
+
+HNC
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1 N u0 p0 c+1 {2,S} {3,T}
+// 2 H u0 p0 c0 {1,S}
+// 3 C u0 p1 c-1 {1,T}
+
+CH2NH2
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 2
+// 1 C u1 p0 c0 {2,S} {3,S} {4,S}
+// 2 N u0 p1 c0 {1,S} {5,S} {6,S}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {2,S}
+// 6 H u0 p0 c0 {2,S}
+
+CH3NHCH2
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 2
+// 1 C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
+// 2 N u0 p1 c0 {1,S} {3,S} {7,S}
+// 3 C u1 p0 c0 {2,S} {8,S} {9,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {1,S}
+// 7 H u0 p0 c0 {2,S}
+// 8 H u0 p0 c0 {3,S}
+// 9 H u0 p0 c0 {3,S}
+
+NCNO
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1 N u0 p1 c0 {2,S} {3,D}
+// 2 C u0 p0 c0 {1,S} {4,T}
+// 3 O u0 p2 c0 {1,D}
+// 4 N u0 p1 c0 {2,T}
+
+CH3NCH3
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 2
+// 1 C u0 p0 c0 {3,S} {4,S} {5,S} {6,S}
+// 2 C u0 p0 c0 {3,S} {7,S} {8,S} {9,S}
+// 3 N u1 p1 c0 {1,S} {2,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {1,S}
+// 7 H u0 p0 c0 {2,S}
+// 8 H u0 p0 c0 {2,S}
+// 9 H u0 p0 c0 {2,S}
+
+NCN
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 3
+// 1 C u0 p0 c0 {2,T} {3,S}
+// 2 N u0 p1 c0 {1,T}
+// 3 N u2 p1 c0 {1,S}
+
+HNCN
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 2
+// 1 C u0 p0 c0 {2,S} {3,T}
+// 2 N u1 p1 c0 {1,S} {4,S}
+// 3 N u0 p1 c0 {1,T}
+// 4 H u0 p0 c0 {2,S}
+
+HNCNH
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1 C u0 p0 c0 {2,D} {3,D}
+// 2 N u0 p1 c0 {1,D} {4,S}
+// 3 N u0 p1 c0 {1,D} {5,S}
+// 4 H u0 p0 c0 {2,S}
+// 5 H u0 p0 c0 {3,S}
+
+H2CC
+1 C 0  {2,D}
+2 C 2T {1,D}
+
+CHCHO
+1 C 0  {2,S} {3,D}
+2 C 2T {1,S}
+3 O 0  {1,D}
+
+NH2OH
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1 N u0 p1 c0 {2,S} {3,S} {4,S}
+// 2 O u0 p2 c0 {1,S} {5,S}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {2,S}
+
+NCCN
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 3
+// 1 C u0 p0 c0 {2,S} {3,T}
+// 2 C u1 p0 c0 {1,S} {4,D}
+// 3 N u0 p1 c0 {1,T}
+// 4 N u1 p1 c0 {2,D}
+
+CH2CHNO
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1 C u0 p0 c0 {2,D} {3,S} {4,S}
+// 2 C u0 p0 c0 {1,D} {5,S} {6,S}
+// 3 N u0 p1 c0 {1,S} {7,D}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {2,S}
+// 6 H u0 p0 c0 {2,S}
+// 7 O u0 p2 c0 {3,D}
+
+CHCHNO
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 2
+// 1 C u0 p0 c0 {2,D} {3,S} {4,S}
+// 2 C u1 p0 c0 {1,D} {5,S}
+// 3 N u0 p1 c0 {1,S} {6,D}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {2,S}
+// 6 O u0 p2 c0 {3,D}
+
+CH3NH2
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+// 2 N u0 p1 c0 {1,S} {6,S} {7,S}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {2,S}
+// 7 H u0 p0 c0 {2,S}
+
+CH3CH2NH2
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1  C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+// 2  C u0 p0 c0 {1,S} {6,S} {7,S} {8,S}
+// 3  N u0 p1 c0 {1,S} {9,S} {10,S}
+// 4  H u0 p0 c0 {1,S}
+// 5  H u0 p0 c0 {1,S}
+// 6  H u0 p0 c0 {2,S}
+// 7  H u0 p0 c0 {2,S}
+// 8  H u0 p0 c0 {2,S}
+// 9  H u0 p0 c0 {3,S}
+// 10 H u0 p0 c0 {3,S}
+
+CH2CH2NH2
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 2
+// 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+// 2 C u1 p0 c0 {1,S} {6,S} {7,S}
+// 3 N u0 p1 c0 {1,S} {8,S} {9,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {2,S}
+// 7 H u0 p0 c0 {2,S}
+// 8 H u0 p0 c0 {3,S}
+// 9 H u0 p0 c0 {3,S}
+
+CH3CHNH2
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 2
+// 1 C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
+// 2 C u1 p0 c0 {1,S} {3,S} {7,S}
+// 3 N u0 p1 c0 {2,S} {8,S} {9,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {1,S}
+// 7 H u0 p0 c0 {2,S}
+// 8 H u0 p0 c0 {3,S}
+// 9 H u0 p0 c0 {3,S}
+
+CH2CNH2
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 2
+// 1 C u0 p0 c0 {3,D} {4,S} {5,S}
+// 2 N u0 p1 c0 {3,S} {6,S} {7,S}
+// 3 C u1 p0 c0 {1,D} {2,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {2,S}
+// 7 H u0 p0 c0 {2,S}
+
+CHCHNH2
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// multiplicity 2
+// 1 C u0 p0 c0 {2,S} {3,D} {4,S}
+// 2 N u0 p1 c0 {1,S} {5,S} {6,S}
+// 3 C u1 p0 c0 {1,D} {7,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {2,S}
+// 6 H u0 p0 c0 {2,S}
+// 7 H u0 p0 c0 {3,S}
+
+H2NCHO
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1 N u0 p1 c0 {2,S} {4,S} {5,S}
+// 2 C u0 p0 c0 {1,S} {3,D} {6,S}
+// 3 O u0 p2 c0 {2,D}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {2,S}
+
+CH3NHCH3
+// Couldn't save in old syntax adjacency list. Here it is in new syntax:
+// 1  C u0 p0 c0 {3,S} {4,S} {5,S} {6,S}
+// 2  C u0 p0 c0 {3,S} {7,S} {8,S} {9,S}
+// 3  N u0 p1 c0 {1,S} {2,S} {10,S}
+// 4  H u0 p0 c0 {1,S}
+// 5  H u0 p0 c0 {1,S}
+// 6  H u0 p0 c0 {1,S}
+// 7  H u0 p0 c0 {2,S}
+// 8  H u0 p0 c0 {2,S}
+// 9  H u0 p0 c0 {2,S}
+// 10 H u0 p0 c0 {3,S}
+

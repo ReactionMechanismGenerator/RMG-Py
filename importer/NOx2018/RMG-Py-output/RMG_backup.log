@@ -1,0 +1,43 @@
+Reading species list...
+[07/Mar/2018:16:17:57] ENGINE Bus STARTING
+[07/Mar/2018:16:17:57] ENGINE Started monitor thread '_TimeoutMonitor'.
+Reading thermo file...
+Warning: Thermo file has no default temperature ranges
+Warning: (The line it would be on is '0200.00  1000.00  6000.00\r\n' but that is not formatted as such)
+Warning: (It should have Tmin in columns 1-10, Tmid in columns 11-20, and Tmax in columns 21-30)
+Ignoring short but non-empty line: '0200.00  1000.00  6000.00\r\n'
+Ignoring thermo data for O2(t) because it's not in the requested list of species.
+Ignoring thermo data for O2(s) because it's not in the requested list of species.
+Ignoring thermo data for O(t) because it's not in the requested list of species.
+Ignoring thermo data for O(s) because it's not in the requested list of species.
+Ignoring thermo data for OH* because it's not in the requested list of species.
+Ignoring thermo data for CH(d) because it's not in the requested list of species.
+Ignoring thermo data for CH(q) because it's not in the requested list of species.
+Ignoring thermo data for C(t) because it's not in the requested list of species.
+Ignoring thermo data for C(s) because it's not in the requested list of species.
+[07/Mar/2018:16:17:57] ENGINE Serving on http://0.0.0.0:8084
+[07/Mar/2018:16:17:57] ENGINE Bus STARTED
+Ignoring thermo data for C2(s) because it's not in the requested list of species.
+Ignoring thermo data for C2(t) because it's not in the requested list of species.
+Trouble reading line 'CHCHOH                  H  3 C  2 O  1      G     298.0    6000.0    1000.0    1' element segment '0    '
+Assuming it's spillover from Tint, and ignoring.
+Ignoring thermo data for NH(t) because it's not in the requested list of species.
+Ignoring thermo data for t-HONO because it's not in the requested list of species.
+Ignoring thermo data for c-HONO because it's not in the requested list of species.
+Ignoring thermo data for C2H3NO2 because it's not in the requested list of species.
+Warning: Skipping duplicate thermo for the species CH3NH
+Ignoring thermo data for CH3N because it's not in the requested list of species.
+Warning: Skipping duplicate thermo for the species HCNH
+Warning: Skipping duplicate thermo for the species CH3CH2NH2
+Warning: Skipping duplicate thermo for the species CH3CH2NH
+Ignoring thermo data for CH3NC because it's not in the requested list of species.
+Ignoring thermo data for CH2NC because it's not in the requested list of species.
+Reading known species...
+Warning: Error reading line 'NCCN
+'
+[07/Mar/2018:16:17:57] ENGINE Bus STOPPING
+[07/Mar/2018:16:17:57] ENGINE HTTP Server cherrypy._cpwsgi_server.CPWSGIServer(('0.0.0.0', 8084)) shut down
+[07/Mar/2018:16:17:57] ENGINE Stopped thread '_TimeoutMonitor'.
+[07/Mar/2018:16:17:57] ENGINE Bus STOPPED
+[07/Mar/2018:16:17:57] ENGINE Bus EXITING
+[07/Mar/2018:16:17:57] ENGINE Bus EXITED

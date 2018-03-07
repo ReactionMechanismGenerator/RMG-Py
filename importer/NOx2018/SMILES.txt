@@ -1,0 +1,155 @@
+H2O2	OO
+OH	[OH]
+H2	[H][H]
+H	[H]
+O	[O]
+H2O	O
+HO2	[O]O
+O2	[O][O]
+AR	[Ar]
+N2	N#N
+HE	[He]
+CO	[C-]#[O+]
+CO2	O=C=O
+CH4	C
+CH3	[CH3]
+CH3OH	CO
+
+
+CH	[CH]
+C	[C]
+C2H6	CC
+C2H5	C[CH2]
+C2H4	C=C
+C2H	[C]#C
+CH3O	C[O]	! Confirmed by Anonymous
+CH2OH	[CH2]O	! Confirmed by Anonymous
+CH2O	C=O	! Confirmed by Anonymous
+C2H3	[CH]=C	! Confirmed by Anonymous
+HCO	[CH]=O	! Confirmed by Anonymous
+C2H2	C#C	! Confirmed by Anonymous
+CH2CHOO	C=CO[O]	! Confirmed by Anonymous
+CH2(S)	[CH2]	! Confirmed by Anonymous
+CH2CHOOH	C=COO	! Confirmed by Anonymous
+CH2	[CH2]	! Confirmed by Anonymous
+CH2CHO	[CH2]C=O	! Confirmed by Anonymous
+HOCO	O=[C]O	! Confirmed by Anonymous
+CH3CHO	CC=O	! Confirmed by Anonymous
+CH2CHOH	C=CO	! Confirmed by Anonymous
+CH3CH2O	CC[O]	! Confirmed by Anonymous
+CH3CHOH	C[CH]O	! Confirmed by Anonymous
+CHCHOH	[CH]=CO	! Confirmed by Anonymous
+CH3CH2OH	CCO	! Confirmed by Anonymous
+HCCOH	C#CO	! Confirmed by Anonymous
+CH2CH2OH	[CH2]CO	! Confirmed by Anonymous
+CH3CO	C[C]=O	! Confirmed by Anonymous
+HOCHO	O=CO	! Confirmed by Anonymous
+CH2CO	C=C=O	! Confirmed by Anonymous
+OCHO	[O]C=O	! Confirmed by Anonymous
+HCCO	C#C[O]	! Confirmed by Anonymous
+CH3CH2OO	CCO[O]	! Confirmed by Anonymous
+HOCH2CH2OO	[O]OCCO	! Confirmed by Anonymous
+CH3CH2OOH	CCOO	! Confirmed by Anonymous
+OCHCHO	O=CC=O	! Confirmed by Anonymous
+CH3CHOOH	C[CH]OO	! Confirmed by Anonymous
+OCHCO	[O]C=C=O	! Confirmed by Anonymous
+CH3OO	CO[O]	! Confirmed by Anonymous
+HOCH2O	[O]CO	! Confirmed by Anonymous
+CH3OOH	COO	! Confirmed by Anonymous
+cC2H3O	[CH]1CO1	! Confirmed by Anonymous
+CH2OOH	[CH2]OO	! Confirmed by Anonymous
+cC2H4O	C1CO1	! Confirmed by Anonymous
+CH2CH2OOH	[CH2]COO	! Confirmed by Anonymous
+C2	[C]#[C]	! Confirmed by Anonymous
+CH3C(O)OO	CC(=O)O[O]	! Confirmed by Anonymous
+C2O	[C]=C=O	! Confirmed by Anonymous
+HCOH [CH]O  ! entered manually
+NO [N]=O  ! entered manually
+NH3 N  ! entered manually
+NH2 [NH2]  ! entered manually
+NH [NH]  ! entered manually
+N [N]  ! entered manually
+NNH [N]=N  ! entered manually
+N2H4 NN  ! entered manually
+N2H3 [NH]N  ! entered manually
+HNO N=O  ! entered manually
+
+NO2	N(=O)[O]	! Confirmed by Anonymous
+N2H2	N=N	! Confirmed by Anonymous
+HONO	N(=O)O	! Confirmed by Anonymous
+HNO2	[NH+](=O)[O-]	! Confirmed by Anonymous
+NO3	[N+](=O)([O-])[O]	! Confirmed by Anonymous
+C2H5NO2	C(C)[N+](=O)[O-]	! Confirmed by Anonymous
+CH2CH2NO2	C([N+](=O)[O-])[CH2]	! Confirmed by Anonymous
+CH3CH2ONO	C(C)ON=O	! Confirmed by Anonymous
+HONO2	[N+](=O)(O)[O-]	! Confirmed by Anonymous
+CH3CHNO2	C[CH][N+](=O)[O-]	! Confirmed by Anonymous
+CH3ONO2	CO[N+](=O)[O-]	! Confirmed by Anonymous
+CH3CH2ONO2	C(C)O[N+](=O)[O-]	! Confirmed by Anonymous
+CH3NO2	C[N+](=O)[O-]	! Confirmed by Anonymous
+CH2NO2	[N+](=O)([CH2])[O-]	! Confirmed by Anonymous
+HNOH	[NH]O	! Confirmed by Anonymous
+CH3ONO	CON=O	! Confirmed by Anonymous
+CH3NO	CN=O	! Confirmed by Anonymous
+C2H5NO	C(C)N=O	! Confirmed by Anonymous
+CH2NO	[CH2]N=O	! Confirmed by Anonymous
+CH3CHNO	CC=N[O]	! Confirmed by Anonymous
+HCNO	[N+](#C)[O-]	! Confirmed by Anonymous
+
+HNCO N=C=O
+NCO [N]=C=O
+H2NN N[N] ! CONVERT TO SINGLET!!!***
+H2NO N[O]
+HON O[N] ! CONVERT TO SINGLET!!!***
+N2O [N-]=[N+]=O
+CN [C]#N
+HCN	C#N	! Confirmed by Anonymous
+HOCN	C(#N)O	! Confirmed by Anonymous
+HCNH	[CH]=N	! Confirmed by Anonymous
+H2CN	C=[N]	! Confirmed by Anonymous
+CH2NH	C=N	! Confirmed by Anonymous
+CH3CHN	CC=[N]	! Confirmed by Anonymous
+CH3CH2NH	C(C)[NH]	! Confirmed by Anonymous
+CH3CHNH	CC=N	! Confirmed by Anonymous
+CH3CN	CC#N	! Confirmed by Anonymous
+CH2CHNH	C(=N)[CH2]	! Confirmed by Anonymous
+CH3CNH	C[C]=N	! Confirmed by Anonymous
+CH2CNH	C=C=N	! Confirmed by Anonymous
+CH2CN	[CH2]C#N	! Confirmed by Anonymous
+CHCNH	C(#C)[NH]	! Confirmed by Anonymous
+CH3NH	C[NH]	! Confirmed by Anonymous
+CH3NCH	CN=[CH]	! Confirmed by Anonymous
+CH2CHN	C(=[N])[CH2]	! Confirmed by Anonymous
+
+CHCNH2 NC#C
+CH2CHNH2 NC=C
+CH2CHN(S) C=C[N] ! CONVERT TO SINGLET!!!***
+CH3NCH2 CN=C
+c-C2H3N C1C=N1
+NCNOH [N]=C=NO
+H2NCO N[C]=O
+CH2NCH2 C=N[CH2]
+HNC [NH+]#[C-]
+CH2NH2 [CH2]N
+CH3NHCH2 CN[CH2]
+
+NCNO	N(=O)C#N	! Confirmed by Anonymous
+CH3NCH3	C[N]C	! Confirmed by Anonymous
+NCN	C(#N)[N]	! Confirmed by Anonymous
+HNCN	C(#N)[NH]	! Confirmed by Anonymous
+HNCNH	C(=N)=N	! Confirmed by Anonymous
+
+H2CC [C]=C ! CONVERT TO SINGLET!!!***
+CHCHO [CH]C=O
+NH2OH NO
+NCCN [N]=C=C=[N]
+CH2CHNO C=CN=O
+CHCHNO [CH]=CN=O
+CH3NH2 CN
+CH3CH2NH2 CCN
+CH2CH2NH2 [CH2]CN
+CH3CHNH2 C[CH]N
+CH2CNH2 C=[C]N
+CHCHNH2 [CH]=CN
+H2NCHO NC=O
+CH3NHCH3 CNC

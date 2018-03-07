@@ -1,0 +1,1062 @@
+H2
+1 H 0 {2,S}
+2 H 0 {1,S}
+
+O2
+1 O 1 {2,S}
+2 O 1 {1,S}
+
+H
+1 H 1
+
+O
+1 O 2T
+
+OH
+1 O 1
+
+HO2
+1 O 0 {2,S}
+2 O 1 {1,S}
+
+H2O
+1 O 0
+
+H2O2
+1 O 0 {2,S}
+2 O 0 {1,S}
+
+// Couldn't save CO in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CO
+// 1 C u0 p1 c-1 {2,T}
+// 2 O u0 p1 c+1 {1,T}
+
+CO2
+1 C 0 {2,D} {3,D}
+2 O 0 {1,D}
+3 O 0 {1,D}
+
+CH4
+1 C 0
+
+CH3
+1 C 1
+
+CH2
+1 C 2T
+
+CH2(S)
+1 C 2T
+
+CH
+1 C 3Q
+
+C
+1 C 4S
+
+CH3OH
+1 C 0 {2,S}
+2 O 0 {1,S}
+
+CH3O
+1 C 0 {2,S}
+2 O 1 {1,S}
+
+CH2OH
+1 C 1 {2,S}
+2 O 0 {1,S}
+
+CH2O
+1 C 0 {2,D}
+2 O 0 {1,D}
+
+HCOH
+1 C 2T {2,S}
+2 O 0  {1,S}
+
+HCO
+1 C 1 {2,D}
+2 O 0 {1,D}
+
+HOCO
+1 C 1 {2,S} {3,D}
+2 O 0 {1,S}
+3 O 0 {1,D}
+
+HOCHO
+1 C 0 {2,S} {3,D}
+2 O 0 {1,S}
+3 O 0 {1,D}
+
+OCHO
+1 C 0 {2,S} {3,D}
+2 O 1 {1,S}
+3 O 0 {1,D}
+
+HOCH2O
+1 C 0 {2,S} {3,S}
+2 O 0 {1,S}
+3 O 1 {1,S}
+
+CH3OOH
+1 C 0 {2,S}
+2 O 0 {1,S} {3,S}
+3 O 0 {2,S}
+
+CH3OO
+1 C 0 {2,S}
+2 O 0 {1,S} {3,S}
+3 O 1 {2,S}
+
+CH2OOH
+1 C 1 {2,S}
+2 O 0 {1,S} {3,S}
+3 O 0 {2,S}
+
+C2H6
+1 C 0 {2,S}
+2 C 0 {1,S}
+
+C2H5
+1 C 0 {2,S}
+2 C 1 {1,S}
+
+C2H4
+1 C 0 {2,D}
+2 C 0 {1,D}
+
+C2H3
+1 C 0 {2,D}
+2 C 1 {1,D}
+
+C2H2
+1 C 0 {2,T}
+2 C 0 {1,T}
+
+H2CC
+1 C 0  {2,D}
+2 C 2T {1,D}
+
+C2H
+1 C 0 {2,T}
+2 C 1 {1,T}
+
+C2
+1 C 1 {2,T}
+2 C 1 {1,T}
+
+CH3CH2OH
+1 C 0 {2,S} {3,S}
+2 C 0 {1,S}
+3 O 0 {1,S}
+
+CH3CHOH
+1 C 0 {2,S}
+2 C 1 {1,S} {3,S}
+3 O 0 {2,S}
+
+CH3CH2O
+1 C 0 {2,S}
+2 C 0 {1,S} {3,S}
+3 O 1 {2,S}
+
+CH2CH2OH
+1 C 0 {2,S} {3,S}
+2 C 1 {1,S}
+3 O 0 {1,S}
+
+CH3CHO
+1 C 0 {2,S}
+2 C 0 {1,S} {3,D}
+3 O 0 {2,D}
+
+CH2CHOH
+1 C 0 {2,D} {3,S}
+2 C 0 {1,D}
+3 O 0 {1,S}
+
+cC2H4O
+1 C 0 {2,S} {3,S}
+2 C 0 {1,S} {3,S}
+3 O 0 {1,S} {2,S}
+
+CHCHOH
+1 C 0 {2,D} {3,S}
+2 C 1 {1,D}
+3 O 0 {1,S}
+
+cC2H3O
+1 C 0 {2,S} {3,S}
+2 C 1 {1,S} {3,S}
+3 O 0 {1,S} {2,S}
+
+CH2CHO
+1 C 1 {2,S}
+2 C 0 {1,S} {3,D}
+3 O 0 {2,D}
+
+CH3CO
+1 C 0 {2,S}
+2 C 1 {1,S} {3,D}
+3 O 0 {2,D}
+
+CH2CO
+1 C 0 {2,D}
+2 C 0 {1,D} {3,D}
+3 O 0 {2,D}
+
+CHCHO
+1 C 0  {2,S} {3,D}
+2 C 2T {1,S}
+3 O 0  {1,D}
+
+HCCOH
+1 C 0 {2,T} {3,S}
+2 C 0 {1,T}
+3 O 0 {1,S}
+
+HCCO
+1 C 0 {2,T}
+2 C 0 {1,T} {3,S}
+3 O 1 {2,S}
+
+C2O
+1 C 0  {2,D} {3,D}
+2 C 2T {1,D}
+3 O 0  {1,D}
+
+CH3CH2OOH
+1 C 0 {2,S} {3,S}
+2 C 0 {1,S}
+3 O 0 {1,S} {4,S}
+4 O 0 {3,S}
+
+CH3CH2OO
+1 C 0 {2,S} {3,S}
+2 C 0 {1,S}
+3 O 0 {1,S} {4,S}
+4 O 1 {3,S}
+
+CH3CHOOH
+1 C 0 {2,S}
+2 C 1 {1,S} {3,S}
+3 O 0 {2,S} {4,S}
+4 O 0 {3,S}
+
+CH2CH2OOH
+1 C 0 {2,S} {3,S}
+2 C 1 {1,S}
+3 O 0 {1,S} {4,S}
+4 O 0 {3,S}
+
+CH2CHOOH
+1 C 0 {2,D} {3,S}
+2 C 0 {1,D}
+3 O 0 {1,S} {4,S}
+4 O 0 {3,S}
+
+HOCH2CH2OO
+1 C 0 {2,S} {3,S}
+2 C 0 {1,S} {4,S}
+3 O 0 {1,S} {5,S}
+4 O 0 {2,S}
+5 O 1 {3,S}
+
+CH2CHOO
+1 C 0 {2,D} {3,S}
+2 C 0 {1,D}
+3 O 0 {1,S} {4,S}
+4 O 1 {3,S}
+
+OCHCHO
+1 C 0 {2,S} {3,D}
+2 C 0 {1,S} {4,D}
+3 O 0 {1,D}
+4 O 0 {2,D}
+
+OCHCO
+1 C 0 {2,D} {3,S}
+2 C 0 {1,D} {4,D}
+3 O 1 {1,S}
+4 O 0 {2,D}
+
+CH3C(O)OO
+1 C 0 {2,S}
+2 C 0 {1,S} {3,S} {4,D}
+3 O 0 {2,S} {5,S}
+4 O 0 {2,D}
+5 O 1 {3,S}
+
+// Couldn't save NO in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// NO
+// multiplicity 2
+// 1 N u1 p1 c0 {2,D}
+// 2 O u0 p2 c0 {1,D}
+
+// Couldn't save HCN in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// HCN
+// 1 C u0 p0 c0 {2,T} {3,S}
+// 2 N u0 p1 c0 {1,T}
+// 3 H u0 p0 c0 {1,S}
+
+// Couldn't save NH3 in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// NH3
+// 1 N u0 p1 c0 {2,S} {3,S} {4,S}
+// 2 H u0 p0 c0 {1,S}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {1,S}
+
+// Couldn't save NH2 in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// NH2
+// multiplicity 2
+// 1 N u1 p1 c0 {2,S} {3,S}
+// 2 H u0 p0 c0 {1,S}
+// 3 H u0 p0 c0 {1,S}
+
+// Couldn't save NH in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// NH
+// multiplicity 3
+// 1 N u2 p1 c0 {2,S}
+// 2 H u0 p0 c0 {1,S}
+
+// Couldn't save N in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// N
+// multiplicity 4
+// 1 N u3 p1 c0
+
+// Couldn't save NNH in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// NNH
+// multiplicity 2
+// 1 N u0 p1 c0 {2,D} {3,S}
+// 2 N u1 p1 c0 {1,D}
+// 3 H u0 p0 c0 {1,S}
+
+// Couldn't save N2H4 in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// N2H4
+// 1 N u0 p1 c0 {2,S} {3,S} {4,S}
+// 2 N u0 p1 c0 {1,S} {5,S} {6,S}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {2,S}
+// 6 H u0 p0 c0 {2,S}
+
+// Couldn't save N2H3 in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// N2H3
+// multiplicity 2
+// 1 N u0 p1 c0 {2,S} {3,S} {4,S}
+// 2 N u1 p1 c0 {1,S} {5,S}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {2,S}
+
+// Couldn't save N2H2 in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// N2H2
+// 1 N u0 p1 c0 {2,D} {3,S}
+// 2 N u0 p1 c0 {1,D} {4,S}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {2,S}
+
+// Couldn't save H2NN in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// H2NN
+// multiplicity 3
+// 1 N u0 p1 c0 {2,S} {3,S} {4,S}
+// 2 N u2 p1 c0 {1,S}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {1,S}
+
+// Couldn't save NH2OH in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// NH2OH
+// 1 N u0 p1 c0 {2,S} {3,S} {4,S}
+// 2 O u0 p2 c0 {1,S} {5,S}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {2,S}
+
+// Couldn't save H2NO in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// H2NO
+// multiplicity 2
+// 1 N u0 p1 c0 {2,S} {3,S} {4,S}
+// 2 O u1 p2 c0 {1,S}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {1,S}
+
+// Couldn't save HNOH in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// HNOH
+// multiplicity 2
+// 1 N u1 p1 c0 {2,S} {3,S}
+// 2 O u0 p2 c0 {1,S} {4,S}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {2,S}
+
+// Couldn't save HNO in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// HNO
+// 1 N u0 p1 c0 {2,D} {3,S}
+// 2 O u0 p2 c0 {1,D}
+// 3 H u0 p0 c0 {1,S}
+
+// Couldn't save HON in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// HON
+// multiplicity 3
+// 1 O u0 p2 c0 {2,S} {3,S}
+// 2 N u2 p1 c0 {1,S}
+// 3 H u0 p0 c0 {1,S}
+
+// Couldn't save NO2 in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// NO2
+// multiplicity 2
+// 1 N u0 p1 c0 {2,D} {3,S}
+// 2 O u0 p2 c0 {1,D}
+// 3 O u1 p2 c0 {1,S}
+
+// Couldn't save HONO in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// HONO
+// 1 N u0 p1 c0 {2,S} {3,D}
+// 2 O u0 p2 c0 {1,S} {4,S}
+// 3 O u0 p2 c0 {1,D}
+// 4 H u0 p0 c0 {2,S}
+
+// Couldn't save HNO2 in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// HNO2
+// 1 N u0 p0 c+1 {2,S} {3,D} {4,S}
+// 2 H u0 p0 c0 {1,S}
+// 3 O u0 p2 c0 {1,D}
+// 4 O u0 p3 c-1 {1,S}
+
+// Couldn't save NO3 in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// NO3
+// multiplicity 2
+// 1 N u0 p0 c+1 {2,D} {3,S} {4,S}
+// 2 O u0 p2 c0 {1,D}
+// 3 O u0 p3 c-1 {1,S}
+// 4 O u1 p2 c0 {1,S}
+
+// Couldn't save HONO2 in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// HONO2
+// 1 N u0 p0 c+1 {2,S} {3,D} {4,S}
+// 2 O u0 p2 c0 {1,S} {5,S}
+// 3 O u0 p2 c0 {1,D}
+// 4 O u0 p3 c-1 {1,S}
+// 5 H u0 p0 c0 {2,S}
+
+// Couldn't save N2O in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// N2O
+// 1 N u0 p0 c+1 {2,D} {3,D}
+// 2 N u0 p2 c-1 {1,D}
+// 3 O u0 p2 c0 {1,D}
+
+// Couldn't save HNC in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// HNC
+// 1 N u0 p0 c+1 {2,S} {3,T}
+// 2 H u0 p0 c0 {1,S}
+// 3 C u0 p1 c-1 {1,T}
+
+// Couldn't save CN in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CN
+// multiplicity 2
+// 1 C u1 p0 c0 {2,T}
+// 2 N u0 p1 c0 {1,T}
+
+// Couldn't save HNCO in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// HNCO
+// 1 N u0 p1 c0 {2,D} {4,S}
+// 2 C u0 p0 c0 {1,D} {3,D}
+// 3 O u0 p2 c0 {2,D}
+// 4 H u0 p0 c0 {1,S}
+
+// Couldn't save HOCN in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// HOCN
+// 1 C u0 p0 c0 {2,S} {3,T}
+// 2 O u0 p2 c0 {1,S} {4,S}
+// 3 N u0 p1 c0 {1,T}
+// 4 H u0 p0 c0 {2,S}
+
+// Couldn't save HCNO in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// HCNO
+// 1 N u0 p0 c+1 {2,T} {3,S}
+// 2 C u0 p0 c0 {1,T} {4,S}
+// 3 O u0 p3 c-1 {1,S}
+// 4 H u0 p0 c0 {2,S}
+
+// Couldn't save NCO in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// NCO
+// multiplicity 2
+// 1 C u0 p0 c0 {2,D} {3,D}
+// 2 N u1 p1 c0 {1,D}
+// 3 O u0 p2 c0 {1,D}
+
+// Couldn't save NCN in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// NCN
+// multiplicity 3
+// 1 C u0 p0 c0 {2,T} {3,S}
+// 2 N u0 p1 c0 {1,T}
+// 3 N u2 p1 c0 {1,S}
+
+// Couldn't save HNCN in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// HNCN
+// multiplicity 2
+// 1 C u0 p0 c0 {2,S} {3,T}
+// 2 N u1 p1 c0 {1,S} {4,S}
+// 3 N u0 p1 c0 {1,T}
+// 4 H u0 p0 c0 {2,S}
+
+// Couldn't save NCNO in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// NCNO
+// 1 N u0 p1 c0 {2,S} {3,D}
+// 2 C u0 p0 c0 {1,S} {4,T}
+// 3 O u0 p2 c0 {1,D}
+// 4 N u0 p1 c0 {2,T}
+
+// Couldn't save NCNOH in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// NCNOH
+// multiplicity 2
+// 1 N u0 p1 c0 {2,D} {3,S}
+// 2 C u0 p0 c0 {1,D} {4,D}
+// 3 O u0 p2 c0 {1,S} {5,S}
+// 4 N u1 p1 c0 {2,D}
+// 5 H u0 p0 c0 {3,S}
+
+// Couldn't save HNCNH in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// HNCNH
+// 1 C u0 p0 c0 {2,D} {3,D}
+// 2 N u0 p1 c0 {1,D} {4,S}
+// 3 N u0 p1 c0 {1,D} {5,S}
+// 4 H u0 p0 c0 {2,S}
+// 5 H u0 p0 c0 {3,S}
+
+// Couldn't save NCCN in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// NCCN
+// multiplicity 3
+// 1 C u0 p0 c0 {2,D} {3,D}
+// 2 C u0 p0 c0 {1,D} {4,D}
+// 3 N u1 p1 c0 {1,D}
+// 4 N u1 p1 c0 {2,D}
+
+// Couldn't save CH3NO in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CH3NO
+// 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+// 2 N u0 p1 c0 {1,S} {6,D}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 O u0 p2 c0 {2,D}
+
+// Couldn't save CH2NO in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CH2NO
+// multiplicity 2
+// 1 C u1 p0 c0 {2,S} {3,S} {4,S}
+// 2 N u0 p1 c0 {1,S} {5,D}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 O u0 p2 c0 {2,D}
+
+// Couldn't save C2H5NO in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// C2H5NO
+// 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+// 2 C u0 p0 c0 {1,S} {6,S} {7,S} {8,S}
+// 3 N u0 p1 c0 {1,S} {9,D}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {2,S}
+// 7 H u0 p0 c0 {2,S}
+// 8 H u0 p0 c0 {2,S}
+// 9 O u0 p2 c0 {3,D}
+
+// Couldn't save CH3CHNO in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CH3CHNO
+// multiplicity 2
+// 1 C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
+// 2 C u0 p0 c0 {1,S} {3,D} {7,S}
+// 3 N u0 p1 c0 {2,D} {8,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {1,S}
+// 7 H u0 p0 c0 {2,S}
+// 8 O u1 p2 c0 {3,S}
+
+// Couldn't save CH2CHNO in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CH2CHNO
+// 1 C u0 p0 c0 {2,D} {3,S} {4,S}
+// 2 C u0 p0 c0 {1,D} {5,S} {6,S}
+// 3 N u0 p1 c0 {1,S} {7,D}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {2,S}
+// 6 H u0 p0 c0 {2,S}
+// 7 O u0 p2 c0 {3,D}
+
+// Couldn't save CHCHNO in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CHCHNO
+// multiplicity 2
+// 1 C u0 p0 c0 {2,D} {3,S} {4,S}
+// 2 C u1 p0 c0 {1,D} {5,S}
+// 3 N u0 p1 c0 {1,S} {6,D}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {2,S}
+// 6 O u0 p2 c0 {3,D}
+
+// Couldn't save CH3NO2 in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CH3NO2
+// 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+// 2 N u0 p0 c+1 {1,S} {6,D} {7,S}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 O u0 p2 c0 {2,D}
+// 7 O u0 p3 c-1 {2,S}
+
+// Couldn't save CH2NO2 in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CH2NO2
+// multiplicity 2
+// 1 N u0 p0 c+1 {2,S} {3,D} {6,S}
+// 2 C u1 p0 c0 {1,S} {4,S} {5,S}
+// 3 O u0 p2 c0 {1,D}
+// 4 H u0 p0 c0 {2,S}
+// 5 H u0 p0 c0 {2,S}
+// 6 O u0 p3 c-1 {1,S}
+
+// Couldn't save C2H5NO2 in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// C2H5NO2
+// 1  C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+// 2  C u0 p0 c0 {1,S} {6,S} {7,S} {8,S}
+// 3  N u0 p0 c+1 {1,S} {9,D} {10,S}
+// 4  H u0 p0 c0 {1,S}
+// 5  H u0 p0 c0 {1,S}
+// 6  H u0 p0 c0 {2,S}
+// 7  H u0 p0 c0 {2,S}
+// 8  H u0 p0 c0 {2,S}
+// 9  O u0 p2 c0 {3,D}
+// 10 O u0 p3 c-1 {3,S}
+
+// Couldn't save CH2CH2NO2 in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CH2CH2NO2
+// multiplicity 2
+// 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+// 2 N u0 p0 c+1 {1,S} {6,D} {7,S}
+// 3 C u1 p0 c0 {1,S} {8,S} {9,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 O u0 p2 c0 {2,D}
+// 7 O u0 p3 c-1 {2,S}
+// 8 H u0 p0 c0 {3,S}
+// 9 H u0 p0 c0 {3,S}
+
+// Couldn't save CH3CHNO2 in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CH3CHNO2
+// multiplicity 2
+// 1 C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
+// 2 C u1 p0 c0 {1,S} {3,S} {7,S}
+// 3 N u0 p0 c+1 {2,S} {8,D} {9,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {1,S}
+// 7 H u0 p0 c0 {2,S}
+// 8 O u0 p2 c0 {3,D}
+// 9 O u0 p3 c-1 {3,S}
+
+// Couldn't save CH3ONO in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CH3ONO
+// 1 C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
+// 2 O u0 p2 c0 {1,S} {3,S}
+// 3 N u0 p1 c0 {2,S} {7,D}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {1,S}
+// 7 O u0 p2 c0 {3,D}
+
+// Couldn't save CH3ONO2 in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CH3ONO2
+// 1 C u0 p0 c0 {3,S} {4,S} {5,S} {6,S}
+// 2 N u0 p0 c+1 {3,S} {7,D} {8,S}
+// 3 O u0 p2 c0 {1,S} {2,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {1,S}
+// 7 O u0 p2 c0 {2,D}
+// 8 O u0 p3 c-1 {2,S}
+
+// Couldn't save CH3CH2ONO in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CH3CH2ONO
+// 1  C u0 p0 c0 {2,S} {3,S} {5,S} {6,S}
+// 2  C u0 p0 c0 {1,S} {7,S} {8,S} {9,S}
+// 3  O u0 p2 c0 {1,S} {4,S}
+// 4  N u0 p1 c0 {3,S} {10,D}
+// 5  H u0 p0 c0 {1,S}
+// 6  H u0 p0 c0 {1,S}
+// 7  H u0 p0 c0 {2,S}
+// 8  H u0 p0 c0 {2,S}
+// 9  H u0 p0 c0 {2,S}
+// 10 O u0 p2 c0 {4,D}
+
+// Couldn't save CH3CH2ONO2 in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CH3CH2ONO2
+// 1  C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
+// 2  C u0 p0 c0 {1,S} {7,S} {8,S} {9,S}
+// 3  N u0 p0 c+1 {4,S} {10,D} {11,S}
+// 4  O u0 p2 c0 {1,S} {3,S}
+// 5  H u0 p0 c0 {1,S}
+// 6  H u0 p0 c0 {1,S}
+// 7  H u0 p0 c0 {2,S}
+// 8  H u0 p0 c0 {2,S}
+// 9  H u0 p0 c0 {2,S}
+// 10 O u0 p2 c0 {3,D}
+// 11 O u0 p3 c-1 {3,S}
+
+// Couldn't save CH3NH2 in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CH3NH2
+// 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+// 2 N u0 p1 c0 {1,S} {6,S} {7,S}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {2,S}
+// 7 H u0 p0 c0 {2,S}
+
+// Couldn't save CH2NH2 in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CH2NH2
+// multiplicity 2
+// 1 C u1 p0 c0 {2,S} {3,S} {4,S}
+// 2 N u0 p1 c0 {1,S} {5,S} {6,S}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {2,S}
+// 6 H u0 p0 c0 {2,S}
+
+// Couldn't save CH3NH in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CH3NH
+// multiplicity 2
+// 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+// 2 N u1 p1 c0 {1,S} {6,S}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {2,S}
+
+// Couldn't save CH2NH in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CH2NH
+// 1 C u0 p0 c0 {2,D} {3,S} {4,S}
+// 2 N u0 p1 c0 {1,D} {5,S}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {2,S}
+
+// Couldn't save H2CN in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// H2CN
+// multiplicity 2
+// 1 C u0 p0 c0 {2,D} {3,S} {4,S}
+// 2 N u1 p1 c0 {1,D}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {1,S}
+
+// Couldn't save HCNH in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// HCNH
+// multiplicity 2
+// 1 C u1 p0 c0 {2,D} {3,S}
+// 2 N u0 p1 c0 {1,D} {4,S}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {2,S}
+
+// Couldn't save CH3CH2NH2 in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CH3CH2NH2
+// 1  C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+// 2  C u0 p0 c0 {1,S} {6,S} {7,S} {8,S}
+// 3  N u0 p1 c0 {1,S} {9,S} {10,S}
+// 4  H u0 p0 c0 {1,S}
+// 5  H u0 p0 c0 {1,S}
+// 6  H u0 p0 c0 {2,S}
+// 7  H u0 p0 c0 {2,S}
+// 8  H u0 p0 c0 {2,S}
+// 9  H u0 p0 c0 {3,S}
+// 10 H u0 p0 c0 {3,S}
+
+// Couldn't save CH2CH2NH2 in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CH2CH2NH2
+// multiplicity 2
+// 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+// 2 C u1 p0 c0 {1,S} {6,S} {7,S}
+// 3 N u0 p1 c0 {1,S} {8,S} {9,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {2,S}
+// 7 H u0 p0 c0 {2,S}
+// 8 H u0 p0 c0 {3,S}
+// 9 H u0 p0 c0 {3,S}
+
+// Couldn't save CH3CHNH2 in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CH3CHNH2
+// multiplicity 2
+// 1 C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
+// 2 C u1 p0 c0 {1,S} {3,S} {7,S}
+// 3 N u0 p1 c0 {2,S} {8,S} {9,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {1,S}
+// 7 H u0 p0 c0 {2,S}
+// 8 H u0 p0 c0 {3,S}
+// 9 H u0 p0 c0 {3,S}
+
+// Couldn't save CH3CH2NH in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CH3CH2NH
+// multiplicity 2
+// 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+// 2 C u0 p0 c0 {1,S} {6,S} {7,S} {8,S}
+// 3 N u1 p1 c0 {1,S} {9,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {2,S}
+// 7 H u0 p0 c0 {2,S}
+// 8 H u0 p0 c0 {2,S}
+// 9 H u0 p0 c0 {3,S}
+
+// Couldn't save CH2CHNH2 in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CH2CHNH2
+// 1 C u0 p0 c0 {2,S} {3,D} {4,S}
+// 2 N u0 p1 c0 {1,S} {5,S} {6,S}
+// 3 C u0 p0 c0 {1,D} {7,S} {8,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {2,S}
+// 6 H u0 p0 c0 {2,S}
+// 7 H u0 p0 c0 {3,S}
+// 8 H u0 p0 c0 {3,S}
+
+// Couldn't save CH3CHNH in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CH3CHNH
+// 1 C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
+// 2 C u0 p0 c0 {1,S} {3,D} {7,S}
+// 3 N u0 p1 c0 {2,D} {8,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {1,S}
+// 7 H u0 p0 c0 {2,S}
+// 8 H u0 p0 c0 {3,S}
+
+// Couldn't save CH2CHNH in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CH2CHNH
+// multiplicity 2
+// 1 C u0 p0 c0 {2,S} {3,D} {4,S}
+// 2 C u1 p0 c0 {1,S} {5,S} {6,S}
+// 3 N u0 p1 c0 {1,D} {7,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {2,S}
+// 6 H u0 p0 c0 {2,S}
+// 7 H u0 p0 c0 {3,S}
+
+// Couldn't save CH2CNH2 in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CH2CNH2
+// multiplicity 2
+// 1 C u0 p0 c0 {3,D} {4,S} {5,S}
+// 2 N u0 p1 c0 {3,S} {6,S} {7,S}
+// 3 C u1 p0 c0 {1,D} {2,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {2,S}
+// 7 H u0 p0 c0 {2,S}
+
+// Couldn't save CH3CNH in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CH3CNH
+// multiplicity 2
+// 1 C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
+// 2 C u1 p0 c0 {1,S} {3,D}
+// 3 N u0 p1 c0 {2,D} {7,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {1,S}
+// 7 H u0 p0 c0 {3,S}
+
+// Couldn't save CH3CHN in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CH3CHN
+// multiplicity 2
+// 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+// 2 C u0 p0 c0 {1,S} {6,D} {7,S}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 N u1 p1 c0 {2,D}
+// 7 H u0 p0 c0 {2,S}
+
+// Couldn't save CHCHNH2 in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CHCHNH2
+// multiplicity 2
+// 1 C u0 p0 c0 {2,S} {3,D} {4,S}
+// 2 N u0 p1 c0 {1,S} {5,S} {6,S}
+// 3 C u1 p0 c0 {1,D} {7,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {2,S}
+// 6 H u0 p0 c0 {2,S}
+// 7 H u0 p0 c0 {3,S}
+
+// Couldn't save CH3CN in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CH3CN
+// 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+// 2 C u0 p0 c0 {1,S} {6,T}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 N u0 p1 c0 {2,T}
+
+// Couldn't save CHCNH2 in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CHCNH2
+// 1 N u0 p1 c0 {2,S} {4,S} {5,S}
+// 2 C u0 p0 c0 {1,S} {3,T}
+// 3 C u0 p0 c0 {2,T} {6,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {3,S}
+
+// Couldn't save CH2CNH in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CH2CNH
+// 1 C u0 p0 c0 {2,D} {4,S} {5,S}
+// 2 C u0 p0 c0 {1,D} {3,D}
+// 3 N u0 p1 c0 {2,D} {6,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {3,S}
+
+// Couldn't save CH2CHN in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CH2CHN
+// multiplicity 3
+// 1 C u0 p0 c0 {2,S} {3,D} {6,S}
+// 2 C u1 p0 c0 {1,S} {4,S} {5,S}
+// 3 N u1 p1 c0 {1,D}
+// 4 H u0 p0 c0 {2,S}
+// 5 H u0 p0 c0 {2,S}
+// 6 H u0 p0 c0 {1,S}
+
+// Couldn't save CH2CHN(S) in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CH2CHN(S)
+// multiplicity 3
+// 1 C u0 p0 c0 {2,D} {4,S} {5,S}
+// 2 C u0 p0 c0 {1,D} {3,S} {6,S}
+// 3 N u2 p1 c0 {2,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {2,S}
+
+// Couldn't save c-C2H3N in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// c-C2H3N
+// 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+// 2 C u0 p0 c0 {1,S} {3,D} {6,S}
+// 3 N u0 p1 c0 {1,S} {2,D}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {2,S}
+
+// Couldn't save CH2CN in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CH2CN
+// multiplicity 2
+// 1 C u1 p0 c0 {2,S} {3,S} {4,S}
+// 2 C u0 p0 c0 {1,S} {5,T}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 N u0 p1 c0 {2,T}
+
+// Couldn't save CHCNH in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CHCNH
+// multiplicity 2
+// 1 C u0 p0 c0 {2,T} {3,S}
+// 2 C u0 p0 c0 {1,T} {5,S}
+// 3 N u1 p1 c0 {1,S} {4,S}
+// 4 H u0 p0 c0 {3,S}
+// 5 H u0 p0 c0 {2,S}
+
+// Couldn't save H2NCHO in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// H2NCHO
+// 1 N u0 p1 c0 {2,S} {4,S} {5,S}
+// 2 C u0 p0 c0 {1,S} {3,D} {6,S}
+// 3 O u0 p2 c0 {2,D}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {2,S}
+
+// Couldn't save H2NCO in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// H2NCO
+// multiplicity 2
+// 1 N u0 p1 c0 {2,S} {3,S} {4,S}
+// 2 C u1 p0 c0 {1,S} {5,D}
+// 3 H u0 p0 c0 {1,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 O u0 p2 c0 {2,D}
+
+// Couldn't save CH3NHCH3 in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CH3NHCH3
+// 1  C u0 p0 c0 {3,S} {4,S} {5,S} {6,S}
+// 2  C u0 p0 c0 {3,S} {7,S} {8,S} {9,S}
+// 3  N u0 p1 c0 {1,S} {2,S} {10,S}
+// 4  H u0 p0 c0 {1,S}
+// 5  H u0 p0 c0 {1,S}
+// 6  H u0 p0 c0 {1,S}
+// 7  H u0 p0 c0 {2,S}
+// 8  H u0 p0 c0 {2,S}
+// 9  H u0 p0 c0 {2,S}
+// 10 H u0 p0 c0 {3,S}
+
+// Couldn't save CH3NHCH2 in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CH3NHCH2
+// multiplicity 2
+// 1 C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
+// 2 N u0 p1 c0 {1,S} {3,S} {7,S}
+// 3 C u1 p0 c0 {2,S} {8,S} {9,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {1,S}
+// 7 H u0 p0 c0 {2,S}
+// 8 H u0 p0 c0 {3,S}
+// 9 H u0 p0 c0 {3,S}
+
+// Couldn't save CH3NCH3 in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CH3NCH3
+// multiplicity 2
+// 1 C u0 p0 c0 {3,S} {4,S} {5,S} {6,S}
+// 2 C u0 p0 c0 {3,S} {7,S} {8,S} {9,S}
+// 3 N u1 p1 c0 {1,S} {2,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {1,S}
+// 7 H u0 p0 c0 {2,S}
+// 8 H u0 p0 c0 {2,S}
+// 9 H u0 p0 c0 {2,S}
+
+// Couldn't save CH3NCH2 in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CH3NCH2
+// 1 C u0 p0 c0 {3,S} {4,S} {5,S} {6,S}
+// 2 C u0 p0 c0 {3,D} {7,S} {8,S}
+// 3 N u0 p1 c0 {1,S} {2,D}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {1,S}
+// 7 H u0 p0 c0 {2,S}
+// 8 H u0 p0 c0 {2,S}
+
+// Couldn't save CH2NCH2 in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CH2NCH2
+// multiplicity 2
+// 1 C u0 p0 c0 {3,D} {6,S} {7,S}
+// 2 C u1 p0 c0 {3,S} {4,S} {5,S}
+// 3 N u0 p1 c0 {1,D} {2,S}
+// 4 H u0 p0 c0 {2,S}
+// 5 H u0 p0 c0 {2,S}
+// 6 H u0 p0 c0 {1,S}
+// 7 H u0 p0 c0 {1,S}
+
+// Couldn't save CH3NCH in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// CH3NCH
+// multiplicity 2
+// 1 C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
+// 2 N u0 p1 c0 {1,S} {3,D}
+// 3 C u1 p0 c0 {2,D} {7,S}
+// 4 H u0 p0 c0 {1,S}
+// 5 H u0 p0 c0 {1,S}
+// 6 H u0 p0 c0 {1,S}
+// 7 H u0 p0 c0 {3,S}
+
+// Couldn't save AR in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// AR
+// 1 Ar u0 p4 c0
+
+// Couldn't save HE in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// HE
+// 1 He u0 p1 c0
+
+// Couldn't save N2 in old RMG-Java syntax, but here it is in newer RMG-Py syntax:
+// N2
+// 1 N u0 p1 c0 {2,T}
+// 2 N u0 p1 c0 {1,T}
+

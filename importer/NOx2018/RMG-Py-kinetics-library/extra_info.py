@@ -1,0 +1,1 @@
+"To generate extra information file, run with RMG_MAKE_INFO_FILES environment variable"
