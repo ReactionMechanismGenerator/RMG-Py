@@ -58,7 +58,7 @@ cpdef object _openbabel_translator(object input_object, str identifier_type, Mol
 
 cdef Molecule _lookup(Molecule mol, str identifier, str identifier_type)
 
-cpdef _is_correctly_parsed(Molecule mol, str identifier)
+cpdef _check_output(Molecule mol, str identifier)
 
 cdef Molecule _read(Molecule mol, str identifier, str identifier_type, str backend)
 

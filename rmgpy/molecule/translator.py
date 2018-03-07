@@ -441,16 +441,17 @@ def _lookup(mol, identifier, identifier_type):
             return None
 
 
-def _is_correctly_parsed(mol, identifier):
+def _check_output(mol, identifier):
     """Check if molecule object has been correctly parsed."""
     conditions = []
 
-    if mol.atoms:
-        conditions.append(True)
-    else:
-        conditions.append(False)
+    # Check that the molecule has atoms
+    conditions.append(bool(mol.atoms))
+    # Check that the identifier is not blank
+    conditions.append(bool(identifier.strip()))
 
-    if 'InChI' in identifier:
+    # Check that the InChI element count matches the molecule
+    if 'InChI=1' in identifier:
         inchi_elementcount = util.retrieveElementCount(identifier)
         mol_elementcount = util.retrieveElementCount(mol)
         conditions.append(inchi_elementcount == mol_elementcount)
@@ -476,7 +477,7 @@ def _read(mol, identifier, identifier_type, backend):
         raise ValueError('Improper identifier type "{0}". The provided identifier appears to be an InChI.'.format(identifier_type))
 
     if _lookup(mol, identifier, identifier_type) is not None:
-        if _is_correctly_parsed(mol, identifier):
+        if _check_output(mol, identifier):
             mol.updateAtomTypes()
             return mol
 
@@ -488,11 +489,11 @@ def _read(mol, identifier, identifier_type, backend):
         else:
             raise NotImplementedError("Unrecognized backend {0}".format(option))
 
-        if _is_correctly_parsed(mol, identifier):
+        if _check_output(mol, identifier):
             mol.updateAtomTypes()
             return mol
         else:
-            logging.debug('Backend %s is not able to parse identifier %s', option, identifier)
+            logging.debug('Backend {0} is not able to parse identifier {1}'.format(option, identifier))
 
     raise ValueError("Unable to correctly parse {0} with backend {1}.".format(identifier, backend))
 
@@ -519,7 +520,11 @@ def _write(mol, identifier_type, backend):
         else:
             raise NotImplementedError("Unrecognized backend {0}".format(option))
 
-        return output
+        if _check_output(mol, output):
+            return output
+        else:
+            logging.debug('Backend {0} is not able to generate {1} for this molecule:\n'
+                          '{2}'.format(option, identifier_type, mol.toAdjacencyList()))
 
     raise ValueError("Unable to generate identifier type {0} with backend {1}.".format(identifier_type, backend))
 
