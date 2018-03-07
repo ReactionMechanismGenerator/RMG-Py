@@ -63,3 +63,5 @@ cpdef _is_correctly_parsed(Molecule mol, str identifier)
 cdef Molecule _read(Molecule mol, str identifier, str identifier_type, str backend)
 
 cdef str _write(Molecule mol, str identifier_type, str backend)
+
+cdef _get_backend_list(str backend)

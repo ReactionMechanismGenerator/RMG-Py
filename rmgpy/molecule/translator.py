@@ -138,7 +138,7 @@ RADICAL_LOOKUPS = {
 }
 
 
-def toInChI(mol, backend='try-all', aug_level=0):
+def toInChI(mol, backend='rdkit-first', aug_level=0):
     """
     Convert a molecular structure to an InChI string.
     For aug_level=0, generates the canonical InChI.
@@ -174,7 +174,7 @@ def toInChI(mol, backend='try-all', aug_level=0):
         raise ValueError("Implemented values for aug_level are 0, 1, or 2.")
 
 
-def toInChIKey(mol, backend='try-all', aug_level=0):
+def toInChIKey(mol, backend='rdkit-first', aug_level=0):
     """
     Convert a molecular structure to an InChI Key string.
     For aug_level=0, generates the canonical InChI.
@@ -480,19 +480,19 @@ def _read(mol, identifier, identifier_type, backend):
             mol.updateAtomTypes()
             return mol
 
-    for backend in (BACKENDS if backend == 'try-all' else [backend]):
-        if backend == 'rdkit':
+    for option in _get_backend_list(backend):
+        if option == 'rdkit':
             mol = _rdkit_translator(identifier, identifier_type, mol)
-        elif backend == 'openbabel':
+        elif option == 'openbabel':
             mol = _openbabel_translator(identifier, identifier_type, mol)
         else:
-            raise NotImplementedError("Unrecognized backend {0}".format(backend))
+            raise NotImplementedError("Unrecognized backend {0}".format(option))
 
         if _is_correctly_parsed(mol, identifier):
             mol.updateAtomTypes()
             return mol
         else:
-            logging.debug('Backend %s is not able to parse identifier %s', backend, identifier)
+            logging.debug('Backend %s is not able to parse identifier %s', option, identifier)
 
     raise ValueError("Unable to correctly parse {0} with backend {1}.".format(identifier, backend))
 
@@ -505,20 +505,39 @@ def _write(mol, identifier_type, backend):
 
     Returns a string identifier of the requested type.
     """
-    for backend in (BACKENDS if backend == 'try-all' else [backend]):
-        if backend == 'rdkit':
+    for option in _get_backend_list(backend):
+        if option == 'rdkit':
             try:
                 output = _rdkit_translator(mol, identifier_type)
             except ValueError:
                 continue
-        elif backend == 'openbabel':
+        elif option == 'openbabel':
             try:
                 output = _openbabel_translator(mol, identifier_type)
             except ValueError:
                 continue
         else:
-            raise NotImplementedError("Unrecognized backend {0}".format(backend))
+            raise NotImplementedError("Unrecognized backend {0}".format(option))
 
         return output
 
     raise ValueError("Unable to generate identifier type {0} with backend {1}.".format(identifier_type, backend))
+
+
+def _get_backend_list(backend):
+    """
+    Returns the appropriate list or iterator of backends given the provided keyword.
+    """
+    if not isinstance(backend, str):
+        raise ValueError("The backend argument should be a string. "
+                         "Accepted values are 'try-all', 'rdkit-first', 'rdkit', and 'openbabel'")
+    backend = backend.strip().lower()
+    if backend == 'try-all':
+        return BACKENDS
+    elif backend == 'rdkit-first':
+        return reversed(BACKENDS)
+    elif backend in ['rdkit', 'openbabel']:
+        return [backend]
+    else:
+        raise ValueError("Unrecognized value for backend argument. "
+                         "Accepted values are 'try-all', 'rdkit-first', 'rdkit', and 'openbabel'")
