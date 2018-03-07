@@ -37,7 +37,7 @@ cantherm:
 	python setup.py build_ext cantherm --build-lib . --build-temp build --pyrex-c-in-temp
 
 check:
-	@ python check_dependencies.py
+	@ python utilities.py check-dependencies
 
 documentation:
 	$(MAKE) -C documentation html
