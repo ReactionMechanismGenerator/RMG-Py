@@ -44,16 +44,24 @@ documentation:
 	@ echo "Start at: documentation/build/html/index.html"
 
 clean:
-	python setup.py clean --build-temp build
-	rm -rf build/
-	find . -name '*.so' -exec rm -f '{}' \;
-	find . -name '*.pyc' -exec rm -f '{}' \;
-	
+	@ echo "Removing build directory..."
+	@ python setup.py clean --build-temp build
+	@ echo "Removing compiled files..."
+	@ python utilities.py clean
+	@ echo "Cleanup completed."
+
 clean-solver:
-	rm -r build/pyrex/rmgpy/solver/
-	rm -r build/build/pyrex/rmgpy/solver/
-	find rmgpy/solver/ -name '*.so' -exec rm -f '{}' \;
-	find rmgpy/solver/ -name '*.pyc' -exec rm -f '{}' \;
+	@ echo "Removing solver build directories..."
+ifeq ($(OS),Windows_NT)
+	@ -rd /s /q build\pyrex\rmgpy\solver
+	@ -rd /s /q build\build\pyrex\rmgpy\solver
+else
+	@ -rm -r build/pyrex/rmgpy/solver/
+	@ -rm -r build/build/pyrex/rmgpy/solver/
+endif
+	@ echo "Removing compiled files..."
+	@ python utilities.py clean-solver
+	@ echo "Cleanup completed."
 
 decython:
 	# de-cythonize all but the 'minimal'. Helpful for debugging in "pure python" mode.

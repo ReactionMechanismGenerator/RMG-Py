@@ -137,6 +137,27 @@ Everything was found :)
 """
 
 
+def clean(subdirectory=''):
+    """
+    Removes files generated during compilation.
+
+    For *nix systems, remove `.so` files and `.pyc` files.
+    For Windows, remove `.pyd` files and `.pyc` files.
+    """
+    if platform.system() == 'Windows':
+        extensions = ['.pyd', '.pyc']
+    else:
+        extensions = ['.so', '.pyc']
+
+    directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), subdirectory)
+
+    for root, dirs, files in os.walk(directory):
+        for f in files:
+            ext = os.path.splitext(f)[1]
+            if ext in extensions:
+                os.remove(os.path.join(root, f))
+
+
 def update_headers():
     """
     Automatically update the headers for *.py, *.pyx, and *.pxd files
@@ -252,12 +273,16 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='RMG Code Utilities')
 
     parser.add_argument('command', metavar='COMMAND', type=str,
-                        choices=['check-dependencies', 'update-headers'],
+                        choices=['check-dependencies', 'clean', 'clean-solver', 'update-headers'],
                         help='command to execute')
 
     args = parser.parse_args()
 
     if args.command == 'check-dependencies':
         check_dependencies()
+    elif args.command == 'clean':
+        clean()
+    elif args.command == 'clean-solver':
+        clean('rmgpy/solver')
     elif args.command == 'update-headers':
         update_headers()
