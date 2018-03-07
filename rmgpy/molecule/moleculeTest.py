@@ -1151,7 +1151,7 @@ class TestMolecule(unittest.TestCase):
         test_strings = ['[C-]#[O+]', '[C]', '[CH]', 'OO', '[H][H]', '[H]',
                        '[He]', '[O]', 'O', '[CH3]', 'C', '[OH]', 'CCC',
                        'CC', 'N#N', '[O]O', 'C[CH2]', '[Ar]', 'CCCC',
-                       'O=C=O', 'N#[C]',
+                       'O=C=O', '[C]#N',
                        ]
         for s in test_strings:
             molecule = Molecule(SMILES=s)
