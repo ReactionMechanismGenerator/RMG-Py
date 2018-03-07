@@ -348,7 +348,10 @@ def _rdkit_translator(input_object, identifier_type, mol=None):
         output = fromRDKitMol(mol, rdkitmol)
     elif isinstance(input_object, Molecule):
         # We are converting from a molecule to a string identifier
-        rdkitmol = toRDKitMol(input_object, sanitize=False)
+        if identifier_type == 'smi':
+            rdkitmol = toRDKitMol(input_object, sanitize=False)
+        else:
+            rdkitmol = toRDKitMol(input_object, sanitize=True)
         if identifier_type == 'inchi':
             output = Chem.inchi.MolToInchi(rdkitmol, options='-SNon')
         elif identifier_type == 'inchikey':
