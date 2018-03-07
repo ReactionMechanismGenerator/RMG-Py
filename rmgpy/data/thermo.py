@@ -1292,10 +1292,15 @@ class ThermoDatabase(object):
                 thermoDataList.append(data)
         # Last entry is always the estimate from group additivity
         # Make it a tuple
-        data = (self.getThermoDataFromGroups(species), None, None)
-        # update group activity for symmetry
-        data[0].S298.value_si -= constants.R * math.log(species.getSymmetryNumber())
-        thermoDataList.append(data)
+        try:
+            data = (self.getThermoDataFromGroups(species), None, None)
+        except DatabaseError:
+            # We don't have a GAV estimate, e.g. unsupported element
+            pass
+        else:
+            # update group activity for symmetry
+            data[0].S298.value_si -= constants.R * math.log(species.getSymmetryNumber())
+            thermoDataList.append(data)
 
         # Return all of the resulting thermo parameters
         return thermoDataList
