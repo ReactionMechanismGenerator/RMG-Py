@@ -145,7 +145,7 @@ def validate(datasets_file, model):
         # display result
         count, mean, std = display_result(result_df, prediction_task=predictor.prediction_task)
         
-        table = '.'.join([host, db_name, collection_name])
+        table = '/'.join([host, db_name, collection_name])
         evaluation_results[table] = {"count": count,
                                      "MAE": mean,
                                      "MAE std": std}
