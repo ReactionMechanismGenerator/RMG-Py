@@ -108,6 +108,9 @@ def saveEntry(f, entry):
         f.write('        ],\n')
         if entry.data.Tmin is not None: f.write('        Tmin = {0!r},\n'.format(entry.data.Tmin))
         if entry.data.Tmax is not None: f.write('        Tmax = {0!r},\n'.format(entry.data.Tmax))
+        if entry.data.E0 is not None: f.write('        E0 = {0!r},\n'.format(entry.data.E0))
+        if entry.data.Cp0 is not None: f.write('        Cp0 = {0!r},\n'.format(entry.data.Cp0))
+        if entry.data.CpInf is not None: f.write('        CpInf = {0!r},\n'.format(entry.data.CpInf))
         f.write('    ),\n')
     else:
         f.write('    thermo = {0!r},\n'.format(entry.data))
