@@ -82,6 +82,7 @@ cdef class ReactionSystem(DASx):
     cdef public numpy.ndarray networkLeakRates    
 
     # variables that cache maximum rate (ratio) data
+    cdef public numpy.ndarray maxCoreReactionRateRatios
     cdef public numpy.ndarray maxEdgeSpeciesRateRatios
     cdef public numpy.ndarray maxNetworkLeakRateRatios
     

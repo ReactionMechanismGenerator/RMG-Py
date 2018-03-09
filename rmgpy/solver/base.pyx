@@ -227,6 +227,7 @@ cdef class ReactionSystem(DASx):
         self.coreSpeciesRates = numpy.zeros((self.numCoreSpecies), numpy.float64)
         self.edgeSpeciesRates = numpy.zeros((self.numEdgeSpecies), numpy.float64)
         self.networkLeakRates = numpy.zeros((self.numPdepNetworks), numpy.float64)
+        self.maxCoreReactionRateRatios = numpy.zeros((len(self.numCoreReactions)), numpy.float64)
         self.maxEdgeSpeciesRateRatios = numpy.zeros((len(self.prunableSpecies)), numpy.float64)
         self.maxNetworkLeakRateRatios = numpy.zeros((len(self.prunableNetworks)), numpy.float64)
         self.sensitivityCoefficients = numpy.zeros((self.numCoreSpecies, self.numCoreReactions), numpy.float64)
@@ -542,10 +543,10 @@ cdef class ReactionSystem(DASx):
         cdef list sortedInds, tempNewObjects, tempNewObjectInds, tempNewObjectVals, tempInds
         cdef int index, spcIndex, maxSpeciesIndex, maxNetworkIndex
         cdef int numCoreSpecies, numEdgeSpecies, numPdepNetworks, numCoreReactions
-        cdef double stepTime, charRate, maxSpeciesRate, maxNetworkRate, maxEdgeReactionAccum, stdan
+        cdef double stepTime, charRate, maxSpeciesRate, maxNetworkRate, maxEdgeReactionAccum, stdan, val
         cdef numpy.ndarray[numpy.float64_t, ndim=1] y0 #: Vector containing the number of moles of each species
         cdef numpy.ndarray[numpy.float64_t, ndim=1] coreSpeciesRates, edgeSpeciesRates, networkLeakRates, coreSpeciesProductionRates, coreSpeciesConsumptionRates, totalDivAccumNums
-        cdef numpy.ndarray[numpy.float64_t, ndim=1] maxCoreSpeciesRates, maxEdgeSpeciesRates, maxNetworkLeakRates,maxEdgeSpeciesRateRatios, maxNetworkLeakRateRatios
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] maxCoreSpeciesRates, maxEdgeSpeciesRates, maxNetworkLeakRates,maxEdgeSpeciesRateRatios, maxNetworkLeakRateRatios, maxCoreReactionRateRatios
         cdef bint terminated
         cdef object maxSpecies, maxNetwork
         cdef int i, j, k
@@ -631,6 +632,7 @@ cdef class ReactionSystem(DASx):
         maxNetworkRate = 0.0
         iteration = 0
 
+        maxCoreReactionRateRatios = self.maxCoreReactionRateRatios
         maxEdgeSpeciesRateRatios = self.maxEdgeSpeciesRateRatios
         maxNetworkLeakRateRatios = self.maxNetworkLeakRateRatios
         forwardRateCoefficients = self.kf
@@ -743,6 +745,9 @@ cdef class ReactionSystem(DASx):
             coreSpeciesConcentrations = self.coreSpeciesConcentrations
             
             # Update the maximum species rate and maximum network leak rate arrays
+            for i,val in enumerate(coreReactionRates/charRate):
+                if maxCoreReactionRateRatios[i] < val:
+                    maxCoreReactionRateRatios[i] = val
             for i,index in enumerate(prunableSpeciesIndices):
                 if maxEdgeSpeciesRateRatios[i] < edgeSpeciesRateRatios[index]:
                     maxEdgeSpeciesRateRatios[i] = edgeSpeciesRateRatios[index]
@@ -1071,6 +1076,7 @@ cdef class ReactionSystem(DASx):
                         row.extend([normSens_array[i][k][j] for j in reactionsAboveThreshold])       
                         worksheet.writerow(row)  
         
+        self.maxCoreReactionRateRatios = maxCoreReactionRateRatios
         self.maxEdgeSpeciesRateRatios = maxEdgeSpeciesRateRatios
         self.maxNetworkLeakRateRatios = maxNetworkLeakRateRatios
         
