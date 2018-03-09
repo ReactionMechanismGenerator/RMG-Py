@@ -53,7 +53,10 @@ class Predictor(object):
 					host, db, table = [token.strip() for token in dataset.split('.')]
 					self.datasets.append((host, db, table, float(testing_ratio)))
 
-	def kfcv_train(self, folds, lr_func, save_model_path, batch_size=1):
+	def kfcv_train(self, folds, lr_func, save_model_path, 
+				   batch_size=1,
+				   nb_epoch=150,
+				   patience=10):
 
 		# prepare data for training
 		folded_data = prepare_folded_data_from_multiple_datasets(self.datasets, folds, 
@@ -86,10 +89,10 @@ class Predictor(object):
 											y_test,
 											X_outer_val,
 											y_outer_val, 
-											nb_epoch=150,
+											nb_epoch=nb_epoch,
 											batch_size=batch_size, 
 											lr_func=lr_func, 
-											patience=10)
+											patience=patience)
 
 			model, loss, inner_val_loss, mean_outer_val_loss, mean_test_loss = train_model_output
 
@@ -122,7 +125,10 @@ class Predictor(object):
 						full_folds_mean_test_loss, 
 						full_folds_loss_report_path)
 
-	def full_train(self, lr_func, save_model_path, batch_size=1):
+	def full_train(self, lr_func, save_model_path, 
+				   batch_size=1,
+				   nb_epoch=150,
+				   patience=10):
 
 		# prepare data for training
 		folded_data = prepare_full_train_data_from_multiple_datasets(self.datasets, 
@@ -155,10 +161,10 @@ class Predictor(object):
 										y_test,
 										X_outer_val=None,
 										y_outer_val=None, 
-										nb_epoch=150,
+										nb_epoch=nb_epoch,
 										batch_size=batch_size, 
 										lr_func=lr_func, 
-										patience=10)
+										patience=patience)
 
 		model, loss, inner_val_loss, mean_outer_val_loss, mean_test_loss = train_model_output
 
@@ -173,7 +179,10 @@ class Predictor(object):
 		self.save_model(loss, inner_val_loss, mean_outer_val_loss, mean_test_loss, fpath)
 
 
-	def kfcv_batch_train(self, folds, batch_size=50):
+	def kfcv_batch_train(self, folds, 
+						 batch_size=50,
+				   		 nb_epoch=150,
+				   		 patience=10):
 
 		# prepare data for training
 		folded_data = prepare_folded_data_from_multiple_datasets(self.datasets, folds, 
@@ -200,12 +209,12 @@ class Predictor(object):
 			X_train.extend(X_inner_val)
 			y_train.extend(y_inner_val)
 
-			earlyStopping = EarlyStopping(monitor='val_loss', patience=10, verbose=1, mode='auto')
+			earlyStopping = EarlyStopping(monitor='val_loss', patience=patience, verbose=1, mode='auto')
 
 			history_callback = self.model.fit(np.array(X_train), 
 							np.array(y_train), 
 							callbacks=[earlyStopping], 
-							nb_epoch=150, 
+							nb_epoch=nb_epoch, 
 							batch_size=batch_size, 
 							validation_split=0.1)
 

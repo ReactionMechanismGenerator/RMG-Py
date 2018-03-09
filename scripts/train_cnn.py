@@ -34,6 +34,12 @@ def parseCommandLineArguments():
 	parser.add_argument('-lr', '--learning_rate', type=str, 
 		default='0.0007_30.0', help='two parameters for learning rate')
 
+	parser.add_argument('-ep', '--nb_epoch', type=int, 
+		default=150, help='number of epochs for training')
+
+	parser.add_argument('-pc', '--patience', type=int, 
+		default=10, help='number of consecutive epochs allowed for loss increase')
+
 	return parser.parse_args()
 ################################################################################
 
@@ -102,6 +108,8 @@ if __name__ == '__main__':
 	folds = args.folds
 	train_mode = args.train_mode
 	batch_size = args.batch_size
+	nb_epoch = args.nb_epoch
+	patience = args.patience
 	lr0, lr1 = [float(i) for i in args.learning_rate.split('_')]
 
 	input_directory = os.path.abspath(os.path.dirname(input_file))
@@ -128,12 +136,18 @@ if __name__ == '__main__':
 		predictor.kfcv_train(folds=folds, 
 							 batch_size=batch_size, 
 							 lr_func=lr_func, 
-							 save_model_path=save_model_path)
+							 save_model_path=save_model_path,	 
+							 nb_epoch=nb_epoch,
+							 patience=patience)
 	elif train_mode == 'keras':
-		predictor.kfcv_batch_train(folds=folds, batch_size=batch_size)
+		predictor.kfcv_batch_train(folds=folds, batch_size=batch_size,
+								   nb_epoch=nb_epoch,
+								   patience=patience)
 	elif train_mode == 'full_train':
 		predictor.full_train(batch_size=batch_size, 
 							 lr_func=lr_func, 
-							 save_model_path=save_model_path)
+							 save_model_path=save_model_path,
+							 nb_epoch=nb_epoch,
+							 patience=patience)
 	else:
 		raise Exception('Currently not supporting train mode: {0}'.format(train_mode))
