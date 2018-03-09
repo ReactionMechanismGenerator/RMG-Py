@@ -775,8 +775,8 @@ cdef class ReactionSystem(DASx):
                     reactionRate = edgeReactionRates[index]
                     if reactionRate > 0:
                         
-                        if self.reactantIndices[index+numCoreReactions,:][1] != -1:
-                            continue
+                        #if self.reactantIndices[index+numCoreReactions,:][1] != -1:
+                        #    continue
                         
                         mults = []
                         for i in self.productIndices[index+numCoreReactions,:]:
@@ -790,8 +790,8 @@ cdef class ReactionSystem(DASx):
                         if max(mults) > 2:
                             continue
                         
-                        if sum(mults) > 3:
-                            continue
+                        #if sum(mults) > 3:
+                        #    continue
                         
                         for spcIndex in self.reactantIndices[index+numCoreReactions,:]:
                             if spcIndex != -1 and spcIndex<numCoreSpecies:
@@ -803,8 +803,8 @@ cdef class ReactionSystem(DASx):
                                     if BNum>branchingNums[index]:
                                         branchingNums[index] = BNum
                     else:
-                        if self.productIndices[index+numCoreReactions,:][1] != -1:
-                            continue
+                        #if self.productIndices[index+numCoreReactions,:][1] != -1:
+                        #    continue
                         
                         mults = []
                         for i in self.reactantIndices[index+numCoreReactions,:]:
@@ -818,8 +818,8 @@ cdef class ReactionSystem(DASx):
                         if max(mults) > 2:
                             continue
                         
-                        if sum(mults) > 3:
-                            continue
+                        #if sum(mults) > 3:
+                        #    continue
                         
                         for spcIndex in self.productIndices[index+numCoreReactions,:]:
                             if spcIndex != -1 and spcIndex<numCoreSpecies:
