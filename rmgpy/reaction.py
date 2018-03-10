@@ -719,7 +719,7 @@ class Reaction:
         If `forcePositive` is True, then all reactions
         are forced to have a non-negative barrier.
         """
-        cython.declare(H0=cython.double, H298=cython.double, Ea=cython.double, kineticsType=type)
+        cython.declare(H0=cython.double, H298=cython.double, Ea=cython.double)
         H298 = self.getEnthalpyOfReaction(298)
         H0 = sum([spec.getThermoData().E0.value_si for spec in self.products]) \
             - sum([spec.getThermoData().E0.value_si for spec in self.reactants])
