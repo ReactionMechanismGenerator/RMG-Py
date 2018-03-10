@@ -45,7 +45,7 @@ from rmgpy.data.base import Database, Entry, getAllCombinations
 
 from rmgpy.quantity import Quantity, ScalarQuantity
 from rmgpy.reaction import Reaction
-from rmgpy.kinetics import ArrheniusEP, StickingCoefficientBEP, SurfaceArrheniusBEP
+from rmgpy.kinetics import ArrheniusEP, Arrhenius, StickingCoefficientBEP, SurfaceArrheniusBEP
 from .common import saveEntry
 from rmgpy.exceptions import KineticsError, DatabaseError
 
@@ -75,7 +75,6 @@ class KineticsRules(Database):
                   longDesc='',
                   rank=None,
                   nodalDistance=None,
-                  Arrhenius=type,
                   treeDistances=None
                   ):
 
