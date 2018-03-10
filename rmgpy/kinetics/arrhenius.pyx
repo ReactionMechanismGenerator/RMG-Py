@@ -58,8 +58,6 @@ cdef class Arrhenius(KineticsModel):
     
     def __init__(self, A=None, n=0.0, Ea=None, T0=(1.0,"K"), Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
         KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
-        self.Pmax = None
-        self.Pmin = None
         self.A = A
         self.n = n
         self.Ea = Ea
