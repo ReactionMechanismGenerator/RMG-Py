@@ -681,10 +681,13 @@ def getAtomType(atom, bonds):
         oDouble = molFeatureList[3]
         sDouble = molFeatureList[4]
         triple = molFeatureList[5]
-        benzene = molFeatureList[6]
-        lonePairs = molFeatureList[7]
-        quadruple = molFeatureList[8]  # todo: check to see if this is kosher or not
+        quadruple = molFeatureList[6]
+        benzene = molFeatureList[7]
+        lonePairs = molFeatureList[8]
 
         raise AtomTypeError(
-            'Unable to determine atom type for atom {0}, which has {1:d} single bonds, {2:d} double bonds to C, {3:d} double bonds to O, {4:d} double bonds to S, {5:d} triple bonds, {6:d} benzene bonds, and {7:d} lone pairs.'.format(
+            ('Unable to determine atom type for atom {0}, which has {1:d} single bonds, '
+             '{2:d} double bonds to C, {3:d} double bonds to O, {4:d} double bonds to S, '
+             '{5:d} triple bonds, {6:d} quadruple bonds, {7:d} benzene bonds, '
+             'and {8:d} lone pairs.').format(
                 atom, single, rDouble, oDouble, sDouble, triple, quadruple, benzene, lonePairs))
