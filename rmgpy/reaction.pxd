@@ -111,15 +111,3 @@ cdef class Reaction:
 
 cpdef bint _isomorphicSpeciesList(list list1, list list2, bint checkIdentical=?, bint checkOnlyLabel=?)
     
-################################################################################
-
-cdef class ReactionModel:
-
-    cdef public list species
-    cdef public list reactions
-
-    cpdef generateStoichiometryMatrix(self)
-
-    cpdef numpy.ndarray getReactionRates(self, double T, double P, dict Ci)
-
-################################################################################
