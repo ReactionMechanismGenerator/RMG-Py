@@ -77,7 +77,7 @@ class AtomType:
     'oDouble'           ''list''            The number of double bonds to oxygen
     'sDouble'           ''list''            The number of double bonds to sulfur
     'triple'            ''list''            The total number of triple bonds on the atom
-    'quadruple'         ''list''            THe total number of quadruple bonds on the atom
+    'quadruple'         ''list''            The total number of quadruple bonds on the atom
     'benzene'           ''list''            The total number of benzene bonds on the atom
     'lonePairs'         ''list''            The number of lone pairs on the atom
     =================== =================== ====================================
@@ -234,7 +234,7 @@ atomTypes['X'] = AtomType(label='X', generic=[], specific=['Xv', 'Xo'],
 
 #: Vacant surface site
 atomTypes['Xv'] = AtomType('Xv', generic=['X'], specific=[],
-                           single=[], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[0], quadruple=[0],
+                           single=[0], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[0], quadruple=[0],
                            benzene=[0], lonePairs=[0]
                            )
 #: Occupied surface site
