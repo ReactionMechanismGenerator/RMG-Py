@@ -41,6 +41,7 @@ import shutil
 import numpy
 import gc
 import copy
+import json
 from copy import deepcopy
 
 from rmgpy.constraints import failsSpeciesConstraints
@@ -766,6 +767,9 @@ class RMG(util.Subject):
                 maxNumSpcsHit = False
                 continue
         
+        
+        self.writeMaxCoreRateRatios()
+        
         if not self.generateSeedEachIteration:
             self.makeSeedMech(firstTime=True)
             
@@ -815,6 +819,22 @@ class RMG(util.Subject):
         
         self.finish()
     
+    def writeMaxCoreRateRatios(self):
+        """
+        Generate a json file with the Max Core Rate Ratios for each reactor
+        """
+        cRRs = []
+        path = os.path.split(self.inputFile)[0]
+        
+        for rxnSys in self.reactionSystems:
+            cRRs.append(rxnSys.maxCoreReactionRateRatios.tolist())
+        
+        fid = open(os.path.join(path,'maxCoreReactionRateRatios.json'),'wb')
+        
+        json.dump(cRRs,fid)
+        
+        fid.close()
+        
     def check_model(self):
         """
         Run checks on the RMG model
