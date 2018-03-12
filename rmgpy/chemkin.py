@@ -667,7 +667,7 @@ def readReactionComments(reaction, comments, read = True):
             if reaction.kinetics:
                 reaction.kinetics.changeRate(1./degen)
             # still add kinetic comment
-            reaction.kinetics.comment += line.strip() + "\n"
+            reaction.kinetics.comment += "\n"
 
         elif line.strip() != '':
             # Any lines which are commented out but don't have any specific flag are simply kinetics comments
@@ -1858,7 +1858,7 @@ def saveChemkinFile(path, species, reactions, verbose = True, checkForDuplicates
     
     f = open(path, 'w')
     
-    sorted_species = sorted(species, key=lambda species: species.index)
+    sorted_species = species
 
     # Elements section
     writeElementsSection(f)
@@ -1868,7 +1868,7 @@ def saveChemkinFile(path, species, reactions, verbose = True, checkForDuplicates
     for spec in sorted_species:
         label = getSpeciesIdentifier(spec)
         if verbose:
-            f.write('    {0!s:<16}    ! {1}\n'.format(label, str(spec)))
+            f.write('    {0!s:<16}    ! {1}\n'.format(label, spec.molecule[0].toSMILES()))
         else:
             f.write('    {0!s:<16}\n'.format(label))
     f.write('END\n\n\n\n')
