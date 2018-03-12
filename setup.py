@@ -36,13 +36,13 @@ try:
     from distutils.extension import Extension
 except ImportError:
     print 'The distutils package is required to build or install RMG Py.'
-    
+
 try:
     from Cython.Distutils import build_ext
     import Cython.Compiler.Options
 except ImportError:
     print 'Cython (http://www.cython.org/) is required to build or install RMG Py.'
-    
+
 try:
     import numpy
 except ImportError:
@@ -68,6 +68,7 @@ def getMainExtensionModules():
         Extension('rmgpy.kinetics.falloff', ['rmgpy/kinetics/falloff.pyx']),
         Extension('rmgpy.kinetics.model', ['rmgpy/kinetics/model.pyx']),
         Extension('rmgpy.kinetics.tunneling', ['rmgpy/kinetics/tunneling.pyx']),
+        Extension('rmgpy.kinetics.surface', ['rmgpy/kinetics/surface.pyx']),
         # Molecules and molecular representations
         Extension('rmgpy.molecule.atomtype', ['rmgpy/molecule/atomtype.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.element', ['rmgpy/molecule/element.py'], include_dirs=['.']),
@@ -110,12 +111,13 @@ def getMainExtensionModules():
         Extension('rmgpy.reaction', ['rmgpy/reaction.py'], include_dirs=['.']),
         Extension('rmgpy.species', ['rmgpy/species.py'], include_dirs=['.']),
     ]
-    
+
 def getSolverExtensionModules():
     return [
         Extension('rmgpy.solver.base', ['rmgpy/solver/base.pyx'], include_dirs=['.']),
         Extension('rmgpy.solver.simple', ['rmgpy/solver/simple.pyx'], include_dirs=['.']),
         Extension('rmgpy.solver.liquid', ['rmgpy/solver/liquid.pyx'], include_dirs=['.']),
+        Extension('rmgpy.solver.surface', ['rmgpy/solver/surface.pyx'], include_dirs=['.']),
     ]
 
 def getCanthermExtensionModules():
@@ -185,6 +187,9 @@ if 'minimal' in sys.argv:
             if os.path.splitext(source)[1] == '.pyx':
                 ext_modules.append(module)
 
+# Remove duplicates while preserving order:
+from collections import OrderedDict
+ext_modules = list(OrderedDict.fromkeys(ext_modules))
 scripts=['cantherm.py',
          'rmg.py',
          'scripts/checkModels.py',
@@ -209,7 +214,7 @@ for root, dirs, files in os.walk('rmgpy'):
             if 'Test' not in file and '__init__' not in file:
                 if not root.endswith('rmgpy/cantherm/files'):
                     module = 'rmgpy' + root.partition('rmgpy')[-1].replace('/','.') + '.' + file.partition('.py')[0]
-                    modules.append(module)       
+                    modules.append(module)
 
 # Initiate the build and/or installation
 

@@ -298,7 +298,7 @@ class TestBond(unittest.TestCase):
         A method called before each unit test in this class.
         """
         self.bond = Bond(atom1=None, atom2=None, order=2)
-        self.orderList = [1,2,3,1.5, 0.30000000000000004]
+        self.orderList = [1,2,3,4,1.5, 0.30000000000000004]
     
     def testGetOrderStr(self):
         """
@@ -394,6 +394,17 @@ class TestBond(unittest.TestCase):
             else:
                 self.assertFalse(bond.isBenzene())
 
+    def testIsQuadruple(self):
+        """
+        Test the Bond.isQuadruple() method.
+        """
+        for order in self.orderList:
+            bond = Bond(None, None, order=order)
+            if order == 4:
+                self.assertTrue(bond.isQuadruple())
+            else:
+                self.assertFalse(bond.isQuadruple())
+                
     def testIncrementOrder(self):
         """
         Test the Bond.incrementOrder() method.
@@ -406,8 +417,10 @@ class TestBond(unittest.TestCase):
                     self.assertTrue(bond.isDouble())
                 elif order == 2: 
                     self.assertTrue(bond.isTriple())
+                elif order == 3:
+                    self.assertTrue(bond.isQuadruple())
             except ActionError:
-                self.assertTrue(order >= 3)
+                self.assertTrue(order >= 4) # or benzene??
         
     def testDecrementOrder(self):
         """
@@ -421,6 +434,8 @@ class TestBond(unittest.TestCase):
                     self.assertTrue(bond.isSingle())
                 elif order == 3: 
                     self.assertTrue(bond.isDouble())
+                elif order == 'Q':
+                    self.assertTrue(bond.isTriple())
             except ActionError:
                 self.assertTrue(order < 1)
                 
@@ -463,7 +478,7 @@ class TestBond(unittest.TestCase):
             try:
                 bond.applyAction(action)
             except ActionError:
-                self.assertTrue(3 <= order0,'Test failed with order {0}'.format(order0))
+                self.assertTrue(4 <= order0,'Test failed with order {0}'.format(order0))
                 
     def testApplyActionDecrementBond(self):
         """
@@ -1501,6 +1516,24 @@ multiplicity 2
         saturated_molecule.saturate_radicals()
         self.assertTrue(saturated_molecule.isIsomorphic(indene))
         
+        
+    def testSurfaceMolecules(self):
+        """
+        Test that we can identify surface molecules.
+        """
+        adsorbed = Molecule().fromAdjacencyList("""
+                                                1  H u0 p0 c0 {2,S}
+                                                2  X u0 p0 c0 {1,S}
+                                                """)
+        self.assertTrue(adsorbed.containsSurfaceSite())
+        gas = Molecule().fromAdjacencyList("""
+                                        1  H u0 p0 c0 {2,S}
+                                        2  H u0 p0 c0 {1,S}
+                                        """)
+        self.assertFalse(gas.containsSurfaceSite())
+
+        
+
     def testMalformedAugmentedInChI(self):
         """Test that augmented inchi without InChI layer raises Exception."""
         from .inchi import InchiException

@@ -187,7 +187,7 @@ cdef class ReactionSystem(DASx):
         return (self.__class__, (self.termination,))
 
     cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list surfaceSpecies=None,
-                          list surfaceReactions=None, list pdepNetworks=None, atol=1e-16, rtol=1e-8, sensitivity=False, 
+                          list surfaceReactions=None, list pdepNetworks=None, atol=1e-16, rtol=1e-8, sensitivity=False,
                           sens_atol=1e-6, sens_rtol=1e-4, filterReactions=False):
         """
         Initialize a simulation of the reaction system using the provided
@@ -577,7 +577,7 @@ cdef class ReactionSystem(DASx):
         numCoreReactions = len(coreReactions)
 
         assert set(coreReactions) >= set(surfaceReactions), 'given surface reactions are not a subset of core reactions'
-        assert set(coreSpecies) >= set(surfaceSpecies), 'given surface species are not a subset of core species' 
+        assert set(coreSpecies) >= set(surfaceSpecies), 'given surface species are not a subset of core species'
 
         toleranceKeepInEdge = modelSettings.fluxToleranceKeepInEdge if prune else 0
         toleranceMoveToCore = modelSettings.fluxToleranceMoveToCore
@@ -607,8 +607,8 @@ cdef class ReactionSystem(DASx):
         for index, spec in enumerate(coreSpecies):
             speciesIndex[spec] = index
         
-        self.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions, surfaceSpecies, surfaceReactions, 
-                             pdepNetworks, absoluteTolerance, relativeTolerance, sensitivity, sensitivityAbsoluteTolerance, 
+        self.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions, surfaceSpecies, surfaceReactions,
+                             pdepNetworks, absoluteTolerance, relativeTolerance, sensitivity, sensitivityAbsoluteTolerance,
                              sensitivityRelativeTolerance, filterReactions)
         
         prunableSpeciesIndices = self.prunableSpeciesIndices
@@ -640,7 +640,7 @@ cdef class ReactionSystem(DASx):
         # Copy the initial conditions to use in evaluating conversions
         y0 = self.y.copy()
         
-        # a list with the time, Volume, mole fractions of core species
+        # a list with the time, Volume, number of moles of core species
         self.snapshots = []
 
         if sensitivity:
@@ -722,7 +722,7 @@ cdef class ReactionSystem(DASx):
 
 
             snapshot = [self.t, self.V]
-            snapshot.extend(y_coreSpecies / numpy.sum(y_coreSpecies))
+            snapshot.extend(y_coreSpecies)
             self.snapshots.append(snapshot)            
 
             # Get the characteristic flux

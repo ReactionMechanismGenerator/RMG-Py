@@ -83,6 +83,9 @@ class ConsistencyChecker(object):
             the theoretical one:
             
             '''
+            if atom.symbol == 'X':
+                return  # because we can't check it.
+        
             valence = PeriodicSystem.valence_electrons[atom.symbol]
             order = atom.getBondOrdersForAtom()
                 

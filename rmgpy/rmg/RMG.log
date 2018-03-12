@@ -1,32 +1,59 @@
-#!/usr/bin/env python
+Global RMG Settings:
+   test_data.directory  = /Users/emilymazeau/Code/RMG-Py/rmgpy/test_data (Default, relative to RMG-Py source code)
+   database.directory   = /Users/emilymazeau/Code/RMG-database/input (Default, relative to RMG-Py source code)
+RMG execution initiated at Mon Jan 22 15:24:30 2018
+
+#########################################################
+# RMG-Py - Reaction Mechanism Generator in Python       #
+# Version: Cat-2.1.0                                    #
+# Authors: RMG Developers (rmg_dev@mit.edu)             #
+# P.I.s:   William H. Green (whgreen@mit.edu)           #
+#          Richard H. West (r.west@neu.edu)             #
+# Website: http://reactionmechanismgenerator.github.io/ #
+#                                                       #
+#  This heterogeneous catalysis branch developed by:    #
+#  Richard H. West (r.west@neu.edu)                     #
+#  C. Franklin Goldsmith (franklin_goldsmith@brown.edu) #
+#########################################################
+
+The current git HEAD for RMG-Py is:
+	1d8704a26b71fdc1e4cdf8a07ffb47b80cf4681a
+	Mon Jan 22 14:42:17 2018 -0500
+
+The current git HEAD for RMG-database is:
+	054f0d2416deabe98c254eb567b2714235241987
+	Wed Feb 15 10:13:59 2017 -0500
+
+Reading input file "/Users/emilymazeau/Code/RMG-Py/rmgpy/rmg/input.py"...
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-###############################################################################
-#                                                                             #
-# RMG - Reaction Mechanism Generator                                          #
-#                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
-# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
-#                                                                             #
-# Permission is hereby granted, free of charge, to any person obtaining a     #
-# copy of this software and associated documentation files (the 'Software'),  #
-# to deal in the Software without restriction, including without limitation   #
-# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
-# and/or sell copies of the Software, and to permit persons to whom the       #
-# Software is furnished to do so, subject to the following conditions:        #
-#                                                                             #
-# The above copyright notice and this permission notice shall be included in  #
-# all copies or substantial portions of the Software.                         #
-#                                                                             #
-# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
-# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
-# DEALINGS IN THE SOFTWARE.                                                   #
-#                                                                             #
-###############################################################################
+################################################################################
+#
+#   RMG - Reaction Mechanism Generator
+#
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
+#
+#   Permission is hereby granted, free of charge, to any person obtaining a
+#   copy of this software and associated documentation files (the 'Software'),
+#   to deal in the Software without restriction, including without limitation
+#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#   and/or sell copies of the Software, and to permit persons to whom the
+#   Software is furnished to do so, subject to the following conditions:
+#
+#   The above copyright notice and this permission notice shall be included in
+#   all copies or substantial portions of the Software.
+#
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+#   DEALINGS IN THE SOFTWARE.
+#
+################################################################################
 
 import logging
 import quantities
@@ -134,10 +161,6 @@ def convertBindingEnergies(bindingEnergies):
 
 def species(label, structure, reactive=True):
     logging.debug('Found {0} species "{1}" ({2})'.format('reactive' if reactive else 'nonreactive', label, structure.toSMILES()))
-    
-    if '+' in label:
-        raise InputError('species {0} label cannot include a + sign'.format(label))
-    
     spec, isNew = rmg.reactionModel.makeNewSpecies(structure, label=label, reactive=reactive)
     if not isNew:
         raise InputError("Species {0} is a duplicate of {1}. Species in input file must be unique".format(label,spec.label))
@@ -803,3 +826,4 @@ def getInput(name):
             raise e
 
     raise Exception('Could not get variable with name: {}'.format(name))
+

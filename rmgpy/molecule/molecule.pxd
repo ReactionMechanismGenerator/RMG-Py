@@ -63,6 +63,8 @@ cdef class Atom(Vertex):
 
     cpdef bint isSulfur(self)
     
+    cpdef bint isSurfaceSite(self)
+    
     cpdef incrementRadical(self)
 
     cpdef decrementRadical(self)
@@ -98,12 +100,16 @@ cdef class Bond(Edge):
     cpdef Edge copy(self)
     
     cpdef bint isOrder(self, float otherOrder)
+    
+    cpdef bint isVanDerWaals(self) except -2
 
     cpdef bint isSingle(self) except -2
 
     cpdef bint isDouble(self) except -2
 
     cpdef bint isTriple(self) except -2
+    
+    cpdef bint isQuadruple(self) except -2
     
     cpdef bint isBenzene(self) except -2
 
@@ -135,10 +141,16 @@ cdef class Molecule(Graph):
     cpdef bint hasAtom(self, Atom atom)
 
     cpdef bint hasBond(self, Atom atom1, Atom atom2)
+    
+    cpdef bint containsSurfaceSite(self)
+    
+    cpdef bint isSurfaceSite(self)
 
     cpdef removeAtom(self, Atom atom)
 
     cpdef removeBond(self, Bond bond)
+    
+    cpdef removeVanDerWaalsBonds(self)
 
     cpdef sortAtoms(self)
     

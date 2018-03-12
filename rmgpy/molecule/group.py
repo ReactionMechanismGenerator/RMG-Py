@@ -152,6 +152,9 @@ class GroupAtom(Vertex):
         where `order` specifies the order of the forming bond, and should be
         1 (since we only allow forming of single bonds).
         """
+        if order == 'vdW' or 0: #todo: remove the 'vdW' (and check 0 is correct)
+            # no change to atom types!
+            return
         if order != 1:
             raise ActionError('Unable to update GroupAtom due to FORM_BOND action: Invalid order "{0}".'.format(order))
         atomType = []
@@ -168,6 +171,9 @@ class GroupAtom(Vertex):
         where `order` specifies the order of the breaking bond, and should be
         1 (since we only allow breaking of single bonds).
         """
+        if order == 'vdW' or 0: #todo: remove 'vdW'
+            # no change to atom types!
+            return
         if order != 1:
             raise ActionError('Unable to update GroupAtom due to BREAK_BOND action: Invalid order "{0}".'.format(order))
         atomType = []
@@ -422,6 +428,14 @@ class GroupAtom(Vertex):
         # Otherwise self is in fact a specific case of other
         return True
 
+
+    def isSurfaceSite(self):
+        """
+        Return ``True`` if the atom represents a surface site or ``False`` if not.
+        """
+        siteType = atomTypes['X']
+        return all([s.isSpecificCaseOf(siteType) for s in self.atomType])
+
     def isOxygen(self):
         """
         Return ``True`` if the atom represents an oxygen atom or ``False`` if
@@ -466,10 +480,10 @@ class GroupAtom(Vertex):
         Returns: list of the number of bonds currently on the :class:GroupAtom
 
         If the argument wildcards is turned off then any bonds with multiple
-        options for bond orders will not be counted
+        options for bond orders will not be counted.
         """
         #count up number of bonds
-        single = 0; rDouble = 0; oDouble = 0; sDouble = 0; triple = 0; benzene = 0
+        single = 0; rDouble = 0; oDouble = 0; sDouble = 0; triple = 0; quadruple = 0; benzene = 0
         for atom2, bond12 in self.bonds.iteritems():
             if not wildcards and len(bond12.order) > 1:
                 continue
@@ -485,11 +499,13 @@ class GroupAtom(Vertex):
                     # rDouble is for double bonds NOT to oxygen or Sulfur
                     rDouble += 1
             if bond12.isTriple(wildcards = True): triple += 1
+            if bond12.isQuadruple(wildcards=True): quadruple += 1
             if bond12.isBenzene(wildcards = True): benzene += 1
 
         allDouble = rDouble + oDouble + sDouble
 
-        return [single, allDouble, rDouble, oDouble, sDouble, triple, benzene]
+        # Warning: some parts of code assume this matches precisely the list returned by getFeatures()
+        return [single, allDouble, rDouble, oDouble, sDouble, triple, quadruple, benzene]
 
     def makeSampleAtom(self):
         """
@@ -625,8 +641,12 @@ class GroupBond(Edge):
                 values.append('D')
             elif value == 3:
                 values.append('T')
+            elif value == 4:
+                values.append('Q')
             elif value == 1.5:
                 values.append('B')
+            elif value == 0.5:
+                values.append('vdW')  # Todo: changed all vdW bonds to have bond order of 0.5 
             elif value == 0:
                 values.append('H')
             else:
@@ -646,6 +666,10 @@ class GroupBond(Edge):
                 values.append(2)
             elif value == 'T':
                 values.append(3)
+            elif value == 'Q':
+                values.append(4)
+            elif value == 'vdW':
+                values.append(0.5)
             elif value == 'B':
                 values.append(1.5)
             elif value == 'H':
@@ -719,6 +743,37 @@ class GroupBond(Edge):
         else:
             return abs(self.order[0]-3) <= 1e-9 and len(self.order) == 1
 
+    def isQuadruple(self, wildcards = False):
+        """
+        Return ``True`` if the bond represents a quadruple bond or ``False`` if
+        not. If `wildcards` is ``False`` we return False anytime there is more
+        than one bond order, otherwise we return ``True`` if any of the options
+        are quadruple.
+        """
+        if wildcards:
+            for order in self.order:
+                if abs(order-4) <= 1e-9:
+                    return True
+            else: return False
+        else:
+            return abs(self.order[0]-4) <= 1e-9 and len(self.order) == 1
+
+    def isVanDerWaals(self, wildcards = False):
+        """
+        Return ``True`` if the bond represents a van der Waals bond or ``False`` if
+        not. If `wildcards` is ``False`` we return False anytime there is more
+        than one bond order, otherwise we return ``True`` if any of the options
+        are van der Waals.
+        """
+        if wildcards:
+            for order in self.order:
+                if abs(order[0.5]) <= 1e-9:
+                    return True
+            else:
+                return False
+        else:
+            return abs(self.order[0.5]) <= 1e-9 and len(self.order) == 1
+
     def isBenzene(self, wildcards = False):
         """
         Return ``True`` if the bond represents a benzene bond or ``False`` if
@@ -756,7 +811,7 @@ class GroupBond(Edge):
         in bond order. `order` is normally 1 or -1, but can be any value
         """
         newOrder = [value + order for value in self.order]
-        if any([value < 0 or value > 3 for value in newOrder]):
+        if any([value < 0 or value > 4 for value in newOrder]):
             raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid resulting order "{0}".'.format(newOrder))
         # Change any modified benzene orders to the appropriate stable order
         newOrder = set(newOrder)
@@ -952,6 +1007,20 @@ class Group(Graph):
         """
         return self.hasEdge(atom1, atom2)
 
+    def containsSurfaceSite(self):
+        """
+        Returns ``True`` iff the group contains an 'X' surface site.
+        """
+        cython.declare(atom=GroupAtom)
+        for atom in self.atoms:
+            if atom.isSurfaceSite():
+                return True
+        return False
+
+    def isSurfaceSite(self):
+        "Returns ``True`` iff the group is nothing but a surface site 'X'."
+        return (len(self.atoms) == 1 and self.atoms[0].isSurfaceSite())
+
     def removeAtom(self, atom):
         """
         Remove `atom` and all bonds associated with it from the graph. Does
@@ -967,6 +1036,16 @@ class Group(Graph):
         this removal.
         """
         return self.removeEdge(bond)
+
+    def removeVanDerWaalsBonds(self):
+        """
+        Remove all bonds that are definitely only van der Waals bonds.
+        """
+        cython.declare(atom=GroupAtom, bond=GroupBond)
+        for atom in self.atoms:
+            for bond in atom.edges.values():
+                if bond.isVanDerWaals(wildcards=False):
+                    self.removeBond(bond)
 
     def sortAtoms(self):
         """
@@ -1442,7 +1521,7 @@ class Group(Graph):
 
         for atom1 in copyGroup.atoms:
             atomtypeFeatureList = atom1.atomType[0].getFeatures()
-            lonePairsRequired[atom1]=atomtypeFeatureList[7]
+            lonePairsRequired[atom1] = atomtypeFeatureList[8]
 
             #set to 0 required if empty list
             atomtypeFeatureList = [featureList if featureList else [0] for featureList in atomtypeFeatureList]
@@ -1451,9 +1530,10 @@ class Group(Graph):
             oDoubleRequired = atomtypeFeatureList[3]
             sDoubleRequired = atomtypeFeatureList[4]
             tripleRequired = atomtypeFeatureList[5]
+            quadrupleRequired = atomtypeFeatureList[6]
 
             #count up number of bonds
-            single = 0; rDouble = 0; oDouble = 0; sDouble = 0; triple = 0; benzene = 0
+            single = 0; rDouble = 0; oDouble = 0; sDouble = 0; triple = 0; quadruple = 0; benzene = 0
             for atom2, bond12 in atom1.bonds.iteritems():
                 # Count numbers of each higher-order bond type
                 if bond12.isSingle():
@@ -1467,6 +1547,7 @@ class Group(Graph):
                         # rDouble is for double bonds NOT to oxygen or Sulfur
                         rDouble += 1
                 elif bond12.isTriple(): triple += 1
+                elif bond12.isQuadruple(): quadruple += 1
                 elif bond12.isBenzene(): benzene += 1
 
 
@@ -1489,6 +1570,11 @@ class Group(Graph):
                 triple +=1
                 newAtom = GroupAtom(atomType=[atomTypes['C']], radicalElectrons=[0], charge=[], label='', lonePairs=None)
                 newBond = GroupBond(atom1, newAtom, order=[3])
+                implicitAtoms[newAtom] = newBond
+            while quadruple < quadrupleRequired[0]:
+                quadruple +=1
+                newAtom = GroupAtom(atomType=[atomTypes['C']], radicalElectrons=[0], charge=[], label='', lonePairs=None)
+                newBond = GroupBond(atom1, newAtom, order=[4])
                 implicitAtoms[newAtom] = newBond
 
         for atom, bond in implicitAtoms.iteritems():
@@ -1882,7 +1968,7 @@ class Group(Graph):
                     atom2.bonds[atom1].order = bond12.order
                     continue
 
-                atom1Bonds = atom1.countBonds()
+                atom1Bonds = atom1.countBonds() # countBonds list must match getFeatures list
                 atom2Bonds = atom2.countBonds()
                 requiredFeatures1 = [atom1Features[x][0] - atom1Bonds[x] if atom1Features[x] else 0 for x in range(len(atom1Bonds))]
                 requiredFeatures2 = [atom2Features[x][0] - atom2Bonds[x] if atom2Features[x] else 0 for x in range(len(atom2Bonds))]
@@ -1894,24 +1980,28 @@ class Group(Graph):
                 requiredFeatures1.reverse()
                 requiredFeatures2.reverse()
 
-                #required features are a now list of [benzene, triple, sDouble, oDouble, rDouble, allDouble, single]
+                #required features are a now list of [benzene, quadruple, triple, sDouble, oDouble, rDouble, allDouble, single]
                 for index, (feature1, feature2) in enumerate(zip(requiredFeatures1[:-1], requiredFeatures2[:-1])):
                     if feature1 > 0 or feature2 > 0:
                         if index == 0 and 1.5 in bond12.order: #benzene bonds
                             bond12.order = [1.5]
                             atom2.bonds[atom1].order = bond12.order
                             break
-                        elif index == 1 and 3 in bond12.order: #triple bond
+                        elif index == 1 and 4 in bond12.order: #quadruple bond
+                            bond12.order = [4]
+                            atom2.bonds[atom1].order = bond12.order
+                            break
+                        elif index == 2 and 3 in bond12.order: #triple bond
                             bond12.order = [3]
                             atom2.bonds[atom1].order = bond12.order
                             break
-                        elif index > 1 and 2 in bond12.order: #any case of double bonds
-                            if index == 2: #sDouble bonds
+                        elif index > 2 and 2 in bond12.order: #any case of double bonds
+                            if index == 3: #sDouble bonds
                                 if (feature1 > 0 and atom2.isSulfur()) or (feature2 > 0 and atom1.isSulfur()):
                                     bond12.order = [2]
                                     atom2.bonds[atom1].order = bond12.order
                                     break
-                            elif index == 3: #oDoubleBonds
+                            elif index == 4: #oDoubleBonds
                                 if (feature1 > 0 and atom2.isOxygen()) or (feature2 > 0 and atom1.isOxygen()):
                                     bond12.order = [2]
                                     atom2.bonds[atom1].order = bond12.order

@@ -307,6 +307,12 @@ class Atom(Vertex):
         """
         return self.element.number == 8
 
+    def isSurfaceSite(self):
+        """
+        Return ``True`` if the atom represents a surface site or ``False`` if not.
+        """
+        return self.symbol == 'X'
+
     def isSilicon(self):
         """
         Return ``True`` if the atom represents an silicon atom or ``False`` if
@@ -514,6 +520,10 @@ class Bond(Edge):
             return 'D'
         elif self.isTriple():
             return 'T'
+        elif self.isQuadruple():
+            return 'Q'
+        elif self.isVanDerWaals():
+            return 'vdW'
         elif self.isHydrogenBond():
             return 'H'
         else:
@@ -531,6 +541,10 @@ class Bond(Edge):
             self.order = 3
         elif newOrder == 'B':
             self.order = 1.5
+        elif newOrder == 'Q':
+            self.order = 4
+        elif newOrder == 'vdW':
+            self.order = 0.5
         elif newOrder == 'H':
             self.order = 0
         else:
@@ -568,6 +582,14 @@ class Bond(Edge):
         b.order = self.order
         return b
 
+
+    def isVanDerWaals(self):
+        """
+        Return ``True`` if the bond represents a van der Waals bond or 
+        ``False`` if not.
+        """
+        return self.isOrder(0.5) or self.order == 'vdW' #todo: remove 'vdW'
+
     def isOrder(self, otherOrder):
         """
         Return ``True`` if the bond is of order otherOrder or ``False`` if
@@ -600,6 +622,13 @@ class Bond(Edge):
         """
         return self.isOrder(3)
 
+    def isQuadruple(self):
+        """
+        Return ``True`` if the bond represents a quadruple bond or ``False`` if
+        not.
+        """
+        return self.isOrder(4)
+
     def isBenzene(self):
         """
         Return ``True`` if the bond represents a benzene bond or ``False`` if
@@ -619,11 +648,11 @@ class Bond(Edge):
         Update the bond as a result of applying a CHANGE_BOND action to
         increase the order by one.
         """
-        if self.order <=2.0001:
+        if self.order <=3.0001:
             self.order += 1
         else:
             raise gr.ActionError('Unable to increment Bond due to CHANGE_BOND action: '+\
-            'Bond order "{0}" is greater than 2.'.format(self.order))
+            'Bond order "{0}" is greater than 3.'.format(self.order))
 
     def decrementOrder(self):
         """
@@ -643,7 +672,7 @@ class Bond(Edge):
         in bond order, and can be any real number.
         """
         self.order += order
-        if self.order < -0.0001 or self.order >3.0001:
+        if self.order < -0.0001 or self.order >4.0001:
             raise gr.ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid resulting order "{0}".'.format(self.order))
 
     def applyAction(self, action):
@@ -806,6 +835,20 @@ class Molecule(Graph):
         """
         return self.hasEdge(atom1, atom2)
 
+    def containsSurfaceSite(self):
+        """
+        Returns ``True`` iff the molecule contains an 'X' surface site.
+        """
+        cython.declare(atom=Atom)
+        for atom in self.atoms:
+            if atom.symbol == 'X':
+                return True
+        return False
+
+    def isSurfaceSite(self):
+        "Returns ``True`` iff the molecule is nothing but a surface site 'X'."
+        return (len(self.atoms) == 1 and self.atoms[0].isSurfaceSite())
+
     def removeAtom(self, atom):
         """
         Remove `atom` and all bonds associated with it from the graph. Does
@@ -823,6 +866,16 @@ class Molecule(Graph):
         """
         self._fingerprint = None
         return self.removeEdge(bond)
+
+    def removeVanDerWaalsBonds(self):
+        """
+        Remove all van der Waals bonds.
+        """
+        cython.declare(atom=Atom, bond=Bond)
+        for atom in self.atoms:
+            for bond in atom.edges.values():
+                if bond.isVanDerWaals():
+                    self.removeBond(bond)
 
     def sortAtoms(self):
         """
@@ -930,6 +983,50 @@ class Molecule(Graph):
                 if atom.element.symbol == element:
                     numAtoms += 1
             return numAtoms
+
+    def getNumberOfRadicalElectrons(self):
+        """
+        Return the total number of radical electrons on all atoms in the
+        molecule. In this function, monoradical atoms count as one, biradicals
+        count as two, etc. 
+        """
+        cython.declare(numRadicals=cython.int, atom=Atom)
+        numRadicals = 0
+        for atom in self.vertices:
+            numRadicals += atom.radicalElectrons
+        return numRadicals
+    
+    def getGasCopiesOfSurfaceMolecule(self):
+        """
+        Create an iterable of gas-phase (desorbed) copies of a surface-bound molecule.
+        
+        This will likely be a radical, because of the dangling bond which used
+        to be to the surface. It's a list because we don't know which electronic 
+        state to return, e.g. two radicals or a lone pair when a "double-bond" 
+        desorbs, so we return both in an iterable.
+        """
+        mol = cython.declare(Molecule)
+        mol = self.copy(deep=True)
+        toDelete = []
+        for atom in mol.atoms:
+            if atom.element.symbol=='X':
+                toDelete.append(atom)
+        for atom in toDelete:
+            for bonded, bond in atom.bonds.iteritems():
+                if bond.isSingle():
+                    bonded.incrementRadical()
+                elif bond.isDouble():
+                    bonded.incrementRadical()
+                    bonded.incrementRadical()
+                elif bond.isTriple():
+                    bonded.incrementRadical()
+                    bonded.incrementLonePairs()
+                elif bond.isQuadruple():
+                    bonded.incrementLonePairs()
+                    bonded.incrementLonePairs()
+            mol.removeAtom(atom)
+        raise NotImplementedError("Code not finished?")
+            
 
     def copy(self, deep=False):
         """
@@ -1628,6 +1725,8 @@ class Molecule(Graph):
         """
         Return the value of the heat capacity at zero temperature in J/mol*K.
         """
+        if self.containsSurfaceSite():
+            return 0.0
         if len(self.atoms) == 1:
             return 2.5 * constants.R
         else:
@@ -1639,10 +1738,13 @@ class Molecule(Graph):
         """
         cython.declare(Natoms=cython.int, Nvib=cython.int, Nrotors=cython.int)
         
+        if self.containsSurfaceSite():
+            # ToDo: internal rotors could still act as rotors
+            return constants.R * 3 * len(self.vertices)
+
         if len(self.vertices) == 1:
             return self.calculateCp0()
         else:
-            
             Natoms = len(self.vertices)
             Nvib = 3 * Natoms - (5 if self.isLinear() else 6)
             Nrotors = self.countInternalRotors()

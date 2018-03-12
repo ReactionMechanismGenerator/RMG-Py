@@ -36,12 +36,14 @@ import os.path
 import logging
 import codecs
 from copy import deepcopy
+import itertools
 
 from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStructures,\
                             getAllCombinations
 from rmgpy.reaction import Reaction
-from rmgpy.kinetics import Arrhenius
+from rmgpy.kinetics import Arrhenius, SurfaceArrhenius,\
+                    SurfaceArrheniusBEP, StickingCoefficient, StickingCoefficientBEP
 from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.molecule.resonance import generate_aromatic_resonance_structures
 from rmgpy.species import Species
@@ -295,7 +297,9 @@ class ReactionRecipe:
                 elif (action[0] == 'FORM_BOND' and doForward) or (action[0] == 'BREAK_BOND' and not doForward):
                     if struct.hasBond(atom1, atom2):
                         raise InvalidActionError('Attempted to create an existing bond.')
-                    bond = GroupBond(atom1, atom2, order=[1]) if pattern else Bond(atom1, atom2, order=1)
+                    if info not in (1, 0, 'vdW'):  # todo: remove vdW and ensure 0 is correct replacement
+                        raise InvalidActionError('Attempted to create bond of type {:!r}'.format(info))
+                    bond = GroupBond(atom1, atom2, order=[info]) if pattern else Bond(atom1, atom2, order=info)
                     struct.addBond(bond)
                     atom1.applyAction(['FORM_BOND', label1, info, label2])
                     atom2.applyAction(['FORM_BOND', label1, info, label2])
@@ -1051,17 +1055,40 @@ class KineticsFamily(Database):
                 # this family; save them so we can try this
                 reverse_entries.append(entry)
                 continue
-            
-            assert isinstance(entry.data, Arrhenius)
+
             data = deepcopy(entry.data)
             data.changeT0(1)
+            
+            if type(data) is Arrhenius:  # more specific than isinstance(data,Arrhenius) because we want to exclude inherited subclasses!
+                data = data.toArrheniusEP()
+            elif isinstance(data, StickingCoefficient):
+                data = StickingCoefficientBEP( #todo: perhaps make a method StickingCoefficient.StickingCoefficientBEP analogous to Arrhenius.toArrheniusEP
+                    A = deepcopy(data.A),
+                    n = deepcopy(data.n),
+                    alpha = 0,
+                    E0 = deepcopy(data.Ea),
+                    Tmin = deepcopy(data.Tmin),
+                    Tmax = deepcopy(data.Tmax)
+                    )
+            elif isinstance(data, SurfaceArrhenius):
+                data = SurfaceArrheniusBEP( #todo: perhaps make a method SurfaceArrhenius.toSurfaceArrheniusBEP analogous to Arrhenius.toArrheniusEP
+                    A = deepcopy(data.A),
+                    n = deepcopy(data.n),
+                    alpha = 0,
+                    E0 = deepcopy(data.Ea),
+                    Tmin = deepcopy(data.Tmin),
+                    Tmax = deepcopy(data.Tmax)
+                    )
+            else:
+                raise NotImplementedError("Unexpected training kinetics type {} for {}".format(type(data), entry))
+
             
             new_entry = Entry(
                 index = index,
                 label = ';'.join([g.label for g in template]),
                 item=Reaction(reactants=[g.item for g in template],
                                                    products=[]),
-                data = data.toArrheniusEP(),
+                data=data,
                 rank = entry.rank,
                 reference=entry.reference,
                 shortDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.shortDesc,
@@ -1295,6 +1322,10 @@ class KineticsFamily(Database):
                 productStructures[1].containsLabeledAtom('*1'):
                 productStructures.reverse()
 
+        # Remove vdW bonds
+        for struct in productStructures:
+            struct.removeVanDerWaalsBonds()
+
         # If product structures are Molecule objects, update their atom types
         for struct in productStructures:
             if isinstance(struct, Molecule):
@@ -1378,9 +1409,8 @@ class KineticsFamily(Database):
         # check family-specific forbidden structures 
         if self.forbidden is not None and self.forbidden.isMoleculeForbidden(molecule):
             return True
-
         # check RMG globally forbidden structures
-        if forbidden_structures.isMoleculeForbidden(molecule):
+        if forbidden_structures is not None and forbidden_structures.isMoleculeForbidden(molecule):
             return True
         return False
 
@@ -1430,12 +1460,20 @@ class KineticsFamily(Database):
         if isinstance(templateReactant, list): templateReactant = templateReactant[0]
         struct = templateReactant.item
         
+        reactantContainsSurfaceSite = reactant.containsSurfaceSite()
+
         if isinstance(struct, LogicNode):
             mappings = []
             for child_structure in struct.getPossibleStructures(self.groups.entries):
+                if child_structure.containsSurfaceSite() != reactantContainsSurfaceSite:
+                    # An adsorbed template can't match a gas-phase species and vice versa
+                    continue
                 mappings.extend(reactant.findSubgraphIsomorphisms(child_structure))
             return mappings
         elif isinstance(struct, Group):
+            if struct.containsSurfaceSite() != reactantContainsSurfaceSite:
+                # An adsorbed template can't match a gas-phase species and vice versa
+                return []
             return reactant.findSubgraphIsomorphisms(struct)
         else:
             raise NotImplementedError("Not expecting template of type {}".format(type(struct)))
@@ -1610,7 +1648,7 @@ class KineticsFamily(Database):
             Degenerate reactions are returned as separate reactions.
         """
 
-        rxnList = []; speciesList = []
+        rxnList = []
 
         # Wrap each reactant in a list if not already done (this is done to 
         # allow for passing multiple resonance structures for each molecule)
@@ -1648,6 +1686,12 @@ class KineticsFamily(Database):
 
             moleculesA = reactants[0]
             moleculesB = reactants[1]
+            
+            # ToDo: try to remove this hard-coding of reaction family name..
+            if 'adsorption' in self.label.lower() and forward:
+                if moleculesA[0].containsSurfaceSite() and moleculesB[0].containsSurfaceSite():
+                    "Can't adsorb something that's already adsorbed. Both reactants either contain or are a surface site"
+                    return []
 
             # Iterate over all resonance isomers of the reactant
             for moleculeA in moleculesA:
@@ -1689,6 +1733,131 @@ class KineticsFamily(Database):
                                     if productStructures is not None:
                                         rxn = self.__createReaction(reactantStructures, productStructures, forward)
                                         if rxn: rxnList.append(rxn)
+            # Termolecular reactants: A + B + C --> products
+        elif len(reactants) == 2 and len(template.reactants) == 3:
+            """
+            Two reactants but a termoleculare template.
+            Could be A + X + X <=> BX + CX (dissociative adsorption)
+            or A + X + X <=> AXX (bidentate adsorption)
+            in which case, if one of the two reactants is an X
+            then we have a match and can just use it twice.
+            """
+            templateSites = [r for r in template.reactants if r.item.isSurfaceSite()]
+            if len(templateSites) == 2:
+                "Two surface sites in template. If there's a site in the reactants, use it twice."
+                if reactants[0][0].isSurfaceSite() and not reactants[1][0].isSurfaceSite():
+                    site1 = reactants[0][0]
+                    site2 = deepcopy(reactants[0][0])
+                    adsorbateMolecules = reactants[1]
+                    reactants.append([site2])
+                elif reactants[1][0].isSurfaceSite() and not reactants[0][0].isSurfaceSite():
+                    site1 = reactants[1][0]
+                    site2 = deepcopy(reactants[1][0])
+                    adsorbateMolecules = reactants[0]
+                    reactants.append([site2])
+                else:
+                    "No reaction with these reactants in this template"
+                    return []
+
+                if adsorbateMolecules[0].containsSurfaceSite():
+                    "An adsorbed molecule can't adsorb again"
+                    return []
+
+                for r in template.reactants:
+                    if not r.item.isSurfaceSite():
+                        templateAdsorbate = r
+                        break
+                else:
+                    raise KineticsError("Couldn't find non-site in template {0!r}".format(template))
+
+                mappingsA = self.__matchReactantToTemplate(site1, templateSites[0])
+                mappingsB = self.__matchReactantToTemplate(site2, templateSites[1])
+                for adsorbateMolecule in adsorbateMolecules:
+                    mappingsC = self.__matchReactantToTemplate(adsorbateMolecule, templateAdsorbate)
+                    for mapA, mapB, mapC in itertools.product(mappingsA, mappingsB, mappingsC):
+                        reactantStructures = [site1, site2, adsorbateMolecule]  # should be in same order as reaction template recipe?
+                        try:
+                            productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB, mapC], forward)
+                        except ForbiddenStructureException:
+                            pass
+                        else:
+                            if productStructures is not None:
+                                rxn = self.__createReaction(reactantStructures, productStructures, forward)
+                                if rxn: rxnList.append(rxn)
+            else:
+                raise NotImplementedError("Termolecluar template not containing two surface sites")
+
+        elif len(reactants) == 3 and len(template.reactants) == 3:
+            """
+            Three reactants and a termolecular template.
+            Could be A + X + X <=> BX + CX (dissociative adsorption)
+            or A + X + X <=> AXX (bidentate adsorption)
+            that was first found in the reverse direction
+            and so is being passed in with all three reactants identified.
+            """
+            templateSites = [r for r in template.reactants if r.item.isSurfaceSite()]
+            if len(templateSites) == 2:
+                "Should be 2 surface sites in reactants too. Find them, and find mappings of the other"
+                m1, m2, m3 = (r[0] for r in reactants)
+                if m1.isSurfaceSite() and m2.isSurfaceSite() and not m3.isSurfaceSite():
+                    site1, site2 = m1, m2
+                    adsorbateMolecules = reactants[2]
+                elif m1.isSurfaceSite() and not m2.isSurfaceSite() and m3.isSurfaceSite():
+                    site1, site2 = m1, m3
+                    adsorbateMolecules = reactants[1]
+                elif not m1.isSurfaceSite() and m2.isSurfaceSite() and m3.isSurfaceSite():
+                    site1, site2 = m2, m3
+                    adsorbateMolecules = reactants[0]
+                else:
+                    raise NotImplementedError("Three reactants not containing two surface sites")
+
+                if adsorbateMolecules[0].containsSurfaceSite():
+                    "An adsorbed molecule can't adsorb again"
+                    return []
+
+                for r in template.reactants:
+                    if not r.item.isSurfaceSite():
+                        templateAdsorbate = r
+                        break
+                else:
+                    raise KineticsError("Couldn't find non-site in template {0!r}".format(template))
+
+                mappingsA = self.__matchReactantToTemplate(site1, templateSites[0])
+                mappingsB = self.__matchReactantToTemplate(site2, templateSites[1])
+                for adsorbateMolecule in adsorbateMolecules:
+                    mappingsC = self.__matchReactantToTemplate(adsorbateMolecule, templateAdsorbate)
+                    # this just copied/pasted from above - not checked
+                    for mapA, mapB, mapC in itertools.product(mappingsA, mappingsB, mappingsC):
+                        reactantStructures = [site1, site2, adsorbateMolecule]
+                        try:
+                            productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB, mapC], forward)
+                        except ForbiddenStructureException:
+                            pass
+                        else:
+                            if productStructures is not None:
+                                rxn = self.__createReaction(reactantStructures, productStructures, forward)
+                                if rxn: rxnList.append(rxn)
+
+            else:
+                raise NotImplementedError("Termolecluar template not containing two surface sites")
+
+        # ToDo: try to remove this hard-coding of reaction family name..
+        if not forward and 'adsorption' in self.label.lower():
+            # Desorption should have desorbed something (else it was probably bidentate)
+            # so delete reactions that don't make a gas-phase desorbed product
+            prunedList = []
+            for reaction in rxnList:
+                for reactant in reaction.reactants:
+                    if not reactant.containsSurfaceSite():
+                        # found a desorbed species, we're ok
+                        prunedList.append(reaction)
+                        break
+                else:  # didn't break, so all species still adsorbed
+                    logging.info("Removing {} reaction {!s} with no desorbed species".format(self.label, reaction))
+                    continue  # to next reaction immediately
+            rxnList = prunedList
+
+
         # If products is given, remove reactions from the reaction list that
         # don't generate the given products
         if products is not None:
@@ -1832,6 +2001,41 @@ class KineticsFamily(Database):
                     pairs.append([reaction.reactants[1],reaction.products[0]])
                 else:
                     error = True
+        elif reaction.isSurfaceReaction():
+            # remove vacant active sites from consideration
+            reactants = [sp for sp in reaction.reactants if not sp.isSurfaceSite()]
+            products =  [sp for sp in reaction.products if not sp.isSurfaceSite()]
+            if len(reactants) == 1 or len(products) == 1:
+                # When there is only one reactant (or one product), it is paired
+                # with each of the products (reactants)
+                for reactant in reactants:
+                    for product in products:
+                        pairs.append([reactant, product])
+            elif self.label.lower() == 'surface_abstraction':
+                # Hardcoding for surface abstraction: pair the reactant containing
+                # *1 with the product containing *3 and vice versa
+                assert len(reaction.reactants) == len(reaction.products) == 2
+                if reaction.reactants[0].containsLabeledAtom('*1'):
+                    if reaction.products[0].containsLabeledAtom('*3'):
+                        pairs.append([reaction.reactants[0], reaction.products[0]])
+                        pairs.append([reaction.reactants[1], reaction.products[1]])
+                    elif reaction.products[1].containsLabeledAtom('*3'):
+                        pairs.append([reaction.reactants[0], reaction.products[1]])
+                        pairs.append([reaction.reactants[1], reaction.products[0]])
+                    else:
+                        error = True
+                elif reaction.reactants[1].containsLabeledAtom('*1'):
+                    if reaction.products[1].containsLabeledAtom('*3'):
+                        pairs.append([reaction.reactants[0], reaction.products[0]])
+                        pairs.append([reaction.reactants[1], reaction.products[1]])
+                    elif reaction.products[0].containsLabeledAtom('*3'):
+                        pairs.append([reaction.reactants[0], reaction.products[1]])
+                        pairs.append([reaction.reactants[1], reaction.products[0]])
+                    else:
+                        error = True
+
+            else:
+                error = True
         else:
             error = True
             

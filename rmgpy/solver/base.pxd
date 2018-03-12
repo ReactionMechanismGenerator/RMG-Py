@@ -46,6 +46,8 @@ cdef class ReactionSystem(DASx):
     cdef public int numCoreSpecies
     cdef public int numCoreReactions
     cdef public int numEdgeSpecies
+    cdef public int numSurfaceSpecies
+    cdef public int numSurfaceReactions
     cdef public int numEdgeReactions
     cdef public int numPdepNetworks
     cdef public int neq
@@ -111,8 +113,20 @@ cdef class ReactionSystem(DASx):
     cdef public numpy.ndarray bimolecularThreshold
 
     # methods
-    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list surfaceSpecies=?,
-        list surfaceReactions=?, list pdepNetworks=?, atol=?, rtol=?, sensitivity=?, sens_atol=?, sens_rtol=?, filterReactions=?)
+    cpdef initializeModel(self,
+                          list coreSpecies,
+                          list coreReactions,
+                          list edgeSpecies,
+                          list edgeReactions,
+                          list surfaceSpecies = ?,
+                          list surfaceReactions = ?,
+                          list pdepNetworks=?,
+                          atol=?,
+                          rtol=?,
+                          sensitivity=?,
+                          sens_atol=?,
+                          sens_rtol=?,
+                          filterReactions=?)
 
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, 
         list edgeReactions,list surfaceSpecies, list surfaceReactions,

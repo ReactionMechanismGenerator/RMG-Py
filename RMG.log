@@ -1,0 +1,28 @@
+Global RMG Settings:
+   test_data.directory  = /Users/emilymazeau/Code/RMG-Py/rmgpy/test_data (Default, relative to RMG-Py source code)
+   database.directory   = /Users/emilymazeau/Code/RMG-database/input (Default, relative to RMG-Py source code)
+RMG execution initiated at Mon Jan 22 15:14:31 2018
+
+#########################################################
+# RMG-Py - Reaction Mechanism Generator in Python       #
+# Version: Cat-2.1.0                                    #
+# Authors: RMG Developers (rmg_dev@mit.edu)             #
+# P.I.s:   William H. Green (whgreen@mit.edu)           #
+#          Richard H. West (r.west@neu.edu)             #
+# Website: http://reactionmechanismgenerator.github.io/ #
+#                                                       #
+#  This heterogeneous catalysis branch developed by:    #
+#  Richard H. West (r.west@neu.edu)                     #
+#  C. Franklin Goldsmith (franklin_goldsmith@brown.edu) #
+#########################################################
+
+The current git HEAD for RMG-Py is:
+	1d8704a26b71fdc1e4cdf8a07ffb47b80cf4681a
+	Mon Jan 22 14:42:17 2018 -0500
+
+The current git HEAD for RMG-database is:
+	054f0d2416deabe98c254eb567b2714235241987
+	Wed Feb 15 10:13:59 2017 -0500
+
+Error: The input file "/Users/emilymazeau/Code/RMG-Py/input.py" could not be opened.
+Check that the file exists and that you have read access.

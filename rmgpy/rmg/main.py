@@ -308,7 +308,10 @@ class RMG(util.Subject):
         
         #check libraries
         self.checkLibraries()
-        
+
+        if self.bindingEnergies:
+            self.database.thermo.setDeltaAtomicAdsorptionEnergies(self.bindingEnergies)
+
         #set global variable solvent
         if self.solvent:
             global solvent
@@ -1180,6 +1183,10 @@ class RMG(util.Subject):
         logging.log(level, '# P.I.s:   William H. Green (whgreen@mit.edu)           #')
         logging.log(level, '#          Richard H. West (r.west@neu.edu)             #')
         logging.log(level, '# Website: http://reactionmechanismgenerator.github.io/ #')
+        logging.log(level, '#                                                       #')
+        logging.log(level, '#  This heterogeneous catalysis branch developed by:    #')
+        logging.log(level, '#  Richard H. West (r.west@neu.edu)                     #')
+        logging.log(level, '#  C. Franklin Goldsmith (franklin_goldsmith@brown.edu) #')
         logging.log(level, '#########################################################\n')
     
         # Extract git commit from RMG-Py

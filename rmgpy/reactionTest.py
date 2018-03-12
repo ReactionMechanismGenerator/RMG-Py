@@ -36,7 +36,9 @@ import numpy
 import unittest
 from external.wip import work_in_progress
 
+from rmgpy.quantity import Quantity
 from rmgpy.species import Species, TransitionState
+from rmgpy.molecule import Molecule
 from rmgpy.reaction import Reaction
 from rmgpy.quantity import Quantity
 from rmgpy.statmech.translation import Translation, IdealGasTranslation
@@ -44,8 +46,8 @@ from rmgpy.statmech.rotation import Rotation, LinearRotor, NonlinearRotor, KRoto
 from rmgpy.statmech.vibration import Vibration, HarmonicOscillator
 from rmgpy.statmech.torsion import Torsion, HinderedRotor
 from rmgpy.statmech.conformer import Conformer
-from rmgpy.kinetics import Arrhenius, ArrheniusEP
-from rmgpy.thermo import Wilhoit
+from rmgpy.kinetics import Arrhenius, ArrheniusEP, SurfaceArrhenius, StickingCoefficient
+from rmgpy.thermo import Wilhoit, ThermoData, NASA, NASAPolynomial
 import rmgpy.constants as constants
 
 ################################################################################
@@ -118,11 +120,125 @@ class TestReactionIsomorphism(unittest.TestCase):
         self.assertFalse(r1.isIsomorphic(self.makeReaction('BA=EDd'),eitherDirection=False,checkOnlyLabel=True))
 
 
+class TestSurfaceReaction(unittest.TestCase):
+    "Test surface reactions"
+    def setUp(self):
+
+        mH2 = Molecule().fromSMILES("[H][H]")
+        mX = Molecule().fromAdjacencyList("1 X u0 p0")
+        mHX = Molecule().fromAdjacencyList("1 H u0 p0 {2,S} \n 2 X u0 p0 {1,S}")
+        mCH3 = Molecule().fromSMILES("[CH3]")
+        mCH3X = Molecule().fromAdjacencyList("1 H u0 p0 {2,S} \n 2 X u0 p0 {1,S}")
+
+        sH2 = Species(
+            molecule=[mH2],
+            thermo=ThermoData(Tdata=([300, 400, 500, 600, 800, 1000, 1500],
+                                     "K"),
+                              Cpdata=([6.955, 6.955, 6.956, 6.961, 7.003,
+                                       7.103, 7.502], "cal/(mol*K)"),
+                              H298=(0, "kcal/mol"),
+                              S298=(31.129  , "cal/(mol*K)")))
+        sX = Species(
+            molecule=[mX],
+            thermo=ThermoData(Tdata=([300, 400, 500, 600, 800, 1000, 1500],
+                                     "K"),
+                              Cpdata=([0., 0., 0., 0., 0., 0., 0.], "cal/(mol*K)"),
+                              H298=(0.0, "kcal/mol"),
+                              S298=(0.0, "cal/(mol*K)")))
+        sHX = Species(
+            molecule=[mHX],
+            thermo=ThermoData(Tdata=([300, 400, 500, 600, 800, 1000, 1500],
+                                     "K"),
+                              Cpdata=([1.50, 2.58, 3.40, 4.00, 4.73, 5.13, 5.57], "cal/(mol*K)"),
+                              H298=(-11.26, "kcal/mol"),
+                              S298=(0.44, "cal/(mol*K)")))
+
+        sCH3 = Species(
+            molecule=[mCH3],
+            thermo=NASA(polynomials=[NASAPolynomial(coeffs=[3.91547, 0.00184155, 3.48741e-06, -3.32746e-09, 8.49953e-13, 16285.6, 0.351743], Tmin=(100, 'K'), Tmax=(1337.63, 'K')),
+                                     NASAPolynomial(coeffs=[3.54146, 0.00476786, -1.82148e-06, 3.28876e-10, -2.22545e-14, 16224, 1.66032], Tmin=(1337.63, 'K'), Tmax=(5000, 'K'))],
+                       Tmin=(100, 'K'), Tmax=(5000, 'K'), E0=(135.382, 'kJ/mol'),
+                       comment="""Thermo library: primaryThermoLibrary + radical(CH3)"""
+                       ),
+            molecularWeight=(15.0345, 'amu'),
+                    )
+
+        sCH3X = Species(
+            molecule=[mCH3X],
+            thermo=NASA(polynomials=[NASAPolynomial(coeffs=[-0.552219, 0.026442, -3.55617e-05, 2.60044e-08, -7.52707e-12, -4433.47, 0.692144], Tmin=(298, 'K'), Tmax=(1000, 'K')),
+                                     NASAPolynomial(coeffs=[3.62557, 0.00739512, -2.43797e-06, 1.86159e-10, 3.6485e-14, -5187.22, -18.9668], Tmin=(1000, 'K'), Tmax=(2000, 'K'))],
+                        Tmin=(298, 'K'), Tmax=(2000, 'K'), E0=(-39.1285, 'kJ/mol'),
+                        comment="""Thermo library: surfaceThermo""")
+                    )
+
+        rxn1s = Reaction(reactants=[sH2, sX, sX],
+                        products=[sHX, sHX],
+                        kinetics=SurfaceArrhenius(A=(9.05e18, 'cm^5/(mol^2*s)'),
+                                           n=0.5,
+                                           Ea=(5.0, 'kJ/mol'),
+                                           T0=(1.0, 'K')))
+        self.rxn1s = rxn1s
+
+        rxn1m = Reaction(reactants=[mH2, mX, mX],
+                        products=[mHX, mHX])
+        self.rxn1m = rxn1m
+        
+        self.rxn2sSC = Reaction(
+                        reactants=[sCH3, sX],
+                        products=[sCH3X],
+                        kinetics=StickingCoefficient(A=0.1, n=0, Ea=(0, 'kcal/mol'),
+                                                     T0=(1, 'K'),
+                                                     Tmin=(200, 'K'), Tmax=(3000, 'K'),
+                                                     comment="""Exact match found for rate rule (Adsorbate;VacantSite)"""
+                                                     )
+                        )
+        self.rxn2sSA = Reaction(
+                        reactants=[sCH3, sX],
+                        products=[sCH3X],
+                        kinetics=SurfaceArrhenius(A=(2.7e10, 'cm^3/(mol*s)'),
+                                           n=0.5,
+                                           Ea=(5.0, 'kJ/mol'),
+                                           T0=(1.0, 'K'),
+                                           comment="""Approximate rate""")
+                        )
+
+    def testIsSurfaceReactionSpecies(self):
+        "Test isSurfaceReaction for reaction based on Species "
+        self.assertTrue(self.rxn1s.isSurfaceReaction())
+
+    def testIsSurfaceReactionMolecules(self):
+        "Test isSurfaceReaction for reaction based on Molecules "
+        self.assertTrue(self.rxn1m.isSurfaceReaction())
+
+    def testMethylAdsorptionSurfaceArrhenius(self):
+        "Test the CH3 adsorption rate given by SurfaceArrhenius"
+        T = 800
+        surfaceSiteDensity = Quantity(2.72e-9, 'mol/cm^2').value_si
+        calculated = self.rxn2sSA.getSurfaceRateCoefficient(T, surfaceSiteDensity)
+        target = 1e6  # mol/m2
+        self.assertAlmostEqual(numpy.log10(calculated),
+                               numpy.log10(target),
+                               places=0)
+
+    def testMethylAdsorptionStickingCoefficient(self):
+        "Test the CH3 adsorption rate given by StickingCoefficient"
+
+        # First, check the molecular weight is in units we expect
+        self.assertAlmostEqual(self.rxn2sSC.reactants[0].getMolecularWeight().value_si / constants.amu / 1000,
+                               15.0345e-3)  # kg/mol
+
+        T = 800
+        surfaceSiteDensity = Quantity(2.72e-9, 'mol/cm^2').value_si
+        calculated = self.rxn2sSC.getSurfaceRateCoefficient(T, surfaceSiteDensity)
+        target = 1e6  # mol/m2
+        self.assertAlmostEqual(numpy.log10(calculated),
+                               numpy.log10(target),
+                               places=0)
+
 class TestReaction(unittest.TestCase):
     """
     Contains unit tests of the Reaction class.
     """
-    
     def setUp(self):
         """
         A method that is called prior to each unit test in this class.

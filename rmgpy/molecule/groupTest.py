@@ -349,18 +349,21 @@ class TestGroupAtom(unittest.TestCase):
         Tests the countBonds function
         """
         adjlist = """
-1 *2 C u0     {2,[D,T]} {3,S}
-2 *3 C u0     {1,[D,T]} {4,B}
-3    C ux     {1,S} {5,D}
-4    C u[0,1] {2,B}
-5    O u0     {3,D}
+1 *2 C     u0     {2,[D,T]} {3,S}
+2 *3 C     u0     {1,[D,T]} {4,B}
+3    C     ux     {1,S} {5,D}
+4    C     u[0,1] {2,B}
+5    O     u0     {3,D}
+6    C     u0     {7,Q}
+7    C     u0     {6,Q}
 """
         test = Group().fromAdjacencyList(adjlist)
-        #returns a list of [single, allDouble, rDouble, oDouble, sDouble, triple, benzene]
-        self.assertListEqual([1,0,0,0,0,0,0], test.atoms[0].countBonds())
-        self.assertListEqual([1,1,1,0,0,1,0], test.atoms[0].countBonds(wildcards = True))
-        self.assertListEqual([0,0,0,0,0,0,1], test.atoms[3].countBonds())
-        self.assertListEqual([1,1,0,1,0,0,0], test.atoms[2].countBonds())
+        #returns a list of [single, allDouble, rDouble, oDouble, sDouble, triple, quadruple, benzene]
+        self.assertListEqual([1,0,0,0,0,0,0,0], test.atoms[0].countBonds())
+        self.assertListEqual([1,1,1,0,0,1,0,0], test.atoms[0].countBonds(wildcards = True))
+        self.assertListEqual([0,0,0,0,0,0,0,1], test.atoms[3].countBonds())
+        self.assertListEqual([1,1,0,1,0,0,0,0], test.atoms[2].countBonds())
+        self.assertListEqual([0,0,0,0,0,0,1,0], test.atoms[5].countBonds())
 
     def testHasWildcards(self):
         """
@@ -642,6 +645,30 @@ class TestGroup(unittest.TestCase):
         self.assertFalse(self.group.containsLabeledAtom('*5'))
         self.assertFalse(self.group.containsLabeledAtom('*6'))
         
+    def testContainsSurfaceSite(self):
+        """
+        Test the Group.containsSurfaceSite() method.
+        """
+        self.assertFalse(self.group.containsSurfaceSite())
+        surfaceGroup = Group().fromAdjacencyList("""
+1 *1 X u0 {2,[S,D]}
+2 *2 R u0 {1,[S,D]}
+""")
+        self.assertTrue(surfaceGroup.containsSurfaceSite())
+
+    def testIsSurfaceSite(self):
+        """
+        Test the Group.isSurfaceSite() method.
+        """
+        self.assertFalse(self.group.isSurfaceSite())
+        surfaceGroup = Group().fromAdjacencyList("""
+1 *1 X u0 {2,[S,D]}
+2 *2 R u0 {1,[S,D]}
+""")
+        self.assertFalse(surfaceGroup.isSurfaceSite())
+        surfaceSite = Group().fromAdjacencyList("1 *1 X u0")
+        self.assertTrue(surfaceSite.isSurfaceSite())
+
     def testGetLabeledAtom(self):
         """
         Test the Group.getLabeledAtom() method.

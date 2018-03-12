@@ -320,7 +320,7 @@ def toOBMol(mol, returnMapping=False):
         a.SetAtomicNum(atom.number)
         a.SetFormalCharge(atom.charge)
         obAtomIds[atom] = a.GetId()
-    orders = {1: 1, 2: 2, 3: 3, 1.5: 5}
+    orders = {1: 1, 2: 2, 3: 3, 4: 4, 1.5: 5}
     for atom1 in mol.vertices:
         for atom2, bond in atom1.edges.iteritems():
             index1 = atoms.index(atom1)
@@ -380,7 +380,10 @@ def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
     rdAtomIndices = {} # dictionary of RDKit atom indices
     rdkitmol = Chem.rdchem.EditableMol(Chem.rdchem.Mol())
     for index, atom in enumerate(mol.vertices):
-        rdAtom = Chem.rdchem.Atom(atom.element.symbol)
+        if atom.element.symbol == 'X':
+            rdAtom = Chem.rdchem.Atom('Ni')
+        else:
+            rdAtom = Chem.rdchem.Atom(atom.element.symbol)
         rdAtom.SetNumRadicalElectrons(atom.radicalElectrons)
         if atom.element.symbol == 'C' and atom.lonePairs == 1 and mol.multiplicity == 1: rdAtom.SetNumRadicalElectrons(2)
         rdkitmol.AddAtom(rdAtom)
@@ -390,7 +393,7 @@ def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
             rdAtomIndices[atom] = index
     
     rdBonds = Chem.rdchem.BondType
-    orders = {'S': rdBonds.SINGLE, 'D': rdBonds.DOUBLE, 'T': rdBonds.TRIPLE, 'B': rdBonds.AROMATIC}
+    orders = {'S': rdBonds.SINGLE, 'D': rdBonds.DOUBLE, 'T': rdBonds.TRIPLE, 'B': rdBonds.AROMATIC, 'Q': rdBonds.QUADRUPLE}
     # Add the bonds
     for atom1 in mol.vertices:
         for atom2, bond in atom1.edges.iteritems():

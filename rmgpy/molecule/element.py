@@ -75,12 +75,15 @@ class Element:
         self.mass = mass
         self.isotope = isotope
         self.chemkinName = chemkinName or self.name
-        try:
-            self.covRadius = _rdkit_periodic_table.GetRcovalent(symbol)
-        except RuntimeError:
-            import logging
-            logging.error("RDkit doesn't know element {0} so covalent radius unknown".format(symbol))
+        if symbol == 'X':
             self.covRadius = 0
+        else:
+            try:
+                self.covRadius = _rdkit_periodic_table.GetRcovalent(symbol)
+            except RuntimeError:
+                import logging
+                logging.error("RDkit doesn't know element {0} so covalent radius unknown".format(symbol))
+                self.covRadius = 0
     
     def __str__(self):
         """
@@ -113,9 +116,9 @@ class PeriodicSystem(object):
     `lone_pairs`: the number of lone pairs an element has
     """
 
-    valences           = {'H': 1, 'He': 0, 'C': 4, 'N': 3, 'O': 2, 'Ne': 0, 'Si': 4, 'S': 2, 'Cl': 1, 'Ar': 0}
-    valence_electrons  = {'H': 1, 'He': 2, 'C': 4, 'N': 5, 'O': 6, 'Ne': 8, 'Si': 4, 'S': 6, 'Cl': 7, 'Ar': 8}
-    lone_pairs         = {'H': 0, 'He': 1, 'C': 0, 'N': 1, 'O': 2, 'Ne': 4, 'Si': 0, 'S': 2, 'Cl': 3, 'Ar': 4}
+    valences           = {'H': 1, 'He': 0, 'C': 4, 'N': 3, 'O': 2, 'Ne': 0, 'Si': 4, 'S': 2, 'Cl': 1, 'Ar': 0, 'X': 1} #todo: check if X should be 4
+    valence_electrons  = {'H': 1, 'He': 2, 'C': 4, 'N': 5, 'O': 6, 'Ne': 8, 'Si': 4, 'S': 6, 'Cl': 7, 'Ar': 8, 'X': 1} #todo: check if X should be 4
+    lone_pairs         = {'H': 0, 'He': 1, 'C': 0, 'N': 1, 'O': 2, 'Ne': 4, 'Si': 0, 'S': 2, 'Cl': 3, 'Ar': 4, 'X': 0}
     
 ################################################################################
 
@@ -155,6 +158,8 @@ def getElement(value, isotope=-1):
 # The elements are sorted by increasing atomic number and grouped by period
 # Recommended IUPAC nomenclature is used throughout (including 'aluminium' and 
 # 'caesium')
+
+X = Element(0, 'X', 'surface_site' , 0.0)
 
 # Period 1
 #: Hydrogen
@@ -289,6 +294,7 @@ Cn = Element(112, 'Cn', 'copernicum'    , 0.285)
 
 # A list of the elements, sorted by increasing atomic number
 elementList = [
+    X,
     H, D, T, He,
     Li, Be, B, C, C13, N, O, O18, F, Ne,
     Na, Mg, Al, Si, P, S, Cl, Ar,

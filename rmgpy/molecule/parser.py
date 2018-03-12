@@ -416,6 +416,7 @@ def fromRDKitMol(mol, rdkitmol):
                 if rdbondtype.name == 'SINGLE': order = 1
                 elif rdbondtype.name == 'DOUBLE': order = 2
                 elif rdbondtype.name == 'TRIPLE': order = 3
+                elif rdbondtype.name == 'QUADRUPLE': order = 4
                 elif rdbondtype.name == 'AROMATIC': order = 1.5
     
                 bond = Bond(mol.vertices[i], mol.vertices[j], order)
@@ -467,7 +468,7 @@ def fromOBMol(mol, obmol):
     for obbond in openbabel.OBMolBondIter(obmol):
         # Process bond type
         oborder = obbond.GetBondOrder()
-        if oborder not in [1,2,3] and obbond.IsAromatic() : 
+        if oborder not in [1,2,3,4] and obbond.IsAromatic() : 
             oborder = 1.5
 
         bond = Bond(mol.vertices[obbond.GetBeginAtomIdx() - 1], mol.vertices[obbond.GetEndAtomIdx() - 1], oborder)#python array indices start at 0

@@ -48,6 +48,7 @@ from rmgpy.thermo import NASAPolynomial, NASA, ThermoData, Wilhoit
 from rmgpy.molecule import Molecule, Bond, Group
 import rmgpy.molecule
 from rmgpy.species import Species
+import rmgpy.quantity
 
 #: This dictionary is used to add multiplicity to species label
 _multiplicity_labels = {1:'S',2:'D',3:'T',4:'Q',5:'V',}
@@ -859,6 +860,7 @@ class ThermoDatabase(object):
             'other',
             'longDistanceInteraction_cyclic',
             'longDistanceInteraction_noncyclic',
+            'adsorption',
         ]
         self.groups = {
             category: ThermoGroups(label=category).load(os.path.join(path, category + '.py'), self.local_context, self.global_context)
@@ -1117,6 +1119,14 @@ class ThermoDatabase(object):
             logging.debug("Found thermo for {0} in {1}".format(species.label,thermo0[0].comment.lower()))
             assert len(thermo0) == 3, "thermo0 should be a tuple at this point: (thermoData, library, entry)"
             thermo0 = thermo0[0]
+
+            if species.containsSurfaceSite():
+                thermo0 = self.correctBindingEnergy(thermo0, species)
+            return thermo0
+        
+        if species.containsSurfaceSite():
+            thermo0 = self.getThermoDataForSurfaceSpecies(species, quantumMechanics=quantumMechanics)
+            thermo0 = self.correctBindingEnergy(thermo0, species)
             return thermo0
 
         try:
@@ -1215,7 +1225,162 @@ class ThermoDatabase(object):
 
         # Return the resulting thermo parameters
         return thermo0
-    
+
+
+    def setDeltaAtomicAdsorptionEnergies(self, bindingEnergies):
+        """
+        Sets and stores the change in atomic binding energy between
+        the desired and the Ni(111) default.
+
+        :param bindingEnergies: the required binding energies
+        :return: None (stores result in self.deltaAtomicAdsorptionEnergy)
+        """
+        # this depends on the two metal surfaces, the reference one
+        # used in the database of adsorption energies, and the desired surface
+        # These are the reference ones, Ni(111), from Blaylock's supplementary material
+        deltaAtomicAdosrptionEnergy = {
+            'C': rmgpy.quantity.Energy(-5.997, 'eV/molecule'),
+            'H': rmgpy.quantity.Energy(-2.778, 'eV/molecule'),
+            'O': rmgpy.quantity.Energy(-4.485, 'eV/molecule')
+        }
+        for element in 'CHO':
+            deltaAtomicAdosrptionEnergy[element].value_si =  bindingEnergies[element].value_si - deltaAtomicAdosrptionEnergy[element].value_si
+        self.deltaAtomicAdsorptionEnergy = deltaAtomicAdosrptionEnergy
+
+    def correctBindingEnergy(self, thermo, species):
+        """
+        Changes the provided thermo, by applying a linear scaling relation
+        to correct the adsorption energy.
+
+        :param thermo: starting thermo data
+        :param species: the species (which is an adsorbate)
+        :return: corrected thermo
+        """
+        molecule = species.molecule[0]
+        # only want/need to do one resonance structure
+        surfaceSites = []
+        for atom in molecule.atoms:
+            if atom.isSurfaceSite():
+                surfaceSites.append(atom)
+        normalizedBonds = {'C':0., 'O':0., 'N':0., 'H':0.}
+        maxBondOrder = {'C':4., 'O':2., 'N':3., 'H':1.}
+        for site in surfaceSites:
+            numbonds = len(site.bonds)
+            if numbonds == 0:
+                #vanDerWaals
+                pass
+            else:
+                assert len(site.bonds) == 1, "Each surface site can only be bonded to 1 atom"
+                bondedAtom = site.bonds.keys()[0]
+                bond = site.bonds[bondedAtom]
+                if bond.isSingle():
+                    bondOrder = 1.
+                elif bond.isDouble():
+                    bondOrder = 2.
+                elif bond.isTriple():
+                    bondOrder = 3.
+                elif bond.isQuadruple():
+                    bondOrder = 4.
+                else:
+                    raise NotImplementedError("Can't remove surface bond of type {}".format(bond.order))
+
+                normalizedBonds[bondedAtom.symbol] += bondOrder / maxBondOrder[bondedAtom.symbol]
+
+        if not isinstance(thermo, ThermoData):
+            thermo = thermo.toThermoData()
+
+        ## now edit the adsorptionThermo using LSR
+        for element in 'CHO':
+            changeInBindingEnergy = self.deltaAtomicAdsorptionEnergy[element].value_si * normalizedBonds[element]
+            thermo.H298.value_si += changeInBindingEnergy
+        thermo.comment += " Binding energy corrected by LSR."
+        return thermo
+
+
+
+    def getThermoDataForSurfaceSpecies(self, species, quantumMechanics=None):
+        """
+        Get the thermo data for an adsorbed species,
+        by desorbing it, finding the thermo of the gas-phase
+        species, then adding an adsorption correction that
+        is found from the groups/adsorption tree.
+        Does not apply linear scaling relationship.
+        
+        Returns a :class:`ThermoData` object, with no Cp0 or CpInf
+        """
+
+        assert not species.isSurfaceSite(), "Can't estimate thermo of vacant site. Should be in library (and should be 0)"
+
+        logging.debug(("Trying to generate thermo for surface species"
+                        " with these {} resonance isomer(s):").format(len(species.molecule)))
+        molecule = species.molecule[0]
+        # only want/need to do one resonance structure,
+        # because will need to regenerate others in gas phase
+        dummyMolecule = molecule.copy(deep=True)
+        sitesToRemove = []
+        for atom in dummyMolecule.atoms:
+            if atom.isSurfaceSite():
+                sitesToRemove.append(atom)
+        for site in sitesToRemove:
+            numbonds = len(site.bonds)
+            if numbonds == 0:
+                #vanDerWaals
+                pass
+            else:
+                assert len(site.bonds) == 1, "Each surface site can only be bonded to 1 atom"
+                bondedAtom = site.bonds.keys()[0]
+                bond = site.bonds[bondedAtom]
+                dummyMolecule.removeBond(bond)
+                if bond.isSingle():
+                    bondedAtom.incrementRadical()
+                elif bond.isDouble():
+                    bondedAtom.incrementRadical()
+                    bondedAtom.incrementRadical()
+                elif bond.isTriple():
+                    bondedAtom.incrementRadical()
+                    bondedAtom.incrementLonePairs()
+                else:
+                    raise NotImplementedError("Can't remove surface bond of type {}".format(bond.order))
+
+            dummyMolecule.removeAtom(site)
+        dummyMolecule.update()
+
+        logging.debug("Before removing from surface:\n" + molecule.toAdjacencyList())
+        logging.debug("After removing from surface:\n" + dummyMolecule.toAdjacencyList())
+
+        dummySpecies = Species()
+        dummySpecies.molecule.append(dummyMolecule)
+        dummySpecies.generateResonanceIsomers()
+        thermo = self.getThermoData(dummySpecies, quantumMechanics=quantumMechanics)
+
+        thermo.comment = "Gas phase thermo from {0}. Adsorption correction:".format(thermo.comment)
+        logging.debug("Using thermo from gas phase for species {}\n".format(species.label) + repr(thermo))
+
+        if not isinstance(thermo, ThermoData):
+            thermo = thermo.toThermoData()
+
+        ## Get the adsorption energy
+        # Create the ThermoData object
+        adsorptionThermo = ThermoData(
+            Tdata = ([300,400,500,600,800,1000,1500],"K"),
+            Cpdata = ([0.0,0.0,0.0,0.0,0.0,0.0,0.0],"J/(mol*K)"),
+            H298 = (0.0,"kJ/mol"),
+            S298 = (0.0,"J/(mol*K)"),
+        )
+        try:
+            self.__addGroupThermoData(adsorptionThermo, self.groups['adsorption'], molecule, {})
+        except KeyError:
+            logging.error("Couldn't find in adsorption thermo database:")
+            logging.error(molecule)
+            logging.error(molecule.toAdjacencyList())
+            raise
+
+        # (groupAdditivity=True means it appends the comments)
+        addThermoData(thermo, adsorptionThermo, groupAdditivity=True)
+
+        thermo.Cp0 = None
+        thermo.CpInf = None
+        return thermo
         
     def getThermoDataFromLibraries(self, species, trainingSet=None):
         """
@@ -1890,7 +2055,7 @@ class ThermoDatabase(object):
         """
         node0 = database.descendTree(molecule, atom, None)
         if node0 is None:
-            raise KeyError('Node not found in database.')
+            raise KeyError('Node not found in thermo database for atom {0} in molecule {1}.'.format(atom, molecule))
 
         # It's possible (and allowed) that items in the tree may not be in the
         # library, in which case we need to fall up the tree until we find an

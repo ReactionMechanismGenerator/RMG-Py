@@ -37,7 +37,8 @@ import numpy
 import rmgpy.constants as constants
 from rmgpy.kinetics import Arrhenius, ArrheniusEP, ThirdBody, Lindemann, Troe, \
                            PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, \
-                           Chebyshev, KineticsData
+                           Chebyshev, KineticsData, StickingCoefficient, \
+                           StickingCoefficientBEP, SurfaceArrhenius, SurfaceArrheniusBEP
 from rmgpy.molecule import Molecule, Group
 from rmgpy.species import Species
 from rmgpy.reaction import Reaction
@@ -73,6 +74,10 @@ class KineticsDatabase(object):
             'ThirdBody': ThirdBody,
             'Lindemann': Lindemann,
             'Troe': Troe,
+            'StickingCoefficient': StickingCoefficient,
+            'StickingCoefficientBEP': StickingCoefficientBEP,
+            'SurfaceArrhenius': SurfaceArrhenius,
+            'SurfaceArrheniusBEP': SurfaceArrheniusBEP,
             'R': constants.R,
         }
         self.global_context = {}
@@ -469,7 +474,12 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
         reaction_list = []
         for label, family in self.families.iteritems():
             if only_families is None or label in only_families:
-                reaction_list.extend(family.generateReactions(molecules, products=products, prod_resonance=prod_resonance))
+                try:
+                    reaction_list.extend(family.generateReactions(molecules, products=products, prod_resonance=prod_resonance))
+                except:
+                    print("Problem family: {}".format(label))
+                    print("Problem reactants: {}".format(molecules))
+                    raise
 
         for reactant in molecules:
             reactant.clearLabeledAtoms()

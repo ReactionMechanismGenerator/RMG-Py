@@ -35,6 +35,7 @@ particularly the :class:`Quantity` class for representing physical quantities.
 
 import numpy
 import quantities as pq
+import re
 
 import rmgpy.constants as constants
 from rmgpy.exceptions import QuantityError
@@ -115,6 +116,35 @@ class Units(object):
         of `units` from the SI equivalent units.
         """
         return 1.0 / self.getConversionFactorToSI()
+
+    # match mm cm dm km and m, but not if it's preceded
+    # or followed by another alphabetic character
+    metres = re.compile('(?<![a-z])[mcdk]?m(?![a-z])')
+    def getConversionFactorFromSItoCM(self):
+        """
+        Return the conversion factor for converting into these units
+        only with all lengths in cm, instead of m, mm, dm, or km. 
+        This is useful for outputting chemkin file kinetics.
+        Depending on the stoichiometry of the reaction the reaction rate
+        coefficient could be /s, cm^3/mol/s, cm^6/mol^2/s, and for 
+        heterogeneous reactions even more possibilities.
+        Only lengths are changed - molecules vs moles, and seconds vs minutes,
+        are not changed. 
+        TODO: this will lead to chemkin errors if your rate cofficients
+        are specified in minutes, for example (it will not convent the time
+        component to SI)
+        """
+        requiredUnits = Units.metres.sub('cm', self.units)
+        try:
+            factor = Units.conversionFactors[requiredUnits]
+        except KeyError:
+            # Fall back to (slow!) quantities package for less common units
+            factor = float(pq.Quantity(1.0, requiredUnits).simplified)
+            # Cache the conversion factor so we don't ever need to use
+            # quantities to compute it again
+            Units.conversionFactors[requiredUnits] = factor
+        return 1.0 / factor
+
 
 ################################################################################
 
@@ -654,9 +684,12 @@ DipoleMoment = UnitType('C*m', extraDimensionality={
 
 "We have to allow 'energies' to be created in units of Kelvins, because Chemkin does so"
 Energy = Enthalpy = FreeEnergy = UnitType('J/mol',
-    commonUnits=['kJ/mol', 'cal/mol', 'kcal/mol'],
-    extraDimensionality={'K': constants.R },
-)
+    commonUnits=['kJ/mol', 'cal/mol', 'kcal/mol', 'eV/molecule'],
+    extraDimensionality={'K': constants.R,
+                         # the following hack also allows 'J' and 'kJ' etc. to be specified without /mol[ecule]
+                         # so is not advisable (and fails unit tests)
+                         # 'eV': constants.Na, # allow people to be lazy and neglect the "/molecule"
+})
 
 
 Entropy = HeatCapacity = UnitType('J/(mol*K)', commonUnits=['kJ/(mol*K)', 'cal/(mol*K)', 'kcal/(mol*K)'])
@@ -731,6 +764,51 @@ def RateCoefficient(*args, **kwargs):
         quantity.value_si *= factor
     except KeyError:
         raise QuantityError('Invalid units {0!r}. Common units are {1}'.format(quantity.units,RATECOEFFICIENT_COMMON_UNITS))
+
+    # Return the Quantity or ArrayQuantity object object
+    return quantity
+
+
+# SurfaceRateCoefficient is handled as a special case since it can take various
+# units depending on the reaction order
+SURFACERATECOEFFICIENT_CONVERSION_FACTORS = {
+    (1.0 / pq.s).dimensionality: 1.0,
+    (pq.m ** 3 / pq.s).dimensionality: 1.0,
+    (pq.m ** 6 / pq.s).dimensionality: 1.0,
+    (pq.m ** 9 / pq.s).dimensionality: 1.0,
+    (pq.m ** 3 / (pq.mol * pq.s)).dimensionality: 1.0,
+    (pq.m ** 6 / (pq.mol ** 2 * pq.s)).dimensionality: 1.0,
+    (pq.m ** 9 / (pq.mol ** 3 * pq.s)).dimensionality: 1.0,
+    (pq.m ** 2 / pq.s).dimensionality: 1.0,
+    (pq.m ** 5 / pq.s).dimensionality: 1.0,
+    (pq.m ** 2 / (pq.mol * pq.s)).dimensionality: 1.0,
+    (pq.m ** 5 / (pq.mol ** 2 * pq.s)).dimensionality: 1.0
+}
+SURFACERATECOEFFICIENT_COMMON_UNITS = [
+    's^-1',  # unimolecular
+    'm^3/(mol*s)', 'cm^3/(mol*s)', 'm^3/(molecule*s)', 'cm^3/(molecule*s)',  # single site adsorption
+    'm^2/(mol*s)', 'cm^2/(mol*s)', 'm^2/(molecule*s)', 'cm^2/(molecule*s)',  # bimolecular surface (Langmuir-Hinshelwood)
+    'm^5/(mol^2*s)', 'cm^5/(mol^2*s)', 'm^5/(molecule^2*s)', 'cm^5/(molecule^2*s)',  # dissociative adsorption
+    ]
+def SurfaceRateCoefficient(*args, **kwargs):
+    # Make a ScalarQuantity or ArrayQuantity object out of the given parameter
+    quantity = Quantity(*args, **kwargs)
+    if quantity is None:
+        return quantity
+
+    units = quantity.units
+
+    # If the units are in the common units, then we can do the conversion
+    # very quickly and avoid the slow calls to the quantities package
+    if units in SURFACERATECOEFFICIENT_COMMON_UNITS:
+        return quantity
+
+    dimensionality = pq.Quantity(1.0, quantity.units).simplified.dimensionality
+    try:
+        factor = SURFACERATECOEFFICIENT_CONVERSION_FACTORS[dimensionality]
+        quantity.value_si *= factor
+    except KeyError:
+        raise QuantityError('Invalid units {0!r}.'.format(quantity.units))
 
     # Return the Quantity or ArrayQuantity object object
     return quantity

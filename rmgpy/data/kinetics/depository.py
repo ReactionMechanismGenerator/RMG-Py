@@ -170,6 +170,7 @@ class KineticsDepository(Database):
             for product in products.split('+'):
                 product = product.strip()
                 if product not in speciesDict:
+                    print repr(speciesDict)
                     raise DatabaseError('Species {0} in kinetics depository {1} is missing from its dictionary.'.format(product, self.label))
                 # For some reason we need molecule objects in the depository rather than species objects
                 rxn.products.append(speciesDict[product])

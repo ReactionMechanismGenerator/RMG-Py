@@ -300,13 +300,15 @@ cdef class NASA(HeatCapacityModel):
 
     cpdef ThermoData toThermoData(self):
         """
-        Convert the Wilhoit model to a :class:`ThermoData` object.
+        Convert the NASAPolynomial model to a :class:`ThermoData` object.
+        
+        If Cp0 and CpInf are omitted or 0, they are None in the returned ThermoData.
         """
         from rmgpy.thermo.thermodata import ThermoData
         
         Tdata = [300,400,500,600,800,1000,1500]
         Cpdata = [self.getHeatCapacity(T) for T in Tdata]
-        
+
         return ThermoData(
             Tdata = (Tdata,"K"),
             Cpdata = (Cpdata,"J/(mol*K)"),
