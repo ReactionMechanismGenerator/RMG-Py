@@ -102,18 +102,6 @@ Function                                                    Description
 
 
 
-Exceptions
-==========
-
-======================================= ========================================
-Exception                               Description
-======================================= ========================================
-:exc:`NetworkError`                     Raised when an error occurs while working with a pressure-dependent reaction network
-:exc:`InvalidMicrocanonicalRateError`   Raised when the :math:`k(E)` is not consistent with the high pressure-limit kinetics or thermodynamics
-======================================= ========================================
-
-
-
 .. toctree::
     :hidden:
     

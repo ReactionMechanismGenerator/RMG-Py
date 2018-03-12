@@ -1,32 +1,32 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 """
 
@@ -344,6 +344,9 @@ def convertRingToSubMolecule(ring):
     """
     This function takes a ring structure (can either be monoring or polyring) to create a new 
     submolecule with newly deep copied atoms
+
+    Outputted submolecules may have incomplete valence and may cause errors with some Molecule.methods(), such
+    as updateAtomTypes() or update(). In the future we may consider using groups for the sub-molecules.
     """
     
     atomsMapping = {}
@@ -357,7 +360,7 @@ def convertRingToSubMolecule(ring):
             if bondedAtom in ring:
                 if not mol0.hasBond(atomsMapping[atom],atomsMapping[bondedAtom]):
                     mol0.addBond(Bond(atomsMapping[atom],atomsMapping[bondedAtom],order=bond.order))
-    
+
     mol0.updateMultiplicity()
     mol0.updateConnectivityValues()
     return mol0, atomsMapping
@@ -497,7 +500,7 @@ def bicyclicDecompositionForPolyring(polyring):
                     pass
                 else:
                     aromaticBond_inA.setOrderNum(1)
-        mergedRing.update()#
+        mergedRing.saturate_unfilled_valence(update = True)
         bicyclicsMergedFromRingPair.append(mergedRing)
 
     return bicyclicsMergedFromRingPair, ringOccurancesDict
@@ -509,10 +512,10 @@ def splitBicyclicIntoSingleRings(bicyclic_submol):
     """
     SSSR = bicyclic_submol.getDeterministicSmallestSetOfSmallestRings()
 
-    return [convertRingToSubMolecule(SSSR[0])[0], 
+    return [convertRingToSubMolecule(SSSR[0])[0],
                 convertRingToSubMolecule(SSSR[1])[0]]
 
-def saturateRingBonds(ring_submol):
+def saturate_ring_bonds(ring_submol):
     """
     Given a ring submolelcule (`Molecule`), makes a deep copy and converts non-single bonds 
     into single bonds, returns a new saturated submolecule (`Molecule`)
@@ -534,7 +537,8 @@ def saturateRingBonds(ring_submol):
                     if bond.isBenzene():
                         bond_order = 1.5
                     mol0.addBond(Bond(atomsMapping[atom],atomsMapping[bondedAtom],order=bond_order))
-    
+
+    mol0.saturate_unfilled_valence()
     mol0.updateAtomTypes()
     mol0.updateMultiplicity()
     mol0.updateConnectivityValues()
@@ -1583,7 +1587,7 @@ class ThermoDatabase(object):
         
         assert molecule.isRadical(), "Method only valid for radicals."
         saturatedStruct = molecule.copy(deep=True)
-        added = saturatedStruct.saturate()
+        added = saturatedStruct.saturate_radicals()
         saturatedStruct.props['saturated'] = True
         
         # Get thermo estimate for saturated form of structure
@@ -1858,8 +1862,8 @@ class ThermoDatabase(object):
                     aromaticBonds = findAromaticBondsFromSubMolecule(submol)
                     for aromaticBond in aromaticBonds:
                         aromaticBond.setOrderNum(1)
-                    
-                    submol.update()
+
+                    submol.saturate_unfilled_valence()
                     singleRingThermodata = self.__addRingCorrectionThermoDataFromTree(None, \
                                                 self.groups['ring'], submol, submol.atoms)[0]
                     
@@ -1878,7 +1882,7 @@ class ThermoDatabase(object):
         # saturate if the bicyclic has unsaturated bonds
         # otherwise return None
         bicyclic_submol = convertRingToSubMolecule(bicyclic)[0]
-        saturated_bicyclic_submol, alreadySaturated = saturateRingBonds(bicyclic_submol)
+        saturated_bicyclic_submol, alreadySaturated = saturate_ring_bonds(bicyclic_submol)
 
         if alreadySaturated:
             return None
@@ -1914,8 +1918,8 @@ class ThermoDatabase(object):
                 aromaticBonds = findAromaticBondsFromSubMolecule(submol)
                 for aromaticBond in aromaticBonds:
                     aromaticBond.setOrderNum(1)
-                
-                submol.update()
+
+                submol.saturate_unfilled_valence()
                 single_ring_thermoData = self.__addRingCorrectionThermoDataFromTree(None,
                                             self.groups['ring'], submol, submol.atoms)[0]
                 
@@ -1932,8 +1936,8 @@ class ThermoDatabase(object):
                 aromaticBonds = findAromaticBondsFromSubMolecule(submol)
                 for aromaticBond in aromaticBonds:
                     aromaticBond.setOrderNum(1)
-                
-                submol.update()
+
+                submol.saturate_unfilled_valence()
                 single_ring_thermoData = self.__addRingCorrectionThermoDataFromTree(None,
                                             self.groups['ring'], submol, submol.atoms)[0]
                 
@@ -2110,15 +2114,25 @@ class ThermoDatabase(object):
         while node.data is None and node is not None:
             node = node.parent
         if node is None:
-            raise DatabaseError('Unable to determine thermo parameters for {0}: no data for node {1} or any of its ancestors.'.format(molecule, node0) )
+            raise DatabaseError('Unable to determine thermo parameters for {0}: no data for node {1} or any of'
+                                ' its ancestors.'.format(molecule, node0))
 
         data = node.data; comment = node.label
-        while isinstance(data, basestring) and data is not None:
-            for entry in database.entries.values():
+        loop_count = 0
+        while isinstance(data, basestring):
+            loop_count += 1
+            if loop_count > 100:
+                raise DatabaseError(
+                    "Maximum iterations reached while following thermo group data pointers. A circular"
+                    " reference may exist. Last node was {0} pointing to group called {1} in"
+                    " database {2}".format(node.label, data, database.label))
+            for entry in database.entries.itervalues():
                 if entry.label == data:
                     data = entry.data
                     comment = entry.label
                     break
+            else: raise DatabaseError("Node {0} points to a non-existant group called {1} in database: {2}".format(
+                node.label, data, database.label))
         data.comment = '{0}({1})'.format(database.label, comment)
 
         # This code prints the hierarchy of the found node; useful for debugging

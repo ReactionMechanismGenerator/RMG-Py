@@ -1,30 +1,32 @@
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 # global imports
 
@@ -53,6 +55,7 @@ import rmgpy.molecule.resonance as resonance
 _known_smiles_molecules = {
                  'N2': 'N#N',
                  'CH4': 'C',
+                 'CH2O': 'C=O',
                  'H2O': 'O',
                  'C2H6': 'CC',
                  'H2': '[H][H]',
@@ -66,6 +69,12 @@ _known_smiles_molecules = {
                  'C2H4': 'C=C',
                  'O2': 'O=O',
                  'C': '[C]',  # for this to be in the "molecule" list it must be singlet with 2 lone pairs
+                 'SO2': 'O=S=O',
+                 'SO3': 'O=S(=O)=O',
+                 'H2SO4': 'OS(=O)(=O)O',
+                 'N2O': 'N#[N+][O-]',
+                 'NH3': 'N',
+                 'O3': '[O-][O+]=O',
              }
 
 _known_smiles_radicals = {
@@ -81,6 +90,11 @@ _known_smiles_radicals = {
                  #'CO': '[C]=O', could also be [C][O]
                  #'C2H4': could  be [CH3][CH] or [CH2][CH2]
                  'O2': '[O][O]',
+                 'S2': '[S][S]',
+                 'SO': '[S][O]',
+                 'HSO3': 'OS(=O)[O]',
+                 'NO': '[N]=O',
+                 'NO2': 'N(=O)[O]',
              }
 
 def toInChI(mol):

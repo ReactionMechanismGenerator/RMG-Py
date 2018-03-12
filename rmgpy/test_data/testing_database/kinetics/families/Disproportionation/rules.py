@@ -3307,7 +3307,7 @@ Added by Beat Buesser, value for reaction: CH2NH2 + CH3 = H2CNH + CH4 (B&D #50e2
 
 entry(
     index = 654,
-    label = "H_rad;Cds/H2_d_N5ddrad/O",
+    label = "H_rad;Cds/H2_d_N5dcrad/O",
     kinetics = ArrheniusEP(
         A = (4.8e+08, 'cm^3/(mol*s)'),
         n = 1.5,
@@ -3318,15 +3318,17 @@ entry(
     ),
     rank = 1,
     shortDesc = u"""Added by Beat Buesser""",
-    longDesc = 
+    longDesc =
 u"""
-Added by Beat Buesser, value for reaction: CH2NO + H = HCNO + H2 (B&D #57c2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
+Added by Beat Buesser, value for reaction: CH2NO + H = HCNO + H2
+The reacting structures are CH2=[N.+][O-] + R = [CH]#[N+][O-] + RH
+(D&B #57c2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
     index = 655,
-    label = "O_pri_rad;Cds/H2_d_N5ddrad/O",
+    label = "O_pri_rad;Cds/H2_d_N5dcrad/O",
     kinetics = ArrheniusEP(
         A = (2.4e+06, 'cm^3/(mol*s)'),
         n = 2,
@@ -3337,15 +3339,16 @@ entry(
     ),
     rank = 1,
     shortDesc = u"""Added by Beat Buesser""",
-    longDesc = 
+    longDesc =
 u"""
-Added by Beat Buesser, value for reaction: CH2NO + OH = HCNO + H2O (B&D #57e2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
+Added by Beat Buesser, value for reaction: CH2NO + OH = HCNO + H2O
+(D&B #57e2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
     index = 656,
-    label = "C_methyl;Cds/H2_d_N5ddrad/O",
+    label = "C_methyl;Cds/H2_d_N5dcrad/O",
     kinetics = ArrheniusEP(
         A = (1.6e+06, 'cm^3/(mol*s)'),
         n = 1.87,
@@ -3356,15 +3359,16 @@ entry(
     ),
     rank = 1,
     shortDesc = u"""Added by Beat Buesser""",
-    longDesc = 
+    longDesc =
 u"""
-Added by Beat Buesser, value for reaction: CH2NO + CH3 = HCNO + CH4 (B&D #57f2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
+Added by Beat Buesser, value for reaction: CH2NO + CH3 = HCNO + CH4
+(D&B #57f2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
 entry(
     index = 657,
-    label = "NH2_rad;Cds/H2_d_N5ddrad/O",
+    label = "NH2_rad;Cds/H2_d_N5dcrad/O",
     kinetics = ArrheniusEP(
         A = (1.8e+06, 'cm^3/(mol*s)'),
         n = 1.94,
@@ -3375,9 +3379,10 @@ entry(
     ),
     rank = 1,
     shortDesc = u"""Added by Beat Buesser""",
-    longDesc = 
+    longDesc =
 u"""
-Added by Beat Buesser, value for reaction: CH2NO + NH2 = HCNO + NH3 (B&D #57g2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
+Added by Beat Buesser, value for reaction: CH2NO + NH2 = HCNO + NH3
+(D&B #57g2) in 'Gas-Phase Combustion Chemistry' (ISBN: 978-1-4612-7088-1), chapter 2, 'Combustion Chemistry of Nitrogen', Anthony M. Dean, Joseph W. Bozzelli",
 """,
 )
 
