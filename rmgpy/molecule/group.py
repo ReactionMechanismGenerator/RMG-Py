@@ -1803,7 +1803,7 @@ class Group(Graph):
 
         for atom1 in copyGroup.atoms:
             atomtypeFeatureList = atom1.atomType[0].getFeatures()
-            lonePairsRequired[atom1]=atomtypeFeatureList[7]
+            lonePairsRequired[atom1] = atomtypeFeatureList[8]
 
             #set to 0 required if empty list
             atomtypeFeatureList = [featureList if featureList else [0] for featureList in atomtypeFeatureList]
@@ -1812,9 +1812,10 @@ class Group(Graph):
             oDoubleRequired = atomtypeFeatureList[3]
             sDoubleRequired = atomtypeFeatureList[4]
             tripleRequired = atomtypeFeatureList[5]
+            quadrupleRequired = atomtypeFeatureList[6]
 
             #count up number of bonds
-            single = 0; rDouble = 0; oDouble = 0; sDouble = 0; triple = 0; benzene = 0
+            single = 0; rDouble = 0; oDouble = 0; sDouble = 0; triple = 0; quadruple = 0; benzene = 0
             for atom2, bond12 in atom1.bonds.iteritems():
                 # Count numbers of each higher-order bond type
                 if bond12.isSingle():
@@ -1828,6 +1829,7 @@ class Group(Graph):
                         # rDouble is for double bonds NOT to oxygen or Sulfur
                         rDouble += 1
                 elif bond12.isTriple(): triple += 1
+                elif bond12.isQuadruple(): quadruple += 1
                 elif bond12.isBenzene(): benzene += 1
 
 
@@ -1850,6 +1852,11 @@ class Group(Graph):
                 triple +=1
                 newAtom = GroupAtom(atomType=[atomTypes['C']], radicalElectrons=[0], charge=[], label='', lonePairs=None)
                 newBond = GroupBond(atom1, newAtom, order=[3])
+                implicitAtoms[newAtom] = newBond
+            while quadruple < quadrupleRequired[0]:
+                quadruple +=1
+                newAtom = GroupAtom(atomType=[atomTypes['C']], radicalElectrons=[0], charge=[], label='', lonePairs=None)
+                newBond = GroupBond(atom1, newAtom, order=[4])
                 implicitAtoms[newAtom] = newBond
 
         for atom, bond in implicitAtoms.iteritems():
@@ -2255,24 +2262,28 @@ class Group(Graph):
                 requiredFeatures1.reverse()
                 requiredFeatures2.reverse()
 
-                #required features are a now list of [benzene, triple, sDouble, oDouble, rDouble, allDouble, single]
+                #required features are a now list of [benzene, quadruple, triple, sDouble, oDouble, rDouble, allDouble, single]
                 for index, (feature1, feature2) in enumerate(zip(requiredFeatures1[:-1], requiredFeatures2[:-1])):
                     if feature1 > 0 or feature2 > 0:
                         if index == 0 and 1.5 in bond12.order: #benzene bonds
                             bond12.order = [1.5]
                             atom2.bonds[atom1].order = bond12.order
                             break
-                        elif index == 1 and 3 in bond12.order: #triple bond
+                        elif index == 1 and 4 in bond12.order: #quadruple bond
+                            bond12.order = [4]
+                            atom2.bonds[atom1].order = bond12.order
+                            break
+                        elif index == 2 and 3 in bond12.order: #triple bond
                             bond12.order = [3]
                             atom2.bonds[atom1].order = bond12.order
                             break
-                        elif index > 1 and 2 in bond12.order: #any case of double bonds
-                            if index == 2: #sDouble bonds
+                        elif index > 2 and 2 in bond12.order: #any case of double bonds
+                            if index == 3: #sDouble bonds
                                 if (feature1 > 0 and atom2.isSulfur()) or (feature2 > 0 and atom1.isSulfur()):
                                     bond12.order = [2]
                                     atom2.bonds[atom1].order = bond12.order
                                     break
-                            elif index == 3: #oDoubleBonds
+                            elif index == 4: #oDoubleBonds
                                 if (feature1 > 0 and atom2.isOxygen()) or (feature2 > 0 and atom1.isOxygen()):
                                     bond12.order = [2]
                                     atom2.bonds[atom1].order = bond12.order
