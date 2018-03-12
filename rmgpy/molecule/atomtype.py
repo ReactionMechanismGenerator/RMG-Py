@@ -77,7 +77,7 @@ class AtomType:
     'oDouble'           ''list''            The number of double bonds to oxygen
     'sDouble'           ''list''            The number of double bonds to sulfur
     'triple'            ''list''            The total number of triple bonds on the atom
-    'quadruple'         ''list''            THe total number of quadruple bonds on the atom
+    'quadruple'         ''list''            The total number of quadruple bonds on the atom
     'benzene'           ''list''            The total number of benzene bonds on the atom
     'lonePairs'         ''list''            The number of lone pairs on the atom
     =================== =================== ====================================
@@ -234,7 +234,7 @@ atomTypes['X'] = AtomType(label='X', generic=[], specific=['Xv', 'Xo'],
 
 #: Vacant surface site
 atomTypes['Xv'] = AtomType('Xv', generic=['X'], specific=[],
-                           single=[], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[0], quadruple=[0],
+                           single=[0], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[0], quadruple=[0],
                            benzene=[0], lonePairs=[0]
                            )
 #: Occupied surface site
@@ -681,10 +681,13 @@ def getAtomType(atom, bonds):
         oDouble = molFeatureList[3]
         sDouble = molFeatureList[4]
         triple = molFeatureList[5]
-        benzene = molFeatureList[6]
-        lonePairs = molFeatureList[7]
-        quadruple = molFeatureList[8]  # todo: check to see if this is kosher or not
+        quadruple = molFeatureList[6]
+        benzene = molFeatureList[7]
+        lonePairs = molFeatureList[8]
 
         raise AtomTypeError(
-            'Unable to determine atom type for atom {0}, which has {1:d} single bonds, {2:d} double bonds to C, {3:d} double bonds to O, {4:d} double bonds to S, {5:d} triple bonds, {6:d} benzene bonds, and {7:d} lone pairs.'.format(
+            ('Unable to determine atom type for atom {0}, which has {1:d} single bonds, '
+             '{2:d} double bonds to C, {3:d} double bonds to O, {4:d} double bonds to S, '
+             '{5:d} triple bonds, {6:d} quadruple bonds, {7:d} benzene bonds, '
+             'and {8:d} lone pairs.').format(
                 atom, single, rDouble, oDouble, sDouble, triple, quadruple, benzene, lonePairs))

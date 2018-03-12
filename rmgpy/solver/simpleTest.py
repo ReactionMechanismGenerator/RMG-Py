@@ -79,13 +79,11 @@ class SimpleReactorCheck(unittest.TestCase):
         edgeSpecies = []
         coreReactions = [rxn1]
         edgeReactions = []
-        surfaceSpecies = []
-        surfaceReactions = []
 
         T = 1000; P = 1.0e5
         rxnSystem = SimpleReactor(T, P, initialMoleFractions={C2H5: 0.1, CH3: 0.1, CH4: 0.4, C2H6: 0.4}, termination=[])
 
-        rxnSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions, surfaceSpecies, surfaceReactions)
+        rxnSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
 
         tlist = numpy.array([10**(i/10.0) for i in range(-130, -49)], numpy.float64)
 
@@ -147,11 +145,9 @@ class SimpleReactorCheck(unittest.TestCase):
             coreSpecies = [CH4,CH3,C2H6,C2H5,H2]
             edgeSpecies = []
             coreReactions = [rxn]
-            surfaceSpecies = []
-            surfaceReactions = []
             
             rxnSystem0 = SimpleReactor(T,P,initialMoleFractions={CH4:0.2,CH3:0.1,C2H6:0.35,C2H5:0.15, H2:0.2},termination=[])
-            rxnSystem0.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions, surfaceSpecies, surfaceReactions)
+            rxnSystem0.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
             dydt0 = rxnSystem0.residual(0.0, rxnSystem0.y, numpy.zeros(rxnSystem0.y.shape))[0]
             numCoreSpecies = len(coreSpecies)
             dN = .000001*sum(rxnSystem0.y)
@@ -187,12 +183,10 @@ class SimpleReactorCheck(unittest.TestCase):
         
         coreSpecies = [CH4,CH3,C2H6,C2H5,H2]
         edgeSpecies = []
-        surfaceSpecies = []
-        surfaceReactions = []
         coreReactions = rxnList
         
         rxnSystem0 = SimpleReactor(T,P,initialMoleFractions={CH4:0.2,CH3:0.1,C2H6:0.35,C2H5:0.15, H2:0.2},termination=[])
-        rxnSystem0.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions, surfaceSpecies, surfaceReactions)
+        rxnSystem0.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
         dfdt0 = rxnSystem0.residual(0.0, rxnSystem0.y, numpy.zeros(rxnSystem0.y.shape))[0]
         solver_dfdk = rxnSystem0.computeRateDerivative()
         #print 'Solver d(dy/dt)/dk'
@@ -214,7 +208,7 @@ class SimpleReactorCheck(unittest.TestCase):
             dk = rxnList[i].getRateCoefficient(T,P) - k0
 
             rxnSystem = SimpleReactor(T,P,initialMoleFractions={CH4:0.2,CH3:0.1,C2H6:0.35,C2H5:0.15, H2:0.2},termination=[])
-            rxnSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions, surfaceSpecies, surfaceReactions)
+            rxnSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
 
             dfdt = rxnSystem.residual(0.0, rxnSystem.y, numpy.zeros(rxnSystem.y.shape))[0]  
             dfdk[:,i]=(dfdt-dfdt0)/dk          

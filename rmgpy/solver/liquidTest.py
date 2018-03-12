@@ -118,14 +118,12 @@ class LiquidReactorCheck(unittest.TestCase):
         edgeSpecies = []
         coreReactions = [rxn1]
         edgeReactions = []
-        surfaceSpecies = []
-        surfaceReactions = []
 
         c0 = {self.C2H5: 0.1, self.CH3: 0.1, self.CH4: 0.4, self.C2H6: 0.4}
 
         rxnSystem = LiquidReactor(self.T, c0, termination=[])
 
-        rxnSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions, surfaceSpecies, surfaceReactions)
+        rxnSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
 
         tlist = numpy.array([10**(i/10.0) for i in xrange(-130, -49)], numpy.float64)
 
@@ -167,8 +165,6 @@ class LiquidReactorCheck(unittest.TestCase):
         numCoreSpecies = len(coreSpecies)
         c0 = {self.CH4: 0.2, self.CH3: 0.1, self.C2H6: 0.35, self.C2H5: 0.15, self.H2: 0.2}
         edgeReactions = []
-        surfaceSpecies = []
-        surfaceReactions = []
 
         rxnList = []
         rxnList.append(Reaction(
@@ -258,7 +254,7 @@ class LiquidReactorCheck(unittest.TestCase):
             coreReactions = [rxn]
 
             rxnSystem0 = LiquidReactor(self.T, c0, termination=[])
-            rxnSystem0.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions, surfaceSpecies, surfaceReactions)
+            rxnSystem0.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
             dydt0 = rxnSystem0.residual(0.0, rxnSystem0.y, numpy.zeros(rxnSystem0.y.shape))[0]
             
             dN = .000001*sum(rxnSystem0.y)
@@ -318,14 +314,12 @@ class LiquidReactorCheck(unittest.TestCase):
         edgeSpecies = []
         coreReactions = rxnList
         edgeReactions = []
-        surfaceSpecies = []
-        surfaceReactions = []
         numCoreSpecies = len(coreSpecies)
         
         c0 = {self.CH4: 0.2, self.CH3: 0.1, self.C2H6: 0.35, self.C2H5: 0.15, self.H2: 0.2}
 
         rxnSystem0 = LiquidReactor(self.T, c0, termination=[])
-        rxnSystem0.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions, surfaceSpecies, surfaceReactions)
+        rxnSystem0.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
         dfdt0 = rxnSystem0.residual(0.0, rxnSystem0.y, numpy.zeros(rxnSystem0.y.shape))[0]
         solver_dfdk = rxnSystem0.computeRateDerivative()
         # print 'Solver d(dy/dt)/dk'
@@ -436,8 +430,6 @@ class LiquidReactorCheck(unittest.TestCase):
         edgeSpecies = []
         coreReactions = [rxn1]
         edgeReactions = []
-        surfaceSpecies = []
-        surfaceReactions = []
         sensitivity = []
         terminationConversion = []
         sensitivityThreshold = 0.001
@@ -447,7 +439,7 @@ class LiquidReactorCheck(unittest.TestCase):
         # The test regarding the writing of constantSPCindices from input file is check with the previous test.
         rxnSystem.constSPCIndices = [0]
         
-        rxnSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions, surfaceSpecies, surfaceReactions)
+        rxnSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
  
         tlist = numpy.array([10**(i/10.0) for i in range(-130, -49)], numpy.float64)
  
