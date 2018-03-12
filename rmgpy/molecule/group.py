@@ -479,10 +479,10 @@ class GroupAtom(Vertex):
         Returns: list of the number of bonds currently on the :class:GroupAtom
 
         If the argument wildcards is turned off then any bonds with multiple
-        options for bond orders will not be counted
+        options for bond orders will not be counted.
         """
         #count up number of bonds
-        single = 0; rDouble = 0; oDouble = 0; sDouble = 0; triple = 0; benzene = 0
+        single = 0; rDouble = 0; oDouble = 0; sDouble = 0; triple = 0; quadruple = 0; benzene = 0
         for atom2, bond12 in self.bonds.iteritems():
             if not wildcards and len(bond12.order) > 1:
                 continue
@@ -498,11 +498,13 @@ class GroupAtom(Vertex):
                     # rDouble is for double bonds NOT to oxygen or Sulfur
                     rDouble += 1
             if bond12.isTriple(wildcards = True): triple += 1
+            if bond12.isQuadruple(wildcards=True): quadruple += 1
             if bond12.isBenzene(wildcards = True): benzene += 1
 
         allDouble = rDouble + oDouble + sDouble
 
-        return [single, allDouble, rDouble, oDouble, sDouble, triple, benzene]
+        # Warning: some parts of code assume this matches precisely the list returned by getFeatures()
+        return [single, allDouble, rDouble, oDouble, sDouble, triple, quadruple, benzene]
 
     def makeSampleAtom(self):
         """
@@ -1939,7 +1941,7 @@ class Group(Graph):
                     atom2.bonds[atom1].order = bond12.order
                     continue
 
-                atom1Bonds = atom1.countBonds()
+                atom1Bonds = atom1.countBonds() # countBonds list must match getFeatures list
                 atom2Bonds = atom2.countBonds()
                 requiredFeatures1 = [atom1Features[x][0] - atom1Bonds[x] if atom1Features[x] else 0 for x in range(len(atom1Bonds))]
                 requiredFeatures2 = [atom2Features[x][0] - atom2Bonds[x] if atom2Features[x] else 0 for x in range(len(atom2Bonds))]

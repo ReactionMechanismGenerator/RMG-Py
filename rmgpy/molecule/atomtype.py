@@ -645,6 +645,8 @@ def getFeatures(atom, bonds):
 
     # allDouble is for all double bonds, to anything
     allDouble = rDouble + oDouble + sDouble
+    # Warning: some parts of code assume this list matches the list returned by countBonds()
+    # possibly the two methods could be merged or one could call the other.
     features = [single, allDouble, rDouble, oDouble, sDouble, triple, quadruple, benzene, atom.lonePairs]
 
     return features
