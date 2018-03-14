@@ -2141,3 +2141,13 @@ class Group(Graph):
             mergedGroup.removeBond(bond)
 
         return mergedGroup
+
+    def resetRingMembership(self):
+        """
+        Resets ring membership information in the GroupAtom.props attribute.
+        """
+        cython.declare(ratom=GroupAtom)
+
+        for atom in self.atoms:
+            if 'inRing' in atom.props:
+                del atom.props['inRing']

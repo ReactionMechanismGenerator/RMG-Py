@@ -1300,6 +1300,8 @@ class KineticsFamily(Database):
         for struct in productStructures:
             if isinstance(struct, Molecule):
                 struct.update()
+            else:
+                struct.resetRingMembership()
 
         # Return the product structures
         return productStructures

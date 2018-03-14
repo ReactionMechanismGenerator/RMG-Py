@@ -190,3 +190,4 @@ cdef class Group(Graph):
 
     cpdef Group mergeGroups(self, Group other)
 
+    cpdef resetRingMembership(self)
