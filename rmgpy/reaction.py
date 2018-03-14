@@ -79,6 +79,7 @@ class Reaction:
     `duplicate`         ``bool``                    ``True`` if the reaction is known to be a duplicate, ``False`` if not
     `degeneracy`        :class:`double`             The reaction path degeneracy for the reaction
     `pairs`             ``list``                    Reactant-product pairings to use in converting reaction flux to species flux
+    `has_pdep_route`    ``bool``                    ``True`` if the reaction has an additional PDep pathway, ``False`` if not (by default), used for LibraryReactions
     `comment`           ``str``                     A description of the reaction source (optional)
     =================== =========================== ============================
     
@@ -96,6 +97,7 @@ class Reaction:
                  duplicate=False,
                  degeneracy=1,
                  pairs=None,
+                 has_pdep_route=False,
                  comment=''
                  ):
         self.index = index
@@ -109,6 +111,7 @@ class Reaction:
         self.transitionState = transitionState
         self.duplicate = duplicate
         self.pairs = pairs
+        self.has_pdep_route = has_pdep_route
         self.comment = comment
         self.k_effective_cache = {}
 
@@ -129,6 +132,7 @@ class Reaction:
         if self.duplicate: string += 'duplicate={0}, '.format(self.duplicate)
         if self.degeneracy != 1: string += 'degeneracy={0:.1f}, '.format(self.degeneracy)
         if self.pairs is not None: string += 'pairs={0}, '.format(self.pairs)
+        if self.has_pdep_route: string += 'has_pdep_route={0}'.format(self.has_pdep_route)
         if self.comment != '': string += 'comment={0!r}, '.format(self.comment)
         string = string[:-2] + ')'
         return string
@@ -168,11 +172,13 @@ class Reaction:
                            self.duplicate,
                            self.degeneracy,
                            self.pairs,
+                           self.has_pdep_route,
                            self.comment
                            ))
 
     def __getDegneneracy(self):
         return self._degeneracy
+
     def __setDegeneracy(self, new):
         # modify rate if kinetics exists
         if self.kinetics is not None:
@@ -1056,6 +1062,7 @@ class Reaction:
         other.transitionState = deepcopy(self.transitionState)
         other.duplicate = self.duplicate
         other.pairs = deepcopy(self.pairs)
+        other.has_pdep_route = self.has_pdep_route
         other.comment = deepcopy(self.comment)
         
         return other
