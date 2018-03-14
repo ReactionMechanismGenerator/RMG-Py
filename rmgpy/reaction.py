@@ -916,24 +916,28 @@ class Reaction:
             productOxygens    = [sum([1 for atom in  product.molecule[0].atoms if atom.isOxygen()])   for product  in products ]
             reactantNitrogens = [sum([1 for atom in reactant.molecule[0].atoms if atom.isNitrogen()]) for reactant in reactants]
             productNitrogens  = [sum([1 for atom in  product.molecule[0].atoms if atom.isNitrogen()]) for product  in products ]
+            reactantSilicons  = [sum([1 for atom in reactant.molecule[0].atoms if atom.isSilicon()])  for reactant in reactants]
+            productSilicons   = [sum([1 for atom in  product.molecule[0].atoms if atom.isSilicon()])  for product  in products ]
             reactantSulfurs   = [sum([1 for atom in reactant.molecule[0].atoms if atom.isSulfur()])   for reactant in reactants]
             productSulfurs    = [sum([1 for atom in  product.molecule[0].atoms if atom.isSulfur()])   for product  in products ]
+            reactantChlorines = [sum([1 for atom in reactant.molecule[0].atoms if atom.isChlorine()]) for reactant in reactants]
+            productChlorines  = [sum([1 for atom in  product.molecule[0].atoms if atom.isChlorine()]) for product  in products ]
             
             # Sort the reactants and products by C/O/N/S numbers
-            reactants = [(carbon, oxygen, nitrogen, sulfur, reactant) for carbon, oxygen, nitrogen, sulfur, reactant
-                         in zip(reactantCarbons,reactantOxygens,reactantNitrogens,reactantSulfurs,reactants)]
+            reactants = [(carbon, oxygen, nitrogen, silicon, sulfur, chlorine, reactant) for carbon, oxygen, nitrogen, silicon, sulfur, chlorine, reactant
+                         in zip(reactantCarbons,reactantOxygens,reactantNitrogens,reactantSilicons,reactantSulfurs,reactantChlorines,reactants)]
             reactants.sort()
-            products = [(carbon, oxygen, nitrogen, sulfur, product) for carbon, oxygen, nitrogen, sulfur, product
-                        in zip(productCarbons,productOxygens,productNitrogens,productSulfurs,products)]
+            products = [(carbon, oxygen, nitrogen, silicon, sulfur, chlorine, product) for carbon, oxygen, nitrogen, silicon, sulfur, chlorine, product
+                        in zip(productCarbons,productOxygens,productNitrogens,productSilicons,productSulfurs,productChlorines,products)]
             products.sort()
             
             while len(reactants) > 1 and len(products) > 1:
-                self.pairs.append((reactants[-1][4], products[-1][4]))
+                self.pairs.append((reactants[-1][6], products[-1][6]))
                 reactants.pop()
                 products.pop()
             for reactant in reactants:
                 for product in products:
-                    self.pairs.append((reactant[4], product[4]))
+                    self.pairs.append((reactant[6], product[6]))
     
     def draw(self, path):
         """

@@ -486,6 +486,9 @@ class TestGetAtomType(unittest.TestCase):
         #                                             10 H u0 p0 {4,S}
         #                                             11 H u0 p0 {5,S}''')
 
+        self.mol73 = Molecule().fromAdjacencyList('''1 H  u0 p0 c0 {2,S}
+                                                     2 Cl u0 p3 c0 {1,S}''')
+
     def atomType(self, mol, atomID):
         atom = mol.atoms[atomID]
         type = getAtomType(atom, mol.getBonds(atom))
@@ -604,7 +607,13 @@ class TestGetAtomType(unittest.TestCase):
         self.assertEqual(self.atomType(self.mol36, 0), 'S6td')
         self.assertEqual(self.atomType(self.mol37, 1), 'S6tt')
         self.assertEqual(self.atomType(self.mol70, 0), 'S6tdc')
-    
+
+    def testChlorineTypes(self):
+        """
+        Test that getAtomType() returns appropriate chlorine atom types.
+        """
+        self.assertEqual(self.atomType(self.mol73, 1), 'Cl1s')
+
     def testOtherTypes(self):
         """
         Test that getAtomType() returns appropriate types for other misc inerts.

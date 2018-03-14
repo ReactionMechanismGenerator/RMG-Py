@@ -1117,18 +1117,23 @@ class Group(Graph):
         isomorphism checks.
         """
         cython.declare(atom=GroupAtom, atomType=AtomType)
-        cython.declare(carbon=AtomType, nitrogen=AtomType, oxygen=AtomType, sulfur=AtomType)
-        cython.declare(isCarbon=cython.bint, isNitrogen=cython.bint, isOxygen=cython.bint, isSulfur=cython.bint, radical=cython.int)
-        
+        cython.declare(carbon=AtomType, nitrogen=AtomType, oxygen=AtomType, sulfur=AtomType, chlorine=AtomType, silicon=AtomType)
+        cython.declare(isCarbon=cython.bint, isNitrogen=cython.bint, isOxygen=cython.bint, isSulfur=cython.bint,
+                       isChlorine=cython.bint, isSilicon=cython.bint, radical=cython.int)
+
         carbon   = atomTypes['C']
         nitrogen = atomTypes['N']
         oxygen   = atomTypes['O']
         sulfur   = atomTypes['S']
+        chlorine = atomTypes['Cl']
+        silicon  = atomTypes['Si']
         
         self.carbonCount   = 0
         self.nitrogenCount = 0
         self.oxygenCount   = 0
         self.sulfurCount   = 0
+        self.chlorineCount = 0
+        self.siliconCount = 0
         self.radicalCount  = 0
         for atom in self.vertices:
             if len(atom.atomType) == 1:
@@ -1137,17 +1142,24 @@ class Group(Graph):
                 isNitrogen = atomType.equivalent(nitrogen)
                 isOxygen   = atomType.equivalent(oxygen)
                 isSulfur   = atomType.equivalent(sulfur)
-                if isCarbon and not isNitrogen and not isOxygen and not isSulfur:
-                    self.carbonCount += 1
-                elif isNitrogen and not isCarbon and not isOxygen and not isSulfur:
-                    self.nitrogenCount += 1
-                elif isOxygen and not isCarbon and not isNitrogen and not isSulfur:
-                    self.oxygenCount += 1
-                elif isSulfur and not isCarbon and not isNitrogen and not isOxygen:
-                    self.sulfurCount += 1
-            if len(atom.radicalElectrons) == 1:
-                radical = atom.radicalElectrons[0]
-                self.radicalCount += radical
+                isChlorine = atomType.equivalent(chlorine)
+                isSilicon  = atomType.equivalent(silicon)
+                sum_is_atom = isCarbon + isNitrogen + isOxygen + isSulfur + isChlorine + isSilicon
+                if sum_is_atom == 1:
+                    if isCarbon:
+                        self.carbonCount += 1
+                    elif isNitrogen:
+                        self.nitrogenCount += 1
+                    elif isOxygen:
+                        self.oxygenCount += 1
+                    elif isSulfur:
+                        self.sulfurCount += 1
+                    elif isChlorine:
+                        self.chlorineCount += 1
+                    elif isSilicon:
+                        self.siliconCount += 1
+            if len(atom.radicalElectrons) >= 1:
+                self.radicalCount += atom.radicalElectrons[0]
 
     def isIsomorphic(self, other, initialMap=None):
         """

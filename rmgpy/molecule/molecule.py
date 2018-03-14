@@ -307,19 +307,40 @@ class Atom(Vertex):
         """
         return self.element.number == 8
 
+    def isFluorine(self):
+        """
+        Return ``True`` if the atom represents a fluorine atom or ``False`` if
+        not.
+        """
+        return self.element.number == 9
+
     def isSilicon(self):
         """
-        Return ``True`` if the atom represents an silicon atom or ``False`` if
+        Return ``True`` if the atom represents a silicon atom or ``False`` if
         not.
         """
         return self.element.number == 14
 
     def isSulfur(self):
         """
-        Return ``True`` if the atom represents an sulfur atom or ``False`` if
+        Return ``True`` if the atom represents a sulfur atom or ``False`` if
         not.
         """
         return self.element.number == 16
+
+    def isChlorine(self):
+        """
+        Return ``True`` if the atom represents a chlorine atom or ``False`` if
+        not.
+        """
+        return self.element.number == 17
+
+    def isIodine(self):
+        """
+        Return ``True`` if the atom represents an iodine atom or ``False`` if
+        not.
+        """
+        return self.element.number == 53
 
     def incrementRadical(self):
         """
