@@ -50,11 +50,11 @@ def parse_arguments():
     parser.add_argument('input', metavar='INPUT', type=str, help='RMG input file')
     parser.add_argument('chemkin', metavar='CHEMKIN', type=str, help='Chemkin file')
     parser.add_argument('dictionary', metavar='DICTIONARY', type=str, help='RMG dictionary file')
-    parser.add_argument('species', metavar='SPECIES', type=str, nargs='?', default=None, help='Path to species images')
     parser.add_argument('chemkinOutput', metavar='CHEMKIN_OUTPUT', type=str, nargs='?', default=None,
                         help='Chemkin output file')
     parser.add_argument('--java', action='store_true', help='process RMG-Java model')
     parser.add_argument('--no-dlim', dest='dlim', action='store_false', help='Turn off diffusion-limited rates')
+    parser.add_argument('-s', '--species', metavar='DIR', type=str, help='Path to folder containing species images')
     parser.add_argument('-f', '--foreign', dest='checkDuplicates', action='store_true',
                         help='Not an RMG generated Chemkin file (will be checked for duplicates)')
     parser.add_argument('-n', '--maxnode', metavar='N', type=int, help='Maximum number of nodes to show in diagram')
