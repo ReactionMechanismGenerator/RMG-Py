@@ -1287,7 +1287,7 @@ class ForbiddenStructures(Database):
                     if molecule.isMappingValid(entry.item, initialMap) and molecule.isSubgraphIsomorphic(entry.item, initialMap):
                         return True
             else:
-                raise NotImplementedError
+                raise NotImplementedError('Checking is only implemented for forbidden Groups, Molecule, and Species.')
             
         # Until we have more thermodynamic data of molecular ions we will forbid them
         if molecule.getNetCharge() != 0:
