@@ -62,12 +62,11 @@ def initialize_isotope_model(rmg, isotopes):
     """
     Initialize the RMG object by using the parameter species list
     as initial species instead of the species from the RMG input file.
-
     """
     # Read input file
     rmg.loadInput(rmg.inputFile)
 
-    # Check input file 
+    # Check input file
     rmg.checkInput()
 
     # Load databases
@@ -163,13 +162,15 @@ def generate_isotope_reactions(isotopeless_reactions, isotopes):
     reaction.
 
     uses the reactSpecies method to find reactions with proper degeneracies and
-    then filters out those that don't match products. the proper reactions are 
+    then filters out those that don't match products. the proper reactions are
     given kinetics of the previous reaction modified for the degeneracy difference.
     """
     # make sure all isotopeless reactions have templates and are TemplateReaction objects
     for rxn in isotopeless_reactions:
-        assert isinstance(rxn,TemplateReaction)
-        assert rxn.template is not None, 'isotope reaction {0} does not have a template attribute. Full details :\n\n{1}'.format(str(rxn),repr(rxn))
+        if not isinstance(rxn,TemplateReaction):
+            raise TypeError('reactions sent to generate_isotope_reactions must be a TemplateReaction object')
+        if rxn.template is None:
+            raise AttributeError('isotope reaction {0} does not have a template attribute. The object is:\n\n{1}'.format(str(rxn),repr(rxn)))
 
     from rmgpy.reaction import _isomorphicSpeciesList
 
@@ -302,7 +303,7 @@ def add_isotope(i, N, mol, mols, element):
 
 def cluster(objList):
     """
-    Creates subcollections of isotopomers/reactions that 
+    Creates subcollections of isotopomers/reactions that
     only differ in their isotopic labeling.
 
     This method works for either species or reactions.
@@ -329,10 +330,10 @@ def cluster(objList):
 def remove_isotope(labeledObj, inplace = False):
     """
     Create a deep copy of the first molecule of the species object and replace
-    non-normal Element objects (of special isotopes) by the 
+    non-normal Element objects (of special isotopes) by the
     expected isotope.
 
-    If the boolean `inplace` is True, the method remove the isotopic atoms of 
+    If the boolean `inplace` is True, the method remove the isotopic atoms of
     the Species/Reaction
     inplace and returns a list of atom objects & element pairs for adding back
     to the oritinal object. This should significantly improve speed of this method.
@@ -351,7 +352,7 @@ def remove_isotope(labeledObj, inplace = False):
             return modifiedAtoms
         else:
             stripped = labeledObj.copy(deep=True)
-    
+
             for atom in stripped.molecule[0].atoms:
                 if atom.element.isotope != -1:
                     atom.element = getElement(atom.element.symbol)
@@ -413,7 +414,7 @@ def remove_isotope(labeledObj, inplace = False):
 def ensure_reaction_direction(isotopomerRxns):
     """
     given a list of reactions with varying isotope labels but identical structure,
-    obtained from the `cluster` method, this method remakes the kinetics so that 
+    obtained from the `cluster` method, this method remakes the kinetics so that
     they all face the same direction.
     """
 
@@ -446,7 +447,7 @@ def ensure_reaction_direction(isotopomerRxns):
 
 def redo_isotope(atomList):
     """
-    This takes a list of zipped atoms with their isotopes removed, from 
+    This takes a list of zipped atoms with their isotopes removed, from
     and elements.
     """
     for atom, element in atomList:
@@ -584,7 +585,8 @@ def get_labeled_reactants(reaction, family):
 
     Used for KIE method 'simple'
     """
-    assert reaction.family == family.name, "{0} != {1}".format(reaction.family, family.name)
+    if reaction.family != family.name:
+        raise AttributeError("The reaction must come from the family specified: {0} != {1}".format(reaction.family, family.name))
     # save the reactants and products to replace in the reaction object
     reactants = list(reaction.reactants)
     products = list(reaction.products)
@@ -657,7 +659,7 @@ def ensure_correct_symmetry(isotopmoper_list, isotopic_element = 'C'):
     returns True if the correct symmetry is detected. False if not detected
 
     This uses the observation that if there are less than 2^n isotopomors, where n is the number of
-    isotopic elements, then there should be an 2^n - m isotopomers where 
+    isotopic elements, then there should be an 2^n - m isotopomers where
     m is related to the amount of entropy increased by some isotopomers since they
     lost symmetry.
     """
@@ -677,12 +679,12 @@ def ensure_correct_symmetry(isotopmoper_list, isotopic_element = 'C'):
 
 def ensure_correct_degeneracies(reaction_isotopomer_list, print_data = False, r_tol_small_flux=1e-5, r_tol_deviation = 0.0001):
     """
-    given a list of isotopomers (reaction objects), returns True if the correct 
-    degeneracy values are detected. False if incorrect degeneracy values 
-    exist. 
+    given a list of isotopomers (reaction objects), returns True if the correct
+    degeneracy values are detected. False if incorrect degeneracy values
+    exist.
 
-    This method assuumes an equilibrium distribution of compounds and finds 
-    the fluxes created by the set of reactions (both forward and 
+    This method assuumes an equilibrium distribution of compounds and finds
+    the fluxes created by the set of reactions (both forward and
     reverse). It then checks that the fluxes of each compounds are proportional to their
     symmetry numbers (since lower symmetry numbers have higher entropy and should have a
     larger concentration.)
@@ -707,7 +709,7 @@ def ensure_correct_degeneracies(reaction_isotopomer_list, print_data = False, r_
             species - The desired species that you'd like to modify the flux value of
             flux - the amount to modify the flux of the species
             product_list - a list of current flux and symmetry values
-            product_structures - a list of unlabled structures un the reaction class 
+            product_structures - a list of unlabled structures un the reaction class
 
         modifies the product list by either adding on new row with the species' structure, flux
         symmetry ratio, etc. or adds the flux to the species' current row in `product_list`
@@ -718,7 +720,7 @@ def ensure_correct_degeneracies(reaction_isotopomer_list, print_data = False, r_
         for struc_index, product_structure in enumerate(product_structures):
             if compare_isotopomers(product_structure, species):
                 structure_index = struc_index
-                break 
+                break
         # store product flux and symmetry info
         for index in product_list.index:
             spec = product_list.at[index,'product']
@@ -729,7 +731,7 @@ def ensure_correct_degeneracies(reaction_isotopomer_list, print_data = False, r_
                 return product_list
         # add product to list
         symmetry_ratio = product_structures[structure_index].getSymmetryNumber() / float(species.getSymmetryNumber())
-        return product_list.append({'product': species, 
+        return product_list.append({'product': species,
                                             'flux': flux,
                                             'product_struc_index': structure_index,
                                             'symmetry_ratio': symmetry_ratio},
@@ -776,7 +778,7 @@ def ensure_correct_degeneracies(reaction_isotopomer_list, print_data = False, r_
         for rxn_reactant in rxn.reactants:
             product_list = store_flux_info(rxn_reactant,-product_flux, product_list, product_structures)
 
-        # now find characteristic flux of reverse direction. 
+        # now find characteristic flux of reverse direction.
         if isinstance(rxn.kinetics, MultiArrhenius):
             reverse_A_factor = 0
             for arr in rxn.kinetics.arrhenius:
@@ -819,7 +821,7 @@ def run(inputFile, outputDir, original=None, maximumIsotopicAtoms = 1,
 
     Firstly, generates the RMG model for the first input file. Takes the core species of that mechanism
     and generates all isotopomers of those core species. Next, generates all reactions between the
-    generated pool of isotopomers, and writes it to file. 
+    generated pool of isotopomers, and writes it to file.
     """
     logging.info("isotope: Starting the RMG isotope generation method 'run'")
     if not original:

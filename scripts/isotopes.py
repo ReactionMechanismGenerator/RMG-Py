@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 """
-This script accepts one input file (e.g. input.py) with the RMG-Py model to generate, 
-optional parameters `--original [folder of original rmg model] ` can allow using 
+This script accepts one input file (e.g. input.py) with the RMG-Py model to generate,
+optional parameters `--original [folder of original rmg model] ` can allow using
 a starting RMG model. A special path can be added  with the argument `--output` for the
 path to output the final files.
 """
@@ -29,7 +29,7 @@ def parseCommandLineArguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('input', help='RMG input file')
     parser.add_argument('--output', type=str, nargs=1, default='',help='Output folder')
-    parser.add_argument('--original', type=str, nargs=1, default='', 
+    parser.add_argument('--original', type=str, nargs=1, default='',
                         help='Location of the isotopeless mechanism')
     parser.add_argument('--maximumIsotopicAtoms', type=int, nargs=1, default=[1000000],
                         help='The maxuminum number of isotopes you allow in a specific molecule')
@@ -38,7 +38,7 @@ def parseCommandLineArguments():
     parser.add_argument('--kineticIsotopeEffect', type=str, nargs=1, default='',
                         help='Type of kinetic isotope effects to use, currently only "simple" supported.')
     args = parser.parse_args()
-    
+
     return args
 
 def main():
@@ -56,7 +56,7 @@ def main():
     if kie not in supported_kie_methods and kie is not None:
         raise InputError('The kie input, {0}, is not one of the currently supported methods, {1}'.format(kie,supported_kie_methods))
     initializeLog(logging.INFO, os.path.join(os.getcwd(), 'RMG.log'))
-    run(inputFile, outputdir, original=original, 
+    run(inputFile, outputdir, original=original,
         maximumIsotopicAtoms=maximumIsotopicAtoms,
         useOriginalReactions=useOriginalReactions,
         kineticIsotopeEffect = kie)

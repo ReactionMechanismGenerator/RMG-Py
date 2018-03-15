@@ -34,13 +34,19 @@ import numpy as np
 
 from rmgpy.species import Species
 from rmgpy.molecule import Molecule
-from rmgpy.tools.isotopes import *
+from rmgpy.tools.isotopes import correct_entropy,apply_kinetic_isotope_effect_simple,\
+                    generate_isotope_reactions,get_reduced_mass,get_labeled_reactants,\
+                    is_enriched,generate_isotopomers,cluster,remove_isotope,\
+                    redo_isotope,ensure_reaction_direction,compare_isotopomers
+
 from rmgpy import settings
 from rmgpy.reaction import Reaction
 from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.kinetics.arrhenius import Arrhenius
 
 from rmgpy.data.rmg import RMGDatabase
+
+database=None
 
 def setUpModule():
     """A function that is run ONCE before all unit tests in this module."""
@@ -177,14 +183,13 @@ class IsotopesTest(unittest.TestCase):
         rxn3 = Reaction(reactants=[eth,meth], products=[eth,meth])
         rxn4 = Reaction(reactants=[meth], products=[meth])
         rxn5 = Reaction(reactants=[ethi], products=[eth])
-        
-        
+
         sameClusterList = [rxn0,rxn1]
 
         clusters = cluster(sameClusterList)
         self.assertEquals(len(clusters), 1)
         self.assertEquals(len(clusters[0]), 2)
-        
+
         sameClusterList = [rxn2,rxn3]
 
         clusters = cluster(sameClusterList)
@@ -197,7 +202,6 @@ class IsotopesTest(unittest.TestCase):
         self.assertEquals(len(clusters), 4)
         self.assertEquals(len(clusters[0]), 1)
 
-        
     def testRemoveIsotopeForReactions(self):
         """
         Test that remove isotope algorithm works with Reaction objects.
@@ -231,7 +235,7 @@ class IsotopesTest(unittest.TestCase):
         unlabeledRxn = Reaction(reactants=[eth], products = [eth])
         labeledRxn = Reaction(reactants=[ethi], products = [ethi])
         stripped = remove_isotope(labeledRxn)
-        
+
         self.assertTrue(unlabeledRxn.isIsomorphic(stripped))
 
     def testRemoveIsotopeForSpecies(self):
@@ -316,7 +320,7 @@ class IsotopesTest(unittest.TestCase):
         """
 
         # get reactions
-        
+
         methyl = Species().fromSMILES('[CH3]')
         methyli = Species().fromAdjacencyList(
         """
@@ -335,7 +339,7 @@ multiplicity 2
 4 H u0 p0 c0 {1,S}
 5 H u0 p0 c0 {1,S}
         """)
-        
+
         dipropyl = Species().fromSMILES('[CH2]C[CH2]')
         dipropyli = Species().fromAdjacencyList("""
 multiplicity 3
@@ -349,7 +353,7 @@ multiplicity 3
 8 H u0 p0 c0 {4,S}
 9 H u0 p0 c0 {4,S}
         """)
-        
+
         propyl = Species().fromSMILES('CC[CH2]')
         propyli = Species().fromAdjacencyList("""
 multiplicity 2
@@ -406,11 +410,11 @@ multiplicity 2
 
         # call method
         ensure_reaction_direction(rxns)
-        
+
         for rxn in rxns:
             # ensure there is a methane in reactants for each reaction
             self.assertTrue(any([compare_isotopomers(methane, reactant) for reactant in rxn.reactants]),msg='ensureReactionDirection didnt flip the proper reactants and products')
-            
+
             # ensure kinetics is correct
             if any([dipropyli.isIsomorphic(reactant) for reactant in rxn.reactants]):
                 self.assertAlmostEqual(rxn.kinetics.A.value, 0.5, msg= 'The A value returned, {0}, is incorrect. Check the reactions degeneracy and how A.value is obtained. The reaction is:{1}'.format(rxn.kinetics.A.value, rxn))
@@ -472,7 +476,7 @@ multiplicity 2
 8 H u0 p0 c0 {2,S}
         """)
         compare_isotopomers(ethii,ethi)
-        
+
         # ensure species still have labels
         for atom in ethii.molecule[0].atoms:
             if atom.element.symbol == 'C':
@@ -582,7 +586,7 @@ multiplicity 2
                             products = [h2,npropyl],
                             family = 'H_Abstraction')
         self.assertTrue(compare_isotopomers(reaction2,reaction3))
-        
+
     def testCompareIsotopomersFailsOnReactions(self):
         """
         Test that compareIsotomers fails on different reaction objects
@@ -643,7 +647,7 @@ multiplicity 2
         reaction2 = TemplateReaction(reactants = [propanei,h],
                             products = [npropyli,h2],
                             family = 'H_Abstraction')
-        
+
         magicReaction = TemplateReaction(reactants = [propane,h],
                             products = [propanei,h],
                             family = 'H_Abstraction')
@@ -655,7 +659,7 @@ multiplicity 2
         thermo as isotopeless with the change in entropy corresponding to the
         symmetry difference.
 
-        This example compares propane to a asymmetrically labeled propane. 
+        This example compares propane to a asymmetrically labeled propane.
         """
         from rmgpy.thermo.nasa import NASA, NASAPolynomial
         from copy import deepcopy
@@ -691,9 +695,9 @@ multiplicity 2
 
         # get thermo of propane
         original_thermo = NASA(polynomials=[NASAPolynomial(
-                coeffs=[1.10564,0.0315339,-1.48274e-05,3.39621e-09,-2.97953e-13,-14351.9,18.775], 
+                coeffs=[1.10564,0.0315339,-1.48274e-05,3.39621e-09,-2.97953e-13,-14351.9,18.775],
                        Tmin=(100,'K'), Tmax=(3370.6,'K')), NASAPolynomial(
-                coeffs=[-1.45473,0.0241202,-6.87667e-06,9.03634e-10,-4.48389e-14,-6688.59,43.0459], 
+                coeffs=[-1.45473,0.0241202,-6.87667e-06,9.03634e-10,-4.48389e-14,-6688.59,43.0459],
                        Tmin=(3370.6,'K'), Tmax=(5000,'K'))], Tmin=(100,'K'), Tmax=(5000,'K'),
                 comment="""Thermo group additivity estimation: group(Cs-CsCsHH) + gauche(Cs(CsCsRR)) + other(R) + group(Cs-CsHHH) + gauche(Cs(Cs(CsRR)RRR)) + other(R) + group(Cs-CsHHH) + gauche(Cs(Cs(CsRR)RRR)) + other(R)""")
         propane.thermo = deepcopy(original_thermo)
@@ -715,7 +719,7 @@ multiplicity 2
         polynomial = NASAPolynomial(coeffs=[1.,1.,1.,1.,1.,1.,1.],
                          Tmin=(200,'K'),Tmax=(1600,'K'),E0=(1.,'kJ/mol'),
                          comment='made up thermo')
-        
+
         spc.thermo = NASA(polynomials=[polynomial],Tmin=(200,'K'),
                         Tmax=(1600,'K'),E0=(1.,'kJ/mol'),
                         comment='made up thermo')
@@ -750,7 +754,6 @@ multiplicity 2
 9  H u0 p0 c0 {2,S}
 10 H u0 p0 c0 {2,S}
         """)
-        
         npropyli = Species().fromAdjacencyList(
         """
 multiplicity 2
@@ -765,20 +768,19 @@ multiplicity 2
 9  H u0 p0 c0 {2,S}
 10 H u0 p0 c0 {2,S}
         """)
-        
+
         self.assertTrue(is_enriched(npropyli))
-        
         self.assertFalse(is_enriched(npropyl))
-        
+
         enrichedReaction = TemplateReaction(reactants = [npropyl],
                             products = [npropyli],
                             family = 'H_Abstraction')
         self.assertTrue(is_enriched(enrichedReaction))
-               
+
         bareReaction = TemplateReaction(reactants = [npropyl],
                             products = [npropyl],
                             family = 'H_Abstraction')
-                            
+
         self.assertFalse(is_enriched(bareReaction))
 
     def testGetLabeledReactants(self):
@@ -911,7 +913,7 @@ multiplicity 3
         isotope_list = [[methyl,methyli],
                         [methane,methanei],
                         [craigie,craigiei]]
-        
+
         new_reactions = generate_isotope_reactions([reaction], isotope_list)
 
         self.assertEqual(len(new_reactions), 4)
