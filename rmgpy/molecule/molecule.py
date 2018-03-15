@@ -1222,32 +1222,22 @@ class Molecule(Graph):
         if not isinstance(other, gr.Group):
             raise TypeError('Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
         group = other
-        
-        # Count the number of carbons, oxygens, and radicals in the molecule
-        carbonCount = 0; nitrogenCount = 0; oxygenCount = 0; sulfurCount = 0; radicalCount = 0
-        for atom in self.vertices:
-            if atom.element.symbol == 'C':
-                carbonCount += 1
-            elif atom.element.symbol == 'N':
-                nitrogenCount += 1
-            elif atom.element.symbol == 'O':
-                oxygenCount += 1
-            elif atom.element.symbol == 'S':
-                sulfurCount += 1
-            radicalCount += atom.radicalElectrons
-        
-        
+
+        # Check multiplicity
         if group.multiplicity:
             if self.multiplicity not in group.multiplicity: return False
-        # If the molecule has fewer of any of these things than the functional
-        # group does, then we know the subgraph isomorphism fails without
-        # needing to perform the full isomorphism check
-        if (radicalCount < group.radicalCount or
-            carbonCount < group.carbonCount or
-            nitrogenCount < group.nitrogenCount or
-            oxygenCount < group.oxygenCount or
-            sulfurCount < group.sulfurCount):
+
+        # Compare radical counts
+        if self.getRadicalCount() < group.radicalCount:
             return False
+
+        # Compare element counts
+        element_count = self.get_element_count()
+        for element, count in group.elementCount.iteritems():
+            if element not in element_count:
+                return False
+            elif element_count[element] < count:
+                return False
 
         # Do the isomorphism comparison
         result = Graph.isSubgraphIsomorphic(self, other, initialMap)
@@ -1272,31 +1262,23 @@ class Molecule(Graph):
         if not isinstance(other, gr.Group):
             raise TypeError('Got a {0} object for parameter "other", when a Group object is required.'.format(other.__class__))
         group = other
-                # Count the number of carbons, oxygens, and radicals in the molecule
-        carbonCount = 0; nitrogenCount = 0; oxygenCount = 0; sulfurCount = 0; radicalCount = 0
-        for atom in self.vertices:
-            if atom.element.symbol == 'C':
-                carbonCount += 1
-            elif atom.element.symbol == 'N':
-                nitrogenCount += 1
-            elif atom.element.symbol == 'O':
-                oxygenCount += 1
-            elif atom.element.symbol == 'S':
-                sulfurCount += 1
-            radicalCount += atom.radicalElectrons
-        
-        
+
+        # Check multiplicity
         if group.multiplicity:
             if self.multiplicity not in group.multiplicity: return []
-        # If the molecule has fewer of any of these things than the functional
-        # group does, then we know the subgraph isomorphism fails without
-        # needing to perform the full isomorphism check
-        if (radicalCount < group.radicalCount or
-            carbonCount < group.carbonCount or
-            nitrogenCount < group.nitrogenCount or
-            oxygenCount < group.oxygenCount or
-            sulfurCount < group.sulfurCount):
+
+        # Compare radical counts
+        if self.getRadicalCount() < group.radicalCount:
             return []
+
+        # Compare element counts
+        element_count = self.get_element_count()
+        for element, count in group.elementCount.iteritems():
+            if element not in element_count:
+                return []
+            elif element_count[element] < count:
+                return []
+
         # Do the isomorphism comparison
         result = Graph.findSubgraphIsomorphisms(self, other, initialMap)
         return result

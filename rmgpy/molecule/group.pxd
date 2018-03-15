@@ -114,13 +114,7 @@ cdef class Group(Graph):
 
     # These read-only attribues act as a "fingerprint" for accelerating
     # subgraph isomorphism checks
-    cdef public short carbonCount
-    cdef public short nitrogenCount
-    cdef public short oxygenCount
-    cdef public short sulfurCount
-    cdef public short chlorineCount
-    cdef public short iodineCount
-    cdef public short siliconCount
+    cdef public dict elementCount
     cdef public short radicalCount
 
     cpdef addAtom(self, GroupAtom atom)

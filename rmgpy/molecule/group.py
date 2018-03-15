@@ -869,6 +869,8 @@ class Group(Graph):
         Graph.__init__(self, atoms)
         self.props = props or {}
         self.multiplicity = multiplicity or []
+        self.elementCount = {}
+        self.radicalCount = -1
         self.update()
 
     def __reduce__(self):
@@ -1148,54 +1150,11 @@ class Group(Graph):
         Update the molecular fingerprint used to accelerate the subgraph
         isomorphism checks.
         """
-        cython.declare(atom=GroupAtom, atomType=AtomType)
-        cython.declare(carbon=AtomType, nitrogen=AtomType, oxygen=AtomType, sulfur=AtomType, chlorine=AtomType,
-                       iodine=AtomType, silicon=AtomType)
-        cython.declare(isCarbon=cython.bint, isNitrogen=cython.bint, isOxygen=cython.bint, isSulfur=cython.bint,
-                       isChlorine=cython.bint, isIodine=cython.bint, isSilicon=cython.bint, radical=cython.int)
+        cython.declare(atom=GroupAtom)
 
-        carbon   = atomTypes['C']
-        nitrogen = atomTypes['N']
-        oxygen   = atomTypes['O']
-        sulfur   = atomTypes['S']
-        chlorine = atomTypes['Cl']
-        iodine   = atomTypes['I']
-        silicon  = atomTypes['Si']
-        
-        self.carbonCount   = 0
-        self.nitrogenCount = 0
-        self.oxygenCount   = 0
-        self.sulfurCount   = 0
-        self.chlorineCount = 0
-        self.iodineCount   = 0
-        self.siliconCount  = 0
-        self.radicalCount  = 0
+        self.elementCount = self.get_element_count()
+        self.radicalCount = 0
         for atom in self.vertices:
-            if len(atom.atomType) == 1:
-                atomType   = atom.atomType[0]
-                isCarbon   = atomType.equivalent(carbon)
-                isNitrogen = atomType.equivalent(nitrogen)
-                isOxygen   = atomType.equivalent(oxygen)
-                isSulfur   = atomType.equivalent(sulfur)
-                isChlorine = atomType.equivalent(chlorine)
-                isIodine = atomType.equivalent(iodine)
-                isSilicon  = atomType.equivalent(silicon)
-                sum_is_atom = isCarbon + isNitrogen + isOxygen + isSulfur + isChlorine + isIodine + isSilicon
-                if sum_is_atom == 1:
-                    if isCarbon:
-                        self.carbonCount += 1
-                    elif isNitrogen:
-                        self.nitrogenCount += 1
-                    elif isOxygen:
-                        self.oxygenCount += 1
-                    elif isSulfur:
-                        self.sulfurCount += 1
-                    elif isChlorine:
-                        self.chlorineCount += 1
-                    elif isIodine:
-                        self.iodineCount += 1
-                    elif isSilicon:
-                        self.siliconCount += 1
             if len(atom.radicalElectrons) >= 1:
                 self.radicalCount += atom.radicalElectrons[0]
 
