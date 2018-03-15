@@ -239,10 +239,10 @@ atomTypes['R']    = AtomType(label='R', generic=[], specific=[
     'C','Ca','Cs','Csc','Cd','CO','CS','Cdd','Cdc','Ct','Cb','Cbf','C2s','C2sc','C2d','C2dc','C2tc',
     'N','N0sc','N1s','N1sc','N1dc','N3s','N3sc','N3d','N3t','N3b','N5sc','N5dc','N5ddc','N5dddc','N5t','N5tc','N5b','N5bd',
     'O','Oa','O0sc','O2s','O2sc','O2d','O4sc','O4dc','O4tc','O4b',
-
     'Si','Sis','Sid','Sidd','Sit','SiO','Sib','Sibf',
     'S','Sa','S0sc','S2s','S2sc','S2d','S2dc','S2tc','S4s','S4sc','S4d','S4dd','S4dc','S4b','S4t','S4tdc','S6s','S6sc','S6d','S6dd','S6ddd','S6dc','S6t','S6td','S6tt','S6tdc',
-    'Cl','Cl1s'])
+    'Cl','Cl1s',
+    'I','I1s'])
 
 atomTypes['R!H']  = AtomType(label='R!H', generic=['R'], specific=[
     'Val4','Val5','Val6','Val7',
@@ -252,7 +252,8 @@ atomTypes['R!H']  = AtomType(label='R!H', generic=['R'], specific=[
     'O','Oa','O0sc','O2s','O2sc','O2d','O4sc','O4dc','O4tc','O4b',
     'Si','Sis','Sid','Sidd','Sit','SiO','Sib','Sibf',
     'S','Sa','S0sc','S2s','S2sc','S2d','S2dc','S2tc','S4s','S4sc','S4d','S4dd','S4dc','S4b','S4t','S4tdc','S6s','S6sc','S6d','S6dd','S6ddd','S6dc','S6t','S6td','S6tt','S6tdc',
-    'Cl','Cl1s'])
+    'Cl','Cl1s',
+    'I','I1s'])
 
 atomTypes['Val4'] = AtomType(label='Val4', generic=['R','R!H'], specific=[
     'C','Ca','Cs','Csc','Cd','CO','CS','Cdd','Cdc','Ct','Cb','Cbf','C2s','C2sc','C2d','C2dc','C2tc',
@@ -266,7 +267,8 @@ atomTypes['Val6'] = AtomType(label='Val6', generic=['R','R!H'], specific=[
     'S','Sa','S0sc','S2s','S2sc','S2d','S2dc','S2tc','S4s','S4sc','S4d','S4dd','S4dc','S4b','S4t','S4tdc','S6s','S6sc','S6d','S6dd','S6ddd','S6dc','S6t','S6td','S6tt','S6tdc'])
 
 atomTypes['Val7'] = AtomType(label='Val7', generic=['R','R!H'], specific=[
-    'Cl','Cl1s'])
+    'Cl','Cl1s',
+    'I','I1s'])
 
 atomTypes['H'   ] = AtomType('H',    generic=['R'],            specific=[])
 
@@ -509,6 +511,10 @@ atomTypes['Cl1s'] = AtomType('Cl1s', generic=['R','R!H','Cl','Val7'],  specific=
                              single=[0,1], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[0], benzene=[0], lonePairs=[3], charge=[0])
 # examples for Cl1s: HCl, [Cl]
 
+atomTypes['I'  ] = AtomType('I',   generic=['R','R!H','Val7'],      specific=['I1s'])
+atomTypes['I1s'] = AtomType('I1s', generic=['R','R!H','I','Val7'],  specific=[],
+                             single=[0,1], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[0], benzene=[0], lonePairs=[3], charge=[0])
+# examples for I1s: HI, [I], IO, CH3I, I2
 
 atomTypes['R'   ].setActions(incrementBond=['R'],            decrementBond=['R'],            formBond=['R'],         breakBond=['R'],         incrementRadical=['R'],    decrementRadical=['R'],    incrementLonePair=['R'],   decrementLonePair=['R'])
 atomTypes['R!H' ].setActions(incrementBond=['R!H'],          decrementBond=['R!H'],          formBond=['R!H'],       breakBond=['R!H'],       incrementRadical=['R!H'],  decrementRadical=['R!H'],  incrementLonePair=['R!H'], decrementLonePair=['R!H'])
@@ -610,6 +616,8 @@ atomTypes['S6tdc'].setActions(incrementBond=['S6td','S6tdc','S6tt'],decrementBon
 atomTypes['Cl'  ].setActions(incrementBond=[],               decrementBond=[],               formBond=['Cl'],        breakBond=['Cl'],        incrementRadical=['Cl'],   decrementRadical=['Cl'],   incrementLonePair=[],      decrementLonePair=[])
 atomTypes['Cl1s'].setActions(incrementBond=[],               decrementBond=[],               formBond=['Cl1s'],      breakBond=['Cl1s'],      incrementRadical=['Cl1s'], decrementRadical=['Cl1s'], incrementLonePair=[],      decrementLonePair=[])
 
+atomTypes['I'  ].setActions(incrementBond=[],               decrementBond=[],               formBond=['I'],        breakBond=['I'],        incrementRadical=['I'],   decrementRadical=['I'],   incrementLonePair=[],      decrementLonePair=[])
+atomTypes['I1s'].setActions(incrementBond=[],               decrementBond=[],               formBond=['I1s'],      breakBond=['I1s'],      incrementRadical=['I1s'], decrementRadical=['I1s'], incrementLonePair=[],      decrementLonePair=[])
 
 #list of elements that do not have more specific atomTypes
 #these are ordered on priority of picking if we encounter a more general atomType for make
