@@ -931,7 +931,7 @@ def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments=
     return speciesList, reactionList
 
 
-cdef _process_duplicate_reactions(list reactionList):
+cpdef _process_duplicate_reactions(list reactionList):
     """
     Check for marked (and unmarked!) duplicate reactions
     Combine marked duplicate reactions into a single reaction using MultiKinetics

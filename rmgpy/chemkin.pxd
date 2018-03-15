@@ -31,4 +31,4 @@
 from rmgpy.reaction cimport Reaction
 from rmgpy.kinetics.model cimport KineticsModel
 
-cdef _process_duplicate_reactions(list reactionList)
+cpdef _process_duplicate_reactions(list reactionList)
