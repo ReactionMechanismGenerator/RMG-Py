@@ -1090,6 +1090,38 @@ class Group(Graph):
                     labeled[atom.label] = atom
         return labeled
 
+    def get_element_count(self):
+        """
+        Returns the element count for the molecule as a dictionary.
+        Wildcards are not counted as any particular element.
+        """
+        from rmgpy.molecule.atomtype import allElements
+
+        element_count = {}
+        for atom in self.atoms:
+            same = True
+            match = None
+            for atomtype in atom.atomType:
+                if match is None:
+                    # This is the first type in the list, so check all elements
+                    for element in allElements:
+                        if atomtype.isSpecificCaseOf(atomTypes[element]):
+                            match = element
+                            break
+                else:
+                    # We've already matched one atomtype, now confirm that the rest are the same
+                    if not atomtype.isSpecificCaseOf(atomTypes[match]):
+                        same = False
+                        break
+            # If match is None, then the group is not a specific case of any element
+            if match is not None and same:
+                if match in element_count:
+                    element_count[match] += 1
+                else:
+                    element_count[match] = 1
+
+        return element_count
+
     def fromAdjacencyList(self, adjlist):
         """
         Convert a string adjacency list `adjlist` to a molecular structure.

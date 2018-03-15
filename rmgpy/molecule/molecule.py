@@ -1138,6 +1138,22 @@ class Molecule(Graph):
                     labeled[atom.label] = atom
         return labeled
 
+    def get_element_count(self):
+        """
+        Returns the element count for the molecule as a dictionary.
+        """
+        element_count = {}
+        for atom in self.atoms:
+            symbol = atom.element.symbol
+            isotope = atom.element.isotope
+            key = symbol if isotope == -1 else (symbol, isotope)
+            if key in element_count:
+                element_count[key] += 1
+            else:
+                element_count[key] = 1
+
+        return element_count
+
     def isIsomorphic(self, other, initialMap=None):
         """
         Returns :data:`True` if two graphs are isomorphic and :data:`False`

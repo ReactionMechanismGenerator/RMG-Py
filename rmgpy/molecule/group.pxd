@@ -153,6 +153,8 @@ cdef class Group(Graph):
 
     cpdef dict getLabeledAtoms(self)
 
+    cpdef dict get_element_count(self)
+
     cpdef fromAdjacencyList(self, str adjlist)
 
     cpdef toAdjacencyList(self, str label=?)
