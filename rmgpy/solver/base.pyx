@@ -738,7 +738,7 @@ cdef class ReactionSystem(DASx):
             coreSpeciesProductionRates = self.coreSpeciesProductionRates
             edgeSpeciesRates = numpy.abs(self.edgeSpeciesRates)
             networkLeakRates = numpy.abs(self.networkLeakRates)
-            coreSpeciesRateRatios = numpy.abs(self.coreSpeciesRates/charRate)
+            coreSpeciesRateRatios = numpy.abs(numpy.maximum(self.coreSpeciesProductionRates,self.coreSpeciesConsumptionRates)/charRate)#numpy.abs(numpy.maximum(self.coreSpeciesProductionRates,self.coreSpeciesConsumptionRates)/charRate)
             edgeSpeciesRateRatios = numpy.abs(self.edgeSpeciesRates/charRate)
             networkLeakRateRatios = numpy.abs(self.networkLeakRates/charRate)
             numEdgeReactions = self.numEdgeReactions
@@ -774,28 +774,9 @@ cdef class ReactionSystem(DASx):
                 for index in xrange(numEdgeReactions):
                     reactionRate = edgeReactionRates[index]
                     if reactionRate > 0:
-                        
-                        #if self.reactantIndices[index+numCoreReactions,:][1] != -1:
-                        #    continue
-                        
-                        mults = []
-                        for i in self.productIndices[index+numCoreReactions,:]:
-                            if i == -1:
-                                continue
-                            elif i<numCoreSpecies:
-                                mults.append(coreSpecies[i].molecule[0].multiplicity)
-                            else:
-                                mults.append(edgeSpecies[i-numCoreSpecies].molecule[0].multiplicity)
-                        
-                        if max(mults) > 2:
-                            continue
-                        
-                        #if sum(mults) > 3:
-                        #    continue
-                        
                         for spcIndex in self.reactantIndices[index+numCoreReactions,:]:
                             if spcIndex != -1 and spcIndex<numCoreSpecies:
-                                if coreSpecies[spcIndex].molecule[0].multiplicity != 2:
+                                if coreSpecies[spcIndex].molecule[0].multiplicity < 2:
                                     continue
                                 consumption = coreSpeciesConsumptionRates[spcIndex]
                                 if consumption != 0: #if consumption = 0 ignore species
@@ -803,27 +784,9 @@ cdef class ReactionSystem(DASx):
                                     if BNum>branchingNums[index]:
                                         branchingNums[index] = BNum
                     else:
-                        #if self.productIndices[index+numCoreReactions,:][1] != -1:
-                        #    continue
-                        
-                        mults = []
-                        for i in self.reactantIndices[index+numCoreReactions,:]:
-                            if i == -1:
-                                continue
-                            elif i<numCoreSpecies:
-                                mults.append(coreSpecies[i].molecule[0].multiplicity)
-                            else:
-                                mults.append(edgeSpecies[i-numCoreSpecies].molecule[0].multiplicity)
-                        
-                        if max(mults) > 2:
-                            continue
-                        
-                        #if sum(mults) > 3:
-                        #    continue
-                        
                         for spcIndex in self.productIndices[index+numCoreReactions,:]:
                             if spcIndex != -1 and spcIndex<numCoreSpecies:
-                                if coreSpecies[spcIndex].molecule[0].multiplicity != 2:
+                                if coreSpecies[spcIndex].molecule[0].multiplicity < 2:
                                     continue
                                 consumption = coreSpeciesConsumptionRates[spcIndex]
                                 if consumption != 0: #if production = 0 ignore species
