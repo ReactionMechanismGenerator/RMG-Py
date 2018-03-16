@@ -30,6 +30,7 @@
 
 import os.path
 import logging
+import json
 from time import time
 
 from rmgpy.rmg.listener import SimulationProfileWriter, SimulationProfilePlotter
@@ -75,7 +76,20 @@ def plot_sensitivity(outputDirectory, reactionSystemIndex, sensitiveSpeciesList,
         ReactionSensitivityPlot(csvFile=csvFile, numReactions=number).barplot(reactionPlotFile)
         ThermoSensitivityPlot(csvFile=csvFile, numSpecies=number).barplot(thermoPlotFile)
 
-
+def writeMaxCoreRateRatios(reactionSystems,directory):
+    """
+    Generate a json file with the Max Core Rate Ratios for each reactor
+    """
+    cRRs = []
+    
+    for rxnSys in reactionSystems:
+        cRRs.append(rxnSys.maxCoreReactionRateRatios.tolist())
+    
+    fid = open(os.path.join(directory,'maxCoreReactionRateRatios.json'),'wb')
+    
+    json.dump(cRRs,fid)
+    
+    fid.close()
 
 def simulate(rmg, diffusionLimited=True):
     """
@@ -134,6 +148,8 @@ def simulate(rmg, diffusionLimited=True):
             modelSettings=modelSettings,
             simulatorSettings=simulatorSettings,
         )
+        
+        writeMaxCoreRateRatios(rmg.reactionSystems,rmg.outputDirectory)
         
         if reactionSystem.sensitiveSpecies:
             plot_sensitivity(rmg.outputDirectory, index, reactionSystem.sensitiveSpecies)
