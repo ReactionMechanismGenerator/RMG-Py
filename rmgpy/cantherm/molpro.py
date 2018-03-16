@@ -318,4 +318,28 @@ class MolproLog:
         if ZPE is not None:
             return ZPE
         else:
-            raise Exception('Unable to find zero-point energy in MolPro log file.')
+            raise Exception('Unable to find zero-point energy in MolPro log file. Make sure that the keyword {frequencies, thermo, print,thermo} is included in the input file')
+
+    def loadNegativeFrequency(self):
+        """
+        Return the negative frequency from a transition state frequency
+        calculation in cm^-1.
+        """
+
+        frequencies = []
+
+        f = open(self.path, 'r')
+        line = f.readline()
+        while line != '':
+            # Read vibrational frequencies
+            if 'Normal Modes of imaginary frequencies' in line:
+                for i in range(3):
+                    line = f.readline()
+                frequency = line.split()[2]
+            line = f.readline()
+        # Close file when finished
+        f.close()
+
+        negativefrequency = -float(frequency)
+
+        return negativefrequency
