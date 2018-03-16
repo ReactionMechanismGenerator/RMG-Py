@@ -811,19 +811,30 @@ class RMG(util.Subject):
         """
         Run checks on the RMG model
         """
-        #check that no two species in core or edge are isomorphic
-        for i,spc in enumerate(self.reactionModel.core.species):
+        logging.info('Performing final model checks...')
+
+        # Check that no two species in core or edge are isomorphic
+        for i, spc in enumerate(self.reactionModel.core.species):
             for j in xrange(i):
                 spc2 = self.reactionModel.core.species[j]
                 if spc.isIsomorphic(spc2):
-                    raise CoreError('Although the model has completed, species {0} is isomorphic to species {1} in the core.  Please open an issue on GitHub with the following output: \n{2}\n{3}'.format(spc.label,spc2.label,spc.toAdjacencyList(),spc2.toAdjacencyList()))
-        
-        for i,spc in enumerate(self.reactionModel.edge.species):
+                    raise CoreError(
+                        'Although the model has completed, species {0} is isomorphic to species {1} in the core. '
+                        'Please open an issue on GitHub with the following output:'
+                        '\n{2}\n{3}'.format(spc.label, spc2.label, spc.toAdjacencyList(), spc2.toAdjacencyList())
+                    )
+
+        for i, spc in enumerate(self.reactionModel.edge.species):
             for j in xrange(i):
                 spc2 = self.reactionModel.edge.species[j]
                 if spc.isIsomorphic(spc2):
-                    logging.warning('species {0} is isomorphic to species {1} in the edge.  Note this does not affect the generated model.  If you would like to report this to help make RMG better please open a GitHub issue with the following output: \n{2}\n{3}'.format(spc.label,spc2.label,spc.toAdjacencyList(),spc2.toAdjacencyList()))
-        
+                    logging.warning(
+                        'Species {0} is isomorphic to species {1} in the edge. This does not affect '
+                        'the generated model. If you would like to report this to help make RMG better '
+                        'please open a GitHub issue with the following output:'
+                        '\n{2}\n{3}'.format(spc.label, spc2.label, spc.toAdjacencyList(), spc2.toAdjacencyList())
+                    )
+
     def makeSeedMech(self,firstTime=False):
         """
         causes RMG to make a seed mechanism out of the current chem_annotated.inp and species_dictionary.txt
