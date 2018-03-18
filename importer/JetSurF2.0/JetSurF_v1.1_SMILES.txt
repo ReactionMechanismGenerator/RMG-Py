@@ -1,0 +1,377 @@
+C12H24 C=CCCCCCCCCCC
+CH3cC5H83 CC1C[CH]CC1
+C4H612 C=C=CC
+PXC12H25 [CH2]CCCCCCCCCCC
+CH2(S) [CH2]
+SXC5H11 C[CH]CCC
+CH3OH CO
+PXC12H23 [CH2]CCCCCCCCCC=C
+SXC12H25 C[CH]CCCCCCCCCC
+CH3CO C[C]=O
+O2 [O][O]
+C6H4CH3 CC1[CH]C=C=CC=1
+S4XC12H25 CCCC[CH]CCCCCCC
+SXC8H17 C[CH]CCCCCC
+HCCOH C#CO
+NC5H12 CCCCC
+PXC8H17 [CH2]CCCCCCC
+S3XC10H21 CCC[CH]CCCCCC
+C5H5OH OC1C=CC=C1
+NC7H16 CCCCCCC
+SXC7H15 C[CH]CCCCC
+CH2 [CH2]
+CH3 [CH3]
+CH4 C
+C2H [C]#C
+C2O [C]=C=O
+m1C5H81 [CH2]C(C)CC=C
+CH3CHCH [CH]=CC
+S2XC10H21 CC[CH]CCCCCCC
+C7H14 C=CCCCCC
+C2H3CHOCH2 C=CC1CO1
+H [H]
+NC9H20 CCCCCCCCC
+C4H10 CCCC
+CH3CHOCH2 CC1CO1
+S3XC8H17 CCC[CH]CCCC
+C4H81 C=CCC
+OH [OH]
+NC10H22 CCCCCCCCCC
+CH2C5H8 C=C1CCCC1
+S4XC9H19 CCCC[CH]CCCC
+H2 [H][H]
+pC3H4 C#CC
+S4XC11H23 CCCC[CH]CCCCCC
+SAXC5H9 C=C[CH]CC
+CH2C4H7 [CH2]C(C)C=C
+C6H12 C=CCCCC
+CH3CH2CHO CCC=O
+C3H6 C=CC
+S2XC9H19 CC[CH]CCCCCC
+l-C6H4 C#CC#CC=C
+C3H3 C#C[CH2]
+S2XC11H23 CC[CH]CCCCCCCC
+C3H8 CCC
+CH2OCH2 C1CO1
+C6H10-13 C=CC=CCC
+CH2O C=O
+CH2OH [CH2]O
+C11H22 C=CCCCCCCCCC
+aC3H4 C=C=C
+aC3H5 [CH2]C=C
+H2O2 OO
+C6H5CH2OH OCC1C=CC=CC=1
+CH3CHCHCO CC=C[C]=O
+pC4H9 [CH2]CCC
+SXC11H23 C[CH]CCCCCCCCC
+C4H82 CC=CC
+SXC6H13 C[CH]CCCC
+C5H10 C=CCCC
+SXC6H11 C=CCC[CH]C
+cC3H4 C1=CC1
+HCCO C#C[O]
+PXC5H11 [CH2]CCCC
+C [C]
+CH2OCH [CH]1CO1
+CH2CHCHCHO [CH2]C=CC=O
+S3XC7H15 CCC[CH]CCC
+O [O]
+C4H4 C#CC=C
+PXC11H21 [CH2]CCCCCCCCC=C
+PXC11H23 [CH2]CCCCCCCCCC
+C8H16 C=CCCCCCC
+iC3H7 C[CH]C
+C2H6 CC
+C4H6O25 C1=CCOC1
+C2H4 C=C
+C4H6O23 C1=COCC1
+C6H5OH OC1C=CC=CC=1
+C6H4O2 O=C1C=CC(=O)C=C1
+nC3H7 [CH2]CC
+SAXC6H11 C=C[CH]CCC
+S3XC11H23 CCC[CH]CCCCCCC
+NC8H18 CCCCCCCC
+C6H2 C#CC#CC#C
+S2XC7H15 CC[CH]CCCC
+C6H6 C1=CC=CC=C1
+C6H5 [C]1=CC=CC=C1
+cC5H9CH2 [CH2]C1CCCC1
+S3XC9H19 CCC[CH]CCCCC
+c-C4H5 [CH]1C=CC1
+PXC8H15 [CH2]CCCCCC=C
+H2C4O C=C=C=C=O
+PXC7H13 [CH2]CCCCC=C
+C5H4O O=C1C=CC=C1
+PXC7H15 [CH2]CCCCCC
+C4H6-2 CC#CC
+S3XC12H25 CCC[CH]CCCCCCCC
+C5H6 C1C=CCC=1
+C5H5O(2,4) [O]C1C=CC=C1
+SXC5H9 C=CC[CH]C
+CH3CHO CC=O
+CH3O C[O]
+C2H3 [CH]=C
+SXC10H21 C[CH]CCCCCCCC
+HCO [CH]=O
+NC11H24 CCCCCCCCCCC
+PXC5H9 [CH2]CCC=C
+CH2CHCO C=C[C]=O
+CH3COCH3 CC(C)=O
+CH [CH]
+CO [C-]#[O+]
+cC5H8 C1=CCCC1
+CH3CCH2 C=[C]C
+o-C6H4 C1#CC=C[CH][CH]1
+C9H18 C=CCCCCCCC
+C2H3CHO C=CC=O
+iC4H10 CC(C)C
+N2 N#N
+iC4H3 C#C[C]=C
+CO2 O=C=O
+iC4H5 C=[C]C=C
+iC4H7 [CH2]C(=C)C
+iC4H9 [CH2]C(C)C
+iC4H8 C=C(C)C
+SAXC6H11-3 CC=C[CH]CC
+S4XC10H21 CCCC[CH]CCCCC
+H2O O
+PXC9H17 [CH2]CCCCCCC=C
+cC6H11 [CH]1CCCCC1
+cC6H10 C1=CCCCC1
+C2H5 C[CH2]
+C6H5O O=C1C=C[CH]C=C1
+S2XC6H11 C=CC[CH]CC
+C5H5O(1,3) O=C1C=C[CH]C1
+S2XC6H13 CC[CH]CCC
+HOC6H4CH3 CC1=CC=CC(O)=C1
+PXC6H11 [CH2]CCCC=C
+PXC6H13 [CH2]CCCCC
+C6H5CH2 [CH2]C1C=CC=CC=1
+C6H5CH3 CC1C=CC=CC=1
+lC5H7 [CH2]C=CC=C
+S2XC5H11 CC[CH]CC
+sC4H9 C[CH]CC
+OC12OOH CCCCCCCCCCC(=O)COO
+PXC10H19 [CH2]CCCCCCCC=C
+PC12H25O2 CCCCCCCCCCCCO[O]
+C10H20 C=CCCCCCCCC
+CH2CHO C=C[O]
+tC4H9 C[C](C)C
+C4H5-2 [CH2]C#CC
+C6H3 [CH]=CC#CC#C
+SOO12OOH [O]OCCCCCCCCCCCCOO
+cC5H9 [CH]1CCCC1
+NC12H26 CCCCCCCCCCCC
+HO2 [O]O
+OC6H4CH3 CC1[CH]C=CC(=O)C=1
+nC4H3 [CH]=CC#C
+nC4H5 [CH]=CC=C
+S5XC12H25 CCCCC[CH]CCCCCC
+P12OOHX2 CCCCCCCCC[CH]CCOO
+C5H5 [CH]1C=CC=C1
+NC6H14 CCCCCC
+S5XC11H23 CCCCC[CH]CCCCC
+C5H8-13 C=CC=CC
+C4H2 C#CC#C
+C5H8-14 C=CCC=C
+C4H7 [CH2]CC=C
+C4H6 C=CC=C
+C4H4O C1C=COC=1
+C2H2 C#C
+C5H4OH OC1[CH]C=CC=1
+SXC9H19 C[CH]CCCCCCC
+PXC10H21 [CH2]CCCCCCCCC
+CH3CHCHCHO CC=CC=O
+S2XC8H17 CC[CH]CCCCC
+PXC9H19 [CH2]CCCCCCCC
+H2CC [C]=C
+Ar [Ar]
+C6H5CHO O=CC1C=CC=CC=1
+CH2CO C=C=O
+S2XC12H25 CC[CH]CCCCCCCCC
+C6H5CO O=[C]C1C=CC=CC=1
+AR	[Ar]
+HE	[He]
+OH*	[OH]
+CH*	[CH]
+SAXC4H7	C=C[CH]C	! Confirmed by Anonymous
+CH3cC6H11	CC1CCCCC1	! Confirmed by Anonymous
+PXCH2cC6H11	[CH2]C1CCCCC1	! Confirmed by Anonymous
+cC6H12	C1CCCCC1	! Confirmed by Anonymous
+PXCH2cC5H9	[CH2]C1CCCC1	! Confirmed by Anonymous
+cC6H10O2H-2	OOC1[CH]CCCC1	! Confirmed by Anonymous
+cC6H11O2	[O]OC1CCCCC1	! Confirmed by Anonymous
+C7H12-16	C=CCCCC=C	! Confirmed by Anonymous
+C7H14-2	CC=CCCCC	! Confirmed by Anonymous
+C8H16-3	CCC=CCCCC	! Confirmed by Anonymous
+SOOcC6O2H	[O]OC1CCCCC1OO	! Confirmed by Anonymous
+CH3-4-SAXC6H10	[CH2]C=CC(C)CC	! Confirmed by Anonymous
+PXCH2-5-1C6H11	[CH2]C(C)CCC=C	! Confirmed by Anonymous
+PXCH2-5-1C7H13	[CH2]C(CC)CCC=C	! Confirmed by Anonymous
+PXCH2-5-1C8H15	[CH2]C(CCC)CCC=C	! Confirmed by Anonymous
+PXCH2-5-1C9H17	[CH2]C(CCC=C)CCCC	! Confirmed by Anonymous
+C3H5cC6H11	C=CCC1CCCCC1	! Confirmed by Anonymous
+PX6-2C6H11	[CH2]CCC=CC	! Confirmed by Anonymous
+PXCH2-4-1C5H9	[CH2]C(C)CC=C	! Confirmed by Anonymous
+PX1-4C8H15	[CH2]CCC=CCCC	! Confirmed by Anonymous
+PXCH2-3-1C5H9	[CH2]C(C=C)CC	! Confirmed by Anonymous
+PXCH2-3-1C4H7	[CH2]C(C)C=C	! Confirmed by Anonymous
+CH3-2-C4H5-13	C=CC(=C)C	! Confirmed by Anonymous
+C2H3cC6H11	C=CC1CCCCC1	! Confirmed by Anonymous
+C7H12-13	C=CC=CCCC	! Confirmed by Anonymous
+C3H7S2XcC6H10	CCCC1[CH]CCCC1	! Confirmed by Anonymous
+C4H9S2XcC6H10	CCCCC1[CH]CCCC1	! Confirmed by Anonymous
+PX1-3C7H13	[CH2]CC=CCCC	! Confirmed by Anonymous
+PXC2H4-4-1C6H11	[CH2]CC(CC)CC=C	! Confirmed by Anonymous
+SAX6-4C10H19	CCCC=C[CH]CCCC	! Confirmed by Anonymous
+SAX4-2C8H15	CC=C[CH]CCCC	! Confirmed by Anonymous
+PX8-2C8H15	[CH2]CCCCC=CC	! Confirmed by Anonymous
+CH3S3XcC5H8	CC1C[CH]CC1	! Confirmed by Anonymous
+C4H9S4XcC6H10	CCCCC1CC[CH]CC1	! Confirmed by Anonymous
+C2H5cC6H11	CCC1CCCCC1	! Confirmed by Anonymous
+CH3-5-SAX1C7H12	[CH2]C=CCC(C)CC	! Confirmed by Anonymous
+C3H7S4XcC6H10	CCCC1CC[CH]CC1	! Confirmed by Anonymous
+C2H5-4-SAX1C6H10	[CH2]C=CC(CC)CC	! Confirmed by Anonymous
+C4H9cC6H11	CCCCC1CCCCC1	! Confirmed by Anonymous
+C3H7cC6H11	CCCC1CCCCC1	! Confirmed by Anonymous
+CH3-5-SAXC6H10	[CH2]C=CCC(C)C	! Confirmed by Anonymous
+C9H18-4	CCCC=CCCCC	! Confirmed by Anonymous
+C6H10-15	C=CCCC=C	! Confirmed by Anonymous
+C10H20-5	CCCCC=CCCCC	! Confirmed by Anonymous
+PAXCH2-2-C4H5	[CH2]C(=C)C=C	! Confirmed by Anonymous
+S2XC8H15	C=CCCC[CH]CC	! Confirmed by Anonymous
+S3XC9H17	C=CCCC[CH]CCC	! Confirmed by Anonymous
+S4XC10H19	C=CCCC[CH]CCCC	! Confirmed by Anonymous
+C2H5-2-1C6H11	C=C(CC)CCCC	! Confirmed by Anonymous
+C4H9-2-1C6H11	C=C(CCCC)CCCC	! Confirmed by Anonymous
+PXC3H6-3-1C7H13	[CH2]CCC(C=C)CCCC	! Confirmed by Anonymous
+C3H7-2-1C6H11	C=C(CCC)CCCC	! Confirmed by Anonymous
+C2H5S3XcC6H10	CCC1C[CH]CCC1	! Confirmed by Anonymous
+C2H5S4XcC6H10	CCC1CC[CH]CC1	! Confirmed by Anonymous
+S2XC4H8cC6H11	CC[CH]CC1CCCCC1	! Confirmed by Anonymous
+C4H9S3XcC6H10	CCCCC1C[CH]CCC1	! Confirmed by Anonymous
+CH3S4XcC6H10	CC1CC[CH]CC1	! Confirmed by Anonymous
+SXC2H4cC6H11	C[CH]C1CCCCC1	! Confirmed by Anonymous
+C3H7S3XcC6H10	CCCC1C[CH]CCC1	! Confirmed by Anonymous
+PXC3H6cC6H11	[CH2]CCC1CCCCC1	! Confirmed by Anonymous
+SXC3H6cC6H11	C[CH]CC1CCCCC1	! Confirmed by Anonymous
+SXC4H8cC6H11	C[CH]CCC1CCCCC1	! Confirmed by Anonymous
+S3XC4H8cC6H11	CCC[CH]C1CCCCC1	! Confirmed by Anonymous
+PXC4H8cC6H11	[CH2]CCCC1CCCCC1	! Confirmed by Anonymous
+PX10-4C10H19	[CH2]CCCCC=CCCC	! Confirmed by Anonymous
+PXC2H4cC6H11	[CH2]CC1CCCCC1	! Confirmed by Anonymous
+CH3-5-SAX1C9H16	[CH2]C=CCC(C)CCCC	! Confirmed by Anonymous
+CH3-5-SAX1C8H14	[CH2]C=CCC(C)CCC	! Confirmed by Anonymous
+C4H9TXcC6H10	CCCC[C]1CCCCC1	! Confirmed by Anonymous
+C2H5S2XcC6H10	CCC1[CH]CCCC1	! Confirmed by Anonymous
+S2XC3H6cC6H11	CC[CH]C1CCCCC1	! Confirmed by Anonymous
+C3H7TXcC6H10	CCC[C]1CCCCC1	! Confirmed by Anonymous
+PX9-3C9H17	[CH2]CCCCC=CCC	! Confirmed by Anonymous
+SAXC6H9-15	C=C[CH]CC=C	! Confirmed by Anonymous
+CH2cC6H10	C=C1CCCCC1	! Confirmed by Anonymous
+C2H5TXcC6H10	CC[C]1CCCCC1	! Confirmed by Anonymous
+C2H5-3-PXC6H10	[CH2]CCC(C=C)CC	! Confirmed by Anonymous
+PAXCH2-2-1C6H11	[CH2]C(=C)CCCC	! Confirmed by Anonymous
+CH3-2-PXC4H6	[CH2]CC(=C)C	! Confirmed by Anonymous
+CH3-3-TAXC6H10	C=C[C](C)CCC	! Confirmed by Anonymous
+C2H5-4-SAX1C8H14	[CH2]C=CC(CC)CCCC	! Confirmed by Anonymous
+C2H5-4-SAX1C7H12	[CH2]C=CC(CC)CCC	! Confirmed by Anonymous
+PAXCH2-2-1C5H9	[CH2]C(=C)CCC	! Confirmed by Anonymous
+SAX5-3C8H15	CCC=C[CH]CCC	! Confirmed by Anonymous
+SAX4-2C7H13	CC=C[CH]CCC	! Confirmed by Anonymous
+PAXCH2-2-1C4H7	[CH2]C(=C)CC	! Confirmed by Anonymous
+PXCH2-3-1C7H13	[CH2]C(C=C)CCCC	! Confirmed by Anonymous
+PX1-3C6H11	[CH2]CC=CCC	! Confirmed by Anonymous
+PXCH2-3-1C6H11	[CH2]C(C=C)CCC	! Confirmed by Anonymous
+S4XC8H15	C=CC[CH]CCCC	! Confirmed by Anonymous
+PXCH2-2-C6H13	[CH2]C(C)CCCC	! Confirmed by Anonymous
+PXCH2-2-C4H9	[CH2]C(C)CC	! Confirmed by Anonymous
+PX10-5C10H19	[CH2]CCCC=CCCCC	! Confirmed by Anonymous
+PXC4H8-2-1C6H11	[CH2]CCCC(=C)CCCC	! Confirmed by Anonymous
+C2H5-2-PXC6H10	[CH2]CCCC(=C)CC	! Confirmed by Anonymous
+CH2*	[CH2]	! Confirmed by Anonymous
+PXC2H4-4-1C8H15	[CH2]CC(CC=C)CCCC	! Confirmed by Anonymous
+PXC2H4-4-1C7H13	[CH2]CC(CC=C)CCC	! Confirmed by Anonymous
+
+CH3-4-PXC6H10	[CH2]CC(C)CC=C	! Confirmed by Anonymous
+CH3S3XcC6H10	CC1C[CH]CCC1	! Confirmed by Anonymous
+PX7-2C7H13	[CH2]CCCC=CC	! Confirmed by Anonymous
+CH3S2XcC6H10	CC1[CH]CCCC1	! Confirmed by Anonymous
+CH3-3-PXC6H10	[CH2]CCC(C)C=C	! Confirmed by Anonymous
+CH3TXcC6H10	C[C]1CCCCC1	! Confirmed by Anonymous
+SAXcC6H9	[CH]1C=CCCC1	! Confirmed by Anonymous
+SXC7H13	C=CCCC[CH]C	! Confirmed by Anonymous
+CH3-2-SXC6H12	C[CH]CCC(C)C	! Confirmed by Anonymous
+PXC3H6-3-1C6H11	[CH2]CCC(C=C)CCC	! Confirmed by Anonymous
+PX9-4C9H17	[CH2]CCCC=CCCC	! Confirmed by Anonymous
+C8H14-13	C=CC=CCCCC	! Confirmed by Anonymous
+CH3-2-PXC6H10	[CH2]CCCC(=C)C	! Confirmed by Anonymous
+SAXcC6H7	[CH]1C=CCC=C1	! Confirmed by Anonymous
+S3XC7H13	C=CC[CH]CCC	! Confirmed by Anonymous
+SAXC7H13	C=C[CH]CCCC	! Confirmed by Anonymous
+C3H7-2-PXC6H10	[CH2]CCCC(=C)CCC	! Confirmed by Anonymous
+PX1-3C8H15	[CH2]CC=CCCCC	! Confirmed by Anonymous
+PXC2H4-2-1C6H11	[CH2]CC(=C)CCCC	! Confirmed by Anonymous
+PXC2H4-2-1C4H7	[CH2]CC(=C)CC	! Confirmed by Anonymous
+C3H7-3-TAX1C7H13	C=C[C](CCC)CCCC	! Confirmed by Anonymous
+SAX5-3C9H17	CCC=C[CH]CCCC	! Confirmed by Anonymous
+SAX6-4C9H17	CCC[CH]C=CCCC	! Confirmed by Anonymous
+C3H7-3-TAX1C6H10	C=C[C](CCC)CCC	! Confirmed by Anonymous
+PX8-3C8H15	[CH2]CCCC=CCC	! Confirmed by Anonymous
+
+cC6H8-13	C1C=CCCC=1	! Confirmed by Anonymous
+C2H5-2-SAX1C6H10	[CH2]C(=CCCC)CC	! Confirmed by Anonymous
+CH3-2-SAXC6H10	[CH2]C(C)=CCCC	! Confirmed by Anonymous
+C6H10-12	C=C=CCCC	! Confirmed by Anonymous
+CH2-3-1C6H10	C=CC(=C)CCC	! Confirmed by Anonymous
+CH2-3-1C7H12	C=CC(=C)CCCC	! Confirmed by Anonymous
+C2H3-2-1C4H7	C=CC(=C)CC	! Confirmed by Anonymous
+C2H5-3-TAX1C6H10	C=C[C](CC)CCC	! Confirmed by Anonymous
+CH3-2-1C6H11	C=C(C)CCCC	! Confirmed by Anonymous
+PXC2H4-2-1C5H9	[CH2]CC(=C)CCC	! Confirmed by Anonymous
+
+CH2-3-1C5H8     C=CC(=C)CC
+SAX4-5C10H19    CCC[C]=CCCCCC
+C5H8-12         C=C=CCC
+
+SAXC4H8-2-1C6H11	[CH2]C(=CCCC)CCCC	! Confirmed by Anonymous
+C3H7-2-SAXC6H10	[CH2]C(=CCCC)CCC	! Confirmed by Anonymous
+SAXC10H19	C=C[CH]CCCCCCC	! Confirmed by Anonymous
+SAXC9H17	C=C[CH]CCCCCC	! Confirmed by Anonymous
+SAXC8H15	C=C[CH]CCCCC	! Confirmed by Anonymous
+C2H5-2-SAX1C5H9	[CH2]C(=CCC)CC	! Confirmed by Anonymous
+
+
+
+
+SOOcC6O	[O]OC1CCCCC1[O]	! structure identified by name, although thermo significantly mismatches GAV
+C2H5cC6H10OO	CCC1CCC(CC1)O[O]	! Uncertain of structure - not enough data to decide
+CH3cC6H10OO	CC1CCC(CC1)O[O]	! Uncertain of structure - not enough data to decide
+C4H9cC6H10OO	CCCCC1CCC(CC1)O[O]	! Uncertain of structure - not enough data to decide
+C2H5cC6H9OOH	CCC1C[CH]C(CC1)OO	! Confirmed by Anonymous
+
+C2H5-2-C4H513   C=C(CC)C=C
+C4H9cC6H9OOH	CCCCC1C[CH]C(CC1)OO	! Confirmed by Anonymous
+CH3cC6H9OOH	CC1C[CH]C(CC1)OO	! Confirmed by Anonymous
+C3H7cC6H10OO	CCCC1CCC(CC1)O[O]	! Not enough info to determine functional group position (ortho/para/meta)
+
+CH3-2-1C5H9     C=C(C)CCC
+CH3-2-1C4H7     C=C(C)CC
+C3H7cC6H9OOH    C1C(CCC)[CH]CC(OO)C1    ! not enough info to determine structure
+
+
+
+CH3cC6H9O3      C1(C)CC([O])CC(O[O])C1     ! not enough info to determine structure 
+C2H5cC6H9O3     C1(CC)CC([O])CC(O[O])C1     ! not enough info to determine structure 
+C3H7cC6H9O3     C1(CCC)CC([O])CC(O[O])C1     ! not enough info to determine structure      ! not enough info to determine structure 
+C4H9cC6H9O3     C1(CCCC)CC([O])CC(O[O])C1     ! not enough info to determine structure 
+
+
+
+
+
+
+
+
+
+
