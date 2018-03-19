@@ -1,15 +1,15 @@
-.. _sensitivity:
+.. _simulate:
 
-********************
-Sensitivity Analysis
-********************
+***********************************
+Simulation and Sensitivity Analysis
+***********************************
 
-
-For sensitivity analysis, RMG-Py must be compiled with the DASPK solver, which is done by default but has 
+For sensitivity analysis, RMG-Py must be compiled with the DASPK solver, which is done by default but has
 some dependency restrictions. (See :ref:`License Restrictions on Dependencies <dependenciesRestrictions>` for more details.) 
-Sensitivity analysis can be conducted in a standalone system for an existing kinetics model in Chemkin format.
+Sensitivity analysis or a simulation (without sensitivity) can be conducted in a standalone system for an existing
+kinetics model in Chemkin format.
 
-To run sensitivity analysis, use the simulate module in RMG-Py/scripts::
+To run a simulation and/or sensitivity analysis, use the simulate module in RMG-Py/scripts::
 
     python simulate.py input.py chem.inp species_dictionary.txt
     
@@ -22,9 +22,14 @@ does not generate a RMG job.  See the following ``input.py`` example file found 
 .. literalinclude:: ../../../../../examples/rmg/minimal_sensitivity/input.py
 
 
-The names of species named in the input file must coincide with the name specified in the CHEMKIN file.  
+The names of species named in the input file must coincide with the names specified in the CHEMKIN file.
 
-Sensitivity analysis is conducted for the list of species given for ``sensitivity`` argument in the input file.  
+Other options that can be specified for the ``simulate.py`` scripts are::
+
+    --no-dlim      Turn off diffusion-limited rates for LiquidReactor
+    -f, --foreign  Not an RMG generated Chemkin file (will be checked for duplicates)
+
+Sensitivity analysis is conducted for the list of species given for the ``sensitivity`` argument in the input file.
 The normalized concentration sensitivities with respect to the reaction rate coefficients dln(C_i)/dln(k_j) are saved to a csv file 
 with the file name ``sensitivity_1_SPC_1.csv`` with the first index value indicating the reactor system and the second naming the index of the species 
 the sensitivity analysis is conducted for.  Sensitivities to thermo of individual species is also saved as semi normalized sensitivities

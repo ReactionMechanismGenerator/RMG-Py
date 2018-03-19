@@ -109,6 +109,7 @@ def getMainExtensionModules():
         Extension('rmgpy.quantity', ['rmgpy/quantity.py'], include_dirs=['.']),
         Extension('rmgpy.reaction', ['rmgpy/reaction.py'], include_dirs=['.']),
         Extension('rmgpy.species', ['rmgpy/species.py'], include_dirs=['.']),
+        Extension('rmgpy.chemkin', ['rmgpy/chemkin.pyx'], include_dirs=['.']),
     ]
     
 def getSolverExtensionModules():

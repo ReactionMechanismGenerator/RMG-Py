@@ -841,13 +841,13 @@ def loadTransportFile(path, speciesDict):
                     comment = comment.strip(),
                 )
 
-def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments = True, thermoPath = None, useChemkinNames=False):
+def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments=True, thermoPath=None,
+                    useChemkinNames=False, checkDuplicates=True):
     """
     Load a Chemkin input file located at `path` on disk to `path`, returning lists of the species
     and reactions in the Chemkin file. The 'thermoPath' point to a separate thermo file, or, if 'None' is 
     specified, the function will look for the thermo database within the chemkin mechanism file
     """
-    
     speciesList = []; speciesDict = {}; speciesAliases = {}
     reactionList = []
 
@@ -857,15 +857,13 @@ def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments 
     # HTML output.
     if dictionaryPath:
         speciesDict = loadSpeciesDictionary(dictionaryPath)
-    
+
     with open(path, 'r+b') as f:
     
         line0 = f.readline()
         while line0 != '':        
             line = removeCommentFromLine(line0)[0]
             line = line.strip()
-            tokens = line.split()
-            tokens_upper = line.upper().split()
             
             if 'SPECIES' in line.upper():
                 # Unread the line (we'll re-read it in readReactionBlock())
@@ -898,86 +896,21 @@ def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments 
                     readThermoBlock(f, speciesDict)  
                     break
                 line0 = f.readline()
-    # Index the reactions now to have identical numbering as in Chemkin 
+    # Index the reactions now to have identical numbering as in Chemkin
     index = 0
     for reaction in reactionList:
         index += 1
         reaction.index = index
 
-    # Check for marked (and unmarked!) duplicate reactions
-    # Combine marked duplicate reactions into a single reaction using MultiKinetics
-    # Raise exception for unmarked duplicate reactions
-    duplicateReactionsToRemove = []
-    duplicateReactionsToAdd = []
-    for index1 in range(len(reactionList)):
-        reaction1 = reactionList[index1]
-        if reaction1 in duplicateReactionsToRemove:
-            continue
-
-        for index2 in range(index1+1, len(reactionList)):
-            reaction2 = reactionList[index2]
-            if reaction1.reactants == reaction2.reactants and reaction1.products == reaction2.products and reaction1.specificCollider == reaction2.specificCollider:
-                if reaction1.duplicate and reaction2.duplicate:
-                    
-                    if isinstance(reaction1, LibraryReaction) and isinstance(reaction2, LibraryReaction):
-                        assert reaction1.library == reaction2.library
-                        if reaction1 not in duplicateReactionsToRemove:
-                            # already created duplicate reaction, move on to appending any additional duplicate kinetics
-                            if isinstance(reaction1.kinetics,
-                                          _kinetics.PDepArrhenius):
-                                kinetics = _kinetics.MultiPDepArrhenius()
-                            elif isinstance(reaction1.kinetics,
-                                            _kinetics.Arrhenius):
-                                kinetics = _kinetics.MultiArrhenius()
-                            else:
-                                logging.warning('Unexpected kinetics type {0} for duplicate reaction {1}. Not combining reactions.'.format(reaction1.kinetics.__class__, reaction1))
-                                continue
-                            reaction = LibraryReaction(
-                                index = reaction1.index,
-                                reactants = reaction1.reactants,
-                                products = reaction1.products,
-                                specificCollider = reaction1.specificCollider,
-                                kinetics = kinetics,
-                                library = reaction1.library,
-                                duplicate = False,
-                            )
-                            duplicateReactionsToAdd.append(reaction)
-                            kinetics.arrhenius = [reaction1.kinetics]
-                            duplicateReactionsToRemove.append(reaction1)
-
-                    else:
-                        # Do not use as duplicate reactions if it's not a library reaction
-                        # Template reactions should be kept separate
-                        continue
-                    
-                    if (isinstance(reaction.kinetics,
-                                   _kinetics.MultiPDepArrhenius) and
-                            isinstance(reaction2.kinetics,
-                                       _kinetics.PDepArrhenius)):
-                        reaction.kinetics.arrhenius.append(reaction2.kinetics)
-                    elif (isinstance(reaction.kinetics,
-                                     _kinetics.MultiArrhenius) and
-                              isinstance(reaction2.kinetics,
-                                         _kinetics.Arrhenius)):
-                        reaction.kinetics.arrhenius.append(reaction2.kinetics)
-                    else:
-                        raise ChemkinError('Mixed kinetics for duplicate reaction {0}.'.format(reaction))
-                    
-                    duplicateReactionsToRemove.append(reaction2)
-                elif reaction1.kinetics.isPressureDependent() == reaction2.kinetics.isPressureDependent():
-                    # If both reactions are pressure-independent or both are pressure-dependent, then they need duplicate tags
-                    # Chemkin treates pdep and non-pdep reactions as different, so those are okay
-                    raise ChemkinError('Encountered unmarked duplicate reaction {0}.'.format(reaction1))
-                    
-    for reaction in duplicateReactionsToRemove:
-        reactionList.remove(reaction)
-    reactionList.extend(duplicateReactionsToAdd)
+    # Process duplicate reactions
+    if checkDuplicates:
+        _process_duplicate_reactions(reactionList)
 
     # If the transport path is given, then read it to obtain the transport
     # properties
     if transportPath:
         loadTransportFile(transportPath, speciesDict)
-    
+
     if not useChemkinNames:
         # Apply species aliases if known
         for spec in speciesList:
@@ -996,6 +929,88 @@ def loadChemkinFile(path, dictionaryPath=None, transportPath=None, readComments 
 
     reactionList.sort(key=lambda reaction: reaction.index)
     return speciesList, reactionList
+
+
+cpdef _process_duplicate_reactions(list reactionList):
+    """
+    Check for marked (and unmarked!) duplicate reactions
+    Combine marked duplicate reactions into a single reaction using MultiKinetics
+    Raise exception for unmarked duplicate reactions
+    """
+    cdef list duplicateReactionsToRemove = []
+    cdef list duplicateReactionsToAdd = []
+    cdef int index1, index2
+    cdef Reaction reaction, reaction1, reaction2
+    cdef KineticsModel kinetics
+
+    for index1 in xrange(len(reactionList)):
+        reaction1 = reactionList[index1]
+        if reaction1 in duplicateReactionsToRemove:
+            continue
+
+        for index2 in xrange(index1 + 1, len(reactionList)):
+            reaction2 = reactionList[index2]
+            if (reaction1.reactants == reaction2.reactants
+                    and reaction1.products == reaction2.products
+                    and reaction1.specificCollider == reaction2.specificCollider):
+                if reaction1.duplicate and reaction2.duplicate:
+
+                    if isinstance(reaction1, LibraryReaction) and isinstance(reaction2, LibraryReaction):
+                        assert reaction1.library == reaction2.library
+                        if reaction1 not in duplicateReactionsToRemove:
+                            # already created duplicate reaction, move on to appending any additional duplicate kinetics
+                            if isinstance(reaction1.kinetics,
+                                          _kinetics.PDepArrhenius):
+                                kinetics = _kinetics.MultiPDepArrhenius()
+                            elif isinstance(reaction1.kinetics,
+                                            _kinetics.Arrhenius):
+                                kinetics = _kinetics.MultiArrhenius()
+                            else:
+                                logging.warning(
+                                    'Unexpected kinetics type {0} for duplicate reaction {1}. '
+                                    'Not combining reactions.'.format(reaction1.kinetics.__class__, reaction1)
+                                )
+                                continue
+                            reaction = LibraryReaction(
+                                index=reaction1.index,
+                                reactants=reaction1.reactants,
+                                products=reaction1.products,
+                                specificCollider=reaction1.specificCollider,
+                                kinetics=kinetics,
+                                library=reaction1.library,
+                                duplicate=False,
+                            )
+                            duplicateReactionsToAdd.append(reaction)
+                            kinetics.arrhenius = [reaction1.kinetics]
+                            duplicateReactionsToRemove.append(reaction1)
+
+                    else:
+                        # Do not use as duplicate reactions if it's not a library reaction
+                        # Template reactions should be kept separate
+                        continue
+
+                    if (isinstance(reaction.kinetics,
+                                   _kinetics.MultiPDepArrhenius) and
+                            isinstance(reaction2.kinetics,
+                                       _kinetics.PDepArrhenius)):
+                        reaction.kinetics.arrhenius.append(reaction2.kinetics)
+                    elif (isinstance(reaction.kinetics,
+                                     _kinetics.MultiArrhenius) and
+                          isinstance(reaction2.kinetics,
+                                     _kinetics.Arrhenius)):
+                        reaction.kinetics.arrhenius.append(reaction2.kinetics)
+                    else:
+                        raise ChemkinError('Mixed kinetics for duplicate reaction {0}.'.format(reaction))
+
+                    duplicateReactionsToRemove.append(reaction2)
+                elif reaction1.kinetics.isPressureDependent() == reaction2.kinetics.isPressureDependent():
+                    # If both reactions are pressure-independent or both are pressure-dependent, then they need
+                    # duplicate tags. Chemkin treates pdep and non-pdep reactions as different, so those are okay
+                    raise ChemkinError('Encountered unmarked duplicate reaction {0}.'.format(reaction1))
+
+    for reaction in duplicateReactionsToRemove:
+        reactionList.remove(reaction)
+    reactionList.extend(duplicateReactionsToAdd)
 
 
 def readSpeciesBlock(f, speciesDict, speciesAliases, speciesList):

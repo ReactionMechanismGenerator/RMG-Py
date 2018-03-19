@@ -15,7 +15,7 @@ otherwise.
     diffModels
     mergeModels
     generateReactions
-    sensitivity
+    simulate
     generateFluxDiagram
     thermoEstimation
     convertFAME
