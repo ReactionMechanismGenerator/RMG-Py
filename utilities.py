@@ -125,11 +125,15 @@ def check_dependencies():
         print """
 There are missing dependencies as listed above. Please install them before proceeding.
 
-Using Anaconda, these dependencies can be installed from the RMG channel as follows:
+Using Anaconda, these dependencies can be individually installed from the RMG channel as follows:
 
-    conda install -c rmg <package name>
+    conda install -c rmg [package name]
 
-Be sure to activate your conda environment (rmg_env by default) before installing.
+You can alternatively update your environment and install all missing dependencies as follows:
+
+    conda env update -f environment_[linux/mac/windows].yml  # Choose the correct file for your OS
+
+Be sure to activate your conda environment (rmg_env by default) before installing or updating.
 """
     else:
         print """
