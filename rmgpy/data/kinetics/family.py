@@ -1546,6 +1546,11 @@ class KineticsFamily(Database):
         """
         reaction.degeneracy = 1
 
+        # if reactants are different instances, make deep copy of reaction object
+        if len(reaction.reactants) > 1 and \
+                      len(set([id(r) for r in reaction.reactants])) != \
+                      len(reaction.reactants):
+            reaction = reaction.copy()
         # find combinations of resonance isomers
         specReactants = ensure_species(reaction.reactants, resonance=True, keepIsomorphic=True)
         molecule_combos = generate_molecule_combos(specReactants)
@@ -1575,13 +1580,14 @@ class KineticsFamily(Database):
             
         # log issues
         if len(reactions) != 1:
-            for reactant in reaction.reactants:
-                logging.error("Reactant: {0!r}".format(reactant))
-            for product in reaction.products:
-                logging.error("Product: {0!r}".format(product))
-            raise KineticsError(('Unable to calculate degeneracy for reaction {0} '
+            logging.warning(('Unable to calculate degeneracy for reaction {0} '
                                  'in reaction family {1}. Expected 1 reaction '
                                  'but generated {2}').format(reaction, self.label, len(reactions)))
+            logging.warning("The full original reaction object is: {0!r}".format(reaction))
+            logging.warning("The reaction objects found are: {0!r}".format(reactions))
+            if len(reactions) == 0:
+                return 1.0
+
         return reactions[0].degeneracy
         
     def __generateReactions(self, reactants, products=None, forward=True, prod_resonance=True):
