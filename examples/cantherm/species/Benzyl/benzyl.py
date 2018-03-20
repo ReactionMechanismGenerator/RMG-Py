@@ -1,11 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-atoms = {
-    'C': 7,
-    'H': 7,
-}
-
 bonds = {
 	'C=C': 3,
     'C-C': 4, 

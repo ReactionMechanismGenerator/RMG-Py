@@ -51,7 +51,7 @@ which accepts a string describing the model chemistry.
 CanTherm uses this information to adjust the computed energies to the usual gas-phase reference
 states by applying atom, bond and spin-orbit coupling energy corrections. This is particularly
 important for ``thermo()`` calculations (see below). Note that the user must specify under the
-``species()`` function the type and number of atoms and bonds for CanTherm to apply these corrections.
+``species()`` function the type and number of bonds for CanTherm to apply these corrections.
 The example below specifies CBS-QB3 as the model chemistry::
 
     modelChemistry("CBS-QB3")
@@ -164,7 +164,6 @@ The species input file accepts the following parameters:
 ======================= =========================== ====================================
 Parameter               Required?                   Description
 ======================= =========================== ====================================
-``atoms``               yes                         Type and number of atoms in the species
 ``bonds``               optional                    Type and number of bonds in the species
 ``linear``              yes                         ``True`` if the molecule is linear, ``False`` if not
 ``externalSymmetry``    yes                         The external symmetry number for rotation
@@ -178,12 +177,11 @@ Parameter               Required?                   Description
 ``rotors``              optional                    A list of :class:`HinderedRotor()` and/or :class:`FreeRotor()` objects describing the hindered/free rotors
 ======================= =========================== ====================================
 
-The ``atom`` and ``bond`` parameters are used to apply atomization energy corrections (AEC), bond corrections (BC), and spin orbit corrections (SOC) for a given ``modelChemistry()`` (see `Model Chemistry <input.html#model-chemistry>`_).
+The types and number of atoms in the species are automatically inferred from the quantum chemistry output and are used
+to apply atomization energy corrections (AEC) and spin orbit corrections (SOC) for a given ``modelChemistry()``
+(see `Model Chemistry`_).
 
-Allowed atom symbols for the ``atoms`` parameter are
-``'C'``, ``'N'``, ``'O'``, ``'S'``, ``'P'``, and ``'H'``. For example, for acetylperoxy radical we would write::
-
-    atoms = {'C': 2, 'O': 3, H': 3}
+The ``bond`` parameter is used to apply bond corrections (BC) for a given ``modelChemistry()``.
 
 Allowed bond types for the ``bonds`` parameter are, e.g., ``'C-H'``, ``'C-C'``, ``'C=C'``, ``'N-O'``, ``'C=S'``, ``'O=O'``, ``'C#N'``...
 
@@ -235,12 +233,6 @@ For example::
 
 In summary, in order to specify the molecular properties of a species by parsing the output of quantum chemistry calculations, without any hindered/free rotors,
 the species input file should look like the following (using acetylperoxy as an example)::
-
-    atoms = {
-    'C': 2,
-    'O': 3,
-    H': 3,
-    }
 
     bonds = {
     'C-C': 1,
@@ -349,12 +341,6 @@ puts a lower bound on the impact of that rotor on the species's overall partitio
 in between these two extremes.
 
 To summarize, the species input file with hindered/free rotors should look like the following example (different options for specifying the same ``rotors`` entry are commented out)::
-
-    atoms = {
-    'C': 2,
-    'O': 3,
-    'H': 3,
-    }
 
     bonds = {
     'C-C': 1,

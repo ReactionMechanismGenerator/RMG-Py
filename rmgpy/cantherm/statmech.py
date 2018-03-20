@@ -39,6 +39,8 @@ import math
 import numpy
 import logging
 
+from rdkit.Chem import GetPeriodicTable
+
 import rmgpy.constants as constants
 
 from rmgpy.cantherm.output import prettify
@@ -54,6 +56,14 @@ from rmgpy.statmech.vibration import Vibration, HarmonicOscillator
 from rmgpy.statmech.torsion import Torsion, HinderedRotor, FreeRotor
 from rmgpy.statmech.conformer import Conformer
 from rmgpy.exceptions import InputError
+
+# These are the atoms we currently have enthalpies of formation for
+atom_num_dict = {1: 'H',
+                 3: 'Li', 4: 'Be', 5: 'B', 6: 'C', 7: 'N', 8: 'O', 9: 'F',
+                 11: 'Na', 12: 'Mg', 13: 'Al', 14: 'Si', 15: 'P', 16: 'S', 17: 'Cl'}
+
+# Use the RDKit periodic table so we can write symbols for not implemented elements
+_rdkit_periodic_table = GetPeriodicTable()
 
 ################################################################################
 
@@ -216,15 +226,6 @@ class StatMechJob:
                 raise
         
         try:
-            atoms = local_context['atoms']
-        except KeyError:
-            raise InputError('Required attribute "atoms" not found in species file {0!r}.'.format(path))
-        else:
-            if isinstance(self.species, Species):
-                # Save atoms for use in writing thermo output
-                self.species.props['elementCounts'] = atoms
-        
-        try:
             bonds = local_context['bonds']
         except KeyError:
             bonds = {}
@@ -317,6 +318,21 @@ class StatMechJob:
         
         logging.debug('    Reading optimized geometry...')
         coordinates, number, mass = geomLog.loadGeometry()
+
+        # Infer atoms from geometry
+        atoms = {}
+        for atom_num in number:
+            try:
+                symbol = atom_num_dict[atom_num]
+            except KeyError:
+                raise Exception(
+                    'Element {} is not yet supported.'.format(_rdkit_periodic_table.GetElementSymbol(atom_num))
+                )
+            atoms[symbol] = atoms.get(symbol, 0) + 1
+
+        # Save atoms for use in writing thermo output
+        if isinstance(self.species, Species):
+            self.species.props['elementCounts'] = atoms
 
         conformer.coordinates = (coordinates,"angstroms")
         conformer.number = number
@@ -449,8 +465,6 @@ class StatMechJob:
         
         logging.info('Saving statistical mechanics parameters for {0}...'.format(self.species.label))
         f = open(outputFile, 'a')
-    
-        numbers = {1: 'H', 6: 'C', 7: 'N', 8: 'O', 14: 'Si', 15: 'P', 16: 'S', 17: 'Cl'}
         
         conformer = self.species.conformer
             
@@ -462,7 +476,7 @@ class StatMechJob:
             x = coordinates[i,0]
             y = coordinates[i,1]
             z = coordinates[i,2]
-            f.write('#   {0} {1:9.4f} {2:9.4f} {3:9.4f}\n'.format(numbers[number[i]], x, y, z))
+            f.write('#   {0} {1:9.4f} {2:9.4f} {3:9.4f}\n'.format(atom_num_dict[number[i]], x, y, z))
         
         string = 'conformer(label={0!r}, E0={1!r}, modes={2!r}, spinMultiplicity={3:d}, opticalIsomers={4:d}'.format(
             self.species.label, 
