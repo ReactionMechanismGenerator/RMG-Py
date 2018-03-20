@@ -13,12 +13,13 @@ Each section is made up of one or more function calls, where parameters are
 specified as text strings, numbers, or objects. Text strings must be wrapped in
 either single or double quotes.
 
-The following is a list of all the functions of a CanTherm input file for thermodynamics and high-pressure limit kinetics computations:
+The following is a list of all the components of a CanTherm input file for thermodynamics and high-pressure limit kinetics computations:
 
 =========================== =========================================================
-Function                    Description
+Component                   Description
 =========================== =========================================================
 ``modelChemistry``          Level of theory from quantum chemical calculations
+``atomEnergies``            Dictionary of atomic energies at ``modelChemistry`` level
 ``frequencyScaleFactor``    A factor by which to scale all frequencies
 ``useHinderedRotors``       ``True`` if hindered rotors are used, ``False`` if not
 ``useBondCorrections``      ``True`` if bond corrections are used, ``False`` if not
@@ -33,8 +34,8 @@ Function                    Description
 Model Chemistry
 ===============
 
-The first item in the input file should be a ``modelChemistry()`` function,
-which accepts a string describing the model chemistry.
+The first item in the input file should be a ``modelChemistry`` assignment
+with a string describing the model chemistry.
 
 CanTherm uses this information to adjust the computed energies to the usual gas-phase reference
 states by applying atom, bond and spin-orbit coupling energy corrections. This is particularly
@@ -42,49 +43,66 @@ important for ``thermo()`` calculations (see below). Note that the user must spe
 ``species()`` function the type and number of bonds for CanTherm to apply these corrections.
 The example below specifies CBS-QB3 as the model chemistry::
 
-    modelChemistry("CBS-QB3")
+    modelChemistry = "CBS-QB3"
 
-Currently, atomization energy corrections (AEC), bond corrections (BC), and spin orbit correction (SOC) are available for the following model chemistries:
+Alternatively, the atomic energies at the ``modelChemistry`` level of theory can be directly
+specified in the input file by providing a dictionary of these energies in the following format::
 
-================================================ ===== ==== ====
-Model Chemistry                                  AEC   BC   SOC     
-================================================ ===== ==== ====
-``'CBS-QB3'``                                     v    v    v
-``'G3'``                                          v         v
-``'M08SO/MG3S*'``                                 v         v
-``'M06-2X/cc-pVTZ'``                              v         v
-``'Klip_1'``                                      v         v
-``'Klip_2'`` *uses QCI(tz,qz) values*             v         v
-``'Klip_3'`` *uses QCI(dz,qz) values*             v         v
-``'Klip_2_cc'`` *uses CCSD(T)(tz,qz) values*      v         v
-``'CCSD-F12/cc-pVDZ-F12'``                        v         v
-``'CCSD(T)-F12/cc-pVDZ-F12_H-TZ'``                v         v
-``'CCSD(T)-F12/cc-pVDZ-F12_H-QZ'``                v         v
-``'CCSD(T)-F12/cc-pVnZ-F12'``, *n = D,T,Q*        v    v    v
-``'CCSD(T)-F12/cc-pVDZ-F12_noscale'``             v         v
-``'CCSD(T)-F12/cc-pCVnZ-F12'``, *n = D,T,Q*       v         v
-``'CCSD(T)-F12/aug-cc-pVnZ-F12'``, *n = D,T,Q*    v         v
-``'B-CCSD(T)-F12/cc-pVnZ-F12'``, *n = D,T,Q*      v         v
-``'B-CCSD(T)-F12/cc-pCVnZ-F12'``, *n = D,T,Q*     v         v
-``'B-CCSD(T)-F12/aug-cc-pVnZ-F12'``, *n = D,T,Q*  v         v
-``'G03_PBEPBE_6-311++g_d_p'``                     v         v
-``'MP2_rmp2_pVnZ'``, *n = D,T,Q*                  v         v
-``'FCI/cc-pVnZ'``, *n = D,T,Q*                    v         v
-``'BMK/cbsb7'``                                   v    v    v
-``'BMK/6-311G(2d,d,p)'``                          v    v    v
+    atomEnergies = {
+        'H': -0.499818,
+        'C': -37.78552,
+        'N': -54.520543,
+        'O': -74.987979,
+        'S': -397.658253,
+    }
+
+The table below shows which model chemistries have atomization energy corrections (AEC), bond
+corrections (BC), and spin orbit corrections (SOC). It also lists which atoms types are available
+for a given model chemistry.
+
+================================================ ===== ==== ==== ====================
+Model Chemistry                                  AEC   BC   SOC  Supported Elements
+================================================ ===== ==== ==== ====================
+``'CBS-QB3'``                                     v    v    v    H, C, N, O, P, S
+``'G3'``                                          v         v    H, C, N, O, P, S
+``'M08SO/MG3S*'``                                 v         v    H, C, N, O, P, S
+``'M06-2X/cc-pVTZ'``                              v         v    H, C, N, O, P, S
+``'Klip_1'``                                      v         v    H, C, N, O
+``'Klip_2'`` *uses QCI(tz,qz) values*             v         v    H, C, N, O
+``'Klip_3'`` *uses QCI(dz,qz) values*             v         v    H, C, N, O
+``'Klip_2_cc'`` *uses CCSD(T)(tz,qz) values*      v         v    H, C, O
+``'CCSD-F12/cc-pVDZ-F12'``                        v         v    H, C, N, O
+``'CCSD(T)-F12/cc-pVDZ-F12_H-TZ'``                v         v    H, C, N, O
+``'CCSD(T)-F12/cc-pVDZ-F12_H-QZ'``                v         v    H, C, N, O
+``'CCSD(T)-F12/cc-pVnZ-F12'``, *n = D,T,Q*        v    v    v    H, C, N, O, S
+``'CCSD(T)-F12/cc-pVDZ-F12_noscale'``             v         v    H, C, N, O
+``'CCSD(T)-F12/cc-pCVnZ-F12'``, *n = D,T,Q*       v         v    H, C, N, O
+``'CCSD(T)-F12/aug-cc-pVnZ'``, *n = D,T,Q*        v         v    H, C, N, O
+``'B-CCSD(T)-F12/cc-pVnZ-F12'``, *n = D,T,Q*      v         v    H, C, N, O, S
+``'B-CCSD(T)-F12/cc-pCVnZ-F12'``, *n = D,T,Q*     v         v    H, C, N, O
+``'B-CCSD(T)-F12/aug-cc-pVnZ'``, *n = D,T,Q*      v         v    H, C, N, O
+``'G03_PBEPBE_6-311++g_d_p'``                     v         v    H, C, N, O
+``'MP2_rmp2_pVnZ'``, *n = D,T,Q*                  v         v    H, C, N, O
+``'FCI/cc-pVnZ'``, *n = D,T,Q*                    v         v    C
+``'BMK/cbsb7'``                                   v    v    v    H, C, N, O, P, S
+``'BMK/6-311G(2d,d,p)'``                          v    v    v    H, C, N, O, P, S
 ``'B3LYP/6-311+G(3df,2p)'``                            v
-``'B3LYP/6-31G**'``                               v    v
-================================================ ===== ==== ====
+``'B3LYP/6-31G**'``                               v    v         H, C, O, S
+================================================ ===== ==== ==== ====================
 
 Notes:
 
-- In ``'M08SO/MG3S*'`` the grid size used in the [QChem] electronic structure calculation utilizes 75 radial points and 434 angular points. ``'DFT_G03_b3lyp'`` is a B3LYP calculation with a moderately large basis set.
+- In ``'M08SO/MG3S*'`` the grid size used in the [QChem] electronic structure calculation utilizes 75 radial points and 434 angular points.
 - Refer to paper by Goldsmith et al. (*Goldsmith, C. F.; Magoon, G. R.; Green, W. H., Database of Small Molecule Thermochemistry for Combustion. J. Phys. Chem. A 2012, 116, 9033-9057*) for definition of ``'Klip_2'`` (*QCI(tz,qz)*) and ``'Klip_3'`` (*QCI(dz,qz)*).
+
+If a model chemistry other than the ones in the above table is used, then the user should supply
+the corresponding atomic energies (using ``atomEnergies``) to get meaningful results. Bond
+corrections would not be applied in this case.
 
 Frequency Scale Factor
 ======================
 
-Frequency scale factors are empirically fit to experiment for different ``modelChemistry()``. Refer to NIST website for values (http://cccbdb.nist.gov/vibscalejust.asp).
+Frequency scale factors are empirically fit to experiment for different ``modelChemistry``. Refer to NIST website for values (http://cccbdb.nist.gov/vibscalejust.asp).
 For CBS-QB3, which is not included in the link above, ``frequencyScaleFactor = 0.99`` according to Montgomery et al. (*J. Chem. Phys. 1999, 110, 2822–2827*).
 
 Species
@@ -128,10 +146,10 @@ Parameter               Required?                   Description
 ======================= =========================== ====================================
 
 The types and number of atoms in the species are automatically inferred from the quantum chemistry output and are used
-to apply atomization energy corrections (AEC) and spin orbit corrections (SOC) for a given ``modelChemistry()``
+to apply atomization energy corrections (AEC) and spin orbit corrections (SOC) for a given ``modelChemistry``
 (see `Model Chemistry`_).
 
-The ``bond`` parameter is used to apply bond corrections (BC) for a given ``modelChemistry()``.
+The ``bond`` parameter is used to apply bond corrections (BC) for a given ``modelChemistry``.
 
 Allowed bond types for the ``bonds`` parameter are, e.g., ``'C-H'``, ``'C-C'``, ``'C=C'``, ``'N-O'``, ``'C=S'``, ``'O=O'``, ``'C#N'``...
 
@@ -155,7 +173,7 @@ For ethane, we would write::
 
     opticalIsomers = 1
 
-The ``energy`` parameter is a dictionary with entries for different ``modelChemistry()``. The entries can consist of either
+The ``energy`` parameter is a dictionary with entries for different ``modelChemistry``. The entries can consist of either
 floating point numbers corresponding to the 0 K atomization energy in Hartree (without zero-point energy correction), or
 they can specify the path to a quantum chemistry calculation output file that contains the species's energy. For example::
 
@@ -165,7 +183,7 @@ they can specify the path to a quantum chemistry calculation output file that co
     }
 
 In this example, the ``CBS-QB3`` energy is obtained from a Gaussian log file, while the ``Klip_2`` energy is specified directly.
-The energy used will depend on what ``modelChemistry()`` was specified in the input file. CanTherm can parse the energy from
+The energy used will depend on what ``modelChemistry`` was specified in the input file. CanTherm can parse the energy from
 a ``GaussianLog``, ``MolproLog`` or ``QchemLog``.
 
 The input to the remaining parameters, ``geometry``, ``frequencies`` and ``rotors``, will depend on if hindered/free rotors are included.

@@ -389,6 +389,7 @@ def loadInputFile(path):
     frequencyScaleFactor = local_context.get('frequencyScaleFactor', 1.0)
     useHinderedRotors = local_context.get('useHinderedRotors', True)
     useBondCorrections = local_context.get('useBondCorrections', False)
+    atomEnergies = local_context.get('atomEnergies', None)
     
     directory = os.path.dirname(path)
     
@@ -399,5 +400,6 @@ def loadInputFile(path):
             job.frequencyScaleFactor = frequencyScaleFactor
             job.includeHinderedRotors = useHinderedRotors
             job.applyBondEnergyCorrections = useBondCorrections
+            job.atomEnergies = atomEnergies
     
     return jobList

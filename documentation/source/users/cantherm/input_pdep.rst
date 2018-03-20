@@ -19,12 +19,13 @@ Each section is made up of one or more function calls, where parameters are
 specified as text strings, numbers, or objects. Text strings must be wrapped in
 either single or double quotes.
 
-The following is a list of all the functions of a CanTherm input file for pressure-dependent calculations:
+The following is a list of all the components of a CanTherm input file for pressure-dependent calculations:
 
 =========================== ================================================================
-Function                    Description
+Component                   Description
 =========================== ================================================================
 ``modelChemistry``          Level of theory from quantum chemical calculations
+``atomEnergies``            Dictionary of atomic energies at ``modelChemistry`` level
 ``frequencyScaleFactor``    A factor by which to scale all frequencies
 ``useHinderedRotors``       ``True`` if hindered rotors are used, ``False`` if not
 ``useBondCorrections``      ``True`` if bond corrections are used, ``False`` if not
@@ -45,8 +46,8 @@ Important differences are mentioned in the sections below.
 Model Chemistry
 ===============
 
-The first item in the input file should be a ``modelChemistry()`` function,
-which accepts a string describing the model chemistry.
+The first item in the input file should be a ``modelChemistry`` assignment
+with a string describing the model chemistry.
 
 CanTherm uses this information to adjust the computed energies to the usual gas-phase reference
 states by applying atom, bond and spin-orbit coupling energy corrections. This is particularly
@@ -54,15 +55,27 @@ important for ``thermo()`` calculations (see below). Note that the user must spe
 ``species()`` function the type and number of bonds for CanTherm to apply these corrections.
 The example below specifies CBS-QB3 as the model chemistry::
 
-    modelChemistry("CBS-QB3")
+    modelChemistry = "CBS-QB3"
 
-Currently, atomization energy corrections (AEC), bond corrections (BC), and spin orbit correction (SOC) are available for
-model chemistries as described under `High-Pressure Limit: Model Chemistry <input.html#model-chemistry>`_
+Alternatively, the atomic energies at the ``modelChemistry`` level of theory can be directly
+specified in the input file by providing a dictionary of these energies in the following format::
+
+    atomEnergies = {
+        'H': -0.499818,
+        'C': -37.78552,
+        'N': -54.520543,
+        'O': -74.987979,
+        'S': -397.658253,
+    }
+
+Whether or not atomization energy corrections (AEC), bond corrections (BC), and spin orbit
+corrections (SOC); and which atom types are available for a given model chemistry is described
+under `High-Pressure Limit: Model Chemistry <input.html#model-chemistry>`_
 
 Frequency Scale Factor
 ======================
 
-Frequency scale factors are empirically fit to experiment for different ``modelChemistry()``. Refer to NIST website for values (http://cccbdb.nist.gov/vibscalejust.asp).
+Frequency scale factors are empirically fit to experiment for different ``modelChemistry``. Refer to NIST website for values (http://cccbdb.nist.gov/vibscalejust.asp).
 For CBS-QB3, which is not included  in the link above, ``frequencyScaleFactor = 0.99`` according to Montgomery et al. (*J. Chem. Phys. 1999, 110, 2822–2827*).
 
 Species Parameters
@@ -178,10 +191,10 @@ Parameter               Required?                   Description
 ======================= =========================== ====================================
 
 The types and number of atoms in the species are automatically inferred from the quantum chemistry output and are used
-to apply atomization energy corrections (AEC) and spin orbit corrections (SOC) for a given ``modelChemistry()``
+to apply atomization energy corrections (AEC) and spin orbit corrections (SOC) for a given ``modelChemistry``
 (see `Model Chemistry`_).
 
-The ``bond`` parameter is used to apply bond corrections (BC) for a given ``modelChemistry()``.
+The ``bond`` parameter is used to apply bond corrections (BC) for a given ``modelChemistry``.
 
 Allowed bond types for the ``bonds`` parameter are, e.g., ``'C-H'``, ``'C-C'``, ``'C=C'``, ``'N-O'``, ``'C=S'``, ``'O=O'``, ``'C#N'``...
 
@@ -205,7 +218,7 @@ For acetylperoxy radical, we would write::
 
     opticalIsomers = 1
 
-The ``energy`` parameter is a dictionary with entries for different ``modelChemistry()``. The entries can consist of either
+The ``energy`` parameter is a dictionary with entries for different ``modelChemistry``. The entries can consist of either
 floating point numbers corresponding to the 0 K atomization energy in Hartree (without zero-point energy correction), or
 they can specify the path to a quantum chemistry calculation output file that contains the species's energy. For example::
 
@@ -215,7 +228,7 @@ they can specify the path to a quantum chemistry calculation output file that co
     }
 
 In this example, the ``CBS-QB3`` energy is obtained from a Gaussian log file, while the ``Klip_2`` energy is specified directly.
-The energy used will depend on what ``modelChemistry()`` was specified in the input file. CanTherm can parse the energy from
+The energy used will depend on what ``modelChemistry`` was specified in the input file. CanTherm can parse the energy from
 a ``GaussianLog``, ``MolproLog`` or ``QchemLog``.
 
 The input to the remaining parameters, ``geometry``, ``frequencies`` and ``rotors``, will depend on if hindered/free rotors are included.
