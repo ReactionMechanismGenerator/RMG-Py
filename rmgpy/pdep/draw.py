@@ -372,6 +372,7 @@ class NetworkDrawer:
         # Fill the background with white
         cr.set_source_rgba(1.0, 1.0, 1.0, 1.0)
         cr.paint()
+        self.__drawText('E0 ({0})'.format(Eunits), cr, 15, 10, padding=2)  # write units
 
 #        # DEBUG: Draw well bounding rectangles
 #        cr.save()

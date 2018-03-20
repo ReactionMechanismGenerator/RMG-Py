@@ -50,6 +50,7 @@ from operator import itemgetter
 
 import rmgpy.quantity as quantity
 
+from rmgpy.molecule.molecule import Atom, Bond, Molecule
 from rmgpy.pdep import SingleExponentialDown
 from rmgpy.statmech.conformer import Conformer
 from rmgpy.thermo import Wilhoit, NASA, ThermoData

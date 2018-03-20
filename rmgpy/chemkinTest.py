@@ -356,7 +356,10 @@ multiplicity 2
                                 reaction_list_unmarked_duplicate)
 
         # Test that unequal libraries are recognized
-        self.assertRaises(AssertionError, _process_duplicate_reactions, reaction_list_unequal_libraries)
+        self.assertRaisesRegexp(ChemkinError,
+                                'from different libraries',
+                                _process_duplicate_reactions,
+                                reaction_list_unequal_libraries)
 
         # Test that an error is raised for reactions with kinetics
         # that cannot be merged

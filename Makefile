@@ -37,23 +37,31 @@ cantherm:
 	python setup.py build_ext cantherm --build-lib . --build-temp build --pyrex-c-in-temp
 
 check:
-	@ python check_dependencies.py
+	@ python utilities.py check-dependencies
 
 documentation:
 	$(MAKE) -C documentation html
 	@ echo "Start at: documentation/build/html/index.html"
 
 clean:
-	python setup.py clean --build-temp build
-	rm -rf build/
-	find . -name '*.so' -exec rm -f '{}' \;
-	find . -name '*.pyc' -exec rm -f '{}' \;
-	
+	@ echo "Removing build directory..."
+	@ python setup.py clean --build-temp build
+	@ echo "Removing compiled files..."
+	@ python utilities.py clean
+	@ echo "Cleanup completed."
+
 clean-solver:
-	rm -r build/pyrex/rmgpy/solver/
-	rm -r build/build/pyrex/rmgpy/solver/
-	find rmgpy/solver/ -name '*.so' -exec rm -f '{}' \;
-	find rmgpy/solver/ -name '*.pyc' -exec rm -f '{}' \;
+	@ echo "Removing solver build directories..."
+ifeq ($(OS),Windows_NT)
+	@ -rd /s /q build\pyrex\rmgpy\solver
+	@ -rd /s /q build\build\pyrex\rmgpy\solver
+else
+	@ -rm -r build/pyrex/rmgpy/solver/
+	@ -rm -r build/build/pyrex/rmgpy/solver/
+endif
+	@ echo "Removing compiled files..."
+	@ python utilities.py clean-solver
+	@ echo "Cleanup completed."
 
 decython:
 	# de-cythonize all but the 'minimal'. Helpful for debugging in "pure python" mode.
@@ -61,40 +69,32 @@ decython:
 	find . -name *.pyc -exec rm -f '{}' \;
 
 test-all:
-ifeq ($(OS),Windows_NT)
-	nosetests --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy
-else
+ifneq ($(OS),Windows_NT)
 	mkdir -p testing/coverage
 	rm -rf testing/coverage/*
-	nosetests --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy
 endif
+	nosetests --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy
 
 test-unittests:
-ifeq ($(OS),Windows_NT)
-	nosetests --nocapture --nologcapture --all-modules -A 'not functional' --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy
-else
+ifneq ($(OS),Windows_NT)
 	mkdir -p testing/coverage
 	rm -rf testing/coverage/*
-	nosetests --nocapture --nologcapture --all-modules -A 'not functional' --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy
 endif
+	nosetests --nocapture --nologcapture --all-modules -A 'not functional' --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy
 
 test test-unittests-non-auth:
-ifeq ($(OS),Windows_NT)
-	nosetests --nocapture --nologcapture --all-modules -A 'not functional and not auth' --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy
-else
+ifneq ($(OS),Windows_NT)
 	mkdir -p testing/coverage
 	rm -rf testing/coverage/*
-	nosetests --nocapture --nologcapture --all-modules -A 'not functional and not auth' --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy
 endif
+	nosetests --nocapture --nologcapture --all-modules -A 'not functional and not auth' --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy
 
 test-functional:
-ifeq ($(OS),Windows_NT)
-	nosetests --nocapture --nologcapture --all-modules -A 'functional' --verbose --exe rmgpy
-else
+ifneq ($(OS),Windows_NT)
 	mkdir -p testing/coverage
 	rm -rf testing/coverage/*
-	nosetests --nocapture --nologcapture --all-modules -A 'functional' --verbose --exe rmgpy
 endif
+	nosetests --nocapture --nologcapture --all-modules -A 'functional' --verbose --exe rmgpy
 
 test-database:
 	nosetests -v -d testing/databaseTest.py	
