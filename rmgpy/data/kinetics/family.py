@@ -2132,6 +2132,15 @@ class KineticsFamily(Database):
         # make sure we start with reaction with species objects
         reaction.ensure_species(reactant_resonance=False, product_resonance=False)
 
+        reactants = reaction.reactants
+        products = reaction.products
+        # ensure all species are independent references
+        if len(reactants + products) > len(set([id(s) for s in reactants + products])):
+            logging.debug('Copying reactants and products for reaction {} since they have identical species references'.format(reaction))
+            # not all species are independent
+            reactants = [s.copy(deep=True) for s in reactants]
+            products = [s.copy(deep=True) for s in products]
+
         # get all possible pairs of resonance structures
         reactant_pairs = list(itertools.product(*[s.molecule for s in reaction.reactants]))
         product_pairs = list(itertools.product(*[s.molecule for s in reaction.products]))
@@ -2152,20 +2161,22 @@ class KineticsFamily(Database):
 
         # place the molecules in reaction's species object
         # this prevents overwriting of attributes of species objects by this method
-        for species in reaction.products:
+        for index, species in enumerate(products):
             for labeled_molecule in labeled_products:
                 if species.isIsomorphic(labeled_molecule):
                     species.molecule = [labeled_molecule]
+                    reaction.products[index] = species
                     break
             else:
-                raise ActionError('Could not find isomorphic molecule to fit the original product {}'.format(species))
-        for species in reaction.reactants:
+                raise ActionError('Could not find isomorphic molecule to fit the original product {} from reaction {}'.format(species, reaction))
+        for index, species in enumerate(reactants):
             for labeled_molecule in labeled_reactants:
                 if species.isIsomorphic(labeled_molecule):
                     species.molecule = [labeled_molecule]
+                    reaction.reactants[index] = species
                     break
             else:
-                raise ActionError('Could not find isomorphic molecule to fit the original reactant {}'.format(species))
+                raise ActionError('Could not find isomorphic molecule to fit the original reactant {} from reaction {}'.format(species, reaction))
 
         if output_with_resonance:
             # convert the molecules to species objects with resonance structures

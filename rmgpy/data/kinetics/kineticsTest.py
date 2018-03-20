@@ -897,3 +897,128 @@ class TestKinetics(unittest.TestCase):
         reaction_list_2 = self.database.kinetics.generate_reactions_from_libraries(reactants, products)
 
         self.assertEqual(len(reaction_list_2), 1)
+
+    def test_add_atom_labels_for_reaction(self):
+        """Test that addAtomLabelsForReaction can identify reactions with resonance
+        The molecule [CH]=C=C has resonance in this reaction"""
+        from rmgpy.data.rmg import getDB
+        reactants = [
+            Molecule().fromSMILES('C=C=C'),
+            Molecule().fromSMILES('[CH]=C=C'),
+        ]
+        products = [
+            Molecule().fromSMILES('C#C[CH2]'),
+            Molecule().fromSMILES('C#CC'),
+        ]
+        reaction = TemplateReaction(reactants =reactants,
+                                    products = products,
+                                    family = 'H_Abstraction')
+        reaction.ensure_species(reactant_resonance=True, product_resonance=True)
+        family = getDB('kinetics').families['H_Abstraction']
+        family.addAtomLabelsForReaction(reaction, output_with_resonance=False)
+
+        # test that the reaction has labels
+        found_labels = []
+        for species in reaction.reactants:
+            for atom in species.molecule[0].atoms:
+                if atom.label != '':
+                    found_labels.append(atom.label)
+        self.assertEqual(len(found_labels), 3)
+        self.assertIn('*1',found_labels)
+        self.assertIn('*2',found_labels)
+        self.assertIn('*3',found_labels)
+
+        # test for the products too
+        found_labels = []
+        for species in reaction.products:
+            for atom in species.molecule[0].atoms:
+                if atom.label != '':
+                    found_labels.append(atom.label)
+        self.assertEqual(len(found_labels), 3)
+        self.assertIn('*1',found_labels)
+        self.assertIn('*2',found_labels)
+        self.assertIn('*3',found_labels)
+
+    def test_add_atom_labels_for_reaction_2(self):
+        """Test that addAtomLabelsForReaction can identify reactions with identical references
+        The molecule [CH]=C=C has resonance in this reaction"""
+        from rmgpy.data.rmg import getDB
+        s1 = Species().fromSMILES('C=C=C')
+        s2 = Species().fromSMILES('C=C=[CH]')
+        s3 = Species().fromSMILES('C#CC')
+        s2.generate_resonance_structures()
+        reactants = [s1,s2]
+        products = [s2,s3]
+        reaction = TemplateReaction(reactants =reactants,
+                                    products = products,
+                                    family = 'H_Abstraction')
+        family = getDB('kinetics').families['H_Abstraction']
+        print reaction.reactants
+        print reaction.products
+        family.addAtomLabelsForReaction(reaction, output_with_resonance=False)
+
+        # test that the reaction has labels
+        found_labels = []
+        for species in reaction.reactants:
+            for atom in species.molecule[0].atoms:
+                if atom.label != '':
+                    found_labels.append(atom.label)
+        self.assertEqual(len(found_labels), 3,'wrong number of labels found {0}'.format(found_labels))
+        self.assertIn('*1',found_labels)
+        self.assertIn('*2',found_labels)
+        self.assertIn('*3',found_labels)
+
+        # test for the products too
+        found_labels = []
+        for species in reaction.products:
+            for atom in species.molecule[0].atoms:
+                if atom.label != '':
+                    found_labels.append(atom.label)
+        self.assertEqual(len(found_labels), 3)
+        self.assertIn('*1',found_labels)
+        self.assertIn('*2',found_labels)
+        self.assertIn('*3',found_labels)
+
+    def test_add_atom_labels_for_reaction_3(self):
+        """Test that addAtomLabelsForReaction can identify reactions with resonance and isotopes"""
+        from rmgpy.data.rmg import getDB
+        mr0 = Molecule().fromAdjacencyList('1    C u0 p0 c0 i13 {3,D} {4,S} {5,S}\n2 *1 C u0 p0 c0 {3,D} {6,S} {7,S}\n3    C u0 p0 c0 {1,D} {2,D}\n4    H u0 p0 c0 {1,S}\n5    H u0 p0 c0 {1,S}\n6    H u0 p0 c0 {2,S}\n7 *4 H u0 p0 c0 {2,S}\n')
+        mr1a = Molecule().fromAdjacencyList('multiplicity 2\n1    C u0 p0 c0 i13 {2,D} {4,S} {5,S}\n2    C u0 p0 c0 {1,D} {3,D}\n3 *1 C u1 p0 c0 {2,D} {6,S}\n4    H u0 p0 c0 {1,S}\n5    H u0 p0 c0 {1,S}\n6    H u0 p0 c0 {3,S}\n')
+        mr1b = Molecule().fromAdjacencyList('multiplicity 2\n1    C u1 p0 c0 i13 {2,S} {4,S} {5,S}\n2    C u0 p0 c0 {1,S} {3,T}\n3 *1 C u0 p0 c0 {2,T} {6,S}\n4    H u0 p0 c0 {1,S}\n5    H u0 p0 c0 {1,S}\n6    H u0 p0 c0 {3,S}\n')
+        mp1a = Molecule().fromAdjacencyList('multiplicity 2\n1    C u0 p0 c0 {2,D} {4,S} {5,S}\n2    C u0 p0 c0 {1,D} {3,D}\n3 *1 C u1 p0 c0 i13 {2,D} {6,S}\n4    H u0 p0 c0 {1,S}\n5    H u0 p0 c0 {1,S}\n6    H u0 p0 c0 {3,S}\n')
+        mp1b = Molecule().fromAdjacencyList('multiplicity 2\n1    C u1 p0 c0 {2,S} {4,S} {5,S}\n2    C u0 p0 c0 {1,S} {3,T}\n3 *1 C u0 p0 c0 i13 {2,T} {6,S}\n4    H u0 p0 c0 {1,S}\n5    H u0 p0 c0 {1,S}\n6    H u0 p0 c0 {3,S}\n')
+        s1 = Species(molecule = [mr0])
+        s2 = Species(molecule = [mr1a,mr1b])
+        s3 = Species(molecule = [mp1a,mp1b])
+        reactants = [s1,s2]
+        products = [s1,s3]
+        reaction = TemplateReaction(reactants =reactants,
+                                    products = products,
+                                    family = 'H_Abstraction')
+        family = getDB('kinetics').families['H_Abstraction']
+        print reaction.reactants
+        print reaction.products
+        family.addAtomLabelsForReaction(reaction, output_with_resonance=False)
+
+        # test that the reaction has labels
+        found_labels = []
+        for species in reaction.reactants:
+            for atom in species.molecule[0].atoms:
+                if atom.label != '':
+                    found_labels.append(atom.label)
+        self.assertEqual(len(found_labels), 3,'wrong number of labels found {0}'.format(found_labels))
+        self.assertIn('*1',found_labels)
+        self.assertIn('*2',found_labels)
+        self.assertIn('*3',found_labels)
+
+        # test for the products too
+        found_labels = []
+        for species in reaction.products:
+            for atom in species.molecule[0].atoms:
+                if atom.label != '':
+                    found_labels.append(atom.label)
+        self.assertEqual(len(found_labels), 3)
+        self.assertIn('*1',found_labels)
+        self.assertIn('*2',found_labels)
+        self.assertIn('*3',found_labels)
+
