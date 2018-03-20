@@ -67,9 +67,6 @@ Model Chemistry                                  AEC   BC   SOC
 ``'B-CCSD(T)-F12/cc-pVnZ-F12'``, *n = D,T,Q*      v         v
 ``'B-CCSD(T)-F12/cc-pCVnZ-F12'``, *n = D,T,Q*     v         v
 ``'B-CCSD(T)-F12/aug-cc-pVnZ-F12'``, *n = D,T,Q*  v         v
-``'DFT_G03_b3lyp'``                               v    v    v
-``'DFT_ks_b3lyp'``                                          v
-``'DFT_uks_b3lyp'``                                         v
 ``'G03_PBEPBE_6-311++g_d_p'``                     v         v
 ``'MP2_rmp2_pVnZ'``, *n = D,T,Q*                  v         v
 ``'FCI/cc-pVnZ'``, *n = D,T,Q*                    v         v

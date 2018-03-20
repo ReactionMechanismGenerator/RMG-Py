@@ -574,7 +574,6 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
     
     # We are assuming that SOC is included in the Bond Energy Corrections  
     elif modelChemistry == 'CCSD(T)-F12/cc-pVDZ-F12':
-#        atomEnergies = {'H':-0.499811124128, 'N':-54.526406291655, 'O':-74.995458316117, 'C':-37.788203485235}
         atomEnergies = {'H':-0.499811124128, 'N':-54.526406291655, 'O':-74.995458316117, 'C':-37.788203485235, 'S':-397.663040369707}
     elif modelChemistry == 'CCSD(T)-F12/cc-pVTZ-F12':
         atomEnergies = {'H':-0.499946213243, 'N':-54.53000909621, 'O':-75.004127673424, 'C':-37.789862146471, 'S':-397.675447487865}
@@ -615,13 +614,6 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
     elif modelChemistry == 'B-CCSD(T)-F12/aug-cc-pVQZ':
         atomEnergies = {'H':-0.499949526073 + SOC['H'], 'N':-54.528189769291 + SOC['N'], 'O':-75.001879610563+ SOC['O'], 'C':-37.788165047059+ SOC['C']}
 
-    elif modelChemistry == 'DFT_G03_b3lyp':
-        atomEnergies = {'H':-0.502256981529 + SOC['H'], 'N':-54.6007233648 + SOC['N'], 'O':-75.0898777574+ SOC['O'], 'C':-37.8572666349+ SOC['C']}
-    elif modelChemistry == 'DFT_ks_b3lyp':
-        atomEnergies = {'H':-0.49785866 + SOC['H'], 'N':-54.45608798 + SOC['N'], 'O':-74.93566254+ SOC['O'], 'C':-37.76119132+ SOC['C']}
-    elif modelChemistry == 'DFT_uks_b3lyp':
-        atomEnergies = {'H':-0.49785866 + SOC['H'], 'N':-54.45729113 + SOC['N'], 'O':-74.93566254+ SOC['O'], 'C':-37.76119132+ SOC['C']}
-
     elif modelChemistry == 'MP2_rmp2_pVDZ':
         atomEnergies = {'H':-0.49927840 + SOC['H'], 'N':-54.46141996 + SOC['N'], 'O':-74.89408254+ SOC['O'], 'C':-37.73792713+ SOC['C']}
     elif modelChemistry == 'MP2_rmp2_pVTZ':
@@ -639,7 +631,6 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
         atomEnergies = {'H':-0.499812273282 + SOC['H'], 'N':-54.5289567564 + SOC['N'], 'O':-75.0033596764+ SOC['O'], 'C':-37.7937388736+ SOC['C']}
 
     elif modelChemistry == 'FCI/cc-pVDZ':
-#        atomEnergies = {'C':-37.760717371923}
         atomEnergies = {'C':-37.789527+ SOC['C']}
     elif modelChemistry == 'FCI/cc-pVTZ':
         atomEnergies = {'C':-37.781266669684+ SOC['C']}
@@ -710,7 +701,7 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
             'N-H': -0.42, 'N=O': 1.11,  'N-N': -1.87, 'N=N': -1.58,'N-O': 0.35,  #Table 2: Ashcraft R (2007) J. Phys. Chem. B; DOI: 10.1021/jp073539t
             'N#N': -2.0,  'O=O': -0.2,  'H-H': 1.1,  # Unknown source
              }
-    elif modelChemistry in ['B3LYP/cbsb7', 'B3LYP/6-311G(2d,d,p)', 'DFT_G03_b3lyp','B3LYP/6-311+G(3df,2p)','b3lyp/6-31G**']:
+    elif modelChemistry in ['B3LYP/cbsb7', 'B3LYP/6-311G(2d,d,p)', 'B3LYP/6-311+G(3df,2p)', 'b3lyp/6-31G**']:
         bondEnergies = { 'C-H': 0.25, 'C-C': -1.89, 'C=C': -0.40, 'C#C': -1.50,
             'O-H': -1.09, 'C-O': -1.18, 'C=O': -0.01, 'N-H': 1.36, 'C-N': -0.44, 
             'C#N': 0.22, 'C-S': -2.35, 'O=S': -5.19, 'S-H': -0.52, }    
