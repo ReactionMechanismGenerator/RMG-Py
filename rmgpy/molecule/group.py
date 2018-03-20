@@ -1117,15 +1117,17 @@ class Group(Graph):
         isomorphism checks.
         """
         cython.declare(atom=GroupAtom, atomType=AtomType)
-        cython.declare(carbon=AtomType, nitrogen=AtomType, oxygen=AtomType, sulfur=AtomType, chlorine=AtomType, silicon=AtomType)
+        cython.declare(carbon=AtomType, nitrogen=AtomType, oxygen=AtomType, sulfur=AtomType, chlorine=AtomType,
+                       iodine=AtomType, silicon=AtomType)
         cython.declare(isCarbon=cython.bint, isNitrogen=cython.bint, isOxygen=cython.bint, isSulfur=cython.bint,
-                       isChlorine=cython.bint, isSilicon=cython.bint, radical=cython.int)
+                       isChlorine=cython.bint, isIodine=cython.bint, isSilicon=cython.bint, radical=cython.int)
 
         carbon   = atomTypes['C']
         nitrogen = atomTypes['N']
         oxygen   = atomTypes['O']
         sulfur   = atomTypes['S']
         chlorine = atomTypes['Cl']
+        iodine   = atomTypes['I']
         silicon  = atomTypes['Si']
         
         self.carbonCount   = 0
@@ -1133,7 +1135,8 @@ class Group(Graph):
         self.oxygenCount   = 0
         self.sulfurCount   = 0
         self.chlorineCount = 0
-        self.siliconCount = 0
+        self.iodineCount   = 0
+        self.siliconCount  = 0
         self.radicalCount  = 0
         for atom in self.vertices:
             if len(atom.atomType) == 1:
@@ -1143,8 +1146,9 @@ class Group(Graph):
                 isOxygen   = atomType.equivalent(oxygen)
                 isSulfur   = atomType.equivalent(sulfur)
                 isChlorine = atomType.equivalent(chlorine)
+                isIodine = atomType.equivalent(iodine)
                 isSilicon  = atomType.equivalent(silicon)
-                sum_is_atom = isCarbon + isNitrogen + isOxygen + isSulfur + isChlorine + isSilicon
+                sum_is_atom = isCarbon + isNitrogen + isOxygen + isSulfur + isChlorine + isIodine + isSilicon
                 if sum_is_atom == 1:
                     if isCarbon:
                         self.carbonCount += 1
@@ -1156,6 +1160,8 @@ class Group(Graph):
                         self.sulfurCount += 1
                     elif isChlorine:
                         self.chlorineCount += 1
+                    elif isIodine:
+                        self.iodineCount += 1
                     elif isSilicon:
                         self.siliconCount += 1
             if len(atom.radicalElectrons) >= 1:
