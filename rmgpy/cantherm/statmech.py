@@ -676,10 +676,14 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds, atomEnergies=None):
     # See Gaussian thermo whitepaper at http://www.gaussian.com/g_whitepap/thermo.htm)
     # Note: these values are relatively old and some improvement may be possible by using newer values, particularly for carbon
     # However, care should be taken to ensure that they are compatible with the BAC values (if BACs are used)
-    atomHf = {'H': 51.63 , 'N': 112.53 ,'O': 58.99 ,'C': 169.98, 'S': 65.66 }
+    atomHf = {'H': 51.63,
+              'Li': 37.69, 'Be': 76.48, 'B': 136.2, 'C': 169.98, 'N': 112.53, 'O': 58.99, 'F': 18.47,
+              'Na': 25.69, 'Mg': 34.87, 'Al': 78.23, 'Si': 106.6, 'P': 75.42, 'S': 65.66, 'Cl': 28.59}
     # Thermal contribution to enthalpy Hss(298 K) - Hss(0 K) reported by Gaussian thermo whitepaper
     # This will be subtracted from the corresponding value in atomHf to produce an enthalpy used in calculating the enthalpy of formation at 298 K
-    atomThermal = {'H': 1.01 , 'N': 1.04, 'O': 1.04 ,'C': 0.25, 'S': 1.05 }
+    atomThermal = {'H': 1.01,
+                   'Li': 1.1, 'Be': 0.46, 'B': 0.29, 'C': 0.25, 'N': 1.04, 'O': 1.04, 'F': 1.05,
+                   'Na': 1.54, 'Mg': 1.19, 'Al': 1.08, 'Si': 0.76, 'P': 1.28, 'S': 1.05, 'Cl': 1.1}
     # Total energy correction used to reach gas-phase reference state
     # Note: Spin orbit coupling no longer included in these energies, since some model chemistries include it automatically
     atomEnergies = {}
