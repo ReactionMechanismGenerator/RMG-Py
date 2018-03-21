@@ -66,15 +66,16 @@ _known_smiles_molecules = {
                  'CH4O': 'CO',
                  'CO2': 'O=C=O',
                  'CO': '[C-]#[O+]',
-                 'C2H4': 'C=C',
                  'O2': 'O=O',
                  'C': '[C]',  # for this to be in the "molecule" list it must be singlet with 2 lone pairs
-                 'SO2': 'O=S=O',
-                 'SO3': 'O=S(=O)=O',
-                 'H2SO4': 'OS(=O)(=O)O',
+                 'H2S': 'S',
                  'N2O': 'N#[N+][O-]',
                  'NH3': 'N',
                  'O3': '[O-][O+]=O',
+                 'Cl2': '[Cl][Cl]',
+                 'ClH': 'Cl',
+                 'I2': '[I][I]',
+                 'HI': 'I',
              }
 
 _known_smiles_radicals = {
@@ -82,19 +83,23 @@ _known_smiles_radicals = {
                  'HO': '[OH]',
                  'C2H5': 'C[CH2]',
                  'O': '[O]',
+                 'S': '[S]',
+                 'N': '[N]',
                  'HO2': '[O]O',
                  'CH': '[CH]',
+                 'CH2': '[CH2]',
                  'H': '[H]',
                  'C': '[C]',  # this, in the radical list, could be triplet or quintet.
-                 #'CO2': it could be [O][C][O] or O=[C][O]
-                 #'CO': '[C]=O', could also be [C][O]
-                 #'C2H4': could  be [CH3][CH] or [CH2][CH2]
                  'O2': '[O][O]',
                  'S2': '[S][S]',
-                 'SO': '[S][O]',
-                 'HSO3': 'OS(=O)[O]',
+                 'OS': '[S][O]',
+                 'HS': '[SH]',
+                 'H2N': '[NH2]',
+                 'HN': '[NH]',
                  'NO': '[N]=O',
                  'NO2': 'N(=O)[O]',
+                 'Cl': '[Cl]',
+                 'I': '[I]',
              }
 
 def toInChI(mol):
