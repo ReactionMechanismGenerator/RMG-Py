@@ -200,7 +200,7 @@ Allowed bond types for the ``bonds`` parameter are, e.g., ``'C-H'``, ``'C-C'``, 
 
 ``'O=S=O'`` is also allowed.
 
-The order of elements in for the bond correction is important and generally follows the order specified under "allowed atom symbols" above, i.e., ``'C=N'`` is correct while ``'N=C'`` is incorrect. Use ``-``/``=``/``#`` to denote a single/double/triple bond, respectively. For example, for acetylperoxy radical we would write::
+The order of elements in for the bond correction is not important. Use ``-``/``=``/``#`` to denote a single/double/triple bond, respectively. For example, for acetylperoxy radical we would write::
 
     bonds = {'C-C': 1, 'C=O': 1, 'C-O': 1, 'O-O': 1, 'C-H': 3}
 

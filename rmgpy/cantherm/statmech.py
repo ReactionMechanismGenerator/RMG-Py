@@ -735,6 +735,7 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds, atomEnergies=None):
 
     for symbol, count in bonds.items():
         if symbol in bondEnergies: E0 += count * bondEnergies[symbol] * 4184.
+        elif symbol[::-1] in bondEnergies: E0 += count * bondEnergies[symbol[::-1]] * 4184.
         else:
             logging.warning('Ignored unknown bond type {0!r}.'.format(symbol))
     
