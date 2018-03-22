@@ -46,7 +46,8 @@ from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.molecule.resonance import generate_aromatic_resonance_structures
 from rmgpy.species import Species
 
-from .common import saveEntry, ensure_species, find_degenerate_reactions, generate_molecule_combos
+from .common import saveEntry, ensure_species, find_degenerate_reactions, generate_molecule_combos,\
+                    ensure_independent_atom_ids
 from .depository import KineticsDepository
 from .groups import KineticsGroups
 from .rules import KineticsRules
@@ -1545,22 +1546,28 @@ class KineticsFamily(Database):
         `ignoreSameReactants= True` to this method.
         """
         reaction.degeneracy = 1
+        # Check if the reactants are the same
+        # If they refer to the same memory address, then make a deep copy so
+        # they can be manipulated independently
+        reactants = reaction.reactants
+        same_reactants = False
+        if len(reactants) == 2:
+            if reactants[0] is reactants[1]:
+                reactants[1] = reactants[1].copy(deep=True)
+                same_reactants = True
+            elif reactants[0].isIsomorphic(reactants[1]):
+                same_reactants = True
 
-        # find combinations of resonance isomers
-        specReactants = ensure_species(reaction.reactants, resonance=True, keepIsomorphic=True)
-        molecule_combos = generate_molecule_combos(specReactants)
+        # Label reactant atoms for proper degeneracy calculation
+        ensure_independent_atom_ids(reactants, resonance=True)
+        molecule_combos = generate_molecule_combos(reactants)
 
         reactions = []
         for combo in molecule_combos:
             reactions.extend(self.__generateReactions(combo, products=reaction.products, forward=True))
 
-        # Check if the reactants are the same
-        sameReactants = False
-        if len(specReactants) == 2 and specReactants[0].isIsomorphic(specReactants[1]):
-            sameReactants = True
-
         # remove degenerate reactions
-        reactions = find_degenerate_reactions(reactions, sameReactants, kinetics_family=self)
+        reactions = find_degenerate_reactions(reactions, same_reactants, kinetics_family=self)
 
         # remove reactions with different templates (only for TemplateReaction)
         if isinstance(reaction, TemplateReaction):
@@ -1692,7 +1699,7 @@ class KineticsFamily(Database):
         # If products is given, remove reactions from the reaction list that
         # don't generate the given products
         if products is not None:
-            products = ensure_species(products, resonance=prod_resonance)
+            ensure_species(products, resonance=prod_resonance)
 
             rxnList0 = rxnList[:]
             rxnList = []
@@ -2125,6 +2132,15 @@ class KineticsFamily(Database):
         # make sure we start with reaction with species objects
         reaction.ensure_species(reactant_resonance=False, product_resonance=False)
 
+        reactants = reaction.reactants
+        products = reaction.products
+        # ensure all species are independent references
+        if len(reactants + products) > len(set([id(s) for s in reactants + products])):
+            logging.debug('Copying reactants and products for reaction {} since they have identical species references'.format(reaction))
+            # not all species are independent
+            reactants = [s.copy(deep=True) for s in reactants]
+            products = [s.copy(deep=True) for s in products]
+
         # get all possible pairs of resonance structures
         reactant_pairs = list(itertools.product(*[s.molecule for s in reaction.reactants]))
         product_pairs = list(itertools.product(*[s.molecule for s in reaction.products]))
@@ -2145,20 +2161,22 @@ class KineticsFamily(Database):
 
         # place the molecules in reaction's species object
         # this prevents overwriting of attributes of species objects by this method
-        for species in reaction.products:
+        for index, species in enumerate(products):
             for labeled_molecule in labeled_products:
                 if species.isIsomorphic(labeled_molecule):
                     species.molecule = [labeled_molecule]
+                    reaction.products[index] = species
                     break
             else:
-                raise ActionError('Could not find isomorphic molecule to fit the original product {}'.format(species))
-        for species in reaction.reactants:
+                raise ActionError('Could not find isomorphic molecule to fit the original product {} from reaction {}'.format(species, reaction))
+        for index, species in enumerate(reactants):
             for labeled_molecule in labeled_reactants:
                 if species.isIsomorphic(labeled_molecule):
                     species.molecule = [labeled_molecule]
+                    reaction.reactants[index] = species
                     break
             else:
-                raise ActionError('Could not find isomorphic molecule to fit the original reactant {}'.format(species))
+                raise ActionError('Could not find isomorphic molecule to fit the original reactant {} from reaction {}'.format(species, reaction))
 
         if output_with_resonance:
             # convert the molecules to species objects with resonance structures
