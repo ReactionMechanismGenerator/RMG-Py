@@ -183,7 +183,7 @@ class ThermoJob(object):
                     elementCounts = {'C': 0, 'H': 0}
         else:
             elementCounts = {'C': 0, 'H': 0}
-        string = writeThermoEntry(species, elementCounts=elementCounts, verbose=False)
+        string = writeThermoEntry(species, elementCounts=elementCounts, verbose=True)
         f.write('{0}\n'.format(string))
         f.close()
 
