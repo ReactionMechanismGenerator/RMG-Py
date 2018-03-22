@@ -397,7 +397,7 @@ def loadInputFile(path):
     for job in jobList:
         if isinstance(job, StatMechJob):
             job.path = os.path.join(directory, job.path)
-            job.modelChemistry = modelChemistry
+            job.modelChemistry = modelChemistry.lower()
             job.frequencyScaleFactor = frequencyScaleFactor
             job.includeHinderedRotors = useHinderedRotors
             job.applyAtomEnergyCorrections = useAtomCorrections
