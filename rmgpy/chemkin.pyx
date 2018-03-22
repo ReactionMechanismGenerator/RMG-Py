@@ -1558,8 +1558,10 @@ def writeReactionString(reaction, javaLibrary = False):
 def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = False, commented=False):
     """
     Return a string representation of the reaction as used in a Chemkin
-    file. Use verbose = True to turn on comments.  Use javaLibrary = True in order to 
-    generate a kinetics entry suitable for an RMG-Java kinetics library.  
+    file. Use `verbose = True` to turn on kinetics comments.
+    Use `commented = True` to comment out the entire reaction.
+    Use javaLibrary = True in order to generate a kinetics entry suitable
+    for an RMG-Java kinetics library.
     """
     string = ""
     
