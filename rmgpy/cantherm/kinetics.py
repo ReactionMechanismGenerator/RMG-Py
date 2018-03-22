@@ -279,8 +279,12 @@ class KineticsJob(object):
         
         reaction = self.reaction
         kinetics = reaction.kinetics
-                
-        string = '{0!s:51} {1:9.3e} {2:9.3f} {3:9.3f}\n'.format(
+
+        string = ''
+        if reaction.kinetics.comment:
+            for line in reaction.kinetics.comment.split("\n"):
+                string += "! {0}\n".format(line)
+        string += '{0!s:51} {1:9.3e} {2:9.3f} {3:9.3f}\n'.format(
             reaction,
             kinetics.A.value_si * factor,
             kinetics.n.value_si,
