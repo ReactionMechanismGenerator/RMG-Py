@@ -25,63 +25,42 @@
 #                                                                             #
 ###############################################################################
 
-# global imports
+cimport rmgpy.molecule.molecule as mm
 
-cimport element as elements
-cimport inchi as inchiutil
-
-# no .pxd files for these:
-#from .util cimport retrieveElementCount, VALENCES, ORDERS
-#from .inchi cimport AugmentedInChI, compose_aug_inchi_key, compose_aug_inchi, INCHI_PREFIX, MULT_PREFIX, U_LAYER_PREFIX
-
-from .molecule cimport Atom, Bond, Molecule
 
 cpdef list BACKENDS
-cpdef dict INSTALLED_BACKENDS
 cpdef dict INCHI_LOOKUPS
 cpdef dict SMILES_LOOKUPS
 
+cpdef dict MOLECULE_LOOKUPS
+cpdef dict RADICAL_LOOKUPS
 
-#  from <identifier> functions:
+cpdef str toInChI(mm.Molecule mol, str backend=?, int aug_level=?)
 
-cdef Molecule __fromSMILES(Molecule mol, str smilesstr, str backend)
+cpdef str toInChIKey(mm.Molecule mol, str backend=?, int aug_level=?)
 
-cdef Molecule __fromInChI(Molecule mol, str inchistr, str backend)
+cpdef str toSMARTS(mm.Molecule mol, backend=?)
 
-cdef Molecule __fromSMARTS(Molecule mol, str identifier, str backend)
+cpdef str toSMILES(mm.Molecule mol, backend=?)
 
-cdef Molecule __parse(Molecule mol, str identifier, str type_identifier, str backend)
+cpdef mm.Molecule fromInChI(mm.Molecule mol, str inchistr, backend=?)
 
-cpdef Molecule parse_openbabel(Molecule mol, str identifier, str type_identifier)
+cpdef mm.Molecule fromSMILES(mm.Molecule mol, str smilesstr, str backend=?)
 
-cpdef Molecule fromInChI(Molecule mol, str inchistr, backend=*)
+cpdef mm.Molecule fromSMARTS(mm.Molecule mol, str smartsstr, str backend=?)
 
-cpdef Molecule fromSMILES(Molecule mol, str smilesstr, str backend=*)
+cpdef mm.Molecule fromAugmentedInChI(mm.Molecule mol, aug_inchi)
 
-cpdef Molecule fromSMARTS(Molecule mol, str smartsstr, str backend=*)
+cpdef object _rdkit_translator(object input_object, str identifier_type, mm.Molecule mol=?)
 
-cpdef Molecule fromAugmentedInChI(Molecule mol, aug_inchi)
-    
-cpdef Molecule fromRDKitMol(Molecule mol, object rdkitmol)
+cpdef object _openbabel_translator(object input_object, str identifier_type, mm.Molecule mol=?)
 
-cpdef Molecule fromOBMol(Molecule mol, object obmol)
+cdef mm.Molecule _lookup(mm.Molecule mol, str identifier, str identifier_type)
 
-cdef Molecule __lookup(Molecule mol, str identifier, str type_identifier)
+cpdef _check_output(mm.Molecule mol, str identifier)
 
-# parser helper functions: 
+cdef mm.Molecule _read(mm.Molecule mol, str identifier, str identifier_type, str backend)
 
-cpdef reset_lone_pairs(Molecule mol, list p_indices)
+cdef str _write(mm.Molecule mol, str identifier_type, str backend)
 
-cdef Molecule fix_unsaturated_bond_to_biradical(Molecule mol, str inchi, list u_indices)
-
-cpdef bint isUnsaturated(Molecule mol)
-
-cpdef isCorrectlyParsed(Molecule mol, str identifier)
-   
-cpdef check(Molecule mol, aug_inchi)
-
-cpdef fix_oxygen_unsaturated_bond(Molecule mol, list u_indices)
-
-cpdef fixCharge(Molecule mol, list u_indices)
-
-cpdef fix_triplet_to_singlet(Molecule mol, list p_indices)
+cdef _get_backend_list(str backend)

@@ -48,7 +48,6 @@ import rmgpy.molecule
 import symmetry
 import qmdata
 from qmdata import parseCCLibData
-from rmgpy.molecule import parser
 
 class Geometry:
     """
