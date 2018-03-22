@@ -28,6 +28,7 @@ Component                   Description
 ``atomEnergies``            Dictionary of atomic energies at ``modelChemistry`` level
 ``frequencyScaleFactor``    A factor by which to scale all frequencies
 ``useHinderedRotors``       ``True`` if hindered rotors are used, ``False`` if not
+``useAtomCorrections``      ``True`` if atom corrections are used, ``False`` if not
 ``useBondCorrections``      ``True`` if bond corrections are used, ``False`` if not
 ``species``                 Contains parameters for non-transition states
 ``transitionState``         Contains parameters for transition state(s)
@@ -69,7 +70,7 @@ specified in the input file by providing a dictionary of these energies in the f
     }
 
 Whether or not atomization energy corrections (AEC), bond corrections (BC), and spin orbit
-corrections (SOC); and which atom types are available for a given model chemistry is described
+corrections (SOC); and which elements are available for a given model chemistry is described
 under `High-Pressure Limit: Model Chemistry <input.html#model-chemistry>`_
 
 Frequency Scale Factor
@@ -192,7 +193,8 @@ Parameter               Required?                   Description
 
 The types and number of atoms in the species are automatically inferred from the quantum chemistry output and are used
 to apply atomization energy corrections (AEC) and spin orbit corrections (SOC) for a given ``modelChemistry``
-(see `Model Chemistry`_).
+(see `Model Chemistry`_). If not interested in accurate thermodynamics (e.g., if only using ``kinetics()``), then
+atom corrections can be turned off by setting ``useAtomCorrections`` to ``False``.
 
 The ``bond`` parameter is used to apply bond corrections (BC) for a given ``modelChemistry``.
 

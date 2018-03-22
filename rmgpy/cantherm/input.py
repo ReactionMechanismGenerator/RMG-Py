@@ -388,6 +388,7 @@ def loadInputFile(path):
         logging.warning('No frequency scale factor specified in input file; assuming a value of unity.')
     frequencyScaleFactor = local_context.get('frequencyScaleFactor', 1.0)
     useHinderedRotors = local_context.get('useHinderedRotors', True)
+    useAtomCorrections = local_context.get('useAtomCorrections', True)
     useBondCorrections = local_context.get('useBondCorrections', False)
     atomEnergies = local_context.get('atomEnergies', None)
     
@@ -399,6 +400,7 @@ def loadInputFile(path):
             job.modelChemistry = modelChemistry
             job.frequencyScaleFactor = frequencyScaleFactor
             job.includeHinderedRotors = useHinderedRotors
+            job.applyAtomEnergyCorrections = useAtomCorrections
             job.applyBondEnergyCorrections = useBondCorrections
             job.atomEnergies = atomEnergies
     
