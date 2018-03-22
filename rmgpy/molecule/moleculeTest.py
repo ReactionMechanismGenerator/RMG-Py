@@ -2206,6 +2206,23 @@ multiplicity 2
         test.update()
         self.assertTrue(expected.isIsomorphic(test))
 
+    def test_get_element_count(self):
+        """Test that we can count elements properly."""
+        mol1 = Molecule(SMILES='c1ccccc1')
+        expected1 = {'C': 6, 'H': 6}
+        result1 = mol1.get_element_count()
+        self.assertEqual(expected1, result1)
+
+        mol2 = Molecule(SMILES='CS(C)(=O)=O')
+        expected2 = {'C': 2, 'H': 6, 'O': 2, 'S': 1}
+        result2 = mol2.get_element_count()
+        self.assertEqual(expected2, result2)
+
+        mol3 = Molecule(SMILES='CCN')
+        expected3 = {'C': 2, 'H': 7, 'N': 1}
+        result3 = mol3.get_element_count()
+        self.assertEqual(expected3, result3)
+
 
 ################################################################################
 
