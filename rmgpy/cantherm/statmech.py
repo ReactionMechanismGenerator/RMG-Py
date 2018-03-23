@@ -667,8 +667,10 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds,
 
             elif modelChemistry in ['bmk/cbsb7', 'bmk/6-311g(2d,d,p)']:
                 atomEnergies = {'H':-0.498618853119+ SOC['H'], 'N':-54.5697851544+ SOC['N'], 'O':-75.0515210278+ SOC['O'], 'C':-37.8287310027+ SOC['C'], 'P':-341.167615941+ SOC['P'], 'S': -398.001619915+ SOC['S']}
-            elif modelChemistry == 'b3lyp/6-31g**':
+            elif modelChemistry == 'b3lyp/6-31g**':  # Fitted to small molecules
                 atomEnergies = {'H':-0.500426155, 'C':-37.850331697831, 'O':-75.0535872748806, 'S':-398.100820107242}
+            elif modelChemistry == 'b3lyp/6-311+g(3df,2p)':  # Calculated atomic energies
+                atomEnergies = {'H':-0.502155915123 + SOC['H'], 'C':-37.8574709934 + SOC['C'], 'N':-54.6007233609 + SOC['N'], 'O':-75.0909131284 + SOC['O'], 'P':-341.281730319 + SOC['P'], 'S':-398.134489850 + SOC['S']}
 
             else:
                 raise Exception('Unknown model chemistry "{}".'.format(modelChemistry))

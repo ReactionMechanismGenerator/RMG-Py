@@ -87,7 +87,7 @@ Model Chemistry                                  AEC   BC   SOC  Supported Eleme
 ``'FCI/cc-pVnZ'``, *n = D,T,Q*                    v         v    C
 ``'BMK/cbsb7'``                                   v    v    v    H, C, N, O, P, S
 ``'BMK/6-311G(2d,d,p)'``                          v    v    v    H, C, N, O, P, S
-``'B3LYP/6-311+G(3df,2p)'``                            v
+``'B3LYP/6-311+G(3df,2p)'``                       v    v    v    H, C, N, O, P, S
 ``'B3LYP/6-31G**'``                               v    v         H, C, O, S
 ================================================ ===== ==== ==== ====================
 
