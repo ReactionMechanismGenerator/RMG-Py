@@ -1337,6 +1337,16 @@ class KineticsFamily(Database):
             if not productStructures[0].containsLabeledAtom('*1') and\
                     productStructures[1].containsLabeledAtom('*1'):
                 productStructures.reverse()
+        # If there are three product structures, sort them based on the lowest number label in each structure
+        elif len(productStructures) == 3:
+            lowest_labels = []
+            for struct in productStructures:
+                # Extract digits from labels and convert others (e.g., "*") to empty strings
+                labels = [''.join(c for c in label if c.isdigit()) for label in struct.getLabeledAtoms().keys()]
+                # Convert digits to integers and remove empty strings
+                labels = [int(label) for label in labels if label]
+                lowest_labels.append(min(labels))
+            productStructures = [s for _, s in sorted(zip(lowest_labels, productStructures))]
             
         # Return the product structures
         return productStructures
@@ -1352,8 +1362,6 @@ class KineticsFamily(Database):
         returns a list of the product structures.
         """
         
-        productStructures = None
-
         # Clear any previous atom labeling from all reactant structures
         for struct in reactantStructures: struct.clearLabeledAtoms()
 
@@ -1373,11 +1381,6 @@ class KineticsFamily(Database):
             productStructures = self.applyRecipe(reactantStructures, forward=forward)
             if not productStructures: return None
         except (InvalidActionError, KekulizationError):
-#            logging.error('Unable to apply reaction recipe!')
-#            logging.error('Reaction family is {0} in {1} direction'.format(self.label, 'forward' if forward else 'reverse'))
-#            logging.error('Reactant structures are:')
-#            for struct in reactantStructures:
-#                logging.error(struct.toAdjacencyList())
             # If unable to apply the reaction recipe, then return no product structures
             return None
         except ActionError:
@@ -1388,12 +1391,6 @@ class KineticsFamily(Database):
             for struct in reactantStructures:
                 logging.info('{0}\n{1}\n'.format(struct, struct.toAdjacencyList()))
             raise
-
-        # If there are two product structures, place the one containing '*1' first
-        if len(productStructures) == 2:
-            if not productStructures[0].containsLabeledAtom('*1') and \
-                productStructures[1].containsLabeledAtom('*1'):
-                productStructures.reverse()
 
         # Apply the generated species constraints (if given)
         for struct in productStructures:
