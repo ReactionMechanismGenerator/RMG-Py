@@ -1284,6 +1284,7 @@ class ThermoDatabase(object):
 
         if not isinstance(thermo, ThermoData):
             thermo = thermo.toThermoData()
+            findCp0andCpInf(species, thermo)
 
         ## now edit the adsorptionThermo using LSR
         for element in 'CHO':
@@ -1354,6 +1355,7 @@ class ThermoDatabase(object):
 
         if not isinstance(thermo, ThermoData):
             thermo = thermo.toThermoData()
+            findCp0andCpInf(species, thermo)
 
         ## Get the adsorption energy
         # Create the ThermoData object
