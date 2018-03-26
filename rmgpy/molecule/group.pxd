@@ -196,4 +196,3 @@ cdef class Group(Graph):
     cpdef bint isBenzeneExplicit(self)
 
     cpdef Group mergeGroups(self, Group other)
-

@@ -380,6 +380,9 @@ class Atom(Vertex):
         Update self.charge, according to the valence, and the
         number and types of bonds, radicals, and lone pairs.
         """
+        if self.isSurfaceSite():
+            self.charge = 0
+            return
         valence_electron = elements.PeriodicSystem.valence_electrons[self.symbol]
         order = self.getBondOrdersForAtom()
         self.charge = valence_electron - order - self.radicalElectrons - 2*self.lonePairs
@@ -1636,7 +1639,7 @@ class Molecule(Graph):
         Return the value of the heat capacity at zero temperature in J/mol*K.
         """
         if self.containsSurfaceSite():
-            return 0.0
+            return 0.01
         if len(self.atoms) == 1:
             return 2.5 * constants.R
         else:

@@ -151,7 +151,7 @@ class GroupAtom(Vertex):
         where `order` specifies the order of the forming bond, and should be
         1 (since we only allow forming of single bonds).
         """
-        if order == 'vdW' or 0: #todo: remove the 'vdW' (and check 0 is correct)
+        if order == 0:
             # no change to atom types!
             return
         if order != 1:
@@ -170,7 +170,7 @@ class GroupAtom(Vertex):
         where `order` specifies the order of the breaking bond, and should be
         1 (since we only allow breaking of single bonds).
         """
-        if order == 'vdW' or 0: #todo: remove 'vdW'
+        if order == 0:
             # no change to atom types!
             return
         if order != 1:
