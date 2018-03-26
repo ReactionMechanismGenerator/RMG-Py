@@ -738,7 +738,7 @@ cdef class ReactionSystem(DASx):
             coreSpeciesProductionRates = self.coreSpeciesProductionRates
             edgeSpeciesRates = numpy.abs(self.edgeSpeciesRates)
             networkLeakRates = numpy.abs(self.networkLeakRates)
-            coreSpeciesRateRatios = numpy.abs(numpy.maximum(self.coreSpeciesProductionRates,self.coreSpeciesConsumptionRates)/charRate)#numpy.abs(numpy.maximum(self.coreSpeciesProductionRates,self.coreSpeciesConsumptionRates)/charRate)
+            coreSpeciesRateRatios = numpy.abs(self.coreSpeciesRates/charRate)#numpy.abs(numpy.maximum(self.coreSpeciesProductionRates,self.coreSpeciesConsumptionRates)/charRate)
             edgeSpeciesRateRatios = numpy.abs(self.edgeSpeciesRates/charRate)
             networkLeakRateRatios = numpy.abs(self.networkLeakRates/charRate)
             numEdgeReactions = self.numEdgeReactions
