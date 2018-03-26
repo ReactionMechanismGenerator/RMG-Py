@@ -388,13 +388,13 @@ class Reaction:
             products (list, optional): Species required on the other side
         """
         # Check forward direction
-        if _isomorphicSpeciesList(self.reactants, reactants):
-            if products is None or _isomorphicSpeciesList(self.products, products):
+        if isomorphic_species_lists(self.reactants, reactants):
+            if products is None or isomorphic_species_lists(self.products, products):
                 return True
             else:
                 return False
-        elif _isomorphicSpeciesList(self.products, reactants):
-            if products is None or _isomorphicSpeciesList(self.reactants, products):
+        elif isomorphic_species_lists(self.products, reactants):
+            if products is None or isomorphic_species_lists(self.reactants, products):
                 return True
             else:
                 return False
@@ -427,19 +427,19 @@ class Reaction:
             except AttributeError:
                 raise TypeError('Only use checkTemplateRxnProducts flag for TemplateReactions.')
 
-            return _isomorphicSpeciesList(species1, species2,
-                                          checkIdentical=checkIdentical,
-                                          checkOnlyLabel=checkOnlyLabel)
+            return isomorphic_species_lists(species1, species2,
+                                            check_identical=checkIdentical,
+                                            only_check_label=checkOnlyLabel)
 
         # Compare reactants to reactants
-        forwardReactantsMatch = _isomorphicSpeciesList(self.reactants, 
-                                    other.reactants,checkIdentical = checkIdentical,
-                                    checkOnlyLabel = checkOnlyLabel)
+        forwardReactantsMatch = isomorphic_species_lists(self.reactants, other.reactants,
+                                                         check_identical=checkIdentical,
+                                                         only_check_label=checkOnlyLabel)
         
         # Compare products to products
-        forwardProductsMatch = _isomorphicSpeciesList(self.products, 
-                                    other.products,checkIdentical = checkIdentical,
-                                    checkOnlyLabel = checkOnlyLabel)
+        forwardProductsMatch = isomorphic_species_lists(self.products, other.products,
+                                                        check_identical=checkIdentical,
+                                                        only_check_label=checkOnlyLabel)
 
         # Compare specificCollider to specificCollider
         ColliderMatch = (self.specificCollider == other.specificCollider)
@@ -451,14 +451,14 @@ class Reaction:
             return False
         
         # Compare reactants to products
-        reverseReactantsMatch = _isomorphicSpeciesList(self.reactants, 
-                                    other.products,checkIdentical = checkIdentical,
-                                    checkOnlyLabel = checkOnlyLabel)
+        reverseReactantsMatch = isomorphic_species_lists(self.reactants, other.products,
+                                                         check_identical=checkIdentical,
+                                                         only_check_label=checkOnlyLabel)
 
         # Compare products to reactants
-        reverseProductsMatch = _isomorphicSpeciesList(self.products, 
-                                    other.reactants,checkIdentical = checkIdentical,
-                                    checkOnlyLabel = checkOnlyLabel)
+        reverseProductsMatch = isomorphic_species_lists(self.products, other.reactants,
+                                                        check_identical=checkIdentical,
+                                                        only_check_label=checkOnlyLabel)
 
         # should have already returned if it matches forwards, or we're not allowed to match backwards
         return  (reverseReactantsMatch and reverseProductsMatch and ColliderMatch)
@@ -1141,7 +1141,7 @@ class Reaction:
         except AttributeError:
             pass
 
-def _isomorphicSpeciesList(list1, list2, checkIdentical=False, checkOnlyLabel = False):
+def isomorphic_species_lists(list1, list2, check_identical=False, only_check_label=False):
     """
     This method compares whether lists of species or molecules are isomorphic
     or identical. It is used for the 'isIsomorphic' method of Reaction class.
@@ -1149,56 +1149,51 @@ def _isomorphicSpeciesList(list1, list2, checkIdentical=False, checkOnlyLabel = 
         
         list1 - list of species/molecule objects of reaction1
         list2 - list of species/molecule objects of reaction2
-        checkIdentical - if true, uses the 'isIdentical' comparison
-                         if false, uses the 'isIsomorphic' comparison
-        checkOnlyLabel - only look at species' labels, no isomorphism checks
+        check_identical - if true, uses the 'isIdentical' comparison
+                          if false, uses the 'isIsomorphic' comparison
+        only_check_label - only look at species' labels, no isomorphism checks
                          
     Returns True if the lists are isomorphic/identical & false otherwise
     """
 
-    def comparison_method(other1, other2, checkIdentical=checkIdentical, checkOnlyLabel=checkOnlyLabel):
-        if checkOnlyLabel:
-            return str(other1) == str(other2)
-        elif checkIdentical:
-            return other1.isIdentical(other2)
+    def same(object1, object2, _check_identical=check_identical, _only_check_label=only_check_label):
+        if _only_check_label:
+            return str(object1) == str(object2)
+        elif _check_identical:
+            return object1.isIdentical(object2)
         else:
-            return other1.isIsomorphic(other2)
+            return object1.isIsomorphic(object2)
 
     if len(list1) == len(list2) == 1:
-        if comparison_method(list1[0], list2[0]):
+        if same(list1[0], list2[0]):
             return True
     elif len(list1) == len(list2) == 2:
-        if comparison_method(list1[0], list2[0]) \
-                    and comparison_method(list1[1], list2[1]):
+        if same(list1[0], list2[0]) and same(list1[1], list2[1]):
             return True
-        elif comparison_method(list1[0], list2[1]) \
-                    and comparison_method(list1[1], list2[0]):
+        elif same(list1[0], list2[1]) and same(list1[1], list2[0]):
             return True
     elif len(list1) == len(list2) == 3:
-        if (    comparison_method(list1[0], list2[0]) and
-                comparison_method(list1[1], list2[1]) and
-                comparison_method(list1[2], list2[2]) ):
-            return True
-        elif (  comparison_method(list1[0], list2[0]) and
-                comparison_method(list1[1], list2[2]) and
-                comparison_method(list1[2], list2[1]) ):
-            return True
-        elif (  comparison_method(list1[0], list2[1]) and
-                comparison_method(list1[1], list2[0]) and
-                comparison_method(list1[2], list2[2]) ):
-            return True
-        elif (  comparison_method(list1[0], list2[2]) and
-                comparison_method(list1[1], list2[0]) and
-                comparison_method(list1[2], list2[1]) ):
-            return True
-        elif (  comparison_method(list1[0], list2[1]) and
-                comparison_method(list1[1], list2[2]) and
-                comparison_method(list1[2], list2[0]) ):
-            return True
-        elif (  comparison_method(list1[0], list2[2]) and
-                comparison_method(list1[1], list2[1]) and
-                comparison_method(list1[2], list2[0]) ):
-            return True
+        if same(list1[0], list2[0]):
+            if same(list1[1], list2[1]):
+                if same(list1[2], list2[2]):
+                    return True
+            elif same(list1[1], list2[2]):
+                if same(list1[2], list2[1]):
+                    return True
+        elif same(list1[0], list2[1]):
+            if same(list1[1], list2[0]):
+                if same(list1[2], list2[2]):
+                    return True
+            elif same(list1[1], list2[2]):
+                if same(list1[2], list2[0]):
+                    return True
+        elif same(list1[0], list2[2]):
+            if same(list1[1], list2[0]):
+                if same(list1[2], list2[1]):
+                    return True
+            elif same(list1[1], list2[1]):
+                if same(list1[2], list2[0]):
+                    return True
     elif len(list1) == len(list2):
         raise NotImplementedError("Can't check isomorphism of lists with {0} species/molecules".format(len(list1)))
     # nothing found
