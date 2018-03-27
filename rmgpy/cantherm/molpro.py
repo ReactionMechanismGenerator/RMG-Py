@@ -198,7 +198,6 @@ class MolproLog:
             # The data we want is in the Thermochemistry section of the output
             if 'THERMODYNAMICAL' in line:
                 modes = []
-                inPartitionFunctions = False
                 line = f.readline()
                 while line != '':
 
@@ -311,9 +310,7 @@ class MolproLog:
         Load the unscaled zero-point energy in J/mol from a MolPro log file.
         """
 
-        modes = []
         ZPE = None
-        spinMultiplicity = 1
 
         f = open(self.path, 'r')
         line = f.readline()
@@ -344,7 +341,6 @@ class MolproLog:
         calculation in cm^-1.
         """
 
-        frequencies = []
 
         f = open(self.path, 'r')
         line = f.readline()
