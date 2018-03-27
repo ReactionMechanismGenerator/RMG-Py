@@ -118,16 +118,34 @@ class MolproLog:
             # Automatically determine the number of atoms
             if 'Current geometry' in line:
                 symbol = []; coord = []
-                if 'ENERGY' in line:
-                    while line != '\n':
-                        data = line.split()
-                        symbol.append(str(data[0]))
-                        coord.append([float(data[1]), float(data[2]), float(data[3])])
-                        line = f.readline()
+                while 'ENERGY' not in line:
+                    line = f.readline()
+                line = f.readline()
+                while line != '\n':
+                    data = line.split()
+                    symbol.append(str(data[0]))
+                    coord.append([float(data[1]), float(data[2]), float(data[3])])
+                    line = f.readline()
                 line = f.readline()
             line = f.readline()
         # Close file when finished
         f.close()
+
+        #If no optimized coordinates were found, uses the input geometry (for example if reading the geometry from a frequency file
+        if coord == []:
+            f = open(self.path, 'r')
+            line = f.readline()
+            while line != '':
+                if 'Atomic Coordinates' in line:
+                    symbol = []; coord = []
+                    for i in range(4):
+                        line = f.readline()
+                    while line != '\n':
+                        data = line.split()
+                        symbol.append(str(data[1]))
+                        coord.append([float(data[3]), float(data[4]), float(data[5])])
+                        line = f.readline()
+                line = f.readline()
 
         coord = numpy.array(coord, numpy.float64)
         number = numpy.zeros(len(symbol), numpy.int)
