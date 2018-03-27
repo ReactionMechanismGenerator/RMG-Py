@@ -40,7 +40,7 @@ from copy import deepcopy
 from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStructures,\
                             getAllCombinations
-from rmgpy.reaction import Reaction
+from rmgpy.reaction import Reaction, isomorphic_species_lists
 from rmgpy.kinetics import Arrhenius
 from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.molecule.resonance import generate_aromatic_resonance_structures
@@ -1427,14 +1427,8 @@ class KineticsFamily(Database):
         """
 
         # Make sure the products are in fact different than the reactants
-        if len(reactants) == len(products) == 1:
-            if reactants[0].isIsomorphic(products[0]):
-                return None
-        elif len(reactants) == len(products) == 2:
-            if reactants[0].isIsomorphic(products[0]) and reactants[1].isIsomorphic(products[1]):
-                return None
-            elif reactants[0].isIsomorphic(products[1]) and reactants[1].isIsomorphic(products[0]):
-                return None
+        if isomorphic_species_lists(reactants, products):
+            return None
 
         # Create and return template reaction object
         reaction = TemplateReaction(
@@ -1477,7 +1471,7 @@ class KineticsFamily(Database):
 
     def generateReactions(self, reactants, products=None, prod_resonance=True):
         """
-        Generate all reactions between the provided list of one or two
+        Generate all reactions between the provided list of one, two, or three
         `reactants`, which should be either single :class:`Molecule` objects
         or lists of same. Does not estimate the kinetics of these reactions
         at this time. Returns a list of :class:`TemplateReaction` objects
@@ -1519,9 +1513,18 @@ class KineticsFamily(Database):
         """
         if self.ownReverse and all([spc.has_reactive_molecule() for spc in rxn.products]):
             # Check if the reactants are the same
-            sameReactants = False
+            sameReactants = 0
             if len(rxn.products) == 2 and rxn.products[0].isIsomorphic(rxn.products[1]):
-                sameReactants = True
+                sameReactants = 2
+            elif len(rxn.products) == 3:
+                same_01 = rxn.products[0].isIsomorphic(rxn.products[1])
+                same_02 = rxn.products[0].isIsomorphic(rxn.products[2])
+                if same_01 and same_02:
+                    sameReactants = 3
+                elif same_01 or same_02:
+                    sameReactants = 2
+                elif rxn.products[1].isIsomorphic(rxn.products[2]):
+                    sameReactants = 2
 
             reactionList = self.__generateReactions([spc.molecule for spc in rxn.products],
                                                     products=rxn.reactants, forward=True,
@@ -1587,13 +1590,38 @@ class KineticsFamily(Database):
         # If they refer to the same memory address, then make a deep copy so
         # they can be manipulated independently
         reactants = reaction.reactants
-        same_reactants = False
+        same_reactants = 0
         if len(reactants) == 2:
             if reactants[0] is reactants[1]:
                 reactants[1] = reactants[1].copy(deep=True)
-                same_reactants = True
+                same_reactants = 2
             elif reactants[0].isIsomorphic(reactants[1]):
-                same_reactants = True
+                same_reactants = 2
+        elif len(reactants) == 3:
+            same_01 = reactants[0] is reactants[1]
+            same_02 = reactants[0] is reactants[2]
+            if same_01 and same_02:
+                same_reactants = 3
+                reactants[1] = reactants[1].copy(deep=True)
+                reactants[2] = reactants[2].copy(deep=True)
+            elif same_01:
+                same_reactants = 2
+                reactants[1] = reactants[1].copy(deep=True)
+            elif same_02:
+                same_reactants = 2
+                reactants[2] = reactants[2].copy(deep=True)
+            elif reactants[1] is reactants[2]:
+                same_reactants = 2
+                reactants[2] = reactants[2].copy(deep=True)
+            else:
+                same_01 = reactants[0].isIsomorphic(reactants[1])
+                same_02 = reactants[0].isIsomorphic(reactants[2])
+                if same_01 and same_02:
+                    same_reactants = 3
+                elif same_01 or same_02:
+                    same_reactants = 2
+                elif reactants[1].isIsomorphic(reactants[2]):
+                    same_reactants = 2
 
         # Label reactant atoms for proper degeneracy calculation
         ensure_independent_atom_ids(reactants, resonance=True)
@@ -1699,9 +1727,11 @@ class KineticsFamily(Database):
                         # Iterate over each pair of matches (A, B)
                         for mapA in mappingsA:
                             for mapB in mappingsB:
-                                reactantStructures = [moleculeA, moleculeB]
+                                # Reverse the order of reactants in case we have a family with only one reactant tree
+                                # that can produce different products depending on the order of reactants
+                                reactantStructures = [moleculeB, moleculeA]
                                 try:
-                                    productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB], forward)
+                                    productStructures = self.__generateProductStructures(reactantStructures, [mapB, mapA], forward)
                                 except ForbiddenStructureException:
                                     pass
                                 else:
@@ -1729,6 +1759,68 @@ class KineticsFamily(Database):
                                             rxn = self.__createReaction(reactantStructures, productStructures, forward)
                                             if rxn: rxnList.append(rxn)
         
+        # Trimolecular reactants: A + B + C --> products
+        elif len(reactants) == 3 and len(template.reactants) == 3:
+
+            moleculesA = reactants[0]
+            moleculesB = reactants[1]
+            moleculesC = reactants[2]
+
+            # Iterate over all resonance isomers of the reactants
+            for moleculeA in moleculesA:
+                for moleculeB in moleculesB:
+                    for moleculeC in moleculesC:
+
+                        def generate_products_and_reactions(order):
+                            """
+                            order = (0, 1, 2) corresponds to reactants stored as A + B + C, etc.
+                            """
+                            _mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[order[0]])
+                            _mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[order[1]])
+                            _mappingsC = self.__matchReactantToTemplate(moleculeC, template.reactants[order[2]])
+
+                            # Iterate over each pair of matches (A, B, C)
+                            for _mapA in _mappingsA:
+                                for _mapB in _mappingsB:
+                                    for _mapC in _mappingsC:
+                                        _reactantStructures = [moleculeA, moleculeB, moleculeC]
+                                        _maps = [_mapA, _mapB, _mapC]
+                                        # Reorder reactants in case we have a family with fewer reactant trees than
+                                        # reactants and different reactant orders can produce different products
+                                        _reactantStructures = [_reactantStructures[_i] for _i in order]
+                                        _maps = [_maps[_i] for _i in order]
+                                        try:
+                                            _productStructures = self.__generateProductStructures(_reactantStructures,
+                                                                                                  _maps,
+                                                                                                  forward)
+                                        except ForbiddenStructureException:
+                                            pass
+                                        else:
+                                            if _productStructures is not None:
+                                                _rxn = self.__createReaction(_reactantStructures,
+                                                                             _productStructures,
+                                                                             forward)
+                                                if _rxn: rxnList.append(_rxn)
+
+                        # Reactants stored as A + B + C
+                        generate_products_and_reactions((0, 1, 2))
+
+                        # Only check for swapped reactants if they are different
+                        if reactants[1] is not reactants[2]:
+                            # Reactants stored as A + C + B
+                            generate_products_and_reactions((0, 2, 1))
+                        if reactants[0] is not reactants[1]:
+                            # Reactants stored as B + A + C
+                            generate_products_and_reactions((1, 0, 2))
+                        if reactants[0] is not reactants[2]:
+                            # Reactants stored as C + B + A
+                            generate_products_and_reactions((2, 1, 0))
+                            if reactants[0] is not reactants[1] and reactants[1] is not reactants[2]:
+                                # Reactants stored as C + A + B
+                                generate_products_and_reactions((2, 0, 1))
+                                # Reactants stored as B + C + A
+                                generate_products_and_reactions((1, 2, 0))
+
         # If products is given, remove reactions from the reaction list that
         # don't generate the given products
         if products is not None:
@@ -1749,20 +1841,7 @@ class KineticsFamily(Database):
                                 products0[i] = aromaticStructs[0]
 
                 # Skip reactions that don't match the given products
-                match = False
-
-                if len(products) == len(products0) == 1:
-                    if products[0].isIsomorphic(products0[0]):
-                        match = True
-                elif len(products) == len(products0) == 2:
-                    if products[0].isIsomorphic(products0[0]) and products[1].isIsomorphic(products0[1]):
-                        match = True
-                    elif products[0].isIsomorphic(products0[1]) and products[1].isIsomorphic(products0[0]):
-                        match = True
-                elif len(products) == len(products0):
-                    raise NotImplementedError("Can't yet filter reactions with {} products".format(len(products)))
-                    
-                if match: 
+                if isomorphic_species_lists(products, products0):
                     rxnList.append(reaction)
 
         # Determine the reactant-product pairs to use for flux analysis
@@ -2085,73 +2164,63 @@ class KineticsFamily(Database):
         """
         template = self.forwardTemplate
         reactants0 = [reactant.copy(deep=True) for reactant in reactants]
+
         if len(reactants0) == 1:
             molecule = reactants0[0]
             mappings = self.__matchReactantToTemplate(molecule, template.reactants[0])
-            for map in mappings:
-                reactantStructures = [molecule]
-                try:
-                    productStructures = self.__generateProductStructures(reactantStructures, [map], forward=True)
-                except ForbiddenStructureException:
-                    pass
-                else:
-                    if productStructures is not None:
-                        if len(products) == 1 and len(productStructures) == 1:
-                            if products[0].isIsomorphic(productStructures[0]):
-                                return reactantStructures, productStructures
-                        elif len(products) == 2 and len(productStructures) == 2:
-                            if products[0].isIsomorphic(productStructures[0]):
-                                if products[1].isIsomorphic(productStructures[1]):
-                                    return reactantStructures, productStructures
-                            if products[0].isIsomorphic(productStructures[1]):
-                                if products[1].isIsomorphic(productStructures[0]):
-                                    return reactantStructures, productStructures
-                        else: continue
-            # if there're some mapping available but cannot match the provided products
-            # raise exception
-            if len(mappings) > 0:
-                raise ActionError('Something wrong with products that RMG cannot find a match!')
-            return (None, None)
+
+            num_mappings = len(mappings)
+            reactant_structures = [molecule]
         elif len(reactants0) == 2:
             moleculeA = reactants0[0]
             moleculeB = reactants0[1]
             # get mappings in forward direction
             mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[0])
             mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[1])
-            mappingPairs = list(itertools.product(mappingsA,mappingsB))
+            mappings = list(itertools.product(mappingsA, mappingsB))
             # get mappings in the reverse direction
             mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[1])
             mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[0])
-            mappingPairs.extend(list(itertools.product(mappingsA,mappingsB)))
+            mappings.extend(list(itertools.product(mappingsA, mappingsB)))
 
-            reactantStructures = [moleculeA, moleculeB]
-            # Iterate over each pair of matches (A, B)
-            for mapA, mapB in mappingPairs:
-                try:
-                    productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB], forward=True)
-                except ForbiddenStructureException:
-                    pass
-                else:
-                    if productStructures is not None:
-                        if len(products) == 1 and len(productStructures) == 1:
-                            if products[0].isIsomorphic(productStructures[0]):
-                                return reactantStructures, productStructures
-                        elif len(products) == 2 and len(productStructures) == 2:
-                            if products[0].isIsomorphic(productStructures[0]):
-                                if products[1].isIsomorphic(productStructures[1]):
-                                    return reactantStructures, productStructures
-                            if products[0].isIsomorphic(productStructures[1]):
-                                if products[1].isIsomorphic(productStructures[0]):
-                                    return reactantStructures, productStructures
-                        else: continue
-            # if there're some mapping available but cannot match the provided products
-            # raise exception
-            if len(mappingsA)*len(mappingsB) > 0:
-                raise ActionError('Something wrong with products that RMG cannot find a match!')
-            return (None, None)
+            reactant_structures = [moleculeA, moleculeB]
+            num_mappings = len(mappingsA) * len(mappingsB)
+        elif len(reactants0) == 3:
+            moleculeA = reactants0[0]
+            moleculeB = reactants0[1]
+            moleculeC = reactants0[2]
+            # Get mappings for all permutations of reactants
+            mappings = []
+            for order in itertools.permutations(range(3), 3):
+                mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[order[0]])
+                mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[order[1]])
+                mappingsC = self.__matchReactantToTemplate(moleculeC, template.reactants[order[2]])
+                mappings.extend(list(itertools.product(mappingsA, mappingsB, mappingsC)))
+
+            reactant_structures = [moleculeA, moleculeB, moleculeC]
+            num_mappings = len(mappingsA)*len(mappingsB)*len(mappingsC)
         else:
             raise IndexError('You have {0} reactants, which is unexpected!'.format(len(reactants)))
-        
+
+        for mapping in mappings:
+            try:
+                product_structures = self.__generateProductStructures(reactant_structures, mapping, forward=True)
+            except ForbiddenStructureException:
+                pass
+            else:
+                if product_structures is not None:
+                    if isomorphic_species_lists(list(products), list(product_structures)):
+                        return reactant_structures, product_structures
+                    else:
+                        continue
+
+        # if there're some mapping available but cannot match the provided products
+        # raise exception
+        if num_mappings > 0:
+            raise ActionError('Something wrong with products that RMG cannot find a match!')
+
+        return None, None
+
     def addAtomLabelsForReaction(self, reaction, output_with_resonance = True):
         """
         Apply atom labels on a reaction using the appropriate atom labels from
