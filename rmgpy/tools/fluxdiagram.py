@@ -313,7 +313,7 @@ def simulate(reactionModel, reactionSystem, settings=None):
 
     reactionSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions,
                                    atol=simulatorSettings.atol, rtol=simulatorSettings.rtol,
-                                   sens_atol=simulatorSettings.sens_atol, sens_rtol=simulatorSettings.sens_rtol)
+                                   sens_atol=simulatorSettings.sens_atol, sens_rtol=simulatorSettings.sens_rtol,conditions=None)
 
     # Copy the initial conditions to use in evaluating conversions
     y0 = reactionSystem.y.copy()

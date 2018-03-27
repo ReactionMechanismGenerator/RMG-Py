@@ -87,7 +87,7 @@ def simulateOne(reactionModel, atol, rtol, reactionSystem):
     simulatorSettings = SimulatorSettings(atol,rtol)
     modelSettings = ModelSettings(toleranceKeepInEdge=0,toleranceMoveToCore=1,toleranceInterruptSimulation=1)
     
-    terminated,resurrected,obj,sspcs,srxns = reactionSystem.simulate(
+    terminated,resurrected,obj,sspcs,srxns,t,conv = reactionSystem.simulate(
         coreSpecies = reactionModel.core.species,
         coreReactions = reactionModel.core.reactions,
         edgeSpecies = reactionModel.edge.species,
