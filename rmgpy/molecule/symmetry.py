@@ -398,7 +398,45 @@ def calculateCyclicSymmetryNumber(molecule):
                     break
                 min_index += 1
                 max_index += -1
-
+            # check to make sure that the groups are identical on centers of flipping
+            if all_the_same:
+                ringed_atom_ids = [id(_atom) for _atom in ring]
+                if size % 2 == 0: # look at two atoms
+                    atom1 = ring[flipping_atom_index]
+                    atom2 = ring[flipping_atom_index + size/2]
+                    non_ring_bonded_atoms = [bonded_atom for bonded_atom in atom1.bonds.keys() + atom2.bonds.keys() if id(bonded_atom) not in ringed_atom_ids]
+                    if len(non_ring_bonded_atoms) < 3:
+                        pass # all_the_same still true
+                    elif len(non_ring_bonded_atoms) == 3:
+                        # at least one of these much be a match for flipping to happen
+                        identical = vf2.feasible(non_ring_bonded_atoms[0],non_ring_bonded_atoms[1])
+                        identical2 = vf2.feasible(non_ring_bonded_atoms[0],non_ring_bonded_atoms[2])
+                        identical3 = vf2.feasible(non_ring_bonded_atoms[1],non_ring_bonded_atoms[2])
+                        if not (identical or identical2 or identical3):
+                            all_the_same = False
+                    elif len(non_ring_bonded_atoms) == 4:
+                        same_sides = vf2.feasible(non_ring_bonded_atoms[0],non_ring_bonded_atoms[1]) and \
+                                     vf2.feasible(non_ring_bonded_atoms[2],non_ring_bonded_atoms[3])
+                        if not same_sides:
+                            atom0_matching = vf2.feasible(non_ring_bonded_atoms[0],non_ring_bonded_atoms[2]) or\
+                                             vf2.feasible(non_ring_bonded_atoms[0],non_ring_bonded_atoms[3])
+                            atom1_matching = vf2.feasible(non_ring_bonded_atoms[1],non_ring_bonded_atoms[2]) or\
+                                             vf2.feasible(non_ring_bonded_atoms[1],non_ring_bonded_atoms[3])
+                            if not (atom0_matching and atom1_matching):
+                                all_the_same = False
+                else:
+                    atom = ring[flipping_atom_index]
+                    non_ring_bonded_atoms = [bonded_atom for bonded_atom in atom.bonds.keys() if id(bonded_atom) not in ringed_atom_ids]
+                    if len(non_ring_bonded_atoms) < 2:
+                        pass # all_the_same still true
+                    elif len(non_ring_bonded_atoms) == 2:
+                        identical = vf2.feasible(non_ring_bonded_atoms[0],non_ring_bonded_atoms[1])
+                        if not identical:
+                            # flipping a tetrahedral will not work
+                            all_the_same = False
+                        else:
+                             # having 5+ bonnds is not modeled here
+                             pass
             # for even rings, check for flipping accross bonds too
             if not all_the_same and size % 2 == 0:
                 all_the_same = True
