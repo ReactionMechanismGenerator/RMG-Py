@@ -494,7 +494,6 @@ multiplicity 3
         symmetryNumber = species.getSymmetryNumber()
         self.assertEqual(symmetryNumber, 6)
 
-    @work_in_progress
     def testTotalSymmetryNumberSpecialCyclic(self):
         """
         Test the Species.getSymmetryNumber() (total symmetry) from issue # 332
@@ -649,7 +648,68 @@ multiplicity 3
         Test the Molecule.calculateSymmetryNumber() on C1=C=C=1
         """
         self.assertEqual(Species().fromSMILES('C1=C=C=1').getSymmetryNumber(), 6)
+
+    def test_symmetry_number_S1_total(self):
+        """
+        Test the Molecule.calculateSymmetryNumber() on [CH]1CCC1CC1CC1
+        """
+        self.assertEqual(Species().fromSMILES('[CH]1CCC1CC1CC1').getSymmetryNumber(),1)
+
+    def testCyclicSymmetryNumberS1(self):
+        """
+        Test the Molecule.calculateCyclicSymmetryNumber() on [CH]1CCC1CC1CC1
+        """
+        molecule = Molecule().fromSMILES('[CH]1CCC1CC1CC1')
+        symmetryNumber = calculateCyclicSymmetryNumber(molecule)
+        self.assertEqual(symmetryNumber, 1)
     
+    def testCyclicSymmetryNumberMethylCycloPropane(self):
+        """
+        Test the Molecule.calculateCyclicSymmetryNumber() on CC1CC1
+        """
+        molecule = Molecule().fromSMILES('CC1CC1')
+        symmetryNumber = calculateCyclicSymmetryNumber(molecule)
+        self.assertEqual(symmetryNumber, 1)
+
+    def testCyclicSymmetryNumberMethylCycloPropene(self):
+        """
+        Test the Molecule.calculateCyclicSymmetryNumber() on C=C1CC1
+        """
+        molecule = Molecule().fromSMILES('C=C1CC1')
+        symmetryNumber = calculateCyclicSymmetryNumber(molecule)
+        self.assertEqual(symmetryNumber, 2)
+
+
+    def testCyclicSymmetryNumberMethylCycloButene(self):
+        """
+        Test the Molecule.calculateCyclicSymmetryNumber() on C=C1CCC1
+        """
+        molecule = Molecule().fromSMILES('C=C1CCC1')
+        symmetryNumber = calculateCyclicSymmetryNumber(molecule)
+        self.assertEqual(symmetryNumber, 2)
+
+    def testCyclicSymmetryNumberMethylCycloButane(self):
+        """
+        Test the Molecule.calculateCyclicSymmetryNumber() on CC1CCC1
+        """
+        molecule = Molecule().fromSMILES('CC1CCC1')
+        symmetryNumber = calculateCyclicSymmetryNumber(molecule)
+        self.assertEqual(symmetryNumber, 1)
+
+    def testCyclicSymmetryNumberDiMethylCycloButane(self):
+        """
+        Test the Molecule.calculateCyclicSymmetryNumber() on CC1CC(C)C1
+        """
+        molecule = Molecule().fromSMILES('CC1CC(C)C1')
+        symmetryNumber = calculateCyclicSymmetryNumber(molecule)
+        self.assertEqual(symmetryNumber, 4)
+
+
+    def test_symmetry_number_dimethylcylcobutane_total(self):
+        """
+        Test the Molecule.calculateSymmetryNumber() on CC1CC(C)C1
+        """
+        self.assertEqual(Species().fromSMILES('CC1CC(C)C1').getSymmetryNumber(),36)
 ################################################################################
 
 if __name__ == '__main__':
