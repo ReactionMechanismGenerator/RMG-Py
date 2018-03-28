@@ -49,6 +49,7 @@ cdef class Reaction:
     cdef public bint duplicate
     cdef public float _degeneracy
     cdef public list pairs
+    cdef public bint has_pdep_route
     cdef public str comment
     cdef public dict k_effective_cache
     
