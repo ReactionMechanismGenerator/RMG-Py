@@ -101,9 +101,10 @@ cdef class LiquidReactor(ReactionSystem):
                 if iter.label == spc:
                     self.constSPCIndices.append(coreSpecies.index(iter))#get 
   
-    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list surfaceSpecies=None,
-                          list surfaceReactions=None, list pdepNetworks=None, atol=1e-16, rtol=1e-8, sensitivity=False, 
-                          sens_atol=1e-6, sens_rtol=1e-4, filterReactions=False, dict conditions=None):
+    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
+                          list surfaceSpecies=None, list surfaceReactions=None, list pdepNetworks=None,
+                          atol=1e-16, rtol=1e-8, sensitivity=False, sens_atol=1e-6, sens_rtol=1e-4,
+                          filterReactions=False, dict conditions=None):
         """
         Initialize a simulation of the liquid reactor using the provided kinetic
         model.
@@ -115,8 +116,11 @@ cdef class LiquidReactor(ReactionSystem):
                     
         # First call the base class version of the method
         # This initializes the attributes declared in the base class
-        ReactionSystem.initializeModel(self, coreSpecies, coreReactions, edgeSpecies, edgeReactions, surfaceSpecies, surfaceReactions, 
-                                       pdepNetworks, atol, rtol, sensitivity, sens_atol, sens_rtol, filterReactions, conditions)
+        ReactionSystem.initializeModel(self, coreSpecies, coreReactions, edgeSpecies, edgeReactions,
+                                       surfaceSpecies=surfaceSpecies, surfaceReactions=surfaceReactions,
+                                       pdepNetworks=pdepNetworks, atol=atol, rtol=rtol,
+                                       sensitivity=sensitivity, sens_atol=sens_atol, sens_rtol=sens_rtol,
+                                       filterReactions=filterReactions, conditions=conditions)
 
         # Set initial conditions
         self.set_initial_conditions()

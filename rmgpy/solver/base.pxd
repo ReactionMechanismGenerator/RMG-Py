@@ -106,15 +106,18 @@ cdef class ReactionSystem(DASx):
 
     cdef public list termination
     
+    # Trimolecular reactants flag
+    cdef public bint trimolecular
+
     # reaction threshold settings
     cdef public numpy.ndarray unimolecularThreshold
     cdef public numpy.ndarray bimolecularThreshold
     cdef public numpy.ndarray trimolecularThreshold
 
     # methods
-    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list surfaceSpecies=?,
-        list surfaceReactions=?, list pdepNetworks=?, atol=?, rtol=?, sensitivity=?, sens_atol=?, sens_rtol=?, filterReactions=?,
-        dict conditions=?)
+    cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
+        list surfaceSpecies=?, list surfaceReactions=?, list pdepNetworks=?, atol=?, rtol=?,
+        sensitivity=?, sens_atol=?, sens_rtol=?, filterReactions=?, dict conditions=?)
 
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, 
         list edgeReactions,list surfaceSpecies, list surfaceReactions,

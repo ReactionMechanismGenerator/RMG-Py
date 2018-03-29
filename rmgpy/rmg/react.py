@@ -113,9 +113,10 @@ def deflate(rxns, species, reactantIndices):
             pass
 
 
-def reactAll(coreSpcList, numOldCoreSpecies, unimolecularReact, bimolecularReact):
+def reactAll(coreSpcList, numOldCoreSpecies, unimolecularReact, bimolecularReact, trimolecularReact=None):
     """
-    Reacts the core species list via uni- and bimolecular reactions.
+    Reacts the core species list via uni-, bi-, and trimolecular
+    reactions.
     """
 
     # Select reactive species that can undergo unimolecular reactions:
@@ -129,6 +130,15 @@ def reactAll(coreSpcList, numOldCoreSpecies, unimolecularReact, bimolecularReact
             if bimolecularReact[i,j]:
                 if coreSpcList[i].reactive and coreSpcList[j].reactive:
                     spcTuples.append((coreSpcList[i], coreSpcList[j]))
+
+    if trimolecularReact is not None:
+        for i in xrange(numOldCoreSpecies):
+            for j in xrange(i, numOldCoreSpecies):
+                for k in xrange(j, numOldCoreSpecies):
+                    # Find reactions involving the species that are trimolecular
+                    if trimolecularReact[i,j,k]:
+                        if coreSpcList[i].reactive and coreSpcList[j].reactive and coreSpcList[k].reactive:
+                            spcTuples.append((coreSpcList[i], coreSpcList[j], coreSpcList[k]))
 
     rxns = list(react(*spcTuples))
     return rxns
