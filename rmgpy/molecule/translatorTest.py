@@ -406,6 +406,14 @@ multiplicity 2
         for inchi in inchi_list:
             self.assertEqual(inchi, expected_inchi)
 
+    def test_disconnected_molecule(self):
+        """Test that we can generate an InChI for a disconnected molecule."""
+        mol = Molecule().fromSMILES('CCCCO.C=O')
+
+        inchi = 'InChI=1S/C4H10O.CH2O/c1-2-3-4-5;1-2/h5H,2-4H2,1H3;1H2'
+
+        self.assertEqual(mol.toInChI(), inchi)
+
 
 class SMILESGenerationTest(unittest.TestCase):
     def compare(self, adjlist, smiles):

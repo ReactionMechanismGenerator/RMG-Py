@@ -48,7 +48,10 @@ def retrieveElementCount(obj):
                 element, count = match.groups()
                 if count is '':
                     count = 1
-                element_count[element] = int(count)
+                if element in element_count:
+                    element_count[element] += int(count)
+                else:
+                    element_count[element] = int(count)
         return element_count
     
     elif isinstance(obj, Molecule):
