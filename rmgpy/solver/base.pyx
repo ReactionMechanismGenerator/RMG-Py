@@ -176,9 +176,11 @@ cdef class ReactionSystem(DASx):
         
         # reaction filtration, unimolecularThreshold is a vector with length of number of core species
         # bimolecularThreshold is a square matrix with length of number of core species
+        # trimolecularThreshold is a rank-3 tensor with length of number of core species
         # A value of 1 in the matrix indicates the species is above the threshold to react or participate in those reactions
         self.unimolecularThreshold = None
         self.bimolecularThreshold = None
+        self.trimolecularThreshold = None
 
     def __reduce__(self):
         """
@@ -246,6 +248,7 @@ cdef class ReactionSystem(DASx):
         self.sensitivityCoefficients = numpy.zeros((self.numCoreSpecies, self.numCoreReactions), numpy.float64)
         self.unimolecularThreshold = numpy.zeros((self.numCoreSpecies), bool)
         self.bimolecularThreshold = numpy.zeros((self.numCoreSpecies, self.numCoreSpecies), bool)
+        self.trimolecularThreshold = numpy.zeros((self.numCoreSpecies, self.numCoreSpecies, self.numCoreSpecies), bool)
 
         surfaceSpecies,surfaceReactions = self.initialize_surface(coreSpecies,coreReactions,surfaceSpecies,surfaceReactions)
         
@@ -436,6 +439,13 @@ cdef class ReactionSystem(DASx):
             for j in xrange(i, numCoreSpecies):
                 if self.coreSpeciesConcentrations[i] > 0 and self.coreSpeciesConcentrations[j] > 0:
                     self.bimolecularThreshold[i,j] = True
+        for i in xrange(numCoreSpecies):
+            for j in xrange(i, numCoreSpecies):
+                for k in xrange(j, numCoreSpecies):
+                    if (self.coreSpeciesConcentrations[i] > 0
+                            and self.coreSpeciesConcentrations[j] > 0
+                            and self.coreSpeciesConcentrations[k] > 0):
+                        self.trimolecularThreshold[i,j,k] = True
 
     def set_initial_derivative(self):
         """
@@ -569,7 +579,8 @@ cdef class ReactionSystem(DASx):
         cdef numpy.ndarray[numpy.float64_t,ndim=1] surfaceSpeciesProduction, surfaceSpeciesConsumption
         cdef numpy.ndarray[numpy.float64_t,ndim=1] surfaceTotalDivAccumNums, surfaceSpeciesRateRatios
         cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, coreSpeciesConcentrations
-        cdef double  prevTime, totalMoles, c, volume, RTP, unimolecularThresholdVal, bimolecularThresholdVal, maxCharRate
+        cdef double prevTime, totalMoles, c, volume, RTP, maxCharRate
+        cdef double unimolecularThresholdVal, bimolecularThresholdVal, trimolecularThresholdVal
         cdef bool useDynamicsTemp, firstTime, useDynamics, terminateAtMaxObjects, schanged
         cdef numpy.ndarray[numpy.float64_t, ndim=1] edgeReactionRates
         cdef double reactionRate, production, consumption
@@ -652,6 +663,7 @@ cdef class ReactionSystem(DASx):
         forwardRateCoefficients = self.kf
         unimolecularThreshold = self.unimolecularThreshold
         bimolecularThreshold = self.bimolecularThreshold
+        trimolecularThreshold = self.trimolecularThreshold
         
         # Copy the initial conditions to use in evaluating conversions
         y0 = self.y.copy()
@@ -890,9 +902,11 @@ cdef class ReactionSystem(DASx):
             if filterReactions:
                 # Calculate unimolecular and bimolecular thresholds for reaction
                 # Set the maximum unimolecular rate to be kB*T/h
-                unimolecularThresholdVal = toleranceMoveToCore * charRate / (2.08366122e10 * self.T.value_si)   
+                unimolecularThresholdVal = toleranceMoveToCore * charRate / (2.08366122e10 * self.T.value_si)
                 # Set the maximum bimolecular rate to be 1e7 m^3/mol*s, or 1e13 cm^3/mol*s
-                bimolecularThresholdVal = toleranceMoveToCore * charRate / 1e7 
+                bimolecularThresholdVal = toleranceMoveToCore * charRate / 1e7
+                # Set the maximum trimolecular rate to be 1e9 m^6/mol^2*s
+                trimolecularThresholdVal = toleranceMoveToCore * charRate / 1e9
                 for i in xrange(numCoreSpecies):
                     if not unimolecularThreshold[i]:
                         # Check if core species concentration has gone above threshold for unimolecular reaction
@@ -903,6 +917,15 @@ cdef class ReactionSystem(DASx):
                         if not bimolecularThreshold[i,j]:
                             if coreSpeciesConcentrations[i]*coreSpeciesConcentrations[j] > bimolecularThresholdVal:
                                 bimolecularThreshold[i,j] = True
+                for i in xrange(numCoreSpecies):
+                    for j in xrange(i, numCoreSpecies):
+                        for k in xrange(j, numCoreSpecies):
+                            if not trimolecularThreshold[i,j,k]:
+                                if (coreSpeciesConcentrations[i]*
+                                    coreSpeciesConcentrations[j]*
+                                    coreSpeciesConcentrations[k]
+                                        > trimolecularThresholdVal):
+                                    trimolecularThreshold[i,j,k] = True
             
             
             ###############################################################################
@@ -1107,6 +1130,7 @@ cdef class ReactionSystem(DASx):
         
         self.unimolecularThreshold = unimolecularThreshold
         self.bimolecularThreshold = bimolecularThreshold
+        self.trimolecularThreshold = trimolecularThreshold
 
         # Return the invalid object (if the simulation was invalid) or None
         # (if the simulation was valid)

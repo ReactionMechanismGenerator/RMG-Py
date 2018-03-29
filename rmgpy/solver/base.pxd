@@ -109,6 +109,7 @@ cdef class ReactionSystem(DASx):
     # reaction threshold settings
     cdef public numpy.ndarray unimolecularThreshold
     cdef public numpy.ndarray bimolecularThreshold
+    cdef public numpy.ndarray trimolecularThreshold
 
     # methods
     cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list surfaceSpecies=?,
