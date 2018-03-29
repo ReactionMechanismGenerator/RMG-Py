@@ -355,7 +355,7 @@ def _rdkit_translator(input_object, identifier_type, mol=None):
         if identifier_type == 'inchi':
             output = Chem.inchi.MolToInchi(rdkitmol, options='-SNon')
         elif identifier_type == 'inchikey':
-            inchi = toInChI(mol)
+            inchi = toInChI(input_object)
             output = Chem.inchi.InchiToInchiKey(inchi)
         elif identifier_type == 'sma':
             output = Chem.MolToSmarts(rdkitmol)
