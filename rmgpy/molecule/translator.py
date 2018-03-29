@@ -345,6 +345,8 @@ def _rdkit_translator(input_object, identifier_type, mol=None):
             raise ValueError('Identifier type {0} is not supported for reading using RDKit.'.format(identifier_type))
         if rdkitmol is None:
             raise ValueError("Could not interpret the identifier {0!r}".format(input_object))
+        if mol is None:
+            mol = mm.Molecule()
         output = fromRDKitMol(mol, rdkitmol)
     elif isinstance(input_object, mm.Molecule):
         # We are converting from a molecule to a string identifier
