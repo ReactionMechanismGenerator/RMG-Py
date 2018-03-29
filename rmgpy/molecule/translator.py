@@ -509,6 +509,10 @@ def _write(mol, identifier_type, backend):
 
     Returns a string identifier of the requested type.
     """
+    # Check that the molecule is not empty
+    if not mol.atoms:
+        return ''
+
     for option in _get_backend_list(backend):
         if option == 'rdkit':
             try:

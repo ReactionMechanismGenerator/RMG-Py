@@ -44,6 +44,16 @@ from rmgpy.molecule.translator import *
 from rmgpy.species import Species
 
 
+class TranslatorTest(unittest.TestCase):
+
+    def test_empty_molecule(self):
+        """Test that we can safely return a blank identifier for an empty molecule."""
+        mol = Molecule()
+
+        self.assertEqual(mol.toSMILES(), '')
+        self.assertEqual(mol.toInChI(), '')
+
+
 class InChIGenerationTest(unittest.TestCase):
     def compare(self, adjlist, aug_inchi):
         spc = Species(molecule=[Molecule().fromAdjacencyList(adjlist)])
