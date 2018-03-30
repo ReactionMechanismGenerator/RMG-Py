@@ -2381,8 +2381,67 @@ class KineticsFamily(Database):
             else:
                 ob,boo = getObjectiveFunction(new,old,T=T)
             return ob,True
-
+    def extendNode(self,parent,thermoDatabase=None,obj=None,T=1000.0):
+        """
+        Constructs an extension to the group parent based on evaluation 
+        of the objective function obj
+        """
         
+        exts = self.getExtensionEdge(parent,obj=obj,T=T)
+        
+        vals = []
+        for grp,grpc,name,typ,einds in exts:
+            val,boo = self.evalExt(parent,grp,name,obj,T)
+            vals.append(val) 
+            
+        min_val = min(vals)
+        
+        min_ind = vals.index(min_val)
+        
+        ext = exts[min_ind]
+        
+        extname = ext[2]
+        
+        self.addEntry(parent,ext[0],extname)
+        
+        complement = not ext[1] is None
+        
+        if complement:
+            frags = extname.split('_')
+            frags[-1] = 'N-'+frags[-1]
+            cextname = ''
+            for k in frags:
+                cextname += k
+                cextname += '_'
+            cextname = cextname[:-1]
+    
+            self.addEntry(parent,ext[1],cextname)
+        
+        rxns = self.getEntriesReactions(parent.label)
+        new,left,newInds = self.splitReactions(rxns,parent.label,ext[0])
+        
+        compEntries = []
+        newEntries = []
+
+        for i,entry in enumerate(self.rules.entries[parent.label]):
+            if i in newInds:
+                entry.label = extname
+                newEntries.append(entry)
+            else:
+                if complement:
+                    entry.label = cextname
+                compEntries.append(entry)
+        
+        self.rules.entries[extname] = newEntries
+        
+        if complement:
+            self.rules.entries[parent.label] = []
+            self.rules.entries[cextname] = compEntries
+        else:
+            self.rules.entries[parent.label] = compEntries
+            
+        return
+    
     def retrieveOriginalEntry(self, templateLabel):
         """
         Retrieves the original entry, be it a rule or training reaction, given
