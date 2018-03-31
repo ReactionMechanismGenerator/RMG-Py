@@ -36,7 +36,7 @@ from rmgpy.data.solvation import SolventData, SoluteData, SoluteGroups, Solvatio
 from rmgpy.reaction import Reaction
 
 
-class DiffusionLimited():
+class DiffusionLimited(object):
 
     def __init__(self):
     # default is false, enabled if there is a solvent
