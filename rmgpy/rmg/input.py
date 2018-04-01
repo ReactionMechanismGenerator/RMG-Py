@@ -203,8 +203,9 @@ def simpleReactor(temperature,
         sensConditions = None
     else:
         sensConditions = sensitivityMoleFractions
-        sensConditions['T'] = Quantity(sensitivityTemperature)
-        sensConditions['P'] = Quantity(sensitivityPressure)
+        sensConditions['T'] = Quantity(sensitivityTemperature).value_si
+        sensConditions['P'] = Quantity(sensitivityPressure).value_si
+
     
     system = SimpleReactor(T, P, initialMoleFractions, nSimsTerm, termination, sensitiveSpecies, sensitivityThreshold,sensConditions)
     rmg.reactionSystems.append(system)
@@ -274,8 +275,8 @@ def liquidReactor(temperature,
     if sensitivityConcentrations is None or sensitivityTemperature is None:
         sensConditions = None
     else:
-        sensConditions = Quantity(sensitivityConcentrations)
-        sensConditions['T'] = Quantity(sensitivityTemperature)
+        sensConditions = sensitivityConcentrations
+        sensConditions['T'] = Quantity(sensitivityTemperature).value_si
         
     system = LiquidReactor(T, initialConcentrations, nSimsTerm, termination, sensitiveSpecies, sensitivityThreshold, sensConditions, constantSpecies)
     rmg.reactionSystems.append(system)

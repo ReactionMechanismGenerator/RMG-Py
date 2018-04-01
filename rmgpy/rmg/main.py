@@ -46,6 +46,7 @@ import copy
 from copy import deepcopy
 from scipy.optimize import brute
 
+from rmgpy.rmg.settings import ModelSettings
 from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.molecule import Molecule
 from rmgpy.solver.base import TerminationTime, TerminationConversion
@@ -814,7 +815,7 @@ class RMG(util.Subject):
                     csvfilePath = os.path.join(self.outputDirectory, 'solver', 'sensitivity_{0}_SPC_{1}.csv'.format(index+1, spec.index))
                     sensWorksheet.append(csvfilePath)
                 
-                terminated, resurrected,obj, surfaceSpecies, surfaceReactions = reactionSystem.simulate(
+                terminated, resurrected,obj, surfaceSpecies, surfaceReactions,t,x = reactionSystem.simulate(
                     coreSpecies = self.reactionModel.core.species,
                     coreReactions = self.reactionModel.core.reactions,
                     edgeSpecies = self.reactionModel.edge.species,
@@ -824,7 +825,7 @@ class RMG(util.Subject):
                     pdepNetworks = self.reactionModel.networkList,
                     sensitivity = True,
                     sensWorksheet = sensWorksheet,
-                    modelSettings = self.modelSettingsList[-1],
+                    modelSettings = ModelSettings(toleranceMoveToCore=1e8,toleranceInterruptSimulation=1e8),
                     simulatorSettings = self.simulatorSettingsList[-1],
                     conditions = reactionSystem.sensConditions,
                 )
