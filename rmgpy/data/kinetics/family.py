@@ -1973,7 +1973,7 @@ class KineticsFamily(Database):
         as the reactants, return the reactant-product pairs to use when
         performing flux analysis.
         """
-        pairs = []; error = False
+        pairs = []
         if len(reaction.reactants) == 1 or len(reaction.products) == 1:
             # When there is only one reactant (or one product), it is paired 
             # with each of the products (reactants)
@@ -1991,8 +1991,6 @@ class KineticsFamily(Database):
                 elif reaction.products[1].containsLabeledAtom('*3'):
                     pairs.append([reaction.reactants[0],reaction.products[1]])
                     pairs.append([reaction.reactants[1],reaction.products[0]])
-                else:
-                    error = True
             elif reaction.reactants[1].containsLabeledAtom('*1'):
                 if reaction.products[1].containsLabeledAtom('*3'):
                     pairs.append([reaction.reactants[0],reaction.products[0]])
@@ -2000,8 +1998,6 @@ class KineticsFamily(Database):
                 elif reaction.products[0].containsLabeledAtom('*3'):
                     pairs.append([reaction.reactants[0],reaction.products[1]])
                     pairs.append([reaction.reactants[1],reaction.products[0]])
-                else:
-                    error = True
         elif self.label.lower() in ['disproportionation', 'co_disproportionation', 'korcek_step1_cat']:
             # Hardcoding for disproportionation, co_disproportionation, korcek_step1_cat:
             # pair the reactant containing *1 with the product containing *1
@@ -2013,8 +2009,6 @@ class KineticsFamily(Database):
                 elif reaction.products[1].containsLabeledAtom('*1'):
                     pairs.append([reaction.reactants[0],reaction.products[1]])
                     pairs.append([reaction.reactants[1],reaction.products[0]])
-                else:
-                    error = True
             elif reaction.reactants[1].containsLabeledAtom('*1'):
                 if reaction.products[1].containsLabeledAtom('*1'):
                     pairs.append([reaction.reactants[0],reaction.products[0]])
@@ -2022,8 +2016,6 @@ class KineticsFamily(Database):
                 elif reaction.products[0].containsLabeledAtom('*1'):
                     pairs.append([reaction.reactants[0],reaction.products[1]])
                     pairs.append([reaction.reactants[1],reaction.products[0]])
-                else:
-                    error = True
         elif self.label.lower() in ['substitution_o', 'substitutions']:
             # Hardcoding for Substitution_O: pair the reactant containing
             # *2 with the product containing *3 and vice versa
@@ -2035,8 +2027,6 @@ class KineticsFamily(Database):
                 elif reaction.products[1].containsLabeledAtom('*3'):
                     pairs.append([reaction.reactants[0],reaction.products[1]])
                     pairs.append([reaction.reactants[1],reaction.products[0]])
-                else:
-                    error = True
             elif reaction.reactants[1].containsLabeledAtom('*2'):
                 if reaction.products[1].containsLabeledAtom('*3'):
                     pairs.append([reaction.reactants[0],reaction.products[0]])
@@ -2044,8 +2034,6 @@ class KineticsFamily(Database):
                 elif reaction.products[0].containsLabeledAtom('*3'):
                     pairs.append([reaction.reactants[0],reaction.products[1]])
                     pairs.append([reaction.reactants[1],reaction.products[0]])
-                else:
-                    error = True
         elif self.label.lower() == 'baeyer-villiger_step1_cat':
             # Hardcoding for Baeyer-Villiger_step1_cat: pair the two reactants
             # with the Criegee intermediate and pair the catalyst with itself
@@ -2059,8 +2047,6 @@ class KineticsFamily(Database):
                     pairs.append([reaction.reactants[1],reaction.products[1]])
                     pairs.append([reaction.reactants[2], reaction.products[1]])
                     pairs.append([reaction.reactants[0], reaction.products[0]])
-                else:
-                    error = True
             elif reaction.reactants[1].containsLabeledAtom('*5'):
                 if reaction.products[0].containsLabeledAtom('*1'):
                     pairs.append([reaction.reactants[0], reaction.products[0]])
@@ -2070,8 +2056,6 @@ class KineticsFamily(Database):
                     pairs.append([reaction.reactants[0], reaction.products[1]])
                     pairs.append([reaction.reactants[2], reaction.products[1]])
                     pairs.append([reaction.reactants[1], reaction.products[0]])
-                else:
-                    error = True
             elif reaction.reactants[2].containsLabeledAtom('*5'):
                 if reaction.products[0].containsLabeledAtom('*1'):
                     pairs.append([reaction.reactants[0], reaction.products[0]])
@@ -2081,8 +2065,6 @@ class KineticsFamily(Database):
                     pairs.append([reaction.reactants[0], reaction.products[1]])
                     pairs.append([reaction.reactants[1], reaction.products[1]])
                     pairs.append([reaction.reactants[2], reaction.products[0]])
-                else:
-                    error = True
         elif self.label.lower() == 'baeyer-villiger_step2_cat':
             # Hardcoding for Baeyer-Villiger_step2_cat: pair the Criegee
             # intermediate with the two products and the catalyst with itself
@@ -2096,8 +2078,6 @@ class KineticsFamily(Database):
                     pairs.append([reaction.reactants[1], reaction.products[1]])
                     pairs.append([reaction.reactants[1], reaction.products[2]])
                     pairs.append([reaction.reactants[0], reaction.products[0]])
-                else:
-                    error = True
             elif reaction.products[1].containsLabeledAtom('*7'):
                 if reaction.reactants[0].containsLabeledAtom('*1'):
                     pairs.append([reaction.reactants[0], reaction.products[0]])
@@ -2107,8 +2087,6 @@ class KineticsFamily(Database):
                     pairs.append([reaction.reactants[1], reaction.products[0]])
                     pairs.append([reaction.reactants[1], reaction.products[2]])
                     pairs.append([reaction.reactants[0], reaction.products[1]])
-                else:
-                    error = True
             elif reaction.products[2].containsLabeledAtom('*7'):
                 if reaction.reactants[0].containsLabeledAtom('*1'):
                     pairs.append([reaction.reactants[0], reaction.products[0]])
@@ -2118,16 +2096,11 @@ class KineticsFamily(Database):
                     pairs.append([reaction.reactants[1], reaction.products[0]])
                     pairs.append([reaction.reactants[1], reaction.products[1]])
                     pairs.append([reaction.reactants[0], reaction.products[2]])
-                else:
-                    error = True
-        else:
-            error = True
-            
-        if error:
+
+        if not pairs:
             logging.debug('Preset mapping missing for determining reaction pairs for family {0!s}, falling back to Reaction.generatePairs'.format(self.label))
-            return []
-        else:
-            return pairs
+
+        return pairs
         
     def getReactionTemplate(self, reaction):
         """
