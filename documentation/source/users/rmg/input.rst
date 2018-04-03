@@ -396,11 +396,13 @@ the model does not converge with normal parameter settings.  See :ref:`Filtering
         toleranceMoveToCore=0.1,
         toleranceInterruptSimulation=0.1,
         filterReactions=True,
+        filterThreshold=5e8,
     )
 
 **Additional parameters:**
 
-- ``filterReactions``: set to ``True`` if reaction filtering is turned on.  By default it is set to False.
+- ``filterReactions``: set to ``True`` if reaction filtering is turned on. By default it is set to False.
+- ``filterThreshold``: click :ref:`here <filterReactionsTheory>` for more description about its effect. Default: ``5e8``
 
 .. _pruning:
 

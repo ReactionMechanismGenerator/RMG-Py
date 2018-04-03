@@ -186,6 +186,7 @@ For estimating ΔG at temperatures other than 298 K, the enthalpy change associa
 
 where `A, B, E, S` and `L` are the same solute descriptors used in the Abraham model for the estimation of ΔG. The lowercase coefficients `c', a', b', e', s'` and `l'` depend only on the solvent and were obtained by fitting to experimental data. In RMG, this equation is implemented and together with ΔG(298 K) can be used to find ΔS(298 K). From this data, ΔG at other temperatures is found by extrapolation.
 
+.. _diffusionLimited:
 
 Diffusion-limited kinetics
 ==========================

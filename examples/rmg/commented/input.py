@@ -147,6 +147,10 @@ model(
     # filter the reactions during the enlarge step to omit species from reacting if their
     # concentration are deemed to be too low
     filterReactions=False,
+    # for bimolecular reactions, will only allow them to react if
+    # filterThreshold*C_A*C_B > toleranceMoveToCore*characteristic_rate
+    # and if filterReactions=True
+    filterThreshold=1e8,
 )
 
 options(
