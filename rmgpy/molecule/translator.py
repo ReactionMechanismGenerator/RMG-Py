@@ -345,6 +345,8 @@ def _rdkit_translator(input_object, identifier_type, mol=None):
             raise ValueError('Identifier type {0} is not supported for reading using RDKit.'.format(identifier_type))
         if rdkitmol is None:
             raise ValueError("Could not interpret the identifier {0!r}".format(input_object))
+        if mol is None:
+            mol = mm.Molecule()
         output = fromRDKitMol(mol, rdkitmol)
     elif isinstance(input_object, mm.Molecule):
         # We are converting from a molecule to a string identifier
@@ -355,7 +357,7 @@ def _rdkit_translator(input_object, identifier_type, mol=None):
         if identifier_type == 'inchi':
             output = Chem.inchi.MolToInchi(rdkitmol, options='-SNon')
         elif identifier_type == 'inchikey':
-            inchi = toInChI(mol)
+            inchi = toInChI(input_object)
             output = Chem.inchi.InchiToInchiKey(inchi)
         elif identifier_type == 'sma':
             output = Chem.MolToSmarts(rdkitmol)
@@ -509,6 +511,10 @@ def _write(mol, identifier_type, backend):
 
     Returns a string identifier of the requested type.
     """
+    # Check that the molecule is not empty
+    if not mol.atoms:
+        return ''
+
     for option in _get_backend_list(backend):
         if option == 'rdkit':
             try:
