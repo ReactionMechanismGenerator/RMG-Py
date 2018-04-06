@@ -1,6 +1,9 @@
 """
 This scripts runs tests on the database
 """
+import numpy as np
+import logging
+
 from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase
 from copy import copy
@@ -107,6 +110,12 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
 
             test = lambda x: self.kinetics_checkAdjlistsNonidentical(library)
             test_name = "Kinetics library {0}: check adjacency lists are nonidentical?".format(library_name)
+            test.description = test_name
+            self.compat_func_name = test_name
+            yield test, library_name
+            
+            test = lambda x: self.kinetics_checkLibraryRatesAreReasonable(library)
+            test_name = "Kinetics library {0}: check rates can be evaluated?".format(library_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, library_name
@@ -415,7 +424,36 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                         continue
 
                     nose.tools.assert_false(speciesList[i].molecule[0].isIsomorphic(speciesList[j].molecule[0], initialMap), "Species {0} and species {1} in {2} database were found to be identical.".format(speciesList[i].label,speciesList[j].label,database.label))
-
+    
+    def kinetics_checkLibraryRatesAreReasonable(self, library):
+        """
+        This test ensures that every library reaction has reasonable kinetics at 1000 K, 1 bar
+        """
+        T = 1000.0 #K
+        P = 100000.0 # 1 bar in Pa
+        Na = 6.022*10**23 #molecules/mol
+        mHrad = 1.6737236e-27 #kg
+        Hrad_diam = 2.4e-10 #m
+        kB = 1.38064852e-23 #m2 * kg *s^-2 * K^-1
+        h = 6.62607004e-34 #m2 kg / s
+        boo = False
+        for entry in library.entries.values():
+            k = entry.data.getRateCoefficient(T,P)
+            rxn = entry.item
+            if k < 0:
+                boo = True
+                logging.error('library reaction {0} from library {1}, had a negative rate at 1000 K, 1 bar'.format(rxn,library.label))
+            if len(rxn.reactants) == 1:
+                if k > (kB*T)/h:
+                    boo = True
+                    logging.error('library reaction {0} from library {1}, exceeds the TST limit at 1000 K, 1 bar'.format(rxn,library.label))
+            elif len(rxn.reactants) == 2:
+                if k > Na*np.pi*Hrad_diam**2*np.sqrt(8*kB*T/(np.pi*mHrad/2)):
+                    boo = True
+                    logging.error('library reaction {0} from library {1}, exceeds the collision limit at 1000 K, 1 bar'.format(rxn,library.label)) 
+        if boo:
+            raise ValueError('library {0} has unreasonable rates'.format(library.label))
+                
     def kinetics_checkReactantAndProductTemplate(self, family_name):
         """
         This test checks whether the reactant and product templates within a family are correctly defined.
