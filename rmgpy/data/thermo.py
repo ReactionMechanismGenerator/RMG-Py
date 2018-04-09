@@ -1119,9 +1119,9 @@ class ThermoDatabase(object):
             if species.containsSurfaceSite():
                 thermo0 = self.correctBindingEnergy(thermo0, species)
             return thermo0
-        
+
         if species.containsSurfaceSite():
-            thermo0 = self.getThermoDataForSurfaceSpecies(species, quantumMechanics=quantumMechanics)
+            thermo0 = self.getThermoDataForSurfaceSpecies(species)
             thermo0 = self.correctBindingEnergy(thermo0, species)
             return thermo0
 
@@ -1130,7 +1130,7 @@ class ThermoDatabase(object):
         except Exception:
             logging.debug('Quantum Mechanics DB could not be found.')
             quantumMechanics = None
-            
+
         if quantumMechanics:
             original_molecule = species.molecule[0]
             if quantumMechanics.settings.onlyCyclics and not original_molecule.isCyclic():
@@ -1295,7 +1295,7 @@ class ThermoDatabase(object):
 
 
 
-    def getThermoDataForSurfaceSpecies(self, species, quantumMechanics=None):
+    def getThermoDataForSurfaceSpecies(self, species):
         """
         Get the thermo data for an adsorbed species,
         by desorbing it, finding the thermo of the gas-phase
@@ -1348,7 +1348,7 @@ class ThermoDatabase(object):
         dummySpecies = Species()
         dummySpecies.molecule.append(dummyMolecule)
         dummySpecies.generateResonanceIsomers()
-        thermo = self.getThermoData(dummySpecies, quantumMechanics=quantumMechanics)
+        thermo = self.getThermoData(dummySpecies)
 
         thermo.comment = "Gas phase thermo from {0}. Adsorption correction:".format(thermo.comment)
         logging.debug("Using thermo from gas phase for species {}\n".format(species.label) + repr(thermo))
