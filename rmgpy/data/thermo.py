@@ -1347,7 +1347,7 @@ class ThermoDatabase(object):
 
         dummySpecies = Species()
         dummySpecies.molecule.append(dummyMolecule)
-        dummySpecies.generateResonanceIsomers()
+        dummySpecies.generate_resonance_structures()
         thermo = self.getThermoData(dummySpecies)
 
         thermo.comment = "Gas phase thermo from {0}. Adsorption correction:".format(thermo.comment)
