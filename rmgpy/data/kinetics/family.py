@@ -1554,7 +1554,6 @@ class KineticsFamily(Database):
         identical reactants (since you will be reducing them later in the algorithm), add
         `ignoreSameReactants= True` to this method.
         """
-        reaction.degeneracy = 1
         # Check if the reactants are the same
         # If they refer to the same memory address, then make a deep copy so
         # they can be manipulated independently
@@ -1576,19 +1575,8 @@ class KineticsFamily(Database):
             reactions.extend(self.__generateReactions(combo, products=reaction.products, forward=True))
 
         # remove degenerate reactions
-        reactions = find_degenerate_reactions(reactions, same_reactants, kinetics_family=self)
+        reactions = find_degenerate_reactions(reactions, same_reactants, template=reaction.template, kinetics_family=self)
 
-        # remove reactions with different templates (only for TemplateReaction)
-        if isinstance(reaction, TemplateReaction):
-            index = 0
-            while index < len(reactions):
-                if reaction.template and \
-                        frozenset(reactions[index].template) != frozenset(reaction.template):
-                    # remove reaction with different template
-                    del reactions[index]
-                    continue
-                index += 1
-            
         # log issues
         if len(reactions) != 1:
             for reactant in reaction.reactants:
