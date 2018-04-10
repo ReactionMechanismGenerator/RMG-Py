@@ -59,7 +59,8 @@ def setUpModule():
             'R_Recombination',
             'Disproportionation',
             'R_Addition_MultipleBond',
-            'H_Abstraction'
+            'H_Abstraction',
+            'intra_H_migration',
         ],
         testing=True,
         depository=False,
@@ -518,6 +519,33 @@ class TestReactionDegeneracy(unittest.TestCase):
         reaction_list = self.assert_correct_reaction_degeneracy(reactants, correct_rxn_num, correct_degeneracy, family_label, products)
 
         self.assertEqual(set(reaction_list[0].template), {'C_rad/H2/Cd', 'Cmethyl_Csrad/H/Cd'})
+
+    def test_degeneracy_multiple_ts_different_template(self):
+        """Test that reactions from different transition states are marked as duplicates."""
+        family_label = 'intra_H_migration'
+        reactants = ['CCCC[CH]CCCCC']
+        products = ['[CH2]CCCCCCCCC']
+
+        correct_rxn_num = 2
+        correct_degeneracy = {3}
+
+        reaction_list = self.assert_correct_reaction_degeneracy(reactants, correct_rxn_num, correct_degeneracy, family_label, products)
+
+        self.assertTrue(reaction_list[0].duplicate)
+        self.assertTrue(reaction_list[1].duplicate)
+
+    def test_degeneracy_multiple_resonance_different_template(self):
+        """Test that reactions from different resonance structures are not kept."""
+        family_label = 'H_Abstraction'
+        reactants = ['c1ccccc1', '[CH3]']
+
+        correct_rxn_num = 1
+        correct_degeneracy = {6}
+
+        reaction_list = self.assert_correct_reaction_degeneracy(reactants, correct_rxn_num, correct_degeneracy, family_label)
+
+        self.assertFalse(reaction_list[0].duplicate)
+
 
 class TestKineticsCommentsParsing(unittest.TestCase):
 
