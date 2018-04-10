@@ -267,22 +267,40 @@ def ensure_independent_atom_ids(input_species, resonance=True):
             species.generate_resonance_structures(keepIsomorphic=True)
 
 
-def find_degenerate_reactions(rxnList, same_reactants=None, template=None, kinetics_database=None, kinetics_family=None):
+def find_degenerate_reactions(rxn_list, same_reactants=None, template=None, kinetics_database=None, kinetics_family=None):
     """
-    given a list of Reaction object with Molecule objects, this method
-    removes degenerate reactions and increments the degeneracy of the
-    reaction object. For multiple transition states, this method adds
-    them as separate duplicate reactions. This method modifies
-    rxnList in place and does not return anything.
+    Given a list of Reaction objects, this method combines degenerate
+    reactions and increments the reaction degeneracy value. For multiple
+    transition states, this method keeps them as duplicate reactions.
+
+    If a template is specified, then the reaction list will be filtered
+    to leave only reactions which match the specified template, then the
+    degeneracy will be calculated as usual.
+
+    A KineticsDatabase or KineticsFamily instance can also be provided to
+    calculate the degeneracy for reactions generated in the reverse direction.
+    If not provided, then it will be retrieved from the global database.
 
     This algorithm used to exist in family.__generateReactions, but was moved
-    here because it didn't have any family dependence.
+    here so it could operate across reaction families.
+
+    This method modifies the rxnList in place and also returns it.
+
+    Args:
+        rxn_list (list):                                reactions to be analyzed
+        same_reactants (bool, optional):                indicate whether the reactants are identical
+        template (list, optional):                      specify a specific template to filter by
+        kinetics_database (KineticsDatabase, optional): provide a KineticsDatabase instance for calculating degeneracy
+        kinetics_family (KineticsFamily, optional):     provide a KineticsFamily instance for calculating degeneracy
+
+    Returns:
+        Reaction list with degenerate reactions combined with proper degeneracy values
     """
     # If a specific reaction template is requested, filter by that template
     if template is not None:
         selected_rxns = []
         template = frozenset(template)
-        for rxn in rxnList:
+        for rxn in rxn_list:
             if template == frozenset(rxn.template):
                 selected_rxns.append(rxn)
         if not selected_rxns:
@@ -290,25 +308,25 @@ def find_degenerate_reactions(rxnList, same_reactants=None, template=None, kinet
             logging.warning('No reactions matched the specified template, {0}'.format(template))
             return []
     else:
-        selected_rxns = rxnList
+        selected_rxns = rxn_list
 
     # We want to sort all the reactions into sublists composed of isomorphic reactions
     # with degenerate transition states
-    rxnSorted = []
+    sorted_rxns = []
     for rxn0 in selected_rxns:
         # find resonance structures for rxn0
         rxn0.ensure_species()
-        if len(rxnSorted) == 0:
+        if len(sorted_rxns) == 0:
             # This is the first reaction, so create a new sublist
-            rxnSorted.append([rxn0])
+            sorted_rxns.append([rxn0])
         else:
             # Loop through each sublist, which represents a unique reaction
-            for rxnList1 in rxnSorted:
+            for sub_list in sorted_rxns:
                 # Try to determine if the current rxn0 is identical or isomorphic to any reactions in the sublist
                 isomorphic = False
                 identical = False
                 sameTemplate = True
-                for rxn in rxnList1:
+                for rxn in sub_list:
                     isomorphic = rxn0.isIsomorphic(rxn, checkIdentical=False, checkTemplateRxnProducts=True)
                     if isomorphic:
                         identical = rxn0.isIsomorphic(rxn, checkIdentical=True, checkTemplateRxnProducts=True)
@@ -328,13 +346,13 @@ def find_degenerate_reactions(rxnList, same_reactants=None, template=None, kinet
                     if sameTemplate:
                         # We found the right sublist, and there is no identical reaction
                         # We should add rxn0 to the sublist as a degenerate rxn, and move on to the next rxn
-                        rxnList1.append(rxn0)
+                        sub_list.append(rxn0)
                         break
                     else:
                         # We found an isomorphic sublist, but the reaction templates are different
                         # We need to mark this as a duplicate and continue searching the remaining sublists
                         rxn0.duplicate = True
-                        rxnList1[0].duplicate = True
+                        sub_list[0].duplicate = True
                         continue
                 else:
                     # This is not an isomorphic sublist, so we need to continue searching the remaining sublists
@@ -342,17 +360,17 @@ def find_degenerate_reactions(rxnList, same_reactants=None, template=None, kinet
                     continue
             else:
                 # We did not break, which means that there was no isomorphic sublist, so create a new one
-                rxnSorted.append([rxn0])
+                sorted_rxns.append([rxn0])
 
-    rxnList = []
-    for rxnList1 in rxnSorted:
+    rxn_list = []
+    for sub_list in sorted_rxns:
         # Collapse our sorted reaction list by taking one reaction from each sublist
-        rxn = rxnList1[0]
+        rxn = sub_list[0]
         # The degeneracy of each reaction is the number of reactions that were in the sublist
-        rxn.degeneracy = sum([reaction0.degeneracy for reaction0 in rxnList1])
-        rxnList.append(rxn)
+        rxn.degeneracy = sum([reaction0.degeneracy for reaction0 in sub_list])
+        rxn_list.append(rxn)
 
-    for rxn in rxnList:
+    for rxn in rxn_list:
         if rxn.isForward:
             reduce_same_reactant_degeneracy(rxn, same_reactants)
         else:
@@ -365,7 +383,7 @@ def find_degenerate_reactions(rxnList, same_reactants=None, template=None, kinet
             if not family.ownReverse:
                 rxn.degeneracy = family.calculateDegeneracy(rxn)
 
-    return rxnList
+    return rxn_list
 
 def reduce_same_reactant_degeneracy(reaction, same_reactants=None):
     """
