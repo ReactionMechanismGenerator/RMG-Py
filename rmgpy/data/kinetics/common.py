@@ -267,7 +267,7 @@ def ensure_independent_atom_ids(input_species, resonance=True):
             species.generate_resonance_structures(keepIsomorphic=True)
 
 
-def find_degenerate_reactions(rxnList, same_reactants=None, kinetics_database=None, kinetics_family=None):
+def find_degenerate_reactions(rxnList, same_reactants=None, template=None, kinetics_database=None, kinetics_family=None):
     """
     given a list of Reaction object with Molecule objects, this method
     removes degenerate reactions and increments the degeneracy of the
@@ -278,11 +278,24 @@ def find_degenerate_reactions(rxnList, same_reactants=None, kinetics_database=No
     This algorithm used to exist in family.__generateReactions, but was moved
     here because it didn't have any family dependence.
     """
+    # If a specific reaction template is requested, filter by that template
+    if template is not None:
+        selected_rxns = []
+        template = frozenset(template)
+        for rxn in rxnList:
+            if template == frozenset(rxn.template):
+                selected_rxns.append(rxn)
+        if not selected_rxns:
+            # Only log a warning here. If a non-empty output is expected, then the caller should raise an exception
+            logging.warning('No reactions matched the specified template, {0}'.format(template))
+            return []
+    else:
+        selected_rxns = rxnList
 
     # We want to sort all the reactions into sublists composed of isomorphic reactions
     # with degenerate transition states
     rxnSorted = []
-    for rxn0 in rxnList:
+    for rxn0 in selected_rxns:
         # find resonance structures for rxn0
         rxn0.ensure_species()
         if len(rxnSorted) == 0:
