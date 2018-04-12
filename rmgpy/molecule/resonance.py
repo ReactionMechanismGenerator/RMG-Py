@@ -61,6 +61,7 @@ from .kekulize import kekulize
 import rmgpy.molecule.pathfinder as pathfinder
 from rmgpy.exceptions import ILPSolutionError, KekulizationError, AtomTypeError, ResonanceError
 import rmgpy.molecule.filtration as filtration
+from rmgpy.molecule.adjlist import Saturator
 
 
 def populate_resonance_algorithms(features=None):
@@ -800,7 +801,7 @@ def generate_opposite_kekule_structure(mol):
     else:
         return [molecule]
 
-def generate_isomorphic_resonance_structures(mol):
+def generate_isomorphic_resonance_structures(mol, saturate_h=False):
     """
     Select the resonance isomer that is isomorphic to the parameter isomer, with the lowest unpaired
     electrons descriptor.
@@ -808,21 +809,21 @@ def generate_isomorphic_resonance_structures(mol):
     We generate over all resonance isomers (non-isomorphic as well as isomorphic) and retain isomorphic
     isomers.
 
+    If `saturate_h` is `True`, then saturate `mol` with hydrogens before generating the resonance structures,
+    and remove the hydrogens before returning `isomorphic_isomers`. This is useful when resonance structures are
+    generated for molecules in which all hydrogens were intentionally removed as in generating augInChI. Otherwise,
+    RMG will probably get many of the lonePairs and partial charges in a molecule wrong.
+
     WIP: do not generate aromatic resonance isomers.
     """
 
-    cython.declare(isomorphic_isomers=list,\
-                   isomers=list,
-                    )
+    cython.declare(isomorphic_isomers=list, isomers=list, index=int, max_val_e=int, order=float, num_h_to_add=int,
+                   isomer=Molecule, newIsomer=Molecule, isom=Molecule, atom=Atom, a=Atom, b=Bond, newAtoms=list)
 
-    cython.declare(isomer=Molecule,\
-                   newIsomer=Molecule,\
-                   isom=Molecule
-                   )
+    if saturate_h:  # Add explicit hydrogen atoms to complete structure if desired
+        Saturator.saturate(mol.vertices)
 
-    cython.declare(index=int)
-
-    isomorphic_isomers = [mol]# resonance isomers that are isomorphic to the parameter isomer.
+    isomorphic_isomers = [mol]  # resonance isomers that are isomorphic to the parameter isomer.
 
     isomers = [mol]
 
@@ -842,10 +843,14 @@ def generate_isomorphic_resonance_structures(mol):
                     isomorphic_isomers.append(newIsomer)
                     break
             else:
-                isomers.append(newIsomer)        
-                    
+                isomers.append(newIsomer)
+
         # Move to next resonance isomer
         index += 1
+
+    if saturate_h:  # remove hydrogens before returning isomorphic_isomers
+        for isomer in isomorphic_isomers:
+            isomer.deleteHydrogens()
 
     return isomorphic_isomers
 
