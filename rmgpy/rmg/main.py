@@ -372,7 +372,11 @@ class RMG(util.Subject):
 
         # Check input file 
         self.checkInput()
-    
+        
+        #Properly set filterReactions to initialize flags properly
+        if len(self.modelSettingsList) > 0:
+            self.filterReactions = self.modelSettingsList[0].filterReactions
+        
         # See if memory profiling package is available
         try:
             import psutil
@@ -540,7 +544,7 @@ class RMG(util.Subject):
         self.Tmax = max([x.T for x in self.reactionSystems]).value_si
         
         # Initiate first reaction discovery step after adding all core species
-        if self.modelSettingsList[0].filterReactions:
+        if self.filterReactions:
             # Run the reaction system to update threshold and react flags
             for index, reactionSystem in enumerate(self.reactionSystems):
                 reactionSystem.initializeModel(
@@ -670,7 +674,7 @@ class RMG(util.Subject):
                     for objectToEnlarge in objectsToEnlarge:
                         self.reactionModel.enlarge(objectToEnlarge)
                         
-                    if len(self.reactionModel.core.species) > numCoreSpecies:
+                    if len(self.reactionModel.core.species) > numCoreSpecies or self.reactionModel.iterationNum == 1:
                         tempModelSettings = deepcopy(modelSettings)
                         tempModelSettings.fluxToleranceKeepInEdge = 0
                         # If there were core species added, then react the edge
@@ -710,10 +714,14 @@ class RMG(util.Subject):
                                                               maximumEdgeSpecies=modelSettings.maximumEdgeSpecies,
                                                               reactionSystems=self.reactionSystems)
         
+                        oldEdgeSize = len(self.reactionModel.edge.reactions)
+                        oldCoreSize = len(self.reactionModel.core.reactions)
                         self.reactionModel.enlarge(reactEdge=True, 
                                 unimolecularReact=self.unimolecularReact, 
                                 bimolecularReact=self.bimolecularReact)
                         
+                        if oldEdgeSize != len(self.reactionModel.edge.reactions) or oldCoreSize != len(self.reactionModel.core.reactions):
+                            reactorDone = False
                         if not numpy.isinf(self.modelSettingsList[0].toleranceThermoKeepSpeciesInEdge):
                             self.reactionModel.thermoFilterDown(maximumEdgeSpecies=modelSettings.maximumEdgeSpecies)
                     
