@@ -714,10 +714,14 @@ class RMG(util.Subject):
                                                               maximumEdgeSpecies=modelSettings.maximumEdgeSpecies,
                                                               reactionSystems=self.reactionSystems)
         
+                        oldEdgeSize = len(self.reactionModel.edge.reactions)
+                        oldCoreSize = len(self.reactionModel.core.reactions)
                         self.reactionModel.enlarge(reactEdge=True, 
                                 unimolecularReact=self.unimolecularReact, 
                                 bimolecularReact=self.bimolecularReact)
                         
+                        if oldEdgeSize != len(self.reactionModel.edge.reactions) or oldCoreSize != len(self.reactionModel.core.reactions):
+                            reactorDone = False
                         if not numpy.isinf(self.modelSettingsList[0].toleranceThermoKeepSpeciesInEdge):
                             self.reactionModel.thermoFilterDown(maximumEdgeSpecies=modelSettings.maximumEdgeSpecies)
                     
