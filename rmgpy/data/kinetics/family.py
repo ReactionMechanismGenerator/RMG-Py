@@ -59,6 +59,8 @@ from .rules import KineticsRules
 from rmgpy.exceptions import InvalidActionError, ReactionPairsError, KineticsError,\
                              UndeterminableKineticsError, ForbiddenStructureException,\
                              KekulizationError, ActionError, DatabaseError
+
+from afm.fragment import Fragment
 import itertools
 ################################################################################
 
@@ -1197,8 +1199,11 @@ class KineticsFamily(Database):
         # products will have tags
         if isinstance(reactantStructures[0], Group):
             reactantStructure = Group()
-        else:
+        elif isinstance(reactantStructures[0], Molecule):
             reactantStructure = Molecule()
+        elif isinstance(reactantStructures[0], Fragment):
+            reactantStructure = Fragment()
+
         for s in reactantStructures:
             reactantStructure = reactantStructure.merge(s.copy(deep=True))
 
@@ -1418,7 +1423,7 @@ class KineticsFamily(Database):
             # If product structures are Molecule objects, update their atom types
             # If product structures are Group objects and the reaction is in certain families
             # (families with charged substances), the charge of structures will be updated
-            if isinstance(struct, Molecule):
+            if isinstance(struct, Molecule) or isinstance(struct, Fragment):
                 struct.update()
             elif isinstance(struct, Group):
                 struct.resetRingMembership()
