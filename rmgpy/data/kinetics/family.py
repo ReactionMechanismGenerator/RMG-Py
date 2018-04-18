@@ -61,7 +61,7 @@ from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.molecule.atomtype import ATOMTYPES
 from rmgpy.reaction import Reaction, same_species_lists
 from rmgpy.species import Species
-
+from afm.fragment import Fragment
 
 ################################################################################
 
@@ -1307,8 +1307,11 @@ class KineticsFamily(Database):
         # products will have tags
         if isinstance(reactant_structures[0], Group):
             reactant_structure = Group()
-        else:
+        elif isinstance(reactant_structures[0], Molecule):
             reactant_structure = Molecule()
+        elif isinstance(reactant_structures[0], Fragment):
+            reactant_structure = Fragment()
+
         for s in reactant_structures:
             reactant_structure = reactant_structure.merge(s.copy(deep=True))
 
@@ -1513,7 +1516,7 @@ class KineticsFamily(Database):
             # If product structures are Molecule objects, update their atom types
             # If product structures are Group objects and the reaction is in certain families
             # (families with charged substances), the charge of structures will be updated
-            if isinstance(struct, Molecule):
+            if isinstance(struct, Molecule) or isinstance(struct, Fragment):
                 struct.update(sort_atoms=not self.save_order)
             elif isinstance(struct, Group):
                 struct.reset_ring_membership()
