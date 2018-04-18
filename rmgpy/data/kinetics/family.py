@@ -54,6 +54,8 @@ from .rules import KineticsRules
 from rmgpy.exceptions import InvalidActionError, ReactionPairsError, KineticsError,\
                              UndeterminableKineticsError, ForbiddenStructureException,\
                              KekulizationError, ActionError, DatabaseError
+
+from afm.fragment import Fragment
 import itertools
 ################################################################################
 
@@ -1164,8 +1166,11 @@ class KineticsFamily(Database):
         # products will have tags
         if isinstance(reactantStructures[0], Group):
             reactantStructure = Group()
-        else:
+        elif isinstance(reactantStructures[0], Molecule):
             reactantStructure = Molecule()
+        elif isinstance(reactantStructures[0], Fragment):
+            reactantStructure = Fragment()
+
         for s in reactantStructures:
             reactantStructure = reactantStructure.merge(s.copy(deep=True))
 
@@ -1197,14 +1202,14 @@ class KineticsFamily(Database):
                 # There should NOT be any families that consist solely of aromatic reactant templates
                 return []
         productStructure = reactantStructure
-
+        
         # Hardcoding of reaction family for reverse of radical recombination
         # (Unimolecular homolysis)
         # Because the two products are identical, they should the same tags
         # In this case, we must change the labels from '*1' and '*2' to '*' and
         # '*'
         if label == 'r_recombination' and not forward:
-            for atom in productStructure.atoms:
+            for atom in productStructure.vertices:
                 if atom.label == '*1' or atom.label == '*2': atom.label = '*'
 
         # If reaction family is its own reverse, relabel atoms
@@ -1215,7 +1220,7 @@ class KineticsFamily(Database):
         if not self.reverseTemplate:
             # Get atom labels for products
             atomLabels = {}
-            for atom in productStructure.atoms:
+            for atom in productStructure.vertices:
                 if atom.label != '':
                     atomLabels[atom.label] = atom
 
@@ -1298,7 +1303,7 @@ class KineticsFamily(Database):
 
         # If product structures are Molecule objects, update their atom types
         for struct in productStructures:
-            if isinstance(struct, Molecule):
+            if isinstance(struct, Molecule) or isinstance(struct, Fragment):
                 struct.update()
 
         # Return the product structures
