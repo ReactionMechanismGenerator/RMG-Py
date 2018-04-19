@@ -69,7 +69,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <dl class="class">
 <dt id="rmgpy.molecule.GroupAtom">
 <em class="property">class </em><code class="descclassname">rmgpy.molecule.</code><code class="descname">GroupAtom</code><span class="sig-paren">(</span><em>atomType=None</em>, <em>radicalElectrons=None</em>, <em>charge=None</em>, <em>label=''</em>, <em>lonePairs=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom" title="Permalink to this definition">¶</a></dt>
-<dd><p>An atom group. This class is based on the <a class="reference internal" href="atom.html#rmgpy.molecule.Atom" title="rmgpy.molecule.Atom"><code class="xref py py-class docutils literal"><span class="pre">Atom</span></code></a> class, except that
+<dd><p>An atom group. This class is based on the <code class="xref py py-class docutils literal"><span class="pre">Atom</span></code> class, except that
 it uses <a class="reference internal" href="atomtype.html#atom-types"><span class="std std-ref">atom types</span></a> instead of elements, and all
 attributes are lists rather than individual values. The attributes are:</p>
 <table border="1" class="docutils">
@@ -87,7 +87,7 @@ attributes are lists rather than individual values. The attributes are:</p>
 <tbody valign="top">
 <tr class="row-even"><td><cite>atomType</cite></td>
 <td><code class="docutils literal"><span class="pre">list</span></code></td>
-<td>The allowed atom types (as <a class="reference internal" href="atomtype.html#rmgpy.molecule.AtomType" title="rmgpy.molecule.AtomType"><code class="xref py py-class docutils literal"><span class="pre">AtomType</span></code></a> objects)</td>
+<td>The allowed atom types (as <code class="xref py py-class docutils literal"><span class="pre">AtomType</span></code> objects)</td>
 </tr>
 <tr class="row-odd"><td><cite>radicalElectrons</cite></td>
 <td><code class="docutils literal"><span class="pre">list</span></code></td>
@@ -158,7 +158,7 @@ required parameters. The available actions can be found
 <dl class="method">
 <dt id="rmgpy.molecule.GroupAtom.copy">
 <code class="descname">copy</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; Vertex<a class="headerlink" href="#rmgpy.molecule.GroupAtom.copy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a deep copy of the <a class="reference internal" href="#rmgpy.molecule.GroupAtom" title="rmgpy.molecule.GroupAtom"><code class="xref py py-class docutils literal"><span class="pre">GroupAtom</span></code></a> object. Modifying the
+<dd><p>Return a deep copy of the <code class="xref py py-class docutils literal"><span class="pre">GroupAtom</span></code> object. Modifying the
 attributes of the copy will not affect the original.</p>
 </dd></dl>
 
@@ -180,8 +180,8 @@ options for bond orders will not be counted</p>
 <dt id="rmgpy.molecule.GroupAtom.equivalent">
 <code class="descname">equivalent</code><span class="sig-paren">(</span><em>self</em>, <em>Vertex other</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.GroupAtom.equivalent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal"><span class="pre">True</span></code> if <cite>other</cite> is equivalent to <cite>self</cite> or <code class="docutils literal"><span class="pre">False</span></code> if not,
-where <cite>other</cite> can be either an <a class="reference internal" href="atom.html#rmgpy.molecule.Atom" title="rmgpy.molecule.Atom"><code class="xref py py-class docutils literal"><span class="pre">Atom</span></code></a> or an <a class="reference internal" href="#rmgpy.molecule.GroupAtom" title="rmgpy.molecule.GroupAtom"><code class="xref py py-class docutils literal"><span class="pre">GroupAtom</span></code></a>
-object. When comparing two <a class="reference internal" href="#rmgpy.molecule.GroupAtom" title="rmgpy.molecule.GroupAtom"><code class="xref py py-class docutils literal"><span class="pre">GroupAtom</span></code></a> objects, this function
+where <cite>other</cite> can be either an <code class="xref py py-class docutils literal"><span class="pre">Atom</span></code> or an <code class="xref py py-class docutils literal"><span class="pre">GroupAtom</span></code>
+object. When comparing two <code class="xref py py-class docutils literal"><span class="pre">GroupAtom</span></code> objects, this function
 respects wildcards, e.g. <code class="docutils literal"><span class="pre">R!H</span></code> is equivalent to <code class="docutils literal"><span class="pre">C</span></code>.</p>
 </dd></dl>
 
@@ -363,7 +363,7 @@ self.atomtype, self.radicalElectrons, self.lonePairs, and self.charge</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

@@ -68,13 +68,13 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.reaction.Reaction<a class="headerlink" href="#rmgpy-reaction-reaction" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.reaction.Reaction">
-<em class="property">class </em><code class="descclassname">rmgpy.reaction.</code><code class="descname">Reaction</code><span class="sig-paren">(</span><em>index=-1</em>, <em>label=''</em>, <em>reactants=None</em>, <em>products=None</em>, <em>specificCollider=None</em>, <em>kinetics=None</em>, <em>reversible=True</em>, <em>transitionState=None</em>, <em>duplicate=False</em>, <em>degeneracy=1</em>, <em>pairs=None</em>, <em>comment=''</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.reaction.</code><code class="descname">Reaction</code><span class="sig-paren">(</span><em>index=-1</em>, <em>label=''</em>, <em>reactants=None</em>, <em>products=None</em>, <em>specificCollider=None</em>, <em>kinetics=None</em>, <em>reversible=True</em>, <em>transitionState=None</em>, <em>duplicate=False</em>, <em>degeneracy=1</em>, <em>pairs=None</em>, <em>has_pdep_route=False</em>, <em>comment=''</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>A chemical reaction. The attributes are:</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="16%" />
-<col width="22%" />
-<col width="62%" />
+<col width="12%" />
+<col width="17%" />
+<col width="71%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Attribute</th>
@@ -127,7 +127,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <td><code class="docutils literal"><span class="pre">list</span></code></td>
 <td>Reactant-product pairings to use in converting reaction flux to species flux</td>
 </tr>
-<tr class="row-odd"><td><cite>comment</cite></td>
+<tr class="row-odd"><td><cite>has_pdep_route</cite></td>
+<td><code class="docutils literal"><span class="pre">bool</span></code></td>
+<td><code class="docutils literal"><span class="pre">True</span></code> if the reaction has an additional PDep pathway, <code class="docutils literal"><span class="pre">False</span></code> if not (by default), used for LibraryReactions</td>
+</tr>
+<tr class="row-even"><td><cite>comment</cite></td>
 <td><code class="docutils literal"><span class="pre">str</span></code></td>
 <td>A description of the reaction source (optional)</td>
 </tr>
@@ -412,6 +416,12 @@ and <cite>products</cite>, which are both lists of <code class="xref py py-class
 </dd></dl>
 
 <dl class="attribute">
+<dt id="rmgpy.reaction.Reaction.has_pdep_route">
+<code class="descname">has_pdep_route</code><a class="headerlink" href="#rmgpy.reaction.Reaction.has_pdep_route" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>has_pdep_route</em> – ‘bool’</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="rmgpy.reaction.Reaction.index">
 <code class="descname">index</code><a class="headerlink" href="#rmgpy.reaction.Reaction.index" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>index</em> – ‘int’</p>
@@ -671,7 +681,7 @@ the labels plus the index in parentheses</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

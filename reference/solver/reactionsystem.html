@@ -68,7 +68,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.solver.ReactionSystem<a class="headerlink" href="#rmgpy-solver-reactionsystem" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.solver.ReactionSystem">
-<em class="property">class </em><code class="descclassname">rmgpy.solver.</code><code class="descname">ReactionSystem</code><span class="sig-paren">(</span><em>termination=None</em>, <em>sensitiveSpecies=None</em>, <em>sensitivityThreshold=0.001</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.solver.</code><code class="descname">ReactionSystem</code><span class="sig-paren">(</span><em>termination=None</em>, <em>sensitiveSpecies=None</em>, <em>sensitivityThreshold=1e-3</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem" title="Permalink to this definition">¶</a></dt>
 <dd><p>A base class for all RMG reaction systems.</p>
 <dl class="attribute">
 <dt id="rmgpy.solver.ReactionSystem.Keq">
@@ -229,7 +229,7 @@ individual values for each dependent variable.</p>
 
 <dl class="method">
 <dt id="rmgpy.solver.ReactionSystem.initializeModel">
-<code class="descname">initializeModel</code><span class="sig-paren">(</span><em>self</em>, <em>list coreSpecies</em>, <em>list coreReactions</em>, <em>list edgeSpecies</em>, <em>list edgeReactions</em>, <em>list surfaceSpecies=None</em>, <em>list surfaceReactions=None</em>, <em>list pdepNetworks=None</em>, <em>atol=1e-16</em>, <em>rtol=1e-08</em>, <em>sensitivity=False</em>, <em>sens_atol=1e-06</em>, <em>sens_rtol=0.0001</em>, <em>filterReactions=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.initializeModel" title="Permalink to this definition">¶</a></dt>
+<code class="descname">initializeModel</code><span class="sig-paren">(</span><em>self</em>, <em>list coreSpecies</em>, <em>list coreReactions</em>, <em>list edgeSpecies</em>, <em>list edgeReactions</em>, <em>list surfaceSpecies=None</em>, <em>list surfaceReactions=None</em>, <em>list pdepNetworks=None</em>, <em>atol=1e-16</em>, <em>rtol=1e-8</em>, <em>sensitivity=False</em>, <em>sens_atol=1e-6</em>, <em>sens_rtol=1e-4</em>, <em>filterReactions=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.initializeModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize a simulation of the reaction system using the provided
 kinetic model. You will probably want to create your own version of this
 method in the derived class; don’t forget to also call the base class
@@ -256,7 +256,7 @@ version, too.</p>
 
 <dl class="method">
 <dt id="rmgpy.solver.ReactionSystem.initiate_tolerances">
-<code class="descname">initiate_tolerances</code><span class="sig-paren">(</span><em>self</em>, <em>atol=1e-16</em>, <em>rtol=1e-08</em>, <em>sensitivity=False</em>, <em>sens_atol=1e-06</em>, <em>sens_rtol=0.0001</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.initiate_tolerances" title="Permalink to this definition">¶</a></dt>
+<code class="descname">initiate_tolerances</code><span class="sig-paren">(</span><em>self</em>, <em>atol=1e-16</em>, <em>rtol=1e-8</em>, <em>sensitivity=False</em>, <em>sens_atol=1e-6</em>, <em>sens_rtol=1e-4</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.initiate_tolerances" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the number of differential equations and initializes the tolerance arrays.</p>
 </dd></dl>
 
@@ -629,7 +629,7 @@ and <cite>dydt</cite> attributes.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

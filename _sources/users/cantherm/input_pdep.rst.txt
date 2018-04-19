@@ -19,14 +19,16 @@ Each section is made up of one or more function calls, where parameters are
 specified as text strings, numbers, or objects. Text strings must be wrapped in
 either single or double quotes.
 
-The following is a list of all the functions of a CanTherm input file for pressure-dependent calculations:
+The following is a list of all the components of a CanTherm input file for pressure-dependent calculations:
 
 =========================== ================================================================
-Function                    Description
+Component                   Description
 =========================== ================================================================
 ``modelChemistry``          Level of theory from quantum chemical calculations
+``atomEnergies``            Dictionary of atomic energies at ``modelChemistry`` level
 ``frequencyScaleFactor``    A factor by which to scale all frequencies
 ``useHinderedRotors``       ``True`` if hindered rotors are used, ``False`` if not
+``useAtomCorrections``      ``True`` if atom corrections are used, ``False`` if not
 ``useBondCorrections``      ``True`` if bond corrections are used, ``False`` if not
 ``species``                 Contains parameters for non-transition states
 ``transitionState``         Contains parameters for transition state(s)
@@ -45,24 +47,36 @@ Important differences are mentioned in the sections below.
 Model Chemistry
 ===============
 
-The first item in the input file should be a ``modelChemistry()`` function,
-which accepts a string describing the model chemistry.
+The first item in the input file should be a ``modelChemistry`` assignment
+with a string describing the model chemistry.
 
 CanTherm uses this information to adjust the computed energies to the usual gas-phase reference
 states by applying atom, bond and spin-orbit coupling energy corrections. This is particularly
 important for ``thermo()`` calculations (see below). Note that the user must specify under the
-``species()`` function the type and number of atoms and bonds for CanTherm to apply these corrections.
+``species()`` function the type and number of bonds for CanTherm to apply these corrections.
 The example below specifies CBS-QB3 as the model chemistry::
 
-    modelChemistry("CBS-QB3")
+    modelChemistry = "CBS-QB3"
 
-Currently, atomization energy corrections (AEC), bond corrections (BC), and spin orbit correction (SOC) are available for
-model chemistries as described under `High-Pressure Limit: Model Chemistry <input.html#model-chemistry>`_
+Alternatively, the atomic energies at the ``modelChemistry`` level of theory can be directly
+specified in the input file by providing a dictionary of these energies in the following format::
+
+    atomEnergies = {
+        'H': -0.499818,
+        'C': -37.78552,
+        'N': -54.520543,
+        'O': -74.987979,
+        'S': -397.658253,
+    }
+
+Whether or not atomization energy corrections (AEC), bond corrections (BC), and spin orbit
+corrections (SOC); and which elements are available for a given model chemistry is described
+under `High-Pressure Limit: Model Chemistry <input.html#model-chemistry>`_
 
 Frequency Scale Factor
 ======================
 
-Frequency scale factors are empirically fit to experiment for different ``modelChemistry()``. Refer to NIST website for values (http://cccbdb.nist.gov/vibscalejust.asp).
+Frequency scale factors are empirically fit to experiment for different ``modelChemistry``. Refer to NIST website for values (http://cccbdb.nist.gov/vibscalejust.asp).
 For CBS-QB3, which is not included  in the link above, ``frequencyScaleFactor = 0.99`` according to Montgomery et al. (*J. Chem. Phys. 1999, 110, 2822–2827*).
 
 Species Parameters
@@ -164,7 +178,6 @@ The species input file accepts the following parameters:
 ======================= =========================== ====================================
 Parameter               Required?                   Description
 ======================= =========================== ====================================
-``atoms``               yes                         Type and number of atoms in the species
 ``bonds``               optional                    Type and number of bonds in the species
 ``linear``              yes                         ``True`` if the molecule is linear, ``False`` if not
 ``externalSymmetry``    yes                         The external symmetry number for rotation
@@ -178,18 +191,18 @@ Parameter               Required?                   Description
 ``rotors``              optional                    A list of :class:`HinderedRotor()` and/or :class:`FreeRotor()` objects describing the hindered/free rotors
 ======================= =========================== ====================================
 
-The ``atom`` and ``bond`` parameters are used to apply atomization energy corrections (AEC), bond corrections (BC), and spin orbit corrections (SOC) for a given ``modelChemistry()`` (see `Model Chemistry <input.html#model-chemistry>`_).
+The types and number of atoms in the species are automatically inferred from the quantum chemistry output and are used
+to apply atomization energy corrections (AEC) and spin orbit corrections (SOC) for a given ``modelChemistry``
+(see `Model Chemistry`_). If not interested in accurate thermodynamics (e.g., if only using ``kinetics()``), then
+atom corrections can be turned off by setting ``useAtomCorrections`` to ``False``.
 
-Allowed atom symbols for the ``atoms`` parameter are
-``'C'``, ``'N'``, ``'O'``, ``'S'``, ``'P'``, and ``'H'``. For example, for acetylperoxy radical we would write::
-
-    atoms = {'C': 2, 'O': 3, H': 3}
+The ``bond`` parameter is used to apply bond corrections (BC) for a given ``modelChemistry``.
 
 Allowed bond types for the ``bonds`` parameter are, e.g., ``'C-H'``, ``'C-C'``, ``'C=C'``, ``'N-O'``, ``'C=S'``, ``'O=O'``, ``'C#N'``...
 
 ``'O=S=O'`` is also allowed.
 
-The order of elements in for the bond correction is important and generally follows the order specified under "allowed atom symbols" above, i.e., ``'C=N'`` is correct while ``'N=C'`` is incorrect. Use ``-``/``=``/``#`` to denote a single/double/triple bond, respectively. For example, for acetylperoxy radical we would write::
+The order of elements in for the bond correction is not important. Use ``-``/``=``/``#`` to denote a single/double/triple bond, respectively. For example, for acetylperoxy radical we would write::
 
     bonds = {'C-C': 1, 'C=O': 1, 'C-O': 1, 'O-O': 1, 'C-H': 3}
 
@@ -207,7 +220,7 @@ For acetylperoxy radical, we would write::
 
     opticalIsomers = 1
 
-The ``energy`` parameter is a dictionary with entries for different ``modelChemistry()``. The entries can consist of either
+The ``energy`` parameter is a dictionary with entries for different ``modelChemistry``. The entries can consist of either
 floating point numbers corresponding to the 0 K atomization energy in Hartree (without zero-point energy correction), or
 they can specify the path to a quantum chemistry calculation output file that contains the species's energy. For example::
 
@@ -217,7 +230,7 @@ they can specify the path to a quantum chemistry calculation output file that co
     }
 
 In this example, the ``CBS-QB3`` energy is obtained from a Gaussian log file, while the ``Klip_2`` energy is specified directly.
-The energy used will depend on what ``modelChemistry()`` was specified in the input file. CanTherm can parse the energy from
+The energy used will depend on what ``modelChemistry`` was specified in the input file. CanTherm can parse the energy from
 a ``GaussianLog``, ``MolproLog`` or ``QchemLog``.
 
 The input to the remaining parameters, ``geometry``, ``frequencies`` and ``rotors``, will depend on if hindered/free rotors are included.
@@ -235,12 +248,6 @@ For example::
 
 In summary, in order to specify the molecular properties of a species by parsing the output of quantum chemistry calculations, without any hindered/free rotors,
 the species input file should look like the following (using acetylperoxy as an example)::
-
-    atoms = {
-    'C': 2,
-    'O': 3,
-    H': 3,
-    }
 
     bonds = {
     'C-C': 1,
@@ -314,6 +321,24 @@ As noted above, ``scanLog`` can either point to a ``GaussianLog``, ``QchemLog`` 
 
 The ``Energy`` can be in units of ``kJ/mol``, ``J/mol``, ``cal/mol``, ``kcal/mol``, ``cm^-1`` or ``hartree``.
 
+The ``symmetry`` parameter will usually equal either 1, 2 or 3. Below are examples of internal rotor scans with these commonly encountered symmetry numbers. First, ``symmetry = 3``:
+
+.. image:: symmetry_3_example.png
+
+Internal rotation of a methyl group is a common example of a hindered rotor with ``symmetry = 3``, such as the one above. As shown, all three minima (and maxima) have identical energies, hence ``symmetry = 3``.
+
+Similarly, if there are only two minima along the internal rotor scan, and both have identical energy, then ``symmetry = 2``, as in the example below: 
+
+.. image:: symmetry_2_example.png
+
+If any of the energy minima in an internal rotor scan are not identical, then the rotor has no symmetry (``symmetry = 1``), as in the example below:
+
+.. image:: symmetry_1_example.png
+
+For the example above there are 3 local energy minima, 2 of which are identical to each other. However, the 3rd minima is different from the other 2, therefore this internal rotor has no symmetry. 
+
+For practical purposes, when determining the symmetry number for a given hindered rotor simply check if the internal rotor scan looks like the ``symmetry = 2`` or ``3`` examples above. If it doesn’t, then most likely ``symmetry = 1``.
+
 Each :class:`FreeRotor()` object requires the following parameters:
 
 ====================== =========================================================
@@ -331,12 +356,6 @@ puts a lower bound on the impact of that rotor on the species's overall partitio
 in between these two extremes.
 
 To summarize, the species input file with hindered/free rotors should look like the following example (different options for specifying the same ``rotors`` entry are commented out)::
-
-    atoms = {
-    'C': 2,
-    'O': 3,
-    'H': 3,
-    }
 
     bonds = {
     'C-C': 1,

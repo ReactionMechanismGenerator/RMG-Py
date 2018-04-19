@@ -86,7 +86,7 @@ type, extending the <code class="xref py py-class docutils literal"><span class=
 <tbody valign="top">
 <tr class="row-even"><td><cite>atoms</cite></td>
 <td><code class="docutils literal"><span class="pre">list</span></code></td>
-<td>Aliases for the <cite>vertices</cite> storing <a class="reference internal" href="groupatom.html#rmgpy.molecule.GroupAtom" title="rmgpy.molecule.GroupAtom"><code class="xref py py-class docutils literal"><span class="pre">GroupAtom</span></code></a></td>
+<td>Aliases for the <cite>vertices</cite> storing <code class="xref py py-class docutils literal"><span class="pre">GroupAtom</span></code></td>
 </tr>
 <tr class="row-odd"><td><cite>multiplicity</cite></td>
 <td><code class="docutils literal"><span class="pre">list</span></code></td>
@@ -157,12 +157,6 @@ this method cannot handle very general cases, so it is better to be conservative
 <dt id="rmgpy.molecule.Group.atoms">
 <code class="descname">atoms</code><a class="headerlink" href="#rmgpy.molecule.Group.atoms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Group.__getAtoms(self)</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="rmgpy.molecule.Group.carbonCount">
-<code class="descname">carbonCount</code><a class="headerlink" href="#rmgpy.molecule.Group.carbonCount" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>carbonCount</em> – ‘short’</p>
 </dd></dl>
 
 <dl class="method">
@@ -240,6 +234,12 @@ connects it to one atom of the group, ‘connectingAtom’. This is useful for m
 <p>Use format to specify the desired output format, eg. ‘png’, ‘svg’, ‘ps’, ‘pdf’, ‘plain’, etc.</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="rmgpy.molecule.Group.elementCount">
+<code class="descname">elementCount</code><a class="headerlink" href="#rmgpy.molecule.Group.elementCount" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>elementCount</em> – dict</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="rmgpy.molecule.Group.findIsomorphism">
 <code class="descname">findIsomorphism</code><span class="sig-paren">(</span><em>self</em>, <em>Graph other</em>, <em>dict initialMap=None</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#rmgpy.molecule.Group.findIsomorphism" title="Permalink to this definition">¶</a></dt>
@@ -249,7 +249,7 @@ used to specify a required mapping from <cite>self</cite> to <cite>other</cite> 
 atoms of <cite>self</cite> are the keys, while the atoms of <cite>other</cite> are the
 values). The returned mapping also uses the atoms of <cite>self</cite> for the keys
 and the atoms of <cite>other</cite> for the values. The <cite>other</cite> parameter must
-be a <a class="reference internal" href="#rmgpy.molecule.Group" title="rmgpy.molecule.Group"><code class="xref py py-class docutils literal"><span class="pre">Group</span></code></a> object, or a <code class="xref py py-class docutils literal"><span class="pre">TypeError</span></code> is raised.</p>
+be a <code class="xref py py-class docutils literal"><span class="pre">Group</span></code> object, or a <code class="xref py py-class docutils literal"><span class="pre">TypeError</span></code> is raised.</p>
 </dd></dl>
 
 <dl class="method">
@@ -262,7 +262,7 @@ Also returns the lists all of valid mappings. The
 <cite>self</cite> to <cite>other</cite> (i.e. the atoms of <cite>self</cite> are the keys, while the
 atoms of <cite>other</cite> are the values). The returned mappings also use the
 atoms of <cite>self</cite> for the keys and the atoms of <cite>other</cite> for the values.
-The <cite>other</cite> parameter must be a <a class="reference internal" href="#rmgpy.molecule.Group" title="rmgpy.molecule.Group"><code class="xref py py-class docutils literal"><span class="pre">Group</span></code></a> object, or a
+The <cite>other</cite> parameter must be a <code class="xref py py-class docutils literal"><span class="pre">Group</span></code> object, or a
 <code class="xref py py-class docutils literal"><span class="pre">TypeError</span></code> is raised.</p>
 </dd></dl>
 
@@ -423,6 +423,13 @@ J. Chem. Inf. Model., 2017, 57 (2), pp 122-126</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.Group.get_element_count">
+<code class="descname">get_element_count</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#rmgpy.molecule.Group.get_element_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the element count for the molecule as a dictionary.
+Wildcards are not counted as any particular element.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.Group.hasAtom">
 <code class="descname">hasAtom</code><span class="sig-paren">(</span><em>self</em>, <em>GroupAtom atom</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Group.hasAtom" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal"><span class="pre">True</span></code> if <cite>atom</cite> is an atom in the graph, or <code class="docutils literal"><span class="pre">False</span></code> if
@@ -494,7 +501,7 @@ opposed to molecules to groups)</p>
 otherwise. The <cite>initialMap</cite> attribute can be used to specify a required
 mapping from <cite>self</cite> to <cite>other</cite> (i.e. the atoms of <cite>self</cite> are the keys,
 while the atoms of <cite>other</cite> are the values). The <cite>other</cite> parameter must
-be a <a class="reference internal" href="#rmgpy.molecule.Group" title="rmgpy.molecule.Group"><code class="xref py py-class docutils literal"><span class="pre">Group</span></code></a> object, or a <code class="xref py py-class docutils literal"><span class="pre">TypeError</span></code> is raised.</p>
+be a <code class="xref py py-class docutils literal"><span class="pre">Group</span></code> object, or a <code class="xref py py-class docutils literal"><span class="pre">TypeError</span></code> is raised.</p>
 </dd></dl>
 
 <dl class="method">
@@ -513,7 +520,7 @@ otherwise. In other words, return <code class="docutils literal"><span class="pr
 The <cite>initialMap</cite> attribute can be used to specify a required
 mapping from <cite>self</cite> to <cite>other</cite> (i.e. the atoms of <cite>self</cite> are the keys,
 while the atoms of <cite>other</cite> are the values). The <cite>other</cite> parameter must
-be a <a class="reference internal" href="#rmgpy.molecule.Group" title="rmgpy.molecule.Group"><code class="xref py py-class docutils literal"><span class="pre">Group</span></code></a> object, or a <code class="xref py py-class docutils literal"><span class="pre">TypeError</span></code> is raised.</p>
+be a <code class="xref py py-class docutils literal"><span class="pre">Group</span></code> object, or a <code class="xref py py-class docutils literal"><span class="pre">TypeError</span></code> is raised.</p>
 </dd></dl>
 
 <dl class="method">
@@ -533,7 +540,7 @@ cycles in the graph, or <code class="docutils literal"><span class="pre">False</
 <dt id="rmgpy.molecule.Group.merge">
 <code class="descname">merge</code><span class="sig-paren">(</span><em>self</em>, <em>Graph other</em><span class="sig-paren">)</span> &#x2192; Graph<a class="headerlink" href="#rmgpy.molecule.Group.merge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Merge two groups so as to store them in a single
-<a class="reference internal" href="#rmgpy.molecule.Group" title="rmgpy.molecule.Group"><code class="xref py py-class docutils literal"><span class="pre">Group</span></code></a> object. The merged <a class="reference internal" href="#rmgpy.molecule.Group" title="rmgpy.molecule.Group"><code class="xref py py-class docutils literal"><span class="pre">Group</span></code></a>
+<code class="xref py py-class docutils literal"><span class="pre">Group</span></code> object. The merged <code class="xref py py-class docutils literal"><span class="pre">Group</span></code>
 object is returned.</p>
 </dd></dl>
 
@@ -549,18 +556,6 @@ on overlapping labeled atoms between self and other</p>
 <dt id="rmgpy.molecule.Group.multiplicity">
 <code class="descname">multiplicity</code><a class="headerlink" href="#rmgpy.molecule.Group.multiplicity" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>multiplicity</em> – list</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="rmgpy.molecule.Group.nitrogenCount">
-<code class="descname">nitrogenCount</code><a class="headerlink" href="#rmgpy.molecule.Group.nitrogenCount" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>nitrogenCount</em> – ‘short’</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="rmgpy.molecule.Group.oxygenCount">
-<code class="descname">oxygenCount</code><a class="headerlink" href="#rmgpy.molecule.Group.oxygenCount" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>oxygenCount</em> – ‘short’</p>
 </dd></dl>
 
 <dl class="method">
@@ -654,7 +649,7 @@ the isomorphism functions, much more efficient.</p>
 <dl class="method">
 <dt id="rmgpy.molecule.Group.split">
 <code class="descname">split</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#rmgpy.molecule.Group.split" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert a single <a class="reference internal" href="#rmgpy.molecule.Group" title="rmgpy.molecule.Group"><code class="xref py py-class docutils literal"><span class="pre">Group</span></code></a> object containing two or more
+<dd><p>Convert a single <code class="xref py py-class docutils literal"><span class="pre">Group</span></code> object containing two or more
 unconnected groups into separate class:<cite>Group</cite> objects.</p>
 </dd></dl>
 
@@ -680,12 +675,6 @@ and valency, this function will not change the type.</p>
 <p>Currently it makes atomtypes as specific as possible and makes CO/CS atomtypes
 have explicit O2d/S2d ligands. Other functions can be added as necessary</p>
 <p>Returns a ‘True’ if the group was modified otherwise returns ‘False’</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="rmgpy.molecule.Group.sulfurCount">
-<code class="descname">sulfurCount</code><a class="headerlink" href="#rmgpy.molecule.Group.sulfurCount" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>sulfurCount</em> – ‘short’</p>
 </dd></dl>
 
 <dl class="method">
@@ -811,7 +800,7 @@ isomorphism checks.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

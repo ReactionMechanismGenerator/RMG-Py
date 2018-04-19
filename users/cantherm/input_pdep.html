@@ -79,14 +79,14 @@ reading of the file.</p>
 <p>Each section is made up of one or more function calls, where parameters are
 specified as text strings, numbers, or objects. Text strings must be wrapped in
 either single or double quotes.</p>
-<p>The following is a list of all the functions of a CanTherm input file for pressure-dependent calculations:</p>
+<p>The following is a list of all the components of a CanTherm input file for pressure-dependent calculations:</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="30%" />
 <col width="70%" />
 </colgroup>
 <thead valign="bottom">
-<tr class="row-odd"><th class="head">Function</th>
+<tr class="row-odd"><th class="head">Component</th>
 <th class="head">Description</th>
 </tr>
 </thead>
@@ -94,11 +94,17 @@ either single or double quotes.</p>
 <tr class="row-even"><td><code class="docutils literal"><span class="pre">modelChemistry</span></code></td>
 <td>Level of theory from quantum chemical calculations</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">frequencyScaleFactor</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">atomEnergies</span></code></td>
+<td>Dictionary of atomic energies at <code class="docutils literal"><span class="pre">modelChemistry</span></code> level</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">frequencyScaleFactor</span></code></td>
 <td>A factor by which to scale all frequencies</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">useHinderedRotors</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">useHinderedRotors</span></code></td>
 <td><code class="docutils literal"><span class="pre">True</span></code> if hindered rotors are used, <code class="docutils literal"><span class="pre">False</span></code> if not</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">useAtomCorrections</span></code></td>
+<td><code class="docutils literal"><span class="pre">True</span></code> if atom corrections are used, <code class="docutils literal"><span class="pre">False</span></code> if not</td>
 </tr>
 <tr class="row-odd"><td><code class="docutils literal"><span class="pre">useBondCorrections</span></code></td>
 <td><code class="docutils literal"><span class="pre">True</span></code> if bond corrections are used, <code class="docutils literal"><span class="pre">False</span></code> if not</td>
@@ -135,22 +141,34 @@ Important differences are mentioned in the sections below.</p>
 </div>
 <div class="section" id="model-chemistry">
 <h2>4.2. Model Chemistry<a class="headerlink" href="#model-chemistry" title="Permalink to this headline">¶</a></h2>
-<p>The first item in the input file should be a <code class="docutils literal"><span class="pre">modelChemistry()</span></code> function,
-which accepts a string describing the model chemistry.</p>
+<p>The first item in the input file should be a <code class="docutils literal"><span class="pre">modelChemistry</span></code> assignment
+with a string describing the model chemistry.</p>
 <p>CanTherm uses this information to adjust the computed energies to the usual gas-phase reference
 states by applying atom, bond and spin-orbit coupling energy corrections. This is particularly
 important for <code class="docutils literal"><span class="pre">thermo()</span></code> calculations (see below). Note that the user must specify under the
-<code class="docutils literal"><span class="pre">species()</span></code> function the type and number of atoms and bonds for CanTherm to apply these corrections.
+<code class="docutils literal"><span class="pre">species()</span></code> function the type and number of bonds for CanTherm to apply these corrections.
 The example below specifies CBS-QB3 as the model chemistry:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">modelChemistry</span><span class="p">(</span><span class="s2">&quot;CBS-QB3&quot;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">modelChemistry</span> <span class="o">=</span> <span class="s2">&quot;CBS-QB3&quot;</span>
 </pre></div>
 </div>
-<p>Currently, atomization energy corrections (AEC), bond corrections (BC), and spin orbit correction (SOC) are available for
-model chemistries as described under <a class="reference external" href="input.html#model-chemistry">High-Pressure Limit: Model Chemistry</a></p>
+<p>Alternatively, the atomic energies at the <code class="docutils literal"><span class="pre">modelChemistry</span></code> level of theory can be directly
+specified in the input file by providing a dictionary of these energies in the following format:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">atomEnergies</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;H&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.499818</span><span class="p">,</span>
+    <span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">37.78552</span><span class="p">,</span>
+    <span class="s1">&#39;N&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">54.520543</span><span class="p">,</span>
+    <span class="s1">&#39;O&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">74.987979</span><span class="p">,</span>
+    <span class="s1">&#39;S&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">397.658253</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Whether or not atomization energy corrections (AEC), bond corrections (BC), and spin orbit
+corrections (SOC); and which elements are available for a given model chemistry is described
+under <a class="reference external" href="input.html#model-chemistry">High-Pressure Limit: Model Chemistry</a></p>
 </div>
 <div class="section" id="frequency-scale-factor">
 <h2>4.3. Frequency Scale Factor<a class="headerlink" href="#frequency-scale-factor" title="Permalink to this headline">¶</a></h2>
-<p>Frequency scale factors are empirically fit to experiment for different <code class="docutils literal"><span class="pre">modelChemistry()</span></code>. Refer to NIST website for values (<a class="reference external" href="http://cccbdb.nist.gov/vibscalejust.asp">http://cccbdb.nist.gov/vibscalejust.asp</a>).
+<p>Frequency scale factors are empirically fit to experiment for different <code class="docutils literal"><span class="pre">modelChemistry</span></code>. Refer to NIST website for values (<a class="reference external" href="http://cccbdb.nist.gov/vibscalejust.asp">http://cccbdb.nist.gov/vibscalejust.asp</a>).
 For CBS-QB3, which is not included  in the link above, <code class="docutils literal"><span class="pre">frequencyScaleFactor</span> <span class="pre">=</span> <span class="pre">0.99</span></code> according to Montgomery et al. (<em>J. Chem. Phys. 1999, 110, 2822–2827</em>).</p>
 </div>
 <div class="section" id="species-parameters">
@@ -274,59 +292,54 @@ will be referred to as the species input file.</p>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">atoms</span></code></td>
-<td>yes</td>
-<td>Type and number of atoms in the species</td>
-</tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">bonds</span></code></td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">bonds</span></code></td>
 <td>optional</td>
 <td>Type and number of bonds in the species</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">linear</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">linear</span></code></td>
 <td>yes</td>
 <td><code class="docutils literal"><span class="pre">True</span></code> if the molecule is linear, <code class="docutils literal"><span class="pre">False</span></code> if not</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">externalSymmetry</span></code></td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">externalSymmetry</span></code></td>
 <td>yes</td>
 <td>The external symmetry number for rotation</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">spinMultiplicity</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">spinMultiplicity</span></code></td>
 <td>yes</td>
 <td>The ground-state spin multiplicity (degeneracy)</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">opticalIsomers</span></code></td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">opticalIsomers</span></code></td>
 <td>yes</td>
 <td>The number of optical isomers of the species</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">energy</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">energy</span></code></td>
 <td>yes</td>
 <td>The ground-state 0 K atomization energy in Hartree
 (without zero-point energy) <strong>or</strong>
 The path to the quantum chemistry output file containing the energy</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">geometry</span></code></td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">geometry</span></code></td>
 <td>yes</td>
 <td>The path to the quantum chemistry output file containing the optimized geometry</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">frequencies</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">frequencies</span></code></td>
 <td>yes</td>
 <td>The path to the quantum chemistry output file containing the computed frequencies</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">rotors</span></code></td>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">rotors</span></code></td>
 <td>optional</td>
 <td>A list of <code class="xref py py-class docutils literal"><span class="pre">HinderedRotor()</span></code> and/or <code class="xref py py-class docutils literal"><span class="pre">FreeRotor()</span></code> objects describing the hindered/free rotors</td>
 </tr>
 </tbody>
 </table>
-<p>The <code class="docutils literal"><span class="pre">atom</span></code> and <code class="docutils literal"><span class="pre">bond</span></code> parameters are used to apply atomization energy corrections (AEC), bond corrections (BC), and spin orbit corrections (SOC) for a given <code class="docutils literal"><span class="pre">modelChemistry()</span></code> (see <a class="reference external" href="input.html#model-chemistry">Model Chemistry</a>).</p>
-<p>Allowed atom symbols for the <code class="docutils literal"><span class="pre">atoms</span></code> parameter are
-<code class="docutils literal"><span class="pre">'C'</span></code>, <code class="docutils literal"><span class="pre">'N'</span></code>, <code class="docutils literal"><span class="pre">'O'</span></code>, <code class="docutils literal"><span class="pre">'S'</span></code>, <code class="docutils literal"><span class="pre">'P'</span></code>, and <code class="docutils literal"><span class="pre">'H'</span></code>. For example, for acetylperoxy radical we would write:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">atoms</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="n">H</span><span class="s1">&#39;: 3}</span>
-</pre></div>
-</div>
+<p>The types and number of atoms in the species are automatically inferred from the quantum chemistry output and are used
+to apply atomization energy corrections (AEC) and spin orbit corrections (SOC) for a given <code class="docutils literal"><span class="pre">modelChemistry</span></code>
+(see <a class="reference internal" href="#model-chemistry">Model Chemistry</a>). If not interested in accurate thermodynamics (e.g., if only using <code class="docutils literal"><span class="pre">kinetics()</span></code>), then
+atom corrections can be turned off by setting <code class="docutils literal"><span class="pre">useAtomCorrections</span></code> to <code class="docutils literal"><span class="pre">False</span></code>.</p>
+<p>The <code class="docutils literal"><span class="pre">bond</span></code> parameter is used to apply bond corrections (BC) for a given <code class="docutils literal"><span class="pre">modelChemistry</span></code>.</p>
 <p>Allowed bond types for the <code class="docutils literal"><span class="pre">bonds</span></code> parameter are, e.g., <code class="docutils literal"><span class="pre">'C-H'</span></code>, <code class="docutils literal"><span class="pre">'C-C'</span></code>, <code class="docutils literal"><span class="pre">'C=C'</span></code>, <code class="docutils literal"><span class="pre">'N-O'</span></code>, <code class="docutils literal"><span class="pre">'C=S'</span></code>, <code class="docutils literal"><span class="pre">'O=O'</span></code>, <code class="docutils literal"><span class="pre">'C#N'</span></code>…</p>
 <p><code class="docutils literal"><span class="pre">'O=S=O'</span></code> is also allowed.</p>
-<p>The order of elements in for the bond correction is important and generally follows the order specified under “allowed atom symbols” above, i.e., <code class="docutils literal"><span class="pre">'C=N'</span></code> is correct while <code class="docutils literal"><span class="pre">'N=C'</span></code> is incorrect. Use <code class="docutils literal"><span class="pre">-</span></code>/<code class="docutils literal"><span class="pre">=</span></code>/<code class="docutils literal"><span class="pre">#</span></code> to denote a single/double/triple bond, respectively. For example, for acetylperoxy radical we would write:</p>
+<p>The order of elements in for the bond correction is not important. Use <code class="docutils literal"><span class="pre">-</span></code>/<code class="docutils literal"><span class="pre">=</span></code>/<code class="docutils literal"><span class="pre">#</span></code> to denote a single/double/triple bond, respectively. For example, for acetylperoxy radical we would write:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">bonds</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;C-C&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;C=O&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;C-O&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;O-O&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;C-H&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">}</span>
 </pre></div>
 </div>
@@ -344,7 +357,7 @@ For acetylperoxy radical, we would write:</p>
 <span class="n">opticalIsomers</span> <span class="o">=</span> <span class="mi">1</span>
 </pre></div>
 </div>
-<p>The <code class="docutils literal"><span class="pre">energy</span></code> parameter is a dictionary with entries for different <code class="docutils literal"><span class="pre">modelChemistry()</span></code>. The entries can consist of either
+<p>The <code class="docutils literal"><span class="pre">energy</span></code> parameter is a dictionary with entries for different <code class="docutils literal"><span class="pre">modelChemistry</span></code>. The entries can consist of either
 floating point numbers corresponding to the 0 K atomization energy in Hartree (without zero-point energy correction), or
 they can specify the path to a quantum chemistry calculation output file that contains the species’s energy. For example:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">energy</span> <span class="o">=</span> <span class="p">{</span>
@@ -354,7 +367,7 @@ they can specify the path to a quantum chemistry calculation output file that co
 </pre></div>
 </div>
 <p>In this example, the <code class="docutils literal"><span class="pre">CBS-QB3</span></code> energy is obtained from a Gaussian log file, while the <code class="docutils literal"><span class="pre">Klip_2</span></code> energy is specified directly.
-The energy used will depend on what <code class="docutils literal"><span class="pre">modelChemistry()</span></code> was specified in the input file. CanTherm can parse the energy from
+The energy used will depend on what <code class="docutils literal"><span class="pre">modelChemistry</span></code> was specified in the input file. CanTherm can parse the energy from
 a <code class="docutils literal"><span class="pre">GaussianLog</span></code>, <code class="docutils literal"><span class="pre">MolproLog</span></code> or <code class="docutils literal"><span class="pre">QchemLog</span></code>.</p>
 <p>The input to the remaining parameters, <code class="docutils literal"><span class="pre">geometry</span></code>, <code class="docutils literal"><span class="pre">frequencies</span></code> and <code class="docutils literal"><span class="pre">rotors</span></code>, will depend on if hindered/free rotors are included.
 Both cases are described below.</p>
@@ -370,13 +383,7 @@ For example:</p>
 </div>
 <p>In summary, in order to specify the molecular properties of a species by parsing the output of quantum chemistry calculations, without any hindered/free rotors,
 the species input file should look like the following (using acetylperoxy as an example):</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">atoms</span> <span class="o">=</span> <span class="p">{</span>
-<span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
-<span class="s1">&#39;O&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
-<span class="n">H</span><span class="s1">&#39;: 3,</span>
-<span class="p">}</span>
-
-<span class="n">bonds</span> <span class="o">=</span> <span class="p">{</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">bonds</span> <span class="o">=</span> <span class="p">{</span>
 <span class="s1">&#39;C-C&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
 <span class="s1">&#39;C=O&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
 <span class="s1">&#39;C-O&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
@@ -465,6 +472,15 @@ Therefore, the proper workflow for generating the <code class="docutils literal"
 </pre></div>
 </div>
 <p>The <code class="docutils literal"><span class="pre">Energy</span></code> can be in units of <code class="docutils literal"><span class="pre">kJ/mol</span></code>, <code class="docutils literal"><span class="pre">J/mol</span></code>, <code class="docutils literal"><span class="pre">cal/mol</span></code>, <code class="docutils literal"><span class="pre">kcal/mol</span></code>, <code class="docutils literal"><span class="pre">cm^-1</span></code> or <code class="docutils literal"><span class="pre">hartree</span></code>.</p>
+<p>The <code class="docutils literal"><span class="pre">symmetry</span></code> parameter will usually equal either 1, 2 or 3. Below are examples of internal rotor scans with these commonly encountered symmetry numbers. First, <code class="docutils literal"><span class="pre">symmetry</span> <span class="pre">=</span> <span class="pre">3</span></code>:</p>
+<img alt="../../_images/symmetry_3_example.png" src="../../_images/symmetry_3_example.png" />
+<p>Internal rotation of a methyl group is a common example of a hindered rotor with <code class="docutils literal"><span class="pre">symmetry</span> <span class="pre">=</span> <span class="pre">3</span></code>, such as the one above. As shown, all three minima (and maxima) have identical energies, hence <code class="docutils literal"><span class="pre">symmetry</span> <span class="pre">=</span> <span class="pre">3</span></code>.</p>
+<p>Similarly, if there are only two minima along the internal rotor scan, and both have identical energy, then <code class="docutils literal"><span class="pre">symmetry</span> <span class="pre">=</span> <span class="pre">2</span></code>, as in the example below:</p>
+<img alt="../../_images/symmetry_2_example.png" src="../../_images/symmetry_2_example.png" />
+<p>If any of the energy minima in an internal rotor scan are not identical, then the rotor has no symmetry (<code class="docutils literal"><span class="pre">symmetry</span> <span class="pre">=</span> <span class="pre">1</span></code>), as in the example below:</p>
+<img alt="../../_images/symmetry_1_example.png" src="../../_images/symmetry_1_example.png" />
+<p>For the example above there are 3 local energy minima, 2 of which are identical to each other. However, the 3rd minima is different from the other 2, therefore this internal rotor has no symmetry.</p>
+<p>For practical purposes, when determining the symmetry number for a given hindered rotor simply check if the internal rotor scan looks like the <code class="docutils literal"><span class="pre">symmetry</span> <span class="pre">=</span> <span class="pre">2</span></code> or <code class="docutils literal"><span class="pre">3</span></code> examples above. If it doesn’t, then most likely <code class="docutils literal"><span class="pre">symmetry</span> <span class="pre">=</span> <span class="pre">1</span></code>.</p>
 <p>Each <code class="xref py py-class docutils literal"><span class="pre">FreeRotor()</span></code> object requires the following parameters:</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -494,13 +510,7 @@ Modeling the same internal rotation as a Harmonic Oscillator (default if it is n
 puts a lower bound on the impact of that rotor on the species’s overall partition function. Modeling the internal rotation as a <code class="xref py py-class docutils literal"><span class="pre">HinderedRotor()</span></code> should fall
 in between these two extremes.</p>
 <p>To summarize, the species input file with hindered/free rotors should look like the following example (different options for specifying the same <code class="docutils literal"><span class="pre">rotors</span></code> entry are commented out):</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">atoms</span> <span class="o">=</span> <span class="p">{</span>
-<span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
-<span class="s1">&#39;O&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
-<span class="s1">&#39;H&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
-<span class="p">}</span>
-
-<span class="n">bonds</span> <span class="o">=</span> <span class="p">{</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">bonds</span> <span class="o">=</span> <span class="p">{</span>
 <span class="s1">&#39;C-C&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
 <span class="s1">&#39;C=O&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
 <span class="s1">&#39;C-O&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
@@ -1136,7 +1146,7 @@ and <cite>n-butanol</cite> example.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

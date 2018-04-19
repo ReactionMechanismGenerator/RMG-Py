@@ -254,7 +254,7 @@ used to specify a required mapping from <cite>self</cite> to <cite>other</cite> 
 atoms of <cite>self</cite> are the keys, while the atoms of <cite>other</cite> are the
 values). The returned mapping also uses the atoms of <cite>self</cite> for the keys
 and the atoms of <cite>other</cite> for the values. The <cite>other</cite> parameter must
-be a <a class="reference internal" href="#rmgpy.molecule.Molecule" title="rmgpy.molecule.Molecule"><code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code></a> object, or a <code class="xref py py-class docutils literal"><span class="pre">TypeError</span></code> is raised.</p>
+be a <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> object, or a <code class="xref py py-class docutils literal"><span class="pre">TypeError</span></code> is raised.</p>
 </dd></dl>
 
 <dl class="method">
@@ -266,7 +266,7 @@ otherwise. Also returns the lists all of valid mappings. The
 <cite>self</cite> to <cite>other</cite> (i.e. the atoms of <cite>self</cite> are the keys, while the
 atoms of <cite>other</cite> are the values). The returned mappings also use the
 atoms of <cite>self</cite> for the keys and the atoms of <cite>other</cite> for the values.
-The <cite>other</cite> parameter must be a <a class="reference internal" href="group.html#rmgpy.molecule.Group" title="rmgpy.molecule.Group"><code class="xref py py-class docutils literal"><span class="pre">Group</span></code></a> object, or a
+The <cite>other</cite> parameter must be a <code class="xref py py-class docutils literal"><span class="pre">Group</span></code> object, or a
 <code class="xref py py-class docutils literal"><span class="pre">TypeError</span></code> is raised.</p>
 </dd></dl>
 
@@ -276,9 +276,6 @@ The <cite>other</cite> parameter must be a <a class="reference internal" href="g
 <dd><p>generates a list of (new-existing H bonds ignored) possible Hbond coordinates [(i1,j1),(i2,j2),…] where i and j values
 correspond to the indexes of the atoms involved, Hbonds are allowed if they meet
 the following constraints:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">docstring of rmgpy.molecule.Molecule.find_H_bonds</tt>, line 4)</p>
-Unexpected indentation.</div>
 <blockquote>
 <div><ol class="arabic simple">
 <li>between a H and [O,N] atoms</li>
@@ -348,18 +345,12 @@ molecule is sent to <cite>ConnectTheDots</cite> so will only contain single bond
 <dd><p>generates a list of Hbonded molecular structures in addition to the
 constraints on Hydrogen bonds applied in the find_H_Bonds function
 the generated structures are constrained to:</p>
-<div class="system-message">
-<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">docstring of rmgpy.molecule.Molecule.generate_H_bonded_structures</tt>, line 4)</p>
-Unexpected indentation.</div>
 <blockquote>
 <div><ol class="arabic simple">
 <li>An atom can only be hydrogen bonded to one other atom</li>
 <li>Only two H-bonds can exist in a given molecule</li>
 </ol>
 </div></blockquote>
-<div class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">docstring of rmgpy.molecule.Molecule.generate_H_bonded_structures</tt>, line 6)</p>
-Block quote ends without a blank line; unexpected unindent.</div>
 <p>the second is done to avoid explosive growth in the number of
 structures as without this constraint the number of possible
 structures grows 2^n where n is the number of possible H-bonds</p>
@@ -619,6 +610,12 @@ If not, it calls the calculateSymmetryNumber method.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.Molecule.get_element_count">
+<code class="descname">get_element_count</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#rmgpy.molecule.Molecule.get_element_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the element count for the molecule as a dictionary.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.Molecule.hasAtom">
 <code class="descname">hasAtom</code><span class="sig-paren">(</span><em>self</em>, <em>Atom atom</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Molecule.hasAtom" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal"><span class="pre">True</span></code> if <cite>atom</cite> is an atom in the graph, or <code class="docutils literal"><span class="pre">False</span></code> if
@@ -713,7 +710,7 @@ is in one or more cycles in the graph, or <code class="xref py py-data docutils 
 otherwise. The <cite>initialMap</cite> attribute can be used to specify a required
 mapping from <cite>self</cite> to <cite>other</cite> (i.e. the atoms of <cite>self</cite> are the keys,
 while the atoms of <cite>other</cite> are the values). The <cite>other</cite> parameter must
-be a <a class="reference internal" href="#rmgpy.molecule.Molecule" title="rmgpy.molecule.Molecule"><code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code></a> object, or a <code class="xref py py-class docutils literal"><span class="pre">TypeError</span></code> is raised.
+be a <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> object, or a <code class="xref py py-class docutils literal"><span class="pre">TypeError</span></code> is raised.
 Also ensures multiplicities are also equal.</p>
 </dd></dl>
 
@@ -746,7 +743,7 @@ or <code class="docutils literal"><span class="pre">False</span></code> otherwis
 otherwise. The <cite>initialMap</cite> attribute can be used to specify a required
 mapping from <cite>self</cite> to <cite>other</cite> (i.e. the atoms of <cite>self</cite> are the keys,
 while the atoms of <cite>other</cite> are the values). The <cite>other</cite> parameter must
-be a <a class="reference internal" href="group.html#rmgpy.molecule.Group" title="rmgpy.molecule.Group"><code class="xref py py-class docutils literal"><span class="pre">Group</span></code></a> object, or a <code class="xref py py-class docutils literal"><span class="pre">TypeError</span></code> is raised.</p>
+be a <code class="xref py py-class docutils literal"><span class="pre">Group</span></code> object, or a <code class="xref py py-class docutils literal"><span class="pre">TypeError</span></code> is raised.</p>
 </dd></dl>
 
 <dl class="method">
@@ -771,8 +768,8 @@ cycles in the graph, or <code class="docutils literal"><span class="pre">False</
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.merge">
 <code class="descname">merge</code><span class="sig-paren">(</span><em>self</em>, <em>Graph other</em><span class="sig-paren">)</span> &#x2192; Graph<a class="headerlink" href="#rmgpy.molecule.Molecule.merge" title="Permalink to this definition">¶</a></dt>
-<dd><p>Merge two molecules so as to store them in a single <a class="reference internal" href="#rmgpy.molecule.Molecule" title="rmgpy.molecule.Molecule"><code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code></a>
-object. The merged <a class="reference internal" href="#rmgpy.molecule.Molecule" title="rmgpy.molecule.Molecule"><code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code></a> object is returned.</p>
+<dd><p>Merge two molecules so as to store them in a single <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code>
+object. The merged <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> object is returned.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -861,6 +858,10 @@ have modified the graph.</p>
 <code class="descname">sortAtoms</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.sortAtoms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sort the atoms in the graph. This can make certain operations, e.g.
 the isomorphism functions, much more efficient.</p>
+<p>This function orders atoms using several attributes in atom.getDescriptor().
+Currently it sorts by placing heaviest atoms first and hydrogen atoms last.
+Placing hydrogens last during sorting ensures that functions with hydrogen
+removal work properly.</p>
 </dd></dl>
 
 <dl class="method">
@@ -873,7 +874,7 @@ the isomorphism functions, much more efficient.</p>
 <dl class="method">
 <dt id="rmgpy.molecule.Molecule.split">
 <code class="descname">split</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#rmgpy.molecule.Molecule.split" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert a single <a class="reference internal" href="#rmgpy.molecule.Molecule" title="rmgpy.molecule.Molecule"><code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code></a> object containing two or more
+<dd><p>Convert a single <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> object containing two or more
 unconnected molecules into separate class:<cite>Molecule</cite> objects.</p>
 </dd></dl>
 
@@ -931,8 +932,6 @@ Perceives aromaticity.</p>
 <p>or</p>
 <p>Convert a molecular structure to an InChI Key string. Uses
 <a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.</p>
-<p>Removes check-sum dash (-) and character so that only
-the 14 + 9 characters remain.</p>
 </dd></dl>
 
 <dl class="method">
@@ -1107,7 +1106,7 @@ number of lone electron pairs, assuming a neutral molecule.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

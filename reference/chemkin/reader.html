@@ -70,7 +70,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h2>Main functions<a class="headerlink" href="#main-functions" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="rmgpy.chemkin.loadChemkinFile">
-<code class="descclassname">rmgpy.chemkin.</code><code class="descname">loadChemkinFile</code><span class="sig-paren">(</span><em>path</em>, <em>dictionaryPath=None</em>, <em>transportPath=None</em>, <em>readComments=True</em>, <em>thermoPath=None</em>, <em>useChemkinNames=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.loadChemkinFile" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">rmgpy.chemkin.</code><code class="descname">loadChemkinFile</code><span class="sig-paren">(</span><em>path</em>, <em>dictionaryPath=None</em>, <em>transportPath=None</em>, <em>readComments=True</em>, <em>thermoPath=None</em>, <em>useChemkinNames=False</em>, <em>checkDuplicates=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.loadChemkinFile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load a Chemkin input file located at <cite>path</cite> on disk to <cite>path</cite>, returning lists of the species
 and reactions in the Chemkin file. The ‘thermoPath’ point to a separate thermo file, or, if ‘None’ is
 specified, the function will look for the thermo database within the chemkin mechanism file</p>
@@ -239,7 +239,7 @@ If the comment is encoded with latin-1, it is converted to utf-8.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

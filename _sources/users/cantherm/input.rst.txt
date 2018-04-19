@@ -13,14 +13,16 @@ Each section is made up of one or more function calls, where parameters are
 specified as text strings, numbers, or objects. Text strings must be wrapped in
 either single or double quotes.
 
-The following is a list of all the functions of a CanTherm input file for thermodynamics and high-pressure limit kinetics computations:
+The following is a list of all the components of a CanTherm input file for thermodynamics and high-pressure limit kinetics computations:
 
 =========================== =========================================================
-Function                    Description
+Component                   Description
 =========================== =========================================================
 ``modelChemistry``          Level of theory from quantum chemical calculations
+``atomEnergies``            Dictionary of atomic energies at ``modelChemistry`` level
 ``frequencyScaleFactor``    A factor by which to scale all frequencies
 ``useHinderedRotors``       ``True`` if hindered rotors are used, ``False`` if not
+``useAtomCorrections``      ``True`` if atom corrections are used, ``False`` if not
 ``useBondCorrections``      ``True`` if bond corrections are used, ``False`` if not
 ``species``                 Contains parameters for non-transition states
 ``transitionState``         Contains parameters for transition state(s)
@@ -33,61 +35,81 @@ Function                    Description
 Model Chemistry
 ===============
 
-The first item in the input file should be a ``modelChemistry()`` function,
-which accepts a string describing the model chemistry.
+The first item in the input file should be a ``modelChemistry`` assignment
+with a string describing the model chemistry.
 
 CanTherm uses this information to adjust the computed energies to the usual gas-phase reference
 states by applying atom, bond and spin-orbit coupling energy corrections. This is particularly
 important for ``thermo()`` calculations (see below). Note that the user must specify under the
-``species()`` function the type and number of atoms and bonds for CanTherm to apply these corrections.
+``species()`` function the type and number of bonds for CanTherm to apply these corrections.
 The example below specifies CBS-QB3 as the model chemistry::
 
-    modelChemistry("CBS-QB3")
+    modelChemistry = "CBS-QB3"
 
-Currently, atomization energy corrections (AEC), bond corrections (BC), and spin orbit correction (SOC) are available for the following model chemistries:
+Alternatively, the atomic energies at the ``modelChemistry`` level of theory can be directly
+specified in the input file by providing a dictionary of these energies in the following format::
 
-================================================ ===== ==== ====
-Model Chemistry                                  AEC   BC   SOC     
-================================================ ===== ==== ====
-``'CBS-QB3'``                                     v    v    v
-``'G3'``                                          v         v
-``'M08SO/MG3S*'``                                 v         v
-``'M06-2X/cc-pVTZ'``                              v         v
-``'Klip_1'``                                      v         v
-``'Klip_2'`` *uses QCI(tz,qz) values*             v         v
-``'Klip_3'`` *uses QCI(dz,qz) values*             v         v
-``'Klip_2_cc'`` *uses CCSD(T)(tz,qz) values*      v         v
-``'CCSD-F12/cc-pVDZ-F12'``                        v         v
-``'CCSD(T)-F12/cc-pVDZ-F12_H-TZ'``                v         v
-``'CCSD(T)-F12/cc-pVDZ-F12_H-QZ'``                v         v
-``'CCSD(T)-F12/cc-pVnZ-F12'``, *n = D,T,Q*        v    v    v
-``'CCSD(T)-F12/cc-pVDZ-F12_noscale'``             v         v
-``'CCSD(T)-F12/cc-pCVnZ-F12'``, *n = D,T,Q*       v         v
-``'CCSD(T)-F12/aug-cc-pVnZ-F12'``, *n = D,T,Q*    v         v
-``'B-CCSD(T)-F12/cc-pVnZ-F12'``, *n = D,T,Q*      v         v
-``'B-CCSD(T)-F12/cc-pCVnZ-F12'``, *n = D,T,Q*     v         v
-``'B-CCSD(T)-F12/aug-cc-pVnZ-F12'``, *n = D,T,Q*  v         v
-``'DFT_G03_b3lyp'``                               v    v    v
-``'DFT_ks_b3lyp'``                                          v
-``'DFT_uks_b3lyp'``                                         v
-``'G03_PBEPBE_6-311++g_d_p'``                     v         v
-``'MP2_rmp2_pVnZ'``, *n = D,T,Q*                  v         v
-``'FCI/cc-pVnZ'``, *n = D,T,Q*                    v         v
-``'BMK/cbsb7'``                                   v    v    v
-``'BMK/6-311G(2d,d,p)'``                          v    v    v
-``'B3LYP/6-311+G(3df,2p)'``                            v
-``'B3LYP/6-31G**'``                               v    v
-================================================ ===== ==== ====
+    atomEnergies = {
+        'H': -0.499818,
+        'C': -37.78552,
+        'N': -54.520543,
+        'O': -74.987979,
+        'S': -397.658253,
+    }
+
+The table below shows which model chemistries have atomization energy corrections (AEC), bond
+corrections (BC), and spin orbit corrections (SOC). It also lists which elements are available
+for a given model chemistry.
+
+================================================ ===== ==== ==== ====================
+Model Chemistry                                  AEC   BC   SOC  Supported Elements
+================================================ ===== ==== ==== ====================
+``'CBS-QB3'``                                     v    v    v    H, C, N, O, P, S
+``'G3'``                                          v         v    H, C, N, O, P, S
+``'M08SO/MG3S*'``                                 v         v    H, C, N, O, P, S
+``'M06-2X/cc-pVTZ'``                              v         v    H, C, N, O, P, S
+``'Klip_1'``                                      v         v    H, C, N, O
+``'Klip_2'`` *uses QCI(tz,qz) values*             v         v    H, C, N, O
+``'Klip_3'`` *uses QCI(dz,qz) values*             v         v    H, C, N, O
+``'Klip_2_cc'`` *uses CCSD(T)(tz,qz) values*      v         v    H, C, O
+``'CCSD-F12/cc-pVDZ-F12'``                        v         v    H, C, N, O
+``'CCSD(T)-F12/cc-pVDZ-F12_H-TZ'``                v         v    H, C, N, O
+``'CCSD(T)-F12/cc-pVDZ-F12_H-QZ'``                v         v    H, C, N, O
+``'CCSD(T)-F12/cc-pVnZ-F12'``, *n = D,T,Q*        v    v    v    H, C, N, O, S
+``'CCSD(T)-F12/cc-pVDZ-F12_noscale'``             v         v    H, C, N, O
+``'CCSD(T)-F12/cc-pCVnZ-F12'``, *n = D,T,Q*       v         v    H, C, N, O
+``'CCSD(T)-F12/aug-cc-pVnZ'``, *n = D,T,Q*        v         v    H, C, N, O
+``'B-CCSD(T)-F12/cc-pVnZ-F12'``, *n = D,T,Q*      v         v    H, C, N, O, S
+``'B-CCSD(T)-F12/cc-pCVnZ-F12'``, *n = D,T,Q*     v         v    H, C, N, O
+``'B-CCSD(T)-F12/aug-cc-pVnZ'``, *n = D,T,Q*      v         v    H, C, N, O
+``'G03_PBEPBE_6-311++g_d_p'``                     v         v    H, C, N, O
+``'MP2_rmp2_pVnZ'``, *n = D,T,Q*                  v         v    H, C, N, O
+``'FCI/cc-pVnZ'``, *n = D,T,Q*                    v         v    C
+``'BMK/cbsb7'``                                   v    v    v    H, C, N, O, P, S
+``'BMK/6-311G(2d,d,p)'``                          v    v    v    H, C, N, O, P, S
+``'B3LYP/6-311+G(3df,2p)'``                       v    v    v    H, C, N, O, P, S
+``'B3LYP/6-31G**'``                               v    v         H, C, O, S
+================================================ ===== ==== ==== ====================
 
 Notes:
 
-- In ``'M08SO/MG3S*'`` the grid size used in the [QChem] electronic structure calculation utilizes 75 radial points and 434 angular points. ``'DFT_G03_b3lyp'`` is a B3LYP calculation with a moderately large basis set.
+- In ``'M08SO/MG3S*'`` the grid size used in the [QChem] electronic structure calculation utilizes 75 radial points and 434 angular points.
 - Refer to paper by Goldsmith et al. (*Goldsmith, C. F.; Magoon, G. R.; Green, W. H., Database of Small Molecule Thermochemistry for Combustion. J. Phys. Chem. A 2012, 116, 9033-9057*) for definition of ``'Klip_2'`` (*QCI(tz,qz)*) and ``'Klip_3'`` (*QCI(dz,qz)*).
+
+If a model chemistry other than the ones in the above table is used, then the user should supply
+the corresponding atomic energies (using ``atomEnergies``) to get meaningful results. Bond
+corrections would not be applied in this case.
+
+If a model chemistry or atomic energies are not available, then a kinetics job can still be run by
+setting ``useAtomCorrections`` to ``False``, in which case Cantherm will not raise an error for
+unknown elements. The user should be aware that the resulting energies and thermodynamic quantities
+in the output file will not be meaningful, but kinetics and equilibrium constants will still be
+correct.
 
 Frequency Scale Factor
 ======================
 
-Frequency scale factors are empirically fit to experiment for different ``modelChemistry()``. Refer to NIST website for values (http://cccbdb.nist.gov/vibscalejust.asp).
+Frequency scale factors are empirically fit to experiment for different ``modelChemistry``. Refer to NIST website for values (http://cccbdb.nist.gov/vibscalejust.asp).
 For CBS-QB3, which is not included in the link above, ``frequencyScaleFactor = 0.99`` according to Montgomery et al. (*J. Chem. Phys. 1999, 110, 2822–2827*).
 
 Species
@@ -117,7 +139,6 @@ The species input file accepts the following parameters:
 ======================= =========================== ====================================
 Parameter               Required?                   Description
 ======================= =========================== ====================================
-``atoms``               yes                         Type and number of atoms in the species
 ``bonds``               optional                    Type and number of bonds in the species
 ``linear``              yes                         ``True`` if the molecule is linear, ``False`` if not
 ``externalSymmetry``    yes                         The external symmetry number for rotation
@@ -131,18 +152,18 @@ Parameter               Required?                   Description
 ``rotors``              optional                    A list of :class:`HinderedRotor()` and/or :class:`FreeRotor()` objects describing the hindered/free rotors
 ======================= =========================== ====================================
 
-The ``atom`` and ``bond`` parameters are used to apply atomization energy corrections (AEC), bond corrections (BC), and spin orbit corrections (SOC) for a given ``modelChemistry()`` (see `Model Chemistry`_).
+The types and number of atoms in the species are automatically inferred from the quantum chemistry output and are used
+to apply atomization energy corrections (AEC) and spin orbit corrections (SOC) for a given ``modelChemistry``
+(see `Model Chemistry`_). If not interested in accurate thermodynamics (e.g., if only using ``kinetics()``), then
+atom corrections can be turned off by setting ``useAtomCorrections`` to ``False``.
 
-Allowed atom symbols for the ``atoms`` parameter are
-``'C'``, ``'N'``, ``'O'``, ``'S'``, ``'P'``, and ``'H'``. For example, for formaldehyde we would write::
-
-    atoms = {'C': 1, 'O': 1, H': 2}
+The ``bond`` parameter is used to apply bond corrections (BC) for a given ``modelChemistry``.
 
 Allowed bond types for the ``bonds`` parameter are, e.g., ``'C-H'``, ``'C-C'``, ``'C=C'``, ``'N-O'``, ``'C=S'``, ``'O=O'``, ``'C#N'``...
 
 ``'O=S=O'`` is also allowed.
 
-The order of elements in the bond correction label is important and generally follows the order specified under "allowed atom symbols" above, i.e., ``'C=N'`` is correct while ``'N=C'`` is incorrect. Use ``-``/``=``/``#`` to denote a single/double/triple bond, respectively. For example, for formaldehyde we would write::
+The order of elements in the bond correction label is not important. Use ``-``/``=``/``#`` to denote a single/double/triple bond, respectively. For example, for formaldehyde we would write::
 
     bonds = {'C=O': 1, 'C-H': 2}
 
@@ -160,7 +181,7 @@ For ethane, we would write::
 
     opticalIsomers = 1
 
-The ``energy`` parameter is a dictionary with entries for different ``modelChemistry()``. The entries can consist of either
+The ``energy`` parameter is a dictionary with entries for different ``modelChemistry``. The entries can consist of either
 floating point numbers corresponding to the 0 K atomization energy in Hartree (without zero-point energy correction), or
 they can specify the path to a quantum chemistry calculation output file that contains the species's energy. For example::
 
@@ -170,7 +191,7 @@ they can specify the path to a quantum chemistry calculation output file that co
     }
 
 In this example, the ``CBS-QB3`` energy is obtained from a Gaussian log file, while the ``Klip_2`` energy is specified directly.
-The energy used will depend on what ``modelChemistry()`` was specified in the input file. CanTherm can parse the energy from
+The energy used will depend on what ``modelChemistry`` was specified in the input file. CanTherm can parse the energy from
 a ``GaussianLog``, ``MolproLog`` or ``QchemLog``.
 
 The input to the remaining parameters, ``geometry``, ``frequencies`` and ``rotors``, will depend on if hindered/free rotors are included.
@@ -192,11 +213,6 @@ the ``species()`` function in the input file should look like the following exam
     species('C2H6', 'C2H6.py')
 
 and the species input file (``C2H6.py`` in the example above) should look like the following::
-
-    atoms = {
-    'C': 2,
-    'H': 6,
-    }
 
     bonds = {
         'C-C': 1,
@@ -267,6 +283,24 @@ As noted above, ``scanLog`` can either point to a ``GaussianLog``, ``QchemLog`` 
 
 The ``Energy`` can be in units of ``kJ/mol``, ``J/mol``, ``cal/mol``, ``kcal/mol``, ``cm^-1`` or ``hartree``.
 
+The ``symmetry`` parameter will usually equal either 1, 2 or 3. Below are examples of internal rotor scans with these commonly encountered symmetry numbers. First, ``symmetry = 3``:
+
+.. image:: symmetry_3_example.png
+
+Internal rotation of a methyl group is a common example of a hindered rotor with ``symmetry = 3``, such as the one above. As shown, all three minima (and maxima) have identical energies, hence ``symmetry = 3``.
+
+Similarly, if there are only two minima along the internal rotor scan, and both have identical energy, then ``symmetry = 2``, as in the example below: 
+
+.. image:: symmetry_2_example.png
+
+If any of the energy minima in an internal rotor scan are not identical, then the rotor has no symmetry (``symmetry = 1``), as in the example below:
+
+.. image:: symmetry_1_example.png
+
+For the example above there are 3 local energy minima, 2 of which are identical to each other. However, the 3rd minima is different from the other 2, therefore this internal rotor has no symmetry. 
+
+For practical purposes, when determining the symmetry number for a given hindered rotor simply check if the internal rotor scan looks like the ``symmetry = 2`` or ``3`` examples above. If it doesn’t, then most likely ``symmetry = 1``.
+
 Each :class:`FreeRotor()` object requires the following parameters:
 
 ====================== =========================================================
@@ -284,11 +318,6 @@ puts a lower bound on the impact of that rotor on the species's overall partitio
 in between these two extremes.
 
 To summarize, the species input file with hindered/free rotors should look like the following example (different options for specifying the same ``rotors`` entry are commented out)::
-
-    atoms = {
-        'C': 2,
-        'H': 6,
-    }
 
     bonds = {
         'C-C': 1,

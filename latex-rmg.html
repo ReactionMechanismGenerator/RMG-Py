@@ -1,0 +1,219 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>RMG-Py v2.1.0 documentation &#8212; RMG-Py 2.1.0 Documentation</title>
+    <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+  MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+    ce: ["Extension","mhchem"],
+  });
+});
+</script>
+
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="index.html">2.1.0 Documentation</a> &raquo;</li>
+ 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="rmg-py-vrelease-documentation">
+<h1>RMG-Py v2.1.0 documentation<a class="headerlink" href="#rmg-py-vrelease-documentation" title="Permalink to this headline">¶</a></h1>
+<p>RMG is an automatic chemical reaction mechanism generator
+that constructs kinetic models composed of elementary chemical reaction
+steps using a general understanding of how molecules react. This documentation is for the newer Python version of RMG that we call RMG-Py.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="34%" />
+<col width="66%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">I want to…</th>
+<th class="head">Resource</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>analyze models &amp; search databases</td>
+<td><a class="reference external" href="http://rmg.mit.edu/">RMG website resources</a>  (no download needed</td>
+</tr>
+<tr class="row-odd"><td>make transition state theory calculations</td>
+<td>Run Cantherm with the Canterm User’s Guide</td>
+</tr>
+<tr class="row-even"><td>create mechanisms automatically</td>
+<td>Download RMG with the RMG User’s Guide</td>
+</tr>
+<tr class="row-odd"><td>post an issue with RMG</td>
+<td><a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">github issues page</a></td>
+</tr>
+<tr class="row-even"><td>contribute to RMG project</td>
+<td><a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-Py/wiki">RMG developer’s wiki</a></td>
+</tr>
+</tbody>
+</table>
+<p>CanTherm is developed and distributed as part of RMG-Py, but can be used as a stand-alone
+application for Thermochemistry, Transition State Theory, and Master Equation chemical kinetics
+calculations. Its user guide is also included.</p>
+<p>The last section of this documentation covers some of the more in depth theory behind
+RMG and CanTherm.</p>
+<p>Please visit <a class="reference external" href="http://reactionmechanismgenerator.github.io/RMG-Py/">http://reactionmechanismgenerator.github.io/RMG-Py/</a>
+for the most up to date documentation and source code. You may refer to the separate <em>RMG-Py API Reference</em>
+document to view the details of RMG-Py’s modules and subpackages.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="users/rmg/index.html">RMG User’s Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="users/rmg/introduction.html">1. Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="users/rmg/features.html">2. Overview of Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="users/rmg/installation/index.html">3. Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="users/rmg/input.html">4. Creating Input Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="users/rmg/examples.html">5. Example Input Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="users/rmg/running.html">6. Running a Job</a></li>
+<li class="toctree-l2"><a class="reference internal" href="users/rmg/output.html">7. Analyzing the Output Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="users/rmg/guidelines.html">8. Guidelines for Building a Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="users/rmg/modules/index.html">9. Standalone Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="users/rmg/species.html">10. Species Representation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="users/rmg/group.html">11. Group Representation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="users/rmg/database/index.html">12. Databases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="users/rmg/thermo.html">13. Thermochemistry Estimation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="users/rmg/kinetics.html">14. Kinetics Estimation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="users/rmg/liquids.html">15. Liquid Phase Systems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="users/rmg/faq.html">16. Frequently Asked Questions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="users/rmg/releaseNotes.html">17. Release Notes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="users/rmg/credits.html">18. Credits</a></li>
+<li class="toctree-l2"><a class="reference internal" href="users/rmg/credits.html#how-to-cite">19. How to Cite</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="users/cantherm/index.html">CanTherm User’s Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="users/cantherm/introduction.html">1. Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="users/cantherm/installation.html">2. Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="users/cantherm/input.html">3. Creating Input Files for Thermodynamics and High-Pressure Limit Kinetics Computations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="users/cantherm/input_pdep.html">4. Creating Input Files for Pressure Dependent Calculations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="users/cantherm/running.html">5. Running CanTherm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="users/cantherm/output.html">6. Parsing Output Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="users/cantherm/faq.html">7. Frequently Asked Questions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="users/cantherm/credits.html">8. Credits</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="theory/index.html">Theory Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="theory/rmg/index.html">RMG Theory Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="theory/pdep/index.html">Pressure-Dependence Theory Guide</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+  <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    <div class="sphinxsidebarwrapper">
+        <div class="sidebarlogo"><a href="index.html">
+            <img src="_static/rmg-logo-small.png" alt="RMG" />
+        </a></div>
+      <div id="sidebar">
+        <div id="rmgsidebar">
+          <a href="http://rmg.mit.edu">
+            <div class="menuitem">
+              <img src="_static/rmg-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG Website</div>
+              <div class="menutext menudesc">Interactive website for RMG-Py</div>
+            </div>
+          </a>
+          <a href="https://github.com/ReactionMechanismGenerator/RMG-Py">
+            <div class="menuitem">
+              <img src="_static/github-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG GitHub</div>
+              <div class="menutext menudesc">View source and post issues</div>
+            </div>
+          </a>
+        </div>
+        <div class="menuitem">
+        </div>
+        <div class="menuitem">
+        </div>
+        <div class="menuitem">
+<div role="note" aria-label="source link">
+    <h3>This Page</h3>
+        <ul class="this-page-menu">
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/latex-rmg.rst"
+                   rel="nofollow">View Source</a></li>
+        </ul>
+</div>
+        </div>
+        <div class="menuitem">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+    </div>
+  </div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="index.html">2.1.0 Documentation</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+    </div>
+  </body>
+</html>

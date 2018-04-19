@@ -25,7 +25,7 @@
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="9.7. Thermo Estimation Module" href="thermoEstimation.html" />
-    <link rel="prev" title="9.5. Sensitivity Analysis" href="sensitivity.html" />
+    <link rel="prev" title="9.5. Simulation and Sensitivity Analysis" href="simulate.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -49,7 +49,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="thermoEstimation.html" title="9.7. Thermo Estimation Module"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="sensitivity.html" title="9.5. Sensitivity Analysis"
+          <a href="simulate.html" title="9.5. Simulation and Sensitivity Analysis"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
   <li><a href="../../../index.html">2.1.0 Documentation</a> &raquo;</li>
@@ -69,12 +69,33 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <span id="generatefluxdiagram"></span><h1>9.6. Generating Flux Diagrams<a class="headerlink" href="#generating-flux-diagrams" title="Permalink to this headline">¶</a></h1>
 <p>The script, <code class="docutils literal"><span class="pre">generateFluxDiagrams.py</span></code>, will create a movie out of a completed RMG model
 that shows interconnected arrows between species that represent fluxes.</p>
-<p>To use this method, you just need a completed RMG run.  THe syntax is as follows:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">generateFluxDiagram</span><span class="o">.</span><span class="n">py</span> <span class="nb">input</span><span class="o">.</span><span class="n">py</span>
+<p>To use this method, you just need a Chemkin input file and an RMG species dictionary.
+The syntax is as follows:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">generateFluxDiagram</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">java</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">dlim</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">s</span> <span class="n">SPECIES</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">f</span><span class="p">]</span>
+                              <span class="p">[</span><span class="o">-</span><span class="n">n</span> <span class="n">N</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">e</span> <span class="n">N</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">c</span> <span class="n">TOL</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">r</span> <span class="n">TOL</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">t</span> <span class="n">S</span><span class="p">]</span>
+                              <span class="n">INPUT</span> <span class="n">CHEMKIN</span> <span class="n">DICTIONARY</span> <span class="p">[</span><span class="n">CHEMKIN_OUTPUT</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>where <code class="docutils literal"><span class="pre">input.py</span></code> is the input file for the completed RMG run.  The program will use the automatically
-generated file structure to find the other necessary files to create the movie.</p>
+<p>Positional arguments:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">INPUT</span>                  <span class="n">RMG</span> <span class="nb">input</span> <span class="n">file</span>
+<span class="n">CHEMKIN</span>                <span class="n">Chemkin</span> <span class="n">file</span>
+<span class="n">DICTIONARY</span>             <span class="n">RMG</span> <span class="n">dictionary</span> <span class="n">file</span>
+<span class="n">CHEMKIN_OUTPUT</span>         <span class="n">Chemkin</span> <span class="n">output</span> <span class="n">file</span>
+</pre></div>
+</div>
+<p>Optional arguments:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="o">--</span><span class="n">help</span>             <span class="n">show</span> <span class="n">this</span> <span class="n">help</span> <span class="n">message</span> <span class="ow">and</span> <span class="n">exit</span>
+<span class="o">--</span><span class="n">java</span>                 <span class="n">process</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Java</span> <span class="n">model</span>
+<span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">dlim</span>              <span class="n">Turn</span> <span class="n">off</span> <span class="n">diffusion</span><span class="o">-</span><span class="n">limited</span> <span class="n">rates</span>
+<span class="o">-</span><span class="n">s</span> <span class="n">DIR</span><span class="p">,</span> <span class="o">--</span><span class="n">species</span> <span class="n">DIR</span>  <span class="n">Path</span> <span class="n">to</span> <span class="n">folder</span> <span class="n">containing</span> <span class="n">species</span> <span class="n">images</span>
+<span class="o">-</span><span class="n">f</span><span class="p">,</span> <span class="o">--</span><span class="n">foreign</span>          <span class="n">Not</span> <span class="n">an</span> <span class="n">RMG</span> <span class="n">generated</span> <span class="n">Chemkin</span> <span class="n">file</span> <span class="p">(</span><span class="n">will</span> <span class="n">be</span> <span class="n">checked</span> <span class="k">for</span> <span class="n">duplicates</span><span class="p">)</span>
+<span class="o">-</span><span class="n">n</span> <span class="n">N</span><span class="p">,</span> <span class="o">--</span><span class="n">maxnode</span> <span class="n">N</span>      <span class="n">Maximum</span> <span class="n">number</span> <span class="n">of</span> <span class="n">nodes</span> <span class="n">to</span> <span class="n">show</span> <span class="ow">in</span> <span class="n">diagram</span>
+<span class="o">-</span><span class="n">e</span> <span class="n">N</span><span class="p">,</span> <span class="o">--</span><span class="n">maxedge</span> <span class="n">N</span>      <span class="n">Maximum</span> <span class="n">number</span> <span class="n">of</span> <span class="n">edges</span> <span class="n">to</span> <span class="n">show</span> <span class="ow">in</span> <span class="n">diagram</span>
+<span class="o">-</span><span class="n">c</span> <span class="n">TOL</span><span class="p">,</span> <span class="o">--</span><span class="n">conctol</span> <span class="n">TOL</span>  <span class="n">Lowest</span> <span class="n">fractional</span> <span class="n">concentration</span> <span class="n">to</span> <span class="n">show</span>
+<span class="o">-</span><span class="n">r</span> <span class="n">TOL</span><span class="p">,</span> <span class="o">--</span><span class="n">ratetol</span> <span class="n">TOL</span>  <span class="n">Lowest</span> <span class="n">fractional</span> <span class="n">species</span> <span class="n">rate</span> <span class="n">to</span> <span class="n">show</span>
+<span class="o">-</span><span class="n">t</span> <span class="n">S</span><span class="p">,</span> <span class="o">--</span><span class="n">tstep</span> <span class="n">S</span>        <span class="n">Multiplicative</span> <span class="n">factor</span> <span class="n">to</span> <span class="n">use</span> <span class="n">between</span> <span class="n">consecutive</span> <span class="n">time</span> <span class="n">points</span>
+</pre></div>
+</div>
 <p>This method is also available to use with a web browser from the RMG website: <a class="reference external" href="http://rmg.mit.edu/tools/flux">Generate Flux Diagram</a>.</p>
 </div>
 
@@ -108,8 +129,8 @@ generated file structure to find the other necessary files to create the movie.<
         </div>
         <div class="menuitem">
   <h4>Previous topic</h4>
-  <p class="topless"><a href="sensitivity.html"
-                        title="previous chapter">9.5. Sensitivity Analysis</a></p>
+  <p class="topless"><a href="simulate.html"
+                        title="previous chapter">9.5. Simulation and Sensitivity Analysis</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="thermoEstimation.html"
                         title="next chapter">9.7. Thermo Estimation Module</a></p>
@@ -155,7 +176,7 @@ generated file structure to find the other necessary files to create the movie.<
           <a href="thermoEstimation.html" title="9.7. Thermo Estimation Module"
              >next</a> |</li>
         <li class="right" >
-          <a href="sensitivity.html" title="9.5. Sensitivity Analysis"
+          <a href="simulate.html" title="9.5. Simulation and Sensitivity Analysis"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
   <li><a href="../../../index.html">2.1.0 Documentation</a> &raquo;</li>
@@ -167,7 +188,7 @@ generated file structure to find the other necessary files to create the movie.<
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

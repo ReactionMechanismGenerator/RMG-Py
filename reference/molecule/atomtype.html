@@ -323,7 +323,7 @@ atom type <cite>atomType2</cite> or <code class="docutils literal"><span class="
 <dl class="function">
 <dt id="rmgpy.molecule.getAtomType">
 <code class="descclassname">rmgpy.molecule.</code><code class="descname">getAtomType</code><span class="sig-paren">(</span><em>atom</em>, <em>dict bonds</em><span class="sig-paren">)</span> &#x2192; AtomType<a class="headerlink" href="#rmgpy.molecule.getAtomType" title="Permalink to this definition">¶</a></dt>
-<dd><p>Determine the appropriate atom type for an <a class="reference internal" href="atom.html#rmgpy.molecule.Atom" title="rmgpy.molecule.Atom"><code class="xref py py-class docutils literal"><span class="pre">Atom</span></code></a> object <cite>atom</cite>
+<dd><p>Determine the appropriate atom type for an <code class="xref py py-class docutils literal"><span class="pre">Atom</span></code> object <cite>atom</cite>
 with local bond structure <cite>bonds</cite>, a <code class="docutils literal"><span class="pre">dict</span></code> containing atom-bond pairs.</p>
 </dd></dl>
 
@@ -603,6 +603,22 @@ molecular substructure patterns via an RMG-style adjacency list.</p>
 <tr class="row-even"><td><code class="docutils literal"><span class="pre">S6tdc</span></code></td>
 <td>charged sulfur atom with no lone pairs (valance 6), one to two triple bonds, up to two double bonds, and up to four single bonds</td>
 </tr>
+<tr class="row-odd"><td colspan="2"><em>Chlorine atom types</em></td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">Cl</span></code></td>
+<td>chlorine atom with any local bond structure</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Cl1s</span></code></td>
+<td>chlorine atom with three lone pairs and zero to one single bonds</td>
+</tr>
+<tr class="row-even"><td colspan="2"><em>Iodine atom types</em></td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">I</span></code></td>
+<td>iodine atom with any local bond structure</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">I1s</span></code></td>
+<td>iodine atom with three lone pairs and zero to one single bonds</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -695,7 +711,7 @@ molecular substructure patterns via an RMG-style adjacency list.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

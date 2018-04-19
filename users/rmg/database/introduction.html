@@ -416,6 +416,22 @@ table below shows all atoms types in RMG.</p>
 <td>Sulfur</td>
 <td>No lone pairs, one to two triple bonds, up to two double bonds, up to four single bonds, charged -1/-1</td>
 </tr>
+<tr class="row-even"><td>Cl</td>
+<td>Chlorine</td>
+<td>No requirements</td>
+</tr>
+<tr class="row-odd"><td>Cl1s</td>
+<td>Chlorine</td>
+<td>Three lone pairs, zero to one single bonds</td>
+</tr>
+<tr class="row-even"><td>I</td>
+<td>Iodine</td>
+<td>No requirements</td>
+</tr>
+<tr class="row-odd"><td>I1s</td>
+<td>Iodine</td>
+<td>Three lone pairs, zero to one single bonds</td>
+</tr>
 <tr class="row-even"><td>He</td>
 <td>Helium</td>
 <td>No requirements, nonreactive</td>
@@ -445,32 +461,68 @@ or products that are forbidden.  These groups are stored in in the file located 
 <code class="docutils literal"><span class="pre">RMG-database/input/forbiddenStructures.py</span></code>.</p>
 <p>To ban certain specific pathways in the kinetics
 families, a <cite>forbidden</cite> group must be created, like the following group
-in the <code class="docutils literal"><span class="pre">intra_H_migration</span></code> family</p>
+in the <code class="docutils literal"><span class="pre">intra_H_migration</span></code> family:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">forbidden</span><span class="p">(</span>
     <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;bridged56_1254&quot;</span><span class="p">,</span>
-<span class="n">group</span> <span class="o">=</span>
-<span class="sd">&quot;&quot;&quot;&quot;&quot;&quot;</span><span class="s2">&quot;</span>
-<span class="mi">1</span> <span class="o">*</span><span class="mi">1</span> <span class="n">C</span> <span class="mi">1</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">6</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
-<span class="mi">2</span> <span class="o">*</span><span class="mi">4</span> <span class="n">C</span> <span class="mi">0</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">3</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">7</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
-<span class="mi">3</span>    <span class="n">C</span> <span class="mi">0</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">4</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
-<span class="mi">4</span> <span class="o">*</span><span class="mi">2</span> <span class="n">C</span> <span class="mi">0</span> <span class="p">{</span><span class="mi">3</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">5</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">8</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
-<span class="mi">5</span> <span class="o">*</span><span class="mi">5</span> <span class="n">C</span> <span class="mi">0</span> <span class="p">{</span><span class="mi">4</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">6</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">7</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
-<span class="mi">6</span>    <span class="n">C</span> <span class="mi">0</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">5</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
-<span class="mi">7</span>    <span class="n">C</span> <span class="mi">0</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">5</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
-<span class="mi">8</span> <span class="o">*</span><span class="mi">3</span> <span class="n">H</span> <span class="mi">0</span> <span class="p">{</span><span class="mi">4</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
-<span class="sd">&quot;&quot;&quot;,</span>
-<span class="sd">    shortDesc = u&quot;&quot;&quot;</span><span class="s2">&quot;&quot;&quot;,</span>
-<span class="s2">    longDesc =</span>
-<span class="s2">u&quot;&quot;&quot;</span>
+    <span class="n">group</span> <span class="o">=</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">1 *1 C 1 {2,S} {6,S}</span>
+<span class="sd">2 *4 C 0 {1,S} {3,S} {7,S}</span>
+<span class="sd">3    C 0 {2,S} {4,S}</span>
+<span class="sd">4 *2 C 0 {3,S} {5,S} {8,S}</span>
+<span class="sd">5 *5 C 0 {4,S} {6,S} {7,S}</span>
+<span class="sd">6    C 0 {1,S} {5,S}</span>
+<span class="sd">7    C 0 {2,S} {5,S}</span>
+<span class="sd">8 *3 H 0 {4,S}</span>
+<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="n">shortDesc</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;&quot;&quot;&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="n">longDesc</span> <span class="o">=</span>
+<span class="sa">u</span><span class="sd">&quot;&quot;&quot;</span>
 
-<span class="s2">&quot;&quot;&quot;,</span>
-<span class="s2">)</span>
+<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 <p>Forbidden groups should be placed inside the groups.py file located inside the
 specific kinetics family’s folder <code class="docutils literal"><span class="pre">RMG-database/input/kinetics/family_name/</span></code>
 alongside normal group entries. The starred atoms in the forbidden group
 ban the specified reaction recipe from occurring in matched products and reactants.</p>
+<p>In addition for forbidding groups, there is the option of forbidding specific
+molecules or species. Forbidding a molecule will prevent that exact structure
+from being generated, while forbidding a species will prevent any of its resonance
+structures from being generated. To specify a forbidden molecule or species, simply
+replace the <code class="docutils literal"><span class="pre">group</span></code> keyword with <code class="docutils literal"><span class="pre">molecule</span></code> or <code class="docutils literal"><span class="pre">species</span></code>:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># This forbids a molecule</span>
+<span class="n">forbidden</span><span class="p">(</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;C_quintet&quot;</span><span class="p">,</span>
+    <span class="n">molecule</span> <span class="o">=</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">multiplicity 5</span>
+<span class="sd">1 C u4 p0</span>
+<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="n">shortDesc</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;&quot;&quot;&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="n">longDesc</span> <span class="o">=</span>
+<span class="sa">u</span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># This forbids a species</span>
+<span class="n">forbidden</span><span class="p">(</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;C_quintet&quot;</span><span class="p">,</span>
+    <span class="n">species</span> <span class="o">=</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">multiplicity 5</span>
+<span class="sd">1 C u4 p0</span>
+<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="n">shortDesc</span> <span class="o">=</span> <span class="sa">u</span><span class="s2">&quot;&quot;&quot;&quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="n">longDesc</span> <span class="o">=</span>
+<span class="sa">u</span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">&quot;&quot;&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="hierarchical-trees">
 <h2>12.1.3. Hierarchical Trees<a class="headerlink" href="#hierarchical-trees" title="Permalink to this headline">¶</a></h2>
@@ -587,7 +639,7 @@ Templates can be filled in with kinetic parameters from the training set or rule
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

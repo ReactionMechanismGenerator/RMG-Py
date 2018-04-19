@@ -68,7 +68,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.molecule.Atom<a class="headerlink" href="#rmgpy-molecule-atom" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.molecule.Atom">
-<em class="property">class </em><code class="descclassname">rmgpy.molecule.</code><code class="descname">Atom</code><span class="sig-paren">(</span><em>element=None</em>, <em>radicalElectrons=0</em>, <em>charge=0</em>, <em>label=''</em>, <em>lonePairs=-100</em>, <em>coords=&lt;???&gt;</em>, <em>id=-1</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.molecule.</code><code class="descname">Atom</code><span class="sig-paren">(</span><em>element=None</em>, <em>radicalElectrons=0</em>, <em>charge=0</em>, <em>label=''</em>, <em>lonePairs=-100</em>, <em>coords=numpy.array([])</em>, <em>id=-1</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom" title="Permalink to this definition">¶</a></dt>
 <dd><p>An atom. The attributes are:</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -84,11 +84,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><cite>atomType</cite></td>
-<td><a class="reference internal" href="atomtype.html#rmgpy.molecule.AtomType" title="rmgpy.molecule.AtomType"><code class="xref py py-class docutils literal"><span class="pre">AtomType</span></code></a></td>
+<td><code class="xref py py-class docutils literal"><span class="pre">AtomType</span></code></td>
 <td>The <a class="reference internal" href="atomtype.html#atom-types"><span class="std std-ref">atom type</span></a></td>
 </tr>
 <tr class="row-odd"><td><cite>element</cite></td>
-<td><a class="reference internal" href="element.html#rmgpy.molecule.Element" title="rmgpy.molecule.Element"><code class="xref py py-class docutils literal"><span class="pre">Element</span></code></a></td>
+<td><code class="xref py py-class docutils literal"><span class="pre">Element</span></code></td>
 <td>The chemical element the atom represents</td>
 </tr>
 <tr class="row-even"><td><cite>radicalElectrons</cite></td>
@@ -217,9 +217,9 @@ where <cite>radical</cite> specifies the number of radical electrons to remove.<
 <dt id="rmgpy.molecule.Atom.equivalent">
 <code class="descname">equivalent</code><span class="sig-paren">(</span><em>self</em>, <em>Vertex other</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Atom.equivalent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if <cite>other</cite> is indistinguishable from this atom, or
-<code class="docutils literal"><span class="pre">False</span></code> otherwise. If <cite>other</cite> is an <a class="reference internal" href="#rmgpy.molecule.Atom" title="rmgpy.molecule.Atom"><code class="xref py py-class docutils literal"><span class="pre">Atom</span></code></a> object, then all
+<code class="docutils literal"><span class="pre">False</span></code> otherwise. If <cite>other</cite> is an <code class="xref py py-class docutils literal"><span class="pre">Atom</span></code> object, then all
 attributes except <cite>label</cite> and ‘ID’ must match exactly. If <cite>other</cite> is an
-<a class="reference internal" href="groupatom.html#rmgpy.molecule.GroupAtom" title="rmgpy.molecule.GroupAtom"><code class="xref py py-class docutils literal"><span class="pre">GroupAtom</span></code></a> object, then the atom must match any of the
+<code class="xref py py-class docutils literal"><span class="pre">GroupAtom</span></code> object, then the atom must match any of the
 combinations in the atom pattern.</p>
 </dd></dl>
 
@@ -276,9 +276,30 @@ not.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.Atom.isChlorine">
+<code class="descname">isChlorine</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Atom.isChlorine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the atom represents a chlorine atom or <code class="docutils literal"><span class="pre">False</span></code> if
+not.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Atom.isFluorine">
+<code class="descname">isFluorine</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Atom.isFluorine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the atom represents a fluorine atom or <code class="docutils literal"><span class="pre">False</span></code> if
+not.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.Atom.isHydrogen">
 <code class="descname">isHydrogen</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Atom.isHydrogen" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the atom represents a hydrogen atom or <code class="docutils literal"><span class="pre">False</span></code> if
+not.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Atom.isIodine">
+<code class="descname">isIodine</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Atom.isIodine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the atom represents an iodine atom or <code class="docutils literal"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
 
@@ -305,8 +326,8 @@ not.</p>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Atom.isSilicon">
-<code class="descname">isSilicon</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom.isSilicon" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the atom represents an silicon atom or <code class="docutils literal"><span class="pre">False</span></code> if
+<code class="descname">isSilicon</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Atom.isSilicon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the atom represents a silicon atom or <code class="docutils literal"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
 
@@ -314,16 +335,16 @@ not.</p>
 <dt id="rmgpy.molecule.Atom.isSpecificCaseOf">
 <code class="descname">isSpecificCaseOf</code><span class="sig-paren">(</span><em>self</em>, <em>Vertex other</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Atom.isSpecificCaseOf" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if <cite>self</cite> is a specific case of <cite>other</cite>, or <code class="docutils literal"><span class="pre">False</span></code>
-otherwise. If <cite>other</cite> is an <a class="reference internal" href="#rmgpy.molecule.Atom" title="rmgpy.molecule.Atom"><code class="xref py py-class docutils literal"><span class="pre">Atom</span></code></a> object, then this is the same
-as the <a class="reference internal" href="#rmgpy.molecule.Atom.equivalent" title="rmgpy.molecule.Atom.equivalent"><code class="xref py py-meth docutils literal"><span class="pre">equivalent()</span></code></a> method. If <cite>other</cite> is an
-<a class="reference internal" href="groupatom.html#rmgpy.molecule.GroupAtom" title="rmgpy.molecule.GroupAtom"><code class="xref py py-class docutils literal"><span class="pre">GroupAtom</span></code></a> object, then the atom must match or be more
+otherwise. If <cite>other</cite> is an <code class="xref py py-class docutils literal"><span class="pre">Atom</span></code> object, then this is the same
+as the <code class="xref py py-meth docutils literal"><span class="pre">equivalent()</span></code> method. If <cite>other</cite> is an
+<code class="xref py py-class docutils literal"><span class="pre">GroupAtom</span></code> object, then the atom must match or be more
 specific than any of the combinations in the atom pattern.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Atom.isSulfur">
 <code class="descname">isSulfur</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Atom.isSulfur" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the atom represents an sulfur atom or <code class="docutils literal"><span class="pre">False</span></code> if
+<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the atom represents a sulfur atom or <code class="docutils literal"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
 
@@ -474,7 +495,7 @@ number and types of bonds, radicals, and lone pairs.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

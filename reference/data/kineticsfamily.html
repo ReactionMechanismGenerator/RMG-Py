@@ -98,7 +98,7 @@ are:</p>
 <td>The forward reaction template</td>
 </tr>
 <tr class="row-odd"><td><cite>forwardRecipe</cite></td>
-<td><a class="reference internal" href="reactionrecipe.html#rmgpy.data.kinetics.ReactionRecipe" title="rmgpy.data.kinetics.ReactionRecipe"><code class="xref py py-class docutils literal"><span class="pre">ReactionRecipe</span></code></a></td>
+<td><code class="xref py py-class docutils literal"><span class="pre">ReactionRecipe</span></code></td>
 <td>The steps to take when applying the forward reaction to a set of reactants</td>
 </tr>
 <tr class="row-even"><td><cite>reverseTemplate</cite></td>
@@ -106,7 +106,7 @@ are:</p>
 <td>The reverse reaction template</td>
 </tr>
 <tr class="row-odd"><td><cite>reverseRecipe</cite></td>
-<td><a class="reference internal" href="reactionrecipe.html#rmgpy.data.kinetics.ReactionRecipe" title="rmgpy.data.kinetics.ReactionRecipe"><code class="xref py py-class docutils literal"><span class="pre">ReactionRecipe</span></code></a></td>
+<td><code class="xref py py-class docutils literal"><span class="pre">ReactionRecipe</span></code></td>
 <td>The steps to take when applying the reverse reaction to a set of reactants</td>
 </tr>
 <tr class="row-even"><td><cite>forbidden</cite></td>
@@ -126,11 +126,11 @@ are:</p>
 <td>The default distance from parent along each tree, if not set default is 1 for every tree</td>
 </tr>
 <tr class="row-even"><td><cite>groups</cite></td>
-<td><a class="reference internal" href="kineticsgroups.html#rmgpy.data.kinetics.KineticsGroups" title="rmgpy.data.kinetics.KineticsGroups"><code class="xref py py-class docutils literal"><span class="pre">KineticsGroups</span></code></a></td>
+<td><code class="xref py py-class docutils literal"><span class="pre">KineticsGroups</span></code></td>
 <td>The set of kinetics group additivity values</td>
 </tr>
 <tr class="row-odd"><td><cite>rules</cite></td>
-<td><a class="reference internal" href="kineticsrules.html#rmgpy.data.kinetics.KineticsRules" title="rmgpy.data.kinetics.KineticsRules"><code class="xref py py-class docutils literal"><span class="pre">KineticsRules</span></code></a></td>
+<td><code class="xref py py-class docutils literal"><span class="pre">KineticsRules</span></code></td>
 <td>The set of kinetics rate rules from RMG-Java</td>
 </tr>
 <tr class="row-even"><td><cite>depositories</cite></td>
@@ -298,7 +298,7 @@ the first is used here; it is assumed to be the most generic.</p>
 <dd><p>Generate all reactions between the provided list of one or two
 <cite>reactants</cite>, which should be either single <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> objects
 or lists of same. Does not estimate the kinetics of these reactions
-at this time. Returns a list of <a class="reference internal" href="templatereaction.html#rmgpy.data.kinetics.TemplateReaction" title="rmgpy.data.kinetics.TemplateReaction"><code class="xref py py-class docutils literal"><span class="pre">TemplateReaction</span></code></a> objects
+at this time. Returns a list of <code class="xref py py-class docutils literal"><span class="pre">TemplateReaction</span></code> objects
 using <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> objects for both reactants and products
 The reactions are constructed such that the forward direction is
 consistent with the template of this reaction family.</p>
@@ -349,7 +349,7 @@ saved to the output file.</p>
 <dd><p>Return the kinetics for the given <cite>reaction</cite> by searching the various
 depositories as well as generating a result using the user-specified <cite>estimator</cite>
 of either ‘group additivity’ or ‘rate rules’.  Unlike
-the regular <a class="reference internal" href="#rmgpy.data.kinetics.KineticsFamily.getKinetics" title="rmgpy.data.kinetics.KineticsFamily.getKinetics"><code class="xref py py-meth docutils literal"><span class="pre">getKinetics()</span></code></a> method, this returns a list of
+the regular <code class="xref py py-meth docutils literal"><span class="pre">getKinetics()</span></code> method, this returns a list of
 results, with each result comprising of</p>
 <ol class="arabic simple">
 <li>the kinetics</li>
@@ -433,7 +433,7 @@ groups in the template.</p>
 <code class="descname">getRootTemplate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.getRootTemplate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the root template for the reaction family. Most of the time this
 is the top-level nodes of the tree (as stored in the
-<a class="reference internal" href="kineticsgroups.html#rmgpy.data.kinetics.KineticsGroups" title="rmgpy.data.kinetics.KineticsGroups"><code class="xref py py-class docutils literal"><span class="pre">KineticsGroups</span></code></a> object), but there are a few exceptions (e.g.
+<code class="xref py py-class docutils literal"><span class="pre">KineticsGroups</span></code> object), but there are a few exceptions (e.g.
 R_Recombination).</p>
 </dd></dl>
 
@@ -808,7 +808,7 @@ for those reactions.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>

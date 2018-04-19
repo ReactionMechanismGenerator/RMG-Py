@@ -68,7 +68,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.solver.SimpleReactor<a class="headerlink" href="#rmgpy-solver-simplereactor" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.solver.SimpleReactor">
-<em class="property">class </em><code class="descclassname">rmgpy.solver.</code><code class="descname">SimpleReactor</code><span class="sig-paren">(</span><em>T</em>, <em>P</em>, <em>initialMoleFractions</em>, <em>termination</em>, <em>sensitiveSpecies=None</em>, <em>sensitivityThreshold=0.001</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SimpleReactor" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.solver.</code><code class="descname">SimpleReactor</code><span class="sig-paren">(</span><em>T</em>, <em>P</em>, <em>initialMoleFractions</em>, <em>termination</em>, <em>sensitiveSpecies=None</em>, <em>sensitivityThreshold=1e-3</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SimpleReactor" title="Permalink to this definition">¶</a></dt>
 <dd><p>A reaction system consisting of a homogeneous, isothermal, isobaric batch
 reactor. These assumptions allow for a number of optimizations that enable
 this solver to complete very rapidly, even for large kinetic models.</p>
@@ -302,7 +302,7 @@ individual values for each dependent variable.</p>
 
 <dl class="method">
 <dt id="rmgpy.solver.SimpleReactor.initializeModel">
-<code class="descname">initializeModel</code><span class="sig-paren">(</span><em>self</em>, <em>list coreSpecies</em>, <em>list coreReactions</em>, <em>list edgeSpecies</em>, <em>list edgeReactions</em>, <em>list surfaceSpecies=None</em>, <em>list surfaceReactions=None</em>, <em>list pdepNetworks=None</em>, <em>atol=1e-16</em>, <em>rtol=1e-08</em>, <em>sensitivity=False</em>, <em>sens_atol=1e-06</em>, <em>sens_rtol=0.0001</em>, <em>filterReactions=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.initializeModel" title="Permalink to this definition">¶</a></dt>
+<code class="descname">initializeModel</code><span class="sig-paren">(</span><em>self</em>, <em>list coreSpecies</em>, <em>list coreReactions</em>, <em>list edgeSpecies</em>, <em>list edgeReactions</em>, <em>list surfaceSpecies=None</em>, <em>list surfaceReactions=None</em>, <em>list pdepNetworks=None</em>, <em>atol=1e-16</em>, <em>rtol=1e-8</em>, <em>sensitivity=False</em>, <em>sens_atol=1e-6</em>, <em>sens_rtol=1e-4</em>, <em>filterReactions=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.initializeModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize a simulation of the simple reactor using the provided kinetic
 model.</p>
 </dd></dl>
@@ -327,13 +327,13 @@ model.</p>
 
 <dl class="method">
 <dt id="rmgpy.solver.SimpleReactor.initiate_tolerances">
-<code class="descname">initiate_tolerances</code><span class="sig-paren">(</span><em>self</em>, <em>atol=1e-16</em>, <em>rtol=1e-08</em>, <em>sensitivity=False</em>, <em>sens_atol=1e-06</em>, <em>sens_rtol=0.0001</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.initiate_tolerances" title="Permalink to this definition">¶</a></dt>
+<code class="descname">initiate_tolerances</code><span class="sig-paren">(</span><em>self</em>, <em>atol=1e-16</em>, <em>rtol=1e-8</em>, <em>sensitivity=False</em>, <em>sens_atol=1e-6</em>, <em>sens_rtol=1e-4</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.initiate_tolerances" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the number of differential equations and initializes the tolerance arrays.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.solver.SimpleReactor.jacobian">
-<code class="descname">jacobian</code><span class="sig-paren">(</span><em>self</em>, <em>double t</em>, <em>ndarray y</em>, <em>ndarray dydt</em>, <em>double cj</em>, <em>ndarray senpar=&lt;???&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.jacobian" title="Permalink to this definition">¶</a></dt>
+<code class="descname">jacobian</code><span class="sig-paren">(</span><em>self</em>, <em>double t</em>, <em>ndarray y</em>, <em>ndarray dydt</em>, <em>double cj</em>, <em>ndarray senpar=numpy.zeros(1</em>, <em>numpy.float64)</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.jacobian" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the analytical Jacobian for the reaction system.</p>
 </dd></dl>
 
@@ -501,7 +501,7 @@ model.</p>
 
 <dl class="method">
 <dt id="rmgpy.solver.SimpleReactor.residual">
-<code class="descname">residual</code><span class="sig-paren">(</span><em>self</em>, <em>double t</em>, <em>ndarray y</em>, <em>ndarray dydt</em>, <em>ndarray senpar=&lt;???&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.residual" title="Permalink to this definition">¶</a></dt>
+<code class="descname">residual</code><span class="sig-paren">(</span><em>self</em>, <em>double t</em>, <em>ndarray y</em>, <em>ndarray dydt</em>, <em>ndarray senpar=numpy.zeros(1</em>, <em>numpy.float64)</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.residual" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the residual function for the governing DAE system for the
 simple reaction system.</p>
 </dd></dl>
@@ -742,7 +742,7 @@ and <cite>dydt</cite> attributes.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
     </div>
   </body>
 </html>
