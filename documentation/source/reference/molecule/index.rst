@@ -94,8 +94,8 @@ Class                            Description
 :mod:`rmgpy.molecule.resonance`  Resonance structure generation methods
 :mod:`rmgpy.molecule.kekulize`   Kekule structure generation
 :mod:`rmgpy.molecule.pathfinder` Resonance path enumeration
-:mod:`rmgpy.molecule.generator`  Molecule string representation generator
-:mod:`rmgpy.molecule.parser`     Molecule string representation parser
+:mod:`rmgpy.molecule.converter`  Molecule object converter (RDKit/OpenBabel)
+:mod:`rmgpy.molecule.translator` Molecule string representation translator
 ================================ ========================================================
 
 
@@ -164,8 +164,8 @@ Class                    Description
     resonance
     kekulize
     pathfinder
-    generator
-    parser
+    converter
+    translator
     adjlist
     symmetry
     moleculedrawer
