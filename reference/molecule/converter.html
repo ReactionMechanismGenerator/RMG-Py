@@ -1,0 +1,204 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>rmgpy.molecule.converter &#8212; RMG-Py 2.1.0 Documentation</title>
+    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="rmgpy.molecule.translator" href="translator.html" />
+    <link rel="prev" title="rmgpy.molecule.pathfinder" href="pathfinder.html" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+  MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+    ce: ["Extension","mhchem"],
+  });
+});
+</script>
+
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="translator.html" title="rmgpy.molecule.translator"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pathfinder.html" title="rmgpy.molecule.pathfinder"
+             accesskey="P">previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-rmgpy.molecule.converter">
+<span id="rmgpy-molecule-converter"></span><h1>rmgpy.molecule.converter<a class="headerlink" href="#module-rmgpy.molecule.converter" title="Permalink to this headline">¶</a></h1>
+<p>This module provides methods for converting molecules between RMG, RDKit, and OpenBabel.</p>
+<dl class="attribute">
+<dt id="rmgpy.molecule.converter.debugRDKitMol">
+<code class="descclassname">rmgpy.molecule.converter.</code><code class="descname">debugRDKitMol</code><a class="headerlink" href="#rmgpy.molecule.converter.debugRDKitMol" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes an rdkit molecule object and logs some debugging information
+equivalent to calling rdmol.Debug() but uses our logging framework.
+Default logging level is INFO but can be controlled with the <cite>level</cite> parameter.
+Also returns the message as a string, should you want it for something.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.converter.fromOBMol">
+<code class="descclassname">rmgpy.molecule.converter.</code><code class="descname">fromOBMol</code><a class="headerlink" href="#rmgpy.molecule.converter.fromOBMol" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a OpenBabel Mol object <cite>obmol</cite> to a molecular structure. Uses
+<a class="reference external" href="http://openbabel.org/">OpenBabel</a> to perform the conversion.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.converter.fromRDKitMol">
+<code class="descclassname">rmgpy.molecule.converter.</code><code class="descname">fromRDKitMol</code><a class="headerlink" href="#rmgpy.molecule.converter.fromRDKitMol" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a RDKit Mol object <cite>rdkitmol</cite> to a molecular structure. Uses
+<a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
+This Kekulizes everything, removing all aromatic atom types.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.converter.toOBMol">
+<code class="descclassname">rmgpy.molecule.converter.</code><code class="descname">toOBMol</code><a class="headerlink" href="#rmgpy.molecule.converter.toOBMol" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a molecular structure to an OpenBabel OBMol object. Uses
+<a class="reference external" href="http://openbabel.org/">OpenBabel</a> to perform the conversion.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.converter.toRDKitMol">
+<code class="descclassname">rmgpy.molecule.converter.</code><code class="descname">toRDKitMol</code><a class="headerlink" href="#rmgpy.molecule.converter.toRDKitMol" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a molecular structure to a RDKit rdmol object. Uses
+<a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
+Perceives aromaticity and, unless removeHs==False, removes Hydrogen atoms.</p>
+<p>If returnMapping==True then it also returns a dictionary mapping the
+atoms to RDKit’s atom indices.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+  <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    <div class="sphinxsidebarwrapper">
+        <div class="sidebarlogo"><a href="../../index.html">
+            <img src="../../_static/rmg-logo-small.png" alt="RMG" />
+        </a></div>
+      <div id="sidebar">
+        <div id="rmgsidebar">
+          <a href="http://rmg.mit.edu">
+            <div class="menuitem">
+              <img src="../../_static/rmg-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG Website</div>
+              <div class="menutext menudesc">Interactive website for RMG-Py</div>
+            </div>
+          </a>
+          <a href="https://github.com/ReactionMechanismGenerator/RMG-Py">
+            <div class="menuitem">
+              <img src="../../_static/github-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG GitHub</div>
+              <div class="menutext menudesc">View source and post issues</div>
+            </div>
+          </a>
+        </div>
+        <div class="menuitem">
+        </div>
+        <div class="menuitem">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pathfinder.html"
+                        title="previous chapter">rmgpy.molecule.pathfinder</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="translator.html"
+                        title="next chapter">rmgpy.molecule.translator</a></p>
+        </div>
+        <div class="menuitem">
+<div role="note" aria-label="source link">
+    <h3>This Page</h3>
+        <ul class="this-page-menu">
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/molecule/converter.rst"
+                   rel="nofollow">View Source</a></li>
+        </ul>
+</div>
+        </div>
+        <div class="menuitem">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+    </div>
+  </div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="translator.html" title="rmgpy.molecule.translator"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pathfinder.html" title="rmgpy.molecule.pathfinder"
+             >previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+    </div>
+  </body>
+</html>

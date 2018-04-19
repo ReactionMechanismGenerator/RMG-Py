@@ -1,0 +1,265 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>rmgpy.molecule.translator &#8212; RMG-Py 2.1.0 Documentation</title>
+    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Adjacency Lists" href="adjlist.html" />
+    <link rel="prev" title="rmgpy.molecule.converter" href="converter.html" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+  MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+    ce: ["Extension","mhchem"],
+  });
+});
+</script>
+
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="adjlist.html" title="Adjacency Lists"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="converter.html" title="rmgpy.molecule.converter"
+             accesskey="P">previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-rmgpy.molecule.translator">
+<span id="rmgpy-molecule-translator"></span><h1>rmgpy.molecule.translator<a class="headerlink" href="#module-rmgpy.molecule.translator" title="Permalink to this headline">¶</a></h1>
+<p>This module provides methods for translating to and from common molecule
+representation formats, e.g. SMILES, InChI, SMARTS.</p>
+<dl class="attribute">
+<dt id="rmgpy.molecule.translator.fromAugmentedInChI">
+<code class="descclassname">rmgpy.molecule.translator.</code><code class="descname">fromAugmentedInChI</code><a class="headerlink" href="#rmgpy.molecule.translator.fromAugmentedInChI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a Molecule object from the augmented inchi.</p>
+<p>First, the inchi is converted into a Molecule using
+the backend parsers.</p>
+<p>Next, the multiplicity and unpaired electron information
+is used to fix a number of parsing errors made by the backends.</p>
+<p>Finally, the atom types of the corrected molecule are perceived.</p>
+<p>Returns a Molecule object</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.translator.fromInChI">
+<code class="descclassname">rmgpy.molecule.translator.</code><code class="descname">fromInChI</code><a class="headerlink" href="#rmgpy.molecule.translator.fromInChI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert an InChI string <cite>inchistr</cite> to a molecular structure. Uses
+a user-specified backend for conversion, currently supporting
+rdkit (default) and openbabel.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.translator.fromSMARTS">
+<code class="descclassname">rmgpy.molecule.translator.</code><code class="descname">fromSMARTS</code><a class="headerlink" href="#rmgpy.molecule.translator.fromSMARTS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a SMARTS string <cite>smartsstr</cite> to a molecular structure. Uses
+<a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
+This Kekulizes everything, removing all aromatic atom types.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.translator.fromSMILES">
+<code class="descclassname">rmgpy.molecule.translator.</code><code class="descname">fromSMILES</code><a class="headerlink" href="#rmgpy.molecule.translator.fromSMILES" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a SMILES string <cite>smilesstr</cite> to a molecular structure. Uses
+a user-specified backend for conversion, currently supporting
+rdkit (default) and openbabel.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.translator.toInChI">
+<code class="descclassname">rmgpy.molecule.translator.</code><code class="descname">toInChI</code><a class="headerlink" href="#rmgpy.molecule.translator.toInChI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a molecular structure to an InChI string.
+For aug_level=0, generates the canonical InChI.
+For aug_level=1, appends the molecule multiplicity.
+For aug_level=2, appends positions of unpaired and paired electrons.</p>
+<p>Uses RDKit or OpenBabel for conversion.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>choice of backend</strong><strong>, </strong><strong>'try-all'</strong><strong>, </strong><strong>'rdkit'</strong><strong>, or </strong><strong>'openbabel'</strong> (<em>backend</em>) – </li>
+<li><strong>level of augmentation</strong><strong>, </strong><strong>0</strong><strong>, </strong><strong>1</strong><strong>, or </strong><strong>2</strong> (<em>aug_level</em>) – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.translator.toInChIKey">
+<code class="descclassname">rmgpy.molecule.translator.</code><code class="descname">toInChIKey</code><a class="headerlink" href="#rmgpy.molecule.translator.toInChIKey" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a molecular structure to an InChI Key string.
+For aug_level=0, generates the canonical InChI.
+For aug_level=1, appends the molecule multiplicity.
+For aug_level=2, appends positions of unpaired and paired electrons.</p>
+<p>Uses RDKit or OpenBabel for conversion.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>choice of backend</strong><strong>, </strong><strong>'try-all'</strong><strong>, </strong><strong>'rdkit'</strong><strong>, or </strong><strong>'openbabel'</strong> (<em>backend</em>) – </li>
+<li><strong>level of augmentation</strong><strong>, </strong><strong>0</strong><strong>, </strong><strong>1</strong><strong>, or </strong><strong>2</strong> (<em>aug_level</em>) – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.translator.toSMARTS">
+<code class="descclassname">rmgpy.molecule.translator.</code><code class="descname">toSMARTS</code><a class="headerlink" href="#rmgpy.molecule.translator.toSMARTS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a molecular structure to an SMARTS string. Uses
+<a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
+Perceives aromaticity and removes Hydrogen atoms.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.translator.toSMILES">
+<code class="descclassname">rmgpy.molecule.translator.</code><code class="descname">toSMILES</code><a class="headerlink" href="#rmgpy.molecule.translator.toSMILES" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a molecular structure to an SMILES string.</p>
+<p>If there is a Nitrogen atom present it uses
+<a class="reference external" href="http://openbabel.org/">OpenBabel</a> to perform the conversion,
+and the SMILES may or may not be canonical.</p>
+<p>Otherwise, it uses <a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the
+conversion, so it will be canonical SMILES.
+While converting to an RDMolecule it will perceive aromaticity
+and removes Hydrogen atoms.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+  <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    <div class="sphinxsidebarwrapper">
+        <div class="sidebarlogo"><a href="../../index.html">
+            <img src="../../_static/rmg-logo-small.png" alt="RMG" />
+        </a></div>
+      <div id="sidebar">
+        <div id="rmgsidebar">
+          <a href="http://rmg.mit.edu">
+            <div class="menuitem">
+              <img src="../../_static/rmg-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG Website</div>
+              <div class="menutext menudesc">Interactive website for RMG-Py</div>
+            </div>
+          </a>
+          <a href="https://github.com/ReactionMechanismGenerator/RMG-Py">
+            <div class="menuitem">
+              <img src="../../_static/github-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG GitHub</div>
+              <div class="menutext menudesc">View source and post issues</div>
+            </div>
+          </a>
+        </div>
+        <div class="menuitem">
+        </div>
+        <div class="menuitem">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="converter.html"
+                        title="previous chapter">rmgpy.molecule.converter</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="adjlist.html"
+                        title="next chapter">Adjacency Lists</a></p>
+        </div>
+        <div class="menuitem">
+<div role="note" aria-label="source link">
+    <h3>This Page</h3>
+        <ul class="this-page-menu">
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/molecule/translator.rst"
+                   rel="nofollow">View Source</a></li>
+        </ul>
+</div>
+        </div>
+        <div class="menuitem">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+    </div>
+  </div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="adjlist.html" title="Adjacency Lists"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="converter.html" title="rmgpy.molecule.converter"
+             >previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+    </div>
+  </body>
+</html>

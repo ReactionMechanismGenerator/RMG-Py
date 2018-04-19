@@ -1012,6 +1012,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/exceptions.html#rmgpy.exceptions.DatabaseError">DatabaseError</a>
 </li>
+      <li><a href="reference/molecule/converter.html#rmgpy.molecule.converter.debugRDKitMol">debugRDKitMol (in module rmgpy.molecule.converter)</a>
+</li>
       <li><a href="reference/molecule/atomtype.html#rmgpy.molecule.AtomType.decrementBond">decrementBond (rmgpy.molecule.AtomType attribute)</a>
 </li>
       <li><a href="reference/molecule/atomtype.html#rmgpy.molecule.AtomType.decrementLonePair">decrementLonePair (rmgpy.molecule.AtomType attribute)</a>
@@ -1460,8 +1462,6 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/thermo/wilhoit.html#rmgpy.thermo.Wilhoit.fitToData">(rmgpy.thermo.Wilhoit method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/thermo/wilhoit.html#rmgpy.thermo.Wilhoit.fitToDataForConstantB">fitToDataForConstantB() (rmgpy.thermo.Wilhoit method)</a>
 </li>
       <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.fixBarrierHeight">fixBarrierHeight() (rmgpy.data.kinetics.DepositoryReaction method)</a>
@@ -1476,6 +1476,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.fixBarrierHeight">(rmgpy.rmg.pdep.PDepReaction method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.fixDiffusionLimitedA">fixDiffusionLimitedA() (rmgpy.data.kinetics.DepositoryReaction method)</a>
 
       <ul>
@@ -1518,11 +1520,23 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/species/species.html#rmgpy.species.Species.fromAdjacencyList">(rmgpy.species.Species method)</a>
 </li>
       </ul></li>
+      <li><a href="reference/molecule/translator.html#rmgpy.molecule.translator.fromAugmentedInChI">fromAugmentedInChI (in module rmgpy.molecule.translator)</a>
+</li>
       <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.fromAugmentedInChI">fromAugmentedInChI() (rmgpy.molecule.Molecule method)</a>
+</li>
+      <li><a href="reference/molecule/translator.html#rmgpy.molecule.translator.fromInChI">fromInChI (in module rmgpy.molecule.translator)</a>
 </li>
       <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.fromInChI">fromInChI() (rmgpy.molecule.Molecule method)</a>
 </li>
+      <li><a href="reference/molecule/converter.html#rmgpy.molecule.converter.fromOBMol">fromOBMol (in module rmgpy.molecule.converter)</a>
+</li>
+      <li><a href="reference/molecule/converter.html#rmgpy.molecule.converter.fromRDKitMol">fromRDKitMol (in module rmgpy.molecule.converter)</a>
+</li>
+      <li><a href="reference/molecule/translator.html#rmgpy.molecule.translator.fromSMARTS">fromSMARTS (in module rmgpy.molecule.translator)</a>
+</li>
       <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.fromSMARTS">fromSMARTS() (rmgpy.molecule.Molecule method)</a>
+</li>
+      <li><a href="reference/molecule/translator.html#rmgpy.molecule.translator.fromSMILES">fromSMILES (in module rmgpy.molecule.translator)</a>
 </li>
       <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.fromSMILES">fromSMILES() (rmgpy.molecule.Molecule method)</a>
 
@@ -4924,11 +4938,15 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/molecule/adjlist.html#module-rmgpy.molecule.adjlist">rmgpy.molecule.adjlist (module)</a>
 </li>
+      <li><a href="reference/molecule/converter.html#module-rmgpy.molecule.converter">rmgpy.molecule.converter (module)</a>
+</li>
       <li><a href="reference/molecule/kekulize.html#module-rmgpy.molecule.kekulize">rmgpy.molecule.kekulize (module)</a>
 </li>
       <li><a href="reference/molecule/pathfinder.html#module-rmgpy.molecule.pathfinder">rmgpy.molecule.pathfinder (module)</a>
 </li>
       <li><a href="reference/molecule/resonance.html#module-rmgpy.molecule.resonance">rmgpy.molecule.resonance (module)</a>
+</li>
+      <li><a href="reference/molecule/translator.html#module-rmgpy.molecule.translator">rmgpy.molecule.translator (module)</a>
 </li>
       <li><a href="reference/pdep/index.html#module-rmgpy.pdep">rmgpy.pdep (module)</a>
 </li>
@@ -5776,8 +5794,6 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/thermo/wilhoit.html#rmgpy.thermo.Wilhoit.Tmin">(rmgpy.thermo.Wilhoit attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/molecule/adjlist.html#rmgpy.molecule.adjlist.toAdjacencyList">toAdjacencyList() (in module rmgpy.molecule.adjlist)</a>
 
       <ul>
@@ -5790,6 +5806,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/species/species.html#rmgpy.species.Species.toAdjacencyList">(rmgpy.species.Species method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/kinetics/multiarrhenius.html#rmgpy.kinetics.MultiArrhenius.toArrhenius">toArrhenius() (rmgpy.kinetics.MultiArrhenius method)</a>
 </li>
       <li><a href="reference/kinetics/arrhenius.html#rmgpy.kinetics.Arrhenius.toArrheniusEP">toArrheniusEP() (rmgpy.kinetics.Arrhenius method)</a>
@@ -5858,7 +5876,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/kinetics/troe.html#rmgpy.kinetics.Troe.toHTML">(rmgpy.kinetics.Troe method)</a>
 </li>
       </ul></li>
+      <li><a href="reference/molecule/translator.html#rmgpy.molecule.translator.toInChI">toInChI (in module rmgpy.molecule.translator)</a>
+</li>
       <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.toInChI">toInChI() (rmgpy.molecule.Molecule method)</a>
+</li>
+      <li><a href="reference/molecule/translator.html#rmgpy.molecule.translator.toInChIKey">toInChIKey (in module rmgpy.molecule.translator)</a>
 </li>
       <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.toInChIKey">toInChIKey() (rmgpy.molecule.Molecule method)</a>
 </li>
@@ -5880,11 +5902,19 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/thermo/wilhoit.html#rmgpy.thermo.Wilhoit.toNASA">(rmgpy.thermo.Wilhoit method)</a>
 </li>
       </ul></li>
+      <li><a href="reference/molecule/converter.html#rmgpy.molecule.converter.toOBMol">toOBMol (in module rmgpy.molecule.converter)</a>
+</li>
+      <li><a href="reference/molecule/converter.html#rmgpy.molecule.converter.toRDKitMol">toRDKitMol (in module rmgpy.molecule.converter)</a>
+</li>
       <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.toRDKitMol">toRDKitMol() (rmgpy.molecule.Molecule method)</a>
 </li>
       <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.toSingleBonds">toSingleBonds() (rmgpy.molecule.Molecule method)</a>
 </li>
+      <li><a href="reference/molecule/translator.html#rmgpy.molecule.translator.toSMARTS">toSMARTS (in module rmgpy.molecule.translator)</a>
+</li>
       <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.toSMARTS">toSMARTS() (rmgpy.molecule.Molecule method)</a>
+</li>
+      <li><a href="reference/molecule/translator.html#rmgpy.molecule.translator.toSMILES">toSMILES (in module rmgpy.molecule.translator)</a>
 </li>
       <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.toSMILES">toSMILES() (rmgpy.molecule.Molecule method)</a>
 </li>
