@@ -818,8 +818,8 @@ class TestKinetics(unittest.TestCase):
         r2 = Species(molecule=[Molecule().fromAdjacencyList(adjlist[1])])
         p1 = Species(molecule=[Molecule().fromAdjacencyList(adjlist[2])])
         p2 = Species(molecule=[Molecule().fromAdjacencyList(adjlist[3])])
-        r1.generate_resonance_structures(keepIsomorphic=True)
-        p1.generate_resonance_structures(keepIsomorphic=True)
+        r1.generate_resonance_structures(keep_isomorphic=True)
+        p1.generate_resonance_structures(keep_isomorphic=True)
         
         
         rxn = TemplateReaction(reactants = [r1, r2], 

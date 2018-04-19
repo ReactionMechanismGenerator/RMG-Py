@@ -1114,11 +1114,11 @@ class Reaction:
             return None
         # obtain species with all resonance isomers
         if self.isForward:
-            ensure_species(self.reactants, resonance=reactant_resonance, keepIsomorphic=True)
-            ensure_species(self.products, resonance=product_resonance, keepIsomorphic=True)
+            ensure_species(self.reactants, resonance=reactant_resonance, keep_isomorphic=True)
+            ensure_species(self.products, resonance=product_resonance, keep_isomorphic=True)
         else:
-            ensure_species(self.reactants, resonance=product_resonance, keepIsomorphic=True)
-            ensure_species(self.products, resonance=reactant_resonance, keepIsomorphic=True)
+            ensure_species(self.reactants, resonance=product_resonance, keep_isomorphic=True)
+            ensure_species(self.products, resonance=reactant_resonance, keep_isomorphic=True)
 
         # convert reaction.pairs object to species
         if self.pairs:

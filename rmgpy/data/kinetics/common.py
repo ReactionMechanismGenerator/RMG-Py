@@ -199,7 +199,7 @@ def filter_reactions(reactants, products, reactionList):
     return reactions
 
 
-def ensure_species(input_list, resonance=False, keepIsomorphic=False):
+def ensure_species(input_list, resonance=False, keep_isomorphic=False):
     """
     The input list of :class:`Species` or :class:`Molecule` objects is modified
     in place to only have :class:`Species` objects. Returns None.
@@ -212,7 +212,7 @@ def ensure_species(input_list, resonance=False, keepIsomorphic=False):
         else:
             raise TypeError('Only Molecule or Species objects can be handled.')
         if resonance:
-            new_item.generate_resonance_structures(keepIsomorphic=keepIsomorphic)
+            new_item.generate_resonance_structures(keep_isomorphic=keep_isomorphic)
         input_list[index] = new_item
 
 
@@ -260,11 +260,11 @@ def ensure_independent_atom_ids(input_species, resonance=True):
             species.molecule = [mol]
             # Remake resonance structures with new labels
             if resonance:
-                species.generate_resonance_structures(keepIsomorphic=True)
+                species.generate_resonance_structures(keep_isomorphic=True)
     elif resonance:
         # IDs are already independent, generate resonance structures if needed
         for species in input_species:
-            species.generate_resonance_structures(keepIsomorphic=True)
+            species.generate_resonance_structures(keep_isomorphic=True)
 
 
 def find_degenerate_reactions(rxn_list, same_reactants=None, template=None, kinetics_database=None, kinetics_family=None):
