@@ -2352,14 +2352,14 @@ class KineticsFamily(Database):
             rmol = rxn.reactants[0].molecule[0]
             for reactant in rxn.reactants[1:]:
                 rmol.merge(reactant.molecule[0])
-            if not rmol.isSubgraphIsomorphic(oldgrp,generateInitialMap=True):
+            if not rmol.isSubgraphIsomorphic(oldgrp,generateInitialMap=True, saveOrder=True):
                 rmol = rxn.products[0].molecule[0]
                 for product in rxn.products[1:]:
                     rmol.merge(product.molecule[0])
-                if not rmol.isSubgraphIsomorphic(oldgrp,generateInitialMap=True):
+                if not rmol.isSubgraphIsomorphic(oldgrp,generateInitialMap=True, saveOrder=True):
                     raise ValueError, 'cant work out training reaction direction'
     
-            if rmol.isSubgraphIsomorphic(newgrp,generateInitialMap=True):
+            if rmol.isSubgraphIsomorphic(newgrp,generateInitialMap=True, saveOrder=True):
                 new.append(kinetics[i])
                 newInds.append(i)
             else:
