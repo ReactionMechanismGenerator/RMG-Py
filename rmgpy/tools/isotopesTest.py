@@ -55,7 +55,7 @@ def setUpModule():
     database.load(
         path=os.path.join(settings['test_data.directory'], 'testing_database'),
         kineticsFamilies=[
-            'H_Abstraction',
+            'H_Abstraction','intra_H_migration'
         ],
         testing=True,
         depository=False,
@@ -81,7 +81,7 @@ class IsotopesTest(unittest.TestCase):
     def setUpClass(self):
         global database
         self.database = database
-        self.family = database.kinetics.families.values()[0]
+        self.family = database.kinetics.families['H_Abstraction']
 
     def testClusterWithSpecies(self):
         """
@@ -420,6 +420,64 @@ multiplicity 2
                 self.assertAlmostEqual(rxn.kinetics.A.value, 0.5, msg= 'The A value returned, {0}, is incorrect. Check the reactions degeneracy and how A.value is obtained. The reaction is:{1}'.format(rxn.kinetics.A.value, rxn))
             else:
                 self.assertAlmostEqual(rxn.kinetics.A.value, 1. , msg='The A value returned, {0}, is incorrect. Check the reactions degeneracy and how A.value is obtained. The reaction is:{1}'.format(rxn.kinetics.A.value, rxn))
+
+    def test_ensure_reaction_direction_with_multiple_TS(self):
+        """Tests that ensure reaction direction can handle multiple transition states"""
+        family = self.database.kinetics.families['intra_H_migration']
+        r = Molecule().fromSMILES("[CH2]CCC")
+        p = Molecule().fromSMILES("C[CH]CC")
+        rxn = TemplateReaction(reactants=[r], products=[p])
+        family.addAtomLabelsForReaction(reaction=rxn)
+        rxn.template = family.getReactionTemplateLabels(reaction=rxn)
+        rxn.degeneracy = family.calculateDegeneracy(rxn)
+        rxn.family = 'intra_H_migration'
+        rxn.kinetics = Arrhenius(A=(1,'s^-1'))
+        ri = Molecule().fromAdjacencyList("""
+        multiplicity 2
+        1  C u1 p0 c0 {2,S} {3,S} {4,S}
+        2  H u0 p0 c0 {1,S}
+        3  H u0 p0 c0 {1,S}
+        4  C u0 p0 c0 i13 {1,S} {5,S} {7,S} {8,S}
+        5  C u0 p0 c0 i13 {4,S} {6,S} {9,S} {10,S}
+        6  C u0 p0 c0 {5,S} {11,S} {12,S} {13,S}
+        7  H u0 p0 c0 {4,S}
+        8  H u0 p0 c0 {4,S}
+        9  H u0 p0 c0 {5,S}
+        10 H u0 p0 c0 {5,S}
+        11 H u0 p0 c0 {6,S}
+        12 H u0 p0 c0 {6,S}
+        13 H u0 p0 c0 {6,S}
+        """)
+        pi = Molecule().fromAdjacencyList("""
+        multiplicity 2
+        1  C u0 p0 c0 {2,S} {6,S} {7,S} {8,S}
+        2  C u1 p0 c0 i13 {1,S} {3,S} {4,S}
+        3  H u0 p0 c0 {2,S}
+        4  C u0 p0 c0 i13 {2,S} {5,S} {9,S} {10,S}
+        5  C u0 p0 c0 {4,S} {11,S} {12,S} {13,S}
+        6  H u0 p0 c0 {1,S}
+        7  H u0 p0 c0 {1,S}
+        8  H u0 p0 c0 {1,S}
+        9  H u0 p0 c0 {4,S}
+        10 H u0 p0 c0 {4,S}
+        11 H u0 p0 c0 {5,S}
+        12 H u0 p0 c0 {5,S}
+        13 H u0 p0 c0 {5,S}
+        """)
+        rxni = TemplateReaction(reactants=[pi], products=[ri],pairs=[[pi,ri]])
+        family.addAtomLabelsForReaction(reaction=rxni)
+        rxni.template = family.getReactionTemplateLabels(reaction=rxni)
+        rxn_cluster = [rxn,rxni]
+        ensure_reaction_direction(rxn_cluster)
+
+        self.assertEqual(rxn_cluster[0].degeneracy, 2)
+        self.assertEqual(rxn_cluster[1].degeneracy, 2)
+
+        self.assertIn('R2Hall', rxn_cluster[0].template)
+        self.assertIn('R2Hall', rxn_cluster[1].template)
+
+        self.assertAlmostEqual(rxn_cluster[0].kinetics.getRateCoefficient(298),
+                               rxn_cluster[1].kinetics.getRateCoefficient(298))
 
     def testCompareIsotopomersWorksOnSpecies(self):
         """

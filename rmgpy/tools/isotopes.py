@@ -426,24 +426,23 @@ def ensure_reaction_direction(isotopomerRxns):
             if not compare_isotopomers(rxn, reference, eitherDirection=False):
                 # the reaction is in the oposite direction
                 logging.info('isotope: identified flipped reaction direction in reaction number {} of reaction {}. Altering the direction.'.format(rxn.index, str(rxn)))
-                # reverse reactants and products
+                # obtain reverse attribute with template and degeneracy
+                family.addReverseAttribute(rxn)
+                if frozenset(rxn.reverse.template) != frozenset(reference.template):
+                    logging.warning("Reaction {} did not find proper reverse template, might cause degeneracy error.".format(str(rxn)))
+                # reverse reactants and products of original reaction
                 rxn.reactants, rxn.products = rxn.products, rxn.reactants
                 rxn.pairs = [(p,r) for r,p in rxn.pairs]
-
-                # calculateDegeneracy
-                rxnMols = TemplateReaction(reactants = [spec.molecule[0] for spec in rxn.reactants],
-                                           products = [spec.molecule[0] for spec in rxn.products])
-                forwardDegen = family.calculateDegeneracy(rxnMols)
-
                 # set degeneracy to isotopeless reaction
                 rxn.degeneracy = reference.degeneracy
                 # make this reaction have kinetics of isotopeless reaction
                 newKinetics = deepcopy(reference.kinetics)
                 rxn.kinetics = newKinetics
-
+                rxn.template = reference.template
                 # set degeneracy to new reaction
-                rxn.degeneracy = forwardDegen
-
+                rxn.degeneracy = rxn.reverse.degeneracy
+                #delete reverse attribute
+                rxn.reverse = None
 
 def redo_isotope(atomList):
     """
