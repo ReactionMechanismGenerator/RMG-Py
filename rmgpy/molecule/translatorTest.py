@@ -73,13 +73,13 @@ class InChIGenerationTest(unittest.TestCase):
 
         adjlist = """
 1 C 0 {2,D} {5,S}
-2 C 0 {1,D} {3,S} 
-3 C 0 {2,S} {4,D} 
-4 C 0 {3,D} {5,S} 
+2 C 0 {1,D} {3,S}
+3 C 0 {2,S} {4,D}
+4 C 0 {3,D} {5,S}
 5 C 1 {4,S} {1,S}
         """
 
-        aug_inchi = 'InChI=1S/C5H5/c1-2-4-5-3-1/h1-5H/u1'
+        aug_inchi = 'InChI=1S/C5H5/c1-2-4-5-3-1/h1-5H/mult2'
         self.compare(adjlist, aug_inchi)
 
 
@@ -105,7 +105,7 @@ class InChIGenerationTest(unittest.TestCase):
 15 H u0 p0 c0 {5,S}
         """
 
-        aug_inchi = 'InChI=1S/C7H8/c1-7-5-3-2-4-6-7/h2-6H,1H3/u2,3'
+        aug_inchi = 'InChI=1S/C7H8/c1-7-5-3-2-4-6-7/h2-6H,1H3/mult3'
         self.compare(adjlist, aug_inchi)
 
     def test_C8H8(self):
@@ -130,7 +130,7 @@ class InChIGenerationTest(unittest.TestCase):
 16 H u0 p0 c0 {8,S}
         """
 
-        aug_inchi = 'InChI=1S/C8H8/c1-2-4-6-8-7-5-3-1/h1-8H/u1,2'
+        aug_inchi = 'InChI=1S/C8H8/c1-2-4-6-8-7-5-3-1/h1-8H/mult3'
         self.compare(adjlist, aug_inchi)
 
     def test_benzyne(self):
@@ -147,7 +147,7 @@ class InChIGenerationTest(unittest.TestCase):
 9  H u0 p0 c0 {5,S}
 10 H u0 p0 c0 {6,S}
         """
-        aug_inchi = 'InChI=1S/C6H4/c1-2-4-6-5-3-1/h1-4H'
+        aug_inchi = 'InChI=1S/C6H4/c1-2-4-6-5-3-1/h1-4H/mult1'
         self.compare(adjlist, aug_inchi)
 
     def test_H(self):
@@ -155,7 +155,7 @@ class InChIGenerationTest(unittest.TestCase):
 multiplicity 2
 1 H u1 p0 c0
 """
-        aug_inchi = 'InChI=1S/H/u1'
+        aug_inchi = 'InChI=1S/H/mult2'
         self.compare(adjlist, aug_inchi)
 
 
@@ -173,7 +173,7 @@ multiplicity 2
 6 C 0 {4,D}
         """
 
-        aug_inchi = 'InChI=1S/C6H8/c1-5(2)6(3)4/h1-4H2/u1,3'
+        aug_inchi = 'InChI=1S/C6H8/c1-5(2)6(3)4/h1-4H2/mult3'
         self.compare(adjlist, aug_inchi)
 
 
@@ -197,7 +197,7 @@ multiplicity 2
 16 H u0 p0 c0 {6,S}
         """
 
-        aug_inchi = 'InChI=1S/C6H10/c1-3-5-6-4-2/h3-4H,1-2,5-6H2/u1,2,3,4'
+        aug_inchi = 'InChI=1S/C6H10/c1-3-5-6-4-2/h3-4H,1-2,5-6H2/mult5'
         self.compare(adjlist, aug_inchi)
 
     def test_Buta13diyl_triplet(self):
@@ -218,7 +218,7 @@ multiplicity 2
 10 H u0 p0 c0 {4,S}
 """
 
-        aug_inchi = 'InChI=1S/C4H6/c1-3-4-2/h3-4H,1-2H2/u1,2'
+        aug_inchi = 'InChI=1S/C4H6/c1-3-4-2/h3-4H,1-2H2/mult3'
         self.compare(adjlist, aug_inchi)
 
     def test_CH2O2(self):
@@ -229,7 +229,7 @@ multiplicity 2
 3 O 1 {1,S}
 """
 
-        aug_inchi = 'InChI=1/CH2O2/c2-1-3/h1H,(H,2,3)/u1,2'
+        aug_inchi = 'InChI=1/CH2O2/c2-1-3/h1H,(H,2,3)/mult3'
         self.compare(adjlist, aug_inchi)
 
     def test_C7H10(self):
@@ -244,7 +244,7 @@ multiplicity 2
 7 C 1 {5,S}
 """
 
-        aug_inchi = 'InChI=1S/C7H10/c1-6(2)5-7(3)4/h1-5H2/u1,2,3,6'
+        aug_inchi = 'InChI=1S/C7H10/c1-6(2)5-7(3)4/h1-5H2/mult5'
         self.compare(adjlist, aug_inchi)
 
     def test_C5H6O(self):
@@ -258,13 +258,13 @@ multiplicity 2
 6 C 0 {5,D}
 """
 
-        aug_inchi = 'InChI=1S/C5H6O/c1-3-5(6)4-2/h3-4H,1-2H2/u1,3'
+        aug_inchi = 'InChI=1S/C5H6O/c1-3-5(6)4-2/h3-4H,1-2H2/mult3'
         self.compare(adjlist, aug_inchi)
 
     def test_C7H9(self):
 
         adjlist = """
-1 C 0 {4,D} 
+1 C 0 {4,D}
 2 C 0 {5,D}
 3 C 1 {6,S}
 4 C 0 {1,D} {7,S}
@@ -273,7 +273,7 @@ multiplicity 2
 7 C 1 {4,S} {5,S} {6,S}
 """
 
-        aug_inchi = 'InChI=1S/C7H9/c1-4-7(5-2)6-3/h4-6H,1-3H2/u1,2,4'
+        aug_inchi = 'InChI=1S/C7H9/c1-4-7(5-2)6-3/h4-6H,1-3H2/mult4'
         self.compare(adjlist, aug_inchi)
 
     def test_C11H16(self):
@@ -292,10 +292,10 @@ multiplicity 2
 11 C 0 {7,S} {8,S} {9,S} {10,S}
 """
 
-        aug_inchi = 'InChI=1S/C11H16/c1-5-9-11(7-3,8-4)10-6-2/h5-8H,1-4,9-10H2/u1,3,5,7'
+        aug_inchi = 'InChI=1S/C11H16/c1-5-9-11(7-3,8-4)10-6-2/h5-8H,1-4,9-10H2/mult5'
         self.compare(adjlist, aug_inchi)
 
-    def test_singlet_vs_closed_shell(self):
+    def test_singlet_vs_triplet(self):
         adjlist_singlet = """
 1 C u0 p0 c0 {2,D} {3,S} {4,S}
 2 C u0 p0 c0 {1,D} {3,S} {5,S}
@@ -304,42 +304,42 @@ multiplicity 2
 5 H u0 p0 c0 {2,S}
         """
 
-        adjlist_closed_shell = """
+        adjlist_triplet = """
 1 C u0 p0 c0 {2,D} {3,S} {4,S}
-2 C u0 p0 c0 {1,D} {3,D}
-3 C u0 p0 c0 {1,S} {2,D} {5,S}
+2 C u0 p0 c0 {1,D} {3,S} {5,S}
+3 C u2 p0 c0 {1,S} {2,S}
 4 H u0 p0 c0 {1,S}
-5 H u0 p0 c0 {3,S}
+5 H u0 p0 c0 {2,S}
         """
 
         singlet = Species(molecule=[Molecule().fromAdjacencyList(adjlist_singlet)])
         singlet.generate_resonance_structures()
-        closed_shell = Species(molecule=[Molecule().fromAdjacencyList(adjlist_closed_shell)])
-        closed_shell.generate_resonance_structures()
+        triplet = Species(molecule=[Molecule().fromAdjacencyList(adjlist_triplet)])
+        triplet.generate_resonance_structures()
 
         singlet_aug_inchi = singlet.getAugmentedInChI()
-        closed_shell_aug_inchi = closed_shell.getAugmentedInChI()
+        closed_shell_aug_inchi = triplet.getAugmentedInChI()
         self.assertTrue(singlet_aug_inchi != closed_shell_aug_inchi)
 
-    #     def test_C6H5(self):
-    #         """Test that the u-layer of phenyl shows atom 1."""
-    #         adjlist = """
-    # multiplicity 2
-    # 1  C u0 p0 c0 {2,D} {3,S} {10,S}
-    # 2  C u0 p0 c0 {1,D} {5,S} {7,S}
-    # 3  C u0 p0 c0 {1,S} {6,D} {8,S}
-    # 4  C u0 p0 c0 {5,D} {6,S} {11,S}
-    # 5  C u0 p0 c0 {2,S} {4,D} {9,S}
-    # 6  C u1 p0 c0 {3,D} {4,S}
-    # 7  H u0 p0 c0 {2,S}
-    # 8  H u0 p0 c0 {3,S}
-    # 9  H u0 p0 c0 {5,S}
-    # 10 H u0 p0 c0 {1,S}
-    # 11 H u0 p0 c0 {4,S}
-    # """
+        def test_C6H5(self):
+            """Test that the u-layer of phenyl shows atom 1."""
+            adjlist = """
+    multiplicity 2
+    1  C u0 p0 c0 {2,D} {3,S} {10,S}
+    2  C u0 p0 c0 {1,D} {5,S} {7,S}
+    3  C u0 p0 c0 {1,S} {6,D} {8,S}
+    4  C u0 p0 c0 {5,D} {6,S} {11,S}
+    5  C u0 p0 c0 {2,S} {4,D} {9,S}
+    6  C u1 p0 c0 {3,D} {4,S}
+    7  H u0 p0 c0 {2,S}
+    8  H u0 p0 c0 {3,S}
+    9  H u0 p0 c0 {5,S}
+    10 H u0 p0 c0 {1,S}
+    11 H u0 p0 c0 {4,S}
+    """
 
-    #         aug_inchi = 'InChI=1S/C6H5/c1-2-4-6-5-3-1/h1-5H/u1'
-    #         self.compare(adjlist, aug_inchi)
+            aug_inchi = 'InChI=1S/C6H5/c1-2-4-6-5-3-1/h1-5H/u1'
+            self.compare(adjlist, aug_inchi)
 
     def test_C5H6_triplet_singlet(self):
         """
@@ -363,7 +363,7 @@ multiplicity 3
 11 H u0 p0 c0 {5,S}
         """
 
-        aug_inchi = 'InChI=1S/C5H6/c1-3-5-4-2/h1-3H2/u1,2/lp3,5'
+        aug_inchi = 'InChI=1S/C5H6/c1-3-5-4-2/h1-3H2/mult3'
         self.compare(adjlist, aug_inchi)
 
     def test_aromatic_resonance_structures(self):
@@ -783,16 +783,16 @@ class ParsingTest(unittest.TestCase):
 7 H u0 p0 c0 {2,S}
 """)
 
-    def test_fromAugmentedInChI(self):
-        aug_inchi = 'InChI=1S/CH4/h1H4'
-        mol = fromAugmentedInChI(Molecule(), aug_inchi)
-        self.assertTrue(not mol.InChI == '')
-        self.assertTrue(mol.isIsomorphic(self.methane))
-
-        aug_inchi = 'InChI=1/CH4/h1H4'
-        mol = fromAugmentedInChI(Molecule(), aug_inchi)
-        self.assertTrue(not mol.InChI == '')
-        self.assertTrue(mol.isIsomorphic(self.methane))
+    # def test_fromAugmentedInChI(self):
+    #     aug_inchi = 'InChI=1S/CH4/h1H4'
+    #     mol = fromAugmentedInChI(Molecule(), aug_inchi)
+    #     self.assertTrue(not mol.InChI == '')
+    #     self.assertTrue(mol.isIsomorphic(self.methane))
+    #
+    #     aug_inchi = 'InChI=1/CH4/h1H4'
+    #     mol = fromAugmentedInChI(Molecule(), aug_inchi)
+    #     self.assertTrue(not mol.InChI == '')
+    #     self.assertTrue(mol.isIsomorphic(self.methane))
 
     def compare(self, adjlist, smiles):
         """
@@ -1079,296 +1079,296 @@ class ParsingTest(unittest.TestCase):
         self.assertTrue('InChIKey is a write-only format' in cm.exception.message)
 
 
-class InChIParsingTest(unittest.TestCase):
-    def compare(self, inchi, u_indices=None, p_indices=None):
-        u_layer = U_LAYER_PREFIX + U_LAYER_SEPARATOR.join(map(str, u_indices)) if u_indices else None
-        p_layer = P_LAYER_PREFIX + P_LAYER_SEPARATOR.join(map(str, p_indices)) if p_indices else None
-
-        aug_inchi = compose_aug_inchi(inchi, u_layer, p_layer)
-
-        mol = fromAugmentedInChI(Molecule(), aug_inchi)
-        ConsistencyChecker.check_multiplicity(mol.getRadicalCount(), mol.multiplicity)
-
-        for at in mol.atoms:
-            ConsistencyChecker.check_partial_charge(at)
-
-        spc = Species(molecule=[mol])
-        spc.generate_resonance_structures()
-
-        ignore_prefix = r"(InChI=1+)(S*)/"
-        aug_inchi_expected = re.split(ignore_prefix, aug_inchi)[-1]
-        aug_inchi_computed = re.split(ignore_prefix, spc.getAugmentedInChI())[-1]
-        self.assertEquals(aug_inchi_expected, aug_inchi_computed)
-
-        return mol
-
-    def test_Ethane_parsing(self):
-        inchi = 'C2H6/c1-2/h1-2H3'
-        self.compare(inchi)
-
-    def test_Ethyl_parsing(self):
-        inchi = 'C2H5/c1-2/h1H2,2H3'
-        u_indices = [1]
-        self.compare(inchi, u_indices)
-
-    def test_CH3_parsing(self):
-        inchi = 'CH3/h1H3'
-        u_indices = [1]
-        self.compare(inchi, u_indices)
-
-    def test_H2_parsing(self):
-        inchi = 'H2/h1H'
-        self.compare(inchi)
-
-    def test_C2H4_biradical_parsing(self):
-        inchi = 'C2H4/c1-2/h1-2H2'
-        u_indices = [1, 2]
-        self.compare(inchi, u_indices)
-
-    def test_C2H3_triradical_parsing(self):
-        inchi = 'C2H3/c1-2/h1H,2H2'
-        u_indices = [1, 1, 2]
-        self.compare(inchi, u_indices)
-
-    def test_C3H6_biradical_parsing(self):
-        inchi = 'C3H6/c1-3-2/h1-3H2'
-        u_indices = [1, 2]
-        self.compare(inchi, u_indices)
-
-    def testC2H3O3(self):
-        inchi = 'C2H3O3/c1-2(3)5-4/h4H,1H2'
-        u_indices = [1]
-        self.compare(inchi, u_indices)
-
-    def testC2H2(self):
-        inchi = 'C2H2/c1-2/h1-2H'
-        u_indices = [1, 2]
-        self.compare(inchi, u_indices)
-
-    def testO2(self):
-        inchi = 'O2/c1-2'
-        u_indices = [1, 2]
-        self.compare(inchi, u_indices)
-
-    def testTriRadicalZwitterMult4(self):
-        inchi = 'C6H11/c1-3-5-6-4-2/h5H,1-4,6H2'
-        u_indices = [1, 2, 5]
-        self.compare(inchi, u_indices)
-
-    def testTriRadicalDoubleBondMult4(self):
-        inchi = 'C4H7/c1-3-4-2/h3H,1-2,4H2'
-        u_indices = [1, 2, 3]
-        self.compare(inchi, u_indices)
-
-    def testTriRadical2DoubleBondMult4(self):
-        inchi = 'C6H9/c1-4-6(3)5-2/h1,4-6H,2H2,3H3'
-        u_indices = [1, 2, 5]
-        self.compare(inchi, u_indices)
-
-    def testQuadriRadicalDoubleBondZwitterMult5(self):
-        inchi = 'C8H14/c1-4-6-7-8(3)5-2/h5-6,8H,1-2,4,7H2,3H3'
-        u_indices = [1, 2, 5, 6]
-        self.compare(inchi, u_indices)
-
-    def testQuadri2DoubleBondMult5(self):
-        inchi = 'C8H14/c1-5-7(3)8(4)6-2/h5-8H,1-2H2,3-4H3'
-        u_indices = [1, 2, 5, 6]
-        self.compare(inchi, u_indices)
-
-    def testC5H6O(self):
-        inchi = 'C5H6O/c6-5-3-1-2-4-5/h1-3,5H,4H2'
-        u_indices = [2, 6]
-        self.compare(inchi, u_indices)
-
-    def testC5H6O_2(self):
-        inchi = 'C5H6O/c1-5-3-2-4-6-5/h2-5H,1H2'
-        u_indices = [1, 3]
-        self.compare(inchi, u_indices)
-
-    def testC5H6O_3(self):
-        inchi = 'C5H6O/c1-5-3-2-4-6-5/h2-5H,1H2'
-        u_indices = [1, 2, 3, 4]
-        self.compare(inchi, u_indices)
-
-    @work_in_progress
-    def testCO(self):
-        inchi = 'CO/c1-2'
-        p_indices = [1, 2]
-        mol = self.compare(inchi, [], p_indices)
-
-        self.assertEqual(mol.atoms[1].lonePairs, 1)  # Oxygen
-
-        self.assertEqual(mol.atoms[0].charge, -1)
-        self.assertEqual(mol.atoms[1].charge, 1)
-
-    def testTripletMethylene(self):
-        inchi = 'CH2/h1H2'
-
-        u_indices = [1, 1]
-        self.compare(inchi, u_indices)
-
-    def testSingletMethylene(self):
-        inchi = 'CH2/h1H2'
-
-        p_indices = [1]
-        self.compare(inchi, u_indices=[], p_indices=p_indices)
-
-    def testC4H6O(self):
-        inchi = 'C4H6O/c1-2-3-4-5/h2H,3H2,1H3'
-        u_indices = [2, 4]
-        mol = self.compare(inchi, u_indices)
-        for at in mol.atoms:
-            if at.isOxygen():
-                self.assertTrue(at.lonePairs == 2)
-
-    def testC6H6(self):
-        inchi = 'C6H6/c1-3-5-6-4-2/h1,6H,2,5H2'
-        u_indices = [1, 3]
-        self.compare(inchi, u_indices)
-
-    def testC4H6O_2(self):
-        inchi = 'C4H6O/c1-2-3-4-5/h2,4H,1,3H2'
-        u_indices = [4, 5]
-        self.compare(inchi, u_indices)
-
-    def test_CO_triplet(self):
-
-        adjlist = """
-        multiplicity 3
-        1 C u2 p0 c0 {2,D}
-        2 O u0 p2 c0 {1,D}
-
-        """
-        spc = Species(molecule=[Molecule().fromAdjacencyList(adjlist)])
-        aug_inchi = spc.getAugmentedInChI()
-
-        self.assertEqual(Species(molecule=[Molecule().fromAugmentedInChI(aug_inchi)]).isIsomorphic(spc), True)
-
-    def test_CCCO_triplet(self):
-
-        adjlist = """
-        multiplicity 3
-1 C u0 p0 c0 {2,D} {5,S} {6,S}
-2 C u0 p0 c0 {1,D} {3,S} {7,S}
-3 C u1 p0 c0 {2,S} {4,S} {8,S}
-4 O u1 p2 c0 {3,S}
-5 H u0 p0 c0 {1,S}
-6 H u0 p0 c0 {1,S}
-7 H u0 p0 c0 {2,S}
-8 H u0 p0 c0 {3,S}
-        """
-        mol = Molecule().fromAdjacencyList(adjlist)
-
-        spc = Species(molecule=[mol])
-        spc.generate_resonance_structures()
-        aug_inchi = spc.getAugmentedInChI()
-
-        self.assertEqual(Species(molecule=[Molecule().fromAugmentedInChI(aug_inchi)]).isIsomorphic(spc), True)
-
-    def testC3H4(self):
-        inchi = 'C3H4/c1-3-2/h1,3H,2H2'
-        u_indices = [1, 1]
-        self.compare(inchi, u_indices)
-
-    def test_C6H8O2(self):
-        inchi = 'C6H8O2/c1-3-5(7)6(8)4-2/h3-6H,1-2H2'
-        u_indices = [7, 8]
-        self.compare(inchi, u_indices)
-
-    def test_C3H3O3(self):
-        inchi = 'C3H3O3/c1-2-5-3-6-4/h1-3H'
-        u_indices = [1, 3, 4]
-        self.compare(inchi, u_indices)
-
-    def test_CH2O2(self):
-        inchi = 'CH2O2/c2-1-3/h1H,(H,2,3)'
-        u_indices = [1, 2]
-        self.compare(inchi, u_indices)
-
-    def test_C2H2O3(self):
-        inchi = 'C2H2O3/c1-5-2(3)4/h1H2'
-        u_indices = [1, 3]
-        self.compare(inchi, u_indices)
-
-    def test_C3H4O4(self):
-        inchi = 'C3H4O4/c4-3(5)1-2-7-6/h1-3,6H'
-        u_indices = [4, 5]
-        self.compare(inchi, u_indices)
-
-    def test_C6H6O4(self):
-        inchi = 'InChI=1S/C6H6O4/c1-2-4-9-6(7)3-5-10-8/h2-3H,1,5H2'
-        u_indices = [1, 3, 4, 8]
-        self.compare(inchi, u_indices)
-
-    def test_C3H2O3(self):
-
-        inchi = 'InChI=1S/C3H2O3/c1-2-3(4)6-5/h1H2'
-        u_indices = [2, 5]
-
-        self.compare(inchi, u_indices)
-
-    def test_C6H6O6(self):
-        inchi = 'C6H6O6/c7-6(2-5-12-9)10-3-1-4-11-8/h1,7H,4-5H2'
-        u_indices = [2, 3, 8, 9]
-        self.compare(inchi, u_indices)
-
-    def test_C3H2(self):
-        inchi = 'C3H2/c1-3-2/h1-2H'
-        u_indices = [1, 1]
-        self.compare(inchi, u_indices)
-
-    def test_C3H4(self):
-        inchi = 'InChI=1S/C3H4/c1-3-2/h1,3H,2H2'
-        u_indices = [1, 1]
-        self.compare(inchi, u_indices)
-
-    def test_C6H8(self):
-        inchi = 'InChI=1S/C6H8/c1-3-5-6-4-2/h1,4H,2,5-6H2'
-        u_indices = [1, 1, 3, 3]
-        self.compare(inchi, u_indices)
-
-    def test_C6H10(self):
-        inchi = 'InChI=1S/C6H10/c1-3-5-6-4-2/h3-4H,1-2,5-6H2'
-        u_indices = [1, 3]
-        self.compare(inchi, u_indices)
-
-    def test_ammonia(self):
-        inchi = 'InChI=1S/H3N/h1H3'
-        self.compare(inchi)
-
-    @work_in_progress
-    def test_ammonium(self):
-        """
-        has same inchi as ammonia but gets a proton layer: /p+1
-        """
-        inchi = 'InChI=1S/H3N/h1H3/p+1'
-        self.compare(inchi)
-
-    def test_H2S(self):
-        inchi = 'InChI=1S/H2S/h1H2'
-        self.compare(inchi)
-
-    def test_pyridine(self):
-        inchi = 'InChI=1S/C5H5N/c1-2-4-6-5-3-1/h1-5H'
-        self.compare(inchi)
-
-    def test_pyrimidine(self):
-        inchi = 'InChI=1S/C4H4N2/c1-2-5-4-6-3-1/h1-4H'
-        self.compare(inchi)
-
-    @work_in_progress
-    def test_nitrate(self):
-        """
-        - Mobile H spread over oxygen 2, 3, 4
-        - Negative charge (3 lone pairs) spread out over oxygen 2, 3, 4
-        - Nitrogen 1 positively charged
-
-        """
-        inchi = 'InChI=1S/HNO3/c2-1(3)4/h(H,2,3,4)'
-        p_indices = [-1, 3, 3, 3]  # ???
-        self.compare(inchi, [], p_indices)
-
-    def test_NO(self):
-        inchi = 'InChI=1S/NO/c1-2'
-        u_indices = [1]
-        self.compare(inchi, u_indices)
+# class InChIParsingTest(unittest.TestCase):
+#     def compare(self, inchi, u_indices=None, p_indices=None):
+#         u_layer = U_LAYER_PREFIX + U_LAYER_SEPARATOR.join(map(str, u_indices)) if u_indices else None
+#         p_layer = P_LAYER_PREFIX + P_LAYER_SEPARATOR.join(map(str, p_indices)) if p_indices else None
+#
+#         aug_inchi = compose_aug_inchi(inchi, u_layer, p_layer)
+#
+#         mol = fromAugmentedInChI(Molecule(), aug_inchi)
+#         ConsistencyChecker.check_multiplicity(mol.getRadicalCount(), mol.multiplicity)
+#
+#         for at in mol.atoms:
+#             ConsistencyChecker.check_partial_charge(at)
+#
+#         spc = Species(molecule=[mol])
+#         spc.generate_resonance_structures()
+#
+#         ignore_prefix = r"(InChI=1+)(S*)/"
+#         aug_inchi_expected = re.split(ignore_prefix, aug_inchi)[-1]
+#         aug_inchi_computed = re.split(ignore_prefix, spc.getAugmentedInChI())[-1]
+#         self.assertEquals(aug_inchi_expected, aug_inchi_computed)
+#
+#         return mol
+#
+#     def test_Ethane_parsing(self):
+#         inchi = 'C2H6/c1-2/h1-2H3'
+#         self.compare(inchi)
+#
+#     def test_Ethyl_parsing(self):
+#         inchi = 'C2H5/c1-2/h1H2,2H3'
+#         u_indices = [1]
+#         self.compare(inchi, u_indices)
+#
+#     def test_CH3_parsing(self):
+#         inchi = 'CH3/h1H3'
+#         u_indices = [1]
+#         self.compare(inchi, u_indices)
+#
+#     def test_H2_parsing(self):
+#         inchi = 'H2/h1H'
+#         self.compare(inchi)
+#
+#     def test_C2H4_biradical_parsing(self):
+#         inchi = 'C2H4/c1-2/h1-2H2'
+#         u_indices = [1, 2]
+#         self.compare(inchi, u_indices)
+#
+#     def test_C2H3_triradical_parsing(self):
+#         inchi = 'C2H3/c1-2/h1H,2H2'
+#         u_indices = [1, 1, 2]
+#         self.compare(inchi, u_indices)
+#
+#     def test_C3H6_biradical_parsing(self):
+#         inchi = 'C3H6/c1-3-2/h1-3H2'
+#         u_indices = [1, 2]
+#         self.compare(inchi, u_indices)
+#
+#     def testC2H3O3(self):
+#         inchi = 'C2H3O3/c1-2(3)5-4/h4H,1H2'
+#         u_indices = [1]
+#         self.compare(inchi, u_indices)
+#
+#     def testC2H2(self):
+#         inchi = 'C2H2/c1-2/h1-2H'
+#         u_indices = [1, 2]
+#         self.compare(inchi, u_indices)
+#
+#     def testO2(self):
+#         inchi = 'O2/c1-2'
+#         u_indices = [1, 2]
+#         self.compare(inchi, u_indices)
+#
+#     def testTriRadicalZwitterMult4(self):
+#         inchi = 'C6H11/c1-3-5-6-4-2/h5H,1-4,6H2'
+#         u_indices = [1, 2, 5]
+#         self.compare(inchi, u_indices)
+#
+#     def testTriRadicalDoubleBondMult4(self):
+#         inchi = 'C4H7/c1-3-4-2/h3H,1-2,4H2'
+#         u_indices = [1, 2, 3]
+#         self.compare(inchi, u_indices)
+#
+#     def testTriRadical2DoubleBondMult4(self):
+#         inchi = 'C6H9/c1-4-6(3)5-2/h1,4-6H,2H2,3H3'
+#         u_indices = [1, 2, 5]
+#         self.compare(inchi, u_indices)
+#
+#     def testQuadriRadicalDoubleBondZwitterMult5(self):
+#         inchi = 'C8H14/c1-4-6-7-8(3)5-2/h5-6,8H,1-2,4,7H2,3H3'
+#         u_indices = [1, 2, 5, 6]
+#         self.compare(inchi, u_indices)
+#
+#     def testQuadri2DoubleBondMult5(self):
+#         inchi = 'C8H14/c1-5-7(3)8(4)6-2/h5-8H,1-2H2,3-4H3'
+#         u_indices = [1, 2, 5, 6]
+#         self.compare(inchi, u_indices)
+#
+#     def testC5H6O(self):
+#         inchi = 'C5H6O/c6-5-3-1-2-4-5/h1-3,5H,4H2'
+#         u_indices = [2, 6]
+#         self.compare(inchi, u_indices)
+#
+#     def testC5H6O_2(self):
+#         inchi = 'C5H6O/c1-5-3-2-4-6-5/h2-5H,1H2'
+#         u_indices = [1, 3]
+#         self.compare(inchi, u_indices)
+#
+#     def testC5H6O_3(self):
+#         inchi = 'C5H6O/c1-5-3-2-4-6-5/h2-5H,1H2'
+#         u_indices = [1, 2, 3, 4]
+#         self.compare(inchi, u_indices)
+#
+#     @work_in_progress
+#     def testCO(self):
+#         inchi = 'CO/c1-2'
+#         p_indices = [1, 2]
+#         mol = self.compare(inchi, [], p_indices)
+#
+#         self.assertEqual(mol.atoms[1].lonePairs, 1)  # Oxygen
+#
+#         self.assertEqual(mol.atoms[0].charge, -1)
+#         self.assertEqual(mol.atoms[1].charge, 1)
+#
+#     def testTripletMethylene(self):
+#         inchi = 'CH2/h1H2'
+#
+#         u_indices = [1, 1]
+#         self.compare(inchi, u_indices)
+#
+#     def testSingletMethylene(self):
+#         inchi = 'CH2/h1H2'
+#
+#         p_indices = [1]
+#         self.compare(inchi, u_indices=[], p_indices=p_indices)
+#
+#     def testC4H6O(self):
+#         inchi = 'C4H6O/c1-2-3-4-5/h2H,3H2,1H3'
+#         u_indices = [2, 4]
+#         mol = self.compare(inchi, u_indices)
+#         for at in mol.atoms:
+#             if at.isOxygen():
+#                 self.assertTrue(at.lonePairs == 2)
+#
+#     def testC6H6(self):
+#         inchi = 'C6H6/c1-3-5-6-4-2/h1,6H,2,5H2'
+#         u_indices = [1, 3]
+#         self.compare(inchi, u_indices)
+#
+#     def testC4H6O_2(self):
+#         inchi = 'C4H6O/c1-2-3-4-5/h2,4H,1,3H2'
+#         u_indices = [4, 5]
+#         self.compare(inchi, u_indices)
+#
+#     def test_CO_triplet(self):
+#
+#         adjlist = """
+#         multiplicity 3
+#         1 C u2 p0 c0 {2,D}
+#         2 O u0 p2 c0 {1,D}
+#
+#         """
+#         spc = Species(molecule=[Molecule().fromAdjacencyList(adjlist)])
+#         aug_inchi = spc.getAugmentedInChI()
+#
+#         self.assertEqual(Species(molecule=[Molecule().fromAugmentedInChI(aug_inchi)]).isIsomorphic(spc), True)
+#
+#     def test_CCCO_triplet(self):
+#
+#         adjlist = """
+#         multiplicity 3
+# 1 C u0 p0 c0 {2,D} {5,S} {6,S}
+# 2 C u0 p0 c0 {1,D} {3,S} {7,S}
+# 3 C u1 p0 c0 {2,S} {4,S} {8,S}
+# 4 O u1 p2 c0 {3,S}
+# 5 H u0 p0 c0 {1,S}
+# 6 H u0 p0 c0 {1,S}
+# 7 H u0 p0 c0 {2,S}
+# 8 H u0 p0 c0 {3,S}
+#         """
+#         mol = Molecule().fromAdjacencyList(adjlist)
+#
+#         spc = Species(molecule=[mol])
+#         spc.generate_resonance_structures()
+#         aug_inchi = spc.getAugmentedInChI()
+#
+#         self.assertEqual(Species(molecule=[Molecule().fromAugmentedInChI(aug_inchi)]).isIsomorphic(spc), True)
+#
+#     def testC3H4(self):
+#         inchi = 'C3H4/c1-3-2/h1,3H,2H2'
+#         u_indices = [1, 1]
+#         self.compare(inchi, u_indices)
+#
+#     def test_C6H8O2(self):
+#         inchi = 'C6H8O2/c1-3-5(7)6(8)4-2/h3-6H,1-2H2'
+#         u_indices = [7, 8]
+#         self.compare(inchi, u_indices)
+#
+#     def test_C3H3O3(self):
+#         inchi = 'C3H3O3/c1-2-5-3-6-4/h1-3H'
+#         u_indices = [1, 3, 4]
+#         self.compare(inchi, u_indices)
+#
+#     def test_CH2O2(self):
+#         inchi = 'CH2O2/c2-1-3/h1H,(H,2,3)'
+#         u_indices = [1, 2]
+#         self.compare(inchi, u_indices)
+#
+#     def test_C2H2O3(self):
+#         inchi = 'C2H2O3/c1-5-2(3)4/h1H2'
+#         u_indices = [1, 3]
+#         self.compare(inchi, u_indices)
+#
+#     def test_C3H4O4(self):
+#         inchi = 'C3H4O4/c4-3(5)1-2-7-6/h1-3,6H'
+#         u_indices = [4, 5]
+#         self.compare(inchi, u_indices)
+#
+#     def test_C6H6O4(self):
+#         inchi = 'InChI=1S/C6H6O4/c1-2-4-9-6(7)3-5-10-8/h2-3H,1,5H2'
+#         u_indices = [1, 3, 4, 8]
+#         self.compare(inchi, u_indices)
+#
+#     def test_C3H2O3(self):
+#
+#         inchi = 'InChI=1S/C3H2O3/c1-2-3(4)6-5/h1H2'
+#         u_indices = [2, 5]
+#
+#         self.compare(inchi, u_indices)
+#
+#     def test_C6H6O6(self):
+#         inchi = 'C6H6O6/c7-6(2-5-12-9)10-3-1-4-11-8/h1,7H,4-5H2'
+#         u_indices = [2, 3, 8, 9]
+#         self.compare(inchi, u_indices)
+#
+#     def test_C3H2(self):
+#         inchi = 'C3H2/c1-3-2/h1-2H'
+#         u_indices = [1, 1]
+#         self.compare(inchi, u_indices)
+#
+#     def test_C3H4(self):
+#         inchi = 'InChI=1S/C3H4/c1-3-2/h1,3H,2H2'
+#         u_indices = [1, 1]
+#         self.compare(inchi, u_indices)
+#
+#     def test_C6H8(self):
+#         inchi = 'InChI=1S/C6H8/c1-3-5-6-4-2/h1,4H,2,5-6H2'
+#         u_indices = [1, 1, 3, 3]
+#         self.compare(inchi, u_indices)
+#
+#     def test_C6H10(self):
+#         inchi = 'InChI=1S/C6H10/c1-3-5-6-4-2/h3-4H,1-2,5-6H2'
+#         u_indices = [1, 3]
+#         self.compare(inchi, u_indices)
+#
+#     def test_ammonia(self):
+#         inchi = 'InChI=1S/H3N/h1H3'
+#         self.compare(inchi)
+#
+#     @work_in_progress
+#     def test_ammonium(self):
+#         """
+#         has same inchi as ammonia but gets a proton layer: /p+1
+#         """
+#         inchi = 'InChI=1S/H3N/h1H3/p+1'
+#         self.compare(inchi)
+#
+#     def test_H2S(self):
+#         inchi = 'InChI=1S/H2S/h1H2'
+#         self.compare(inchi)
+#
+#     def test_pyridine(self):
+#         inchi = 'InChI=1S/C5H5N/c1-2-4-6-5-3-1/h1-5H'
+#         self.compare(inchi)
+#
+#     def test_pyrimidine(self):
+#         inchi = 'InChI=1S/C4H4N2/c1-2-5-4-6-3-1/h1-4H'
+#         self.compare(inchi)
+#
+#     @work_in_progress
+#     def test_nitrate(self):
+#         """
+#         - Mobile H spread over oxygen 2, 3, 4
+#         - Negative charge (3 lone pairs) spread out over oxygen 2, 3, 4
+#         - Nitrogen 1 positively charged
+#
+#         """
+#         inchi = 'InChI=1S/HNO3/c2-1(3)4/h(H,2,3,4)'
+#         p_indices = [-1, 3, 3, 3]  # ???
+#         self.compare(inchi, [], p_indices)
+#
+#     def test_NO(self):
+#         inchi = 'InChI=1S/NO/c1-2'
+#         u_indices = [1]
+#         self.compare(inchi, u_indices)

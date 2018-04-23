@@ -1250,9 +1250,9 @@ class TestMolecule(unittest.TestCase):
             1     C     u1 p0 c0 {2,S}
             2     C     u1 p0 c0 {1,S}
         """, saturateH=True)
-        
-        self.assertEqual(mol.toAugmentedInChI(), 'InChI=1S/C2H4/c1-2/h1-2H2/u1,2')
-        
+
+        self.assertEqual(mol.toAugmentedInChI(), 'InChI=1S/C2H4/c1-2/h1-2H2/mult3')
+
     def testAugmentedInChIKey(self):
         """
         Test the Augmented InChI Key generation
@@ -1261,8 +1261,8 @@ class TestMolecule(unittest.TestCase):
             1     C     u1 p0 c0 {2,S}
             2     C     u1 p0 c0 {1,S}
         """, saturateH=True)
-        
-        self.assertEqual(mol.toAugmentedInChIKey(), 'VGGSQFUCUMXWEO-UHFFFAOYSA-N-u1,2')
+
+        self.assertEqual(mol.toAugmentedInChIKey(), 'VGGSQFUCUMXWEO-UHFFFAOYSA-N-mult3')
 
     def testLinearMethane(self):
         """
@@ -1394,7 +1394,7 @@ class TestMolecule(unittest.TestCase):
         
         mol = Molecule().fromAdjacencyList(ch2_t)
     
-        self.assertEqual( mol.toAugmentedInChI(), 'InChI=1S/CH2/h1H2/u1,1')
+        self.assertEqual( mol.toAugmentedInChI(), 'InChI=1S/CH2/h1H2/mult3')
         self.assertEqual( mol.toSMILES(), '[CH2]')
         
 
@@ -1406,7 +1406,7 @@ class TestMolecule(unittest.TestCase):
         '''
         
         mol = Molecule().fromAdjacencyList(ch2_s)
-        self.assertEqual( mol.toAugmentedInChI(), 'InChI=1S/CH2/h1H2/lp1')
+        self.assertEqual( mol.toAugmentedInChI(), 'InChI=1S/CH2/h1H2/mult1')
         self.assertEqual( mol.toSMILES(), '[CH2]')
         
         
