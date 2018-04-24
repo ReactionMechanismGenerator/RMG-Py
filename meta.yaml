@@ -71,6 +71,7 @@ requirements:
     - pydas >=1.0.2
     - pydot ==1.2.2
     - pydqed >=1.0.1
+    - pymongo
     - pyparsing
     - pyrdl
     - python
