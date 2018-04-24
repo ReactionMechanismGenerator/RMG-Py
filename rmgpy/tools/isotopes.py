@@ -224,7 +224,7 @@ def generate_isotope_reactions(isotopeless_reactions, isotopes):
         for pair in reactant_pairs:
             # copy species so they don't get modified
             speciesTuple = tuple([spc.copy(deep=True) for spc in pair])
-            unfiltered_rxns = getDB('kinetics').generate_reactions_from_families(speciesTuple)
+            unfiltered_rxns = getDB('kinetics').generate_reactions_from_families(speciesTuple,only_families=[rxn.family])
             # remove reactions whose products don't match the original reactions
             rxn_index5 = 0
             while rxn_index5 < len(unfiltered_rxns):
