@@ -3,7 +3,7 @@ export CXX=${PREFIX}/bin/g++
 export F77=${PREFIX}/bin/gfortran
 export F90=${PREFIX}/bin/gfortran
 make -j${CPU_COUNT}
-make QM
+make check
 $PYTHON setup.py install
 
 # Save version number stored in rmgpy/__init__.py file

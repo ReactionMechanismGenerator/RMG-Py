@@ -5,7 +5,7 @@ set F90=gfortran
 
 
 mingw32-make -j%CPU_COUNT%
-mingw32-make QM
+mingw32-make check
 
 %PYTHON% setup.py install
 
