@@ -127,6 +127,7 @@ class RMG(util.Subject):
     `verboseComments`                   ``True`` to keep the verbose comments for database estimates, ``False`` otherwise
     `saveEdgeSpecies`                   ``True`` to save chemkin and HTML files of the edge species, ``False`` otherwise
     `keepIrreversible`                  ``True`` to keep ireversibility of library reactions as is ('<=>' or '=>'). ``False`` (default) to force all library reactions to be reversible ('<=>')
+    `trimolecularProductReversible`     ``True`` (default) to allow families with trimolecular products to react in the reverse direction, ``False`` otherwise
     `pressureDependence`                Whether to process unimolecular (pressure-dependent) reaction networks
     `quantumMechanics`                  Whether to apply quantum mechanical calculations instead of group additivity to certain molecular types.
     `wallTime`                          The maximum amount of CPU time in the form DD:HH:MM:SS to expend on this job; used to stop gracefully so we can still get profiling information
@@ -192,6 +193,7 @@ class RMG(util.Subject):
         self.verboseComments = None
         self.saveEdgeSpecies = None
         self.keepIrreversible = None
+        self.trimolecularProductReversible = None
         self.pressureDependence = None
         self.quantumMechanics = None
         self.speciesConstraints = {}
@@ -327,13 +329,29 @@ class RMG(util.Subject):
             #frequenciesLibraries = self.statmechLibraries,
             depository = False, # Don't bother loading the depository information, as we don't use it
         )
-        
+
+        # Turn off reversibility for families with three products if desired
+        if not self.trimolecularProductReversible:
+            for family in self.database.kinetics.families.itervalues():
+                if len(family.forwardTemplate.products) > 2:
+                    family.reversible = False
+                    family.reverseTemplate = None
+                    family.reverseRecipe = None
+                    family.reverse = None
+
         # Determine if trimolecular families are present
         for family in self.database.kinetics.families.itervalues():
-            if len(family.forwardTemplate.reactants) > 2 or len(family.forwardTemplate.products) > 2:
+            if len(family.forwardTemplate.reactants) > 2:
                 logging.info('Trimolecular reactions are turned on')
                 self.trimolecular = True
                 break
+        # Only check products if we want to react them
+        if not self.trimolecular and self.trimolecularProductReversible:
+            for family in self.database.kinetics.families.itervalues():
+                if len(family.forwardTemplate.products) > 2:
+                    logging.info('Trimolecular reactions are turned on')
+                    self.trimolecular = True
+                    break
 
         #check libraries
         self.checkLibraries()

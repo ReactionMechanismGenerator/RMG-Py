@@ -404,7 +404,7 @@ def pressureDependence(
 
 def options(name='Seed', generateSeedEachIteration=False, saveSeedToDatabase=False, units='si', saveRestartPeriod=None, 
             generateOutputHTML=False, generatePlots=False, saveSimulationProfiles=False, verboseComments=False, 
-            saveEdgeSpecies=False, keepIrreversible=False, wallTime='00:00:00:00'):
+            saveEdgeSpecies=False, keepIrreversible=False, trimolecularProductReversible=True, wallTime='00:00:00:00'):
     rmg.name = name
     rmg.generateSeedEachIteration=generateSeedEachIteration
     rmg.saveSeedToDatabase=saveSeedToDatabase
@@ -420,6 +420,7 @@ def options(name='Seed', generateSeedEachIteration=False, saveSeedToDatabase=Fal
         logging.warning('Edge species saving was turned on. This will slow down model generation for large simulations.')
     rmg.saveEdgeSpecies = saveEdgeSpecies
     rmg.keepIrreversible = keepIrreversible
+    rmg.trimolecularProductReversible = trimolecularProductReversible
     rmg.wallTime = wallTime
 
 def generatedSpeciesConstraints(**kwargs):
@@ -752,6 +753,7 @@ def saveInputFile(path, rmg):
     f.write('    saveSimulationProfiles = {0},\n'.format(rmg.saveSimulationProfiles))
     f.write('    saveEdgeSpecies = {0},\n'.format(rmg.saveEdgeSpecies))
     f.write('    keepIrreversible = {0},\n'.format(rmg.keepIrreversible))
+    f.write('    trimolecularProductReversible = {0},\n'.format(rmg.trimolecularProductReversible))
     f.write('    verboseComments = {0},\n'.format(rmg.verboseComments))
     f.write('    wallTime = {0},\n'.format(rmg.wallTime))
     f.write(')\n\n')
