@@ -8,7 +8,7 @@ externalSymmetry = 1
 
 spinMultiplicity = 2
 
-opticalIsomers = 1
+opticalIsomers = 2
 
 energy = {
     'M08SO': QchemLog('dimetpropoxy.out'),    
