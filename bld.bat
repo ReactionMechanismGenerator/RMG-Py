@@ -9,9 +9,6 @@ mingw32-make check
 
 %PYTHON% setup.py install
 
-:: Save version number stored in rmgpy/__init__.py file
-%PYTHON% -c "from rmgpy import __version__; print __version__" > %SRC_DIR%\__conda_version__.txt
-
 :: lazy "install" of everything in our 'external' folder.
 :: most of which should probably be elsewhere
 mkdir %SP_DIR%\external
