@@ -749,8 +749,7 @@ class KineticsFamily(Database):
         self.forwardRecipe = ReactionRecipe()
         for action in actions:
             action[0] = action[0].upper()
-            assert action[0] in ['CHANGE_BOND','FORM_BOND','BREAK_BOND','GAIN_RADICAL','LOSE_RADICAL', \
-                                 'GAIN_PAIR','LOSE_PAIR', 'GAIN_CHARGE', 'LOSE_CHARGE']
+            assert action[0] in ['CHANGE_BOND','FORM_BOND','BREAK_BOND','GAIN_RADICAL','LOSE_RADICAL', 'GAIN_PAIR','LOSE_PAIR', 'GAIN_CHARGE', 'LOSE_CHARGE']
             self.forwardRecipe.addAction(action)
 
     def loadForbidden(self, label, group, shortDesc='', longDesc=''):
