@@ -85,6 +85,7 @@ class Reaction:
                                                     If ``False`` (by default), this library reaction will not be explored.
                                                     Only unimolecular library reactions with high pressure limit kinetics should be flagged (not if the kinetics were measured at some relatively low pressure)
     `comment`           ``str``                     A description of the reaction source (optional)
+    `is_forward`        ``bool``                    Indicates if the reaction was generated in the forward (true) or reverse (false)
     =================== =========================== ============================
     
     """
@@ -105,6 +106,7 @@ class Reaction:
                  allow_pdep_route=False,
                  elementary_high_p=False,
                  comment='',
+                 is_forward=None,
                  ):
         self.index = index
         self.label = label
@@ -122,7 +124,8 @@ class Reaction:
         self.elementary_high_p = elementary_high_p
         self.comment = comment
         self.k_effective_cache = {}
-
+        self.is_forward = is_forward
+        
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
