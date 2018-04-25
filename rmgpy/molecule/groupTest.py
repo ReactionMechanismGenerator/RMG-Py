@@ -797,6 +797,18 @@ class TestGroup(unittest.TestCase):
         for v in ans:
             boos = [ext.isIdentical(v) and ext.isSubgraphIsomorphic(v,generateInitialMap=True) for ext in extensions]
             self.assertTrue(any(boos),'generated extensions did not match expected extensions')
+    
+    def testGeneratedExtensionsSubgraphs(self):
+        testGrp = Group().fromAdjacencyList("""
+1 *2 C u0 {2,[S,D]} 
+2 *1 C u[0,1] {1,[S,D]} {3,S}
+3    R!H     u0 {2,S}
+            """)
+        extensions = testGrp.getExtensions(R=[atomTypes[i] for i in ['C','O','H']])
+        extensions = [a[0] for a in extensions]
+        
+        for ext in extensions:
+            self.assertTrue(ext.isSubgraphIsomorphic(testGrp,generateInitialMap=True))
         
     def testPickle(self):
         """
