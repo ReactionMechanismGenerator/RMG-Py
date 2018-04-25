@@ -249,6 +249,10 @@ class ReactionRecipe:
                 other.addAction(['GAIN_PAIR', action[1], action[2]])
             elif action[0] == 'GAIN_PAIR':
                 other.addAction(['LOSE_PAIR', action[1], action[2]])
+            elif action[0] == 'GAIN_CHARGE':
+                other.addAction(['GAIN_CHARGE', action[1], action[2]])
+            elif action[0] == 'LOSE_CHARGE':
+                other.addAction(['LOSE_CHARGE', action[1], action[2]])
         return other
 
     def __apply(self, struct, doForward, unique):
@@ -341,6 +345,25 @@ class ReactionRecipe:
                         atom.applyAction(['GAIN_PAIR', label, 1])
                     elif (action[0] == 'LOSE_PAIR' and doForward) or (action[0] == 'GAIN_PAIR' and not doForward):
                         atom.applyAction(['LOSE_PAIR', label, 1])
+
+            # Charge variation. Set up especially for reactions generating/consuming CO/CS.
+            # The charge here refers to positive charge for each action.
+            elif action[0] in ['LOSE_CHARGE', 'GAIN_CHARGE']:
+
+                label, change = action[1:]
+                change = int(change)
+
+                # Find associated atom
+                atom = struct.getLabeledAtom(label)
+                if atom is None:
+                    raise InvalidActionError('Unable to find atom with label "{0}" while applying reaction recipe.'.format(label))
+
+                # Apply the action
+                for i in range(change):
+                    if (action[0] == 'GAIN_CHARGE' and doForward) or (action[0] == 'LOSE_CHARGE' and not doForward):
+                        atom.applyAction(['GAIN_CHARGE', label, 1])
+                    elif (action[0] == 'LOSE_CHARGE' and doForward) or (action[0] == 'GAIN_CHARGE' and not doForward):
+                        atom.applyAction(['LOSE_CHARGE', label, 1])
 
             else:
                 raise InvalidActionError('Unknown action "' + action[0] + '" encountered.')
@@ -645,7 +668,7 @@ class KineticsFamily(Database):
                 self.reverseRecipe = self.forwardRecipe.getReverse()
                 if self.reverse is None:
                     self.reverse = '{0}_reverse'.format(self.label)
-        
+
         self.groups.numReactants = len(self.forwardTemplate.reactants)
             
         self.rules = KineticsRules(label='{0}/rules'.format(self.label))
@@ -660,7 +683,7 @@ class KineticsFamily(Database):
             for entry in entries:
                 entry.item = reaction
         self.depositories = []
-        
+
         toplabels = [i.label for i in self.groups.top]
         if self.treeDistances is None:
             self.treeDistances = {topentry:1 for topentry in toplabels}
@@ -696,7 +719,7 @@ class KineticsFamily(Database):
                 if 'training' not in depositoryLabels:
                     depositoryLabels.append('training')
             
-        for name in depositoryLabels :
+        for name in depositoryLabels:
             if name == '!training':
                 continue
             label = '{0}/{1}'.format(self.label, name)
@@ -726,7 +749,8 @@ class KineticsFamily(Database):
         self.forwardRecipe = ReactionRecipe()
         for action in actions:
             action[0] = action[0].upper()
-            assert action[0] in ['CHANGE_BOND','FORM_BOND','BREAK_BOND','GAIN_RADICAL','LOSE_RADICAL','GAIN_PAIR','LOSE_PAIR']
+            assert action[0] in ['CHANGE_BOND','FORM_BOND','BREAK_BOND','GAIN_RADICAL','LOSE_RADICAL', \
+                                 'GAIN_PAIR','LOSE_PAIR', 'GAIN_CHARGE', 'LOSE_CHARGE']
             self.forwardRecipe.addAction(action)
 
     def loadForbidden(self, label, group, shortDesc='', longDesc=''):
@@ -1173,6 +1197,9 @@ class KineticsFamily(Database):
         # because the two reactants are identical, they have the same tags
         # In this case, we must change the labels from '*' and '*' to '*1' and
         # '*2'
+
+
+
         if label == 'r_recombination' and forward:
             identicalCenterCounter = 0
             for atom in reactantStructure.atoms:
@@ -1181,6 +1208,7 @@ class KineticsFamily(Database):
                     atom.label = '*' + str(identicalCenterCounter)
             if identicalCenterCounter != 2:
                 raise KineticsError('Unable to change labels from "*" to "*1" and "*2" for reaction family {0}.'.format(label))
+
 
         # Generate the product structure by applying the recipe
         if forward:
@@ -1427,7 +1455,6 @@ class KineticsFamily(Database):
         Return a complete list of the mappings if the provided reactant 
         matches the provided template reactant, or an empty list if not.
         """
-
         if isinstance(templateReactant, list): templateReactant = templateReactant[0]
         struct = templateReactant.item
         
@@ -1463,7 +1490,7 @@ class KineticsFamily(Database):
             Degenerate reactions are returned as separate reactions.
         """
         reactionList = []
-        
+
         # Forward direction (the direction in which kinetics is defined)
         reactionList.extend(self.__generateReactions(reactants, products=products, forward=True, prod_resonance=prod_resonance))
         
@@ -1637,7 +1664,6 @@ class KineticsFamily(Database):
 
             # Iterate over all resonance isomers of the reactant
             for molecule in reactants[0]:
-
                 mappings = self.__matchReactantToTemplate(molecule, template.reactants[0])
                 for map in mappings:
                     reactantStructures = [molecule]

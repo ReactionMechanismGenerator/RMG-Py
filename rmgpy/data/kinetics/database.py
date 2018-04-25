@@ -458,7 +458,6 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
         # Delete reactions which we could not find a reverse reaction for
         for i in reversed(to_delete):
             del reaction_list[i]
-
         return reaction_list
 
     def react_molecules(self, molecules, products=None, only_families=None, prod_resonance=True):
