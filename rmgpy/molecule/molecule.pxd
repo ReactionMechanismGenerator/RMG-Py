@@ -198,7 +198,7 @@ cdef class Molecule(Graph):
     
     cpdef str toInChI(self)
 
-    cpdef str toAugmentedInChI(self)
+    cpdef str toAugmentedInChI(self, int aug_level)
 
     cpdef str toInChIKey(self)
 
