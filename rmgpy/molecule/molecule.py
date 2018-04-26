@@ -1422,14 +1422,14 @@ class Molecule(Graph):
         """
         return translator.toInChI(self)
         
-    def toAugmentedInChI(self):
+    def toAugmentedInChI(self, aug_level=1):
         """
-        Adds an extra layer to the InChI denoting the multiplicity
-        of the molecule.
+        Return the standard InChi for augmentation level 0, Adds an extra layer to the InChI denoting the multiplicity
+        of the molecule for level 1, adds the indices of unpaired radicals / lone pair electrons for level 2.
         
-        Separate layer with a forward slash character.
+        Separates layers with a forward slash character.
         """
-        return translator.toInChI(self, aug_level=1)
+        return translator.toInChI(self, aug_level)
         
     
     def toInChIKey(self):
@@ -1472,7 +1472,7 @@ class Molecule(Graph):
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion,
         and the SMILES may or may not be canonical.
         
-        Otherwise, it uses `RDKit <http://rdkit.org/>`_ to perform the 
+        Otherwise, it uses `RDKit <http://rdkit.org/>`_ to perform the
         conversion, so it will be canonical SMILES.
         While converting to an RDMolecule it will perceive aromaticity
         and removes Hydrogen atoms.
