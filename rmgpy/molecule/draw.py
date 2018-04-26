@@ -1538,13 +1538,13 @@ class ReactionDrawer:
         for reactant in reaction.reactants:
             if isinstance(reactant, Species):
                 molecule = reactant.molecule[0]
-            elif isinstance(reactant, Molecule):
+            else:
                 molecule = reactant
             reactants.append(MoleculeDrawer().draw(molecule, format))
         for product in reaction.products:
             if isinstance(product, Species):
                 molecule = product.molecule[0]
-            elif isinstance(product, Molecule):
+            else:
                 molecule = product
             products.append(MoleculeDrawer().draw(molecule, format))
             
