@@ -529,12 +529,12 @@ class Species(object):
             self.aug_inchi = self.generate_aug_inchi()
         return self.aug_inchi
 
-    def generate_aug_inchi(self):
+    def generate_aug_inchi(self, aug_level=1):
         candidates = []
         self.generate_resonance_structures()
         for mol in self.molecule:
             try:
-                cand = [mol.toAugmentedInChI(),mol]
+                cand = [mol.toAugmentedInChI(aug_level=aug_level),mol]
             except ValueError:
                 pass  # not all resonance structures can be parsed into InChI (e.g. if containing a hypervalance atom)
             else:
