@@ -1209,7 +1209,7 @@ class KineticsFamily(Database):
         # In this case, we must change the labels from '*1' and '*2' to '*' and
         # '*'
         if label == 'r_recombination' and not forward:
-            for atom in productStructure.vertices:
+            for atom in productStructure.atoms:
                 if atom.label == '*1' or atom.label == '*2': atom.label = '*'
 
         # If reaction family is its own reverse, relabel atoms
@@ -1220,7 +1220,7 @@ class KineticsFamily(Database):
         if not self.reverseTemplate:
             # Get atom labels for products
             atomLabels = {}
-            for atom in productStructure.vertices:
+            for atom in productStructure.atoms:
                 if atom.label != '':
                     atomLabels[atom.label] = atom
 
