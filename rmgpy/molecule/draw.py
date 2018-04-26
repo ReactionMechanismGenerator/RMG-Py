@@ -54,7 +54,7 @@ import logging
 
 from rmgpy.qm.molecule import Geometry
 from rdkit.Chem import AllChem
-from rmgpy.molecule.molecule import Molecule
+from rmgpy.molecule.molecule import Atom, Molecule
 
 from numpy.linalg import LinAlgError
 
@@ -163,7 +163,7 @@ class MoleculeDrawer:
         self.implicitHydrogens = {}
         surfaceSites = []
         for atom in self.molecule.atoms:
-            if atom.isHydrogen() and atom.label == '': atomsToRemove.append(atom)
+            if isinstance(atom, Atom) and atom.isHydrogen() and atom.label == '': atomsToRemove.append(atom)
             elif atom.isSurfaceSite(): surfaceSites.append(atom)
         if len(atomsToRemove) < len(self.molecule.atoms) - len(surfaceSites):
             for atom in atomsToRemove:
@@ -949,7 +949,7 @@ class MoleculeDrawer:
         drawLonePairs = False
         
         for atom in atoms:
-            if atom.isNitrogen():
+            if isinstance(atom, Atom) and atom.isNitrogen():
                 drawLonePairs = True
     
         left = 0.0
@@ -1219,7 +1219,8 @@ class MoleculeDrawer:
             boundingRect = [x1, y1, x2, y2]
     
             # Set color for text
-            if   atom.element.isotope != -1: cr.set_source_rgba(0.0, 0.5, 0.0, 1.0)
+            if not isinstance(atom, Atom): cr.set_source_rgba(0.0, 0.5, 0.0, 1.0)
+            elif atom.element.isotope != -1: cr.set_source_rgba(0.0, 0.5, 0.0, 1.0)
             elif heavyAtom == 'C':  cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
             elif heavyAtom == 'N':  cr.set_source_rgba(0.0, 0.0, 1.0, 1.0)
             elif heavyAtom == 'O':  cr.set_source_rgba(1.0, 0.0, 0.0, 1.0)
