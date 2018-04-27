@@ -822,7 +822,7 @@ def to_adjacency_list(atoms, multiplicity, label=None, group=False, remove_h=Fal
     atom_numbers = {}
     index = 0
     for atom in atoms:
-        if remove_h and atom.element.symbol == 'H' and atom.label == '':
+        if remove_h and atom.symbol == 'H' and atom.label == '':
             continue
         atom_numbers[atom] = '{0:d}'.format(index + 1)
         index += 1
@@ -877,7 +877,7 @@ def to_adjacency_list(atoms, multiplicity, label=None, group=False, remove_h=Fal
     else:
         for atom in atom_numbers:
             # Atom type
-            atom_types[atom] = '{0}'.format(atom.element.symbol)
+            atom_types[atom] = '{0}'.format(atom.symbol)
             # Unpaired Electron(s)
             atom_unpaired_electrons[atom] = '{0}'.format(atom.radical_electrons)
             # Lone Electron Pair(s)
