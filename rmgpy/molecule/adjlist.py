@@ -49,14 +49,13 @@ class Saturator(object):
         Returns a list of atoms that is extended
         (and bond attributes) by saturating the valency of the non-hydrogen atoms with an
         appropriate number of hydrogen atoms.
-
         The required number of hydrogen atoms per heavy atom is determined as follows:
         H's =     max number of valence electrons - atom.radical_electrons
                     - 2* atom.lone_pairs - order - atom.charge
-
         """
         new_atoms = []
         for atom in atoms:
+            if not isinstance(atom, Atom): continue
             try:
                 max_number_of_valence_electrons = PeriodicSystem.valence_electrons[atom.symbol]
             except KeyError:
@@ -78,7 +77,6 @@ class Saturator(object):
                 atom.bonds[a] = b
                 a.bonds[atom] = b
         atoms.extend(new_atoms)
-
 
 class ConsistencyChecker(object):
 
@@ -695,9 +693,13 @@ def from_adjacency_list(adjlist, group=False, saturate_h=False):
         if group:
             atom = GroupAtom(atom_type, unpaired_electrons, partial_charges, label, lone_pairs, props)
         else:
-            atom = Atom(atom_type[0], unpaired_electrons[0], partial_charges[0], label, lone_pairs[0])
-            if isotope != -1:
-                atom.element = get_element(atom.number, isotope)
+            try:
+                atom = Atom(atom_type[0], unpaired_electrons[0], partial_charges[0], label, lone_pairs[0])
+                if isotope != -1:
+                    atom.element = get_element(atom.number, isotope)
+            except KeyError:
+                from afm.fragment import CuttingLabel
+                atom = CuttingLabel(name=atom_type[0], label=label)
 
         # Add the atom to the list
         atoms.append(atom)
@@ -769,13 +771,14 @@ def from_adjacency_list(adjlist, group=False, saturate_h=False):
         # Molecule consistency check
         # Electron and valency consistency check for each atom
         for atom in atoms:
-            ConsistencyChecker.check_partial_charge(atom)
+            if isinstance(atom, Atom):
+                ConsistencyChecker.check_partial_charge(atom)
 
         n_rad = sum([atom.radical_electrons for atom in atoms])
         absolute_spin_per_electron = 1 / 2.
         if multiplicity is None:
             multiplicity = 2 * (n_rad * absolute_spin_per_electron) + 1
-
+            
         ConsistencyChecker.check_multiplicity(n_rad, multiplicity)
         for atom in atoms:
             ConsistencyChecker.check_hund_rule(atom, multiplicity)
