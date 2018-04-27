@@ -166,6 +166,7 @@ class RMG(util.Subject):
         
         self.modelSettingsList = []
         self.simulatorSettingsList = []
+        self.balanceSpecies = None
         
         self.filterReactions=False
         self.unimolecularReact = None
@@ -561,7 +562,7 @@ class RMG(util.Subject):
         if self.filterReactions:
             # Run the reaction system to update threshold and react flags
             for index, reactionSystem in enumerate(self.reactionSystems):
-                self.rmg_memories.append(RMG_Memory(reactionSystem))
+                self.rmg_memories.append(RMG_Memory(reactionSystem,self.balanceSpecies))
                 self.rmg_memories[index].generate_cond()
                 log_conditions(self.rmg_memories,index)
                 reactionSystem.initializeModel(
@@ -580,7 +581,7 @@ class RMG(util.Subject):
                     rxnSysBimolecularThreshold=reactionSystem.bimolecularThreshold)
         else:
             for index, reactionSystem in enumerate(self.reactionSystems):
-                self.rmg_memories.append(RMG_Memory(reactionSystem))
+                self.rmg_memories.append(RMG_Memory(reactionSystem,self.balanceSpecies))
                 self.rmg_memories[index].generate_cond()
                 log_conditions(self.rmg_memories,index)
                 
@@ -1561,30 +1562,34 @@ class RMG_Memory:
     class for remembering RMG simulations
     and determining what simulation to run next
     """
-    def __init__(self,reactionSystem):
+    def __init__(self,reactionSystem,bspc):
         self.Ranges = dict()
-        if hasattr(reactionSystem,'Trange') and type(reactionSystem.Trange) == list:
+        
+        if hasattr(reactionSystem,'Trange') and isinstance(reactionSystem.Trange, list):
             Trange = reactionSystem.Trange
             self.Ranges['T'] = [T.value_si for T in Trange]
-        if hasattr(reactionSystem,'Prange') and type(reactionSystem.Prange) == list:
+        if hasattr(reactionSystem,'Prange') and isinstance(reactionSystem.Prange, list):
             Prange = reactionSystem.Prange
             self.Ranges['P'] = [np.log(P.value_si) for P in Prange]
         if hasattr(reactionSystem,'initialMoleFractions'):
+            if bspc:
+                self.initialMoleFractions = deepcopy(reactionSystem.initialMoleFractions)
+                self.balanceSpecies = [x for x in self.initialMoleFractions.keys() if x.label == bspc][0]  #find the balance species
             for key,value in reactionSystem.initialMoleFractions.iteritems():
                 assert key != 'T' and key != 'P', 'naming a species T or P is forbidden'
-                if type(value) == list:
+                if isinstance(value, list):
                     self.Ranges[key] = value
         if hasattr(reactionSystem,'initialConcentrations'):
             for key,value in reactionSystem.initialConcentrations.iteritems():
                 assert key != 'T' and key != 'P', 'naming a species T or P is forbidden'
-                if type(value) == list:
+                if isinstance(value, list):
                     self.Ranges[key] = [v.value_si for v in value]
                     
         for term in reactionSystem.termination:
             if isinstance(term, TerminationTime):
                 self.tmax = term.time.value_si
         
-        self.normalize = hasattr(reactionSystem,'initialMoleFractions')
+        self.reactionSystem = reactionSystem
         self.conditionList = []
         self.scaledConditionList = []
         self.ts = []
@@ -1677,12 +1682,18 @@ class RMG_Memory:
             if 'P' in newCond.keys():
                 newCond['P'] = np.exp(newCond['P'])
             
-            if self.normalize:
+            if hasattr(self,'initialMoleFractions'):
+                for key in self.initialMoleFractions.keys():
+                    if not isinstance(self.initialMoleFractions[key],list):
+                        newCond[key] = self.initialMoleFractions[key]
                 total = sum([val for key,val in newCond.iteritems() if key != 'T' and key != 'P'])
-                for key,val in newCond.iteritems():
-                    if key != 'T' and key != 'P':
-                        newCond[key] = val/total
-                        
+                if self.balanceSpecies is None:
+                    for key,val in newCond.iteritems():
+                        if key != 'T' and key != 'P':
+                            newCond[key] = val/total
+                else:
+                    newCond[self.balanceSpecies] = self.initialMoleFractions[self.balanceSpecies] + 1.0 - total
+
             self.conditionList.append(newCond)
             self.scaledConditionList.append(scaledNewCond)
         return 

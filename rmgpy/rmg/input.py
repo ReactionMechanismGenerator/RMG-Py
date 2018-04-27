@@ -32,6 +32,7 @@ import logging
 import quantities
 import os
 import numpy
+from copy import deepcopy
 
 from rmgpy import settings
 
@@ -136,6 +137,7 @@ def simpleReactor(temperature,
                   nSimsTerm=6,
                   terminationConversion=None,
                   terminationTime=None,
+                  balanceSpecies=None,
                   sensitivity=None,
                   sensitivityThreshold=1e-3,
                   sensitivityTemperature=None,
@@ -153,9 +155,7 @@ def simpleReactor(temperature,
             if len(value) != 2:
                 raise InputError("Initial mole fraction values must either be a number or a list with 2 entries")
             initialMoleFractions[key] = [float(value[0]),float(value[1])]
-            if len(value) > 2:
-                raise InputError('mole ranges can only have one or two entries')
-            elif value[0] < 0 or value[1] < 0:
+            if value[0] < 0 or value[1] < 0:
                 raise InputError('Initial mole fractions cannot be negative.')
             elif value[1] < value[0]:
                 raise InputError('Initial mole fraction range out of order: {0}'.format(key))
@@ -170,7 +170,7 @@ def simpleReactor(temperature,
     if not isinstance(pressure,list):
         P = Quantity(pressure)
     else:
-        if len(pressure) > 2:
+        if len(pressure) != 2:
             raise InputError('Temperature and pressure ranges can either be in the form of (number,units) or a list with 2 entries of the same format')
         P = [Quantity(p) for p in pressure]
         
@@ -198,7 +198,7 @@ def simpleReactor(temperature,
     if not isinstance(P,list):
         sensitivityPressure = P
     if not any([isinstance(x,list) for x in initialMoleFractions.itervalues()]):
-        sensitivityMoleFractions = initialMoleFractions
+        sensitivityMoleFractions = deepcopy(initialMoleFractions)
     if sensitivityMoleFractions is None or sensitivityTemperature is None or sensitivityPressure is None:
         sensConditions = None
     else:
@@ -209,7 +209,20 @@ def simpleReactor(temperature,
     
     system = SimpleReactor(T, P, initialMoleFractions, nSimsTerm, termination, sensitiveSpecies, sensitivityThreshold,sensConditions)
     rmg.reactionSystems.append(system)
+    
+    assert balanceSpecies is None or isinstance(balanceSpecies,str), 'balanceSpecies should be the string corresponding to a single species'
+    rmg.balanceSpecies = balanceSpecies
+    if balanceSpecies: #check that the balanceSpecies can't be taken to zero
+        total = 0.0
+        for key,item in initialMoleFractions.iteritems():
+            if key == balanceSpecies:
+                assert not isinstance(item,list), 'balanceSpecies must not have a defined range'
+                xbspcs = item
+            if isinstance(item,list):
+                total += item[1]-item[0]
 
+        if total > xbspcs:
+            raise ValueError('The sum of the differences in the ranged mole fractions is greater than the mole fraction of the balance species, this would require the balanceSpecies mole fraction to be negative in some cases which is not allowed, either reduce the maximum mole fractions or dont use balanceSpecies')
 
 # Reaction systems
 def liquidReactor(temperature,
