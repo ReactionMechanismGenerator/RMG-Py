@@ -9,7 +9,7 @@ RMG is based upon work supported by the Department of Energy, Office of Basic En
 Project Supervisors:
 
 - Prof. William H. Green (whgreen@mit.edu)
-- Prof. Richard H. West (r.west@neu.edu)
+- Prof. Richard H. West (r.west@northeastern.edu)
  
 Current Developers: (rmg_dev@mit.edu)
 
@@ -43,5 +43,5 @@ Previous Developers:
 How to Cite
 ***********
 
-Connie W. Gao, Joshua W. Allen, William H. Green, Richard H. West, "Reaction Mechanism Generator: automatic 
-construction of chemical kinetic mechanisms." *Computer Physics Communications* (2016).
+Connie W. Gao, Joshua W. Allen, William H. Green, Richard H. West, "Reaction Mechanism Generator: Automatic 
+construction of chemical kinetic mechanisms." *Computer Physics Communications* 203 (2016) 212-225. https://doi.org/10.1016/j.cpc.2016.02.013
