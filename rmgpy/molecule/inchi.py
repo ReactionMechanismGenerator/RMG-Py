@@ -30,6 +30,7 @@
 
 import itertools
 import re
+import warnings
 
 import cython
 from rdkit import Chem
@@ -376,6 +377,9 @@ def _generate_minimum_resonance_isomer(mol):
     Next, we return the candidate with the lowest unpaired electrons metric.
 
     The metric is a sorted list with indices of the atoms that bear an unpaired electron
+
+    This function is currently deprecated since InChI effectively eliminates resonance,
+    see InChI, the IUPAC International Chemical Identifier, J. Cheminform 2015, 7, 23, doi: 10.1186/s13321-015-0068-4
     """
 
     cython.declare(
@@ -385,6 +389,9 @@ def _generate_minimum_resonance_isomer(mol):
         metric_sel=list,
         metric_cand=list,
     )
+
+    warnings.warn("The _generate_minimum_resonance_isomer method is no longer used and may be removed in a future"
+                  " version.", DeprecationWarning)
 
     candidates = resonance.generate_isomorphic_resonance_structures(mol, saturate_h=True)
 
