@@ -133,47 +133,51 @@ def adjacencyList(string):
 def simpleReactor(temperature,
                   pressure,
                   initialMoleFractions,
+                  nSimsTerm=6,
                   terminationConversion=None,
                   terminationTime=None,
                   sensitivity=None,
-                  sensitivityThreshold=1e-3
+                  sensitivityThreshold=1e-3,
+                  sensitivityTemperature=None,
+                  sensitivityPressure=None,
+                  sensitivityMoleFractions=None,
                   ):
     logging.debug('Found SimpleReactor reaction system')
     
-    for value in initialMoleFractions.values():
-        if value < 0:
-            raise InputError('Initial mole fractions cannot be negative.')
-        
-    for spec in initialMoleFractions:
-            initialMoleFractions[spec] = float(initialMoleFractions[spec])
-
-    totalInitialMoles = sum(initialMoleFractions.values())
-    if totalInitialMoles != 1:
-        logging.warning('Initial mole fractions do not sum to one; normalizing.')
-        logging.info('')
-        logging.info('Original composition:')
-        for spec, molfrac in initialMoleFractions.iteritems():
-            logging.info("{0} = {1}".format(spec,molfrac))
-        for spec in initialMoleFractions:
-            initialMoleFractions[spec] /= totalInitialMoles
-        logging.info('')
-        logging.info('Normalized mole fractions:')
-        for spec, molfrac in initialMoleFractions.iteritems():
-            logging.info("{0} = {1}".format(spec,molfrac))
+    for key,value in initialMoleFractions.iteritems():
+        if not isinstance(value,list):
+            initialMoleFractions[key] = float(value)
+            if value < 0:
+                raise InputError('Initial mole fractions cannot be negative.')
+        else:
+            if len(value) != 2:
+                raise InputError("Initial mole fraction values must either be a number or a list with 2 entries")
+            initialMoleFractions[key] = [float(value[0]),float(value[1])]
+            if len(value) > 2:
+                raise InputError('mole ranges can only have one or two entries')
+            elif value[0] < 0 or value[1] < 0:
+                raise InputError('Initial mole fractions cannot be negative.')
+            elif value[1] < value[0]:
+                raise InputError('Initial mole fraction range out of order: {0}'.format(key))
     
-    if type(temperature) != list and type(pressure) != list:
+    if not isinstance(temperature,list):
         T = Quantity(temperature)
+    else:
+        if len(temperature) != 2:
+            raise InputError('Temperature and pressure ranges can either be in the form of (number,units) or a list with 2 entries of the same format')
+        T = [Quantity(t) for t in temperature]
+        
+    if not isinstance(pressure,list):
         P = Quantity(pressure)
     else:
-        if type(temperature) != list:
-            temperature = list(temperature)
-        if type(pressure) != list:
-            pressure = list(pressure)
-        T = [Quantity(t) for t in temperature]
+        if len(pressure) > 2:
+            raise InputError('Temperature and pressure ranges can either be in the form of (number,units) or a list with 2 entries of the same format')
         P = [Quantity(p) for p in pressure]
-        if len(T) > 2 or len(P) > 2:
-            raise InputError('Temperature and pressure ranges can only have one or two entries')
         
+        
+    if not isinstance(temperature,list) and not isinstance(pressure,list) and all([not isinstance(x,list) for x in initialMoleFractions.values()]):
+        nSimsTerm=1
+    
     termination = []
     if terminationConversion is not None:
         for spec, conv in terminationConversion.iteritems():
@@ -188,7 +192,21 @@ def simpleReactor(temperature,
         if isinstance(sensitivity, str): sensitivity = [sensitivity]
         for spec in sensitivity:
             sensitiveSpecies.append(speciesDict[spec])
-    system = SimpleReactor(T, P, initialMoleFractions, termination, sensitiveSpecies, sensitivityThreshold)
+    
+    if not isinstance(T,list):
+        sensitivityTemperature = T
+    if not isinstance(P,list):
+        sensitivityPressure = P
+    if not any([isinstance(x,list) for x in initialMoleFractions.itervalues()]):
+        sensitivityMoleFractions = initialMoleFractions
+    if sensitivityMoleFractions is None or sensitivityTemperature is None or sensitivityPressure is None:
+        sensConditions = None
+    else:
+        sensConditions = sensitivityMoleFractions
+        sensConditions['T'] = Quantity(sensitivityTemperature)
+        sensConditions['P'] = Quantity(sensitivityPressure)
+    
+    system = SimpleReactor(T, P, initialMoleFractions, nSimsTerm, termination, sensitiveSpecies, sensitivityThreshold,sensConditions)
     rmg.reactionSystems.append(system)
 
 
@@ -196,25 +214,37 @@ def simpleReactor(temperature,
 def liquidReactor(temperature,
                   initialConcentrations,
                   terminationConversion=None,
+                  nSimsTerm = 4,
                   terminationTime=None,
                   sensitivity=None,
                   sensitivityThreshold=1e-3,
+                  sensitivityTemperature=None,
+                  sensitivityConcentrations=None,
                   constantSpecies=None):
     
     logging.debug('Found LiquidReactor reaction system')
     
-    if type(temperature) != list:
+    if not isinstance(temperature,list):
         T = Quantity(temperature)
     else:
+        if len(temperature) != 2:
+            raise InputError('Temperature and pressure ranges can either be in the form of (number,units) or a list with 2 entries of the same format')
         T = [Quantity(t) for t in temperature]
-        if len(T) > 2:
-            raise InputError('Temperature ranges can only have one or two entries')
     
     for spec,conc in initialConcentrations.iteritems():
-        concentration = Quantity(conc)
-        # check the dimensions are ok
-        # convert to mol/m^3 (or something numerically nice? or must it be SI)
-        initialConcentrations[spec] = concentration.value_si
+        if not isinstance(conc,list):
+            concentration = Quantity(conc)
+            # check the dimensions are ok
+            # convert to mol/m^3 (or something numerically nice? or must it be SI)
+            initialConcentrations[spec] = concentration.value_si
+        else:
+            if len(conc) != 2:
+                raise InputError("Concentration values must either be in the form of (number,units) or a list with 2 entries of the same format")
+            initialConcentrations[spec] = [Quantity(conc[0]),Quantity(conc[1])]
+            
+    if not isinstance(temperature,list) and all([not isinstance(x,list) for x in initialConcentrations.itervalues()]):
+        nSimsTerm=1
+        
     termination = []
     if terminationConversion is not None:
         for spec, conv in terminationConversion.iteritems():
@@ -236,9 +266,18 @@ def liquidReactor(temperature,
             logging.debug("  {0}".format(constantSpecie))
             if not speciesDict.has_key(constantSpecie):
                 raise InputError('Species {0} not found in the input file'.format(constantSpecie))
-             
-            
-    system = LiquidReactor(T, initialConcentrations, termination, sensitiveSpecies, sensitivityThreshold,constantSpecies)
+    
+    if not isinstance(T,list):
+        sensitivityTemperature = T
+    if not any([isinstance(x,list) for x in initialConcentrations.itervalues()]):
+        sensitivityConcentrations = initialConcentrations
+    if sensitivityConcentrations is None or sensitivityTemperature is None:
+        sensConditions = None
+    else:
+        sensConditions = Quantity(sensitivityConcentrations)
+        sensConditions['T'] = Quantity(sensitivityTemperature)
+        
+    system = LiquidReactor(T, initialConcentrations, nSimsTerm, termination, sensitiveSpecies, sensitivityThreshold, sensConditions, constantSpecies)
     rmg.reactionSystems.append(system)
     
 def simulator(atol, rtol, sens_atol=1e-6, sens_rtol=1e-4):

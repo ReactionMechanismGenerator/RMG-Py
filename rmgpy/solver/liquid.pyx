@@ -54,19 +54,22 @@ cdef class LiquidReactor(ReactionSystem):
     cdef public ScalarQuantity P    
     cdef public double V
     cdef public bint constantVolume
-    cdef public constSPCNames
+    cdef public list constSPCNames
     cdef public list constSPCIndices
     cdef public dict initialConcentrations
-
-    def __init__(self, T, initialConcentrations, termination, sensitiveSpecies=None, sensitivityThreshold=1e-3, constSPCNames=None):
+    cdef public list Trange
+    cdef public int nSimsTerm
+    cdef public dict sensConditions
+    
+    def __init__(self, T, initialConcentrations, nSimsTerm=None, termination=None, sensitiveSpecies=None, sensitivityThreshold=1e-3, sensConditions=None, constSPCNames=None):
         
         ReactionSystem.__init__(self, termination, sensitiveSpecies, sensitivityThreshold)
         
         if type(T) != list:
             self.T = Quantity(T)
         else:
-            self.Tlist = [Quantity(t) for t in T]
-            
+            self.Trange = [Quantity(t) for t in T]
+        
         self.P = Quantity(100000.,'kPa') # Arbitrary high pressure (1000 Bar) to get reactions in the high-pressure limit!
         self.initialConcentrations = initialConcentrations # should be passed in SI
         self.V = 0 # will be set from initialConcentrations in initializeModel
@@ -74,6 +77,8 @@ cdef class LiquidReactor(ReactionSystem):
         #Constant concentration attributes
         self.constSPCIndices=None
         self.constSPCNames = constSPCNames #store index of constant species 
+        self.sensConditions = sensConditions
+        self.nSimsTerm = nSimsTerm
         
     def convertInitialKeysToSpeciesObjects(self, speciesDict):
         """
@@ -82,6 +87,8 @@ cdef class LiquidReactor(ReactionSystem):
         """
         initialConcentrations = {}
         for label, moleFrac in self.initialConcentrations.iteritems():
+            if label == 'T':
+                continue
             initialConcentrations[speciesDict[label]] = moleFrac
         self.initialConcentrations = initialConcentrations
     
@@ -96,7 +103,7 @@ cdef class LiquidReactor(ReactionSystem):
   
     cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list surfaceSpecies=None,
                           list surfaceReactions=None, list pdepNetworks=None, atol=1e-16, rtol=1e-8, sensitivity=False, 
-                          sens_atol=1e-6, sens_rtol=1e-4, filterReactions=False, T=None, P=None):
+                          sens_atol=1e-6, sens_rtol=1e-4, filterReactions=False, dict conditions=None):
         """
         Initialize a simulation of the liquid reactor using the provided kinetic
         model.
@@ -105,15 +112,11 @@ cdef class LiquidReactor(ReactionSystem):
             surfaceSpecies = []
         if surfaceReactions is None:
             surfaceReactions = []
-        
-        if T:
-            self.T = T
-        if P:
-            raise ValueError('P should always be None') #P was added because it helps avoid messy code duplication in main.py
-            
+                    
         # First call the base class version of the method
         # This initializes the attributes declared in the base class
-        ReactionSystem.initializeModel(self, coreSpecies, coreReactions, edgeSpecies, edgeReactions, surfaceSpecies, surfaceReactions, pdepNetworks, atol, rtol, sensitivity, sens_atol, sens_rtol)
+        ReactionSystem.initializeModel(self, coreSpecies, coreReactions, edgeSpecies, edgeReactions, surfaceSpecies, surfaceReactions, 
+                                       pdepNetworks, atol, rtol, sensitivity, sens_atol, sens_rtol, filterReactions, conditions)
 
         # Set initial conditions
         self.set_initial_conditions()

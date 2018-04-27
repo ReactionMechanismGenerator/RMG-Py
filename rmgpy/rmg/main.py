@@ -647,7 +647,7 @@ class RMG(util.Subject):
                         # Turn pruning off if we haven't reached minimum core size.
                         prune = False
                         
-                    try: terminated,resurrected,obj,newSurfaceSpecies,newSurfaceReactions = reactionSystem.simulate(
+                    try: terminated,resurrected,obj,newSurfaceSpecies,newSurfaceReactions,t,x = reactionSystem.simulate(
                         coreSpecies = self.reactionModel.core.species,
                         coreReactions = self.reactionModel.core.reactions,
                         edgeSpecies = self.reactionModel.edge.species,
@@ -806,7 +806,7 @@ class RMG(util.Subject):
         # Run sensitivity analysis post-model generation if sensitivity analysis is on
         for index, reactionSystem in enumerate(self.reactionSystems):
             
-            if reactionSystem.sensitiveSpecies:
+            if reactionSystem.sensitiveSpecies and reactionSystem.sensConditions:
                 logging.info('Conducting sensitivity analysis of reaction system %s...' % (index+1))
                     
                 sensWorksheet = []
@@ -826,6 +826,7 @@ class RMG(util.Subject):
                     sensWorksheet = sensWorksheet,
                     modelSettings = self.modelSettingsList[-1],
                     simulatorSettings = self.simulatorSettingsList[-1],
+                    conditions = reactionSystem.sensConditions,
                 )
                 
                 plot_sensitivity(self.outputDirectory, index, reactionSystem.sensitiveSpecies)
