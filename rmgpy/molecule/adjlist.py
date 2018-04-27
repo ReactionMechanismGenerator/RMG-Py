@@ -56,6 +56,7 @@ class Saturator(object):
             '''
             newAtoms = []
             for atom in atoms:
+                if not isinstance(atom, Atom): continue
                 try:
                     max_number_of_valence_electrons = PeriodicSystem.valence_electrons[atom.symbol]
                 except KeyError:
@@ -639,9 +640,13 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
         if group:
             atom = GroupAtom(atomType, unpairedElectrons, partialCharges, label, lonePairs, props)
         else:
-            atom = Atom(atomType[0], unpairedElectrons[0], partialCharges[0], label, lonePairs[0])
-            if isotope != -1:
-                atom.element = getElement(atom.number, isotope)
+            try:
+                atom = Atom(atomType[0], unpairedElectrons[0], partialCharges[0], label, lonePairs[0])
+                if isotope != -1:
+                    atom.element = getElement(atom.number, isotope)
+            except KeyError:
+                from afm.fragment import CuttingLabel
+                atom = CuttingLabel(name=atomType[0], label=label)
 
         # Add the atom to the list
         atoms.append(atom)
@@ -707,7 +712,9 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
     if not group:
         # Molecule consistency check
         # Electron and valency consistency check for each atom
-        for atom in atoms: ConsistencyChecker.check_partial_charge(atom)
+        for atom in atoms:
+            if isinstance(atom, Atom):
+                ConsistencyChecker.check_partial_charge(atom)
 
         nRad = sum([atom.radicalElectrons for atom in atoms])
         absolute_spin_per_electron = 1/2.
