@@ -4,6 +4,41 @@
 Release Notes
 *************
 
+RMG-Py Version 2.1.2
+====================
+Date: May 18, 2017
+
+- Improvements:
+    - New nitrogen atom types
+    - Kinetics libraries can now be specified as a list of strings in the input file
+    - New script to generate output HTML locally: generateChemkinHTML.py
+    - New kekulization module replaces RDKit for generating Kekule structures
+    - Benzene bonds can now be reacted in reaction families
+    - Removed cantherm.geometry module due to redundancy with statmech.conformer
+
+- Fixes:
+    - Reaction direction is now more deterministic after accounting for floating point error
+    - Multiple bugs with resonance structure generation for aromatics have been addressed
+
+
+RMG-database Version 2.1.2
+==========================
+Date: May 18, 2017
+
+- Nitrogen improvements:
+    - Added ethylamine kinetics library
+    - Updated group additivity values for nitrogen species
+    - Added rate rules and training reactions for nitrogen species
+
+- Additions:
+    - New CO_Disproportionation family
+    - Added CurranPentane kinetics and thermo libraries
+
+- Fixes:
+    - Corrected some rates in FFCM1(-) to use MultiArrhenius kinetics
+    - Corrected a few adjlists in FFCM1(-)
+
+
 RMG-Py Version 2.1.1
 ====================
 Date: April 07, 2017
