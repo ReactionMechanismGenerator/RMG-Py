@@ -610,14 +610,12 @@ def readReactionComments(reaction, comments, read = True):
                     if reactant.label == reacStr:
                         break
                 else:
-                    import pdb; pdb.set_trace()
                     raise ChemkinError('Unexpected species identifier {0} encountered in flux pairs for reaction {1}.'.format(reacStr, reaction))
                 if prodStr[-1] == ';': prodStr = prodStr[:-1]
                 for product in reaction.products:
                     if product.label == prodStr:
                         break
                 else:
-                    import pdb; pdb.set_trace()
                     raise ChemkinError('Unexpected species identifier {0} encountered in flux pairs for reaction {1}.'.format(prodStr, reaction))
                 reaction.pairs.append((reactant, product))
             assert len(reaction.pairs) == max(len(reaction.reactants), len(reaction.products))

@@ -168,6 +168,8 @@ class KineticsGroups(Database):
         """
         Determine the appropriate kinetics for a reaction with the given
         `template` using group additivity.
+        
+        Returns just the kinetics.
         """
 
         # Start with the generic kinetics of the top-level nodes

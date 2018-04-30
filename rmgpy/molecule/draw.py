@@ -178,6 +178,7 @@ class MoleculeDrawer:
             # RDKit does not accept atom type Ot
             self.molecule.removeAtom(self.molecule.atoms[-1])
             self.symbols = ['CO']
+            self.molecule.atoms[0].charge = 0  # don't label the C as - if you're not drawing the O with a +
             self.coordinates = numpy.array([[0,0]], numpy.float64)
         else:
             # Generate the coordinates to use to draw the molecule

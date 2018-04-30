@@ -61,6 +61,7 @@ requirements:
     - lpsolve55
     - markupsafe
     - matplotlib >=1.5
+    - mock
     - mopac
     - nose
     - numpy
@@ -74,7 +75,7 @@ requirements:
     - pyzmq
     - quantities
     - rdkit >=2015.09.2
-    - rmgdatabase >=2.1.0
+    - rmgdatabase >=2.1.1
     - scipy
     - scoop
     - symmetry

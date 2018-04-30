@@ -734,6 +734,7 @@ class TestConsistencyChecker(unittest.TestCase):
             multiplicity 1
             1 C u2 p0 c0
             """, saturateH=True)
+
     def test_check_hund_rule_success(self):
         try:
             Molecule().fromAdjacencyList("""
@@ -742,7 +743,50 @@ class TestConsistencyChecker(unittest.TestCase):
             """, saturateH=True)
         except InvalidAdjacencyListError:
             self.fail('InvalidAdjacencyListError thrown unexpectedly!')
-    
+
+    def test_check_multiplicity(self):
+        """
+        adjlist: Check that RMG allows different electron spins in the same molecule with multiplicity = 2s + 1
+        """
+        # [N] radical:
+        try:
+            Molecule().fromAdjacencyList('''multiplicity 4
+                                            1 N u3 p1 c0''')
+        except InvalidAdjacencyListError:
+            self.fail('InvalidAdjacencyListError thrown unexpectedly for N tri-rad!')
+
+        # A general molecule with 4 radicals, multiplicity 5:
+        try:
+            Molecule().fromAdjacencyList('''multiplicity 5
+                                            1 O u1 p2 c0 {2,S}
+                                            2 C u1 p0 c0 {1,S} {3,S} {4,S}
+                                            3 H u0 p0 c0 {2,S}
+                                            4 N u1 p1 c0 {2,S} {5,S}
+                                            5 O u1 p2 c0 {4,S}''')
+        except InvalidAdjacencyListError:
+            self.fail('InvalidAdjacencyListError thrown unexpectedly for a molecule with 4 radicals, multiplicity 5')
+
+        # A general molecule with 4 radicals, multiplicity 3:
+        try:
+            Molecule().fromAdjacencyList('''multiplicity 3
+                                            1 O u1 p2 c0 {2,S}
+                                            2 C u1 p0 c0 {1,S} {3,S} {4,S}
+                                            3 H u0 p0 c0 {2,S}
+                                            4 N u1 p1 c0 {2,S} {5,S}
+                                            5 O u1 p2 c0 {4,S}''')
+        except InvalidAdjacencyListError:
+            self.fail('InvalidAdjacencyListError thrown unexpectedly for a molecule with 4 radicals, multiplicity 3')
+
+        # [N]=C=[N] singlet:
+        try:
+            Molecule().fromAdjacencyList('''multiplicity 1
+                                            1 N u1 p1 c0 {2,D}
+                                            2 C u0 p0 c0 {1,D} {3,D}
+                                            3 N u1 p1 c0 {2,D}''')
+        except InvalidAdjacencyListError:
+            self.fail('InvalidAdjacencyListError thrown unexpectedly for singlet [N]=C=[N]!')
+
 if __name__ == '__main__':
 
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=3))
+

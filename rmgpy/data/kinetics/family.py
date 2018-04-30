@@ -36,6 +36,7 @@ import os.path
 import logging
 import codecs
 from copy import deepcopy
+import itertools
 
 from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStructures,\
@@ -1289,9 +1290,8 @@ class KineticsFamily(Database):
 
     def __matchReactantToTemplate(self, reactant, templateReactant):
         """
-        Return ``True`` if the provided reactant matches the provided
-        template reactant and ``False`` if not, along with a complete list of the
-        mappings.
+        Return a complete list of the mappings if the provided reactant 
+        matches the provided template reactant, or an empty list if not.
         """
 
         if isinstance(templateReactant, list): templateReactant = templateReactant[0]
@@ -1304,6 +1304,8 @@ class KineticsFamily(Database):
             return mappings
         elif isinstance(struct, Group):
             return reactant.findSubgraphIsomorphisms(struct)
+        else:
+            raise NotImplementedError("Not expecting template of type {}".format(type(struct)))
 
     def generateReactions(self, reactants):
         """
@@ -1383,9 +1385,9 @@ class KineticsFamily(Database):
         reactions = self.__generateReactions(reaction.reactants, products=reaction.products, forward=True)
         if len(reactions) != 1:
             for reactant in reaction.reactants:
-                logging.error(reactant)
+                logging.error("Reactant: {0!r}".format(reactant))
             for product in reaction.products:
-                logging.error(product)
+                logging.error("Product: {0!r}".format(product))
             raise KineticsError(('Unable to calculate degeneracy for reaction {0} '
                                  'in reaction family {1}. Expected 1 reaction '
                                  'but generated {2}').format(reaction, self.label, len(reactions)))
@@ -1511,6 +1513,8 @@ class KineticsFamily(Database):
                             elif products0[0].isIsomorphic(productB) and products0[1].isIsomorphic(productA):
                                 match = True
                                 break
+                elif len(products) == len(products0):
+                    raise NotImplementedError("Can't yet filter reactions with {} products".format(len(products)))
                     
                 if match: 
                     rxnList.append(reaction)
@@ -1535,7 +1539,7 @@ class KineticsFamily(Database):
                 # We know the reactants are the same, so we only need to compare the products
                 match = False
                 if len(products) == len(products0) == 1:
-                    for product in products0[0]:
+                    for product in products0[0]: # for each resonance isomer of the only product0
                         if products[0].isIsomorphic(product):
                             match = True
                             break
@@ -1548,7 +1552,46 @@ class KineticsFamily(Database):
                             elif products[0].isIsomorphic(productB) and products[1].isIsomorphic(productA):
                                 match = True
                                 break
-                    
+                elif len(products) == len(products0) == 3:
+                    for productA, productB, productC in itertools.product(products0[0], products0[1], products0[2]):
+                    # This is equivalent to three nested for loops,
+                    # but allows us to break out of them all at once
+                    # with a single break statement.
+                        if (    products[0].isIsomorphic(productA) and
+                                products[1].isIsomorphic(productB) and
+                                products[2].isIsomorphic(productC) ):
+                            match = True
+                            break
+                        elif (  products[0].isIsomorphic(productA) and
+                                products[1].isIsomorphic(productC) and
+                                products[2].isIsomorphic(productB) ):
+                            match = True
+                            break
+                        elif (  products[0].isIsomorphic(productB) and
+                                products[1].isIsomorphic(productA) and
+                                products[2].isIsomorphic(productC) ):
+                            match = True
+                            break
+                        elif (  products[0].isIsomorphic(productC) and
+                                products[1].isIsomorphic(productA) and
+                                products[2].isIsomorphic(productB) ):
+                            match = True
+                            break
+                        elif (  products[0].isIsomorphic(productB) and
+                                products[1].isIsomorphic(productC) and
+                                products[2].isIsomorphic(productA) ):
+                            match = True
+                            break
+                        elif (  products[0].isIsomorphic(productC) and
+                                products[1].isIsomorphic(productB) and
+                                products[2].isIsomorphic(productA) ):
+                            match = True
+                            break
+                elif len(products) == len(products0):
+                    raise NotImplementedError(
+                        "Can't yet check degeneracy of reactions with {0} products".format(len(products))
+                        )
+
                 # If we found a match, remove it from the list
                 # Also increment the reaction path degeneracy of the remaining reaction
                 if match:
@@ -1693,8 +1736,14 @@ class KineticsFamily(Database):
         """
         Return an estimate of the kinetics for a reaction with the given
         `template` and reaction-path `degeneracy`. There are two possible methods
-        to use: 'group additivity' (new RMG-Py behavior) and 'rate rules' (old
-        RMG-Java behavior).
+        to use: 'group additivity' (new possible RMG-Py behavior) and 'rate rules' (old
+        RMG-Java behavior, and default RMG-Py behavior).
+        
+        Returns a tuple (kinetics, entry):
+        If it's estimated via 'rate rules' and an exact match is found in the tree,
+        then the entry is returned as the second element of the tuple.
+        But if an average is used, or the 'group additivity' method, then the tuple
+        returned is (kinetics, None).
         """
         if method.lower() == 'group additivity':
             return self.estimateKineticsUsingGroupAdditivity(template, degeneracy), None
@@ -1725,7 +1774,7 @@ class KineticsFamily(Database):
         """
         For a given set of kinetics `kineticsList`, return the kinetics deemed
         to be the "best". This is determined to be the one with the lowest
-        non-zero rank that occurs first.
+        non-zero rank that occurs first (has the lowest index).
         """
         if any([x[1].rank == 0 for x in kineticsList]) and not all([x[1].rank == 0 for x in kineticsList]):
             kineticsList = [x for x in kineticsList if x[1].rank != 0]
@@ -1738,9 +1787,11 @@ class KineticsFamily(Database):
         depositories as well as generating a result using the user-specified `estimator`
         of either 'group additivity' or 'rate rules'.  Unlike
         the regular :meth:`getKinetics()` method, this returns a list of
-        results, with each result comprising the kinetics, the source, and
-        the entry. If it came from a template estimate, the source and entry
-        will both be `None`.
+        results, with each result comprising the kinetics, the source,
+        the entry, and whether it's in the forward direction.
+        The source will be the depository name or estimator method.
+        If it came from a template estimated with averaging then the
+        entry will be `None`.
         If returnAllKinetics==False, only the first (best?) matching kinetics is returned.
         """
         kineticsList = []
@@ -1801,6 +1852,8 @@ class KineticsFamily(Database):
         """
         Determine the appropriate kinetics for a reaction with the given
         `template` using group additivity.
+        
+        Returns just the kinetics, or None.
         """
         # Start with the generic kinetics of the top-level nodes
         kinetics = None
@@ -1817,6 +1870,10 @@ class KineticsFamily(Database):
         """
         Determine the appropriate kinetics for a reaction with the given
         `template` using rate rules.
+        
+        Returns a tuple (kinetics, entry) where `entry` is the database
+        entry used to determine the kinetics only if it is an exact match,
+        and is None if some averaging or use of a parent node took place.
         """    
         kinetics, entry  = self.rules.estimateKinetics(template, degeneracy)
                 
@@ -2099,7 +2156,7 @@ class KineticsFamily(Database):
         trainingEntries = None
         degeneracy = 1
 
-        regex = "\((.*)\)" # only hit outermost parentheses
+        regex = "\[(.*)\]" # only hit outermost brackets
         for line in lines:
             if line.startswith('Matched'):
                 # Source of the kinetics is from training reaction

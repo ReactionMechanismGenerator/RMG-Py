@@ -60,7 +60,7 @@ class TestAtom(unittest.TestCase):
             if element.symbol == 'H':
                 self.assertFalse(atom.isNonHydrogen())
             else:
-                self.assertTrue(atom.isNonHydrogen())
+                self.assertTrue(atom.isNonHydrogen(), "Atom {0!r} isn't reporting isNonHydrogen()".format(atom))
 
     def testIsCarbon(self):
         """
@@ -1042,12 +1042,12 @@ class TestMolecule(unittest.TestCase):
 
     def testRadicalCH(self):
         """
-        Test that the species [CH] has three radical electrons and a spin multiplicity of 4.
+        Test that the species [CH] has one radical electrons and a spin multiplicity of 2.
         """
         molecule = Molecule().fromSMILES('[CH]')
-        self.assertEqual(molecule.atoms[0].radicalElectrons, 3)
-        self.assertEqual(molecule.multiplicity, 4)
-        self.assertEqual(molecule.getRadicalCount(), 3)
+        self.assertEqual(molecule.atoms[0].radicalElectrons, 1)
+        self.assertEqual(molecule.multiplicity, 2)
+        self.assertEqual(molecule.getRadicalCount(), 1)
 
     def testRadicalCH2(self):
         """

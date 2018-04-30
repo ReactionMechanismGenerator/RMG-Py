@@ -127,13 +127,16 @@ class RMGDatabase:
         self.transport.load(path, transportLibraries)
         broadcast(self.transport, 'transport')
         
-    def loadForbiddenStructures(self, path):
+    def loadForbiddenStructures(self, path = None):
         """
         Load the RMG forbidden structures from the given `path` on disk, where
         `path` points to the forbidden structures file.
+
+        If no path is given, a blank forbidden structures object is created.
         """
         self.forbiddenStructures = ForbiddenStructures()
-        self.forbiddenStructures.load(path)
+        if path is not None:
+            self.forbiddenStructures.load(path)
         broadcast(self.forbiddenStructures, 'forbidden')
 
     def loadKinetics(self,

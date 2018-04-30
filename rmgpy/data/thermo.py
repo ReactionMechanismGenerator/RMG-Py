@@ -775,6 +775,9 @@ class ThermoDatabase(object):
                     self.libraries[library.label] = library
                     self.libraryOrder.append(library.label)
                 else:
+                    if libraryName == "KlippensteinH2O2":
+                        logging.info("""\n** Note: The thermo library KlippensteinH2O2 was replaced and is no longer available in RMG.
+                        For H2 combustion chemistry consider using the BurkeH2O2 library instead\n""")
                     raise Exception('Library {} not found in {}...Please check if your library is correctly placed'.format(libraryName, path))
 
     def loadGroups(self, path):
@@ -1616,6 +1619,7 @@ class ThermoDatabase(object):
         Determine the group additivity thermodynamic data for the atom `atom`
         in the structure `structure`, and add it to the existing thermo data
         `thermoData`.
+        The parameter `atom` is a dictionary of label-atom pairs like {'*',atom}
         """
         node0 = database.descendTree(molecule, atom, None)
         if node0 is None:
@@ -1625,7 +1629,7 @@ class ThermoDatabase(object):
         # library, in which case we need to fall up the tree until we find an
         # ancestor that has an entry in the library
         node = node0
-        while node.data is None and node is not None:
+        while node is not None and node.data is None:
             node = node.parent
         if node is None:
             raise DatabaseError('Unable to determine thermo parameters for {0}: no data for node {1} or any of its ancestors.'.format(molecule, node0) )

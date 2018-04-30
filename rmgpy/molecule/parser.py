@@ -42,12 +42,30 @@ INCHI_LOOKUPS = {
             'He': '[He]',
         }
 SMILES_LOOKUPS = {
-            '[He]':# RDKit improperly handles helium and returns it in a triplet state
+    '[He]':  # RDKit improperly handles helium and returns it in a triplet state
             """
             He
             multiplicity 1
             1 He u0 p1
+            """,
+    '[Ar]':  # RDKit improperly handles argon
             """
+            Ar
+            multiplicity 1
+            1 Ar u0 p4
+            """,
+    '[C]':  # We'd return the quintuplet without this
+            """
+            multiplicity 3
+            1 C u2 p1 c0
+            """,
+    '[CH]':  # We'd return the quartet without this
+            """
+            multiplicity 2
+            1 C u1 p1 c0 {2,S}
+            2 H u0 p0 c0 {1,S}
+            """,
+
 }     
 
 def __fromSMILES(mol, smilesstr, backend):
@@ -335,6 +353,7 @@ def fromRDKitMol(mol, rdkitmol):
     mol.vertices = []
     
     # Add hydrogen atoms to complete molecule if needed
+    rdkitmol.UpdatePropertyCache(strict=False)
     rdkitmol = Chem.AddHs(rdkitmol)
     Chem.rdmolops.Kekulize(rdkitmol, clearAromaticFlags=True)
     

@@ -24,8 +24,8 @@ dependencies:
   - nose
   - coverage
   - gprof2dot
-  #- cairo
-  #- cairocffi
+  - cairo
+  - cairocffi
   - openbabel
   - psutil
   - symmetry
@@ -35,3 +35,5 @@ dependencies:
   - ffmpeg
   - jupyter
   - networkx
+  - mock
+  # - muq

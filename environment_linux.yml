@@ -37,3 +37,5 @@ dependencies:
   - ffmpeg
   - jupyter
   - networkx
+  - mock
+  - muq

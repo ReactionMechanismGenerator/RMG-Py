@@ -4,6 +4,7 @@ import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
 from rmgpy.tools.data import GenericData
+import numpy
         
 def parseCSVData(csvFile):
     """
@@ -22,7 +23,6 @@ def parseCSVData(csvFile):
     Where Time is returned as a GenericData object, and DataList is list of GenericData objects
     """
     import csv
-    import numpy
     import re
     
     # Pattern for matching indices or units
@@ -82,7 +82,6 @@ def findNearest(array, value):
     """
     Returns the index of the closest value in a sorted array
     """
-    import numpy
     idx = (numpy.abs(array-value)).argmin()
     return idx
 
@@ -181,7 +180,6 @@ class GenericPlot(object):
         Plot a generic barplot using just the yVars.
         idx is the index of the each y-variable to be plotted. if not given, the last value will be used
         """
-        import numpy
         mpl.rc('font',family='sans-serif')
         
         fig = plt.figure()
@@ -422,6 +420,46 @@ class ReactionSensitivityPlot(GenericPlot):
         if not self.xlabel:
             self.xlabel = 'dln(c)/dln(k_i)'
         GenericPlot.barplot(self, filename=filename, idx=idx)
+
+    def uncertaintyPlot(self, totalVariance, t=None, filename=''):
+        """
+        Plot the top uncertainty contributions resulting from uncertainties in the
+        kinetic parameters.  The totalVariance must be specified.  Optionally,
+        the reaction time `t` in seconds can be specified for plotting the uncertainties.
+        The number of reaction uncertainties to plot is determined by self.numReactions
+        """
+
+        filename = filename if filename else "kinetics_uncertainty.png"
+        self.load()
+        if t:
+            idx = findNearest(self.xVar.data, t)
+        else:
+            idx = -1
+
+        reactionUncertainty = []
+
+        totalUncertainty = totalVariance
+
+        for reactionSens in self.yVar:
+            if isinstance(reactionSens,numpy.ndarray):
+                # The parameter uncertainties are an array which should have the same length as the sensitivity data
+                uncertaintyData = reactionSens*reactionSens.uncertainty
+                uncertaintyContribution = uncertaintyData[idx]**2
+            else:
+                uncertaintyContribution = (reactionSens.data[idx]*reactionSens.uncertainty)**2
+
+            reactionUncertainty.append([reactionSens.label, reactionSens.reaction, uncertaintyContribution])
+
+        # Normalize and create new list of GenericData
+        newYVar = []
+        for label, reaction, uncertainty in reactionUncertainty:
+            data = GenericData(label=label, reaction=reaction, data = [uncertainty/totalUncertainty*100])
+            newYVar.append(data)
+
+        newYVar.sort(key=lambda x: abs(x.data[0]), reverse = True)
+        newYVar = newYVar[:self.numReactions]
+
+        GenericPlot(xVar=None, yVar=newYVar, xlabel ="Uncertainty Contribution (%)").barplot(filename=filename)
         
 class ThermoSensitivityPlot(GenericPlot):
     """
@@ -489,3 +527,44 @@ class ThermoSensitivityPlot(GenericPlot):
             self.xlabel = 'dln(c)/d(G_i) [(kcal/mol)^-1]'
         GenericPlot.barplot(self, filename=filename, idx=idx)
 
+
+    def uncertaintyPlot(self, totalVariance, t=None, filename=''):
+        """
+        Plot the top uncertainty contributions resulting from uncertainties in the
+        thermo parameters.  The totalVariance must be specified.  Optionally,
+        the reaction time `t` in seconds can be specified for plotting the uncertainties.
+        The number of thermo uncertainties to plot is determined by self.numSpecies
+        """
+
+        filename = filename if filename else "thermo_uncertainty.png"
+        self.load()
+        if t:
+            idx = findNearest(self.xVar.data, t)
+        else:
+            idx = -1
+
+        thermoUncertainty = []
+
+        totalUncertainty = totalVariance
+
+        for thermoSens in self.yVar:
+            if isinstance(thermoSens,numpy.ndarray):
+                # The parameter uncertainties are an array which should have the same length as the sensitivity data
+                uncertaintyData = thermoSens*thermoSens.uncertainty
+                uncertaintyContribution = uncertaintyData[idx]**2
+            else:
+                # The parameter uncertainty is a scalar
+                uncertaintyContribution = (thermoSens.data[idx]*thermoSens.uncertainty)**2
+            thermoUncertainty.append([thermoSens.label, thermoSens.species, uncertaintyContribution])
+
+
+        # Normalize and create new list of GenericData
+        newYVar = []
+        for label, species, uncertainty in thermoUncertainty:
+            data = GenericData(label=label, species = species, data = [uncertainty/totalUncertainty*100])
+            newYVar.append(data)
+
+
+        newYVar.sort(key=lambda x: abs(x.data[0]), reverse = True)
+        newYVar = newYVar[:self.numSpecies]
+        GenericPlot(xVar=None, yVar=newYVar, xlabel ="Uncertainty Contribution (%)").barplot(filename=filename)

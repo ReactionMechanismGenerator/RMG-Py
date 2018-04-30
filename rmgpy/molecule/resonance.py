@@ -680,6 +680,10 @@ def _clarOptimization(mol, constraints=None, maxNum=None):
                    a=list, objective=list, status=cython.int, solution=list, innerSolutions=list)
 
     from lpsolve55 import lpsolve
+    import signal
+
+    # Save the current signal handler
+    sig = signal.getsignal(signal.SIGINT)
 
     # Make a copy of the molecule so we don't destroy the original
     molecule = mol.copy(deep=True)
@@ -752,6 +756,9 @@ def _clarOptimization(mol, constraints=None, maxNum=None):
     status = lpsolve('solve', lp)
     objVal, solution = lpsolve('get_solution', lp)[0:2]
     lpsolve('delete_lp', lp)  # Delete the LP problem to clear up memory
+
+    # Reset signal handling since lpsolve changed it
+    signal.signal(signal.SIGINT, sig)
 
     # Check that optimization was successful
     if status != 0:

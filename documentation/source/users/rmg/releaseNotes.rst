@@ -4,6 +4,36 @@
 Release Notes
 *************
 
+RMG-Py Version 2.1.1
+====================
+Date: April 07, 2017
+
+- Uncertainty analysis:
+    - Local and global uncertainty analysis now available for RMG-generated models
+    - Global uncertainty analysis uses MIT Uncertainty Quantification library, currently only supported on Linux systems
+    - Examples for each module are available in localUncertainty.ipynb and globalUncertainty.ipynb
+
+- Fixes:
+    - Clar structure generation no longer intercepts signals
+    - Fixes to SMILES generation
+    - Fix default spin state of [CH]
+
+RMG-database Version 2.1.1
+==========================
+Date: April 07, 2017
+
+- Additions:
+    - More species added to FFCM1(-) thermo library
+
+- Changes:
+    - Improved handling of excited species in FFCM1(-) kinetics library
+    - Replaced Klippenstein H2O2 kinetics and thermo libraries with BurkeH2O2inN2 and BurkeH2O2inArHe
+
+- Fixes:
+    - Corrected adjlists for some species in JetSurf2.0 kinetics and thermo libraries (also renamed from JetSurf0.2)
+    - Correct multiplicities for [C] and [CH] in multiple libraries ([C] from 5 to 3, [CH] from 4 to 2)
+
+
 RMG-Py Version 2.1.0
 ====================
 Date: March 07, 2017
