@@ -44,6 +44,7 @@ from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStruct
 from rmgpy.reaction import Reaction
 from rmgpy.kinetics import Arrhenius, ArrheniusEP
 from rmgpy.molecule import Bond, GroupBond, Group, Molecule, ActionError
+from rmgpy.molecule.kekulize import KekulizationError
 from rmgpy.species import Species
 
 from .common import KineticsError, UndeterminableKineticsError, saveEntry
@@ -204,6 +205,7 @@ class ReactionRecipe:
         """
 
         pattern = isinstance(struct, Group)
+        struct.props['validAromatic'] = True
 
         for action in self.actions:
             if action[0] in ['CHANGE_BOND', 'FORM_BOND', 'BREAK_BOND']:
@@ -225,6 +227,8 @@ class ReactionRecipe:
                 if action[0] == 'CHANGE_BOND':
                     info = int(info)
                     bond = struct.getBond(atom1, atom2)
+                    if bond.isBenzene():
+                        struct.props['validAromatic'] = False
                     if doForward:
                         atom1.applyAction(['CHANGE_BOND', label1, info, label2])
                         atom2.applyAction(['CHANGE_BOND', label1, info, label2])
@@ -849,7 +853,8 @@ class KineticsFamily(Database):
         productStructures = []
         for reactantStructure in reactantStructures:
             productStructure = self.applyRecipe(reactantStructure, forward=True, unique=False)
-            productStructures.append(productStructure)
+            if productStructure:
+                productStructures.append(productStructure)
 
         # Fourth, remove duplicates from the lists
         productStructureList = [[] for i in range(len(productStructures[0]))]
@@ -1095,6 +1100,15 @@ class KineticsFamily(Database):
             self.forwardRecipe.applyForward(reactantStructure, unique)
         else:
             self.reverseRecipe.applyForward(reactantStructure, unique)
+        if not reactantStructure.props['validAromatic']:
+            if isinstance(reactantStructure, Molecule):
+                # For molecules, kekulize the product to redistribute bonds appropriately
+                reactantStructure.kekulize()
+            else:
+                # For groups, we ignore the product template for a purely aromatic group
+                # If there is an analagous aliphatic group in the family, then the product template will be identical
+                # There should NOT be any families that consist solely of aromatic reactant templates
+                return []
         productStructure = reactantStructure
 
         # Hardcoding of reaction family for reverse of radical recombination
@@ -1205,7 +1219,7 @@ class KineticsFamily(Database):
         try:
             productStructures = self.applyRecipe(reactantStructures, forward=forward)
             if not productStructures: return None
-        except InvalidActionError:
+        except (InvalidActionError, KekulizationError):
 #            logging.error('Unable to apply reaction recipe!')
 #            logging.error('Reaction family is {0} in {1} direction'.format(self.label, 'forward' if forward else 'reverse'))
 #            logging.error('Reactant structures are:')
@@ -1672,9 +1686,9 @@ class KineticsFamily(Database):
                     pairs.append([reaction.reactants[1],reaction.products[0]])
                 else:
                     error = True
-        elif self.label.lower() == 'disproportionation':
-            # Hardcoding for disproportionation: pair the reactant containing
-            # *1 with the product containing *1
+        elif self.label.lower() in ['disproportionation', 'co_disproportionation']:
+            # Hardcoding for disproportionation and co_disproportionation: pair
+            # the reactant containing *1 with the product containing *1
             assert len(reaction.reactants) == len(reaction.products) == 2
             if reaction.reactants[0].containsLabeledAtom('*1'):
                 if reaction.products[0].containsLabeledAtom('*1'):
@@ -1787,11 +1801,16 @@ class KineticsFamily(Database):
         depositories as well as generating a result using the user-specified `estimator`
         of either 'group additivity' or 'rate rules'.  Unlike
         the regular :meth:`getKinetics()` method, this returns a list of
-        results, with each result comprising the kinetics, the source,
-        the entry, and whether it's in the forward direction.
-        The source will be the depository name or estimator method.
-        If it came from a template estimated with averaging then the
-        entry will be `None`.
+        results, with each result comprising of
+
+        1. the kinetics
+        2. the source - this will be `None` if from a template estimate
+        3. the entry  - this will be `None` if from a template estimate
+        4. isForward a boolean denoting whether the matched entry is in the same
+        direction as the inputted reaction. This will always be True if using
+        rates rules or group additivity. This can be `True` or `False` if using
+        a depository
+
         If returnAllKinetics==False, only the first (best?) matching kinetics is returned.
         """
         kineticsList = []

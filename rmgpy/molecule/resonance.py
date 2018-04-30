@@ -47,12 +47,12 @@ Currently supported resonance types:
 """
 
 import cython
-
-import rmgpy.molecule.generator as generator
-import rmgpy.molecule.parser as parser
+import logging
+import itertools
 
 from .graph import Vertex, Edge, Graph, getVertexConnectivityValue
 from .molecule import Atom, Bond, Molecule
+from .kekulize import kekulize, KekulizationError
 from .atomtype import AtomTypeError
 import rmgpy.molecule.pathfinder as pathfinder
 
@@ -78,14 +78,10 @@ def populateResonanceAlgorithms(features=None):
             generateClarStructures,
         ]
     else:
-        if features['isAromatic']:
-            methodList.append(generateAromaticResonanceStructures)
-            methodList.append(generateKekuleStructure)
-            if features['isPolycyclicAromatic']:
-                methodList.append(generateClarStructures)
-            else:
-                methodList.append(generateOppositeKekuleStructure)
-        if features['isRadical'] and not features['isArylRadical']:
+        # If the molecule is aromatic, then radical resonance has already been considered
+        # If the molecule was falsely identified as aromatic, then isArylRadical will still accurately capture
+        # cases where the radical is in an orbital that is orthogonal to the pi orbitals.
+        if features['isRadical'] and not features['isAromatic'] and not features['isArylRadical']:
             methodList.append(generateAdjacentResonanceStructures)
         if features['hasNitrogen']:
             methodList.append(generateN5dd_N5tsResonanceStructures)
@@ -113,13 +109,13 @@ def analyzeMolecule(mol):
                 }
 
     if features['isCyclic']:
-        ASSSR = mol.getAromaticSSSR()[0]
-        if len(ASSSR) > 0:
+        aromaticRings = mol.getAromaticRings()[0]
+        if len(aromaticRings) > 0:
             features['isAromatic'] = True
-        if len(ASSSR) > 1:
+        if len(aromaticRings) > 1:
             features['isPolycyclicAromatic'] = True
         if features['isRadical'] and features['isAromatic']:
-            features['isArylRadical'] = mol.isArylRadical(ASSSR)
+            features['isArylRadical'] = mol.isArylRadical(aromaticRings)
     for atom in mol.vertices:
         if atom.isNitrogen():
             features['hasNitrogen'] = True
@@ -130,7 +126,7 @@ def analyzeMolecule(mol):
 
     return features
 
-def generateResonanceStructures(mol):
+def generateResonanceStructures(mol, clarStructures=True, keepIsomorphic=False):
     """
     Generate and return all of the resonance structures for the input molecule.
 
@@ -170,51 +166,64 @@ def generateResonanceStructures(mol):
     else:
         newMolList = []
 
+    # Special handling for aromatic species
     if len(newMolList) > 0:
         if features['isRadical'] and not features['isArylRadical']:
             if features['isPolycyclicAromatic']:
-                _generateResonanceStructures(newMolList, [generateKekuleStructure])
-                _generateResonanceStructures(newMolList, [generateAdjacentResonanceStructures])
-                _generateResonanceStructures(newMolList, [generateClarStructures])
-                # Remove non-aromatic structures under the assumption that they aren't important resonance contributors
-                newMolList = [m for m in newMolList if m.isAromatic()]
+                if clarStructures:
+                    _generateResonanceStructures(newMolList, [generateKekuleStructure], keepIsomorphic)
+                    _generateResonanceStructures(newMolList, [generateAdjacentResonanceStructures], keepIsomorphic)
+                    _generateResonanceStructures(newMolList, [generateClarStructures], keepIsomorphic)
+                    # Remove non-aromatic structures under the assumption that they aren't important resonance contributors
+                    newMolList = [m for m in newMolList if m.isAromatic()]
+                else:
+                    pass
             else:
                 _generateResonanceStructures(newMolList, [generateKekuleStructure,
-                                                          generateOppositeKekuleStructure])
-                _generateResonanceStructures(newMolList, [generateAdjacentResonanceStructures])
+                                                          generateOppositeKekuleStructure]), keepIsomorphic
+                _generateResonanceStructures(newMolList, [generateAdjacentResonanceStructures], keepIsomorphic)
         elif features['isPolycyclicAromatic']:
-            _generateResonanceStructures(newMolList, [generateClarStructures])
+            if clarStructures:
+                _generateResonanceStructures(newMolList, [generateClarStructures], keepIsomorphic)
+            else:
+                pass
         else:
             # The molecule is an aryl radical or stable mono-ring aromatic
             # In this case, generate the kekulized form
             _generateResonanceStructures(newMolList, [generateKekuleStructure,
-                                                      generateOppositeKekuleStructure])
+                                                      generateOppositeKekuleStructure], keepIsomorphic)
 
         # Check for isomorphism against the original molecule
-        for newMol in newMolList:
-            if mol.isIsomorphic(newMol):
+        for i, newMol in enumerate(newMolList):
+            if not keepIsomorphic and mol.isIsomorphic(newMol):
                 # There will be at most one isomorphic molecule, since the new molecules have
                 # already been checked against each other, so we can break after removing it
-                newMolList.remove(newMol)
+                del newMolList[i]
+                break
+            elif keepIsomorphic and mol.isIdentical(newMol):
+                del newMolList[i]
                 break
         # Add the newly generated structures to the original list
         # This is not optimal, but is a temporary measure to ensure compatability until other issues are fixed
         molList.extend(newMolList)
-    else:
-        methodList = populateResonanceAlgorithms(features)
-        _generateResonanceStructures(molList, methodList)
+
+    # Generate remaining resonance structures
+    methodList = populateResonanceAlgorithms(features)
+    _generateResonanceStructures(molList, methodList, keepIsomorphic)
 
     return molList
 
-def _generateResonanceStructures(molList, methodList, copy=False):
+def _generateResonanceStructures(molList, methodList, keepIsomorphic=False, copy=False):
     """
     Iteratively generate all resonance structures for a list of starting molecules using the specified methods.
 
     Args:
-        molList      starting list of molecules
-        methodList   list of resonance structure algorithms
-        copy         if False, append new resonance structures to input list (default)
-                     if True, make a new list with all of the resonance structures
+        molList             starting list of molecules
+        methodList          list of resonance structure algorithms
+        keepIsomorphic      if False, removes any structures that give isIsomorphic=True (default)
+                            if True, only remove structures that give isIdentical=True
+        copy                if False, append new resonance structures to input list (default)
+                            if True, make a new list with all of the resonance structures
     """
     cython.declare(index=cython.int, molecule=Molecule, newMolList=list, newMol=Molecule, mol=Molecule)
 
@@ -234,7 +243,9 @@ def _generateResonanceStructures(molList, methodList, copy=False):
         for newMol in newMolList:
             # Append to isomer list if unique
             for mol in molList:
-                if mol.isIsomorphic(newMol):
+                if not keepIsomorphic and mol.isIsomorphic(newMol):
+                    break
+                elif keepIsomorphic and mol.isIdentical(newMol):
                     break
             else:
                 molList.append(newMol)
@@ -428,8 +439,9 @@ def generateAromaticResonanceStructures(mol, features=None):
     In certain cases where multiple forms have the same number of aromatic rings, multiple structures will be returned.
     If there's an error (eg. in RDKit) it just returns an empty list.
     """
-    cython.declare(molecule=Molecule, SSSR=list, rings=list, aromaticBonds=list, kekuleList=list,
-                   maxNum=cython.int, molList=list, newMolList=list, ring=list, bond=Bond)
+    cython.declare(molecule=Molecule, rings=list, aromaticBonds=list, kekuleList=list, maxNum=cython.int, molList=list,
+                   newMolList=list, ring=list, bond=Bond, order=float, originalBonds=list, originalOrder=list,
+                   i=cython.int, counter=cython.int)
 
     if features is None:
         features = analyzeMolecule(mol)
@@ -440,11 +452,10 @@ def generateAromaticResonanceStructures(mol, features=None):
     molecule = mol.copy(deep=True)
 
     # First get all rings in the molecule
-    SSSR = molecule.getSmallestSetOfSmallestRings()
-    rings = [ring0 for ring0 in SSSR if len(ring0) == 6]
+    rings = molecule.getAllSimpleCyclesOfSize(6)
 
     # Then determine which ones are aromatic
-    aromaticBonds = molecule.getAromaticSSSR(SSSR)[1]
+    aromaticBonds = molecule.getAromaticRings(rings)[1]
 
     # If the species is a radical and the number of aromatic rings is less than the number of total rings,
     # then there is a chance that the radical can be shifted to a location that increases the number of aromatic rings.
@@ -460,7 +471,7 @@ def generateAromaticResonanceStructures(mol, features=None):
 
         # Iterate through the adjacent resonance structures and keep the structures with the most aromatic rings
         for mol0 in kekuleList:
-            aromaticBonds = mol0.getAromaticSSSR()[1]
+            aromaticBonds = mol0.getAromaticRings()[1]
             if len(aromaticBonds) > maxNum:
                 maxNum = len(aromaticBonds)
                 molList = [(mol0, aromaticBonds)]
@@ -477,6 +488,14 @@ def generateAromaticResonanceStructures(mol, features=None):
     for mol0, aromaticBonds in molList:
         if not aromaticBonds:
             continue
+        # Save original bond orders in case this doesn't work out
+        originalBonds = []
+        for ring in aromaticBonds:
+            originalOrder = []
+            for bond in ring:
+                originalOrder.append(bond.order)
+            originalBonds.append(originalOrder)
+        # Change bond types to benzene bonds for all aromatic rings
         for ring in aromaticBonds:
             for bond in ring:
                 bond.order = 1.5
@@ -484,7 +503,37 @@ def generateAromaticResonanceStructures(mol, features=None):
         try:
             mol0.updateAtomTypes(logSpecies=False)
         except AtomTypeError:
-            continue
+            # If this didn't work the first time, then there might be a ring that is not actually aromatic
+            # Reset our changes
+            for ring, originalOrder in itertools.izip(aromaticBonds, originalBonds):
+                for bond, order in itertools.izip(ring, originalOrder):
+                    bond.order = order
+            # Try to make each ring aromatic, one by one
+            i = 0
+            counter = 0
+            while i < len(aromaticBonds) and counter < 2*len(aromaticBonds):
+                counter += 1
+                originalOrder = []
+                for bond in aromaticBonds[i]:
+                    originalOrder.append(bond.order)
+                    bond.order = 1.5
+                try:
+                    mol0.updateAtomTypes(logSpecies=False)
+                except AtomTypeError:
+                    # This ring could not be made aromatic, possibly because it depends on other rings
+                    # Undo changes
+                    for bond, order in itertools.izip(aromaticBonds[i], originalOrder):
+                        bond.order = order
+                    # Move it to the end of the list, and go on to the next ring
+                    aromaticBonds.append(aromaticBonds.pop(i))
+                    continue
+                else:
+                    # We're done with this ring, so go on to the next ring
+                    i += 1
+            # If we didn't end up making any of the rings aromatic, then this molecule is not actually aromatic
+            if i == 0:
+                # Move onto next molecule in the list
+                continue
 
         for mol1 in newMolList:
             if mol1.isIsomorphic(mol0):
@@ -502,20 +551,22 @@ def generateKekuleStructure(mol):
     Returns a single Kekule structure as an element of a list of length 1.
     If there's an error (eg. in RDKit) then it just returns an empty list.
     """
-    cython.declare(atom=Atom)
+    cython.declare(atom=Atom, molecule=Molecule)
+
     for atom in mol.atoms:
         if atom.atomType.label == 'Cb' or atom.atomType.label == 'Cbf':
             break
     else:
         return []
-   
+
+    molecule = mol.copy(deep=True)
+
     try:
-        rdkitmol = generator.toRDKitMol(mol)  # This perceives aromaticity
-        isomer = parser.fromRDKitMol(Molecule(), rdkitmol)  # This step Kekulizes the molecule
-    except ValueError:
+        kekulize(molecule)
+    except KekulizationError:
         return []
-    isomer.updateAtomTypes(logSpecies=False)
-    return [isomer]
+
+    return [molecule]
 
 def generateOppositeKekuleStructure(mol):
     """
@@ -531,7 +582,7 @@ def generateOppositeKekuleStructure(mol):
 
     molecule = mol.copy(deep=True)
 
-    aromaticBonds = molecule.getAromaticSSSR()[1]
+    aromaticBonds = molecule.getAromaticRings()[1]
 
     # We can only do this for single ring aromatics for now
     if len(aromaticBonds) != 1:
@@ -616,23 +667,27 @@ def generateClarStructures(mol):
 
     Returns a list of :class:`Molecule` objects corresponding to the Clar structures.
     """
-    cython.declare(output=list, molList=list, newmol=Molecule, asssr=list, bonds=list, solution=list,
+    cython.declare(output=list, molList=list, newmol=Molecule, aromaticRings=list, bonds=list, solution=list,
                    y=list, x=list, index=cython.int, bond=Bond, ring=list)
 
     if not mol.isCyclic():
         return []
 
-    output = _clarOptimization(mol)
+    try:
+        output = _clarOptimization(mol)
+    except ILPSolutionError:
+        # The optimization algorithm did not work on the first iteration
+        return []
 
     molList = []
 
-    for newmol, asssr, bonds, solution in output:
+    for newmol, aromaticRings, bonds, solution in output:
 
         # The solution includes a part corresponding to rings, y, and a part corresponding to bonds, x, using
         # nomenclature from the paper. In y, 1 means the ring as a sextet, 0 means it does not.
         # In x, 1 corresponds to a double bond, 0 either means a single bond or the bond is part of a sextet.
-        y = solution[0:len(asssr)]
-        x = solution[len(asssr):]
+        y = solution[0:len(aromaticRings)]
+        x = solution[len(aromaticRings):]
 
         # Apply results to molecule - double bond locations first
         for index, bond in enumerate(bonds):
@@ -644,7 +699,7 @@ def generateClarStructures(mol):
                 raise ValueError('Unaccepted bond value {0} obtained from optimization.'.format(x[index]))
 
         # Then apply locations of aromatic sextets by converting to benzene bonds
-        for index, ring in enumerate(asssr):
+        for index, ring in enumerate(aromaticRings):
             if y[index] == 1:
                 _clarTransformation(newmol, ring)
 
@@ -676,7 +731,7 @@ def _clarOptimization(mol, constraints=None, maxNum=None):
         Hansen, P.; Zheng, M. The Clar Number of a Benzenoid Hydrocarbon and Linear Programming.
             J. Math. Chem. 1994, 15 (1), 93–107.
     """
-    cython.declare(molecule=Molecule, asssr=list, exo=list, l=cython.int, m=cython.int, n=cython.int,
+    cython.declare(molecule=Molecule, aromaticRings=list, exo=list, l=cython.int, m=cython.int, n=cython.int,
                    a=list, objective=list, status=cython.int, solution=list, innerSolutions=list)
 
     from lpsolve55 import lpsolve
@@ -688,14 +743,14 @@ def _clarOptimization(mol, constraints=None, maxNum=None):
     # Make a copy of the molecule so we don't destroy the original
     molecule = mol.copy(deep=True)
 
-    asssr = molecule.getAromaticSSSR()[0]
+    aromaticRings = molecule.getAromaticRings()[0]
 
-    if not asssr:
+    if not aromaticRings:
         return []
 
     # Get list of atoms that are in rings
     atoms = set()
-    for ring in asssr:
+    for ring in aromaticRings:
         atoms.update(ring)
     atoms = list(atoms)
 
@@ -717,7 +772,7 @@ def _clarOptimization(mol, constraints=None, maxNum=None):
             exo.append(None)
 
     # Dimensions
-    l = len(asssr)
+    l = len(aromaticRings)
     m = len(atoms)
     n = l + len(bonds)
 
@@ -725,7 +780,7 @@ def _clarOptimization(mol, constraints=None, maxNum=None):
     # Part of equality constraint Ax=b
     a = []
     for atom in atoms:
-        inRing = [1 if atom in ring else 0 for ring in asssr]
+        inRing = [1 if atom in ring else 0 for ring in aromaticRings]
         inBond = [1 if atom in [bond.atom1, bond.atom2] else 0 for bond in bonds]
         a.append(inRing + inBond)
 
@@ -751,7 +806,13 @@ def _clarOptimization(mol, constraints=None, maxNum=None):
     # Add constraints to problem if provided
     if constraints is not None:
         for constraint in constraints:
-            lpsolve('add_constraint', lp, constraint[0], '<=', constraint[1])
+            try:
+                lpsolve('add_constraint', lp, constraint[0], '<=', constraint[1])
+            except:
+                logging.error('Unable to add constraint: {0} <= {1}'.format(constraint[0], constraint[1]))
+                logging.error('Cannot complete Clar optimization for {0}.'.format(str(mol)))
+                logging.error(mol.toAdjacencyList())
+                raise
 
     status = lpsolve('solve', lp)
     objVal, solution = lpsolve('get_solution', lp)[0:2]
@@ -792,7 +853,7 @@ def _clarOptimization(mol, constraints=None, maxNum=None):
     except ILPSolutionError:
         innerSolutions = []
 
-    return innerSolutions + [(molecule, asssr, bonds, solution)]
+    return innerSolutions + [(molecule, aromaticRings, bonds, solution)]
 
 
 def _clarTransformation(mol, aromaticRing):

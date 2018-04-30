@@ -1947,45 +1947,45 @@ multiplicity 2
         self.assertTrue(exp.isIsomorphic(calc))
 
     def testAromaticityPerceptionBenzene(self):
-        """Test aromaticity perception via getAromaticSSSR for benzene."""
+        """Test aromaticity perception via getAromaticRings for benzene."""
         mol = Molecule(SMILES='c1ccccc1')
-        asssr, aromaticBonds = mol.getAromaticSSSR()
-        self.assertEqual(len(asssr), 1)
+        aromaticAtoms, aromaticBonds = mol.getAromaticRings()
+        self.assertEqual(len(aromaticAtoms), 1)
         self.assertEqual(len(aromaticBonds), 1)
         for bond in aromaticBonds[0]:
-            self.assertTrue(bond.atom1 in asssr[0] and bond.atom2 in asssr[0])
+            self.assertTrue(bond.atom1 in aromaticAtoms[0] and bond.atom2 in aromaticAtoms[0])
 
     def testAromaticityPerceptionTetralin(self):
-        """Test aromaticity perception via getAromaticSSSR for tetralin."""
+        """Test aromaticity perception via getAromaticRings for tetralin."""
         mol = Molecule(SMILES='c1ccc2c(c1)CCCC2')
-        asssr, aromaticBonds = mol.getAromaticSSSR()
-        self.assertEqual(len(asssr), 1)
+        aromaticAtoms, aromaticBonds = mol.getAromaticRings()
+        self.assertEqual(len(aromaticAtoms), 1)
         self.assertEqual(len(aromaticBonds), 1)
         for bond in aromaticBonds[0]:
-            self.assertTrue(bond.atom1 in asssr[0] and bond.atom2 in asssr[0])
+            self.assertTrue(bond.atom1 in aromaticAtoms[0] and bond.atom2 in aromaticAtoms[0])
 
     def testAromaticityPerceptionBiphenyl(self):
-        """Test aromaticity perception via getAromaticSSSR for biphenyl."""
+        """Test aromaticity perception via getAromaticRings for biphenyl."""
         mol = Molecule(SMILES='c1ccc(cc1)c2ccccc2')
-        asssr, aromaticBonds = mol.getAromaticSSSR()
-        self.assertEqual(len(asssr), 2)
+        aromaticAtoms, aromaticBonds = mol.getAromaticRings()
+        self.assertEqual(len(aromaticAtoms), 2)
         self.assertEqual(len(aromaticBonds), 2)
-        for index in range(len(asssr)):
+        for index in range(len(aromaticAtoms)):
             for bond in aromaticBonds[index]:
-                self.assertTrue(bond.atom1 in asssr[index] and bond.atom2 in asssr[index])
+                self.assertTrue(bond.atom1 in aromaticAtoms[index] and bond.atom2 in aromaticAtoms[index])
 
     def testAromaticityPerceptionAzulene(self):
-        """Test aromaticity perception via getAromaticSSSR for azulene."""
+        """Test aromaticity perception via getAromaticRings for azulene."""
         mol = Molecule(SMILES='c1cccc2cccc2c1')
-        asssr, aromaticBonds = mol.getAromaticSSSR()
-        self.assertEqual(len(asssr), 0)
+        aromaticAtoms, aromaticBonds = mol.getAromaticRings()
+        self.assertEqual(len(aromaticAtoms), 0)
         self.assertEqual(len(aromaticBonds), 0)
 
     def testAromaticityPerceptionFuran(self):
-        """Test aromaticity perception via getAromaticSSSR for furan."""
+        """Test aromaticity perception via getAromaticRings for furan."""
         mol = Molecule(SMILES='c1ccoc1')
-        asssr, aromaticBonds = mol.getAromaticSSSR()
-        self.assertEqual(len(asssr), 0)
+        aromaticAtoms, aromaticBonds = mol.getAromaticRings()
+        self.assertEqual(len(aromaticAtoms), 0)
         self.assertEqual(len(aromaticBonds), 0)
 
     def testArylRadicalTrue(self):
@@ -2007,6 +2007,59 @@ multiplicity 2
         mol = Molecule(SMILES='[CH2]c1c[c]ccc1')
         self.assertFalse(mol.isArylRadical())
 
+    def testIdenticalTrue(self):
+        """Test that the isIdentical returns True with butane"""
+        mol = Molecule(SMILES='CCCC')
+        mol.assignAtomIDs()
+        molCopy = mol.copy(deep=True)
+        self.assertTrue(mol.isIsomorphic(molCopy))
+        self.assertTrue(mol.isIdentical(molCopy))
+
+    def testIdenticalFalse(self):
+        """Test that the isIdentical returns False with butane"""
+        mol = Molecule(SMILES='CCCC')
+        mol.assignAtomIDs()
+        molCopy = mol.copy(deep=True)
+        # Remove a hydrogen from mol
+        a = mol.atoms[-1]
+        self.assertEquals(a.id, 13)
+        mol.removeAtom(a)
+        # Remove a different hydrogen from molCopy
+        b = molCopy.atoms[-2]
+        self.assertEquals(b.id, 12)
+        molCopy.removeAtom(b)
+
+        self.assertTrue(mol.isIsomorphic(molCopy))
+        self.assertFalse(mol.isIdentical(molCopy))
+
+    def testIdenticalFalse2(self):
+        """Test that the isIdentical method returns False with ethene"""
+        # Manually test addition of H radical to ethene
+        reactant1 = Molecule(SMILES='C=C')
+        carbons = [atom for atom in reactant1.atoms if atom.symbol == 'C']
+        carbons[0].label = '*1'
+        carbons[1].label = '*2'
+        reactant2 = Molecule(SMILES='[H]')
+        reactant2.atoms[0].label = '*3'
+        # Merge reactants
+        mol = reactant1.merge(reactant2)
+        mol.assignAtomIDs()
+        molCopy = mol.copy(deep=True)
+        # Manually perform R_Addition_MultipleBond of *3 to *1
+        labeledAtoms = mol.getLabeledAtoms()
+        mol.getBond(labeledAtoms['*1'], labeledAtoms['*2']).decrementOrder()
+        mol.addBond(Bond(labeledAtoms['*1'], labeledAtoms['*3'], order='S'))
+        labeledAtoms['*2'].incrementRadical()
+        labeledAtoms['*3'].decrementRadical()
+        # Manually perform R_Addition_MultipleBond of *3 to *2
+        labeledAtoms = molCopy.getLabeledAtoms()
+        molCopy.getBond(labeledAtoms['*1'], labeledAtoms['*2']).decrementOrder()
+        molCopy.addBond(Bond(labeledAtoms['*2'], labeledAtoms['*3'], order='S'))
+        labeledAtoms['*1'].incrementRadical()
+        labeledAtoms['*3'].decrementRadical()
+
+        self.assertTrue(mol.isIsomorphic(molCopy))
+        self.assertFalse(mol.isIdentical(molCopy))
 
 ################################################################################
 

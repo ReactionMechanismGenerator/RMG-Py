@@ -758,8 +758,16 @@ class GroupBond(Edge):
         newOrder = [value + order for value in self.order]
         if any([value < 0 or value > 3 for value in newOrder]):
             raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid resulting order "{0}".'.format(newOrder))
-        # Set the new bond orders, removing any duplicates
-        self.order = list(set(newOrder))
+        # Change any modified benzene orders to the appropriate stable order
+        newOrder = set(newOrder)
+        if 0.5 in newOrder:
+            newOrder.remove(0.5)
+            newOrder.add(1)
+        if 2.5 in newOrder:
+            newOrder.remove(2.5)
+            newOrder.add(2)
+        # Set the new bond orders
+        self.order = list(newOrder)
 
     def applyAction(self, action):
         """
@@ -844,22 +852,30 @@ class GroupBond(Edge):
 class Group(Graph):
     """
     A representation of a molecular substructure group using a graph data
-    type, extending the :class:`Graph` class. The `atoms` and `bonds` attributes
-    are aliases for the `vertices` and `edges` attributes, and store 
-    :class:`GroupAtom` and :class:`GroupBond` objects, respectively.
-    Corresponding alias methods have also been provided.
+    type, extending the :class:`Graph` class. The attributes are:
+    
+    =================== =================== ====================================
+    Attribute           Type                Description
+    =================== =================== ====================================
+    `atoms`             ``list``            Aliases for the `vertices` storing :class:`GroupAtom`
+    `multiplicity`      ``list``            Range of multiplicities accepted for the group
+    `props`             ``dict``            Dictionary of arbitrary properties/flags classifying state of Group object 
+    =================== =================== ====================================
+
+    Corresponding alias methods to Molecule have also been provided.
     """
 
-    def __init__(self, atoms=None, multiplicity=None):
+    def __init__(self, atoms=None, props=None, multiplicity=None):
         Graph.__init__(self, atoms)
-        self.multiplicity = multiplicity if multiplicity else []
+        self.props = props or {}
+        self.multiplicity = multiplicity or []
         self.update()
 
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
-        return (Group, (self.vertices,))
+        return (Group, (self.vertices, self.props))
 
     def _repr_png_(self):
         """
@@ -1959,7 +1975,12 @@ class Group(Graph):
 
         #Saturate up to expected valency
         for molAtom in newMolecule.atoms:
-            statedCharge = molAtom.charge
+            #Group atom had a explicit charge
+            if molAtom in molToGroup and molToGroup[molAtom].charge:
+                statedCharge = molToGroup[molAtom].charge[0]
+            #otherwise assume no charge (or implicit atoms we assume hvae no charge)
+            else:
+                statedCharge = 0
             molAtom.updateCharge()
             if molAtom.charge - statedCharge:
                 hydrogenNeeded = molAtom.charge - statedCharge
@@ -1975,25 +1996,34 @@ class Group(Graph):
                     newMolecule.addBond(newBond)
                 molAtom.updateCharge()
 
+
+
         newMolecule.update()
+
+        #hard-coded exception for carbonMonoxide with default (but incorrect) charges/lone pairs
+        #Not the best solution, but because solubility expects this we need to allow it for now
+        falseCarbonMonoxide = mol.Molecule().fromSMILES("C#[O-]")
+        if newMolecule.isIsomorphic(falseCarbonMonoxide):
+            return newMolecule
+
         #Check that the charge of atoms is expected
-        carbonMonoxide = mol.Molecule(SMILES="[C-]#[O+]")
-        carbonMonosulfide = mol.Molecule().fromAdjacencyList(
-"""
-1 S u0 p1 c+1 {2,T}
-2 C u0 p1 c-1 {1,T}
-"""
-        )
         for atom in newMolecule.atoms:
-            if abs(atom.charge) > 1: raise UnexpectedChargeError(graph = newMolecule)
-            elif abs(atom.charge) == 1:
-                if atom.atomType.isSpecificCaseOf(atomTypes['N']): pass
-                elif atom.atomType.isSpecificCaseOf(atomTypes['O']): pass
-                elif atom.atomType.isSpecificCaseOf(atomTypes['S']): pass
-                elif atom.atomType.isSpecificCaseOf(atomTypes['C']) and newMolecule.isIsomorphic(carbonMonoxide): pass
-                elif atom.atomType.isSpecificCaseOf(atomTypes['C']) and newMolecule.isIsomorphic(carbonMonosulfide): pass
+            if abs(atom.charge) > 0:
+                if atom in molToGroup:
+                    groupAtom = molToGroup[atom]
                 else:
                     raise UnexpectedChargeError(graph = newMolecule)
+                #check hardcoded atomtypes
+                if groupAtom.atomType[0] in [atomTypes[x] for x in ['N5d', 'N5dd', 'N5t', 'N5b', 'N5s', 'Ot']] and atom.charge == 1:
+                    pass
+                elif groupAtom.atomType[0] in [atomTypes[x] for x in ['N1d', 'N2s']] and atom.charge == -1:
+                    pass
+                #declared charge in original group is not same as new charge
+                elif atom.charge in groupAtom.charge:
+                    pass
+                else:
+                    raise UnexpectedChargeError(graph = newMolecule)
+
         return newMolecule
 
     def isBenzeneExplicit(self):

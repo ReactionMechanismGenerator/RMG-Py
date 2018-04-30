@@ -74,6 +74,17 @@ def database(
     rmg.databaseDirectory = settings['database.directory']
     rmg.thermoLibraries = thermoLibraries or []
     rmg.transportLibraries = transportLibraries
+    # Modify reactionLibraries if the user didn't specify tuple input
+    if reactionLibraries:
+        index = 0
+        while index < len(reactionLibraries):
+            if isinstance(reactionLibraries[index],tuple):
+                pass
+            elif isinstance(reactionLibraries[index],str):
+                reactionLibraries[index] = (reactionLibraries[index], False)
+            else:
+                raise TypeError('reaction libraries must be input as tuples or strings')
+            index += 1
     rmg.reactionLibraries = reactionLibraries or []
     rmg.seedMechanisms = seedMechanisms or []
     rmg.statmechLibraries = frequenciesLibraries or []
@@ -347,6 +358,14 @@ def generatedSpeciesConstraints(**kwargs):
 
 ################################################################################
 
+def setGlobalRMG(rmg0):
+    """
+    sets the global variable rmg to rmg0. This is used to allow for unittesting
+    of above methods
+    """
+    global rmg
+    rmg = rmg0
+
 def readInputFile(path, rmg0):
     """
     Read an RMG input file at `path` on disk into the :class:`RMG` object 
@@ -366,7 +385,7 @@ def readInputFile(path, rmg0):
     logging.info(f.read())
     f.seek(0)# return to beginning of file
 
-    rmg = rmg0
+    setGlobalRMG(rmg0)
     rmg.reactionModel = CoreEdgeReactionModel()
     rmg.initialSpecies = []
     rmg.reactionSystems = []

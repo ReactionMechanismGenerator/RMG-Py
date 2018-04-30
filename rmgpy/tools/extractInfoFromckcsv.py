@@ -50,28 +50,27 @@ def getROPFromCKCSV(ckcsvFile):
                 firstColDict[header] = contentCol
                 continue
 
-            if len(tokens) > 1:
-                if tokens[1] == 'ROP':
-                    if 'Soln' in tokens[-1]:
-                        raise Exception("This function only supports ckcsv with one Soln!")
-                    species_string = tokens[0]
-                    units = row[1].strip()[1:-1].lower()
-                    header = ''
-                    contentCol = numpy.array([float(r) for r in row[2:]], numpy.float)
-                    if tokens[-1] == 'Total':
-                    	header += species_string + ' ROP ' + tokens[2] \
-                    	+ ' ' + tokens[-1] + '_(' + units + ')'
-                        if species_string not in spc_total_dict:
-                            spc_total_dict[species_string] = (header, contentCol)
-                        else:
-                            raise Exception("ckcsv file has two {} which is not in proper format!".format(header))
-                    else: # where tokens[-1] is something like GasRxn#123
-                    	header += species_string + ' ROP ' \
-                    	+ tokens[-1] + '_(' + units + ')'
-                        if species_string not in spc_indiv_dict:
-                            spc_indiv_dict[species_string] = [(header, contentCol)]
-                        else:
-                            spc_indiv_dict[species_string].append((header, contentCol))
+            if len(tokens) > 1 and 'ROP' in tokens:
+                if 'Soln' in tokens[-1]:
+                    raise Exception("This function only supports ckcsv with one Soln!")
+                species_string = label.split('_ROP_')[0]
+                units = row[1].strip()[1:-1].lower()
+                header = ''
+                contentCol = numpy.array([float(r) for r in row[2:]], numpy.float)
+                if tokens[-1] == 'Total':
+                    header += species_string + ' ROP ' + tokens[2] \
+                    + ' ' + tokens[-1] + '_(' + units + ')'
+                    if species_string not in spc_total_dict:
+                        spc_total_dict[species_string] = (header, contentCol)
+                    else:
+                        raise Exception("ckcsv file has two {} which is not in proper format!".format(species_string))
+                else: # where tokens[-1] is something like GasRxn#123
+                    header += species_string + ' ROP ' \
+                    + tokens[-1] + '_(' + units + ')'
+                    if species_string not in spc_indiv_dict:
+                        spc_indiv_dict[species_string] = [(header, contentCol)]
+                    else:
+                        spc_indiv_dict[species_string].append((header, contentCol))
 
 
     return firstColDict, spc_total_dict, spc_indiv_dict
@@ -152,13 +151,13 @@ def getConcentrationDictFromCKCSV(ckcsvFile):
                 if tokens[0] == 'Mole' and tokens[1] == 'fraction':
                     if 'Soln' in tokens[-1]:
                         raise Exception("This function only supports ckcsv with one Soln!")
-                    species_string = tokens[2]
+                    species_string = label.split('Mole_fraction_')[1]
                     contentCol = numpy.array([float(r) for r in row[2:]], numpy.float)
                     header = species_string + ' Mole_fraction'
                     if species_string not in spc_conc_dict:
                         spc_conc_dict[species_string] = contentCol
                     else:
-                        raise Exception("ckcsv file has two {} which is not in proper format!".format(header))
+                        raise Exception("ckcsv file has two {} which is not in proper format!".format(species_string))
 
     return firstColDict, spc_conc_dict
 

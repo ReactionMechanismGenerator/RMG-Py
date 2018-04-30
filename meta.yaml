@@ -75,7 +75,7 @@ requirements:
     - pyzmq
     - quantities
     - rdkit >=2015.09.2
-    - rmgdatabase >=2.1.1
+    - rmgdatabase >=2.1.2
     - scipy
     - scoop
     - symmetry

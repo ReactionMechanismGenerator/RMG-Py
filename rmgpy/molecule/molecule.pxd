@@ -43,6 +43,7 @@ cdef class Atom(Vertex):
     cdef public AtomType atomType
     cdef public numpy.ndarray coords
     cdef public short lonePairs
+    cdef public int id
 
     
     cpdef bint equivalent(self, Vertex other) except -2
@@ -210,12 +211,18 @@ cdef class Molecule(Graph):
     
     cpdef bint isRadical(self) except -2
 
-    cpdef bint isArylRadical(self, list ASSSR=?) except -2
+    cpdef bint isArylRadical(self, list aromaticRings=?) except -2
 
     cpdef int calculateSymmetryNumber(self) except -1
 
-    cpdef list generateResonanceIsomers(self)
+    cpdef list generateResonanceIsomers(self, bint keepIsomorphic=?)
 
-    cpdef tuple getAromaticSSSR(self, list SSSR=?)
+    cpdef tuple getAromaticRings(self, list rings=?)
 
     cpdef list getDeterministicSmallestSetOfSmallestRings(self)
+
+    cpdef kekulize(self)
+
+    cpdef assignAtomIDs(self)
+
+    cpdef bint isIdentical(self, Molecule other) except -2

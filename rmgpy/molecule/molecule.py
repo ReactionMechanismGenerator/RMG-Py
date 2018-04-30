@@ -57,6 +57,7 @@ import rmgpy.constants as constants
 import rmgpy.molecule.parser as parser
 import rmgpy.molecule.generator as generator
 import rmgpy.molecule.resonance as resonance
+from .kekulize import kekulize
 
 ################################################################################
 
@@ -80,6 +81,7 @@ class Atom(Vertex):
     `label`             ``str``             A string label that can be used to tag individual atoms
     `coords`            ``numpy array``     The (x,y,z) coordinates in Angstrom
     `lonePairs`         ``short``           The number of lone electron pairs
+    `id`                ``int``             Number assignment for atom tracking purposes
     =================== =================== ====================================
 
     Additionally, the ``mass``, ``number``, and ``symbol`` attributes of the
@@ -87,7 +89,7 @@ class Atom(Vertex):
     e.g. ``atom.symbol`` instead of ``atom.element.symbol``.
     """
 
-    def __init__(self, element=None, radicalElectrons=0, charge=0, label='', lonePairs=-100, coords=numpy.array([])):
+    def __init__(self, element=None, radicalElectrons=0, charge=0, label='', lonePairs=-100, coords=numpy.array([]), id=-1):
         Vertex.__init__(self)
         if isinstance(element, str):
             self.element = elements.__dict__[element]
@@ -99,6 +101,7 @@ class Atom(Vertex):
         self.atomType = None
         self.lonePairs = lonePairs
         self.coords = coords
+        self.id = id
 
     def __str__(self):
         """
@@ -255,6 +258,7 @@ class Atom(Vertex):
         a.atomType = self.atomType
         a.lonePairs = self.lonePairs
         a.coords = self.coords[:]
+        a.id = self.id
         return a
 
     def isHydrogen(self):
@@ -1555,23 +1559,23 @@ class Molecule(Graph):
                 return True
         return False
 
-    def isArylRadical(self, ASSSR=None):
+    def isArylRadical(self, aromaticRings=None):
         """
         Return ``True`` if the molecule only contains aryl radicals,
         ie. radical on an aromatic ring, or ``False`` otherwise.
         """
         cython.declare(atom=Atom, radList=list)
-        if ASSSR is None:
-            ASSSR = self.getAromaticSSSR()[0]
+        if aromaticRings is None:
+            aromaticRings = self.getAromaticRings()[0]
 
         total = self.getRadicalCount()
-        aromaticAtoms = set([atom for atom in itertools.chain.from_iterable(ASSSR)])
+        aromaticAtoms = set([atom for atom in itertools.chain.from_iterable(aromaticRings)])
         aryl = sum([atom.radicalElectrons for atom in aromaticAtoms])
 
         return total == aryl
 
-    def generateResonanceIsomers(self):
-        return resonance.generateResonanceStructures(self)
+    def generateResonanceIsomers(self, keepIsomorphic=False):
+        return resonance.generateResonanceStructures(self, keepIsomorphic=keepIsomorphic)
 
     def getURL(self):
         """
@@ -1672,9 +1676,9 @@ class Molecule(Graph):
         
         return group
 
-    def getAromaticSSSR(self, SSSR=None):
+    def getAromaticRings(self, rings=None):
         """
-        Returns the smallest set of smallest aromatic rings as a list of atoms and a list of bonds
+        Returns all aromatic rings as a list of atoms and a list of bonds.
 
         Identifies rings using `Graph.getSmallestSetOfSmallestRings()`, then uses RDKit to perceive aromaticity.
         RDKit uses an atom-based pi-electron counting algorithm to check aromaticity based on Huckel's Rule.
@@ -1683,45 +1687,70 @@ class Molecule(Graph):
         The method currently restricts aromaticity to six-membered carbon-only rings. This is a limitation imposed
         by RMG, and not by RDKit.
         """
-        cython.declare(rdAtomIndices=dict, aromaticRings=list, aromaticBonds=list)
-        cython.declare(rings=list, ring0=list, i=cython.int, atom1=Atom, atom2=Atom)
+        cython.declare(rdAtomIndices=dict, obAtomIds=dict, aromaticRings=list, aromaticBonds=list)
+        cython.declare(ring0=list, i=cython.int, atom1=Atom, atom2=Atom)
 
         from rdkit.Chem.rdchem import BondType
-
         AROMATIC = BondType.AROMATIC
 
-        if SSSR is None:
-            SSSR = self.getSmallestSetOfSmallestRings()
-
-        rings = [ring0 for ring0 in SSSR if len(ring0) == 6]
+        if rings is None:
+            rings = self.getAllSimpleCyclesOfSize(6)
         if not rings:
             return [], []
 
         try:
             rdkitmol, rdAtomIndices = generator.toRDKitMol(self, removeHs=False, returnMapping=True)
         except ValueError:
+            logging.warning('Unable to check aromaticity by converting to RDKit Mol.')
+        else:
+            aromaticRings = []
+            aromaticBonds = []
+            for ring0 in rings:
+                aromaticBondsInRing = []
+                # Figure out which atoms and bonds are aromatic and reassign appropriately:
+                for i, atom1 in enumerate(ring0):
+                    if not atom1.isCarbon():
+                        # all atoms in the ring must be carbon in RMG for our definition of aromatic
+                        break
+                    for atom2 in ring0[i + 1:]:
+                        if self.hasBond(atom1, atom2):
+                            if rdkitmol.GetBondBetweenAtoms(rdAtomIndices[atom1],
+                                                            rdAtomIndices[atom2]).GetBondType() is AROMATIC:
+                                aromaticBondsInRing.append(self.getBond(atom1, atom2))
+                else:  # didn't break so all atoms are carbon
+                    if len(aromaticBondsInRing) == 6:
+                        aromaticRings.append(ring0)
+                        aromaticBonds.append(aromaticBondsInRing)
+
+            return aromaticRings, aromaticBonds
+
+        logging.info('Trying to use OpenBabel to check aromaticity.')
+        try:
+            obmol, obAtomIds = generator.toOBMol(self, returnMapping=True)
+        except ImportError:
+            logging.warning('Unable to check aromaticity by converting for OB Mol.')
             return [], []
+        else:
+            aromaticRings = []
+            aromaticBonds = []
+            for ring0 in rings:
+                aromaticBondsInRing = []
+                # Figure out which atoms and bonds are aromatic and reassign appropriately:
+                for i, atom1 in enumerate(ring0):
+                    if not atom1.isCarbon():
+                        # all atoms in the ring must be carbon in RMG for our definition of aromatic
+                        break
+                    for atom2 in ring0[i + 1:]:
+                        if self.hasBond(atom1, atom2):
+                            if obmol.GetBond(obmol.GetAtomById(obAtomIds[atom1]),
+                                             obmol.GetAtomById(obAtomIds[atom2])).IsAromatic():
+                                aromaticBondsInRing.append(self.getBond(atom1, atom2))
+                else:  # didn't break so all atoms are carbon
+                    if len(aromaticBondsInRing) == 6:
+                        aromaticRings.append(ring0)
+                        aromaticBonds.append(aromaticBondsInRing)
 
-        aromaticRings = []
-        aromaticBonds = []
-        for ring0 in rings:
-            aromaticBondsInRing = []
-            # Figure out which atoms and bonds are aromatic and reassign appropriately:
-            for i, atom1 in enumerate(ring0):
-                if not atom1.isCarbon():
-                    # all atoms in the ring must be carbon in RMG for our definition of aromatic
-                    break
-                for atom2 in ring0[i + 1:]:
-                    if self.hasBond(atom1, atom2):
-                        if rdkitmol.GetBondBetweenAtoms(rdAtomIndices[atom1],
-                                                        rdAtomIndices[atom2]).GetBondType() is AROMATIC:
-                            aromaticBondsInRing.append(self.getBond(atom1, atom2))
-            else:  # didn't break so all atoms are carbon
-                if len(aromaticBondsInRing) == 6:
-                    aromaticRings.append(ring0)
-                    aromaticBonds.append(aromaticBondsInRing)
-
-        return aromaticRings, aromaticBonds
+            return aromaticRings, aromaticBonds
 
     def getDeterministicSmallestSetOfSmallestRings(self):
         """
@@ -1830,3 +1859,49 @@ class Molecule(Graph):
             cycleList[i] = [self.vertices[vertices.index(v)] for v in cycleList[i]]
 
         return cycleList
+
+    def kekulize(self):
+        """
+        Kekulizes an aromatic molecule.
+        """
+        kekulize(self)
+
+    def assignAtomIDs(self):
+        """
+        Assigns an ID number to every atom in the molecule for tracking purposes.
+        """
+        for i, atom in enumerate(self.atoms):
+            atom.id = i
+
+    def isIdentical(self, other):
+        """
+        Performs isomorphism checking, with the added constraint that atom IDs must match.
+
+        Primary use case is tracking atoms in reactions for reaction degeneracy determination.
+
+        Returns :data:`True` if two graphs are identical and :data:`False` otherwise.
+        """
+        cython.declare(atomIndicies=set, otherIndices=set, atomList=list, otherList=list, mapping = dict)
+
+        if not isinstance(other, Molecule):
+            raise TypeError('Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
+
+        # Get a set of atom indices for each molecule
+        atomIDs = set([atom.id for atom in self.atoms])
+        otherIDs = set([atom.id for atom in other.atoms])
+
+        if atomIDs == otherIDs:
+            # If the two molecules have the same indices, then they might be identical
+            # Sort the atoms by ID
+            atomList = sorted(self.atoms, key=lambda x: x.id)
+            otherList = sorted(other.atoms, key=lambda x: x.id)
+
+            # If matching atom indices gives a valid mapping, then the molecules are fully identical
+            mapping = {}
+            for atom1, atom2 in itertools.izip(atomList, otherList):
+                mapping[atom1] = atom2
+
+            return self.isMappingValid(other, mapping)
+        else:
+            # The molecules don't have the same set of indices, so they are not identical
+            return False

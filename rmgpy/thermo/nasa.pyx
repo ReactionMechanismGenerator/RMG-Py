@@ -263,28 +263,28 @@ cdef class NASA(HeatCapacityModel):
     
     cpdef double getHeatCapacity(self, double T) except -1000000000:
         """
-        Return the dimensionless constant-pressure heat capacity
-        :math:`C_\\mathrm{p}(T)/R` at the specified temperature `T` in K.
+        Return the constant-pressure heat capacity
+        :math:`C_\\mathrm{p}(T)` in J/mol*K at the specified temperature `T` in K.
         """
         return self.selectPolynomial(T).getHeatCapacity(T)
     
     cpdef double getEnthalpy(self, double T) except 1000000000:
         """
-        Return the dimensionless enthalpy :math:`H(T)/RT` at the specified
+        Return the enthalpy :math:`H(T)` in J/mol at the specified
         temperature `T` in K.
         """
         return self.selectPolynomial(T).getEnthalpy(T)
     
     cpdef double getEntropy(self, double T) except -1000000000:
         """
-        Return the dimensionless entropy :math:`S(T)/R` at the specified
+        Return the entropy :math:`S(T)` in J/mol*K at the specified
         temperature `T` in K.
         """
         return self.selectPolynomial(T).getEntropy(T)
     
     cpdef double getFreeEnergy(self, double T) except 1000000000:
         """
-        Return the dimensionless Gibbs free energy :math:`G(T)/RT` at the
+        Return the Gibbs free energy :math:`G(T)` in J/mol at the
         specified temperature `T` in K.
         """
         return self.selectPolynomial(T).getFreeEnergy(T)
