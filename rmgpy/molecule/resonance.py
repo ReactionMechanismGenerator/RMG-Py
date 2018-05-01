@@ -573,7 +573,7 @@ def generate_optimal_aromatic_resonance_structures(mol, features=None):
     In certain cases where multiple forms have the same number of aromatic rings, multiple structures will be returned.
     If there's an error (eg. in RDKit) it just returns an empty list.
     """
-    cython.declare(molecule=Molecule, rings=list, aromaticBonds=list, kekuleList=list, maxNum=cython.int, mol_list=list,
+    cython.declare(molecule=Graph, rings=list, aromaticBonds=list, kekuleList=list, maxNum=cython.int, mol_list=list,
                    new_mol_list=list, ring=list, bond=Bond, order=float, originalBonds=list, originalOrder=list,
                    i=cython.int, counter=cython.int)
 
