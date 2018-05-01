@@ -36,19 +36,19 @@ cpdef list generate_resonance_structures(Graph mol, bint clarStructures=?, bint 
 
 cpdef list _generate_resonance_structures(list molList, list methodList, bint keepIsomorphic=?, bint copy=?)
 
-cpdef list generate_adjacent_resonance_structures(Molecule mol)
+cpdef list generate_adjacent_resonance_structures(Graph mol)
 
-cpdef list generate_lone_pair_radical_resonance_structures(Molecule mol)
+cpdef list generate_lone_pair_radical_resonance_structures(Graph mol)
 
-cpdef list generate_N5dd_N5ts_resonance_structures(Molecule mol)
+cpdef list generate_N5dd_N5ts_resonance_structures(Graph mol)
 
-cpdef list generate_isomorphic_resonance_structures(Molecule mol)
+cpdef list generate_isomorphic_resonance_structures(Graph mol)
 
 cpdef list generate_aromatic_resonance_structures(Graph mol, dict features=?)
 
 cpdef list generate_kekule_structure(Graph mol)
 
-cpdef list generate_opposite_kekule_structure(Molecule mol)
+cpdef list generate_opposite_kekule_structure(Graph mol)
 
 cpdef list generate_clar_structures(Molecule mol)
 
