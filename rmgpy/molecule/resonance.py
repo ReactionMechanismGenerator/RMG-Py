@@ -254,7 +254,7 @@ def _generate_resonance_structures(mol_list, method_list, keep_isomorphic=False,
         copy                if False, append new resonance structures to input list (default)
                             if True, make a new list with all of the resonance structures
     """
-    cython.declare(index=cython.int, molecule=Molecule, new_mol_list=list, new_mol=Molecule, mol=Molecule)
+    cython.declare(index=cython.int, molecule=Graph, new_mol_list=list, new_mol=Graph, mol=Graph)
 
     if copy:
         # Make a copy of the list so we don't modify the input list
@@ -786,9 +786,10 @@ def generate_kekule_structure(mol):
     Returns a single Kekule structure as an element of a list of length 1.
     If there's an error (eg. in RDKit) then it just returns an empty list.
     """
-    cython.declare(atom=Atom, molecule=Molecule)
+    cython.declare(atom=Vertex, molecule=Graph)
 
     for atom in mol.atoms:
+        if not isinstance(atom, Atom): continue
         if atom.atomType.label == 'Cb' or atom.atomType.label == 'Cbf':
             break
     else:
