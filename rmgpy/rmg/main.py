@@ -1234,7 +1234,13 @@ class RMG(util.Subject):
         if os.path.exists(outName):
             os.remove(outName)
         parser = ck2cti.Parser()
-        parser.convertMech(chemkinFile, transportFile=transportFile, outName=outName, quiet=True, permissive=True, **kwargs)
+        try:
+            parser.convertMech(chemkinFile, transportFile=transportFile, outName=outName, quiet=True, permissive=True, **kwargs)
+        except ck2cti.InputParseError:
+            logging.exception("Error converting to Cantera format.")
+            logging.info("Trying again without transport data file.")
+            parser.convertMech(chemkinFile, outName=outName, quiet=True, permissive=True, **kwargs)
+
 
     def initializeReactionThresholdAndReactFlags(self):
         numCoreSpecies = len(self.reactionModel.core.species)
