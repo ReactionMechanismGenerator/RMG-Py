@@ -2,6 +2,7 @@
 import os
 import argparse
 import json
+import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
@@ -58,10 +59,14 @@ def prepare_data(host, db_name, collection_name, prediction_task="Hf298(kcal/mol
         if prediction_task != "Cp(cal/mol/K)":
             y = float(db_mol[prediction_task])
         else:
-            try:
-                y = float(db_mol["Cp298(cal/mol/K)"])
-            except KeyError:
-                y = float(db_mol["Cp300(cal/mol/K)"])
+            Cp300 = float(db_mol["Cp300(cal/mol/K)"])
+            Cp400 = float(db_mol["Cp400(cal/mol/K)"])
+            Cp500 = float(db_mol["Cp500(cal/mol/K)"])
+            Cp600 = float(db_mol["Cp600(cal/mol/K)"])
+            Cp800 = float(db_mol["Cp800(cal/mol/K)"])
+            Cp1000 = float(db_mol["Cp1000(cal/mol/K)"])
+            Cp1500 = float(db_mol["Cp1500(cal/mol/K)"])
+            y = np.array([Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500])
         
         smiles_list.append(smiles)
         ys.append(y)
@@ -102,6 +107,13 @@ def evaluate(smiles_list, ys, ys_pred, prediction_task="Hf298(kcal/mol)"):
     result_df[prediction_task+"_pred"] = pd.Series(ys_pred, index=result_df.index)
 
     diff = abs(result_df[prediction_task+"_true"]-result_df[prediction_task+"_pred"])
+
+    # if the prediction task is Cp
+    # since it has 7 values
+    # we'll average them for evaluation
+    if prediction_task == 'Cp(cal/mol/K)':
+        diff = [np.average(d) for d in diff]
+
     result_df[prediction_task+"_diff"] = pd.Series(diff, index=result_df.index)
 
     return result_df

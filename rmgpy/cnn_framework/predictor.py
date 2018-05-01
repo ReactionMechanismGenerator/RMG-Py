@@ -262,4 +262,7 @@ class Predictor(object):
 		if self.padding:
 			molecule_tensor = pad_molecule_tensor(molecule_tensor, self.padding_final_size)
 		molecule_tensor_array = np.array([molecule_tensor])
-		return self.model.predict(molecule_tensor_array)[0][0]
+		if self.prediction_task == "Cp(cal/mol/K)":
+			return self.model.predict(molecule_tensor_array)[0]
+		else:
+			return self.model.predict(molecule_tensor_array)[0][0]

@@ -83,10 +83,14 @@ def get_data_from_db(host, db_name, collection_name,
 		if prediction_task != "Cp(cal/mol/K)":
 			yi = float(db_mol[prediction_task])
 		else:
-			try:
-				yi = float(db_mol["Cp298(cal/mol/K)"])
-			except KeyError:
-				yi = float(db_mol["Cp300(cal/mol/K)"])
+			Cp300 = float(db_mol["Cp300(cal/mol/K)"])
+			Cp400 = float(db_mol["Cp400(cal/mol/K)"])
+			Cp500 = float(db_mol["Cp500(cal/mol/K)"])
+			Cp600 = float(db_mol["Cp600(cal/mol/K)"])
+			Cp800 = float(db_mol["Cp800(cal/mol/K)"])
+			Cp1000 = float(db_mol["Cp1000(cal/mol/K)"])
+			Cp1500 = float(db_mol["Cp1500(cal/mol/K)"])
+			yi = np.array([Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500])
 
 		X.append(mol_tensor)
 		y.append(yi)
