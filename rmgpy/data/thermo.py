@@ -1376,8 +1376,7 @@ class ThermoDatabase(object):
         # (groupAdditivity=True means it appends the comments)
         addThermoData(thermo, adsorptionThermo, groupAdditivity=True)
 
-        thermo.Cp0 = None
-        thermo.CpInf = None
+        findCp0andCpInf(species, thermo)
         return thermo
         
     def getThermoDataFromLibraries(self, species, trainingSet=None):
