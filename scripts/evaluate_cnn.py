@@ -49,13 +49,13 @@ def prepare_data(host, db_name, collection_name, prediction_task="Hf298(kcal/mol
     smiles_list = []
     ys = []
     # decide what predict task is
-    if prediction_task not in ["Hf298(kcal/mol)", "S298(cal/mol/K)", "Cp"]:
+    if prediction_task not in ["Hf298(kcal/mol)", "S298(cal/mol/K)", "Cp(cal/mol/K)"]:
         raise NotImplementedError("Prediction task: {0} not supported yet!".format(prediction_task))
 
     for i, db_mol in enumerate(db_mols):
         smiles = str(db_mol["SMILES_input"])
 
-        if prediction_task != "Cp":
+        if prediction_task != "Cp(cal/mol/K)":
             y = float(db_mol[prediction_task])
         else:
             try:

@@ -65,7 +65,7 @@ def get_data_from_db(host, db_name, collection_name,
 	logging.info('Generating molecular tensor data...')
 
 	# decide what predict task is
-	if prediction_task not in ["Hf298(kcal/mol)", "S298(cal/mol/K)", "Cp"]:
+	if prediction_task not in ["Hf298(kcal/mol)", "S298(cal/mol/K)", "Cp(cal/mol/K)"]:
 		raise NotImplementedError("Prediction task: {0} not supported yet!".format(prediction_task))
 
 	for db_mol in db_mols:
@@ -80,7 +80,7 @@ def get_data_from_db(host, db_name, collection_name,
 		if padding:
 			mol_tensor = pad_molecule_tensor(mol_tensor, padding_final_size)
 
-		if prediction_task != "Cp":
+		if prediction_task != "Cp(cal/mol/K)":
 			yi = float(db_mol[prediction_task])
 		else:
 			try:
