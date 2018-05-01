@@ -1,10 +1,6 @@
 # specify all the datasets to 
 # train on
 
-rmg.sdata134k.polycyclic_2954_table_train: 0.0
+rmg.sdata134k.sdata134k_cho_cyclics_table_train: 0.0
 
-rmg.sdata134k.cyclic_O_only_table_train: 0.0
-
-rmg.sdata134k.polycyclic_2954_table_test: 1.0
-
-rmg.sdata134k.cyclic_O_only_table_test: 1.0
+rmg.sdata134k.sdata134k_cho_cyclics_table_test: 1.0
