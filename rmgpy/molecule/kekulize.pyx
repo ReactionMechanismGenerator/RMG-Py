@@ -52,12 +52,15 @@ and the process continues until the entire molecule can be solved.
 
 import logging
 
+from .graph cimport Graph
+from .molecule cimport Atom, Bond, Molecule
+from .element import PeriodicSystem
 from rmgpy.exceptions import KekulizationError, AtomTypeError
 from rmgpy.molecule.element import PeriodicSystem
 from rmgpy.molecule.molecule cimport Atom, Bond, Molecule
 
 
-cpdef kekulize(Molecule mol):
+cpdef kekulize(Graph mol):
     """
     Kekulize an aromatic molecule in place. If the molecule cannot be kekulized,
     a KekulizationError will be raised. However, the molecule will be left in
