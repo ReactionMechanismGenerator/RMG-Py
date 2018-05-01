@@ -30,9 +30,9 @@ from .molecule cimport Atom, Bond, Molecule
 
 cpdef list populate_resonance_algorithms(dict features=?)
 
-cpdef dict analyze_molecule(Molecule mol)
+cpdef dict analyze_molecule(Graph mol)
 
-cpdef list generate_resonance_structures(Molecule mol, bint clar_structures=?, bint keep_isomorphic=?, bint filter_structures=?)
+cpdef list generate_resonance_structures(Graph mol, bint clar_structures=?, bint keep_isomorphic=?, bint filter_structures=?)
 
 cpdef list _generate_resonance_structures(list mol_list, list method_list, bint keep_isomorphic=?, bint copy=?)
 
@@ -52,9 +52,9 @@ cpdef list generate_N5dc_resonance_structures(Molecule mol)
 
 cpdef list generate_isomorphic_resonance_structures(Molecule mol, bint saturate_h=?)
 
-cpdef list generate_aromatic_resonance_structures(Molecule mol, dict features=?)
+cpdef list generate_aromatic_resonance_structures(Graph mol, dict features=?)
 
-cpdef list generate_kekule_structure(Molecule mol)
+cpdef list generate_kekule_structure(Graph mol)
 
 cpdef list generate_opposite_kekule_structure(Molecule mol)
 
