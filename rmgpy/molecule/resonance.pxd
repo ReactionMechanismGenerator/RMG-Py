@@ -36,27 +36,27 @@ cpdef list generate_resonance_structures(Graph mol, bint clar_structures=?, bint
 
 cpdef list _generate_resonance_structures(list mol_list, list method_list, bint keep_isomorphic=?, bint copy=?)
 
-cpdef list generate_allyl_delocalization_resonance_structures(Molecule mol)
+cpdef list generate_allyl_delocalization_resonance_structures(Graph mol)
 
-cpdef list generate_lone_pair_radical_resonance_structures(Molecule mol)
+cpdef list generate_lone_pair_radical_resonance_structures(Graph mol)
 
-cpdef list generate_lone_pair_multiple_bond_resonance_structures(Molecule mol)
+cpdef list generate_lone_pair_multiple_bond_resonance_structures(Graph mol)
 
-cpdef list generate_lone_pair_radical_multiple_bond_resonance_structures(Molecule mol)
+cpdef list generate_lone_pair_radical_multiple_bond_resonance_structures(Graph mol)
 
-cpdef list generate_N5ddc_N5tc_resonance_structures(Molecule mol)
+cpdef list generate_N5ddc_N5tc_resonance_structures(Graph mol)
 
-cpdef list generate_N5dc_radical_resonance_structures(Molecule mol)
+cpdef list generate_N5dc_radical_resonance_structures(Graph mol)
 
-cpdef list generate_N5dc_resonance_structures(Molecule mol)
+cpdef list generate_N5dc_resonance_structures(Graph mol)
 
-cpdef list generate_isomorphic_resonance_structures(Molecule mol, bint saturate_h=?)
+cpdef list generate_isomorphic_resonance_structures(Graph mol, bint saturate_h=?)
 
 cpdef list generate_aromatic_resonance_structures(Graph mol, dict features=?)
 
 cpdef list generate_kekule_structure(Graph mol)
 
-cpdef list generate_opposite_kekule_structure(Molecule mol)
+cpdef list generate_opposite_kekule_structure(Graph mol)
 
 cpdef list generate_clar_structures(Molecule mol)
 
