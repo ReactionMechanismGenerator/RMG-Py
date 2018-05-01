@@ -223,8 +223,12 @@ def generate_molecule_combos(input_species):
         combos = [(mol,) for mol in input_species[0].molecule]
     elif len(input_species) == 2:
         combos = itertools.product(input_species[0].molecule, input_species[1].molecule)
+    elif len(input_species) == 3:
+        combos = itertools.product(input_species[0].molecule,
+                                   input_species[1].molecule,
+                                   input_species[2].molecule)
     else:
-        raise ValueError('Reaction generation can be done for 1 or 2 species, not {0}.'.format(len(input_species)))
+        raise ValueError('Reaction generation can be done for up to 3 species, not {0}.'.format(len(input_species)))
 
     return combos
 
