@@ -4,6 +4,47 @@
 Release Notes
 *************
 
+RMG-Py Version 2.1.6
+====================
+Date: December 21, 2017
+
+- Model resurrection:
+    - Automatically attempts to save simulation after encountering a DASPK error
+    - Adds species and reactions in order to modify model dynamics and fix the error
+
+- New features:
+    - Add functionality to read RCCSD(T)-F12 energies from MolPro log files
+    - Add liquidReactor support to flux diagram generation
+
+- Other changes:
+    - Removed rmgpy.rmg.model.Species class and merged functionality into main rmgpy.species.Species class
+    - Refactored parsing of RMG-generated kinetics comments from Chemkin files and fixed related issues
+    - Refactored framework for generating reactions to reduce code duplication
+    - Resonance methods renamed from generateResonanceIsomers to generate_resonance_structures across all modules
+    - Raise CpInf to Cphigh for entropy calculations to prevent invalid results
+
+- Fixes:
+    - Update sensitivity analysis to use ModelSettings and SimulatorSettings classes introduced in v2.1.5
+    - Fixed generate_reactions methods in KineticsDatabase to be directly usable again
+    - Fixed issues with aromaticity perception and generation of aromatic resonance structures
+
+RMG-database Version 2.1.6
+==========================
+Date: December 21, 2017
+
+- Additions:
+    - New training reactions added for [NH2] related H_Abstractions
+    - 14 new kinetics libraries related to aromatics formation (see RMG-database #222 for details)
+
+- Other changes:
+    - Removed some global forbidden groups which are no longer needed
+    - Forbid CO and CS biradicals
+    - Updated lone_electron_pair_bond family and removed from recommended list
+
+- Fixes:
+    - Fixed unit errors in some H_Abstraction and R_Addition_MultipleBond depositories
+
+
 RMG-Py Version 2.1.5
 ====================
 Date: October 18, 2017
