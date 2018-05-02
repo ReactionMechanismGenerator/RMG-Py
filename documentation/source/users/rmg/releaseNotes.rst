@@ -4,6 +4,125 @@
 Release Notes
 *************
 
+RMG-Py Version 2.1.3
+====================
+Date: July 27, 2017
+
+- Thermo central database:
+    - Framework for tracking and submitting species to a central database have been added
+    - Following species submission, the central database will queue and submit quantum chemistry jobs for thermochemistry calculation
+    - This is an initial step towards self-improving thermochemistry prediction
+
+- Rotor handling in Cantherm:
+    - Free rotors can now be specified
+    - Limit number of terms used when fitting hinder rotor scans
+    - Fixed bug with ZPE calculation when using hindered rotors
+
+- New reaction degeneracy algorithm:
+    - Use atom ID's to distinguish degenerate reactions from duplicates due to other factors
+    - Degeneracy calculation now operates across all families rather than within each separately
+    - Multiple transition states are now identified based on template comparisons and kept as duplicate reactions
+
+- Nodal distances:
+    - Distances can now be assigned to trees in reaction families
+    - This enables better rate averages with multiple trees
+    - Fixed bug with finding the closest rate rule in the tree
+
+- New features:
+    - Added methods for automatically writing RMG-database files
+    - New symmetry algorithm improves symmetry number calculations for resonant and cyclic species
+    - Group additivity algorithm updated to apply new long distance corrections
+    - Specific colliders can now be specified for pressure-dependent rates
+    - Very short superminimal example added (hydrogen oxidation) for checking basic RMG operation
+    - Cantera now outputs a Chemkin file which can be directly imported into Chemkin
+
+- Fixes:
+    - Fixed bug with negative activation energies when using Evans-Polanyi rates
+    - Fixed walltime specification from command line when running RMG
+    - Fixes and unit tests added for diffusionLimited module
+
+- Known issues:
+    - The multiple transition state algorithm can result in undesired duplicate reactions for reactants with multiple resonance structures
+
+RMG-database Version 2.1.3
+==========================
+Date: July 27, 2017
+
+- Long-distance interaction thermo corrections:
+    - The gauche and int15 group files have been replaced by longDistanceInteraction_noncyclic
+    - New corrections for cyclic ortho/meta/para interactions are now available in longDistanceInteraction_cyclic
+
+- Changes:
+    - Oa_R_Recombination family renamed to Birad_R_Recombination
+    - More training reactions added for sulfur species in H_Abstraction
+    - RMG-database tests have been moved to RMG-Py
+
+
+RMG-Py Version 2.1.2
+====================
+Date: May 18, 2017
+
+- Improvements:
+    - New nitrogen atom types
+    - Kinetics libraries can now be specified as a list of strings in the input file
+    - New script to generate output HTML locally: generateChemkinHTML.py
+    - New kekulization module replaces RDKit for generating Kekule structures
+    - Benzene bonds can now be reacted in reaction families
+    - Removed cantherm.geometry module due to redundancy with statmech.conformer
+
+- Fixes:
+    - Reaction direction is now more deterministic after accounting for floating point error
+    - Multiple bugs with resonance structure generation for aromatics have been addressed
+
+
+RMG-database Version 2.1.2
+==========================
+Date: May 18, 2017
+
+- Nitrogen improvements:
+    - Added ethylamine kinetics library
+    - Updated group additivity values for nitrogen species
+    - Added rate rules and training reactions for nitrogen species
+
+- Additions:
+    - New CO_Disproportionation family
+    - Added CurranPentane kinetics and thermo libraries
+
+- Fixes:
+    - Corrected some rates in FFCM1(-) to use MultiArrhenius kinetics
+    - Corrected a few adjlists in FFCM1(-)
+
+
+RMG-Py Version 2.1.1
+====================
+Date: April 07, 2017
+
+- Uncertainty analysis:
+    - Local and global uncertainty analysis now available for RMG-generated models
+    - Global uncertainty analysis uses MIT Uncertainty Quantification library, currently only supported on Linux systems
+    - Examples for each module are available in localUncertainty.ipynb and globalUncertainty.ipynb
+
+- Fixes:
+    - Clar structure generation no longer intercepts signals
+    - Fixes to SMILES generation
+    - Fix default spin state of [CH]
+
+RMG-database Version 2.1.1
+==========================
+Date: April 07, 2017
+
+- Additions:
+    - More species added to FFCM1(-) thermo library
+
+- Changes:
+    - Improved handling of excited species in FFCM1(-) kinetics library
+    - Replaced Klippenstein H2O2 kinetics and thermo libraries with BurkeH2O2inN2 and BurkeH2O2inArHe
+
+- Fixes:
+    - Corrected adjlists for some species in JetSurf2.0 kinetics and thermo libraries (also renamed from JetSurf0.2)
+    - Correct multiplicities for [C] and [CH] in multiple libraries ([C] from 5 to 3, [CH] from 4 to 2)
+
+
 RMG-Py Version 2.1.0
 ====================
 Date: March 07, 2017
