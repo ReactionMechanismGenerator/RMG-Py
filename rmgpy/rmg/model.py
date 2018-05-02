@@ -45,7 +45,7 @@ from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.quantity import Quantity
 import rmgpy.species
 from rmgpy.thermo.thermoengine import submit
-
+from rmgpy.reaction import Reaction
 from rmgpy.exceptions import ForbiddenStructureException
 from rmgpy.data.kinetics.depository import DepositoryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
@@ -201,7 +201,7 @@ class CoreEdgeReactionModel:
 
     """
 
-    def __init__(self, core=None, edge=None):
+    def __init__(self, core=None, edge=None, surface=None):
         if core is None:
             self.core = ReactionModel()
         else:
@@ -210,9 +210,11 @@ class CoreEdgeReactionModel:
             self.edge = ReactionModel()
         else:
             self.edge = edge
-        
-        self.surfaceSpecies = []
-        self.surfaceReactions = []
+        if surface is None:
+            self.surface = ReactionModel()
+        else:
+            self.surface = surface
+            
         # The default tolerances mimic the original RMG behavior; no edge
         # pruning takes place, and the simulation is interrupted as soon as
         # a species flux higher than the validity
@@ -243,7 +245,11 @@ class CoreEdgeReactionModel:
         self.maximumEdgeSpecies = 100000
         self.Tmax = 0
         self.reactionSystems = []
-
+        self.newSurfaceSpcsAdd = set()
+        self.newSurfaceRxnsAdd = set()
+        self.newSurfaceSpcsLoss = set()
+        self.newSurfaceRxnsLoss = set()
+    
     def checkForExistingSpecies(self, molecule):
         """
         Check to see if an existing species contains the same
@@ -722,7 +728,61 @@ class CoreEdgeReactionModel:
         )
 
         logging.info('')
-
+    
+    def addNewSurfaceObjects(self,obj,newSurfaceSpecies,newSurfaceReactions,reactionSystem):
+        """
+        obj is the list of objects for enlargement coming from simulate
+        newSurfaceSpecies and newSurfaceReactions are the current lists of surface species and surface reactions
+        following simulation
+        reactionSystem is the current reactor
+        manages surface species and reactions being moved to and from the surface
+        moves them to appropriate newSurfaceSpc/RxnsAdd/loss sets
+        returns false if the surface has changed
+        """
+        surfSpcs = set(self.surface.species)
+        surfRxns = set(self.surface.reactions)
+        
+        newSurfaceSpecies = set(newSurfaceSpecies)
+        newSurfaceReactions = set(newSurfaceReactions)
+                    
+        addedRxns = {k for k in obj if isinstance(k,Reaction)}
+        addedSurfaceRxns = newSurfaceReactions - surfRxns
+                    
+        addedBulkRxns = addedRxns-addedSurfaceRxns
+        lostSurfaceRxns = (surfRxns - newSurfaceReactions) | addedBulkRxns
+                    
+        addedSpcs = {k for k in obj if isinstance(k,Species)} | {k.getMaximumLeakSpecies(reactionSystem.T.value_si, reactionSystem.P.value_si) for k in obj if isinstance(k,PDepNetwork)}
+        lostSurfaceSpcs = (surfSpcs-newSurfaceSpecies) | addedSpcs
+        addedSurfaceSpcs = newSurfaceSpecies - surfSpcs
+                    
+        self.newSurfaceSpcsAdd = self.newSurfaceSpcsAdd | addedSurfaceSpcs
+        self.newSurfaceRxnsAdd = self.newSurfaceRxnsAdd | addedSurfaceRxns
+        self.newSurfaceSpcsLoss = self.newSurfaceSpcsLoss | lostSurfaceSpcs
+        self.newSurfaceRxnsLoss = self.newSurfaceRxnsLoss | lostSurfaceRxns
+        
+        return not (self.newSurfaceRxnsAdd != set() or self.newSurfaceRxnsLoss != set() or self.newSurfaceSpcsLoss != set() or self.newSurfaceSpcsAdd != set())
+    
+    def adjustSurface(self):
+        """
+        Here we add species intended to be added and remove any species that need to be moved out of the core.  
+        For now we remove reactions from the surface that have become part of a PDepNetwork by 
+        intersecting the set of surface reactions with the core so that all surface reactions are in the core
+        thus the surface algorithm currently (June 2017) is not implemented for pdep networks
+        (however it will function fine for non-pdep reactions on a pdep run)
+        """
+        self.surface.species = list(((set(self.surface.species) | self.newSurfaceSpcsAdd)-self.newSurfaceSpcsLoss) & set(self.core.species))
+        self.surface.reactions = list(((set(self.surface.reactions) | self.newSurfaceRxnsAdd)-self.newSurfaceRxnsLoss) & set(self.core.reactions))
+        self.clearSurfaceAdjustments()
+        
+    def clearSurfaceAdjustments(self):
+        """
+        empties surface tracking varaibles
+        """
+        self.newSurfaceSpcsAdd = set()
+        self.newSurfaceRxnsAdd = set()
+        self.newSurfaceSpcsLoss = set()
+        self.newSurfaceRxnsLoss = set()
+        
     def processNewReactions(self, newReactions, newSpecies, pdepNetwork=None):
         """
         Process a list of newly-generated reactions involving the new core

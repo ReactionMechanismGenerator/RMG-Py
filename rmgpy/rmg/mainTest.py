@@ -31,7 +31,7 @@
 import os
 import unittest
 import shutil 
-
+from nose.plugins.attrib import attr
 from main import RMG
 from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase
@@ -40,7 +40,7 @@ from rmgpy.rmg.model import CoreEdgeReactionModel
 ###################################################
 
 originalPath = getPath()
-
+@attr('functional')
 class TestMain(unittest.TestCase):
 
     @classmethod

@@ -63,7 +63,7 @@ class ModelSettings(object):
           toleranceMoveEdgeReactionToSurface=numpy.inf, toleranceMoveSurfaceSpeciesToCore=numpy.inf, toleranceMoveSurfaceReactionToCore=numpy.inf,
           toleranceMoveEdgeReactionToSurfaceInterrupt=None,toleranceMoveEdgeReactionToCoreInterrupt=None, maximumEdgeSpecies=1000000, minCoreSizeForPrune=50, 
           minSpeciesExistIterationsForPrune=2, filterReactions=False, ignoreOverallFluxCriterion=False, maxNumSpecies=None, maxNumObjsPerIter=1,
-          toleranceThermoKeepSpeciesInEdge=numpy.inf):
+          terminateAtMaxObjects=False,toleranceThermoKeepSpeciesInEdge=numpy.inf):
         
         self.fluxToleranceKeepInEdge = toleranceKeepInEdge
         self.fluxToleranceMoveToCore = toleranceMoveToCore
@@ -78,7 +78,8 @@ class ModelSettings(object):
         self.toleranceMoveSurfaceSpeciesToCore = toleranceMoveSurfaceSpeciesToCore
         self.toleranceMoveSurfaceReactionToCore = toleranceMoveSurfaceReactionToCore
         self.toleranceThermoKeepSpeciesInEdge = toleranceThermoKeepSpeciesInEdge
-        
+        self.terminateAtMaxObjects = terminateAtMaxObjects
+
         if toleranceInterruptSimulation:
             self.fluxToleranceInterrupt = toleranceInterruptSimulation
         else:

@@ -28,24 +28,9 @@
 import os
 import numpy
 import rmgpy.util as util 
+from rmgpy.species import Species
 from rmgpy.tools.plot import *
 from rmgpy.tools. data import GenericData
-
-def retrieveSaturatedSpeciesFromList(species, speciesList):
-    """
-    Given a radical `species`, this function retrieves the saturated species objects from a list of species objects.
-    """
-    molecule = species.molecule[0]
-    assert molecule.isRadical(), "Method only valid for radicals."
-    saturatedStruct = molecule.copy(deep=True)
-    saturatedStruct.saturate()
-    for otherSpecies in speciesList:
-        if otherSpecies.isIsomorphic(saturatedStruct):
-            return otherSpecies
-    else:
-        raise Exception('Could not retrieve saturated species form of {0} from the species list'.format(species))
-
-
 
 class ThermoParameterUncertainty:
     """
@@ -341,6 +326,31 @@ class Uncertainty:
                                                               dictionaryPath=dictionaryPath,
                                                               transportPath=transportPath)
 
+    def retrieveSaturatedSpeciesFromList(self,species):
+        """
+        Given a radical `species`, this function retrieves the saturated species objects from a list of species objects
+        and returns the saturated species object along with a boolean that indicates if the species is not part of the model
+        (True->not in the model, False->in the model)
+        """
+        
+        molecule = species.molecule[0]
+        assert molecule.isRadical(), "Method only valid for radicals."
+        saturatedStruct = molecule.copy(deep=True)
+        saturatedStruct.saturate()
+        for otherSpecies in self.speciesList:
+            if otherSpecies.isIsomorphic(saturatedStruct):
+                return otherSpecies, False
+        
+        #couldn't find saturated species in the model, try libraries
+        newSpc = Species(molecule=[saturatedStruct])
+        thermo = self.database.thermo.getThermoDataFromLibraries(newSpc)
+        
+        if thermo is not None:
+            newSpc.thermo = thermo
+            self.speciesList.append(newSpc)
+            return newSpc, True
+        else:         
+            raise Exception('Could not retrieve saturated species form of {0} from the species list'.format(species))
 
     def extractSourcesFromModel(self):
         """
@@ -348,30 +358,36 @@ class Uncertainty:
         Must be done after loading model and database to work.
         """
         self.speciesSourcesDict = {}
+        ignoreSpcs = []
         for species in self.speciesList:
-            source = self.database.thermo.extractSourceFromComments(species)
+            if not species in ignoreSpcs:
+                source = self.database.thermo.extractSourceFromComments(species)
             
-            # Now prep the source data
-            # Do not alter the GAV information, but reassign QM and Library sources to the species indices that they came from
-            if len(source.keys()) == 1:
-                # The thermo came from a single source, so we know it comes from a value describing the exact species
-                if 'Library' in source:
-                    source['Library'] = self.speciesList.index(species)   # Use just the species index in self.speciesList, for better shorter printouts when debugging
-                if 'QM' in source:
-                    source['QM'] = self.speciesList.index(species)
+                # Now prep the source data
+                # Do not alter the GAV information, but reassign QM and Library sources to the species indices that they came from
+                if len(source.keys()) == 1:
+                    # The thermo came from a single source, so we know it comes from a value describing the exact species
+                    if 'Library' in source:
+                        source['Library'] = self.speciesList.index(species)   # Use just the species index in self.speciesList, for better shorter printouts when debugging
+                    if 'QM' in source:
+                        source['QM'] = self.speciesList.index(species)
+                        
+                elif len(source.keys()) == 2:
+                    # The thermo has two sources, which indicates it's an HBI correction on top of a library or QM value.  We must retrieve the original
+                    # saturated molecule's thermo instead of using the radical species as the source of thermo
+                    saturatedSpecies,ignoreSpc = self.retrieveSaturatedSpeciesFromList(species)
                     
-            elif len(source.keys()) == 2:
-                # The thermo has two sources, which indicates it's an HBI correction on top of a library or QM value.  We must retrieve the original
-                # saturated molecule's thermo instead of using the radical species as the source of thermo
-                saturatedSpecies = retrieveSaturatedSpeciesFromList(species,self.speciesList)
-                if 'Library' in source:
-                    source['Library'] = self.speciesList.index(saturatedSpecies)
-                if 'QM' in source:
-                    source['QM'] = self.speciesList.index(saturatedSpecies)
-            else:
-                raise Exception('Source of thermo should not use more than two sources out of QM, Library, or GAV.')
-            
-            self.speciesSourcesDict[species] = source
+                    if ignoreSpc: #this is saturated species that isn't in the actual model
+                        ignoreSpcs.append(saturatedSpecies)
+                        
+                    if 'Library' in source:
+                        source['Library'] = self.speciesList.index(saturatedSpecies)
+                    if 'QM' in source:
+                        source['QM'] = self.speciesList.index(saturatedSpecies)
+                else:
+                    raise Exception('Source of thermo should not use more than two sources out of QM, Library, or GAV.')
+                
+                self.speciesSourcesDict[species] = source
         
         self.reactionSourcesDict = {}
         for reaction in self.reactionList:
@@ -393,6 +409,9 @@ class Uncertainty:
                 raise Exception('Source of kinetics must be either Library, PDep, Training, or Rate Rules')
             self.reactionSourcesDict[reaction] = source
         
+        for spc in ignoreSpcs:
+            self.speciesList.remove(spc)
+            
     def compileAllSources(self):
         """
         Compile two dictionaries composed of all the thermo and kinetic sources.  Must

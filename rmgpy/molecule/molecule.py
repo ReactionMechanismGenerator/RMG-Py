@@ -565,7 +565,7 @@ class Bond(Edge):
         NOTE: we can replace the absolute value relation with math.isclose when
         we swtich to python 3.5+
         """
-        return abs(self.order - otherOrder) <= 1e-6
+        return abs(self.order - otherOrder) <= 1e-4
 
         
     def isSingle(self):
@@ -573,35 +573,35 @@ class Bond(Edge):
         Return ``True`` if the bond represents a single bond or ``False`` if
         not.
         """
-        return abs(self.order-1) <= 1e-6
+        return self.isOrder(1)
 
     def isDouble(self):
         """
         Return ``True`` if the bond represents a double bond or ``False`` if
         not.
         """
-        return abs(self.order-2) <= 1e-6
+        return self.isOrder(2)
 
     def isTriple(self):
         """
         Return ``True`` if the bond represents a triple bond or ``False`` if
         not.
         """
-        return abs(self.order-3) <= 1e-6
+        return self.isOrder(3)
 
     def isBenzene(self):
         """
         Return ``True`` if the bond represents a benzene bond or ``False`` if
         not.
         """
-        return abs(self.order-1.5) <= 1e-6
+        return self.isOrder(1.5)
 
     def incrementOrder(self):
         """
         Update the bond as a result of applying a CHANGE_BOND action to
         increase the order by one.
         """
-        if self.order <=2: 
+        if self.order <=2.0001:
             self.order += 1
         else:
             raise gr.ActionError('Unable to increment Bond due to CHANGE_BOND action: '+\
@@ -612,7 +612,7 @@ class Bond(Edge):
         Update the bond as a result of applying a CHANGE_BOND action to
         decrease the order by one.
         """
-        if self.order >=1: 
+        if self.order >=0.9999:
             self.order -= 1
         else:
             raise gr.ActionError('Unable to decrease Bond due to CHANGE_BOND action: '+\
@@ -625,7 +625,7 @@ class Bond(Edge):
         in bond order, and can be any real number.
         """
         self.order += order
-        if self.order < 0 or self.order >3:
+        if self.order < -0.0001 or self.order >3.0001:
             raise gr.ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid resulting order "{0}".'.format(self.order))
 
     def applyAction(self, action):
@@ -1858,7 +1858,9 @@ class Molecule(Graph):
                 # Keep the smallest of the cycles found above
                 cycleCandidate_tups = []
                 for cycle0 in cycles:
-                    tup = (cycle0, len(cycle0), -sum([originConnDict[v] for v in cycle0]), -sum([v.element.number for v in cycle0]))
+                    tup = (cycle0, len(cycle0), -sum([originConnDict[v] for v in cycle0]), 
+                            -sum([v.element.number for v in cycle0]),
+                            -sum([v.getBondOrdersForAtom() for v in cycle0]))
                     cycleCandidate_tups.append(tup)
                 
                 cycle = sorted(cycleCandidate_tups, key=lambda tup0: tup0[1:])[0][0]

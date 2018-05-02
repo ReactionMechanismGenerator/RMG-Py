@@ -102,10 +102,10 @@ class ReactionSystemTest(unittest.TestCase):
         self.assertEquals(len(reactionSystem.surfaceSpeciesIndices),1) #surfaceSpeciesIndices calculated correctly
         self.assertEquals(reactionSystem.surfaceSpeciesIndices[0],5) #surfaceSpeciesIndices calculated correctly
 
-        arr = numpy.array([5.,1.,2.])
-        ind = reactionSystem.maxIndUnderSurfaceLayeringConstraint(arr,reactionSystem.surfaceSpeciesIndices)
-        
-        self.assertEquals(ind,2) #maxIndUnderSurfaceLayeringConstraint worked correctly
+        inds = reactionSystem.getLayeringIndices()
+
+        self.assertEquals(inds[0],1) #worked correctly
+        self.assertEquals(inds[1],2)
     
     def testAddReactionsToSurface(self):
         """

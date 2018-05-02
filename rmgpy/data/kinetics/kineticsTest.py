@@ -27,17 +27,16 @@
 
 import os
 import unittest 
-from external.wip import work_in_progress
 import itertools
+import numpy
 
 from rmgpy import settings
+from rmgpy.chemkin import loadChemkinFile
 from rmgpy.data.kinetics.database import KineticsDatabase
-from rmgpy.data.base import DatabaseError
-import numpy
-from rmgpy.molecule.molecule import Molecule
+from rmgpy.data.base import Entry, DatabaseError, ForbiddenStructures
 from rmgpy.data.rmg import RMGDatabase
-from rmgpy.rmg.react import findDegeneracies, reduceSameReactantDegeneracy, react, reactSpecies, _labelListOfSpecies
-from rmgpy.data.base import ForbiddenStructures
+from rmgpy.rmg.react import findDegeneracies, react, reactSpecies
+from rmgpy.molecule.molecule import Molecule
 from rmgpy.species import Species
 ###################################################
 
@@ -201,7 +200,7 @@ class TestReactionDegeneracy(unittest.TestCase):
         reactionList = findDegeneracies(reactionList)
 
         self.assertEqual(len(reactionList), 1)
-        self.assertEqual(reactionList[0].degeneracy, 1)
+        self.assertEqual(reactionList[0].degeneracy, 0.5)
 
     def test_degeneracy_for_methyl_methyl_recombination(self):
         """Test that the proper degeneracy is calculated for methyl + methyl recombination"""
@@ -354,7 +353,6 @@ class TestReactionDegeneracy(unittest.TestCase):
         for reactant in reactants: reactant.assignAtomIDs()
         reactions = family.generateReactions(reactants)
         reactions = findDegeneracies(reactions)
-        reduceSameReactantDegeneracy(reactions)
         self.assertEqual(len(reactions), num_independent_reactions,'only {1} reaction(s) should be produced. Produced reactions {0}'.format(reactions,num_independent_reactions))
 
         return sum([reaction.degeneracy for reaction in reactions]), reactions
@@ -676,7 +674,6 @@ class TestReactionDegeneracy(unittest.TestCase):
         Ensure the returned kinetics have the same degeneracy irrespective of
         whether __generateReactions has forward = True or False
         """
-        from rmgpy.rmg.react import correctDegeneracyOfReverseReactions
 
         family = database.kinetics.families['Disproportionation']
 
@@ -697,12 +694,30 @@ class TestReactionDegeneracy(unittest.TestCase):
         forward_reactions = findDegeneracies(forward_reactions)
         reverse_reactions = findDegeneracies(reverse_reactions)
 
-        # correct reverse reaction degeneracy
-        correctDegeneracyOfReverseReactions(forward_reactions, reactants = [molA, molB])
-        correctDegeneracyOfReverseReactions(reverse_reactions, reactants = [molC, molD])
-
         self.assertEqual(forward_reactions[0].degeneracy, reverse_reactions[0].degeneracy,
                          'the kinetics from forward and reverse directions had different degeneracies, {} and {} respectively'.format(forward_reactions[0].degeneracy, reverse_reactions[0].degeneracy))
+
+    def test_degeneracy_same_reactant_different_resonance_structure(self):
+        """Test if degeneracy is correct when reacting different resonance structures."""
+        from rmgpy.reaction import _isomorphicSpeciesList
+
+        spc = Species().fromSMILES('CC=C[CH2]')
+        # reactSpecies will label reactants and generate resonance structures
+        reactions = reactSpecies((spc, spc))
+        # these products are only possible if the reacting structures are CC=C[CH2] and C[CH2]C=C
+        products = [Species().fromSMILES('CC=CC'), Species().fromSMILES('C=CC=C')]
+
+        # search for the desired products
+        desired_rxn = None
+        for rxn in reactions:
+            if rxn.family == 'Disproportionation' and _isomorphicSpeciesList(rxn.products, products):
+                if desired_rxn is None:
+                    desired_rxn = rxn
+                else:
+                    self.fail('Found two reactions which should be isomorphic.')
+
+        self.assertEqual(desired_rxn.degeneracy, 3)
+        self.assertEqual(set(desired_rxn.template), {'C_rad/H2/Cd', 'Cmethyl_Csrad/H/Cd'})
 
 class TestKineticsCommentsParsing(unittest.TestCase):
 
@@ -713,8 +728,6 @@ class TestKineticsCommentsParsing(unittest.TestCase):
         self.database = database
 
     def testParseKinetics(self):
-        from rmgpy.chemkin import loadChemkinFile
-        import rmgpy
         species, reactions = loadChemkinFile(os.path.join(settings['test_data.directory'], 'parsing_data','chem_annotated.inp'),
                                              os.path.join(settings['test_data.directory'], 'parsing_data','species_dictionary.txt')
                                                        )
@@ -800,7 +813,6 @@ class TestKinetics(unittest.TestCase):
     
     @classmethod
     def setUpClass(self):
-        from rmgpy.chemkin import loadChemkinFile
         """A function that is run ONCE before all unit tests in this class."""
 
         global database
@@ -861,8 +873,6 @@ class TestKinetics(unittest.TestCase):
         tests that save entry can run
         """
         from rmgpy.data.kinetics.common import saveEntry
-        import os
-        from rmgpy.data.base import Entry
         
         reactions=self.reactions
         

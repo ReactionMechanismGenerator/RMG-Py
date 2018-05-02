@@ -33,12 +33,14 @@ before_install:
 install:
   - conda env create -f environment_linux.yml
   - source activate rmg_env
+  - conda list
   - pip install codecov
   - yes 'Yes' | $HOME/miniconda/envs/rmg_env/bin/mopac $MOPACKEY > /dev/null
   - make
 
 script: 
-  - make test-all
+  - make test-unittests
+  - make test-functional
   - make test-database
 
 after_success:

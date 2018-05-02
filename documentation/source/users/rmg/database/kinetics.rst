@@ -71,6 +71,8 @@ Below is a list of pre-packaged kinetics library reactions in RMG:
 +---------------------------------------+------------------------------------------------------------------------------------------+
 |BurkeH2O2inN2                          |Comprehensive H2/O2 kinetic model in N2 atmosphere                                        |
 +---------------------------------------+------------------------------------------------------------------------------------------+
+|C2H4+O_Klipp2017                       |C2H4 + O intersystem crossing reactions, probably important for all C/H/O combustion      |
++---------------------------------------+------------------------------------------------------------------------------------------+
 |C10H11                                 |Cyclopentadiene pyrolysis in the presence of ethene                                       |
 +---------------------------------------+------------------------------------------------------------------------------------------+
 |C3                                     |Cyclopentadiene pyrolysis in the presence of ethene                                       |

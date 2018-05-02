@@ -4,6 +4,39 @@
 Release Notes
 *************
 
+RMG-Py Version 2.1.5
+====================
+Date: October 18, 2017
+
+- New bicyclic formula:
+    - Estimates polycyclic corrections for unsaturated bicyclics by adjusting the correction for the saturated version
+    - Can provide a decent estimate in many cases where there is not an exact match
+
+- Other changes:
+    - Refactored simulation algorithm to properly add multiple objects per iteration
+    - Print equilibrium constant and reverse rate coefficient values when using Cantherm to calculate kinetics
+    - Speed up degeneracy calculation by reducing unnecessary operations
+
+- Fixes:
+    - Loosen tolerance for bond order identification to account for floating point error
+    - Fixed uncertainty analysis to allow floats as bond orders
+    - Fixed some comment parsing issues in uncertainty analysis
+    - Added product structure atom relabeling for families added in RMG-database v2.1.5
+    - Fixed issue with automatic debugging of kinetics errors due to forbidden structures
+
+RMG-database Version 2.1.5
+==========================
+Date: October 18, 2017
+
+- Additions:
+    - New thermo groups added for species relevant in cyclopentadiene and natural gas pyrolysis
+    - Added C2H4+O_Klipp2017 kinetics library
+
+- Fixes:
+    - Prevent charged carbenes from reacting in Singlet_Carbene_Intra_Disproportionation
+    - Updated H_Abstraction rates in ethylamine library and corresponding training reactions
+
+
 RMG-Py Version 2.1.4
 ====================
 Date: September 08, 2017

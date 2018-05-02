@@ -119,6 +119,67 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         for family in rmg.database.kinetics.families.values():
             family.forbidden = ForbiddenStructures()
         rmg.database.forbiddenStructures = ForbiddenStructures()
+    
+    def testAddNewSurfaceObjects(self):
+        """
+        basic test that surface movement object management works properly
+        """
+        #create object with ReactionSystem behavior
+        class rsys:
+            pass
+        class item:
+            pass
+        T = item()
+        P = item()
+        T.value_si = 1000.0
+        P.value_si = 101000.0
+        rsys.T = T
+        rsys.P = P
+        
+        cerm = CoreEdgeReactionModel()
+        
+        spcA = Species().fromSMILES('[OH]')
+        spcs = [Species().fromSMILES('CC'), Species().fromSMILES('[CH3]')]
+        spcTuples = [(spcA, spc) for spc in spcs]
+        
+        rxns = list(react(*spcTuples))
+        rxns += list(react(*[(spcs[0],spcs[1])]))
+        
+        for rxn in rxns:
+            cerm.makeNewReaction(rxn)
+        
+        cerm.core.species = [spcA]+spcs
+        
+        corerxns = []
+        edgerxns = []
+        edgespcs = set()
+        for rxn in rxns:
+            if set(rxn.reactants+rxn.products) <= set(cerm.core.species):
+                corerxns.append(rxn)
+            else:
+                edgespcs |= set(cerm.core.species)-set(rxn.reactants+rxn.products)
+                edgerxns.append(rxn)
+                
+        cerm.edge.species += list(edgespcs)
+        
+        cerm.core.reactions = corerxns
+        cerm.edge.reactions = edgerxns
+        
+        cerm.surface.species = []
+        cerm.surface.reactions = []
+        
+        newSurfaceReactions = [cerm.edge.reactions[0]]
+        newSurfaceSpecies = []
+        obj = newSurfaceReactions
+        
+        cerm.addNewSurfaceObjects(obj,newSurfaceSpecies,newSurfaceReactions,rsys)
+        
+        empty = set()
+        
+        self.assertEqual(cerm.newSurfaceSpcsAdd,empty)
+        self.assertEqual(cerm.newSurfaceSpcsLoss,empty)
+        self.assertEqual(cerm.newSurfaceRxnsLoss,empty)
+        self.assertEqual(cerm.newSurfaceRxnsAdd,set([cerm.edge.reactions[0]]))
         
     def testMakeNewSpecies(self):
         """

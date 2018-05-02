@@ -1,5 +1,12 @@
 # <img align="top" src="https://raw.githubusercontent.com/ReactionMechanismGenerator/RMG-Py/master/documentation/source/_static/rmg-logo-small.png"> Reaction Mechanism Generator (RMG)
 
+[![Build status](https://img.shields.io/travis/ReactionMechanismGenerator/RMG-Py/master.svg)](https://travis-ci.org/ReactionMechanismGenerator/RMG-Py)
+[![Codecov report](https://img.shields.io/codecov/c/github/ReactionMechanismGenerator/RMG-Py/master.svg)](https://codecov.io/gh/ReactionMechanismGenerator/RMG-Py)
+[![Codacy report](https://img.shields.io/codacy/grade/c4b23c89e2e6486e981704d8d973d3e7/master.svg)](https://www.codacy.com/app/ReactionMechanismGenerator/RMG-Py/dashboard)
+[![GitHub release](https://img.shields.io/github/release/ReactionMechanismGenerator/RMG-Py.svg)](https://github.com/ReactionMechanismGenerator/RMG-Py/releases)
+[![Anconda](https://img.shields.io/conda/v/rmg/rmg.svg)](https://anaconda.org/rmg/rmg)
+[![Gitter](https://img.shields.io/gitter/room/ReactionMechanismGenerator/RMG-Py.svg)](https://gitter.im/ReactionMechanismGenerator/RMG-Py)
+[![RMG Website](https://img.shields.io/website-up-down-green-red/http/rmg.mit.edu.svg?label=rmg%20website)](http://rmg.mit.edu/)
 
 ## Description
 This repository contains the Python version of **Reaction Mechanism Generator (RMG)**,
@@ -16,14 +23,9 @@ Gaussian, MOPAC, QChem, and MOLPRO.
 - [RMG Github Repository](https://github.com/ReactionMechanismGenerator/RMG-Py): contains the latest source code for RMG
 - [RMG-database Github Repository](https://github.com/ReactionMechanismGenerator/RMG-database): contains source code for the latest version of the database
 
-## Latest Stable Release
-**RMG v2.1.4**
-[![Anaconda-Server Badge](https://anaconda.org/rmg/rmg/badges/version.svg)](https://anaconda.org/rmg/rmg)
-
-View the [Release Notes](http://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/releaseNotes.html).
-
 ## How to Install
-View the [Download and Install](http://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/installation/index.html) page.
+You can either download the source from GitHub and compile yourself, or download the binaries from Anaconda.
+Please see the [Download and Install](http://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/installation/index.html) page for detailed instructions.
 
 ## Documentation
 - [RMG Documentation](http://ReactionMechanismGenerator.github.io/RMG-Py/) ([PDF version](https://github.com/ReactionMechanismGenerator/RMG-Py/raw/master/documentation/RMG-Py_and_CanTherm_Documentation.pdf))
@@ -32,18 +34,14 @@ View the [Download and Install](http://reactionmechanismgenerator.github.io/RMG-
 
 Alternatively, PDF versions of all the documentation can also be found in the `documentation` folder of the source code.  
 
-## Credits
-
-- [Professor William H. Green's research group](http://cheme.scripts.mit.edu/green-group/) at the 
-[Massachusetts Institute of Technology](http://web.mit.edu/) 
-- [Professor Richard H. West's research group](http://www.northeastern.edu/comocheng/) at 
-[Northeastern University](http://www.northeastern.edu/). 
+## How to Contribute
+Please see the [Contributor Guidelines](https://github.com/ReactionMechanismGenerator/RMG-Py/wiki/RMG-Contributor-Guidelines)
+for details on how to contribute to RMG-Py or RMG-database.
 
 ## How to Give Feedback
 
 Please post any issues you may have to the [issues page](https://github.com/ReactionMechanismGenerator/RMG-Py/issues/)
 or drop in to the [chat room](https://gitter.im/ReactionMechanismGenerator/RMG-Py) or email [rmg_dev@mit.edu](mailto:rmg_dev@mit.edu) if you have questions.  
-[![Join the chat at https://gitter.im/ReactionMechanismGenerator/RMG-Py](https://badges.gitter.im/ReactionMechanismGenerator/RMG-Py.svg)](https://gitter.im/ReactionMechanismGenerator/RMG-Py?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ## Useful Links
 
@@ -52,10 +50,9 @@ perform thermodynamics and kinetics searches
 - [Wiki](https://github.com/ReactionMechanismGenerator/RMG-Py/wiki): a wiki for developer notes
 - [Issues Page](https://github.com/ReactionMechanismGenerator/RMG-Py/issues/): view current issues and feature requests
 
+## Credits
 
-## Continuous Integration
-
-We have a continuous integration build test suite 
-which you can access at https://travis-ci.org/ReactionMechanismGenerator/RMG-Py
-The current build status is
-[![Build Status](https://travis-ci.org/ReactionMechanismGenerator/RMG-Py.svg?branch=master)](https://travis-ci.org/ReactionMechanismGenerator/RMG-Py)
+- [Professor William H. Green's research group](http://cheme.scripts.mit.edu/green-group/) at the 
+[Massachusetts Institute of Technology](http://web.mit.edu/) 
+- [Professor Richard H. West's research group](http://www.northeastern.edu/comocheng/) at 
+[Northeastern University](http://www.northeastern.edu/). 

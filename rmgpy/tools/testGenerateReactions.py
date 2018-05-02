@@ -28,11 +28,11 @@
 import unittest
 import os.path
 import shutil
-
+from nose.plugins.attrib import attr
 import rmgpy
 from rmgpy.tools.generate_reactions import *
 
-
+@attr('functional')
 class GenerateReactionsTest(unittest.TestCase):
 
     def test(self):

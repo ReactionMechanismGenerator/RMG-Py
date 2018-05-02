@@ -103,7 +103,7 @@ class Reaction:
         self.reactants = reactants
         self.products = products
         self.specificCollider = specificCollider
-        self.degeneracy = degeneracy
+        self._degeneracy = degeneracy
         self.kinetics = kinetics
         self.reversible = reversible
         self.transitionState = transitionState
@@ -180,6 +180,13 @@ class Reaction:
                 degeneracyRatio = new
             else:
                 degeneracyRatio = (new*1.0) / self._degeneracy
+            # fix kinetics comment with new degeneracy
+            if 'Multiplied by reaction path degeneracy {}'.format(self._degeneracy) in self.kinetics.comment:
+                self.kinetics.comment = self.kinetics.comment.replace(
+                                                  'Multiplied by reaction path degeneracy {}'.format(self._degeneracy),
+                                                  'Multiplied by reaction path degeneracy {}'.format(float(new)))
+            elif self.kinetics.comment:
+                self.kinetics.comment += 'Multiplied by reaction path degeneracy {}'.format(float(new))
             self.kinetics.changeRate(degeneracyRatio)
         # set new degeneracy
         self._degeneracy = new
@@ -384,7 +391,7 @@ class Reaction:
         return False
 
     def isIsomorphic(self, other, eitherDirection=True, checkIdentical = False,
-                     checkOnlyLabel = False):
+                     checkOnlyLabel = False, checkTemplateRxnProducts=False):
         """
         Return ``True`` if this reaction is the same as the `other` reaction,
         or ``False`` if they are different. The comparison involves comparing
@@ -397,7 +404,21 @@ class Reaction:
                         checking degeneracy
         `checkOnlyLabel` indicates that the string representation will be 
                         checked, ignoring the molecular structure comparisons
+        `checkTemplateRxnProducts` indicates that only the products of the
+                        reaction are checked for isomorphism. This is used when
+                        we know the reactants are identical, i.e. in generating
+                        reactions.
         """
+        if checkTemplateRxnProducts:
+            try:
+                species1 = self.products if self.isForward else self.reactants
+                species2 = other.products if other.isForward else other.reactants
+            except AttributeError:
+                raise TypeError('Only use checkTemplateRxnProducts flag for TemplateReactions.')
+
+            return _isomorphicSpeciesList(species1, species2,
+                                          checkIdentical=checkIdentical,
+                                          checkOnlyLabel=checkOnlyLabel)
 
         # Compare reactants to reactants
         forwardReactantsMatch = _isomorphicSpeciesList(self.reactants, 

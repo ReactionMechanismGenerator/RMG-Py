@@ -29,10 +29,10 @@ import unittest
 import os
 import os.path
 import shutil
-
+from nose.plugins.attrib import attr
 import rmgpy
 from rmgpy.tools.fluxdiagram import *
-
+@attr('functional')
 class FluxDiagramTest(unittest.TestCase):
 
     def test_avi(self):

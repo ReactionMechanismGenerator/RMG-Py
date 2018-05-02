@@ -57,10 +57,18 @@ from rmgpy.exceptions import InvalidActionError, ReactionPairsError, KineticsErr
 
 class TemplateReaction(Reaction):
     """
-    A Reaction object generated from a reaction family template. In addition to
-    the usual attributes, this class includes a `family` attribute to store the
-    family that it was created from, as well as a `estimator` attribute to indicate
-    whether it came from a rate rules or a group additivity estimate.
+    A Reaction object generated from a reaction family template. In addition
+    to attributes inherited from :class:`Reaction`, this class includes the
+    following attributes:
+
+    =========== ========================= =====================================
+    Attribute   Type                      Description
+    =========== ========================= =====================================
+    `family`    ``str``                   The kinetics family that the reaction was created from.
+    `estimator` ``str``                   Whether the kinetics came from rate rules or group additivity.
+    `reverse`   :class:`TemplateReaction` The reverse reaction, for families that are their own reverse.
+    `isForward` ``bool``                  Whether the reaction was generated in the forward direction of the family.
+    =========== ========================= =====================================
     """
 
     def __init__(self,
@@ -77,7 +85,8 @@ class TemplateReaction(Reaction):
                 family=None,
                 template=None,
                 estimator=None,
-                reverse=None
+                reverse=None,
+                isForward=None,
                 ):
         Reaction.__init__(self,
                           index=index,
@@ -95,6 +104,7 @@ class TemplateReaction(Reaction):
         self.template = template
         self.estimator = estimator
         self.reverse = reverse
+        self.isForward = isForward
 
     def __reduce__(self):
         """
@@ -114,6 +124,7 @@ class TemplateReaction(Reaction):
                                    self.template,
                                    self.estimator,
                                    self.reverse,
+                                   self.isForward
                                    ))
 
     def __repr__(self):
@@ -174,6 +185,7 @@ class TemplateReaction(Reaction):
         other.template = self.template
         other.estimator = self.estimator
         other.reverse = self.reverse
+        other.isForward = self.isForward
         
         return other
 
@@ -1190,6 +1202,10 @@ class KineticsFamily(Database):
                 if atom.label == '*1' or atom.label == '*2': atom.label = '*'
 
         # If reaction family is its own reverse, relabel atoms
+        # This allows comparison of the product species to forbidden
+        #  structures which are labeled as reactants.
+        # Unfortunately, this means that reaction family info is
+        #  hardcoded, so this must be updated if the database changes.
         if not self.reverseTemplate:
             # Get atom labels for products
             atomLabels = {}
@@ -1197,7 +1213,6 @@ class KineticsFamily(Database):
                 if atom.label != '':
                     atomLabels[atom.label] = atom
 
-            # This is hardcoding of reaction families (bad!)
             label = self.label.lower()
             if label == 'h_abstraction':
                 # '*2' is the H that migrates
@@ -1211,18 +1226,44 @@ class KineticsFamily(Database):
                 atomLabels['*1'].label = '*2'
                 atomLabels['*2'].label = '*1'
                 # reverse all the atoms in the chain between *1 and *2
-                # i.e. swap *4 with the highest, *5 with the second-highest
                 highest = len(atomLabels)
-                if highest>4:
-                    for i in range(4,highest+1):
-                        atomLabels['*{0:d}'.format(i)].label = '*{0:d}'.format(4+highest-i)
+                if highest > 4:
+                    # swap *4 with *5
+                    atomLabels['*4'].label = '*5'
+                    atomLabels['*5'].label = '*4'
+                if highest > 6:
+                    # swap *6 with the highest, etc.
+                    for i in range(6, highest+1):
+                        atomLabels['*{0:d}'.format(i)].label = '*{0:d}'.format(6+highest-i)
                         
-            elif label == 'H_shift_cyclopentadiene':
+            elif label == 'intra_ene_reaction':
                 # Labels for nodes are swapped
                 atomLabels['*1'].label = '*2'
                 atomLabels['*2'].label = '*1'
                 atomLabels['*3'].label = '*5'
                 atomLabels['*5'].label = '*3'
+
+            elif label == '6_membered_central_c-c_shift':
+                # Labels for nodes are swapped
+                atomLabels['*1'].label = '*3'
+                atomLabels['*3'].label = '*1'
+                atomLabels['*4'].label = '*6'
+                atomLabels['*6'].label = '*4'
+
+            elif label == '1,2_shiftc':
+                # Labels for nodes are swapped
+                atomLabels['*2'].label = '*3'
+                atomLabels['*3'].label = '*2'
+
+            elif label == 'intra_r_add_exo_scission':
+                # Labels for nodes are swapped
+                atomLabels['*1'].label = '*3'
+                atomLabels['*3'].label = '*1'
+
+            elif label == 'intra_substitutions_isomerization':
+                # Swap *2 and *3
+                atomLabels['*2'].label = '*3'
+                atomLabels['*3'].label = '*2'
 
         if not forward: template = self.reverseTemplate
         else:           template = self.forwardTemplate
@@ -1362,6 +1403,7 @@ class KineticsFamily(Database):
             degeneracy = 1,
             reversible = True,
             family = self.label,
+            isForward = isForward,
         )
         
         # Store the labeled atoms so we can recover them later
@@ -1418,19 +1460,21 @@ class KineticsFamily(Database):
         """
         For rxn (with species' objects) from families with ownReverse, this method adds a `reverse`
         attribute that contains the reverse reaction information (like degeneracy)
+
+        Returns `True` if successful and `False` if the reverse reaction is forbidden.
+        Will raise a `KineticsError` if unsuccessful for other reasons.
         """
-        from rmgpy.rmg.react import findDegeneracies, getMoleculeTuples
+        from rmgpy.rmg.react import findDegeneracies
 
         if self.ownReverse:
-            # make sure to react all resonance structures.
-            tuples = getMoleculeTuples(rxn.products)
-            reactionList = []
-            for tup in tuples:
-                moltup = [mol_and_index[0] for mol_and_index in tup]
-                reactionList.extend(self.__generateReactions(moltup,
-                                                             products=rxn.reactants,
-                                                             forward=True))
-            reactions = findDegeneracies(reactionList)
+            # Check if the reactants are the same
+            sameReactants = False
+            if len(rxn.products) == 2 and rxn.products[0].isIsomorphic(rxn.products[1]):
+                sameReactants = True
+
+            reactionList = self.__generateReactions([spc.molecule for spc in rxn.products],
+                                                    products=rxn.reactants, forward=True)
+            reactions = findDegeneracies(reactionList, sameReactants)
             if len(reactions) == 0:
                 logging.error("Expecting one matching reverse reaction, not zero in reaction family {0} for forward reaction {1}.\n".format(self.label, str(rxn)))
                 logging.error("There is likely a bug in the RMG-database kinetics reaction family involving a missing group, missing atomlabels, forbidden groups, etc.")
@@ -1448,18 +1492,19 @@ class KineticsFamily(Database):
                 tempObject = self.forbidden
                 self.forbidden = ForbiddenStructures()  # Initialize with empty one
                 try:
-                    reactions = self.__generateReactions(rxn.products, products=rxn.reactants, forward=True)
+                    reactionList = self.__generateReactions([spc.molecule for spc in rxn.products],
+                                                            products=rxn.reactants, forward=True)
+                    reactions = findDegeneracies(reactionList)
                 finally:
                     self.forbidden = tempObject
-                if len(reactions) != 1:
+                if len(reactions) == 1 or (len(reactions) > 1 and all([reactions[0].isIsomorphic(other, checkTemplateRxnProducts=True) for other in reactions])):
+                    logging.error("Error was fixed, the product is a forbidden structure when used as a reactant in the reverse direction.")
+                    # This reaction should be forbidden in the forward direction as well
+                    return False
+                else:
                     logging.error("Still experiencing error: Expecting one matching reverse reaction, not {0} in reaction family {1} for forward reaction {2}.\n".format(len(reactions), self.label, str(rxn)))
                     raise KineticsError("Did not find reverse reaction in reaction family {0} for reaction {1}.".format(self.label, str(rxn)))
-                else:
-                    logging.error("Error was fixed, the product is a forbidden structure when used as a reactant in the reverse direction.")
-                    # Delete this reaction, since it should probably also be forbidden in the initial direction
-                    # Hack fix for now
-                    del rxn
-            elif len(reactions) > 1 and not all([reactions[0].isIsomorphic(other) for other in reactions]):
+            elif len(reactions) > 1 and not all([reactions[0].isIsomorphic(other, checkTemplateRxnProducts=True) for other in reactions]):
                 logging.error("Expecting one matching reverse reaction. Recieved {0} reactions with multiple non-isomorphic ones in reaction family {1} for forward reaction {2}.\n".format(len(reactions), self.label, str(rxn)))
                 logging.info("Found the following reverse reactions")
                 for rxn0 in reactions:
@@ -1473,8 +1518,9 @@ class KineticsFamily(Database):
                 raise KineticsError("Found multiple reverse reactions in reaction family {0} for reaction {1}, likely due to inconsistent resonance structure generation".format(self.label, str(rxn)))
             else:
                 rxn.reverse = reactions[0]
+                return True
 
-    def calculateDegeneracy(self, reaction, ignoreSameReactants=False):
+    def calculateDegeneracy(self, reaction):
         """
         For a `reaction`  with `Molecule` or `Species` objects given in the direction in which
         the kinetics are defined, compute the reaction-path degeneracy.
@@ -1485,7 +1531,7 @@ class KineticsFamily(Database):
         `ignoreSameReactants= True` to this method.
         """
         reaction.degeneracy = 1
-        from rmgpy.rmg.react import findDegeneracies, reduceSameReactantDegeneracy, getMoleculeTuples
+        from rmgpy.rmg.react import findDegeneracies, getMoleculeTuples
 
         # find combinations of resonance isomers
         specReactants = []
@@ -1505,10 +1551,13 @@ class KineticsFamily(Database):
             comboOnlyMols = [tup[0] for tup in combo]
             reactions.extend(self.__generateReactions(comboOnlyMols, products=reaction.products, forward=True))
 
+        # Check if the reactants are the same
+        sameReactants = False
+        if len(specReactants) == 2 and specReactants[0].isIsomorphic(specReactants[1]):
+            sameReactants = True
+
         # remove degenerate reactions
-        reactions = findDegeneracies(reactions)
-        if not ignoreSameReactants:
-            reduceSameReactantDegeneracy(reactions)
+        reactions = findDegeneracies(reactions, sameReactants)
 
         # remove reactions with different templates (only for TemplateReaction)
         if isinstance(reaction, TemplateReaction):
@@ -1631,6 +1680,8 @@ class KineticsFamily(Database):
             if isinstance(products[0],Molecule):
                 products = [product.generateResonanceIsomers() for product in products]
             elif isinstance(products[0],Species):
+                for product in products:
+                    product.generateResonanceIsomers(keepIsomorphic=False)
                 products = [product.molecule for product in products]
             else:
                 raise TypeError('products input to __generateReactions must be Species or Molecule Objects')
@@ -2140,8 +2191,12 @@ class KineticsFamily(Database):
             
             # Discard the last line, unless it's the only line!
             # The last line is 'Estimated using ... for rate rule (originalTemplate)'
-            if len(lines) == 1:
-                comment = lines[0]
+            #if from training reaction is in the first line append it to the end of the second line and skip the first line
+            if not 'Average of' in kinetics.comment:
+                if 'from training reaction' in lines[0]:
+                    comment = lines[1]
+                else:
+                    comment = lines[0]
                 if comment.startswith('Estimated using template'):
                     tokenTemplateLabel = comment.split()[3][1:-1]
                     ruleEntry, trainingEntry = self.retrieveOriginalEntry(tokenTemplateLabel) 
@@ -2157,8 +2212,8 @@ class KineticsFamily(Database):
                 evalCommentString = re.sub(r" \+ ", ",",                        # any remaining + signs
                                     re.sub(r"Average of ", "",                  # average of averages
                                     re.sub(r"Average of \[(?!Average)", "['",   # average of groups
-                                    re.sub(r"(\b|\))]", r"\1']",                # initial closing bracket
-                                    re.sub(r"(?<=\b) \+ (?=Average)", "',",     # + sign between non-average and average
+                                    re.sub(r"(\w|\))]", r"\1']",                # initial closing bracket
+                                    re.sub(r"(?<=[\w)]) \+ (?=Average)", "',",  # + sign between non-average and average
                                     re.sub(r"(?<=]) \+ (?!Average)", ",'",      # + sign between average and non-average
                                     re.sub(r"(?<!]) \+ (?!Average)", "','",     # + sign between non-averages
                                     comment)))))))
@@ -2243,7 +2298,7 @@ class KineticsFamily(Database):
             elif line.startswith('Estimated'):
                 pass
             elif line.startswith('Multiplied by'):
-                degeneracy = int(line.split()[-1])
+                degeneracy = float(line.split()[-1])
 
         # Extract the rate rule information 
         fullCommentString = reaction.kinetics.comment.replace('\n', ' ')

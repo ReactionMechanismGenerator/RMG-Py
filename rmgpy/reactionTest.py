@@ -241,8 +241,11 @@ class TestReaction(unittest.TestCase):
                 Tmax = (2500, 'K'),
             ),
             transitionState = TS,
+            degeneracy = 2,
         )
-    
+        self.reaction.kinetics.comment = '''
+        Multiplied by reaction path degeneracy 2.0
+        '''
         # CC(=O)O[O]
         acetylperoxy = Species(
             label='acetylperoxy',
@@ -1025,6 +1028,16 @@ class TestReaction(unittest.TestCase):
         degeneracyFactor = 2
         self.reaction.degeneracy *= degeneracyFactor
         self.assertAlmostEqual(self.reaction.kinetics.A.value_si, degeneracyFactor * prefactor)
+
+    def testDegeneracyUpdatesKineticsComment(self):
+        """
+        This method tests that a change in degeneracy will result in a modified rate constant
+        """
+
+        newDegeneracy = 8
+        self.reaction.degeneracy = newDegeneracy
+        self.assertIn('Multiplied by reaction path degeneracy 8.0', self.reaction.kinetics.comment)
+
 
 class TestReactionToCantera(unittest.TestCase):
     """

@@ -31,10 +31,10 @@
 import unittest
 import os
 import os.path
-
+from nose.plugins.attrib import attr
 import rmgpy
 from rmgpy.tools.regression import *
-
+@attr('functional')
 class regressionTest(unittest.TestCase):
 
     def test(self):
