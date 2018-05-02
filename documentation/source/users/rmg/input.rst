@@ -413,8 +413,20 @@ and works reasonably well while running more rapidly. The latter
 utilizes the steady-state/reservoir-state approach of Green and Bhatti [Green2007]_, 
 and is more theoretically sound but more expensive.
 
-The pressure dependence block should specify the following:
 
+The following is an example of pressure dependence options ::
+
+	pressureDependence(
+		method='modified strong collision',
+		maximumGrainSize=(0.5,'kcal/mol'),
+		minimumNumberOfGrains=250,
+		temperatures=(300,2000,'K',8),
+		pressures=(0.01,100,'bar',5),
+		interpolation=('Chebyshev', 6, 4),
+		maximumAtoms=16,
+	)
+
+The various options are as follows:
 
 Method used for estimating pressure dependent kinetics
 ------------------------------------------------------
@@ -468,10 +480,7 @@ Section 3.6.3 of the :file:`CHEMKIN_Theory.pdf` document.  These files are part 
 the CHEMKIN manual.  
 
 To fit a set of Chebyshev polynomials on inverse temperature and logarithmic pressure axes mapped 
-to [-1,1], use the line ::
-
-	interpolation=('Chebyshev', 6, 4)
-	
+to [-1,1], specify `''Chebyshev'` interpolation. 
 You should also specify the number of temperature and pressure basis functions by adding the appropriate integers. 
 For example, the following specifies that six basis functions in temperature and four in pressure should be used ::
 
@@ -480,6 +489,12 @@ For example, the following specifies that six basis functions in temperature and
 The auxillary information printed to the Chemkin chem.inp file will have the "CHEB"
 format.  Refer to Section 3.5.3 of the :file:`CHEMKIN_Input.pdf` document and/or 
 Section 3.6.4 of the :file:`CHEMKIN_Theory.pdf` document.
+
+Regarding the number of polynomial coeffients for Chebyshev interpolated rates,
+plese refer to the :class:`rmgpy.kinetics.Chebyshev` documentation. 
+The number of pressures and temperature coefficents should always be smaller 
+than the respective number of user-specified temperatures and pressures. 
+
 
 Maximum size of adduct for which pressure dependence kinetics be generated
 --------------------------------------------------------------------------
@@ -498,23 +513,6 @@ the line ::
 to turn off pressure dependence for all molecules larger than the given number
 of atoms (16 in the above example).
 
-
-The following is an example of pressure dependence options ::
-
-	pressureDependence(
-		method='modified strong collision',
-		maximumGrainSize=(0.5,'kcal/mol'),
-		minimumNumberOfGrains=250,
-		temperatures=(300,2000,'K',8),
-		pressures=(0.01,100,'bar',5),
-		interpolation=('Chebyshev', 6, 4),
-		maximumAtoms=16,
-	)
-
-Regarding the number of polynomial coeffients for Chebyshev interpolated rates,
-plese refer to the :class:`rmgpy.kinetics.Chebyshev` documentation. 
-The number of pressures and temperature coefficents should always be smaller 
-than the respective number of user-specified temperatures and pressures. 
 
 .. _miscellaneousoptions:
 

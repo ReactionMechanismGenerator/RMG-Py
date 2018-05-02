@@ -1,10 +1,39 @@
+################################################################################
+#
+#   RMG - Reaction Mechanism Generator
+#
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
+#
+#   Permission is hereby granted, free of charge, to any person obtaining a
+#   copy of this software and associated documentation files (the 'Software'),
+#   to deal in the Software without restriction, including without limitation
+#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#   and/or sell copies of the Software, and to permit persons to whom the
+#   Software is furnished to do so, subject to the following conditions:
+#
+#   The above copyright notice and this permission notice shall be included in
+#   all copies or substantial portions of the Software.
+#
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+#   DEALINGS IN THE SOFTWARE.
+#
+################################################################################
+
 import unittest
 import os.path
+import shutil
 
 from rmgpy import settings
 from rmgpy.data.kinetics.database import KineticsDatabase
 from rmgpy.data.kinetics.family import ReactionRecipe
 from rmgpy.molecule import Molecule
+import filecmp
 ###################################################
 
 class TestFamily(unittest.TestCase):
@@ -150,3 +179,24 @@ multiplicity 2
 
         self.assertEqual(len(products), 1)
         self.assertTrue(expectedProduct.isIsomorphic(products[0]))
+
+    def testSaveFamily(self):
+        """
+
+        This tests the the family.save method by writing a new temporary file and
+        comparing it to the original source.
+
+        """
+        os.makedirs(os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_copy'))
+        self.family.save(os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_copy'))
+        try:
+            self.assertTrue(filecmp.cmp(os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_migration/groups.py'),
+                                 os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_copy/groups.py')))
+            self.assertTrue(filecmp.cmp(os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_migration/rules.py'),
+                                 os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_copy/rules.py')))
+            self.assertTrue(filecmp.cmp(os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_migration/training/reactions.py'),
+                                 os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_copy/training/reactions.py')))
+            self.assertTrue(filecmp.cmp(os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_migration/training/dictionary.txt'),
+                                 os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_copy/training/dictionary.txt')))
+        finally:
+            shutil.rmtree(os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_copy'))

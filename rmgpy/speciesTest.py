@@ -1,6 +1,33 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+################################################################################
+#
+#   RMG - Reaction Mechanism Generator
+#
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
+#
+#   Permission is hereby granted, free of charge, to any person obtaining a
+#   copy of this software and associated documentation files (the 'Software'),
+#   to deal in the Software without restriction, including without limitation
+#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#   and/or sell copies of the Software, and to permit persons to whom the
+#   Software is furnished to do so, subject to the following conditions:
+#
+#   The above copyright notice and this permission notice shall be included in
+#   all copies or substantial portions of the Software.
+#
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+#   DEALINGS IN THE SOFTWARE.
+#
+################################################################################
+
 """
 This module contains unit tests of the rmgpy.species module.
 """
@@ -147,8 +174,37 @@ class TestSpecies(unittest.TestCase):
         exec('spec2 = {0!r}'.format(spec))
         self.assertEqual(len(spec.molecule), len(spec2.molecule))
         for i, j in zip(spec.molecule, spec2.molecule):
-            self.assertTrue(i.isIsomorphic(j))
+            self.assertTrue(j.isIsomorphic(i), msg='i is not isomorphic with j, where i is {} and j is {}'.format(i.toSMILES(), j.toSMILES()))
 
+    def testGetResonanceHybrid(self):
+        """
+        Tests that getResonanceHybrid returns an isomorphic structure
+        which has intermediate bond orders.
+        
+        This check is for C=C[CH]CC which has another resonance structure,
+        [CH2]C=CC. When these structures are merged, the bond structure should be,
+        C~C~CC, where '~' is a hybrid bond of order 1.5. 
+        """
+        spec = Species().fromSMILES('C=C[CH]CC')
+        hybridMol = spec.getResonanceHybrid()
+        
+        self.assertTrue(hybridMol.toSingleBonds().isIsomorphic(spec.molecule[0].toSingleBonds()))
+        
+        # a rough check for intermediate bond orders
+        expected_orders = [1,1.5]
+        bonds = []
+        # ensure all bond orders are expected
+        for atom in hybridMol.atoms:
+            for atom2 in atom.bonds:
+                bond = hybridMol.getBond(atom,atom2)
+                self.assertTrue(any([bond.isOrder(otherOrder) for otherOrder in expected_orders]), 'Unexpected bond order {}'.format(bond.getOrderNum()))
+                bonds.append(bond)
+                
+        # ensure all expected orders are present
+        for expected_order in expected_orders:
+            self.assertTrue(any([bond.isOrder(expected_order) for bond in bonds]),'No bond of order {} found'.format(expected_order))
+            
+            
     def testCopy(self):
         """Test that we can make a copy of a Species object."""
 
@@ -172,7 +228,7 @@ class TestSpecies(unittest.TestCase):
 Thermo library: primaryThermoLibrary
 """), molecule=[Molecule(SMILES="[Ar]")], transportData=TransportData(shapeIndex=0, epsilon=(1134.93,'J/mol'), sigma=(3.33,'angstrom'), dipoleMoment=(2,'De'), polarizability=(1,'angstrom^3'), rotrelaxcollnum=15.0, comment="""GRI-Mech"""))
         
-        rmg_ctSpecies = rmgSpecies.toCantera()
+        rmg_ctSpecies = rmgSpecies.toCantera(useChemkinIdentifier = True)
         
         ctSpecies = ct.Species.fromCti("""species(name=u'Ar',
         atoms='Ar:1',

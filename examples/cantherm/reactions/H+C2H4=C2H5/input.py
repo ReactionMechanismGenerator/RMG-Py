@@ -11,6 +11,10 @@ species('C2H4', '../../species/C2H4/ethene.py')
 species('C2H5', '../../species/C2H5/ethyl.py')
 transitionState('TS', 'TS.py')
 
+thermo('H','NASA')
+thermo('C2H4','NASA')
+thermo('C2H5','NASA')
+
 reaction(
     label = 'H + C2H4 <=> C2H5',
     reactants = ['H', 'C2H4'],

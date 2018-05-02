@@ -5,11 +5,11 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2009 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the "Software"),
+#   copy of this software and associated documentation files (the 'Software'),
 #   to deal in the Software without restriction, including without limitation
 #   the rights to use, copy, modify, merge, publish, distribute, sublicense,
 #   and/or sell copies of the Software, and to permit persons to whom the
@@ -18,10 +18,10 @@
 #   The above copyright notice and this permission notice shall be included in
 #   all copies or substantial portions of the Software.
 #
-#   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 #   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-#   THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 #   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #   DEALINGS IN THE SOFTWARE.
@@ -45,7 +45,14 @@ try:
 except ImportError:
     pass
 
+from rmgpy.chemkin import writeElementsSection, writeThermoEntry, writeKineticsEntry
+
 from rmgpy.cantherm.input import loadInputFile
+
+from rmgpy.cantherm.kinetics import KineticsJob
+from rmgpy.cantherm.statmech import StatMechJob
+from rmgpy.cantherm.thermo import ThermoJob
+from rmgpy.cantherm.pdep import PressureDependenceJob
 
 ################################################################################
 
@@ -229,12 +236,40 @@ class CanTherm:
         with open(outputFile, 'w') as f:
             pass
         chemkinFile = os.path.join(self.outputDirectory, 'chem.inp')
+
+        # write the chemkin files and run the thermo and then kinetics jobs
         with open(chemkinFile, 'w') as f:
-            pass
-        
-        # Run the jobs
+            writeElementsSection(f)
+            
+            f.write('SPECIES\n\n')
+
+            # write each species in species block
+            for job in self.jobList:
+                if isinstance(job,ThermoJob):
+                    f.write(job.species.toChemkin())
+                    f.write('\n')
+
+            f.write('\nEND\n\n\n\n')
+            f.write('THERM ALL\n')
+            f.write('    300.000  1000.000  5000.000\n\n')
+
+        # run thermo jobs (printing out thermo stuff)
         for job in self.jobList:
-            job.execute(outputFile=outputFile, plot=self.plot)
-        
+            if isinstance(job,ThermoJob) or isinstance(job, StatMechJob):
+                job.execute(outputFile=outputFile, plot=self.plot)
+
+        with open(chemkinFile, 'a') as f:
+            f.write('\n')
+            f.write('END\n\n\n\n')
+            f.write('REACTIONS    KCAL/MOLE   MOLES\n\n')
+
+        # run kinetics and pdep jobs (and outputing chemkin stuff)
+        for job in self.jobList:
+            if isinstance(job,KineticsJob) or isinstance(job, PressureDependenceJob):
+                job.execute(outputFile=outputFile, plot=self.plot)
+
+        with open(chemkinFile, 'a') as f:
+            f.write('END\n\n')
+
         # Print some information to the end of the log
         self.logFooter()

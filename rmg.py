@@ -81,8 +81,8 @@ def parseCommandLineArguments():
     parser.add_argument('-p', '--profile', action='store_true', help='run under cProfile to gather profiling statistics, and postprocess them if job completes')
     parser.add_argument('-P', '--postprocess', action='store_true', help='postprocess profiling statistics from previous [failed] run; does not run the simulation')
 
-    parser.add_argument('-t', '--walltime', type=str, nargs=1, default='0',
-        metavar='HH:MM:SS', help='set the maximum execution time')
+    parser.add_argument('-t', '--walltime', type=str, nargs=1, default='00:00:00:00',
+        metavar='DD:HH:MM:SS', help='set the maximum execution time')
 
     #Add option to output a folder that stores the details of each kinetic database entry source
     parser.add_argument('-k', '--kineticsdatastore', action='store_true', help='output a folder, kinetics_database, that contains a .txt file for each reaction family listing the source(s) for each entry')
@@ -100,6 +100,12 @@ if __name__ == '__main__':
     # to match the input file location
     import os.path
     inputFile = args.file[0]
+
+    if args.output_directory != '':
+        args.output_directory = args.output_directory[0]
+
+    if args.walltime != '00:00:00:00':
+        args.walltime = args.walltime[0]
 
     inputDirectory = os.path.abspath(os.path.dirname(inputFile))
     if args.output_directory == '':

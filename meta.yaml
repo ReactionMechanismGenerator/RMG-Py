@@ -16,7 +16,7 @@ requirements:
     - cairo # [unix]
     - cairocffi # [unix]
     - coverage
-    - cython ==0.21
+    - cython >=0.25.2
     - gcc # [unix]
     - gcc ==4.8.2 # [linux32]
     - gprof2dot
@@ -75,7 +75,7 @@ requirements:
     - pyzmq
     - quantities
     - rdkit >=2015.09.2
-    - rmgdatabase >=2.1.2
+    - rmgdatabase >=2.1.3
     - scipy
     - scoop
     - symmetry

@@ -1,12 +1,44 @@
+################################################################################
+#
+#   RMG - Reaction Mechanism Generator
+#
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
+#
+#   Permission is hereby granted, free of charge, to any person obtaining a
+#   copy of this software and associated documentation files (the 'Software'),
+#   to deal in the Software without restriction, including without limitation
+#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#   and/or sell copies of the Software, and to permit persons to whom the
+#   Software is furnished to do so, subject to the following conditions:
+#
+#   The above copyright notice and this permission notice shall be included in
+#   all copies or substantial portions of the Software.
+#
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+#   DEALINGS IN THE SOFTWARE.
+#
+################################################################################
+
 import os
 import unittest 
 from external.wip import work_in_progress
+import itertools
+
 from rmgpy import settings
 from rmgpy.data.kinetics.database import KineticsDatabase
 from rmgpy.data.base import DatabaseError
 import numpy
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.data.rmg import RMGDatabase
+from rmgpy.rmg.react import findDegeneracies, reduceSameReactantDegeneracy, react, reactSpecies, _labelListOfSpecies
+from rmgpy.data.base import ForbiddenStructures
+from rmgpy.species import Species
 ###################################################
 
 def setUpModule():
@@ -21,12 +53,17 @@ def setUpModule():
             'R_Recombination',
             'Disproportionation',
             'R_Addition_MultipleBond',
+            'H_Abstraction'
         ],
         testing=True,
         depository=False,
         solvation=False,
     )
-    database.loadForbiddenStructures()
+    #load empty forbidden structures to avoid any dependence on forbidden structures
+    #for these tests
+    for family in database.kinetics.families.values():
+        family.forbidden = ForbiddenStructures()
+    database.forbiddenStructures = ForbiddenStructures()
 
     # Prepare the database by loading training reactions and averaging the rate rules
     for family in database.kinetics.families.values():
@@ -68,10 +105,108 @@ class TestReactionDegeneracy(unittest.TestCase):
         global database
         self.database = database
 
+    def testR_Addition_MultipleBondBenzene(self):
+        """Test that the proper degeneracy is calculated for H addition to benzene"""
+        family = 'R_Addition_MultipleBond'
+        reactants = [
+            Molecule().fromSMILES('c1ccccc1'),
+            Molecule().fromSMILES('[H]'),
+        ]
+        # assign atom IDs
+        for reactant in reactants: reactant.assignAtomIDs()
+
+        reactants = [mol.generateResonanceIsomers() for mol in reactants]
+
+        combinations = itertools.product(reactants[0], reactants[1])
+
+        reactionList = []
+        for combi in combinations:
+            reactionList.extend(self.database.kinetics.families[family].generateReactions(combi))
+
+        reactionList = findDegeneracies(reactionList)
+
+        self.assertEqual(len(reactionList), 1)
+        for rxn in reactionList:
+            self.assertEqual(rxn.degeneracy, 6)
+
+    def testR_Addition_MultipleBondMethylNaphthalene(self):
+        """Test that the proper degeneracy is calculated for H addition to methylnaphthalene"""
+        family = 'R_Addition_MultipleBond'
+        reactants = [
+            Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1C'),
+            Molecule().fromSMILES('[H]'),
+        ]
+        # assign atom IDs
+        for reactant in reactants: reactant.assignAtomIDs()
+        
+        reactants = [mol.generateResonanceIsomers() for mol in reactants]
+
+        combinations = itertools.product(reactants[0], reactants[1])
+
+        reactionList = []
+        for combi in combinations:
+            reactionList.extend(self.database.kinetics.families[family].generateReactions(combi))
+
+        product = Species().fromSMILES('C[C]1CC=CC2=CC=CC=C12')
+        product.generateResonanceIsomers()
+
+        targetReactions = []
+        for rxn in reactionList:
+            for spc in rxn.products:
+                if product.isIsomorphic(spc):
+                    targetReactions.append(rxn)
+
+        targetReactions = findDegeneracies(targetReactions)
+
+        self.assertEqual(len(targetReactions), 1)
+        for rxn in targetReactions:
+            self.assertEqual(rxn.degeneracy, 1)
+
+    def testR_RecombinationPhenyl(self):
+        """Test that the proper degeneracy is calculated for phenyl + H recombination"""
+        family = 'R_Recombination'
+        reactants = [
+            Molecule().fromSMILES('[c]1ccccc1'),
+            Molecule().fromSMILES('[H]'),
+        ]
+
+        # assign atom IDs
+        for reactant in reactants: reactant.assignAtomIDs()
+
+        reactants = [mol.generateResonanceIsomers() for mol in reactants]
+
+        combinations = itertools.product(reactants[0], reactants[1])
+
+        reactionList = []
+        for combi in combinations:
+            reactionList.extend(self.database.kinetics.families[family].generateReactions(combi))
+
+        reactionList = findDegeneracies(reactionList)
+
+        self.assertEqual(len(reactionList), 1)
+        for rxn in reactionList:
+            self.assertEqual(rxn.degeneracy, 1)
+
+    def testR_RecombinationH(self):
+        """Test that the proper degeneracy is calculated for H + H recombination"""
+        family = 'R_Recombination'
+        reactants = [
+            Molecule().fromSMILES('[H]'),
+            Molecule().fromSMILES('[H]'),
+        ]
+        for reactant in reactants: reactant.assignAtomIDs()
+
+        reactionList = self.database.kinetics.families[family].generateReactions(reactants)
+
+        reactionList = findDegeneracies(reactionList)
+
+        self.assertEqual(len(reactionList), 1)
+        self.assertEqual(reactionList[0].degeneracy, 1)
+
     def test_degeneracy_for_methyl_methyl_recombination(self):
         """Test that the proper degeneracy is calculated for methyl + methyl recombination"""
 
-        correct_degeneracy = 1
+        correct_degeneracy = 0.5
         rxn_family_str = 'R_Recombination'
         adj_lists = [
             """
@@ -119,7 +254,7 @@ class TestReactionDegeneracy(unittest.TestCase):
     def test_degeneracy_for_ethyl_ethyl_disproportionation(self):
         """Test that the proper degeneracy is calculated for ethyl + ethyl disproportionation"""
 
-        correct_degeneracy = 6
+        correct_degeneracy = 3
         rxn_family_str = 'Disproportionation'
         adj_lists = [
             """
@@ -216,18 +351,136 @@ class TestReactionDegeneracy(unittest.TestCase):
         reactants = [Molecule().fromAdjacencyList(reactants_adj_list[0]),
                      Molecule().fromAdjacencyList(reactants_adj_list[1])]
 
+        for reactant in reactants: reactant.assignAtomIDs()
         reactions = family.generateReactions(reactants)
+        reactions = findDegeneracies(reactions)
+        reduceSameReactantDegeneracy(reactions)
         self.assertEqual(len(reactions), num_independent_reactions,'only {1} reaction(s) should be produced. Produced reactions {0}'.format(reactions,num_independent_reactions))
 
         return sum([reaction.degeneracy for reaction in reactions]), reactions
 
-    def test_propyl_propyl_reaction_is_the_same_as_propyl_butyl(self):
+    def test_degeneracy_does_not_include_identical_atom_labels(self):
+        """
+        ensure rxns with identical atom_ids are not counted twice for degeneracy
+        
+        this test uses [H] + CC=C[CH]C -> H2 + [CH2]C=C[CH]C as an example. Since
+        the reactant is symmetric with the middle carbon, the degeneracy should be
+        6.
+        """
+        spcA = Species().fromSMILES('[H]')
+        spcB = Species().fromSMILES('CC=C[CH]C')
+        spcB.generateResonanceIsomers(keepIsomorphic=True)
+        spcTuples = [(spcA,spcB)]
+        
+        reactionList = list(react(*spcTuples))
+        
+        # find reaction with a specific product
+        specific_product = Species().fromSMILES('[CH2]C=C[CH]C')
+        
+        specific_product.generateResonanceIsomers()
+        
+        specific_reaction = None
+        for rxn in reactionList:
+            if any([specific_product.isIsomorphic(product) for product in rxn.products]):
+                specific_reaction = rxn
+                break
+        self.assertIsNotNone(specific_reaction,'no reaction found with the specified product')
+        
+        self.assertEqual(specific_reaction.degeneracy, 6,'The reaction output the wrong degeneracy of {}.'.format(specific_reaction.degeneracy))
+    def test_degeneracy_keeps_separate_transition_states_separated(self):
+        """
+        ensure rxns with multiple transition states are kept as separate reactions
+        
+        this test uses C[C]=C + C=C[CH2] -> C=C=C + C=CC as an example. 
+        This reaction should have two transition states, which should occur regardless
+        of the order .
+        """
+        spcA = Species().fromSMILES('C[C]=C')
+        spcB = Species().fromSMILES('C=C[CH2]')
+        spcTuples = [(spcA,spcB)]
+        reactionList = list(react(*spcTuples))
+        # find reaction with a specific product
+        specific_products = [Species().fromSMILES('C=C=C'),
+                             Species().fromSMILES('CC=C'),]
+        
+        # eliminate rxns that do not match products
+        isomorphic_rxns = 0
+        for rxn in reactionList:
+            #  rxn contains all products
+            if all([any([specific_product.isIsomorphic(product) for product in rxn.products]) for specific_product in specific_products]):
+                isomorphic_rxns += 1
+
+        self.assertEqual(isomorphic_rxns, 2,'The reaction output did not output all the transition states in either order of reactants')
+     
+    def test_separate_transition_states_generated_regardless_of_reactant_order(self):
+        """
+        ensure rxns with multiple transition states are kept as separate reactions
+        
+        this test uses C[C]=C + C=C[CH2] -> C=C=C + C=CC as an example. 
+        This reaction should have two transition states, which should occur regardless
+        of the order .
+        """
+        molA = Molecule().fromSMILES('C=[C]C')
+        molB = Molecule().fromSMILES('C=C[CH2]')
+        molC = Molecule().fromSMILES('C=C=C')
+        molD = Molecule().fromSMILES('C=CC')
+        reactionList = database.kinetics.families['Disproportionation']._KineticsFamily__generateReactions([molA, molB], products=[molC,molD])
+        
+        swapped_reactionList = database.kinetics.families['Disproportionation']._KineticsFamily__generateReactions([molB, molA], products=[molC,molD])
+        
+        
+        # eliminate rxns that do not match products
+        templates = {}
+        for rxn in reactionList:
+            try:
+                templates[rxn.template[0]] += 1
+            except KeyError:
+                templates[rxn.template[0]] = 1
+        reverseTemplates = {}
+        for rxn in swapped_reactionList:  
+            try:
+                reverseTemplates[rxn.template[0]] += 1
+            except KeyError:
+                reverseTemplates[rxn.template[0]] = 1
+
+        self.assertEqual(reverseTemplates, templates,'The reaction output did not output all the transition states in either order of reactants')
+
+    def test_degeneracy_keeps_track_of_both_rate_rules_from_resonance_isomers(self):
+        """
+        rxns that have multiple resonance structures hitting different rate rules should 
+        be kept separate when findDegeneracy is used.
+
+        this test uses [H] + CC=C[CH]C -> H2 + [CH2]C=C[CH]C as an example. 
+        This reaction should have two transition states.
+        """
+        spcA = Species().fromSMILES('[H]')
+        spcB = Species().fromSMILES('CC=C[CH]C')
+        spcB.generateResonanceIsomers(keepIsomorphic=True)
+        spcTuples = [(spcA,spcB)]
+        
+        reactionList = list(react(*spcTuples))
+        
+        # find reaction with a specific product
+        specific_product = Species().fromSMILES('CC=C[CH][CH2]')
+        specific_product.generateResonanceIsomers()
+        
+        specific_reactions_found = 0
+        templates_found = []
+        for rxn in reactionList:
+            if any([specific_product.isIsomorphic(product) for product in rxn.products]):
+                specific_reactions_found += 1
+                templates_found.append(rxn.template)
+        
+        self.assertEqual(specific_reactions_found, 2,'The reaction output did not contain 2 transition states.')
+        self.assertNotEqual(templates_found[0],templates_found[1],'The reactions should have different templates')
+
+    def test_propyl_propyl_reaction_is_the_half_propyl_butyl(self):
         """
         test that propyl propyl r-recombination is the same rate as propyl butyl
 
         this test assures that r-recombination reactions from the same rate rule
-        have the same reaction rate since they have both symmetrical transition
-        states and reactants, which should cancel out in TST
+        with identical reactants have half the reaction rate since there is a 
+        symmetrical transition state.
         """
         rxn_family_str = 'R_Recombination'
         propyl_adj_list = """
@@ -283,21 +536,22 @@ class TestReactionDegeneracy(unittest.TestCase):
         self.assertEqual(len(pb_kinetics_list), 1, 'The propyl and butyl recombination should only return one reaction. It returned {0}. Here is the full kinetics: {1}'.format(len(pb_kinetics_list),pb_kinetics_list))
 
         # the same reaction group must be found or this test will not work
-        self.assertIn(pp_kinetics_list[0][0].comment,pb_kinetics_list[0][0].comment,
+        self.assertIn(pb_kinetics_list[0][0].comment,pp_kinetics_list[0][0].comment,
                          'this test found different kinetics for the two groups, so it will not function as expected\n' +
                          str(pp_kinetics_list)+str(pb_kinetics_list))
 
         # test that the kinetics are correct
-        self.assertAlmostEqual(pp_kinetics_list[0][0].getRateCoefficient(300), pb_kinetics_list[0][0].getRateCoefficient(300))
+        self.assertAlmostEqual(pp_kinetics_list[0][0].getRateCoefficient(300) * 2, pb_kinetics_list[0][0].getRateCoefficient(300))
 
-    def test_identical_reactants_have_faster_kinetics(self):
+    def test_identical_reactants_have_similar_kinetics(self):
         """
-        tests identical reactants have faster kinetics that different reactants.
-
-        this test assures that r addition multiple bond reactions from the same
-        rate rule have the faster reaction rate if the reactants are identicaal
-        since they have symmetrical reactants, with little change in the
-        transition state symmetry. This should be more robust than just checking
+        tests identical reactants have the same kinetics than different reactants.
+        
+        this test assures that r addition multiple bond reactions from the same 
+        rate rule have the same reaction rate if the reactants are identicaal 
+        since little changes in the reactant or transition state symmetry. 
+        
+        This method should be more robust than just checking
         the degeneracy of reactions.
         """
         rxn_family_str = 'R_Addition_MultipleBond'
@@ -413,9 +667,43 @@ class TestReactionDegeneracy(unittest.TestCase):
                          str(pp_kinetics_list)+str(pb_kinetics_list))
 
         # test that the kinetics are correct
-        self.assertNotEqual(pp_kinetics_list[0][0].getRateCoefficient(300), pb_kinetics_list[0][0].getRateCoefficient(300))
-        self.assertAlmostEqual(pp_kinetics_list[0][0].getRateCoefficient(300) / 2, pb_kinetics_list[0][0].getRateCoefficient(300))
+        self.assertAlmostEqual(pp_kinetics_list[0][0].getRateCoefficient(300), pb_kinetics_list[0][0].getRateCoefficient(300))
         
+    def test_reaction_degeneracy_independent_of_generatereactions_direction(self):
+        """
+        test_reaction_degeneracy_independent_of_generatereactions_direction
+        
+        Ensure the returned kinetics have the same degeneracy irrespective of
+        whether __generateReactions has forward = True or False
+        """
+        from rmgpy.rmg.react import correctDegeneracyOfReverseReactions
+
+        family = database.kinetics.families['Disproportionation']
+
+        molA = Molecule().fromSMILES('C[CH2]')
+        molB = Molecule().fromSMILES('C[CH2]')
+        molC = Molecule().fromSMILES('C=C')
+        molD = Molecule().fromSMILES('CC')
+        
+        molA.assignAtomIDs()
+        molB.assignAtomIDs()
+        molC.assignAtomIDs()
+        molD.assignAtomIDs()
+
+        # generate reactions in both directions
+        forward_reactions = family._KineticsFamily__generateReactions([molA, molB], products=[molC, molD], forward=True)
+        reverse_reactions = family._KineticsFamily__generateReactions([molC, molD], products=[molA, molB], forward=False)
+
+        forward_reactions = findDegeneracies(forward_reactions)
+        reverse_reactions = findDegeneracies(reverse_reactions)
+
+        # correct reverse reaction degeneracy
+        correctDegeneracyOfReverseReactions(forward_reactions, reactants = [molA, molB])
+        correctDegeneracyOfReverseReactions(reverse_reactions, reactants = [molC, molD])
+
+        self.assertEqual(forward_reactions[0].degeneracy, reverse_reactions[0].degeneracy,
+                         'the kinetics from forward and reverse directions had different degeneracies, {} and {} respectively'.format(forward_reactions[0].degeneracy, reverse_reactions[0].degeneracy))
+
 class TestKineticsCommentsParsing(unittest.TestCase):
 
     @classmethod
@@ -480,7 +768,7 @@ class TestKineticsCommentsParsing(unittest.TestCase):
         
                     
         self.assertEqual(len(training),1)
-        self.assertEqual(training[0][1].index,1)  # Assert that the index of that training reaction is 1
+        self.assertEqual(training[0][1].index,0)  # Assert that the index of that training reaction is 1
         
         reconstructedKinetics = self.database.kinetics.reconstructKineticsFromSource(reactions[2],sources[2],fixBarrierHeight=True)
         A = reconstructedKinetics.A.value_si
@@ -603,3 +891,73 @@ class TestKinetics(unittest.TestCase):
         out = lib.convertDuplicatesToMulti()
         self.assertIsNone(out)
 
+    def testaddReverseAttribute(self):
+        """
+        tests that the addReverseAttribute method gets the reverse degeneracy correct
+        """
+        from rmgpy.data.rmg import getDB
+        from rmgpy.data.kinetics.family import TemplateReaction
+        adjlist = ['''
+        multiplicity 2
+        1 H u0 p0 c0 {7,S}
+        2 H u0 p0 c0 {4,S}
+        3 C u1 p0 c0 {5,S} {7,S} {8,S}
+        4 C u0 p0 c0 {2,S} {6,S} {7,D}
+        5 H u0 p0 c0 {3,S}
+        6 H u0 p0 c0 {4,S}
+        7 C u0 p0 c0 {1,S} {3,S} {4,D}
+        8 H u0 p0 c0 {3,S}
+        ''',
+          '''
+        1 C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
+        2 C u0 p0 c0 i13 {1,S} {3,D} {7,S}
+        3 C u0 p0 c0 {2,D} {8,S} {9,S}
+        4 H u0 p0 c0 {1,S}
+        5 H u0 p0 c0 {1,S}
+        6 H u0 p0 c0 {1,S}
+        7 H u0 p0 c0 {2,S}
+        8 H u0 p0 c0 {3,S}
+        9 H u0 p0 c0 {3,S}
+        ''',
+                '''
+        multiplicity 2
+        1 H u0 p0 c0 {7,S}
+        2 H u0 p0 c0 {4,S}
+        3 C u1 p0 c0 {5,S} {7,S} {8,S}
+        4 C u0 p0 c0 {2,S} {6,S} {7,D}
+        5 H u0 p0 c0 {3,S}
+        6 H u0 p0 c0 {4,S}
+        7 C u0 p0 c0 i13 {1,S} {3,S} {4,D}
+        8 H u0 p0 c0 {3,S}
+        ''',
+          '''
+        1 C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
+        2 C u0 p0 c0 {1,S} {3,D} {7,S}
+        3 C u0 p0 c0 {2,D} {8,S} {9,S}
+        4 H u0 p0 c0 {1,S}
+        5 H u0 p0 c0 {1,S}
+        6 H u0 p0 c0 {1,S}
+        7 H u0 p0 c0 {2,S}
+        8 H u0 p0 c0 {3,S}
+        9 H u0 p0 c0 {3,S}
+        '''
+          ]
+        family = getDB('kinetics').families['H_Abstraction']
+        r1 = Species(molecule=[Molecule().fromAdjacencyList(adjlist[0])])
+        r2 = Species(molecule=[Molecule().fromAdjacencyList(adjlist[1])])
+        p1 = Species(molecule=[Molecule().fromAdjacencyList(adjlist[2])])
+        p2 = Species(molecule=[Molecule().fromAdjacencyList(adjlist[3])])
+        r1.generateResonanceIsomers(keepIsomorphic=True)
+        p1.generateResonanceIsomers(keepIsomorphic=True)
+        
+        
+        rxn = TemplateReaction(reactants = [r1, r2], 
+                               products = [p1, p2]
+)
+        
+        rxn.degeneracy = family.calculateDegeneracy(rxn)
+        self.assertEqual(rxn.degeneracy, 6)
+        
+        family.addReverseAttribute(rxn)
+        
+        self.assertEqual(rxn.reverse.degeneracy, 6)

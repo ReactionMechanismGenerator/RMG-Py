@@ -5,8 +5,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2010 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -99,7 +99,10 @@ options(
         shutil.rmtree(self.dir_name)
         # go back to the main RMG-Py directory
         os.chdir('..')
-        
+        # remove modular level database
+        import rmgpy.data.rmg
+        rmgpy.data.rmg.database = None
+
     def testRMGExecute(self):
         """
         This example is to test if RMG.execute increases the core reactions

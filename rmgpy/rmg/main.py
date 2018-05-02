@@ -5,8 +5,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2010 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -55,6 +55,7 @@ from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
 from rmgpy.kinetics.diffusionLimited import diffusionLimiter
 
 from model import Species, CoreEdgeReactionModel
+from rmgpy.reaction import Reaction
 from pdep import PDepNetwork
 import rmgpy.util as util
 
@@ -164,6 +165,10 @@ class RMG(util.Subject):
         self.fluxToleranceKeepInEdge = 0.0
         self.fluxToleranceMoveToCore = 1.0
         self.fluxToleranceInterrupt = 1.0
+        self.reactionToleranceMoveToCore = numpy.inf
+        self.reactionToleranceInterrupt = numpy.inf
+        self.ignoreOverallFluxCriterion=False
+        
         self.absoluteTolerance = 1.0e-8
         self.relativeTolerance = 1.0e-4
         self.sensitivityAbsoluteTolerance = 1.0e-6
@@ -195,6 +200,8 @@ class RMG(util.Subject):
         self.wallTime = '00:00:00:00'
         self.initializationTime = 0
         self.kineticsdatastore = None
+
+        self.thermoCentralDatabase = None
 
         self.execTime = []
     
@@ -402,6 +409,11 @@ class RMG(util.Subject):
             diffusionLimiter.enable(Species.solventData, self.database.solvation)
             logging.info("Setting solvent data for {0}".format(self.solvent))
 
+        try:
+            self.wallTime = kwargs['walltime']
+        except KeyError:
+            pass
+
         data = self.wallTime.split(':')
         self.wallTime = int(data[-1]) + 60 * int(data[-2]) + 3600 * int(data[-3]) + 86400 * int(data[-4])
         if not len(data) == 4:
@@ -581,8 +593,11 @@ class RMG(util.Subject):
                     edgeReactions = self.reactionModel.edge.reactions,
                     toleranceKeepInEdge = self.fluxToleranceKeepInEdge if prune else 0,
                     toleranceMoveToCore = self.fluxToleranceMoveToCore,
+                    toleranceReactionMoveToCore = self.reactionToleranceMoveToCore,
                     toleranceInterruptSimulation = self.fluxToleranceInterrupt if prune else self.fluxToleranceMoveToCore,
+                    toleranceReactionInterruptSimulation = self.reactionToleranceInterrupt if prune else self.reactionToleranceMoveToCore,
                     pdepNetworks = self.reactionModel.networkList,
+                    ignoreOverallFluxCriterion=self.ignoreOverallFluxCriterion,
                     absoluteTolerance = self.absoluteTolerance,
                     relativeTolerance = self.relativeTolerance,
                     filterReactions=False,
@@ -606,7 +621,18 @@ class RMG(util.Subject):
                         # We do this here because we need a temperature and pressure
                         # Store the maximum leak species along with the associated network
                         obj = (obj, obj.getMaximumLeakSpecies(reactionSystem.T.value_si, reactionSystem.P.value_si))
-                    objectsToEnlarge.append(obj)
+                        objectsToEnlarge.append(obj)
+                    elif isinstance(obj, Species):
+                        objectsToEnlarge.append(obj)
+                        assert len(objectsToEnlarge)>0
+                    elif isinstance(obj,Reaction):
+                        potentialSpcs = obj.reactants+obj.products
+                        #remove species already in core
+                        neededSpcs = [x for x in potentialSpcs if x not in self.reactionModel.core.species]
+                        for i in range(len(neededSpcs)): #remove duplicate species
+                            if neededSpcs.index(neededSpcs[i]) != i:
+                                del neededSpcs[i]
+                        objectsToEnlarge.extend(neededSpcs)
                     self.done = False
     
     
@@ -646,8 +672,11 @@ class RMG(util.Subject):
                                 edgeReactions = [],
                                 toleranceKeepInEdge = 0,
                                 toleranceMoveToCore = self.fluxToleranceMoveToCore,
+                                toleranceReactionMoveToCore = self.reactionToleranceMoveToCore,
                                 toleranceInterruptSimulation = self.fluxToleranceMoveToCore,
+                                toleranceReactionInterruptSimulation = self.reactionToleranceInterrupt,
                                 pdepNetworks = self.reactionModel.networkList,
+                                ignoreOverallFluxCriterion=self.ignoreOverallFluxCriterion,
                                 absoluteTolerance = self.absoluteTolerance,
                                 relativeTolerance = self.relativeTolerance,
                                 filterReactions=True,
@@ -701,8 +730,11 @@ class RMG(util.Subject):
                     edgeReactions = self.reactionModel.edge.reactions,
                     toleranceKeepInEdge = self.fluxToleranceKeepInEdge,
                     toleranceMoveToCore = self.fluxToleranceMoveToCore,
-                    toleranceInterruptSimulation = self.fluxToleranceInterrupt,
+                    toleranceReactionMoveToCore = self.reactionToleranceMoveToCore,
+                    toleranceInterruptSimulation = self.fluxToleranceMoveToCore,
+                    toleranceReactionInterruptSimulation = self.reactionToleranceInterrupt,
                     pdepNetworks = self.reactionModel.networkList,
+                    ignoreOverallFluxCriterion=self.ignoreOverallFluxCriterion,
                     absoluteTolerance = self.absoluteTolerance,
                     relativeTolerance = self.relativeTolerance,
                     sensitivity = True,

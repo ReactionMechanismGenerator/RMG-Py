@@ -660,7 +660,6 @@ MRH 30-Aug-2009
 """,
 )
 
-
 entry(
     index = 506,
     label = "C_rad/H2/Cd;C/H2/Nd_Csrad",
@@ -762,7 +761,6 @@ MRH 30-Aug-2009
 """,
 )
 
-
 entry(
     index = 508,
     label = "C_rad/H/NonDeC;C/H2/Nd_Csrad",
@@ -856,17 +854,13 @@ entry(
     kinetics = ArrheniusEP(
         A = (6.44e+08, 'cm^3/(mol*s)'),
         n = 1.19,
-        alpha = 0.0,
+        alpha = 0,
         E0 = (0.51, 'kcal/mol'),
         Tmin = (300, 'K'),
         Tmax = (1500, 'K'),
     ),
     rank = 5,
     shortDesc = u"""Very rough based on R_Recomb #491""",
-    longDesc = 
-u"""
-
-""",
 )
 
 entry(
@@ -903,16 +897,13 @@ entry(
     kinetics = ArrheniusEP(
         A = (6.44e+08, 'cm^3/(mol*s)'),
         n = 1.19,
-        alpha = 0.0,
+        alpha = 0,
         E0 = (0.51, 'kcal/mol'),
         Tmin = (300, 'K'),
         Tmax = (1500, 'K'),
     ),
     rank = 5,
     shortDesc = u"""Very rough based on R_Recomb #491""",
-    longDesc = 
-u"""
-""",
 )
 
 entry(
@@ -1309,6 +1300,213 @@ JDM 31-Mar-2010
 """,
 )
 
+entry(
+    index = 526,
+    label = "C_methyl;Cdpri_Csrad",
+    kinetics = ArrheniusEP(
+        A = (3.01e+12, 'cm^3/(mol*s)', '*|/', 3),
+        n = 0,
+        alpha = 0,
+        E0 = (6, 'kcal/mol'),
+        Tmin = (300, 'K'),
+        Tmax = (2500, 'K'),
+    ),
+    rank = 5,
+    shortDesc = u"""SSM estimate. Original value with 6 kcal barrier""",
+    longDesc = 
+u"""
+[93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
+Literature review: CH3 + C3H5 --> H2C=C=CH2 + CH4
+
+pg.257: Discussion on evaluated data
+
+Entry 47,16(a): No data available at the time.  Recommended rate coefficient expression
+
+based on rxn C3H5+C2H5=C2H4+C3H6 (James, D.G.L. and Troughton, G.E.); this leads to disproportionation-
+to-addition ratio of 0.03.  The addition rate expression was derived using the geometric
+mean rule for the rxns C3H5+C3H5-->adduct and CH3+CH3-->adduct.
+NOTE: The Ea reported in the discussion is Ea/R=-132 Kelvin.  However, in the table near
+
+the beginning of the review article (summarizing all reported data) and in the NIST
+online database (kinetics.nist.gov), the reported Ea/R=-66 Kelvin.  MRH took the
+geometric mean of the allyl combination rxn (1.70x10^-11 * exp(132/T)) and methyl
+combination rxn (1.68x10^-9 * T^-0.64) to obtain 1.69x10^-11 * T^-0.32 * exp(66/T).
+Multiplying by 0.03 results in the recommended rate coefficient expression.
+MRH 31-Aug-2009
+""",
+)
+
+entry(
+    index = 527,
+    label = "C_rad/H2/Cs;Cdpri_Csrad",
+    kinetics = ArrheniusEP(
+        A = (9.64e+11, 'cm^3/(mol*s)', '*|/', 2),
+        n = 0,
+        alpha = 0,
+        E0 = (6, 'kcal/mol'),
+        Tmin = (300, 'K'),
+        Tmax = (2500, 'K'),
+    ),
+    rank = 5,
+    shortDesc = u"""SSM estimate. Original value with 6 kcal barrier""",
+    longDesc = 
+u"""
+[93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
+Literature review: C2H5 + C3H5 --> H2C=C=CH2 + C2H6
+
+pg.259: Discussion on evaluated data
+
+Entry 47,17(a): The recommended rate expression is derived from the experimentally-
+
+determined disproportionation-to-addition ratio of 0.047 (James and Troughton)
+and the addition rate rule (C2H5+C3H5-->adduct) calculated using the geometric
+mean rule of the rxns C2H5+C2H5-->adduct and C3H5+C3H5-->adduct.
+MRH 31-Aug-2009
+""",
+)
+
+entry(
+    index = 528,
+    label = "C_rad/H2/Cd;Cdpri_Csrad",
+    kinetics = ArrheniusEP(
+        A = (8.43e+10, 'cm^3/(mol*s)', '*|/', 2.5),
+        n = 0,
+        alpha = 0,
+        E0 = (6, 'kcal/mol'),
+        Tmin = (300, 'K'),
+        Tmax = (2500, 'K'),
+    ),
+    rank = 5,
+    shortDesc = u"""SSM estimate. Original value with 6 kcal barrier""",
+    longDesc = 
+u"""
+[93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
+Literature review: C3H5 + C3H5 --> H2C=C=CH2 + C3H6
+
+pg.271-272: Discussion on evaluated data
+
+Entry 47,47(b): The recommended rate expression is derived from the experimentally-
+
+determined disproportionation-to-addition ratio of 0.008 (James and Kambanis)
+and the addition rate rule (C3H5+C3H5-->adduct) calculated based on the results
+of Tulloch et al.
+MRH 31-Aug-2009
+""",
+)
+
+entry(
+    index = 529,
+    label = "C_rad/H/NonDeC;Cdpri_Csrad",
+    kinetics = ArrheniusEP(
+        A = (4.58e+12, 'cm^3/(mol*s)', '*|/', 3),
+        n = 0,
+        alpha = 0,
+        E0 = (6, 'kcal/mol'),
+        Tmin = (300, 'K'),
+        Tmax = (2500, 'K'),
+    ),
+    rank = 5,
+    shortDesc = u"""SSM estimate. Original value with 6 kcal barrier""",
+    longDesc = 
+u"""
+[93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
+Literature review: iC3H7 + C3H5 --> H2C=C=CH2 + C3H8
+
+pg.268: Discussion on evaluated data
+
+Entry 47,42(b): No data available at the time.  Recommended rate coefficient expression
+
+based on rxn C3H5+C2H5=C2H4+C3H6 (James, D.G.L. and Troughton, G.E.) and values
+for "alkyl radicals" (Gibian M.J. and Corley R.C.); this leads to disproportionation-
+to-addition ratio of 0.04.  The addition rate expression was derived using the geometric
+mean rule for the rxns C3H5+C3H5-->adduct and iC3H7+iC3H7-->adduct.
+MRH 31-Aug-2009
+""",
+)
+
+entry(
+    index = 530,
+    label = "C_rad/Cs3;Cdpri_Csrad",
+    kinetics = ArrheniusEP(
+        A = (2.89e+13, 'cm^3/(mol*s)', '*|/', 3),
+        n = 0,
+        alpha = 0,
+        E0 = (6, 'kcal/mol'),
+        Tmin = (300, 'K'),
+        Tmax = (2500, 'K'),
+    ),
+    rank = 5,
+    shortDesc = u"""SSM estimate. Original value with 6 kcal barrier""",
+    longDesc = 
+u"""
+[93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
+Literature review: tC4H9 + C3H5 --> H2C=C=CH2 + iC4H10
+
+pg.269: Discussion on evaluated data
+
+Entry 47,44(b): No data available at the time.  Recommended rate coefficient expression
+
+based on "allyl and alkyl radicals behaving in similar fashion" (possibly referencing
+Gibian M.J. and Corley R.C.); this leads to disproportionation-
+to-addition ratio of 0.04.  The addition rate expression was derived using the geometric
+mean rule for the rxns C3H5+C3H5-->adduct and tC4H9+tC4H9-->adduct.
+MRH 31-Aug-2009
+""",
+)
+
+entry(
+    index = 531,
+    label = "Cd_pri_rad;Cdpri_Csrad",
+    kinetics = ArrheniusEP(
+        A = (2.41e+12, 'cm^3/(mol*s)', '*|/', 3),
+        n = 0,
+        alpha = 0,
+        E0 = (6, 'kcal/mol'),
+        Tmin = (300, 'K'),
+        Tmax = (2500, 'K'),
+    ),
+    rank = 5,
+    shortDesc = u"""SSM estimate. Original value with 6 kcal barrier""",
+    longDesc = 
+u"""
+[93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
+Literature review: C2H3 + C3H5 --> H2C=C=CH2 + C2H4
+
+pg.261-262: Discussion on evaluated data
+
+Entry 47,19(d): No data available at the time.  Author recommends a rate coefficient
+
+of 4x10^-12 cm3/molecule/s for the disproportionation rxn.
+MRH 31-Aug-2009
+""",
+)
+
+entry(
+    index = 532,
+    label = "O_pri_rad;Cdpri_Csrad",
+    kinetics = ArrheniusEP(
+        A = (6.03e+12, 'cm^3/(mol*s)', '*|/', 3),
+        n = 0,
+        alpha = 0,
+        E0 = (6, 'kcal/mol'),
+        Tmin = (300, 'K'),
+        Tmax = (2500, 'K'),
+    ),
+    rank = 5,
+    shortDesc = u"""SSM estimate. Original value with 6 kcal barrier""",
+    longDesc = 
+u"""
+[93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
+Literature review: OH + C3H5 --> H2C=C=CH2 + H2O
+
+pg.253: Discussion on evaluated data
+
+Entry 47,6(a): No data available at the time.  Author recommends a rate coefficient
+
+of 1x10^-11 cm3/molecule/s, based on "comparable rxns".
+MRH 31-Aug-2009
+""",
+)
 
 entry(
     index = 533,
@@ -1904,7 +2102,7 @@ entry(
     index = 555,
     label = "O2b;O_Csrad",
     kinetics = ArrheniusEP(
-        A = (3.7E+16, 'cm^3/(mol*s)'),
+        A = (3.7e+16, 'cm^3/(mol*s)'),
         n = -1.63,
         alpha = 0,
         E0 = (3.4, 'kcal/mol'),
@@ -1916,7 +2114,7 @@ entry(
     longDesc = 
 u"""
 Estimate on basis of C3H7 + O2 rate from NIST kinetic datbase, Measurements, Theory, and Modeling of OH Formation in Ethyl + O2 and Propyl + O2 Reactions
-ref: DOI: 10.1021/jp0221946 
+ref: DOI: 10.1021/jp0221946
 """,
 )
 
@@ -1924,7 +2122,7 @@ entry(
     index = 555,
     label = "O2b;Cd_Cdrad",
     kinetics = ArrheniusEP(
-        A = (1.3E+15, 'cm^3/(mol*s)','*|/',5),
+        A = (1.3e+15, 'cm^3/(mol*s)', '*|/', 5),
         n = -1.26,
         alpha = 0,
         E0 = (3.31, 'kcal/mol'),
@@ -1937,7 +2135,7 @@ entry(
 u"""
 This rate rule is a estimate taken from NIST, ref: Aromatic and Polycyclic Aromatic
 Hydrocarbon Formation in a Laminar Premixed n-butane Flame
-Derived from fitting to a complex mechanism for C2H3 + O2 = C2H2 + HO2  
+Derived from fitting to a complex mechanism for C2H3 + O2 = C2H2 + HO2
 """,
 )
 
@@ -1945,10 +2143,10 @@ entry(
     index = 555,
     label = "O2b;Cmethyl_Csrad/H/Cd",
     kinetics = ArrheniusEP(
-        A = (7.23E+12, 'cm^3/(mol*s)','*|/',10),
+        A = (7.23e+12, 'cm^3/(mol*s)', '*|/', 10),
         n = 0,
         alpha = 0,
-        E0 = (22.0, 'kcal/mol'),
+        E0 = (22, 'kcal/mol'),
         Tmin = (300, 'K'),
         Tmax = (2000, 'K'),
     ),
@@ -1960,7 +2158,6 @@ SSM estimate based on Miyoshi rate rule for secondary carbon in dx.doi.org/10.10
 modified to account for allylic stability (+7 kcal)
 """,
 )
-
 
 entry(
     index = 556,
@@ -1974,10 +2171,8 @@ entry(
         Tmax = (1500, 'K'),
     ),
     rank = 5,
-    shortDesc = 'A.G. Vandeputte estimated value',
+    shortDesc = u"""A.G. Vandeputte estimated value""",
 )
-
-
 
 entry(
     index = 556,
@@ -2082,215 +2277,6 @@ entry(
     ),
     rank = 4,
     shortDesc = u"""Estimated value, AG Vandeputte""",
-)
-
-
-entry(
-    index = 526,
-    label = "C_methyl;Cdpri_Csrad",
-    kinetics = ArrheniusEP(
-        A = (3.01e+12, 'cm^3/(mol*s)', '*|/', 3),
-        n = 0,
-        alpha = 0,
-        E0 = (6, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
-    ),
-    rank = 5,
-    shortDesc = u"""SSM estimate. Original value with 6 kcal barrier""",
-    longDesc = 
-u"""
-[93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
-Literature review: CH3 + C3H5 --> H2C=C=CH2 + CH4
-
-pg.257: Discussion on evaluated data
-
-Entry 47,16(a): No data available at the time.  Recommended rate coefficient expression
-
-based on rxn C3H5+C2H5=C2H4+C3H6 (James, D.G.L. and Troughton, G.E.); this leads to disproportionation-
-to-addition ratio of 0.03.  The addition rate expression was derived using the geometric
-mean rule for the rxns C3H5+C3H5-->adduct and CH3+CH3-->adduct.
-NOTE: The Ea reported in the discussion is Ea/R=-132 Kelvin.  However, in the table near
-
-the beginning of the review article (summarizing all reported data) and in the NIST
-online database (kinetics.nist.gov), the reported Ea/R=-66 Kelvin.  MRH took the
-geometric mean of the allyl combination rxn (1.70x10^-11 * exp(132/T)) and methyl
-combination rxn (1.68x10^-9 * T^-0.64) to obtain 1.69x10^-11 * T^-0.32 * exp(66/T).
-Multiplying by 0.03 results in the recommended rate coefficient expression.
-MRH 31-Aug-2009
-""",
-)
-
-entry(
-    index = 527,
-    label = "C_rad/H2/Cs;Cdpri_Csrad",
-    kinetics = ArrheniusEP(
-        A = (9.64e+11, 'cm^3/(mol*s)', '*|/', 2),
-        n = 0,
-        alpha = 0,
-        E0 = (6, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
-    ),
-    rank = 5,
-    shortDesc = u"""SSM estimate. Original value with 6 kcal barrier""",
-    longDesc = 
-u"""
-[93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
-Literature review: C2H5 + C3H5 --> H2C=C=CH2 + C2H6
-
-pg.259: Discussion on evaluated data
-
-Entry 47,17(a): The recommended rate expression is derived from the experimentally-
-
-determined disproportionation-to-addition ratio of 0.047 (James and Troughton)
-and the addition rate rule (C2H5+C3H5-->adduct) calculated using the geometric
-mean rule of the rxns C2H5+C2H5-->adduct and C3H5+C3H5-->adduct.
-MRH 31-Aug-2009
-""",
-)
-
-entry(
-    index = 528,
-    label = "C_rad/H2/Cd;Cdpri_Csrad",
-    kinetics = ArrheniusEP(
-        A = (8.43e+10, 'cm^3/(mol*s)', '*|/', 2.5),
-        n = 0,
-        alpha = 0,
-        E0 = (6, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
-    ),
-    rank = 5,
-    shortDesc = u"""SSM estimate. Original value with 6 kcal barrier""",
-    longDesc = 
-u"""
-[93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
-Literature review: C3H5 + C3H5 --> H2C=C=CH2 + C3H6
-
-pg.271-272: Discussion on evaluated data
-
-Entry 47,47(b): The recommended rate expression is derived from the experimentally-
-
-determined disproportionation-to-addition ratio of 0.008 (James and Kambanis)
-and the addition rate rule (C3H5+C3H5-->adduct) calculated based on the results
-of Tulloch et al.
-MRH 31-Aug-2009
-""",
-)
-
-entry(
-    index = 529,
-    label = "C_rad/H/NonDeC;Cdpri_Csrad",
-    kinetics = ArrheniusEP(
-        A = (4.58e+12, 'cm^3/(mol*s)', '*|/', 3),
-        n = 0,
-        alpha = 0,
-        E0 = (6, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
-    ),
-    rank = 5,
-    shortDesc = u"""SSM estimate. Original value with 6 kcal barrier""",
-    longDesc = 
-u"""
-[93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
-Literature review: iC3H7 + C3H5 --> H2C=C=CH2 + C3H8
-
-pg.268: Discussion on evaluated data
-
-Entry 47,42(b): No data available at the time.  Recommended rate coefficient expression
-
-based on rxn C3H5+C2H5=C2H4+C3H6 (James, D.G.L. and Troughton, G.E.) and values
-for "alkyl radicals" (Gibian M.J. and Corley R.C.); this leads to disproportionation-
-to-addition ratio of 0.04.  The addition rate expression was derived using the geometric
-mean rule for the rxns C3H5+C3H5-->adduct and iC3H7+iC3H7-->adduct.
-MRH 31-Aug-2009
-""",
-)
-
-entry(
-    index = 530,
-    label = "C_rad/Cs3;Cdpri_Csrad",
-    kinetics = ArrheniusEP(
-        A = (2.89e+13, 'cm^3/(mol*s)', '*|/', 3),
-        n = 0,
-        alpha = 0,
-        E0 = (6, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
-    ),
-    rank = 5,
-    shortDesc = u"""SSM estimate. Original value with 6 kcal barrier""",
-    longDesc = 
-u"""
-[93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
-Literature review: tC4H9 + C3H5 --> H2C=C=CH2 + iC4H10
-
-pg.269: Discussion on evaluated data
-
-Entry 47,44(b): No data available at the time.  Recommended rate coefficient expression
-
-based on "allyl and alkyl radicals behaving in similar fashion" (possibly referencing
-Gibian M.J. and Corley R.C.); this leads to disproportionation-
-to-addition ratio of 0.04.  The addition rate expression was derived using the geometric
-mean rule for the rxns C3H5+C3H5-->adduct and tC4H9+tC4H9-->adduct.
-MRH 31-Aug-2009
-""",
-)
-
-entry(
-    index = 531,
-    label = "Cd_pri_rad;Cdpri_Csrad",
-    kinetics = ArrheniusEP(
-        A = (2.41e+12, 'cm^3/(mol*s)', '*|/', 3),
-        n = 0,
-        alpha = 0,
-        E0 = (6, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
-    ),
-    rank = 5,
-    shortDesc = u"""SSM estimate. Original value with 6 kcal barrier""",
-    longDesc = 
-u"""
-[93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
-Literature review: C2H3 + C3H5 --> H2C=C=CH2 + C2H4
-
-pg.261-262: Discussion on evaluated data
-
-Entry 47,19(d): No data available at the time.  Author recommends a rate coefficient
-
-of 4x10^-12 cm3/molecule/s for the disproportionation rxn.
-MRH 31-Aug-2009
-""",
-)
-
-entry(
-    index = 532,
-    label = "O_pri_rad;Cdpri_Csrad",
-    kinetics = ArrheniusEP(
-        A = (6.03e+12, 'cm^3/(mol*s)', '*|/', 3),
-        n = 0,
-        alpha = 0,
-        E0 = (6, 'kcal/mol'),
-        Tmin = (300, 'K'),
-        Tmax = (2500, 'K'),
-    ),
-    rank = 5,
-    shortDesc = u"""SSM estimate. Original value with 6 kcal barrier""",
-    longDesc = 
-u"""
-[93] Tsang, W.; Journal of Physical and Chemical Reference Data (1991), 20(2), 221-273.
-Literature review: OH + C3H5 --> H2C=C=CH2 + H2O
-
-pg.253: Discussion on evaluated data
-
-Entry 47,6(a): No data available at the time.  Author recommends a rate coefficient
-
-of 1x10^-11 cm3/molecule/s, based on "comparable rxns".
-MRH 31-Aug-2009
-""",
 )
 
 entry(
@@ -3399,7 +3385,7 @@ entry(
     index = 658,
     label = "C_rad/H/TwoDe;Cmethyl_Csrad/H/Cd",
     kinetics = ArrheniusEP(
-        A = (5E+10, 'cm^3/(mol*s)'),
+        A = (5e+10, 'cm^3/(mol*s)'),
         n = 0,
         alpha = 0,
         E0 = (0, 'kcal/mol'),
@@ -3409,10 +3395,10 @@ entry(
     rank = 5,
     shortDesc = u"""Estimated by S.S. Merchant""",
     longDesc = 
-"""
+u"""
 Estimating rate coefficient for cyclopentadienyl radical + butadieneyl radical
 NIST estimate for allyl + iso-butyl is 8E+11 at 1000 K, however in our system the butadieneyl radical is also resonance stabilized
 and it will be harder to break the bond to give butadiene + cyclopentadiene. Currently estimate it to be a factor of 5 slower.
-"""
+""",
 )
 

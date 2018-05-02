@@ -76,3 +76,6 @@ git commit --allow-empty -m rmgpy-$REV
 
 # push to the branch to the RMG/RMG-tests repo:
 git push -f $REPO $RMGTESTSBRANCH > /dev/null
+
+# kill ssh-agent if neccessary
+ssh-agent -k

@@ -5,7 +5,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2009-2011 by the RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -148,7 +149,7 @@ class MoleculeDrawer:
             try:
                 import cairo
             except ImportError:
-                print 'Cairo not found; molecule will not be drawn.'
+                logging.error('Cairo not found; molecule will not be drawn.')
                 return
         
         # Make a copy of the molecule so we don't modify the original
@@ -183,7 +184,12 @@ class MoleculeDrawer:
         else:
             # Generate the coordinates to use to draw the molecule
             try:
+                # before getting coordinates, make all bonds single and then
+                # replace the bonds after generating coordinates. This avoids
+                # bugs with RDKit
+                old_bond_dictionary = self.__make_single_bonds()
                 self.__generateCoordinates()
+                self.__replace_bonds(old_bond_dictionary)
                 
                 # Generate labels to use
                 self.__generateAtomLabels()
@@ -194,6 +200,12 @@ class MoleculeDrawer:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 traceback.print_exc()
                 return None, None, None
+            except KeyError:
+                logging.error('KeyError occured when drawing molecule, likely because' +\
+                            ' the molecule contained non-standard bond orders in the' +\
+                            ' getResonanceHybrid method. These cannot be drawn since' +\
+                            ' they cannot be sent to RDKit for coordinate placing.')
+                raise
 
         self.coordinates[:,1] *= -1
         self.coordinates *= self.options['bondLength']
@@ -962,7 +974,7 @@ class MoleculeDrawer:
         padding = self.options['padding']
         self.left -= padding; self.top -= padding; self.right += padding; self.bottom += padding
     
-    def __drawLine(self, cr, x1, y1, x2, y2):
+    def __drawLine(self, cr, x1, y1, x2, y2, dashed = False):
         """
         Draw a line on the given Cairo context `cr` from (`x1`, `y1`) to
         (`x2`,`y2`), and update the bounding rectangle if necessary.
@@ -974,9 +986,14 @@ class MoleculeDrawer:
         cairo
         cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
         cr.set_line_width(1.0)
+        if dashed:
+            cr.set_dash([3.5])
         cr.set_line_cap(cairo.LINE_CAP_ROUND)
         cr.move_to(x1, y1); cr.line_to(x2, y2)
         cr.stroke()
+        # remove dashes for next method call
+        if dashed:
+            cr.set_dash([])
         if x1 < self.left: self.left = x1
         if x1 > self.right: self.right = x1
         if y1 < self.top: self.top = y1
@@ -996,9 +1013,22 @@ class MoleculeDrawer:
             import cairocffi as cairo
         except ImportError:
             import cairo
-    
         bondLength = self.options['bondLength']
-    
+
+        # determine if aromatic
+        isAromatic = False
+        for cycle in self.cycles:
+            if self.molecule.atoms[atom1] in cycle and \
+                  self.molecule.atoms[atom2] in cycle:
+                allBenzenes = True
+                for index in range(len(cycle)):
+                    if not cycle[index -1].bonds[cycle[index]].isBenzene():
+                        allBenzenes = False
+                        break
+                if allBenzenes:
+                    isAromatic = True
+                    break
+
         x1, y1 = self.coordinates[atom1,:]
         x2, y2 = self.coordinates[atom2,:]
         angle = math.atan2(y2 - y1, x2 - x1)
@@ -1006,17 +1036,31 @@ class MoleculeDrawer:
         dx = x2 - x1; dy = y2 - y1
         du = math.cos(angle + math.pi / 2)
         dv = math.sin(angle + math.pi / 2)
-        if bond.isDouble() and (self.symbols[atom1] != '' or self.symbols[atom2] != ''):
-            # Draw double bond centered on bond axis
-            du *= 1.6; dv *= 1.6
-            self.__drawLine(cr, x1 - du, y1 - dv, x2 - du, y2 - dv)
-            self.__drawLine(cr, x1 + du, y1 + dv, x2 + du, y2 + dv)
-        elif bond.isTriple() and (self.symbols[atom1] != '' or self.symbols[atom2] != ''):
-            # Draw triple bond centered on bond axis
-            du *= 3; dv *= 3
-            self.__drawLine(cr, x1 - du, y1 - dv, x2 - du, y2 - dv)
-            self.__drawLine(cr, x1     , y1     , x2     , y2     )
-            self.__drawLine(cr, x1 + du, y1 + dv, x2 + du, y2 + dv)
+        if (self.symbols[atom1] != '' or \
+                         self.symbols[atom2] != ''):
+            if bond.isTriple():
+                # Draw triple bond centered on bond axis
+                du *= 3; dv *= 3
+                self.__drawLine(cr, x1 - du, y1 - dv, x2 - du, y2 - dv)
+                self.__drawLine(cr, x1     , y1     , x2     , y2     )
+                self.__drawLine(cr, x1 + du, y1 + dv, x2 + du, y2 + dv)
+            elif bond.getOrderNum() > 2 and bond.getOrderNum() < 3:
+                du *= 3; dv *= 3
+                self.__drawLine(cr, x1 - du, y1 - dv, x2 - du, y2 - dv)
+                self.__drawLine(cr, x1     , y1     , x2     , y2     )
+                self.__drawLine(cr, x1 + du, y1 + dv, x2 + du, y2 + dv, dashed = True)
+            elif bond.isDouble():
+                # Draw double bond centered on bond axis
+                du *= 1.6; dv *= 1.6
+                self.__drawLine(cr, x1 - du, y1 - dv, x2 - du, y2 - dv)
+                self.__drawLine(cr, x1 + du, y1 + dv, x2 + du, y2 + dv)
+            elif bond.getOrderNum() > 1 and bond.getOrderNum() < 2 and not isAromatic:
+                # Draw dashed double bond centered on bond axis
+                du *= 1.6; dv *= 1.6
+                self.__drawLine(cr, x1 - du, y1 - dv, x2 - du, y2 - dv)
+                self.__drawLine(cr, x1 + du, y1 + dv, x2 + du, y2 + dv, dashed=True)
+            else:
+                self.__drawLine(cr, x1, y1, x2, y2)
         else:
             # Draw bond on skeleton
             self.__drawLine(cr, x1, y1, x2, y2)
@@ -1028,7 +1072,14 @@ class MoleculeDrawer:
                 du *= 3; dv *= 3; dx = 2 * dx / bondLength; dy = 2 * dy / bondLength
                 self.__drawLine(cr, x1 - du + dx, y1 - dv + dy, x2 - du - dx, y2 - dv - dy)
                 self.__drawLine(cr, x1 + du + dx, y1 + dv + dy, x2 + du - dx, y2 + dv - dy)
-        
+            elif bond.getOrderNum() > 1 and bond.getOrderNum() < 2 and not isAromatic:
+                du *= 3.2; dv *= 3.2; dx = 2 * dx / bondLength; dy = 2 * dy / bondLength
+                self.__drawLine(cr, x1 + du + dx, y1 + dv + dy, x2 + du - dx, y2 + dv - dy, dashed=True)
+            elif bond.getOrderNum() > 2 and bond.getOrderNum() < 3:
+                du *= 3; dv *= 3; dx = 2 * dx / bondLength; dy = 2 * dy / bondLength
+                self.__drawLine(cr, x1 - du + dx, y1 - dv + dy, x2 - du - dx, y2 - dv - dy)
+                self.__drawLine(cr, x1 + du + dx, y1 + dv + dy, x2 + du - dx, y2 + dv - dy, dashed=True)
+
     def __renderAtom(self, symbol, atom, x0, y0, cr, heavyFirst=True, drawLonePairs=False):
         """
         Render the `label` for an atom centered around the coordinates (`x0`, `y0`)
@@ -1357,6 +1408,25 @@ class MoleculeDrawer:
         if boundingRect[3] > self.bottom:
             self.bottom = boundingRect[3]
 
+    def __make_single_bonds(self):
+        """This method converts all bonds to single bonds and then returns
+        a dictionary of Bond object keys with the old bond order as a value"""
+        dictionary = {}
+        for atom1 in self.molecule.atoms:
+            for atom2, bond in atom1.bonds.items():
+                if not bond.isSingle():
+                    dictionary[bond] = bond.getOrderNum()
+                    bond.setOrderNum(1)
+        return dictionary
+
+    def __replace_bonds(self,bond_order_dictionary):
+        """
+        Sets the bond order in self.molecule equal to the orders in bond_order_dictionary
+        which is obtained from __make_single_bonds().
+        """
+        for bond, order in bond_order_dictionary.items():
+            bond.setOrderNum(order)
+
 ################################################################################
 
 class ReactionDrawer:
@@ -1397,7 +1467,7 @@ class ReactionDrawer:
             try:
                 import cairo
             except ImportError:
-                print 'Cairo not found; molecule will not be drawn.'
+                logging.error('Cairo not found; molecule will not be drawn.')
                 return
 
         from .molecule import Molecule
@@ -1423,19 +1493,14 @@ class ReactionDrawer:
             
         # Next determine size required for surface
         rxn_width = 0; rxn_height = 0; rxn_top = 0
-        for surface, cr, rect in reactants:
+        for surface, cr, rect in reactants + products:
             left, top, width, height = rect
             rxn_width += width
             if height > rxn_height: rxn_height = height
             if height + top > rxn_top: rxn_top = height + top
-        for surface, cr, rect in products:
-            left, top, width, height = rect
-            rxn_width += width
-            if height > rxn_height: rxn_height = height
-            if height + top > rxn_top: rxn_top = height + top
-        
+
         rxn_top = 0.5 * rxn_height - rxn_top
-        
+
         # Also include '+' and reaction arrow in width
         cr.set_font_size(fontSizeNormal)
         plus_extents = cr.text_extents(' + ')
@@ -1467,6 +1532,7 @@ class ReactionDrawer:
                 rxn_x += plus_extents[4]
             # Draw the reactant
             rxn_y = top + rxn_top + 0.5 * rxn_height
+            if rxn_y < 0 : rxn_y = 0
             rxn_cr.save()
             rxn_cr.set_source_surface(surface, rxn_x, rxn_y)
             rxn_cr.paint()
@@ -1504,6 +1570,7 @@ class ReactionDrawer:
                 rxn_x += plus_extents[4]
             # Draw the product
             rxn_y = top + rxn_top + 0.5 * rxn_height
+            if rxn_y < 0 : rxn_y = 0
             rxn_cr.save()
             rxn_cr.set_source_surface(surface, rxn_x, rxn_y)
             rxn_cr.paint()

@@ -5,8 +5,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2010 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -31,6 +31,7 @@
 import logging
 import quantities
 import os
+import numpy
 
 from rmgpy import settings
 
@@ -235,22 +236,30 @@ def solvation(solvent):
         raise InputError("solvent should be a string like 'water'")
     rmg.solvent = solvent
 
-def model(toleranceMoveToCore=None, toleranceKeepInEdge=0.0, toleranceInterruptSimulation=1.0, maximumEdgeSpecies=1000000, minCoreSizeForPrune=50, minSpeciesExistIterationsForPrune=2, filterReactions=False):
+def model(toleranceMoveToCore=None, toleranceMoveReactionToCore=numpy.inf,toleranceKeepInEdge=0.0, toleranceInterruptSimulation=1.0, toleranceReactionInterruptSimulation=numpy.inf, maximumEdgeSpecies=1000000, minCoreSizeForPrune=50, minSpeciesExistIterationsForPrune=2, filterReactions=False, ignoreOverallFluxCriterion=False):
     """
-    How to generate the model. `toleranceMoveToCore` must be specified. Other parameters are optional and control the pruning.
+    How to generate the model. `toleranceMoveToCore` must be specified. 
+    toleranceMoveReactionToCore and toleranceReactionInterruptSimulation refers to an additional criterion for forcing an edge reaction to be included in the core
+    by default this criterion is turned off
+    Other parameters are optional and control the pruning.
+    ignoreOverallFluxCriterion=True will cause the toleranceMoveToCore to be only applied
+    to the pressure dependent network expansion and not movement of species from edge to core
     """
     if toleranceMoveToCore is None:
         raise InputError("You must provide a toleranceMoveToCore value. It should be less than or equal to toleranceInterruptSimulation which is currently {0}".format(toleranceInterruptSimulation))
     if toleranceMoveToCore > toleranceInterruptSimulation:
         raise InputError("toleranceMoveToCore must be less than or equal to toleranceInterruptSimulation, which is currently {0}".format(toleranceInterruptSimulation))
-
+    
     rmg.fluxToleranceKeepInEdge = toleranceKeepInEdge
     rmg.fluxToleranceMoveToCore = toleranceMoveToCore
+    rmg.reactionToleranceMoveToCore = toleranceMoveReactionToCore
+    rmg.reactionToleranceInterrupt = toleranceReactionInterruptSimulation
     rmg.fluxToleranceInterrupt = toleranceInterruptSimulation
     rmg.maximumEdgeSpecies = maximumEdgeSpecies
     rmg.minCoreSizeForPrune = minCoreSizeForPrune
     rmg.minSpeciesExistIterationsForPrune = minSpeciesExistIterationsForPrune
     rmg.filterReactions = filterReactions
+    rmg.ignoreOverallFluxCriterion=ignoreOverallFluxCriterion
 
 def quantumMechanics(
                     software,
@@ -356,6 +365,20 @@ def generatedSpeciesConstraints(**kwargs):
         
         rmg.speciesConstraints[key] = value
 
+def thermoCentralDatabase(host,
+                        port,
+                        username,
+                        password,
+                        application):
+    
+    from rmgpy.data.thermo import ThermoCentralDatabaseInterface
+    rmg.thermoCentralDatabase = ThermoCentralDatabaseInterface(host,
+                                                            port,
+                                                            username,
+                                                            password,
+                                                            application)
+                    
+
 ################################################################################
 
 def setGlobalRMG(rmg0):
@@ -411,6 +434,7 @@ def readInputFile(path, rmg0):
         'pressureDependence': pressureDependence,
         'options': options,
         'generatedSpeciesConstraints': generatedSpeciesConstraints,
+        'thermoCentralDatabase': thermoCentralDatabase
     }
 
     try:
@@ -669,6 +693,8 @@ def getInput(name):
             return rmg.speciesConstraints
         elif name == 'quantumMechanics':
             return rmg.quantumMechanics
+        elif name == 'thermoCentralDatabase':
+            return rmg.thermoCentralDatabase
         else:
             raise Exception('Unrecognized keyword: {}'.format(name))
     else:

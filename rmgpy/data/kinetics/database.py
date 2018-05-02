@@ -5,8 +5,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2010 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -391,6 +391,7 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
                 reaction = LibraryReaction(
                     reactants = entry.item.reactants[:],
                     products = entry.item.products[:],
+                    specificCollider = entry.item.specificCollider,
                     degeneracy = entry.item.degeneracy,
                     reversible = entry.item.reversible,
                     duplicate = entry.item.duplicate,
@@ -474,6 +475,7 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
             reaction = Reaction(
                 reactants = entry.item.reactants[:],
                 products = [],
+                specificCollider = entry.item.specificCollider,
                 kinetics = entry.data,
                 degeneracy = 1,
             )

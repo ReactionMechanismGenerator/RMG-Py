@@ -114,7 +114,6 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             self.compat_func_name = test_name
             yield test, library_name
 
-
     def test_thermo(self):
         for group_name, group in self.database.thermo.groups.iteritems():
             test = lambda x: self.general_checkNodesFoundInTree(group_name, group)
@@ -695,6 +694,7 @@ The following adjList may have atoms in a different ordering than the input file
                     #test accessibility here
                     atoms = sampleMolecule.getLabeledAtoms()
                     match = family.groups.descendTree(sampleMolecule, atoms, strict=True, root = root)
+                    nose.tools.assert_is_not_none(match, "Group {0} does not match its root node, {1}".format(entryName, root.label))
                     nose.tools.assert_in(entry, [match]+family.groups.ancestors(match), """In group {0}, a sample molecule made from node {1} returns node {2} when descending the tree.
 Sample molecule AdjList:
 {3}
@@ -867,7 +867,7 @@ The following adjList may have atoms in a different ordering than the input file
 
                     atoms = sampleMolecule.getLabeledAtoms()
                     match = group.descendTree(sampleMolecule, atoms, strict=True)
-
+                    nose.tools.assert_is_not_none(match, "Group {0} does not match its root node, {1}".format(entryName, group.top[0]))
                     nose.tools.assert_in(entry, [match]+group.ancestors(match), """In group {0}, a sample molecule made from node {1} returns node {2} when descending the tree.
 Sample molecule AdjList:
 {3}

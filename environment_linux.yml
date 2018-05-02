@@ -8,7 +8,7 @@ dependencies:
   - numpy >=1.10.0
   - cantera >=2.2
   - coolprop
-  - cython ==0.21
+  - cython >=0.25.2
   - matplotlib >=1.5
   - rdkit >=2015.09.2
   - pydas >=1.0.1
@@ -39,3 +39,4 @@ dependencies:
   - networkx
   - mock
   - muq
+  - pymongo

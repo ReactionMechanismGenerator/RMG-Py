@@ -2,7 +2,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2009-2011 by the RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -238,7 +239,7 @@ cdef class Graph:
 
     cpdef dict getEdges(self, Vertex vertex):
         """
-        Return a list of the edges involving the specified `vertex`.
+        Return a dictionary of the edges involving the specified `vertex`.
         """
         return vertex.edges
 
@@ -984,6 +985,21 @@ cdef class Graph:
 
         return cycleList
 
+    cpdef list getLargestRing(self, Vertex vertex):
+        """
+        returns the largest ring containing vertex. This is typically
+        useful for finding the longest path in a polycyclic ring, since
+        the polycyclic rings returned from getPolycyclicRings are not necessarily
+        in order in the ring structure.
+        """
+        all_cycles = self.getAllCycles(vertex)
+        longest_cycle = []
+        for cycle in all_cycles:
+            if len(cycle) > len(longest_cycle):
+                longest_cycle = cycle
+        return longest_cycle
+        
+        
     cpdef bint isMappingValid(self, Graph other, dict mapping) except -2:
         """
         Check that a proposed `mapping` of vertices from `self` to `other`

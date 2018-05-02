@@ -5,8 +5,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2010 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -28,20 +28,45 @@
 #
 ################################################################################
 
-import sys
 import os.path
+import argparse
 
 from input import load
 from output import writeModel
 from optimization import optimize
 from reduction import computeObservables, initialize
+from logging import INFO, DEBUG, WARNING
 
 from rmgpy.scoop_framework.util import logger
 
+
+def parseCommandLineArguments():
+    """Parse the command-line arguments for the stand-alone model-reduction module"""
+    parser = argparse.ArgumentParser(description='RMG Model Reduction Tool')
+    parser.add_argument('requiredFiles', metavar='FILE', type=str, nargs=4,
+                        help='File Order: input.py reduction_input.py chem_annotated.inp species_dictionary.txt')
+
+    # Options for controlling the amount of information printed to the console
+    # By default a moderate level of information is printed; you can either
+    # ask for less (quiet), more (verbose), or much more (debug)
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('-q', '--quiet', action='store_true', help='only print warnings and errors')
+    group.add_argument('-v', '--verbose', action='store_true', help='print more verbose output')
+    group.add_argument('-d', '--debug', action='store_true', help='print debug information')
+
+    return parser.parse_args()
+
+
 def main():
-    level = 20#10 : debug, 20: info
+    args = parseCommandLineArguments()
+
+    level = INFO
+    if args.debug: level = 0
+    elif args.verbose: level = DEBUG
+    elif args.quiet: level = WARNING
     initializeLog(level)
-    inputFile, reductionFile, chemkinFile, spcDict = sys.argv[-4:]
+
+    inputFile, reductionFile, chemkinFile, spcDict = args.requiredFiles[-4:]
 
     for f in [inputFile, reductionFile, chemkinFile, spcDict]:
         assert os.path.isfile(f), 'Could not find {}'.format(f)

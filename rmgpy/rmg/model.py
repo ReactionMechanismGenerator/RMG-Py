@@ -3,28 +3,28 @@
 
 ################################################################################
 #
-#	RMG - Reaction Mechanism Generator
+#   RMG - Reaction Mechanism Generator
 #
-#	Copyright (c) 2002-2009 Prof. William H. Green (whgreen@mit.edu) and the
-#	RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
-#	Permission is hereby granted, free of charge, to any person obtaining a
-#	copy of this software and associated documentation files (the 'Software'),
-#	to deal in the Software without restriction, including without limitation
-#	the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#	and/or sell copies of the Software, and to permit persons to whom the
-#	Software is furnished to do so, subject to the following conditions:
+#   Permission is hereby granted, free of charge, to any person obtaining a
+#   copy of this software and associated documentation files (the 'Software'),
+#   to deal in the Software without restriction, including without limitation
+#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#   and/or sell copies of the Software, and to permit persons to whom the
+#   Software is furnished to do so, subject to the following conditions:
 #
-#	The above copyright notice and this permission notice shall be included in
-#	all copies or substantial portions of the Software.
+#   The above copyright notice and this permission notice shall be included in
+#   all copies or substantial portions of the Software.
 #
-#	THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#	FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#	DEALINGS IN THE SOFTWARE.
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+#   DEALINGS IN THE SOFTWARE.
 #
 ################################################################################
 
@@ -386,20 +386,35 @@ class CoreEdgeReactionModel:
         for rxn0 in shortlist:
             rxn_id0 = generateReactionId(rxn0)
 
-            if (rxn_id == rxn_id0):
-                if isinstance(familyObj, KineticsLibrary):
-                    # If the reaction comes from a kinetics library, then we can retain duplicates if they are marked
-                    if areIdenticalSpeciesReferences(rxn, rxn0):
-                        if not rxn.duplicate:
+            if (rxn_id == rxn_id0) and isinstance(familyObj, KineticsLibrary):
+                # If the reaction comes from a kinetics library, then we can 
+                # retain duplicates if they are marked
+                if areIdenticalSpeciesReferences(rxn, rxn0) and not rxn.duplicate:
+                    return True, rxn0
+            elif ((rxn_id == rxn_id0) or (rxn_id == rxn_id0[::-1])) and \
+                        isinstance(familyObj, KineticsFamily):
+                # ensure TemplateReactions have the same templates and families in order
+                # to classify this as existing reaction. Also checks for reverse
+                # direction matching. Marks duplicate if identical species and different
+                # templates or families
+                if areIdenticalSpeciesReferences(rxn, rxn0):
+                    if rxn.family == rxn0.family:
+                        equal_templates = frozenset(rxn.template) == frozenset(rxn0.template)
+                        # check reverse template
+                        if not equal_templates and familyObj.ownReverse and \
+                                    rxn.reverse is not None:
+                            equal_templates = frozenset(rxn.reverse.template) == frozenset(rxn0.template)
+                        if equal_templates:
                             return True, rxn0
-                else:
-                    if areIdenticalSpeciesReferences(rxn, rxn0):
-                        return True, rxn0
-            if isinstance(familyObj, KineticsFamily):
-                
-                if (rxn_id == rxn_id0[::-1]):
-                    if areIdenticalSpeciesReferences(rxn, rxn0):
-                        return True, rxn0
+                        else:
+                            rxn.duplicate = True
+                            rxn0.duplicate = True
+                    else:
+                        rxn.duplicate = True
+                        rxn0.duplicate = True
+            elif (rxn_id == rxn_id0):
+                if areIdenticalSpeciesReferences(rxn, rxn0):
+                    return True, rxn0
 
         # Now check seed mechanisms
         # We want to check for duplicates in *other* seed mechanisms, but allow
@@ -448,6 +463,8 @@ class CoreEdgeReactionModel:
         # Determine the proper species objects for all reactants and products
         reactants = [self.makeNewSpecies(reactant)[0] for reactant in forward.reactants]
         products  = [self.makeNewSpecies(product)[0]  for product  in forward.products ]
+        if forward.specificCollider is not None: forward.specificCollider = self.makeNewSpecies(forward.specificCollider)[0]
+
         if forward.pairs is not None:
             for pairIndex in range(len(forward.pairs)):
                 reactantIndex = forward.reactants.index(forward.pairs[pairIndex][0])
@@ -635,24 +652,10 @@ class CoreEdgeReactionModel:
         # Generate kinetics of new reactions
         logging.info('Generating kinetics for new reactions...')
         for reaction in self.newReactionList:
-            family = getFamilyLibraryObject(reaction.family)
-
             # If the reaction already has kinetics (e.g. from a library),
             # assume the kinetics are satisfactory
             if reaction.kinetics is None:
-                # Set the reaction kinetics
-                kinetics, source, entry, isForward = self.generateKinetics(reaction)
-                reaction.kinetics = kinetics
-                # Flip the reaction direction if the kinetics are defined in the reverse direction
-                if not isForward:
-                    reaction.reactants, reaction.products = reaction.products, reaction.reactants
-                    reaction.pairs = [(p,r) for r,p in reaction.pairs]
-                    if family.ownReverse and hasattr(reaction,'reverse'):
-                        if reaction.reverse:
-                            reaction.template = reaction.reverse.template
-                            reaction.degeneracy = reaction.reverse.degeneracy
-                        # We're done with the "reverse" attribute, so delete it to save a bit of memory
-                        reaction.reverse = None
+                self.applyKineticsToReaction(reaction)
                     
         # For new reactions, convert ArrheniusEP to Arrhenius, and fix barrier heights.
         # self.newReactionList only contains *actually* new reactions, all in the forward direction.
@@ -778,6 +781,28 @@ class CoreEdgeReactionModel:
                         self.core.reactions.remove(rxn)
                     if rxn in self.edge.reactions:
                         self.edge.reactions.remove(rxn)
+
+    def applyKineticsToReaction(self, reaction):
+        """
+        retrieve the best kinetics for the reaction and apply it towards the forward 
+        or reverse direction (if reverse, flip the direaction).
+        """
+        from rmgpy.data.rmg import getDB
+        # Find the reaction kinetics
+        kinetics, source, entry, isForward = self.generateKinetics(reaction)
+        # Flip the reaction direction if the kinetics are defined in the reverse direction
+        if not isForward:
+            family = getDB('kinetics').families[reaction.family]
+            reaction.reactants, reaction.products = reaction.products, reaction.reactants
+            reaction.pairs = [(p,r) for r,p in reaction.pairs]
+            if family.ownReverse and hasattr(reaction,'reverse'):
+                if reaction.reverse:
+                    reaction.template = reaction.reverse.template
+                    # replace degeneracy
+                    reaction.degeneracy = reaction.reverse.degeneracy
+                # We're done with the "reverse" attribute, so delete it to save a bit of memory
+                reaction.reverse = None
+        reaction.kinetics = kinetics
 
     def generateKinetics(self, reaction):
         """
@@ -1230,7 +1255,7 @@ class CoreEdgeReactionModel:
 
         for entry in seedMechanism.entries.values():
             rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],\
-             library=seedMechanism.label, kinetics=entry.data, duplicate=entry.item.duplicate,\
+             library=seedMechanism.label, specificCollider=entry.item.specificCollider, kinetics=entry.data, duplicate=entry.item.duplicate,\
              reversible=entry.item.reversible
              )
             r, isNew = self.makeNewReaction(rxn) # updates self.newSpeciesList and self.newReactionlist
@@ -1300,7 +1325,7 @@ class CoreEdgeReactionModel:
         # Load library reactions, keep reversibility as is
         for entry in reactionLibrary.entries.values():
             rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],\
-            library=reactionLibrary.label, kinetics=entry.data,\
+            specificCollider=entry.item.specificCollider, library=reactionLibrary.label, kinetics=entry.data,\
             duplicate=entry.item.duplicate, reversible=entry.item.reversible if rmg.keepIrreversible else True
             )
             r, isNew = self.makeNewReaction(rxn) # updates self.newSpeciesList and self.newReactionlist
@@ -1681,6 +1706,7 @@ class CoreEdgeReactionModel:
         for obj in itertools.chain(deflatedRxn.reactants, deflatedRxn.products):
             if isinstance(obj, int):
                 return self.getSpecies(obj)
+        raise Exception("No core species were found in either reactants or products of {0}!".format(deflatedRxn))
 
 
 def generateReactionKey(rxn, useProducts=False):

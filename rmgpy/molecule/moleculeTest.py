@@ -1,6 +1,33 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+################################################################################
+#
+#   RMG - Reaction Mechanism Generator
+#
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
+#
+#   Permission is hereby granted, free of charge, to any person obtaining a
+#   copy of this software and associated documentation files (the 'Software'),
+#   to deal in the Software without restriction, including without limitation
+#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#   and/or sell copies of the Software, and to permit persons to whom the
+#   Software is furnished to do so, subject to the following conditions:
+#
+#   The above copyright notice and this permission notice shall be included in
+#   all copies or substantial portions of the Software.
+#
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+#   DEALINGS IN THE SOFTWARE.
+#
+################################################################################
+
 import unittest
 
 from external.wip import work_in_progress
@@ -2022,11 +2049,11 @@ multiplicity 2
         molCopy = mol.copy(deep=True)
         # Remove a hydrogen from mol
         a = mol.atoms[-1]
-        self.assertEquals(a.id, 13)
+
         mol.removeAtom(a)
         # Remove a different hydrogen from molCopy
         b = molCopy.atoms[-2]
-        self.assertEquals(b.id, 12)
+
         molCopy.removeAtom(b)
 
         self.assertTrue(mol.isIsomorphic(molCopy))
@@ -2060,6 +2087,32 @@ multiplicity 2
 
         self.assertTrue(mol.isIsomorphic(molCopy))
         self.assertFalse(mol.isIdentical(molCopy))
+
+    def testatomidvalid(self):
+        """see if the atomIDVvalid method properly returns True"""
+        mol = Molecule(SMILES='CCCC')
+        for index, atom in enumerate(mol.atoms):
+            atom.id =index
+        self.assertTrue(mol.atomIDValid())
+
+    def testatomidvalid2(self):
+        """see if the atomIDVvalid method properly returns False"""
+        mol = Molecule(SMILES='CCCC')
+        for index, atom in enumerate(mol.atoms):
+            atom.index =index
+        mol.atoms[3].index = 4
+        self.assertFalse(mol.atomIDValid())
+
+    def testatomidvalid2(self):
+        """see if the atomIDVvalid method properly returns False"""
+        mol = Molecule(SMILES='CCCC')
+        self.assertFalse(mol.atomIDValid())
+
+    def testassignatomid(self):
+        """see if the assignAtomID method properly labels molecule"""
+        mol = Molecule(SMILES='CCCC')
+        mol.assignAtomIDs()
+        self.assertTrue(mol.atomIDValid())
 
 ################################################################################
 

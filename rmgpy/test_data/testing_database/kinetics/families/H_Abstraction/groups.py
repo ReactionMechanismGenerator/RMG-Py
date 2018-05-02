@@ -17,21 +17,28 @@ recipe(actions=[
 ])
 
 entry(
-    index = 1,
+    index = 0,
     label = "X_H_or_Xrad_H_Xbirad_H_Xtrirad_H",
     group = "OR{Xtrirad_H, Xbirad_H, Xrad_H, X_H}",
     kinetics = None,
 )
 
 entry(
-    index = 474,
+    index = 1,
+    label = "Y_rad_birad_trirad_quadrad",
+    group = "OR{Y_rad, Y_1centerbirad, Y_1centertrirad, Y_1centerquadrad}",
+    kinetics = None,
+)
+
+entry(
+    index = 2,
     label = "Xtrirad_H",
     group = "OR{C_quartet_H, C_doublet_H}",
     kinetics = None,
 )
 
 entry(
-    index = 480,
+    index = 3,
     label = "C_quartet_H",
     group = 
 """
@@ -42,7 +49,7 @@ entry(
 )
 
 entry(
-    index = 481,
+    index = 4,
     label = "C_doublet_H",
     group = 
 """
@@ -53,14 +60,14 @@ entry(
 )
 
 entry(
-    index = 444,
+    index = 5,
     label = "Xbirad_H",
     group = "OR{CH2_triplet_H, CH2_singlet_H, NH_triplet_H, NH_singlet_H}",
     kinetics = None,
 )
 
 entry(
-    index = 476,
+    index = 6,
     label = "CH2_triplet_H",
     group = 
 """
@@ -72,7 +79,7 @@ entry(
 )
 
 entry(
-    index = 477,
+    index = 7,
     label = "CH2_singlet_H",
     group = 
 """
@@ -84,7 +91,7 @@ entry(
 )
 
 entry(
-    index = 478,
+    index = 8,
     label = "NH_triplet_H",
     group = 
 """
@@ -95,7 +102,7 @@ entry(
 )
 
 entry(
-    index = 479,
+    index = 9,
     label = "NH_singlet_H",
     group = 
 """
@@ -106,18 +113,18 @@ entry(
 )
 
 entry(
-    index = 185,
+    index = 10,
     label = "Xrad_H",
     group = 
 """
 1 *1 R!H u1 {2,S}
-2 *2 H u0 {1,S}
+2 *2 H   u0 {1,S}
 """,
     kinetics = None,
 )
 
 entry(
-    index = 3,
+    index = 11,
     label = "X_H",
     group = 
 """
@@ -128,21 +135,14 @@ entry(
 )
 
 entry(
-    index = 2,
-    label = "Y_rad_birad_trirad_quadrad",
-    group = "OR{Y_rad, Y_1centerbirad, Y_1centertrirad, Y_1centerquadrad}",
-    kinetics = None,
-)
-
-entry(
-    index = 475,
+    index = 12,
     label = "Y_1centerquadrad",
     group = "OR{C_quintet, C_triplet}",
     kinetics = None,
 )
 
 entry(
-    index = 482,
+    index = 13,
     label = "C_quintet",
     group = 
 """
@@ -152,7 +152,7 @@ entry(
 )
 
 entry(
-    index = 483,
+    index = 14,
     label = "C_triplet",
     group = 
 """
@@ -162,14 +162,14 @@ entry(
 )
 
 entry(
-    index = 419,
+    index = 15,
     label = "Y_1centertrirad",
     group = "OR{N_atom_quartet, N_atom_doublet, CH_quartet, CH_doublet}",
     kinetics = None,
 )
 
 entry(
-    index = 485,
+    index = 16,
     label = "N_atom_quartet",
     group = 
 """
@@ -179,7 +179,7 @@ entry(
 )
 
 entry(
-    index = 486,
+    index = 17,
     label = "N_atom_doublet",
     group = 
 """
@@ -189,7 +189,7 @@ entry(
 )
 
 entry(
-    index = 487,
+    index = 18,
     label = "CH_quartet",
     group = 
 """
@@ -200,7 +200,7 @@ entry(
 )
 
 entry(
-    index = 487,
+    index = 19,
     label = "CH_doublet",
     group = 
 """
@@ -211,7 +211,7 @@ entry(
 )
 
 entry(
-    index = 188,
+    index = 20,
     label = "Y_1centerbirad",
     group = 
 """
@@ -221,11 +221,54 @@ entry(
 )
 
 entry(
-    index = 191,
+    index = 21,
     label = "Y_rad",
     group = 
 """
 1 *3 R u1
+""",
+    kinetics = None,
+)
+
+entry(
+    index = 63,
+    label = "C/H3/Cs",
+    group = 
+"""
+1 *1 C  u0 {2,S} {3,S} {4,S} {5,S}
+2 *2 H  u0 {1,S}
+3    H  u0 {1,S}
+4    H  u0 {1,S}
+5    Cs u0 {1,S}
+""",
+    kinetics = None,
+)
+
+entry(
+    index = 78,
+    label = "C/H3/Cd",
+    group = 
+"""
+1 *1 C  u0 {2,S} {3,S} {4,S} {5,S}
+2 *2 H  u0 {1,S}
+3    H  u0 {1,S}
+4    H  u0 {1,S}
+5    Cd u0 {1,S} {6,D}
+6    C  u0 {5,D}
+""",
+    kinetics = None,
+)
+
+entry(
+    index = 65,
+    label = "C/H3/Cdot",
+    group = 
+"""
+1 *1 C  u0 {2,S} {3,S} {4,S} {5,S}
+2 *2 H  u0 {1,S}
+3    H  u0 {1,S}
+4    H  u0 {1,S}
+5    C  u1 {1,S}
 """,
     kinetics = None,
 )
@@ -243,6 +286,9 @@ L1: X_H_or_Xrad_H_Xbirad_H_Xtrirad_H
         L3: NH_singlet_H
     L2: Xrad_H
     L2: X_H
+        L3: C/H3/Cs
+        L3: C/H3/Cdot
+        L3: C/H3/Cd
 L1: Y_rad_birad_trirad_quadrad
     L2: Y_1centerquadrad
         L3: C_quintet

@@ -5,7 +5,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2009-2011 by the RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -162,7 +163,7 @@ class Atom(Vertex):
         """
         Return ``True`` if `other` is indistinguishable from this atom, or
         ``False`` otherwise. If `other` is an :class:`Atom` object, then all
-        attributes except `label` must match exactly. If `other` is an
+        attributes except `label` and 'ID' must match exactly. If `other` is an
         :class:`GroupAtom` object, then the atom must match any of the
         combinations in the atom pattern.
         """
@@ -173,7 +174,8 @@ class Atom(Vertex):
                 self.element                is atom.element and
                 self.radicalElectrons       == atom.radicalElectrons   and
                 self.lonePairs              == atom.lonePairs           and
-                self.charge                 == atom.charge
+                self.charge                 == atom.charge and
+                self.atomType              is atom.atomType
                 )
         elif isinstance(other, gr.GroupAtom):
             cython.declare(a=AtomType, radical=cython.short, lp=cython.short, charge=cython.short)
@@ -486,10 +488,10 @@ class Bond(Edge):
         cython.declare(bond=Bond, bp=gr.GroupBond)
         if isinstance(other, Bond):
             bond = other
-            return (self.getOrderNum() == bond.getOrderNum())
+            return self.isOrder(bond.getOrderNum())
         elif isinstance(other, gr.GroupBond):
             bp = other
-            return (self.getOrderNum() in bp.getOrderNum())
+            return any([self.isOrder(otherOrder) for otherOrder in bp.getOrderNum()])
 
     def isSpecificCaseOf(self, other):
         """
@@ -513,8 +515,7 @@ class Bond(Edge):
         elif self.isTriple():
             return 'T'
         else:
-            raise ValueError("Bond order {} does not have string representation." +  \
-            "".format(self.order))
+            raise ValueError("Bond order {} does not have string representation.".format(self.order))
         
     def setOrderStr(self, newOrder):
         """
@@ -529,7 +530,11 @@ class Bond(Edge):
         elif newOrder == 'B':
             self.order = 1.5
         else:
-            raise TypeError('Bond order {} is not hardcoded into this method'.format(newOrder))
+            # try to see if an float disguised as a string was input by mistake
+            try:
+                self.order = float(newOrder)
+            except ValueError:
+                raise TypeError('Bond order {} is not hardcoded into this method'.format(newOrder))
             
             
     def getOrderNum(self):
@@ -567,7 +572,7 @@ class Bond(Edge):
         NOTE: we can replace the absolute value relation with math.isclose when
         we swtich to python 3.5+
         """
-        return abs(self.order - otherOrder) <= 1e-9
+        return abs(self.order - otherOrder) <= 1e-6
 
         
     def isSingle(self):
@@ -575,28 +580,28 @@ class Bond(Edge):
         Return ``True`` if the bond represents a single bond or ``False`` if
         not.
         """
-        return abs(self.order-1) <= 1e-9
+        return abs(self.order-1) <= 1e-6
 
     def isDouble(self):
         """
         Return ``True`` if the bond represents a double bond or ``False`` if
         not.
         """
-        return abs(self.order-2) <= 1e-9
+        return abs(self.order-2) <= 1e-6
 
     def isTriple(self):
         """
         Return ``True`` if the bond represents a triple bond or ``False`` if
         not.
         """
-        return abs(self.order-3) <= 1e-9
+        return abs(self.order-3) <= 1e-6
 
     def isBenzene(self):
         """
         Return ``True`` if the bond represents a benzene bond or ``False`` if
         not.
         """
-        return abs(self.order-1.5) <= 1e-9
+        return abs(self.order-1.5) <= 1e-6
 
     def incrementOrder(self):
         """
@@ -663,6 +668,7 @@ class Molecule(Graph):
     ======================= =========== ========================================
     `symmetryNumber`        ``int``     The (estimated) external + internal symmetry number of the molecule
     `multiplicity`          ``int``     The multiplicity of this species, multiplicity = 2*total_spin+1
+    `props`                 ``dict``    A list of properties describing the state of the molecule.
     ======================= =========== ========================================
 
     A new molecule object can be easily instantiated by passing the `SMILES` or
@@ -712,9 +718,15 @@ class Molecule(Graph):
         """
         cython.declare(multiplicity=cython.int)
         multiplicity = self.multiplicity
-        if multiplicity != self.getRadicalCount() + 1:
-            return 'Molecule(SMILES="{0}", multiplicity={1:d})'.format(self.toSMILES(), multiplicity)
-        return 'Molecule(SMILES="{0}")'.format(self.toSMILES())
+        try:
+            if multiplicity != self.getRadicalCount() + 1:
+                return 'Molecule(SMILES="{0}", multiplicity={1:d})'.format(self.toSMILES(), multiplicity)
+            return 'Molecule(SMILES="{0}")'.format(self.toSMILES())
+        except KeyError:
+            logging.warning('Could not generate SMILES for this molecule object.'+\
+                        ' Likely due to a keyerror when converting to RDKit'+\
+                        ' Here is molecules AdjList: {}'.format(self.toAdjacencyList()))
+            return 'Molecule().fromAdjacencyList"""{}"""'.format(self.toAdjacencyList())
 
     def __reduce__(self):
         """
@@ -743,7 +755,7 @@ class Molecule(Graph):
 
     def getBonds(self, atom):
         """
-        Return a list of the bonds involving the specified `atom`.
+        Return a dictionary of the bonds involving the specified `atom`.
         """
         return self.getEdges(atom)
 
@@ -979,11 +991,15 @@ class Molecule(Graph):
                     self.addBond(bond)
         self.updateAtomTypes()
         
-    def updateAtomTypes(self, logSpecies=True):
+    def updateAtomTypes(self, logSpecies=True, raiseException=True):
         """
         Iterate through the atoms in the structure, checking their atom types
         to ensure they are correct (i.e. accurately describe their local bond
         environment) and complete (i.e. are as detailed as possible).
+        
+        If `raiseException` is `False`, then the generic atomType 'R' will
+        be prescribed to any atom when getAtomType fails. Currently used for
+        resonance hybrid atom types.
         """
         for atom in self.vertices:
             try:
@@ -991,7 +1007,9 @@ class Molecule(Graph):
             except AtomTypeError:
                 if logSpecies:
                     logging.error("Could not update atomtypes for {0}.\n{1}".format(self, self.toAdjacencyList()))
-                raise
+                if raiseException:
+                    raise
+                atom.atomType = atomTypes['R']
             
     def updateMultiplicity(self):
         """
@@ -1545,6 +1563,7 @@ class Molecule(Graph):
         includes both external and internal modes.
         """
         from rmgpy.molecule.symmetry import calculateSymmetryNumber
+        self.updateConnectivityValues() # for consistent results
         self.symmetryNumber = calculateSymmetryNumber(self)
         return self.symmetryNumber
     
@@ -1868,10 +1887,29 @@ class Molecule(Graph):
 
     def assignAtomIDs(self):
         """
-        Assigns an ID number to every atom in the molecule for tracking purposes.
+        Assigns an index to every atom in the molecule for tracking purposes.
+        Uses entire range of cython's integer values to reduce chance of duplicates
         """
+
+        global atom_id_counter
+
         for i, atom in enumerate(self.atoms):
-            atom.id = i
+            atom.id = atom_id_counter
+            atom_id_counter += 1
+            if atom_id_counter == 2**15:
+                atom_id_counter = -2**15
+
+    def atomIDValid(self):
+        """
+        Checks to see if the atom IDs are valid in this structure
+        """
+        num_atoms = len(self.atoms)
+        num_IDs = len(set([atom.id for atom in self.atoms]))
+
+        if num_atoms == num_IDs:
+            # all are unique
+            return True
+        return False
 
     def isIdentical(self, other):
         """
@@ -1905,3 +1943,34 @@ class Molecule(Graph):
         else:
             # The molecules don't have the same set of indices, so they are not identical
             return False
+
+    def getNthNeighbor(self, startingAtoms, distanceList, ignoreList = None, n=1):
+        '''
+        Recursively get the Nth nonHydrogen neighbors of the startingAtoms, and return them in a list.
+        `startingAtoms` is a list of :class:Atom for which we will get the nth neighbor.
+        `distanceList` is a list of intergers, corresponding to the desired neighbor distances.
+        `ignoreList` is a list of :class:Atom that have been counted in (n-1)th neighbor, and will not be returned.
+        `n` is an interger, corresponding to the distance to be calculated in the current iteration.
+        '''
+        if ignoreList is None:
+            ignoreList = []
+
+        neighbors = []
+        for atom in startingAtoms:
+            newNeighbors = [neighbor for neighbor in self.getBonds(atom) if neighbor.isNonHydrogen()]
+            neighbors.extend(newNeighbors)
+
+        neighbors = list(set(neighbors)-set(ignoreList))
+        for atom in startingAtoms:
+            ignoreList.append(atom)
+        if n < max(distanceList):
+            if n in distanceList:
+                neighbors += self.getNthNeighbor(neighbors, distanceList, ignoreList, n+1)
+            else:
+                neighbors = self.getNthNeighbor(neighbors, distanceList, ignoreList, n+1)
+        return neighbors
+
+
+# this variable is used to name atom IDs so that there are as few conflicts by 
+# using the entire space of integer objects
+atom_id_counter = -2**15

@@ -18,7 +18,7 @@ recipe(actions=[
 ])
 
 entry(
-    index = 1,
+    index = 0,
     label = "Y_rad",
     group = 
 """
