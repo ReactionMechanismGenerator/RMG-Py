@@ -4,6 +4,71 @@
 Release Notes
 *************
 
+RMG-Py Version 2.1.2
+====================
+Date: May 18, 2017
+
+- Improvements:
+    - New nitrogen atom types
+    - Kinetics libraries can now be specified as a list of strings in the input file
+    - New script to generate output HTML locally: generateChemkinHTML.py
+    - New kekulization module replaces RDKit for generating Kekule structures
+    - Benzene bonds can now be reacted in reaction families
+    - Removed cantherm.geometry module due to redundancy with statmech.conformer
+
+- Fixes:
+    - Reaction direction is now more deterministic after accounting for floating point error
+    - Multiple bugs with resonance structure generation for aromatics have been addressed
+
+
+RMG-database Version 2.1.2
+==========================
+Date: May 18, 2017
+
+- Nitrogen improvements:
+    - Added ethylamine kinetics library
+    - Updated group additivity values for nitrogen species
+    - Added rate rules and training reactions for nitrogen species
+
+- Additions:
+    - New CO_Disproportionation family
+    - Added CurranPentane kinetics and thermo libraries
+
+- Fixes:
+    - Corrected some rates in FFCM1(-) to use MultiArrhenius kinetics
+    - Corrected a few adjlists in FFCM1(-)
+
+
+RMG-Py Version 2.1.1
+====================
+Date: April 07, 2017
+
+- Uncertainty analysis:
+    - Local and global uncertainty analysis now available for RMG-generated models
+    - Global uncertainty analysis uses MIT Uncertainty Quantification library, currently only supported on Linux systems
+    - Examples for each module are available in localUncertainty.ipynb and globalUncertainty.ipynb
+
+- Fixes:
+    - Clar structure generation no longer intercepts signals
+    - Fixes to SMILES generation
+    - Fix default spin state of [CH]
+
+RMG-database Version 2.1.1
+==========================
+Date: April 07, 2017
+
+- Additions:
+    - More species added to FFCM1(-) thermo library
+
+- Changes:
+    - Improved handling of excited species in FFCM1(-) kinetics library
+    - Replaced Klippenstein H2O2 kinetics and thermo libraries with BurkeH2O2inN2 and BurkeH2O2inArHe
+
+- Fixes:
+    - Corrected adjlists for some species in JetSurf2.0 kinetics and thermo libraries (also renamed from JetSurf0.2)
+    - Correct multiplicities for [C] and [CH] in multiple libraries ([C] from 5 to 3, [CH] from 4 to 2)
+
+
 RMG-Py Version 2.1.0
 ====================
 Date: March 07, 2017
