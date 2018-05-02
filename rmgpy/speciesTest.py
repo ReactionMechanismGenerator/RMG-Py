@@ -163,14 +163,14 @@ class TestSpecies(unittest.TestCase):
     def testResonanceIsomersGenerated(self):
         "Test that 1-penten-3-yl makes 2-penten-1-yl resonance isomer"
         spec = Species().fromSMILES('C=C[CH]CC')
-        spec.generateResonanceIsomers()
+        spec.generate_resonance_structures()
         self.assertEquals(len(spec.molecule), 2)
         self.assertEquals(spec.molecule[1].toSMILES(), "[CH2]C=CCC")
 
     def testResonaceIsomersRepresented(self):
         "Test that both resonance forms of 1-penten-3-yl are printed by __repr__"
         spec = Species().fromSMILES('C=C[CH]CC')
-        spec.generateResonanceIsomers()
+        spec.generate_resonance_structures()
         exec('spec2 = {0!r}'.format(spec))
         self.assertEqual(len(spec.molecule), len(spec2.molecule))
         for i, j in zip(spec.molecule, spec2.molecule):

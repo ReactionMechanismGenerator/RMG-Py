@@ -534,7 +534,7 @@ cdef class ReactionSystem(DASx):
         cdef numpy.ndarray[numpy.float64_t,ndim=1] surfaceTotalDivAccumNums, surfaceSpeciesRateRatios
         cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, coreSpeciesConcentrations
         cdef double  prevTime, totalMoles, c, volume, RTP, unimolecularThresholdVal, bimolecularThresholdVal
-        cdef bool firstTime, useDynamics, terminateAtMaxObjects, schanged
+        cdef bool useDynamicsTemp, firstTime, useDynamics, terminateAtMaxObjects, schanged
         cdef numpy.ndarray[numpy.float64_t, ndim=1] edgeReactionRates
         cdef double reactionRate, production, consumption
         cdef numpy.ndarray[numpy.int_t,ndim=1] surfaceSpeciesIndices, surfaceReactionIndices
@@ -573,8 +573,11 @@ cdef class ReactionSystem(DASx):
         sensitivityRelativeTolerance = simulatorSettings.sens_rtol
         filterReactions = modelSettings.filterReactions
         maxNumObjsPerIter = modelSettings.maxNumObjsPerIter
+
         #if not pruning always terminate at max objects, otherwise only do so if terminateAtMaxObjects=True
         terminateAtMaxObjects = True if not prune else modelSettings.terminateAtMaxObjects 
+
+        dynamicsTimeScale = modelSettings.dynamicsTimeScale
         
         useDynamics = not (toleranceMoveEdgeReactionToCore == numpy.inf and toleranceMoveEdgeReactionToSurface == numpy.inf)
         
@@ -589,7 +592,7 @@ cdef class ReactionSystem(DASx):
         surfaceSpeciesIndices = self.surfaceSpeciesIndices
         surfaceReactionIndices = self.surfaceReactionIndices
         
-       
+        totalDivAccumNums = None #the product of the ratios between accumulation numbers with and without a given reaction for products and reactants
 
         invalidObjects = []
         newSurfaceReactions = []
@@ -628,19 +631,51 @@ cdef class ReactionSystem(DASx):
         
         stepTime = 1e-12
         prevTime = self.t
+
+        firstTime = True
+        
         while not terminated:
             # Integrate forward in time by one time step
-            try:
-                self.step(stepTime)
-            except DASxError as e:
-                logging.error("Trying to step from time {} to {}".format(prevTime, stepTime))
-                logging.error("Core species names: {!r}".format([getSpeciesIdentifier(s) for s in coreSpecies]))
-                logging.error("Core species moles: {!r}".format(self.y[:numCoreSpecies]))
-                logging.error("Volume: {!r}".format(self.V))
-                logging.error("Core species net rates: {!r}".format(self.coreSpeciesRates))
-                logging.error("Edge species net rates: {!r}".format(self.edgeSpeciesRates))
-                logging.error("Network leak rates: {!r}".format(self.networkLeakRates))
-                raise e
+            
+            if not firstTime:
+                try:
+                    self.step(stepTime)
+                except DASxError as e:
+                    logging.error("Trying to step from time {} to {} resulted in a solver (DASPK) error".format(prevTime, stepTime))
+                    
+                    logging.info('Resurrecting Model...')
+                    
+                    if invalidObjects == []:
+                        #species flux criterion
+                        if len(edgeSpeciesRateRatios) > 0:
+                            ind = numpy.argmax(edgeSpeciesRateRatios)
+                            obj = edgeSpecies[ind]
+                            logging.info('At time {0:10.4e} s, species {1} at rate ratio {2} was added to model core in model resurrection process'.format(self.t, obj,maxEdgeSpeciesRates[ind]))
+                            invalidObjects.append(obj)
+                        
+                        if totalDivAccumNums and len(totalDivAccumNums) > 0: #if dynamics data available
+                            ind = numpy.argmax(totalDivAccumNums)
+                            obj = edgeReactions[ind]
+                            logging.info('At time {0:10.4e} s, Reaction {1} at dynamics number {2} was added to model core in model resurrection process'.format(self.t, obj,totalDivAccumNums[ind]))
+                            invalidObjects.append(obj)
+                        
+                        if pdepNetworks != [] and networkLeakRateRatios != []:
+                            ind = numpy.argmax(networkLeakRateRatios)
+                            obj = pdepNetworks[ind]
+                            logging.info('At time {0:10.4e} s, PDepNetwork #{1:d} at network leak rate {2} was sent for exploring during model resurrection process'.format(self.t, obj.index, networkLeakRateRatios[ind]))
+                            invalidObjects.append(obj)
+                    
+                    if invalidObjects != []:
+                        return False,True,invalidObjects,surfaceSpecies,surfaceReactions
+                    else:
+                        logging.error('Model Resurrection has failed')
+                        logging.error("Core species names: {!r}".format([getSpeciesIdentifier(s) for s in coreSpecies]))
+                        logging.error("Core species moles: {!r}".format(self.y[:numCoreSpecies]))
+                        logging.error("Volume: {!r}".format(self.V))
+                        logging.error("Core species net rates: {!r}".format(self.coreSpeciesRates))
+                        logging.error("Edge species net rates: {!r}".format(self.edgeSpeciesRates))
+                        logging.error("Network leak rates: {!r}".format(self.networkLeakRates))
+                        raise ValueError('invalidObjects could not be filled during resurrection process')
             
             y_coreSpecies = self.y[:numCoreSpecies]
             totalMoles = numpy.sum(y_coreSpecies)
@@ -707,15 +742,14 @@ cdef class ReactionSystem(DASx):
                 maxSpecies = edgeSpecies[maxSpeciesIndex]
                 maxSpeciesRate = edgeSpeciesRates[maxSpeciesIndex]
                 logging.info('At time {0:10.4e} s, species {1} was added to model core to avoid singularity'.format(self.t, maxSpecies))
-                self.logRates(charRate, maxSpecies, maxSpeciesRate, numpy.inf, maxNetwork, maxNetworkRate)
-                self.logConversions(speciesIndex, y0)
                 invalidObjects.append(maxSpecies)
                 break
             
-            if useDynamics:
+            if useDynamics and not firstTime and self.t >= dynamicsTimeScale:
                 #######################################################
                 # Calculation of dynamics criterion for edge reactions#
                 #######################################################
+
                 totalDivAccumNums = numpy.ones(numEdgeReactions)
                 for index in xrange(numEdgeReactions):
                     reactionRate = edgeReactionRates[index]
@@ -872,11 +906,9 @@ cdef class ReactionSystem(DASx):
                 tempNewObjects = []
                 tempNewObjectInds = []
                 tempNewObjectVals = []
-            
-            if useDynamics:     
-                
-                #movement of reactions to core/surface based on dynamics number
-            
+                              
+            if useDynamics and not firstTime and self.t >= dynamicsTimeScale:     
+                #movement of reactions to core/surface based on dynamics number  
                 validLayeringIndices = self.validLayeringIndices
                 tempSurfaceObjects = []
                 
@@ -971,6 +1003,9 @@ cdef class ReactionSystem(DASx):
             if schanged: #reinitialize surface
                 surfaceSpecies,surfaceReactions = self.initialize_surface(coreSpecies,coreReactions,surfaceSpecies,surfaceReactions)
                 schanged = False
+
+            if firstTime: #turn off firstTime
+                firstTime = False
                 
             if interrupt: #breaks while loop terminating iterations
                 logging.info('terminating simulation due to interrupt...')
@@ -1034,7 +1069,7 @@ cdef class ReactionSystem(DASx):
 
         # Return the invalid object (if the simulation was invalid) or None
         # (if the simulation was valid)
-        return terminated, invalidObjects, surfaceSpecies, surfaceReactions
+        return terminated, False, invalidObjects, surfaceSpecies, surfaceReactions
 
     cpdef logRates(self, double charRate, object species, double speciesRate, double maxDifLnAccumNum, object network, double networkRate):
         """

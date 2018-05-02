@@ -43,7 +43,7 @@ from rmgpy.display import display
 import rmgpy.constants as constants
 from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.quantity import Quantity
-import rmgpy.species
+from rmgpy.species import Species
 from rmgpy.thermo.thermoengine import submit
 from rmgpy.reaction import Reaction
 from rmgpy.exceptions import ForbiddenStructureException
@@ -56,31 +56,8 @@ import rmgpy.data.rmg
 from .react import reactAll
 
 from pdep import PDepReaction, PDepNetwork
+
 # generateThermoDataFromQM under the Species class imports the qm package
-
-################################################################################
-
-class Species(rmgpy.species.Species):
-    solventName = None
-    solventData = None
-    # solventStructure is the instance of species class whose molecule attribute corresponds to the solvent SMILES.
-    # If the solvent library does not contain the SMILES of the solvent, then the solventStructure is None
-    solventStructure = None
-    solventViscosity = None
-    isSolvent = False # returns True if the species is the solvent and False if not
-    diffusionTemp = None
-
-    def __init__(self, index=-1, label='', thermo=None, conformer=None, 
-                 molecule=None, transportData=None, molecularWeight=None, 
-                 energyTransferModel=None, reactive=True, props=None, creationIteration=0):
-        rmgpy.species.Species.__init__(self, index, label, thermo, conformer, molecule, transportData, molecularWeight, energyTransferModel, reactive, props)
-        self.creationIteration = creationIteration
-
-    def __reduce__(self):
-        """
-        A helper function used when pickling an object.
-        """
-        return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.transportData, self.molecularWeight, self.energyTransferModel, self.reactive, self.props,self.creationIteration),)
 
 ################################################################################
 
@@ -196,6 +173,7 @@ class CoreEdgeReactionModel:
     `networkList`              A list of pressure-dependent reaction networks (:class:`Network` objects)
     `networkCount`             A counter for the number of pressure-dependent networks created
     `indexSpeciesDict`         A dictionary with a unique index pointing to the species objects
+    `solventName`              String describing solvent name for liquid reactions. Empty for non-liquid estimation
     =========================  ==============================================================
 
 
@@ -249,7 +227,8 @@ class CoreEdgeReactionModel:
         self.newSurfaceRxnsAdd = set()
         self.newSurfaceSpcsLoss = set()
         self.newSurfaceRxnsLoss = set()
-    
+        self.solventName = ''
+
     def checkForExistingSpecies(self, molecule):
         """
         Check to see if an existing species contains the same
@@ -271,8 +250,8 @@ class CoreEdgeReactionModel:
         # within the list of isomers for a species object describing a unique aromatic compound
         if molecule.isCyclic():
             obj = Species(molecule=[molecule])
-            from rmgpy.molecule.resonance import generateAromaticResonanceStructures
-            aromaticIsomers = generateAromaticResonanceStructures(molecule)
+            from rmgpy.molecule.resonance import generate_aromatic_resonance_structures
+            aromaticIsomers = generate_aromatic_resonance_structures(molecule)
             obj.molecule.extend(aromaticIsomers)
 
         # First check cache and return if species is found
@@ -335,10 +314,10 @@ class CoreEdgeReactionModel:
             spec = Species(index=speciesIndex, label=label, molecule=[molecule], reactive=reactive)
         
         spec.creationIteration = self.iterationNum
-        spec.generateResonanceIsomers()
+        spec.generate_resonance_structures()
         spec.molecularWeight = Quantity(spec.molecule[0].getMolecularWeight()*1000.,"amu")
         
-        submit(spec)
+        submit(spec,self.solventName)
         
         if spec.label == '':
             if spec.thermo and spec.thermo.label != '': #check if thermo libraries have a name for it
@@ -489,7 +468,8 @@ class CoreEdgeReactionModel:
         # Determine the proper species objects for all reactants and products
         reactants = [self.makeNewSpecies(reactant)[0] for reactant in forward.reactants]
         products  = [self.makeNewSpecies(product)[0]  for product  in forward.products ]
-        if forward.specificCollider is not None: forward.specificCollider = self.makeNewSpecies(forward.specificCollider)[0]
+        if forward.specificCollider is not None:
+            forward.specificCollider = self.makeNewSpecies(forward.specificCollider)[0]
 
         if forward.pairs is not None:
             for pairIndex in range(len(forward.pairs)):
@@ -1448,7 +1428,7 @@ class CoreEdgeReactionModel:
 
         for spec in self.newSpeciesList:            
             if spec.reactive:
-                submit(spec)
+                submit(spec,self.solventName)
 
             self.addSpeciesToCore(spec)
 
@@ -1458,7 +1438,7 @@ class CoreEdgeReactionModel:
                 # we need to make sure the barrier is positive.
                 # ...but are Seed Mechanisms run through PDep? Perhaps not.
                 for spec in itertools.chain(rxn.reactants, rxn.products):
-                    submit(spec)
+                    submit(spec,self.solventName)
 
                 rxn.fixBarrierHeight(forcePositive=True)
             self.addReactionToCore(rxn)
@@ -1514,7 +1494,7 @@ class CoreEdgeReactionModel:
 
         for spec in self.newSpeciesList:
             if spec.reactive: 
-                submit(spec)
+                submit(spec,self.solventName)
 
             self.addSpeciesToEdge(spec)
 
@@ -1951,7 +1931,8 @@ def areIdenticalSpeciesReferences(rxn1, rxn2):
     Checks if the references of the reactants and products of the two reactions
     are identical, in either direction.
     """
-
-    return any([rxn1.reactants == rxn2.reactants and rxn1.products == rxn2.products, \
-            rxn1.reactants == rxn2.products and rxn1.products == rxn2.reactants
-            ])
+    identical_same_direction = rxn1.reactants == rxn2.reactants and rxn1.products == rxn2.products
+    identical_opposite_directions = rxn1.reactants == rxn2.products and rxn1.products == rxn2.reactants
+    identical_collider = rxn1.specificCollider == rxn2.specificCollider
+    
+    return (identical_same_direction or identical_opposite_directions) and identical_collider

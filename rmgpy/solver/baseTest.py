@@ -164,7 +164,7 @@ class ReactionSystemTest(unittest.TestCase):
         simulatorSettings = SimulatorSettings()
         
         # run simulation:
-        terminated, obj,sspcs,srxns = reactionSystem.simulate(
+        terminated,resurrected,obj,sspcs,srxns = reactionSystem.simulate(
             coreSpecies = reactionModel.core.species,
             coreReactions = reactionModel.core.reactions,
             edgeSpecies = reactionModel.edge.species,

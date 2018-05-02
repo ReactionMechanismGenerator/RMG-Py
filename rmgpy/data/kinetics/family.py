@@ -43,9 +43,10 @@ from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStruct
 from rmgpy.reaction import Reaction
 from rmgpy.kinetics import Arrhenius
 from rmgpy.molecule import Bond, GroupBond, Group, Molecule
+from rmgpy.molecule.resonance import generate_aromatic_resonance_structures
 from rmgpy.species import Species
 
-from .common import saveEntry
+from .common import saveEntry, ensure_species, find_degenerate_reactions, generate_molecule_combos
 from .depository import KineticsDepository
 from .groups import KineticsGroups
 from .rules import KineticsRules
@@ -1060,7 +1061,7 @@ class KineticsFamily(Database):
                 shortDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.shortDesc,
                 longDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.longDesc,
             )
-            new_entry.data.comment = "{0} from training reaction {1}".format(';'.join([g.label for g in template]), entry.index)
+            new_entry.data.comment = "From training reaction {1} for rate rule {0}".format(';'.join([g.label for g in template]), entry.index)
 
             new_entry.data.A.value_si /= entry.item.degeneracy
             try:
@@ -1081,10 +1082,10 @@ class KineticsFamily(Database):
             item = Reaction(reactants=[Species(molecule=[m.molecule[0].copy(deep=True)], label=m.label) for m in entry.item.reactants],
                              products=[Species(molecule=[m.molecule[0].copy(deep=True)], label=m.label) for m in entry.item.products])
             for reactant in item.reactants:
-                reactant.generateResonanceIsomers()
+                reactant.generate_resonance_structures()
                 reactant.thermo = thermoDatabase.getThermoData(reactant, trainingSet=True) 
             for product in item.products:
-                product.generateResonanceIsomers()
+                product.generate_resonance_structures()
                 product.thermo = thermoDatabase.getThermoData(product,trainingSet=True)
             # Now that we have the thermo, we can get the reverse k(T)
             item.kinetics = data
@@ -1108,7 +1109,7 @@ class KineticsFamily(Database):
                 shortDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.shortDesc,
                 longDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.longDesc,
             )
-            new_entry.data.comment = "{0} from training reaction {1}".format(';'.join([g.label for g in template]), entry.index)
+            new_entry.data.comment = "From training reaction {1} for rate rule {0}".format(';'.join([g.label for g in template]), entry.index)
 
             new_entry.data.A.value_si /= new_degeneracy
             try:
@@ -1435,7 +1436,7 @@ class KineticsFamily(Database):
         else:
             raise NotImplementedError("Not expecting template of type {}".format(type(struct)))
 
-    def generateReactions(self, reactants):
+    def generateReactions(self, reactants, products=None, prod_resonance=True):
         """
         Generate all reactions between the provided list of one or two
         `reactants`, which should be either single :class:`Molecule` objects
@@ -1444,15 +1445,26 @@ class KineticsFamily(Database):
         using :class:`Molecule` objects for both reactants and products
         The reactions are constructed such that the forward direction is
         consistent with the template of this reaction family.
+
+        Args:
+            reactants:      List of Molecules to react
+            products:       List of Molecules or Species of desired product structures (optional)
+            prod_resonance: Flag to generate resonance structures for product checking (optional)
+                            Defaults to True, resonance structures are compared
+
+        Returns:
+            List of all reactions containing Molecule objects with the
+                specified reactants and products within this family.
+            Degenerate reactions are returned as separate reactions.
         """
         reactionList = []
         
         # Forward direction (the direction in which kinetics is defined)
-        reactionList.extend(self.__generateReactions(reactants, forward=True))
+        reactionList.extend(self.__generateReactions(reactants, products=products, forward=True, prod_resonance=prod_resonance))
         
         if not self.ownReverse:
             # Reverse direction (the direction in which kinetics is not defined)
-            reactionList.extend(self.__generateReactions(reactants, forward=False))
+            reactionList.extend(self.__generateReactions(reactants, products=products, forward=False, prod_resonance=prod_resonance))
 
         return reactionList
 
@@ -1464,8 +1476,6 @@ class KineticsFamily(Database):
         Returns `True` if successful and `False` if the reverse reaction is forbidden.
         Will raise a `KineticsError` if unsuccessful for other reasons.
         """
-        from rmgpy.rmg.react import findDegeneracies
-
         if self.ownReverse:
             # Check if the reactants are the same
             sameReactants = False
@@ -1474,7 +1484,7 @@ class KineticsFamily(Database):
 
             reactionList = self.__generateReactions([spc.molecule for spc in rxn.products],
                                                     products=rxn.reactants, forward=True)
-            reactions = findDegeneracies(reactionList, sameReactants)
+            reactions = find_degenerate_reactions(reactionList, sameReactants, kinetics_family=self)
             if len(reactions) == 0:
                 logging.error("Expecting one matching reverse reaction, not zero in reaction family {0} for forward reaction {1}.\n".format(self.label, str(rxn)))
                 logging.error("There is likely a bug in the RMG-database kinetics reaction family involving a missing group, missing atomlabels, forbidden groups, etc.")
@@ -1494,7 +1504,7 @@ class KineticsFamily(Database):
                 try:
                     reactionList = self.__generateReactions([spc.molecule for spc in rxn.products],
                                                             products=rxn.reactants, forward=True)
-                    reactions = findDegeneracies(reactionList)
+                    reactions = find_degenerate_reactions(reactionList, sameReactants, kinetics_family=self)
                 finally:
                     self.forbidden = tempObject
                 if len(reactions) == 1 or (len(reactions) > 1 and all([reactions[0].isIsomorphic(other, checkTemplateRxnProducts=True) for other in reactions])):
@@ -1531,25 +1541,14 @@ class KineticsFamily(Database):
         `ignoreSameReactants= True` to this method.
         """
         reaction.degeneracy = 1
-        from rmgpy.rmg.react import findDegeneracies, getMoleculeTuples
 
         # find combinations of resonance isomers
-        specReactants = []
-        if isinstance(reaction.reactants[0], Molecule):
-            for mol in reaction.reactants:
-                spec = Species(molecule=[mol])
-                spec.generateResonanceIsomers(keepIsomorphic=True)
-                specReactants.append(spec)
-        elif isinstance(reaction.reactants[0], Species):
-            specReactants = reaction.reactants
-        else:
-            raise TypeError('Reactants must be either Species or Molecule Objects')
-        molecule_combos = getMoleculeTuples(specReactants)
+        specReactants = ensure_species(reaction.reactants, resonance=True, keepIsomorphic=True)
+        molecule_combos = generate_molecule_combos(specReactants)
 
         reactions = []
         for combo in molecule_combos:
-            comboOnlyMols = [tup[0] for tup in combo]
-            reactions.extend(self.__generateReactions(comboOnlyMols, products=reaction.products, forward=True))
+            reactions.extend(self.__generateReactions(combo, products=reaction.products, forward=True))
 
         # Check if the reactants are the same
         sameReactants = False
@@ -1557,7 +1556,7 @@ class KineticsFamily(Database):
             sameReactants = True
 
         # remove degenerate reactions
-        reactions = findDegeneracies(reactions, sameReactants)
+        reactions = find_degenerate_reactions(reactions, sameReactants, kinetics_family=self)
 
         # remove reactions with different templates (only for TemplateReaction)
         if isinstance(reaction, TemplateReaction):
@@ -1581,7 +1580,7 @@ class KineticsFamily(Database):
                                  'but generated {2}').format(reaction, self.label, len(reactions)))
         return reactions[0].degeneracy
         
-    def __generateReactions(self, reactants, products=None, forward=True):
+    def __generateReactions(self, reactants, products=None, forward=True, prod_resonance=True):
         """
         Generate a list of all of the possible reactions of this family between
         the list of `reactants`. The number of reactants provided must match
@@ -1590,8 +1589,21 @@ class KineticsFamily(Database):
         be a list of :class:`Molecule` objects, each representing a resonance
         isomer of the species of interest.
         
-        This method returns degenerate reactions, and `react.findDegeneracies`
-        can be used to find the degenerate reactions.
+        This method returns all reactions, and degenerate reactions can then be
+        found using `rmgpy.data.kinetics.common.find_degenerate_reactions`.
+
+        Args:
+            reactants:      List of Molecules to react
+            products:       List of Molecules or Species of desired product structures (optional)
+            forward:        Flag to indicate whether the forward or reverse template should be applied (optional)
+                            Default is True, forward template is used
+            prod_resonance: Flag to generate resonance structures for product checking (optional)
+                            Default is True, resonance structures are compared
+
+        Returns:
+            List of all reactions containing Molecule objects with the
+                specified reactants and products within this family.
+            Degenerate reactions are returned as separate reactions.
         """
 
         rxnList = []; speciesList = []
@@ -1677,39 +1689,33 @@ class KineticsFamily(Database):
         # If products is given, remove reactions from the reaction list that
         # don't generate the given products
         if products is not None:
-            if isinstance(products[0],Molecule):
-                products = [product.generateResonanceIsomers() for product in products]
-            elif isinstance(products[0],Species):
-                for product in products:
-                    product.generateResonanceIsomers(keepIsomorphic=False)
-                products = [product.molecule for product in products]
-            else:
-                raise TypeError('products input to __generateReactions must be Species or Molecule Objects')
-            
+            products = ensure_species(products, resonance=prod_resonance)
+
             rxnList0 = rxnList[:]
             rxnList = []
-            index = 0
             for reaction in rxnList0:
             
-                products0 = reaction.products if forward else reaction.reactants
-                    
+                products0 = reaction.products[:] if forward else reaction.reactants[:]
+
+                # For aromatics, generate aromatic resonance structures to accurately identify isomorphic species
+                if prod_resonance:
+                    for i, product in enumerate(products0):
+                        if product.isCyclic:
+                            aromaticStructs = generate_aromatic_resonance_structures(product)
+                            if aromaticStructs:
+                                products0[i] = aromaticStructs[0]
+
                 # Skip reactions that don't match the given products
                 match = False
 
                 if len(products) == len(products0) == 1:
-                    for product in products[0]:
-                        if products0[0].isIsomorphic(product):
-                            match = True
-                            break
+                    if products[0].isIsomorphic(products0[0]):
+                        match = True
                 elif len(products) == len(products0) == 2:
-                    for productA in products[0]:
-                        for productB in products[1]:
-                            if products0[0].isIsomorphic(productA) and products0[1].isIsomorphic(productB):
-                                match = True
-                                break
-                            elif products0[0].isIsomorphic(productB) and products0[1].isIsomorphic(productA):
-                                match = True
-                                break
+                    if products[0].isIsomorphic(products0[0]) and products[1].isIsomorphic(products0[1]):
+                        match = True
+                    elif products[0].isIsomorphic(products0[1]) and products[1].isIsomorphic(products0[0]):
+                        match = True
                 elif len(products) == len(products0):
                     raise NotImplementedError("Can't yet filter reactions with {} products".format(len(products)))
                     
@@ -2136,12 +2142,11 @@ class KineticsFamily(Database):
         
         Where the TrainingReactionEntry is only present if it comes from a training reaction
         """
-        
-        templateLabels = templateLabel.split()[0].split(';')
+        templateLabels = templateLabel.split()[-1].split(';')
         template = self.retrieveTemplate(templateLabels)
         rule = self.getRateRule(template)
-        if 'from training reaction' in rule.data.comment:
-            trainingIndex = int(rule.data.comment.split()[-1])
+        if 'From training reaction' in rule.data.comment:
+            trainingIndex = int(rule.data.comment.split()[3])
             trainingDepository = self.getTrainingDepository()
             return rule, trainingDepository.entries[trainingIndex]
         else:
@@ -2193,7 +2198,7 @@ class KineticsFamily(Database):
             # The last line is 'Estimated using ... for rate rule (originalTemplate)'
             #if from training reaction is in the first line append it to the end of the second line and skip the first line
             if not 'Average of' in kinetics.comment:
-                if 'from training reaction' in lines[0]:
+                if 'From training reaction' in lines[0]:
                     comment = lines[1]
                 else:
                     comment = lines[0]
@@ -2227,6 +2232,8 @@ class KineticsFamily(Database):
                 training = {}
                 
                 for tokenTemplateLabel, weight in weightedEntries:
+                    if 'From training reaction' in tokenTemplateLabel:
+                        tokenTemplateLabel = tokenTemplateLabel.split()[-1]
                     ruleEntry, trainingEntry = self.retrieveOriginalEntry(tokenTemplateLabel)
                     if trainingEntry:
                         if (ruleEntry, trainingEntry) in training:

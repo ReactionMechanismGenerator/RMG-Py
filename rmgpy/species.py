@@ -46,6 +46,7 @@ transition states (first-order saddle points on a potential energy surface).
 import numpy
 import cython
 import logging
+from operator import itemgetter
 
 import rmgpy.quantity as quantity
 
@@ -79,15 +80,20 @@ class Species(object):
                                 always considered regardless of this variable
     `props`                 A generic 'properties' dictionary to store user-defined flags
     `aug_inchi`             Unique augmented inchi
+    `isSolvent`             Boolean describing whether this species is the solvent
+    `creationIteration`     Iteration which the species is created within the reaction mechanism generation algorithm
     ======================= ====================================================
 
     note: :class:`rmg.model.Species` inherits from this class, and adds some extra methods.
     """
 
+    # these are class level attributes?
+
+
     def __init__(self, index=-1, label='', thermo=None, conformer=None, 
                  molecule=None, transportData=None, molecularWeight=None, 
                  energyTransferModel=None, reactive=True, props=None, aug_inchi=None,
-                 symmetryNumber = -1):
+                 symmetryNumber = -1, creationIteration = 0):
         self.index = index
         self.label = label
         self.thermo = thermo
@@ -100,13 +106,14 @@ class Species(object):
         self.props = props or {}
         self.aug_inchi = aug_inchi
         self.symmetryNumber = symmetryNumber
+        self.isSolvent = False
+        self.creationIteration = creationIteration
         # Check multiplicity of each molecule is the same
         if molecule is not None and len(molecule)>1:
             mult = molecule[0].multiplicity
             for m in molecule[1:]:
                 if mult != m.multiplicity:
                     raise SpeciesError('Multiplicities of molecules in species {species} do not match.'.format(species=label))
-
         
 
 
@@ -155,17 +162,17 @@ class Species(object):
         self._molecularWeight = quantity.Mass(value)
     molecularWeight = property(getMolecularWeight, setMolecularWeight, """The molecular weight of the species. (Note: value_si is in kg/molecule not kg/mole)""")
 
-    def generateResonanceIsomers(self, keepIsomorphic=True):
+    def generate_resonance_structures(self, keepIsomorphic=True):
         """
-        Generate all of the resonance isomers of this species. The isomers are
+        Generate all of the resonance structures of this species. The isomers are
         stored as a list in the `molecule` attribute. If the length of
         `molecule` is already greater than one, it is assumed that all of the
-        resonance isomers have already been generated.
+        resonance structures have already been generated.
         """
         if len(self.molecule) == 1:
             if not self.molecule[0].atomIDValid():
                 self.molecule[0].assignAtomIDs()
-            self.molecule = self.molecule[0].generateResonanceIsomers(keepIsomorphic)
+            self.molecule = self.molecule[0].generate_resonance_structures(keepIsomorphic)
     
     def isIsomorphic(self, other):
         """
@@ -415,7 +422,7 @@ class Species(object):
         of all the resonance structures.
         """
         # get labeled resonance isomers
-        self.generateResonanceIsomers(keepIsomorphic=True)
+        self.generate_resonance_structures(keepIsomorphic=True)
 
         # return if no resonance
         if len(self.molecule) == 1:
@@ -519,21 +526,25 @@ class Species(object):
     def getAugmentedInChI(self):
         if self.aug_inchi is None:
             self.aug_inchi = self.generate_aug_inchi()
-            return self.aug_inchi
-        else:
-            return self.aug_inchi
+        return self.aug_inchi
 
     def generate_aug_inchi(self):
         candidates = []
-        self.generateResonanceIsomers()
+        self.generate_resonance_structures()
         for mol in self.molecule:
-            cand = mol.toAugmentedInChI()
-            candidates.append(cand)
+            try:
+                cand = [mol.toAugmentedInChI(),mol]
+            except ValueError:
+                pass  # not all resonance structures can be parsed into InChI (e.g. if containing a hypervalance atom)
+            else:
+                candidates.append(cand)
+        candidates = sorted(candidates, key=itemgetter(0))
+        for cand in candidates:
+            if all(atom.charge == 0 for atom in cand[1].vertices):
+                return cand[0]
+        return candidates[0][0]
 
-        candidates.sort()
-        return candidates[0] 
-
-    def getThermoData(self):
+    def getThermoData(self, solventName = ''):
         """
         Returns a `thermoData` object of the current Species object.
 
@@ -553,7 +564,7 @@ class Species(object):
             if not isinstance(self.thermo, (NASA, Wilhoit, ThermoData)):
                 self.thermo = self.thermo.result()
         else:
-            submit(self)
+            submit(self, solventName)
             if not isinstance(self.thermo, (NASA, Wilhoit, ThermoData)):
                 self.thermo = self.thermo.result()
 

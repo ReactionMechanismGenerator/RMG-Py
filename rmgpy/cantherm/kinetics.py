@@ -185,7 +185,7 @@ class KineticsJob:
         f.write('#   ======= =========== =========== =========== ===============\n')
         
         if self.Tlist is None:
-            Tlist = [300,400,500,600,800,1000,1500,2000]
+            Tlist = numpy.array([300,400,500,600,800,1000,1500,2000])
         else:
             Tlist =self.Tlist.value_si
 

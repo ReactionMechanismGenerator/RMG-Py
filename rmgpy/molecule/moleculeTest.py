@@ -279,7 +279,7 @@ class TestAtom(unittest.TestCase):
         """
         
         m = Molecule().fromSMILES('C12C(C=CC=C1)=CC=CC=2')
-        isomers = m.generateResonanceIsomers()
+        isomers = m.generate_resonance_structures()
         for isomer in isomers:
             for atom in isomer.atoms:
                 if atom.symbol == 'C':
@@ -1293,7 +1293,7 @@ class TestMolecule(unittest.TestCase):
         Test the Molecule.isAromatic() method for Benzene.
         """
         m = Molecule().fromSMILES('C1=CC=CC=C1')
-        isomers = m.generateResonanceIsomers()
+        isomers = m.generate_resonance_structures()
         self.assertTrue(any(isomer.isAromatic() for isomer in isomers))
 
     def testAromaticNaphthalene(self):
@@ -1301,7 +1301,7 @@ class TestMolecule(unittest.TestCase):
         Test the Molecule.isAromatic() method for Naphthalene.
         """
         m = Molecule().fromSMILES('C12C(C=CC=C1)=CC=CC=2')
-        isomers = m.generateResonanceIsomers()
+        isomers = m.generate_resonance_structures()
         self.assertTrue(any(isomer.isAromatic() for isomer in isomers))
                         
     def testAromaticCyclohexane(self):
@@ -1309,7 +1309,7 @@ class TestMolecule(unittest.TestCase):
         Test the Molecule.isAromatic() method for Cyclohexane.
         """
         m = Molecule().fromSMILES('C1CCCCC1')
-        isomers = m.generateResonanceIsomers()
+        isomers = m.generate_resonance_structures()
         self.assertFalse(any(isomer.isAromatic() for isomer in isomers))
          
     def testCountInternalRotorsEthane(self):

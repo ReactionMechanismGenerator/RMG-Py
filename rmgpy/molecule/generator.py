@@ -492,7 +492,7 @@ def find_lowest_u_layer(mol, u_layer, equivalent_atoms):
 def generate_minimum_resonance_isomer(mol):
     """
     Select the resonance isomer that is isomorphic to the parameter isomer, with the lowest unpaired
-    electrons descriptor.
+    electrons descriptor, unless this unnecessarily forms a charged molecule.
 
     First, we generate all isomorphic resonance isomers.
     Next, we return the candidate with the lowest unpaired electrons metric.
@@ -501,24 +501,29 @@ def generate_minimum_resonance_isomer(mol):
     """
 
     cython.declare(
+        atom=Atom,
         candidates=list,
         sel=Molecule,
         cand=Molecule,
         metric_sel=list,
+        charge_sel=int,
+        charge_cand=int,
         metric_cand=list,
         )
 
+    candidates = resonance.generate_isomorphic_resonance_structures(mol)
 
-    candidates = resonance.generateIsomorphicResonanceStructures(mol)
-    
-    sel = candidates[0]
+    sel = mol
     metric_sel = get_unpaired_electrons(sel)
-    for cand in candidates[1:]:
-       metric_cand = get_unpaired_electrons(cand)
-       if metric_cand < metric_sel:
-            sel = cand
-            metric_sel = metric_cand
-
+    charge_sel = sum([abs(atom.charge) for atom in sel.vertices])
+    for cand in candidates:
+        metric_cand = get_unpaired_electrons(cand)
+        if metric_cand < metric_sel:
+            charge_cand = sum([abs(atom.charge) for atom in cand.vertices])
+            if charge_cand <= charge_sel:
+                sel = cand
+                metric_sel = metric_cand
+                charge_sel = charge_cand
     return sel
 
 

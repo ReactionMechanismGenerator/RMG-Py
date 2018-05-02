@@ -52,7 +52,7 @@ class InChIParsingTest(unittest.TestCase):
             ConsistencyChecker.check_partial_charge(at)
         
         spc = Species(molecule=[mol])
-        spc.generateResonanceIsomers()
+        spc.generate_resonance_structures()
 
         ignore_prefix = r"(InChI=1+)(S*)/"
         aug_inchi_expected = re.split(ignore_prefix, aug_inchi)[-1]
@@ -230,7 +230,7 @@ class InChIParsingTest(unittest.TestCase):
         mol = Molecule().fromAdjacencyList(adjlist)
         
         spc = Species(molecule=[mol])
-        spc.generateResonanceIsomers()
+        spc.generate_resonance_structures()
         aug_inchi = spc.getAugmentedInChI()
 
         self.assertEqual(Species(molecule=[Molecule().fromAugmentedInChI(aug_inchi)]).isIsomorphic(spc), True)

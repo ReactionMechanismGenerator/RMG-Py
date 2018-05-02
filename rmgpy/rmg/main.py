@@ -211,6 +211,8 @@ class RMG(util.Subject):
         if self.pressureDependence:
             self.pressureDependence.outputFile = self.outputDirectory
             self.reactionModel.pressureDependence = self.pressureDependence
+        if self.solvent:
+            self.reactionModel.solventName = self.solvent
 
         self.reactionModel.verboseComments = self.verboseComments
         self.reactionModel.saveEdgeSpecies = self.saveEdgeSpecies
@@ -393,10 +395,8 @@ class RMG(util.Subject):
         
         # Do all liquid-phase startup things:
         if self.solvent:
-            Species.solventData = self.database.solvation.getSolventData(self.solvent)
-            Species.solventName = self.solvent
-            Species.solventStructure = self.database.solvation.getSolventStructure(self.solvent)
-            diffusionLimiter.enable(Species.solventData, self.database.solvation)
+            solventData = self.database.solvation.getSolventData(self.solvent)
+            diffusionLimiter.enable(solventData, self.database.solvation)
             logging.info("Setting solvent data for {0}".format(self.solvent))
 
         try:
@@ -447,7 +447,8 @@ class RMG(util.Subject):
 
             # For liquidReactor, checks whether the solvent is listed as one of the initial species.
             if self.solvent:
-                self.database.solvation.checkSolventinInitialSpecies(self,Species.solventStructure)
+                solventStructure = self.database.solvation.getSolventStructure(self.solvent)
+                self.database.solvation.checkSolventinInitialSpecies(self,solventStructure)
 
             #Check to see if user has input Singlet O2 into their input file or libraries
             #This constraint is special in that we only want to check it once in the input instead of every time a species is made
@@ -470,7 +471,7 @@ class RMG(util.Subject):
                         """.format(spec.label))
 
             for spec in self.initialSpecies:
-                submit(spec)
+                submit(spec,self.solvent)
                 
             # Add nonreactive species (e.g. bath gases) to core first
             # This is necessary so that the PDep algorithm can identify the bath gas            
@@ -597,6 +598,8 @@ class RMG(util.Subject):
                 
                 allTerminated = True
                 numCoreSpecies = len(self.reactionModel.core.species)
+
+                notResurrectedVec = [True for i in xrange(len(self.reactionSystems))]
                 
                 for index, reactionSystem in enumerate(self.reactionSystems):
                     self.reactionSystem = reactionSystem
@@ -610,7 +613,7 @@ class RMG(util.Subject):
                         # Turn pruning off if we haven't reached minimum core size.
                         prune = False
                         
-                    try: terminated, obj,newSurfaceSpecies,newSurfaceReactions = reactionSystem.simulate(
+                    try: terminated,resurrected,obj,newSurfaceSpecies,newSurfaceReactions = reactionSystem.simulate(
                         coreSpecies = self.reactionModel.core.species,
                         coreReactions = self.reactionModel.core.reactions,
                         edgeSpecies = self.reactionModel.edge.species,
@@ -631,7 +634,9 @@ class RMG(util.Subject):
                             logging.error(prettify(repr(self.reactionModel.core.reactions)))
                         self.makeSeedMech()
                         raise
-
+                    
+                    notResurrectedVec[index] = not resurrected
+                    
                     if self.generateSeedEachIteration:
                         self.makeSeedMech()
                         
@@ -684,20 +689,23 @@ class RMG(util.Subject):
                             # Run a raw simulation to get updated reaction system threshold values
                             for index, reactionSystem in enumerate(self.reactionSystems):
                                 # Run with the same conditions as with pruning off
-                                reactionSystem.simulate(
-                                    coreSpecies = self.reactionModel.core.species,
-                                    coreReactions = self.reactionModel.core.reactions,
-                                    edgeSpecies = [],
-                                    edgeReactions = [],
-                                    surfaceSpecies = self.reactionModel.surface.species,
-                                    surfaceReactions = self.reactionModel.surface.reactions,
-                                    pdepNetworks = self.reactionModel.networkList,
-                                    modelSettings = tempModelSettings,
-                                    simulatorSettings = simulatorSettings,
-                                )
-                                self.updateReactionThresholdAndReactFlags(
-                                    rxnSysUnimolecularThreshold = reactionSystem.unimolecularThreshold,
-                                    rxnSysBimolecularThreshold = reactionSystem.bimolecularThreshold)
+                                if notResurrectedVec[index]:
+                                    reactionSystem.simulate(
+                                        coreSpecies = self.reactionModel.core.species,
+                                        coreReactions = self.reactionModel.core.reactions,
+                                        edgeSpecies = [],
+                                        edgeReactions = [],
+                                        surfaceSpecies = self.reactionModel.surface.species,
+                                        surfaceReactions = self.reactionModel.surface.reactions,
+                                        pdepNetworks = self.reactionModel.networkList,
+                                        modelSettings = tempModelSettings,
+                                        simulatorSettings = simulatorSettings,
+                                    )
+                                    self.updateReactionThresholdAndReactFlags(
+                                        rxnSysUnimolecularThreshold = reactionSystem.unimolecularThreshold,
+                                        rxnSysBimolecularThreshold = reactionSystem.bimolecularThreshold)
+                                else:
+                                    logging.warn('Reaction thresholds/flags for Reaction System {0} was not updated due to resurrection'.format(index+1))
         
                             logging.info('')    
                         else:
@@ -755,7 +763,7 @@ class RMG(util.Subject):
                     csvfilePath = os.path.join(self.outputDirectory, 'solver', 'sensitivity_{0}_SPC_{1}.csv'.format(index+1, spec.index))
                     sensWorksheet.append(csvfilePath)
                 
-                terminated, obj, surfaceSpecies, surfaceReactions = reactionSystem.simulate(
+                terminated, resurrected,obj, surfaceSpecies, surfaceReactions = reactionSystem.simulate(
                     coreSpecies = self.reactionModel.core.species,
                     coreReactions = self.reactionModel.core.reactions,
                     edgeSpecies = self.reactionModel.edge.species,

@@ -1,30 +1,30 @@
 from .graph cimport Vertex, Edge, Graph
 from .molecule cimport Atom, Bond, Molecule
 
-cpdef list populateResonanceAlgorithms(dict features=?)
+cpdef list populate_resonance_algorithms(dict features=?)
 
-cpdef dict analyzeMolecule(Molecule mol)
+cpdef dict analyze_molecule(Molecule mol)
 
-cpdef list generateResonanceStructures(Molecule mol, bint clarStructures=?, bint keepIsomorphic=?)
+cpdef list generate_resonance_structures(Molecule mol, bint clarStructures=?, bint keepIsomorphic=?)
 
-cpdef list _generateResonanceStructures(list molList, list methodList, bint keepIsomorphic=?, bint copy=?)
+cpdef list _generate_resonance_structures(list molList, list methodList, bint keepIsomorphic=?, bint copy=?)
 
-cpdef list generateAdjacentResonanceStructures(Molecule mol)
+cpdef list generate_adjacent_resonance_structures(Molecule mol)
 
-cpdef list generateLonePairRadicalResonanceStructures(Molecule mol)
+cpdef list generate_lone_pair_radical_resonance_structures(Molecule mol)
 
-cpdef list generateN5dd_N5tsResonanceStructures(Molecule mol)
+cpdef list generate_N5dd_N5ts_resonance_structures(Molecule mol)
 
-cpdef list generateIsomorphicResonanceStructures(Molecule mol)
+cpdef list generate_isomorphic_resonance_structures(Molecule mol)
 
-cpdef list generateAromaticResonanceStructures(Molecule mol, dict features=?)
+cpdef list generate_aromatic_resonance_structures(Molecule mol, dict features=?)
 
-cpdef list generateKekuleStructure(Molecule mol)
+cpdef list generate_kekule_structure(Molecule mol)
 
-cpdef list generateOppositeKekuleStructure(Molecule mol)
+cpdef list generate_opposite_kekule_structure(Molecule mol)
 
-cpdef list generateClarStructures(Molecule mol)
+cpdef list generate_clar_structures(Molecule mol)
 
-cpdef list _clarOptimization(Molecule mol, list constraints=?, maxNum=?)
+cpdef list _clar_optimization(Molecule mol, list constraints=?, maxNum=?)
 
-cpdef list _clarTransformation(Molecule mol, list ring)
+cpdef list _clar_transformation(Molecule mol, list ring)

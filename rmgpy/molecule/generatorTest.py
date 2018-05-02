@@ -95,7 +95,7 @@ class CreateULayerTest(unittest.TestCase):
 class InChIGenerationTest(unittest.TestCase):
     def compare(self, adjlist, aug_inchi):
         spc = Species(molecule=[Molecule().fromAdjacencyList(adjlist)])
-        spc.generateResonanceIsomers()
+        spc.generate_resonance_structures()
 
         ignore_prefix = r"(InChI=1+)(S*)/"
 
@@ -352,9 +352,9 @@ multiplicity 2
         """
 
         singlet = Species(molecule=[Molecule().fromAdjacencyList(adjlist_singlet)])
-        singlet.generateResonanceIsomers()
+        singlet.generate_resonance_structures()
         closed_shell = Species(molecule=[Molecule().fromAdjacencyList(adjlist_closed_shell)])
-        closed_shell.generateResonanceIsomers()
+        closed_shell.generate_resonance_structures()
 
         singlet_aug_inchi = singlet.getAugmentedInChI()
         closed_shell_aug_inchi = closed_shell.getAugmentedInChI()

@@ -54,6 +54,7 @@ This module contains settings classes for manipulation of RMG run parameters
 ==================================================================================================================================================
 """
 import numpy
+from rmgpy.quantity import Quantity
 
 class ModelSettings(object):
     """
@@ -63,7 +64,8 @@ class ModelSettings(object):
           toleranceMoveEdgeReactionToSurface=numpy.inf, toleranceMoveSurfaceSpeciesToCore=numpy.inf, toleranceMoveSurfaceReactionToCore=numpy.inf,
           toleranceMoveEdgeReactionToSurfaceInterrupt=None,toleranceMoveEdgeReactionToCoreInterrupt=None, maximumEdgeSpecies=1000000, minCoreSizeForPrune=50, 
           minSpeciesExistIterationsForPrune=2, filterReactions=False, ignoreOverallFluxCriterion=False, maxNumSpecies=None, maxNumObjsPerIter=1,
-          terminateAtMaxObjects=False,toleranceThermoKeepSpeciesInEdge=numpy.inf):
+          terminateAtMaxObjects=False,toleranceThermoKeepSpeciesInEdge=numpy.inf,dynamicsTimeScale = Quantity((0.0,'sec'))):
+
         
         self.fluxToleranceKeepInEdge = toleranceKeepInEdge
         self.fluxToleranceMoveToCore = toleranceMoveToCore
@@ -79,7 +81,8 @@ class ModelSettings(object):
         self.toleranceMoveSurfaceReactionToCore = toleranceMoveSurfaceReactionToCore
         self.toleranceThermoKeepSpeciesInEdge = toleranceThermoKeepSpeciesInEdge
         self.terminateAtMaxObjects = terminateAtMaxObjects
-
+        self.dynamicsTimeScale = dynamicsTimeScale.value_si
+        
         if toleranceInterruptSimulation:
             self.fluxToleranceInterrupt = toleranceInterruptSimulation
         else:

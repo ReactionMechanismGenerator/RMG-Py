@@ -79,6 +79,7 @@ model(
     maximumEdgeSpecies=10000
 )
 
+simulator(atol=1e-16,rtol=1e-8)
 options(
     units='si',
     saveRestartPeriod=None,

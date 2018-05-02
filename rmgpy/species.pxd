@@ -49,8 +49,10 @@ cdef class Species:
     cdef public dict props
     cdef public str aug_inchi
     cdef public float symmetryNumber
-    
-    cpdef generateResonanceIsomers(self,bint keepIsomorphic=?)
+    cdef public bint isSolvent
+    cdef public int creationIteration
+
+    cpdef generate_resonance_structures(self,bint keepIsomorphic=?)
     
     cpdef bint isIsomorphic(self, other) except -2
 

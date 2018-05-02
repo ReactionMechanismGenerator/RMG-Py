@@ -31,15 +31,24 @@ import os.path
 import shutil
 from nose.plugins.attrib import attr
 import rmgpy
-from rmgpy.tools.fluxdiagram import *
+from rmgpy.tools.fluxdiagram import createFluxDiagram
 @attr('functional')
 class FluxDiagramTest(unittest.TestCase):
 
-    def test_avi(self):
+    def test_avi_simple(self):
         folder = os.path.join(os.path.dirname(rmgpy.__file__),'tools','data','flux')
         
-        inputFile = os.path.join(folder,'input.py')
-        run(inputFile)
+        inputFile = os.path.join(folder,'input_simple.py')
+        chemkinFile = os.path.join(folder, 'chemkin', 'chem.inp')
+        dictFile = os.path.join(folder, 'chemkin', 'species_dictionary.txt')
+        settings = {'maximumNodeCount': 50,
+                    'maximumEdgeCount': 50,
+                    'concentrationTolerance': 1e-6,
+                    'speciesRateTolerance': 1e-6,
+                    'maximumNodePenWidth': 10.0,
+                    'maximumEdgePenWidth': 10.0,
+                    'timeStep': 10**0.1}
+        createFluxDiagram(inputFile, chemkinFile, dictFile, centralSpecies='ethane', settings=settings)
 
         outputdir = os.path.join(folder,'flux')
         simfile = os.path.join(outputdir,'1','flux_diagram.avi')
@@ -48,6 +57,24 @@ class FluxDiagramTest(unittest.TestCase):
 
         self.assertTrue(os.path.isfile(simfile))
         
+        shutil.rmtree(outputdir)
+        shutil.rmtree(speciesdir)
+
+    def test_avi_liquid(self):
+        folder = os.path.join(os.path.dirname(rmgpy.__file__), 'tools', 'data', 'flux')
+
+        inputFile = os.path.join(folder, 'input_liquid.py')
+        chemkinFile = os.path.join(folder, 'chemkin', 'chem.inp')
+        dictFile = os.path.join(folder, 'chemkin', 'species_dictionary.txt')
+        createFluxDiagram(inputFile, chemkinFile, dictFile, diffusionLimited=False)
+
+        outputdir = os.path.join(folder, 'flux')
+        simfile = os.path.join(outputdir, '1', 'flux_diagram.avi')
+
+        speciesdir = os.path.join(folder, 'species')
+
+        self.assertTrue(os.path.isfile(simfile))
+
         shutil.rmtree(outputdir)
         shutil.rmtree(speciesdir)
 

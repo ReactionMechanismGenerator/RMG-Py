@@ -263,28 +263,20 @@ def findAllDelocalizationPaths(atom1):
 def findAllDelocalizationPathsLonePairRadical(atom1):
     """
     Find all the delocalization paths of lone electron pairs next to the radical center indicated
-    by `atom1`. Used to generate resonance isomers.
+    by `atom1`. Used to generate resonance isomers in adjacent N and O as in NO2.
     """
     cython.declare(paths=list)
     cython.declare(atom2=Atom, bond12=Bond)
-    
-    # No paths if atom1 is not a radical
-    if atom1.radicalElectrons <= 0:
-        return []
-    
-    # In a first step we only consider nitrogen and oxygen atoms as possible radical centers
-    if not ((atom1.lonePairs == 0 and atom1.isNitrogen()) or(atom1.lonePairs == 2 and atom1.isOxygen())):
-        return []
-    
-    # Find all delocalization paths
+
     paths = []
-    for atom2, bond12 in atom1.edges.items():
-        # Only single bonds are considered
-        if bond12.isSingle():
-            # Neighboring atom must posses a lone electron pair to loose it
-            if ((atom2.lonePairs == 1 and atom2.isNitrogen()) or (atom2.lonePairs == 3 and atom2.isOxygen())) and (atom2.radicalElectrons == 0):
+    if atom1.isNitrogen() and atom1.radicalElectrons >= 1 and atom1.lonePairs == 0:
+        for atom2, bond12 in atom1.edges.items():
+            if atom2.isOxygen() and atom2.radicalElectrons == 0 and atom2.lonePairs == 3 and bond12.isSingle():
                 paths.append([atom1, atom2])
-                
+    elif atom1.isOxygen() and atom1.radicalElectrons >= 1 and atom1.lonePairs == 2:
+        for atom2, bond12 in atom1.edges.items():
+            if atom2.isNitrogen() and atom2.radicalElectrons == 0 and atom2.lonePairs == 1 and bond12.isSingle():
+                paths.append([atom1, atom2])
     return paths
 
 def findAllDelocalizationPathsN5dd_N5ts(atom1):

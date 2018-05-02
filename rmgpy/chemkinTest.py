@@ -29,8 +29,11 @@ import unittest
 import mock
 import os
 from chemkin import *
+from chemkin import _removeLineBreaks
 import rmgpy
 from rmgpy.species import Species
+from rmgpy.reaction import Reaction
+from rmgpy.kinetics.arrhenius import Arrhenius
 
 
 ###################################################
@@ -116,9 +119,9 @@ class ChemkinTest(unittest.TestCase):
         self.assertEqual(formula, {'H': 6, 'C': 2})
         self.assertTrue(isinstance(thermo, NASA))
 
-    def testReadAndWriteTemplateReactionFamilyForMinimalExample(self):
+    def testReadAndWriteAndReadTemplateReactionFamilyForMinimalExample(self):
         """
-        This example is mainly to test if family info can be correctly
+        This example tests if family and templates info can be correctly
         parsed from comments like '!Template reaction: R_Recombination'.
         """
         folder = os.path.join(os.path.dirname(rmgpy.__file__), 'test_data/chemkin/chemkin_py')
@@ -126,15 +129,16 @@ class ChemkinTest(unittest.TestCase):
         chemkinPath = os.path.join(folder, 'minimal', 'chem.inp')
         dictionaryPath = os.path.join(folder, 'minimal', 'species_dictionary.txt')
 
-        # loadChemkinFile
+        # read original chemkin file
         species, reactions = loadChemkinFile(chemkinPath, dictionaryPath)
 
+        # ensure correct reading
         reaction1 = reactions[0]
         self.assertEqual(reaction1.family, "R_Recombination")
-
+        self.assertEqual(frozenset('C_methyl;C_methyl'.split(';')), frozenset(reaction1.template))
         reaction2 = reactions[1]
         self.assertEqual(reaction2.family, "H_Abstraction")
-
+        self.assertEqual(frozenset('C/H3/Cs\H3;C_methyl'.split(';')), frozenset(reaction2.template))
         # saveChemkinFile
         chemkinSavePath = os.path.join(folder, 'minimal', 'chem_new.inp')
         dictionarySavePath = os.path.join(folder, 'minimal', 'species_dictionary_new.txt')
@@ -144,6 +148,19 @@ class ChemkinTest(unittest.TestCase):
 
         self.assertTrue(os.path.isfile(chemkinSavePath))
         self.assertTrue(os.path.isfile(dictionarySavePath))
+
+        # read newly written chemkin file to make sure the entire cycle works
+        _, reactions2 =loadChemkinFile(chemkinSavePath, dictionarySavePath)
+
+        reaction1_new = reactions2[0]
+        self.assertEqual(reaction1_new.family, reaction1_new.family)
+        self.assertEqual(reaction1_new.template, reaction1_new.template)
+        self.assertEqual(reaction1_new.degeneracy, reaction1_new.degeneracy)
+
+        reaction2_new = reactions2[1]
+        self.assertEqual(reaction2_new.family, reaction2_new.family)
+        self.assertEqual(reaction2_new.template, reaction2_new.template)
+        self.assertEqual(reaction2_new.degeneracy, reaction2_new.degeneracy)
 
         # clean up
         os.remove(chemkinSavePath)
@@ -290,3 +307,168 @@ multiplicity 2
 
         self.assertEqual(reaction.specificCollider.label, 'N2(5)')
 
+class TestReadReactionComments(unittest.TestCase):
+    @classmethod
+    def setUpClass(self):
+        r = Species().fromSMILES('[CH3]')
+        r.label = '[CH3]'
+        p = Species().fromSMILES('CC')
+        p.label = 'CC'
+
+        self.reaction = Reaction(reactants=[r,r],
+                                 products=[p],
+                                 kinetics = Arrhenius(A=(8.26e+17,'cm^3/(mol*s)'),
+                                                      n=-1.4,
+                                                      Ea=(1,'kcal/mol'), T0=(1,'K'))
+                                )
+        self.comments_list = ["""
+Reaction index: Chemkin #1; RMG #1
+Template reaction: R_Recombination
+Exact match found for rate rule (C_methyl;C_methyl)
+Multiplied by reaction path degeneracy 0.5
+""",
+"""
+Reaction index: Chemkin #2; RMG #4
+Template reaction: H_Abstraction
+Estimated using template (C/H3/Cs;C_methyl) for rate rule (C/H3/Cs\H3;C_methyl)
+Multiplied by reaction path degeneracy 6
+""",
+"""
+Reaction index: Chemkin #13; RMG #8
+Template reaction: H_Abstraction
+Flux pairs: [CH3], CC; [CH3], CC; 
+Estimated using an average for rate rule [C/H3/Cs\H3;C_rad/H2/Cs]
+Multiplied by reaction path degeneracy 6.0
+""",
+"""
+Reaction index: Chemkin #17; RMG #31
+Template reaction: H_Abstraction
+Flux pairs: [CH3], CC; [CH3], CC; 
+Estimated using average of templates [C/H3/Cs;H_rad] + [C/H3/Cs\H3;Y_rad] for rate rule [C/H3/Cs\H3;H_rad]
+Multiplied by reaction path degeneracy 6.0
+""",
+"""
+Reaction index: Chemkin #69; RMG #171
+Template reaction: intra_H_migration
+Flux pairs: [CH3], CC; [CH3], CC; 
+Estimated using average of templates [R3H_SS;O_rad_out;Cs_H_out_2H] + [R3H_SS_Cs;Y_rad_out;Cs_H_out_2H] for rate rule
+[R3H_SS_Cs;O_rad_out;Cs_H_out_2H]
+Multiplied by reaction path degeneracy 3.0
+""",
+"""
+Reaction index: Chemkin #3; RMG #243
+Template reaction: Disproportionation
+Flux pairs: [CH3], CC; [CH3], CC; 
+Average of [Average of [O2b;O_Csrad] + Average of [O_atom_triplet;O_Csrad + CH2_triplet;O_Csrad] + Average of [Average of [Ct_rad/Ct;O_Csrad from
+training reaction 0] + Average of [O_pri_rad;O_Csrad + Average of [O_rad/NonDeC;O_Csrad + O_rad/NonDeO;O_Csrad]] + Average of [Cd_pri_rad;O_Csrad] +
+Average of [CO_pri_rad;O_Csrad] + Average of [C_methyl;O_Csrad + Average of [C_rad/H2/Cs;O_Csrad + C_rad/H2/Cd;O_Csrad + C_rad/H2/O;O_Csrad] + Average
+of [C_rad/H/NonDeC;O_Csrad] + Average of [Average of [C_rad/Cs3;O_Csrad]]] + H_rad;O_Csrad]]
+Estimated using template [Y_rad_birad_trirad_quadrad;O_Csrad] for rate rule [CH_quartet;O_Csrad]
+""",
+"""
+Reaction index: Chemkin #4; RMG #303
+Template reaction: Disproportionation
+Flux pairs: [CH3], CC; [CH3], CC; 
+Matched reaction 0 C2H + CH3O <=> C2H2 + CH2O in Disproportionation/training
+""",
+"""
+Reaction index: Chemkin #51; RMG #136
+Template reaction: H_Abstraction
+Flux pairs: [CH3], CC; [CH3], CC; 
+Estimated using an average for rate rule [C/H3/Cd\H_Cd\H2;C_rad/H2/Cs]
+Euclidian distance = 0
+Multiplied by reaction path degeneracy 3.0
+""",
+"""
+Reaction index: Chemkin #32; RMG #27
+Template reaction: R_Recombination
+Flux pairs: [CH3], CC; [CH3], CC; 
+Matched reaction 20 CH3 + CH3 <=> C2H6 in R_Recombination/training
+This reaction matched rate rule [C_methyl;C_methyl]
+""",
+"""
+Reaction index: Chemkin #2; RMG #4
+Template reaction: R_Recombination
+Flux pairs: [CH3], CC; [CH3], CC; 
+From training reaction 21 for rate rule [C_rad/H2/Cs;C_methyl]
+Exact match found for rate rule [C_rad/H2/Cs;C_methyl]
+Euclidian distance = 0
+"""]
+        self.template_list = [['C_methyl','C_methyl'],
+                              ['C/H3/Cs\H3','C_methyl'],
+                              ['C/H3/Cs\H3','C_rad/H2/Cs'],
+                              ['C/H3/Cs\H3','H_rad'],
+                              ['R3H_SS_Cs','O_rad_out','Cs_H_out_2H'],
+                              ['CH_quartet','O_Csrad'],
+                              None,
+                              ['C/H3/Cd\H_Cd\H2','C_rad/H2/Cs'],
+                              ['C_methyl','C_methyl'],
+                              ['C_rad/H2/Cs','C_methyl']]
+        self.family_list = ['R_Recombination',
+                            'H_Abstraction',
+                            'H_Abstraction',
+                            'H_Abstraction',
+                            'intra_H_migration',
+                            'Disproportionation',
+                            'Disproportionation',
+                            'H_Abstraction',
+                            'R_Recombination',
+                            'R_Recombination',]
+        self.degeneracy_list = [0.5,
+                                6,
+                                6,
+                                6,
+                                3,
+                                1,
+                                1,
+                                3,
+                                1,
+                                1]
+        self.expected_lines = [4,4,5,5,5,5,4,6,5,6]
+
+    def testReadReactionCommentsTemplate(self):
+        """
+        Test that the template is picked up from reading reaction comments.
+        """
+        for index, comment in enumerate(self.comments_list):
+            new_rxn = readReactionComments(self.reaction, comment)
+
+            # only check template if meant to find one
+            if self.template_list[index]:
+                self.assertTrue(new_rxn.template,'The template was not saved from the reaction comment {}'.format(comment))
+                self.assertEqual(frozenset(new_rxn.template),frozenset(self.template_list[index]),'The reaction template does not match')
+            else:
+                self.assertFalse(new_rxn.template)
+
+    def testReadReactionCommentsFamily(self):
+        """
+        Test that the family is picked up from reading reaction comments.
+        """
+        for index, comment in enumerate(self.comments_list):
+            new_rxn = readReactionComments(self.reaction, comment)
+
+            self.assertEqual(new_rxn.family, self.family_list[index], 'wrong reaction family stored')
+
+    def testReadReactionCommentsDegeneracy(self):
+        """
+        Test that the degeneracy is picked up from reading reaction comments.
+
+        Also checks that reaction rate was not modified in the process.
+        """
+        for index, comment in enumerate(self.comments_list):
+            previous_rate = self.reaction.kinetics.A.value_si
+            new_rxn = readReactionComments(self.reaction, comment)
+            new_rate = new_rxn.kinetics.A.value_si
+
+            self.assertEqual(new_rxn.degeneracy, self.degeneracy_list[index], 'wrong degeneracy was stored')
+            self.assertEqual(previous_rate, new_rate)
+
+    def testRemoveLineBreaks(self):
+        """
+        tests that _removeLineBreaks functions properly
+        """
+        for index, comment in enumerate(self.comments_list):
+            new_comment = _removeLineBreaks(comment)
+            new_comment_lines = len(new_comment.strip().splitlines())
+            self.assertEqual(new_comment_lines, self.expected_lines[index],
+                             'Found {} more lines than expected for comment \n\n""{}""\n\n which converted to \n\n""{}""'.format(new_comment_lines - self.expected_lines[index],comment.strip(), new_comment.strip()))

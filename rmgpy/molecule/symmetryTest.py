@@ -34,7 +34,7 @@ from external.wip import work_in_progress
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.molecule.symmetry import calculateAtomSymmetryNumber, calculateAxisSymmetryNumber, calculateBondSymmetryNumber, calculateCyclicSymmetryNumber
 from rmgpy.species import Species
-from rmgpy.molecule.resonance import generateAromaticResonanceStructures
+from rmgpy.molecule.resonance import generate_aromatic_resonance_structures
 ################################################################################
 
 class TestMoleculeSymmetry(unittest.TestCase):
@@ -531,7 +531,7 @@ multiplicity 3
         """
         molecule = Molecule().fromSMILES('c1ccccc1[O]')
         species = Species(molecule=[molecule])
-        aromatic_molecule = generateAromaticResonanceStructures(molecule)[0]
+        aromatic_molecule = generate_aromatic_resonance_structures(molecule)[0]
         symmetryNumber = aromatic_molecule.getSymmetryNumber()
         self.assertEqual(symmetryNumber, 2)
 

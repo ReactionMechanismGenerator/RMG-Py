@@ -515,7 +515,7 @@ def getRMGSpeciesFromUserSpecies(userList, RMGList):
     """
     mapping = {}
     for userSpecies in userList:
-        userSpecies.generateResonanceIsomers()
+        userSpecies.generate_resonance_structures()
 
         for rmgSpecies in RMGList:
             if userSpecies.isIsomorphic(rmgSpecies):

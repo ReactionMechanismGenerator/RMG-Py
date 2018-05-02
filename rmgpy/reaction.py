@@ -360,35 +360,28 @@ class Reaction:
             (all([spec in self.products for spec in reactants]) and
             all([spec in self.reactants for spec in products])))
 
-    def matchesMolecules(self, reactants):
+    def matchesSpecies(self, reactants, products=None):
         """
-        Return ``True`` if the given ``reactants`` represent the total set of
-        reactants or products for the current ``reaction``, or ``False`` if not.
-        The reactants should be :class:`Molecule` objects.
+        Compares the provided reactants and products against the reactants
+        and products of this reaction. Both directions are checked.
+
+        Args:
+            reactants   List of Species required on one side of the reaction
+            products    List of Species required on the other side (optional)
         """
-        assert all([isinstance(reactant, Molecule) for reactant in reactants])
         # Check forward direction
-        if len(reactants) == len(self.reactants) == 1:
-            if self.reactants[0].isIsomorphic(reactants[0]): 
+        if _isomorphicSpeciesList(self.reactants, reactants):
+            if products is None or _isomorphicSpeciesList(self.products, products):
                 return True
-        elif len(reactants) == len(self.reactants) == 2:
-            if self.reactants[0].isIsomorphic(reactants[0]) and self.reactants[1].isIsomorphic(reactants[1]):
+            else:
+                return False
+        elif _isomorphicSpeciesList(self.products, reactants):
+            if products is None or _isomorphicSpeciesList(self.reactants, products):
                 return True
-            elif self.reactants[0].isIsomorphic(reactants[1]) and self.reactants[1].isIsomorphic(reactants[0]):
-                return True
-        # Check reverse direction
-        if len(reactants) == len(self.products) == 1:
-            if self.products[0].isIsomorphic(reactants[0]): 
-                return True
-        elif len(reactants) == len(self.products) == 2:
-            if self.products[0].isIsomorphic(reactants[0]) and self.products[1].isIsomorphic(reactants[1]):
-                return True
-            elif self.products[0].isIsomorphic(reactants[1]) and self.products[1].isIsomorphic(reactants[0]):
-                return True
-        if len(reactants) > 2:
-            raise NotImplementedError("Can't check isomorphism of reactions with {0} reactants".format(len(reactants)))
-        # If we're here then neither direction matched, so return false
-        return False
+            else:
+                return False
+        else:
+            return False
 
     def isIsomorphic(self, other, eitherDirection=True, checkIdentical = False,
                      checkOnlyLabel = False, checkTemplateRxnProducts=False):

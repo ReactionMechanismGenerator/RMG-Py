@@ -535,6 +535,27 @@ def _readKineticsLine(line, reaction, speciesDict, Eunits, kunits, klow_units, k
             raise ChemkinError(error_msg)
     return kinetics
 
+def _removeLineBreaks(comments):
+    """
+    This method removes any extra line breaks in reaction comments, so they
+    can be parsed by readReactionComments.
+    """
+    comments = comments.replace('\n',' ')
+    new_statement_indicators = ['Reaction index','Template reaction','Library reaction',
+                                'PDep reaction','Flux pairs',
+                                'Estimated using','Exact match found','Average of ',
+                                'Euclidian distance','Matched node ','Matched reaction ',
+                                'Multiplied by reaction path degeneracy ',
+                                'Kinetics were estimated in this direction',
+                                'dGrxn(298 K) = ','Both directions are estimates',
+                                'Other direction matched ','Both directions matched ',
+                                'This direction matched an entry in ', 'From training reaction',
+                                'This reaction matched rate rule','family: ','Warning:',
+                                'Chemkin file stated explicit reverse rate:','Ea raised from',
+                                ]
+    for indicator in new_statement_indicators:
+        comments = comments.replace(' ' + indicator, '\n' + indicator,1)
+    return comments
 
 def readReactionComments(reaction, comments, read = True):
     """
@@ -561,6 +582,9 @@ def readReactionComments(reaction, comments, read = True):
         
         return reaction  
     
+    # the comments could have line breaks that will mess up reading
+    # we will now combine the lines and separate them based on statements
+    comments = _removeLineBreaks(comments)
     lines = comments.strip().splitlines()
         
     for line in lines:
@@ -627,6 +651,23 @@ def readReactionComments(reaction, comments, read = True):
                     raise ChemkinError('Unexpected species identifier {0} encountered in flux pairs for reaction {1}.'.format(prodStr, reaction))
                 reaction.pairs.append((reactant, product))
             assert len(reaction.pairs) == max(len(reaction.reactants), len(reaction.products))
+
+        elif isinstance(reaction,TemplateReaction) and 'rate rule ' in line:
+            bracketed_rule = tokens[-1]
+            templates = bracketed_rule[1:-1].split(';')
+            reaction.template = templates
+            # still add kinetic comment
+            reaction.kinetics.comment += line.strip() + "\n"
+
+        elif isinstance(reaction,TemplateReaction) and\
+                       'Multiplied by reaction path degeneracy ' in line:
+            degen = float(tokens[-1])
+            reaction.degeneracy = degen
+            # undo the kinetic manipulation caused by setting degneracy
+            if reaction.kinetics:
+                reaction.kinetics.changeRate(1./degen)
+            # still add kinetic comment
+            reaction.kinetics.comment += line.strip() + "\n"
 
         elif line.strip() != '':
             # Any lines which are commented out but don't have any specific flag are simply kinetics comments
@@ -714,7 +755,7 @@ def loadSpeciesDictionary(path):
             if line.strip() == '' and adjlist.strip() != '':
                 # Finish this adjacency list
                 species = Species().fromAdjacencyList(adjlist)
-                species.generateResonanceIsomers()
+                species.generate_resonance_structures()
                 label = species.label
                 for inert in inerts:
                     if inert.isIsomorphic(species):
@@ -732,7 +773,7 @@ def loadSpeciesDictionary(path):
         else: #reach end of file
             if adjlist.strip() != '':
                 species = Species().fromAdjacencyList(adjlist)
-                species.generateResonanceIsomers()
+                species.generate_resonance_structures()
                 label = species.label
                 for inert in inerts:
                     if inert.isIsomorphic(species):

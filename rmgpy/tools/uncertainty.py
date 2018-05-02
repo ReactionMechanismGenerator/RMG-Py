@@ -585,7 +585,7 @@ class Uncertainty:
         from rmgpy.quantity import Quantity
         from rmgpy.tools.sensitivity import plotSensitivity
         from rmgpy.rmg.listener import SimulationProfileWriter, SimulationProfilePlotter
-
+        from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
         T = Quantity(T)
         P = Quantity(P)
         termination=[TerminationTime(Quantity(terminationTime))]
@@ -605,14 +605,22 @@ class Uncertainty:
         reactionSystem.attach(SimulationProfilePlotter(
             self.outputDirectory, reactionSystemIndex, self.speciesList))
         
+        simulatorSettings = SimulatorSettings() #defaults
+        
+        modelSettings = ModelSettings() #defaults
+        modelSettings.fluxToleranceMoveToCore = 0.1
+        modelSettings.fluxToleranceInterrupt = 1.0
+        modelSettings.fluxToleranceKeepInEdge = 0.0
+        
         reactionSystem.simulate(
             coreSpecies = self.speciesList,
             coreReactions = self.reactionList,
             edgeSpecies = [],
             edgeReactions = [],
-            toleranceKeepInEdge = 0,
-            toleranceMoveToCore = 1,
-            toleranceInterruptSimulation = 1,
+            surfaceSpecies = [],
+            surfaceReactions = [],
+            modelSettings = modelSettings,
+            simulatorSettings = simulatorSettings,
             sensitivity = True,
             sensWorksheet = sensWorksheet,
         )

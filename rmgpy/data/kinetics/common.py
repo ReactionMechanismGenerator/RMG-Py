@@ -32,10 +32,13 @@
 This module contains classes and functions that are used by multiple modules
 in this subpackage.
 """
+import itertools
+import logging
+import warnings
 
 from rmgpy.data.base import LogicNode
 from rmgpy.reaction import Reaction
-from rmgpy.molecule import Group
+from rmgpy.molecule import Group, Molecule
 from rmgpy.species import Species
 from rmgpy.exceptions import DatabaseError, KineticsError
 
@@ -141,7 +144,7 @@ def saveEntry(f, entry):
     f.write(')\n\n')
 
 
-def filterReactions(reactants, products, reactionList):
+def filter_reactions(reactants, products, reactionList):
     """
     Remove any reactions from the given `reactionList` whose reactants do
     not involve all the given `reactants` or whose products do not involve 
@@ -150,27 +153,12 @@ def filterReactions(reactants, products, reactionList):
     
     reactants and products can be either molecule or species objects
     """
+    warnings.warn("The filter_reactions method is no longer used and may be removed in a future version.", DeprecationWarning)
     
     # Convert from molecules to species and generate resonance isomers.
-    reactant_species = []
-    for mol in reactants:
-        if isinstance(mol,Species):
-            s = mol
-        else:
-            s = Species(molecule=[mol])
-        s.generateResonanceIsomers()
-        reactant_species.append(s)
-    reactants = reactant_species
-    product_species = []
-    for mol in products:
-        if isinstance(mol,Species):
-            s = mol
-        else:
-            s = Species(molecule=[mol])
-        s.generateResonanceIsomers()
-        product_species.append(s)
-    products = product_species
-    
+    reactants = ensure_species(reactants, resonance=True)
+    products = ensure_species(products, resonance=True)
+
     reactions = reactionList[:]
     
     for reaction in reactionList:
@@ -205,3 +193,211 @@ def filterReactions(reactants, products, reactionList):
         if not forward and not reverse:
             reactions.remove(reaction)
     return reactions
+
+
+def ensure_species(input_list, resonance=False, keepIsomorphic=False):
+    """
+    Given an input list of molecules or species, return a list with only
+    species objects.
+    """
+    output_list = []
+    for item in input_list:
+        if isinstance(item, Molecule):
+            new_item = Species(molecule=[item])
+        elif isinstance(item, Species):
+            new_item = item
+        else:
+            raise TypeError('Only Molecule or Species objects can be handled.')
+        if resonance:
+            new_item.generate_resonance_structures(keepIsomorphic=keepIsomorphic)
+        output_list.append(new_item)
+
+    return output_list
+
+
+def generate_molecule_combos(input_species):
+    """
+    Generate combinations of molecules from the given species objects.
+    """
+    if len(input_species) == 1:
+        combos = [(mol,) for mol in input_species[0].molecule]
+    elif len(input_species) == 2:
+        combos = itertools.product(input_species[0].molecule, input_species[1].molecule)
+    else:
+        raise ValueError('Reaction generation can be done for 1 or 2 species, not {0}.'.format(len(input_species)))
+
+    return combos
+
+
+def ensure_independent_atom_ids(input_species, resonance=True):
+    """
+    Given a list or tuple of :class:`Species` objects, ensure that atom ids are
+    independent across all of the species. Optionally, the `resonance` argument
+    can be set to False to not generate resonance structures.
+
+    Modifies the input species in place, nothing is returned.
+    """
+
+    # Method to check that all species' atom ids are different
+    def independent_ids():
+        num_atoms = 0
+        IDs = []
+        for species in input_species:
+            num_atoms += len(species.molecule[0].atoms)
+            IDs.extend([atom.id for atom in species.molecule[0].atoms])
+        num_ID = len(set(IDs))
+        return num_ID == num_atoms
+
+    # If they are not all different, reassign ids and remake resonance structures
+    if not independent_ids():
+        logging.debug('identical atom ids found between species. regenerating')
+        for species in input_species:
+            mol = species.molecule[0]
+            mol.assignAtomIDs()
+            species.molecule = [mol]
+            # Remake resonance structures with new labels
+            if resonance:
+                species.generate_resonance_structures(keepIsomorphic=True)
+    elif resonance:
+        # IDs are already independent, generate resonance structures if needed
+        for species in input_species:
+            species.generate_resonance_structures(keepIsomorphic=True)
+
+
+def find_degenerate_reactions(rxnList, same_reactants=None, kinetics_database=None, kinetics_family=None):
+    """
+    given a list of Reaction object with Molecule objects, this method
+    removes degenerate reactions and increments the degeneracy of the
+    reaction object. For multiple transition states, this method adds
+    them as separate duplicate reactions. This method modifies
+    rxnList in place and does not return anything.
+
+    This algorithm used to exist in family.__generateReactions, but was moved
+    here because it didn't have any family dependence.
+    """
+
+    # We want to sort all the reactions into sublists composed of isomorphic reactions
+    # with degenerate transition states
+    rxnSorted = []
+    for rxn0 in rxnList:
+        # find resonance structures for rxn0
+        ensure_species_in_reaction(rxn0)
+        if len(rxnSorted) == 0:
+            # This is the first reaction, so create a new sublist
+            rxnSorted.append([rxn0])
+        else:
+            # Loop through each sublist, which represents a unique reaction
+            for rxnList1 in rxnSorted:
+                # Try to determine if the current rxn0 is identical or isomorphic to any reactions in the sublist
+                isomorphic = False
+                identical = False
+                sameTemplate = False
+                for rxn in rxnList1:
+                    isomorphic = rxn0.isIsomorphic(rxn, checkIdentical=False, checkTemplateRxnProducts=True)
+                    if not isomorphic:
+                        identical = False
+                    else:
+                        identical = rxn0.isIsomorphic(rxn, checkIdentical=True, checkTemplateRxnProducts=True)
+                    sameTemplate = frozenset(rxn.template) == frozenset(rxn0.template)
+                    if not isomorphic:
+                        # a different product was found, go to next list
+                        break
+                    elif not sameTemplate:
+                        # a different transition state was found, mark as duplicate and
+                        # go to the next sublist
+                        rxn.duplicate = True
+                        rxn0.duplicate = True
+                        break
+                    elif identical:
+                        # An exact copy of rxn0 is already in our list, so we can move on to the next rxn
+                        break
+                    else: # sameTemplate and isomorphic but not identical
+                        # This is the right sublist for rxn0, but continue to see if there is an identical rxn
+                        continue
+                else:
+                    # We did not break, so this is the right sublist, but there is no identical reaction
+                    # This means that we should add rxn0 to the sublist as a degenerate rxn
+                    rxnList1.append(rxn0)
+                if isomorphic and sameTemplate:
+                    # We already found the right sublist, so we can move on to the next rxn
+                    break
+            else:
+                # We did not break, which means that there was no isomorphic sublist, so create a new one
+                rxnSorted.append([rxn0])
+
+    rxnList = []
+    for rxnList1 in rxnSorted:
+        # Collapse our sorted reaction list by taking one reaction from each sublist
+        rxn = rxnList1[0]
+        # The degeneracy of each reaction is the number of reactions that were in the sublist
+        rxn.degeneracy = sum([reaction0.degeneracy for reaction0 in rxnList1])
+        rxnList.append(rxn)
+
+    for rxn in rxnList:
+        if rxn.isForward:
+            reduce_same_reactant_degeneracy(rxn, same_reactants)
+        else:
+            # fix the degeneracy of (not ownReverse) reactions found in the backwards direction
+            try:
+                family = kinetics_family or kinetics_database.families[rxn.family]
+            except AttributeError:
+                from rmgpy.data.rmg import getDB
+                family = getDB('kinetics').families[rxn.family]
+            if not family.ownReverse:
+                rxn.degeneracy = family.calculateDegeneracy(rxn)
+
+    return rxnList
+
+
+def ensure_species_in_reaction(reaction):
+    """
+    Modifies a reaction holding Molecule objects to a reaction holding
+    Species objects. Generates resonance structures for reaction products.
+    """
+    # if already species' objects, return none
+    if isinstance(reaction.reactants[0], Species):
+        return None
+    # obtain species with all resonance isomers
+    if reaction.isForward:
+        reaction.reactants = ensure_species(reaction.reactants, resonance=False)
+        reaction.products = ensure_species(reaction.products, resonance=True, keepIsomorphic=True)
+    else:
+        reaction.reactants = ensure_species(reaction.reactants, resonance=True, keepIsomorphic=True)
+        reaction.products = ensure_species(reaction.products, resonance=False)
+
+    # convert reaction.pairs object to species
+    new_pairs = []
+    for reactant, product in reaction.pairs:
+        new_pair = []
+        for reactant0 in reaction.reactants:
+            if reactant0.isIsomorphic(reactant):
+                new_pair.append(reactant0)
+                break
+        for product0 in reaction.products:
+            if product0.isIsomorphic(product):
+                new_pair.append(product0)
+                break
+        new_pairs.append(new_pair)
+    reaction.pairs = new_pairs
+
+    try:
+        ensure_species_in_reaction(reaction.reverse)
+    except AttributeError:
+        pass
+
+
+def reduce_same_reactant_degeneracy(reaction, same_reactants=None):
+    """
+    This method reduces the degeneracy of reactions with identical reactants,
+    since translational component of the transition states are already taken
+    into account (so swapping the same reactant is not valid)
+
+    This comes from work by Bishop and Laidler in 1965
+    """
+    if len(reaction.reactants) == 2 and (
+                (reaction.isForward and same_reactants) or
+                reaction.reactants[0].isIsomorphic(reaction.reactants[1])
+            ):
+        reaction.degeneracy *= 0.5
+        logging.debug('Degeneracy of reaction {} was decreased by 50% to {} since the reactants are identical'.format(reaction, reaction.degeneracy))
+
