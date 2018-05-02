@@ -22,6 +22,7 @@ dependencies:
   #- argparse # [py26]
   - pyparsing
   - pydot ==1.2.2
+  - pyrdl
   - nose
   - coverage
   - gprof2dot

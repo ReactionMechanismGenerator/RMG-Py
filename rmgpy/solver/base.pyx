@@ -1,29 +1,29 @@
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 """
 Contains the :class:`ReactionSystem` class, a base class for all RMG reaction
@@ -145,11 +145,14 @@ cdef class ReactionSystem(DASx):
         self.validLayeringIndices = None
         
         # variables that cache maximum rate (ratio) data
-        self.maxCoreSpeciesRates = None
-        self.maxEdgeSpeciesRates = None
-        self.maxNetworkLeakRates = None
         self.maxEdgeSpeciesRateRatios = None
         self.maxNetworkLeakRateRatios = None
+        
+        #for managing prunable edge species
+        self.prunableSpecies = []
+        self.prunableNetworks = []
+        self.prunableSpeciesIndices = None
+        self.prunableNetworkIndices = None
 
         # sensitivity variables
         self.sensmethod = 2 # sensmethod = 1 for staggered corrector sensitivities, 0 (simultaneous corrector), 2 (staggered direct)
@@ -224,21 +227,40 @@ cdef class ReactionSystem(DASx):
         self.coreSpeciesRates = numpy.zeros((self.numCoreSpecies), numpy.float64)
         self.edgeSpeciesRates = numpy.zeros((self.numEdgeSpecies), numpy.float64)
         self.networkLeakRates = numpy.zeros((self.numPdepNetworks), numpy.float64)
-        self.maxCoreSpeciesRates = numpy.zeros((self.numCoreSpecies), numpy.float64)
-        self.maxEdgeSpeciesRates = numpy.zeros((self.numEdgeSpecies), numpy.float64)
-        self.maxNetworkLeakRates = numpy.zeros((self.numPdepNetworks), numpy.float64)
-        self.maxEdgeSpeciesRateRatios = numpy.zeros((self.numEdgeSpecies), numpy.float64)
-        self.maxNetworkLeakRateRatios = numpy.zeros((self.numPdepNetworks), numpy.float64)
+        self.maxEdgeSpeciesRateRatios = numpy.zeros((len(self.prunableSpecies)), numpy.float64)
+        self.maxNetworkLeakRateRatios = numpy.zeros((len(self.prunableNetworks)), numpy.float64)
         self.sensitivityCoefficients = numpy.zeros((self.numCoreSpecies, self.numCoreReactions), numpy.float64)
         self.unimolecularThreshold = numpy.zeros((self.numCoreSpecies), bool)
         self.bimolecularThreshold = numpy.zeros((self.numCoreSpecies, self.numCoreSpecies), bool)
 
         surfaceSpecies,surfaceReactions = self.initialize_surface(coreSpecies,coreReactions,surfaceSpecies,surfaceReactions)
         
+        self.set_prunable_indices(edgeSpecies, pdepNetworks)
         
     def initialize_solver(self):
         DASx.initialize(self, self.t0, self.y0, self.dydt0, self.senpar, self.atol_array, self.rtol_array)
     
+    def set_prunable_indices(self,edgeSpecies,pdepNetworks):
+        cdef object spc
+        cdef list temp
+        temp = []
+        for i,spc in enumerate(self.prunableSpecies):
+            try:
+                temp.append(edgeSpecies.index(spc))
+            except ValueError:
+                self.maxEdgeSpeciesRateRatios[i] = numpy.inf #avoid pruning of species that have been moved to core
+        
+        self.prunableSpeciesIndices = numpy.array(temp)
+        
+        temp = []
+        for i,spc in enumerate(self.prunableNetworks):
+            try:
+                temp.append(pdepNetworks.index(spc))
+            except:
+                self.maxNetworkLeakRateRatios[i] = numpy.inf #avoid pruning of lost networks
+                
+        self.prunableNetworkIndices = numpy.array(temp)
+        
     @cython.boundscheck(False)
     cpdef initialize_surface(self,list coreSpecies,list coreReactions,list surfaceSpecies,list surfaceReactions):
         """
@@ -589,6 +611,9 @@ cdef class ReactionSystem(DASx):
                              pdepNetworks, absoluteTolerance, relativeTolerance, sensitivity, sensitivityAbsoluteTolerance, 
                              sensitivityRelativeTolerance, filterReactions)
         
+        prunableSpeciesIndices = self.prunableSpeciesIndices
+        prunableNetworkIndices = self.prunableNetworkIndices
+        
         surfaceSpeciesIndices = self.surfaceSpeciesIndices
         surfaceReactionIndices = self.surfaceReactionIndices
         
@@ -606,9 +631,6 @@ cdef class ReactionSystem(DASx):
         maxNetworkRate = 0.0
         iteration = 0
 
-        maxCoreSpeciesRates = self.maxCoreSpeciesRates
-        maxEdgeSpeciesRates = self.maxEdgeSpeciesRates
-        maxNetworkLeakRates = self.maxNetworkLeakRates
         maxEdgeSpeciesRateRatios = self.maxEdgeSpeciesRateRatios
         maxNetworkLeakRateRatios = self.maxNetworkLeakRateRatios
         forwardRateCoefficients = self.kf
@@ -650,7 +672,7 @@ cdef class ReactionSystem(DASx):
                         if len(edgeSpeciesRateRatios) > 0:
                             ind = numpy.argmax(edgeSpeciesRateRatios)
                             obj = edgeSpecies[ind]
-                            logging.info('At time {0:10.4e} s, species {1} at rate ratio {2} was added to model core in model resurrection process'.format(self.t, obj,maxEdgeSpeciesRates[ind]))
+                            logging.info('At time {0:10.4e} s, species {1} at rate ratio {2} was added to model core in model resurrection process'.format(self.t, obj,edgeSpeciesRates[ind]))
                             invalidObjects.append(obj)
                         
                         if totalDivAccumNums and len(totalDivAccumNums) > 0: #if dynamics data available
@@ -721,21 +743,12 @@ cdef class ReactionSystem(DASx):
             coreSpeciesConcentrations = self.coreSpeciesConcentrations
             
             # Update the maximum species rate and maximum network leak rate arrays
-            for index in xrange(numCoreSpecies):
-                if maxCoreSpeciesRates[index] < coreSpeciesRates[index]:
-                    maxCoreSpeciesRates[index] = coreSpeciesRates[index]
-            for index in xrange(numEdgeSpecies):
-                if maxEdgeSpeciesRates[index] < edgeSpeciesRates[index]:
-                    maxEdgeSpeciesRates[index] = edgeSpeciesRates[index]
-            for index in xrange(numPdepNetworks):
-                if maxNetworkLeakRates[index] < networkLeakRates[index]:
-                    maxNetworkLeakRates[index] = networkLeakRates[index]
-            for index in xrange(numEdgeSpecies):
-                if maxEdgeSpeciesRateRatios[index] < edgeSpeciesRateRatios[index]:
-                    maxEdgeSpeciesRateRatios[index] = edgeSpeciesRateRatios[index]
-            for index in xrange(numPdepNetworks):
-                if maxNetworkLeakRateRatios[index] < networkLeakRateRatios[index]:
-                    maxNetworkLeakRateRatios[index] = networkLeakRateRatios[index]
+            for i,index in enumerate(prunableSpeciesIndices):
+                if maxEdgeSpeciesRateRatios[i] < edgeSpeciesRateRatios[index]:
+                    maxEdgeSpeciesRateRatios[i] = edgeSpeciesRateRatios[index]
+            for i,index in enumerate(prunableNetworkIndices):
+                if maxNetworkLeakRateRatios[i] < networkLeakRateRatios[index]:
+                    maxNetworkLeakRateRatios[i] = networkLeakRateRatios[index]
             
             if charRate == 0 and len(edgeSpeciesRates)>0: #this deals with the case when there is no flux in the system
                 maxSpeciesIndex = numpy.argmax(edgeSpeciesRates)
@@ -1058,9 +1071,6 @@ cdef class ReactionSystem(DASx):
                         row.extend([normSens_array[i][k][j] for j in reactionsAboveThreshold])       
                         worksheet.writerow(row)  
         
-        self.maxCoreSpeciesRates = maxCoreSpeciesRates
-        self.maxEdgeSpeciesRates = maxEdgeSpeciesRates
-        self.maxNetworkLeakRates = maxNetworkLeakRates
         self.maxEdgeSpeciesRateRatios = maxEdgeSpeciesRateRatios
         self.maxNetworkLeakRateRatios = maxNetworkLeakRateRatios
         

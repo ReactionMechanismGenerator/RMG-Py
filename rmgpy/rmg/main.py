@@ -1,32 +1,32 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 """
 This module contains the main execution functionality for Reaction Mechanism
@@ -573,7 +573,8 @@ class RMG(util.Subject):
         
         self.saveEverything()
         
-        self.makeSeedMech(firstTime=True)
+        if self.generateSeedEachIteration:
+            self.makeSeedMech(firstTime=True)
 
         maxNumSpcsHit = False #default
         
@@ -594,14 +595,20 @@ class RMG(util.Subject):
                 
                 self.reactionModel.iterationNum += 1
                 self.done = True
-                objectsToEnlarge = []
                 
                 allTerminated = True
                 numCoreSpecies = len(self.reactionModel.core.species)
-
-                notResurrectedVec = [True for i in xrange(len(self.reactionSystems))]
+                
+                prunableSpecies = self.reactionModel.edge.species[:]
+                prunableNetworks = self.reactionModel.networkList[:]
                 
                 for index, reactionSystem in enumerate(self.reactionSystems):
+                    
+                    reactionSystem.prunableSpecies = prunableSpecies
+                    reactionSystem.prunableNetworks = prunableNetworks
+                    
+                    reactorDone = True
+                    objectsToEnlarge = []
                     self.reactionSystem = reactionSystem
                     # Conduct simulation
                     logging.info('Conducting simulation of reaction system %s...' % (index+1))
@@ -632,15 +639,16 @@ class RMG(util.Subject):
                         else:
                             from rmgpy.cantherm.output import prettify
                             logging.error(prettify(repr(self.reactionModel.core.reactions)))
-                        self.makeSeedMech()
+                        if self.generateSeedEachIteration:
+                            self.makeSeedMech()
+                        else:
+                            self.makeSeedMech(firstTime=True)
                         raise
-                    
-                    notResurrectedVec[index] = not resurrected
                     
                     if self.generateSeedEachIteration:
                         self.makeSeedMech()
                         
-                    self.done = self.reactionModel.addNewSurfaceObjects(obj,newSurfaceSpecies,newSurfaceReactions,reactionSystem)
+                    reactorDone = self.reactionModel.addNewSurfaceObjects(obj,newSurfaceSpecies,newSurfaceReactions,reactionSystem)
                     
                     allTerminated = allTerminated and terminated
                     logging.info('')
@@ -648,28 +656,9 @@ class RMG(util.Subject):
                     # If simulation is invalid, note which species should be added to
                     # the core
                     if obj != [] and not (obj is None):
-                        objects = self.processToSpeciesNetworks(obj)
-                        for ob in objects:
-                            if not (ob in objectsToEnlarge):
-                                if isinstance(ob,Species): #keep Species before PDepNetworks
-                                    objectsToEnlarge.insert(0,ob)
-                                elif isinstance(ob[0],PDepNetwork):
-                                    objectsToEnlarge.append(ob)
-                                else:
-                                    raise TypeError('processed object not recognized')
+                        objectsToEnlarge = self.processToSpeciesNetworks(obj)
 
-                        self.done = False
-                        
-                if not self.done: # There is something that needs exploring/enlarging
-
-                    # If we reached our termination conditions, then try to prune
-                    # species from the edge
-                    if allTerminated:
-                        self.reactionModel.prune(self.reactionSystems, modelSettings.fluxToleranceKeepInEdge, modelSettings.maximumEdgeSpecies, modelSettings.minSpeciesExistIterationsForPrune)
-                        # Perform garbage collection after pruning
-                        collected = gc.collect()
-                        logging.info('Garbage collector: collected %d objects.' % (collected))
-        
+                        reactorDone = False
                     # Enlarge objects identified by the simulation for enlarging
                     # These should be Species or Network objects
                     logging.info('')
@@ -682,15 +671,14 @@ class RMG(util.Subject):
                         
                     if len(self.reactionModel.core.species) > numCoreSpecies:
                         tempModelSettings = deepcopy(modelSettings)
-                        tempModelSettings.toleranceKeepInEdge = 0
+                        tempModelSettings.fluxToleranceKeepInEdge = 0
                         # If there were core species added, then react the edge
                         # If there were no new core species, it means the pdep network needs be updated through another enlarge core step
                         if modelSettings.filterReactions:
                             # Run a raw simulation to get updated reaction system threshold values
-                            for index, reactionSystem in enumerate(self.reactionSystems):
-                                # Run with the same conditions as with pruning off
-                                if notResurrectedVec[index]:
-                                    reactionSystem.simulate(
+                            # Run with the same conditions as with pruning off
+                            if not resurrected:
+                                reactionSystem.simulate(
                                         coreSpecies = self.reactionModel.core.species,
                                         coreReactions = self.reactionModel.core.reactions,
                                         edgeSpecies = [],
@@ -701,11 +689,15 @@ class RMG(util.Subject):
                                         modelSettings = tempModelSettings,
                                         simulatorSettings = simulatorSettings,
                                     )
-                                    self.updateReactionThresholdAndReactFlags(
+                                self.updateReactionThresholdAndReactFlags(
                                         rxnSysUnimolecularThreshold = reactionSystem.unimolecularThreshold,
                                         rxnSysBimolecularThreshold = reactionSystem.bimolecularThreshold)
-                                else:
-                                    logging.warn('Reaction thresholds/flags for Reaction System {0} was not updated due to resurrection'.format(index+1))
+                            else:
+                                self.updateReactionThresholdAndReactFlags(
+                                        rxnSysUnimolecularThreshold = reactionSystem.unimolecularThreshold,
+                                        rxnSysBimolecularThreshold = reactionSystem.bimolecularThreshold, skipUpdate=True)
+                                logging.warn('Reaction thresholds/flags for Reaction System {0} was not updated due to resurrection'.format(index+1))
+
         
                             logging.info('')    
                         else:
@@ -729,7 +721,20 @@ class RMG(util.Subject):
                     if maxNumSpcsHit: #breaks the while loop 
                         break
                     
-                self.saveEverything()
+                    if not reactorDone:
+                        self.done = False
+                        
+                    self.saveEverything()
+                    
+                if not self.done: # There is something that needs exploring/enlarging
+
+                    # If we reached our termination conditions, then try to prune
+                    # species from the edge
+                    if allTerminated and modelSettings.fluxToleranceKeepInEdge>0.0:
+                        self.reactionModel.prune(self.reactionSystems, modelSettings.fluxToleranceKeepInEdge, modelSettings.maximumEdgeSpecies, modelSettings.minSpeciesExistIterationsForPrune)
+                        # Perform garbage collection after pruning
+                        collected = gc.collect()
+                        logging.info('Garbage collector: collected %d objects.' % (collected))
     
                 # Consider stopping gracefully if the next iteration might take us
                 # past the wall time
@@ -752,6 +757,9 @@ class RMG(util.Subject):
                 maxNumSpcsHit = False
                 continue
         
+        if not self.generateSeedEachIteration:
+            self.makeSeedMech(firstTime=True)
+            
         # Run sensitivity analysis post-model generation if sensitivity analysis is on
         for index, reactionSystem in enumerate(self.reactionSystems):
             
@@ -863,7 +871,7 @@ class RMG(util.Subject):
                 logging.warning('Species {0} did not contain any thermo data and was omitted from the edge thermo library.'.format(str(species)))
                    
         # load kinetics library entries                    
-        kineticsLibrary = KineticsLibrary(name=name,duplicatesChecked=False)
+        kineticsLibrary = KineticsLibrary(name=name,autoGenerated=True)
         kineticsLibrary.entries = {}
         for i in range(len(reactionList)):
             reaction = reactionList[i]        
@@ -874,9 +882,9 @@ class RMG(util.Subject):
                     data = reaction.kinetics,
                 )
             try:
-        	    entry.longDesc = 'Originally from reaction library: ' + reaction.library + "\n" + reaction.kinetics.comment
-    	    except AttributeError:
-        	    entry.longDesc = reaction.kinetics.comment
+                entry.longDesc = 'Originally from reaction library: ' + reaction.library + "\n" + reaction.kinetics.comment
+            except AttributeError:
+                entry.longDesc = reaction.kinetics.comment
             kineticsLibrary.entries[i+1] = entry
         
         # Mark as duplicates where there are mixed pressure dependent and non-pressure dependent duplicate kinetics
@@ -885,7 +893,7 @@ class RMG(util.Subject):
         
         
         # load kinetics library entries                    
-        edgeKineticsLibrary = KineticsLibrary(name=name+'_edge',duplicatesChecked=False)
+        edgeKineticsLibrary = KineticsLibrary(name=name+'_edge',autoGenerated=True)
         edgeKineticsLibrary.entries = {}
         for i,reaction in enumerate(edgeReactionList):       
             entry = Entry(
@@ -1049,8 +1057,11 @@ class RMG(util.Subject):
             self.unimolecularReact = numpy.ones((numCoreSpecies),bool)
             self.bimolecularReact = numpy.ones((numCoreSpecies, numCoreSpecies),bool)
             # No need to initialize reaction threshold arrays in this case
-
-    def updateReactionThresholdAndReactFlags(self, rxnSysUnimolecularThreshold=None, rxnSysBimolecularThreshold=None):
+    
+    def updateReactionThresholdAndReactFlags(self, rxnSysUnimolecularThreshold=None, rxnSysBimolecularThreshold=None,skipUpdate=False):
+        """
+        updates the length and boolean value of the unimolecular and bimolecular react and threshold flags
+        """
         numCoreSpecies = len(self.reactionModel.core.species)
         prevNumCoreSpecies = len(self.unimolecularReact)
         stale = True if numCoreSpecies > prevNumCoreSpecies else False
@@ -1070,6 +1081,10 @@ class RMG(util.Subject):
                 bimolecularThreshold[:prevNumCoreSpecies,:prevNumCoreSpecies] = self.bimolecularThreshold
                 self.unimolecularThreshold = unimolecularThreshold
                 self.bimolecularThreshold = bimolecularThreshold
+                
+            if skipUpdate:
+                return
+            
             # Always update the react and threshold arrays
             for i in xrange(numCoreSpecies):
                 if not self.unimolecularThreshold[i] and rxnSysUnimolecularThreshold[i]:

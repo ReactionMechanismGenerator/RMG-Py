@@ -5,7 +5,9 @@ Linux Installation
 ******************
 
 RMG-Py and all of its dependencies may be easily installed through a short series of Terminal commands.
-The instructions listed below have been confirmed on a fresh Ubuntu 12.04 installation and should generally apply to other distributions.
+The instructions listed below were written for Ubuntu 12.04 and should generally apply to other distributions.
+
+Warning: This installation method is no longer actively maintained, and is not guaranteed to work as written.
 
 * Install compilers and libraries: ::
 
@@ -22,7 +24,7 @@ The instructions listed below have been confirmed on a fresh Ubuntu 12.04 instal
 
 * Install dependencies: ::
 
-	sudo apt-get install libpng-dev libfreetype6-dev graphviz mencoder
+	sudo apt-get install libpng-dev libfreetype6-dev graphviz
 	
 	sudo pip install numpy		# install NumPy before other packages
 	
@@ -61,6 +63,12 @@ The instructions listed below have been confirmed on a fresh Ubuntu 12.04 instal
   	export RDBASE=$HOME/rdkit # CHECK THIS (maybe you put RDKit somewhere else)
   	export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$RDBASE/lib
   	export PYTHONPATH=$PYTHONPATH:$RDBASE  # (or some other way to make sure it's on your Python path)
+
+* The following dependencies are also required for core RMG functions and must be installed from source before building RMG:
+
+  **pyrdl:** RingDecomposerLib, used for ring perception. Download from https://github.com/rareylab/RingDecomposerLib. Requires CMAKE to compile.
+
+  **lpsolve:** Mixed integer linear programming solver. Download from https://sourceforge.net/projects/lpsolve/. Python extension also required.
 
 * Install RMG-Py: ::
 

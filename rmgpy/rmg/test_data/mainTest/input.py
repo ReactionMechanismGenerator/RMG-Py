@@ -1,7 +1,7 @@
 database(
     thermoLibraries = ['primaryThermoLibrary'],
     reactionLibraries = [],
-    seedMechanisms = [],
+    seedMechanisms = ['GRI-Mech3.0'],
     kineticsDepositories = ['training'],
     kineticsFamilies = ['R_Recombination'],
     kineticsEstimator = 'rate rules',
@@ -46,3 +46,6 @@ options(
     saveEdgeSpecies=False,
     saveSimulationProfiles=False,
 )
+
+generatedSpeciesConstraints(allowed=['seed mechanisms','reaction libraries'],
+maximumRadicalElectrons=3,maximumCarbeneRadicals=3,maximumSingletCarbenes=3)

@@ -1,32 +1,32 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 import os
 import unittest
@@ -159,8 +159,8 @@ class TestThermoDatabase(unittest.TestCase):
         GAVspecies = Species(index=3, label="c1c(O)c(O)c(CC(C)CC)cc1", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[-1.18833,0.11272,-4.26393e-05,-2.12017e-08,1.441e-11,-51642.9,38.8904], Tmin=(100,'K'), Tmax=(1078.35,'K')),
          NASAPolynomial(coeffs=[26.6057,0.0538434,-2.22538e-05,4.22393e-09,-3.00808e-13,-60208.4,-109.218], Tmin=(1078.35,'K'), Tmax=(5000,'K'))],
          Tmin=(100,'K'), Tmax=(5000,'K'), comment="""Thermo group additivity estimation: group(Cs-CsCsCsH) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) +
-         group(Cs-CbCsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cb-Cs) + group(Cb-Os) + group(Cb-Os) + group(Cb-H) +
-         group(Cb-H) + group(Cb-H) + group(Os-CbH) + group(Os-CbH) + longDistanceInteraction_cyclic(o_OH_OH) +
+         group(Cs-CbCsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cb-Cs) + group(Cb-O2s) + group(Cb-O2s) + group(Cb-H) +
+         group(Cb-H) + group(Cb-H) + group(O2s-CbH) + group(O2s-CbH) + longDistanceInteraction_cyclic(o_OH_OH) +
          longDistanceInteraction_cyclic(o_OH_OH) + ring(Benzene)"""), molecule=[Molecule(SMILES="c1c(O)c(O)c(CC(C)CC)cc1")])
 
         source = self.database.extractSourceFromComments(GAVspecies)
@@ -1069,6 +1069,8 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         polyring = mol.getDisparateRings()[1][0]
 
         bicyclicList, ringOccurancesDict = bicyclicDecompositionForPolyring(polyring)
+        for bicyclic in bicyclicList:
+            bicyclic.deleteHydrogens()
 
         # 1st test: number of cores
         self.assertEqual(len(bicyclicList), 5)
@@ -1117,6 +1119,8 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         polyring = mol.getDisparateRings()[1][0]
 
         bicyclicList, ringOccurancesDict = bicyclicDecompositionForPolyring(polyring)
+        for bicyclic in bicyclicList:
+            bicyclic.deleteHydrogens()
 
         # 1st test: number of cores
         self.assertEqual(len(bicyclicList), 3)
@@ -1151,6 +1155,8 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         polyring = mol.getDisparateRings()[1][0]
 
         bicyclicList, ringOccurancesDict = bicyclicDecompositionForPolyring(polyring)
+        for bicyclic in bicyclicList:
+            bicyclic.deleteHydrogens()
 
         # 1st test: number of cores
         self.assertEqual(len(bicyclicList), 3)
@@ -1201,15 +1207,13 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         single_ring_submol_a, single_ring_submol_b = sorted(single_ring_submols,
                                 key=lambda submol: len(submol.atoms))
 
-        single_ring_submol_a.updateAtomTypes()
-        single_ring_submol_b.updateAtomTypes()
+        single_ring_submol_a.saturate_unfilled_valence()
+        single_ring_submol_b.saturate_unfilled_valence()
 
         expected_submol_a = Molecule().fromSMILES('C1=CC1')
-        expected_submol_a.deleteHydrogens()
         expected_submol_a.updateConnectivityValues()
 
         expected_submol_b = Molecule().fromSMILES('C1=CCCC1')
-        expected_submol_b.deleteHydrogens()
         expected_submol_b.updateConnectivityValues()
 
 
@@ -1233,17 +1237,13 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         single_ring_submol_a, single_ring_submol_b = sorted(single_ring_submols,
                                 key=lambda submol: len(submol.atoms))
 
-        single_ring_submol_a.updateAtomTypes()
-        single_ring_submol_b.updateAtomTypes()
+        single_ring_submol_a.saturate_unfilled_valence()
+        single_ring_submol_b.saturate_unfilled_valence()
 
         expected_submol_a = Molecule().fromSMILES('C1=CC1')
-        # remove hydrogen
-        expected_submol_a.deleteHydrogens()
         expected_submol_a.updateConnectivityValues()
 
         expected_submol_b = Molecule().fromSMILES('C1=CC=CC1')
-        # remove hydrogen
-        expected_submol_b.deleteHydrogens()
         expected_submol_b.updateConnectivityValues()
 
         self.assertTrue(single_ring_submol_a.isIsomorphic(expected_submol_a))
@@ -1257,11 +1257,9 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         mol = Molecule().fromSMILES(smiles)
         ring_submol = convertRingToSubMolecule(mol.getDisparateRings()[1][0])[0]
 
-        saturated_ring_submol, alreadySaturated = saturateRingBonds(ring_submol)
+        saturated_ring_submol, alreadySaturated = saturate_ring_bonds(ring_submol)
 
         expected_saturated_ring_submol = Molecule().fromSMILES('C1CCC2C1C2')
-        # remove hydrogen
-        expected_saturated_ring_submol.deleteHydrogens()
         
         expected_saturated_ring_submol.updateConnectivityValues()
 
@@ -1280,14 +1278,12 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         mol = spe.molecule[1]
         ring_submol = convertRingToSubMolecule(mol.getDisparateRings()[1][0])[0]
 
-        saturated_ring_submol, alreadySaturated = saturateRingBonds(ring_submol)
+        saturated_ring_submol, alreadySaturated = saturate_ring_bonds(ring_submol)
 
         expected_spe = Species().fromSMILES('C1=CC=C2CCCCC2=C1')
         expected_spe.generate_resonance_structures()
         expected_saturated_ring_submol = expected_spe.molecule[1]
-        # remove hydrogen
-        expected_saturated_ring_submol.deleteHydrogens()
-        
+
         expected_saturated_ring_submol.updateConnectivityValues()
 
         self.assertTrue(alreadySaturated)
@@ -1305,13 +1301,11 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         mol = spe.molecule[1]
         ring_submol = convertRingToSubMolecule(mol.getDisparateRings()[1][0])[0]
 
-        saturated_ring_submol, alreadySaturated = saturateRingBonds(ring_submol)
+        saturated_ring_submol, alreadySaturated = saturate_ring_bonds(ring_submol)
 
         expected_spe = Species().fromSMILES('C1=CC=C2CCCCC2=C1')
         expected_spe.generate_resonance_structures()
         expected_saturated_ring_submol = expected_spe.molecule[1]
-        # remove hydrogen
-        expected_saturated_ring_submol.deleteHydrogens()
         
         expected_saturated_ring_submol.updateConnectivityValues()
 

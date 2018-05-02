@@ -1,32 +1,32 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 """
 This module provides classes and methods for working with molecular substructure
@@ -58,6 +58,7 @@ class GroupAtom(Vertex):
     `charge`            ``list``            The allowed formal charges (as short integers)
     `label`             ``str``             A string label that can be used to tag individual atoms
     `lonePairs`         ``list``            The number of lone electron pairs
+    'charge'            ''list''            The partial charge of the atom
     =================== =================== ====================================
 
     Each list represents a logical OR construct, i.e. an atom will match the
@@ -532,23 +533,30 @@ class GroupAtom(Vertex):
         #dummy defaultAtom to get default values
         defaultAtom = mol.Atom()
 
+        #Three possible values for charge and lonePairs
+        if self.charge:
+            newCharge = self.charge[0]
+        elif atomtype.charge:
+            newCharge = atomtype.charge[0]
+        else:
+            newCharge = defaultAtom.charge
+
+        if self.lonePairs:
+            newLonePairs = self.lonePairs[0]
+        elif atomtype.lonePairs:
+            newLonePairs = atomtype.lonePairs[0]
+        else:
+            newLonePairs = defaultAtom.lonePairs
+
         newAtom = mol.Atom(element = element,
                            radicalElectrons = self.radicalElectrons[0] if self.radicalElectrons else defaultAtom.radicalElectrons,
-                           charge = self.charge[0] if self.charge else defaultAtom.charge,
-                           lonePairs = self.lonePairs[0] if self.lonePairs else defaultAtom.lonePairs,
+                           charge = newCharge,
+                           lonePairs = newLonePairs,
                            label = self.label if self.label else defaultAtom.label)
 
         #For some reason the default when no lone pairs is set to -100,
         #Based on git history, it is probably because RDKit requires a number instead of None
-        #Instead we will set it to 0 here
-
-        #Hard code charge for a few atomtypes
-        if atomtype in [atomTypes[x] for x in ['N5d', 'N5dd', 'N5t', 'N5b', 'N5s']]:
-            newAtom.lonePairs = 0
-            newAtom.charge = 1
-        elif atomtype in [atomTypes[x] for x in ['N1d']]:
-            newAtom.charge = -1
-        elif newAtom.lonePairs == -100:
+        if newAtom.lonePairs == -100:
             newAtom.lonePairs = defaultLonePairs[newAtom.symbol]
 
         return newAtom
@@ -1351,7 +1359,7 @@ class Group(Graph):
 
     def addExplicitLigands(self):
         """
-        This function Od/Sd ligand to CO or CS atomtypes if they are not already there.
+        This function O2d/S2d ligand to CO or CS atomtypes if they are not already there.
 
         Returns a 'True' if the group was modified otherwise returns 'False'
         """
@@ -1374,9 +1382,9 @@ class Group(Graph):
             modified = True
             atomtypes = None
             if self.atoms[atomIndex].atomType[0] is atomTypes['CO']:
-                atomtypes = ['Od']
+                atomtypes = ['O2d']
             elif self.atoms[atomIndex].atomType[0] is atomTypes['CS']:
-                atomtypes = ['Sd']
+                atomtypes = ['S2d']
             self.createAndConnectAtom(atomtypes, self.atoms[atomIndex], [2])
 
         return modified
@@ -1386,7 +1394,7 @@ class Group(Graph):
         This function modifies groups to make them have a standard AdjList form.
 
         Currently it makes atomtypes as specific as possible and makes CO/CS atomtypes
-        have explicit Od/Sd ligands. Other functions can be added as necessary
+        have explicit O2d/S2d ligands. Other functions can be added as necessary
 
         Returns a 'True' if the group was modified otherwise returns 'False'
         """
@@ -1946,9 +1954,8 @@ class Group(Graph):
 
         #Saturate up to expected valency
         for molAtom in newMolecule.atoms:
-            #Group atom had a explicit charge
-            if molAtom in molToGroup and molToGroup[molAtom].charge:
-                statedCharge = molToGroup[molAtom].charge[0]
+            if molAtom.charge:
+                statedCharge = molAtom.charge
             #otherwise assume no charge (or implicit atoms we assume hvae no charge)
             else:
                 statedCharge = 0
@@ -1967,15 +1974,7 @@ class Group(Graph):
                     newMolecule.addBond(newBond)
                 molAtom.updateCharge()
 
-
-
         newMolecule.update()
-
-        #hard-coded exception for carbonMonoxide with default (but incorrect) charges/lone pairs
-        #Not the best solution, but because solubility expects this we need to allow it for now
-        falseCarbonMonoxide = mol.Molecule().fromSMILES("C#[O-]")
-        if newMolecule.isIsomorphic(falseCarbonMonoxide):
-            return newMolecule
 
         #Check that the charge of atoms is expected
         for atom in newMolecule.atoms:
@@ -1985,9 +1984,17 @@ class Group(Graph):
                 else:
                     raise UnexpectedChargeError(graph = newMolecule)
                 #check hardcoded atomtypes
-                if groupAtom.atomType[0] in [atomTypes[x] for x in ['N5d', 'N5dd', 'N5t', 'N5b', 'N5s', 'Ot']] and atom.charge == 1:
+                positiveCharged = ['Csc','Cdc',
+                                   'N3sc','N5sc','N5dc','N5ddc','N5tc','N5b',
+                                   'O2sc','O4sc','O4dc','O4tc',
+                                   'S2sc','S4sc','S4dc','S4tdc','S6sc','S6dc','S6tdc']
+                negativeCharged = ['C2sc','C2dc','C2tc',
+                                   'N0sc','N1sc','N1dc','N5dddc',
+                                   'O0sc',
+                                   'S0sc','S2sc','S2dc','S2tc','S4dc','S4tdc','S6sc','S6dc','S6tdc']
+                if groupAtom.atomType[0] in [atomTypes[x] for x in positiveCharged] and atom.charge > 0:
                     pass
-                elif groupAtom.atomType[0] in [atomTypes[x] for x in ['N1d', 'N2s']] and atom.charge == -1:
+                elif groupAtom.atomType[0] in [atomTypes[x] for x in negativeCharged] and atom.charge < 0:
                     pass
                 #declared charge in original group is not same as new charge
                 elif atom.charge in groupAtom.charge:

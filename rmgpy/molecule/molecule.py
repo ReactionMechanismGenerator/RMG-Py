@@ -1,32 +1,32 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 """
 This module provides classes and methods for working with molecules and
@@ -57,6 +57,7 @@ import rmgpy.molecule.parser as parser
 import rmgpy.molecule.generator as generator
 import rmgpy.molecule.resonance as resonance
 from .kekulize import kekulize
+from .adjlist import Saturator
 
 ################################################################################
 
@@ -135,7 +136,11 @@ class Atom(Vertex):
             'atomType': self.atomType.label if self.atomType else None,
             'lonePairs': self.lonePairs,
         }
-        return (Atom, (self.element.symbol, self.radicalElectrons, self.charge, self.label), d)
+        if self.element.isotope == -1:
+            element2pickle = self.element.symbol
+        else:
+            element2pickle = self.element
+        return (Atom, (element2pickle, self.radicalElectrons, self.charge, self.label), d)
 
     def __setstate__(self, d):
         """
@@ -819,12 +824,13 @@ class Molecule(Graph):
         Update multiplicity, and sort atoms using the new
         connectivity values.
         """
-        self.updateAtomTypes()
-        self.updateMultiplicity()
-        self.sortVertices()
 
         for atom in self.atoms:
             atom.updateCharge()
+
+        self.updateAtomTypes()
+        self.updateMultiplicity()
+        self.sortVertices()
 
     def getFormula(self):
         """
@@ -1023,12 +1029,16 @@ class Molecule(Graph):
         be prescribed to any atom when getAtomType fails. Currently used for
         resonance hybrid atom types.
         """
+        #Because we use lonepairs to match atomtypes and default is -100 when unspecified,
+        #we should update before getting the atomtype.
+        self.updateLonePairs()
+
         for atom in self.vertices:
             try:
                 atom.atomType = getAtomType(atom, atom.edges)
             except AtomTypeError:
                 if logSpecies:
-                    logging.error("Could not update atomtypes for {0}.\n{1}".format(self, self.toAdjacencyList()))
+                    logging.error("Could not update atomtypes for this molecule:\n{0}".format(self.toAdjacencyList()))
                 if raiseException:
                     raise
                 atom.atomType = atomTypes['R']
@@ -1500,10 +1510,10 @@ class Molecule(Graph):
         there will be at least one 6 membered aromatic ring so this algorithm
         will not fail for fused aromatic rings.
         """
-        cython.declare(SSSR=list, vertices=list, polycyclicVertices=list)
-        SSSR = self.getSmallestSetOfSmallestRings()
-        if SSSR:
-            for cycle in SSSR:
+        cython.declare(rc=list, cycle=list, atom=Atom)
+        rc = self.getRelevantCycles()
+        if rc:
+            for cycle in rc:
                 if len(cycle) == 6:
                     for atom in cycle:
                         #print atom.atomType.label
@@ -1653,7 +1663,16 @@ class Molecule(Graph):
             charge += atom.charge
         return charge
 
-    def saturate(self):
+    def saturate_unfilled_valence(self, update = True):
+        """
+        Saturate the molecule by adding H atoms to any unfilled valence
+        """
+
+        saturator = Saturator()
+        saturator.saturate(self.atoms)
+        if update: self.update()
+
+    def saturate_radicals(self):
         """
         Saturate the molecule by replacing all radicals with bonds to hydrogen atoms.  Changes self molecule object.  
         """
@@ -1676,7 +1695,6 @@ class Molecule(Graph):
         # very expensive, so will do it anyway)
         self.sortVertices()
         self.updateAtomTypes()
-        self.updateLonePairs()
         self.multiplicity = 1
 
         return added
@@ -1724,7 +1742,8 @@ class Molecule(Graph):
         AROMATIC = BondType.AROMATIC
 
         if rings is None:
-            rings = self.getAllSimpleCyclesOfSize(6)
+            rings = self.getRelevantCycles()
+            rings = [ring for ring in rings if len(ring) == 6]
         if not rings:
             return [], []
 
@@ -1792,6 +1811,13 @@ class Molecule(Graph):
         For instance, molecule with this SMILES: C1CC2C3CSC(CO3)C2C1, will have non-deterministic
         output from `getSmallestSetOfSmallestRings`, which leads to non-deterministic bycyclic decomposition
         Using this new method can effectively prevent this situation.
+
+        Important Note: This method returns an incorrect set of SSSR in certain molecules (such as cubane).
+        It is recommended to use the main `Graph.getSmallestSetOfSmallestRings` method in new applications.
+        Alternatively, consider using `Graph.getRelevantCycles` for deterministic output.
+
+        In future development, this method should ideally be replaced by some method to select a deterministic
+        set of SSSR from the set of Relevant Cycles, as that would be a more robust solution.
         """
         cython.declare(vertices=list, verticesToRemove=list, rootCandidates_tups=list, graphs=list)
         cython.declare(cycleList=list, cycleCandidate_tups=list, cycles=list, cycle0=list, originConnDict=dict)
