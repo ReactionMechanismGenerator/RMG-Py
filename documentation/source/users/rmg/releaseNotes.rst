@@ -4,6 +4,40 @@
 Release Notes
 *************
 
+RMG-Py Version 2.1.8
+====================
+Date: March 22, 2018
+
+- New features:
+    - Chlorine and iodine atom types have been added, bringing support for these elements to RMG-database
+    - Forbidden structures now support Molecule and Species definitions in addition to Group definitions
+
+- Changes:
+    - Reaction pair generation will now fall back to generic method instead of raising an exception
+    - Removed sensitivity.py script since it was effectively a duplicate of simulate.py
+    - Thermo jobs in Cantherm now output a species dictionary
+    - Fitted atom energy corrections added for B3LYP/6-31g**
+    - Initial framework added for hydrogen bonding
+    - Renamed molepro module and associated classes to molpro (MolPro) to match actual spelling of the program
+    - Chemkin module is now cythonized to improve performance
+
+- Fixes:
+    - Allow delocalization of triradicals to prevent hysteresis in resonance structure generation
+    - Fix reaction comment parsing issue with uncertainty analysis
+    - Fix numerical issue causing a number of pressure dependent RMG jobs to crash
+    - Template reactions from seed mechanisms are now loaded as library reactions if the original family is not loaded
+    - Fix issues with degeneracy calculation for identical reactants
+
+RMG-database Version 2.1.8
+==========================
+Date: March 22, 2018
+
+- Changes:
+    - Corrected name of JetSurf2.0 kinetics and thermo libraries to JetSurf1.0
+    - Added actual JetSurf2.0 kinetics and thermo libraries
+    - Updated thermo groups for near-aromatic radicals, including radical and polycyclic corrections
+
+
 RMG-Py Version 2.1.7
 ====================
 Date: February 12, 2018
