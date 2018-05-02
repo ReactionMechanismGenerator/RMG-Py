@@ -4,6 +4,69 @@
 Release Notes
 *************
 
+RMG-Py Version 2.1.7
+====================
+Date: February 12, 2018
+
+- Charged atom types:
+    - Atom types now have a charge attribute to cover a wider range of species
+    - New atom types added for nitrogen and sulfur groups
+    - Carbon and oxygen atom types renamed following new valence based naming scheme
+
+- Ring perception:
+    - Ring perception methods in the Graph class now use RingDecomposerLib
+    - This includes the getSmallestSetOfSmallestRings methods and a newly added getRelevantCycles method
+    - The set of relevant cycles is unique and generally more useful for chemical graphs
+    - This also fixes inaccuracies with the original SSSR method
+
+- Other changes:
+    - Automatically load reaction libraries when using a seed mechanism
+    - Default kinetics estimator has been changed to rate rules instead of group additivity
+    - Kinetics families can now be set to be irreversible
+    - Model enlargement now occurs after each reactor simulation rather than after all of them
+    - Updated bond additivity corrections for CBS-QB3 in Cantherm
+
+- Fixes:
+    - Do not print SMILES when raising AtomTypeError to avoid further exceptions
+    - Do not recalculate thermo if a species already has it
+    - Fixes to parsing of family names in seed mechanisms
+
+
+RMG-database Version 2.1.7
+==========================
+Date: February 12, 2018
+
+- Charged atom types:
+    - Update adjlists with new atom types across the entire database
+    - Added sulfur groups to all relevant kinetics families
+    - New thermo group additivity values for sulfur/oxygen species
+
+- Additions:
+    - Benzene bonds can now react in in R_Addition_MultipleBond
+    - Many new training reactions and groups added in R_Addition_MultipleBond
+    - New Singlet_Val6_to_triplet kinetics family
+    - New Sulfur GlarborgBozzelli kinetics and thermo libraries
+    - New Sulfur GlarborgMarshall kinetics and thermo libraries
+    - New Sulfur GlarborgH2S kinetics and thermo libraries
+    - New Sulfur GlarborgNS kinetics and thermo libraries
+    - New NOx and NOx/LowT kinetics libraries
+    - New SOx kinetics library
+    - New BurcatNS thermo library
+    - New SOxNOx thermo library
+    - New 2+2_cycloaddition_CS kinetics family
+    - New Cyclic_Thioether_Formation kinetics family
+    - New Lai_Hexylbenzene kinetics and thermo libraries
+
+- Changes:
+    - 1,2-Birad_to_alkene family is now irreversible
+    - OxygenSingTrip kinetics library removed (replaced by Singlet_Val6_to_triplet family)
+    - Ozone is no longer forbidden
+
+- Fixes:
+    - Corrected adjlist for phenyl radical in JetSurf2.0 and USC-Mech-ii
+    - Some singlet thermo groups relocated from radical.py to group.py
+
+
 RMG-Py Version 2.1.6
 ====================
 Date: December 21, 2017
