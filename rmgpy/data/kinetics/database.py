@@ -223,7 +223,7 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
                     name, ext = os.path.splitext(f)
                     if ext.lower() == '.py':
                         library_file = os.path.join(root, f)
-                        label=os.path.dirname(library_file)[len(path)+1:]
+                        label=os.path.dirname(library_file)[len(path):]
                         logging.info('Loading kinetics library {0} from {1}...'.format(label, library_file))
                         library = KineticsLibrary(label=label)
                         library.load(library_file, self.local_context, self.global_context)
