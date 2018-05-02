@@ -46,7 +46,7 @@ cimport rmgpy.constants as constants
 import rmgpy.quantity as quantity
 cimport rmgpy.statmech.schrodinger as schrodinger 
 import rmgpy.statmech.schrodinger as schrodinger 
-
+from rmgpy.exceptions import NegativeBarrierException
 import logging
 
 ################################################################################
@@ -87,14 +87,6 @@ cdef class Torsion(Mode):
         A helper function used when pickling a Rotation object.
         """
         return (Torsion, (self.symmetry, self.quantum))
-
-################################################################################
-
-class NegativeBarrierException(Exception):
-    """This Exception occurs when the energy barrier for a hindered Rotor is negative.
-    This can occur if the scan or fourier fit is poor. """
-    
-    pass
 
 ################################################################################
 

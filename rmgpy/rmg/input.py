@@ -40,15 +40,11 @@ from rmgpy.quantity import Quantity
 from rmgpy.solver.base import TerminationTime, TerminationConversion
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.solver.liquid import LiquidReactor
-
+from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
 from model import CoreEdgeReactionModel
 
 from rmgpy.scoop_framework.util import broadcast, get
-
-################################################################################
-
-class InputError(Exception): pass
-
+from rmgpy.exceptions import InputError
 ################################################################################
 
 rmg = None
@@ -225,10 +221,7 @@ def liquidReactor(temperature,
     rmg.reactionSystems.append(system)
     
 def simulator(atol, rtol, sens_atol=1e-6, sens_rtol=1e-4):
-    rmg.absoluteTolerance = atol
-    rmg.relativeTolerance = rtol
-    rmg.sensitivityAbsoluteTolerance = sens_atol
-    rmg.sensitivityRelativeTolerance = sens_rtol
+    rmg.simulatorSettingsList.append(SimulatorSettings(atol, rtol, sens_atol, sens_rtol))
     
 def solvation(solvent):
     # If solvation module in input file, set the RMG solvent variable
@@ -236,7 +229,12 @@ def solvation(solvent):
         raise InputError("solvent should be a string like 'water'")
     rmg.solvent = solvent
 
-def model(toleranceMoveToCore=None, toleranceMoveReactionToCore=numpy.inf,toleranceKeepInEdge=0.0, toleranceInterruptSimulation=1.0, toleranceReactionInterruptSimulation=numpy.inf, maximumEdgeSpecies=1000000, minCoreSizeForPrune=50, minSpeciesExistIterationsForPrune=2, filterReactions=False, ignoreOverallFluxCriterion=False):
+def model(toleranceMoveToCore=None, toleranceMoveEdgeReactionToCore=numpy.inf,toleranceKeepInEdge=0.0, toleranceInterruptSimulation=1.0, 
+          toleranceMoveEdgeReactionToSurface=numpy.inf, toleranceMoveSurfaceSpeciesToCore=numpy.inf, toleranceMoveSurfaceReactionToCore=numpy.inf,
+          toleranceMoveEdgeReactionToSurfaceInterrupt=None,
+          toleranceMoveEdgeReactionToCoreInterrupt=None, maximumEdgeSpecies=1000000, minCoreSizeForPrune=50, 
+          minSpeciesExistIterationsForPrune=2, filterReactions=False, ignoreOverallFluxCriterion=False,
+          maxNumSpecies=None,maxNumObjsPerIter=1,toleranceThermoKeepSpeciesInEdge=numpy.inf):
     """
     How to generate the model. `toleranceMoveToCore` must be specified. 
     toleranceMoveReactionToCore and toleranceReactionInterruptSimulation refers to an additional criterion for forcing an edge reaction to be included in the core
@@ -250,17 +248,12 @@ def model(toleranceMoveToCore=None, toleranceMoveReactionToCore=numpy.inf,tolera
     if toleranceMoveToCore > toleranceInterruptSimulation:
         raise InputError("toleranceMoveToCore must be less than or equal to toleranceInterruptSimulation, which is currently {0}".format(toleranceInterruptSimulation))
     
-    rmg.fluxToleranceKeepInEdge = toleranceKeepInEdge
-    rmg.fluxToleranceMoveToCore = toleranceMoveToCore
-    rmg.reactionToleranceMoveToCore = toleranceMoveReactionToCore
-    rmg.reactionToleranceInterrupt = toleranceReactionInterruptSimulation
-    rmg.fluxToleranceInterrupt = toleranceInterruptSimulation
-    rmg.maximumEdgeSpecies = maximumEdgeSpecies
-    rmg.minCoreSizeForPrune = minCoreSizeForPrune
-    rmg.minSpeciesExistIterationsForPrune = minSpeciesExistIterationsForPrune
-    rmg.filterReactions = filterReactions
-    rmg.ignoreOverallFluxCriterion=ignoreOverallFluxCriterion
+    rmg.modelSettingsList.append(ModelSettings(toleranceMoveToCore, toleranceMoveEdgeReactionToCore,toleranceKeepInEdge, toleranceInterruptSimulation, 
+          toleranceMoveEdgeReactionToSurface, toleranceMoveSurfaceSpeciesToCore, toleranceMoveSurfaceReactionToCore,
+          toleranceMoveEdgeReactionToSurfaceInterrupt,toleranceMoveEdgeReactionToCoreInterrupt, maximumEdgeSpecies, minCoreSizeForPrune, 
+          minSpeciesExistIterationsForPrune, filterReactions, ignoreOverallFluxCriterion, maxNumSpecies, maxNumObjsPerIter,toleranceThermoKeepSpeciesInEdge))
 
+    
 def quantumMechanics(
                     software,
                     method,
@@ -329,7 +322,12 @@ def pressureDependence(
     rmg.pressureDependence.activeKRotor = True
     rmg.pressureDependence.rmgmode = True
 
-def options(units='si', saveRestartPeriod=None, generateOutputHTML=False, generatePlots=False, saveSimulationProfiles=False, verboseComments=False, saveEdgeSpecies=False, keepIrreversible=False, wallTime='00:00:00:00'):
+def options(name='Seed', generateSeedEachIteration=False, saveSeedToDatabase=False, units='si', saveRestartPeriod=None, 
+            generateOutputHTML=False, generatePlots=False, saveSimulationProfiles=False, verboseComments=False, 
+            saveEdgeSpecies=False, keepIrreversible=False, wallTime='00:00:00:00'):
+    rmg.name = name
+    rmg.generateSeedEachIteration=generateSeedEachIteration
+    rmg.saveSeedToDatabase=saveSeedToDatabase
     rmg.units = units
     rmg.saveRestartPeriod = Quantity(saveRestartPeriod) if saveRestartPeriod else None
     if generateOutputHTML:
@@ -355,6 +353,8 @@ def generatedSpeciesConstraints(**kwargs):
         'maximumSulfurAtoms',
         'maximumHeavyAtoms',
         'maximumRadicalElectrons',
+        'maximumSingletCarbenes',
+        'maximumCarbeneRadicals',
         'allowSingletO2',
         'maximumIsotopicAtoms'
     ]

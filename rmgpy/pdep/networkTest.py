@@ -200,6 +200,19 @@ class TestNetwork(unittest.TestCase):
         """
         self.network.initialize(Tmin=300., Tmax=2000., Pmin=1e3, Pmax=1e7, minimumGrainCount=200, maximumGrainSize=4184.0)
     
+    def test_collisionMatrixMemoryHandling(self):
+        net = Network()
+        net.Elist = [1]*10000
+        net.E0 = 1.0
+        niso = 100000000
+        net.isomers = niso*[1]
+        try:
+            net.calculateCollisionModel()
+        except MemoryError:
+            raise AssertionError('Large collision matrix resulted in memory error, handling failed')
+        except:
+            pass
+        
 ################################################################################
 
 if __name__ == '__main__':

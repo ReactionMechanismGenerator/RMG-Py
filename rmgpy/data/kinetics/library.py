@@ -35,16 +35,22 @@ This module contains functionality for working with kinetics libraries.
 import os.path
 import logging
 import re
-
+try:
+    from collections import OrderedDict
+except ImportError:
+    logging.warning("Upgrade to Python 2.7 or later to ensure your database entries are read and written in the same order each time!")
+    OrderedDict = dict
+    
 from rmgpy.data.base import DatabaseError, Database, Entry
 
 from rmgpy.reaction import Reaction
 from rmgpy.kinetics import Arrhenius, ThirdBody, Lindemann, Troe, \
-                           PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, \
-                           PDepKineticsModel
+                           PDepArrhenius, MultiArrhenius, MultiPDepArrhenius
 from rmgpy.molecule import Molecule
 from rmgpy.species import Species
 from .common import saveEntry
+from .family import TemplateReaction
+import codecs
 
 ################################################################################
 
@@ -117,15 +123,55 @@ class KineticsLibrary(Database):
     A class for working with an RMG kinetics library.
     """
 
-    def __init__(self, label='', name='', solvent=None, shortDesc='', longDesc=''):
+    def __init__(self, label='', name='', solvent=None, shortDesc='', longDesc='', duplicatesChecked=True):
         Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
+        self.duplicatesChecked=duplicatesChecked
         
     def __str__(self):
         return 'Kinetics Library {0}'.format(self.label)
     
     def __repr__(self):
         return '<KineticsLibrary "{0}">'.format(self.label)
-
+    
+    def getLibraryReactions(self):
+        """
+        makes library and template reactions as appropriate from the library comments
+        and returns at list of all of these LibraryReaction and TemplateReaction objects
+        """
+        rxns = []
+        for entry in self.entries.values():                
+            if entry._longDesc and 'Originally from reaction library: ' in entry._longDesc:
+                lib = entry._longDesc.replace('Originally from reaction library: ','')
+                lib = lib.replace('\n','')
+                logging.info(lib)
+                rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],\
+                 library=lib, specificCollider=entry.item.specificCollider, kinetics=entry.data, duplicate=entry.item.duplicate,\
+                 reversible=entry.item.reversible
+                 )
+            elif entry._longDesc and 'rate rule' in entry._longDesc: #template reaction
+                c = entry._longDesc.split('\n')
+                familyname = c[-1].replace('family: ','')
+                logging.info(familyname)
+                tstring = c[0]
+                ind = tstring.find('rate rule')
+                tstring = tstring[ind+9:]
+                tstrings = tstring.split(';')
+                tstrings[0] = tstrings[0][1:]
+                tstrings[-1] = tstrings[-1][:-1]
+                logging.info(tstring)
+                rxn = TemplateReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],\
+                  specificCollider=entry.item.specificCollider, kinetics=entry.data, duplicate=entry.item.duplicate,\
+                 reversible=entry.item.reversible,family=familyname,template=tstrings
+                 )
+            else: #pdep or standard library reaction
+                rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],\
+                 library=self.label, specificCollider=entry.item.specificCollider, kinetics=entry.data, duplicate=entry.item.duplicate,\
+                 reversible=entry.item.reversible
+                 )
+            rxns.append(rxn)
+        
+        return rxns
+    
     def markValidDuplicates(self, reactions1, reactions2):
         """
         Check for reactions that appear in both lists,
@@ -171,7 +217,7 @@ class KineticsLibrary(Database):
         Merge all marked duplicate reactions in the kinetics library
         into single reactions with multiple kinetics.
         """
-        print "trying to find duplicates"
+        logging.debug("Searching for duplicate reactions...")
         entries_to_remove = []
         for entry0 in self.entries.values():
             if entry0 in entries_to_remove:
@@ -179,7 +225,7 @@ class KineticsLibrary(Database):
             reaction0 = entry0.item
             if not reaction0.duplicate:
                 continue
-            print "Found a duplicate reaction: {0}".format(reaction0)
+            logging.debug("Found a duplicate reaction: {0}".format(reaction0))
             duplicates = [entry0]
             for entry in self.entries.values():
                 reaction = entry.item
@@ -187,7 +233,7 @@ class KineticsLibrary(Database):
                     continue
                 if reaction0.isIsomorphic(reaction, eitherDirection=False):
                     if reaction0.reversible != reaction.reversible:
-                        print "Reactions isomorphic but with different reversibilities"
+                        logging.debug("Reactions isomorphic but with different reversibilities.")
                         continue
                     duplicates.append(entry)
             if len(duplicates)<=1:
@@ -224,14 +270,51 @@ class KineticsLibrary(Database):
             entry0.longDesc = longDesc
             entries_to_remove.extend(duplicates[1:])
         for entry in entries_to_remove:
-            print "removing duplicate reaction with index {0}.".format(entry.index)
+            logging.debug("Removing duplicate reaction with index {0}.".format(entry.index))
             del(self.entries[entry.index])
-        print "NB. the entries have not been renumbered, so these indices are missing."
+        logging.debug("NB. the entries have not been renumbered, so these indices are missing.")
         
         
     def load(self, path, local_context=None, global_context=None):
-        Database.load(self, path, local_context, global_context)
+        # Clear any previously-loaded data
+        self.entries = OrderedDict()
+        self.top = []
+
+        # Set up global and local context
+        if global_context is None: global_context = {}
+        global_context['__builtins__'] = None
+        global_context['True'] = True
+        global_context['False'] = False
+        if local_context is None: local_context = {}
+        local_context['__builtins__'] = None
+        local_context['entry'] = self.loadEntry
+        #local_context['tree'] = self.__loadTree
+        local_context['name'] = self.name
+        local_context['solvent'] = self.solvent
+        local_context['shortDesc'] = self.shortDesc
+        local_context['longDesc'] = self.longDesc
+        # add in anything from the Class level dictionary.
+        for key, value in Database.local_context.iteritems():
+            local_context[key]=value
         
+        # Process the file
+        f = open(path, 'r')
+        try:
+            exec f in global_context, local_context
+        except Exception:
+            logging.error('Error while reading database {0!r}.'.format(path))
+            raise
+        f.close()
+
+        # Extract the database metadata
+        self.name = local_context['name']
+        self.solvent = local_context['solvent']
+        self.shortDesc = local_context['shortDesc']
+        self.longDesc = local_context['longDesc'].strip()
+        
+        if 'duplicatesChecked' in local_context.keys():
+            self.duplicatesChecked = local_context['duplicatesChecked']
+    
         # Load a unique set of the species in the kinetics library
         speciesDict = self.getSpecies(os.path.join(os.path.dirname(path),'dictionary.txt'))
         # Make sure all of the reactions draw from only this set
@@ -241,7 +324,7 @@ class KineticsLibrary(Database):
             rxn = entry.item
             rxn_string = entry.label
             # Convert the reactants and products to Species objects using the speciesDict
-            reactants, products = rxn_string.split('=')
+            reactants, products = rxn_string.split('=>')
             reversible = True
             if '<=>' in rxn_string:
                 reactants = reactants[:-1]
@@ -288,8 +371,13 @@ class KineticsLibrary(Database):
                 raise DatabaseError('RMG does not accept reactions with more than 3 reactants in its solver.  Reaction {0} in kinetics library {1} has {2} reactants.'.format(rxn, self.label, len(rxn.reactants)))
             if len(rxn.products) > 3:
                 raise DatabaseError('RMG does not accept reactions with more than 3 products in its solver.  Reaction {0} in kinetics library {1} has {2} reactants.'.format(rxn, self.label, len(rxn.products)))
+        
+        if self.duplicatesChecked:
+            self.checkForDuplicates()
+        else:
+            self.checkForDuplicates(markDuplicates=True)
+            self.convertDuplicatesToMulti()
             
-        self.checkForDuplicates()
         
     def loadEntry(self,
                   index,
@@ -328,7 +416,34 @@ class KineticsLibrary(Database):
             shortDesc = shortDesc,
             longDesc = longDesc.strip(),
         )
+    
+    def save(self, path):
+        """
+        Save the current database to the file at location `path` on disk. 
+        """
+        try:
+            os.makedirs(os.path.dirname(path))
+        except OSError:
+            pass
+        entries = self.getEntriesToSave()
 
+        f = codecs.open(path, 'w', 'utf-8')
+        f.write('#!/usr/bin/env python\n')
+        f.write('# encoding: utf-8\n\n')
+        f.write('name = "{0}"\n'.format(self.name))
+        f.write('shortDesc = u"{0}"\n'.format(self.shortDesc))
+        f.write('longDesc = u"""\n')
+        f.write(self.longDesc.strip() + '\n')
+        f.write('"""\n')
+        f.write('duplicatesChecked={0}\n'.format(self.duplicatesChecked))
+        
+        for entry in entries:
+            self.saveEntry(f, entry)
+
+        f.close()
+        
+        self.saveDictionary(os.path.join(os.path.split(path)[0],'dictionary.txt'))
+        
     def saveEntry(self, f, entry):
         """
         Write the given `entry` in the kinetics library to the file object `f`.

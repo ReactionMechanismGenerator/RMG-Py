@@ -36,16 +36,7 @@ cimport numpy
 from libc.math cimport exp, log, sqrt
 
 import rmgpy.constants as constants
-
-################################################################################
-
-class ModifiedStrongCollisionError(Exception): 
-    """
-    An exception raised when the modified strong collsion method is unsuccessful
-    for any reason. Pass a string describing the cause of the exceptional 
-    behavior.
-    """
-    pass
+from rmgpy.exceptions import ModifiedStrongCollisionError
 
 ################################################################################
 

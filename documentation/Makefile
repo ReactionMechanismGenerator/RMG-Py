@@ -39,8 +39,7 @@ setup_github_pages:
 # Turn the build/html directory into a git repository linked to github ready to push to gh-pages branch!
 # Should only need to be run once.
 	rm -rf $(BUILDDIR)/html
-	mkdir -p $(BUILDDIR)/html
-	git clone --shared --branch gh-pages --config remote.official.url=git@github.com:ReactionMechanismGenerator/RMG-Py.git --config remote.official.fetch=+refs/heads/*:refs/remotes/official/* --config branch.gh-pages.remote=official --config branch.gh-pages.merge=refs/heads/gh-pages ../.git $(BUILDDIR)/html
+	git clone --single-branch --branch gh-pages --origin official git@github.com:ReactionMechanismGenerator/RMG-Py.git build/html
 
 publish: $(BUILDDIR)/html/.git
 # Commit changes to gh-pages and push to github, to publish the results!

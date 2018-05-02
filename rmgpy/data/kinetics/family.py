@@ -36,40 +36,22 @@ import os.path
 import logging
 import codecs
 from copy import deepcopy
-import itertools
-import numpy as np
 
 from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStructures,\
-                            ForbiddenStructureException, getAllCombinations
+                            getAllCombinations
 from rmgpy.reaction import Reaction
-from rmgpy.kinetics import Arrhenius, ArrheniusEP
-from rmgpy.molecule import Bond, GroupBond, Group, Molecule, ActionError
-from rmgpy.molecule.kekulize import KekulizationError
+from rmgpy.kinetics import Arrhenius
+from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.species import Species
 
-from .common import KineticsError, UndeterminableKineticsError, saveEntry
+from .common import saveEntry
 from .depository import KineticsDepository
 from .groups import KineticsGroups
 from .rules import KineticsRules
-
-
-
-################################################################################
-
-class InvalidActionError(Exception):
-    """
-    An exception to be raised when an invalid action is encountered in a
-    reaction recipe.
-    """
-    pass
-
-class ReactionPairsError(Exception):
-    """
-    An exception to be raised when an error occurs while working with reaction
-    pairs.
-    """
-    pass
+from rmgpy.exceptions import InvalidActionError, ReactionPairsError, KineticsError,\
+                             UndeterminableKineticsError, ForbiddenStructureException,\
+                             KekulizationError, ActionError
 
 ################################################################################
 
@@ -133,6 +115,29 @@ class TemplateReaction(Reaction):
                                    self.estimator,
                                    self.reverse,
                                    ))
+
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the
+        object.
+        """
+        string = 'TemplateReaction('
+        if self.index != -1: string += 'index={0:d}, '.format(self.index)
+        if self.label != '': string += 'label={0!r}, '.format(self.label)
+        if self.reactants is not None: string += 'reactants={0!r}, '.format(self.reactants)
+        if self.products is not None: string += 'products={0!r}, '.format(self.products)
+        if self.specificCollider is not None: string += 'specificCollider={0!r}, '.format(self.specificCollider)
+        if self.kinetics is not None: string += 'kinetics={0!r}, '.format(self.kinetics)
+        if not self.reversible: string += 'reversible={0}, '.format(self.reversible)
+        if self.transitionState is not None: string += 'transitionState={0!r}, '.format(self.transitionState)
+        if self.duplicate: string += 'duplicate={0}, '.format(self.duplicate)
+        if self.degeneracy != 1: string += 'degeneracy={0:.1f}, '.format(self.degeneracy)
+        if self.pairs is not None: string += 'pairs={0}, '.format(self.pairs)
+        if self.family: string += "family='{}', ".format(self.family)
+        if self.template: string += "template={}, ".format(self.template)
+        if self.comment != '': string += 'comment={0!r}, '.format(self.comment)
+        string = string[:-2] + ')'
+        return string
 
     def getSource(self):
         """
@@ -937,8 +942,8 @@ class KineticsFamily(Database):
                     try:
                         if s.isIdentical(struct): break
                     except KeyError:
-                        print struct.toAdjacencyList()
-                        print s.toAdjacencyList()
+                        logging.error(struct.toAdjacencyList())
+                        logging.error(s.toAdjacencyList())
                         raise
                 else:
                     productStructureList[i].append(struct)
@@ -1324,8 +1329,11 @@ class KineticsFamily(Database):
         
         forbidden_structures = getDB('forbidden')
 
+        # check family-specific forbidden structures 
         if self.forbidden is not None and self.forbidden.isMoleculeForbidden(molecule):
             return True
+
+        # check RMG globally forbidden structures
         if forbidden_structures.isMoleculeForbidden(molecule):
             return True
         return False
@@ -2128,7 +2136,7 @@ class KineticsFamily(Database):
             
             lines = kinetics.comment.split('\n')
             
-            lines = [line for line in lines if not line.startswith('Euclid')] #remove the Euclidean distance line to help parser
+            lines = [line for line in lines if not line.startswith('Euclid') and not line.startswith('family:')] #remove the Euclidean distance and family lines to help parser
             
             # Discard the last line, unless it's the only line!
             # The last line is 'Estimated using ... for rate rule (originalTemplate)'

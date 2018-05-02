@@ -17,7 +17,7 @@ Gaussian, MOPAC, QChem, and MOLPRO.
 - [RMG-database Github Repository](https://github.com/ReactionMechanismGenerator/RMG-database): contains source code for the latest version of the database
 
 ## Latest Stable Release
-**RMG v2.1.3**
+**RMG v2.1.4**
 [![Anaconda-Server Badge](https://anaconda.org/rmg/rmg/badges/version.svg)](https://anaconda.org/rmg/rmg)
 
 View the [Release Notes](http://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/releaseNotes.html).

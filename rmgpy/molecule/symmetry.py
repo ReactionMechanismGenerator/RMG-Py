@@ -84,7 +84,7 @@ def calculateAtomSymmetryNumber(molecule, atom):
             elif count == [3, 1]: symmetryNumber *= 3
             elif count == [2, 2]: symmetryNumber *= 2
             elif count == [2, 1, 1]: symmetryNumber *= 1
-            elif count == [1, 1, 1, 1]: symmetryNumber *= 1
+            elif count == [1, 1, 1, 1]: symmetryNumber *= 0.5 # found chirality
         elif single == 3:
             # Three single bonds
             if count == [3]: symmetryNumber *= 3

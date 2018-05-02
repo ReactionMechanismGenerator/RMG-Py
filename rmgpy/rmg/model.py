@@ -36,6 +36,7 @@ import logging
 import math
 import numpy
 import itertools
+import gc
 
 from rmgpy.display import display
 #import rmgpy.chemkin
@@ -45,7 +46,7 @@ from rmgpy.quantity import Quantity
 import rmgpy.species
 from rmgpy.thermo.thermoengine import submit
 
-from rmgpy.data.base import ForbiddenStructureException
+from rmgpy.exceptions import ForbiddenStructureException
 from rmgpy.data.kinetics.depository import DepositoryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
@@ -71,15 +72,15 @@ class Species(rmgpy.species.Species):
 
     def __init__(self, index=-1, label='', thermo=None, conformer=None, 
                  molecule=None, transportData=None, molecularWeight=None, 
-                 energyTransferModel=None, reactive=True, props=None, coreSizeAtCreation=0):
+                 energyTransferModel=None, reactive=True, props=None, creationIteration=0):
         rmgpy.species.Species.__init__(self, index, label, thermo, conformer, molecule, transportData, molecularWeight, energyTransferModel, reactive, props)
-        self.coreSizeAtCreation = coreSizeAtCreation
+        self.creationIteration = creationIteration
 
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
-        return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.transportData, self.molecularWeight, self.energyTransferModel, self.reactive, self.props, self.coreSizeAtCreation),)
+        return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.transportData, self.molecularWeight, self.energyTransferModel, self.reactive, self.props,self.creationIteration),)
 
 ################################################################################
 
@@ -209,6 +210,9 @@ class CoreEdgeReactionModel:
             self.edge = ReactionModel()
         else:
             self.edge = edge
+        
+        self.surfaceSpecies = []
+        self.surfaceReactions = []
         # The default tolerances mimic the original RMG behavior; no edge
         # pruning takes place, and the simulation is interrupted as soon as
         # a species flux higher than the validity
@@ -230,6 +234,15 @@ class CoreEdgeReactionModel:
         self.kineticsEstimator = 'group additivity'
         self.indexSpeciesDict = {}
         self.saveEdgeSpecies = False
+        self.iterationNum = 0
+        self.toleranceThermoKeepSpeciesInEdge = numpy.inf
+        self.Gfmax = numpy.inf
+        self.Gmax = numpy.inf
+        self.Gmin = -numpy.inf
+        self.minCoreSizeForPrune = 50
+        self.maximumEdgeSpecies = 100000
+        self.Tmax = 0
+        self.reactionSystems = []
 
     def checkForExistingSpecies(self, molecule):
         """
@@ -304,14 +317,6 @@ class CoreEdgeReactionModel:
         # Check that the structure is not forbidden
 
         # If we're here then we're ready to make the new species
-        if label == '': 
-            # Use SMILES as default format for label
-            # However, SMILES can contain slashes (to describe the
-            # stereochemistry around double bonds); since RMG doesn't 
-            # distinguish cis and trans isomers, we'll just strip these out
-            # so that we can use the label in file paths
-            label = molecule.toSMILES().replace('/','').replace('\\','')
-        logging.debug('Creating new species {0}'.format(label))
         if reactive:
             self.speciesCounter += 1   # count only reactive species
             speciesIndex = self.speciesCounter
@@ -323,12 +328,27 @@ class CoreEdgeReactionModel:
         except AttributeError, e:
             spec = Species(index=speciesIndex, label=label, molecule=[molecule], reactive=reactive)
         
-        spec.coreSizeAtCreation = len(self.core.species)
+        spec.creationIteration = self.iterationNum
         spec.generateResonanceIsomers()
         spec.molecularWeight = Quantity(spec.molecule[0].getMolecularWeight()*1000.,"amu")
         
         submit(spec)
-
+        
+        if spec.label == '':
+            if spec.thermo and spec.thermo.label != '': #check if thermo libraries have a name for it
+                logging.info('Species with SMILES of {0} named {1} based on thermo library name'.format(molecule.toSMILES().replace('/','').replace('\\',''),spec.thermo.label))
+                spec.label = spec.thermo.label
+                label = spec.label
+            else:
+                # Use SMILES as default format for label
+                # However, SMILES can contain slashes (to describe the
+                # stereochemistry around double bonds); since RMG doesn't 
+                # distinguish cis and trans isomers, we'll just strip these out
+                # so that we can use the label in file paths
+                label = molecule.toSMILES().replace('/','').replace('\\','')
+                
+        logging.debug('Creating new species {0}'.format(label))
+        
         spec.generateEnergyTransferModel()
         formula = molecule.getFormula()
         if formula in self.speciesDict:
@@ -721,17 +741,20 @@ class CoreEdgeReactionModel:
                 allSpeciesInCore = True
                 # Add the reactant and product species to the edge if necessary
                 # At the same time, check if all reactants and products are in the core
+                spcs = []
                 for spec in rxn.reactants:
                     if spec not in self.core.species:
                         allSpeciesInCore = False
                         if spec not in self.edge.species:
+                            spcs.append(spec)
                             self.addSpeciesToEdge(spec)
                 for spec in rxn.products:
                     if spec not in self.core.species:
                         allSpeciesInCore = False
                         if spec not in self.edge.species:
+                            spcs.append(spec)
                             self.addSpeciesToEdge(spec)
-            
+                    
             isomerAtoms = sum([len(spec.molecule[0].atoms) for spec in rxn.reactants])
             
             # Decide whether or not to handle the reaction as a pressure-dependent reaction
@@ -756,14 +779,8 @@ class CoreEdgeReactionModel:
                     # The reaction is not new, so it should already be in the core or edge
                     continue
                 if allSpeciesInCore:
-                    #for reaction in self.core.reactions:
-                    #    if isinstance(reaction, Reaction) and reaction.isEquivalent(rxn): break
-                    #else:
                     self.addReactionToCore(rxn)
                 else:
-                    #for reaction in self.edge.reactions:
-                    #    if isinstance(reaction, Reaction) and reaction.isEquivalent(rxn): break
-                    #else:
                     self.addReactionToEdge(rxn)
             else:
                 # Add the reaction to the appropriate unimolecular reaction network
@@ -781,7 +798,10 @@ class CoreEdgeReactionModel:
                         self.core.reactions.remove(rxn)
                     if rxn in self.edge.reactions:
                         self.edge.reactions.remove(rxn)
-
+            
+            if not numpy.isinf(self.toleranceThermoKeepSpeciesInEdge) and spcs != []: #do thermodynamic filtering
+                self.thermoFilterSpecies(spcs)
+                
     def applyKineticsToReaction(self, reaction):
         """
         retrieve the best kinetics for the reaction and apply it towards the forward 
@@ -990,7 +1010,113 @@ class CoreEdgeReactionModel:
         Add a species `spec` to the reaction model edge.
         """
         self.edge.species.append(spec)
+    
+    def setThermodynamicFilteringParameters(self,Tmax, toleranceThermoKeepSpeciesInEdge,minCoreSizeForPrune,maximumEdgeSpecies,reactionSystems):
+        """
+        sets parameters for thermodynamic filtering based on the current core
+        Tmax is the maximum reactor temperature in K
+        toleranceThermoKeepSpeciesInEdge is the Gibbs number above which species will be filtered
+        minCoreSizeForPrune is the core size at which thermodynamic filtering will start
+        maximumEdgeSpecies is the maximum allowed number of edge species
+        reactionSystems is a list of reactionSystem objects
+        """
+        self.Tmax = Tmax
+        Gs = [spc.thermo.getFreeEnergy(Tmax) for spc in self.core.species]
+        self.Gmax = max(Gs)
+        self.Gmin = min(Gs)
+        
+        self.Gfmax = toleranceThermoKeepSpeciesInEdge*(self.Gmax-self.Gmin)+self.Gmax
+        self.toleranceThermoKeepSpeciesInEdge = toleranceThermoKeepSpeciesInEdge
+        self.minCoreSizeForPrune = minCoreSizeForPrune
+        self.reactionSystems = reactionSystems
+        self.maximumEdgeSpecies = maximumEdgeSpecies
+    
+    def thermoFilterSpecies(self, spcs):
+        """
+        checks Gibbs energy of the species in species against the
+        maximum allowed Gibbs energy
+        """
+        Tmax = self.Tmax
+        for spc in spcs:
+            G = spc.thermo.getFreeEnergy(Tmax)
+            if G > self.Gfmax:
+                Gn = (G-self.Gmax)/(self.Gmax-self.Gmin)
+                logging.info('Removing species {0} with Gibbs energy {1} from edge because it\'s Gibbs number {2} is greater than the toleranceThermoKeepSpeciesInEdge of {3} '.format(spc,G,Gn,self.toleranceThermoKeepSpeciesInEdge))
+                self.removeSpeciesFromEdge(self.reactionSystems,spc)
+                
+        # Delete any networks that became empty as a result of pruning
+        if self.pressureDependence:
+            self.removeEmptyPdepNetworks()
+                        
+    def thermoFilterDown(self,maximumEdgeSpecies,minSpeciesExistIterationsForPrune=0):
+        """
+        removes species from the edge based on their Gibbs energy until maximumEdgeSpecies
+        is reached under the constraint that all removed species are older than
+        minSpeciesExistIterationsForPrune iterations
+        maximumEdgeSpecies is the maximum allowed number of edge species
+        minSpeciesExistIterationsForPrune is the number of iterations a species must be in the edge
+        before it is eligible for thermo filtering
+        """
+        Tmax = self.Tmax
+        numToRemove = len(self.edge.species) - maximumEdgeSpecies
+        logging.debug('Planning to remove {0} species'.format(numToRemove))
+        iteration = self.iterationNum
+            
+        if numToRemove > 0: #implies flux pruning is off or did not trigger
+            logging.info('Reached maximum number of edge species')
+            logging.info('Attempting to remove excess edge species with Thermodynamic filtering')
+            spcs = self.edge.species
+            Gfs = numpy.array([spc.thermo.getFreeEnergy(Tmax) for spc in spcs])
+            Gns = (Gfs-self.Gmax)/(self.Gmax-self.Gmin) 
+            inds = numpy.argsort(Gns) #could actually do this with the Gfs, but want to print the Gn value later
+            inds = inds[::-1] #get in order of increasing Gf
 
+            ind = 0
+            removeSpcs = []
+            
+            
+            while ind < len(inds) and numToRemove > 0: #find the species we can remove and collect indices for removal     
+                i = inds[ind]
+                spc = spcs[i]
+                if iteration - spc.creationIteration >= minSpeciesExistIterationsForPrune:
+                    removeSpcs.append(spc)
+                    numToRemove -= 1
+                ind += 1
+            
+            logging.debug('found {0} eligible species for filtering'.format(len(removeSpcs)))
+            
+            for spc in removeSpcs:
+                logging.info('Removing species {0} from edge to meet maximum number of edge species, Gibbs number is {1}'.format(spc,Gns[i]))
+                self.removeSpeciesFromEdge(self.reactionSystems,spc)
+            
+            # Delete any networks that became empty as a result of pruning
+            if self.pressureDependence:
+                self.removeEmptyPdepNetworks()
+            
+            #call garbage collection
+            collected = gc.collect()
+            logging.info('Garbage collector: collected %d objects.' % (collected))
+            
+    def removeEmptyPdepNetworks(self):
+        """
+        searches for and deletes any empty pdep networks
+        """
+        networksToDelete = []
+        for network in self.networkList:
+            if len(network.pathReactions) == 0 and len(network.netReactions) == 0:
+                networksToDelete.append(network)
+                    
+        if len(networksToDelete) > 0:
+            logging.info('Deleting {0:d} empty pressure-dependent reaction networks'.format(len(networksToDelete)))
+            for network in networksToDelete:
+                logging.debug('    Deleting empty pressure dependent reaction network #{0:d}'.format(network.index))
+                source = tuple(network.source)
+                nets_with_this_source = self.networkDict[source]
+                nets_with_this_source.remove(network)
+                if not nets_with_this_source:
+                    del(self.networkDict[source])
+                self.networkList.remove(network)
+                    
     def prune(self, reactionSystems, toleranceKeepInEdge, maximumEdgeSpecies, minSpeciesExistIterationsForPrune):
         """
         Remove species from the model edge based on the simulation results from
@@ -999,13 +1125,12 @@ class CoreEdgeReactionModel:
 
         ineligibleSpecies = []     # A list of the species which are not eligible for pruning, for any reason
 
-        numCoreSpecies = len(self.core.species)
         numEdgeSpecies = len(self.edge.species)
-
+        iteration = self.iterationNum
         # All edge species that have not existed for more than two enlarge
         # iterations are ineligible for pruning
         for spec in self.edge.species:
-            if numCoreSpecies - spec.coreSizeAtCreation <= minSpeciesExistIterationsForPrune:
+            if iteration - spec.creationIteration <= minSpeciesExistIterationsForPrune:
                 ineligibleSpecies.append(spec)
 
         # Get the maximum species rates (and network leak rates)
@@ -1069,21 +1194,7 @@ class CoreEdgeReactionModel:
 
         # Delete any networks that became empty as a result of pruning
         if self.pressureDependence:
-            networksToDelete = []
-            for network in self.networkList:
-                if len(network.pathReactions) == 0 and len(network.netReactions) == 0:
-                    networksToDelete.append(network)
-            
-            if len(networksToDelete) > 0:
-                logging.info('Deleting {0:d} empty pressure-dependent reaction networks'.format(len(networksToDelete)))
-                for network in networksToDelete:
-                    logging.debug('    Deleting empty pressure dependent reaction network #{0:d}'.format(network.index))
-                    source = tuple(network.source)
-                    nets_with_this_source = self.networkDict[source]
-                    nets_with_this_source.remove(network)
-                    if not nets_with_this_source:
-                        del(self.networkDict[source])
-                    self.networkList.remove(network)
+            self.removeEmptyPdepNetworks()
 
         logging.info('')
 
@@ -1099,7 +1210,10 @@ class CoreEdgeReactionModel:
 
         # clean up species references in reactionSystems
         for reactionSystem in reactionSystems:
-            reactionSystem.speciesIndex.pop(spec)
+            try:
+                reactionSystem.speciesIndex.pop(spec)
+            except KeyError:
+                pass
 
             # identify any reactions it's involved in
             rxnList = []
@@ -1252,13 +1366,11 @@ class CoreEdgeReactionModel:
         logging.info('Adding seed mechanism {0} to model core...'.format(seedMechanism))
 
         seedMechanism = database.kinetics.libraries[seedMechanism]
-
-        for entry in seedMechanism.entries.values():
-            rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],\
-             library=seedMechanism.label, specificCollider=entry.item.specificCollider, kinetics=entry.data, duplicate=entry.item.duplicate,\
-             reversible=entry.item.reversible
-             )
+        
+        rxns = seedMechanism.getLibraryReactions()
+        for rxn in rxns:
             r, isNew = self.makeNewReaction(rxn) # updates self.newSpeciesList and self.newReactionlist
+            if not isNew: logging.info("This library reaction was not new: {0}".format(rxn))
             
         # Perform species constraints and forbidden species checks
         
@@ -1322,12 +1434,8 @@ class CoreEdgeReactionModel:
         logging.info('Adding reaction library {0} to model edge...'.format(reactionLibrary))
         reactionLibrary = database.kinetics.libraries[reactionLibrary]
 
-        # Load library reactions, keep reversibility as is
-        for entry in reactionLibrary.entries.values():
-            rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],\
-            specificCollider=entry.item.specificCollider, library=reactionLibrary.label, kinetics=entry.data,\
-            duplicate=entry.item.duplicate, reversible=entry.item.reversible if rmg.keepIrreversible else True
-            )
+        rxns = reactionLibrary.getLibraryReactions()
+        for rxn in rxns:
             r, isNew = self.makeNewReaction(rxn) # updates self.newSpeciesList and self.newReactionlist
             if not isNew: logging.info("This library reaction was not new: {0}".format(rxn))
 
@@ -1459,7 +1567,7 @@ class CoreEdgeReactionModel:
         # Two partial networks having the same source and containing one or
         # more explored isomers in common must be merged together to avoid
         # double-counting of rates
-        for source, networks in self.networkDict.iteritems():
+        for networks in self.networkDict.itervalues():
             networkCount = len(networks)
             for index0, network0 in enumerate(networks):
                 index = index0 + 1

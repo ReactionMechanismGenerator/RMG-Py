@@ -54,8 +54,8 @@ cdef class NASAPolynomial(HeatCapacityModel):
 
     """
     
-    def __init__(self, coeffs=None, Tmin=None, Tmax=None, E0=None, comment=''):
-        HeatCapacityModel.__init__(self, Tmin=Tmin, Tmax=Tmax, E0=E0, comment=comment)
+    def __init__(self, coeffs=None, Tmin=None, Tmax=None, E0=None, label='', comment=''):
+        HeatCapacityModel.__init__(self, Tmin=Tmin, Tmax=Tmax, E0=E0, label=label, comment=comment)
         self.coeffs = coeffs
         
     def __repr__(self):
@@ -71,6 +71,7 @@ cdef class NASAPolynomial(HeatCapacityModel):
         if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
         if self.E0 is not None: string += ', E0={0!r}'.format(self.E0)
+        if self.label != '': string += ', label="""{0}"""'.format(self.label)
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
@@ -79,7 +80,7 @@ cdef class NASAPolynomial(HeatCapacityModel):
         """
         A helper function used when pickling an object.
         """
-        return (NASAPolynomial, ([self.cm2, self.cm1, self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6], self.Tmin, self.Tmax, self.E0, self.comment))
+        return (NASAPolynomial, ([self.cm2, self.cm1, self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6], self.Tmin, self.Tmax, self.E0, self.label, self.comment))
 
     property coeffs:
         """The set of seven or nine NASA polynomial coefficients."""
@@ -200,8 +201,8 @@ cdef class NASA(HeatCapacityModel):
 
     """
     
-    def __init__(self, polynomials=None, Tmin=None, Tmax=None, E0=None, Cp0=None, CpInf=None, comment=''):
-        HeatCapacityModel.__init__(self, Tmin=Tmin, Tmax=Tmax, E0=E0, Cp0=Cp0, CpInf=CpInf, comment=comment)
+    def __init__(self, polynomials=None, Tmin=None, Tmax=None, E0=None, Cp0=None, CpInf=None, label='', comment=''):
+        HeatCapacityModel.__init__(self, Tmin=Tmin, Tmax=Tmax, E0=E0, Cp0=Cp0, CpInf=CpInf, label=label, comment=comment)
         self.polynomials = polynomials
     
     def __repr__(self):
@@ -216,6 +217,7 @@ cdef class NASA(HeatCapacityModel):
         if self.E0 is not None: string += ', E0={0!r}'.format(self.E0)
         if self.Cp0 is not None: string += ', Cp0={0!r}'.format(self.Cp0)
         if self.CpInf is not None: string += ', CpInf={0!r}'.format(self.CpInf)
+        if self.label != '': string += ', label="""{0}"""'.format(self.label)
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
@@ -224,7 +226,7 @@ cdef class NASA(HeatCapacityModel):
         """
         A helper function used when pickling an object.
         """
-        return (NASA, (self.polynomials, self.Tmin, self.Tmax, self.E0, self.Cp0, self.CpInf, self.comment))
+        return (NASA, (self.polynomials, self.Tmin, self.Tmax, self.E0, self.Cp0, self.CpInf, self.label, self.comment))
 
     property polynomials:
         """The set of one, two, or three NASA polynomials."""
@@ -338,7 +340,7 @@ cdef class NASA(HeatCapacityModel):
         H298 = self.getEnthalpy(298)
         S298 = self.getEntropy(298)
         
-        return Wilhoit(comment=self.comment).fitToData(Tdata, Cpdata, Cp0, CpInf, H298, S298)
+        return Wilhoit(label=self.label,comment=self.comment).fitToData(Tdata, Cpdata, Cp0, CpInf, H298, S298)
     
     cpdef NASA changeBaseEnthalpy(self, double deltaH):
         """

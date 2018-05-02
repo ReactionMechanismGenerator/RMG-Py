@@ -41,16 +41,7 @@ import rmgpy.reaction
 
 from rmgpy.pdep import Conformer, Configuration
 from rmgpy.rmg.react import react
-
-################################################################################
-
-class PressureDependenceError(Exception):
-    """
-    An exception class to use when an error involving pressure dependence is
-    encountered. Pass a string describing the circumstances of the exceptional
-    behavior.
-    """
-    pass
+from rmgpy.exceptions import PressureDependenceError
 
 ################################################################################
 
@@ -596,8 +587,6 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                         reactionModel.addReactionToEdge(netReaction)
 
                 # Set/update the net reaction kinetics using interpolation model
-                Tdata = job.Tlist.value_si
-                Pdata = job.Plist.value_si
                 kdata = K[:,:,i,j].copy()
                 order = len(netReaction.reactants)
                 kdata *= 1e6 ** (order-1)

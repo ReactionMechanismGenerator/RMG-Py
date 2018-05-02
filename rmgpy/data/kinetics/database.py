@@ -41,11 +41,12 @@ from rmgpy.kinetics import Arrhenius, ArrheniusEP, ThirdBody, Lindemann, Troe, \
 from rmgpy.molecule import Molecule, Group
 from rmgpy.species import Species
 from rmgpy.reaction import Reaction
-from rmgpy.data.base import LogicNode, DatabaseError
+from rmgpy.data.base import LogicNode
 
 from .family import  KineticsFamily
 from .library import LibraryReaction, KineticsLibrary
 from .common import filterReactions
+from rmgpy.exceptions import DatabaseError
 
 ################################################################################
 

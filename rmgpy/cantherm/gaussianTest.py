@@ -33,7 +33,7 @@ import unittest
 import os
 
 from rmgpy.cantherm.gaussian import GaussianLog
-from rmgpy.statmech import Conformer, IdealGasTranslation, LinearRotor, NonlinearRotor, HarmonicOscillator, HinderedRotor
+from rmgpy.statmech import IdealGasTranslation, LinearRotor, NonlinearRotor, HarmonicOscillator, HinderedRotor
 import rmgpy.constants as constants
 from external.wip import work_in_progress
 ################################################################################

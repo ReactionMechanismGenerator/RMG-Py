@@ -34,7 +34,6 @@ Contains functions for generating reactions.
 import logging
 import itertools
 
-from rmgpy.molecule.molecule import Molecule
 from rmgpy.data.rmg import getDB
 from rmgpy.scoop_framework.util import map_
 from rmgpy.species import Species
@@ -127,26 +126,6 @@ def _labelListOfSpecies(speciesTuple):
             # remake resonance isomers with new labeles
             species.molecule = [mol]
             species.generateResonanceIsomers(keepIsomorphic = True)
-            
-    
-def getMoleculeTuples(speciesTuple):
-    """
-    returns a list of molule tuples from given speciesTuples.
-
-    The species objects should already have resonance isomers
-    generated for the function to work
-    """
-    combos = []
-    if len(speciesTuple) == 1:#unimolecular reaction
-        spc, = speciesTuple
-        mols = [(mol, spc.index) for mol in spc.molecule]
-        combos.extend([(combo,) for combo in mols])
-    elif len(speciesTuple) == 2:#bimolecular reaction
-        spcA, spcB = speciesTuple
-        molsA = [(mol, spcA.index) for mol in spcA.molecule]
-        molsB = [(mol, spcB.index) for mol in spcB.molecule]
-        combos.extend(itertools.product(molsA, molsB))
-    return combos
 
 def getMoleculeTuples(speciesTuple):
     """
@@ -310,11 +289,11 @@ def reduceSameReactantDegeneracy(rxnList):
     for reaction in rxnList:
         if len(reaction.reactants) == 2 and reaction.reactants[0].isIsomorphic(reaction.reactants[1]):
             reaction.degeneracy *= 0.5
-            print('Degeneracy of reaction {} was decreased by 50% to {} since the reactants are identical'.format(reaction,reaction.degeneracy))
+            logging.debug('Degeneracy of reaction {} was decreased by 50% to {} since the reactants are identical'.format(reaction,reaction.degeneracy))
         if reaction.reverse and len(reaction.reverse.reactants) == 2 and \
                                    reaction.reverse.reactants[0].isIsomorphic(reaction.reverse.reactants[1]):
             reaction.reverse.degeneracy *= 0.5
-            print('Degeneracy of reaction {} was decreased by 50% to {} since the reactants are identical'.format(reaction.reverse,reaction.reverse.degeneracy))
+            logging.debug('Degeneracy of reaction {} was decreased by 50% to {} since the reactants are identical'.format(reaction.reverse,reaction.reverse.degeneracy))
 
 def correctDegeneracyOfReverseReactions(reactionList, reactants):
     """

@@ -35,7 +35,6 @@ This script contains unit tests of the :mod:`rmgpy.thermo.nasa` module.
 import unittest
 import numpy
 import os.path
-import logging
 
 from rmgpy.thermo.nasa import NASA, NASAPolynomial
 import rmgpy.constants as constants

@@ -35,6 +35,7 @@ from .reduction import *
 
 from rmgpy.rmg.model import CoreEdgeReactionModel
 from rmgpy.species import Species
+from rmgpy.rmg.settings import SimulatorSettings
 
 class ReduceFunctionalTest(unittest.TestCase):
 
@@ -66,12 +67,14 @@ class ReduceFunctionalTest(unittest.TestCase):
         target = ReduceFunctionalTest.targets[0]
         reactionModel = rmg.reactionModel
 
-        atol, rtol = rmg.absoluteTolerance, rmg.relativeTolerance
+        simulatorSettings = SimulatorSettings()
+        atol, rtol = simulatorSettings.atol, simulatorSettings.rtol
+        
         index = 0
         reactionSystem = rmg.reactionSystems[index]
 
         conv = computeConversion(target, reactionModel, reactionSystem,\
-         rmg.absoluteTolerance, rmg.relativeTolerance)
+         rmg.simulatorSettingsList[-1].atol, rmg.simulatorSettingsList[-1].rtol)
         self.assertIsNotNone(conv)
 
 
@@ -80,13 +83,13 @@ class ReduceFunctionalTest(unittest.TestCase):
         targets = ReduceFunctionalTest.targets
         reactionModel = rmg.reactionModel
 
-
-        atol, rtol = rmg.absoluteTolerance, rmg.relativeTolerance
+        simulatorSettings = SimulatorSettings()
+        atol, rtol = simulatorSettings.atol, simulatorSettings.rtol
         index = 0
         reactionSystem = rmg.reactionSystems[index]
-
+        
         observables = computeObservables(targets, reactionModel, reactionSystem, \
-            rmg.absoluteTolerance, rmg.relativeTolerance)
+            simulatorSettings.atol, simulatorSettings.rtol)
 
         tols = [0.7, 1e-3, 1e-6]
         for tol in tols:

@@ -266,6 +266,14 @@ Chiral molecules belong to point groups that lack a superposable mirror image
 (i.e. point groups lacking :math:`\sigma_h`, :math:`\sigma_d`, :math:`\sigma_v`, and :math:`S_n`
 symmetry elements).
 	
+In RMG, chirality is incorportated into the symmetry attribute by dividing the symmetry by
+two which will increase entropy by :math:`+R * ln(2)`. RMG currently checks for each chiral
+center, defined by 4 different groups attached to a carbon, and halves the symmetry 
+for each chiral center.
+
+The effect of cis-trans isomers is currently not accounted for in RMG.
+
+
 References
 ==========
 

@@ -37,6 +37,7 @@ import numpy
 import quantities as pq
 
 import rmgpy.constants as constants
+from rmgpy.exceptions import QuantityError
 
 ################################################################################
 
@@ -63,14 +64,6 @@ NOT_IMPLEMENTED_UNITS = [
                         'degR',
                         'R'
                         ]
-
-class QuantityError(Exception):
-    """
-    An exception to be raised when an error occurs while working with physical
-    quantities in RMG. Pass a string describing the circumstances of the
-    exceptional behavior.
-    """
-    pass
 
 ################################################################################
 
@@ -226,7 +219,7 @@ class ScalarQuantity(Units):
         Check the uncertainty type is valid, then set it.
         """
         if v not in ['+|-','*|/']:
-            raise QuantityError("Invalid uncertainty type")
+            raise QuantityError('Unexpected uncertainty type "{0}"; valid values are "+|-" and "*|/".'.format(v))
         self._uncertaintyType = v
 
     uncertaintyType = property(getUncertaintyType, setUncertaintyType)
@@ -434,7 +427,7 @@ class ArrayQuantity(Units):
         the units. This ensures you set the type first.
         """
         if v not in ['+|-','*|/']:
-            raise QuantityError("Invalid uncertainty type")
+            raise QuantityError('Unexpected uncertainty type "{0}"; valid values are "+|-" and "*|/".'.format(v))
         self._uncertaintyType = v
 
     uncertaintyType = property(getUncertaintyType, setUncertaintyType)
@@ -642,7 +635,7 @@ class UnitType:
             quantity.value_si *= self.extraDimensionality[dimensionality]
             quantity.units = self.units
         else:
-            raise QuantityError('Invalid units {0!r}.'.format(quantity.units))
+            raise QuantityError('Invalid units {0!r}. Try common units: {1}'.format(quantity.units,self.commonUnits))
         
         # Return the Quantity or ArrayQuantity object object
         return quantity
@@ -737,7 +730,7 @@ def RateCoefficient(*args, **kwargs):
         factor = RATECOEFFICIENT_CONVERSION_FACTORS[dimensionality]
         quantity.value_si *= factor
     except KeyError:
-        raise QuantityError('Invalid units {0!r}.'.format(quantity.units))
+        raise QuantityError('Invalid units {0!r}. Common units are {1}'.format(quantity.units,RATECOEFFICIENT_COMMON_UNITS))
 
     # Return the Quantity or ArrayQuantity object object
     return quantity

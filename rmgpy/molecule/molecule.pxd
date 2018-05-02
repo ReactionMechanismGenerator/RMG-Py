@@ -73,8 +73,6 @@ cdef class Atom(Vertex):
     cpdef decrementLonePairs(self)
     
     cpdef updateCharge(self)
-    
-    cpdef setSpinMultiplicity(self, int spinMultiplicity)
 
     cpdef getBondOrdersForAtom(self)
     
@@ -117,15 +115,13 @@ cdef class Bond(Edge):
 cdef class Molecule(Graph):
 
     cdef public bint implicitHydrogens
-    cdef public int symmetryNumber
+    cdef public float symmetryNumber
     cdef public int multiplicity
     cdef public object rdMol
     cdef public int rdMolConfId
     cdef str _fingerprint
     cdef public str InChI
     cdef public dict props
-    
-    cpdef str getFingerprint(self)
     
     cpdef addAtom(self, Atom atom)
 
@@ -148,6 +144,8 @@ cdef class Molecule(Graph):
     cpdef str getFormula(self)
 
     cpdef short getRadicalCount(self)
+
+    cpdef short getSingletCarbeneCount(self)
 
     cpdef double getMolecularWeight(self)
 
@@ -213,7 +211,7 @@ cdef class Molecule(Graph):
 
     cpdef bint isArylRadical(self, list aromaticRings=?) except -2
 
-    cpdef int calculateSymmetryNumber(self) except -1
+    cpdef float calculateSymmetryNumber(self) except -1
 
     cpdef list generateResonanceIsomers(self, bint keepIsomorphic=?)
 

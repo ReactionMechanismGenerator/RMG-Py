@@ -33,7 +33,6 @@ This script contains unit tests of the :mod:`rmgpy.quantity` module.
 """
 
 import unittest
-import math
 import numpy
 
 import rmgpy.constants as constants

@@ -59,8 +59,8 @@ cdef class Wilhoit(HeatCapacityModel):
     
     """
 
-    def __init__(self, Cp0=None, CpInf=None, a0=0.0, a1=0.0, a2=0.0, a3=0.0, H0=None, S0=None, B=None, Tmin=None, Tmax=None, comment=''):
-        HeatCapacityModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Cp0=Cp0, CpInf=CpInf, comment=comment)
+    def __init__(self, Cp0=None, CpInf=None, a0=0.0, a1=0.0, a2=0.0, a3=0.0, H0=None, S0=None, B=None, Tmin=None, Tmax=None, label='', comment=''):
+        HeatCapacityModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Cp0=Cp0, CpInf=CpInf, label=label, comment=comment)
         self.B = B
         self.a0 = a0
         self.a1 = a1
@@ -78,6 +78,7 @@ cdef class Wilhoit(HeatCapacityModel):
             self.Cp0, self.CpInf, self.a0, self.a1, self.a2, self.a3, self.H0, self.S0, self.B)
         if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.label != '': string += ', label="""{0}"""'.format(self.label)
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
@@ -86,7 +87,7 @@ cdef class Wilhoit(HeatCapacityModel):
         """
         A helper function used when pickling a Wilhoit object.
         """
-        return (Wilhoit, (self.Cp0, self.CpInf, self.a0, self.a1, self.a2, self.a3, self.H0, self.S0, self.B, self.Tmin, self.Tmax, self.comment))
+        return (Wilhoit, (self.Cp0, self.CpInf, self.a0, self.a1, self.a2, self.a3, self.H0, self.S0, self.B, self.Tmin, self.Tmax, self.label, self.comment))
 
     property B:
         """The Wilhoit scaled temperature coefficient."""
@@ -566,6 +567,7 @@ cdef class Wilhoit(HeatCapacityModel):
             E0 = self.E0,
             Cp0 = self.Cp0,
             CpInf = self.CpInf,
+            label = self.label,
             comment = self.comment,
         )
     

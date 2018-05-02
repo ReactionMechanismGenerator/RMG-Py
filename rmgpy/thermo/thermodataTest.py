@@ -215,6 +215,7 @@ class TestThermoData(unittest.TestCase):
         self.assertEqual(self.thermodata.Tmax.units, thermodata.Tmax.units)
         self.assertAlmostEqual(self.thermodata.E0.value, thermodata.E0.value, 4)
         self.assertEqual(self.thermodata.E0.units, thermodata.E0.units)
+        self.assertEqual(self.thermodata.label,thermodata.label)
         self.assertEqual(self.thermodata.comment, thermodata.comment)
     
     def test_repr(self):
@@ -246,4 +247,5 @@ class TestThermoData(unittest.TestCase):
         self.assertEqual(self.thermodata.Tmax.units, thermodata.Tmax.units)
         self.assertAlmostEqual(self.thermodata.E0.value, thermodata.E0.value, 4)
         self.assertEqual(self.thermodata.E0.units, thermodata.E0.units)
+        self.assertEqual(self.thermodata.label, thermodata.label)
         self.assertEqual(self.thermodata.comment, thermodata.comment)

@@ -50,6 +50,7 @@ cdef class Vertex(object):
     `connectivity1`     ``int``         The number of nearest neighbors
     `connectivity2`     ``int``         The sum of the neighbors' `connectivity1` values
     `connectivity3`     ``int``         The sum of the neighbors' `connectivity2` values
+    `edges`             ``dict``        Dictionary of edges with keys being neighboring vertices
     `sortingLabel`      ``int``         An integer label used to sort the vertices
     =================== =============== ========================================
     
@@ -140,9 +141,8 @@ cpdef short getVertexSortingLabel(Vertex vertex) except -1:
 
 cdef class Edge(object):
     """
-    A base class for edges in a graph. This class does *not* store the vertex
-    pair that comprises the edge; that functionality would need to be included
-    in the derived class.
+    A base class for edges in a graph. The vertices which comprise the edge can be
+    accessed using the `vertex1` and `vertex2` attributes.
     """
 
     def __init__(self, vertex1, vertex2):
@@ -201,12 +201,11 @@ cdef VF2 vf2 = VF2()
 cdef class Graph:
     """
     A graph data type. The vertices of the graph are stored in a list
-    `vertices`; this provides a consistent traversal order. The edges of the
-    graph are stored in a dictionary of dictionaries `edges`. A single edge can
-    be accessed using ``graph.edges[vertex1][vertex2]`` or the :meth:`getEdge`
-    method; in either case, an exception will be raised if the edge does not
-    exist. All edges of a vertex can be accessed using ``graph.edges[vertex]``
-    or the :meth:`getEdges` method.
+    `vertices`; this provides a consistent traversal order. A single edge can
+    be accessed using the :meth:`getEdge` method or by accessing specific
+    vertices using ``vertex1.edges[vertex2]``; in either case, an exception
+    will be raised if the edge does not exist. All edges of a vertex can be
+    accessed using the :meth:`getEdges` method or ``vertex.edges``.
     """
 
     def __init__(self, vertices=None):

@@ -27,18 +27,18 @@
 
 import os
 import unittest
-import logging
-from external.wip import work_in_progress 
 
 from .main import RMG, CoreEdgeReactionModel
 from .model import Species
 from rmgpy import settings
-from rmgpy.data.rmg import RMGDatabase, database
+from rmgpy.data.rmg import RMGDatabase
 from rmgpy.molecule import Molecule
 from rmgpy.rmg.react import react
 from rmgpy.restart import saveRestartFile
 import rmgpy
 from rmgpy.data.base import ForbiddenStructures
+
+from rmg import *
 ###################################################
 
 class TestRMGWorkFlow(unittest.TestCase):
@@ -225,3 +225,48 @@ def findTargetRxnsContaining(mol1, mol2, reactions):
                     if rxn_spec1.isIsomorphic(mol2):
                         target_rxns.append(rxn)
     return target_rxns
+
+
+class TestRMGScript(unittest.TestCase):
+    """
+    Contains unit tests for rmg.py
+    """
+
+    def test_parse_command_line_arguments_defaults(self):
+        """
+        Test the default values for the parseCommandLineArguments module
+        """
+
+        # Acquire default arguments
+        args = parse_command_line_arguments(['input.py'])
+
+        # Test default values
+        self.assertEqual(args.walltime, '00:00:00:00')
+        self.assertEqual(args.output_directory, os.path.abspath(os.path.dirname('./')))
+        self.assertEqual(args.debug, False)
+        self.assertEqual(args.file, 'input.py')
+        self.assertEqual(args.kineticsdatastore, False)
+        self.assertEqual(args.postprocess, False)
+        self.assertEqual(args.profile, False)
+        self.assertEqual(args.quiet, False)
+        self.assertEqual(args.restart, False)
+        self.assertEqual(args.verbose, False)
+
+    def test_parse_command_line_non_defaults(self):
+        """
+        Test user command line inputs into rmg.py
+        """
+
+        # Acquire arguments
+        args = parse_command_line_arguments(['other_name.py', '-d', '-o', '/test/output/dir/', '-r', '-P',
+                                            '-t', '01:20:33:45', '-k'])
+
+        # Test expected values
+        self.assertEqual(args.walltime, '01:20:33:45')
+        self.assertEqual(args.output_directory, '/test/output/dir/')
+        self.assertEqual(args.debug, True)
+        self.assertEqual(args.file, 'other_name.py')
+        self.assertEqual(args.kineticsdatastore, True)
+        self.assertEqual(args.postprocess, True)
+        self.assertEqual(args.profile, True)
+        self.assertEqual(args.restart, True)

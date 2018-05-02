@@ -4,6 +4,61 @@
 Release Notes
 *************
 
+RMG-Py Version 2.1.4
+====================
+Date: September 08, 2017
+
+- Accelerator tools:
+    - Dynamics criterion provides another method to expand the mechanism by adding reactions to the core
+    - Surface algorithm enables better control of species movement to the core when using the dynamics criterion
+    - Multiple sets of model parameters can now be specified in a input file to allow different stages of model generation
+    - A species number termination criterion can now be set to limit model size
+    - Multiple items can now be added per iteration to speed up model construction
+    - New ModelSettings and SimulatorSettings classes for storing input parameters
+
+- New features:
+    - Kinetics libraries can now be automatically generated during RMG runs to be used as seeds for subsequent runs
+    - Loading automatically generated seed mechanisms recreates the original template reaction objects to allow restarting runs from the seed mechanism
+    - Carbene constraints can now be set in the species constraint block using maxSingletCarbenes and maxCarbeneRadicals
+    - Chirality is now considered for determining symmetry numbers
+    - Thermodynamic pruning has been added to allow removal of edge species with unfavorable free energy (beta)
+
+- Other changes:
+    - RMG-Py exception classes have been consolidated in the rmgpy.exceptions module
+    - Species labels will now inherit the label from a matched thermo library entry
+    - Sensitivity analysis is now available for LiquidReactor
+
+- Fixes:
+    - Fixed sensitivity analysis following changes to the simulate method
+    - Add memory handling when generating collision matrix for pressure dependence
+    - Improved error checking for MOPAC
+    - Prevent infinite loops when retrieving thermo groups
+
+- Known issues:
+    - Seed mechanisms cannot be loaded if the database settings are different from the original ones used to generate the seed
+
+RMG-database Version 2.1.4
+==========================
+Date: September 08, 2017
+
+- New kinetics families for propargyl recombination route to benzene:
+    - Singlet_Carbene_Intra_Disproportionation
+    - Intra_5_membered_conjugated_C=C_C=C_addition
+    - Intra_Diels_alder_monocyclic
+    - Concerted_Intra_Diels_alder_monocyclic_1,2_shift
+    - Intra_2+2_cycloaddition_Cd
+    - Cyclopentadiene_scission
+    - 6_membered_central_C-C_shift
+
+- Renamed kinetics families:
+    - Intra_Diels_Alder --> Intra_Retro_Diels_alder_bicyclic
+    - H_shift_cyclopentadiene --> Intra_ene_reaction
+
+- Other additions:
+    - Klippenstein_Glarborg2016 kinetics and thermo libraries
+    - Group additivity values added for singlet carbenes, which are no longer forbidden
+
+
 RMG-Py Version 2.1.3
 ====================
 Date: July 27, 2017

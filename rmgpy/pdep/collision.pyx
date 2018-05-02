@@ -37,11 +37,7 @@ cimport cython
 cimport rmgpy.constants as constants
 import rmgpy.quantity as quantity
 from libc.math cimport exp, sqrt
-
-################################################################################
-
-def CollisionError(Exception):
-    pass
+from rmgpy.exceptions import CollisionError
 
 ################################################################################
 

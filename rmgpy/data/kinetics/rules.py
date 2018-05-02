@@ -41,12 +41,13 @@ import math
 import numpy
 from copy import  deepcopy
 
-from rmgpy.data.base import Database, Entry, DatabaseError, getAllCombinations
+from rmgpy.data.base import Database, Entry, getAllCombinations
 
 from rmgpy.quantity import Quantity, ScalarQuantity
 from rmgpy.reaction import Reaction
 from rmgpy.kinetics import ArrheniusEP, Arrhenius
-from .common import KineticsError, saveEntry
+from .common import saveEntry
+from rmgpy.exceptions import KineticsError, DatabaseError
 
 ################################################################################
 
@@ -704,7 +705,10 @@ class KineticsRules(Database):
         if degeneracy > 1:
             kinetics.comment += "\n"
             kinetics.comment += "Multiplied by reaction path degeneracy {0}".format(degeneracy)
-
+        
+        kinetics.comment += "\n"
+        kinetics.comment += "family: {0}".format(self.label.replace('/rules',''))
+        
         return kinetics, (entry if 'Exact' in kinetics.comment else None)
 
 def removeIdenticalKinetics(kList):

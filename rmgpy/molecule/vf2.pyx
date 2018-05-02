@@ -32,14 +32,9 @@ algorithm of Vento and Foggia.
 
 cimport cython
 from rmgpy.molecule.graph import Graph
-################################################################################
+from rmgpy.exceptions import VF2Error
 
-class VF2Error(Exception):
-    """
-    An exception raised if an error occurs within the VF2 graph isomorphism
-    algorithm. Pass a string describing the error.
-    """
-    pass
+################################################################################
 
 cdef class VF2:
     """

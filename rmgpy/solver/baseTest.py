@@ -28,10 +28,10 @@
 import unittest
 import pickle
 import os.path
-
+import numpy
 from rmgpy.tools.loader import loadRMGPyJob
 import rmgpy
-
+from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
 from rmgpy.solver.base import *
 
 class ConcentrationPrinter:
@@ -54,7 +54,87 @@ class ReactionSystemTest(unittest.TestCase):
 
         self.rmg = loadRMGPyJob(inputFile, chemkinFile, spc_dict, generateImages=False)
 
+    def testSurfaceInitialization(self):
+        """
+        test that initialize_surface is correctly removing species and reactions when
+        they are no longer consistent with the surface (due to other species/reactions moving to the 
+        bulk core)
+        """
+        reactionSystem = self.rmg.reactionSystems[0]
+        reactionSystem.attach(self.listener)
+        reactionModel = self.rmg.reactionModel
+        
+        coreSpecies = reactionModel.core.species
+        coreReactions = reactionModel.core.reactions
+        surfaceSpecies = [coreSpecies[7],coreSpecies[6]] 
+        surfaceReactions = [coreReactions[0],coreReactions[2],coreReactions[3]]
+        
+        reactionSystem.initializeModel(coreSpecies,coreReactions,
+                                       reactionModel.edge.species,reactionModel.edge.reactions,surfaceSpecies,surfaceReactions)
+        
+        self.assertEquals(len(surfaceSpecies),1) #only H should be left
+        self.assertEquals(len(surfaceReactions),2) #all the reactions with H should stay
+        
+    
+    def testSurfaceLayeringConstraint(self):
+        """
+        test that the correct maximum under the surface layering constraint is being
+        found
+        """
+        reactionSystem = self.rmg.reactionSystems[0]
+        reactionSystem.attach(self.listener)
+        reactionModel = self.rmg.reactionModel
+        coreSpecies = reactionModel.core.species
+        coreReactions = reactionModel.core.reactions
+        
+        edgeSpecies = [coreSpecies[6],coreSpecies[7]]
+        edgeReactions = coreReactions[1:]
+        surfaceSpecies = [coreSpecies[5]] 
+        surfaceReactions = [coreReactions[0]]
+        coreSpecies = coreSpecies[0:6]+[coreSpecies[8]]
+        coreReactions = surfaceReactions[:]
+        reactionSystem.numCoreReactions = 1
+        reactionSystem.numCoreSpecies = 7
+        
+        reactionSystem.initializeModel(coreSpecies,coreReactions,
+                                       edgeSpecies,edgeReactions,surfaceSpecies,surfaceReactions)
+        
+        self.assertEquals(len(reactionSystem.surfaceSpeciesIndices),1) #surfaceSpeciesIndices calculated correctly
+        self.assertEquals(reactionSystem.surfaceSpeciesIndices[0],5) #surfaceSpeciesIndices calculated correctly
 
+        arr = numpy.array([5.,1.,2.])
+        ind = reactionSystem.maxIndUnderSurfaceLayeringConstraint(arr,reactionSystem.surfaceSpeciesIndices)
+        
+        self.assertEquals(ind,2) #maxIndUnderSurfaceLayeringConstraint worked correctly
+    
+    def testAddReactionsToSurface(self):
+        """
+        tests that addReactionsToSurface gives the correct surfaceSpecies and surfaceReactions lists after being called
+        """
+        reactionSystem = self.rmg.reactionSystems[0]
+        reactionSystem.attach(self.listener)
+        reactionModel = self.rmg.reactionModel
+        species = reactionModel.core.species
+        reactions = reactionModel.core.reactions
+        
+        coreSpecies = species[0:6]
+        coreReactions = [reactions[0]]
+        surfaceSpecies = []
+        surfaceReactions = []
+        edgeSpecies = species[6:]
+        edgeReactions = reactions[1:]
+        
+        reactionSystem.initializeModel(coreSpecies,coreReactions,
+                                       edgeSpecies,edgeReactions,surfaceSpecies,surfaceReactions)
+        
+        newSurfaceReactions = edgeReactions
+        newSurfaceReactionInds = [edgeReactions.index(i) for i in newSurfaceReactions]
+        
+        surfaceSpecies,surfaceReactions=reactionSystem.addReactionsToSurface(newSurfaceReactions,newSurfaceReactionInds,surfaceSpecies,surfaceReactions,edgeSpecies)
+        
+        self.assertEqual(set(surfaceSpecies),set(edgeSpecies)) #all edge species should now be in the surface
+        self.assertEqual(set(surfaceReactions),set(edgeReactions)) #all edge reactions should now be in the surface
+        
     def testAttachDetach(self):
         """
         Test that a ReactionSystem listener can be attached/detached.
@@ -79,16 +159,20 @@ class ReactionSystemTest(unittest.TestCase):
         reactionModel = self.rmg.reactionModel
 
         self.assertEqual(self.listener.data, [])
-
+        
+        modelSettings = ModelSettings(toleranceMoveToCore=1,toleranceKeepInEdge=0,toleranceInterruptSimulation=1)
+        simulatorSettings = SimulatorSettings()
+        
         # run simulation:
-        terminated, obj = reactionSystem.simulate(
+        terminated, obj,sspcs,srxns = reactionSystem.simulate(
             coreSpecies = reactionModel.core.species,
             coreReactions = reactionModel.core.reactions,
             edgeSpecies = reactionModel.edge.species,
             edgeReactions = reactionModel.edge.reactions,
-            toleranceKeepInEdge = 0,
-            toleranceMoveToCore = 1,
-            toleranceInterruptSimulation = 1,
+            surfaceSpecies = [],
+            surfaceReactions = [],
+            modelSettings = modelSettings,
+            simulatorSettings = simulatorSettings,
         ) 
 
         self.assertNotEqual(self.listener.data, [])

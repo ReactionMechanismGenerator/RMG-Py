@@ -2,14 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-from external.wip import work_in_progress
-from nose.tools import assert_raises
 from numpy import testing
 
 from rmgpy.molecule.molecule import Molecule
-from rmgpy.molecule.symmetry import calculateAtomSymmetryNumber, calculateAxisSymmetryNumber, calculateBondSymmetryNumber, calculateCyclicSymmetryNumber
-from rmgpy.species import Species
-from rmgpy.molecule.resonance import generateAromaticResonanceStructures
 from rmgpy.molecule.vf2 import VF2
 from rmgpy.molecule.graph import getVertexConnectivityValue
 ################################################################################

@@ -32,97 +32,138 @@ import os
 import unittest
 import shutil 
 
-from rmgpy.chemkin import loadChemkinFile
-
 from main import RMG
+from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy import getPath
+from rmgpy.rmg.model import CoreEdgeReactionModel
 ###################################################
 
 originalPath = getPath()
 
 class TestMain(unittest.TestCase):
 
-    def setUp(self):
-        self.dir_name = 'temp_dir_for_testing'
-        os.chdir(originalPath)
-        os.mkdir(self.dir_name)
-        os.chdir(self.dir_name)
-        inputFile = """
-database(
-    thermoLibraries = ['primaryThermoLibrary'],
-    reactionLibraries = [],
-    seedMechanisms = [],
-    kineticsDepositories = ['training'],
-    kineticsFamilies = ['R_Recombination'],
-    kineticsEstimator = 'rate rules',
-)
-species(
-    label='ethane',
-    reactive=True,
-    structure=SMILES("CC"),
-)
-simpleReactor(
-    temperature=(1350,'K'),
-    pressure=(1.0,'bar'),
-    initialMoleFractions={
-        "ethane": 1.0,
-    },
-    terminationConversion={
-        'ethane': 0.000000000001,
-    },
-    terminationTime=(1e6,'s'),
-)
-model(
-    toleranceKeepInEdge=0.0,
-    toleranceMoveToCore=0.2,
-    toleranceInterruptSimulation=0.2,
-)
-options(
-    units='si',
-    saveRestartPeriod=None,
-    generateOutputHTML=False,
-    generatePlots=False,
-    saveEdgeSpecies=False,
-    saveSimulationProfiles=False,
-)
-        """
+    @classmethod
+    def setUpClass(cls):
+        """A function that is run ONCE before all unit tests in this class."""
+        cls.testDir = os.path.join(originalPath, 'rmg', 'test_data', 'mainTest')
+        cls.outputDir = 'output'
+        cls.databaseDirectory = settings['database.directory']
 
-        f = open('input.py','w')
-        f.write(inputFile)
-        f.close()
+        cls.seedThermo = os.path.join(cls.databaseDirectory, 'thermo', 'libraries', 'testSeed.py')
+        cls.seedKinetics = os.path.join(cls.databaseDirectory, 'kinetics', 'libraries', 'testSeed')
+        cls.seedThermoEdge = os.path.join(cls.databaseDirectory, 'thermo', 'libraries', 'testSeed_edge.py')
+        cls.seedKineticsEdge = os.path.join(cls.databaseDirectory, 'kinetics', 'libraries', 'testSeed_edge')
 
-        self.rmg = RMG(inputFile=os.path.join(os.getcwd(), 'input.py'), outputDirectory=os.getcwd())
+        os.mkdir(os.path.join(cls.testDir, cls.outputDir))
 
-    def tearDown(self):
-        os.chdir(originalPath)
-        shutil.rmtree(self.dir_name)
-        # go back to the main RMG-Py directory
-        os.chdir('..')
-        # remove modular level database
+        cls.rmg = RMG(inputFile=os.path.join(cls.testDir, 'input.py'),
+                      outputDirectory=os.path.join(cls.testDir, cls.outputDir))
+
+        cls.rmg.execute()
+
+    @classmethod
+    def tearDownClass(cls):
+        """A function that is run ONCE after all unit tests in this class."""
+        # Reset module level database
         import rmgpy.data.rmg
         rmgpy.data.rmg.database = None
 
+        # Remove output directory
+        shutil.rmtree(os.path.join(cls.testDir, cls.outputDir))
+
+        # Delete the seed libraries created in database
+        os.remove(cls.seedThermo)
+        shutil.rmtree(cls.seedKinetics)
+        os.remove(cls.seedThermoEdge)
+        shutil.rmtree(cls.seedKineticsEdge)
+
     def testRMGExecute(self):
-        """
-        This example is to test if RMG.execute increases the core reactions
-        """
-        
-        self.rmg.execute()
+        """Test that RMG.execute completed successfully."""
         self.assertIsInstance(self.rmg.database, RMGDatabase)
         self.assertTrue(self.rmg.done)
+
+    def testRMGIncreasesReactions(self):
+        """Test that RMG.execute increases reactions and species."""
         self.assertTrue(len(self.rmg.reactionModel.core.reactions) > 0)
         self.assertTrue(len(self.rmg.reactionModel.core.species) > 1)
         self.assertTrue(len(self.rmg.reactionModel.edge.reactions) > 0)
         self.assertTrue(len(self.rmg.reactionModel.edge.species) > 0)
+
+    def testRMGSeedMechanismCreation(self):
+        """Test that the expected seed mechanisms are created in output directory."""
+        seedDir = os.path.join(self.testDir, self.outputDir, 'seed')
+        self.assertTrue(os.path.exists)
+
+        self.assertTrue(os.path.exists(os.path.join(seedDir, self.rmg.name + '.py')))  # thermo library made
+        self.assertTrue(os.path.exists(os.path.join(seedDir, self.rmg.name)))  # kinetics library folder made
+
+        self.assertTrue(os.path.exists(os.path.join(seedDir, self.rmg.name, 'dictionary.txt')))  # dictionary file made
+        self.assertTrue(os.path.exists(os.path.join(seedDir, self.rmg.name, 'reactions.py')))  # reactions file made
+
+    def testRMGSeedEdgeMechanismCreation(self):
+        """Test that the expected seed mechanisms are created in output directory."""
+        seedDir = os.path.join(self.testDir, self.outputDir, 'seed')
+        self.assertTrue(os.path.exists)
+
+        name = self.rmg.name + '_edge'
+
+        self.assertTrue(os.path.exists(os.path.join(seedDir, name + '.py')))  # thermo library made
+        self.assertTrue(os.path.exists(os.path.join(seedDir, name)))  # kinetics library folder made
+
+        self.assertTrue(os.path.exists(os.path.join(seedDir, name, 'dictionary.txt')))  # dictionary file made
+        self.assertTrue(os.path.exists(os.path.join(seedDir, name, 'reactions.py')))  # reactions file made
+
+    def testRMGSeedLibraryCreation(self):
+        """Test that seed mechanisms are created in the correct database locations."""
+        self.assertTrue(os.path.exists(self.seedThermo))
+        self.assertTrue(os.path.exists(self.seedKinetics))
+
+    def testRMGSeedEdgeLibraryCreation(self):
+        """Test that edge seed mechanisms are created in the correct database locations."""
+        self.assertTrue(os.path.exists(self.seedThermo))
+        self.assertTrue(os.path.exists(self.seedKinetics))
+
+    def testRMGSeedWorks(self):
+        """Test that the created seed libraries work.
+
+        Note: Since this test modifies the class level RMG instance,
+        it can cause other tests to fail if run out of order."""
+        # Load the seed libraries into the database
+        self.rmg.database.load(
+            path=self.databaseDirectory,
+            thermoLibraries=['testSeed', 'testSeed_edge'],
+            reactionLibraries=['testSeed', 'testSeed_edge'],
+            seedMechanisms=['testSeed', 'testSeed_edge'],
+            kineticsFamilies='default',
+            kineticsDepositories=[],
+            depository=False
+        )
         
+        self.rmg.reactionModel = CoreEdgeReactionModel()
+        self.rmg.reactionModel.addReactionLibraryToEdge('testSeed')  # try adding seed as library
+        self.assertTrue(len(self.rmg.reactionModel.edge.species) > 0)
+        self.assertTrue(len(self.rmg.reactionModel.edge.reactions) > 0)
+        
+        self.rmg.reactionModel = CoreEdgeReactionModel()
+        self.rmg.reactionModel.addSeedMechanismToCore('testSeed')  # try adding seed as seed mech
+        self.assertTrue(len(self.rmg.reactionModel.core.species) > 0)
+        self.assertTrue(len(self.rmg.reactionModel.core.reactions) > 0)
+
+        self.rmg.reactionModel = CoreEdgeReactionModel()
+        self.rmg.reactionModel.addReactionLibraryToEdge('testSeed_edge')  # try adding seed as library
+        self.assertTrue(len(self.rmg.reactionModel.edge.species) > 0)
+        self.assertTrue(len(self.rmg.reactionModel.edge.reactions) > 0)
+
+        self.rmg.reactionModel = CoreEdgeReactionModel()
+        self.rmg.reactionModel.addSeedMechanismToCore('testSeed_edge')  # try adding seed as seed mech
+        self.assertTrue(len(self.rmg.reactionModel.core.species) > 0)
+        self.assertTrue(len(self.rmg.reactionModel.core.reactions) > 0)
+
     def testMakeCanteraInputFile(self):
         """
-        This tests to ensure that a usable cantera input file is created
+        This tests to ensure that a usable Cantera input file is created.
         """
-        
-        self.rmg.execute()
-        
         import cantera as ct
         
         outName = os.path.join(self.rmg.outputDirectory, 'cantera')
@@ -132,8 +173,9 @@ options(
                 try:
                     ct.Solution(os.path.join(outName, f))
                 except:
-                    self.assertTrue(False, 'The output cantera file is not loadable in cantera')
-                    
+                    self.fail('The output Cantera file is not loadable in Cantera.')
+
+
 class TestCanteraOutput(unittest.TestCase):
     
     def setUp(self):

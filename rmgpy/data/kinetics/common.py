@@ -33,27 +33,11 @@ This module contains classes and functions that are used by multiple modules
 in this subpackage.
 """
 
-from rmgpy.data.base import DatabaseError, LogicNode
-from rmgpy.reaction import Reaction, ReactionError
+from rmgpy.data.base import LogicNode
+from rmgpy.reaction import Reaction
 from rmgpy.molecule import Group
 from rmgpy.species import Species
-
-################################################################################
-
-class KineticsError(Exception):
-    """
-    An exception for problems with kinetics. Pass a string describing the problem.
-    """
-    pass
-
-class UndeterminableKineticsError(ReactionError):
-    """
-    An exception raised when attempts to estimate appropriate kinetic parameters
-    for a chemical reaction are unsuccessful.
-    """
-    def __init__(self, reaction, message=''):
-        new_message = 'Kinetics could not be determined. '+message
-        ReactionError.__init__(self,reaction,new_message)
+from rmgpy.exceptions import DatabaseError, KineticsError
 
 ################################################################################
 
@@ -90,10 +74,6 @@ def saveEntry(f, entry):
         #Write out additional data if depository or library
         #kinetic rules would have a Group object for its reactants instead of Species
         if isinstance(entry.item.reactants[0], Species):
-            if entry.label != str(entry.item):
-                raise KineticsError("Reactions are now defined solely by their labels, "
-                                                    "but reaction {0!s} has label {1!r}".format(
-                                                     entry.item, entry.label))
             # Add degeneracy if the reaction is coming from a depository or kinetics library
             f.write('    degeneracy = {0:.1f},\n'.format(entry.item.degeneracy))
             if entry.item.duplicate:

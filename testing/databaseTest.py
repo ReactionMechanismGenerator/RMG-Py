@@ -1,9 +1,6 @@
 """
 This scripts runs tests on the database
 """
-import os.path
-import logging
-from external.wip import work_in_progress
 from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase
 from copy import copy
@@ -409,7 +406,9 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             for j in range(i+1,len(speciesList)):
                     initialMap = {}
                     try:
-                        for atomLabel in labeledAtoms[i]:
+                        atom_labels = set(list(labeledAtoms[i].keys()) + 
+                                                list(labeledAtoms[j].keys()))
+                        for atomLabel in atom_labels:
                             initialMap[labeledAtoms[i][atomLabel]] = labeledAtoms[j][atomLabel]
                     except KeyError:
                         # atom labels did not match, therefore not a match
@@ -555,7 +554,7 @@ The following adjList may have atoms in a different ordering than the input file
 
         # set of all end_labels should be backbone label
         backboneLabel = set([])
-        for end, end_label in endLabels.iteritems():
+        for end_label in endLabels.itervalues():
             for label in end_label:
                 backboneLabel.add(label)
 

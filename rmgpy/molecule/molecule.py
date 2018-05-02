@@ -39,7 +39,6 @@ describe the corresponding atom or bond.
 import cython
 import logging
 import os
-import re
 import numpy
 import urllib
 from collections import OrderedDict
@@ -50,7 +49,6 @@ try:
     import openbabel
 except:
     pass
-from rdkit import Chem
 from .graph import Vertex, Edge, Graph, getVertexConnectivityValue
 import rmgpy.molecule.group as gr
 from .atomtype import AtomType, atomTypes, getAtomType, AtomTypeError
@@ -83,6 +81,10 @@ class Atom(Vertex):
     `coords`            ``numpy array``     The (x,y,z) coordinates in Angstrom
     `lonePairs`         ``short``           The number of lone electron pairs
     `id`                ``int``             Number assignment for atom tracking purposes
+    `bonds`             ``dict``            Dictionary of bond objects with keys being neighboring atoms
+    `mass`              ``int``             atomic mass of element (read only)
+    `number`            ``int``             atomic number of element (read only)
+    `symbol`            ``str``             atomic symbol of element (read only)
     =================== =================== ====================================
 
     Additionally, the ``mass``, ``number``, and ``symbol`` attributes of the
@@ -397,17 +399,6 @@ class Atom(Vertex):
         else:
             raise gr.ActionError('Unable to update Atom: Invalid action {0}".'.format(action))
 
-    def setSpinMultiplicity(self,spinMultiplicity):
-        """
-        Set the spin multiplicity.
-        """
-        raise NotImplementedError("I thought multiplicity was now a molecule attribute not atom?")
-        # Set the spin multiplicity
-        self.spinMultiplicity = spinMultiplicity
-        if self.spinMultiplicity < 0:
-            raise gr.ActionError('Unable to update Atom due to spin multiplicity : Invalid spin multiplicity set "{0}".'.format(self.spinMultiplicity))
-        self.updateCharge()
-
     def getBondOrdersForAtom(self):
         """
         This helper function is to help calculate total bond orders for an
@@ -442,6 +433,8 @@ class Bond(Edge):
     Attribute           Type                Description
     =================== =================== ====================================
     `order`             ``float``             The :ref:`bond type <bond-types>`
+    `atom1`             ``Atom``              An Atom object connecting to the bond
+    `atom2`             ``Atom``              An Atom object connecting to the bond
     =================== =================== ====================================
 
     """
@@ -660,15 +653,17 @@ class Bond(Edge):
 class Molecule(Graph):
     """
     A representation of a molecular structure using a graph data type, extending
-    the :class:`Graph` class. The `atoms` and `bonds` attributes are aliases
-    for the `vertices` and `edges` attributes. Other attributes are:
+    the :class:`Graph` class. Attributes are:
 
     ======================= =========== ========================================
     Attribute               Type        Description
     ======================= =========== ========================================
-    `symmetryNumber`        ``int``     The (estimated) external + internal symmetry number of the molecule
+    `symmetryNumber`        ``float``   The (estimated) external + internal symmetry number of the molecule, modified for chirality
     `multiplicity`          ``int``     The multiplicity of this species, multiplicity = 2*total_spin+1
     `props`                 ``dict``    A list of properties describing the state of the molecule.
+    `InChI`                 ``str``     A string representation of the molecule in InChI
+    `atoms`                 ``list``    A list of Atom objects in the molecule
+    `fingerprint`           ``str``     A representation for fast comparison, set as molecular formula
     ======================= =========== ========================================
 
     A new molecule object can be easily instantiated by passing the `SMILES` or
@@ -688,7 +683,7 @@ class Molecule(Graph):
     
     
     def __hash__(self):
-        return hash((self.getFingerprint()))
+        return hash((self.fingerprint))
             
     def __richcmp__(x, y, op):
         if op == 2:#Py_EQ
@@ -702,7 +697,7 @@ class Molecule(Graph):
         """Method to test equality of two Molecule objects."""
         if not isinstance(other, Molecule): return False #different type
         elif self is other: return True #same reference in memory
-        elif self.getFingerprint() != other.getFingerprint(): return False
+        elif self.fingerprint != other.fingerprint: return False
         else:
             return self.isIsomorphic(other)   
 
@@ -737,6 +732,20 @@ class Molecule(Graph):
     def __getAtoms(self): return self.vertices
     def __setAtoms(self, atoms): self.vertices = atoms
     atoms = property(__getAtoms, __setAtoms)
+
+    def __getFingerprint(self):
+        """
+        Return a string containing the "fingerprint" used to accelerate graph
+        isomorphism comparisons with other molecules. The fingerprint is a
+        short string containing a summary of selected information about the 
+        molecule. Two fingerprint strings matching is a necessary (but not
+        sufficient) condition for the associated molecules to be isomorphic.
+        """
+        if self._fingerprint is None:
+            self.fingerprint = self.getFormula()
+        return self._fingerprint
+    def __setFingerprint(self, fingerprint): self._fingerprint = fingerprint
+    fingerprint = property(__getFingerprint, __setFingerprint)
 
     def addAtom(self, atom):
         """
@@ -874,6 +883,19 @@ class Molecule(Graph):
         for atom in self.vertices:
             radicals += atom.radicalElectrons
         return radicals
+
+    def getSingletCarbeneCount(self):
+        """
+        Return the total number of singlet carbenes (lone pair on a carbon atom)
+        in the molecule. Counts the number of carbon atoms with a lone pair.
+        In the case of [C] with two lone pairs, this method will return 1.
+        """
+        cython.declare(atom=Atom, carbenes=cython.short)
+        carbenes = 0
+        for atom in self.vertices:
+            if atom.isCarbon() and atom.lonePairs > 0:
+                carbenes += 1
+        return carbenes
 
     def getNumAtoms(self, element = None):
         """
@@ -1063,18 +1085,6 @@ class Molecule(Graph):
                     labeled[atom.label] = atom
         return labeled
 
-    def getFingerprint(self):
-        """
-        Return a string containing the "fingerprint" used to accelerate graph
-        isomorphism comparisons with other molecules. The fingerprint is a
-        short string containing a summary of selected information about the 
-        molecule. Two fingerprint strings matching is a necessary (but not
-        sufficient) condition for the associated molecules to be isomorphic.
-        """
-        if self._fingerprint is None:
-            self._fingerprint = self.getFormula()
-        return self._fingerprint
-    
     def isIsomorphic(self, other, initialMap=None):
         """
         Returns :data:`True` if two graphs are isomorphic and :data:`False`
@@ -1091,7 +1101,7 @@ class Molecule(Graph):
         # Do the quick isomorphism comparison using the fingerprint
         # Two fingerprint strings matching is a necessary (but not
         # sufficient!) condition for the associated molecules to be isomorphic
-        if self.getFingerprint() != other.getFingerprint():
+        if self.fingerprint != other.fingerprint:
             return False
         # check multiplicity
         if self.multiplicity != other.multiplicity:
@@ -1117,7 +1127,7 @@ class Molecule(Graph):
         # Do the quick isomorphism comparison using the fingerprint
         # Two fingerprint strings matching is a necessary (but not
         # sufficient!) condition for the associated molecules to be isomorphic
-        if self.getFingerprint() != other.getFingerprint():
+        if self.fingerprint != other.fingerprint:
             return []
         # check multiplicity
         if self.multiplicity != other.multiplicity:
@@ -1893,7 +1903,7 @@ class Molecule(Graph):
 
         global atom_id_counter
 
-        for i, atom in enumerate(self.atoms):
+        for atom in self.atoms:
             atom.id = atom_id_counter
             atom_id_counter += 1
             if atom_id_counter == 2**15:

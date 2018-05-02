@@ -56,18 +56,8 @@ from rmgpy.species import Species
 from rmgpy.kinetics.arrhenius import Arrhenius #PyDev: @UnresolvedImport
 from rmgpy.kinetics import KineticsData, ArrheniusEP, ThirdBody, Lindemann, Troe, Chebyshev, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, getRateCoefficientUnitsFromReactionOrder  #PyDev: @UnresolvedImport
 from rmgpy.pdep.reaction import calculateMicrocanonicalRateCoefficient
-
+from rmgpy.exceptions import ReactionError
 from rmgpy.kinetics.diffusionLimited import diffusionLimiter
-
-################################################################################
-
-class ReactionError(Exception):
-    """
-    An exception class for exceptional behavior involving :class:`Reaction`
-    objects. Pass a string describing the circumstances that caused the
-    exceptional behavior.
-    """
-    pass
 
 ################################################################################
 
@@ -120,9 +110,7 @@ class Reaction:
         self.duplicate = duplicate
         self.pairs = pairs
         self.comment = comment
-        
-        if diffusionLimiter.enabled:
-            self.k_effective_cache = {}
+        self.k_effective_cache = {}
 
     def __repr__(self):
         """
@@ -150,12 +138,20 @@ class Reaction:
         Return a string representation of the reaction, in the form 'A + B <=> C + D'.
         If a specificCollider exists, the srting representation is 'A + B (+S) <=> C + D (+S)'.
         """
+        return self.toLabeledStr(use_index=True)
+    
+    def toLabeledStr(self, use_index=False):
+        """
+        the same as __str__ except that the labels are assumed to exist and used for reactant and products rather than 
+        the labels plus the index in parentheses
+        """
         arrow = ' <=> '
         if not self.reversible: arrow = ' => '
+        
         if self.specificCollider:
-            return arrow.join([' + '.join([str(s) for s in self.reactants])+' (+'+str(self.specificCollider)+')', ' + '.join([str(s) for s in self.products])+' (+'+str(self.specificCollider)+')'])
+            return arrow.join([' + '.join([str(s) if use_index else s.label for s in self.reactants])+' (+'+str(self.specificCollider)+')', ' + '.join([str(s) if use_index else s.label for s in self.products])+' (+'+str(self.specificCollider)+')'])
         else:
-            return arrow.join([' + '.join([str(s) for s in self.reactants]), ' + '.join([str(s) for s in self.products])])
+            return arrow.join([' + '.join([str(s) if use_index else s.label for s in self.reactants]), ' + '.join([str(s) if use_index else s.label for s in self.products])])
 
     def __reduce__(self):
         """
@@ -471,7 +467,7 @@ class Reaction:
         for reactant in self.reactants:
             try:
                 dGrxn -= reactant.getFreeEnergy(T)
-            except Exception as e:
+            except Exception:
                 logging.error("Problem with reactant {!r} in reaction {!s}".format(reactant, self))
                 raise
         for product in self.products:

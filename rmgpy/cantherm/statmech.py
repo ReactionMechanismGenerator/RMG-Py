@@ -53,15 +53,7 @@ from rmgpy.statmech.rotation import Rotation, LinearRotor, NonlinearRotor, KRoto
 from rmgpy.statmech.vibration import Vibration, HarmonicOscillator
 from rmgpy.statmech.torsion import Torsion, HinderedRotor, FreeRotor
 from rmgpy.statmech.conformer import Conformer
-
-################################################################################
-
-class InputError(Exception):
-    """
-    An exception raised when parsing an input file for a conformer. Pass a
-    string describing the error.
-    """
-    pass
+from rmgpy.exceptions import InputError
 
 ################################################################################
 

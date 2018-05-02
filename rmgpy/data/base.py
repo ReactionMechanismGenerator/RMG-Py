@@ -44,18 +44,9 @@ except ImportError:
     logging.warning("Upgrade to Python 2.7 or later to ensure your database entries are read and written in the same order each time!")
     OrderedDict = dict
 from rmgpy.molecule import Molecule, Group
-from rmgpy.molecule.adjlist import InvalidAdjacencyListError
 
 from reference import Reference, Article, Book, Thesis
-
-################################################################################
-
-class DatabaseError(Exception):
-    """
-    A exception that occurs when working with an RMG database. Pass a string
-    giving specifics about the exceptional behavior.
-    """
-    pass
+from rmgpy.exceptions import DatabaseError, ForbiddenStructureException, InvalidAdjacencyListError
 
 ################################################################################
 
@@ -231,7 +222,7 @@ class Database:
         f = open(path, 'r')
         try:
             exec f in global_context, local_context
-        except Exception, e:
+        except Exception:
             logging.error('Error while reading database {0!r}.'.format(path))
             raise
         f.close()
@@ -1263,12 +1254,6 @@ def getAllCombinations(nodeLists):
     return items
 
 ################################################################################
-
-class ForbiddenStructureException(Exception):
-    """
-    Made a forbidden structure.
-    """
-    pass
 
 class ForbiddenStructures(Database):
     """

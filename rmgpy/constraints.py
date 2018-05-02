@@ -43,7 +43,7 @@ def failsSpeciesConstraints(species):
 
     try:
         speciesConstraints = getInput('speciesConstraints')
-    except Exception, e:
+    except Exception:
         logging.debug('Species constraints could not be found.')
         speciesConstraints = {}
     
@@ -91,6 +91,16 @@ def failsSpeciesConstraints(species):
     maxRadicals = speciesConstraints.get('maximumRadicalElectrons', -1)
     if maxRadicals != -1:
         if (struct.getRadicalCount() > maxRadicals):
+            return True
+
+    maxCarbenes = speciesConstraints.get('maximumSingletCarbenes', 1)
+    if maxRadicals != -1:
+        if struct.getSingletCarbeneCount() > maxCarbenes:
+            return True
+
+    maxCarbeneRadicals = speciesConstraints.get('maximumCarbeneRadicals', 0)
+    if maxCarbeneRadicals != -1:
+        if struct.getSingletCarbeneCount() > 0 and struct.getRadicalCount() > maxCarbeneRadicals:
             return True
 
     maxIsotopes = speciesConstraints.get('maximumIsotopicAtoms', -1)

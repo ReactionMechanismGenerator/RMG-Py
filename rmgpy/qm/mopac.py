@@ -36,6 +36,7 @@ import shutil
 
 from rmgpy.molecule import Molecule
 from molecule import QMMolecule
+from rmgpy.exceptions import DependencyError
 
 
 class Mopac:
@@ -98,7 +99,26 @@ class Mopac:
 
     def testReady(self):
         if not os.path.exists(self.executablePath):
-            raise Exception("Couldn't find MOPAC executable at {0}. Try setting your MOPAC_DIR environment variable.".format(self.executablePath))
+            raise DependencyError("Couldn't find MOPAC executable at {0}. Try setting your MOPAC_DIR environment variable.".format(self.executablePath))
+
+        # Check if MOPAC executable works properly
+        process = Popen(self.executablePath,
+                        stdin=PIPE,
+                        stdout=PIPE,
+                        stderr=PIPE)
+        stdout, stderr = process.communicate()
+
+        self.expired = False
+        if 'has expired' in stderr:
+            # The MOPAC executable is expired
+            logging.warning('\n'.join(stderr.split('\n')[2:7]))
+            self.expired = True
+        elif 'To install the MOPAC license' in stderr:
+            # The MOPAC executable exists, but the license has not been installed
+            raise DependencyError('\n'.join(stderr.split('\n')[0:9]))
+        elif 'MOPAC_LICENSE' in stderr:
+            # The MOPAC executable is in the wrong location on Windows; MOPAC_LICENSE must be set
+            raise DependencyError('\n'.join(stderr.split('\n')[0:11]))
 
     def run(self):
         self.testReady()
@@ -109,8 +129,9 @@ class Mopac:
         tempInpFile = os.path.join(dirpath, os.path.basename(self.inputFilePath))
         shutil.copy(self.inputFilePath, dirpath)      
 
-        process = Popen([self.executablePath, tempInpFile], stderr=PIPE)
-        stdout, stderr = process.communicate()  # necessary to wait for executable termination!
+        process = Popen([self.executablePath, tempInpFile], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        command = '\n' if self.expired else None  # press enter to pass expiration notice
+        stdout, stderr = process.communicate(input=command)  # necessary to wait for executable termination!
         if "ended normally" not in stderr.strip():
             logging.warning("Mopac error message:" + stderr)
 
@@ -142,8 +163,7 @@ class Mopac:
         if not os.path.exists(self.outputFilePath):
             logging.debug("Output file {0} does not (yet) exist.".format(self.outputFilePath))
             return False
-    
-        InChIMatch=False #flag (1 or 0) indicating whether the InChI in the file matches InChIaug this can only be 1 if InChIFound is also 1
+
         InChIFound=False #flag (1 or 0) indicating whether an InChI was found in the log file
         
         # Initialize dictionary with "False"s 
@@ -166,16 +186,16 @@ class Mopac:
                     logFileInChI = line #output files should take up to 240 characters of the name in the input file
                     InChIFound = True
                     if self.uniqueIDlong in logFileInChI:
-                        InChIMatch = True
+                        pass
                     elif self.uniqueIDlong.startswith(logFileInChI):
                         logging.info("InChI too long to check, but beginning matches so assuming OK.")
-                        InChIMatch = True
+
                     else:
                         logging.warning("InChI in log file ({0}) didn't match that in geometry ({1}).".format(logFileInChI, self.uniqueIDlong))                    
                         # Use only up to first 80 characters to match due to MOPAC bug which deletes 81st character of InChI string
                         if self.uniqueIDlong.startswith(logFileInChI[:80]):
                             logging.warning("but the beginning matches so it's probably just a truncation problem.")
-                            InChIMatch = True
+
         # Check that ALL 'success' keywords were found in the file.
         if not all( successKeysFound.values() ):
             logging.error('Not all of the required keywords for success were found in the output file!')
@@ -184,10 +204,6 @@ class Mopac:
         if not InChIFound:
             logging.error("No InChI was found in the MOPAC output file {0}".format(self.outputFilePath))
             return False
-        
-        if not InChIMatch:
-            #InChIs do not match (most likely due to limited name length mirrored in log file (240 characters), but possibly due to a collision)
-            return self.checkForInChiKeyCollision(logFileInChI) # Not yet implemented!
 
         # Compare the optimized geometry to the original molecule
         qmData = self.parse()
@@ -200,9 +216,6 @@ class Mopac:
 
         logging.info("Successful {1} quantum result in {0}".format(self.outputFilePath, self.__class__.__name__))
         return True
-        
-        #InChIs do not match (most likely due to limited name length mirrored in log file (240 characters), but possibly due to a collision)
-        return self.checkForInChiKeyCollision(logFileInChI) # Not yet implemented!
     
     def getParser(self, outputFile):
         """

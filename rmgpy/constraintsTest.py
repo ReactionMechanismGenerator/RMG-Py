@@ -33,8 +33,13 @@ This script contains unit tests of the :mod:`rmgpy.constraints` module.
 """
 
 import unittest
+import mock
 
-from rmgpy.constraints import *
+from rmgpy.rmg.main import RMG
+from rmgpy.constraints import failsSpeciesConstraints
+from rmgpy.species import Species
+from rmgpy.molecule import Molecule
+import rmgpy.rmg.input
 
 ################################################################################
 
@@ -42,14 +47,196 @@ class TestFailsSpeciesConstraints(unittest.TestCase):
     """
     Contains unit tests of the failsSpeciesConstraints function.
     """
-            
-    def testConstraintsNotLoaded(self):
+
+    @classmethod
+    def setUpClass(cls):
+        """
+        A function run ONCE before all unit tests in this class.
+        """
+        cls.rmg = RMG()
+        rmgpy.rmg.input.rmg = cls.rmg
+        rmgpy.rmg.input.generatedSpeciesConstraints(
+            maximumCarbonAtoms=2,
+            maximumOxygenAtoms=1,
+            maximumNitrogenAtoms=1,
+            maximumSiliconAtoms=1,
+            maximumSulfurAtoms=1,
+            maximumHeavyAtoms=3,
+            maximumRadicalElectrons=2,
+            maximumSingletCarbenes=1,
+            maximumCarbeneRadicals=0,
+            maximumIsotopicAtoms=2,
+        )
+
+    @classmethod
+    def tearDownClass(cls):
+        """
+        A function run ONCE after all unit tests in this class.
+        """
+        rmgpy.rmg.input.rmg = None
+
+    @mock.patch('rmgpy.constraints.logging')
+    def testConstraintsNotLoaded(self, mock_logging):
         """
         Test what happens when constraints are not loaded.
         """
-        from rmgpy.species import Species
+        # Reset module level rmg variable in rmgpy.rmg.input
+        rmgpy.rmg.input.rmg = None
 
+        mol = Molecule(SMILES='C')
+
+        self.assertFalse(failsSpeciesConstraints(mol))
+
+        mock_logging.debug.assert_called_with('Species constraints could not be found.')
+
+        # Restore module level rmg variable in rmgpy.rmg.input
+        rmgpy.rmg.input.rmg = self.rmg
+
+    def testSpeciesInput(self):
+        """
+        Test that failsSpeciesConstraints can handle a Species object.
+        """
         spc = Species().fromSMILES('C')
 
-        fails = failsSpeciesConstraints(spc)
-        self.assertFalse(fails)
+        self.assertFalse(failsSpeciesConstraints(spc))
+
+    def testExplicitlyAllowedMolecules(self):
+        """
+        Test that we can explicitly allow molecules in species constraints.
+        """
+        mol = Molecule(SMILES='CCCC')
+        self.assertTrue(failsSpeciesConstraints(mol))
+
+        self.rmg.speciesConstraints['explicitlyAllowedMolecules'] = [Molecule(SMILES='CCCC')]
+        self.assertFalse(failsSpeciesConstraints(mol))
+
+    def testCarbonConstraint(self):
+        """
+        Test that we can constrain the max number of carbon atoms.
+        """
+        mol1 = Molecule(SMILES='CC')
+        self.assertFalse(failsSpeciesConstraints(mol1))
+
+        mol2 = Molecule(SMILES='CCC')
+        self.assertTrue(failsSpeciesConstraints(mol2))
+
+    def testOxygenConstraint(self):
+        """
+        Test that we can constrain the max number of oxygen atoms.
+        """
+        mol1 = Molecule(SMILES='C=O')
+        self.assertFalse(failsSpeciesConstraints(mol1))
+
+        mol2 = Molecule(SMILES='OC=O')
+        self.assertTrue(failsSpeciesConstraints(mol2))
+
+    def testNitrogenConstraint(self):
+        """
+        Test that we can constrain the max number of nitrogen atoms.
+        """
+        mol1 = Molecule(SMILES='CN')
+        self.assertFalse(failsSpeciesConstraints(mol1))
+
+        mol2 = Molecule(SMILES='NCN')
+        self.assertTrue(failsSpeciesConstraints(mol2))
+
+    def testSiliconConstraint(self):
+        """
+        Test that we can constrain the max number of silicon atoms.
+        """
+        mol1 = Molecule(SMILES='[SiH4]')
+        self.assertFalse(failsSpeciesConstraints(mol1))
+
+        mol2 = Molecule(SMILES='[SiH3][SiH3]')
+        self.assertTrue(failsSpeciesConstraints(mol2))
+
+    def testSulfurConstraint(self):
+        """
+        Test that we can constrain the max number of sulfur atoms.
+        """
+        mol1 = Molecule(SMILES='CS')
+        self.assertFalse(failsSpeciesConstraints(mol1))
+
+        mol2 = Molecule(SMILES='SCS')
+        self.assertTrue(failsSpeciesConstraints(mol2))
+
+    def testHeavyConstraint(self):
+        """
+        Test that we can constrain the max number of heavy atoms.
+        """
+        mol1 = Molecule(SMILES='CCO')
+        self.assertFalse(failsSpeciesConstraints(mol1))
+
+        mol2 = Molecule(SMILES='CCN=O')
+        self.assertTrue(failsSpeciesConstraints(mol2))
+
+    def testRadicalConstraint(self):
+        """
+        Test that we can constrain the max number of radical electrons.
+        """
+        mol1 = Molecule(SMILES='[CH2][CH2]')
+        self.assertFalse(failsSpeciesConstraints(mol1))
+
+        mol2 = Molecule(SMILES='[CH2][CH][CH2]')
+        self.assertTrue(failsSpeciesConstraints(mol2))
+
+    def testCarbeneConstraint(self):
+        """
+        Test that we can constrain the max number of singlet carbenes.
+        """
+        mol1 = Molecule().fromAdjacencyList("""
+1 C u0 p1 c0 {2,S} {3,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+""")
+        self.assertFalse(failsSpeciesConstraints(mol1))
+
+        mol2 = Molecule().fromAdjacencyList("""
+1 C u0 p1 c0 {2,S} {3,S}
+2 H u0 p0 c0 {1,S}
+3 C u0 p1 c0 {1,S} {4,S}
+4 H u0 p0 c0 {3,S}
+""")
+        self.assertTrue(failsSpeciesConstraints(mol2))
+
+    def testCarbeneRadicalConstraint(self):
+        """
+        Test that we can constrain the max number of radical electrons with a carbene.
+        """
+        mol1 = Molecule().fromAdjacencyList("""
+1 C u0 p1 c0 {2,S} {3,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+""")
+        self.assertFalse(failsSpeciesConstraints(mol1))
+
+        mol2 = Molecule().fromAdjacencyList("""
+1 C u0 p1 c0 {2,S} {3,S}
+2 H u0 p0 c0 {1,S}
+3 C u1 p0 c0 {1,S} {4,S} {5,S}
+4 H u0 p0 c0 {3,S}
+5 H u0 p0 c0 {3,S}
+""")
+        self.assertTrue(failsSpeciesConstraints(mol2))
+
+    def testIsotopeConstraint(self):
+        """
+        Test that we can constrain the max number of isotopic atoms.
+        """
+        mol1 = Molecule().fromAdjacencyList("""
+1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 D u0 p0 c0 {1,S}
+3 D u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+5 H u0 p0 c0 {1,S}
+""")
+        self.assertFalse(failsSpeciesConstraints(mol1))
+
+        mol2 = Molecule().fromAdjacencyList("""
+1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 D u0 p0 c0 {1,S}
+3 D u0 p0 c0 {1,S}
+4 D u0 p0 c0 {1,S}
+5 H u0 p0 c0 {1,S}
+""")
+        self.assertTrue(failsSpeciesConstraints(mol2))
