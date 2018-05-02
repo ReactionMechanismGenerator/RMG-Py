@@ -40,7 +40,7 @@ from rmgpy.rmg.settings import ModelSettings
 from rmgpy.solver.liquid import LiquidReactor
 from rmgpy.kinetics.diffusionLimited import diffusionLimiter
 
-def plotSensitivity(outputDirectory, reactionSystemIndex, sensitiveSpeciesList, number=10, fileformat='.png'):
+def plot_sensitivity(outputDirectory, reactionSystemIndex, sensitiveSpeciesList, number=10, fileformat='.png'):
     """
     A function for plotting the top reaction thermo sensitivities (the number is 
     inputted as the variable `number`) in bar plot format.
@@ -93,12 +93,11 @@ def simulate(rmg, diffusionLimited=True):
         
         else:
             logging.info('Conducting simulation of reaction system %s...' % (index+1))
-            
-        if rmg.saveSimulationProfiles:
-            reactionSystem.attach(SimulationProfileWriter(
-                rmg.outputDirectory, index, rmg.reactionModel.core.species))   
-            reactionSystem.attach(SimulationProfilePlotter(
-                    rmg.outputDirectory, index, rmg.reactionModel.core.species))
+
+        reactionSystem.attach(SimulationProfileWriter(
+            rmg.outputDirectory, index, rmg.reactionModel.core.species))
+        reactionSystem.attach(SimulationProfilePlotter(
+            rmg.outputDirectory, index, rmg.reactionModel.core.species))
             
         sensWorksheet = []
         for spec in reactionSystem.sensitiveSpecies:
@@ -137,19 +136,19 @@ def simulate(rmg, diffusionLimited=True):
         )
         
         if reactionSystem.sensitiveSpecies:
-            plotSensitivity(rmg.outputDirectory, index, reactionSystem.sensitiveSpecies)
+            plot_sensitivity(rmg.outputDirectory, index, reactionSystem.sensitiveSpecies)
 
-def runSensitivity(inputFile, chemkinFile, dictFile, diffusionLimited=True):
+def run_simulation(inputFile, chemkinFile, dictFile, diffusionLimited=True, checkDuplicates=True):
     """
     Runs a standalone simulation of RMG.  Runs sensitivity analysis if sensitive species are given.
     diffusionLimited=True implies that if it is a liquid reactor diffusion limitations will be enforced
     otherwise they will not be in a liquid reactor
     """
     
-    rmg = loadRMGJob(inputFile, chemkinFile, dictFile, generateImages=False)    
+    rmg = loadRMGJob(inputFile, chemkinFile, dictFile, generateImages=False, checkDuplicates=checkDuplicates)
     
     start_time = time()
-    # conduct sensitivity simulation
+    # conduct simulation
     simulate(rmg,diffusionLimited)
     end_time = time()
     time_taken = end_time - start_time

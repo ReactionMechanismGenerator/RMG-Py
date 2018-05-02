@@ -16,9 +16,9 @@ Current Developers: (rmg_dev@mit.edu)
 - Dr. Alon G. Dana
 - Mark Goldman
 - Kehang Han
-- Max Liu
-- Belinda Slakman
-- Nathan Yee
+- Matt Johnson
+- Mengjie Liu
+- Mark Payne
 
 Previous Developers: 
 
@@ -31,9 +31,12 @@ Previous Developers:
 - Dr. Fariba S. Khanshan
 - Victor Lambert
 - Dr. Shamel S. Merchant
+- Dr. Belinda Slakman
 - Sean Troiano
 - Dr. Aaron Vandeputte
 - Dr. Nick M. Vandewiele
+- Dr. Nathan Yee
+- Peng Zhang
 
 
 ***********

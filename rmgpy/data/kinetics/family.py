@@ -46,7 +46,8 @@ from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.molecule.resonance import generate_aromatic_resonance_structures
 from rmgpy.species import Species
 
-from .common import saveEntry, ensure_species, find_degenerate_reactions, generate_molecule_combos
+from .common import saveEntry, ensure_species, find_degenerate_reactions, generate_molecule_combos,\
+                    ensure_independent_atom_ids
 from .depository import KineticsDepository
 from .groups import KineticsGroups
 from .rules import KineticsRules
@@ -1067,7 +1068,7 @@ class KineticsFamily(Database):
                 shortDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.shortDesc,
                 longDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.longDesc,
             )
-            new_entry.data.comment = "From training reaction {1} for rate rule {0}".format(';'.join([g.label for g in template]), entry.index)
+            new_entry.data.comment = "From training reaction {1} used for {0}".format(';'.join([g.label for g in template]), entry.index)
 
             new_entry.data.A.value_si /= entry.item.degeneracy
             try:
@@ -1115,7 +1116,7 @@ class KineticsFamily(Database):
                 shortDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.shortDesc,
                 longDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.longDesc,
             )
-            new_entry.data.comment = "From training reaction {1} for rate rule {0}".format(';'.join([g.label for g in template]), entry.index)
+            new_entry.data.comment = "From training reaction {1} used for {0}".format(';'.join([g.label for g in template]), entry.index)
 
             new_entry.data.A.value_si /= new_degeneracy
             try:
@@ -1451,14 +1452,14 @@ class KineticsFamily(Database):
         consistent with the template of this reaction family.
 
         Args:
-            reactants:      List of Molecules to react
-            products:       List of Molecules or Species of desired product structures (optional)
-            prod_resonance: Flag to generate resonance structures for product checking (optional)
-                            Defaults to True, resonance structures are compared
+            reactants (list):                List of Molecules to react.
+            products (list, optional):       List of Molecules or Species of desired product structures.
+            prod_resonance (bool, optional): Flag to generate resonance structures for product checking.
+                Defaults to True, resonance structures are compared.
 
         Returns:
             List of all reactions containing Molecule objects with the
-                specified reactants and products within this family.
+            specified reactants and products within this family.
             Degenerate reactions are returned as separate reactions.
         """
         reactionList = []
@@ -1545,22 +1546,28 @@ class KineticsFamily(Database):
         `ignoreSameReactants= True` to this method.
         """
         reaction.degeneracy = 1
+        # Check if the reactants are the same
+        # If they refer to the same memory address, then make a deep copy so
+        # they can be manipulated independently
+        reactants = reaction.reactants
+        same_reactants = False
+        if len(reactants) == 2:
+            if reactants[0] is reactants[1]:
+                reactants[1] = reactants[1].copy(deep=True)
+                same_reactants = True
+            elif reactants[0].isIsomorphic(reactants[1]):
+                same_reactants = True
 
-        # find combinations of resonance isomers
-        specReactants = ensure_species(reaction.reactants, resonance=True, keepIsomorphic=True)
-        molecule_combos = generate_molecule_combos(specReactants)
+        # Label reactant atoms for proper degeneracy calculation
+        ensure_independent_atom_ids(reactants, resonance=True)
+        molecule_combos = generate_molecule_combos(reactants)
 
         reactions = []
         for combo in molecule_combos:
             reactions.extend(self.__generateReactions(combo, products=reaction.products, forward=True))
 
-        # Check if the reactants are the same
-        sameReactants = False
-        if len(specReactants) == 2 and specReactants[0].isIsomorphic(specReactants[1]):
-            sameReactants = True
-
         # remove degenerate reactions
-        reactions = find_degenerate_reactions(reactions, sameReactants, kinetics_family=self)
+        reactions = find_degenerate_reactions(reactions, same_reactants, kinetics_family=self)
 
         # remove reactions with different templates (only for TemplateReaction)
         if isinstance(reaction, TemplateReaction):
@@ -1692,7 +1699,7 @@ class KineticsFamily(Database):
         # If products is given, remove reactions from the reaction list that
         # don't generate the given products
         if products is not None:
-            products = ensure_species(products, resonance=prod_resonance)
+            ensure_species(products, resonance=prod_resonance)
 
             rxnList0 = rxnList[:]
             rxnList = []
@@ -1836,7 +1843,8 @@ class KineticsFamily(Database):
             error = True
             
         if error:
-            raise ReactionPairsError('Unable to determine reaction pairs for {0!s} reaction {1!s}.'.format(self.label, reaction))
+            logging.debug('Preset mapping missing for determining reaction pairs for family {0!s}, falling back to Reaction.generatePairs'.format(self.label))
+            return []
         else:
             return pairs
         
@@ -1913,9 +1921,9 @@ class KineticsFamily(Database):
         2. the source - this will be `None` if from a template estimate
         3. the entry  - this will be `None` if from a template estimate
         4. isForward a boolean denoting whether the matched entry is in the same
-        direction as the inputted reaction. This will always be True if using
-        rates rules or group additivity. This can be `True` or `False` if using
-        a depository
+           direction as the inputted reaction. This will always be True if using
+           rates rules or group additivity. This can be `True` or `False` if using
+           a depository
 
         If returnAllKinetics==False, only the first (best?) matching kinetics is returned.
         """
@@ -2124,6 +2132,15 @@ class KineticsFamily(Database):
         # make sure we start with reaction with species objects
         reaction.ensure_species(reactant_resonance=False, product_resonance=False)
 
+        reactants = reaction.reactants
+        products = reaction.products
+        # ensure all species are independent references
+        if len(reactants + products) > len(set([id(s) for s in reactants + products])):
+            logging.debug('Copying reactants and products for reaction {} since they have identical species references'.format(reaction))
+            # not all species are independent
+            reactants = [s.copy(deep=True) for s in reactants]
+            products = [s.copy(deep=True) for s in products]
+
         # get all possible pairs of resonance structures
         reactant_pairs = list(itertools.product(*[s.molecule for s in reaction.reactants]))
         product_pairs = list(itertools.product(*[s.molecule for s in reaction.products]))
@@ -2144,20 +2161,22 @@ class KineticsFamily(Database):
 
         # place the molecules in reaction's species object
         # this prevents overwriting of attributes of species objects by this method
-        for species in reaction.products:
+        for index, species in enumerate(products):
             for labeled_molecule in labeled_products:
                 if species.isIsomorphic(labeled_molecule):
                     species.molecule = [labeled_molecule]
+                    reaction.products[index] = species
                     break
             else:
-                raise ActionError('Could not find isomorphic molecule to fit the original product {}'.format(species))
-        for species in reaction.reactants:
+                raise ActionError('Could not find isomorphic molecule to fit the original product {} from reaction {}'.format(species, reaction))
+        for index, species in enumerate(reactants):
             for labeled_molecule in labeled_reactants:
                 if species.isIsomorphic(labeled_molecule):
                     species.molecule = [labeled_molecule]
+                    reaction.reactants[index] = species
                     break
             else:
-                raise ActionError('Could not find isomorphic molecule to fit the original reactant {}'.format(species))
+                raise ActionError('Could not find isomorphic molecule to fit the original reactant {} from reaction {}'.format(species, reaction))
 
         if output_with_resonance:
             # convert the molecules to species objects with resonance structures
@@ -2299,21 +2318,22 @@ class KineticsFamily(Database):
         Will return the template associated with the matched rate rule.
         Returns a tuple containing (Boolean_Is_Kinetics_From_Training_reaction, Source_Data)
         
-        For a training reaction, the Source_Data returns 
-        [Family_Label, Training_Reaction_Entry, Kinetics_In_Reverse?]
+        For a training reaction, the Source_Data returns::
+
+            [Family_Label, Training_Reaction_Entry, Kinetics_In_Reverse?]
         
-        For a reaction from rate rules, the Source_Data is a tuple containing
-        [Family_Label, {'template': originalTemplate,
-            'degeneracy': degeneracy, 
-            'exact': boolean_exact?, 
-            'rules': a list of (original rate rule entry, weight in average)
-            'training': a list of (original rate rule entry associated with training entry, original training entry, weight in average)
-            }]
-        where TrainingReactions are ones that have created rules used in the estimate.
-        
-        where Exact is a boolean of whether the rate is an exact match, 
-        Template is the reaction template used,
-        and RateRules is a list of the rate rule entries containing the kinetics used
+        For a reaction from rate rules, the Source_Data is a tuple containing::
+
+            [Family_Label, {'template': originalTemplate,
+                            'degeneracy': degeneracy,
+                            'exact': boolean_exact?,
+                            'rules': a list of (original rate rule entry, weight in average)
+                            'training': a list of (original rate rule entry associated with training entry, original training entry, weight in average)}]
+
+
+        where Exact is a boolean of whether the rate is an exact match, Template is
+        the reaction template used, RateRules is a list of the rate rule entries containing
+        the kinetics used, and TrainingReactions are ones that have created rules used in the estimate.
         """
         import re
         lines = reaction.kinetics.comment.split('\n')
@@ -2354,7 +2374,12 @@ class KineticsFamily(Database):
         
         # The rate rule string is right after the phrase 'for rate rule'
         rateRuleString = fullCommentString.split("for rate rule",1)[1].split()[0]
-        templateLabel = re.split(regex, rateRuleString)[1]
+        
+        if rateRuleString[0] == '[':
+            templateLabel = re.split(regex, rateRuleString)[1]
+        else:
+            templateLabel = rateRuleString #if has the line 'From training reaction # for rate rule node1;node2'
+            
         template = self.retrieveTemplate(templateLabel.split(';'))
         rules, trainingEntries = self.getSourcesForTemplate(template)
         

@@ -364,7 +364,7 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
         reactionList = []
         if only_families is None:
             reactionList.extend(self.generate_reactions_from_libraries(reactants, products))
-        reactionList.extend(self.generate_reactions_from_families(reactants, products, only_families=None, resonance=True))
+        reactionList.extend(self.generate_reactions_from_families(reactants, products, only_families=None, resonance=resonance))
         return reactionList
 
     def generate_reactions_from_libraries(self, reactants, products=None):
@@ -386,7 +386,7 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
         provided `reactants`, which can be either :class:`Molecule` objects or
         :class:`Species` objects.
         """
-        reactants = ensure_species(reactants)
+        ensure_species(reactants)
 
         reaction_list = []
         for entry in library.entries.values():
@@ -434,10 +434,9 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
             elif reactants[0].isIsomorphic(reactants[1]):
                 same_reactants = True
 
-        # Convert to Species objects if necessary
-        reactants = ensure_species(reactants)
-
-        # Label reactant atoms for proper degeneracy calculation
+        # Label reactant atoms for proper degeneracy calculation (cannot be in tuple)
+        if isinstance(reactants, tuple):
+            reactants = list(reactants)
         ensure_independent_atom_ids(reactants, resonance=resonance)
 
         combos = generate_molecule_combos(reactants)

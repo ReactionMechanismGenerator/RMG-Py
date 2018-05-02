@@ -68,6 +68,9 @@ class Network:
     `Ngrains`               The number of energy grains
     `NJ`                    The number of angular momentum grains
     ----------------------- ----------------------------------------------------
+     `grainSize`            Maximum size of separation between energies
+     `grainCount`           Minimum number of descrete energies separated
+     `E0`                   A list of ground state energies of isomers, reactants, and products
     `activeKRotor`          ``True`` if the K-rotor is treated as active, ``False`` if treated as adiabatic
     `activeJRotor`          ``True`` if the J-rotor is treated as active, ``False`` if treated as adiabatic
     `rmgmode`               ``True`` if in RMG mode, ``False`` otherwise
@@ -75,34 +78,79 @@ class Network:
     
     """
     
-    def __init__(self, label='', isomers=None, reactants=None, products=None, pathReactions=None, bathGas=None):
+    def __init__(self, label='', isomers=None, reactants=None, products=None,
+                 pathReactions=None, bathGas=None, netReactions=None, T=0.0, P =0.0,
+                 Elist = None, Jlist = None, Ngrains = 0, NJ = 0, activeKRotor = True,
+                 activeJRotor = True, grainSize=0.0, grainCount = 0, E0 = None):
+        """
+        To initialize a Network object for running a pressure dependent job,
+        only label, isomers, reactants, products pathReactions and bathGas are useful,
+        since the other attributes will be created during the run.
+
+        The other attributes are used to reinstantiate the created network object
+        for debugging and testing.
+        """
         self.label = label
         self.isomers = isomers or []
         self.reactants = reactants or []
         self.products = products or []
         self.pathReactions = pathReactions or []
         self.bathGas = bathGas or {}
-        self.netReactions = []
+        self.netReactions = netReactions or []
         
-        self.T = 0.0
-        self.P = 0.0
-        self.Elist = None
-        self.Jlist = None
+        self.T = T
+        self.P = P
+        self.Elist = Elist
+        self.Jlist = Jlist
         
         self.Nisom = len(self.isomers)
         self.Nreac = len(self.reactants)
         self.Nprod = len(self.products)
-        self.Ngrains = 0
-        self.NJ = 0
+        self.Ngrains = Ngrains
+        self.NJ = NJ
 
-        self.activeKRotor = True
-        self.activeJRotor = True
+        self.activeKRotor = activeKRotor
+        self.activeJRotor = activeJRotor
 
-        self.grainSize = 0.0
-        self.grainCount = 0
-        self.E0 = None
+        self.grainSize = grainSize
+        self.grainCount = grainCount
+        self.E0 = E0
 
         self.valid = False
+
+    def __repr__(self):
+        string = 'Network('
+        if self.label != '': string += 'label="{0}", '.format(self.label)
+        if self.isomers: string += 'isomers="{0!r}", '.format(self.isomers)
+        if self.reactants: string += 'reactants="{0!r}", '.format(self.reactants)
+        if self.products: string += 'products="{0!r}", '.format(self.products)
+        if self.pathReactions: string += 'pathReactions="{0!r}", '.format(self.pathReactions)
+        if self.bathGas: string += 'bathGas="{0!r}", '.format(self.bathGas)
+        if self.netReactions: string += 'netReactions="{0!r}", '.format(self.netReactions)
+        if self.T != 0.0: string += 'T="{0}", '.format(self.T)
+        if self.P != 0.0: string += 'P="{0}", '.format(self.P)
+        if self.Elist is not None: string += 'Elist="{0}", '.format(self.Elist)
+        if self.Jlist is not None: string += 'Jlist="{0}", '.format(self.Jlist)
+        if self.Ngrains != 0: string += 'Ngrains="{0}", '.format(self.Ngrains)
+        if self.NJ != 0: string += 'NJ="{0}", '.format(self.NJ)
+        string += 'activeKRotor="{0}", '.format(self.activeKRotor)
+        string += 'activeJRotor="{0}", '.format(self.activeJRotor)
+        if self.grainSize != 0.0: string += 'grainSize="{0}", '.format(self.grainSize)
+        if self.grainCount != 0: string += 'grainCount="{0}", '.format(self.grainCount)
+        if self.E0 is not None: string += 'E0="{0}", '.format(self.E0)
+        string += ')'
+        return string
+
+    def __str__(self):
+        """return Network like it would be seen in cantherm input file"""
+        return "Network(label = '{0}', isomers = {1}, reactants = {2}, products = {3}, "\
+                        "pathReactions = {4}, bathGas = {5}, "\
+                        "netReactions = {6})".format(self.label, [i.species[0].label for i in self.isomers],
+                        [[r.label for r in pair.species] for pair in self.reactants],
+                        [[p.label for p in pair.species] for pair in self.products],
+                        [r.label for r in self.pathReactions],
+                        dict([(s.label, value) for s, value in self.bathGas.items()]),
+                        [r.toLabeledStr() for r in self.netReactions])
 
     def invalidate(self):
         """
@@ -170,6 +218,8 @@ class Network:
         self.rmgmode = rmgmode
         
         self.calculateDensitiesOfStates()
+        logging.debug('Finished initialization for network {0}.'.format(self.label))
+        logging.debug('The nework now has values of {0}'.format(repr(self)))
 
     def calculateRateCoefficients(self, Tlist, Plist, method, errorCheck=True):
         
@@ -239,7 +289,9 @@ class Network:
                                 logging.info(K[t,p,0:Nisom+Nreac+Nprod,0:Nisom+Nreac])
                                 K[t,p,:,:] = 0 * K[t,p,:,:]
                                 self.K = 0 * self.K
-
+        logging.debug('Finished calculating rate coefficients for network {0}.'.format(self.label))
+        logging.debug('The nework now has values of {0}'.format(repr(self)))
+        logging.debug('Master equation matrix found for network {0} is {1}'.format(self.label, K))
         return K
 
     def setConditions(self, T, P, ymB=None):
@@ -325,6 +377,8 @@ class Network:
             # Update parameters that depend on temperature and pressure if necessary
             if temperatureChanged or pressureChanged:
                 self.calculateCollisionModel()
+        logging.debug('Finished setting conditions for network {0}.'.format(self.label))
+        logging.debug('The nework now has values of {0}'.format(repr(self)))
 
     def __getEnergyGrains(self, Emin, Emax, grainSize=0.0, grainCount=0):
         """

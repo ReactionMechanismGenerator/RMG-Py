@@ -76,6 +76,7 @@ Model Chemistry                                  AEC   BC   SOC
 ``'BMK/cbsb7'``                                   v    v    v
 ``'BMK/6-311G(2d,d,p)'``                          v    v    v
 ``'B3LYP/6-311+G(3df,2p)'``                            v
+``'B3LYP/6-31G**'``                               v    v
 ================================================ ===== ==== ====
 
 Notes:
@@ -122,8 +123,8 @@ Parameter               Required?                   Description
 ``externalSymmetry``    yes                         The external symmetry number for rotation
 ``spinMultiplicity``    yes                         The ground-state spin multiplicity (degeneracy)
 ``opticalIsomers``      yes                         The number of optical isomers of the species
-``energy``              yes                         The ground-state 0 K atomization energy in Hartree (without zero-point energy)
-                                                    **or**
+``energy``              yes                         The ground-state 0 K atomization energy in Hartree
+                                                    (without zero-point energy) **or**
                                                     The path to the quantum chemistry output file containing the energy
 ``geometry``            yes                         The path to the quantum chemistry output file containing the optimized geometry
 ``frequencies``         yes                         The path to the quantum chemistry output file containing the computed frequencies
@@ -170,7 +171,7 @@ they can specify the path to a quantum chemistry calculation output file that co
 
 In this example, the ``CBS-QB3`` energy is obtained from a Gaussian log file, while the ``Klip_2`` energy is specified directly.
 The energy used will depend on what ``modelChemistry()`` was specified in the input file. CanTherm can parse the energy from
-a ``GaussianLog``, ``MoleProLog`` or ``QchemLog``.
+a ``GaussianLog``, ``MolproLog`` or ``QchemLog``.
 
 The input to the remaining parameters, ``geometry``, ``frequencies`` and ``rotors``, will depend on if hindered/free rotors are included.
 Both cases are described below.
@@ -265,6 +266,24 @@ As noted above, ``scanLog`` can either point to a ``GaussianLog``, ``QchemLog`` 
            6.2831853072            0.0000000000
 
 The ``Energy`` can be in units of ``kJ/mol``, ``J/mol``, ``cal/mol``, ``kcal/mol``, ``cm^-1`` or ``hartree``.
+
+The ``symmetry`` parameter will usually equal either 1, 2 or 3. Below are examples of internal rotor scans with these commonly encountered symmetry numbers. First, ``symmetry = 3``:
+
+.. image:: symmetry_3_example.png
+
+Internal rotation of a methyl group is a common example of a hindered rotor with ``symmetry = 3``, such as the one above. As shown, all three minima (and maxima) have identical energies, hence ``symmetry = 3``.
+
+Similarly, if there are only two minima along the internal rotor scan, and both have identical energy, then ``symmetry = 2``, as in the example below: 
+
+.. image:: symmetry_2_example.png
+
+If any of the energy minima in an internal rotor scan are not identical, then the rotor has no symmetry (``symmetry = 1``), as in the example below:
+
+.. image:: symmetry_1_example.png
+
+For the example above there are 3 local energy minima, 2 of which are identical to each other. However, the 3rd minima is different from the other 2, therefore this internal rotor has no symmetry. 
+
+For practical purposes, when determining the symmetry number for a given hindered rotor simply check if the internal rotor scan looks like the ``symmetry = 2`` or ``3`` examples above. If it doesn’t, then most likely ``symmetry = 1``.
 
 Each :class:`FreeRotor()` object requires the following parameters:
 

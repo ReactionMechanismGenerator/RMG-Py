@@ -627,6 +627,8 @@ class GroupBond(Edge):
                 values.append('T')
             elif value == 1.5:
                 values.append('B')
+            elif value == 0:
+                values.append('H')
             else:
                 raise TypeError('Bond order number {} is not hardcoded as a string'.format(value))
         return values
@@ -646,6 +648,8 @@ class GroupBond(Edge):
                 values.append(3)
             elif value == 'B':
                 values.append(1.5)
+            elif value == 'H':
+                values.append(0)
             else:
                 # try to see if an float disguised as a string was input by mistake
                 try:
@@ -730,6 +734,21 @@ class GroupBond(Edge):
         else:
             return abs(self.order[0]-1.5) <= 1e-9 and len(self.order) == 1
 
+    def isHydrogenBond(self, wildcards = False):
+        """
+        Return ``True`` if the bond represents a hydrogen bond or ``False`` if
+        not. If `wildcards` is ``False`` we return False anytime there is more
+        than one bond order, otherwise we return ``True`` if any of the options
+        are hydrogen bonds.
+        """
+        if wildcards:
+            for order in self.order:
+                if abs(order) <= 1e-9:
+                    return True
+            else: return False
+        else:
+            return abs(self.order[0]) <= 1e-9 and len(self.order) == 1
+        
     def __changeBond(self, order):
         """
         Update the bond group as a result of applying a CHANGE_BOND action,
@@ -1098,18 +1117,26 @@ class Group(Graph):
         isomorphism checks.
         """
         cython.declare(atom=GroupAtom, atomType=AtomType)
-        cython.declare(carbon=AtomType, nitrogen=AtomType, oxygen=AtomType, sulfur=AtomType)
-        cython.declare(isCarbon=cython.bint, isNitrogen=cython.bint, isOxygen=cython.bint, isSulfur=cython.bint, radical=cython.int)
-        
+        cython.declare(carbon=AtomType, nitrogen=AtomType, oxygen=AtomType, sulfur=AtomType, chlorine=AtomType,
+                       iodine=AtomType, silicon=AtomType)
+        cython.declare(isCarbon=cython.bint, isNitrogen=cython.bint, isOxygen=cython.bint, isSulfur=cython.bint,
+                       isChlorine=cython.bint, isIodine=cython.bint, isSilicon=cython.bint, radical=cython.int)
+
         carbon   = atomTypes['C']
         nitrogen = atomTypes['N']
         oxygen   = atomTypes['O']
         sulfur   = atomTypes['S']
+        chlorine = atomTypes['Cl']
+        iodine   = atomTypes['I']
+        silicon  = atomTypes['Si']
         
         self.carbonCount   = 0
         self.nitrogenCount = 0
         self.oxygenCount   = 0
         self.sulfurCount   = 0
+        self.chlorineCount = 0
+        self.iodineCount   = 0
+        self.siliconCount  = 0
         self.radicalCount  = 0
         for atom in self.vertices:
             if len(atom.atomType) == 1:
@@ -1118,17 +1145,27 @@ class Group(Graph):
                 isNitrogen = atomType.equivalent(nitrogen)
                 isOxygen   = atomType.equivalent(oxygen)
                 isSulfur   = atomType.equivalent(sulfur)
-                if isCarbon and not isNitrogen and not isOxygen and not isSulfur:
-                    self.carbonCount += 1
-                elif isNitrogen and not isCarbon and not isOxygen and not isSulfur:
-                    self.nitrogenCount += 1
-                elif isOxygen and not isCarbon and not isNitrogen and not isSulfur:
-                    self.oxygenCount += 1
-                elif isSulfur and not isCarbon and not isNitrogen and not isOxygen:
-                    self.sulfurCount += 1
-            if len(atom.radicalElectrons) == 1:
-                radical = atom.radicalElectrons[0]
-                self.radicalCount += radical
+                isChlorine = atomType.equivalent(chlorine)
+                isIodine = atomType.equivalent(iodine)
+                isSilicon  = atomType.equivalent(silicon)
+                sum_is_atom = isCarbon + isNitrogen + isOxygen + isSulfur + isChlorine + isIodine + isSilicon
+                if sum_is_atom == 1:
+                    if isCarbon:
+                        self.carbonCount += 1
+                    elif isNitrogen:
+                        self.nitrogenCount += 1
+                    elif isOxygen:
+                        self.oxygenCount += 1
+                    elif isSulfur:
+                        self.sulfurCount += 1
+                    elif isChlorine:
+                        self.chlorineCount += 1
+                    elif isIodine:
+                        self.iodineCount += 1
+                    elif isSilicon:
+                        self.siliconCount += 1
+            if len(atom.radicalElectrons) >= 1:
+                self.radicalCount += atom.radicalElectrons[0]
 
     def isIsomorphic(self, other, initialMap=None):
         """

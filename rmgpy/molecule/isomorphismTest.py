@@ -40,7 +40,7 @@ from external.wip import work_in_progress
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.molecule.group import Group
 
-molecule_atom_types           = [ 'C', 'O', 'N', 'S', 'Si', 'Cl']
+molecule_atom_types           = [ 'C', 'O', 'N', 'S', 'Si', 'Cl', 'I']
 group_atomtypes = {}
 
 for item in create_atom_types() :
@@ -140,6 +140,7 @@ def load_cases_molecule_atom_types():
     '''
     output = []
     a_types           = list(itertools.product(molecule_atom_types, repeat=2))
+    uncharged_a_types = ['Cl','I']
     unpaired_electrons = list(itertools.product(range(3), repeat=2))
     cross_element_unpaired = list(itertools.product(a_types,unpaired_electrons))
     for item in cross_element_unpaired:
@@ -155,7 +156,10 @@ def load_cases_molecule_atom_types():
                 for now, only allow charges up to +1, not +2, +3, even
                 if the unspecified valency allows for that.
                 '''
-                charges.append(range(min(val,1)+1))
+                if el not in uncharged_a_types:
+                    charges.append(range(min(val,1)+1))
+                else:
+                    charges.append((0,0))
                 
         charge_combos = list(itertools.product(charges[0],charges[1]))#cross product for both graphs
         for charge_combo in charge_combos:#combine charge tuple with the cross product of element and unpaired

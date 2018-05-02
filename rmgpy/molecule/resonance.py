@@ -36,6 +36,7 @@ Molecule object is ``generate_resonance_structures``. It calls the necessary
 functions for generating each type of resonance structure.
 
 Currently supported resonance types:
+
 - All species:
     - ``generate_adjacent_resonance_structures``: single radical shift with double or triple bond
     - ``generate_lone_pair_radical_resonance_structures``: single radical shift with lone pair
@@ -142,10 +143,10 @@ def generate_resonance_structures(mol, clarStructures=True, keepIsomorphic=False
     Aromatic species are broken into the following categories for resonance treatment:
 
     - Radical polycyclic aromatic species: Kekule structures are generated in order to generate adjacent resonance
-    structures. The resulting structures are then used for Clar structure generation. After all three steps, any
-    non-aromatic structures are removed, under the assumption that they are not important resonance contributors.
+      structures. The resulting structures are then used for Clar structure generation. After all three steps, any
+      non-aromatic structures are removed, under the assumption that they are not important resonance contributors.
     - Radical monocyclic aromatic species: Kekule structures are generated along with adjacent resonance structures.
-    All are kept regardless of aromaticity because the radical is more likely to delocalize into the ring.
+      All are kept regardless of aromaticity because the radical is more likely to delocalize into the ring.
     - Stable polycyclic aromatic species: Clar structures are generated
     - Stable monocyclic aromatic species: Kekule structures are generated
     """

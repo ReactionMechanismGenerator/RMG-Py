@@ -193,13 +193,41 @@ class TestNetwork(unittest.TestCase):
         Test that the network `netReactions` property was properly set.
         """
         self.assertEqual(0, len(self.network.netReactions))
-    
-    def test_initialize(self):
+
+    def test_repr(self):
         """
-        Test that the Network.initialize() method.
+        Test that the `repr` representation contains desired properties.
         """
-        self.network.initialize(Tmin=300., Tmax=2000., Pmin=1e3, Pmax=1e7, minimumGrainCount=200, maximumGrainSize=4184.0)
-    
+        output = repr(self.network)
+        # ensure species strings
+        labels = ['dehydration','H2O','N2','TS','n-C4H8','n-C4H10O']
+        for label in labels:
+            self.assertIn(label, output)
+
+        # ensure classes are used as well
+        attributes = ['Configuration','Network','Species','Conformer','NonlinearRotor',
+                   'HarmonicOscillator','frequencies','TransportData',
+                   'molecularWeight','SingleExponentialDown']
+        for label in attributes:
+            self.assertIn(label, output)
+
+    def test_str(self):
+        """
+        Test that the string representation contains desired properties.
+        """
+        output = str(self.network)
+        # ensure species strings
+        labels = ['dehydration','H2O','N2','n-C4H8','n-C4H10O']
+        for label in labels:
+            self.assertIn(label, output)
+
+        # ensure this extra fluff is not in Network string
+        attributes = ['Configuration','Species','Conformer','Molecule','NonlinearRotor',
+                   'HarmonicOscillator','frequencies','spinMultiplicity','TransportData',
+                   'molecularWeight','SingleExponentialDown']
+        for label in attributes:
+            self.assertNotIn(label, output)
+
     def test_collisionMatrixMemoryHandling(self):
         net = Network()
         net.Elist = [1]*10000

@@ -43,7 +43,7 @@ import rmgpy.constants as constants
 
 from rmgpy.cantherm.output import prettify
 from rmgpy.cantherm.gaussian import GaussianLog
-from rmgpy.cantherm.molepro import MoleProLog 
+from rmgpy.cantherm.molpro import MolproLog
 from rmgpy.cantherm.qchem import QchemLog 
 
 from rmgpy.species import TransitionState, Species
@@ -174,6 +174,8 @@ class StatMechJob:
         self.load()
         if outputFile is not None:
             self.save(outputFile)
+        logging.debug('Finished statmech job for species {0}.'.format(self.species))
+        logging.debug(repr(self.species))
     
     def load(self):
         """
@@ -200,7 +202,7 @@ class StatMechJob:
             # File formats
             'GaussianLog': GaussianLog,
             'QchemLog': QchemLog,
-            'MoleProLog': MoleProLog,
+            'MolproLog': MolproLog,
             'ScanLog': ScanLog,
         }
     
@@ -262,7 +264,7 @@ class StatMechJob:
         elif isinstance(energy, QchemLog):
             energyLog = energy; E0 = None
             energyLog.path = os.path.join(directory, energyLog.path)
-        elif isinstance(energy, MoleProLog):
+        elif isinstance(energy, MolproLog):
             energyLog = energy; E0 = None
             energyLog.path = os.path.join(directory, energyLog.path)
         elif isinstance(energy, float):
@@ -646,7 +648,9 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
         
     elif modelChemistry in ['BMK/cbsb7', 'BMK/6-311G(2d,d,p)']:
         atomEnergies = {'H':-0.498618853119+ SOC['H'], 'N':-54.5697851544+ SOC['N'], 'O':-75.0515210278+ SOC['O'], 'C':-37.8287310027+ SOC['C'], 'P':-341.167615941+ SOC['P'], 'S': -398.001619915+ SOC['S']}
-        
+    elif modelChemistry == 'b3lyp/6-31G**':
+        atomEnergies = {'H':-0.500426155, 'C':-37.850331697831, 'O':-75.0535872748806, 'S':-398.100820107242}
+
     else:
         logging.warning('Unknown model chemistry "{0}"; not applying energy corrections.'.format(modelChemistry))
         return E0
@@ -701,12 +705,12 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds):
             'N-H':  0.06, 'N-N': -0.23, 'N=N': -0.37, 'N#N': -0.64,}
     elif modelChemistry == 'CBS-QB3': 
         bondEnergies = { 
-            'C-C': -0.495, 'C-H': -0.045, 'C=C': -0.825, 'C-O': 0.378, 'C=O': 0.743, 'O-H': -0.423, #Table2: Paraskevas, PD (2013). Chemistry-A European J., DOI: 10.1002/chem.201301381
-            'C#C': -0.64,  'C#N': -0.89,  'C-S': 0.43,   'O=S': -0.78, 'S-H': 0.0,   'C-N': -0.13, # Table IX: Petersson GA (1998) J. of Chemical Physics, DOI: 10.1063/1.477794 
-            'N-H': -0.42,  'N=O': 1.11,   'N-N': -1.87,  'N=N': -1.58, 'N-O': 0.35, #Table 2: Ashcraft R (2007) J. Phys. Chem. B; DOI: 10.1021/jp073539t
-            'N#N': -2.0,   'O=O': -0.2,   'H-H': 1.1, # Unknown source
+            'C-C': -0.495,'C-H': -0.045,'C=C': -0.825,'C-O': 0.378,'C=O': 0.743,'O-H': -0.423,  #Table2: Paraskevas, PD (2013). Chemistry-A European J., DOI: 10.1002/chem.201301381
+            'C#C': -0.64, 'C#N': -0.89, 'C-S': 0.43,  'O=S': -0.78,'S-H': 0.0,  'C-N': -0.13, 'C-Cl': 1.29, 'C-F': 0.55,  # Table IX: Petersson GA (1998) J. of Chemical Physics, DOI: 10.1063/1.477794
+            'N-H': -0.42, 'N=O': 1.11,  'N-N': -1.87, 'N=N': -1.58,'N-O': 0.35,  #Table 2: Ashcraft R (2007) J. Phys. Chem. B; DOI: 10.1021/jp073539t
+            'N#N': -2.0,  'O=O': -0.2,  'H-H': 1.1,  # Unknown source
              }
-    elif modelChemistry in ['B3LYP/cbsb7', 'B3LYP/6-311G(2d,d,p)', 'DFT_G03_b3lyp','B3LYP/6-311+G(3df,2p)']:
+    elif modelChemistry in ['B3LYP/cbsb7', 'B3LYP/6-311G(2d,d,p)', 'DFT_G03_b3lyp','B3LYP/6-311+G(3df,2p)','b3lyp/6-31G**']:
         bondEnergies = { 'C-H': 0.25, 'C-C': -1.89, 'C=C': -0.40, 'C#C': -1.50,
             'O-H': -1.09, 'C-O': -1.18, 'C=O': -0.01, 'N-H': 1.36, 'C-N': -0.44, 
             'C#N': 0.22, 'C-S': -2.35, 'O=S': -5.19, 'S-H': -0.52, }    
@@ -727,6 +731,9 @@ def projectRotors(conformer, F, rotors, linear, TS):
     molecule `linear`, project out the nonvibrational modes from the force
     constant matrix and use this to determine the vibrational frequencies. The
     list of vibrational frequencies is returned in cm^-1.
+
+    Refer to Gaussian whitepaper (http://gaussian.com/vib/) for procedure to calculate 
+    harmonic oscillator vibrational frequencies using the force constant matrix.
     """
     
     Nrotors = len(rotors)
@@ -851,7 +858,9 @@ def projectRotors(conformer, F, rotors, linear, TS):
 
     logging.debug('Frequencies from internal Hessian')  
     for i in range(3*Natoms-external):
-        logging.debug(numpy.sqrt(eig[i])/(2 * math.pi * constants.c * 100))
+        with numpy.warnings.catch_warnings():
+            numpy.warnings.filterwarnings('ignore', r'invalid value encountered in sqrt')
+            logging.debug(numpy.sqrt(eig[i])/(2 * math.pi * constants.c * 100))
 
     # Now we can start thinking about projecting out the internal rotations
     Dint=numpy.zeros((3*Natoms,Nrotors), numpy.float64)
@@ -930,7 +939,9 @@ def projectRotors(conformer, F, rotors, linear, TS):
 
     logging.debug('Frequencies from projected Hessian')
     for i in range(3*Natoms):
-        logging.debug(numpy.sqrt(eig[i])/(2 * math.pi * constants.c * 100))
+        with numpy.warnings.catch_warnings():
+            numpy.warnings.filterwarnings('ignore', r'invalid value encountered in sqrt')
+            logging.debug(numpy.sqrt(eig[i])/(2 * math.pi * constants.c * 100))
         
     return numpy.sqrt(eig[-Nvib:]) / (2 * math.pi * constants.c * 100)
 

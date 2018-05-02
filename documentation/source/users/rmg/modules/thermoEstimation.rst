@@ -68,4 +68,8 @@ Submitting a job is easy::
 
 We recommend you make a job-specific directory for each thermoEstimator simulation.
 
+You can also specify that an RMG-style thermo library be saved upon completion::
+
+	python thermoEstimator.py -l input.py
+
 Note that the RMG website also provides thermo estimation through the `Molecule Search <http://rmg.mit.edu/molecule_search>`_.

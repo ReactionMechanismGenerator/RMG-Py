@@ -118,6 +118,9 @@ cdef class Group(Graph):
     cdef public short nitrogenCount
     cdef public short oxygenCount
     cdef public short sulfurCount
+    cdef public short chlorineCount
+    cdef public short iodineCount
+    cdef public short siliconCount
     cdef public short radicalCount
 
     cpdef addAtom(self, GroupAtom atom)

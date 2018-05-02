@@ -68,6 +68,17 @@ cdef class Configuration:
     def __str__(self):
         return ' + '.join([str(spec) for spec in self.species])
         
+    def __repr__(self):
+        string = 'Configuration('
+        string += 'species="{0!r}", '.format(self.species)
+        if self.Elist is not None: string += 'Elist={0}, '.format(self.Elist)
+        if self.densStates is not None: string += 'densStates={0}, '.format(self.densStates)
+        if self.sumStates is not None: string += 'sumStates={0}, '.format(self.sumStates)
+        string += 'activeKRotor={0}, '.format(self.activeKRotor)
+        string += 'activeJRotor={0}, '.format(self.activeJRotor)
+        string += ')'
+        return string
+
     property E0:
         """The ground-state energy of the configuration in J/mol."""
         def __get__(self):

@@ -164,7 +164,7 @@ class ThermoJob:
         f.write('{0}\n\n'.format(prettify(string)))
         
         f.close()
-        
+        # write chemkin file
         f = open(os.path.join(os.path.dirname(outputFile), 'chem.inp'), 'a')
         if isinstance(species, Species):
             if species.molecule and isinstance(species.molecule[0], Molecule):
@@ -179,7 +179,14 @@ class ThermoJob:
         string = writeThermoEntry(species, elementCounts=elementCounts, verbose=False)
         f.write('{0}\n'.format(string))
         f.close()
-    
+
+        # write species dictionary
+        f = open(os.path.join(os.path.dirname(outputFile), 'species_dictionary.txt'), 'a')
+        if isinstance(species, Species):
+            if species.molecule and isinstance(species.molecule[0], Molecule):
+                f.write(species.molecule[0].toAdjacencyList(removeH=False,label=species.label))
+                f.write('\n')
+        f.close()
 
     def plot(self, outputDirectory):
         """

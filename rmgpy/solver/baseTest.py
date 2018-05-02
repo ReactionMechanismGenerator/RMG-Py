@@ -55,7 +55,7 @@ class ReactionSystemTest(unittest.TestCase):
         chemkinFile = os.path.join(folder, 'chemkin/chem.inp')
         spc_dict = os.path.join(folder, 'chemkin/species_dictionary.txt')
 
-        self.rmg = loadRMGPyJob(inputFile, chemkinFile, spc_dict, generateImages=False)
+        self.rmg = loadRMGPyJob(inputFile, chemkinFile, spc_dict, generateImages=False, checkDuplicates=False)
 
     def testSurfaceInitialization(self):
         """

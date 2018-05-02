@@ -155,7 +155,7 @@ table below shows all atoms types in RMG.
 +----------+-------------------+------------------------------------------------------------------------------------------------------------------+
 |S4s       |Sulfur             |One lone pair, up to four single bonds                                                                            |
 +----------+-------------------+------------------------------------------------------------------------------------------------------------------+
-|S4sc      |Sulfur             |One lone pair, up to five single bonds, charged -1/+1                                                               |
+|S4sc      |Sulfur             |One lone pair, up to five single bonds, charged -1/+1                                                             |
 +----------+-------------------+------------------------------------------------------------------------------------------------------------------+
 |S4d       |Sulfur             |One lone pair, one double bond, up to two single bonds                                                            |
 +----------+-------------------+------------------------------------------------------------------------------------------------------------------+
@@ -189,6 +189,14 @@ table below shows all atoms types in RMG.
 +----------+-------------------+------------------------------------------------------------------------------------------------------------------+
 |S6tdc     |Sulfur             |No lone pairs, one to two triple bonds, up to two double bonds, up to four single bonds, charged -1/-1            |
 +----------+-------------------+------------------------------------------------------------------------------------------------------------------+
+|Cl        |Chlorine           |No requirements                                                                                                   |
++----------+-------------------+------------------------------------------------------------------------------------------------------------------+
+|Cl1s      |Chlorine           |Three lone pairs, zero to one single bonds                                                                        |
++----------+-------------------+------------------------------------------------------------------------------------------------------------------+
+|I         |Iodine             |No requirements                                                                                                   |
++----------+-------------------+------------------------------------------------------------------------------------------------------------------+
+|I1s       |Iodine             |Three lone pairs, zero to one single bonds                                                                        |
++----------+-------------------+------------------------------------------------------------------------------------------------------------------+
 |He        |Helium             |No requirements, nonreactive                                                                                      |
 +----------+-------------------+------------------------------------------------------------------------------------------------------------------+
 |Ne        |Neon               |No requirements, nonreactive                                                                                      |
@@ -214,12 +222,12 @@ or products that are forbidden.  These groups are stored in in the file located 
 
 To ban certain specific pathways in the kinetics 
 families, a `forbidden` group must be created, like the following group
-in the ``intra_H_migration`` family ::
+in the ``intra_H_migration`` family: ::
 
     forbidden(
         label = "bridged56_1254",
-    group =
-    """""""
+        group =
+    """
     1 *1 C 1 {2,S} {6,S}
     2 *4 C 0 {1,S} {3,S} {7,S}
     3    C 0 {2,S} {4,S}
@@ -230,9 +238,9 @@ in the ``intra_H_migration`` family ::
     8 *3 H 0 {4,S}
     """,
         shortDesc = u"""""",
-        longDesc = 
+        longDesc =
     u"""
-    
+
     """,
     )
 
@@ -240,6 +248,42 @@ Forbidden groups should be placed inside the groups.py file located inside the
 specific kinetics family's folder ``RMG-database/input/kinetics/family_name/`` 
 alongside normal group entries. The starred atoms in the forbidden group
 ban the specified reaction recipe from occurring in matched products and reactants.
+
+In addition for forbidding groups, there is the option of forbidding specific
+molecules or species. Forbidding a molecule will prevent that exact structure
+from being generated, while forbidding a species will prevent any of its resonance
+structures from being generated. To specify a forbidden molecule or species, simply
+replace the ``group`` keyword with ``molecule`` or ``species``: ::
+
+    # This forbids a molecule
+    forbidden(
+        label = "C_quintet",
+        molecule =
+    """
+    multiplicity 5
+    1 C u4 p0
+    """,
+        shortDesc = u"""""",
+        longDesc =
+    u"""
+
+    """,
+    )
+
+    # This forbids a species
+    forbidden(
+        label = "C_quintet",
+        species =
+    """
+    multiplicity 5
+    1 C u4 p0
+    """,
+        shortDesc = u"""""",
+        longDesc =
+    u"""
+
+    """,
+    )
 
 Hierarchical Trees
 ------------------

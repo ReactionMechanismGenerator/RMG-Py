@@ -109,6 +109,7 @@ def getMainExtensionModules():
         Extension('rmgpy.quantity', ['rmgpy/quantity.py'], include_dirs=['.']),
         Extension('rmgpy.reaction', ['rmgpy/reaction.py'], include_dirs=['.']),
         Extension('rmgpy.species', ['rmgpy/species.py'], include_dirs=['.']),
+        Extension('rmgpy.chemkin', ['rmgpy/chemkin.pyx'], include_dirs=['.']),
     ]
     
 def getSolverExtensionModules():
@@ -185,8 +186,19 @@ if 'minimal' in sys.argv:
             if os.path.splitext(source)[1] == '.pyx':
                 ext_modules.append(module)
 
-scripts=['cantherm.py', 'rmg.py', 'scripts/diffModels.py', 'scripts/generateFluxDiagram.py',
-         'scripts/generateReactions.py', 'scripts/mergeModels.py','scripts/sensitivity.py', 'scripts/thermoEstimator.py',
+scripts=['cantherm.py',
+         'rmg.py',
+         'scripts/checkModels.py',
+         'scripts/convertFAME.py',
+         'scripts/diffModels.py',
+         'scripts/generateChemkinHTML.py',
+         'scripts/generateFluxDiagram.py',
+         'scripts/generateReactions.py',
+         'scripts/machineWriteDatabase.py',
+         'scripts/mergeModels.py',
+         'scripts/simulate.py',
+         'scripts/standardizeModelSpeciesNames.py',
+         'scripts/thermoEstimator.py',
          'testing/databaseTest.py']
 
 modules = []

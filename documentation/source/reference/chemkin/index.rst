@@ -52,19 +52,6 @@ Function                        Description
 
 
 
-Exceptions
-==========
-
-.. currentmodule:: rmgpy.chemkin
-
-=================================== ============================================
-Exception                           Description
-=================================== ============================================
-:exc:`ChemkinError`                 Raised when an error occurs while working with a Chemkin file
-=================================== ============================================
-
-
-
 .. toctree::
     :hidden:
     

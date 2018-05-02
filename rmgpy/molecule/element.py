@@ -52,17 +52,17 @@ class Element:
     """
     A chemical element. The attributes are:
 
-    =========== =============== ================================================
-    Attribute   Type            Description
-    =========== =============== ================================================
-    `number`    ``int``         The atomic number of the element
-    `symbol`    ``str``         The symbol used for the element
-    `name`      ``str``         The IUPAC name of the element
-    `mass`      ``float``       The mass of the element in kg/mol
-    `covRadius` ``float``       Covalent bond radius in Angstrom
-    `isotope`   ``int``         The isotope integer of the element
-    `chemkinName` ``str``       The chemkin compatible representation of the element
-    =========== =============== ================================================
+    ============= =============== ================================================
+    Attribute     Type            Description
+    ============= =============== ================================================
+    `number`      ``int``         The atomic number of the element
+    `symbol`      ``str``         The symbol used for the element
+    `name`        ``str``         The IUPAC name of the element
+    `mass`        ``float``       The mass of the element in kg/mol
+    `covRadius`   ``float``       Covalent bond radius in Angstrom
+    `isotope`     ``int``         The isotope integer of the element
+    `chemkinName` ``str``         The chemkin compatible representation of the element
+    ============= =============== ================================================
     
     This class is specifically for properties that all atoms of the same element
     share. Ideally there is only one instance of this class for each element.
@@ -113,9 +113,9 @@ class PeriodicSystem(object):
     `lone_pairs`: the number of lone pairs an element has
     """
 
-    valences           = {'H': 1, 'He': 0, 'C': 4, 'N': 3, 'O': 2, 'Ne': 0, 'Si': 4, 'S': 2, 'Cl': 1, 'Ar': 0}
-    valence_electrons  = {'H': 1, 'He': 2, 'C': 4, 'N': 5, 'O': 6, 'Ne': 8, 'Si': 4, 'S': 6, 'Cl': 7, 'Ar': 8}
-    lone_pairs         = {'H': 0, 'He': 1, 'C': 0, 'N': 1, 'O': 2, 'Ne': 4, 'Si': 0, 'S': 2, 'Cl': 3, 'Ar': 4}
+    valences          = {'H': 1, 'He': 0, 'C': 4, 'N': 3, 'O': 2, 'F': 1, 'Ne': 0, 'Si': 4, 'S': 2, 'Cl': 1, 'Ar': 0, 'I': 1}
+    valence_electrons = {'H': 1, 'He': 2, 'C': 4, 'N': 5, 'O': 6, 'F': 7, 'Ne': 8, 'Si': 4, 'S': 6, 'Cl': 7, 'Ar': 8, 'I': 7}
+    lone_pairs        = {'H': 0, 'He': 1, 'C': 0, 'N': 1, 'O': 2, 'F': 3, 'Ne': 4, 'Si': 0, 'S': 2, 'Cl': 3, 'Ar': 4, 'I': 3}
     
 ################################################################################
 

@@ -366,8 +366,8 @@ class Reaction:
         and products of this reaction. Both directions are checked.
 
         Args:
-            reactants   List of Species required on one side of the reaction
-            products    List of Species required on the other side (optional)
+            reactants (list): Species required on one side of the reaction
+            products (list, optional): Species required on the other side
         """
         # Check forward direction
         if _isomorphicSpeciesList(self.reactants, reactants):
@@ -916,24 +916,30 @@ class Reaction:
             productOxygens    = [sum([1 for atom in  product.molecule[0].atoms if atom.isOxygen()])   for product  in products ]
             reactantNitrogens = [sum([1 for atom in reactant.molecule[0].atoms if atom.isNitrogen()]) for reactant in reactants]
             productNitrogens  = [sum([1 for atom in  product.molecule[0].atoms if atom.isNitrogen()]) for product  in products ]
+            reactantSilicons  = [sum([1 for atom in reactant.molecule[0].atoms if atom.isSilicon()])  for reactant in reactants]
+            productSilicons   = [sum([1 for atom in  product.molecule[0].atoms if atom.isSilicon()])  for product  in products ]
             reactantSulfurs   = [sum([1 for atom in reactant.molecule[0].atoms if atom.isSulfur()])   for reactant in reactants]
             productSulfurs    = [sum([1 for atom in  product.molecule[0].atoms if atom.isSulfur()])   for product  in products ]
+            reactantChlorines = [sum([1 for atom in reactant.molecule[0].atoms if atom.isChlorine()]) for reactant in reactants]
+            productChlorines  = [sum([1 for atom in  product.molecule[0].atoms if atom.isChlorine()]) for product  in products ]
+            reactantIodines   = [sum([1 for atom in reactant.molecule[0].atoms if atom.isChlorine()]) for reactant in reactants]
+            productIodines    = [sum([1 for atom in  product.molecule[0].atoms if atom.isChlorine()]) for product  in products ]
             
             # Sort the reactants and products by C/O/N/S numbers
-            reactants = [(carbon, oxygen, nitrogen, sulfur, reactant) for carbon, oxygen, nitrogen, sulfur, reactant
-                         in zip(reactantCarbons,reactantOxygens,reactantNitrogens,reactantSulfurs,reactants)]
+            reactants = [(carbon, oxygen, nitrogen, silicon, sulfur, chlorine, iodine, reactant) for carbon, oxygen, nitrogen, silicon, sulfur, chlorine, iodine, reactant
+                         in zip(reactantCarbons,reactantOxygens,reactantNitrogens,reactantSilicons,reactantSulfurs,reactantChlorines, reactantIodines, reactants)]
             reactants.sort()
-            products = [(carbon, oxygen, nitrogen, sulfur, product) for carbon, oxygen, nitrogen, sulfur, product
-                        in zip(productCarbons,productOxygens,productNitrogens,productSulfurs,products)]
+            products = [(carbon, oxygen, nitrogen, silicon, sulfur, chlorine, iodine, product) for carbon, oxygen, nitrogen, silicon, sulfur, chlorine, iodine, product
+                        in zip(productCarbons,productOxygens,productNitrogens,productSilicons,productSulfurs,productChlorines, productIodines, products)]
             products.sort()
             
             while len(reactants) > 1 and len(products) > 1:
-                self.pairs.append((reactants[-1][4], products[-1][4]))
+                self.pairs.append((reactants[-1][-1], products[-1][-1]))
                 reactants.pop()
                 products.pop()
             for reactant in reactants:
                 for product in products:
-                    self.pairs.append((reactant[4], product[4]))
+                    self.pairs.append((reactant[-1], product[-1]))
     
     def draw(self, path):
         """
@@ -1071,11 +1077,11 @@ class Reaction:
             return None
         # obtain species with all resonance isomers
         if self.isForward:
-            self.reactants = ensure_species(self.reactants, resonance=reactant_resonance, keepIsomorphic=True)
-            self.products = ensure_species(self.products, resonance=product_resonance, keepIsomorphic=True)
+            ensure_species(self.reactants, resonance=reactant_resonance, keepIsomorphic=True)
+            ensure_species(self.products, resonance=product_resonance, keepIsomorphic=True)
         else:
-            self.reactants = ensure_species(self.reactants, resonance=product_resonance, keepIsomorphic=True)
-            self.products = ensure_species(self.products, resonance=reactant_resonance, keepIsomorphic=True)
+            ensure_species(self.reactants, resonance=product_resonance, keepIsomorphic=True)
+            ensure_species(self.products, resonance=reactant_resonance, keepIsomorphic=True)
 
         # convert reaction.pairs object to species
         if self.pairs:

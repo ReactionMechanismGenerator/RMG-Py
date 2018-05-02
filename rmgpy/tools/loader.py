@@ -39,19 +39,23 @@ from rmgpy.chemkin import loadChemkinFile
 from rmgpy.solver.liquid import LiquidReactor
 from rmgpy.solver.base import TerminationConversion
 
-def loadRMGJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=True, useJava=False, useChemkinNames=False):
+def loadRMGJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=True, useJava=False,
+               useChemkinNames=False, checkDuplicates=True):
 
     if useJava:
         # The argument is an RMG-Java input file
-        rmg = loadRMGJavaJob(inputFile, chemkinFile, speciesDict, generateImages, useChemkinNames=useChemkinNames)
+        rmg = loadRMGJavaJob(inputFile, chemkinFile, speciesDict, generateImages,
+                             useChemkinNames=useChemkinNames, checkDuplicates=checkDuplicates)
         
     else:
         # The argument is an RMG-Py input file
-        rmg = loadRMGPyJob(inputFile, chemkinFile, speciesDict, generateImages, useChemkinNames=useChemkinNames)
+        rmg = loadRMGPyJob(inputFile, chemkinFile, speciesDict, generateImages,
+                           useChemkinNames=useChemkinNames, checkDuplicates=checkDuplicates)
 
     return rmg
 
-def loadRMGPyJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=True, useChemkinNames=False):
+def loadRMGPyJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=True,
+                 useChemkinNames=False, checkDuplicates=True):
     """
     Load the results of an RMG-Py job generated from the given `inputFile`.
     """
@@ -67,7 +71,8 @@ def loadRMGPyJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=T
         chemkinFile = os.path.join(os.path.dirname(inputFile), 'chemkin', 'chem.inp')
     if not speciesDict:
         speciesDict = os.path.join(os.path.dirname(inputFile), 'chemkin', 'species_dictionary.txt')
-    speciesList, reactionList = loadChemkinFile(chemkinFile, speciesDict, useChemkinNames=useChemkinNames)
+    speciesList, reactionList = loadChemkinFile(chemkinFile, speciesDict,
+                                                useChemkinNames=useChemkinNames, checkDuplicates=checkDuplicates)
     
     # Map species in input file to corresponding species in Chemkin file
     speciesDict = {}
@@ -121,7 +126,9 @@ def loadRMGPyJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=T
     
     return rmg
 
-def loadRMGJavaJob(inputFile, chemkinFile=None, speciesDict=None, useChemkinNames=False):
+
+def loadRMGJavaJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=True,
+                   useChemkinNames=False, checkDuplicates=True):
     """
     Load the results of an RMG-Java job generated from the given `inputFile`.
     """
@@ -139,7 +146,8 @@ def loadRMGJavaJob(inputFile, chemkinFile=None, speciesDict=None, useChemkinName
         chemkinFile = os.path.join(os.path.dirname(inputFile), 'chemkin', 'chem.inp')
     if not speciesDict:
         speciesDict = os.path.join(os.path.dirname(inputFile), 'RMG_Dictionary.txt')
-    speciesList, reactionList = loadChemkinFile(chemkinFile, speciesDict, useChemkinNames=useChemkinNames)
+    speciesList, reactionList = loadChemkinFile(chemkinFile, speciesDict,
+                                                useChemkinNames=useChemkinNames, checkDuplicates=checkDuplicates)
     
     # Bath gas species don't appear in RMG-Java species dictionary, so handle
     # those as a special case
@@ -178,15 +186,16 @@ def loadRMGJavaJob(inputFile, chemkinFile=None, speciesDict=None, useChemkinName
     rmg.reactionModel.core.reactions = reactionList
     
     # RMG-Java doesn't generate species images, so draw them ourselves now
-    speciesPath = os.path.join(os.path.dirname(inputFile), 'species')
-    try:
-        os.mkdir(speciesPath)
-    except OSError:
-        pass
-    for species in speciesList:
-
-        path = os.path.join(speciesPath + '/{0!s}.png'.format(species))
-        species.molecule[0].draw(str(path))
+    if generateImages:
+        speciesPath = os.path.join(os.path.dirname(inputFile), 'species')
+        try:
+            os.mkdir(speciesPath)
+        except OSError:
+            pass
+        for species in speciesList:
+            path = os.path.join(speciesPath + '/{0!s}.png'.format(species))
+            if not os.path.exists(path):
+                species.molecule[0].draw(str(path))
     
     return rmg
 

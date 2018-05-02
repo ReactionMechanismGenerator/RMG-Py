@@ -178,13 +178,18 @@ cdef class SimpleReactor(ReactionSystem):
     def calculate_effective_pressure(self, rxn):
         """
         Computes the effective pressure for a reaction as:
-            Peff = P * sum(yi * effi / sum(y))
+
+        .. math:: P_{eff} = P * \\sum_i \\frac{y_i * eff_i}{\\sum_j y_j}
+
         with:
             - P the pressure of the reactor,
             - y the array of initial moles of the core species
+
         or as:
-            Peff = P * y_specificCollider / sum(y)
-        if a secificCollider is mentioned
+
+        .. math:: P_{eff} = \\frac{P * y_{specificCollider}}{\\sum_j y_j}
+
+        if a specificCollider is mentioned.
         """
 
         y0_coreSpecies = self.y0[:self.numCoreSpecies]

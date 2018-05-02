@@ -28,48 +28,50 @@
 #                                                                             #
 ###############################################################################
 
-"""
-This script runs stand-alone sensitivity analysis on an RMG job.
-"""
+import numpy
+import unittest
+import os
 
-import os.path
-import argparse
-
-from rmgpy.tools.sensitivity import runSensitivity
+from rmgpy.cantherm.molpro import MolproLog
+import rmgpy.constants as constants
 
 ################################################################################
 
-def parse_arguments():
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('input', metavar='INPUT', type=str, nargs=1,
-        help='RMG input file')
-    parser.add_argument('chemkin', metavar='CHEMKIN', type=str, nargs=1,
-        help='Chemkin file')
-    parser.add_argument('dictionary', metavar='DICTIONARY', type=str, nargs=1,
-        help='RMG dictionary file')
-    parser.add_argument('--no-dlim', dest='dlim', action='store_false',
-        help='Turn off diffusion-limited rates for LiquidReactor')
-    args = parser.parse_args()
+class MolproTest(unittest.TestCase):
+    """
+    Contains unit tests for the chempy.io.gaussian module, used for reading
+    and writing Molpro files.
+    """
     
-    inputFile = os.path.abspath(args.input[0])
-    chemkinFile = os.path.abspath(args.chemkin[0])
-    dictFile = os.path.abspath(args.dictionary[0])
-    dflag = args.dlim
-
-    return inputFile, chemkinFile, dictFile, dflag
-
-def main():
-    # This might not work anymore because functions were modified for use with webserver
-
-    inputFile, chemkinFile, dictFile, dflag = parse_arguments()
-
-    runSensitivity(inputFile, chemkinFile, dictFile, dflag)
-
-################################################################################
-
-if __name__ == '__main__':
-    main()
-
+    def testLoadDzFromMolproLog_F12(self):
+        """
+        Uses a Molpro log file for ethylene_dz (C2H4) to test that F12a
+        energy can be properly read.
+        """
+        
+        log=MolproLog(os.path.join(os.path.dirname(__file__),'data','ethylene_f12_dz.out'))
+        E0=log.loadEnergy()
+        
+        self.assertAlmostEqual(E0 / constants.Na / constants.E_h, -78.474353559604, 5)
     
-    
+    def testLoadQzFromMolproLog_F12(self):
+        """
+        Uses a Molpro log file for ethylene_qz (C2H4) to test that F12b
+        energy can be properly read.
+        """
+        
+        log=MolproLog(os.path.join(os.path.dirname(__file__),'data','ethylene_f12_qz.out'))
+        E0=log.loadEnergy()
+        
+        self.assertAlmostEqual(E0 / constants.Na / constants.E_h, -78.472682755635, 5)
+
+    def testLoadRadFromMolproLog_F12(self):
+        """
+        Uses a Molpro log file for OH (C2H4) to test that radical
+        energy can be properly read.
+        """
+        
+        log=MolproLog(os.path.join(os.path.dirname(__file__),'data','OH_f12.out'))
+        E0=log.loadEnergy()
+        
+        self.assertAlmostEqual(E0 / constants.Na / constants.E_h, -75.663696424380, 5)
