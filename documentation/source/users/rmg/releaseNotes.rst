@@ -4,6 +4,60 @@
 Release Notes
 *************
 
+RMG-Py Version 2.1.3
+====================
+Date: July 27, 2017
+
+- Thermo central database:
+    - Framework for tracking and submitting species to a central database have been added
+    - Following species submission, the central database will queue and submit quantum chemistry jobs for thermochemistry calculation
+    - This is an initial step towards self-improving thermochemistry prediction
+
+- Rotor handling in Cantherm:
+    - Free rotors can now be specified
+    - Limit number of terms used when fitting hinder rotor scans
+    - Fixed bug with ZPE calculation when using hindered rotors
+
+- New reaction degeneracy algorithm:
+    - Use atom ID's to distinguish degenerate reactions from duplicates due to other factors
+    - Degeneracy calculation now operates across all families rather than within each separately
+    - Multiple transition states are now identified based on template comparisons and kept as duplicate reactions
+
+- Nodal distances:
+    - Distances can now be assigned to trees in reaction families
+    - This enables better rate averages with multiple trees
+    - Fixed bug with finding the closest rate rule in the tree
+
+- New features:
+    - Added methods for automatically writing RMG-database files
+    - New symmetry algorithm improves symmetry number calculations for resonant and cyclic species
+    - Group additivity algorithm updated to apply new long distance corrections
+    - Specific colliders can now be specified for pressure-dependent rates
+    - Very short superminimal example added (hydrogen oxidation) for checking basic RMG operation
+    - Cantera now outputs a Chemkin file which can be directly imported into Chemkin
+
+- Fixes:
+    - Fixed bug with negative activation energies when using Evans-Polanyi rates
+    - Fixed walltime specification from command line when running RMG
+    - Fixes and unit tests added for diffusionLimited module
+
+- Known issues:
+    - The multiple transition state algorithm can result in undesired duplicate reactions for reactants with multiple resonance structures
+
+RMG-database Version 2.1.3
+==========================
+Date: July 27, 2017
+
+- Long-distance interaction thermo corrections:
+    - The gauche and int15 group files have been replaced by longDistanceInteraction_noncyclic
+    - New corrections for cyclic ortho/meta/para interactions are now available in longDistanceInteraction_cyclic
+
+- Changes:
+    - Oa_R_Recombination family renamed to Birad_R_Recombination
+    - More training reactions added for sulfur species in H_Abstraction
+    - RMG-database tests have been moved to RMG-Py
+
+
 RMG-Py Version 2.1.2
 ====================
 Date: May 18, 2017
