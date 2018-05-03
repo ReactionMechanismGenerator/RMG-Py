@@ -60,7 +60,7 @@ from rmgpy.exceptions import InputError
 # These are the atoms we currently have enthalpies of formation for
 atom_num_dict = {1: 'H',
                  3: 'Li', 4: 'Be', 5: 'B', 6: 'C', 7: 'N', 8: 'O', 9: 'F',
-                 11: 'Na', 12: 'Mg', 13: 'Al', 14: 'Si', 15: 'P', 16: 'S', 17: 'Cl'}
+                 11: 'Na', 12: 'Mg', 13: 'Al', 14: 'Si', 15: 'P', 16: 'S', 17: 'Cl', 53: 'I'}
 
 # Use the RDKit periodic table so we can write symbols for not implemented elements
 _rdkit_periodic_table = GetPeriodicTable()
@@ -234,14 +234,18 @@ class StatMechJob:
             
         try:
             linear = local_context['linear']
+            symfromlog = False
         except KeyError:
-            raise InputError('Required attribute "linear" not found in species file {0!r}.'.format(path))
-        
+            externalSymmetry = None
+            symfromlog = True
+
         try:
             externalSymmetry = local_context['externalSymmetry']
+            symfromlog = False
         except KeyError:
-            raise InputError('Required attribute "externalSymmetry" not found in species file {0!r}.'.format(path))
-        
+            externalSymmetry = None
+            symfromlog = True
+            
         try:
             spinMultiplicity = local_context['spinMultiplicity']
         except KeyError:
@@ -317,7 +321,7 @@ class StatMechJob:
                                     'Please verify that the geometry and Hessian of {0!r} are defined in the same coordinate system'.format(self.species.label))
 
         logging.debug('    Reading molecular degrees of freedom...')
-        conformer = statmechLog.loadConformer(symmetry=externalSymmetry, spinMultiplicity=spinMultiplicity, opticalIsomers=opticalIsomers)
+        conformer = statmechLog.loadConformer(symmetry=externalSymmetry, spinMultiplicity=spinMultiplicity, opticalIsomers=opticalIsomers, symfromlog = symfromlog)
         
         logging.debug('    Reading optimized geometry...')
         coordinates, number, mass = geomLog.loadGeometry()
@@ -357,14 +361,14 @@ class StatMechJob:
                                     applyAtomEnergyCorrections=self.applyAtomEnergyCorrections,
                                     applyBondEnergyCorrections=self.applyBondEnergyCorrections)
         ZPE = statmechLog.loadZeroPointEnergy() * self.frequencyScaleFactor
-        
+
         # The E0_withZPE at this stage contains the ZPE
         E0_withZPE = E0 + ZPE
         
         logging.debug('         Scaling factor used = {0:g}'.format(self.frequencyScaleFactor))
         logging.debug('         ZPE (0 K) = {0:g} kcal/mol'.format(ZPE / 4184.))
         logging.debug('         E0 (0 K) = {0:g} kcal/mol'.format(E0_withZPE / 4184.))
-       
+
         conformer.E0 = (E0_withZPE*0.001,"kJ/mol")
         
         # If loading a transition state, also read the imaginary frequency
@@ -452,12 +456,12 @@ class StatMechJob:
 
         elif len(conformer.modes) > 2:
             if len(rotors) > 0:
-                logging.warn('Force Constant Matrix Missing Ignoring rotors, if running Gaussian if not already present you need to add the keyword iop(7/33=1) in your Gaussian frequency job for Gaussian to generate the force constant matrix')
+                logging.warn('Force Constant Matrix Missing Ignoring rotors, if running Gaussian if not already present you need to add the keyword iop(7/33=1) in your Gaussian frequency job for Gaussian to generate the force constant matrix, if running Molpro include keyword print, hessian')
             frequencies = conformer.modes[2].frequencies.value_si
             rotors = numpy.array([])
         else:
             if len(rotors) > 0:
-                logging.warn('Force Constant Matrix Missing Ignoring rotors, if running Gaussian if not already present you need to add the keyword iop(7/33=1) in your Gaussian frequency job for Gaussian to generate the force constant matrix')
+                logging.warn('Force Constant Matrix Missing Ignoring rotors, if running Gaussian if not already present you need to add the keyword iop(7/33=1) in your Gaussian frequency job for Gaussian to generate the force constant matrix, if running Molpro include keyword print, hessian')
             frequencies = numpy.array([])
             rotors = numpy.array([])
 
@@ -476,7 +480,7 @@ class StatMechJob:
         
         logging.info('Saving statistical mechanics parameters for {0}...'.format(self.species.label))
         f = open(outputFile, 'a')
-        
+
         conformer = self.species.conformer
             
         coordinates = conformer.coordinates.value_si * 1e10
@@ -561,11 +565,14 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds,
     `bonds` is a dictionary associating bond types with the number
     of that bond in the molecule.
     """
+
     if applyAtomEnergyCorrections:
         # Spin orbit correction (SOC) in Hartrees
         # Values taken from ref 22 of http://dx.doi.org/10.1063/1.477794 and converted to hartrees
         # Values in millihartree are also available (with fewer significant figures) from table VII of http://dx.doi.org/10.1063/1.473182
-        SOC = {'H':0.0, 'N':0.0, 'O': -0.000355, 'C': -0.000135, 'S':  -0.000893, 'P': 0.0}
+        # Iodine SOC calculated as a weighted average of the electronic spin splittings of the lowest energy state. The splittings are
+        # obtained from Huber, K.P.; Herzberg, G., Molecular Spectra and Molecular Structure. IV. Constants of Diatomic Molecules, Van Nostrand Reinhold Co., 1979
+        SOC = {'H':0.0, 'N':0.0, 'O': -0.000355, 'C': -0.000135, 'S':  -0.000893, 'P': 0.0, 'I':-0.011547226,}
 
         # Step 1: Reference all energies to a model chemistry-independent basis
         # by subtracting out that model chemistry's atomic energies
@@ -613,6 +620,11 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds,
                 atomEnergies = {'H':-0.499946213243 + SOC['H'], 'N':-54.588545831900 + SOC['N'], 'O':-75.065995072347 + SOC['O'], 'C':-37.844662139972+ SOC['C']}
             elif modelChemistry == 'ccsd(t)-f12/cc-pcvqz-f12':
                 atomEnergies = {'H':-0.499994558325 + SOC['H'], 'N':-54.589137594139+ SOC['N'], 'O':-75.067412234737+ SOC['O'], 'C':-37.844893820561+ SOC['C']}
+            elif modelChemistry == 'ccsd(t)-f12/cc-pvtz-f12(-pp)':
+                atomEnergies = {'H':-0.499946213243 + SOC['H'], 'N':-54.53000909621 + SOC['N'], 'O':-75.004127673424 + SOC['O'], 'C':-37.789862146471 + SOC['C'], 'S':-397.675447487865 + SOC['S'], 'I':-294.81781766 + SOC['I']}
+            #ccsd(t)/aug-cc-pvtz(-pp) atomic energies were fit to a set of 8 small molecules: CH4, CH3OH, H2S, H2O, SO2, HI, I2, CH3I
+            elif modelChemistry == 'ccsd(t)/aug-cc-pvtz(-pp)':
+                atomEnergies = {'H':-0.499821176024 + SOC['H'], 'O':-74.96738492 + SOC['O'], 'C':-37.77385697 + SOC['C'], 'S':-397.6461604 + SOC['S'], 'I':-294.7958443 + SOC['I']}
 
             elif modelChemistry == 'ccsd(t)-f12/aug-cc-pvdz':
                 atomEnergies = {'H':-0.499459066131 + SOC['H'], 'N':-54.524279516472 + SOC['N'], 'O':-74.992097308083+ SOC['O'], 'C':-37.786694171716+ SOC['C']}
@@ -690,14 +702,15 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds,
         # Note: these values are relatively old and some improvement may be possible by using newer values, particularly for carbon
         # However, care should be taken to ensure that they are compatible with the BAC values (if BACs are used)
         # The enthalpies listed here should correspond to the allowed elements in atom_num_dict
+        # Iodine value is from Cox, J. D., Wagman, D. D., and Medvedev, V. A., CODATA Key Values for Thermodynamics, Hemisphere Publishing Corp., New York, 1989.
         atomHf = {'H': 51.63,
                   'Li': 37.69, 'Be': 76.48, 'B': 136.2, 'C': 169.98, 'N': 112.53, 'O': 58.99, 'F': 18.47,
-                  'Na': 25.69, 'Mg': 34.87, 'Al': 78.23, 'Si': 106.6, 'P': 75.42, 'S': 65.66, 'Cl': 28.59}
+                  'Na': 25.69, 'Mg': 34.87, 'Al': 78.23, 'Si': 106.6, 'P': 75.42, 'S': 65.66, 'Cl': 28.59, 'I':24.04}
         # Thermal contribution to enthalpy Hss(298 K) - Hss(0 K) reported by Gaussian thermo whitepaper
         # This will be subtracted from the corresponding value in atomHf to produce an enthalpy used in calculating the enthalpy of formation at 298 K
         atomThermal = {'H': 1.01,
                        'Li': 1.1, 'Be': 0.46, 'B': 0.29, 'C': 0.25, 'N': 1.04, 'O': 1.04, 'F': 1.05,
-                       'Na': 1.54, 'Mg': 1.19, 'Al': 1.08, 'Si': 0.76, 'P': 1.28, 'S': 1.05, 'Cl': 1.1}
+                       'Na': 1.54, 'Mg': 1.19, 'Al': 1.08, 'Si': 0.76, 'P': 1.28, 'S': 1.05, 'Cl': 1.1, 'I':1.48}
         # Total energy correction used to reach gas-phase reference state
         # Note: Spin orbit coupling no longer included in these energies, since some model chemistries include it automatically
         atomEnthalpyCorrections = {element: atomHf[element] - atomThermal[element] for element in atomHf}
@@ -756,7 +769,7 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds,
                 E0 += count * bondEnergies[symbol[::-1]] * 4184.
             else:
                 logging.warning('Ignored unknown bond type {0!r}.'.format(symbol))
-    
+
     return E0
 
 def projectRotors(conformer, F, rotors, linear, TS):
