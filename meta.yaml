@@ -17,7 +17,7 @@ requirements:
     - cairocffi # [unix]
     - coverage
     - cython >=0.25.2
-    - gcc # [unix]
+    - gcc_linux-64 # [unix]
     - gcc ==4.8.2 # [linux32]
     - gprof2dot
     - jinja2
