@@ -180,7 +180,8 @@ class Species(object):
         Return ``True`` if the species is isomorphic to `other`, which can be
         either a :class:`Molecule` object or a :class:`Species` object.
         """
-        if isinstance(other, Molecule):
+        from afm.fragment import Fragment
+        if isinstance(other, Molecule) or isinstance(other, Fragment):
             for molecule in self.molecule:
                 if molecule.isIsomorphic(other):
                     return True
