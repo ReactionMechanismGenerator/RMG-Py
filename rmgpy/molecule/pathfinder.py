@@ -253,7 +253,7 @@ def find_allyl_delocalization_paths(atom1):
     """
     Find all the delocalization paths allyl to the radical center indicated by `atom1`.
     """
-    cython.declare(paths=list, atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
+    cython.declare(paths=list, atom2=Vertex, atom3=Vertex, bond12=Edge, bond23=Edge)
     
     # No paths if atom1 is not a radical
     if atom1.radicalElectrons <= 0:

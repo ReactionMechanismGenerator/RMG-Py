@@ -315,8 +315,8 @@ def generate_allyl_delocalization_resonance_structures(mol):
 
     Biradicals on a single atom are not supported.
     """
-    cython.declare(structures=list, paths=list, index=cython.int, structure=Molecule)
-    cython.declare(atom=Atom, atom1=Atom, atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
+    cython.declare(structures=list, paths=list, index=cython.int, structure=Graph)
+    cython.declare(atom=Vertex, atom1=Vertex, atom2=Vertex, atom3=Vertex, bond12=Edge, bond23=Edge)
     cython.declare(v1=Vertex, v2=Vertex)
 
     structures = []
