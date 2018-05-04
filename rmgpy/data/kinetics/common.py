@@ -156,8 +156,9 @@ def ensure_species(input_list, resonance=False, keep_isomorphic=False):
     The input list of :class:`Species` or :class:`Molecule` objects is modified
     in place to only have :class:`Species` objects. Returns None.
     """
+    from afm.fragment import Fragment
     for index, item in enumerate(input_list):
-        if isinstance(item, Molecule):
+        if isinstance(item, Molecule) or isinstance(item, Fragment):
             new_item = Species(molecule=[item])
         elif isinstance(item, Species):
             new_item = item

@@ -234,7 +234,8 @@ class Species(object):
             generateInitialMap (bool, optional): If ``True``, make initial map by matching labeled atoms
             strict (bool, optional):             If ``False``, perform isomorphism ignoring electrons.
         """
-        if isinstance(other, Molecule):
+        from afm.fragment import Fragment
+        if isinstance(other, Molecule) or isinstance(other, Fragment):
             for molecule in self.molecule:
                 if molecule.isIsomorphic(other, generateInitialMap=generateInitialMap, strict=strict):
                     return True
