@@ -286,7 +286,8 @@ class Species(object):
             save_order (bool, optional):           if ``True``, reset atom order after performing atom isomorphism
             strict (bool, optional):               If ``False``, perform isomorphism ignoring electrons.
         """
-        if isinstance(other, Molecule):
+        from afm.fragment import Fragment
+        if isinstance(other, Molecule) or isinstance(other, Fragment):
             for molecule in self.molecule:
                 if molecule.is_isomorphic(other, generate_initial_map=generate_initial_map,
                                           save_order=save_order, strict=strict):
