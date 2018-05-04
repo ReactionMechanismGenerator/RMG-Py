@@ -246,7 +246,7 @@ def findAllDelocalizationPaths(atom1):
     by `atom1`. Used to generate resonance isomers.
     """
     cython.declare(paths=list)
-    cython.declare(atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
+    cython.declare(atom2=Vertex, atom3=Vertex, bond12=Edge, bond23=Edge)
     
     # No paths if atom1 is not a radical
     if atom1.radicalElectrons <= 0:

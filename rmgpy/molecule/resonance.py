@@ -266,8 +266,8 @@ def generate_adjacent_resonance_structures(mol):
 
     Biradicals on a single atom are not supported.
     """
-    cython.declare(isomers=list, paths=list, index=cython.int, isomer=Molecule)
-    cython.declare(atom=Atom, atom1=Atom, atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
+    cython.declare(isomers=list, paths=list, index=cython.int, isomer=Graph)
+    cython.declare(atom=Vertex, atom1=Vertex, atom2=Vertex, atom3=Vertex, bond12=Edge, bond23=Edge)
     cython.declare(v1=Vertex, v2=Vertex)
     
     isomers = []
