@@ -181,7 +181,8 @@ class Species(object):
         "non-representative" resonance structure of self is generated, and it should be identified as the same Species,
         and be assigned a reactive=False flag.
         """
-        if isinstance(other, Molecule):
+        from afm.fragment import Fragment
+        if isinstance(other, Molecule) or isinstance(other, Fragment):
             for molecule in self.molecule:
                 if molecule.isIsomorphic(other):
                     return True
