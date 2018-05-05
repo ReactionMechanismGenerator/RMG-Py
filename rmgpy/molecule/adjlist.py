@@ -717,8 +717,7 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
                 ConsistencyChecker.check_partial_charge(atom)
 
         nRad = sum([atom.radicalElectrons for atom in atoms])
-        absolute_spin_per_electron = 1/2.
-        if multiplicity == None: multiplicity = 2* (nRad * absolute_spin_per_electron) + 1
+        if multiplicity == None: multiplicity = nRad + 1
             
         ConsistencyChecker.check_multiplicity(nRad, multiplicity)
         for atom in atoms: ConsistencyChecker.check_hund_rule(atom, multiplicity)
