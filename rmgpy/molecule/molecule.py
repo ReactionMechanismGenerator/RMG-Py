@@ -1342,7 +1342,7 @@ class Molecule(Graph):
         """
         # It only makes sense to compare a Molecule to a Molecule for full
         # isomorphism, so raise an exception if this is not what was requested
-        if not isinstance(other, Molecule):
+        if not isinstance(other, Graph):
             raise TypeError('Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
         # Do the quick isomorphism comparison using the fingerprint
         # Two fingerprint strings matching is a necessary (but not
