@@ -131,6 +131,10 @@ def InChI(string):
 def adjacencyList(string):
     return Molecule().fromAdjacencyList(string)
 
+def fragment_adj(string):
+    from afm.fragment import Fragment
+    return Fragment().fromAdjacencyList(string)
+
 # Reaction systems
 def simpleReactor(temperature,
                   pressure,
@@ -576,6 +580,7 @@ def readInputFile(path, rmg0):
         'database': database,
         'species': species,
         'SMARTS': SMARTS,
+        'fragment_adj': fragment_adj,
         'SMILES': SMILES,
         'InChI': InChI,
         'adjacencyList': adjacencyList,
