@@ -35,6 +35,7 @@ from rmgpy.molecule.molecule import Molecule
 
 def get_element_count(obj):
     """Converts an (augmented) inchi or Molecule into a dictionary element -> count"""
+    from afm.fragment import Fragment
     element_count = {}
 
     if isinstance(obj, str):
@@ -59,8 +60,8 @@ def get_element_count(obj):
             del element_count['Pt']
 
         return element_count
-
-    elif isinstance(obj, Molecule):
+    
+    elif isinstance(obj, Molecule) or isinstance(obj, Fragment):
         return obj.get_element_count()
 
     else:
