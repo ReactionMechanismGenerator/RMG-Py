@@ -1409,17 +1409,12 @@ class KineticsFamily(Database):
         Return ``True`` if the molecule is forbidden in this family, or
         ``False`` otherwise. 
         """
-        from rmgpy.data.rmg import getDB
-        
-        forbidden_structures = getDB('forbidden')
 
         # check family-specific forbidden structures 
         if self.forbidden is not None and self.forbidden.isMoleculeForbidden(molecule):
             return True
 
-        # check RMG globally forbidden structures
-        if forbidden_structures.isMoleculeForbidden(molecule):
-            return True
+
         return False
 
     def __createReaction(self, reactants, products, isForward):
