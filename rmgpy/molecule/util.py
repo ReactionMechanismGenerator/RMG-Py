@@ -35,6 +35,7 @@ from .molecule import Molecule
 
 def retrieveElementCount(obj):
     """Converts an (augmented) inchi or Molecule into a dictionary element -> count"""
+    from afm.fragment import Fragment
     element_count = {}
 
     if isinstance(obj, str):
@@ -54,7 +55,7 @@ def retrieveElementCount(obj):
                     element_count[element] = int(count)
         return element_count
     
-    elif isinstance(obj, Molecule):
+    elif isinstance(obj, Molecule) or isinstance(obj, Fragment):
         return obj.get_element_count()
 
     else:
