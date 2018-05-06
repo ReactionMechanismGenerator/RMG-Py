@@ -188,7 +188,11 @@ def react(tups):
             if not isinstance(it, str):
                 raise InputError("React takes a list of tuples of species strings.")
     rmg.init_react_tuples = tups
-            
+
+def fragment_adj(string):
+    from afm.fragment import Fragment
+    return Fragment().from_adjacency_list(string)
+
 # Reaction systems
 def simple_reactor(temperature,
                    pressure,
@@ -928,6 +932,8 @@ def read_input_file(path, rmg0):
         'catalystProperties': catalyst_properties,
         'species': species,
         'SMARTS': smarts,
+        'fragment_adj': fragment_adj,
+        'fragment_SMILES': fragment_smiles,
         'SMILES': smiles,
         'InChI': inchi,
         'adjacencyList': adjacency_list,
