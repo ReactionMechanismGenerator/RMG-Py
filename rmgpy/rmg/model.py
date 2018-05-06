@@ -53,6 +53,9 @@ from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 
 from rmgpy.kinetics import KineticsData, Arrhenius
+
+from rmgpy.data.rmg import getDB
+        
 import rmgpy.data.rmg
 from .react import reactAll
 
@@ -1049,6 +1052,34 @@ class CoreEdgeReactionModel:
 
         assert spec not in self.core.species, "Tried to add species {0} to core, but it's already there".format(spec.label)
 
+        forbidden_structures = getDB('forbidden')
+        
+        # check RMG globally forbidden structures
+        if forbidden_structures.isMoleculeForbidden(spec.molecule[0]):
+            
+            rxnList = []
+            if spec in self.edge.species:
+                self.core.species.append(spec)
+                # If species was in edge, remove it
+                logging.info("Species {0} was Forbidden and not added to Core...Removing from Edge.".format(spec))
+                self.edge.species.remove(spec)
+                # Search edge for reactions that now contain only core species;
+                # these belong in the model core and will be moved there
+                for rxn in self.edge.reactions:
+                    allCore = True
+                    for reactant in rxn.reactants:
+                        if reactant not in self.core.species: allCore = False
+                    for product in rxn.products:
+                        if product not in self.core.species: allCore = False
+                    if allCore: rxnList.append(rxn)
+                
+                self.core.species.remove(spec)
+                # Move any identified reactions to the core
+                for rxn in rxnList:
+                    self.edge.reactions.remove(rxn)
+                    logging.info("Removing Forbidden Reaction from Edge: {0}".format(rxn))
+                return []
+        
         # Add the species to the core
         self.core.species.append(spec)
         
