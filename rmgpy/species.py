@@ -688,7 +688,12 @@ class Species(object):
             raise
 
         #count = sum([1 for atom in self.molecule[0].vertices if atom.isNonHydrogen()])
-        self.transportData = transportDB.getTransportProperties(self)[0]
+        if isinstance(self.molecule[0], Molecule):
+            self.transportData = transportDB.getTransportProperties(self)[0]
+        else:
+            # assume it's a species for Fragment
+            self.molecule[0].assign_representative_species()
+            self.transportData = transportDB.getTransportProperties(self.molecule[0].species_repr)[0]
 
 
     def getTransportData(self):
