@@ -756,8 +756,13 @@ class Species(object):
             logging.debug('Could not obtain the transport database. Not generating transport...')
             raise
 
-        # count = sum([1 for atom in self.molecule[0].vertices if atom.is_non_hydrogen()])
-        self.transport_data = transport_db.get_transport_properties(self)[0]
+        #count = sum([1 for atom in self.molecule[0].vertices if atom.is_non_hydrogen()])
+        if isinstance(self.molecule[0], Molecule):
+            self.transport_data = transport_db.get_transport_properties(self)[0]
+        else:
+            # assume it's a species for Fragment
+            self.molecule[0].assign_representative_species()
+            self.transport_data = transport_db.get_transport_properties(self.molecule[0].species_repr)[0]
 
     def get_transport_data(self):
         """
