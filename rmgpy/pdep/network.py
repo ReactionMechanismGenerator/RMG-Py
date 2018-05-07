@@ -619,7 +619,8 @@ class Network:
                 kf_expected = rxn.calculateTSTRateCoefficient(T)
             else:
                 # ILT was used to compute k(E), so use high-P kinetics to compute k(T)
-                kf_expected = rxn.kinetics.getRateCoefficient(T)
+                kf_expected = rxn.kinetics.getRateCoefficient(T) if rxn.network_kinetics is None else\
+                    rxn.network_kinetics.getRateCoefficient(T)
             
             # Determine the expected value of the equilibrium constant (Kc)
             Keq_expected = self.eqRatios[prod] / self.eqRatios[reac] 
