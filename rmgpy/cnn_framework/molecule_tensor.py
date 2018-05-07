@@ -168,7 +168,7 @@ def get_bond_attributes(molecule,
 		for bonded_atom, bond in atom.bonds.iteritems():
 			if not bonded_atom.isHydrogen() and (bond not in bond_attributes_dict):
 				
-				attributes = []
+				attributes = [1]
 				if differentiate_bond_type:
 					attributes.extend(oneHotVector(bond.getOrderStr(),
 												   ['S', 'B', 'D', 'T']))
@@ -182,16 +182,20 @@ def get_bond_attributes(molecule,
 				if add_extra_attribute:
 					attributes.extend(is_bond_in_ring(molecule, bond))
 
-				# add if connected
+				# the 1 here doesn't contribute to
+				# fingerprint calculation; it's just
+				# a helpful indicator in matrix operation
+				# to show there's a bond in between some 
+				# row_idx and col_idx
 				attributes.append(1)
 
 				bond_attributes_dict[bond] = np.array(attributes, dtype=np.float32)
 
 	if not bond_attributes_dict:
 		if differentiate_bond_type:
-			bond_attributes_dict['no_bond'] = np.array([0]*14, dtype=np.float32)
+			bond_attributes_dict['no_bond'] = np.array([0]*15, dtype=np.float32)
 		else:
-			bond_attributes_dict['no_bond'] = np.array([0]*8, dtype=np.float32)
+			bond_attributes_dict['no_bond'] = np.array([0]*9, dtype=np.float32)
 	
 	return bond_attributes_dict
 
