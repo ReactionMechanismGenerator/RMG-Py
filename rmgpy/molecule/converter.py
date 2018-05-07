@@ -279,6 +279,7 @@ def fromOBMol(mol, obmol):
     mol.updateConnectivityValues()
     mol.updateAtomTypes()
     mol.updateMultiplicity()
+    mol.identifyRingMembership()
 
     # Assume this is always true
     # There are cases where 2 radicalElectrons is a singlet, but

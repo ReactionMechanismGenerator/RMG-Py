@@ -967,6 +967,22 @@ class TestMolecule(unittest.TestCase):
                 self.assertTrue(key in molecule.atoms)
                 self.assertTrue(value in group.atoms)
 
+    def testSubgraphIsomorphismRings(self):
+        molecule = Molecule(SMILES='C1CCCC1CCC')
+        groupNoRing = Group().fromAdjacencyList("""
+1 *1 C u0 p0 c0 r0
+        """)
+        groupRing = Group().fromAdjacencyList("""
+1 *1 C u0 p0 c0 r1
+        """)
+
+        self.assertTrue(molecule.isSubgraphIsomorphic(groupNoRing))
+        mapping = molecule.findSubgraphIsomorphisms(groupNoRing)
+        self.assertEqual(len(mapping), 3)
+        self.assertTrue(molecule.isSubgraphIsomorphic(groupRing))
+        mapping = molecule.findSubgraphIsomorphisms(groupRing)
+        self.assertEqual(len(mapping), 5)
+
     def testAdjacencyList(self):
         """
         Check the adjacency list read/write functions for a full molecule.
@@ -2223,6 +2239,15 @@ multiplicity 2
         result3 = mol3.get_element_count()
         self.assertEqual(expected3, result3)
 
+    def testRingPerception(self):
+        """Test that identifying ring membership of atoms works properly."""
+        mol = Molecule(SMILES='c12ccccc1cccc2')
+        mol.identifyRingMembership()
+        for atom in mol.atoms:
+            if atom.element == 'C':
+                self.assertTrue(atom.props['inRing'])
+            elif atom.element == 'H':
+                self.assertFalse(atom.props['inRing'])
 
 ################################################################################
 

@@ -59,6 +59,7 @@ class GroupAtom(Vertex):
     `label`             ``str``             A string label that can be used to tag individual atoms
     `lonePairs`         ``list``            The number of lone electron pairs
     'charge'            ''list''            The partial charge of the atom
+    `props`             ``dict``            Dictionary for storing additional atom properties
     =================== =================== ====================================
 
     Each list represents a logical OR construct, i.e. an atom will match the
@@ -68,7 +69,7 @@ class GroupAtom(Vertex):
     order to match.
     """
 
-    def __init__(self, atomType=None, radicalElectrons=None, charge=None, label='', lonePairs=None):
+    def __init__(self, atomType=None, radicalElectrons=None, charge=None, label='', lonePairs=None, props=None):
         Vertex.__init__(self)
         self.atomType = atomType or []
         for index in range(len(self.atomType)):
@@ -78,6 +79,7 @@ class GroupAtom(Vertex):
         self.charge = charge or []
         self.label = label
         self.lonePairs = lonePairs or []
+        self.props = props or {}
 
     def __reduce__(self):
         """
@@ -125,7 +127,14 @@ class GroupAtom(Vertex):
         Return a deep copy of the :class:`GroupAtom` object. Modifying the
         attributes of the copy will not affect the original.
         """
-        return GroupAtom(self.atomType[:], self.radicalElectrons[:], self.charge[:], self.label, self.lonePairs[:])
+        return GroupAtom(
+            self.atomType[:],
+            self.radicalElectrons[:],
+            self.charge[:],
+            self.label,
+            self.lonePairs[:],
+            deepcopy(self.props),
+        )
 
     def __changeBond(self, order):
         """
@@ -364,13 +373,18 @@ class GroupAtom(Vertex):
                     if charge1 == charge2: break
                 else:
                     return False
+        # Other properties must have an equivalent in other (and vice versa)
+        # Absence of the 'inRing' prop indicates a wildcard
+        if 'inRing' in self.props and 'inRing' in group.props:
+            if self.props['inRing'] != group.props['inRing']:
+                return False
         # Otherwise the two atom groups are equivalent
         return True
 
     def isSpecificCaseOf(self, other):
         """
-        Returns ``True`` if `other` is the same as `self` or is a more
-        specific case of `self`. Returns ``False`` if some of `self` is not
+        Returns ``True`` if `self` is the same as `other` or is a more
+        specific case of `other`. Returns ``False`` if some of `self` is not
         included in `other` or they are mutually exclusive. 
         """
         cython.declare(group=GroupAtom)
@@ -419,6 +433,13 @@ class GroupAtom(Vertex):
                         return False
         else:
             if group.charge: return False
+        # Other properties must have an equivalent in other
+        # Absence of the 'inRing' prop indicates a wildcard
+        if 'inRing' in self.props and 'inRing' in group.props:
+            if self.props['inRing'] != group.props['inRing']:
+                return False
+        elif 'inRing' not in self.props and 'inRing' in group.props:
+            return False
         # Otherwise self is in fact a specific case of other
         return True
 
@@ -2120,3 +2141,13 @@ class Group(Graph):
             mergedGroup.removeBond(bond)
 
         return mergedGroup
+
+    def resetRingMembership(self):
+        """
+        Resets ring membership information in the GroupAtom.props attribute.
+        """
+        cython.declare(ratom=GroupAtom)
+
+        for atom in self.atoms:
+            if 'inRing' in atom.props:
+                del atom.props['inRing']

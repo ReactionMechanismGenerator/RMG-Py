@@ -82,6 +82,7 @@ class Atom(Vertex):
     `lonePairs`         ``short``           The number of lone electron pairs
     `id`                ``int``             Number assignment for atom tracking purposes
     `bonds`             ``dict``            Dictionary of bond objects with keys being neighboring atoms
+    `props`             ``dict``            Dictionary for storing additional atom properties
     `mass`              ``int``             atomic mass of element (read only)
     `number`            ``int``             atomic number of element (read only)
     `symbol`            ``str``             atomic symbol of element (read only)
@@ -92,7 +93,7 @@ class Atom(Vertex):
     e.g. ``atom.symbol`` instead of ``atom.element.symbol``.
     """
 
-    def __init__(self, element=None, radicalElectrons=0, charge=0, label='', lonePairs=-100, coords=numpy.array([]), id=-1):
+    def __init__(self, element=None, radicalElectrons=0, charge=0, label='', lonePairs=-100, coords=numpy.array([]), id=-1, props=None):
         Vertex.__init__(self)
         if isinstance(element, str):
             self.element = elements.__dict__[element]
@@ -105,6 +106,7 @@ class Atom(Vertex):
         self.lonePairs = lonePairs
         self.coords = coords
         self.id = id
+        self.props = props or {}
 
     def __str__(self):
         """
@@ -205,6 +207,9 @@ class Atom(Vertex):
                     if self.charge == charge: break
                 else:
                     return False
+            if 'inRing' in self.props and 'inRing' in ap.props:
+                if self.props['inRing'] != ap.props['inRing']:
+                    return False
             return True
     
     def getDescriptor(self):
@@ -247,6 +252,11 @@ class Atom(Vertex):
                     if self.charge == charge: break
                 else:
                     return False
+            if 'inRing' in self.props and 'inRing' in atom.props:
+                if self.props['inRing'] != atom.props['inRing']:
+                    return False
+            elif 'inRing' not in self.props and 'inRing' in atom.props:
+                return False
             return True
 
     def copy(self):
@@ -267,6 +277,7 @@ class Atom(Vertex):
         a.lonePairs = self.lonePairs
         a.coords = self.coords[:]
         a.id = self.id
+        a.props = deepcopy(self.props)
         return a
 
     def isHydrogen(self):
@@ -874,6 +885,7 @@ class Molecule(Graph):
         self.updateAtomTypes()
         self.updateMultiplicity()
         self.sortAtoms()
+        self.identifyRingMembership()
 
     def getFormula(self):
         """
@@ -1361,6 +1373,7 @@ class Molecule(Graph):
         
         self.vertices, self.multiplicity = fromAdjacencyList(adjlist, group=False, saturateH=saturateH)
         self.updateAtomTypes()
+        self.identifyRingMembership()
         
         # Check if multiplicity is possible
         n_rad = self.getRadicalCount() 
@@ -1835,6 +1848,22 @@ class Molecule(Graph):
         group.update()
         
         return group
+
+    def identifyRingMembership(self):
+        """
+        Performs ring perception and saves ring membership information to the Atom.props attribute.
+        """
+        cython.declare(rc=list, atom=Atom, ring=list)
+
+        # Get the set of relevant cycles
+        rc = self.getRelevantCycles()
+        # Identify whether each atom is in a ring
+        for atom in self.atoms:
+            atom.props['inRing'] = False
+            for ring in rc:
+                if atom in ring:
+                    atom.props['inRing'] = True
+                    break
 
     def getAromaticRings(self, rings=None):
         """
