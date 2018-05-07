@@ -57,6 +57,7 @@ class PDepReaction(rmgpy.reaction.Reaction):
                  specificCollider=None,
                  network=None,
                  kinetics=None,
+                 network_kinetics=None,
                  reversible=True,
                  transitionState=None,
                  duplicate=False,
@@ -64,17 +65,18 @@ class PDepReaction(rmgpy.reaction.Reaction):
                  pairs=None
                  ):
         rmgpy.reaction.Reaction.__init__(self,
-                                         index,
-                                         label,
-                                         reactants,
-                                         products,
-                                         specificCollider,
-                                         kinetics,
-                                         reversible,
-                                         transitionState,
-                                         duplicate,
-                                         degeneracy,
-                                         pairs
+                                         index=index,
+                                         label=label,
+                                         reactants=reactants,
+                                         products=products,
+                                         specificCollider=specificCollider,
+                                         kinetics=kinetics,
+                                         network_kinetics=network_kinetics,
+                                         reversible=reversible,
+                                         transitionState=transitionState,
+                                         duplicate=duplicate,
+                                         degeneracy=degeneracy,
+                                         pairs=pairs
                                          )
         self.network = network
 
