@@ -46,6 +46,7 @@ cdef class Reaction:
     cdef public bint reversible
     cdef public TransitionState transitionState
     cdef public KineticsModel kinetics
+    cdef public Arrhenius network_kinetics
     cdef public bint duplicate
     cdef public float _degeneracy
     cdef public list pairs
@@ -92,7 +93,7 @@ cdef class Reaction:
 
     cpdef reverseThisArrheniusRate(self, Arrhenius kForward, str reverseUnits)
 
-    cpdef generateReverseRateCoefficient(self)
+    cpdef generateReverseRateCoefficient(self, bint network_kinetics=?)
 
     cpdef numpy.ndarray calculateTSTRateCoefficients(self, numpy.ndarray Tlist)
 
