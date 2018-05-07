@@ -644,7 +644,7 @@ class TestGenerateReactions(unittest.TestCase):
             path=os.path.join(settings['test_data.directory'], 'testing_database'),
             thermoLibraries=[],
             reactionLibraries=[],
-            kineticsFamilies=['H_Abstraction', 'R_Addition_MultipleBond','Singlet_Val6_to_triplet'],
+            kineticsFamilies=['H_Abstraction', 'R_Addition_MultipleBond','Singlet_Val6_to_triplet', 'R_Recombination'],
             depository=False,
             solvation=False,
             testing=True,
@@ -734,3 +734,16 @@ multiplicity 2
         reactant = [Molecule(SMILES='O=O')]
         reactionList = self.database.kinetics.families['Singlet_Val6_to_triplet'].generateReactions(reactant)
         self.assertFalse(reactionList[0].reversible)
+
+    def test_net_charge_of_products(self):
+        """Test that __generateProductStructures() does not generate charged products"""
+
+        reactant = [Molecule(SMILES='[NH-][NH2+]')]
+        reactionList = self.database.kinetics.families['R_Recombination'].generateReactions(reactant)
+        for rxn in reactionList:
+            for product in rxn.products:
+                self.assertEquals(product.getNetCharge(), 0)
+
+        reactant = [Molecule(SMILES='[O-][N+]#N')]
+        reactionList = self.database.kinetics.families['R_Recombination'].generateReactions(reactant)
+        self.assertEquals(len(reactionList), 0)
