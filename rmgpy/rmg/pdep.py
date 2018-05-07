@@ -387,8 +387,6 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         the current `reactionModel` because some decisions on sorting are made
         based on which species are in the model core. 
         """
-
-        isomers = []
         reactants = []
         products = []
         
@@ -486,7 +484,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         for rxn in self.pathReactions:
             if rxn.kinetics is None and rxn.reverse.kinetics is None:
                 raise PressureDependenceError('Path reaction {0} with no high-pressure-limit kinetics encountered in PDepNetwork #{1:d}.'.format(rxn, self.index))
-            elif rxn.kinetics is not None and rxn.kinetics.isPressureDependent():
+            elif rxn.kinetics is not None and rxn.kinetics.isPressureDependent() and rxn.network_kinetics is None:
                 raise PressureDependenceError('Pressure-dependent kinetics encountered for path reaction {0} in PDepNetwork #{1:d}.'.format(rxn, self.index))
         
         # Do nothing if the network is already valid
@@ -536,13 +534,15 @@ class PDepNetwork(rmgpy.pdep.network.Network):
             elif isinstance(rxn.kinetics, MultiArrhenius):
                 logging.info('Converting multiple kinetics to a single Arrhenius expression for reaction {rxn}'.format(rxn=rxn))
                 rxn.kinetics = rxn.kinetics.toArrhenius(Tmin=Tmin, Tmax=Tmax)
-            elif not isinstance(rxn.kinetics, Arrhenius):
-                raise Exception('Path reaction "{0}" in PDepNetwork #{1:d} has invalid kinetics type "{2!s}".'.format(rxn, self.index, rxn.kinetics.__class__))
+            elif not isinstance(rxn.kinetics, Arrhenius) and rxn.network_kinetics is None:
+                raise Exception('Path reaction "{0}" in PDepNetwork #{1:d} has invalid kinetics type "{2!s}".'.format(
+                        rxn,self.index,rxn.kinetics.__class__))
             rxn.fixBarrierHeight(forcePositive=True)
-            E0 = sum([spec.conformer.E0.value_si for spec in rxn.reactants]) + rxn.kinetics.Ea.value_si
-            rxn.transitionState = rmgpy.species.TransitionState(
-                conformer = Conformer(E0=(E0*0.001,"kJ/mol")),
-            )
+            if rxn.network_kinetics is None:
+                E0 = sum([spec.conformer.E0.value_si for spec in rxn.reactants]) + rxn.kinetics.Ea.value_si
+            else:
+                E0 = sum([spec.conformer.E0.value_si for spec in rxn.reactants]) + rxn.network_kinetics.Ea.value_si
+            rxn.transitionState = rmgpy.species.TransitionState(conformer=Conformer(E0=(E0 * 0.001, "kJ/mol")))
 
         # Set collision model
         bathGas = [spec for spec in reactionModel.core.species if not spec.reactive]
@@ -634,17 +634,23 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                         # k(T,P) values potentially contain both direct and
                         # well-skipping contributions, and therefore could be
                         # significantly larger than the direct k(T) value
-                        # (This can also happen for association/dissocation
+                        # (This can also happen for association/dissociation
                         # reactions, but the effect is generally not too large)
                         continue
                     if pathReaction.reactants == netReaction.reactants and pathReaction.products == netReaction.products:
-                        kinf = pathReaction.kinetics.getRateCoefficient(Tlist[t])
+                        if pathReaction.network_kinetics is not None:
+                            kinf = pathReaction.network_kinetics.getRateCoefficient(Tlist[t])
+                        else:
+                            kinf = pathReaction.kinetics.getRateCoefficient(Tlist[t])
                         if K[t,p,i,j] > 2 * kinf: # To allow for a small discretization error
                             logging.warning('k(T,P) for net reaction {0} exceeds high-P k(T) by {1:g} at {2:g} K, {3:g} bar'.format(netReaction, K[t,p,i,j] / kinf, Tlist[t], Plist[p]/1e5))
                             logging.info('    k(T,P) = {0:9.2e}    k(T) = {1:9.2e}'.format(K[t,p,i,j], kinf))
                         break
                     elif pathReaction.products == netReaction.reactants and pathReaction.reactants == netReaction.products:
-                        kinf = pathReaction.kinetics.getRateCoefficient(Tlist[t]) / pathReaction.getEquilibriumConstant(Tlist[t])
+                        if pathReaction.network_kinetics is not None:
+                            kinf = pathReaction.network_kinetics.getRateCoefficient(Tlist[t]) / pathReaction.getEquilibriumConstant(Tlist[t])
+                        else:
+                            kinf = pathReaction.kinetics.getRateCoefficient(Tlist[t]) / pathReaction.getEquilibriumConstant(Tlist[t])
                         if K[t,p,i,j] > 2 * kinf: # To allow for a small discretization error
                             logging.warning('k(T,P) for net reaction {0} exceeds high-P k(T) by {1:g} at {2:g} K, {3:g} bar'.format(netReaction, K[t,p,i,j] / kinf, Tlist[t], Plist[p]/1e5))           
                             logging.info('    k(T,P) = {0:9.2e}    k(T) = {1:9.2e}'.format(K[t,p,i,j], kinf))
