@@ -610,9 +610,9 @@ class CoreEdgeReactionModel:
             for network in self.networkList:
                 network.updateConfigurations(self)
                 index = 0
+                isomers = [isomer.species[0] for isomer in network.isomers]
                 while index < len(self.core.species):
                     species = self.core.species[index]
-                    isomers = [isomer.species[0] for isomer in network.isomers]
                     if species in isomers and species not in network.explored:
                         network.explored.append(species)
                         continue
