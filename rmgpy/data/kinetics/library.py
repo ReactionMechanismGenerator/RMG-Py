@@ -35,6 +35,7 @@ This module contains functionality for working with kinetics libraries.
 import os.path
 import logging
 import re
+import numpy as np
 try:
     from collections import OrderedDict
 except ImportError:
@@ -67,6 +68,7 @@ class LibraryReaction(Reaction):
                  products=None,
                  specificCollider=None,
                  kinetics=None,
+                 network_kinetics=None,
                  reversible=True,
                  transitionState=None,
                  duplicate=False,
@@ -83,6 +85,7 @@ class LibraryReaction(Reaction):
                           products=products,
                           specificCollider=specificCollider,
                           kinetics=kinetics,
+                          network_kinetics=network_kinetics,
                           reversible=reversible,
                           transitionState=transitionState,
                           duplicate=duplicate,
@@ -104,6 +107,7 @@ class LibraryReaction(Reaction):
                                   self.products,
                                   self.specificCollider,
                                   self.kinetics,
+                                  self.network_kinetics,
                                   self.reversible,
                                   self.transitionState,
                                   self.duplicate,
