@@ -62,6 +62,8 @@ class Predictor(object):
 		folded_data = prepare_folded_data_from_multiple_datasets(self.datasets, folds, 
 																self.add_extra_atom_attribute, 
 																self.add_extra_bond_attribute,
+																self.differentiate_atom_type,
+																self.differentiate_bond_type,
 																self.padding,
 																self.padding_final_size,
 																self.prediction_task)
@@ -134,6 +136,8 @@ class Predictor(object):
 		folded_data = prepare_full_train_data_from_multiple_datasets(self.datasets, 
 																self.add_extra_atom_attribute, 
 																self.add_extra_bond_attribute,
+																self.differentiate_atom_type,
+																self.differentiate_bond_type,
 																self.padding,
 																self.padding_final_size,
 																self.prediction_task)
@@ -188,6 +192,8 @@ class Predictor(object):
 		folded_data = prepare_folded_data_from_multiple_datasets(self.datasets, folds, 
 																self.add_extra_atom_attribute, 
 																self.add_extra_bond_attribute,
+																self.differentiate_atom_type,
+																self.differentiate_bond_type,
 																self.padding,
 																self.padding_final_size,
 																self.prediction_task)
@@ -257,8 +263,11 @@ class Predictor(object):
 
 	def predict(self, molecule):
 
-		molecule_tensor = get_molecule_tensor(molecule, \
-							self.add_extra_atom_attribute, self.add_extra_bond_attribute)
+		molecule_tensor = get_molecule_tensor(molecule,
+											  self.add_extra_atom_attribute, 
+											  self.add_extra_bond_attribute,
+											  self.differentiate_atom_type,
+											  self.differentiate_bond_type)
 		if self.padding:
 			molecule_tensor = pad_molecule_tensor(molecule_tensor, self.padding_final_size)
 		molecule_tensor_array = np.array([molecule_tensor])

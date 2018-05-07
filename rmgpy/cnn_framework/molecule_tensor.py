@@ -16,7 +16,11 @@ def pad_molecule_tensor(molecule_tensor, final_size):
 
 
 
-def get_molecule_tensor(molecule, add_extra_atom_attribute=True, add_extra_bond_attribute=True):
+def get_molecule_tensor(molecule, 
+						add_extra_atom_attribute=True, 
+						add_extra_bond_attribute=True,
+						differentiate_atom_type=True,
+						differentiate_bond_type=True):
 
 	"""
 	this method takes RMG `Molecule` object and vectorize 
@@ -26,8 +30,14 @@ def get_molecule_tensor(molecule, add_extra_atom_attribute=True, add_extra_bond_
 	non_H_atoms = [atom0 for atom0 in molecule.atoms if not atom0.isHydrogen()]
 	non_H_atom_num = len(non_H_atoms)
 	
-	atom_attributes_dict = get_atom_attributes(molecule, non_H_atoms, add_extra_atom_attribute)
-	bond_attributes_dict = get_bond_attributes(molecule, non_H_atoms, add_extra_bond_attribute)
+	atom_attributes_dict = get_atom_attributes(molecule, 
+											   non_H_atoms, 
+											   add_extra_atom_attribute,
+											   differentiate_atom_type)
+	bond_attributes_dict = get_bond_attributes(molecule, 
+											   non_H_atoms, 
+											   add_extra_bond_attribute,
+											   differentiate_bond_type)
 
 	atom_attribute_num = len(atom_attributes_dict.values()[0])
 	bond_attribute_num = len(bond_attributes_dict.values()[0])
@@ -44,7 +54,10 @@ def get_molecule_tensor(molecule, add_extra_atom_attribute=True, add_extra_bond_
 
 	return molecule_tensor
 
-def get_attribute_vector_size(add_extra_atom_attribute=True, add_extra_bond_attribute=True):
+def get_attribute_vector_size(add_extra_atom_attribute=True, 
+							  add_extra_bond_attribute=True,
+							  differentiate_atom_type=True,
+							  differentiate_bond_type=True):
 
 	"""
 	this method examines current feature engineering setup
@@ -55,8 +68,14 @@ def get_attribute_vector_size(add_extra_atom_attribute=True, add_extra_bond_attr
 	molecule = Molecule().fromSMILES('CC')
 	non_H_atoms = [atom0 for atom0 in molecule.atoms if not atom0.isHydrogen()]
 	
-	atom_attributes_dict = get_atom_attributes(molecule, non_H_atoms, add_extra_atom_attribute)
-	bond_attributes_dict = get_bond_attributes(molecule, non_H_atoms, add_extra_bond_attribute)
+	atom_attributes_dict = get_atom_attributes(molecule, 
+											   non_H_atoms, 
+											   add_extra_atom_attribute,
+											   differentiate_atom_type)
+	bond_attributes_dict = get_bond_attributes(molecule, 
+											   non_H_atoms, 
+											   add_extra_bond_attribute,
+											   differentiate_bond_type)
 
 	atom_attribute_num = len(atom_attributes_dict.values()[0])
 	bond_attribute_num = len(bond_attributes_dict.values()[0])
@@ -64,7 +83,9 @@ def get_attribute_vector_size(add_extra_atom_attribute=True, add_extra_bond_attr
 
 	return attribute_num
 
-def get_atom_attributes(molecule, non_H_atoms, add_extra_attribute=True):
+def get_atom_attributes(molecule, non_H_atoms, 
+						add_extra_attribute=True,
+						differentiate_atom_type=True):
 
 	"""
 	this method takes a molecule with hydrogen pre-removed and returns a dict
@@ -97,13 +118,14 @@ def get_atom_attributes(molecule, non_H_atoms, add_extra_attribute=True):
 		#in ring
 		attributes.append(molecule.isVertexInCycle(atom))
 		
-		# Add boolean if aromatic atom
-		is_aromatic = False
-		for bonded_atom, bond in atom.bonds.iteritems():
-			if bond.isBenzene():
-				is_aromatic = True
-				break
-		attributes.append(is_aromatic)
+		if differentiate_atom_type:
+			# Add boolean if aromatic atom
+			is_aromatic = False
+			for bonded_atom, bond in atom.bonds.iteritems():
+				if bond.isBenzene():
+					is_aromatic = True
+					break
+			attributes.append(is_aromatic)
 
 		# add atom in i-member rings
 		if add_extra_attribute:
@@ -133,7 +155,10 @@ def is_atom_in_ring(molecule, atom):
 
 	return atom_in_rings
 
-def get_bond_attributes(molecule, non_H_atoms, add_extra_attribute=True):
+def get_bond_attributes(molecule, 
+						non_H_atoms, 
+						add_extra_attribute=True, 
+						differentiate_bond_type=True):
 	"""
 	this method takes a molecule with hydrogen pre-removed and returns a dict
 	with bond as key, bond attributes as value
@@ -142,13 +167,15 @@ def get_bond_attributes(molecule, non_H_atoms, add_extra_attribute=True):
 	for atom in non_H_atoms:
 		for bonded_atom, bond in atom.bonds.iteritems():
 			if not bonded_atom.isHydrogen() and (bond not in bond_attributes_dict):
-				attributes = oneHotVector(bond.getOrderStr(),
-										['S', 'B', 'D', 'T']
-										)
-				# Add if is aromatic
-				attributes.append(bond.isBenzene())
+				
+				attributes = []
+				if differentiate_bond_type:
+					attributes.extend(oneHotVector(bond.getOrderStr(),
+												   ['S', 'B', 'D', 'T']))
+					# Add if is aromatic
+					attributes.append(bond.isBenzene())
 
-				attributes.append(is_bond_conjugated(bond))
+					attributes.append(is_bond_conjugated(bond))
 				
 				attributes.append(molecule.__isChainInCycle([bond.atom1, bond.atom2]))
 
@@ -161,7 +188,10 @@ def get_bond_attributes(molecule, non_H_atoms, add_extra_attribute=True):
 				bond_attributes_dict[bond] = np.array(attributes, dtype=np.float32)
 
 	if not bond_attributes_dict:
-		bond_attributes_dict['no_bond'] = np.array([0]*14, dtype=np.float32)
+		if differentiate_bond_type:
+			bond_attributes_dict['no_bond'] = np.array([0]*14, dtype=np.float32)
+		else:
+			bond_attributes_dict['no_bond'] = np.array([0]*8, dtype=np.float32)
 	
 	return bond_attributes_dict
 

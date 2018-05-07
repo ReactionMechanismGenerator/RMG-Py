@@ -40,6 +40,8 @@ def get_db_mols(host, db_name, collection_name):
 def get_data_from_db(host, db_name, collection_name, 
 					add_extra_atom_attribute=True, 
 					add_extra_bond_attribute=True,
+					differentiate_atom_type=True,
+					differentiate_bond_type=True,
 					padding=True,
 					padding_final_size=20,
 					prediction_task="Hf298(kcal/mol)"):
@@ -75,8 +77,11 @@ def get_data_from_db(host, db_name, collection_name,
 			mol = Molecule().fromAdjacencyList(adj)
 		else:
 			mol = Molecule().fromSMILES(smile)
-		mol_tensor = get_molecule_tensor(mol, add_extra_atom_attribute, 
-										 add_extra_bond_attribute)
+		mol_tensor = get_molecule_tensor(mol, 
+										 add_extra_atom_attribute, 
+										 add_extra_bond_attribute,
+										 differentiate_atom_type,
+										 differentiate_bond_type)
 		if padding:
 			mol_tensor = pad_molecule_tensor(mol_tensor, padding_final_size)
 
@@ -104,6 +109,8 @@ def prepare_folded_data_from_multiple_datasets(datasets,
 												folds, 
 												add_extra_atom_attribute, 
 												add_extra_bond_attribute,
+												differentiate_atom_type,
+												differentiate_bond_type,
 												padding=True,
 												padding_final_size=20,
 												prediction_task="Hf298(kcal/mol)"):
@@ -116,6 +123,8 @@ def prepare_folded_data_from_multiple_datasets(datasets,
 								table, 
 								add_extra_atom_attribute, 
 								add_extra_bond_attribute,
+								differentiate_atom_type,
+								differentiate_bond_type,
 								padding,
 								padding_final_size,
 								prediction_task)
@@ -162,6 +171,8 @@ def prepare_folded_data_from_multiple_datasets(datasets,
 def prepare_full_train_data_from_multiple_datasets(datasets, 
 													add_extra_atom_attribute, 
 													add_extra_bond_attribute,
+													differentiate_atom_type,
+													differentiate_bond_type,
 													padding=True,
 													padding_final_size=20,
 													prediction_task="Hf298(kcal/mol)",
@@ -175,6 +186,8 @@ def prepare_full_train_data_from_multiple_datasets(datasets,
 										table, 
 										add_extra_atom_attribute, 
 										add_extra_bond_attribute,
+										differentiate_atom_type,
+										differentiate_bond_type,
 										padding,
 										padding_final_size,
 										prediction_task)

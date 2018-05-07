@@ -9,6 +9,8 @@ predictor = None
 def predictor_model(prediction_task="Hf298(kcal/mol)",
                     embedding_size=512, attribute_vector_size=None, depth=2, 
                     add_extra_atom_attribute=True, add_extra_bond_attribute=True,
+                    differentiate_atom_type=True,
+                    differentiate_bond_type=True,
                     scale_output=0.05, 
                     padding=False, padding_final_size=20,
                     mol_conv_inner_activation='tanh',
@@ -18,8 +20,10 @@ def predictor_model(prediction_task="Hf298(kcal/mol)",
                     lr=0.01, optimizer='adam', loss='mse'):
     
     if attribute_vector_size is None:
-        attribute_vector_size = get_attribute_vector_size(\
-                                    add_extra_atom_attribute, add_extra_bond_attribute)
+        attribute_vector_size = get_attribute_vector_size(add_extra_atom_attribute, 
+                                                          add_extra_bond_attribute,
+                                                          differentiate_atom_type,
+                                                          differentiate_bond_type)
     
     model = build_model(embedding_size, attribute_vector_size, depth,
                 scale_output, 
@@ -34,6 +38,8 @@ def predictor_model(prediction_task="Hf298(kcal/mol)",
     predictor.model = model
     predictor.add_extra_atom_attribute = add_extra_atom_attribute
     predictor.add_extra_bond_attribute = add_extra_bond_attribute
+    predictor.differentiate_bond_type = differentiate_bond_type
+    predictor.differentiate_atom_type = differentiate_atom_type
     predictor.padding = padding
     predictor.padding_final_size = padding_final_size
 
