@@ -17,12 +17,10 @@ requirements:
     - cairocffi # [unix]
     - coverage
     - cython >=0.25.2
-    - gcc # [unix]
-    - gcc ==4.8.2 # [linux32]
+    - gcc_linux-64 # [linux]
+    - clang_osx-64 # [osx]
     - gprof2dot
     - jinja2
-    - libgcc # [unix]
-    - libgfortran ==1.0 # [linux] You may need to comment this out for mac osx
     - lpsolve55
     - markupsafe
     - matplotlib >=1.5

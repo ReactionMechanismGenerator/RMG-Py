@@ -1,8 +1,3 @@
-set CC=gcc
-set CXX=g++
-set F77=gfortran
-set F90=gfortran
-
 
 mingw32-make -j%CPU_COUNT%
 mingw32-make QM
