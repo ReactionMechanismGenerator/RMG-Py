@@ -80,6 +80,9 @@ class Reaction:
     `degeneracy`        :class:`double`             The reaction path degeneracy for the reaction
     `pairs`             ``list``                    Reactant-product pairings to use in converting reaction flux to species flux
     `has_pdep_route`    ``bool``                    ``True`` if the reaction has an additional PDep pathway, ``False`` if not (by default), used for LibraryReactions
+    `elementary_high_p` ``bool``                    If ``True``, pressure dependent kinetics will be generated (relevant only for unimolecular library reactions)
+                                                    If ``False`` (by default), this library reaction will not be explored.
+                                                    Only unimolecular library reactions with high pressure limit kinetics should be flagged (not if the kinetics were measured at some relatively low pressure)
     `comment`           ``str``                     A description of the reaction source (optional)
     =================== =========================== ============================
     
@@ -98,7 +101,8 @@ class Reaction:
                  degeneracy=1,
                  pairs=None,
                  has_pdep_route=False,
-                 comment=''
+                 elementary_high_p=False,
+                 comment='',
                  ):
         self.index = index
         self.label = label
@@ -112,6 +116,7 @@ class Reaction:
         self.duplicate = duplicate
         self.pairs = pairs
         self.has_pdep_route = has_pdep_route
+        self.elementary_high_p = elementary_high_p
         self.comment = comment
         self.k_effective_cache = {}
 
@@ -132,7 +137,8 @@ class Reaction:
         if self.duplicate: string += 'duplicate={0}, '.format(self.duplicate)
         if self.degeneracy != 1: string += 'degeneracy={0:.1f}, '.format(self.degeneracy)
         if self.pairs is not None: string += 'pairs={0}, '.format(self.pairs)
-        if self.has_pdep_route: string += 'has_pdep_route={0}'.format(self.has_pdep_route)
+        if self.has_pdep_route: string += 'has_pdep_route={0}, '.format(self.has_pdep_route)
+        if self.elementary_high_p: string += 'elementary_high_p={0}, '.format(self.elementary_high_p)
         if self.comment != '': string += 'comment={0!r}, '.format(self.comment)
         string = string[:-2] + ')'
         return string
@@ -173,6 +179,7 @@ class Reaction:
                            self.degeneracy,
                            self.pairs,
                            self.has_pdep_route,
+                           self.elementary_high_p,
                            self.comment
                            ))
 
@@ -1063,6 +1070,7 @@ class Reaction:
         other.duplicate = self.duplicate
         other.pairs = deepcopy(self.pairs)
         other.has_pdep_route = self.has_pdep_route
+        other.elementary_high_p = self.elementary_high_p
         other.comment = deepcopy(self.comment)
         
         return other
