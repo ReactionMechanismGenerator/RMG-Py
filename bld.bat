@@ -1,7 +1,7 @@
-
+:: Compile RMG
 mingw32-make -j%CPU_COUNT%
-mingw32-make QM
 
+:: Install RMG
 %PYTHON% setup.py install
 
 :: lazy "install" of everything in our 'external' folder.

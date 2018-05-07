@@ -157,10 +157,6 @@ def getCanthermExtensionModules():
 ################################################################################
 
 ext_modules = []
-if 'install' in sys.argv:
-    # This is so users can still do simply `python setup.py install`
-    ext_modules.extend(getMainExtensionModules())
-    ext_modules.extend(getSolverExtensionModules())
 if 'main' in sys.argv:
     # This is for `python setup.py build_ext main`
     sys.argv.remove('main')

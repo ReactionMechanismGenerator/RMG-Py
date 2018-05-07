@@ -1,5 +1,7 @@
+# Compile RMG
 make -j${CPU_COUNT}
-make QM
+
+# Install RMG
 $PYTHON setup.py install
 
 # lazy "install" of everything in our 'external' folder.
