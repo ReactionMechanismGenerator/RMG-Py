@@ -11,27 +11,16 @@ build:
 
 requirements:
   build:
-    - argparse # [py26]
     - boost ==1.56.0
-    - cairo # [unix]
-    - cairocffi # [unix]
-    - coverage
     - cython >=0.25.2
     - gcc_linux-64 # [linux]
     - clang_osx-64 # [osx]
-    - gprof2dot
     - jinja2
     - lpsolve55
-    - markupsafe
-    - matplotlib >=1.5
-    - nose
     - numpy
     - openbabel
-    - psutil
     - pydas >=1.0.2
-    - pydot ==1.2.2
     - pydqed >=1.0.1
-    - pyparsing
     - pyrdl
     - python
     - pyzmq
@@ -40,23 +29,20 @@ requirements:
     - scipy
     - scoop
     - setuptools
-    - xlwt
 
   run:
     - argparse # [py26]
     - cairo # [unix]
     - cairocffi # [unix]
-    - cantera >=2.2
+    - cantera >=2.3.0a3
     - coolprop
     - coverage
-    - cython ==0.21
+    - cython >=0.25.2
     - ffmpeg
     - gprof2dot
     - graphviz
     - guppy
     - jinja2
-    - libgcc # [unix]
-    - libgfortran ==1.0 # [linux] You may need to comment this out for mac osx
     - lpsolve55
     - markupsafe
     - matplotlib >=1.5
@@ -69,6 +55,7 @@ requirements:
     - pydas >=1.0.2
     - pydot ==1.2.2
     - pydqed >=1.0.1
+    - pymongo
     - pyparsing
     - pyrdl
     - python
