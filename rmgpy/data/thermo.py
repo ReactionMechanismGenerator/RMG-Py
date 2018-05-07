@@ -1127,6 +1127,12 @@ class ThermoDatabase(object):
         except Exception:
             logging.debug('Quantum Mechanics DB could not be found.')
             quantumMechanics = None
+
+        try:
+            mcnn_estimator = getInput('MCNNEstimator')
+        except Exception:
+            logging.debug('MCNN estimator could not be found.')
+            mcnn_estimator = None
             
         if quantumMechanics:
             original_molecule = species.molecule[0]
@@ -1205,13 +1211,37 @@ class ThermoDatabase(object):
                     # Did not find any saturated values in the thermo libraries, so try group additivity instead
                     thermo0 = self.getThermoDataFromGroups(species)
 
-            else:
-                # Saturated molecule, estimate it via groups since we've already checked libraries much earlier
-                thermo0 = self.getThermoDataFromGroups(species)
-                
-            # update entropy by symmetry correction
-            thermo0.S298.value_si -= constants.R * math.log(species.getSymmetryNumber())
+                # update entropy by symmetry correction
+                thermo0.S298.value_si -= constants.R * math.log(species.getSymmetryNumber())
 
+            else:
+                # for saturated molecule, since we've already checked 
+                # libraries much earlier, we estimate it via groups or
+                # other estimators e.g., MCNN estimator
+                
+                # since we are trying to replace GA with MCNN estimator
+                # eventually, for now we'll start using MCNN
+                # for non-aromatic polycyclic species only
+                useGA = False
+                if not mcnn_estimator:
+                    useGA = True
+                else:
+                    for mol in species.molecule:
+                        if mol.isAromatic():
+                            useGA = True
+                            break
+                    else: 
+                        mol = species.molecule[0]
+                        monorings, polyrings = mol.getDisparateRings()
+                        if len(polyrings) == 0:
+                            useGA = True
+
+                if useGA:
+                    thermo0 = self.getThermoDataFromGroups(species)
+                    # update entropy by symmetry correction
+                    thermo0.S298.value_si -= constants.R * math.log(species.getSymmetryNumber())
+                else:
+                    thermo0 = mcnn_estimator.get_thermo_data_for_species(species)
 
         # Make sure to calculate Cp0 and CpInf if it wasn't done already
         findCp0andCpInf(species, thermo0)

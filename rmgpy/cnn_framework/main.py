@@ -56,6 +56,19 @@ class MCNNEstimator():
                           )
         return thermo
 
+    def get_thermo_data_for_species(self, species):
+        """
+        Return the set of thermodynamic parameters corresponding to a given
+        :class:`Species` object `species` by estimation using mcnn.
+        
+        The current MCNN estimator treats each resonance isomer same, 
+        i.e., give same thermo estimator for molecules belong to `species`
+        so there's no need to order them.
+        
+        Returns: ThermoData
+        """       
+        return self.get_thermo_data(species.molecule[0])
+
 def load_pretrained_estimator(model_path):
 
     estimator = Predictor()

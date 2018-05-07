@@ -274,6 +274,21 @@ def quantumMechanics(
                                         onlyCyclics = onlyCyclics,
                                         maxRadicalNumber = maxRadicalNumber,
                                         )
+
+def mcnnEstimator(mode='thermochemistry'):
+    import rmgpy.cnn_framework
+    from rmgpy.cnn_framework.main import MCNNEstimator
+
+    # currently only support mode of thermochemistry
+    if mode == 'thermochemistry':
+        pretrained_models_path = os.path.join(rmgpy.cnn_framework.__path__[0], 
+                                              'pretrained_models')
+        Hf298_path = os.path.join(pretrained_models_path, 'Hf298')
+        S298_path = os.path.join(pretrained_models_path, 'S298')
+        Cp_path = os.path.join(pretrained_models_path, 'Cp')
+        rmg.MCNNEstimator = MCNNEstimator(Hf298_path, S298_path, Cp_path)
+    else:
+        logging.info('mode: {0} is not supported. Currently MCNN Estimator only supports thermochemistry.'.format(mode))
                     
 
 def pressureDependence(
@@ -435,6 +450,7 @@ def readInputFile(path, rmg0):
         'solvation': solvation,
         'model': model,
         'quantumMechanics': quantumMechanics,
+        'mcnnEstimator': mcnnEstimator,
         'pressureDependence': pressureDependence,
         'options': options,
         'generatedSpeciesConstraints': generatedSpeciesConstraints,
@@ -697,6 +713,8 @@ def getInput(name):
             return rmg.speciesConstraints
         elif name == 'quantumMechanics':
             return rmg.quantumMechanics
+        elif name == 'MCNNEstimator':
+            return rmg.MCNNEstimator
         elif name == 'thermoCentralDatabase':
             return rmg.thermoCentralDatabase
         else:

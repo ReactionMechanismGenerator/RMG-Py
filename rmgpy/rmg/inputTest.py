@@ -90,6 +90,26 @@ class TestInputDatabase(unittest.TestCase):
         self.assertIsInstance(rmg.reactionLibraries[0], tuple)
         self.assertTrue(rmg.reactionLibraries[0][1])
 
+class TestInputMCNNEstimator(unittest.TestCase):
+    """
+    Contains unit tests rmgpy.rmg.input.mcnnEstimator
+    """
+    def tearDown(self):
+        # remove the reactionLibraries value
+        global rmg
+        rmg.MCNNEstimator = None
+
+    def testMCNNEstimator(self):
+        """
+        Test that we can input.
+        """
+        from rmgpy.cnn_framework.main import MCNNEstimator
+        global rmg
+        # add database properties to RMG
+        inp.mcnnEstimator(
+                mode='thermochemistry'
+        )
+        self.assertIsInstance(rmg.MCNNEstimator, MCNNEstimator)
 
 class TestInputThemoCentralDatabase(unittest.TestCase):
     """
