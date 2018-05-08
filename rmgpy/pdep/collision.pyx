@@ -31,7 +31,7 @@
 This module contains classes and functions for working with collision models.
 """
 
-import numpy
+import numpy, logging
 cimport cython
 
 cimport rmgpy.constants as constants
@@ -300,7 +300,7 @@ cdef class SingleExponentialDown:
         beta = (dEdown / (dEdown + Fe * R * T))**2 / Delta
     
         if beta > 1:
-            print('Warning: Collision efficiency {0:.3f} calculated at {1:g} K is greater than unity, so it will be set to unity.'.format(beta, T))
+            logging.debug('Collision efficiency {0:.3f} calculated at {1:g} K is greater than unity, so it will be set to unity.'.format(beta, T))
             beta = 1
         if beta < 0:
             raise CollisionError('Invalid collision efficiency {0:.3f} calculated at {1:g} K.'.format(beta, T))
