@@ -594,7 +594,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                         for rxn in reactionModel.core.reactions:
                             if isinstance(rxn, LibraryReaction) \
                                     and rxn.isIsomorphic(netReaction, eitherDirection=True) \
-                                    and not rxn.has_pdep_route:  # if this reaction is flagged as having an additional PDep pathway, do add the network reaction
+                                    and not rxn.has_pdep_route and not rxn.elementary_high_p:
                                 logging.info('Network reaction {0} matched an existing core reaction {1}'
                                     ' from the {2} library, and was not added to the model'.format(
                                     str(netReaction), str(rxn), rxn.library))
@@ -606,7 +606,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                         for rxn in reactionModel.edge.reactions:
                             if isinstance(rxn, LibraryReaction) \
                                     and rxn.isIsomorphic(netReaction, eitherDirection=True) \
-                                    and not rxn.has_pdep_route:  # if this reaction is flagged as having an additional PDep pathway, do add the network reaction
+                                    and not rxn.has_pdep_route and not rxn.elementary_high_p:
                                 logging.info('Network reaction {0} matched an existing edge reaction {1}'
                                     ' from the {2} library, and was not added to the model'.format(
                                     str(netReaction), str(rxn), rxn.library))
