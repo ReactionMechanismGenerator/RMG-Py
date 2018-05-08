@@ -787,7 +787,7 @@ class Network:
         current conditions using the modified strong collision method.
         """
         import rmgpy.pdep.msc as msc
-        logging.debug('Applying modified strong collision method at {0:g} K, {1:g} bar...'.format(self.T, self.P))
+        logging.debug('Applying modified strong collision method at {0:g} K, {1:g} Pa...'.format(self.T, self.P))
         self.K, self.p0 = msc.applyModifiedStrongCollisionMethod(self, efficiencyModel)
         return self.K, self.p0
     
@@ -797,7 +797,7 @@ class Network:
         current conditions using the reservoir state method.
         """
         import rmgpy.pdep.rs as rs
-        logging.debug('Applying reservoir state method at {0:g} K, {1:g} bar...'.format(self.T, self.P))
+        logging.debug('Applying reservoir state method at {0:g} K, {1:g} Pa...'.format(self.T, self.P))
         self.K, self.p0 = rs.applyReservoirStateMethod(self)
         return self.K, self.p0
     
@@ -810,7 +810,7 @@ class Network:
         reduced set of :math:`k(T,P)` values. 
         """
         import rmgpy.pdep.cse as cse
-        logging.debug('Applying chemically-significant eigenvalues method at {0:g} K, {1:g} bar...'.format(self.T, self.P))
+        logging.debug('Applying chemically-significant eigenvalues method at {0:g} K, {1:g} Pa...'.format(self.T, self.P))
         self.K, self.p0 = cse.applyChemicallySignificantEigenvaluesMethod(self, lumpingOrder)
         return self.K, self.p0
     
