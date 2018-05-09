@@ -53,9 +53,10 @@ from rmgpy.molecule import Molecule
 from rmgpy.solver.base import TerminationTime, TerminationConversion
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.data.rmg import RMGDatabase
-from rmgpy.exceptions import ForbiddenStructureException, DatabaseError
+from rmgpy.exceptions import ForbiddenStructureException, DatabaseError, CoreError
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
+from rmgpy.rmg.pdep import PDepReaction
 
 from rmgpy.data.thermo import ThermoLibrary
 from rmgpy.data.base import Entry
@@ -77,7 +78,6 @@ from rmgpy.stats import ExecutionStatsWriter
 from rmgpy.thermo.thermoengine import submit
 from rmgpy.tools.simulate import plot_sensitivity
 from cantera import ck2cti
-from rmgpy.exceptions import CoreError
 ################################################################################
 
 solvent = None
@@ -147,6 +147,10 @@ class RMG(util.Subject):
         self.clear()
         self.modelSettingsList = []
         self.simulatorSettingsList = []
+        self.Tmin = 0.0
+        self.Tmax = 0.0
+        self.Pmin = 0.0
+        self.Pmax = 0.0
     
     def clear(self):
         """
@@ -599,15 +603,16 @@ class RMG(util.Subject):
         self.register_listeners()
 
         self.done = False
-        
-        Tlist = []
-        for x in self.reactionSystems:
-            if x.Trange:
-                Tlist.append(x.Trange[1].value_si)
-            elif x.T:
-                Tlist.append(x.T.value_si)
-                
-        self.Tmax = max(Tlist)
+
+        # determine min and max values for T and P (don't determine P values for liquid reactors)
+        self.Tmin = min([r_sys.Trange[0] if r_sys.Trange else r_sys.T for r_sys in self.reactionSystems]).value_si
+        self.Tmax = max([r_sys.Trange[1] if r_sys.Trange else r_sys.T for r_sys in self.reactionSystems]).value_si
+        try:
+            self.Pmin = min([x.Prange[0] if x.Prange else x.P for x in self.reactionSystems]).value_si
+            self.Pmax = max([x.Prange[1] if x.Prange else x.P for x in self.reactionSystems]).value_si
+        except AttributeError:
+            # For LiquidReactor, Pmin and Pmax remain with the default value of `None`
+            pass
         
         self.rmg_memories = []
         
@@ -951,6 +956,53 @@ class RMG(util.Subject):
                         'please open a GitHub issue with the following output:'
                         '\n{2}\n{3}'.format(spc.label, spc2.label, spc.toAdjacencyList(), spc2.toAdjacencyList())
                     )
+
+        # Check all core reactions (in both directions) for collision limit violation
+        violators = []
+        num_rxn_violators = 0
+        for rxn in self.reactionModel.core.reactions:
+            violator_list = rxn.check_collision_limit_violation(t_min=self.Tmin, t_max=self.Tmax,
+                                                            p_min=self.Pmin, p_max=self.Pmax)
+            if violator_list:
+                violators.extend(violator_list)
+                num_rxn_violators += 1
+        # Whether or not violators were found, rename 'collision_rate_violators.log' if it exists
+        if os.path.isfile('collision_rate_violators.log'):
+            # If there are no violators, yet the violators log exists (probably from a previous run
+            # in the same folder), rename it.
+            if os.path.isfile('collision_rate_violators_OLD.log'):
+                os.remove('collision_rate_violators_OLD.log')
+            os.rename('collision_rate_violators.log', 'collision_rate_violators_OLD.log')
+        if violators:
+            logging.info("\n")
+            logging.warning("{0} CORE reactions violate the collision rate limit!"
+                            "\nSee the 'collision_rate_violators.log' for details.\n\n".format(num_rxn_violators))
+            with open('collision_rate_violators.log', 'w') as violators_f:
+                violators_f.write('*** Collision rate limit violators report ***\n'
+                                  '"Violation factor" is the ratio of the rate coefficient to the collision limit'
+                                  ' rate at the relevant conditions\n\n')
+                for violator in violators:
+                    rxn_string = str(violator[0])
+                    kinetics = violator[0].kinetics
+                    comment=''
+                    if isinstance(violator[0], TemplateReaction):
+                        comment = violator[0].kinetics.comment
+                        violator[0].kinetics.comment = ''  # the comment is printed better when outside of the object
+                    if isinstance(violator[0], LibraryReaction):
+                        comment = 'Kinetic library: {0}'.format(violator[0].library)
+                    if isinstance(violator[0], PDepReaction):
+                        comment = 'Network #{0}'.format(violator[0].network)
+                    direction = violator[1]
+                    ratio = violator[2]
+                    condition = violator[3]
+                    violators_f.write('{0}\n{1}\n{2}\nDirection: {3}\nViolation factor: {4:.2f}\n'
+                                      'Violation condition: {5}\n\n'.format(
+                                        rxn_string, kinetics, comment, direction, ratio, condition))
+                    if isinstance(violator[0], TemplateReaction):
+                        # although this is the end of the run, restore the original comment
+                        violator[0].kinetics.comment = comment
+        else:
+            logging.info("No collision rate violators found.")
 
     def makeSeedMech(self,firstTime=False):
         """
