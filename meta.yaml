@@ -68,6 +68,7 @@ requirements:
     - scoop
     - symmetry
     - xlwt
+    - dde
 
 test:
   source_files:
