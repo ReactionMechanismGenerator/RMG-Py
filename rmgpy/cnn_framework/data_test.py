@@ -19,7 +19,7 @@ class Test_Data(unittest.TestCase):
 
 		X, y, _ = get_data_from_db('rmg', 'rmg_internal', 
 								   'kh_tricyclics_table', 
-								   prediction_task='Cp')
+								   prediction_task='Cp(cal/mol/K)')
 
 		self.assertEqual(len(X), 180)
 		self.assertEqual(len(y), 180)
@@ -127,7 +127,9 @@ class Test_Data(unittest.TestCase):
 										datasets=datasets, 
 										folds=5, add_extra_atom_attribute=True, 
 										add_extra_bond_attribute=True,
-										prediction_task="Cp")
+										differentiate_atom_type=True,
+										differentiate_bond_type=True,
+										prediction_task="Cp(cal/mol/K)")
 		self.assertEqual(len(folded_Xs), 5)
 		self.assertEqual(len(folded_ys), 5)
 
@@ -149,6 +151,8 @@ class Test_Data(unittest.TestCase):
 												datasets=datasets, 
 												add_extra_atom_attribute=True, 
 												add_extra_bond_attribute=True,
+												differentiate_atom_type=True,
+												differentiate_bond_type=True,
 												save_meta=False)
 		self.assertEqual(len(X_train), 486)
 		self.assertEqual(len(y_train), 486)
