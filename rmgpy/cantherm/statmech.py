@@ -67,7 +67,7 @@ _rdkit_periodic_table = GetPeriodicTable()
 
 ################################################################################
 
-class ScanLog:
+class ScanLog(object):
     """
     Represent a text file containing a table of angles and corresponding
     scan energies.
@@ -156,12 +156,16 @@ class ScanLog:
 
 ################################################################################
 
+
 def hinderedRotor(scanLog, pivots, top, symmetry, fit='best'):
     return [scanLog, pivots, top, symmetry, fit]
+
+
 def freeRotor(pivots,top,symmetry):
     return [pivots,top,symmetry]
 
-class StatMechJob:
+
+class StatMechJob(object):
     """
     A representation of a CanTherm statistical mechanics job. This job is used
     to compute and save the statistical mechanics information for a single
@@ -193,13 +197,12 @@ class StatMechJob:
         """
         Load the statistical mechanics parameters for each conformer from
         the associated files on disk. Creates :class:`Conformer` objects for
-        each conformer and appends them to the list of confomers on the
+        each conformer and appends them to the list of conformers on the
         species object.
         """
         logging.info('Loading statistical mechanics parameters for {0}...'.format(self.species.label))
         
         path = self.path
-        
         TS = isinstance(self.species, TransitionState)
     
         global_context = {
@@ -216,6 +219,7 @@ class StatMechJob:
             'QchemLog': QchemLog,
             'MolproLog': MolproLog,
             'ScanLog': ScanLog,
+            'Log': Log
         }
     
         directory = os.path.abspath(os.path.dirname(path))
@@ -265,14 +269,12 @@ class StatMechJob:
             try:
                 energy = energy[self.modelChemistry]
             except KeyError:
-                raise InputError('Model chemistry {0!r} not found in from dictionary of energy values in species file {1!r}.'.format(self.modelChemistry, path))
-        if isinstance(energy, GaussianLog):
-            energyLog = energy; E0 = None
-            energyLog.path = os.path.join(directory, energyLog.path)
-        elif isinstance(energy, QchemLog):
-            energyLog = energy; E0 = None
-            energyLog.path = os.path.join(directory, energyLog.path)
-        elif isinstance(energy, MolproLog):
+                raise InputError('Model chemistry {0!r} not found in from dictionary of energy values in species file '
+                                 '{1!r}.'.format(self.modelChemistry, path))
+        if isinstance(energy, Log):
+            energy.determine_qm_software(os.path.join(directory, energy.path))
+            energy = energy.software_log
+        if isinstance(energy, (GaussianLog,QchemLog,MolproLog)):
             energyLog = energy; E0 = None
             energyLog.path = os.path.join(directory, energyLog.path)
         elif isinstance(energy, float):
@@ -282,13 +284,21 @@ class StatMechJob:
             geomLog = local_context['geometry']
         except KeyError:
             raise InputError('Required attribute "geometry" not found in species file {0!r}.'.format(path))
-        geomLog.path = os.path.join(directory, geomLog.path)
+        if isinstance(geomLog, Log):
+            geomLog.determine_qm_software(os.path.join(directory, geomLog.path))
+            geomLog = geomLog.software_log
+        else:
+            geomLog.path = os.path.join(directory, geomLog.path)
     
         try:
             statmechLog = local_context['frequencies']
         except KeyError:
             raise InputError('Required attribute "frequencies" not found in species file {0!r}.'.format(path))
-        statmechLog.path = os.path.join(directory, statmechLog.path)
+        if isinstance(statmechLog, Log):
+            statmechLog.determine_qm_software(os.path.join(directory, statmechLog.path))
+            statmechLog = statmechLog.software_log
+        else:
+            statmechLog.path = os.path.join(directory, statmechLog.path)
         
         if 'frequencyScaleFactor' in local_context:
             logging.warning('Ignoring frequency scale factor in species file {0!r}.'.format(path))
@@ -401,6 +411,9 @@ class StatMechJob:
                 elif len(q) == 5:
                     scanLog, pivots, top, symmetry, fit  = q
                     # Load the hindered rotor scan energies
+                    if isinstance(scanLog, Log):
+                        scanLog.determine_qm_software(os.path.join(directory, scanLog.path))
+                        scanLog = scanLog.software_log
                     if isinstance(scanLog, GaussianLog):
                         scanLog.path = os.path.join(directory, scanLog.path)
                         Vlist, angle = scanLog.loadScanEnergies()
@@ -777,6 +790,41 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds,
                 logging.warning('Ignored unknown bond type {0!r}.'.format(symbol))
 
     return E0
+
+class Log(object):
+    """
+    Represent a general log file.
+    The attribute `path` refers to the location on disk of the log file of interest.
+    A method is provided to determine whether it is a Gaussian, Molpro, or QChem type.
+    """
+
+    def __init__(self, path):
+        self.path = path
+
+    def determine_qm_software(self, fullpath):
+        """
+        Given a path to the log file of a QM software, determine whether it is Gaussian, Molpro, or QChem
+        """
+        f = open(fullpath, 'r')
+        line = f.readline()
+        software_log = None
+        while line != '':
+            if 'gaussian' in line.lower():
+                f.close()
+                software_log = GaussianLog(fullpath)
+                break
+            elif 'qchem' in line.lower():
+                f.close()
+                software_log = QchemLog(fullpath)
+                break
+            elif 'molpro' in line.lower():
+                f.close()
+                software_log = MolproLog(fullpath)
+                break
+            line = f.readline()
+        f.close()
+        self.software_log = software_log
+
 
 def projectRotors(conformer, F, rotors, linear, TS):
     """
