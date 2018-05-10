@@ -32,11 +32,13 @@ import unittest
 import mock
 import os
 from chemkin import *
-from chemkin import _removeLineBreaks
+from chemkin import _removeLineBreaks, _process_duplicate_reactions
 import rmgpy
 from rmgpy.species import Species
 from rmgpy.reaction import Reaction
-from rmgpy.kinetics.arrhenius import Arrhenius
+from rmgpy.data.kinetics import LibraryReaction
+from rmgpy.kinetics.arrhenius import Arrhenius, MultiArrhenius
+from rmgpy.kinetics.chebyshev import Chebyshev
 
 
 ###################################################
@@ -309,6 +311,76 @@ multiplicity 2
         reaction = readKineticsEntry(entry, speciesDict, Aunits, Eunits)
 
         self.assertEqual(reaction.specificCollider.label, 'N2(5)')
+
+    def test_process_duplicate_reactions(self):
+        """
+        Test that duplicate reactions are handled correctly when
+        loading a Chemkin file.
+        """
+        s1 = Species().fromSMILES('CC')
+        s2 = Species().fromSMILES('[CH3]')
+        s3 = Species().fromSMILES('[OH]')
+        s4 = Species().fromSMILES('C[CH2]')
+        s5 = Species().fromSMILES('O')
+        r1 = Reaction(reactants=[s1], products=[s2, s2], duplicate=False, kinetics=Arrhenius())
+        r2 = Reaction(reactants=[s1, s3], products=[s4, s5], duplicate=True, kinetics=Arrhenius())
+        r3 = Reaction(reactants=[s1, s3], products=[s4, s5], duplicate=True, kinetics=Arrhenius())
+        r4 = Reaction(reactants=[s1, s3], products=[s4, s5], duplicate=False, kinetics=Arrhenius())
+        r5 = LibraryReaction(reactants=[s1, s3], products=[s4, s5], duplicate=True,
+                             kinetics=Arrhenius(), library='lib1')
+        r6 = LibraryReaction(reactants=[s1, s3], products=[s4, s5], duplicate=True,
+                             kinetics=Arrhenius(), library='lib2')
+        r7 = LibraryReaction(reactants=[s1, s3], products=[s4, s5], duplicate=True,
+                             kinetics=Chebyshev(), library='lib1')
+        r8 = LibraryReaction(reactants=[s1, s3], products=[s4, s5], duplicate=True,
+                             kinetics=Arrhenius(), library='lib1')
+        r9 = LibraryReaction(reactants=[s1, s3], products=[s4, s5], duplicate=False,
+                             kinetics=MultiArrhenius(arrhenius=[Arrhenius(), Arrhenius()]), library='lib1')
+        reaction_list_with_duplicate = [r1, r2, r3]
+        reaction_list_with_duplicate2 = [r1, r2, r3]
+        reaction_list_unmarked_duplicate = [r1, r2, r4]
+        reaction_list_unequal_libraries = [r1, r5, r6]
+        reaction_list_mixed_kinetics = [r1, r5, r7]
+        reaction_list_mergeable = [r1, r5, r8]
+        reaction_list_merged = [r1, r9]
+
+        # Test that duplicates are not removed for non-library reactions
+        _process_duplicate_reactions(reaction_list_with_duplicate)
+        self.assertEqual(reaction_list_with_duplicate, reaction_list_with_duplicate2)
+
+        # Test that unmarked duplicate reactions are detected if both
+        # reactions are p-dep or p-indep
+        self.assertRaisesRegexp(ChemkinError,
+                                'Encountered unmarked duplicate reaction',
+                                _process_duplicate_reactions,
+                                reaction_list_unmarked_duplicate)
+
+        # Test that unequal libraries are recognized
+        self.assertRaisesRegexp(ChemkinError,
+                                'from different libraries',
+                                _process_duplicate_reactions,
+                                reaction_list_unequal_libraries)
+
+        # Test that an error is raised for reactions with kinetics
+        # that cannot be merged
+        self.assertRaisesRegexp(ChemkinError,
+                                'Mixed kinetics for duplicate reaction',
+                                _process_duplicate_reactions,
+                                reaction_list_mixed_kinetics)
+
+        # Test that duplicate library reactions are merged successfully
+        _process_duplicate_reactions(reaction_list_mergeable)
+        self.assertEqual(len(reaction_list_mergeable), len(reaction_list_merged))
+        self.assertEqual(reaction_list_mergeable[0], reaction_list_merged[0])
+        rtest = reaction_list_mergeable[1]
+        rtrue = reaction_list_merged[1]
+        self.assertEqual(rtest.reactants, rtrue.reactants)
+        self.assertEqual(rtest.products, rtrue.products)
+        self.assertEqual(rtest.duplicate, rtrue.duplicate)
+        self.assertEqual(rtest.library, rtrue.library)
+        self.assertTrue(isinstance(rtest.kinetics, MultiArrhenius))
+        self.assertTrue(all(isinstance(k, Arrhenius) for k in rtest.kinetics.arrhenius))
+
 
 class TestReadReactionComments(unittest.TestCase):
     @classmethod

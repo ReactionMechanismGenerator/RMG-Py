@@ -59,6 +59,7 @@ class GroupAtom(Vertex):
     `label`             ``str``             A string label that can be used to tag individual atoms
     `lonePairs`         ``list``            The number of lone electron pairs
     'charge'            ''list''            The partial charge of the atom
+    `props`             ``dict``            Dictionary for storing additional atom properties
     =================== =================== ====================================
 
     Each list represents a logical OR construct, i.e. an atom will match the
@@ -68,7 +69,7 @@ class GroupAtom(Vertex):
     order to match.
     """
 
-    def __init__(self, atomType=None, radicalElectrons=None, charge=None, label='', lonePairs=None):
+    def __init__(self, atomType=None, radicalElectrons=None, charge=None, label='', lonePairs=None, props=None):
         Vertex.__init__(self)
         self.atomType = atomType or []
         for index in range(len(self.atomType)):
@@ -78,6 +79,7 @@ class GroupAtom(Vertex):
         self.charge = charge or []
         self.label = label
         self.lonePairs = lonePairs or []
+        self.props = props or {}
 
     def __reduce__(self):
         """
@@ -125,7 +127,14 @@ class GroupAtom(Vertex):
         Return a deep copy of the :class:`GroupAtom` object. Modifying the
         attributes of the copy will not affect the original.
         """
-        return GroupAtom(self.atomType[:], self.radicalElectrons[:], self.charge[:], self.label, self.lonePairs[:])
+        return GroupAtom(
+            self.atomType[:],
+            self.radicalElectrons[:],
+            self.charge[:],
+            self.label,
+            self.lonePairs[:],
+            deepcopy(self.props),
+        )
 
     def __changeBond(self, order):
         """
@@ -370,13 +379,18 @@ class GroupAtom(Vertex):
                     if charge1 == charge2: break
                 else:
                     return False
+        # Other properties must have an equivalent in other (and vice versa)
+        # Absence of the 'inRing' prop indicates a wildcard
+        if 'inRing' in self.props and 'inRing' in group.props:
+            if self.props['inRing'] != group.props['inRing']:
+                return False
         # Otherwise the two atom groups are equivalent
         return True
 
     def isSpecificCaseOf(self, other):
         """
-        Returns ``True`` if `other` is the same as `self` or is a more
-        specific case of `self`. Returns ``False`` if some of `self` is not
+        Returns ``True`` if `self` is the same as `other` or is a more
+        specific case of `other`. Returns ``False`` if some of `self` is not
         included in `other` or they are mutually exclusive. 
         """
         cython.declare(group=GroupAtom)
@@ -425,6 +439,13 @@ class GroupAtom(Vertex):
                         return False
         else:
             if group.charge: return False
+        # Other properties must have an equivalent in other
+        # Absence of the 'inRing' prop indicates a wildcard
+        if 'inRing' in self.props and 'inRing' in group.props:
+            if self.props['inRing'] != group.props['inRing']:
+                return False
+        elif 'inRing' not in self.props and 'inRing' in group.props:
+            return False
         # Otherwise self is in fact a specific case of other
         return True
 
@@ -924,6 +945,8 @@ class Group(Graph):
         Graph.__init__(self, atoms)
         self.props = props or {}
         self.multiplicity = multiplicity or []
+        self.elementCount = {}
+        self.radicalCount = -1
         self.update()
 
     def __reduce__(self):
@@ -1169,6 +1192,38 @@ class Group(Graph):
                     labeled[atom.label] = atom
         return labeled
 
+    def get_element_count(self):
+        """
+        Returns the element count for the molecule as a dictionary.
+        Wildcards are not counted as any particular element.
+        """
+        from rmgpy.molecule.atomtype import allElements
+
+        element_count = {}
+        for atom in self.atoms:
+            same = True
+            match = None
+            for atomtype in atom.atomType:
+                if match is None:
+                    # This is the first type in the list, so check all elements
+                    for element in allElements:
+                        if atomtype.isSpecificCaseOf(atomTypes[element]):
+                            match = element
+                            break
+                else:
+                    # We've already matched one atomtype, now confirm that the rest are the same
+                    if not atomtype.isSpecificCaseOf(atomTypes[match]):
+                        same = False
+                        break
+            # If match is None, then the group is not a specific case of any element
+            if match is not None and same:
+                if match in element_count:
+                    element_count[match] += 1
+                else:
+                    element_count[match] = 1
+
+        return element_count
+
     def fromAdjacencyList(self, adjlist):
         """
         Convert a string adjacency list `adjlist` to a molecular structure.
@@ -1195,38 +1250,13 @@ class Group(Graph):
         Update the molecular fingerprint used to accelerate the subgraph
         isomorphism checks.
         """
-        cython.declare(atom=GroupAtom, atomType=AtomType)
-        cython.declare(carbon=AtomType, nitrogen=AtomType, oxygen=AtomType, sulfur=AtomType)
-        cython.declare(isCarbon=cython.bint, isNitrogen=cython.bint, isOxygen=cython.bint, isSulfur=cython.bint, radical=cython.int)
-        
-        carbon   = atomTypes['C']
-        nitrogen = atomTypes['N']
-        oxygen   = atomTypes['O']
-        sulfur   = atomTypes['S']
-        
-        self.carbonCount   = 0
-        self.nitrogenCount = 0
-        self.oxygenCount   = 0
-        self.sulfurCount   = 0
-        self.radicalCount  = 0
+        cython.declare(atom=GroupAtom)
+
+        self.elementCount = self.get_element_count()
+        self.radicalCount = 0
         for atom in self.vertices:
-            if len(atom.atomType) == 1:
-                atomType   = atom.atomType[0]
-                isCarbon   = atomType.equivalent(carbon)
-                isNitrogen = atomType.equivalent(nitrogen)
-                isOxygen   = atomType.equivalent(oxygen)
-                isSulfur   = atomType.equivalent(sulfur)
-                if isCarbon and not isNitrogen and not isOxygen and not isSulfur:
-                    self.carbonCount += 1
-                elif isNitrogen and not isCarbon and not isOxygen and not isSulfur:
-                    self.nitrogenCount += 1
-                elif isOxygen and not isCarbon and not isNitrogen and not isSulfur:
-                    self.oxygenCount += 1
-                elif isSulfur and not isCarbon and not isNitrogen and not isOxygen:
-                    self.sulfurCount += 1
-            if len(atom.radicalElectrons) == 1:
-                radical = atom.radicalElectrons[0]
-                self.radicalCount += radical
+            if len(atom.radicalElectrons) >= 1:
+                self.radicalCount += atom.radicalElectrons[0]
 
     def isIsomorphic(self, other, initialMap=None):
         """
@@ -2201,3 +2231,13 @@ class Group(Graph):
             mergedGroup.removeBond(bond)
 
         return mergedGroup
+
+    def resetRingMembership(self):
+        """
+        Resets ring membership information in the GroupAtom.props attribute.
+        """
+        cython.declare(ratom=GroupAtom)
+
+        for atom in self.atoms:
+            if 'inRing' in atom.props:
+                del atom.props['inRing']

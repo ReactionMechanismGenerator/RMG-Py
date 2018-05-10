@@ -486,9 +486,15 @@ class TestGetAtomType(unittest.TestCase):
         #                                             10 H u0 p0 {4,S}
         #                                             11 H u0 p0 {5,S}''')
 
-        self.mol73 = Molecule().fromAdjacencyList('''1  H u0 p0 {2,S}
+        self.mol73 = Molecule().fromAdjacencyList('''1 H  u0 p0 c0 {2,S}
+                                                     2 Cl u0 p3 c0 {1,S}''')
+
+        self.mol74 = Molecule().fromAdjacencyList('''1 H  u0 p0 c0 {2,S}
+                                                     2 I  u0 p3 c0 {1,S}''')
+
+        self.mol75 = Molecule().fromAdjacencyList('''1  H u0 p0 {2,S}
                                                      2  X u0 {1,S}''')
-        self.mol74 = Molecule().fromAdjacencyList('''1 X u0 p0''')
+        self.mol76 = Molecule().fromAdjacencyList('''1 X u0 p0''')
         
     
     def atomType(self, mol, atomID):
@@ -609,7 +615,19 @@ class TestGetAtomType(unittest.TestCase):
         self.assertEqual(self.atomType(self.mol36, 0), 'S6td')
         self.assertEqual(self.atomType(self.mol37, 1), 'S6tt')
         self.assertEqual(self.atomType(self.mol70, 0), 'S6tdc')
-    
+
+    def testChlorineTypes(self):
+        """
+        Test that getAtomType() returns appropriate chlorine atom types.
+        """
+        self.assertEqual(self.atomType(self.mol73, 1), 'Cl1s')
+
+    def testIodineTypes(self):
+        """
+        Test that getAtomType() returns appropriate iodine atom types.
+        """
+        self.assertEqual(self.atomType(self.mol74, 1), 'I1s')
+
     def testOtherTypes(self):
         """
         Test that getAtomType() returns appropriate types for other misc inerts.
@@ -622,13 +640,13 @@ class TestGetAtomType(unittest.TestCase):
         """
         Test that getAtomType() works for occupied surface sites.
         """
-        self.assertEqual(self.atomType(self.mol25, 1), 'Xo')
+        self.assertEqual(self.atomType(self.mol75, 1), 'Xo')
 
     def testSurfaceSiteAtomType(self):
         """
         Test that getAtomType() works for vacant surface sites.
         """
-        self.assertEqual(self.atomType(self.mol26, 0), 'Xv')
+        self.assertEqual(self.atomType(self.mol76, 0), 'Xv')
 
 ################################################################################
 

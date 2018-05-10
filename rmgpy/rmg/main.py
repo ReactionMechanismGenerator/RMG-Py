@@ -375,7 +375,11 @@ class RMG(util.Subject):
 
         # Check input file 
         self.checkInput()
-    
+        
+        #Properly set filterReactions to initialize flags properly
+        if len(self.modelSettingsList) > 0:
+            self.filterReactions = self.modelSettingsList[0].filterReactions
+        
         # See if memory profiling package is available
         try:
             import psutil
@@ -543,7 +547,7 @@ class RMG(util.Subject):
         self.Tmax = max([x.T for x in self.reactionSystems]).value_si
         
         # Initiate first reaction discovery step after adding all core species
-        if self.modelSettingsList[0].filterReactions:
+        if self.filterReactions:
             # Run the reaction system to update threshold and react flags
             for index, reactionSystem in enumerate(self.reactionSystems):
                 reactionSystem.initializeModel(
@@ -673,7 +677,7 @@ class RMG(util.Subject):
                     for objectToEnlarge in objectsToEnlarge:
                         self.reactionModel.enlarge(objectToEnlarge)
                         
-                    if len(self.reactionModel.core.species) > numCoreSpecies:
+                    if len(self.reactionModel.core.species) > numCoreSpecies or self.reactionModel.iterationNum == 1:
                         tempModelSettings = deepcopy(modelSettings)
                         tempModelSettings.fluxToleranceKeepInEdge = 0
                         # If there were core species added, then react the edge
@@ -713,10 +717,14 @@ class RMG(util.Subject):
                                                               maximumEdgeSpecies=modelSettings.maximumEdgeSpecies,
                                                               reactionSystems=self.reactionSystems)
         
+                        oldEdgeSize = len(self.reactionModel.edge.reactions)
+                        oldCoreSize = len(self.reactionModel.core.reactions)
                         self.reactionModel.enlarge(reactEdge=True, 
                                 unimolecularReact=self.unimolecularReact, 
                                 bimolecularReact=self.bimolecularReact)
                         
+                        if oldEdgeSize != len(self.reactionModel.edge.reactions) or oldCoreSize != len(self.reactionModel.core.reactions):
+                            reactorDone = False
                         if not numpy.isinf(self.modelSettingsList[0].toleranceThermoKeepSpeciesInEdge):
                             self.reactionModel.thermoFilterDown(maximumEdgeSpecies=modelSettings.maximumEdgeSpecies)
                     
@@ -814,36 +822,30 @@ class RMG(util.Subject):
         """
         Run checks on the RMG model
         """
-        #check that no two species in core or edge are isomorphic
-        for i,spc in enumerate(self.reactionModel.core.species):
+        logging.info('Performing final model checks...')
+
+        # Check that no two species in core or edge are isomorphic
+        for i, spc in enumerate(self.reactionModel.core.species):
             for j in xrange(i):
                 spc2 = self.reactionModel.core.species[j]
                 if spc.isIsomorphic(spc2):
-                    raise CoreError('Although the model has completed, species {0} is isomorphic to species {1} in the core.  Please open an issue on GitHub with the following output: \n{2}\n{3}'.format(spc.label,spc2.label,spc.toAdjacencyList(),spc2.toAdjacencyList()))
-        
-        for i,spc in enumerate(self.reactionModel.edge.species):
+                    raise CoreError(
+                        'Although the model has completed, species {0} is isomorphic to species {1} in the core. '
+                        'Please open an issue on GitHub with the following output:'
+                        '\n{2}\n{3}'.format(spc.label, spc2.label, spc.toAdjacencyList(), spc2.toAdjacencyList())
+                    )
+
+        for i, spc in enumerate(self.reactionModel.edge.species):
             for j in xrange(i):
                 spc2 = self.reactionModel.edge.species[j]
                 if spc.isIsomorphic(spc2):
-                    logging.warning('species {0} is isomorphic to species {1} in the edge.  Note this does not affect the generated model.  If you would like to report this to help make RMG better please open a GitHub issue with the following output: \n{2}\n{3}'.format(spc.label,spc2.label,spc.toAdjacencyList(),spc2.toAdjacencyList()))
-        
-        for i,rxn1 in enumerate(self.reactionModel.core.reactions):
-            for j in xrange(i):
-                rxn2 = self.reactionModel.core.reactions[j]
-                if not(rxn1.duplicate and rxn2.duplicate) and rxn1.isIsomorphic(rxn2):
-                    logging.warning('rxn {0} in the core has duplicate reactions that are unmarked these reactions may duplicate each other:'.format(str(rxn1)))
-                    logging.warning('index: {0}, \n rxn: {1!r}'.format(i,rxn1))
-                    logging.warning('index: {0}, \n rxn: {1!r}'.format(j,rxn2))
-                    
-        for i,rxn1 in enumerate(self.reactionModel.edge.reactions):
-            for j in xrange(i):
-                rxn2 = self.reactionModel.edge.reactions[j]
-                if not(rxn1.duplicate and rxn2.duplicate) and rxn1.isIsomorphic(rxn2):
-                    logging.warning('rxn {0} in the edge has duplicate reactions that are unmarked these reactions may duplicate each other:'.format(str(rxn1)))
-                    logging.warning('index: {0}, \n rxn: {1!r}'.format(i,rxn1))
-                    logging.warning('index: {0}, \n rxn: {1!r}'.format(j,rxn2))
-                    
-        
+                    logging.warning(
+                        'Species {0} is isomorphic to species {1} in the edge. This does not affect '
+                        'the generated model. If you would like to report this to help make RMG better '
+                        'please open a GitHub issue with the following output:'
+                        '\n{2}\n{3}'.format(spc.label, spc2.label, spc.toAdjacencyList(), spc2.toAdjacencyList())
+                    )
+
     def makeSeedMech(self,firstTime=False):
         """
         causes RMG to make a seed mechanism out of the current chem_annotated.inp and species_dictionary.txt
@@ -918,9 +920,9 @@ class RMG(util.Subject):
                     data = reaction.kinetics,
                 )
             try:
-        	    entry.longDesc = 'Originally from reaction library: ' + reaction.library + "\n" + reaction.kinetics.comment
-    	    except AttributeError:
-        	    entry.longDesc = reaction.kinetics.comment
+                entry.longDesc = 'Originally from reaction library: ' + reaction.library + "\n" + reaction.kinetics.comment
+            except AttributeError:
+                entry.longDesc = reaction.kinetics.comment
             edgeKineticsLibrary.entries[i+1] = entry
         
         #save in database

@@ -41,7 +41,9 @@ import rmgpy.reaction
 
 from rmgpy.pdep import Conformer, Configuration
 from rmgpy.rmg.react import react
-from rmgpy.exceptions import PressureDependenceError
+from rmgpy.exceptions import PressureDependenceError, NetworkError
+from rmgpy.data.kinetics.library import LibraryReaction
+
 
 ################################################################################
 
@@ -132,7 +134,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         """
         A helper function used when pickling an object.
         """
-        return (PDepNetwork, (self.index, self.source), self.__dict__ )
+        return (PDepNetwork, (self.index, self.source), self.__dict__)
     
     def __setstate__(self,dict):
         self.__dict__.update(dict)
@@ -227,7 +229,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
 
         # Make sure we've identified a species
         if maxSpecies is None:
-            raise UnirxnNetworkException('No unimolecular isomers left to explore!')
+            raise NetworkError('No unimolecular isomers left to explore!')
         # Return the species
         return maxSpecies
 
@@ -584,10 +586,31 @@ class PDepNetwork(rmgpy.pdep.network.Network):
 
                     # Place the net reaction in the core or edge if necessary
                     # Note that leak reactions are not placed in the edge
-                    if all([s in reactionModel.core.species for s in netReaction.reactants]) and all([s in reactionModel.core.species for s in netReaction.products]):
-                        reactionModel.addReactionToCore(netReaction)
+                    if all([s in reactionModel.core.species for s in netReaction.reactants]) \
+                            and all([s in reactionModel.core.species for s in netReaction.products]):
+                        # Check whether netReaction already exists either in the core as a LibraryReaction
+                        for rxn in reactionModel.core.reactions:
+                            if isinstance(rxn, LibraryReaction) \
+                                    and rxn.isIsomorphic(netReaction, eitherDirection=True) \
+                                    and not rxn.has_pdep_route:  # if this reaction is flagged as having an additional PDep pathway, do add the network reaction
+                                logging.info('Network reaction {0} matched an existing core reaction {1}'
+                                    ' from the {2} library, and was not added to the model'.format(
+                                    str(netReaction), str(rxn), rxn.library))
+                                break
+                        else:
+                            reactionModel.addReactionToCore(netReaction)
                     else:
-                        reactionModel.addReactionToEdge(netReaction)
+                        # Check whether netReaction already exists either in the core as a LibraryReaction
+                        for rxn in reactionModel.edge.reactions:
+                            if isinstance(rxn, LibraryReaction) \
+                                    and rxn.isIsomorphic(netReaction, eitherDirection=True) \
+                                    and not rxn.has_pdep_route:  # if this reaction is flagged as having an additional PDep pathway, do add the network reaction
+                                logging.info('Network reaction {0} matched an existing edge reaction {1}'
+                                    ' from the {2} library, and was not added to the model'.format(
+                                    str(netReaction), str(rxn), rxn.library))
+                                break
+                        else:
+                            reactionModel.addReactionToEdge(netReaction)
 
                 # Set/update the net reaction kinetics using interpolation model
                 kdata = K[:,:,i,j].copy()

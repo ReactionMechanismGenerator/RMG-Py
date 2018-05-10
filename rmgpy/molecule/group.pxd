@@ -38,6 +38,7 @@ cdef class GroupAtom(Vertex):
     cdef public list charge
     cdef public str label
     cdef public list lonePairs
+    cdef public dict props
 
     cpdef Vertex copy(self)
 
@@ -116,10 +117,7 @@ cdef class Group(Graph):
 
     # These read-only attribues act as a "fingerprint" for accelerating
     # subgraph isomorphism checks
-    cdef public short carbonCount
-    cdef public short nitrogenCount
-    cdef public short oxygenCount
-    cdef public short sulfurCount
+    cdef public dict elementCount
     cdef public short radicalCount
 
     cpdef addAtom(self, GroupAtom atom)
@@ -153,6 +151,8 @@ cdef class Group(Graph):
     cpdef GroupAtom getLabeledAtom(self, str label)
 
     cpdef dict getLabeledAtoms(self)
+
+    cpdef dict get_element_count(self)
 
     cpdef fromAdjacencyList(self, str adjlist)
 
@@ -197,3 +197,5 @@ cdef class Group(Graph):
     cpdef bint isBenzeneExplicit(self)
 
     cpdef Group mergeGroups(self, Group other)
+
+    cpdef resetRingMembership(self)

@@ -33,6 +33,30 @@ from scipy.special import comb
 
 from .util import *
 
+
+class ElementCountTest(unittest.TestCase):
+
+    def test_inchi_count(self):
+        """Test element counting for InChI"""
+        inchi = 'InChI=1S/C4H10O/c1-2-3-4-5/h5H,2-4H2,1H3'
+
+        expected = {'C': 4, 'H': 10, 'O': 1}
+
+        count = retrieveElementCount(inchi)
+
+        self.assertEqual(count, expected)
+
+    def test_inchi_count_disconnected(self):
+        """Test element counting for InChI with disconnected molecule"""
+        inchi = 'InChI=1S/C4H10O.CH2O/c1-2-3-4-5;1-2/h5H,2-4H2,1H3;1H2'
+
+        expected = {'C': 5, 'H': 12, 'O': 2}
+
+        count = retrieveElementCount(inchi)
+
+        self.assertEqual(count, expected)
+
+
 class PartitionTest(unittest.TestCase):
 
     def test_singleton(self):

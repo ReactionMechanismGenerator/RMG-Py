@@ -51,7 +51,7 @@ class GaussianTest(unittest.TestCase):
         """
 
         log = GaussianLog(os.path.join(os.path.dirname(__file__),'data','ethylene.log'))
-        conformer = log.loadConformer()
+        conformer = log.loadConformer(symfromlog=True)
         E0 = log.loadEnergy()
         
         self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode,IdealGasTranslation)]) == 1)
@@ -78,7 +78,7 @@ class GaussianTest(unittest.TestCase):
         """
 
         log = GaussianLog(os.path.join(os.path.dirname(__file__),'data','oxygen.log'))
-        conformer = log.loadConformer()
+        conformer = log.loadConformer(symfromlog=True)
         E0 = log.loadEnergy()
         
         self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode,IdealGasTranslation)]) == 1)
@@ -106,7 +106,7 @@ class GaussianTest(unittest.TestCase):
         """
 
         log = GaussianLog(os.path.join(os.path.dirname(__file__),'data','ethylene_G3.log'))
-        conformer = log.loadConformer()
+        conformer = log.loadConformer(symfromlog=True)
         E0 = log.loadEnergy()
         
         self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode,IdealGasTranslation)]) == 1)

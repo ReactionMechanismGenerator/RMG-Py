@@ -318,6 +318,8 @@ cdef class Configuration:
                 for spec in self.species:
                     self.densStates *= spec.conformer.spinMultiplicity * spec.conformer.opticalIsomers
                     self.sumStates *= spec.conformer.spinMultiplicity * spec.conformer.opticalIsomers
+        if self.densStates is None:
+            raise ValueError("Species {} has no active modes".format(species.label))
             
     @cython.boundscheck(False)
     @cython.wraparound(False)

@@ -29,10 +29,13 @@
 ###############################################################################
 
 import unittest
+from external.wip import work_in_progress
 
-from .molecule import Molecule
+from .molecule import Atom, Molecule
 
 from .inchi import *
+from .inchi import _has_unexpected_lone_pairs, _parse_E_layer, _parse_H_layer, _parse_N_layer, _reset_lone_pairs
+
 
 class InChITest(unittest.TestCase):
 
@@ -94,10 +97,10 @@ class IgnorePrefixTest(unittest.TestCase):
 
     def test_ignore(self):
         string = 'InChI=1S/foo'
-        self.assertTrue( ignore_prefix(string) == 'foo')
+        self.assertTrue(remove_inchi_prefix(string) == 'foo')
 
         with self.assertRaises(InchiException):
-            ignore_prefix('foo')
+            remove_inchi_prefix('foo')
 
 class ComposeTest(unittest.TestCase):
 
@@ -114,7 +117,7 @@ class Parse_H_layerTest(unittest.TestCase):
 
         smi = 'O=C-O'
         inchi = Molecule().fromSMILES(smi).toInChI()
-        mobile_hs = parse_H_layer(inchi)
+        mobile_hs = _parse_H_layer(inchi)
         expected = [[2,3]]
         self.assertTrue(mobile_hs == expected)
 
@@ -123,20 +126,20 @@ class Parse_E_LayerTest(unittest.TestCase):
         """Test that the absence of an E-layer results in an empty list."""
 
         auxinfo = "AuxInfo=1/0/N:1/rA:1C/rB:/rC:;"
-        e_layer = parse_E_layer(auxinfo)
+        e_layer = _parse_E_layer(auxinfo)
         self.assertFalse(e_layer)
 
     def test_C8H22(self):
 
         auxinfo = "AuxInfo=1/0/N:1,8,4,6,2,7,3,5/E:(1,2)(3,4)(5,6)(7,8)/rA:8C.2C.2CCCCCC/rB:s1;s2;s3;s3;s5;s5;d7;/rC:;;;;;;;;"
-        e_layer = parse_E_layer(auxinfo)
+        e_layer = _parse_E_layer(auxinfo)
         expected = [[1, 2], [3, 4], [5, 6], [7, 8]]
         self.assertTrue(e_layer == expected)
 
     def test_C7H17(self):
 
         auxinfo = "AuxInfo=1/0/N:3,5,7,2,4,6,1/E:(1,2,3)(4,5,6)/rA:7CCCCCCC/rB:s1;d2;s1;d4;s1;d6;/rC:;;;;;;;"
-        e_layer = parse_E_layer(auxinfo)
+        e_layer = _parse_E_layer(auxinfo)
         expected = [[1, 2, 3], [4, 5, 6]]
         self.assertTrue(e_layer == expected)
 
@@ -144,7 +147,7 @@ class Parse_E_LayerTest(unittest.TestCase):
 class ParseNLayerTest(unittest.TestCase):
     def test_OCCC(self):
        auxinfo = "AuxInfo=1/0/N:4,3,2,1/rA:4OCCC/rB:s1;s2;s3;/rC:;;;;"
-       n_layer = parse_N_layer(auxinfo)
+       n_layer = _parse_N_layer(auxinfo)
        expected = [4,3,2,1]
        self.assertTrue(n_layer == expected)
 
@@ -153,23 +156,23 @@ class DecomposeTest(unittest.TestCase):
     def test_inchi(self):
         string = 'InChI=1S/XXXX/cXXX/hXXX'
 
-        inchi, u_indices, p_indices = decompose(string)
+        _, u_indices, _ = decompose_aug_inchi(string)
         self.assertEquals([], u_indices)
 
     def test_inchi_u_layer(self):
         string = 'InChI=1S/XXXX/cXXX/hXXX/u1,2'
     
-        inchi, u_indices, p_indices = decompose(string)
+        _, u_indices, _ = decompose_aug_inchi(string)
         self.assertEquals([1,2], u_indices)
 
     def test_inchi_p_layer(self):
         string = 'InChI=1S/XXXX/cXXX/hXXX/lp1,2'
-        inchi, u_indices, p_indices = decompose(string)
+        _, _, p_indices = decompose_aug_inchi(string)
         self.assertEquals([1,2], p_indices)
 
     def test_inchi_u_layer_p_layer(self):
         string = 'InChI=1S/XXXX/cXXX/hXXX/u1,2/lp3,4'
-        inchi, u_indices, p_indices = decompose(string)
+        _, u_indices, p_indices = decompose_aug_inchi(string)
         self.assertEquals([1,2], u_indices)
         self.assertEquals([3,4], p_indices)
 
@@ -179,8 +182,156 @@ class DecomposeTest(unittest.TestCase):
         pairs can be read correctly.
         """
         string = 'InChI=1S/XXXX/cXXX/hXXX/lp1(0)'
-        inchi, u_indices, p_indices = decompose(string)
+        _, _, p_indices = decompose_aug_inchi(string)
         self.assertEquals([(1,0)], p_indices)
+
+class CreateULayerTest(unittest.TestCase):
+    def testC4H6(self):
+        """
+        Test that 3-butene-1,2-diyl biradical is always resulting in the
+        same u-layer, regardless of the original order.
+        """
+
+        # radical positions 3 and 4
+        adjlist1 = """
+1  C u0 p0 c0 {2,D} {5,S} {6,S}
+2  C u0 p0 c0 {1,D} {3,S} {7,S}
+3  C u1 p0 c0 {2,S} {4,S} {8,S}
+4  C u1 p0 c0 {3,S} {9,S} {10,S}
+5  H u0 p0 c0 {1,S}
+6  H u0 p0 c0 {1,S}
+7  H u0 p0 c0 {2,S}
+8  H u0 p0 c0 {3,S}
+9  H u0 p0 c0 {4,S}
+10 H u0 p0 c0 {4,S}
+
+        """
+
+        # radical positions 1 and 2
+        adjlist2 = """
+1  C u1 p0 c0 {2,S} {5,S} {6,S}
+2  C u1 p0 c0 {1,S} {3,S} {7,S}
+3  C u0 p0 c0 {2,S} {4,D} {8,S}
+4  C u0 p0 c0 {3,D} {9,S} {10,S}
+5  H u0 p0 c0 {1,S}
+6  H u0 p0 c0 {1,S}
+7  H u0 p0 c0 {2,S}
+8  H u0 p0 c0 {3,S}
+9  H u0 p0 c0 {4,S}
+10 H u0 p0 c0 {4,S}
+        """
+
+        u_layers = []
+        for adjlist in [adjlist1, adjlist2]:
+            mol = Molecule().fromAdjacencyList(adjlist)
+            u_layer = create_augmented_layers(mol)[0]
+            u_layers.append(u_layer)
+
+        self.assertEquals(u_layers[0], u_layers[1])
+
+
+class ExpectedLonePairsTest(unittest.TestCase):
+    def test_SingletCarbon(self):
+        mol = Molecule(atoms=[Atom(element='C', lonePairs=1)])
+        unexpected = _has_unexpected_lone_pairs(mol)
+        self.assertTrue(unexpected)
+
+    def test_NormalCarbon(self):
+        mol = Molecule(atoms=[Atom(element='C', lonePairs=0)])
+        unexpected = _has_unexpected_lone_pairs(mol)
+        self.assertFalse(unexpected)
+
+    def test_NormalOxygen(self):
+        mol = Molecule(atoms=[Atom(element='O', lonePairs=2)])
+        unexpected = _has_unexpected_lone_pairs(mol)
+        self.assertFalse(unexpected)
+
+    def test_Oxygen_3LP(self):
+        mol = Molecule(atoms=[Atom(element='O', lonePairs=3)])
+        unexpected = _has_unexpected_lone_pairs(mol)
+        self.assertTrue(unexpected)
+
+
+class CreateAugmentedLayersTest(unittest.TestCase):
+    def test_Methane(self):
+        smi = 'C'
+        mol = Molecule().fromSMILES(smi)
+        ulayer, player = create_augmented_layers(mol)
+        self.assertTrue(not ulayer)
+        self.assertTrue(not player)
+
+    def test_SingletMethylene(self):
+        adjlist = """
+multiplicity 1
+1 C u0 p1 c0 {2,S} {3,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+"""
+        mol = Molecule().fromAdjacencyList(adjlist)
+        ulayer, player = create_augmented_layers(mol)
+        self.assertTrue(not ulayer)
+        self.assertEquals(P_LAYER_PREFIX + '1', player)
+
+    def test_TripletMethylene(self):
+        adjlist = """
+multiplicity 3
+1 C u2 p0 c0 {2,S} {3,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+"""
+        mol = Molecule().fromAdjacencyList(adjlist)
+        ulayer, player = create_augmented_layers(mol)
+        self.assertEquals(U_LAYER_PREFIX + '1,1', ulayer)
+        self.assertTrue(not player)
+
+    @work_in_progress
+    def test_Nitrate(self):
+        """
+        Test that N atom in the p-layer has correct symbol.
+        """
+
+        adjlist = """
+1 O u0 p2 c0 {4,D}
+2 O u0 p3 c-1 {4,S}
+3 O u0 p3 c-1 {4,S}
+4 N u0 p0 c+1 {1,D} {2,S} {3,S}
+"""
+        mol = Molecule().fromAdjacencyList(adjlist)
+        ulayer, player = create_augmented_layers(mol)
+        self.assertTrue(not ulayer)
+        self.assertTrue(player.contains(P_LAYER_PREFIX + '1(0)'))
+
+
+class ResetLonePairsTest(unittest.TestCase):
+
+    def test_Methane(self):
+        smi = 'C'
+        mol = Molecule().fromSMILES(smi)
+        p_indices = []
+
+        _reset_lone_pairs(mol, p_indices)
+
+        for at in mol.atoms:
+            self.assertEquals(at.lonePairs, 0)
+
+    def test_SingletMethylene(self):
+        adjlist = """
+multiplicity 1
+1 C u0 p1 c0 {2,S} {3,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+"""
+        mol = Molecule().fromAdjacencyList(adjlist)
+        p_indices = [1]
+
+        _reset_lone_pairs(mol, p_indices)
+
+        for at in mol.atoms:
+            if at.symbol == 'C':
+                self.assertEquals(at.lonePairs, 1)
+            else:
+                self.assertEquals(at.lonePairs, 0)
+
 
 if __name__ == '__main__':
     unittest.main()

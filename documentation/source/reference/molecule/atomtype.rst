@@ -115,4 +115,12 @@ Atom type       Description
 ``S6td``        sulfur atom with no lone pairs (valance 6), one triple bond, one double bond and up to one single bond
 ``S6tt``        sulfur atom with no lone pairs (valance 6) and two triple bonds
 ``S6tdc``       charged sulfur atom with no lone pairs (valance 6), one to two triple bonds, up to two double bonds, and up to four single bonds
+*Chlorine atom types*
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+``Cl``          chlorine atom with any local bond structure
+``Cl1s``        chlorine atom with three lone pairs and zero to one single bonds
+*Iodine atom types*
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+``I``           iodine atom with any local bond structure
+``I1s``         iodine atom with three lone pairs and zero to one single bonds
 =============== ==============================================================================================================================================================

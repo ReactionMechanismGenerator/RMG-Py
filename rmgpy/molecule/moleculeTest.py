@@ -982,6 +982,22 @@ class TestMolecule(unittest.TestCase):
                 self.assertTrue(key in molecule.atoms)
                 self.assertTrue(value in group.atoms)
 
+    def testSubgraphIsomorphismRings(self):
+        molecule = Molecule(SMILES='C1CCCC1CCC')
+        groupNoRing = Group().fromAdjacencyList("""
+1 *1 C u0 p0 c0 r0
+        """)
+        groupRing = Group().fromAdjacencyList("""
+1 *1 C u0 p0 c0 r1
+        """)
+
+        self.assertTrue(molecule.isSubgraphIsomorphic(groupNoRing))
+        mapping = molecule.findSubgraphIsomorphisms(groupNoRing)
+        self.assertEqual(len(mapping), 3)
+        self.assertTrue(molecule.isSubgraphIsomorphic(groupRing))
+        mapping = molecule.findSubgraphIsomorphisms(groupRing)
+        self.assertEqual(len(mapping), 5)
+
     def testAdjacencyList(self):
         """
         Check the adjacency list read/write functions for a full molecule.
@@ -1166,7 +1182,7 @@ class TestMolecule(unittest.TestCase):
         test_strings = ['[C-]#[O+]', '[C]', '[CH]', 'OO', '[H][H]', '[H]',
                        '[He]', '[O]', 'O', '[CH3]', 'C', '[OH]', 'CCC',
                        'CC', 'N#N', '[O]O', 'C[CH2]', '[Ar]', 'CCCC',
-                       'O=C=O', 'N#[C]',
+                       'O=C=O', '[C]#N',
                        ]
         for s in test_strings:
             molecule = Molecule(SMILES=s)
@@ -1255,7 +1271,7 @@ class TestMolecule(unittest.TestCase):
         """
         molecule = Molecule().fromInChI('InChI=1S/C7H12/c1-2-7-4-3-6(1)5-7/h6-7H,1-5H2')
         key = molecule.toInChIKey()
-        self.assertEqual(key, 'UMRZSTCPUPJPOJ-UHFFFAOYSA')
+        self.assertEqual(key, 'UMRZSTCPUPJPOJ-UHFFFAOYSA-N')
         
     def testAugmentedInChI(self):
         """
@@ -1277,7 +1293,7 @@ class TestMolecule(unittest.TestCase):
             2     C     u1 p0 c0 {1,S}
         """, saturateH=True)
         
-        self.assertEqual(mol.toAugmentedInChIKey(), 'VGGSQFUCUMXWEO-UHFFFAOYSA-u1,2')
+        self.assertEqual(mol.toAugmentedInChIKey(), 'VGGSQFUCUMXWEO-UHFFFAOYSA-N-u1,2')
 
     def testLinearMethane(self):
         """
@@ -1560,34 +1576,6 @@ multiplicity 2
         with self.assertRaises(Exception):
             mol = Molecule().fromAugmentedInChI(malform_aug_inchi)
 
-    def testRDKitMolAtomMapping(self):
-        """
-        Test that the atom mapping returned by toRDKitMol contains the correct
-        atom indices of the atoms of the molecule when hydrogens are removed.
-        """
-        from .generator import toRDKitMol
-
-        adjlist = '''
-1 H u0 p0 c0 {2,S}
-2 C u0 p0 c0 {1,S} {3,S} {4,S} {5,S}
-3 H u0 p0 c0 {2,S}
-4 H u0 p0 c0 {2,S}
-5 O u0 p2 c0 {2,S} {6,S}
-6 H u0 p0 c0 {5,S}
-        '''
-
-        mol = Molecule().fromAdjacencyList(adjlist)
-        rdkitmol, rdAtomIndices = toRDKitMol(mol, removeHs=True, returnMapping=True)
-
-        heavy_atoms = [at for at in mol.atoms if at.number != 1]
-        for at1 in heavy_atoms:
-            for at2 in heavy_atoms:
-                if mol.hasBond(at1, at2):
-                    try:
-                        rdkitmol.GetBondBetweenAtoms(rdAtomIndices[at1],rdAtomIndices[at2])
-                    except RuntimeError:
-                        self.fail("RDKit failed in finding the bond in the original atom!")
-    
     def testUpdateLonePairs(self):
         adjlist = """
 1 Si u0 p1 c0 {2,S} {3,S}
@@ -2267,6 +2255,32 @@ multiplicity 2
         test.update()
         self.assertTrue(expected.isIsomorphic(test))
 
+    def test_get_element_count(self):
+        """Test that we can count elements properly."""
+        mol1 = Molecule(SMILES='c1ccccc1')
+        expected1 = {'C': 6, 'H': 6}
+        result1 = mol1.get_element_count()
+        self.assertEqual(expected1, result1)
+
+        mol2 = Molecule(SMILES='CS(C)(=O)=O')
+        expected2 = {'C': 2, 'H': 6, 'O': 2, 'S': 1}
+        result2 = mol2.get_element_count()
+        self.assertEqual(expected2, result2)
+
+        mol3 = Molecule(SMILES='CCN')
+        expected3 = {'C': 2, 'H': 7, 'N': 1}
+        result3 = mol3.get_element_count()
+        self.assertEqual(expected3, result3)
+
+    def testRingPerception(self):
+        """Test that identifying ring membership of atoms works properly."""
+        mol = Molecule(SMILES='c12ccccc1cccc2')
+        mol.identifyRingMembership()
+        for atom in mol.atoms:
+            if atom.element == 'C':
+                self.assertTrue(atom.props['inRing'])
+            elif atom.element == 'H':
+                self.assertFalse(atom.props['inRing'])
 
 ################################################################################
 

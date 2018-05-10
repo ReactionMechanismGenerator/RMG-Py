@@ -1403,6 +1403,18 @@ graph G {
         mergedGroup = backbone2.mergeGroups(end2)
         self.assertTrue(mergedGroup.isIdentical(desiredMerge2))
 
+    def test_get_element_count(self):
+        """Test that we can count elements properly."""
+        group = Group().fromAdjacencyList("""
+1 R!H u0 {2,S}
+2 [Cs,Cd,Ct,Cb] u0 {1,S} {3,S}
+3 [Cs,Cd,Ct,Cb,O2s,S2s] u0 {2,S} {4,S}
+4 N1s u0 {3,S}
+""")
+        expected = {'C': 1, 'N': 1}
+        result = group.get_element_count()
+        self.assertEqual(expected, result)
+
 ################################################################################
 
 if __name__ == '__main__':

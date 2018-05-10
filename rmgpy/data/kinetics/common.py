@@ -156,8 +156,8 @@ def filter_reactions(reactants, products, reactionList):
     warnings.warn("The filter_reactions method is no longer used and may be removed in a future version.", DeprecationWarning)
     
     # Convert from molecules to species and generate resonance isomers.
-    reactants = ensure_species(reactants, resonance=True)
-    products = ensure_species(products, resonance=True)
+    ensure_species(reactants, resonance=True)
+    ensure_species(products, resonance=True)
 
     reactions = reactionList[:]
     
@@ -197,11 +197,10 @@ def filter_reactions(reactants, products, reactionList):
 
 def ensure_species(input_list, resonance=False, keepIsomorphic=False):
     """
-    Given an input list of molecules or species, return a list with only
-    species objects.
+    The input list of :class:`Species` or :class:`Molecule` objects is modified
+    in place to only have :class:`Species` objects. Returns None.
     """
-    output_list = []
-    for item in input_list:
+    for index, item in enumerate(input_list):
         if isinstance(item, Molecule):
             new_item = Species(molecule=[item])
         elif isinstance(item, Species):
@@ -210,9 +209,7 @@ def ensure_species(input_list, resonance=False, keepIsomorphic=False):
             raise TypeError('Only Molecule or Species objects can be handled.')
         if resonance:
             new_item.generate_resonance_structures(keepIsomorphic=keepIsomorphic)
-        output_list.append(new_item)
-
-    return output_list
+        input_list[index] = new_item
 
 
 def generate_molecule_combos(input_species):
@@ -235,13 +232,15 @@ def generate_molecule_combos(input_species):
 
 def ensure_independent_atom_ids(input_species, resonance=True):
     """
-    Given a list or tuple of :class:`Species` objects, ensure that atom ids are
-    independent across all of the species. Optionally, the `resonance` argument
-    can be set to False to not generate resonance structures.
+    Given a list or tuple of :class:`Species` or :class:`Molecule` objects,
+    ensure that atom ids are independent.
+    The `resonance` argument can be set to False to not generate
+    resonance structures.
 
-    Modifies the input species in place, nothing is returned.
+    Modifies the list in place (replacing :class:`Molecule` with :class:`Species`).
+    Returns None.
     """
-
+    ensure_species(input_species, resonance=resonance)
     # Method to check that all species' atom ids are different
     def independent_ids():
         num_atoms = 0

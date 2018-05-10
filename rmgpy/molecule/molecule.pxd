@@ -45,7 +45,7 @@ cdef class Atom(Vertex):
     cdef public numpy.ndarray coords
     cdef public short lonePairs
     cdef public int id
-
+    cdef public dict props
     
     cpdef bint equivalent(self, Vertex other) except -2
 
@@ -61,7 +61,15 @@ cdef class Atom(Vertex):
 
     cpdef bint isOxygen(self)
 
+    cpdef bint isFluorine(self)
+
+    cpdef bint isSilicon(self)
+
     cpdef bint isSulfur(self)
+
+    cpdef bint isChlorine(self)
+
+    cpdef bint isIodine(self)
     
     cpdef bint isSurfaceSite(self)
     
@@ -176,6 +184,8 @@ cdef class Molecule(Graph):
 
     cpdef dict getLabeledAtoms(self)
 
+    cpdef dict get_element_count(self)
+
     cpdef bint isIsomorphic(self, Graph other, dict initialMap=?) except -2
 
     cpdef list findIsomorphism(self, Graph other, dict initialMap=?)
@@ -227,6 +237,8 @@ cdef class Molecule(Graph):
     cpdef float calculateSymmetryNumber(self) except -1
 
     cpdef list generate_resonance_structures(self, bint keepIsomorphic=?)
+
+    cpdef identifyRingMembership(self)
 
     cpdef tuple getAromaticRings(self, list rings=?)
 

@@ -42,10 +42,11 @@ from rmgpy.rmg.main import RMG
 from rmgpy.chemkin import saveChemkinFile, saveSpeciesDictionary
 from rmgpy.rmg.model import Species
 from rmgpy.thermo.thermoengine import submit
+from rmgpy.data.thermo import ThermoLibrary
                      
 ################################################################################
 
-def runThermoEstimator(inputFile):
+def runThermoEstimator(inputFile, library_flag):
     """
     Estimate thermo for a list of species using RMG and the settings chosen inside a thermo input file.
     """
@@ -67,16 +68,17 @@ def runThermoEstimator(inputFile):
     for species in rmg.initialSpecies:
         submit(species)
 
-    # library = ThermoLibrary(name='Thermo Estimation Library')
-    # for spc in rmg.initialSpecies:
-    #     library.loadEntry(
-    #         index = len(library.entries) + 1,
-    #         label = species.label,
-    #         molecule = species.molecule[0].toAdjacencyList(),
-    #         thermo = species.getThermoData().toThermoData(),
-    #         shortDesc = species.getThermoData().comment,
-    #     )
-    # library.save(os.path.join(rmg.outputDirectory,'ThermoLibrary.py'))
+    if library_flag:
+        library = ThermoLibrary(name='Thermo Estimation Library')
+        for species in rmg.initialSpecies:
+            library.loadEntry(
+                index = len(library.entries) + 1,
+                label = species.label,
+                molecule = species.molecule[0].toAdjacencyList(),
+                thermo = species.getThermoData().toThermoData(),
+                shortDesc = species.getThermoData().comment,
+            )
+        library.save(os.path.join(rmg.outputDirectory,'ThermoLibrary.py'))
     
 
     # Save the thermo data to chemkin format output files and dictionary, with no reactions    
@@ -92,8 +94,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('input', metavar='INPUT', type=str, nargs=1,
         help='Thermo input file')
+    parser.add_argument('-l', '--library', action='store_true', help='generate RMG thermo library')
+
     args = parser.parse_args()
     
     inputFile = os.path.abspath(args.input[0])
     
-    runThermoEstimator(inputFile)
+    runThermoEstimator(inputFile, args.library)

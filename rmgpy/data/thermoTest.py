@@ -314,6 +314,18 @@ multiplicity 2
 
         self.assertAlmostEqual(previous_enthalpy, latter_enthalpy, 2)
 
+    def test_getAllThermoData_fails_quietly(self):
+        """Test that getAllThermoData doesn't break when GAV fails."""
+        spec = Species().fromSMILES('[Ne]')
+
+        # Check that GAV fails
+        with self.assertRaises(DatabaseError):
+            self.database.getThermoDataFromGroups(spec)
+
+        # Check that getAllThermoData doesn't break
+        thermo = self.database.getAllThermoData(spec)
+        self.assertEqual(len(thermo), 1)
+
 
 class TestThermoAccuracy(unittest.TestCase):
     """

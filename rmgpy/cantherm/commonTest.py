@@ -207,7 +207,7 @@ class testCanthermInput(unittest.TestCase):
     def setUp(self):
         """Preparation for all unit tests in this class."""
         self.directory = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)), 'examples', 'cantherm')
-        self.modelChemistry = "CBS-QB3"
+        self.modelChemistry = "cbs-qb3"
         self.frequencyScaleFactor = 0.99
         self.useHinderedRotors = False
         self.useBondCorrections = True
