@@ -1047,3 +1047,60 @@ def projectRotors(conformer, F, rotors, linear, TS):
         
     return numpy.sqrt(eig[-Nvib:]) / (2 * math.pi * constants.c * 100)
 
+def assign_frequency_scale_factor(model_chemistry):
+    """
+    Assign the frequency scaling factor according to the model chemistry.
+    Refer to https://comp.chem.umn.edu/freqscale/index.html for future updates of these factors
+    """
+    freq_dict = {'cbs-qb3': 0.99,  # J. Chem. Phys. 1999, 110, 2822–2827
+                 # 'g3': ,
+                 'm08so/mg3s*': 0.983,  # DOI: 10.1021/ct100326h, taken as 'M08-SO/MG3S'
+                 'm06-2x/cc-pvtz': 0.955,  # http://cccbdb.nist.gov/vibscalejust.asp
+                 # 'klip_1': ,
+                 # 'klip_2': ,
+                 # 'klip_3': ,
+                 # 'klip_2_cc': ,
+                 # 'ccsd(t)-f12/cc-pvdz-f12_h-tz': ,
+                 # 'ccsd(t)-f12/cc-pvdz-f12_h-qz': ,
+                 'ccsd(t)-f12/cc-pvdz-f12': 0.979,  # http://cccbdb.nist.gov/vibscalejust.asp, taken as 'ccsd(t)/cc-pvdz'
+                 'ccsd(t)-f12/cc-pvtz-f12': 0.984,  # DOI: 10.1021/ct100326h, taken as 'CCSD(T)-F12a/cc-pVTZ-F12'
+                 'ccsd(t)-f12/cc-pvqz-f12': 0.970,  # http://cccbdb.nist.gov/vibscalejust.asp, taken as 'ccsd(t)/cc-pvqz'
+                 'ccsd(t)-f12/cc-pcvdz-f12': 0.971,  # http://cccbdb.nist.gov/vibscalejust.asp, taken as 'ccsd(t)/cc-pcvdz'
+                 'ccsd(t)-f12/cc-pcvtz-f12': 0.966,
+                 # 'ccsd(t)-f12/cc-pcvqz-f12': ,
+                 # 'ccsd(t)-f12/cc-pvtz-f12(-pp)': ,
+                 # 'ccsd(t)/aug-cc-pvtz(-pp)': ,
+                 'ccsd(t)-f12/aug-cc-pvdz': 0.963,  # http://cccbdb.nist.gov/vibscalejust.asp, taken as 'ccsd(t)/aug-cc-pvdz'
+                 'ccsd(t)-f12/aug-cc-pvtz': 0.970,  # http://cccbdb.nist.gov/vibscalejust.asp, taken as 'ccsd(t)/aug-cc-pvtz'
+                 'ccsd(t)-f12/aug-cc-pvqz': 0.975,  # http://cccbdb.nist.gov/vibscalejust.asp, taken as 'ccsd(t)/aug-cc-pvqz'
+                 # 'b-ccsd(t)-f12/cc-pvdz-f12': ,
+                 # 'b-ccsd(t)-f12/cc-pvtz-f12': ,
+                 # 'b-ccsd(t)-f12/cc-pvqz-f12': ,
+                 # 'b-ccsd(t)-f12/cc-pcvdz-f12': ,
+                 # 'b-ccsd(t)-f12/cc-pcvtz-f12': ,
+                 # 'b-ccsd(t)-f12/cc-pcvqz-f12': ,
+                 # 'b-ccsd(t)-f12/aug-cc-pvdz': ,
+                 # 'b-ccsd(t)-f12/aug-cc-pvtz': ,
+                 # 'b-ccsd(t)-f12/aug-cc-pvqz': ,
+                 'mp2_rmp2_pvdz': 0.953,  # http://cccbdb.nist.gov/vibscalejust.asp, taken as ',p2/cc-pvdz'
+                 'mp2_rmp2_pvtz': 0.950,  # http://cccbdb.nist.gov/vibscalejust.asp, taken as ',p2/cc-pvdz'
+                 'mp2_rmp2_pvqz': 0.962,  # http://cccbdb.nist.gov/vibscalejust.asp, taken as ',p2/cc-pvdz'
+                 'ccsd-f12/cc-pvdz-f12': 0.947,  # http://cccbdb.nist.gov/vibscalejust.asp, taken as ccsd/cc-pvdz
+                 # 'ccsd(t)-f12/cc-pvdz-f12_noscale': ,
+                 # 'g03_pbepbe_6-311++g_d_p': ,
+                 # 'fci/cc-pvdz': ,
+                 # 'fci/cc-pvtz': ,
+                 # 'fci/cc-pvqz': ,
+                 # 'bmk/cbsb7': ,
+                 # 'bmk/6-311g(2d,d,p)': ,
+                 'b3lyp/6-31g**': 0.961,  # http://cccbdb.nist.gov/vibscalejust.asp
+                 'b3lyp/6-311+g(3df,2p)': 0.967,  # http://cccbdb.nist.gov/vibscalejust.asp
+                 }
+    scale_factor = freq_dict.get(model_chemistry.lower(), 1)
+    if scale_factor == 1:
+        logging.warning('No frequency scale factor found for model chemistry {0}; assuming a value of unity.'.format(
+            model_chemistry))
+    else:
+        logging.info('Assigned a frequency scale factor of {0} for model chemistry {1}'.format(
+            scale_factor,model_chemistry))
+    return scale_factor

@@ -62,7 +62,7 @@ from rmgpy.reaction import Reaction
 from rmgpy.transport import TransportData
 
 from rmgpy.cantherm.kinetics import KineticsJob
-from rmgpy.cantherm.statmech import StatMechJob
+from rmgpy.cantherm.statmech import StatMechJob, assign_frequency_scale_factor
 from rmgpy.cantherm.thermo import ThermoJob
 from rmgpy.cantherm.pdep import PressureDependenceJob
 
@@ -389,8 +389,10 @@ def loadInputFile(path):
 
     modelChemistry = local_context.get('modelChemistry', '')
     if 'frequencyScaleFactor' not in local_context:
-        logging.warning('No frequency scale factor specified in input file; assuming a value of unity.')
-    frequencyScaleFactor = local_context.get('frequencyScaleFactor', 1.0)
+        logging.debug('Assigning a frequencyScaleFactor according to the modelChemistry...')
+        frequencyScaleFactor = assign_frequency_scale_factor(modelChemistry)
+    else:
+        frequencyScaleFactor = local_context.get('frequencyScaleFactor')
     useHinderedRotors = local_context.get('useHinderedRotors', True)
     useAtomCorrections = local_context.get('useAtomCorrections', True)
     useBondCorrections = local_context.get('useBondCorrections', False)
