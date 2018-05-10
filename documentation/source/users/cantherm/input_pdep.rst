@@ -112,6 +112,17 @@ acceptable for the acetone molecule: ::
 
     structure = SMILES('CC(C)=O')
 
+    structure = adjacencyList("""1  C u0 p0 c0 {2,S} {5,S} {6,S} {7,S}
+                                 2  C u0 p0 c0 {1,S} {3,S} {4,D}
+                                 3  C u0 p0 c0 {2,S} {8,S} {9,S} {10,S}
+                                 4  O u0 p2 c0 {2,D}
+                                 5  H u0 p0 c0 {1,S}
+                                 6  H u0 p0 c0 {1,S}
+                                 7  H u0 p0 c0 {1,S}
+                                 8  H u0 p0 c0 {3,S}
+                                 9  H u0 p0 c0 {3,S}
+                                 10 H u0 p0 c0 {3,S}""")
+
     structure = InChI('InChI=1S/C3H6O/c1-3(2)4/h1-2H3')
 
 The ``molecularWeight`` parameter should be defined in the quantity format ``(value, 'units')``
@@ -225,26 +236,27 @@ floating point numbers corresponding to the 0 K atomization energy in Hartree (w
 they can specify the path to a quantum chemistry calculation output file that contains the species's energy. For example::
 
     energy = {
-    'CBS-QB3': GaussianLog('acetylperoxy_cbsqb3.log'),
+    'CBS-QB3': Log('acetylperoxy_cbsqb3.log'),
     'Klip_2': -79.64199436,
     }
 
 In this example, the ``CBS-QB3`` energy is obtained from a Gaussian log file, while the ``Klip_2`` energy is specified directly.
 The energy used will depend on what ``modelChemistry`` was specified in the input file. CanTherm can parse the energy from
-a ``GaussianLog``, ``MolproLog`` or ``QchemLog``.
+a Gaussian, Molpro, or QChem log file, all using the same ``Log`` class, as shown below.
 
 The input to the remaining parameters, ``geometry``, ``frequencies`` and ``rotors``, will depend on if hindered/free rotors are included.
 Both cases are described below.
 
 Without Hindered/Free Rotors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-In this case, only ``geometry`` and ``frequencies`` need to be specified, and they can point to the same or different quantum chemistry calculation output files
-(either a ``GaussianLog`` or a ``QchemLog``). The ``geometry`` file contains  the optimized geometry, and the ``frequencies`` file contains the harmonic oscillator frequencies of the species in its optimized geometry.
+In this case, only ``geometry`` and ``frequencies`` need to be specified, and they can point to the same or different
+quantum chemistry calculation output files. The ``geometry`` file contains the optimized geometry, while the
+``frequencies`` file contains the harmonic oscillator frequencies of the species in its optimized geometry.
 For example::
 
-    geometry = GaussianLog('acetylperoxy_cbsqb3.log')
+    geometry = Log('acetylperoxy_cbsqb3.log')
 
-    frequencies = GaussianLog('acetylperoxy_freq.log')
+    frequencies = Log('acetylperoxy_freq.log')
 
 In summary, in order to specify the molecular properties of a species by parsing the output of quantum chemistry calculations, without any hindered/free rotors,
 the species input file should look like the following (using acetylperoxy as an example)::
@@ -266,23 +278,23 @@ the species input file should look like the following (using acetylperoxy as an 
     opticalIsomers = 1
 
     energy = {
-        'CBS-QB3': GaussianLog('acetylperoxy_cbsqb3.log'),
+        'CBS-QB3': Log('acetylperoxy_cbsqb3.log'),
         'Klip_2': -79.64199436,
     }
 
-    geometry = GaussianLog('acetylperoxy_cbsqb3.log')
+    geometry = Log('acetylperoxy_cbsqb3.log')
 
-    frequencies = GaussianLog('acetylperoxy_freq.log')
+    frequencies = Log('acetylperoxy_freq.log')
 
 With Hindered/Free Rotors
 ~~~~~~~~~~~~~~~~~~~~~~~~~
-In this case, ``geometry``, ``frequencies`` and ``rotors`` need to be specified. The ``geometry`` and ``frequencies`` parameters
-must point to the **same** quantum chemistry calculation output file in this case, which can be either a ``GaussianLog`` or a ``QchemLog``.
+In this case, ``geometry``, ``frequencies`` and ``rotors`` need to be specified. Note that the ``geometry`` and
+``frequencies`` parameters must point to the **same** quantum chemistry calculation output file.
 For example::
 
-    geometry = GaussianLog('acetylperoxy_freq.log')
+    geometry = Log('acetylperoxy_freq.log')
 
-    frequencies = GaussianLog('acetylperoxy_freq.log')
+    frequencies = Log('acetylperoxy_freq.log')
 
 The ``geometry/frequencies`` log file must contain both the optimized geometry and the Hessian (matrix of partial second derivatives of potential energy surface,
 also referred to as the force constant matrix), which is used to calculate the harmonic oscillator frequencies. If Gaussian is used
@@ -308,7 +320,8 @@ Parameter              Description
 ``fit``                Fit to the scan data. Can be either ``fourier``, ``cosine`` or ``best`` (default).
 ====================== =========================================================
 
-As noted above, ``scanLog`` can either point to a ``GaussianLog``, ``QchemLog`` or simply a ``ScanLog``, which is a text file summarizing the scan in the following format::
+``scanLog`` can either point to a ``Log`` file, or simply a ``ScanLog``, with the path to a text file summarizing the
+scan in the following format::
 
           Angle (radians)          Energy (kJ/mol)
            0.0000000000            0.0147251160
@@ -374,16 +387,16 @@ To summarize, the species input file with hindered/free rotors should look like 
     opticalIsomers = 1
 
     energy = {
-        'CBS-QB3': GaussianLog('acetylperoxy_cbsqb3.log'),
+        'CBS-QB3': Log('acetylperoxy_cbsqb3.log'),
         'Klip_2': -79.64199436,
     }
 
-    geometry = GaussianLog('acetylperoxy_freq.log')
+    geometry = Log('acetylperoxy_freq.log')
 
-    frequencies = GaussianLog('acetylperoxy_freq.log')
+    frequencies = Log('acetylperoxy_freq.log')
 
     rotors = [
-        HinderedRotor(scanLog=GaussianLog('acetylperoxy_scan_1.log'), pivots=[1,5], top=[1,2,3,4], symmetry=3, fit='best'),
+        HinderedRotor(scanLog=Log('acetylperoxy_scan_1.log'), pivots=[1,5], top=[1,2,3,4], symmetry=3, fit='best'),
         #HinderedRotor(scanLog=ScanLog('acetylperoxy_rotor_1.txt'), pivots=[1,5], top=[1,2,3,4], symmetry=3, fit='best'),
         #FreeRotor(pivots=[1,5], top=[1,2,3,4], symmetry=3),
     ]
@@ -406,7 +419,7 @@ function:
 Parameter               Required?                           Description
 ======================= =================================== ====================================
 ``label``               all species                         A unique string label used as an identifier
-``structure``           all species except bath gas         A chemical structure for the species defined using either SMILES or InChI
+``structure``           all species except bath gas         A chemical structure for the species defined using either SMILES, adjacencyList, or InChI
 ``E0``                  all species                         The ground-state 0 K enthalpy of formation (including zero-point energy)
 ``modes``               all species                         The molecular degrees of freedom (see below)
 ``spinMultiplicity``    all species                         The ground-state spin multiplicity (degeneracy), sets to 1 by default if not used

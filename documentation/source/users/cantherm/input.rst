@@ -15,22 +15,22 @@ either single or double quotes.
 
 The following is a list of all the components of a CanTherm input file for thermodynamics and high-pressure limit kinetics computations:
 
-=========================== =========================================================
+=========================== ====================================================================
 Component                   Description
-=========================== =========================================================
+=========================== ====================================================================
 ``modelChemistry``          Level of theory from quantum chemical calculations
 ``atomEnergies``            Dictionary of atomic energies at ``modelChemistry`` level
 ``frequencyScaleFactor``    A factor by which to scale all frequencies
-``useHinderedRotors``       ``True`` if hindered rotors are used, ``False`` if not
-``useAtomCorrections``      ``True`` if atom corrections are used, ``False`` if not
-``useBondCorrections``      ``True`` if bond corrections are used, ``False`` if not
+``useHinderedRotors``       ``True`` (by default) if hindered rotors are used, ``False`` if not
+``useAtomCorrections``      ``True`` (by default) if atom corrections are used, ``False`` if not
+``useBondCorrections``      ``True`` if bond corrections are used, ``False`` (by default) if not
 ``species``                 Contains parameters for non-transition states
 ``transitionState``         Contains parameters for transition state(s)
 ``reaction``                Required for performing kinetic computations
 ``statmech``                Loads statistical mechanics parameters
 ``thermo``                  Performs a thermodynamics computation
 ``kinetics``                Performs a high-pressure limit kinetic computation
-=========================== =========================================================
+=========================== ====================================================================
 
 Model Chemistry
 ===============
@@ -61,37 +61,37 @@ The table below shows which model chemistries have atomization energy correction
 corrections (BC), and spin orbit corrections (SOC). It also lists which elements are available
 for a given model chemistry.
 
-================================================ ===== ==== ==== ====================
-Model Chemistry                                  AEC   BC   SOC  Supported Elements
-================================================ ===== ==== ==== ====================
-``'CBS-QB3'``                                     v    v    v    H, C, N, O, P, S
-``'G3'``                                          v         v    H, C, N, O, P, S
-``'M08SO/MG3S*'``                                 v         v    H, C, N, O, P, S
-``'M06-2X/cc-pVTZ'``                              v         v    H, C, N, O, P, S
-``'Klip_1'``                                      v         v    H, C, N, O
-``'Klip_2'`` *uses QCI(tz,qz) values*             v         v    H, C, N, O
-``'Klip_3'`` *uses QCI(dz,qz) values*             v         v    H, C, N, O
-``'Klip_2_cc'`` *uses CCSD(T)(tz,qz) values*      v         v    H, C, O
-``'CCSD-F12/cc-pVDZ-F12'``                        v         v    H, C, N, O
-``'CCSD(T)-F12/cc-pVDZ-F12_H-TZ'``                v         v    H, C, N, O
-``'CCSD(T)-F12/cc-pVDZ-F12_H-QZ'``                v         v    H, C, N, O
-``'CCSD(T)-F12/cc-pVnZ-F12'``, *n = D,T,Q*        v    v    v    H, C, N, O, S
-``'CCSD(T)-F12/cc-pVDZ-F12_noscale'``             v         v    H, C, N, O
-``'CCSD(T)-F12/cc-pCVnZ-F12'``, *n = D,T,Q*       v         v    H, C, N, O
-``'CCSD(T)-F12/aug-cc-pVnZ'``, *n = D,T,Q*        v         v    H, C, N, O
-``'CCSD(T)-F12/cc-pVTZ-f12(-pp)``,                v         v    H, C, N, O, S, I
-``'CCSD(T)/aug-cc-pVTZ(-pp)``,                    v         v    H, C, O, S, I
-``'B-CCSD(T)-F12/cc-pVnZ-F12'``, *n = D,T,Q*      v         v    H, C, N, O, S
-``'B-CCSD(T)-F12/cc-pCVnZ-F12'``, *n = D,T,Q*     v         v    H, C, N, O
-``'B-CCSD(T)-F12/aug-cc-pVnZ'``, *n = D,T,Q*      v         v    H, C, N, O
-``'G03_PBEPBE_6-311++g_d_p'``                     v         v    H, C, N, O
-``'MP2_rmp2_pVnZ'``, *n = D,T,Q*                  v         v    H, C, N, O
-``'FCI/cc-pVnZ'``, *n = D,T,Q*                    v         v    C
-``'BMK/cbsb7'``                                   v    v    v    H, C, N, O, P, S
-``'BMK/6-311G(2d,d,p)'``                          v    v    v    H, C, N, O, P, S
-``'B3LYP/6-311+G(3df,2p)'``                       v    v    v    H, C, N, O, P, S
-``'B3LYP/6-31G**'``                               v    v         H, C, O, S
-================================================ ===== ==== ==== ====================
+================================================ ===== ==== ==== ========== ====================
+Model Chemistry                                  AEC   BC   SOC  Freq Scale Supported Elements
+================================================ ===== ==== ==== ========== ====================
+``'CBS-QB3'``                                     v    v    v    v (0.990)  H, C, N, O, P, S
+``'G3'``                                          v         v               H, C, N, O, P, S
+``'M08SO/MG3S*'``                                 v         v               H, C, N, O, P, S
+``'M06-2X/cc-pVTZ'``                              v         v    v (0.955)  H, C, N, O, P, S
+``'Klip_1'``                                      v         v               H, C, N, O
+``'Klip_2'`` *uses QCI(tz,qz) values*             v         v               H, C, N, O
+``'Klip_3'`` *uses QCI(dz,qz) values*             v         v               H, C, N, O
+``'Klip_2_cc'`` *uses CCSD(T)(tz,qz) values*      v         v               H, C, O
+``'CCSD-F12/cc-pVDZ-F12'``                        v         v    v (0.947)  H, C, N, O
+``'CCSD(T)-F12/cc-pVDZ-F12_H-TZ'``                v         v               H, C, N, O
+``'CCSD(T)-F12/cc-pVDZ-F12_H-QZ'``                v         v               H, C, N, O
+``'CCSD(T)-F12/cc-pVnZ-F12'``, *n = D,T,Q*        v    v    v    v          H, C, N, O, S
+``'CCSD(T)-F12/cc-pVDZ-F12_noscale'``             v         v               H, C, N, O
+``'CCSD(T)-F12/cc-pCVnZ-F12'``, *n = D,T,Q*       v         v    v          H, C, N, O
+``'CCSD(T)-F12/aug-cc-pVnZ'``, *n = D,T,Q*        v         v    v          H, C, N, O
+``'CCSD(T)-F12/cc-pVTZ-f12(-pp)``,                v         v               H, C, N, O, S, I
+``'CCSD(T)/aug-cc-pVTZ(-pp)``,                    v         v               H, C, O, S, I
+``'B-CCSD(T)-F12/cc-pVnZ-F12'``, *n = D,T,Q*      v         v               H, C, N, O, S
+``'B-CCSD(T)-F12/cc-pCVnZ-F12'``, *n = D,T,Q*     v         v               H, C, N, O
+``'B-CCSD(T)-F12/aug-cc-pVnZ'``, *n = D,T,Q*      v         v               H, C, N, O
+``'G03_PBEPBE_6-311++g_d_p'``                     v         v               H, C, N, O
+``'MP2_rmp2_pVnZ'``, *n = D,T,Q*                  v         v    v          H, C, N, O
+``'FCI/cc-pVnZ'``, *n = D,T,Q*                    v         v               C
+``'BMK/cbsb7'``                                   v    v    v               H, C, N, O, P, S
+``'BMK/6-311G(2d,d,p)'``                          v    v    v               H, C, N, O, P, S
+``'B3LYP/6-311+G(3df,2p)'``                       v    v    v    v (0.967)  H, C, N, O, P, S
+``'B3LYP/6-31G**'``                               v    v         v (0.961)  H, C, O, S
+================================================ ===== ==== ==== ========== ====================
 
 Notes:
 
@@ -111,8 +111,12 @@ correct.
 Frequency Scale Factor
 ======================
 
-Frequency scale factors are empirically fit to experiment for different ``modelChemistry``. Refer to NIST website for values (http://cccbdb.nist.gov/vibscalejust.asp).
-For CBS-QB3, which is not included in the link above, ``frequencyScaleFactor = 0.99`` according to Montgomery et al. (*J. Chem. Phys. 1999, 110, 2822–2827*).
+Frequency scale factors are empirically fit to experiment for different ``modelChemistry``.
+Refer to NIST website for values (http://cccbdb.nist.gov/vibscalejust.asp).
+For CBS-QB3, which is not included in the link above, ``frequencyScaleFactor = 0.99`` according to Montgomery et al.
+(*J. Chem. Phys. 1999, 110, 2822–2827*).
+The frequency scale factor is automatically assigned according to the supplied ``modelChemistry``, if available
+(see above table). If not available automatically and not specified by the user, it will be assumed a unity value.
 
 Species
 =======
@@ -188,26 +192,27 @@ floating point numbers corresponding to the 0 K atomization energy in Hartree (w
 they can specify the path to a quantum chemistry calculation output file that contains the species's energy. For example::
 
     energy = {
-    'CBS-QB3': GaussianLog('ethane_cbsqb3.log'),
+    'CBS-QB3': Log('ethane_cbsqb3.log'),
     'Klip_2': -79.64199436,
     }
 
 In this example, the ``CBS-QB3`` energy is obtained from a Gaussian log file, while the ``Klip_2`` energy is specified directly.
 The energy used will depend on what ``modelChemistry`` was specified in the input file. CanTherm can parse the energy from
-a ``GaussianLog``, ``MolproLog`` or ``QchemLog``.
+a Gaussian, Molpro, or QChem log file, all using the same ``Log`` class, as shown below.
 
 The input to the remaining parameters, ``geometry``, ``frequencies`` and ``rotors``, will depend on if hindered/free rotors are included.
 Both cases are described below.
 
 Without Hindered/Free Rotors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-In this case, only ``geometry`` and ``frequencies`` need to be specified, and they can point to the same or different quantum chemistry calculation output files
-(either a ``GaussianLog`` or a ``QchemLog``). The ``geometry`` file contains  the optimized geometry, and the ``frequencies`` file contains the harmonic oscillator frequencies of the species in its optimized geometry.
+In this case, only ``geometry`` and ``frequencies`` need to be specified, and they can point to the same or different
+quantum chemistry calculation output files. The ``geometry`` file contains the optimized geometry, while the
+``frequencies`` file contains the harmonic oscillator frequencies of the species in its optimized geometry.
 For example::
 
-    geometry = GaussianLog('ethane_cbsqb3.log')
+    geometry = Log('ethane_cbsqb3.log')
 
-    frequencies = GaussianLog('ethane_freq.log')
+    frequencies = Log('ethane_freq.log')
 
 In summary, in order to specify the molecular properties of a species by parsing the output of quantum chemistry calculations, without any hindered/free rotors,
 the ``species()`` function in the input file should look like the following example::
@@ -230,23 +235,23 @@ and the species input file (``C2H6.py`` in the example above) should look like t
     opticalIsomers = 1
 
     energy = {
-        'CBS-QB3': GaussianLog('ethane_cbsqb3.log'),
+        'CBS-QB3': Log('ethane_cbsqb3.log'),
         'Klip_2': -79.64199436,
     }
 
-    geometry = GaussianLog('ethane_cbsqb3.log')
+    geometry = Log('ethane_cbsqb3.log')
 
-    frequencies = GaussianLog('ethane_freq.log')
+    frequencies = Log('ethane_freq.log')
 
 With Hindered/Free Rotors
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 In this case, ``geometry``, ``frequencies`` and ``rotors`` need to be specified. The ``geometry`` and ``frequencies`` parameters
-must point to the **same** quantum chemistry calculation output file in this case, which can be either a ``GaussianLog`` or a ``QchemLog``.
+must point to the **same** quantum chemistry calculation output file in this case.
 For example::
 
-    geometry = GaussianLog('ethane_freq.log')
+    geometry = Log('ethane_freq.log')
 
-    frequencies = GaussianLog('ethane_freq.log')
+    frequencies = Log('ethane_freq.log')
 
 The ``geometry/frequencies`` log file must contain both the optimized geometry and the Hessian (matrix of partial second derivatives of potential energy surface,
 also referred to as the force constant matrix), which is used to calculate the harmonic oscillator frequencies. If Gaussian is used
@@ -262,17 +267,18 @@ The output of step 2 is the correct log file to use for ``geometry/frequencies``
 
 ``rotors`` is a list of :class:`HinderedRotor()` and/or :class:`FreeRotor()` objects. Each :class:`HinderedRotor()` object requires the following parameters:
 
-====================== =========================================================
+====================== ==========================================================================================
 Parameter              Description
-====================== =========================================================
-``scanLog``            The path to the Gaussian/Qchem log file or text file containing the scan
+====================== ==========================================================================================
+``scanLog``            The path to the Gaussian/Qchem log file, or a text file containing the scan energies
 ``pivots``             The indices of the atoms in the hindered rotor torsional bond
 ``top``                The indices of all atoms on one side of the torsional bond (including the pivot atom)
 ``symmetry``           The symmetry number for the torsional rotation (number of indistinguishable energy minima)
 ``fit``                Fit to the scan data. Can be either ``fourier``, ``cosine`` or ``best`` (default).
-====================== =========================================================
+====================== ==========================================================================================
 
-As noted above, ``scanLog`` can either point to a ``GaussianLog``, ``QchemLog`` or simply a ``ScanLog``, which is a text file summarizing the scan in the following format::
+``scanLog`` can either point to a ``Log`` file, or simply a ``ScanLog``, with the path to a text file summarizing the
+scan in the following format::
 
           Angle (radians)          Energy (kJ/mol)
            0.0000000000            0.0147251160
@@ -335,16 +341,16 @@ To summarize, the species input file with hindered/free rotors should look like 
     opticalIsomers = 1
 
     energy = {
-        'CBS-QB3': GaussianLog('ethane_cbsqb3.log'),
+        'CBS-QB3': Log('ethane_cbsqb3.log'),
         'Klip_2': -79.64199436,
     }
 
-    geometry = GaussianLog('ethane_freq.log')
+    geometry = Log('ethane_freq.log')
 
-    frequencies = GaussianLog('ethane_freq.log')
+    frequencies = Log('ethane_freq.log')
 
     rotors = [
-        HinderedRotor(scanLog=GaussianLog('ethane_scan_1.log'), pivots=[1,5], top=[1,2,3,4], symmetry=3, fit='best'),
+        HinderedRotor(scanLog=Log('ethane_scan_1.log'), pivots=[1,5], top=[1,2,3,4], symmetry=3, fit='best'),
         #HinderedRotor(scanLog=ScanLog('C2H6_rotor_1.txt'), pivots=[1,5], top=[1,2,3,4], symmetry=3, fit='best'),
         #FreeRotor(pivots=[1,5], top=[1,2,3,4], symmetry=3),
     ]
@@ -635,5 +641,5 @@ For calculations using internal hindered rotors:
 
 - Did you check to make sure the rotor has a reasonable potential (e.g., visually inspect the automatically generated rotor pdf files)?
 - Within your input files, do all specified rotors point to the correct files?
-- Do all of the atom label indices correspond to those in the file that is read by the logger (GaussianLog, QchemLog, etc.)?
-- Why do the fourier fits look so much different than the results of the ab initio potential energy scan calculations? This is likely because the initial scan energy is not at a minimum. One solution is to simply shift the potential with respect to angle so that it starts at zero and, instead of having CanTherm read a Qchem or Gaussian output file, have CanTherm point to a 'ScanLog' file. Another problem can arise when the potential at 2*pi is also not [close] to zero.       
+- Do all of the atom label indices correspond to those in the file that is read by ``Log``?
+- Why do the fourier fits look so much different than the results of the ab initio potential energy scan calculations? This is likely because the initial scan energy is not at a minimum. One solution is to simply shift the potential with respect to angle so that it starts at zero and, instead of having CanTherm read a Qchem or Gaussian output file, have CanTherm point to a 'ScanLog' file. Another problem can arise when the potential at 2*pi is also not [close] to zero.
