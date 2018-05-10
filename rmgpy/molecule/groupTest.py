@@ -354,6 +354,8 @@ class TestGroupAtom(unittest.TestCase):
 3    C ux     {1,S} {5,D}
 4    C u[0,1] {2,B}
 5    O u0     {3,D}
+6    C u0     {7,Q}
+7    C u0     {6,Q}
 """
         test = Group().fromAdjacencyList(adjlist)
         #returns a list of [single, allDouble, rDouble, oDouble, sDouble, triple, benzene]
