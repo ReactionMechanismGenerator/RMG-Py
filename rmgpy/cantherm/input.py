@@ -317,6 +317,9 @@ def pressureDependence(label,
 def SMILES(smiles):
     return Molecule().fromSMILES(smiles)
 
+def adjacencyList(adj):
+    return Molecule().fromAdjacencyList(adj)
+
 def InChI(inchi):
     return Molecule().fromInChI(inchi)
 
@@ -373,6 +376,7 @@ def loadInputFile(path):
         'pressureDependence': pressureDependence,
         # Miscellaneous
         'SMILES': SMILES,
+        'adjacencyList': adjacencyList,
         'InChI': InChI,
     }
 
