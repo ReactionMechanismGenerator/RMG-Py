@@ -2646,6 +2646,35 @@ class KineticsFamily(Database):
         
         return
     
+    def extendRegularization(self, node, inds, regs, typ):
+        """
+        Applies a regularization down the tree from a given parent node
+        """
+        grp = node.item
+        
+        if isinstance(grp,Group):
+            if typ == 'atomtype':
+                grp.atoms[inds[0]].atomType = list(set(grp.atoms[inds[0]].atomType) & set(regs))
+                for child in node.children:
+                    self.extendRegularization(child,inds,regs,typ)
+            elif typ == 'unpaired':
+                grp.atoms[inds[0]].radicalElectrons = list(set(grp.atoms[inds[0]].radicalElectrons) & set(regs))
+                for child in node.children:
+                    self.extendRegularization(child,inds,regs,typ)
+            elif typ == 'bond':
+                bd = grp.getBond(grp.atoms[inds[0]],grp.atoms[inds[1]])
+                bd.order = list(set(bd.order) & set(regs))
+                for child in node.children:
+                    self.extendRegularization(child,inds,regs,typ)
+            else:
+                raise ValueError('regularization type of {0} is unimplemented'.format(typ))
+    
+    def regularize(self, regularization=simpleRegularization):
+        """
+        Regularizes the tree according to the regularization function regularization
+        """
+        regularization(self,self.getRootTemplate()[0])
+        
     def prepareTreeForGeneration(self,thermoDatabase=None):
         """
         clears groups and rules in the tree, generates an appropriate
