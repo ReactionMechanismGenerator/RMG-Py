@@ -365,11 +365,9 @@ class MolproLog:
 
     def loadNegativeFrequency(self):
         """
-        Return the negative frequency from a transition state frequency
-        calculation in cm^-1.
+        Return the negative frequency from a transition state frequency calculation in cm^-1.
         """
-
-
+        frequency = None
         f = open(self.path, 'r')
         line = f.readline()
         while line != '':
@@ -379,9 +377,8 @@ class MolproLog:
                     line = f.readline()
                 frequency = line.split()[2]
             line = f.readline()
-        # Close file when finished
         f.close()
-
+        if frequency is None:
+            raise Exception('Unable to find imaginary frequency in Molpro output file {0}'.format(self.path))
         negativefrequency = -float(frequency)
-
         return negativefrequency

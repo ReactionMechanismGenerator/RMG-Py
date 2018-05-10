@@ -394,8 +394,4 @@ class QchemLog:
         if frequency < 0:
             return frequency
         else:
-            raise Exception('Unable to find imaginary frequency in QChem output file.')    
-        
-
-
-
+            raise Exception('Unable to find imaginary frequency in QChem output file {0}'.format(self.path))

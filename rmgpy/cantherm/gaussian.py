@@ -408,9 +408,8 @@ class GaussianLog:
         Return the negative frequency from a transition state frequency
         calculation in cm^-1.
         """
-        
+        frequency = None
         frequencies = []
-        
         f = open(self.path, 'r')
         line = f.readline()
         while line != '':
@@ -424,5 +423,6 @@ class GaussianLog:
         frequencies = [float(freq) for freq in frequencies]
         frequencies.sort()
         frequency = [freq for freq in frequencies if freq < 0][0]
-        
+        if frequency is None:
+            raise Exception('Unable to find imaginary frequency in Gaussian output file {0}'.format(self.path))
         return frequency
