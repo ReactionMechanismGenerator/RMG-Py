@@ -96,7 +96,7 @@ def species(label, *args, **kwargs):
         structure = None
         E0 = None
         modes = []
-        spinMultiplicity = 1
+        spinMultiplicity = 0
         opticalIsomers = 1
         molecularWeight = None
         collisionModel = None
@@ -125,7 +125,7 @@ def species(label, *args, **kwargs):
                 raise TypeError('species() got an unexpected keyword argument {0!r}.'.format(key))
             
         if structure: spec.molecule = [structure]
-        spec.conformer = Conformer(E0=E0, modes=modes, spinMultiplicity=spinMultiplicity, opticalIsomers=opticalIsomers)  
+        spec.conformer = Conformer(E0=E0, modes=modes, spinMultiplicity=spinMultiplicity, opticalIsomers=opticalIsomers)
         spec.molecularWeight = molecularWeight
         spec.transportData = collisionModel
         spec.energyTransferModel = energyTransferModel

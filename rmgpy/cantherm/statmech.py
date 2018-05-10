@@ -249,7 +249,7 @@ class StatMechJob:
         try:
             spinMultiplicity = local_context['spinMultiplicity']
         except KeyError:
-            raise InputError('Required attribute "spinMultiplicity" not found in species file {0!r}.'.format(path))
+            spinMultiplicity = 0
        
         try:
             opticalIsomers = local_context['opticalIsomers']
@@ -321,8 +321,14 @@ class StatMechJob:
                                     'Please verify that the geometry and Hessian of {0!r} are defined in the same coordinate system'.format(self.species.label))
 
         logging.debug('    Reading molecular degrees of freedom...')
-        conformer = statmechLog.loadConformer(symmetry=externalSymmetry, spinMultiplicity=spinMultiplicity, opticalIsomers=opticalIsomers, symfromlog = symfromlog)
-        
+        conformer = statmechLog.loadConformer(symmetry=externalSymmetry, spinMultiplicity=spinMultiplicity,
+                                              opticalIsomers=opticalIsomers, symfromlog=symfromlog,
+                                              label=self.species.label)
+
+        if conformer.spinMultiplicity == 0:
+            raise ValueError("Could not read spin multiplicity from log file {0},\n"
+                             "please specify the multiplicity in the input file.".format(self.path))
+
         logging.debug('    Reading optimized geometry...')
         coordinates, number, mass = geomLog.loadGeometry()
 
