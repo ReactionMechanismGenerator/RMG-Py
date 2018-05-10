@@ -270,6 +270,7 @@ atomTypes['R'] = AtomType(label='R', generic=[], specific=[
     'S','Sa','Sd','Ss','St','S0sc','S2s','S2sc','S2d','S2dc','S2tc','S4s','S4sc','S4d','S4dd','S4dc','S4b','S4t','S4tdc','S6s','S6sc','S6d','S6dd','S6ddd','S6dc','S6t','S6td','S6tt','S6tdc',
     'Cl','Ar']
 )
+atomTypes['R!H' ] = AtomType(label='R!H', generic=[], specific=[
     'He',
     'Val4','Val5','Val6','Val7',
     'C','Ca','Cs','Csc','Cd','CO','CS','Cdd','Cdc','Ct','Cb','Cq','Cbf','C2s','C2sc','C2d','C2dc','C2tc',
