@@ -1,32 +1,32 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 """
 This module provides classes and methods for working with molecules and
@@ -43,6 +43,7 @@ import numpy
 import urllib
 from collections import OrderedDict
 import itertools
+from copy import deepcopy
 
 import element as elements
 try:
@@ -51,12 +52,14 @@ except:
     pass
 from .graph import Vertex, Edge, Graph, getVertexConnectivityValue
 import rmgpy.molecule.group as gr
+from rmgpy.molecule.pathfinder import find_shortest_path
 from .atomtype import AtomType, atomTypes, getAtomType, AtomTypeError
 import rmgpy.constants as constants
 import rmgpy.molecule.parser as parser
 import rmgpy.molecule.generator as generator
 import rmgpy.molecule.resonance as resonance
 from .kekulize import kekulize
+from .adjlist import Saturator
 
 ################################################################################
 
@@ -524,6 +527,8 @@ class Bond(Edge):
             return 'Q'
         elif self.isVanDerWaals():
             return 'vdW'
+        elif self.isHydrogenBond():
+            return 'H'
         else:
             raise ValueError("Bond order {} does not have string representation.".format(self.order))
         
@@ -543,6 +548,8 @@ class Bond(Edge):
             self.order = 4
         elif newOrder == 'vdW':
             self.order = 0
+        elif newOrder == 'H':
+            self.order = 0.1
         else:
             # try to see if an float disguised as a string was input by mistake
             try:
@@ -588,7 +595,7 @@ class Bond(Edge):
 
     def isOrder(self, otherOrder):
         """
-        Return ``True`` if the bond represents a single bond or ``False`` if
+        Return ``True`` if the bond is of order otherOrder or ``False`` if
         not. This compares floats that takes into account floating point error
         
         NOTE: we can replace the absolute value relation with math.isclose when
@@ -631,7 +638,14 @@ class Bond(Edge):
         not.
         """
         return self.isOrder(1.5)
-
+    
+    def isHydrogenBond(self):
+        """
+        Return ``True`` if the bond represents a hydrogen bond or ``False`` if
+        not.
+        """
+        return self.isOrder(0)
+    
     def incrementOrder(self):
         """
         Update the bond as a result of applying a CHANGE_BOND action to
@@ -879,12 +893,13 @@ class Molecule(Graph):
         Update multiplicity, and sort atoms using the new
         connectivity values.
         """
-        self.updateAtomTypes()
-        self.updateMultiplicity()
-        self.sortVertices()
 
         for atom in self.atoms:
             atom.updateCharge()
+
+        self.updateAtomTypes()
+        self.updateMultiplicity()
+        self.sortVertices()
 
     def getFormula(self):
         """
@@ -1127,6 +1142,10 @@ class Molecule(Graph):
         be prescribed to any atom when getAtomType fails. Currently used for
         resonance hybrid atom types.
         """
+        #Because we use lonepairs to match atomtypes and default is -100 when unspecified,
+        #we should update before getting the atomtype.
+        self.updateLonePairs()
+
         for atom in self.vertices:
             try:
                 atom.atomType = getAtomType(atom, atom.edges)
@@ -1549,7 +1568,78 @@ class Molecule(Graph):
         from .adjlist import toAdjacencyList
         result = toAdjacencyList(self.vertices, self.multiplicity,  label=label, group=False, removeH=removeH, removeLonePairs=removeLonePairs, oldStyle=oldStyle)
         return result
-
+    
+    def find_H_bonds(self):
+        """
+        generates a list of (new-existing H bonds ignored) possible Hbond coordinates [(i1,j1),(i2,j2),...] where i and j values
+        correspond to the indexes of the atoms involved, Hbonds are allowed if they meet
+        the following constraints:
+           1) between a H and [O,N] atoms
+           2) the hydrogen is covalently bonded to an O or N
+           3) the Hydrogen bond must complete a ring with at least 5 members
+           4) An atom can only be hydrogen bonded to one other atom
+        """
+        potBonds = []
+        
+        ONatoms = [a for a in self.atoms if a.isOxygen() or a.isNitrogen()]
+        ONinds = [n for n,a in enumerate(self.atoms) if a.isOxygen() or a.isNitrogen()]
+        
+        for i,atm1 in enumerate(self.atoms):
+            if atm1.atomType.label == 'H':
+                atm_covs = [q for q in atm1.bonds.keys()] 
+                if len(atm_covs) > 1: #H is already H bonded
+                    continue 
+                else:
+                    atm_cov = atm_covs[0]
+                if (atm_cov.isOxygen() or atm_cov.isNitrogen()): #this H can be H-bonded
+                    for k,atm2 in enumerate(ONatoms):
+                        if all([q.order != 0 for q in atm2.bonds.values()]): #atm2 not already H bonded
+                            dist = len(find_shortest_path(atm1,atm2))-1
+                            if dist > 3:
+                                j = ONinds[k]
+                                potBonds.append((i,j))
+        return potBonds
+    
+    def generate_H_bonded_structures(self):
+        """
+        generates a list of Hbonded molecular structures in addition to the
+        constraints on Hydrogen bonds applied in the find_H_Bonds function
+        the generated structures are constrained to:
+            1) An atom can only be hydrogen bonded to one other atom
+            2) Only two H-bonds can exist in a given molecule
+        the second is done to avoid explosive growth in the number of 
+        structures as without this constraint the number of possible 
+        structures grows 2^n where n is the number of possible H-bonds
+        """
+        structs = []
+        Hbonds = self.find_H_bonds()
+        for i,bd1 in enumerate(Hbonds):
+            molc = deepcopy(self)
+            molc.addBond(Bond(molc.atoms[bd1[0]],molc.atoms[bd1[1]],order=0))
+            structs.append(molc)
+            for j,bd2 in enumerate(Hbonds):
+                if j<i and bd1[0] != bd2[0] and bd1[1] != bd2[1]:
+                    molc = deepcopy(self)
+                    molc.addBond(Bond(molc.atoms[bd1[0]],molc.atoms[bd1[1]],order=0))
+                    molc.addBond(Bond(molc.atoms[bd2[0]],molc.atoms[bd2[1]],order=0))
+                    structs.append(molc)
+        
+        return structs
+    
+    def remove_H_bonds(self):
+        """
+        removes any present hydrogen bonds from the molecule
+        """
+        
+        atoms = self.atoms
+        for i,atm1 in enumerate(atoms):
+            for j,atm2 in enumerate(atoms):
+                if j<i and self.hasBond(atm1,atm2):
+                    bd = self.getBond(atm1,atm2)
+                    if bd.order == 0:
+                        self.removeBond(bd)
+        return
+    
     def isLinear(self):
         """
         Return :data:`True` if the structure is linear and :data:`False`
@@ -1604,10 +1694,10 @@ class Molecule(Graph):
         there will be at least one 6 membered aromatic ring so this algorithm
         will not fail for fused aromatic rings.
         """
-        cython.declare(SSSR=list, vertices=list, polycyclicVertices=list)
-        SSSR = self.getSmallestSetOfSmallestRings()
-        if SSSR:
-            for cycle in SSSR:
+        cython.declare(rc=list, cycle=list, atom=Atom)
+        rc = self.getRelevantCycles()
+        if rc:
+            for cycle in rc:
                 if len(cycle) == 6:
                     for atom in cycle:
                         #print atom.atomType.label
@@ -1762,7 +1852,16 @@ class Molecule(Graph):
             charge += atom.charge
         return charge
 
-    def saturate(self):
+    def saturate_unfilled_valence(self, update = True):
+        """
+        Saturate the molecule by adding H atoms to any unfilled valence
+        """
+
+        saturator = Saturator()
+        saturator.saturate(self.atoms)
+        if update: self.update()
+
+    def saturate_radicals(self):
         """
         Saturate the molecule by replacing all radicals with bonds to hydrogen atoms.  Changes self molecule object.  
         """
@@ -1785,7 +1884,6 @@ class Molecule(Graph):
         # very expensive, so will do it anyway)
         self.sortVertices()
         self.updateAtomTypes()
-        self.updateLonePairs()
         self.multiplicity = 1
 
         return added
@@ -1833,7 +1931,8 @@ class Molecule(Graph):
         AROMATIC = BondType.AROMATIC
 
         if rings is None:
-            rings = self.getAllSimpleCyclesOfSize(6)
+            rings = self.getRelevantCycles()
+            rings = [ring for ring in rings if len(ring) == 6]
         if not rings:
             return [], []
 
@@ -1901,6 +2000,13 @@ class Molecule(Graph):
         For instance, molecule with this SMILES: C1CC2C3CSC(CO3)C2C1, will have non-deterministic
         output from `getSmallestSetOfSmallestRings`, which leads to non-deterministic bycyclic decomposition
         Using this new method can effectively prevent this situation.
+
+        Important Note: This method returns an incorrect set of SSSR in certain molecules (such as cubane).
+        It is recommended to use the main `Graph.getSmallestSetOfSmallestRings` method in new applications.
+        Alternatively, consider using `Graph.getRelevantCycles` for deterministic output.
+
+        In future development, this method should ideally be replaced by some method to select a deterministic
+        set of SSSR from the set of Relevant Cycles, as that would be a more robust solution.
         """
         cython.declare(vertices=list, verticesToRemove=list, rootCandidates_tups=list, graphs=list)
         cython.declare(cycleList=list, cycleCandidate_tups=list, cycles=list, cycle0=list, originConnDict=dict)

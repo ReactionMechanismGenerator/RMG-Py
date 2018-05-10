@@ -16,15 +16,20 @@ Briefly, RMG depends on the following packages, almost all of which can be found
 * **cairocffi:** a set of Python bindings and object-oriented API for cairo
 * **coverage:** code coverage measurement for Python
 * **cython:** compiling Python modules to C for speed up
+* **ffmpeg:** (optional) used to encode videos, necessary for generating video flux diagrams
 * **gaussian:** (optional) commerical software program for quantum mechanical calculations.  Must be installed separately.
 * **gcc:** GNU compiler collection for C,C++, and Fortran. (MinGW is used in windows)
 * **gprof2dot:** converts Python profiling output to a dot graph
 * **graphviz:** generating flux diagrams
 * **jinja2:** Python templating language for html rendering
+* **jupyter:** (optional) for using IPython notebooks
+* **lpsolve:** mixed integer linear programming solver, used for resonance structure generation. Must also install Python extension.
 * **markupsafe:** implements XML/HTML/XHTML markup safe strings for Python
 * **matplotlib:** library for making plots
-* **ffmpeg:** (optional) used to encode videos, necessary for generating video flux diagrams
+* **mock:** for unit-testing
 * **mopac:** semi-empirical software package for QM calculations
+* **muq:** (optional) MIT Uncertainty Quantification library, used for global uncertainty analysis
+* **networkx:** (optional) network analysis for reaction-path analysis IPython notebook
 * **nose:** advanced unit test controls
 * **numpy:** fast matrix operations
 * **openbabel:** chemical toolbox for speaking the many languages of chemical data
@@ -33,6 +38,7 @@ Briefly, RMG depends on the following packages, almost all of which can be found
 * **pydot:** interface to Dot graph language
 * **pydqed:** constrained nonlinear optimization
 * **pyparsing:** a general parsing module for python
+* **pyrdl:** RingDecomposerLib for graph ring perception
 * **pyzmq:** Python bindings for zeroMQ
 * **quantities:** unit conversion
 * **rdkit:** open-source cheminformatics toolkit

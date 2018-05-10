@@ -98,22 +98,6 @@ Class/Function                      Description
 
 
 
-Exceptions
-==========
-
-.. currentmodule:: rmgpy.data
-
-=================================== ============================================
-Exception                           Description
-=================================== ============================================
-:exc:`DatabaseError`                Raised when an error occurs while working with the database
-:exc:`InvalidActionError`           Raised when an error occurs while applying a reaction recipe
-:exc:`UndeterminableKineticsError`  Raised when the kinetics of a given reaction cannot be determined
-:exc:`StatmechFitError`             Raised when an error occurs while fitting internal degrees of freedom to heat capacity data
-=================================== ============================================
-
-
-
 .. toctree::
     :hidden:
     

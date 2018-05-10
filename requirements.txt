@@ -38,3 +38,8 @@ git+https://github.com/soravux/scoop.git@0.7.0
 
 # For unit tests
 mock
+
+# Other required packages which are not available via pip:
+# lpsolve - Download from https://sourceforge.net/projects/lpsolve/
+#           Instructions for python interface: http://lpsolve.sourceforge.net/5.5/Python.htm
+# RingDecomposerLib - Download from https://github.com/rareylab/RingDecomposerLib

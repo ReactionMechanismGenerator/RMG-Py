@@ -6,13 +6,10 @@
 
 DASPK=$(shell python -c 'import pydas.daspk; print pydas.daspk.__file__')
 DASSL=$(shell python -c 'import pydas.dassl; print pydas.dassl.__file__')
-RDKIT_VERSION=$(shell python -c 'import rdkit; print rdkit.__version__')
 
-.PHONY : all minimal main solver cantherm clean decython documentation QM mopac_travis
+.PHONY : all minimal main solver check cantherm clean decython documentation mopac_travis
 
-all: main solver QM
-
-noQM: main solver
+all: main solver check
 
 minimal:
 	python setup.py build_ext minimal --build-lib . --build-temp build --pyrex-c-in-temp
@@ -39,19 +36,8 @@ endif
 cantherm:
 	python setup.py build_ext cantherm --build-lib . --build-temp build --pyrex-c-in-temp
 
-QM:
-	@ echo "Checking if you have symmetry..."
-	@ echo "symmetry -h"
-	@ echo "Checking you have rdkit..."
-	@ python -c 'import rdkit; print rdkit.__file__'
-	@ echo "Checking rdkit version..."
-ifneq ($(RDKIT_VERSION),)
-	@ echo "Found rdkit version $(RDKIT_VERSION)"
-else
-	$(error RDKit version out of date, please install RDKit version 2015.03.1 or later with InChI support);
-endif
-	@ echo "Checking rdkit has InChI support..."
-	@ python -c 'from rdkit import Chem; assert Chem.inchi.INCHI_AVAILABLE, "RDKit installed without InChI Support. Please install with InChI."'
+check:
+	@ python check_dependencies.py
 
 documentation:
 	$(MAKE) -C documentation html
@@ -112,13 +98,13 @@ endif
 
 test-database:
 	nosetests -v -d testing/databaseTest.py	
-eg0: noQM
+eg0: all
 	mkdir -p testing/eg0
 	rm -rf testing/eg0/*
 	cp examples/rmg/superminimal/input.py testing/eg0/input.py
 	@ echo "Running eg0: superminimal (H2 oxidation) example"
 	python rmg.py testing/eg0/input.py
-eg1: noQM
+eg1: all
 	mkdir -p testing/eg1
 	rm -rf testing/eg1/*
 	cp examples/rmg/minimal/input.py testing/eg1/input.py
@@ -168,7 +154,7 @@ eg7: all
 	@ echo "Running eg7: gri_mech_rxn_lib example"
 	python rmg.py testing/eg7/input.py
 	
-scoop: noQM
+scoop: all
 	mkdir -p testing/scoop
 	rm -rf testing/scoop/*
 	cp examples/rmg/minimal/input.py testing/scoop/input.py

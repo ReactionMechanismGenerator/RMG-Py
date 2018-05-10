@@ -11,39 +11,60 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 {% endblock %}
 
 {% block rootrellink %}
-<li><a href="{{ pathto('index') }}">Documentation {{ release }}</a> &raquo;</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="{{ pathto('index') }}">{{ release }} Documentation</a> &raquo;</li>
 {% endblock %}
 
-{%- block header %}
-<div class="header">
-&nbsp;
-</div>
-{%- endblock %}
-
-{%- block sidebarlogo %}
-<div class="sidebarlogo">
-<a href="{{ pathto('index') }}"><img src="{{ pathto('_static/rmg-logo-small.png', 1) }}" alt="RMG" /></a>
-</div>
-{%- endblock %}
-
-{%- block relbar1 %}{% endblock %}
-
-  {%- block document %}
-      <div class="documentwrapper">
-      {%- if render_sidebar %}
-        <div class="bodywrapper">
-      {%- endif %}
-          <div class="body">
-            {{ relbar() }}
-            {% block body %} {% endblock %}
-          </div>
-      {%- if render_sidebar %}
+{%- block sidebar2 %}
+  {%- if render_sidebar %}
+  <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    <div class="sphinxsidebarwrapper">
+      {%- block sidebarlogo %}
+        <div class="sidebarlogo"><a href="{{ pathto('index') }}">
+            <img src="{{ pathto('_static/rmg-logo-small.png', 1) }}" alt="RMG" />
+        </a></div>
+      {%- endblock %}
+      <div id="sidebar">
+        <div id="rmgsidebar">
+          <a href="http://rmg.mit.edu">
+            <div class="menuitem">
+              <img src="{{ pathto('_static/rmg-icon.png', 1) }}" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG Website</div>
+              <div class="menutext menudesc">Interactive website for RMG-Py</div>
+            </div>
+          </a>
+          <a href="https://github.com/ReactionMechanismGenerator/RMG-Py">
+            <div class="menuitem">
+              <img src="{{ pathto('_static/github-icon.png', 1) }}" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG GitHub</div>
+              <div class="menutext menudesc">View source and post issues</div>
+            </div>
+          </a>
+        </div>
+      {%- if sidebars != None %}
+        {#- new style sidebar: explicitly include/exclude templates #}
+        {%- for sidebartemplate in sidebars %}
+        <div class="menuitem">
+        {%- include sidebartemplate %}
+        </div>
+        {%- endfor %}
+      {%- else %}
+        {#- old style sidebars: using blocks -- should be deprecated #}
+        <div class="menuitem">
+        {%- include "localtoc.html" %}
+        </div>
+        <div class="menuitem">
+        {%- include "relations.html" %}
+        </div>
+        <div class="menuitem">
+        {%- include "sourcelink.html" %}
+        </div>
+        <div class="menuitem">
+        {%- include "searchbox.html" %}
         </div>
       {%- endif %}
       </div>
-  {%- endblock %}
-
-{%- block relbar2 %}{% endblock %}
-
-  </body>
-</html>
+    </div>
+  </div>
+  {%- endif %}
+{% endblock %}

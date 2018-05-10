@@ -49,9 +49,9 @@ source code updates and patches through Github.
     updatingSourceCode
 
 For Developers: Direct Installation by Source without Anaconda
-=================================================================
+==============================================================
 
-The installation approach in this section is not recommended and also not maintained by RMG developer team. This is only a record for people who don't want to use Anaconda.
+The installation approach in this section is not recommended and also not maintained by RMG developer team. This is only a record for people who cannot use Anaconda.
 
 .. toctree::
     :maxdepth: 1

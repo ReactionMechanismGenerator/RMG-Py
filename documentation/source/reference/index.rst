@@ -26,6 +26,7 @@ Module                  Description
 :mod:`rmgpy.species`    Chemical species
 :mod:`rmgpy.statmech`   Statistical mechanics models of molecular degrees of freedom
 :mod:`rmgpy.thermo`     Thermodynamics models of chemical species
+:mod:`rmgpy.exceptions` Custom RMG exception classes
 ======================= ========================================================
 
 .. toctree::
@@ -46,3 +47,4 @@ Module                  Description
     species/index
     statmech/index
     thermo/index
+    exceptions

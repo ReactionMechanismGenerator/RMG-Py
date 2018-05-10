@@ -191,7 +191,7 @@ entry(
     group = 
 """
 1 *3 Cs u1 {2,S} {3,S}
-2    Ss u0 {1,S}
+2    S2s u0 {1,S}
 3    H  u0 {1,S}
 """,
     kinetics = None,
@@ -203,8 +203,8 @@ entry(
     group = 
 """
 1 *3 Cs u1 {2,S} {3,S}
-2    Ss u0 {1,S}
-3    Ss u0 {1,S}
+2    S2s u0 {1,S}
+3    S2s u0 {1,S}
 """,
     kinetics = None,
 )
@@ -216,7 +216,7 @@ entry(
 """
 1 *3 Cs u1 {2,S} {3,S}
 2    Cs u0 {1,S}
-3    Ss u0 {1,S}
+3    S2s u0 {1,S}
 """,
     kinetics = None,
 )
@@ -287,7 +287,7 @@ entry(
     group = 
 """
 1 *3 Cs            u1 {2,S} {3,S}
-2    Ss            u0 {1,S}
+2    S2s            u0 {1,S}
 3    [Cd,Ct,Cb,CO] u0 {1,S}
 """,
     kinetics = None,
@@ -299,7 +299,7 @@ entry(
     group = 
 """
 1 *3 Cs u1 {2,S} {3,S}
-2    Ss u0 {1,S}
+2    S2s u0 {1,S}
 3    Cd u0 {1,S}
 """,
     kinetics = None,
