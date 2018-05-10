@@ -2646,6 +2646,33 @@ class KineticsFamily(Database):
         
         return
     
+    def simpleRegularization(self, node):
+        """
+        Simplest regularization algorithm
+        All nodes are made as specific as their descendant reactions
+        Training reactions are assumed to not generalize 
+        For example if an particular atom at a node is Oxygen for all of its
+        descendent reactions a reaction where it is Sulfur will never hit that node
+        unless it is the top node even if the tree did not split on the identity 
+        of that atom
+        """
+        grp = node.item
+        
+        if isinstance(node.item,Group):
+            for i,atm1 in enumerate(grp.atoms):
+                if atm1.reg_dim_atm != [] and set(atm1.reg_dim_atm) != set(atm1.atomType):
+                    self.extendRegularization(node,[i],atm1.reg_dim_atm,'atomtype')
+                if atm1.reg_dim_u != [] and set(atm1.reg_dim_u) != set(atm1.radicalElectrons):
+                    self.extendRegularization(node,[i],atm1.reg_dim_u,'unpaired')
+                for j,atm2 in enumerate(grp.atoms[i:]):
+                    if grp.hasBond(atm1,atm2):
+                        bd = grp.getBond(atm1,atm2)
+                        if bd.reg_dim != [] and set(bd.reg_dim) != set(bd.order):
+                            self.extendRegularization(node,[i,j],bd.reg_dim,'bond')    
+        
+        for child in node.children:
+            self.simpleRegularization(child)
+            
     def extendRegularization(self, node, inds, regs, typ):
         """
         Applies a regularization down the tree from a given parent node
