@@ -34,9 +34,9 @@ thermodynamics information for a single species.
 """
 
 import os.path
-import math
 import numpy.linalg
 import logging
+import string
 
 import rmgpy.constants as constants
 from rmgpy.cantherm.output import prettify
@@ -198,7 +198,7 @@ class ThermoJob:
         """
         # Skip this step if matplotlib is not installed
         try:
-            import pylab
+            import matplotlib.pyplot as plt
         except ImportError:
             return
         
@@ -224,29 +224,34 @@ class ThermoJob:
             Hlist1[i] = thermo.getEnthalpy(Tlist[i]) * 0.001
             Glist1[i] = thermo.getFreeEnergy(Tlist[i]) * 0.001
 
-        fig = pylab.figure(figsize=(10,8))
+        fig = plt.figure(figsize=(10,8))
+        fig.suptitle('{0}'.format(self.species.label))
+        plt.subplot(2,2,1)
+        plt.plot(Tlist, Cplist / 4.184, '-r', Tlist, Cplist1 / 4.184, '-b')
+        plt.xlabel('Temperature (K)')
+        plt.ylabel('Heat capacity (cal/mol*K)')
+        plt.legend(['statmech', 'fitted'], loc=4)
 
-        pylab.subplot(2,2,1)
-        pylab.plot(Tlist, Cplist / 4.184, '-r', Tlist, Cplist1 / 4.184, '-b')
-        pylab.xlabel('Temperature (K)')
-        pylab.ylabel('Heat capacity (cal/mol*K)')
-        pylab.legend(['statmech', 'thermo'], loc=4)
+        plt.subplot(2,2,2)
+        plt.plot(Tlist, Slist / 4.184, '-r', Tlist, Slist1 / 4.184, '-b')
+        plt.xlabel('Temperature (K)')
+        plt.ylabel('Entropy (cal/mol*K)')
 
-        pylab.subplot(2,2,2)
-        pylab.plot(Tlist, Slist / 4.184, '-r', Tlist, Slist1 / 4.184, '-b')
-        pylab.xlabel('Temperature (K)')
-        pylab.ylabel('Entropy (cal/mol*K)')
+        plt.subplot(2,2,3)
+        plt.plot(Tlist, Hlist / 4.184, '-r', Tlist, Hlist1 / 4.184, '-b')
+        plt.xlabel('Temperature (K)')
+        plt.ylabel('Enthalpy (kcal/mol)')
 
-        pylab.subplot(2,2,3)
-        pylab.plot(Tlist, Hlist / 4.184, '-r', Tlist, Hlist1 / 4.184, '-b')
-        pylab.xlabel('Temperature (K)')
-        pylab.ylabel('Enthalpy (kcal/mol)')
-
-        pylab.subplot(2,2,4)
-        pylab.plot(Tlist, Glist / 4.184, '-r', Tlist, Glist1 / 4.184, '-b')
-        pylab.xlabel('Temperature (K)')
-        pylab.ylabel('Gibbs free energy (kcal/mol)')
+        plt.subplot(2,2,4)
+        plt.plot(Tlist, Glist / 4.184, '-r', Tlist, Glist1 / 4.184, '-b')
+        plt.xlabel('Temperature (K)')
+        plt.ylabel('Gibbs free energy (kcal/mol)')
 
         fig.subplots_adjust(left=0.10, bottom=0.08, right=0.95, top=0.95, wspace=0.35, hspace=0.20)
-        pylab.savefig(os.path.join(outputDirectory, 'thermo.pdf'))
-        pylab.close()
+
+        if not os.path.exists('plots'):
+            os.mkdir('plots')
+        valid_chars = "-_.()<=> %s%s" % (string.ascii_letters, string.digits)
+        filename = os.path.join('plots', ''.join(c for c in self.species.label if c in valid_chars) + '.pdf')
+        plt.savefig(os.path.join(outputDirectory, filename))
+        plt.close()
