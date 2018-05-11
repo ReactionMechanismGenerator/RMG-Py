@@ -12,11 +12,11 @@ spinMultiplicity = 2
 opticalIsomers = 2 #confirmed
 
 energy = {
-    'M08SO': QchemLog('ts1.out'),
+    'M08SO': Log('ts1.out'),
 }
 
-geometry = QchemLog('ts1.out')
+geometry = Log('ts1.out')
 
-frequencies = QchemLog('ts1.out')
+frequencies = Log('ts1.out')
 
 rotors = []

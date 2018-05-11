@@ -15,11 +15,11 @@ spinMultiplicity = 2
 opticalIsomers = 1
 
 energy = {
-    'M08SO': QchemLog('hco.out'),
+    'M08SO': Log('hco.out'),
 }
 
-geometry = QchemLog('hco.out')
+geometry = Log('hco.out')
 
-frequencies = QchemLog('hco.out')
+frequencies = Log('hco.out')
 
 

@@ -16,11 +16,11 @@ spinMultiplicity = 2
 opticalIsomers = 1 #confirmed
 
 energy = {
-    'M08SO': QchemLog('ch3oh.out'),
+    'M08SO': Log('ch3oh.out'),
 }
 
-geometry = QchemLog('ch3oh.out')
+geometry = Log('ch3oh.out')
 
-frequencies = QchemLog('ch3oh.out')
+frequencies = Log('ch3oh.out')
 
 
