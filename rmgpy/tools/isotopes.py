@@ -490,8 +490,7 @@ def generate_RMG_model(inputFile, outputDirectory):
     initializeLog(logging.INFO, os.path.join(outputDirectory, 'RMG.log'))
     # generate mechanism:
     rmg = RMG(inputFile = os.path.abspath(inputFile),
-            outputDirectory = os.path.abspath(outputDirectory)
-        )
+              outputDirectory = os.path.abspath(outputDirectory))
     rmg.execute()
 
     return rmg
@@ -725,10 +724,10 @@ def ensure_correct_degeneracies(reaction_isotopomer_list, print_data = False, r_
         # add product to list
         symmetry_ratio = product_structures[structure_index].getSymmetryNumber() / float(species.getSymmetryNumber())
         return product_list.append({'product': species,
-                                            'flux': flux,
-                                            'product_struc_index': structure_index,
-                                            'symmetry_ratio': symmetry_ratio},
-                                           ignore_index=True)
+                                    'flux': flux,
+                                    'product_struc_index': structure_index,
+                                    'symmetry_ratio': symmetry_ratio},
+                                   ignore_index=True)
 
     # copy list in case it is called upon
     reaction_isotopomer_list = copy(reaction_isotopomer_list)
