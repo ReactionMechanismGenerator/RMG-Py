@@ -57,7 +57,6 @@ import rmgpy.molecule.element
 from rmgpy.kinetics.arrhenius import MultiArrhenius
 from rmgpy.reaction import isomorphic_species_lists
 
-
 def initialize_isotope_model(rmg, isotopes):
     """
     Initialize the RMG object by using the parameter species list
@@ -171,8 +170,6 @@ def generate_isotope_reactions(isotopeless_reactions, isotopes):
             raise TypeError('reactions sent to generate_isotope_reactions must be a TemplateReaction object')
         if rxn.template is None:
             raise AttributeError('isotope reaction {0} does not have a template attribute. The object is:\n\n{1}'.format(str(rxn),repr(rxn)))
-
-    from rmgpy.reaction import _isomorphicSpeciesList
 
     found_reactions = []
     rxn_index = 0
@@ -628,8 +625,7 @@ def get_reduced_mass(labeled_molecules, labels, three_member_ts):
         from rmgpy.exceptions import KineticsError
         raise KineticsError("Did not find a labeled atom in molecules {}".format([mol.toAdjacencyList() for mol in labeled_molecules]))
     if three_member_ts: # actually convert to reduced mass using the mass of hydrogen
-        from rmgpy.molecule import element
-        reduced_mass = 1/element.H.mass + 1/combined_mass
+        reduced_mass = 1/rmgpy.molecule.element.H.mass + 1/combined_mass
     return 1./reduced_mass
 
 def is_enriched(obj):
@@ -662,7 +658,6 @@ def ensure_correct_symmetry(isotopmoper_list, isotopic_element = 'C'):
     m is related to the amount of entropy increased by some isotopomers since they
     lost symmetry.
     """
-    gas_constant = 8.314 # J/molK
     number_elements = 0
     for atom in isotopmoper_list[0].molecule[0].atoms:
         if atom.element.symbol ==isotopic_element:
@@ -673,7 +668,7 @@ def ensure_correct_symmetry(isotopmoper_list, isotopic_element = 'C'):
     count = 0.
     for spec in isotopmoper_list:
         entropy_diff = spec.getEntropy(298) - minimum_entropy
-        count += math.exp(entropy_diff / gas_constant)
+        count += math.exp(entropy_diff / constants.R)
     return abs(count - 2**number_elements) < 0.01
 
 def ensure_correct_degeneracies(reaction_isotopomer_list, print_data = False, r_tol_small_flux=1e-5, r_tol_deviation = 0.0001):
@@ -701,7 +696,6 @@ def ensure_correct_degeneracies(reaction_isotopomer_list, print_data = False, r_
     product_list - a pandas.DataFrame that sotres the fluxes and symmetry values
     """
 
-    from rmgpy.kinetics.arrhenius import MultiArrhenius
     def store_flux_info(species, flux, product_list,  product_structures):
         """
         input:
