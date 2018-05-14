@@ -716,12 +716,12 @@ class RMG(util.Subject):
                                         modelSettings = tempModelSettings,
                                         simulatorSettings = simulatorSettings,
                                     )
-                                
-                                for i,t in enumerate(reactionSystem.termination): #reset times and conversions to the full values
-                                    if isinstance(t,TerminationTime):
-                                        t.time = Quantity((orig_vals[i],'s'))
-                                    elif isinstance(t,TerminationConversion):
-                                        t.conversion = orig_vals[i]
+                                if not completionRun:
+                                    for i,t in enumerate(reactionSystem.termination): #reset times and conversions to the full values
+                                        if isinstance(t,TerminationTime):
+                                            t.time = Quantity((orig_vals[i],'s'))
+                                        elif isinstance(t,TerminationConversion):
+                                            t.conversion = orig_vals[i]
                                         
                                 self.updateReactionThresholdAndReactFlags(
                                         rxnSysUnimolecularThreshold = reactionSystem.unimolecularThreshold,
