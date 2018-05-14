@@ -52,7 +52,7 @@ from rmgpy.exceptions import ForbiddenStructureException, DatabaseError
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
 
-from quantities import Quantity
+from rmgpy.quantity import Quantity
 from rmgpy.data.thermo import ThermoLibrary
 from rmgpy.data.base import Entry
 from rmgpy import settings
@@ -687,13 +687,14 @@ class RMG(util.Subject):
                                 orig_vals = []
                                 for i,t in enumerate(reactionSystem.termination): #adjust times and conversions for current system
                                     if isinstance(t,TerminationTime):
-                                        orig_vals.append(t.time)
-                                        t.time = t.time*(1-(1-reactionSystem.t/t.time.value_si)**0.3)
+                                        orig_vals.append(t.time.value_si)
+                                        tval = t.time.value_si
+                                        t.time = Quantity((tval*(1.0-(1.0-reactionSystem.t/tval)**0.3),'s'))
                                     elif isinstance(t,TerminationConversion):
                                         orig_vals.append(t.conversion)
                                         spcind = reactionSystem.speciesIndex[t.species]
                                         xconv = 1.0 - (reactionSystem.y[spcind]/reactionSystem.y0[spcind])
-                                        t.conversion = t.conversion*(1-(1-xconv/t.conversion)**0.3)
+                                        t.conversion = t.conversion*(1.0-(1.0-xconv/t.conversion)**0.3)
                                 
                                 reactionSystem.simulate(
                                         coreSpecies = self.reactionModel.core.species,
@@ -709,7 +710,7 @@ class RMG(util.Subject):
                                 
                                 for i,t in enumerate(reactionSystem.termination): #reset times and conversions to the full values
                                     if isinstance(t,TerminationTime):
-                                        t.time = Quantity(orig_vals[i],'sec')
+                                        t.time = Quantity((orig_vals[i],'s'))
                                     elif isinstance(t,TerminationConversion):
                                         t.conversion = orig_vals[i]
                                         
