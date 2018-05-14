@@ -685,16 +685,25 @@ class RMG(util.Subject):
                             # Run with the same conditions as with pruning off
                             if not resurrected:
                                 orig_vals = []
+                                ratios = []
                                 for i,t in enumerate(reactionSystem.termination): #adjust times and conversions for current system
                                     if isinstance(t,TerminationTime):
                                         orig_vals.append(t.time.value_si)
-                                        tval = t.time.value_si
-                                        t.time = Quantity((tval*(1.0-(1.0-reactionSystem.t/tval)**0.3),'s'))
+                                        ratios.append(reactionSystem.t/t.time.value_si)
                                     elif isinstance(t,TerminationConversion):
                                         orig_vals.append(t.conversion)
                                         spcind = reactionSystem.speciesIndex[t.species]
                                         xconv = 1.0 - (reactionSystem.y[spcind]/reactionSystem.y0[spcind])
-                                        t.conversion = t.conversion*(1.0-(1.0-xconv/t.conversion)**0.3)
+                                        ratios.append(xconv/t.conversion)
+                                
+                                completionRun = max(ratios) >= 1.0
+                                
+                                if not completionRun:
+                                    for i,t in enumerate(reactionSystem.termination): #reset times and conversions to the full values
+                                        if isinstance(t,TerminationTime):
+                                            t.time = Quantity((orig_vals[i]*(1.0-(1.0-ratios[i])**0.1),'s'))
+                                        elif isinstance(t,TerminationConversion):
+                                            t.conversion = orig_vals[i]*(1.0-(1.0-ratios[i])**0.1)
                                 
                                 reactionSystem.simulate(
                                         coreSpecies = self.reactionModel.core.species,
