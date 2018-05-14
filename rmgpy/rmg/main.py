@@ -246,10 +246,21 @@ class RMG(util.Subject):
         """
         if self.pressureDependence:
             for index, reactionSystem in enumerate(self.reactionSystems):
-                assert (reactionSystem.T.value_si < self.pressureDependence.Tmax.value_si), "Reaction system T is above pressureDependence range."
-                assert (reactionSystem.T.value_si > self.pressureDependence.Tmin.value_si), "Reaction system T is below pressureDependence range."
-                assert (reactionSystem.P.value_si < self.pressureDependence.Pmax.value_si), "Reaction system P is above pressureDependence range."
-                assert (reactionSystem.P.value_si > self.pressureDependence.Pmin.value_si), "Reaction system P is below pressureDependence range."
+                if reactionSystem.T:
+                    logging.info(reactionSystem.T)
+                    assert (reactionSystem.T.value_si < self.pressureDependence.Tmax.value_si), "Reaction system T is above pressureDependence range."
+                    assert (reactionSystem.T.value_si > self.pressureDependence.Tmin.value_si), "Reaction system T is below pressureDependence range."
+                else:
+                    assert (reactionSystem.Trange[1].value_si < self.pressureDependence.Tmax.value_si), "Reaction system T is above pressureDependence range."
+                    assert (reactionSystem.Trange[0].value_si > self.pressureDependence.Tmin.value_si), "Reaction system T is below pressureDependence range."
+                if reactionSystem.P:
+                    assert (reactionSystem.P.value_si < self.pressureDependence.Pmax.value_si), "Reaction system P is above pressureDependence range."
+                    assert (reactionSystem.P.value_si > self.pressureDependence.Pmin.value_si), "Reaction system P is below pressureDependence range."
+                else:
+                    assert (reactionSystem.Prange[1].value_si < self.pressureDependence.Pmax.value_si), "Reaction system P is above pressureDependence range."
+                    assert (reactionSystem.Prange[0].value_si > self.pressureDependence.Pmin.value_si), "Reaction system P is below pressureDependence range."
+                
+
             assert any([not s.reactive for s in reactionSystem.initialMoleFractions.keys()]), \
                 "Pressure Dependence calculations require at least one inert (nonreacting) species for the bath gas."
 
