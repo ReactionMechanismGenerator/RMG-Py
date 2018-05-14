@@ -675,7 +675,7 @@ class RMG(util.Subject):
                     for objectToEnlarge in objectsToEnlarge:
                         self.reactionModel.enlarge(objectToEnlarge)
                         
-                    if len(self.reactionModel.core.species) > numCoreSpecies or self.reactionModel.iterationNum == 1:
+                    if True:
                         tempModelSettings = deepcopy(modelSettings)
                         tempModelSettings.fluxToleranceKeepInEdge = 0
                         # If there were core species added, then react the edge
