@@ -58,8 +58,8 @@ cpdef list generate_aryne_resonance_structures(Molecule mol)
 
 cpdef list generate_kekule_structure(Graph mol)
 
-cpdef list generate_clar_structures(Molecule mol)
+cpdef list generate_clar_structures(Graph mol)
 
-cpdef list _clar_optimization(Molecule mol, list constraints=?, max_num=?)
+cpdef list _clar_optimization(Graph mol, list constraints=?, max_num=?)
 
-cpdef list _clar_transformation(Molecule mol, list aromatic_ring)
+cpdef list _clar_transformation(Graph mol, list aromatic_ring)
