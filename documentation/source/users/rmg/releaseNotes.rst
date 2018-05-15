@@ -4,6 +4,48 @@
 Release Notes
 *************
 
+RMG-Py Version 2.1.9
+====================
+Date: May 1, 2018
+
+- Cantherm:
+    - Atom counts are no longer necessary in input files and are automatically determined from geometries
+    - Custom atom energies can now be specified in input files
+    - Removed atom energies for a few ambiguous model chemistries
+    - Add atom energies for B3LYP/6-311+g(3df,2p)
+
+- Changes:
+    - Refactored molecule.parser and molecule.generator modules into molecule.converter and molecule.translator to improve code organization
+    - SMILES generation now outputs canonical SMILES
+    - Molecule.sortAtoms method restored for deterministic atom order
+    - PDep reactions which match an existing library reaction are no longer added to the model
+
+- Fixes:
+    - Fix issue with reaction filter initiation when using seed mechanisms
+
+RMG-database Version 2.1.9
+==========================
+Date: May 1, 2018
+
+- Chlorine:
+    - New Chlorinated_Hydrocarbons thermo library
+    - Added group additivity values and long distance corrections for chlorinated species
+    - Added chlorine groups and training reactions to H_Abstraction
+
+- Additions:
+    - New NOx2018 kinetics, thermo, and transport libraries
+    - New N-S_interactions kinetics library
+    - New SulfurHaynes thermo library
+    - Added species to SOxNOx thermo library from quantum calculations
+
+- Other changes:
+    - Renamed NOx and SOx kinetics libraries to PrimaryNitrogenLibrary and PrimarySulfurLibrary
+    - S2O2, SOO2, SO2O2, and N2SH were globally forbidden due to inability to optimize geometries
+
+- Fixes:
+    - Corrected some A-factor units in Nitrogen_Dean_and_Bozzelli kinetics library
+
+
 RMG-Py Version 2.1.8
 ====================
 Date: March 22, 2018

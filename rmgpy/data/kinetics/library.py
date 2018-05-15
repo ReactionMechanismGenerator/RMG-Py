@@ -73,6 +73,7 @@ class LibraryReaction(Reaction):
                  degeneracy=1,
                  pairs=None,
                  library=None,
+                 has_pdep_route=False,
                  entry=None
                  ):
         Reaction.__init__(self,
@@ -85,7 +86,8 @@ class LibraryReaction(Reaction):
                           transitionState=transitionState,
                           duplicate=duplicate,
                           degeneracy=degeneracy,
-                          pairs=pairs
+                          pairs=pairs,
+                          has_pdep_route=has_pdep_route
                           )
         self.library = library
         self.family = library
@@ -106,6 +108,7 @@ class LibraryReaction(Reaction):
                                   self.degeneracy,
                                   self.pairs,
                                   self.library,
+                                  self.has_pdep_route,
                                   self.entry
                                   ))
 
@@ -139,13 +142,13 @@ class KineticsLibrary(Database):
         and returns at list of all of these LibraryReaction and TemplateReaction objects
         """
         rxns = []
-        for entry in self.entries.values():                
+        for entry in self.entries.values():
             if entry._longDesc and 'Originally from reaction library: ' in entry._longDesc:
                 lib = [line for line in entry._longDesc.split('\n') if 'Originally from reaction library: ' in line]
                 lib = lib[0].replace('Originally from reaction library: ','')
                 lib = lib.replace('\n','')
-                rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],\
-                 library=lib, specificCollider=entry.item.specificCollider, kinetics=entry.data, duplicate=entry.item.duplicate,\
+                rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],
+                 library=lib, specificCollider=entry.item.specificCollider, kinetics=entry.data, duplicate=entry.item.duplicate,
                  reversible=entry.item.reversible
                  )
             elif entry._longDesc and 'rate rule' in entry._longDesc: #template reaction
@@ -158,15 +161,16 @@ class KineticsLibrary(Database):
                 tstrings = tstring.split(';')
                 tstrings[0] = tstrings[0][1:]
                 tstrings[-1] = tstrings[-1][:-1]
-                rxn = TemplateReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],\
-                  specificCollider=entry.item.specificCollider, kinetics=entry.data, duplicate=entry.item.duplicate,\
+                rxn = TemplateReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],
+                  specificCollider=entry.item.specificCollider, kinetics=entry.data, duplicate=entry.item.duplicate,
                  reversible=entry.item.reversible,family=familyname,template=tstrings
                  )
-            else: #pdep or standard library reaction
-                rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],\
-                 library=self.label, specificCollider=entry.item.specificCollider, kinetics=entry.data, duplicate=entry.item.duplicate,\
-                 reversible=entry.item.reversible
-                 )
+            else:  # pdep or standard library reaction
+                rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],
+                                      library=self.label, specificCollider=entry.item.specificCollider,
+                                      kinetics=entry.data, duplicate=entry.item.duplicate,
+                                      reversible=entry.item.reversible, has_pdep_route=entry.item.has_pdep_route
+                                      )
             rxns.append(rxn)
         
         return rxns
@@ -179,10 +183,9 @@ class KineticsLibrary(Database):
         for r1 in reactions1:
             for r2 in reactions2:
                 if (r1.reactants == r2.reactants and
-                    r1.products == r2.products and
-                    r1.specificCollider == r2.specificCollider and
-                    r1.reversible == r2.reversible
-                    ):
+                        r1.products == r2.products and
+                        r1.specificCollider == r2.specificCollider and
+                        r1.reversible == r2.reversible):
                     r1.duplicate = True
                     r2.duplicate = True
                     
@@ -389,6 +392,7 @@ class KineticsLibrary(Database):
                   referenceType='',
                   shortDesc='',
                   longDesc='',
+                  has_pdep_route=False,
                   ):
         
 #        reactants = [Species(label=reactant1.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(reactant1)])]
@@ -400,7 +404,8 @@ class KineticsLibrary(Database):
 #        if product3 is not None: products.append(Species(label=product3.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(product3)]))
 #        
         # Make a blank reaction
-        rxn = Reaction(reactants=[], products=[], degeneracy=degeneracy, duplicate=duplicate, reversible=reversible)
+        rxn = Reaction(reactants=[], products=[], degeneracy=degeneracy, duplicate=duplicate, reversible=reversible,
+                       has_pdep_route=has_pdep_route)
 #        if not rxn.isBalanced():
 #            raise DatabaseError('Reaction {0} in kinetics library {1} was not balanced! Please reformulate.'.format(rxn, self.label))        
 #        label = str(rxn)

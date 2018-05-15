@@ -713,6 +713,9 @@ def toAdjacencyList(atoms, multiplicity, label=None, group=False, removeH=False,
     Convert a chemical graph defined by a list of `atoms` into a string
     adjacency list.
     """
+    if not atoms:
+        return ''
+
     if oldStyle:
         return toOldAdjacencyList(atoms, multiplicity, label, group, removeH)
     

@@ -76,8 +76,8 @@ def getMainExtensionModules():
         Extension('rmgpy.molecule.molecule', ['rmgpy/molecule/molecule.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.symmetry', ['rmgpy/molecule/symmetry.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.vf2', ['rmgpy/molecule/vf2.pyx'], include_dirs=['.']),
-        Extension('rmgpy.molecule.parser', ['rmgpy/molecule/parser.py'], include_dirs=['.']),
-        Extension('rmgpy.molecule.generator', ['rmgpy/molecule/generator.py'], include_dirs=['.']),
+        Extension('rmgpy.molecule.converter', ['rmgpy/molecule/converter.py'], include_dirs=['.']),
+        Extension('rmgpy.molecule.translator', ['rmgpy/molecule/translator.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.util', ['rmgpy/molecule/util.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.inchi', ['rmgpy/molecule/inchi.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.resonance', ['rmgpy/molecule/resonance.py'], include_dirs=['.']),
@@ -157,10 +157,6 @@ def getCanthermExtensionModules():
 ################################################################################
 
 ext_modules = []
-if 'install' in sys.argv:
-    # This is so users can still do simply `python setup.py install`
-    ext_modules.extend(getMainExtensionModules())
-    ext_modules.extend(getSolverExtensionModules())
 if 'main' in sys.argv:
     # This is for `python setup.py build_ext main`
     sys.argv.remove('main')

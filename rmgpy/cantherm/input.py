@@ -388,16 +388,20 @@ def loadInputFile(path):
         logging.warning('No frequency scale factor specified in input file; assuming a value of unity.')
     frequencyScaleFactor = local_context.get('frequencyScaleFactor', 1.0)
     useHinderedRotors = local_context.get('useHinderedRotors', True)
+    useAtomCorrections = local_context.get('useAtomCorrections', True)
     useBondCorrections = local_context.get('useBondCorrections', False)
+    atomEnergies = local_context.get('atomEnergies', None)
     
     directory = os.path.dirname(path)
     
     for job in jobList:
         if isinstance(job, StatMechJob):
             job.path = os.path.join(directory, job.path)
-            job.modelChemistry = modelChemistry
+            job.modelChemistry = modelChemistry.lower()
             job.frequencyScaleFactor = frequencyScaleFactor
             job.includeHinderedRotors = useHinderedRotors
+            job.applyAtomEnergyCorrections = useAtomCorrections
             job.applyBondEnergyCorrections = useBondCorrections
+            job.atomEnergies = atomEnergies
     
     return jobList
