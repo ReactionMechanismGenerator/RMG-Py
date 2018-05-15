@@ -625,7 +625,9 @@ class RMG(util.Subject):
                     if numCoreSpecies < modelSettings.minCoreSizeForPrune:
                         # Turn pruning off if we haven't reached minimum core size.
                         prune = False
-                        
+                    
+                    tempfilter = modelSettings.filterReactions
+                    modelSettings.filterReactions = False
                     try: terminated,resurrected,obj,newSurfaceSpecies,newSurfaceReactions = reactionSystem.simulate(
                         coreSpecies = self.reactionModel.core.species,
                         coreReactions = self.reactionModel.core.reactions,
@@ -650,6 +652,8 @@ class RMG(util.Subject):
                         else:
                             self.makeSeedMech(firstTime=True)
                         raise
+                    
+                    modelSettings.filterReactions = tempfilter
                     
                     if self.generateSeedEachIteration:
                         self.makeSeedMech()
