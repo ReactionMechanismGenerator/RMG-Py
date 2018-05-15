@@ -94,7 +94,7 @@ pressureDependent block of the input file). If set to ``False`` (the default val
 limit rate in network exploration, and will not convert Arrhenius kinetics of library reactions that have no template
 (a corresponding reaction family) into a pressure-dependent form.
 
-2. **has_pdep_route**: If set to ``True`` and RMG discovers a pressure-dependent reaction with the same reactants and products,
+2. **allow_pdep_route**: If set to ``True`` and RMG discovers a pressure-dependent reaction with the same reactants and products,
 the latter *will* be considered in addition to the library reaction. This is useful for cases when more than one pathway connects
 the same reactants and products, and some of these pathways are well-skipping reactions. If set to ``False`` (the default value),
 similar network reactions will not be considered in the model generation.

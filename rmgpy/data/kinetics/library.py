@@ -75,7 +75,7 @@ class LibraryReaction(Reaction):
                  degeneracy=1,
                  pairs=None,
                  library=None,
-                 has_pdep_route=False,
+                 allow_pdep_route=False,
                  elementary_high_p=False,
                  entry=None
                  ):
@@ -91,7 +91,7 @@ class LibraryReaction(Reaction):
                           duplicate=duplicate,
                           degeneracy=degeneracy,
                           pairs=pairs,
-                          has_pdep_route=has_pdep_route,
+                          allow_pdep_route=allow_pdep_route,
                           elementary_high_p=elementary_high_p,
                           )
         self.library = library
@@ -114,7 +114,7 @@ class LibraryReaction(Reaction):
                                   self.degeneracy,
                                   self.pairs,
                                   self.library,
-                                  self.has_pdep_route,
+                                  self.allow_pdep_route,
                                   self.elementary_high_p,
                                   self.entry
                                   ))
@@ -218,7 +218,7 @@ class KineticsLibrary(Database):
                 rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],
                                       library=lib, specificCollider=entry.item.specificCollider, kinetics=entry.data,
                                       duplicate=entry.item.duplicate, reversible=entry.item.reversible,
-                                      has_pdep_route=entry.item.has_pdep_route,
+                                      allow_pdep_route=entry.item.allow_pdep_route,
                                       elementary_high_p=entry.item.elementary_high_p)
             elif entry._longDesc and 'rate rule' in entry._longDesc: #template reaction
                 c = entry._longDesc.split('\n')
@@ -238,7 +238,7 @@ class KineticsLibrary(Database):
                 rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],
                                       library=self.label, specificCollider=entry.item.specificCollider,
                                       kinetics=entry.data, duplicate=entry.item.duplicate,
-                                      reversible=entry.item.reversible, has_pdep_route=entry.item.has_pdep_route,
+                                      reversible=entry.item.reversible, allow_pdep_route=entry.item.allow_pdep_route,
                                       elementary_high_p=entry.item.elementary_high_p)
             rxns.append(rxn)
         
@@ -461,7 +461,7 @@ class KineticsLibrary(Database):
                   referenceType='',
                   shortDesc='',
                   longDesc='',
-                  has_pdep_route=False,
+                  allow_pdep_route=False,
                   elementary_high_p=False,
                   ):
         
@@ -475,7 +475,7 @@ class KineticsLibrary(Database):
 #        
         # Make a blank reaction
         rxn = Reaction(reactants=[], products=[], degeneracy=degeneracy, duplicate=duplicate, reversible=reversible,
-                       has_pdep_route=has_pdep_route, elementary_high_p=elementary_high_p)
+                       allow_pdep_route=allow_pdep_route, elementary_high_p=elementary_high_p)
 #        if not rxn.isBalanced():
 #            raise DatabaseError('Reaction {0} in kinetics library {1} was not balanced! Please reformulate.'.format(rxn, self.label))        
 #        label = str(rxn)
