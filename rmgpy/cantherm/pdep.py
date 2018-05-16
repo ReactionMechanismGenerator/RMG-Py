@@ -464,7 +464,7 @@ class PressureDependenceJob(object):
 
         # Skip this step if matplotlib is not installed
         try:
-            import pylab
+            import matplotlib.pyplot as plt
         except ImportError:
             return
 
@@ -493,7 +493,7 @@ class PressureDependenceJob(object):
                     ' + '.join([product.label for product in reaction.products]),
                 )
                 
-                fig = pylab.figure(figsize=(10,6))
+                fig = plt.figure(figsize=(10,6))
                 
                 K2 = numpy.zeros((Tcount, Pcount))
                 if reaction.kinetics is not None:
@@ -507,32 +507,32 @@ class PressureDependenceJob(object):
                 K2 *= 1e6 ** (order-1)
                 kunits = {1: 's^-1', 2: 'cm^3/(mol*s)', 3: 'cm^6/(mol^2*s)'}[order]
 
-                pylab.subplot(1,2,1)
+                plt.subplot(1,2,1)
                 for p in xrange(Pcount):
-                    pylab.semilogy(1000.0 / Tlist, K[:,p], color=cm(1.*p/(Pcount-1)), marker='o', linestyle='',
+                    plt.semilogy(1000.0 / Tlist, K[:,p], color=cm(1.*p/(Pcount-1)), marker='o', linestyle='',
                                    label=str('%.2e' % (Plist[p]/1e+5)) + ' bar')
                     if reaction.kinetics is not None:
-                        pylab.semilogy(1000.0 / Tlist, K2[:,p], color=cm(1.*p/(Pcount-1)), marker='', linestyle='-')
-                pylab.xlabel('1000 / Temperature (1000/K)')
-                pylab.ylabel('Rate coefficient ({0})'.format(kunits))
-                pylab.title(reaction_str)
-                pylab.legend()
+                        plt.semilogy(1000.0 / Tlist, K2[:,p], color=cm(1.*p/(Pcount-1)), marker='', linestyle='-')
+                plt.xlabel('1000 / Temperature (1000/K)')
+                plt.ylabel('Rate coefficient ({0})'.format(kunits))
+                plt.title(reaction_str)
+                plt.legend()
                 
-                pylab.subplot(1,2,2)
+                plt.subplot(1,2,2)
                 for t in xrange(Tcount):
-                    pylab.loglog(Plist*1e-5, K[t,:], color=cm(1.*t/(Tcount-1)), marker='o', linestyle='',
+                    plt.loglog(Plist*1e-5, K[t,:], color=cm(1.*t/(Tcount-1)), marker='o', linestyle='',
                                    label=str('%.0d' % Tlist[t]) + ' K')
-                    pylab.loglog(Plist*1e-5, K2[t,:], color=cm(1.*t/(Tcount-1)), marker='', linestyle='-')
-                pylab.xlabel('Pressure (bar)')
-                pylab.ylabel('Rate coefficient ({0})'.format(kunits))
-                pylab.title(reaction_str)
-                pylab.legend()
+                    plt.loglog(Plist*1e-5, K2[t,:], color=cm(1.*t/(Tcount-1)), marker='', linestyle='-')
+                plt.xlabel('Pressure (bar)')
+                plt.ylabel('Rate coefficient ({0})'.format(kunits))
+                plt.title(reaction_str)
+                plt.legend()
                 
                 fig.subplots_adjust(left=0.10, bottom=0.13, right=0.95, top=0.92, wspace=0.3, hspace=0.3)
                 if not os.path.exists('plots'):
                     os.mkdir('plots')
-                pylab.savefig(os.path.join(outputDirectory, 'plots/kinetics_{0:d}.pdf'.format(count)))
-                pylab.close()
+                plt.savefig(os.path.join(outputDirectory, 'plots/kinetics_{0:d}.pdf'.format(count)))
+                plt.close()
 
     def draw(self, outputDirectory, format='pdf'):
         """
