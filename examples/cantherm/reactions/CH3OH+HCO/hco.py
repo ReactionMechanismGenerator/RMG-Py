@@ -15,7 +15,7 @@ spinMultiplicity = 2
 opticalIsomers = 1
 
 energy = {
-    'M08SO': Log('hco.out'),
+    'm08so/mg3s*': Log('hco.out'),
 }
 
 geometry = Log('hco.out')

@@ -11,7 +11,7 @@ spinMultiplicity = 2
 opticalIsomers = 2
 
 energy = {
-    'M08SO': Log('dimetpropoxy_betasci.out'),
+    'm08so/mg3s*': Log('dimetpropoxy_betasci.out'),
 }
 
 geometry = Log('dimetpropoxy_betasci.out')

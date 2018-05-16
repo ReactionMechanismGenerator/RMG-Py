@@ -12,7 +12,7 @@ spinMultiplicity = 2
 opticalIsomers = 2 #confirmed
 
 energy = {
-    'M08SO': Log('ts1.out'),
+    'm08so/mg3s*': Log('ts1.out'),
 }
 
 geometry = Log('ts1.out')
