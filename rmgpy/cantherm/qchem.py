@@ -47,7 +47,6 @@ class QchemLog:
     def __init__(self, path):
         self.path = path
 
-
     def getNumberOfAtoms(self):
         """
         Return the number of atoms in the molecular configuration used in
@@ -70,6 +69,7 @@ class QchemLog:
         f.close()
         # Return the result
         return Natoms
+
     def loadForceConstantMatrix(self):
         """
         Return the force constant matrix (in Cartesian coordinates) from the 
