@@ -39,10 +39,14 @@ import logging
 import time
 import shutil
 import numpy
+np = numpy
 import gc
 import copy
-from copy import deepcopy
 
+from copy import deepcopy
+from scipy.optimize import brute
+
+from rmgpy.rmg.settings import ModelSettings
 from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.molecule import Molecule
 from rmgpy.solver.base import TerminationTime, TerminationConversion
@@ -162,6 +166,7 @@ class RMG(util.Subject):
         
         self.modelSettingsList = []
         self.simulatorSettingsList = []
+        self.balanceSpecies = None
         
         self.filterReactions=False
         self.unimolecularReact = None
@@ -241,10 +246,21 @@ class RMG(util.Subject):
         """
         if self.pressureDependence:
             for index, reactionSystem in enumerate(self.reactionSystems):
-                assert (reactionSystem.T.value_si < self.pressureDependence.Tmax.value_si), "Reaction system T is above pressureDependence range."
-                assert (reactionSystem.T.value_si > self.pressureDependence.Tmin.value_si), "Reaction system T is below pressureDependence range."
-                assert (reactionSystem.P.value_si < self.pressureDependence.Pmax.value_si), "Reaction system P is above pressureDependence range."
-                assert (reactionSystem.P.value_si > self.pressureDependence.Pmin.value_si), "Reaction system P is below pressureDependence range."
+                if reactionSystem.T:
+                    logging.info(reactionSystem.T)
+                    assert (reactionSystem.T.value_si < self.pressureDependence.Tmax.value_si), "Reaction system T is above pressureDependence range."
+                    assert (reactionSystem.T.value_si > self.pressureDependence.Tmin.value_si), "Reaction system T is below pressureDependence range."
+                else:
+                    assert (reactionSystem.Trange[1].value_si < self.pressureDependence.Tmax.value_si), "Reaction system T is above pressureDependence range."
+                    assert (reactionSystem.Trange[0].value_si > self.pressureDependence.Tmin.value_si), "Reaction system T is below pressureDependence range."
+                if reactionSystem.P:
+                    assert (reactionSystem.P.value_si < self.pressureDependence.Pmax.value_si), "Reaction system P is above pressureDependence range."
+                    assert (reactionSystem.P.value_si > self.pressureDependence.Pmin.value_si), "Reaction system P is below pressureDependence range."
+                else:
+                    assert (reactionSystem.Prange[1].value_si < self.pressureDependence.Pmax.value_si), "Reaction system P is above pressureDependence range."
+                    assert (reactionSystem.Prange[0].value_si > self.pressureDependence.Pmin.value_si), "Reaction system P is below pressureDependence range."
+                
+
             assert any([not s.reactive for s in reactionSystem.initialMoleFractions.keys()]), \
                 "Pressure Dependence calculations require at least one inert (nonreacting) species for the bath gas."
 
@@ -541,12 +557,25 @@ class RMG(util.Subject):
 
         self.done = False
         
-        self.Tmax = max([x.T for x in self.reactionSystems]).value_si
+        Tlist = []
+        for x in self.reactionSystems:
+            if x.Trange:
+                Tlist.append(x.Trange[1].value_si)
+            elif x.T:
+                Tlist.append(x.T.value_si)
+                
+        self.Tmax = max(Tlist)
         
+        self.nSimsTerms = [0 for i in xrange(len(self.reactionSystems))]
+        
+        self.rmg_memories = []
         # Initiate first reaction discovery step after adding all core species
         if self.filterReactions:
             # Run the reaction system to update threshold and react flags
             for index, reactionSystem in enumerate(self.reactionSystems):
+                self.rmg_memories.append(RMG_Memory(reactionSystem,self.balanceSpecies))
+                self.rmg_memories[index].generate_cond()
+                log_conditions(self.rmg_memories,index)
                 reactionSystem.initializeModel(
                     coreSpecies = self.reactionModel.core.species,
                     coreReactions = self.reactionModel.core.reactions,
@@ -556,10 +585,16 @@ class RMG(util.Subject):
                     atol = self.simulatorSettingsList[0].atol,
                     rtol = self.simulatorSettingsList[0].rtol,
                     filterReactions=True,
+                    conditions = self.rmg_memories[index].get_cond()
                 )
                 self.updateReactionThresholdAndReactFlags(
                     rxnSysUnimolecularThreshold=reactionSystem.unimolecularThreshold, 
                     rxnSysBimolecularThreshold=reactionSystem.bimolecularThreshold)
+        else:
+            for index, reactionSystem in enumerate(self.reactionSystems):
+                self.rmg_memories.append(RMG_Memory(reactionSystem,self.balanceSpecies))
+                self.rmg_memories[index].generate_cond()
+                log_conditions(self.rmg_memories,index)
                 
         if not numpy.isinf(self.modelSettingsList[0].toleranceThermoKeepSpeciesInEdge):
             self.reactionModel.setThermodynamicFilteringParameters(self.Tmax,toleranceThermoKeepSpeciesInEdge=self.modelSettingsList[0].toleranceThermoKeepSpeciesInEdge,
@@ -625,7 +660,7 @@ class RMG(util.Subject):
                         # Turn pruning off if we haven't reached minimum core size.
                         prune = False
                         
-                    try: terminated,resurrected,obj,newSurfaceSpecies,newSurfaceReactions = reactionSystem.simulate(
+                    try: terminated,resurrected,obj,newSurfaceSpecies,newSurfaceReactions,t,x = reactionSystem.simulate(
                         coreSpecies = self.reactionModel.core.species,
                         coreReactions = self.reactionModel.core.reactions,
                         edgeSpecies = self.reactionModel.edge.species,
@@ -636,6 +671,7 @@ class RMG(util.Subject):
                         prune = prune,
                         modelSettings=modelSettings,
                         simulatorSettings = simulatorSettings,
+                        conditions = self.rmg_memories[index].get_cond()
                     )
                     except:
                         logging.error("Model core reactions:")
@@ -649,6 +685,10 @@ class RMG(util.Subject):
                         else:
                             self.makeSeedMech(firstTime=True)
                         raise
+                    
+                    self.rmg_memories[index].add_t_conv_N(t,x,len(obj))
+                    self.rmg_memories[index].generate_cond()
+                    log_conditions(self.rmg_memories,index)
                     
                     if self.generateSeedEachIteration:
                         self.makeSeedMech()
@@ -693,6 +733,7 @@ class RMG(util.Subject):
                                         pdepNetworks = self.reactionModel.networkList,
                                         modelSettings = tempModelSettings,
                                         simulatorSettings = simulatorSettings,
+                                        conditions = self.rmg_memories[index].get_cond()
                                     )
                                 self.updateReactionThresholdAndReactFlags(
                                         rxnSysUnimolecularThreshold = reactionSystem.unimolecularThreshold,
@@ -731,6 +772,12 @@ class RMG(util.Subject):
                         break
                     
                     if not reactorDone:
+                        self.nSimsTerms[index] = 0
+                        self.done = False
+                    
+                    if reactorDone and self.nSimsTerms[index]+1 < reactionSystem.nSimsTerm:
+                        logging.info('Reactor system {0} completed the {1}-th terminating simulation waiting for the {2} terminating simulation'.format(index,self.nSimsTerms[index]+1,reactionSystem.nSimsTerm))
+                        self.nSimsTerms[index] += 1
                         self.done = False
                         
                     self.saveEverything()
@@ -772,7 +819,7 @@ class RMG(util.Subject):
         # Run sensitivity analysis post-model generation if sensitivity analysis is on
         for index, reactionSystem in enumerate(self.reactionSystems):
             
-            if reactionSystem.sensitiveSpecies:
+            if reactionSystem.sensitiveSpecies and reactionSystem.sensConditions:
                 logging.info('Conducting sensitivity analysis of reaction system %s...' % (index+1))
                     
                 sensWorksheet = []
@@ -780,7 +827,7 @@ class RMG(util.Subject):
                     csvfilePath = os.path.join(self.outputDirectory, 'solver', 'sensitivity_{0}_SPC_{1}.csv'.format(index+1, spec.index))
                     sensWorksheet.append(csvfilePath)
                 
-                terminated, resurrected,obj, surfaceSpecies, surfaceReactions = reactionSystem.simulate(
+                terminated, resurrected,obj, surfaceSpecies, surfaceReactions,t,x = reactionSystem.simulate(
                     coreSpecies = self.reactionModel.core.species,
                     coreReactions = self.reactionModel.core.reactions,
                     edgeSpecies = self.reactionModel.edge.species,
@@ -790,8 +837,9 @@ class RMG(util.Subject):
                     pdepNetworks = self.reactionModel.networkList,
                     sensitivity = True,
                     sensWorksheet = sensWorksheet,
-                    modelSettings = self.modelSettingsList[-1],
+                    modelSettings = ModelSettings(toleranceMoveToCore=1e8,toleranceInterruptSimulation=1e8),
                     simulatorSettings = self.simulatorSettingsList[-1],
+                    conditions = reactionSystem.sensConditions,
                 )
                 
                 plot_sensitivity(self.outputDirectory, index, reactionSystem.sensitiveSpecies)
@@ -1193,7 +1241,7 @@ class RMG(util.Subject):
             logging.log(level, '')
         else:
             # If we cannot get git info, try checking if it is a conda package instead:
-            condaPackage = getCondaPackage('rmg')
+            condaPackage = get_condaPackage('rmg')
             if condaPackage != '':
                 logging.log(level, 'The current anaconda package for RMG-Py is:')
                 logging.log(level, condaPackage)
@@ -1206,7 +1254,7 @@ class RMG(util.Subject):
             logging.log(level, '\t%s' % databaseDate)
             logging.log(level, '')
         else:
-            databaseCondaPackage=getCondaPackage('rmgdatabase')
+            databaseCondaPackage=get_condaPackage('rmgdatabase')
             if databaseCondaPackage != '':
                 logging.log(level, 'The current anaconda package for RMG-database is:')
                 logging.log(level, databaseCondaPackage)
@@ -1520,7 +1568,163 @@ def initializeLog(verbose, log_file_name):
     logger.addHandler(fh)
 
 ################################################################################
+class RMG_Memory:
+    """
+    class for remembering RMG simulations
+    and determining what simulation to run next
+    """
+    def __init__(self,reactionSystem,bspc):
+        self.Ranges = dict()
+        
+        if hasattr(reactionSystem,'Trange') and isinstance(reactionSystem.Trange, list):
+            Trange = reactionSystem.Trange
+            self.Ranges['T'] = [T.value_si for T in Trange]
+        if hasattr(reactionSystem,'Prange') and isinstance(reactionSystem.Prange, list):
+            Prange = reactionSystem.Prange
+            self.Ranges['P'] = [np.log(P.value_si) for P in Prange]
+        if hasattr(reactionSystem,'initialMoleFractions'):
+            if bspc:
+                self.initialMoleFractions = deepcopy(reactionSystem.initialMoleFractions)
+                self.balanceSpecies = [x for x in self.initialMoleFractions.keys() if x.label == bspc][0]  #find the balance species
+            for key,value in reactionSystem.initialMoleFractions.iteritems():
+                assert key != 'T' and key != 'P', 'naming a species T or P is forbidden'
+                if isinstance(value, list):
+                    self.Ranges[key] = value
+        if hasattr(reactionSystem,'initialConcentrations'):
+            for key,value in reactionSystem.initialConcentrations.iteritems():
+                assert key != 'T' and key != 'P', 'naming a species T or P is forbidden'
+                if isinstance(value, list):
+                    self.Ranges[key] = [v.value_si for v in value]
+                    
+        for term in reactionSystem.termination:
+            if isinstance(term, TerminationTime):
+                self.tmax = term.time.value_si
+        
+        self.reactionSystem = reactionSystem
+        self.conditionList = []
+        self.scaledConditionList = []
+        self.ts = []
+        self.convs = []
+        self.Ns = []
+        self.randState = np.random.RandomState(1)
+        
+    def add_t_conv_N(self,t,conv,N):
+        """
+        adds the completion time and conversion and the number of objects added 
+        from a given run to the memory
+        """
+        if hasattr(self,'tmax'):
+            self.ts.append(t/self.tmax)
+        self.convs.append(conv)
+        self.Ns.append(N)
+        
+    def get_cond(self):
+        """
+        Returns the condition being run
+        """
+        if self.Ranges == dict():
+            return None
+        else:
+            return self.conditionList[-1]
+    
+    def calculate_cond(self,obj,Ndims,Ns=20):
+        """
+        Weighted Stochastic Grid Sampling algorithm 
+        obj is evaluated at a grid of points and the evaluations are normalized 
+        and then sampled randomly based on their normalized value
+        then a random step of length 1/(2*Ns) is taken from that point to give a final condition point
+        if this process were to impact runtime under some conditions you could decrease the value of Ns to speed it up
+        """
+        bounds = tuple((0.0,1.0) for k in xrange(Ndims))
+        x0,fval,grid,Jout = brute(obj,bounds,Ns=Ns,full_output=True,finish=None) #run brute just to easily get the evaluations at each grid point (we don't care about the optimal value)
+        Jout += abs(Jout.min(tuple(xrange(Ndims)))) #shifts Jout positive so tot is positive
+        tot = np.sum(Jout,axis=tuple(xrange(len(Jout.shape))))
+        Jout /= tot #normalize Jout
+        n = self.randState.uniform(0,1,1)[0] #draw a random number between 0 and 1
+        s = 0.0
+        for indexes in np.ndenumerate(Jout): #choose a coordinate such that grid[indexes] is choosen with probability Jout[indexes]
+            s += Jout[indexes[0]]
+            if s > n:
+                break
+        if len(bounds) != 1:
+            yf = np.array([grid[i][indexes[0]] for i in xrange(len(grid))])
+        else:
+            yf = np.array([grid[indexes[0]] for i in xrange(len(grid))])
+        
+        step = self.randState.uniform(0,1,len(Jout.shape)) #take a step in a random direction in a length between 0 and 1/(2*Ns)
+        step /= step.sum()
+        mag = self.randState.uniform(0,1,1)[0]
 
+        yf += step*mag*np.sqrt(2)/(2.0*Ns)
+        
+        return yf
+    
+    def generate_cond(self):
+        """
+        find the next condition to run at by solving an optimization problem
+        this optimization problem maximizes distance from prior conditions weighted more if they are more recent
+        and maximizes number of objects added
+        the resulting condition is added to the end of conditionList
+        """
+        if self.conditionList == []:
+            self.conditionList.append({key:value[0] for key,value in self.Ranges.iteritems()})
+            self.scaledConditionList.append({key:0.0 for key,value in self.Ranges.iteritems()})
+        elif len(self.conditionList[0]) == 0:
+            pass
+        else:
+            ykey = self.conditionList[0].keys()
+            Ns = self.Ns
+            def obj(y):
+                boo = y.shape == tuple()
+                vec = []
+                N = len(self.conditionList)
+                for i,cond in enumerate(self.scaledConditionList):
+                    for j,key in enumerate(ykey):
+                        if not boo:
+                            vec.append(10.0*N/((N-i)*(Ns[i]+1))*abs(y[j]-cond[key])**0.3) 
+                        else:
+                            vec.append(10.0*N/((N-i)*(Ns[i]+1))*abs(y-cond[key])**0.3) 
+                return -np.array(vec).sum()
+
+            yf = self.calculate_cond(obj,len(ykey))
+            
+            scaledNewCond = {ykey[i]:yf[i] for i in xrange(len(ykey))}
+            newCond = {yk:yf[i]*(self.Ranges[yk][1]-self.Ranges[yk][0])+self.Ranges[yk][0] for i,yk in enumerate(ykey) }
+            if 'P' in newCond.keys():
+                newCond['P'] = np.exp(newCond['P'])
+            
+            if hasattr(self,'initialMoleFractions'):
+                for key in self.initialMoleFractions.keys():
+                    if not isinstance(self.initialMoleFractions[key],list):
+                        newCond[key] = self.initialMoleFractions[key]
+                total = sum([val for key,val in newCond.iteritems() if key != 'T' and key != 'P'])
+                if self.balanceSpecies is None:
+                    for key,val in newCond.iteritems():
+                        if key != 'T' and key != 'P':
+                            newCond[key] = val/total
+                else:
+                    newCond[self.balanceSpecies] = self.initialMoleFractions[self.balanceSpecies] + 1.0 - total
+
+            self.conditionList.append(newCond)
+            self.scaledConditionList.append(scaledNewCond)
+        return 
+
+def log_conditions(RMG_Memories,index):
+    """
+    log newly generated reactor conditions
+    """
+    if RMG_Memories[index].get_cond() is not None:
+        s = 'conditions choosen for reactor {0} were: '.format(index)
+        for key,item in RMG_Memories[index].get_cond().iteritems():
+            if key == 'T':
+                s += 'T = {0} K, '.format(item)
+            elif key == 'P':
+                s += 'P = {0} bar, '.format(item/1.0e5)
+            else:
+                s += key.label + ' = {0}, '.format(item)
+        
+        logging.info(s)
+    
 class Tee:
     """A simple tee to create a stream which prints to many streams.
     
@@ -1533,7 +1737,7 @@ class Tee:
         for fileobject in self.fileobjects:
             fileobject.write(string)
             
-def getCondaPackage(module):
+def get_condaPackage(module):
     """
     Check the version of any conda package
     """

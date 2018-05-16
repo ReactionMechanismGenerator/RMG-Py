@@ -32,6 +32,7 @@ import logging
 import quantities
 import os
 import numpy
+from copy import deepcopy
 
 from rmgpy import settings
 
@@ -133,36 +134,49 @@ def adjacencyList(string):
 def simpleReactor(temperature,
                   pressure,
                   initialMoleFractions,
+                  nSimsTerm=6,
                   terminationConversion=None,
                   terminationTime=None,
+                  balanceSpecies=None,
                   sensitivity=None,
-                  sensitivityThreshold=1e-3
+                  sensitivityThreshold=1e-3,
+                  sensitivityTemperature=None,
+                  sensitivityPressure=None,
+                  sensitivityMoleFractions=None,
                   ):
     logging.debug('Found SimpleReactor reaction system')
     
-    for value in initialMoleFractions.values():
-        if value < 0:
-            raise InputError('Initial mole fractions cannot be negative.')
+    for key,value in initialMoleFractions.iteritems():
+        if not isinstance(value,list):
+            initialMoleFractions[key] = float(value)
+            if value < 0:
+                raise InputError('Initial mole fractions cannot be negative.')
+        else:
+            if len(value) != 2:
+                raise InputError("Initial mole fraction values must either be a number or a list with 2 entries")
+            initialMoleFractions[key] = [float(value[0]),float(value[1])]
+            if value[0] < 0 or value[1] < 0:
+                raise InputError('Initial mole fractions cannot be negative.')
+            elif value[1] < value[0]:
+                raise InputError('Initial mole fraction range out of order: {0}'.format(key))
+    
+    if not isinstance(temperature,list):
+        T = Quantity(temperature)
+    else:
+        if len(temperature) != 2:
+            raise InputError('Temperature and pressure ranges can either be in the form of (number,units) or a list with 2 entries of the same format')
+        T = [Quantity(t) for t in temperature]
         
-    for spec in initialMoleFractions:
-            initialMoleFractions[spec] = float(initialMoleFractions[spec])
-
-    totalInitialMoles = sum(initialMoleFractions.values())
-    if totalInitialMoles != 1:
-        logging.warning('Initial mole fractions do not sum to one; normalizing.')
-        logging.info('')
-        logging.info('Original composition:')
-        for spec, molfrac in initialMoleFractions.iteritems():
-            logging.info("{0} = {1}".format(spec,molfrac))
-        for spec in initialMoleFractions:
-            initialMoleFractions[spec] /= totalInitialMoles
-        logging.info('')
-        logging.info('Normalized mole fractions:')
-        for spec, molfrac in initialMoleFractions.iteritems():
-            logging.info("{0} = {1}".format(spec,molfrac))
-
-    T = Quantity(temperature)
-    P = Quantity(pressure)
+    if not isinstance(pressure,list):
+        P = Quantity(pressure)
+    else:
+        if len(pressure) != 2:
+            raise InputError('Temperature and pressure ranges can either be in the form of (number,units) or a list with 2 entries of the same format')
+        P = [Quantity(p) for p in pressure]
+        
+        
+    if not isinstance(temperature,list) and not isinstance(pressure,list) and all([not isinstance(x,list) for x in initialMoleFractions.values()]):
+        nSimsTerm=1
     
     termination = []
     if terminationConversion is not None:
@@ -178,26 +192,73 @@ def simpleReactor(temperature,
         if isinstance(sensitivity, str): sensitivity = [sensitivity]
         for spec in sensitivity:
             sensitiveSpecies.append(speciesDict[spec])
-    system = SimpleReactor(T, P, initialMoleFractions, termination, sensitiveSpecies, sensitivityThreshold)
-    rmg.reactionSystems.append(system)
+    
+    if not isinstance(T,list):
+        sensitivityTemperature = T
+    if not isinstance(P,list):
+        sensitivityPressure = P
+    if not any([isinstance(x,list) for x in initialMoleFractions.itervalues()]):
+        sensitivityMoleFractions = deepcopy(initialMoleFractions)
+    if sensitivityMoleFractions is None or sensitivityTemperature is None or sensitivityPressure is None:
+        sensConditions = None
+    else:
+        sensConditions = sensitivityMoleFractions
+        sensConditions['T'] = Quantity(sensitivityTemperature).value_si
+        sensConditions['P'] = Quantity(sensitivityPressure).value_si
 
+    
+    system = SimpleReactor(T, P, initialMoleFractions, nSimsTerm, termination, sensitiveSpecies, sensitivityThreshold,sensConditions)
+    rmg.reactionSystems.append(system)
+    
+    assert balanceSpecies is None or isinstance(balanceSpecies,str), 'balanceSpecies should be the string corresponding to a single species'
+    rmg.balanceSpecies = balanceSpecies
+    if balanceSpecies: #check that the balanceSpecies can't be taken to zero
+        total = 0.0
+        for key,item in initialMoleFractions.iteritems():
+            if key == balanceSpecies:
+                assert not isinstance(item,list), 'balanceSpecies must not have a defined range'
+                xbspcs = item
+            if isinstance(item,list):
+                total += item[1]-item[0]
+
+        if total > xbspcs:
+            raise ValueError('The sum of the differences in the ranged mole fractions is greater than the mole fraction of the balance species, this would require the balanceSpecies mole fraction to be negative in some cases which is not allowed, either reduce the maximum mole fractions or dont use balanceSpecies')
 
 # Reaction systems
 def liquidReactor(temperature,
                   initialConcentrations,
                   terminationConversion=None,
+                  nSimsTerm = 4,
                   terminationTime=None,
                   sensitivity=None,
                   sensitivityThreshold=1e-3,
+                  sensitivityTemperature=None,
+                  sensitivityConcentrations=None,
                   constantSpecies=None):
     
     logging.debug('Found LiquidReactor reaction system')
-    T = Quantity(temperature)
+    
+    if not isinstance(temperature,list):
+        T = Quantity(temperature)
+    else:
+        if len(temperature) != 2:
+            raise InputError('Temperature and pressure ranges can either be in the form of (number,units) or a list with 2 entries of the same format')
+        T = [Quantity(t) for t in temperature]
+    
     for spec,conc in initialConcentrations.iteritems():
-        concentration = Quantity(conc)
-        # check the dimensions are ok
-        # convert to mol/m^3 (or something numerically nice? or must it be SI)
-        initialConcentrations[spec] = concentration.value_si
+        if not isinstance(conc,list):
+            concentration = Quantity(conc)
+            # check the dimensions are ok
+            # convert to mol/m^3 (or something numerically nice? or must it be SI)
+            initialConcentrations[spec] = concentration.value_si
+        else:
+            if len(conc) != 2:
+                raise InputError("Concentration values must either be in the form of (number,units) or a list with 2 entries of the same format")
+            initialConcentrations[spec] = [Quantity(conc[0]),Quantity(conc[1])]
+            
+    if not isinstance(temperature,list) and all([not isinstance(x,list) for x in initialConcentrations.itervalues()]):
+        nSimsTerm=1
+        
     termination = []
     if terminationConversion is not None:
         for spec, conv in terminationConversion.iteritems():
@@ -219,9 +280,18 @@ def liquidReactor(temperature,
             logging.debug("  {0}".format(constantSpecie))
             if not speciesDict.has_key(constantSpecie):
                 raise InputError('Species {0} not found in the input file'.format(constantSpecie))
-             
-            
-    system = LiquidReactor(T, initialConcentrations, termination, sensitiveSpecies, sensitivityThreshold,constantSpecies)
+    
+    if not isinstance(T,list):
+        sensitivityTemperature = T
+    if not any([isinstance(x,list) for x in initialConcentrations.itervalues()]):
+        sensitivityConcentrations = initialConcentrations
+    if sensitivityConcentrations is None or sensitivityTemperature is None:
+        sensConditions = None
+    else:
+        sensConditions = sensitivityConcentrations
+        sensConditions['T'] = Quantity(sensitivityTemperature).value_si
+        
+    system = LiquidReactor(T, initialConcentrations, nSimsTerm, termination, sensitiveSpecies, sensitivityThreshold, sensConditions, constantSpecies)
     rmg.reactionSystems.append(system)
     
 def simulator(atol, rtol, sens_atol=1e-6, sens_rtol=1e-4):

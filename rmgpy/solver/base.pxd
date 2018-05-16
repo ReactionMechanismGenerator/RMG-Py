@@ -112,12 +112,13 @@ cdef class ReactionSystem(DASx):
 
     # methods
     cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list surfaceSpecies=?,
-        list surfaceReactions=?, list pdepNetworks=?, atol=?, rtol=?, sensitivity=?, sens_atol=?, sens_rtol=?, filterReactions=?)
+        list surfaceReactions=?, list pdepNetworks=?, atol=?, rtol=?, sensitivity=?, sens_atol=?, sens_rtol=?, filterReactions=?,
+        dict conditions=?)
 
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, 
         list edgeReactions,list surfaceSpecies, list surfaceReactions,
         list pdepNetworks=?, bool prune=?, bool sensitivity=?, list sensWorksheet=?, object modelSettings=?,
-        object simulatorSettings=?)
+        object simulatorSettings=?, dict conditions=?)
 
     cpdef logRates(self, double charRate, object species, double speciesRate, double maxDifLnAccumNum, object network, double networkRate)
      

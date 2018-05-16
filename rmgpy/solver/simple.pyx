@@ -101,12 +101,27 @@ cdef class SimpleReactor(ReactionSystem):
     a specifcCollider attribyte. E.g. [16, 155, 90]
     """
     cdef public numpy.ndarray pdepSpecificColliderReactionIndices
+    
+    cdef public dict sensConditions
+    
+    cdef public list Trange
+    cdef public list Prange
+    cdef public int nSimsTerm
 
-
-    def __init__(self, T, P, initialMoleFractions, termination, sensitiveSpecies=None, sensitivityThreshold=1e-3):
+    def __init__(self, T, P, initialMoleFractions, nSimsTerm=None, termination=None, sensitiveSpecies=None, sensitivityThreshold=1e-3,sensConditions=None):
         ReactionSystem.__init__(self, termination, sensitiveSpecies, sensitivityThreshold)
-        self.T = Quantity(T)
-        self.P = Quantity(P)
+        
+        
+        if type(T) != list:
+            self.T = Quantity(T)
+        else:
+            self.Trange = [Quantity(t) for t in T]
+            
+        if type(P) != list:
+            self.P = Quantity(P)
+        else:
+            self.Prange = [Quantity(p) for p in P]
+        
         self.initialMoleFractions = initialMoleFractions
 
         self.V = 0 # will be set in initializeModel
@@ -118,14 +133,15 @@ cdef class SimpleReactor(ReactionSystem):
         self.pdepSpecificColliderReactionIndices = None
         self.pdepSpecificColliderKinetics = None
         self.specificColliderSpecies = None
-        
+        self.sensConditions = sensConditions
+        self.nSimsTerm = nSimsTerm
 
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
         return (self.__class__, 
-            (self.T, self.P, self.initialMoleFractions, self.termination))
+            (self.T, self.P, self.initialMoleFractions, self.nSimsTerm, self.termination))
 
 
     def convertInitialKeysToSpeciesObjects(self, speciesDict):
@@ -140,22 +156,24 @@ cdef class SimpleReactor(ReactionSystem):
 
     cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list surfaceSpecies=None,
                           list surfaceReactions=None, list pdepNetworks=None, atol=1e-16, rtol=1e-8, sensitivity=False, 
-                          sens_atol=1e-6, sens_rtol=1e-4, filterReactions=False):
+                          sens_atol=1e-6, sens_rtol=1e-4, filterReactions=False, dict conditions=None):
         """
         Initialize a simulation of the simple reactor using the provided kinetic
         model.
         """
+        
         if surfaceSpecies is None:
             surfaceSpecies = []
         if surfaceReactions is None:
             surfaceReactions = []
-            
+        
+        
         # First call the base class version of the method
         # This initializes the attributes declared in the base class
         ReactionSystem.initializeModel(self, coreSpecies=coreSpecies, coreReactions=coreReactions, edgeSpecies=edgeSpecies, 
                                        edgeReactions=edgeReactions, surfaceSpecies=surfaceSpecies, surfaceReactions=surfaceReactions,
                                        pdepNetworks=pdepNetworks, atol=atol, rtol=rtol, sensitivity=sensitivity, sens_atol=sens_atol, 
-                                       sens_rtol=sens_rtol)
+                                       sens_rtol=sens_rtol,filterReactions=filterReactions,conditions=conditions)
         
         # Set initial conditions
         self.set_initial_conditions()
