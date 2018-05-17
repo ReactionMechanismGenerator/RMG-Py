@@ -633,7 +633,10 @@ class PressureDependenceJob(object):
                 if rxn.kinetics is not None:
                     if isinstance(rxn, LibraryReaction) and 'Reaction library:' not in rxn.kinetics.comment:
                         rxn.kinetics.comment += 'Reaction library: {0!r}'.format(rxn.library)
-                    f.write('    kinetics = {0!r},\n'.format(rxn.kinetics))
+                    if rxn.network_kinetics is not None:
+                        f.write('    kinetics = {0!r},\n'.format(rxn.network_kinetics))
+                    else:
+                        f.write('    kinetics = {0!r},\n'.format(rxn.kinetics))
                 if ts.tunneling is not None:
                     f.write('    tunneling = {0!r},\n'.format(ts.tunneling.__class__.__name__))
                 f.write(')\n\n')

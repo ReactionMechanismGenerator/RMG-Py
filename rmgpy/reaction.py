@@ -74,12 +74,16 @@ class Reaction:
     `products`          :class:`list`               The product species (as :class:`Species` objects)
     'specificCollider'  :class:`Species`            The collider species (as a :class:`Species` object)
     `kinetics`          :class:`KineticsModel`      The kinetics model to use for the reaction
+    `network_kinetics`  :class:`Arrhenius`          The kinetics model to use for PDep network exploration if the `kinetics` attribute is :class:PDepKineticsModel:
     `reversible`        ``bool``                    ``True`` if the reaction is reversible, ``False`` if not
     `transitionState`   :class:`TransitionState`    The transition state
     `duplicate`         ``bool``                    ``True`` if the reaction is known to be a duplicate, ``False`` if not
     `degeneracy`        :class:`double`             The reaction path degeneracy for the reaction
     `pairs`             ``list``                    Reactant-product pairings to use in converting reaction flux to species flux
-    `has_pdep_route`    ``bool``                    ``True`` if the reaction has an additional PDep pathway, ``False`` if not (by default), used for LibraryReactions
+    `allow_pdep_route`  ``bool``                    ``True`` if the reaction has an additional PDep pathway, ``False`` if not (by default), used for LibraryReactions
+    `elementary_high_p` ``bool``                    If ``True``, pressure dependent kinetics will be generated (relevant only for unimolecular library reactions)
+                                                    If ``False`` (by default), this library reaction will not be explored.
+                                                    Only unimolecular library reactions with high pressure limit kinetics should be flagged (not if the kinetics were measured at some relatively low pressure)
     `comment`           ``str``                     A description of the reaction source (optional)
     =================== =========================== ============================
     
@@ -92,13 +96,15 @@ class Reaction:
                  products=None,
                  specificCollider=None,
                  kinetics=None,
+                 network_kinetics=None,
                  reversible=True,
                  transitionState=None,
                  duplicate=False,
                  degeneracy=1,
                  pairs=None,
-                 has_pdep_route=False,
-                 comment=''
+                 allow_pdep_route=False,
+                 elementary_high_p=False,
+                 comment='',
                  ):
         self.index = index
         self.label = label
@@ -107,11 +113,13 @@ class Reaction:
         self.specificCollider = specificCollider
         self._degeneracy = degeneracy
         self.kinetics = kinetics
+        self.network_kinetics = network_kinetics
         self.reversible = reversible
         self.transitionState = transitionState
         self.duplicate = duplicate
         self.pairs = pairs
-        self.has_pdep_route = has_pdep_route
+        self.allow_pdep_route = allow_pdep_route
+        self.elementary_high_p = elementary_high_p
         self.comment = comment
         self.k_effective_cache = {}
 
@@ -127,12 +135,14 @@ class Reaction:
         if self.products is not None: string += 'products={0!r}, '.format(self.products)
         if self.specificCollider is not None: string += 'specificCollider={0!r}, '.format(self.specificCollider)
         if self.kinetics is not None: string += 'kinetics={0!r}, '.format(self.kinetics)
+        if self.network_kinetics is not None: string += 'network_kinetics={0!r}, '.format(self.network_kinetics)
         if not self.reversible: string += 'reversible={0}, '.format(self.reversible)
         if self.transitionState is not None: string += 'transitionState={0!r}, '.format(self.transitionState)
         if self.duplicate: string += 'duplicate={0}, '.format(self.duplicate)
         if self.degeneracy != 1: string += 'degeneracy={0:.1f}, '.format(self.degeneracy)
         if self.pairs is not None: string += 'pairs={0}, '.format(self.pairs)
-        if self.has_pdep_route: string += 'has_pdep_route={0}'.format(self.has_pdep_route)
+        if self.allow_pdep_route: string += 'allow_pdep_route={0}, '.format(self.allow_pdep_route)
+        if self.elementary_high_p: string += 'elementary_high_p={0}, '.format(self.elementary_high_p)
         if self.comment != '': string += 'comment={0!r}, '.format(self.comment)
         string = string[:-2] + ')'
         return string
@@ -167,12 +177,14 @@ class Reaction:
                            self.products,
                            self.specificCollider,
                            self.kinetics,
+                           self.network_kinetics,
                            self.reversible,
                            self.transitionState,
                            self.duplicate,
                            self.degeneracy,
                            self.pairs,
-                           self.has_pdep_route,
+                           self.allow_pdep_route,
+                           self.elementary_high_p,
                            self.comment
                            ))
 
@@ -648,7 +660,19 @@ class Reaction:
             self.kinetics.comment += "\nEa raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si/1000.)
             logging.info("For reaction {1!s} Ea raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si/1000., self))
             self.kinetics.Ea.value_si = 0
-
+        if self.kinetics.isPressureDependent() and self.network_kinetics is not None:
+            Ea = self.network_kinetics.Ea.value_si
+            if H0 >= 0 and Ea < H0:
+                self.network_kinetics.Ea.value_si = H0
+                self.network_kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of" \
+                                                 " reaction.".format(Ea / 1000., H0 / 1000.)
+                logging.info("For reaction {2!s}, Ea of the high pressure limit kinetics raised from {0:.1f} to {1:.1f}"
+                             " kJ/mol to match endothermicity of reaction.".format(Ea / 1000., H0 / 1000., self))
+            if forcePositive and isinstance(self.kinetics, Arrhenius) and self.kinetics.Ea.value_si < 0:
+                self.network_kinetics.comment += "\nEa raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si / 1000.)
+                logging.info("For reaction {1!s} Ea of the high pressure limit kinetics raised from {0:.1f} to 0"
+                             " kJ/mol.".format(self.kinetics.Ea.value_si / 1000.,self))
+                self.kinetics.Ea.value_si = 0
 
     def reverseThisArrheniusRate(self, kForward, reverseUnits):
         """
@@ -669,7 +693,7 @@ class Reaction:
         kr.fitToData(Tlist, klist, reverseUnits, kf.T0.value_si)
         return kr
         
-    def generateReverseRateCoefficient(self):
+    def generateReverseRateCoefficient(self, network_kinetics=False):
         """
         Generate and return a rate coefficient model for the reverse reaction. 
         Currently this only works if the `kinetics` attribute is one of several
@@ -706,6 +730,10 @@ class Reaction:
             return kr
             
         elif isinstance(kf, Arrhenius):
+            return self.reverseThisArrheniusRate(kf, kunits)
+
+        elif network_kinetics and self.network_kinetics is not None:
+            kf = self.network_kinetics
             return self.reverseThisArrheniusRate(kf, kunits)
                     
         elif isinstance (kf, Chebyshev):
@@ -1058,11 +1086,13 @@ class Reaction:
         other.degeneracy = self.degeneracy
         other.specificCollider = self.specificCollider
         other.kinetics = deepcopy(self.kinetics)
+        other.network_kinetics = deepcopy(self.network_kinetics)
         other.reversible = self.reversible
         other.transitionState = deepcopy(self.transitionState)
         other.duplicate = self.duplicate
         other.pairs = deepcopy(self.pairs)
-        other.has_pdep_route = self.has_pdep_route
+        other.allow_pdep_route = self.allow_pdep_route
+        other.elementary_high_p = self.elementary_high_p
         other.comment = deepcopy(self.comment)
         
         return other

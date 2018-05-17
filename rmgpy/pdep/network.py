@@ -219,7 +219,7 @@ class Network:
         
         self.calculateDensitiesOfStates()
         logging.debug('Finished initialization for network {0}.'.format(self.label))
-        logging.debug('The nework now has values of {0}'.format(repr(self)))
+        logging.debug('The network now has values of {0}'.format(repr(self)))
 
     def calculateRateCoefficients(self, Tlist, Plist, method, errorCheck=True):
         
@@ -290,7 +290,7 @@ class Network:
                                 K[t,p,:,:] = 0 * K[t,p,:,:]
                                 self.K = 0 * self.K
         logging.debug('Finished calculating rate coefficients for network {0}.'.format(self.label))
-        logging.debug('The nework now has values of {0}'.format(repr(self)))
+        logging.debug('The network now has values of {0}'.format(repr(self)))
         logging.debug('Master equation matrix found for network {0} is {1}'.format(self.label, K))
         return K
 
@@ -378,7 +378,7 @@ class Network:
             if temperatureChanged or pressureChanged:
                 self.calculateCollisionModel()
         logging.debug('Finished setting conditions for network {0}.'.format(self.label))
-        logging.debug('The nework now has values of {0}'.format(repr(self)))
+        logging.debug('The network now has values of {0}'.format(repr(self)))
 
     def __getEnergyGrains(self, Emin, Emax, grainSize=0.0, grainCount=0):
         """
@@ -619,7 +619,8 @@ class Network:
                 kf_expected = rxn.calculateTSTRateCoefficient(T)
             else:
                 # ILT was used to compute k(E), so use high-P kinetics to compute k(T)
-                kf_expected = rxn.kinetics.getRateCoefficient(T)
+                kf_expected = rxn.kinetics.getRateCoefficient(T) if rxn.network_kinetics is None else\
+                    rxn.network_kinetics.getRateCoefficient(T)
             
             # Determine the expected value of the equilibrium constant (Kc)
             Keq_expected = self.eqRatios[prod] / self.eqRatios[reac] 
@@ -786,7 +787,7 @@ class Network:
         current conditions using the modified strong collision method.
         """
         import rmgpy.pdep.msc as msc
-        logging.debug('Applying modified strong collision method at {0:g} K, {1:g} bar...'.format(self.T, self.P))
+        logging.debug('Applying modified strong collision method at {0:g} K, {1:g} Pa...'.format(self.T, self.P))
         self.K, self.p0 = msc.applyModifiedStrongCollisionMethod(self, efficiencyModel)
         return self.K, self.p0
     
@@ -796,7 +797,7 @@ class Network:
         current conditions using the reservoir state method.
         """
         import rmgpy.pdep.rs as rs
-        logging.debug('Applying reservoir state method at {0:g} K, {1:g} bar...'.format(self.T, self.P))
+        logging.debug('Applying reservoir state method at {0:g} K, {1:g} Pa...'.format(self.T, self.P))
         self.K, self.p0 = rs.applyReservoirStateMethod(self)
         return self.K, self.p0
     
@@ -809,7 +810,7 @@ class Network:
         reduced set of :math:`k(T,P)` values. 
         """
         import rmgpy.pdep.cse as cse
-        logging.debug('Applying chemically-significant eigenvalues method at {0:g} K, {1:g} bar...'.format(self.T, self.P))
+        logging.debug('Applying chemically-significant eigenvalues method at {0:g} K, {1:g} Pa...'.format(self.T, self.P))
         self.K, self.p0 = cse.applyChemicallySignificantEigenvaluesMethod(self, lumpingOrder)
         return self.K, self.p0
     

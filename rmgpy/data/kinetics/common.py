@@ -72,7 +72,7 @@ def saveEntry(f, entry):
 
 
     #Entries for kinetic rules, libraries, training reactions
-    #and depositories will have an Reaction object for its item
+    #and depositories will have a Reaction object for its item
     if isinstance(entry.item, Reaction):
         #Write out additional data if depository or library
         #kinetic rules would have a Group object for its reactants instead of Species
@@ -83,6 +83,10 @@ def saveEntry(f, entry):
                 f.write('    duplicate = {0!r},\n'.format(entry.item.duplicate))
             if not entry.item.reversible:
                 f.write('    reversible = {0!r},\n'.format(entry.item.reversible))
+            if entry.item.allow_pdep_route:
+                f.write('    allow_pdep_route = {0!r},\n'.format(entry.item.allow_pdep_route))
+            if entry.item.elementary_high_p:
+                f.write('    elementary_high_p = {0!r},\n'.format(entry.item.elementary_high_p))
     #Entries for groups with have a group or logicNode for its item
     elif isinstance(entry.item, Group):
         f.write('    group = \n')

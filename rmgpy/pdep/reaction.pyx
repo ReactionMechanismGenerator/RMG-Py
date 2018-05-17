@@ -119,11 +119,11 @@ def calculateMicrocanonicalRateCoefficient(reaction,
         # so let's use the less accurate inverse Laplace transform method
         logging.debug('Calculating microcanonical rate coefficient using ILT method for {0}...'.format(reaction))
         if reactantStatesKnown:
-            kinetics = reaction.kinetics
+            kinetics = reaction.kinetics if reaction.network_kinetics is None else reaction.network_kinetics
             kf = applyInverseLaplaceTransformMethod(reaction.transitionState, kinetics, Elist, Jlist, reacDensStates, T)
             forward = True
         elif productStatesKnown:
-            kinetics = reaction.generateReverseRateCoefficient()
+            kinetics = reaction.generateReverseRateCoefficient(network_kinetics=True)
             kr = applyInverseLaplaceTransformMethod(reaction.transitionState, kinetics, Elist, Jlist, prodDensStates, T)
             forward = False
         else:

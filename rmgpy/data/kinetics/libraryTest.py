@@ -31,10 +31,12 @@
 import unittest
 import os.path
 import shutil
+import logging
 
 from rmgpy import settings
 from rmgpy.data.kinetics.library import LibraryReaction
 from rmgpy.kinetics.model import PDepKineticsModel
+from rmgpy.kinetics import Arrhenius, Troe, PDepArrhenius
 from rmgpy.data.kinetics.database import KineticsDatabase
 from rmgpy.data.kinetics.family import TemplateReaction
 ###################################################
@@ -82,3 +84,33 @@ class TestLibrary(unittest.TestCase):
             self.assertTrue(all([repr(oriRxns[i])==repr(copyRxns[i]) for i in xrange(len(oriRxns))]))
         finally:
             shutil.rmtree(os.path.join(settings['test_data.directory'], 'testing_database','kinetics','libraries','eth-oxcopy'))
+
+    def test_generate_high_p_limit_kinetics(self):
+        """
+        Test that a :class:Arrhenius kinetics object representing the high pressure limit rate
+        is returned from Troe/Lindmann/PDepArrhenius/Chebyshev kinetic classes
+        """
+        libRxns = self.libraries['lib_net'].getLibraryReactions()
+        for rxn in libRxns:
+            self.assertIsNone(rxn.network_kinetics)
+            logging.debug("Processing reaction {0}".format(rxn))
+            success = rxn.generate_high_p_limit_kinetics()
+            if (isinstance(rxn.kinetics, PDepArrhenius) and rxn.kinetics.pressures.value_si[-1] < 9000000)\
+                    or not rxn.isUnimolecular():
+                # generate_high_p_limit_kinetics() should return `False` if the reaction is not unimolecular
+                # or if it is a PDepArrhenius or Chebyshev with Pmax < 90 bar
+                self.assertFalse(success)
+            else:
+                self.assertTrue(success)
+                if isinstance(rxn.kinetics, Arrhenius):
+                    # If the library reaction is already an Arrhenius expression, network_kinetics isn't generated
+                    self.assertIsNone(rxn.network_kinetics)
+                else:
+                    self.assertTrue(isinstance(rxn.network_kinetics, Arrhenius))
+                    if isinstance(rxn.kinetics,Troe):
+                        # This block quantitative tests the "H + CH2 <=> CH3" reaction
+                        # from the test library test_data/testing_database/kinetics/libraries/lib_net/reactions.py
+                        # 1. Check that the T exponent in the modified Arrhenius (the "n") equals to 0
+                        self.assertAlmostEqual(rxn.network_kinetics.n.value_si, 0)
+                        # 2. Check that the pre-exponential factor equals to 6e+8 m^3/(mol*s)
+                        self.assertAlmostEqual(int(rxn.network_kinetics.A.value_si), 6e+8)
