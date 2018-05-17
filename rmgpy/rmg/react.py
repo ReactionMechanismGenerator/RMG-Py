@@ -62,6 +62,7 @@ def react(*spcTuples):
 
     return reactions
 
+
 def reactSpecies(speciesTuple):
     """
     Given a tuple of Species objects, generates all possible reactions
@@ -112,7 +113,6 @@ def deflate(rxns, species, reactantIndices):
             pass
 
 
-
 def reactAll(coreSpcList, numOldCoreSpecies, unimolecularReact, bimolecularReact):
     """
     Reacts the core species list via uni- and bimolecular reactions.
@@ -132,6 +132,7 @@ def reactAll(coreSpcList, numOldCoreSpecies, unimolecularReact, bimolecularReact
 
     rxns = list(react(*spcTuples))
     return rxns
+
 
 def deflateReaction(rxn, molDict):
     """
