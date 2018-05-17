@@ -70,16 +70,11 @@ requirements:
 
 test:
   source_files:
-    - '*'
-  requires:
-    - nose
+    - 'examples/rmg/minimal'
   imports:
     - rmgpy
   commands:
-    - cp $PREFIX/lib/python2.7/site-packages/rmgpy/rmgrc $SRC_DIR [unix]
-    - make -C $SRC_DIR test [unix]
-    - cp %PREFIX%\Lib\site-packages\rmgpy\rmgrc %SRC_DIR% [win]
-    - mingw32-make -C %SRC_DIR% test [win]
+    - rmg.py examples/rmg/minimal/input.py
 
 about:
   home: http://github.com/ReactionMechanismGenerator/RMG-Py
