@@ -16,13 +16,13 @@ spinMultiplicity = 1
 opticalIsomers = 1
 
 energy = {
-    'CBS-QB3': GaussianLog('TolueneEnergy.log')
+    'CBS-QB3': Log('TolueneEnergy.log')
 }
 
-geometry = GaussianLog('TolueneFreq.log')
+geometry = Log('TolueneFreq.log')
 
-frequencies = GaussianLog('TolueneFreq.log')
+frequencies = Log('TolueneFreq.log')
 
 rotors = [
-HinderedRotor(scanLog=GaussianLog('TolueneRot1.log'),pivots=[3,12],top=[12,13,14,15],symmetry=6, fit='best'),
+HinderedRotor(scanLog=Log('TolueneRot1.log'),pivots=[3,12],top=[12,13,14,15],symmetry=6, fit='best'),
 ]

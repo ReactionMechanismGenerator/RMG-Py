@@ -11,11 +11,11 @@ spinMultiplicity = 2
 opticalIsomers = 2
 
 energy = {
-    'M08SO': QchemLog('dimetpropoxy_betasci.out'),    
+    'm08so/mg3s*': Log('dimetpropoxy_betasci.out'),
 }
 
-geometry = QchemLog('dimetpropoxy_betasci.out')
-frequencies = QchemLog('dimetpropoxy_betasci.out')
+geometry = Log('dimetpropoxy_betasci.out')
+frequencies = Log('dimetpropoxy_betasci.out')
 
 frequencyScaleFactor = 0.983
 
@@ -24,8 +24,8 @@ top contains the atoms that are being rotated including one of the atoms from pi
 symmetry is the symmetry number of the scan                                                                                                    
 fit is fit of the scan data. It defaults to 'best', but can also be assigned as 'cosine' or 'fourier' 
 rotors = [
-    HinderedRotor(scanLog=QchemLog('c5h11o1scan2.out'), pivots=[1,3], top=[3,4,5,6], symmetry=3, fit='best'),
-    HinderedRotor(scanLog=QchemLog('c5h11o1scan3.out'), pivots=[1,7], top=[7,8,9,10], symmetry=3, fit='best'),
+    HinderedRotor(scanLog=Log('c5h11o1scan2.out'), pivots=[1,3], top=[3,4,5,6], symmetry=3, fit='best'),
+    HinderedRotor(scanLog=Log('c5h11o1scan3.out'), pivots=[1,7], top=[7,8,9,10], symmetry=3, fit='best'),
 ]
 
 """

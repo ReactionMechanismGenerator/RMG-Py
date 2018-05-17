@@ -30,6 +30,7 @@
 
 import math
 import numpy
+import logging
 import os.path
 from rmgpy.cantherm.common import checkConformerEnergy
 import rmgpy.constants as constants
@@ -163,7 +164,7 @@ class GaussianLog:
         
         return coord, number, mass
 
-    def loadConformer(self, symmetry=None, spinMultiplicity=None, opticalIsomers=1, symfromlog=None):
+    def loadConformer(self, symmetry=None, spinMultiplicity=0, opticalIsomers=1, symfromlog=None, label=''):
         """
         Load the molecular degree of freedom data from a log file created as
         the result of a Gaussian "Freq" quantum chemistry calculation. As
@@ -180,6 +181,11 @@ class GaussianLog:
         f = open(self.path, 'r')
         line = f.readline()
         while line != '':
+
+            # Read the spin multiplicity if not explicitly given
+            if spinMultiplicity == 0 and 'Multiplicity =' in line:
+                spinMultiplicity = int(line.split()[-1])
+                logging.debug('Conformer {0} is assigned a spin multiplicity of {1}'.format(label, spinMultiplicity))
 
             # The data we want is in the Thermochemistry section of the output
             if '- Thermochemistry -' in line:
@@ -236,8 +242,8 @@ class GaussianLog:
                     elif 'Sum of electronic and zero-point Energies=' in line:
                         E0 = float(line.split()[6]) * 4.35974394e-18 * constants.Na
 
-                    # Read spin multiplicity if not explicitly given
-                    elif 'Electronic' in line and inPartitionFunctions and spinMultiplicity is None:
+                    # Read spin multiplicity if above method was unsuccessful
+                    elif 'Electronic' in line and inPartitionFunctions and spinMultiplicity == 0:
                         spinMultiplicity = int(float(line.split()[1].replace('D', 'E')))
 
                     elif 'Log10(Q)' in line:
@@ -402,9 +408,8 @@ class GaussianLog:
         Return the negative frequency from a transition state frequency
         calculation in cm^-1.
         """
-        
+        frequency = None
         frequencies = []
-        
         f = open(self.path, 'r')
         line = f.readline()
         while line != '':
@@ -418,5 +423,6 @@ class GaussianLog:
         frequencies = [float(freq) for freq in frequencies]
         frequencies.sort()
         frequency = [freq for freq in frequencies if freq < 0][0]
-        
+        if frequency is None:
+            raise Exception('Unable to find imaginary frequency in Gaussian output file {0}'.format(self.path))
         return frequency

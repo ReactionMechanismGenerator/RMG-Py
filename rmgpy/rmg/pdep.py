@@ -590,7 +590,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                     # Note that leak reactions are not placed in the edge
                     if all([s in reactionModel.core.species for s in netReaction.reactants]) \
                             and all([s in reactionModel.core.species for s in netReaction.products]):
-                        # Check whether netReaction already exists either in the core as a LibraryReaction
+                        # Check whether netReaction already exists in the core as a LibraryReaction
                         for rxn in reactionModel.core.reactions:
                             if isinstance(rxn, LibraryReaction) \
                                     and rxn.isIsomorphic(netReaction, eitherDirection=True) \
@@ -602,7 +602,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                         else:
                             reactionModel.addReactionToCore(netReaction)
                     else:
-                        # Check whether netReaction already exists either in the core as a LibraryReaction
+                        # Check whether netReaction already exists in the edge as a LibraryReaction
                         for rxn in reactionModel.edge.reactions:
                             if isinstance(rxn, LibraryReaction) \
                                     and rxn.isIsomorphic(netReaction, eitherDirection=True) \

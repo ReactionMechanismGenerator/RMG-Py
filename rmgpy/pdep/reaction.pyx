@@ -209,11 +209,14 @@ def applyRRKMTheory(transitionState,
     # state sum of states that includes tunneling
     conf.sumStates = convolve(conf.densStates, kappa)
     conf.Elist += Elist[0] - E0_TS
-    
-    for r in range(Ngrains):
+
+    E0 = None
+    for r in xrange(Ngrains):
         if conf.sumStates[r] > 0:
             E0 = conf.Elist[r]
             break
+    if E0 is None:
+        raise ValueError, "Could not find a positive sum of states for {0}".format(conf)
     conf.Elist -= E0
     
     sumStates = conf.mapSumOfStates(Elist - E0, Jlist)

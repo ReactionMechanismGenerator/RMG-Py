@@ -62,7 +62,7 @@ from rmgpy.reaction import Reaction
 from rmgpy.transport import TransportData
 
 from rmgpy.cantherm.kinetics import KineticsJob
-from rmgpy.cantherm.statmech import StatMechJob
+from rmgpy.cantherm.statmech import StatMechJob, assign_frequency_scale_factor
 from rmgpy.cantherm.thermo import ThermoJob
 from rmgpy.cantherm.pdep import PressureDependenceJob
 
@@ -96,7 +96,7 @@ def species(label, *args, **kwargs):
         structure = None
         E0 = None
         modes = []
-        spinMultiplicity = 1
+        spinMultiplicity = 0
         opticalIsomers = 1
         molecularWeight = None
         collisionModel = None
@@ -125,7 +125,7 @@ def species(label, *args, **kwargs):
                 raise TypeError('species() got an unexpected keyword argument {0!r}.'.format(key))
             
         if structure: spec.molecule = [structure]
-        spec.conformer = Conformer(E0=E0, modes=modes, spinMultiplicity=spinMultiplicity, opticalIsomers=opticalIsomers)  
+        spec.conformer = Conformer(E0=E0, modes=modes, spinMultiplicity=spinMultiplicity, opticalIsomers=opticalIsomers)
         spec.molecularWeight = molecularWeight
         spec.transportData = collisionModel
         spec.energyTransferModel = energyTransferModel
@@ -317,6 +317,9 @@ def pressureDependence(label,
 def SMILES(smiles):
     return Molecule().fromSMILES(smiles)
 
+def adjacencyList(adj):
+    return Molecule().fromAdjacencyList(adj)
+
 def InChI(inchi):
     return Molecule().fromInChI(inchi)
 
@@ -373,6 +376,7 @@ def loadInputFile(path):
         'pressureDependence': pressureDependence,
         # Miscellaneous
         'SMILES': SMILES,
+        'adjacencyList': adjacencyList,
         'InChI': InChI,
     }
 
@@ -385,8 +389,10 @@ def loadInputFile(path):
 
     modelChemistry = local_context.get('modelChemistry', '')
     if 'frequencyScaleFactor' not in local_context:
-        logging.warning('No frequency scale factor specified in input file; assuming a value of unity.')
-    frequencyScaleFactor = local_context.get('frequencyScaleFactor', 1.0)
+        logging.debug('Assigning a frequencyScaleFactor according to the modelChemistry...')
+        frequencyScaleFactor = assign_frequency_scale_factor(modelChemistry)
+    else:
+        frequencyScaleFactor = local_context.get('frequencyScaleFactor')
     useHinderedRotors = local_context.get('useHinderedRotors', True)
     useAtomCorrections = local_context.get('useAtomCorrections', True)
     useBondCorrections = local_context.get('useBondCorrections', False)

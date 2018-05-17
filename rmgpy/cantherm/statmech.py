@@ -67,7 +67,7 @@ _rdkit_periodic_table = GetPeriodicTable()
 
 ################################################################################
 
-class ScanLog:
+class ScanLog(object):
     """
     Represent a text file containing a table of angles and corresponding
     scan energies.
@@ -156,12 +156,16 @@ class ScanLog:
 
 ################################################################################
 
+
 def hinderedRotor(scanLog, pivots, top, symmetry, fit='best'):
     return [scanLog, pivots, top, symmetry, fit]
+
+
 def freeRotor(pivots,top,symmetry):
     return [pivots,top,symmetry]
 
-class StatMechJob:
+
+class StatMechJob(object):
     """
     A representation of a CanTherm statistical mechanics job. This job is used
     to compute and save the statistical mechanics information for a single
@@ -193,13 +197,12 @@ class StatMechJob:
         """
         Load the statistical mechanics parameters for each conformer from
         the associated files on disk. Creates :class:`Conformer` objects for
-        each conformer and appends them to the list of confomers on the
+        each conformer and appends them to the list of conformers on the
         species object.
         """
         logging.info('Loading statistical mechanics parameters for {0}...'.format(self.species.label))
         
         path = self.path
-        
         TS = isinstance(self.species, TransitionState)
     
         global_context = {
@@ -216,6 +219,7 @@ class StatMechJob:
             'QchemLog': QchemLog,
             'MolproLog': MolproLog,
             'ScanLog': ScanLog,
+            'Log': Log
         }
     
         directory = os.path.abspath(os.path.dirname(path))
@@ -249,7 +253,7 @@ class StatMechJob:
         try:
             spinMultiplicity = local_context['spinMultiplicity']
         except KeyError:
-            raise InputError('Required attribute "spinMultiplicity" not found in species file {0!r}.'.format(path))
+            spinMultiplicity = 0
        
         try:
             opticalIsomers = local_context['opticalIsomers']
@@ -265,14 +269,12 @@ class StatMechJob:
             try:
                 energy = energy[self.modelChemistry]
             except KeyError:
-                raise InputError('Model chemistry {0!r} not found in from dictionary of energy values in species file {1!r}.'.format(self.modelChemistry, path))
-        if isinstance(energy, GaussianLog):
-            energyLog = energy; E0 = None
-            energyLog.path = os.path.join(directory, energyLog.path)
-        elif isinstance(energy, QchemLog):
-            energyLog = energy; E0 = None
-            energyLog.path = os.path.join(directory, energyLog.path)
-        elif isinstance(energy, MolproLog):
+                raise InputError('Model chemistry {0!r} not found in from dictionary of energy values in species file '
+                                 '{1!r}.'.format(self.modelChemistry, path))
+        if isinstance(energy, Log):
+            energy.determine_qm_software(os.path.join(directory, energy.path))
+            energy = energy.software_log
+        if isinstance(energy, (GaussianLog,QchemLog,MolproLog)):
             energyLog = energy; E0 = None
             energyLog.path = os.path.join(directory, energyLog.path)
         elif isinstance(energy, float):
@@ -282,13 +284,21 @@ class StatMechJob:
             geomLog = local_context['geometry']
         except KeyError:
             raise InputError('Required attribute "geometry" not found in species file {0!r}.'.format(path))
-        geomLog.path = os.path.join(directory, geomLog.path)
+        if isinstance(geomLog, Log):
+            geomLog.determine_qm_software(os.path.join(directory, geomLog.path))
+            geomLog = geomLog.software_log
+        else:
+            geomLog.path = os.path.join(directory, geomLog.path)
     
         try:
             statmechLog = local_context['frequencies']
         except KeyError:
             raise InputError('Required attribute "frequencies" not found in species file {0!r}.'.format(path))
-        statmechLog.path = os.path.join(directory, statmechLog.path)
+        if isinstance(statmechLog, Log):
+            statmechLog.determine_qm_software(os.path.join(directory, statmechLog.path))
+            statmechLog = statmechLog.software_log
+        else:
+            statmechLog.path = os.path.join(directory, statmechLog.path)
         
         if 'frequencyScaleFactor' in local_context:
             logging.warning('Ignoring frequency scale factor in species file {0!r}.'.format(path))
@@ -321,8 +331,14 @@ class StatMechJob:
                                     'Please verify that the geometry and Hessian of {0!r} are defined in the same coordinate system'.format(self.species.label))
 
         logging.debug('    Reading molecular degrees of freedom...')
-        conformer = statmechLog.loadConformer(symmetry=externalSymmetry, spinMultiplicity=spinMultiplicity, opticalIsomers=opticalIsomers, symfromlog = symfromlog)
-        
+        conformer = statmechLog.loadConformer(symmetry=externalSymmetry, spinMultiplicity=spinMultiplicity,
+                                              opticalIsomers=opticalIsomers, symfromlog=symfromlog,
+                                              label=self.species.label)
+
+        if conformer.spinMultiplicity == 0:
+            raise ValueError("Could not read spin multiplicity from log file {0},\n"
+                             "please specify the multiplicity in the input file.".format(self.path))
+
         logging.debug('    Reading optimized geometry...')
         coordinates, number, mass = geomLog.loadGeometry()
 
@@ -395,6 +411,9 @@ class StatMechJob:
                 elif len(q) == 5:
                     scanLog, pivots, top, symmetry, fit  = q
                     # Load the hindered rotor scan energies
+                    if isinstance(scanLog, Log):
+                        scanLog.determine_qm_software(os.path.join(directory, scanLog.path))
+                        scanLog = scanLog.software_log
                     if isinstance(scanLog, GaussianLog):
                         scanLog.path = os.path.join(directory, scanLog.path)
                         Vlist, angle = scanLog.loadScanEnergies()
@@ -772,6 +791,41 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds,
 
     return E0
 
+class Log(object):
+    """
+    Represent a general log file.
+    The attribute `path` refers to the location on disk of the log file of interest.
+    A method is provided to determine whether it is a Gaussian, Molpro, or QChem type.
+    """
+
+    def __init__(self, path):
+        self.path = path
+
+    def determine_qm_software(self, fullpath):
+        """
+        Given a path to the log file of a QM software, determine whether it is Gaussian, Molpro, or QChem
+        """
+        f = open(fullpath, 'r')
+        line = f.readline()
+        software_log = None
+        while line != '':
+            if 'gaussian' in line.lower():
+                f.close()
+                software_log = GaussianLog(fullpath)
+                break
+            elif 'qchem' in line.lower():
+                f.close()
+                software_log = QchemLog(fullpath)
+                break
+            elif 'molpro' in line.lower():
+                f.close()
+                software_log = MolproLog(fullpath)
+                break
+            line = f.readline()
+        f.close()
+        self.software_log = software_log
+
+
 def projectRotors(conformer, F, rotors, linear, TS):
     """
     For a given `conformer` with associated force constant matrix `F`, lists of
@@ -993,3 +1047,60 @@ def projectRotors(conformer, F, rotors, linear, TS):
         
     return numpy.sqrt(eig[-Nvib:]) / (2 * math.pi * constants.c * 100)
 
+def assign_frequency_scale_factor(model_chemistry):
+    """
+    Assign the frequency scaling factor according to the model chemistry.
+    Refer to https://comp.chem.umn.edu/freqscale/index.html for future updates of these factors
+    """
+    freq_dict = {'cbs-qb3': 0.99,  # J. Chem. Phys. 1999, 110, 2822–2827
+                 # 'g3': ,
+                 'm08so/mg3s*': 0.983,  # DOI: 10.1021/ct100326h, taken as 'M08-SO/MG3S'
+                 'm06-2x/cc-pvtz': 0.955,  # http://cccbdb.nist.gov/vibscalejust.asp
+                 # 'klip_1': ,
+                 # 'klip_2': ,
+                 # 'klip_3': ,
+                 # 'klip_2_cc': ,
+                 # 'ccsd(t)-f12/cc-pvdz-f12_h-tz': ,
+                 # 'ccsd(t)-f12/cc-pvdz-f12_h-qz': ,
+                 'ccsd(t)-f12/cc-pvdz-f12': 0.979,  # http://cccbdb.nist.gov/vibscalejust.asp, taken as 'ccsd(t)/cc-pvdz'
+                 'ccsd(t)-f12/cc-pvtz-f12': 0.984,  # DOI: 10.1021/ct100326h, taken as 'CCSD(T)-F12a/cc-pVTZ-F12'
+                 'ccsd(t)-f12/cc-pvqz-f12': 0.970,  # http://cccbdb.nist.gov/vibscalejust.asp, taken as 'ccsd(t)/cc-pvqz'
+                 'ccsd(t)-f12/cc-pcvdz-f12': 0.971,  # http://cccbdb.nist.gov/vibscalejust.asp, taken as 'ccsd(t)/cc-pcvdz'
+                 'ccsd(t)-f12/cc-pcvtz-f12': 0.966,
+                 # 'ccsd(t)-f12/cc-pcvqz-f12': ,
+                 # 'ccsd(t)-f12/cc-pvtz-f12(-pp)': ,
+                 # 'ccsd(t)/aug-cc-pvtz(-pp)': ,
+                 'ccsd(t)-f12/aug-cc-pvdz': 0.963,  # http://cccbdb.nist.gov/vibscalejust.asp, taken as 'ccsd(t)/aug-cc-pvdz'
+                 'ccsd(t)-f12/aug-cc-pvtz': 0.970,  # http://cccbdb.nist.gov/vibscalejust.asp, taken as 'ccsd(t)/aug-cc-pvtz'
+                 'ccsd(t)-f12/aug-cc-pvqz': 0.975,  # http://cccbdb.nist.gov/vibscalejust.asp, taken as 'ccsd(t)/aug-cc-pvqz'
+                 # 'b-ccsd(t)-f12/cc-pvdz-f12': ,
+                 # 'b-ccsd(t)-f12/cc-pvtz-f12': ,
+                 # 'b-ccsd(t)-f12/cc-pvqz-f12': ,
+                 # 'b-ccsd(t)-f12/cc-pcvdz-f12': ,
+                 # 'b-ccsd(t)-f12/cc-pcvtz-f12': ,
+                 # 'b-ccsd(t)-f12/cc-pcvqz-f12': ,
+                 # 'b-ccsd(t)-f12/aug-cc-pvdz': ,
+                 # 'b-ccsd(t)-f12/aug-cc-pvtz': ,
+                 # 'b-ccsd(t)-f12/aug-cc-pvqz': ,
+                 'mp2_rmp2_pvdz': 0.953,  # http://cccbdb.nist.gov/vibscalejust.asp, taken as ',p2/cc-pvdz'
+                 'mp2_rmp2_pvtz': 0.950,  # http://cccbdb.nist.gov/vibscalejust.asp, taken as ',p2/cc-pvdz'
+                 'mp2_rmp2_pvqz': 0.962,  # http://cccbdb.nist.gov/vibscalejust.asp, taken as ',p2/cc-pvdz'
+                 'ccsd-f12/cc-pvdz-f12': 0.947,  # http://cccbdb.nist.gov/vibscalejust.asp, taken as ccsd/cc-pvdz
+                 # 'ccsd(t)-f12/cc-pvdz-f12_noscale': ,
+                 # 'g03_pbepbe_6-311++g_d_p': ,
+                 # 'fci/cc-pvdz': ,
+                 # 'fci/cc-pvtz': ,
+                 # 'fci/cc-pvqz': ,
+                 # 'bmk/cbsb7': ,
+                 # 'bmk/6-311g(2d,d,p)': ,
+                 'b3lyp/6-31g**': 0.961,  # http://cccbdb.nist.gov/vibscalejust.asp
+                 'b3lyp/6-311+g(3df,2p)': 0.967,  # http://cccbdb.nist.gov/vibscalejust.asp
+                 }
+    scale_factor = freq_dict.get(model_chemistry.lower(), 1)
+    if scale_factor == 1:
+        logging.warning('No frequency scale factor found for model chemistry {0}; assuming a value of unity.'.format(
+            model_chemistry))
+    else:
+        logging.info('Assigned a frequency scale factor of {0} for model chemistry {1}'.format(
+            scale_factor,model_chemistry))
+    return scale_factor

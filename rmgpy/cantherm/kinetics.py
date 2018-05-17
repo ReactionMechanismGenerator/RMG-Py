@@ -30,6 +30,7 @@
 
 import os.path
 import numpy
+import string
 import logging
 
 from rmgpy.cantherm.output import prettify
@@ -113,12 +114,11 @@ class KineticsJob:
     def Tlist(self, value):
         self._Tlist = quantity.Temperature(value)
         
-    def execute(self, outputFile=None, plot=False):
+    def execute(self, outputFile=None, plot=True):
         """
         Execute the kinetics job, saving the results to the given `outputFile`
         on disk.
         """
-        
         if self.Tlist is not None:
             self.generateKinetics(self.Tlist.value_si)
         else:
@@ -263,24 +263,35 @@ class KineticsJob:
         """
         # Skip this step if matplotlib is not installed
         try:
-            import pylab
+            import matplotlib.pyplot as plt
         except ImportError:
             return
-
-        Tlist = 1000.0/numpy.arange(0.4, 3.35, 0.05)
-        klist = numpy.zeros_like(Tlist)
-        klist2 = numpy.zeros_like(Tlist)
-        for i in range(Tlist.shape[0]):
-            klist[i] = self.reaction.calculateTSTRateCoefficient(Tlist[i])
-            klist2[i] = self.reaction.kinetics.getRateCoefficient(Tlist[i])
+        if self.Tlist is not None:
+            t_list = [t for t in self.Tlist.value_si]
+        else:
+            t_list = 1000.0/numpy.arange(0.4, 3.35, 0.05)
+        klist = numpy.zeros_like(t_list)
+        klist2 = numpy.zeros_like(t_list)
+        for i in xrange(len(t_list)):
+            klist[i] = self.reaction.calculateTSTRateCoefficient(t_list[i])
+            klist2[i] = self.reaction.kinetics.getRateCoefficient(t_list[i])
 
         order = len(self.reaction.reactants)
         klist *= 1e6 ** (order-1)
         klist2 *= 1e6 ** (order-1)
-
-        pylab.semilogy(1000.0 / Tlist, klist, 'ok')
-        pylab.semilogy(1000.0 / Tlist, klist2, '-k')
-        pylab.xlabel('1000 / Temperature (1000/K)')
-        pylab.ylabel('Rate coefficient ({0})'.format(self.kunits))
-        pylab.savefig(os.path.join(outputDirectory, 'kinetics.pdf'))
-        pylab.close()
+        t_list = [1000.0 / t for t in t_list]
+        plt.semilogy(t_list, klist, 'ob', label='TST calculation')
+        plt.semilogy(t_list, klist2, '-k', label='Fitted rate')
+        plt.legend()
+        reaction_str = '{0} {1} {2}'.format(
+            ' + '.join([reactant.label for reactant in self.reaction.reactants]),
+            '<=>', ' + '.join([product.label for product in self.reaction.products]))
+        plt.title(reaction_str)
+        plt.xlabel('1000 / Temperature (1000/K)')
+        plt.ylabel('Rate coefficient ({0})'.format(self.kunits))
+        if not os.path.exists('plots'):
+            os.mkdir('plots')
+        valid_chars = "-_.()<=> %s%s" % (string.ascii_letters, string.digits)
+        filename = 'plots/' + ''.join(c for c in reaction_str if c in valid_chars) + '.pdf'
+        plt.savefig(os.path.join(outputDirectory, filename))
+        plt.close()
