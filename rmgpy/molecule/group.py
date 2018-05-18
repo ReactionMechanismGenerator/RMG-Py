@@ -40,8 +40,10 @@ from .graph import Vertex, Edge, Graph
 from .atomtype import atomTypes, allElements, nonSpecifics, getFeatures
 from .element import PeriodicSystem
 import rmgpy.molecule.molecule as mol
+import rmgpy.molecule.element as elements
 from copy import deepcopy, copy
 from rmgpy.exceptions import ActionError, ImplicitBenzeneError, UnexpectedChargeError
+
 ################################################################################
 
 class GroupAtom(Vertex):
@@ -1042,6 +1044,29 @@ class Group(Graph):
         self.updateConnectivityValues()
         self.updateFingerprint()
 
+    def update_charge(self):
+        """
+        Update the partial charge according to the valence electron, total bond order, lone pairs
+        and radical electrons. This method is used for products of specific families with recipes that modify charges.
+        """
+        for atom in self.atoms:
+            if (len(atom.charge) == 1) and (len(atom.lonePairs) == 1) and (len(atom.radicalElectrons) == 1):
+                # if the charge of the group is not labeled, then no charge update will be
+                # performed. If there multiple charges are assigned, no update either.
+                # Besides, this groupatom should have enough information to be updated
+                atom_type = atom.atomType[0]
+                for element in allElements:
+                    if atom_type is atomTypes[element] or atom_type in atomTypes[element].specific:
+                        bond_order = 0
+                        valence_electron = elements.PeriodicSystem.valence_electrons[element]
+                        for _ , bond in atom.bonds.iteritems():
+                            bond_order += bond.order[0]
+                        lone_pairs = atom.lonePairs[0]
+                        radical_electrons = atom.radicalElectrons[0]
+                        atom.charge[0] = valence_electron - bond_order - 2 * lone_pairs - radical_electrons
+                    else:
+                        # if the group is not specified to specific element, charge will not be updated
+                        pass
 
     def merge(self, other):
         """
