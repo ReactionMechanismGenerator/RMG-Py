@@ -755,6 +755,17 @@ class KineticsFamily(Database):
         """ 
         from rmgpy import settings
 
+        if not isinstance(reference, list):
+            reference = [reference]*len(reactions)
+        if not isinstance(referenceType, list):
+            referenceType = [referenceType]*len(reactions)
+        if not isinstance(shortDesc, list):
+            shortDesc = [shortDesc]*len(reactions)
+        if not isinstance(longDesc, list):
+            longDesc = [longDesc]*len(reactions)
+        if not isinstance(rank, list):
+            rank = [rank]*len(reactions)
+
         training_path = os.path.join(settings['database.directory'], 'kinetics', 'families',
                                      self.label, 'training')
 
@@ -817,11 +828,11 @@ class KineticsFamily(Database):
                 label = str(reaction),
                 item = reaction,
                 data = reaction.kinetics,
-                reference = reference,
-                referenceType = referenceType,
-                shortDesc = unicode(shortDesc),
-                longDesc = unicode(longDesc),
-                rank = rank,
+                reference = reference[i],
+                referenceType = referenceType[i],
+                shortDesc = unicode(shortDesc[i]),
+                longDesc = unicode(longDesc[i]),
+                rank = rank[i],
             )
 
             # Add this entry to the loaded depository so it is immediately usable
