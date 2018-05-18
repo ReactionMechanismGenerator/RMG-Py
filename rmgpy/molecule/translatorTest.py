@@ -363,7 +363,7 @@ multiplicity 3
 11 H u0 p0 c0 {5,S}
         """
 
-        aug_inchi = 'InChI=1S/C5H6/c1-3-5-4-2/h1-3H2/u1,2/lp3,5'
+        aug_inchi = 'InChI=1S/C5H6/c1-3-5-4-2/h1-3H2/u1,2/lp4,5'
         self.compare(adjlist, aug_inchi)
 
     def test_aromatic_resonance_structures(self):

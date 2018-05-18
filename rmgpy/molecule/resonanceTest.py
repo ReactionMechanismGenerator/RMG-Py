@@ -526,7 +526,6 @@ multiplicity 2
         self.assertTrue(result1[0].isIsomorphic(result2[0]))
         self.assertTrue(result1[0].isIsomorphic(result3[0]))
 
-    @work_in_progress
     def testBridgedAromatic(self):
         """Test that we can handle bridged aromatics.
 
