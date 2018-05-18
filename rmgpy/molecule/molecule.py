@@ -212,11 +212,13 @@ class Atom(Vertex):
                     return False
             return True
     
-    def getDescriptor(self):
-        return self.number, self.getAtomConnectivityValue(), self.radicalElectrons, self.lonePairs, self.charge
-
-    def getAtomConnectivityValue(self):
-        return getVertexConnectivityValue(self)
+    def get_descriptor(self):
+        """
+        Return a tuple used for sorting atoms.
+        Currently uses atomic number, connectivity value,
+        radical electrons, lone pairs, and charge
+        """
+        return self.number, -getVertexConnectivityValue(self), self.radicalElectrons, self.lonePairs, self.charge
 
     def isSpecificCaseOf(self, other):
         """
@@ -879,7 +881,7 @@ class Molecule(Graph):
             if vertex.sortingLabel < 0:
                 self.updateConnectivityValues()
                 break
-        self.atoms.sort(key=lambda a: a.getDescriptor(), reverse=True)
+        self.atoms.sort(key=lambda a: a.get_descriptor(), reverse=True)
         for index, vertex in enumerate(self.vertices):
             vertex.sortingLabel = index
 
