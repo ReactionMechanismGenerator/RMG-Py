@@ -1065,7 +1065,12 @@ cdef class ReactionSystem(DASx):
                         logging.info('At time {0:10.4e} s, reached target termination conversion: {1:f} of {2}'.format(self.t,term.conversion,term.species))
                         self.logConversions(speciesIndex, y0)
                         break
-
+                elif isinstance(term, TerminationRateRatio):
+                    if maxCharRate != 0.0 and charRate/maxCharRate < term.ratio:
+                        terminated = True
+                        logging.info('At time {0:10.4e} s, reached target termination RateRatio: {1}'.format(self.t,charRate/maxCharRate))
+                        self.logConversions(speciesIndex, y0)
+                        
             # Increment destination step time if necessary
             if self.t >= 0.9999 * stepTime:
                 stepTime *= 10.0
