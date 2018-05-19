@@ -1236,3 +1236,15 @@ class TerminationConversion:
     def __init__(self, spec=None, conv=0.0):
         self.species = spec
         self.conversion = conv
+        
+class TerminationRateRatio:
+    """
+    Represent a fraction of the maximum characteristic rate of the simulation
+    at which the simulation should be terminated.  This class has one attribute
+    the ratio between the current and maximum characteristic rates at which
+    to terminate
+    """
+    
+    def __init__(self, ratio=0.01):
+        self.ratio = ratio
+        
