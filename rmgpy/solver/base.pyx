@@ -569,7 +569,7 @@ cdef class ReactionSystem(DASx):
         cdef numpy.ndarray[numpy.float64_t,ndim=1] surfaceSpeciesProduction, surfaceSpeciesConsumption
         cdef numpy.ndarray[numpy.float64_t,ndim=1] surfaceTotalDivAccumNums, surfaceSpeciesRateRatios
         cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, coreSpeciesConcentrations
-        cdef double  prevTime, totalMoles, c, volume, RTP, unimolecularThresholdVal, bimolecularThresholdVal
+        cdef double  prevTime, totalMoles, c, volume, RTP, unimolecularThresholdVal, bimolecularThresholdVal, maxCharRate
         cdef bool useDynamicsTemp, firstTime, useDynamics, terminateAtMaxObjects, schanged
         cdef numpy.ndarray[numpy.float64_t, ndim=1] edgeReactionRates
         cdef double reactionRate, production, consumption
@@ -645,7 +645,8 @@ cdef class ReactionSystem(DASx):
         maxNetworkRate = 0.0
         iteration = 0
         conversion = 0.0
-
+        maxCharRate = 0.0
+        
         maxEdgeSpeciesRateRatios = self.maxEdgeSpeciesRateRatios
         maxNetworkLeakRateRatios = self.maxNetworkLeakRateRatios
         forwardRateCoefficients = self.kf
@@ -749,6 +750,9 @@ cdef class ReactionSystem(DASx):
             # Get the characteristic flux
             charRate = sqrt(numpy.sum(self.coreSpeciesRates * self.coreSpeciesRates))
             
+            if charRate > maxCharRate:
+                maxCharRate = charRate
+                
             coreSpeciesRates = numpy.abs(self.coreSpeciesRates)
             edgeReactionRates = self.edgeReactionRates
             coreSpeciesConsumptionRates = self.coreSpeciesConsumptionRates
