@@ -27,10 +27,10 @@ install:
   - yes 'Yes' | $HOME/miniconda/bin/mopac $MOPACKEY > /dev/null
 
 script: 
-  - rmg.py examples/rmg/minimal/input.py
-  - rmg.py examples/rmg/1,3-hexadiene/input.py
-  - rmg.py examples/rmg/liquid_phase/input.py
-  - scripts/thermoEstimator.py examples/thermoEstimator/input.py
-  - rmg.py examples/rmg/heptane-eg5/input.py
-  - rmg.py examples/rmg/ethane-oxidation/input.py
-  - rmg.py examples/rmg/gri_mech_rxn_lib/input.py
+  - rmg.py RMG-Py/examples/rmg/minimal/input.py
+  - rmg.py RMG-Py/examples/rmg/1,3-hexadiene/input.py
+  - rmg.py RMG-Py/examples/rmg/liquid_phase/input.py
+  - thermoEstimator.py RMG-Py/examples/thermoEstimator/input.py
+  - rmg.py RMG-Py/examples/rmg/heptane-eg5/input.py
+  - rmg.py RMG-Py/examples/rmg/ethane-oxidation/input.py
+  - rmg.py RMG-Py/examples/rmg/gri_mech_rxn_lib/input.py
