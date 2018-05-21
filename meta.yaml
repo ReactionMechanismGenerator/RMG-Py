@@ -11,14 +11,14 @@ build:
 
 requirements:
   build:
+    - {{ compiler('c') }}
+  host:
     - boost ==1.56.0
     - cython >=0.25.2
-    - gcc_linux-64 # [linux]
-    - clang_osx-64 # [osx]
     - jinja2
     - lpsolve55
     - numpy
-    - openbabel
+    - openbabel >=2.4.1
     - pydas >=1.0.2
     - pydqed >=1.0.1
     - pyrdl
@@ -29,11 +29,10 @@ requirements:
     - scipy
     - scoop
     - setuptools
-
   run:
     - argparse # [py26]
-    - cairo # [unix]
-    - cairocffi # [unix]
+    - cairo
+    - cairocffi
     - cantera >=2.3.0a3
     - coolprop
     - coverage
@@ -49,8 +48,8 @@ requirements:
     - mock
     - mopac
     - nose
-    - numpy
-    - openbabel
+    - {{ pin_compatible('numpy') }}
+    - openbabel >=2.4.1
     - psutil
     - pydas >=1.0.2
     - pydot ==1.2.2
