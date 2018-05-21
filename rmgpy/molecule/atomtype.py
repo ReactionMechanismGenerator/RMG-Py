@@ -680,8 +680,8 @@ atomTypes['Ar'  ].setActions(incrementBond=[],               decrementBond=[],  
 
 # list of elements that do not have more specific atomTypes
 # these are ordered on priority of picking if we encounter a more general atomType for make
-allElements = ['H', 'C', 'O', 'N', 'S', 'Si', 'Cl', 'Ne', 'Ar', 'He', ]
-nonSpecifics = ['H', 'He', 'Ne', 'Cl', 'Ar', ]
+allElements = ['H', 'C', 'O', 'N', 'S', 'Si', 'Ne', 'Ar', 'He']
+nonSpecifics = ['H', 'He', 'Ne', 'Ar']
 
 for atomType in atomTypes.values():
     for items in [atomType.generic, atomType.specific,
