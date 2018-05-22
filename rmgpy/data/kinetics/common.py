@@ -115,7 +115,7 @@ def saveEntry(f, entry):
         f.write('    kinetics = None,\n')
             
     # Write reference
-    if entry.reference is not None:
+    if entry.reference is not None and entry.reference != '':
         reference = entry.reference.toPrettyRepr()
         lines = reference.splitlines()
         f.write('    reference = {0}\n'.format(lines[0]))

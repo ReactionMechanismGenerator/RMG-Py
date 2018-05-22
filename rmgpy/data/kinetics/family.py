@@ -743,7 +743,7 @@ class KineticsFamily(Database):
         """
         return saveEntry(f, entry)
     
-    def saveTrainingReactions(self, reactions, reference=None, referenceType='', shortDesc='', rank=3):
+    def saveTrainingReactions(self, reactions, reference='', referenceType='', shortDesc='', rank=3):
         """
         This function takes a list of reactions appends it to the training reactions file.  It ignores the existence of
         duplicate reactions.  
@@ -754,6 +754,15 @@ class KineticsFamily(Database):
         For each entry, the long description is imported from the kinetics comment. 
         """ 
         from rmgpy import settings
+        
+        if not isinstance(reference,list):
+            reference = [reference]*len(reactions)
+        if not isinstance(referenceType,list):
+            referenceType = [referenceType]*len(reactions)
+        if not isinstance(shortDesc,list):
+            shortDesc = [shortDesc]*len(reactions)
+        if not isinstance(rank,list):
+            rank = [rank]*len(reactions)
 
         training_path = os.path.join(settings['database.directory'], 'kinetics', 'families', \
             self.label, 'training')
@@ -822,11 +831,11 @@ class KineticsFamily(Database):
                 label = str(reaction),
                 item = reaction,
                 data = reaction.kinetics,
-                reference = reference,
-                referenceType = referenceType,
-                shortDesc = unicode(shortDesc),
+                reference = reference[i],
+                referenceType = referenceType[i],
+                shortDesc = unicode(shortDesc[i]),
                 longDesc = unicode(longDesc),
-                rank = rank,
+                rank = rank[i],
                 )
             
             self.saveEntry(training_file, entry)
