@@ -57,7 +57,7 @@ from rmgpy.molecule.util import retrieveElementCount
 
 ################################################################################
 
-class ThermoJob:
+class ThermoJob(object):
     """
     A representation of a CanTherm thermodynamics job. This job is used to
     compute and save the thermodynamics information for a single species.

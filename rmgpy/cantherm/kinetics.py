@@ -48,7 +48,7 @@ from rmgpy.molecule.draw import MoleculeDrawer, createNewSurface
 
 ################################################################################
 
-class KineticsJob:
+class KineticsJob(object):
     """
     A representation of a CanTherm kinetics job. This job is used to compute 
     and save the high-pressure-limit kinetics information for a single reaction.
