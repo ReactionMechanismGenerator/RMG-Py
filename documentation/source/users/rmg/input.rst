@@ -146,11 +146,32 @@ Kinetics Depositories
 
 Kinetics Families
 -----------------
-In this section users can specify the particular reaction families that they wish to use to generate their model. for example you can use only :file:`Intra_RH_Add_Endocyclic` family to build the model by::
+In this section users can specify the particular reaction families that they wish to use to generate their model.
+This can be specified with any combination of specific families and predefined sets from :file:`RMG-database/input/families/recommended.py`.
 
-	kineticsFamilies = ['Intra_RH_Add_Endocyclic']
+For example, you can use only the :file:`H_Abstraction` family to build the model::
 
-Otherwise, by typing 'default' (and excluding the brackets that are shown in the example above), RMG will use recommended reaction families to generate the mechanism. The recommended reaction families can be found in :file:`RMG-database/input/families/recommended.py`.
+	kineticsFamilies = 'H_Abstraction'
+
+You can also specify multiple families in a list::
+
+	kineticsFamilies = ['H_Abstraction', 'Disproportionation', 'R_Recombination']
+
+To use a predefined set, simply specify its name::
+
+	kineticsFamilies = 'default'
+
+You can use a mix of predefined sets and kinetics families::
+
+	kineticsFamilies = ['default', 'SubstitutionS']
+
+It is also possible to request the inverse of a particular list::
+
+	kineticsFamilies = ['!default', '!SubstitutionS']
+
+This will load all kinetics families except the ones in ``'default'`` and ``'SubstitutionS'``.
+
+Finally, you can also specify ``'all'`` or ``'none'``, which may be useful in certain cases.
 
 
 Kinetics Estimator
