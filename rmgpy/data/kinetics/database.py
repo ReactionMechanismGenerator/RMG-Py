@@ -261,24 +261,45 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
         
     def saveRecommendedFamilies(self, path):
         """ 
-        Save the list of recommended families in a dictionary stored at 
-        `path`/recommended.py
+        Save the recommended families to [path]/recommended.py.
+        The old style was as a dictionary named `recommendedFamilies`.
+        The new style is as multiple sets with different labels.
         """
         import codecs
         
         if not os.path.exists(path): os.mkdir(path)
-        f = codecs.open(os.path.join(path,'recommended.py'), 'w', 'utf-8')
-        f.write('''# This file contains a dictionary of kinetics families.  The families
+
+        with codecs.open(os.path.join(path,'recommended.py'), 'w', 'utf-8') as f:
+            if 'recommendedFamilies' in self.recommendedFamilies:
+                # For backwards compatibility with the old system of recommended families
+                f.write("""# This file contains a dictionary of kinetics families.  The families
 # set to `True` are recommended by RMG and turned on by default by setting
 # kineticsFamilies = 'default' in the RMG input file. Families set to `False` 
 # are not turned on by default because the family is severely lacking in data.
-# These families should only be turned on with caution.''')
-        f.write('\n\n')
-        f.write('recommendedFamilies = {\n')
-        for label in sorted(self.recommendedFamilies.keys()):
-            f.write("'{label}':{value},\n".format(label=label,value=self.recommendedFamilies[label]))
-        f.write('}')
-        f.close()
+# These families should only be turned on with caution.""")
+                f.write('\n\n')
+                f.write('recommendedFamilies = {\n')
+                for label in sorted(self.recommendedFamilies.keys()):
+                    f.write("'{label}':{value},\n".format(label=label,value=self.recommendedFamilies[label]))
+                f.write('}')
+            else:
+                f.write('''#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+This file contains multiple sets of suggested kinetics families for various
+systems of interest. They can be used by including the name of a set in the
+kineticsFamilies part of the input file. Multiple sets can be specified at the
+same time, and union of them will be loaded. These sets can also be specified
+along with individual families. Custom sets can be easily defined in this file 
+and immediately used in input files without any additional changes.
+"""
+''')
+                for name, item in self.recommendedFamilies.iteritems():
+                    f.write('\n{0} = {{\n'.format(name))
+                    for label in sorted(item):
+                        f.write("    '{0}',\n".format(label))
+                    f.write('}\n')
         
     def saveFamilies(self, path):
         """
