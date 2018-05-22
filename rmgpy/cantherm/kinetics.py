@@ -32,6 +32,7 @@ import os.path
 import numpy
 import string
 import logging
+from sensitivity import KineticsSensitivity as sa
 
 from rmgpy.cantherm.output import prettify
 
@@ -57,7 +58,8 @@ class KineticsJob:
                  Tmin=None, 
                  Tmax=None,
                  Tlist=None,
-                 Tcount=0):
+                 Tcount=0,
+                 sensitivity_conditions=None):
         
         if Tmin is not None:
             self.Tmin = quantity.Quantity(Tmin)
@@ -90,6 +92,11 @@ class KineticsJob:
         
         self.reaction = reaction
         self.kunits = None
+
+        if sensitivity_conditions is not None:
+            self.sensitivity_conditions = [quantity.Quantity(condition) for condition in sensitivity_conditions]
+        else:
+            self.sensitivity_conditions = None
     
     @property
     def Tmin(self):
@@ -117,8 +124,7 @@ class KineticsJob:
         
     def execute(self, outputFile=None, plot=True):
         """
-        Execute the kinetics job, saving the results to the given `outputFile`
-        on disk.
+        Execute the kinetics job, saving the results to the given `outputFile` on disk.
         """
         if self.Tlist is not None:
             self.generateKinetics(self.Tlist.value_si)
@@ -128,15 +134,16 @@ class KineticsJob:
             self.save(outputFile)
             if plot:
                 self.plot(os.path.dirname(outputFile))
-        if outputFile is not None:
             self.draw(os.path.dirname(outputFile))
+            if self.sensitivity_conditions is not None:
+                logging.info('\n\nRunning sensitivity analysis...')
+                sa(self, os.path.dirname(outputFile))
         logging.debug('Finished kinetics job for reaction {0}.'.format(self.reaction))
         logging.debug(repr(self.reaction))
     
     def generateKinetics(self,Tlist=None):
         """
-        Generate the kinetics data for the reaction and fit it to a modified
-        Arrhenius model.
+        Generate the kinetics data for the reaction and fit it to a modified Arrhenius model.
         """
         kineticsClass = 'Arrhenius'
         
@@ -295,10 +302,9 @@ class KineticsJob:
         if not os.path.exists('plots'):
             os.mkdir('plots')
         valid_chars = "-_.()<=> %s%s" % (string.ascii_letters, string.digits)
-        filename = 'plots/' + ''.join(c for c in reaction_str if c in valid_chars) + '.pdf'
+        filename = os.path.join('plots', ''.join(c for c in reaction_str if c in valid_chars) + '.pdf')
         plt.savefig(os.path.join(outputDirectory, filename))
         plt.close()
-
 
     def draw(self, outputDirectory, format='pdf'):
         """

@@ -47,7 +47,7 @@ from rmgpy.thermo.thermodata import ThermoData
 from rmgpy.thermo.nasa import NASAPolynomial, NASA
 from rmgpy.thermo.wilhoit import Wilhoit
 
-from rmgpy.kinetics.arrhenius import Arrhenius, ArrheniusEP, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius 
+from rmgpy.kinetics.arrhenius import Arrhenius, ArrheniusEP, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius
 from rmgpy.kinetics.chebyshev import Chebyshev
 from rmgpy.kinetics.falloff import ThirdBody, Lindemann, Troe
 from rmgpy.kinetics.kineticsdata import KineticsData, PDepKineticsData
@@ -266,13 +266,14 @@ def network(label, isomers=None, reactants=None, products=None, pathReactions=No
     )
     networkDict[label] = network
 
-def kinetics(label,Tmin=None, Tmax=None,Tlist=None, Tcount=0):
+def kinetics(label, Tmin=None, Tmax=None, Tlist=None, Tcount=0, sensitivity_conditions=None):
     global jobList, reactionDict
     try:
         rxn = reactionDict[label]
     except KeyError:
         raise ValueError('Unknown reaction label {0!r} for kinetics() job.'.format(label))
-    job = KineticsJob(reaction=rxn,Tmin=Tmin, Tmax=Tmax,Tcount = Tcount,Tlist=Tlist)
+    job = KineticsJob(reaction=rxn, Tmin=Tmin, Tmax=Tmax, Tcount=Tcount, Tlist=Tlist,
+                      sensitivity_conditions=sensitivity_conditions)
     jobList.append(job)
 
 def statmech(label):
