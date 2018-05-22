@@ -569,7 +569,7 @@ cdef class ReactionSystem(DASx):
         cdef numpy.ndarray[numpy.float64_t,ndim=1] surfaceSpeciesProduction, surfaceSpeciesConsumption
         cdef numpy.ndarray[numpy.float64_t,ndim=1] surfaceTotalDivAccumNums, surfaceSpeciesRateRatios
         cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, coreSpeciesConcentrations
-        cdef double  prevTime, totalMoles, c, volume, RTP, unimolecularThresholdVal, bimolecularThresholdVal
+        cdef double  prevTime, totalMoles, c, volume, RTP, unimolecularThresholdVal, bimolecularThresholdVal, maxCharRate
         cdef bool useDynamicsTemp, firstTime, useDynamics, terminateAtMaxObjects, schanged
         cdef numpy.ndarray[numpy.float64_t, ndim=1] edgeReactionRates
         cdef double reactionRate, production, consumption
@@ -645,7 +645,8 @@ cdef class ReactionSystem(DASx):
         maxNetworkRate = 0.0
         iteration = 0
         conversion = 0.0
-
+        maxCharRate = 0.0
+        
         maxEdgeSpeciesRateRatios = self.maxEdgeSpeciesRateRatios
         maxNetworkLeakRateRatios = self.maxNetworkLeakRateRatios
         forwardRateCoefficients = self.kf
@@ -749,6 +750,9 @@ cdef class ReactionSystem(DASx):
             # Get the characteristic flux
             charRate = sqrt(numpy.sum(self.coreSpeciesRates * self.coreSpeciesRates))
             
+            if charRate > maxCharRate:
+                maxCharRate = charRate
+                
             coreSpeciesRates = numpy.abs(self.coreSpeciesRates)
             edgeReactionRates = self.edgeReactionRates
             coreSpeciesConsumptionRates = self.coreSpeciesConsumptionRates
@@ -1061,7 +1065,12 @@ cdef class ReactionSystem(DASx):
                         logging.info('At time {0:10.4e} s, reached target termination conversion: {1:f} of {2}'.format(self.t,term.conversion,term.species))
                         self.logConversions(speciesIndex, y0)
                         break
-
+                elif isinstance(term, TerminationRateRatio):
+                    if maxCharRate != 0.0 and charRate/maxCharRate < term.ratio:
+                        terminated = True
+                        logging.info('At time {0:10.4e} s, reached target termination RateRatio: {1}'.format(self.t,charRate/maxCharRate))
+                        self.logConversions(speciesIndex, y0)
+                        
             # Increment destination step time if necessary
             if self.t >= 0.9999 * stepTime:
                 stepTime *= 10.0
@@ -1236,3 +1245,15 @@ class TerminationConversion:
     def __init__(self, spec=None, conv=0.0):
         self.species = spec
         self.conversion = conv
+        
+class TerminationRateRatio:
+    """
+    Represent a fraction of the maximum characteristic rate of the simulation
+    at which the simulation should be terminated.  This class has one attribute
+    the ratio between the current and maximum characteristic rates at which
+    to terminate
+    """
+    
+    def __init__(self, ratio=0.01):
+        self.ratio = ratio
+        

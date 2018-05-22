@@ -29,6 +29,7 @@ simpleReactor(
         'ethane': 0.000000000001,
     },
     terminationTime=(1e6,'s'),
+    terminationRateRatio=0.01,
     balanceSpecies='N2',
 )
 
@@ -42,6 +43,7 @@ liquidReactor(
         'ethane': 0.000000000001,
     },
     terminationTime=(1e6,'s'),
+    terminationRateRatio=0.01,
 )
 
 liquidReactor(    
@@ -54,6 +56,7 @@ liquidReactor(
     	'ethane': 0.000000000001,
     },
     terminationTime=(1e6,'s'),
+    terminationRateRatio=0.01,
 )
 
 simulator(

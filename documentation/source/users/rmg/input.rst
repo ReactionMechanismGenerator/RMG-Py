@@ -214,9 +214,13 @@ Currently, RMG can only model constant temperature and pressure systems. Future 
 will allow for variable temperature and pressure. To define a reaction system we need to
 define the temperature, pressure and initial mole fractions of the reactant species. The
 initial mole fractions are defined using the label for the species in
-the species block. Every reaction system can have its termination criterion based on
-species conversion or termination time or both. When both termination criterion are specified
-the model generation will stop when either of the termination criterion is satisfied.
+the species block. Reaction system simulations terminate when one of the specified termination
+criteria are satisfied.  Termination can be specied to occur at a specific time, at a specific
+conversion of a given initial species or to occur at a given terminationRateRatio, which is the
+characteristic flux in the system at that time divided by the maximum characteristic flux observed so far
+in the system (measure of how much chemistry is happening at a moment relative to the main chemical process).  
+
+
 
 The following is an example of a simple reactor system::
 
@@ -232,6 +236,7 @@ The following is an example of a simple reactor system::
 			'CH4': 0.9,
 		},
 		terminationTime=(1e0,'s'),
+		terminationRateRatio=0.01,
 		sensitivity=['CH4','H2'],
 		sensitivityThreshold=0.001,
 
