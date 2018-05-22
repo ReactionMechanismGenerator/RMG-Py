@@ -432,6 +432,12 @@ class Atom(Vertex):
             for i in range(action[2]): self.incrementLonePairs()
         elif action[0].upper() == 'LOSE_PAIR':
             for i in range(abs(action[2])): self.decrementLonePairs()
+        elif action[0].upper() == 'GAIN_CHARGE':
+            # no update in atomtype with changing charge so far.
+            pass
+        elif action[0].upper() == 'LOSE_CHARGE':
+            # no update in atomtype with changing charge so far.
+            pass
         else:
             raise gr.ActionError('Unable to update Atom: Invalid action {0}".'.format(action))
 

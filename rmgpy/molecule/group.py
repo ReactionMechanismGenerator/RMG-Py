@@ -286,6 +286,46 @@ class GroupAtom(Vertex):
         # Set the new atom types, removing any duplicates
         self.atomType = list(set(atomType))
 
+    def __gainCharge(self, charge):
+        """
+        Update the atom charge as a result of applying a GAIN_CHARGE action,
+        where `charge` specifies the number of postive charges to gain.
+        """
+
+        chargeNum = []
+
+        if not self.charge:
+            raise ActionError('Unable to update GroupAtom due to GAIN_CHARGE action: Unknown charge status for GroupAtom "{0}".'.format(self.atomType))
+        else:
+            for x in self.charge:
+                chargeNum.append(x + charge)
+            self.charge = chargeNum
+
+        # Have not update __gainCharge to the molecule.atomtype
+        # If more species (recipe) related to this action, we need to consider update atomtype.py
+        # self.atomType = list(set(atomType))
+
+    def __loseCharge(self, charge):
+        """
+        Update the atom charge as a result of applying a LOSE_CHARGE action,
+        where `charge` specifies the number of positive charges to lose.
+        """
+        chargeNum = []
+
+        if not self.charge:
+            raise ActionError(
+                'Unable to update GroupAtom due to GAIN_CHARGE action: Unknown charge status for GroupAtom "{0}".'.format(
+                    self.atomType))
+        else:
+            for x in self.charge:
+                chargeNum.append(x - charge)
+            self.charge = chargeNum
+
+        # Have not update __loseCharge to the molecule.atomtype
+        # If more species (recipe) related to this action, we need to consider update atomtype.py
+        #self.atomType = list(set(atomType))
+        # self.atomType = list(set(atomType))
+
     def applyAction(self, action):
         """
         Update the atom group as a result of applying `action`, a tuple
@@ -308,6 +348,10 @@ class GroupAtom(Vertex):
             self.__gainPair(action[2])
         elif action[0].upper() == 'LOSE_PAIR':
             self.__losePair(action[2])
+        elif action[0].upper() == 'GAIN_CHARGE':
+            self.__gainCharge(action[2])
+        elif action[0].upper() == 'LOSE_CHARGE':
+            self.__loseCharge(action[2])
         else:
             raise ActionError('Unable to update GroupAtom: Invalid action {0}".'.format(action))
 

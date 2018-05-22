@@ -56,6 +56,10 @@ cdef class GroupAtom(Vertex):
 
     cpdef __losePair(self, short radical)
 
+    cpdef __gainCharge(self, short radical)
+
+    cpdef __loseCharge(self, short radical)
+
     cpdef applyAction(self, list action)
 
     cpdef bint equivalent(self, Vertex other) except -2
