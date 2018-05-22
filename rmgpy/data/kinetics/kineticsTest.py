@@ -88,12 +88,11 @@ def tearDownModule():
 
 class TestKineticsDatabase(unittest.TestCase):
 
-    def testLoadFamilies(self):
-        """
-        Test that the loadFamilies function raises the correct exceptions
-        """
-        path = os.path.join(settings['test_data.directory'],'testing_database','kinetics','families')
+    def test_load_families_incorrect(self):
+        """Test invalid methods for loading kinetics families"""
+        path = os.path.join(settings['test_data.directory'], 'testing_database', 'kinetics', 'families')
         database = KineticsDatabase()
+        database.loadRecommendedFamiliesList(os.path.join(path, 'recommended.py'))
 
         with self.assertRaises(DatabaseError):
             database.loadFamilies(path, families='random')
@@ -101,8 +100,53 @@ class TestKineticsDatabase(unittest.TestCase):
             database.loadFamilies(path, families=['!H_Abstraction','Disproportionation'])
         with self.assertRaises(DatabaseError):
             database.loadFamilies(path, families=['fake_family'])
-        with self.assertRaises(DatabaseError):
+
+    def test_load_families_correct(self):
+        """Test valid methods for loading kinetics families."""
+        path = os.path.join(settings['test_data.directory'], 'testing_database', 'kinetics', 'families')
+        database = KineticsDatabase()
+        database.loadRecommendedFamiliesList(os.path.join(path, 'recommended.py'))
+
+        try:
             database.loadFamilies(path, families=[])
+        except DatabaseError:
+            self.fail("Unable to load families using list []")
+
+        try:
+            database.loadFamilies(path, families='none')
+        except DatabaseError:
+            self.fail("Unable to load families using keyword 'none'")
+
+        try:
+            database.loadFamilies(path, families='default')
+        except DatabaseError:
+            self.fail("Unable to load families using keyword 'default'")
+
+        try:
+            database.loadFamilies(path, families=['default', 'pah'])
+        except DatabaseError:
+            self.fail("Unable to load families using list ['default', 'pah']")
+
+        try:
+            database.loadFamilies(path, families=['R_Addition_MultipleBond'])
+        except DatabaseError:
+            self.fail("Unable to load families using list ['R_Addition_MultipleBond']")
+
+        try:
+            database.loadFamilies(path, families=['!H_Abstraction', '!Disproportionation'])
+        except DatabaseError:
+            self.fail("Unable to load families using list ['!H_Abstraction', '!Disproportionation']")
+
+        try:
+            database.loadFamilies(path, families='!pah')
+        except DatabaseError:
+            self.fail("Unable to load families using keyword '!pah'")
+
+        try:
+            database.loadFamilies(path, families=['H_Abstraction', 'pah'])
+        except DatabaseError:
+            self.fail("Unable to load families using list ['H_Abstraction', 'pah']")
+
 
 class TestReactionDegeneracy(unittest.TestCase):
 
