@@ -156,6 +156,8 @@ cdef class Group(Graph):
     
     cpdef updateFingerprint(self)
 
+    cpdef update_charge(self)
+
     cpdef bint isIsomorphic(self, Graph other, dict initialMap=?) except -2
 
     cpdef list findIsomorphism(self, Graph other, dict initialMap=?)

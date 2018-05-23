@@ -1297,12 +1297,19 @@ class KineticsFamily(Database):
                 productStructures.reverse()
 
         # If product structures are Molecule objects, update their atom types
+        # If product structures are Group objects and the reaction is in certain families
+        # (families with charged substances), the charge of structures will be updated
         for struct in productStructures:
             if isinstance(struct, Molecule):
                 struct.update()
-            else:
+            elif isinstance(struct, Group):
                 struct.resetRingMembership()
-
+                if label in ['1,2_insertion_co', 'r_addition_com', 'co_disproportionation',
+                             'intra_no2_ono_conversion', 'lone_electron_pair_bond']:
+                    struct.update_charge()
+            else:
+                raise TypeError('Expecting Molecule or Group object, not {0}'.format(struct.__class__.__name__))
+            
         # Return the product structures
         return productStructures
 
