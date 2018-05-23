@@ -301,7 +301,8 @@ def pressureDependence(label,
                        Pmin=None, Pmax=None, Pcount=0, Plist=None,
                        maximumGrainSize=None, minimumGrainCount=0,
                        method=None, interpolationModel=None,
-                       activeKRotor=True, activeJRotor=True, rmgmode=False):
+                       activeKRotor=True, activeJRotor=True, rmgmode=False,
+                       sensitivity_conditions=None):
     global jobList, networkDict
     if isinstance(interpolationModel, str):
         interpolationModel = (interpolationModel,)
@@ -311,8 +312,7 @@ def pressureDependence(label,
         maximumGrainSize=maximumGrainSize, minimumGrainCount=minimumGrainCount,
         method=method, interpolationModel=interpolationModel,
         activeKRotor=activeKRotor, activeJRotor=activeJRotor,
-        rmgmode=rmgmode,
-    )
+        rmgmode=rmgmode, sensitivity_conditions=sensitivity_conditions)
     jobList.append(job)
 
 def SMILES(smiles):
