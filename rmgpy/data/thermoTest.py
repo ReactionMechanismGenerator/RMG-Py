@@ -326,6 +326,26 @@ multiplicity 2
         thermo = self.database.getAllThermoData(spec)
         self.assertEqual(len(thermo), 1)
 
+    def test_consistent_res_struct_order(self):
+        """Test we have consistent sorting of resonance structures."""
+        # Two species with different initial resonance structure
+        s1 = Species().fromSMILES('CCC[CH]C=CC=CCC')
+        s2 = Species().fromSMILES('CCCC=CC=C[CH]CC')
+
+        # Generate resonance structures
+        s1.generate_resonance_structures()
+        s2.generate_resonance_structures()
+
+        # Generate thermo data
+        t1 = self.database.getThermoDataFromGroups(s1)
+        t2 = self.database.getThermoDataFromGroups(s2)
+        self.assertEqual(t1.H298.value_si, t2.H298.value_si)
+
+        # Check resonance structure order
+        self.assertTrue(s1.molecule[0].isIsomorphic(s2.molecule[0]))
+        self.assertTrue(s1.molecule[1].isIsomorphic(s2.molecule[1]))
+        self.assertTrue(s1.molecule[2].isIsomorphic(s2.molecule[2]))
+
 
 class TestThermoAccuracy(unittest.TestCase):
     """
