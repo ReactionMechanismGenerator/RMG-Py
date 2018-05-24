@@ -2249,6 +2249,13 @@ multiplicity 2
             elif atom.element == 'H':
                 self.assertFalse(atom.props['inRing'])
 
+    def test_get_sorting_int(self):
+        """Test that we can generate a deterministic number for sorting."""
+        mol = Molecule(SMILES='[CH2]C=CC')
+        result = mol.get_sorting_int()
+        self.assertEqual(result, 29415)
+
+
 ################################################################################
 
 if __name__ == '__main__':

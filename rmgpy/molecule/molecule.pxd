@@ -240,4 +240,6 @@ cdef class Molecule(Graph):
 
     cpdef bint isIdentical(self, Molecule other) except -2
 
+    cpdef int get_sorting_int(self)
+
 cdef atom_id_counter

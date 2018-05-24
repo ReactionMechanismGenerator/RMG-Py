@@ -2150,6 +2150,25 @@ class Molecule(Graph):
                 neighbors = self.getNthNeighbor(neighbors, distanceList, ignoreList, n+1)
         return neighbors
 
+    def get_sorting_int(self):
+        """
+        Generate an integer based on the molecular structure which can be used
+        to sort resonance structures. This is a somewhat arbitrary value which
+        does not hold any physical significance. However, it is useful for
+        ensuring deterministic ordering in cases where it is important.
+        """
+        cython.declare(result=int, atom=Atom, descriptor=int, a=Atom, b=Bond)
+        self.update()
+        result = 0
+        for atom in self.atoms:
+            # Properties of the atom
+            descriptor = atom.number + atom.radicalElectrons + atom.lonePairs
+            # Properties of the neighbors
+            descriptor += sum([a.sortingLabel * int(10 * b.order) for a, b in atom.bonds.iteritems()])
+            # Factor in atom order
+            result += 2 ** atom.sortingLabel * descriptor
+        return result % (2 ** 15)
+
 
 # this variable is used to name atom IDs so that there are as few conflicts by 
 # using the entire space of integer objects
