@@ -1161,7 +1161,8 @@ class ThermoDatabase(object):
                     
                     if len(thermo) > 1:
                         # Sort thermo first by the priority, then by the most stable H298 value
-                        thermo = sorted(thermo, key=lambda x: (x[0], x[1])) 
+                        # and finally by the sorting int, which is arbitrary but deterministic
+                        thermo = sorted(thermo, key=lambda x: (x[0], x[1], x[2].get_sorting_int()))
                         for i in range(len(thermo)): 
                             logging.debug("Resonance isomer {0} {1} gives H298={2:.0f} J/mol".format(i+1, thermo[i][2].toSMILES(), thermo[i][1]))
                         # Save resonance isomers reordered by their thermo
@@ -1190,8 +1191,9 @@ class ThermoDatabase(object):
                         thermo.append((tdata.getEnthalpy(298.), molecule, tdata))
                 
                 if thermo:
-                    # Sort thermo by the most stable H298 value when choosing between thermoLibrary values
-                    thermo = sorted(thermo, key=lambda x: x[0])
+                    # Sort thermo by the most stable H298 value followed by the sorting int
+                    # when choosing between thermoLibrary values
+                    thermo = sorted(thermo, key=lambda x: (x[0], x[1].get_sorting_int()))
                     for i in range(len(thermo)): 
                         logging.debug("Resonance isomer {0} {1} gives H298={2:.0f} J/mol".format(i+1, thermo[i][1].toSMILES(), thermo[i][0]))
                     # Save resonance isomers reordered by their thermo
@@ -1352,6 +1354,8 @@ class ThermoDatabase(object):
             if match is not None:
                 break
         if match is not None:
+            # Sort the resonance structures first to ensure deterministic order
+            species.molecule.sort(key=lambda x: x.get_sorting_int())
             # Move the matched molecule to the first position in the list
             species.molecule.remove(molecule)
             species.molecule.insert(0, molecule)
@@ -1378,44 +1382,44 @@ class ThermoDatabase(object):
             tdata = self.estimateThermoViaGroupAdditivity(molecule)
             thermo.append(tdata)
 
-        indices = self.prioritizeThermo(species, thermo)
+        thermoData = self.prioritizeThermo(species, thermo)
         
-        species.molecule = [species.molecule[ind] for ind in indices]
-        
-        thermoData = thermo[indices[0]]
         findCp0andCpInf(species, thermoData)
         return thermoData
 
-    def prioritizeThermo(self, species, thermoDataList):
+    def prioritizeThermo(self, species, thermo_data_list):
         """
         Use some metrics to reorder a list of thermo data from best to worst.
-        Return a list of indices with the desired order associated with the index of thermo from the data list.
+        The molecule list in input species object is reordered in place.
+        Returns the best thermo data result.
         """
         if len(species.molecule) > 1:
             # Go further only if there is more than one isomer
             if species.molecule[0].isCyclic():
                 # Special treatment for cyclic compounds
                 entries = []
-                for thermo in thermoDataList:
-                    ringGroups, polycyclicGroups = self.getRingGroupsFromComments(thermo)
+                for thermo, molecule in zip(thermo_data_list, species.molecule):
+                    ring_groups, polycyclic_groups = self.getRingGroupsFromComments(thermo)
                     
                     # Use rank as a metric for prioritizing thermo. 
                     # The smaller the rank, the better.
-                    sumRank = numpy.sum([3 if entry.rank is None else entry.rank for entry in ringGroups + polycyclicGroups])
-                    entries.append((thermo, sumRank))
+                    sum_rank = numpy.sum([3 if entry.rank is None else entry.rank for entry in ring_groups + polycyclic_groups])
+                    entries.append((thermo, molecule, sum_rank))
                 
                 # Sort first by rank, then by enthalpy at 298 K
-                entries = sorted(entries, key=lambda entry: (entry[1], entry[0].getEnthalpy(298.)))
-                indices = [thermoDataList.index(entry[0]) for entry in entries]
-                
+                entries.sort(key=lambda x: (x[2], x[0].getEnthalpy(298.), x[1].get_sorting_int()))
             else:
                 # For noncyclics, default to original algorithm of ordering thermo based on the most stable enthalpy
-                H298 = numpy.array([t.getEnthalpy(298.) for t in thermoDataList])
-                indices = H298.argsort()
+                entries = sorted(zip(thermo_data_list, species.molecule),
+                                 key=lambda x: (x[0].getEnthalpy(298.), x[1].get_sorting_int()))
         else:
-            indices = [0]
+            entries = zip(thermo_data_list, species.molecule)
 
-        return indices
+        species.molecule = [x[1] for x in entries]
+
+        thermo_data = entries[0][0]
+
+        return thermo_data
 
     def estimateRadicalThermoViaHBI(self, molecule, stableThermoEstimator ):
         """
