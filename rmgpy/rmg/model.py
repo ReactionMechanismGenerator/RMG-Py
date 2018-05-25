@@ -393,34 +393,16 @@ class CoreEdgeReactionModel:
         for rxn0 in shortlist:
             rxn_id0 = generateReactionId(rxn0)
 
-            if (rxn_id == rxn_id0) and isinstance(familyObj, KineticsLibrary):
-                # If the reaction comes from a kinetics library, then we can 
-                # retain duplicates if they are marked
-                if areIdenticalSpeciesReferences(rxn, rxn0) and not rxn.duplicate:
+            if rxn_id == rxn_id0 and areIdenticalSpeciesReferences(rxn, rxn0):
+                if isinstance(familyObj, KineticsLibrary) or isinstance(familyObj, KineticsFamily):
+                    if not rxn.duplicate:
+                        return True, rxn0
+                else:
                     return True, rxn0
-            elif ((rxn_id == rxn_id0) or (rxn_id == rxn_id0[::-1])) and \
-                        isinstance(familyObj, KineticsFamily):
-                # ensure TemplateReactions have the same templates and families in order
-                # to classify this as existing reaction. Also checks for reverse
-                # direction matching. Marks duplicate if identical species and different
-                # templates or families
-                if areIdenticalSpeciesReferences(rxn, rxn0):
-                    if rxn.family == rxn0.family:
-                        equal_templates = frozenset(rxn.template) == frozenset(rxn0.template)
-                        # check reverse template
-                        if not equal_templates and familyObj.ownReverse and \
-                                    rxn.reverse is not None:
-                            equal_templates = frozenset(rxn.reverse.template) == frozenset(rxn0.template)
-                        if equal_templates:
-                            return True, rxn0
-                        else:
-                            rxn.duplicate = True
-                            rxn0.duplicate = True
-                    else:
-                        rxn.duplicate = True
-                        rxn0.duplicate = True
-            elif (rxn_id == rxn_id0):
-                if areIdenticalSpeciesReferences(rxn, rxn0):
+            elif (isinstance(familyObj, KineticsFamily)
+                  and rxn_id == rxn_id0[::-1]
+                  and areIdenticalSpeciesReferences(rxn, rxn0)):
+                if not rxn.duplicate:
                     return True, rxn0
 
         # Now check seed mechanisms

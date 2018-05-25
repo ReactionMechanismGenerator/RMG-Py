@@ -231,6 +231,46 @@ entry(
 )
 
 entry(
+    index = 28,
+    label = "Cd_H",
+    group =
+"""
+1 *1 C     u0 {2,D} {3,S} {4,S}
+2    [C,N] u0 {1,D}
+3 *2 H     u0 {1,S}
+4    R     u0 {1,S}
+""",
+    kinetics = None,
+)
+
+entry(
+    index = 40,
+    label = "Cb_H",
+    group =
+"""
+1 *1 Cb       u0 {2,B} {3,B} {4,S}
+2    [Cb,Cbf] u0 {1,B}
+3    [Cb,Cbf] u0 {1,B}
+4 *2 H        u0 {1,S}
+""",
+    kinetics = None,
+)
+
+entry(
+    index = 60,
+    label = "Cs_H",
+    group =
+"""
+1 *1 C u0 {2,S} {3,S} {4,S} {5,S}
+2 *2 H u0 {1,S}
+3    R u0 {1,S}
+4    R u0 {1,S}
+5    R u0 {1,S}
+""",
+    kinetics = None,
+)
+
+entry(
     index = 63,
     label = "C/H3/Cs",
     group = 
@@ -286,9 +326,12 @@ L1: X_H_or_Xrad_H_Xbirad_H_Xtrirad_H
         L3: NH_singlet_H
     L2: Xrad_H
     L2: X_H
-        L3: C/H3/Cs
-        L3: C/H3/Cdot
-        L3: C/H3/Cd
+        L3: Cd_H
+        L3: Cb_H
+        L3: Cs_H
+            L4: C/H3/Cs
+            L4: C/H3/Cdot
+            L4: C/H3/Cd
 L1: Y_rad_birad_trirad_quadrad
     L2: Y_1centerquadrad
         L3: C_quintet
