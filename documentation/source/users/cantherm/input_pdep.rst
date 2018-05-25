@@ -696,6 +696,7 @@ Parameter                                          Description
 ``Tmin``/``Tmax``/``Tcount`` **or** ``Tlist``      Define temperatures at which to compute (and output) :math:`k(T,P)`
 ``Pmin``/``Pmax``/``Pcount`` **or** ``Plist``      Define pressures at which to compute (and output) :math:`k(T,P)`
 ``maximumGrainSize`` **and** ``minimumGrainCount`` Defines fineness of energy grains used in master equation calculations.
+``sensitivity_conditions``                         Specifies the conditions at which to run a network sensitivity analysis.
 ================================================== ====================================================================================================================================================
 
 **Temperature and Pressure Ranges**
@@ -713,7 +714,8 @@ Determine the fineness of the energy grains to be used in the master equation ca
 the ``maximumGrainSize``, and the ``minimumGrainCount``.
 
 
-An example of the algorithm parameters function for the acetyl + O2 network is shown below. ::
+An example of the algorithm parameters function for the acetyl + O2 network is shown below.
+This example also includes the ``sensitivity_conditions`` attribute which invokes a sensitivity analysis calculation::
 
     pressureDependence(
         label='acetyl + O2',
@@ -730,7 +732,13 @@ An example of the algorithm parameters function for the acetyl + O2 network is s
         #interpolationModel = ('pdeparrhenius'),
         #activeKRotor = True, 
         activeJRotor = True,
+        sensitivity_conditions = [[(1000, 'K'), (1, 'bar')], [(1500, 'K'), (10, 'bar')]]
     )
+
+The output of a sensitivity analysis is saved into a ``sensitivity`` folder in the output directory. A text file, named
+with the network label, delineates the semi-normalized sensitivity coefficients ``dln(r)/dE0`` in units of ``mol/J``
+for all network reactions (both directions if reversible) at all requested conditions. Horizontal bar figures are
+automatically generated per network reaction, showing the semi-normalized sensitivity coefficients at all conditions.
 
 Thermodynamics Computations
 ===========================
