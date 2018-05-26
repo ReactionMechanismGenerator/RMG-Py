@@ -51,6 +51,26 @@ cdef class Arrhenius(KineticsModel):
 
     cpdef ArrheniusEP toArrheniusEP(self, double alpha=?, double dHrxn=?)
 
+    cpdef EArrhenius toEArrhenius(self)
+
+################################################################################
+
+cdef class EArrhenius(KineticsModel):
+
+    cdef public ScalarQuantity _A
+    cdef public ScalarQuantity _n
+    cdef public ScalarQuantity _Ea
+
+    cpdef double getRateCoefficient(self, double T, double P=?) except -1
+
+    cpdef fitToData(self, numpy.ndarray Tlist, numpy.ndarray klist, str kunits)
+
+    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
+
+    cpdef changeRate(self, double factor)
+
+    cpdef Arrhenius toArrhenius(self)
+
 ################################################################################
 
 cdef class ArrheniusEP(KineticsModel):

@@ -40,10 +40,10 @@ cdef class Arrhenius(KineticsModel):
     A kinetics model based on the (modified) Arrhenius equation. The attributes
     are:
 
-    =============== =============================================================
+    =============== ====================================================================================
     Attribute       Description
-    =============== =============================================================
-    `A`             The preexponential factor
+    =============== ====================================================================================
+    `A`             The pre-exponential factor
     `T0`            The reference temperature
     `n`             The temperature exponent
     `Ea`            The activation energy
@@ -52,7 +52,7 @@ cdef class Arrhenius(KineticsModel):
     `Pmin`          The minimum pressure at which the model is valid, or zero if unknown or undefined
     `Pmax`          The maximum pressure at which the model is valid, or zero if unknown or undefined
     `comment`       Information about the model (e.g. its source)
-    =============== =============================================================
+    =============== ====================================================================================
     
     """
     
@@ -276,6 +276,178 @@ cdef class Arrhenius(KineticsModel):
                           Pmax = self.Pmax,
                           comment = self.comment)
         return aep
+
+    cpdef EArrhenius toEArrhenius(self):
+        """
+        Converts an Arrhenius object to an EArrhenius object
+        """
+        self.comment += 'Converted to an e-Arrhenius from an Arrhenius, '
+        ea = EArrhenius(Tmin=self.Tmin, Tmax=self.Tmax, Pmin=self.Pmin, Pmax=self.Pmax, comment=self.comment)
+        if self.Tmin is None or self.Tmax is None:
+            raise ValueError, "Both Tmin and Tmax of the Arrhenius object must be defined for the conversion into" \
+                              " an e-Arrhenius object."
+        Tdata = numpy.arange(self.Tmin.value_si, self.Tmax.value_si, (self.Tmax.value_si - self.Tmin.value_si) / 50)
+        kdata = numpy.zeros_like(Tdata)
+        for i, t in enumerate(Tdata):
+            kdata[i] = self.getRateCoefficient(t)
+        ea.fitToData(Tdata, kdata, kunits=self.A.units)
+        return ea
+
+################################################################################
+
+cdef class EArrhenius(KineticsModel):
+    """
+    A kinetics model based on the exponentially-modified Arrhenius equation (or e-Arrhenius).
+
+    k = A * exp(n * exp(-Ea/RT))
+
+    See Eq. (7) in Table 2 of:
+    D.S. Firaha, M. Dontgen, B. Berkels, K. Leonhard,
+    "Pressure-dependent rate constant predictions utilizing the inverse Laplace Transform:
+    A victim of deficient input data",
+    ACS Omega, 2018
+
+    The attributes are:
+
+    =============== ====================================================================================
+    Attribute       Description
+    =============== ====================================================================================
+    `A`             The pre-exponential factor
+    `n`             The minor pre-exponential factor
+    `Ea`            The activation energy
+    `Tmin`          The minimum temperature at which the model is valid, or zero if unknown or undefined
+    `Tmax`          The maximum temperature at which the model is valid, or zero if unknown or undefined
+    `Pmin`          The minimum pressure at which the model is valid, or zero if unknown or undefined
+    `Pmax`          The maximum pressure at which the model is valid, or zero if unknown or undefined
+    `comment`       Information about the model (e.g. its source)
+    =============== ====================================================================================
+    """
+
+    def __init__(self, A=None, n=None, Ea=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
+        self.A = A
+        self.n = n
+        self.Ea = Ea
+
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the e-Arrhenius object.
+        """
+        string = 'EArrhenius(A={0!r}, n={1!r}, Ea={2!r}'.format(self.A, self.n, self.Ea)
+        if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
+        if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
+        if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
+        if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
+        string += ')'
+        return string
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an Arrhenius object.
+        """
+        return (EArrhenius, (self.A, self.n, self.Ea, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
+
+    property A:
+        """The pre-exponential factor"""
+        def __get__(self):
+            return self._A
+        def __set__(self, value):
+            self._A = quantity.RateCoefficient(value)
+
+    property n:
+        """The  minor pre-exponential factor"""
+        def __get__(self):
+            return self._n
+        def __set__(self, value):
+            self._n = quantity.Dimensionless(value)
+
+    property Ea:
+        """The activation energy"""
+        def __get__(self):
+            return self._Ea
+        def __set__(self, value):
+            self._Ea = quantity.Energy(value)
+
+    cpdef double getRateCoefficient(self, double T, double P=0.0) except -1:
+        """
+        Return the rate coefficient in the appropriate combination of m^3, 
+        mol, and s at temperature `T` in K. 
+        """
+        cdef double A, n, Ea, T0
+        A = self._A.value_si
+        n = self._n.value_si
+        Ea = self._Ea.value_si
+        return A * exp(n * exp(-Ea / (constants.R * T)))
+
+    cpdef fitToData(self, numpy.ndarray Tlist, numpy.ndarray klist, str kunits):
+        """
+        Fit the Arrhenius parameters to a set of rate coefficient data `klist`
+        in units of `kunits` corresponding to a set of temperatures `Tlist` in 
+        K. A non-linear least-squares fit is used, which guarantees that the 
+        resulting parameters provide the best possible approximation to the data.
+        """
+        import scipy.stats
+        from scipy.optimize import curve_fit
+        from .common import fit_func
+
+        assert len(Tlist) == len(klist), "Length of temperatures and rates must be the same"
+        if len(Tlist) < 4:
+            raise KineticsError('Not enough degrees of freedom to fit this e-Arrhenius expression')
+        
+        popt, pcov = curve_fit(fit_func, Tlist, numpy.log(numpy.array(klist)),
+                               p0=[1.0e-10,10.0,1000.0], maxfev=100000,
+                               bounds=([0,-1000,-numpy.inf],[numpy.inf,1000,numpy.inf]))
+
+        self.A = (popt[0], kunits)
+        self.n = popt[1]
+        self.Ea = (popt[2] * 0.001, 'kJ/mol')
+
+        # Obtain parameter uncertainties from covarianace matrix `pcov`
+        count = klist.size
+        t = scipy.stats.t.ppf(0.975, count - 3)
+        self.Tmin = (numpy.min(Tlist),'K')
+        self.Tmax = (numpy.max(Tlist),'K')
+        self.comment += 'Fitted to {0:d} data points; dA = *|/ {1:g}, dn = +|- {2:g}, dEa = +|- {3:g} kJ/mol'.format(
+            len(Tlist), exp(sqrt(pcov[0,0])), sqrt(pcov[1,1]), sqrt(pcov[2,2]) * 0.001)
+
+        return self
+
+    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2:
+        """
+        Returns ``True`` if kinetics matches that of another kinetics model. Must match temperature
+        range of kinetics model, as well as parameters: A, n, Ea. Otherwise returns ``False``.
+        """
+        if not isinstance(otherKinetics,EArrhenius):
+            return False
+        if not KineticsModel.isIdenticalTo(self, otherKinetics):
+            return False
+        if not (self.A.equals(otherKinetics.A) and self.n.equals(otherKinetics.n)
+                and self.Ea.equals(otherKinetics.Ea)):
+            return False
+        return True
+
+    cpdef changeRate(self, double factor):
+        """
+        Changes A factor in Arrhenius expression by multiplying it by a ``factor``.
+        """
+        self._A.value_si *= factor
+
+    cpdef Arrhenius toArrhenius(self):
+        """
+        Converts an EArrhenius object to an Arrhenius object
+        """
+        self.comment += 'Converted to an Arrhenius from an e-Arrhenius, '
+        arr = Arrhenius(Tmin=self.Tmin, Tmax=self.Tmax, Pmin=self.Pmin, Pmax=self.Pmax, comment=self.comment)
+        if self.Tmin is None or self.Tmax is None:
+            raise ValueError, "Both Tmin and Tmax of the Arrhenius object must be defined for the conversion into" \
+                              " an e-Arrhenius object."
+        Tdata = numpy.arange(self.Tmin.value_si, self.Tmax.value_si, (self.Tmax.value_si - self.Tmin.value_si) / 50)
+        kdata = numpy.zeros_like(Tdata)
+        for i, t in enumerate(Tdata):
+            kdata[i] = self.getRateCoefficient(t)
+        arr.fitToData(Tdata, kdata, kunits=self.A.units)
+        return arr
 ################################################################################
 
 cdef class ArrheniusEP(KineticsModel):
