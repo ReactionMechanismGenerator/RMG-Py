@@ -986,3 +986,49 @@ multiplicity 3
                                     reaction.degeneracy / rxn.degeneracy)
 
         self.assertEqual(degeneracies_found, set([3]))
+
+    def testGenerateIsotopeReactionsLimitedLabeling(self):
+        """
+        shows that all isotope reactions are created with generateIsotopeReactions
+        with limits of two isotopes per molecule
+        """
+        max_number_labels = 1
+        methyl = Species().fromSMILES('[CH3]')
+        methyl_isotopologues = [methyl] + generate_isotopomers(methyl,max_number_labels)
+        methane = Species().fromSMILES('C')
+        methane_isotopologues = [methane] + generate_isotopomers(methane,max_number_labels)
+        ethyl = Species().fromSMILES('C[CH2]')
+        ethyl_isotopologues = [ethyl] + generate_isotopomers(ethyl,max_number_labels)
+        ethane = Species().fromSMILES('CC')
+        ethane_isotopologues = [ethane] + generate_isotopomers(ethane,max_number_labels)
+
+        self.assertEqual(len(methyl_isotopologues),2)
+        self.assertEqual(len(methane_isotopologues),2)
+        self.assertEqual(len(ethane_isotopologues),2)
+        self.assertEqual(len(ethyl_isotopologues),3)
+
+        reaction = TemplateReaction(reactants = [ethyl,methane],
+                                    products = [ethane,methyl],
+                                    family = 'H_Abstraction',
+                                    template = ['C/H4', 'Y_rad'],
+                                    degeneracy = 4)
+        reaction.kinetics = Arrhenius(A=(1e5,'cm^3/(mol*s)'),Ea=(0,'J/mol'))
+        isotope_list = [methyl_isotopologues,
+                        methane_isotopologues,
+                        ethyl_isotopologues,
+                        ethane_isotopologues]
+
+        new_reactions = generate_isotope_reactions([reaction], isotope_list)
+
+        self.assertEqual(len(new_reactions), 6)
+
+        degeneracies_found = set()
+        for rxn in new_reactions:
+            self.assertEqual(rxn.template, reaction.template)
+            degeneracies_found.add(rxn.degeneracy)
+            self.assertIsNotNone(rxn.kinetics,'kinetics not obtained for reaction {}.'.format(rxn))
+            self.assertAlmostEqual(reaction.kinetics.getRateCoefficient(298),
+                                   rxn.kinetics.getRateCoefficient(298) *\
+                                    reaction.degeneracy / rxn.degeneracy)
+
+        self.assertEqual(degeneracies_found, set([4]))

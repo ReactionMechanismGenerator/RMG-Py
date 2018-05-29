@@ -1172,7 +1172,7 @@ class Molecule(Graph):
         for atom in self.atoms:
             symbol = atom.element.symbol
             isotope = atom.element.isotope
-            key = symbol if isotope == -1 else (symbol, isotope)
+            key = symbol
             if key in element_count:
                 element_count[key] += 1
             else:
@@ -1246,7 +1246,7 @@ class Molecule(Graph):
         # It only makes sense to compare a Molecule to a Group for subgraph
         # isomorphism, so raise an exception if this is not what was requested
         if not isinstance(other, gr.Group):
-            raise TypeError('Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
+            raise TypeError('Got a {0} object for parameter "other", when a Group object is required.'.format(other.__class__))
         group = other
         
         # Check multiplicity
