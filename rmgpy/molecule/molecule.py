@@ -1656,13 +1656,13 @@ class Molecule(Graph):
         Hbonds = self.find_H_bonds()
         for i,bd1 in enumerate(Hbonds):
             molc = deepcopy(self)
-            molc.addBond(Bond(molc.atoms[bd1[0]],molc.atoms[bd1[1]],order=0))
+            molc.addBond(Bond(molc.atoms[bd1[0]],molc.atoms[bd1[1]],order=0.1))
             structs.append(molc)
             for j,bd2 in enumerate(Hbonds):
                 if j<i and bd1[0] != bd2[0] and bd1[1] != bd2[1]:
                     molc = deepcopy(self)
-                    molc.addBond(Bond(molc.atoms[bd1[0]],molc.atoms[bd1[1]],order=0))
-                    molc.addBond(Bond(molc.atoms[bd2[0]],molc.atoms[bd2[1]],order=0))
+                    molc.addBond(Bond(molc.atoms[bd1[0]],molc.atoms[bd1[1]],order=0.1))
+                    molc.addBond(Bond(molc.atoms[bd2[0]],molc.atoms[bd2[1]],order=0.1))
                     structs.append(molc)
         
         return structs
