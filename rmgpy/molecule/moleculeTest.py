@@ -1038,7 +1038,7 @@ class TestMolecule(unittest.TestCase):
             for j,atm2 in enumerate(testMol.atoms):
                 if j<i and testMol.hasBond(atm1,atm2):
                     bd = testMol.getBond(atm1,atm2)
-                    self.assertNotAlmostEqual(bd.order,0)
+                    self.assertNotAlmostEqual(bd.order,0.1)
                     
     def testSSSR(self):
         """
