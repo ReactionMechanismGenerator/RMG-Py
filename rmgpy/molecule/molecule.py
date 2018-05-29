@@ -1615,7 +1615,7 @@ class Molecule(Graph):
             for j,atm2 in enumerate(atoms):
                 if j<i and self.hasBond(atm1,atm2):
                     bd = self.getBond(atm1,atm2)
-                    if bd.order == 0.1:
+                    if numpy.isclose(0.1, bd.order):
                         self.removeBond(bd)
         return
     
