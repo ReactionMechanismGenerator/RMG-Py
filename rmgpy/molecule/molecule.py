@@ -1590,8 +1590,11 @@ class Molecule(Graph):
         While converting to an RDMolecule it will perceive aromaticity
         and removes Hydrogen atoms.
         """
-        
-        return translator.toSMILES(self)
+
+        if self.containsSurfaceSite():
+            pass
+        else:
+            return translator.toSMILES(self)
 
     def toRDKitMol(self, *args, **kwargs):
         """
