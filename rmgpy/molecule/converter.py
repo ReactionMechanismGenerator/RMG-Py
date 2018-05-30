@@ -82,7 +82,7 @@ def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
             rdAtomIndices[atom] = index
 
     rdBonds = Chem.rdchem.BondType
-    orders = {'S': rdBonds.SINGLE, 'D': rdBonds.DOUBLE, 'T': rdBonds.TRIPLE, 'B': rdBonds.AROMATIC}
+    orders = {'S': rdBonds.SINGLE, 'D': rdBonds.DOUBLE, 'T': rdBonds.TRIPLE, 'B': rdBonds.AROMATIC, 'Q': rdBonds.QUADRUPLE}
     # Add the bonds
     for atom1 in mol.vertices:
         for atom2, bond in atom1.edges.iteritems():
