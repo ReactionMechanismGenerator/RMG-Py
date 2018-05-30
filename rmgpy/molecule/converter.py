@@ -222,7 +222,7 @@ def toOBMol(mol, returnMapping=False):
             a.SetIsotope(atom.element.isotope)
         a.SetFormalCharge(atom.charge)
         obAtomIds[atom] = a.GetId()
-    orders = {1: 1, 2: 2, 3: 3, 1.5: 5}
+    orders = {1: 1, 2: 2, 3: 3, 4: 4, 1.5: 5}
     for atom1 in mol.vertices:
         for atom2, bond in atom1.edges.iteritems():
             index1 = atoms.index(atom1)
@@ -275,7 +275,7 @@ def fromOBMol(mol, obmol):
     for obbond in openbabel.OBMolBondIter(obmol):
         # Process bond type
         oborder = obbond.GetBondOrder()
-        if oborder not in [1,2,3] and obbond.IsAromatic() :
+        if oborder not in [1,2,3,4] and obbond.IsAromatic() :
             oborder = 1.5
 
         bond = mm.Bond(mol.vertices[obbond.GetBeginAtomIdx() - 1], mol.vertices[obbond.GetEndAtomIdx() - 1], oborder)#python array indices start at 0
