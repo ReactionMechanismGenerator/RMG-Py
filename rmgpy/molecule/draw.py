@@ -320,6 +320,7 @@ class MoleculeDrawer:
         for atom in self.molecule.atoms:
             if atom.charge != 0:
                  flag_charge = 1
+                 useRDKit = False
                  break
         
         # Initialize array of coordinates
