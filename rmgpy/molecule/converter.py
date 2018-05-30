@@ -154,6 +154,7 @@ def fromRDKitMol(mol, rdkitmol):
                 if rdbondtype.name == 'SINGLE': order = 1
                 elif rdbondtype.name == 'DOUBLE': order = 2
                 elif rdbondtype.name == 'TRIPLE': order = 3
+                elif rdbondtype.name == 'QUADRUPLE': order = 4
                 elif rdbondtype.name == 'AROMATIC': order = 1.5
 
                 bond = mm.Bond(mol.vertices[i], mol.vertices[j], order)
