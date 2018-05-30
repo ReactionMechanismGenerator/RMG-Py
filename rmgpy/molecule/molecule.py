@@ -1591,10 +1591,7 @@ class Molecule(Graph):
         and removes Hydrogen atoms.
         """
 
-        if self.containsSurfaceSite():
-            pass
-        else:
-            return translator.toSMILES(self)
+        return translator.toSMILES(self)
 
     def toRDKitMol(self, *args, **kwargs):
         """

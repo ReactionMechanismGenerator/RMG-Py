@@ -68,7 +68,10 @@ def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
     rdAtomIndices = {} # dictionary of RDKit atom indices
     rdkitmol = Chem.rdchem.EditableMol(Chem.rdchem.Mol())
     for index, atom in enumerate(mol.vertices):
-        rdAtom = Chem.rdchem.Atom(atom.element.symbol)
+        if atom.element.symbol == 'X':
+            rdAtom = Chem.rdchem.Atom('Ni')
+        else:
+            rdAtom = Chem.rdchem.Atom(atom.element.symbol)
         rdAtom.SetNumRadicalElectrons(atom.radicalElectrons)
         rdAtom.SetFormalCharge(atom.charge)
         if atom.element.symbol == 'C' and atom.lonePairs == 1 and mol.multiplicity == 1: rdAtom.SetNumRadicalElectrons(2)

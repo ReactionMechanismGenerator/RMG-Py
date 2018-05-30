@@ -84,6 +84,11 @@ SMILES_LOOKUPS = {
         1 C u1 p1 c0 {2,S}
         2 H u0 p0 c0 {1,S}
         """,
+    '[X]':  # Surface site
+        """
+        multiplicity 1
+        1 X u0
+        """
 }
 
 #: This dictionary is used to shortcut lookups of a molecule's SMILES string from its chemical formula.
