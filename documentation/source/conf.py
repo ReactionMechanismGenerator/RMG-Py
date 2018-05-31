@@ -234,16 +234,16 @@ latex_logo = '_static/rmg-logo-big.pdf'
 #latex_use_parts = False
 
 # Additional stuff for the LaTeX preamble.
-latex_preamble = """
-\\usepackage[scaled]{beramono}
-\\usepackage[version=3]{mhchem}
-\\DeclareUnicodeCharacter{0394}{\\ensuremath{\\Delta}}
-\\renewcommand{\\vector}[1]{\\ensuremath{\\boldsymbol{\\mathbf{#1}}}}
-\\renewcommand{\\matrix}[1]{\\ensuremath{\\boldsymbol{\\mathbf{#1}}}}
-"""
+latex_elements = {
+    'preamble': r"""
+\usepackage[scaled]{beramono}
+\usepackage[version=3]{mhchem}
+\DeclareUnicodeCharacter{0394}{\ensuremath{\\Delta}}
+\renewcommand{\vector}[1]{\ensuremath{\boldsymbol{\mathbf{#1}}}}
+\renewcommand{\matrix}[1]{\ensuremath{\boldsymbol{\mathbf{#1}}}}
+""",
+}
 # See also the extrahead block in the layout.html template for mathjax extenions!
-
-pngmath_latex_preamble = latex_preamble
 
 # If true, show page references after internal links.
 #latex_show_pagerefs = False
