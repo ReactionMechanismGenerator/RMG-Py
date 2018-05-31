@@ -1,0 +1,6 @@
+# specify all the datasets to 
+# train on
+
+rmg.sdata134k.sdata134k_cho_cyclics_table_train: 0.0
+
+rmg.sdata134k.sdata134k_cho_cyclics_table_test: 1.0

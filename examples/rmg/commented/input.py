@@ -251,3 +251,6 @@ generatedSpeciesConstraints(
 #     # If the amount of radicals is more than this, RMG will use hydrogen bond incrementation method
 #     maxRadicalNumber=0,
 # )
+
+# optional block allows thermo to be estimated through MCNN estimator
+# mcnnEstimator(mode='thermochemistry')

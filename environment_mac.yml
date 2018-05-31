@@ -40,3 +40,6 @@ dependencies:
   - mock
   # - muq
   - pymongo
+  - theano=0.9.0
+  - rmg::keras=1.2.2
+  - tqdm
