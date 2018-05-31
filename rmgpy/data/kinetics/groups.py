@@ -141,9 +141,9 @@ class KineticsGroups(Database):
                 matched_node = self.descendTree(reactant, atoms, root=entry, strict=True)
                 if matched_node is not None:
                     template.append(matched_node)
-                else:
-                    logging.warning("Couldn't find match for {0} in {1}".format(entry,atomList))
-                    logging.warning(reactant.toAdjacencyList())
+                #else:
+                #    logging.warning("Couldn't find match for {0} in {1}".format(entry,atomList))
+                #    logging.warning(reactant.toAdjacencyList())
 
         # Get fresh templates (with duplicate nodes back in)
         forwardTemplate = self.top[:]
