@@ -36,7 +36,8 @@ import unittest
 import math
 import numpy
 
-from rmgpy.kinetics.arrhenius import Arrhenius, ArrheniusEP, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius
+from rmgpy.kinetics.arrhenius import Arrhenius, EArrhenius, ArrheniusEP, PDepArrhenius,\
+    MultiArrhenius, MultiPDepArrhenius
 import rmgpy.constants as constants
 
 ################################################################################
@@ -209,7 +210,7 @@ class TestArrhenius(unittest.TestCase):
 
     def test_toCanteraKinetics(self):
         """
-        Test that the Arrhenius cantera object can be set properly within 
+        Test that the Arrhenius cantera object can be set properly within
         a cantera ElementaryReaction object
         """
         ctArrhenius = self.arrhenius.toCanteraKinetics()
@@ -240,6 +241,167 @@ class TestArrhenius(unittest.TestCase):
     def test_toArrheniusEP_throws_error_with_just_alpha(self):
         with self.assertRaises(Exception):
             self.arrhenius.toArrheniusEP(alpha=1)
+
+    def test_toEArrhenius(self):
+        """
+        Test the  EArrhenius.toArrhenius() method.
+        """
+        ea = self.arrhenius.toEArrhenius()
+        self.assertAlmostEquals(ea.A.value_si, 4.5604e-15, delta=1e-5*ea.A.value_si)
+        self.assertAlmostEquals(ea.n.value_si, 37.80, places=2)
+        self.assertAlmostEquals(ea.Ea.value_si, 1.58104e+3, delta=1e-5*ea.Ea.value_si)
+
+################################################################################
+
+class TestEArrhenius(unittest.TestCase):
+    """
+    Contains unit tests of the :class:`EArrhenius` class.
+    """
+
+    @classmethod
+    def setUpClass(self):
+        """
+        A function run ONCE before all unit tests in this class.
+        """
+        self.A = 1e-13
+        self.n = 57.7
+        self.Ea = 1.512
+        self.Tmin = 300.
+        self.Tmax = 3000.
+        self.comment = 'C2H6'
+        self.earrhenius = EArrhenius(
+            A=(self.A,"s^-1"),
+            n=self.n,
+            Ea=(self.Ea,"kJ/mol"),
+            Tmin=(self.Tmin,"K"),
+            Tmax=(self.Tmax,"K"),
+            comment=self.comment,
+        )
+
+    def test_A(self):
+        """
+        Test that the EArrhenius A property was properly set.
+        """
+        self.assertAlmostEqual(self.earrhenius.A.value_si * 1e-13, self.A)
+
+    def test_n(self):
+        """
+        Test that the EArrhenius n property was properly set.
+        """
+        self.assertAlmostEqual(self.earrhenius.n.value_si, self.n, 57.7)
+
+    def test_Ea(self):
+        """
+        Test that the EArrhenius Ea property was properly set.
+        """
+        self.assertAlmostEqual(self.earrhenius.Ea.value_si * 0.001, self.Ea, 1.512)
+
+    def test_Tmin(self):
+        """
+        Test that the EArrhenius Tmin property was properly set.
+        """
+        self.assertAlmostEqual(self.earrhenius.Tmin.value_si, self.Tmin, 6)
+
+    def test_Tmax(self):
+        """
+        Test that the EArrhenius Tmax property was properly set.
+        """
+        self.assertAlmostEqual(self.earrhenius.Tmax.value_si, self.Tmax, 6)
+
+    def test_comment(self):
+        """
+        Test that the EArrhenius comment property was properly set.
+        """
+        self.assertEqual(self.earrhenius.comment, self.comment)
+
+    def test_isTemperatureValid(self):
+        """
+        Test the EArrhenius.isTemperatureValid() method.
+        """
+        Tdata = numpy.array([200,400,600,800,1000,1200,1400,1600,1800,2000])
+        validdata = numpy.array([False,True,True,True,True,True,True,True,True,True], numpy.bool)
+        for T, valid in zip(Tdata, validdata):
+            valid0 = self.earrhenius.isTemperatureValid(T)
+            self.assertEqual(valid0, valid)
+
+    def test_getRateCoefficient(self):
+        """
+        Test the EArrhenius.getRateCoefficient() method.
+        """
+        Tlist = numpy.array([200,400,600,800,1000,1200,1400,1600,1800,2000])
+        kexplist = numpy.array([2.4848e-3, 1.6048e+3, 6.4245e+5, 1.8392e+7, 1.5602e+8,
+                                6.8561e+8, 2.0294e+9, 4.6516e+9, 8.9506e+9, 1.5200e+10])
+        for T, kexp in zip(Tlist, kexplist):
+            kact = self.earrhenius.getRateCoefficient(T)
+            self.assertAlmostEqual(kexp, kact, delta=1e-4*kexp)
+
+    def test_fitToData(self):
+        """
+        Test the EArrhenius.fitToData() method.
+        """
+        Tdata = numpy.array([300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500])
+        kdata = numpy.array([self.earrhenius.getRateCoefficient(T) for T in Tdata])
+        earrhenius = EArrhenius().fitToData(Tdata, kdata, kunits="s^-1")
+        for T, k in zip(Tdata, kdata):
+            self.assertAlmostEqual(k, earrhenius.getRateCoefficient(T), delta=k)
+        self.assertAlmostEqual(earrhenius.A.value_si, self.earrhenius.A.value_si, delta=1e-5)
+        self.assertAlmostEqual(earrhenius.n.value_si, self.earrhenius.n.value_si, delta=10)
+        self.assertAlmostEqual(earrhenius.Ea.value_si, self.earrhenius.Ea.value_si, delta=600)
+
+    def test_pickle(self):
+        """
+        Test that an EArrhenius object can be pickled and unpickled with no loss of information.
+        """
+        import cPickle
+        earrhenius = cPickle.loads(cPickle.dumps(self.earrhenius,-1))
+        self.assertAlmostEqual(self.earrhenius.A.value, earrhenius.A.value, delta=1e0)
+        self.assertEqual(self.earrhenius.A.units, earrhenius.A.units)
+        self.assertAlmostEqual(self.earrhenius.n.value, earrhenius.n.value, 4)
+        self.assertAlmostEqual(self.earrhenius.Ea.value, earrhenius.Ea.value, 4)
+        self.assertEqual(self.earrhenius.Ea.units, earrhenius.Ea.units)
+        self.assertAlmostEqual(self.earrhenius.Tmin.value, earrhenius.Tmin.value, 4)
+        self.assertEqual(self.earrhenius.Tmin.units, earrhenius.Tmin.units)
+        self.assertAlmostEqual(self.earrhenius.Tmax.value, earrhenius.Tmax.value, 4)
+        self.assertEqual(self.earrhenius.Tmax.units, earrhenius.Tmax.units)
+        self.assertEqual(self.earrhenius.comment, earrhenius.comment)
+
+    def test_repr(self):
+        """
+        Test that an EArrhenius object can be reconstructed from its repr()
+        output with no loss of information.
+        """
+        earrhenius = None
+        exec('earrhenius = {0!r}'.format(self.earrhenius))
+        self.assertAlmostEqual(self.earrhenius.A.value, earrhenius.A.value, delta=1e0)
+        self.assertEqual(self.earrhenius.A.units, earrhenius.A.units)
+        self.assertAlmostEqual(self.earrhenius.n.value, earrhenius.n.value, 4)
+        self.assertAlmostEqual(self.earrhenius.Ea.value, earrhenius.Ea.value, 4)
+        self.assertEqual(self.earrhenius.Ea.units, earrhenius.Ea.units)
+        self.assertAlmostEqual(self.earrhenius.Tmin.value, earrhenius.Tmin.value, 4)
+        self.assertEqual(self.earrhenius.Tmin.units, earrhenius.Tmin.units)
+        self.assertAlmostEqual(self.earrhenius.Tmax.value, earrhenius.Tmax.value, 4)
+        self.assertEqual(self.earrhenius.Tmax.units, earrhenius.Tmax.units)
+        self.assertEqual(self.earrhenius.comment, earrhenius.comment)
+
+    def test_changeRate(self):
+        """
+        Test the EArrhenius.changeRate() method.
+        """
+        Tlist = numpy.array([300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500])
+        k0list = numpy.array([self.earrhenius.getRateCoefficient(T) for T in Tlist])
+        self.earrhenius.changeRate(2)
+        for T, kexp in zip(Tlist, k0list):
+            kact = self.earrhenius.getRateCoefficient(T)
+            self.assertAlmostEqual(2*kexp, kact, delta=1e-6*kexp)
+
+    def test_toArrhenius(self):
+        """
+        Test the  EArrhenius.toArrhenius() method.
+        """
+        arr = self.earrhenius.toArrhenius()
+        self.assertAlmostEquals(arr.A.value_si, 5.5469e+4, delta=1e-5*arr.A.value_si)
+        self.assertAlmostEquals(arr.n.value_si, 2.05, places=2)
+        self.assertAlmostEquals(arr.Ea.value_si, 5.2132e+4, delta=1e-5*arr.Ea.value_si)
 
 ################################################################################
 
