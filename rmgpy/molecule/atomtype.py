@@ -322,11 +322,11 @@ atomTypes['Cdc' ] = AtomType('Cdc',   generic=['R','R!H','C','Val4'],  specific=
 # examples for Cdc: [CH+]=C=[CH-], [CH+]=N[O-] (one of the res structures of Fulminic acid)
 atomTypes['CO'  ] = AtomType('CO',    generic=['R','R!H','C','Val4'],  specific=[],  # (shared electrons = 6-8)
                              single=[0,1,2], allDouble=[1], rDouble=[0], oDouble=[1], sDouble=[0], triple=[0], quadruple=[], benzene=[0], lonePairs=[0], charge=[0])
-atomTypes['CS'  ] = AtomType('CS',    generic=['R','R!H','C','Val4'],  specific=[],  # (shared electrons = 6-8)
 # examples for CO: C=O
+atomTypes['CS'  ] = AtomType('CS',    generic=['R','R!H','C','Val4'],  specific=[],  # (shared electrons = 6-8)
                              single=[0,1,2], allDouble=[1], rDouble=[0], oDouble=[0], sDouble=[1], triple=[0], quadruple=[], benzene=[0], lonePairs=[0], charge=[0])
-atomTypes['Cdd' ] = AtomType('Cdd',   generic=['R','R!H','C','Val4'],  specific=[],  # (shared electrons = 8)
 # examples for CS: C=S
+atomTypes['Cdd' ] = AtomType('Cdd',   generic=['R','R!H','C','Val4'],  specific=[],  # (shared electrons = 8)
                              single=[0], allDouble=[2], rDouble=[0,1,2], oDouble=[0,1,2], sDouble=[0,1,2], triple=[0], quadruple=[], benzene=[0], lonePairs=[0], charge=[0])
 # examples for Cdd: O=C=O, C=C=C
 atomTypes['Ct'  ] = AtomType('Ct',    generic=['R','R!H','C','Val4'],  specific=[],  # (shared electrons = 7-8)
@@ -536,7 +536,7 @@ atomTypes['S6tt'] = AtomType('S6tt', generic=['R','R!H','S','Val6'],  specific=[
                              single=[0], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[2], quadruple=[], benzene=[0], lonePairs=[0], charge=[0])
 # examples for S6tt: N#S#N
 atomTypes['S6tdc'] = AtomType('S6tdc',generic=['R','R!H','S','Val6'],  specific=[],
-                             single=[0,1,2,3,4], allDouble=[0,1,2], rDouble=[], oDouble=[], sDouble=[], quadruple=[], triple=[1,2], benzene=[0], lonePairs=[0], charge=[-1,+1])
+                             single=[0,1,2,3,4], allDouble=[0,1,2], rDouble=[], oDouble=[], sDouble=[], triple=[1,2], quadruple=[], benzene=[0], lonePairs=[0], charge=[-1,+1])
 # *Composite atomType; examples for S6tdc: [SH2+]#[C-], [N-]=[S+]#N
 
 atomTypes['Cl'  ] = AtomType('Cl',   generic=['R','R!H','Val7'],      specific=['Cl1s'])
