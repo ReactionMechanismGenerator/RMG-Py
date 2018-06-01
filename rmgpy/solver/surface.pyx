@@ -114,7 +114,9 @@ cdef class SurfaceReactor(ReactionSystem):
                           sensitivity=False,
                           sens_atol=1e-6,
                           sens_rtol=1e-4,
-                          filterReactions=False):
+                          filterReactions=False,
+                          dict conditions=None,
+                          ):
         """
         Initialize a simulation of the simple reactor using the provided kinetic
         model.
@@ -122,8 +124,21 @@ cdef class SurfaceReactor(ReactionSystem):
 
         # First call the base class version of the method
         # This initializes the attributes declared in the base class
-        ReactionSystem.initializeModel(self, coreSpecies, coreReactions, edgeSpecies, edgeReactions, surfaceSpecies, surfaceReactions, pdepNetworks, atol, rtol, sensitivity, sens_atol, sens_rtol)
-
+        ReactionSystem.initializeModel(self,
+                                       coreSpecies=coreSpecies,
+                                       coreReactions=coreReactions,
+                                       edgeSpecies=edgeSpecies,
+                                       edgeReactions=edgeReactions,
+                                       surfaceSpecies=surfaceSpecies,
+                                       surfaceReactions=surfaceReactions,
+                                       pdepNetworks=pdepNetwoerks,
+                                       atol=atol,
+                                       rtol=rtol,
+                                       sensitivity=sensitivity,
+                                       sens_atol=sens_atol,
+                                       sens_rtol=sens_rtol,
+                                       conditions=conditions,
+                                       )
         cdef numpy.ndarray[numpy.int_t, ndim=1] speciesOnSurface, reactionsOnSurface
         cdef int index
         #: 1 if it's on a surface, 0 if it's in the gas phase
