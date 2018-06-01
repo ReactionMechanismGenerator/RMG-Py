@@ -282,4 +282,5 @@ pressureDependence(
     #interpolationModel = ('pdeparrhenius'),
     #activeKRotor = True, 
     activeJRotor = True,
+    sensitivity_conditions = [[(1000, 'K'), (1, 'bar')], [(1500, 'K'), (10, 'bar')]]
 )

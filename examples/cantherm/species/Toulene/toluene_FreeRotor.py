@@ -16,12 +16,12 @@ spinMultiplicity = 1
 opticalIsomers = 1
 
 energy = {
-    'CBS-QB3': GaussianLog('TolueneEnergy.log')
+    'CBS-QB3': Log('TolueneEnergy.log')
 }
 
-geometry = GaussianLog('TolueneFreq.log')
+geometry = Log('TolueneFreq.log')
 
-frequencies = GaussianLog('TolueneFreq.log')
+frequencies = Log('TolueneFreq.log')
 
 rotors = [
 FreeRotor(pivots=[3,12],top=[12,13,14,15],symmetry=6)

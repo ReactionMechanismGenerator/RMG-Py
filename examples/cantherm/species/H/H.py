@@ -12,12 +12,12 @@ spinMultiplicity = 2
 opticalIsomers = 1
 
 energy = {
-    'CBS-QB3': GaussianLog('H_cbsqb3.log'),
+    'CBS-QB3': Log('H_cbsqb3.log'),
     'Klip_2': -0.50003976,
 }
 
-geometry = GaussianLog('H_cbsqb3.log')
+geometry = Log('H_cbsqb3.log')
 
-frequencies = GaussianLog('H_cbsqb3.log')
+frequencies = Log('H_cbsqb3.log')
 
 rotors = []

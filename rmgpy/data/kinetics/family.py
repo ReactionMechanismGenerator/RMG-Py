@@ -747,7 +747,7 @@ class KineticsFamily(Database):
         """
         return saveEntry(f, entry)
     
-    def saveTrainingReactions(self, reactions, reference=None, referenceType='', shortDesc='', rank=3):
+    def saveTrainingReactions(self, reactions, reference=None, referenceType='', shortDesc='', longDesc='', rank=3):
         """
         This function takes a list of reactions appends it to the training reactions file.  It ignores the existence of
         duplicate reactions.  
@@ -759,48 +759,56 @@ class KineticsFamily(Database):
         """ 
         from rmgpy import settings
 
-        training_path = os.path.join(settings['database.directory'], 'kinetics', 'families', \
-            self.label, 'training')
+        if not isinstance(reference, list):
+            reference = [reference]*len(reactions)
+        if not isinstance(referenceType, list):
+            referenceType = [referenceType]*len(reactions)
+        if not isinstance(shortDesc, list):
+            shortDesc = [shortDesc]*len(reactions)
+        if not isinstance(longDesc, list):
+            longDesc = [longDesc]*len(reactions)
+        if not isinstance(rank, list):
+            rank = [rank]*len(reactions)
 
-        directory_file = os.path.join(training_path, 'dictionary.txt')
+        training_path = os.path.join(settings['database.directory'], 'kinetics', 'families',
+                                     self.label, 'training')
+
+        dictionary_path = os.path.join(training_path, 'dictionary.txt')
 
         # Load the old set of the species of the training reactions
-        speciesDict = Database().getSpecies(directory_file)
+        species_dict = Database().getSpecies(dictionary_path)
 
-        # add new unique species with labeledAtoms into speciesDict
+        # Add new unique species with labeledAtoms into species_dict
         for rxn in reactions:
             for spec in (rxn.reactants + rxn.products):
-                for ex_spec_label in speciesDict:
-                    ex_spec = speciesDict[ex_spec_label]
+                for ex_spec in species_dict.itervalues():
                     if ex_spec.molecule[0].getFormula() != spec.molecule[0].getFormula():
                         continue
                     else:
-                        spec_labeledAtoms = spec.molecule[0].getLabeledAtoms()
-                        ex_spec_labeledAtoms = ex_spec.molecule[0].getLabeledAtoms()
+                        spec_labeled_atoms = spec.molecule[0].getLabeledAtoms()
+                        ex_spec_labeled_atoms = ex_spec.molecule[0].getLabeledAtoms()
                         initialMap = {}
                         try:
-                            for atomLabel in spec_labeledAtoms:
-                                initialMap[spec_labeledAtoms[atomLabel]] = ex_spec_labeledAtoms[atomLabel]
+                            for atomLabel in spec_labeled_atoms:
+                                initialMap[spec_labeled_atoms[atomLabel]] = ex_spec_labeled_atoms[atomLabel]
                         except KeyError:
-                            # atom labels did not match, therefore not a match
+                            # Atom labels did not match, therefore not a match
                             continue
-                        if spec.molecule[0].isIsomorphic(ex_spec.molecule[0],initialMap):
+                        if spec.molecule[0].isIsomorphic(ex_spec.molecule[0], initialMap):
                             spec.label = ex_spec.label
                             break
-                else:# no isomorphic existing species found
+                else:  # No isomorphic existing species found
                     spec_formula = spec.molecule[0].getFormula()
-                    if spec_formula not in speciesDict:
+                    if spec_formula not in species_dict:
                         spec.label = spec_formula
                     else:
                         index = 2
-                        while (spec_formula + '-{}'.format(index)) in speciesDict:
+                        while (spec_formula + '-{}'.format(index)) in species_dict:
                             index += 1
                         spec.label = spec_formula + '-{}'.format(index)
-                    speciesDict[spec.label] = spec
+                    species_dict[spec.label] = spec
 
-        training_file = open(os.path.join(settings['database.directory'], 'kinetics', 'families', \
-            self.label, 'training', 'reactions.py'), 'a')
-        training_file.write("\n\n")
+        training_file = open(os.path.join(training_path, 'reactions.py'), 'a')
 
         # get max reaction entry index from the existing training data
         try:
@@ -811,37 +819,38 @@ class KineticsFamily(Database):
             depository = KineticsDepository()
             self.depositories.append(depository)
         
-        trainingDatabase = depository
-        indices = [entry.index for entry in trainingDatabase.entries.values()]
-        if indices:
-            maxIndex = max(indices)
+        if depository.entries:
+            max_index = max(depository.entries.keys())
         else:
-            maxIndex = 0
-        # save new reactions to reactions.py
+            max_index = 0
+
+        # Add new reactions to training depository
         for i, reaction in enumerate(reactions):    
-            longDesc = 'Taken from entry: {0}'.format(reaction.kinetics.comment)
-            reaction.kinetics.comment = ''
+            index = max_index+i+1
             entry = Entry(
-                index = maxIndex+i+1,
+                index = index,
                 label = str(reaction),
                 item = reaction,
                 data = reaction.kinetics,
-                reference = reference,
-                referenceType = referenceType,
-                shortDesc = unicode(shortDesc),
-                longDesc = unicode(longDesc),
-                rank = rank,
-                )
-            
+                reference = reference[i],
+                referenceType = referenceType[i],
+                shortDesc = unicode(shortDesc[i]),
+                longDesc = unicode(longDesc[i]),
+                rank = rank[i],
+            )
+
+            # Add this entry to the loaded depository so it is immediately usable
+            depository.entries[index] = entry
+            # Write the entry to the reactions.py file
             self.saveEntry(training_file, entry)
+
         training_file.close()
 
         # save species to dictionary
-        with open(directory_file, 'w') as f:
-            for label in speciesDict.keys():
-                f.write(speciesDict[label].molecule[0].toAdjacencyList(label=label, removeH=False))
+        with open(dictionary_path, 'w') as f:
+            for label in species_dict.keys():
+                f.write(species_dict[label].molecule[0].toAdjacencyList(label=label, removeH=False))
                 f.write('\n')
-        f.close()
 
     def save(self, path):
         """
@@ -1328,12 +1337,19 @@ class KineticsFamily(Database):
             struct.removeVanDerWaalsBonds()
 
         # If product structures are Molecule objects, update their atom types
+        # If product structures are Group objects and the reaction is in certain families
+        # (families with charged substances), the charge of structures will be updated
         for struct in productStructures:
             if isinstance(struct, Molecule):
                 struct.update()
-            else:
+            elif isinstance(struct, Group):
                 struct.resetRingMembership()
-
+                if label in ['1,2_insertion_co', 'r_addition_com', 'co_disproportionation',
+                             'intra_no2_ono_conversion', 'lone_electron_pair_bond']:
+                    struct.update_charge()
+            else:
+                raise TypeError('Expecting Molecule or Group object, not {0}'.format(struct.__class__.__name__))
+            
         # Return the product structures
         return productStructures
 
@@ -1585,7 +1601,6 @@ class KineticsFamily(Database):
         identical reactants (since you will be reducing them later in the algorithm), add
         `ignoreSameReactants= True` to this method.
         """
-        reaction.degeneracy = 1
         # Check if the reactants are the same
         # If they refer to the same memory address, then make a deep copy so
         # they can be manipulated independently
@@ -1607,19 +1622,8 @@ class KineticsFamily(Database):
             reactions.extend(self.__generateReactions(combo, products=reaction.products, forward=True))
 
         # remove degenerate reactions
-        reactions = find_degenerate_reactions(reactions, same_reactants, kinetics_family=self)
+        reactions = find_degenerate_reactions(reactions, same_reactants, template=reaction.template, kinetics_family=self)
 
-        # remove reactions with different templates (only for TemplateReaction)
-        if isinstance(reaction, TemplateReaction):
-            index = 0
-            while index < len(reactions):
-                if reaction.template and \
-                        frozenset(reactions[index].template) != frozenset(reaction.template):
-                    # remove reaction with different template
-                    del reactions[index]
-                    continue
-                index += 1
-            
         # log issues
         if len(reactions) != 1:
             for reactant in reaction.reactants:

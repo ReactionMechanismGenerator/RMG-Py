@@ -8,7 +8,7 @@ description = \
 NONE
 """
 
-modelChemistry = "M08SO"
+modelChemistry = "m08so/mg3s*"
 frequencyScaleFactor = 0.983
 useHinderedRotors = True
 useBondCorrections = False

@@ -30,7 +30,7 @@
 
 import math
 import numpy
-import os.path
+import logging
 import rmgpy.constants as constants
 
 from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
@@ -182,7 +182,7 @@ class MolproLog:
                 print 'Atomic number {0:d} not yet supported in loadGeometry().'.format(number[i])
         return coord, number, mass
 
-    def loadConformer(self, symmetry=None, spinMultiplicity=None, opticalIsomers=1, symfromlog=None):
+    def loadConformer(self, symmetry=None, spinMultiplicity=0, opticalIsomers=1, symfromlog=None, label=''):
         """
         Load the molecular degree of freedom data from a log file created as
         the result of a MolPro "Freq" quantum chemistry calculation with the thermo printed.
@@ -194,6 +194,34 @@ class MolproLog:
         f = open(self.path, 'r')
         line = f.readline()
         while line != '':
+
+            # Read the spin multiplicity if not explicitly given
+            if spinMultiplicity == 0 and 'spin' in line:
+                splits = line.replace('=', ' ').replace(',', ' ').split(' ')
+                for i, s in enumerate(splits):
+                    if 'spin' in s:
+                        spinMultiplicity = int(splits[i+1]) + 1
+                        logging.debug(
+                            'Conformer {0} is assigned a spin multiplicity of {1}'.format(label, spinMultiplicity))
+                        break
+            if spinMultiplicity == 0 and 'SPIN SYMMETRY' in line:
+                spin_symmetry = line.split()[-1]
+                if spin_symmetry == 'Singlet':
+                    spinMultiplicity = 1
+                elif spin_symmetry == 'Doublet':
+                    spinMultiplicity = 2
+                elif spin_symmetry == 'Triplet':
+                    spinMultiplicity = 3
+                elif spin_symmetry == 'Quartet':
+                    spinMultiplicity = 4
+                elif spin_symmetry == 'Quintet':
+                    spinMultiplicity = 5
+                elif spin_symmetry == 'Sextet':
+                    spinMultiplicity = 6
+                if spinMultiplicity:
+                    logging.debug(
+                        'Conformer {0} is assigned a spin multiplicity of {1}'.format(label, spinMultiplicity))
+                    break
 
             # The data we want is in the Thermochemistry section of the output
             if 'THERMODYNAMICAL' in line:
@@ -337,11 +365,9 @@ class MolproLog:
 
     def loadNegativeFrequency(self):
         """
-        Return the negative frequency from a transition state frequency
-        calculation in cm^-1.
+        Return the negative frequency from a transition state frequency calculation in cm^-1.
         """
-
-
+        frequency = None
         f = open(self.path, 'r')
         line = f.readline()
         while line != '':
@@ -351,9 +377,8 @@ class MolproLog:
                     line = f.readline()
                 frequency = line.split()[2]
             line = f.readline()
-        # Close file when finished
         f.close()
-
+        if frequency is None:
+            raise Exception('Unable to find imaginary frequency in Molpro output file {0}'.format(self.path))
         negativefrequency = -float(frequency)
-
         return negativefrequency

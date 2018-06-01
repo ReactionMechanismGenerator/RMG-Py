@@ -51,24 +51,35 @@ cdef class LiquidReactor(ReactionSystem):
     """
 
     cdef public ScalarQuantity T
-    cdef public ScalarQuantity P    
+    cdef public ScalarQuantity P
     cdef public double V
     cdef public bint constantVolume
-    cdef public constSPCNames
+    cdef public list constSPCNames
     cdef public list constSPCIndices
     cdef public dict initialConcentrations
+    cdef public list Trange
+    cdef public int nSimsTerm
+    cdef public dict sensConditions
 
-    def __init__(self, T, initialConcentrations, termination, sensitiveSpecies=None, sensitivityThreshold=1e-3, constSPCNames=None):
+    def __init__(self, T, initialConcentrations, nSimsTerm=None, termination=None, sensitiveSpecies=None, sensitivityThreshold=1e-3, sensConditions=None, constSPCNames=None):
+
         ReactionSystem.__init__(self, termination, sensitiveSpecies, sensitivityThreshold)
-        self.T = Quantity(T)
+
+        if type(T) != list:
+            self.T = Quantity(T)
+        else:
+            self.Trange = [Quantity(t) for t in T]
+
         self.P = Quantity(100000.,'kPa') # Arbitrary high pressure (1000 Bar) to get reactions in the high-pressure limit!
         self.initialConcentrations = initialConcentrations # should be passed in SI
         self.V = 0 # will be set from initialConcentrations in initializeModel
         self.constantVolume = True
         #Constant concentration attributes
         self.constSPCIndices=None
-        self.constSPCNames = constSPCNames #store index of constant species 
-        
+        self.constSPCNames = constSPCNames #store index of constant species
+        self.sensConditions = sensConditions
+        self.nSimsTerm = nSimsTerm
+
     def convertInitialKeysToSpeciesObjects(self, speciesDict):
         """
         Convert the initialConcentrations dictionary from species names into species objects,
@@ -76,9 +87,11 @@ cdef class LiquidReactor(ReactionSystem):
         """
         initialConcentrations = {}
         for label, moleFrac in self.initialConcentrations.iteritems():
+            if label == 'T':
+                continue
             initialConcentrations[speciesDict[label]] = moleFrac
         self.initialConcentrations = initialConcentrations
-    
+
     def get_constSPCIndices (self, coreSpecies):
         "Allow to identify constant Species position in solver"
         for spc in self.constSPCNames:
@@ -86,11 +99,11 @@ cdef class LiquidReactor(ReactionSystem):
                 self.constSPCIndices=[]
             for iter in coreSpecies: #Need to identify the species object corresponding to the the string written in the input file
                 if iter.label == spc:
-                    self.constSPCIndices.append(coreSpecies.index(iter))#get 
-  
+                    self.constSPCIndices.append(coreSpecies.index(iter))#get
+
     cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions, list surfaceSpecies=None,
                           list surfaceReactions=None, list pdepNetworks=None, atol=1e-16, rtol=1e-8, sensitivity=False,
-                          sens_atol=1e-6, sens_rtol=1e-4, filterReactions=False):
+                          sens_atol=1e-6, sens_rtol=1e-4, filterReactions=False, dict conditions=None):
         """
         Initialize a simulation of the liquid reactor using the provided kinetic
         model.
@@ -99,10 +112,11 @@ cdef class LiquidReactor(ReactionSystem):
             surfaceSpecies = []
         if surfaceReactions is None:
             surfaceReactions = []
-            
+
         # First call the base class version of the method
         # This initializes the attributes declared in the base class
-        ReactionSystem.initializeModel(self, coreSpecies, coreReactions, edgeSpecies, edgeReactions, surfaceSpecies, surfaceReactions, pdepNetworks, atol, rtol, sensitivity, sens_atol, sens_rtol)
+        ReactionSystem.initializeModel(self, coreSpecies, coreReactions, edgeSpecies, edgeReactions, surfaceSpecies, surfaceReactions,
+                                       pdepNetworks, atol, rtol, sensitivity, sens_atol, sens_rtol, filterReactions, conditions)
 
         # Set initial conditions
         self.set_initial_conditions()
@@ -115,7 +129,7 @@ cdef class LiquidReactor(ReactionSystem):
         self.generate_rate_coefficients(coreReactions, edgeReactions)
 
         ReactionSystem.compute_network_variables(self, pdepNetworks)
-        
+
         ReactionSystem.set_initial_derivative(self)
 
         # Initialize the model
@@ -124,10 +138,10 @@ cdef class LiquidReactor(ReactionSystem):
     def generate_rate_coefficients(self, coreReactions, edgeReactions):
         """
         Populates the forwardRateCoefficients, reverseRateCoefficients and equilibriumConstants
-        arrays with the values computed at the temperature and (effective) pressure of the 
+        arrays with the values computed at the temperature and (effective) pressure of the
         reacion system.
         """
-        
+
         for rxn in itertools.chain(coreReactions, edgeReactions):
             j = self.reactionIndex[rxn]
             self.kf[j] = rxn.getRateCoefficient(self.T.value_si, self.P.value_si)
@@ -137,10 +151,10 @@ cdef class LiquidReactor(ReactionSystem):
 
     def set_initial_conditions(self):
         """
-        Sets the initial conditions of the rate equations that represent the 
+        Sets the initial conditions of the rate equations that represent the
         current reactor model.
 
-        The volume is set to the value in m3 required to contain 
+        The volume is set to the value in m3 required to contain
         one mole total of core species at start.
 
         The coreSpeciesConcentrations array is set to the values stored in the
@@ -155,13 +169,13 @@ cdef class LiquidReactor(ReactionSystem):
         for spec, conc in self.initialConcentrations.iteritems():
             i = self.get_species_index(spec)
             self.coreSpeciesConcentrations[i] = conc
-        
+
         V = 1.0 / numpy.sum(self.coreSpeciesConcentrations)
-        self.V = V 
-        
+        self.V = V
+
         for j in xrange(self.numCoreSpecies):
             self.y0[j] = self.coreSpeciesConcentrations[j] * V
-       
+
 
     @cython.boundscheck(False)
     def residual(self, double t, numpy.ndarray[numpy.float64_t, ndim=1] y, numpy.ndarray[numpy.float64_t, ndim=1] dydt, numpy.ndarray[numpy.float64_t, ndim=1] senpar = numpy.zeros(1, numpy.float64)):
@@ -185,7 +199,7 @@ cdef class LiquidReactor(ReactionSystem):
 
         kf = self.kf
         kr = self.kb
-        
+
         inet = self.networkIndices
         knet = self.networkLeakCoefficients
 
@@ -194,8 +208,8 @@ cdef class LiquidReactor(ReactionSystem):
         numEdgeSpecies = len(self.edgeSpeciesRates)
         numEdgeReactions = len(self.edgeReactionRates)
         numPdepNetworks = len(self.networkLeakRates)
-        
-        
+
+
         res = numpy.zeros(numCoreSpecies, numpy.float64)
 
         coreSpeciesConcentrations = numpy.zeros_like(self.coreSpeciesConcentrations)
@@ -206,7 +220,7 @@ cdef class LiquidReactor(ReactionSystem):
         edgeSpeciesRates = numpy.zeros_like(self.edgeSpeciesRates)
         edgeReactionRates = numpy.zeros_like(self.edgeReactionRates)
         networkLeakRates = numpy.zeros_like(self.networkLeakRates)
-        
+
 
         C = numpy.zeros_like(self.coreSpeciesConcentrations)
         V =  self.V # constant volume reactor
@@ -214,7 +228,7 @@ cdef class LiquidReactor(ReactionSystem):
         for j in xrange(numCoreSpecies):
             C[j] = y[j] / V
             coreSpeciesConcentrations[j] = C[j]
-        
+
         for j in xrange(ir.shape[0]):
             k = kf[j]
             if ir[j,0] >= numCoreSpecies or ir[j,1] >= numCoreSpecies or ir[j,2] >= numCoreSpecies:
@@ -234,9 +248,9 @@ cdef class LiquidReactor(ReactionSystem):
                 revReactionRate = k * C[ip[j,0]] * C[ip[j,1]]
             else: # three reactants!! (really?)
                 revReactionRate = k * C[ip[j,0]] * C[ip[j,1]] * C[ip[j,2]]
-                
+
             reactionRate = fReactionRate-revReactionRate
-            
+
             # Set the reaction and species rates
             if j < numCoreReactions:
                 # The reaction is a core reaction
@@ -310,7 +324,7 @@ cdef class LiquidReactor(ReactionSystem):
             networkLeakRates[j] = reactionRate
 
 
-        #chatelak: Same as in Java, coreSpecies rate = 0 if declared as constatn 
+        #chatelak: Same as in Java, coreSpecies rate = 0 if declared as constatn
         if self.constSPCIndices is not None:
             for spcIndice in self.constSPCIndices:
                 coreSpeciesRates[spcIndice] = 0
@@ -325,9 +339,9 @@ cdef class LiquidReactor(ReactionSystem):
         self.edgeReactionRates = edgeReactionRates
         self.networkLeakRates = networkLeakRates
 
-        res = coreSpeciesRates * V 
-        
-        
+        res = coreSpeciesRates * V
+
+
         if self.sensitivity:
             delta = numpy.zeros(len(y), numpy.float64)
             delta[:numCoreSpecies] = res
@@ -339,13 +353,13 @@ cdef class LiquidReactor(ReactionSystem):
             for j in xrange(numCoreReactions+numCoreSpecies):
                 for i in xrange(numCoreSpecies):
                     for z in xrange(numCoreSpecies):
-                        delta[(j+1)*numCoreSpecies + i] += jacobian[i,z]*y[(j+1)*numCoreSpecies + z] 
+                        delta[(j+1)*numCoreSpecies + i] += jacobian[i,z]*y[(j+1)*numCoreSpecies + z]
                     delta[(j+1)*numCoreSpecies + i] += dgdk[i,j]
 
         else:
             delta = res
         delta = delta - dydt
-        
+
         # Return DELTA, IRES.  IRES is set to 1 in order to tell DASPK to evaluate the sensitivity residuals
         return delta, 1
 

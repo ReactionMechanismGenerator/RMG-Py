@@ -47,7 +47,6 @@ for more information.
 """
 
 import os
-import os.path
 import logging
 
 from rmgpy.cantherm.main import *
