@@ -131,7 +131,7 @@ cdef class SurfaceReactor(ReactionSystem):
                                        edgeReactions=edgeReactions,
                                        surfaceSpecies=surfaceSpecies,
                                        surfaceReactions=surfaceReactions,
-                                       pdepNetworks=pdepNetwoerks,
+                                       pdepNetworks=pdepNetworks,
                                        atol=atol,
                                        rtol=rtol,
                                        sensitivity=sensitivity,
