@@ -618,19 +618,23 @@ multiplicity 2
         comparing it to the original source.
 
         """
-        os.makedirs(os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_copy'))
-        self.family.save(os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_copy'))
+        source_path = os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_migration')
+        test_path = os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_copy')
+        if os.path.exists(test_path):
+            shutil.rmtree(test_path)
+        os.makedirs(test_path)
+        self.family.save(test_path)
         try:
-            self.assertTrue(filecmp.cmp(os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_migration/groups.py'),
-                                 os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_copy/groups.py')))
-            self.assertTrue(filecmp.cmp(os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_migration/rules.py'),
-                                 os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_copy/rules.py')))
-            self.assertTrue(filecmp.cmp(os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_migration/training/reactions.py'),
-                                 os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_copy/training/reactions.py')))
-            self.assertTrue(filecmp.cmp(os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_migration/training/dictionary.txt'),
-                                 os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_copy/training/dictionary.txt')))
+            self.assertTrue(filecmp.cmp(os.path.join(source_path, 'groups.py'),
+                                 os.path.join(test_path, 'groups.py')))
+            self.assertTrue(filecmp.cmp(os.path.join(source_path, 'rules.py'),
+                                 os.path.join(test_path, 'rules.py')))
+            self.assertTrue(filecmp.cmp(os.path.join(source_path, 'training/reactions.py'),
+                                 os.path.join(test_path, 'training/reactions.py')))
+            self.assertTrue(filecmp.cmp(os.path.join(source_path, 'training/dictionary.txt'),
+                                 os.path.join(test_path, 'training/dictionary.txt')))
         finally:
-            shutil.rmtree(os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_copy'))
+            shutil.rmtree(test_path)
 
 
 class TestGenerateReactions(unittest.TestCase):
