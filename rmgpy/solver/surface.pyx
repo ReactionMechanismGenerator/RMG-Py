@@ -137,6 +137,7 @@ cdef class SurfaceReactor(ReactionSystem):
                                        sensitivity=sensitivity,
                                        sens_atol=sens_atol,
                                        sens_rtol=sens_rtol,
+                                       filterReactions=filterReactions,
                                        conditions=conditions,
                                        )
         cdef numpy.ndarray[numpy.int_t, ndim=1] speciesOnSurface, reactionsOnSurface
