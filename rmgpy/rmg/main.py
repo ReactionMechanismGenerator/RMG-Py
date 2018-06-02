@@ -568,6 +568,15 @@ class RMG(util.Subject):
         
         self.nSimsTerms = [0 for i in xrange(len(self.reactionSystems))]
         
+        maxNSimsTerm = 0
+        for rsys in self.reactionSystems:
+            if rsys.nSimsTerm:
+                if rsys.nSimsTerm > maxNSimsTerm:
+                    maxNSimsTerm = rsys.nSimsTerm
+        
+        pruning_trigger = maxNSimsTerm*len(self.reactionSystems)
+        pruning_counter = 0
+        
         self.rmg_memories = []
         # Initiate first reaction discovery step after adding all core species
         if self.filterReactions:
@@ -686,6 +695,8 @@ class RMG(util.Subject):
                             self.makeSeedMech(firstTime=True)
                         raise
                     
+                    pruning_counter += 1
+                    
                     self.rmg_memories[index].add_t_conv_N(t,x,len(obj))
                     self.rmg_memories[index].generate_cond()
                     log_conditions(self.rmg_memories,index)
@@ -795,11 +806,15 @@ class RMG(util.Subject):
                     # If we reached our termination conditions, then try to prune
                     # species from the edge
                     if allTerminated and modelSettings.fluxToleranceKeepInEdge>0.0:
-                        self.reactionModel.prune(self.reactionSystems, modelSettings.fluxToleranceKeepInEdge, modelSettings.maximumEdgeSpecies, modelSettings.minSpeciesExistIterationsForPrune)
-                        # Perform garbage collection after pruning
-                        collected = gc.collect()
-                        logging.info('Garbage collector: collected %d objects.' % (collected))
-    
+                        if pruning_counter >= pruning_trigger:
+                            self.reactionModel.prune(self.reactionSystems, modelSettings.fluxToleranceKeepInEdge, modelSettings.maximumEdgeSpecies, modelSettings.minSpeciesExistIterationsForPrune)
+                            # Perform garbage collection after pruning
+                            pruning_counter = 0
+                            collected = gc.collect()
+                            logging.info('Garbage collector: collected %d objects.' % (collected))
+                        else:
+                            logging.info('pruning_counter was {0} max was {1}'.format(pruning_counter,pruning_trigger))
+                            
                 # Consider stopping gracefully if the next iteration might take us
                 # past the wall time
                 if self.wallTime > 0 and len(self.execTime) > 1:
