@@ -490,7 +490,10 @@ class ReactionSensitivityPlot(GenericPlot):
         newYVar = newYVar[:self.numReactions]
 
         GenericPlot(xVar=None, yVar=newYVar, xlabel ="Uncertainty Contribution (%)").barplot(filename=filename)
-        
+
+        return reactionUncertainty
+
+
 class ThermoSensitivityPlot(GenericPlot):
     """
     A class for plotting the top sensitivities to a thermo DeltaG value of species within the model.
@@ -598,3 +601,5 @@ class ThermoSensitivityPlot(GenericPlot):
         newYVar.sort(key=lambda x: abs(x.data[0]), reverse = True)
         newYVar = newYVar[:self.numSpecies]
         GenericPlot(xVar=None, yVar=newYVar, xlabel ="Uncertainty Contribution (%)").barplot(filename=filename)
+
+        return thermoUncertainty
