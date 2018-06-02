@@ -569,6 +569,12 @@ class RMG(util.Subject):
         self.nSimsTerms = [0 for i in xrange(len(self.reactionSystems))]
         
         self.rmg_memories = []
+        
+        maxNSimsTerm = 0
+        for rsys in self.reactionSystems:
+            if rsys.nSimsTerm > maxNSimsTerm:
+                maxNSimsTerm = rsys.nSimsTerm
+        
         # Initiate first reaction discovery step after adding all core species
         if self.filterReactions:
             # Run the reaction system to update threshold and react flags
@@ -619,6 +625,10 @@ class RMG(util.Subject):
         maxNumSpcsHit = False #default
         
         for q,modelSettings in enumerate(self.modelSettingsList):
+            
+            #define an iteration as the number of times the reactors have fully cycled (each reactor has run at least nSimsTerm times)
+            minExistRuns = modelSettings.minSpeciesExistIterationsForPrune*maxNSimsTerm*len(self.reactionSystems)
+            
             if len(self.simulatorSettingsList) > 1: 
                 simulatorSettings = self.simulatorSettingsList[q]
             else: #if they only provide one input for simulator use that everytime
@@ -795,7 +805,7 @@ class RMG(util.Subject):
                     # If we reached our termination conditions, then try to prune
                     # species from the edge
                     if allTerminated and modelSettings.fluxToleranceKeepInEdge>0.0:
-                        self.reactionModel.prune(self.reactionSystems, modelSettings.fluxToleranceKeepInEdge, modelSettings.maximumEdgeSpecies, modelSettings.minSpeciesExistIterationsForPrune)
+                        self.reactionModel.prune(self.reactionSystems, modelSettings.fluxToleranceKeepInEdge, modelSettings.maximumEdgeSpecies, minExistRuns)
                         # Perform garbage collection after pruning
                         collected = gc.collect()
                         logging.info('Garbage collector: collected %d objects.' % (collected))
