@@ -141,7 +141,7 @@ cdef class SimpleReactor(ReactionSystem):
         A helper function used when pickling an object.
         """
         return (self.__class__, 
-            (self.T, self.P, self.initialMoleFractions, self.nSimsTerm, self.termination))
+            (self.T, self.P, self.Trange, self.Prange, self.initialMoleFractions, self.nSimsTerm, self.termination))
 
 
     def convertInitialKeysToSpeciesObjects(self, speciesDict):
