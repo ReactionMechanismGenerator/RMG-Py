@@ -223,7 +223,7 @@ def toSMILES(mol, backend='default'):
     """
     Convert a molecular structure to an SMILES string.
 
-    If there is a Nitrogen atom present it uses
+    If there is a Nitrogen/Sulfur atom present it uses
     `OpenBabel <http://openbabel.org/>`_ to perform the conversion,
     and the SMILES may or may not be canonical.
 
@@ -244,7 +244,7 @@ def toSMILES(mol, backend='default'):
     except KeyError:
         if backend == 'default':
             for atom in mol.atoms:
-                if atom.isNitrogen():
+                if atom.isNitrogen() or atom.isSulfur():
                     return _write(mol, 'smi', backend='openbabel')
             return _write(mol, 'smi', backend='rdkit')
         else:
