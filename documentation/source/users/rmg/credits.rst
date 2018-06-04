@@ -9,16 +9,16 @@ RMG is based upon work supported by the Department of Energy, Office of Basic En
 Project Supervisors:
 
 - Prof. William H. Green (whgreen@mit.edu)
-- Prof. Richard H. West (r.west@neu.edu)
+- Prof. Richard H. West (r.west@northeastern.edu)
  
 Current Developers: (rmg_dev@mit.edu)
 
 - Dr. Alon G. Dana
 - Mark Goldman
 - Kehang Han
-- Max Liu
-- Belinda Slakman
-- Nathan Yee
+- Matt Johnson
+- Mengjie Liu
+- Mark Payne
 
 Previous Developers: 
 
@@ -31,14 +31,17 @@ Previous Developers:
 - Dr. Fariba S. Khanshan
 - Victor Lambert
 - Dr. Shamel S. Merchant
+- Dr. Belinda Slakman
 - Sean Troiano
 - Dr. Aaron Vandeputte
 - Dr. Nick M. Vandewiele
+- Dr. Nathan Yee
+- Peng Zhang
 
 
 ***********
 How to Cite
 ***********
 
-Connie W. Gao, Joshua W. Allen, William H. Green, Richard H. West, "Reaction Mechanism Generator: automatic 
-construction of chemical kinetic mechanisms." *Computer Physics Communications* (2016).
+Connie W. Gao, Joshua W. Allen, William H. Green, Richard H. West, "Reaction Mechanism Generator: Automatic 
+construction of chemical kinetic mechanisms." *Computer Physics Communications* 203 (2016) 212-225. https://doi.org/10.1016/j.cpc.2016.02.013

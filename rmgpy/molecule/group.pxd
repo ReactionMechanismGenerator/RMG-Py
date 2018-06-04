@@ -1,28 +1,29 @@
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2009-2011 by the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 from .graph cimport Vertex, Edge, Graph
 from .atomtype cimport AtomType
@@ -37,6 +38,7 @@ cdef class GroupAtom(Vertex):
     cdef public list charge
     cdef public str label
     cdef public list lonePairs
+    cdef public dict props
 
     cpdef Vertex copy(self)
 
@@ -115,10 +117,7 @@ cdef class Group(Graph):
 
     # These read-only attribues act as a "fingerprint" for accelerating
     # subgraph isomorphism checks
-    cdef public short carbonCount
-    cdef public short nitrogenCount
-    cdef public short oxygenCount
-    cdef public short sulfurCount
+    cdef public dict elementCount
     cdef public short radicalCount
 
     cpdef addAtom(self, GroupAtom atom)
@@ -152,6 +151,8 @@ cdef class Group(Graph):
     cpdef GroupAtom getLabeledAtom(self, str label)
 
     cpdef dict getLabeledAtoms(self)
+
+    cpdef dict get_element_count(self)
 
     cpdef fromAdjacencyList(self, str adjlist)
 
@@ -196,3 +197,5 @@ cdef class Group(Graph):
     cpdef bint isBenzeneExplicit(self)
 
     cpdef Group mergeGroups(self, Group other)
+
+    cpdef resetRingMembership(self)

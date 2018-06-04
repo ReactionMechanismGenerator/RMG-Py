@@ -1,32 +1,32 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 from nose.tools import assert_equal, assert_true, assert_false
 import logging
@@ -40,7 +40,7 @@ from external.wip import work_in_progress
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.molecule.group import Group
 
-molecule_atom_types           = [ 'C', 'O', 'N', 'S', 'Si', 'Cl']
+molecule_atom_types           = [ 'C', 'O', 'N', 'S', 'Si', 'Cl', 'I']
 group_atomtypes = {}
 
 for item in create_atom_types() :
@@ -99,7 +99,7 @@ def retrieve_unspecified_valency(atom_type, unpaired_electrons):
 def load_cases_group_atom_types():
     '''
     creates test cases in which the atom types of the 1st graph are 'molecule' atom types, like 'C', 'N', ...
-    and are 'group' atom types like 'Cs', 'Od', ... for the 2nd graph.
+    and are 'group' atom types like 'Cs', 'O2d', ... for the 2nd graph.
     '''
     
     output = []
@@ -140,6 +140,7 @@ def load_cases_molecule_atom_types():
     '''
     output = []
     a_types           = list(itertools.product(molecule_atom_types, repeat=2))
+    uncharged_a_types = ['Cl','I']
     unpaired_electrons = list(itertools.product(range(3), repeat=2))
     cross_element_unpaired = list(itertools.product(a_types,unpaired_electrons))
     for item in cross_element_unpaired:
@@ -155,7 +156,10 @@ def load_cases_molecule_atom_types():
                 for now, only allow charges up to +1, not +2, +3, even
                 if the unspecified valency allows for that.
                 '''
-                charges.append(range(min(val,1)+1))
+                if el not in uncharged_a_types:
+                    charges.append(range(min(val,1)+1))
+                else:
+                    charges.append((0,0))
                 
         charge_combos = list(itertools.product(charges[0],charges[1]))#cross product for both graphs
         for charge_combo in charge_combos:#combine charge tuple with the cross product of element and unpaired

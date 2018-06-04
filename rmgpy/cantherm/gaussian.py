@@ -1,32 +1,32 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 import math
 import numpy
@@ -156,12 +156,14 @@ class GaussianLog:
                 mass[i] = 31.97207100
             elif number[i] == 17:
                 mass[i] = 35.4527
+            elif number[i] == 53:
+                mass[i] = 126.90447
             else:
                 raise NotImplementedError('Atomic number {0:d} not yet supported in loadGeometry().'.format(number[i]))
         
         return coord, number, mass
 
-    def loadConformer(self, symmetry=None, spinMultiplicity=None, opticalIsomers=1):
+    def loadConformer(self, symmetry=None, spinMultiplicity=None, opticalIsomers=1, symfromlog=None):
         """
         Load the molecular degree of freedom data from a log file created as
         the result of a Gaussian "Freq" quantum chemistry calculation. As
@@ -198,7 +200,8 @@ class GaussianLog:
 
                     # Read Gaussian's estimate of the external symmetry number
                     elif 'Rotational symmetry number' in line and symmetry is None:
-                        symmetry = int(float(line.split()[3]))
+                        if symfromlog is True:
+                            symmetry = int(float(line.split()[3]))
 
                     # Read moments of inertia for external rotational modes
                     elif 'Rotational constants (GHZ):' in line:

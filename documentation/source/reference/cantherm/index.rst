@@ -23,16 +23,30 @@ Class                           Description
 
 
 
-Geometry
-========
+Reading Q-Chem log files
+========================
 
-.. currentmodule:: rmgpy.cantherm.geometry
+.. currentmodule:: rmgpy.cantherm.qchem
 
 =============================== ================================================
 Class                           Description
 =============================== ================================================
-:class:`Geometry`               The three-dimensional geometry of a molecular conformation
+:class:`QchemLog`               Extract chemical parameters from Q-Chem log files
 =============================== ================================================
+
+
+
+Reading Molpro log files
+========================
+
+.. currentmodule:: rmgpy.cantherm.molpro
+
+=============================== ================================================
+Class                           Description
+=============================== ================================================
+:class:`MolproLog`              Extract chemical parameters from Molpro log files
+=============================== ================================================
+
 
 
 Input
@@ -65,24 +79,12 @@ Class                           Description
 
 
 
-Exceptions
-==========
-
-.. currentmodule:: rmgpy.cantherm
-
-=============================== ================================================
-Exception                       Description
-=============================== ================================================
-:exc:`GaussianError`            Raised when an error occurs while working with a Gaussian log file
-=============================== ================================================
-
-
-
 .. toctree::
     :hidden:
     
     gaussianlog
-    geometry
+    qchemlog
+    molprolog
     input
     kinetics
     main

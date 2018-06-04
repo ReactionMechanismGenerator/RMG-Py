@@ -1,32 +1,32 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 """
 This module contains functionality for parsing CanTherm input files.
@@ -388,16 +388,20 @@ def loadInputFile(path):
         logging.warning('No frequency scale factor specified in input file; assuming a value of unity.')
     frequencyScaleFactor = local_context.get('frequencyScaleFactor', 1.0)
     useHinderedRotors = local_context.get('useHinderedRotors', True)
+    useAtomCorrections = local_context.get('useAtomCorrections', True)
     useBondCorrections = local_context.get('useBondCorrections', False)
+    atomEnergies = local_context.get('atomEnergies', None)
     
     directory = os.path.dirname(path)
     
     for job in jobList:
         if isinstance(job, StatMechJob):
             job.path = os.path.join(directory, job.path)
-            job.modelChemistry = modelChemistry
+            job.modelChemistry = modelChemistry.lower()
             job.frequencyScaleFactor = frequencyScaleFactor
             job.includeHinderedRotors = useHinderedRotors
+            job.applyAtomEnergyCorrections = useAtomCorrections
             job.applyBondEnergyCorrections = useBondCorrections
+            job.atomEnergies = atomEnergies
     
     return jobList

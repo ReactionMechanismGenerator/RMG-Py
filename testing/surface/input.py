@@ -196,7 +196,7 @@ options(
     units='si',
     saveRestartPeriod=None,
     generateOutputHTML=True,
-    generatePlots=True,
+    generatePlots=False, # Enable to make plots of core and edge size etc.. But takes 40% of the total runtime!
     saveEdgeSpecies=True,
     saveSimulationProfiles=True,
 )

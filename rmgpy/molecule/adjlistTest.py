@@ -1,5 +1,32 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 import unittest
 from external.wip import work_in_progress
@@ -24,7 +51,7 @@ class TestGroupAdjLists(unittest.TestCase):
         """
         adjlist = """
 1 *2 {Cs,Cd} 0 {2,{S,D}} {3,S}
-2 *1 {Os,Od}  0   {1,{S,D}}
+2 *1 {O2s,O2d}  0   {1,{S,D}}
 3    R!H     {0,1} {1,S}
             """
         group = Group().fromAdjacencyList(adjlist)
@@ -42,8 +69,8 @@ class TestGroupAdjLists(unittest.TestCase):
         self.assertTrue(atom1.radicalElectrons == [0])
 
         self.assertTrue(atom2.label == '*1')
-        self.assertTrue(atom2.atomType[0].label in ['Os', 'Od'])
-        self.assertTrue(atom2.atomType[1].label in ['Os', 'Od'])
+        self.assertTrue(atom2.atomType[0].label in ['O2s', 'O2d'])
+        self.assertTrue(atom2.atomType[1].label in ['O2s', 'O2d'])
         self.assertTrue(atom2.radicalElectrons == [0])
 
         self.assertTrue(atom3.label == '')
@@ -59,9 +86,9 @@ class TestGroupAdjLists(unittest.TestCase):
         adjlist: Test the Group.fromAdjacencyList() method.
         """
         adjlist = """
-1 *2 [Cs,Cd] u0 {2,[S,D]} {3,S}
-2 *1 [Os,Od] u0 {1,[S,D]}
-3    R!H     u0 {1,S}
+1 *2 [Cs,Cd]   u0 {2,[S,D]} {3,S}
+2 *1 [O2s,O2d] u0 {1,[S,D]}
+3    R!H       u0 {1,S}
             """
         group = Group().fromAdjacencyList(adjlist)
         
@@ -78,8 +105,8 @@ class TestGroupAdjLists(unittest.TestCase):
         self.assertTrue(atom1.radicalElectrons == [0])
 
         self.assertTrue(atom2.label == '*1')
-        self.assertTrue(atom2.atomType[0].label in ['Os', 'Od'])
-        self.assertTrue(atom2.atomType[1].label in ['Os', 'Od'])
+        self.assertTrue(atom2.atomType[0].label in ['O2s', 'O2d'])
+        self.assertTrue(atom2.atomType[1].label in ['O2s', 'O2d'])
         self.assertTrue(atom2.radicalElectrons == [0])
         
         self.assertTrue(atom3.label == '')
@@ -116,15 +143,32 @@ class TestGroupAdjLists(unittest.TestCase):
         adjlist: Test the Group.toAdjacencyList() method.
         """
         adjlist = """
-1 *2 [Cs,Cd] u0 {2,[S,D]} {3,S}
-2 *1 [Os,Od] u0 {1,[S,D]}
-3    R!H     u0 {1,S}
+1 *2 [Cs,Cd]   u0 {2,[S,D]} {3,S}
+2 *1 [O2s,O2d] u0 {1,[S,D]}
+3    R!H       u0 {1,S}
             """
         group = Group().fromAdjacencyList(adjlist)
         adjlist2 = group.toAdjacencyList()
 
         self.assertEqual(adjlist.strip(), adjlist2.strip())
 
+    def testAtomProps(self):
+        """Test that the atom props attribute can be properly read and written."""
+        adjlist = """
+1 *1 R!H u1 r0 {2,S}
+2 *4 R!H u0 r0 {1,S} {3,S}
+3 *2 Cb  u0 r1 {2,S} {4,B}
+4 *3 Cb  u0 r1 {3,B}
+        """
+        group = Group().fromAdjacencyList(adjlist)
+        for atom in group.atoms:
+            if atom.atomType[0].label == 'R!H':
+                self.assertFalse(atom.props['inRing'])
+            elif atom.atomType[0].label == 'Cb':
+                self.assertTrue(atom.props['inRing'])
+        adjlist2 = group.toAdjacencyList()
+
+        self.assertEqual(adjlist.strip(), adjlist2.strip())
 
 class TestMoleculeAdjLists(unittest.TestCase):
     """
@@ -508,8 +552,8 @@ class TestMoleculeAdjLists(unittest.TestCase):
         """
         adjlist: Test that improperly formed adjlists raise an InvalidAdjacencyListError.
         """
-        # Carbon with 1 radical and 3 lone pairs = 7 total electrons.  Should have -3 charge but doesn't
-        adjlist1 = "1 C u1 p3 c0"
+        # Carbon with 1 radical and 2 lone pairs = 5 total electrons.  Should have -1 charge but doesn't
+        adjlist1 = "1 C u1 p2 c0"
         
         with self.assertRaises(InvalidAdjacencyListError):
             Molecule().fromAdjacencyList(adjlist1)

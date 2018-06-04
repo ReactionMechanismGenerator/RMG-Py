@@ -1,32 +1,32 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 """
 This module contains classes and functions that are used by multiple modules
@@ -156,8 +156,8 @@ def filter_reactions(reactants, products, reactionList):
     warnings.warn("The filter_reactions method is no longer used and may be removed in a future version.", DeprecationWarning)
     
     # Convert from molecules to species and generate resonance isomers.
-    reactants = ensure_species(reactants, resonance=True)
-    products = ensure_species(products, resonance=True)
+    ensure_species(reactants, resonance=True)
+    ensure_species(products, resonance=True)
 
     reactions = reactionList[:]
     
@@ -197,11 +197,10 @@ def filter_reactions(reactants, products, reactionList):
 
 def ensure_species(input_list, resonance=False, keepIsomorphic=False):
     """
-    Given an input list of molecules or species, return a list with only
-    species objects.
+    The input list of :class:`Species` or :class:`Molecule` objects is modified
+    in place to only have :class:`Species` objects. Returns None.
     """
-    output_list = []
-    for item in input_list:
+    for index, item in enumerate(input_list):
         if isinstance(item, Molecule):
             new_item = Species(molecule=[item])
         elif isinstance(item, Species):
@@ -210,9 +209,7 @@ def ensure_species(input_list, resonance=False, keepIsomorphic=False):
             raise TypeError('Only Molecule or Species objects can be handled.')
         if resonance:
             new_item.generate_resonance_structures(keepIsomorphic=keepIsomorphic)
-        output_list.append(new_item)
-
-    return output_list
+        input_list[index] = new_item
 
 
 def generate_molecule_combos(input_species):
@@ -235,13 +232,15 @@ def generate_molecule_combos(input_species):
 
 def ensure_independent_atom_ids(input_species, resonance=True):
     """
-    Given a list or tuple of :class:`Species` objects, ensure that atom ids are
-    independent across all of the species. Optionally, the `resonance` argument
-    can be set to False to not generate resonance structures.
+    Given a list or tuple of :class:`Species` or :class:`Molecule` objects,
+    ensure that atom ids are independent.
+    The `resonance` argument can be set to False to not generate
+    resonance structures.
 
-    Modifies the input species in place, nothing is returned.
+    Modifies the list in place (replacing :class:`Molecule` with :class:`Species`).
+    Returns None.
     """
-
+    ensure_species(input_species, resonance=resonance)
     # Method to check that all species' atom ids are different
     def independent_ids():
         num_atoms = 0
@@ -285,7 +284,7 @@ def find_degenerate_reactions(rxnList, same_reactants=None, kinetics_database=No
     rxnSorted = []
     for rxn0 in rxnList:
         # find resonance structures for rxn0
-        ensure_species_in_reaction(rxn0)
+        rxn0.ensure_species()
         if len(rxnSorted) == 0:
             # This is the first reaction, so create a new sublist
             rxnSorted.append([rxn0])
@@ -351,44 +350,6 @@ def find_degenerate_reactions(rxnList, same_reactants=None, kinetics_database=No
                 rxn.degeneracy = family.calculateDegeneracy(rxn)
 
     return rxnList
-
-
-def ensure_species_in_reaction(reaction):
-    """
-    Modifies a reaction holding Molecule objects to a reaction holding
-    Species objects. Generates resonance structures for reaction products.
-    """
-    # if already species' objects, return none
-    if isinstance(reaction.reactants[0], Species):
-        return None
-    # obtain species with all resonance isomers
-    if reaction.isForward:
-        reaction.reactants = ensure_species(reaction.reactants, resonance=False)
-        reaction.products = ensure_species(reaction.products, resonance=True, keepIsomorphic=True)
-    else:
-        reaction.reactants = ensure_species(reaction.reactants, resonance=True, keepIsomorphic=True)
-        reaction.products = ensure_species(reaction.products, resonance=False)
-
-    # convert reaction.pairs object to species
-    new_pairs = []
-    for reactant, product in reaction.pairs:
-        new_pair = []
-        for reactant0 in reaction.reactants:
-            if reactant0.isIsomorphic(reactant):
-                new_pair.append(reactant0)
-                break
-        for product0 in reaction.products:
-            if product0.isIsomorphic(product):
-                new_pair.append(product0)
-                break
-        new_pairs.append(new_pair)
-    reaction.pairs = new_pairs
-
-    try:
-        ensure_species_in_reaction(reaction.reverse)
-    except AttributeError:
-        pass
-
 
 def reduce_same_reactant_degeneracy(reaction, same_reactants=None):
     """

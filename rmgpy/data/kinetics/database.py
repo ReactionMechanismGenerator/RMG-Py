@@ -1,32 +1,32 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 
 import os.path
@@ -205,7 +205,6 @@ class KineticsDatabase(object):
         The `path` points to the folder of kinetics libraries in the database,
         and the libraries should be in files like :file:`<path>/<library>.py`.
         """
-        self.libraries = {}
         
         if libraries is not None:
             for library_name in libraries:
@@ -221,8 +220,7 @@ class KineticsDatabase(object):
 For H2 combustion chemistry consider using either the BurkeH2inN2 or BurkeH2inArHe
 library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n""")
                     raise IOError("Couldn't find kinetics library {0}".format(library_file))
-            # library order should've been set prior to this, with the given seed mechs and reaction libraries
-            assert (len(self.libraryOrder) == len(libraries))
+
         else:# load all the libraries you can find (this cannot be activated in a normal RMG job.  Only activated when loading the database for other purposes)
             self.libraryOrder = []
             for (root, dirs, files) in os.walk(os.path.join(path)):
@@ -371,7 +369,7 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
         reactionList = []
         if only_families is None:
             reactionList.extend(self.generate_reactions_from_libraries(reactants, products))
-        reactionList.extend(self.generate_reactions_from_families(reactants, products, only_families=None, resonance=True))
+        reactionList.extend(self.generate_reactions_from_families(reactants, products, only_families=None, resonance=resonance))
         return reactionList
 
     def generate_reactions_from_libraries(self, reactants, products=None):
@@ -393,7 +391,7 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
         provided `reactants`, which can be either :class:`Molecule` objects or
         :class:`Species` objects.
         """
-        reactants = ensure_species(reactants)
+        ensure_species(reactants)
 
         reaction_list = []
         for entry in library.entries.values():
@@ -441,10 +439,9 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
             elif reactants[0].isIsomorphic(reactants[1]):
                 same_reactants = True
 
-        # Convert to Species objects if necessary
-        reactants = ensure_species(reactants)
-
-        # Label reactant atoms for proper degeneracy calculation
+        # Label reactant atoms for proper degeneracy calculation (cannot be in tuple)
+        if isinstance(reactants, tuple):
+            reactants = list(reactants)
         ensure_independent_atom_ids(reactants, resonance=resonance)
 
         combos = generate_molecule_combos(reactants)

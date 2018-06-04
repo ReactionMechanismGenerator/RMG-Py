@@ -1,33 +1,32 @@
 #!/usr/bin/env python
-# encoding: utf-8
-from __builtin__ import True
+# -*- coding: utf-8 -*-
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 """
 This module contains classes and functions for working with chemical reactions.
@@ -82,6 +81,7 @@ class Reaction:
     `duplicate`         ``bool``                    ``True`` if the reaction is known to be a duplicate, ``False`` if not
     `degeneracy`        :class:`double`             The reaction path degeneracy for the reaction
     `pairs`             ``list``                    Reactant-product pairings to use in converting reaction flux to species flux
+    `has_pdep_route`    ``bool``                    ``True`` if the reaction has an additional PDep pathway, ``False`` if not (by default), used for LibraryReactions
     `comment`           ``str``                     A description of the reaction source (optional)
     =================== =========================== ============================
     
@@ -99,6 +99,7 @@ class Reaction:
                  duplicate=False,
                  degeneracy=1,
                  pairs=None,
+                 has_pdep_route=False,
                  comment=''
                  ):
         self.index = index
@@ -112,6 +113,7 @@ class Reaction:
         self.transitionState = transitionState
         self.duplicate = duplicate
         self.pairs = pairs
+        self.has_pdep_route = has_pdep_route
         self.comment = comment
         self.k_effective_cache = {}
 
@@ -132,6 +134,7 @@ class Reaction:
         if self.duplicate: string += 'duplicate={0}, '.format(self.duplicate)
         if self.degeneracy != 1: string += 'degeneracy={0:.1f}, '.format(self.degeneracy)
         if self.pairs is not None: string += 'pairs={0}, '.format(self.pairs)
+        if self.has_pdep_route: string += 'has_pdep_route={0}'.format(self.has_pdep_route)
         if self.comment != '': string += 'comment={0!r}, '.format(self.comment)
         string = string[:-2] + ')'
         return string
@@ -171,11 +174,13 @@ class Reaction:
                            self.duplicate,
                            self.degeneracy,
                            self.pairs,
+                           self.has_pdep_route,
                            self.comment
                            ))
 
     def __getDegneneracy(self):
         return self._degeneracy
+
     def __setDegeneracy(self, new):
         # modify rate if kinetics exists
         if self.kinetics is not None:
@@ -381,8 +386,8 @@ class Reaction:
         and products of this reaction. Both directions are checked.
 
         Args:
-            reactants   List of Species required on one side of the reaction
-            products    List of Species required on the other side (optional)
+            reactants (list): Species required on one side of the reaction
+            products (list, optional): Species required on the other side
         """
         # Check forward direction
         if _isomorphicSpeciesList(self.reactants, reactants):
@@ -995,41 +1000,52 @@ class Reaction:
         
         There are a number of ways of determining the correct pairing for 
         bimolecular reactions. Here we try a simple similarity analysis by comparing
-        the number of heavy atoms (carbons and oxygens at the moment). This should
+        the number of heavy atoms (C/O/N/S at the moment). This should
         work most of the time, but a more rigorous algorithm may be needed for
         some cases.
         """
         self.pairs = []
-        
+
         if len(self.reactants) == 1 or len(self.products) == 1:
             # Pair each reactant with each product
             for reactant in self.reactants:
                 for product in self.products:
                     self.pairs.append((reactant, product))
             
-        else:
-                
+        else:  # this is the bimolecular case
             reactants = self.reactants[:]
             products = self.products[:]
+
+            reactantCarbons   = [sum([1 for atom in reactant.molecule[0].atoms if atom.isCarbon()])   for reactant in reactants]
+            productCarbons    = [sum([1 for atom in  product.molecule[0].atoms if atom.isCarbon()])   for product  in products ]
+            reactantOxygens   = [sum([1 for atom in reactant.molecule[0].atoms if atom.isOxygen()])   for reactant in reactants]
+            productOxygens    = [sum([1 for atom in  product.molecule[0].atoms if atom.isOxygen()])   for product  in products ]
+            reactantNitrogens = [sum([1 for atom in reactant.molecule[0].atoms if atom.isNitrogen()]) for reactant in reactants]
+            productNitrogens  = [sum([1 for atom in  product.molecule[0].atoms if atom.isNitrogen()]) for product  in products ]
+            reactantSilicons  = [sum([1 for atom in reactant.molecule[0].atoms if atom.isSilicon()])  for reactant in reactants]
+            productSilicons   = [sum([1 for atom in  product.molecule[0].atoms if atom.isSilicon()])  for product  in products ]
+            reactantSulfurs   = [sum([1 for atom in reactant.molecule[0].atoms if atom.isSulfur()])   for reactant in reactants]
+            productSulfurs    = [sum([1 for atom in  product.molecule[0].atoms if atom.isSulfur()])   for product  in products ]
+            reactantChlorines = [sum([1 for atom in reactant.molecule[0].atoms if atom.isChlorine()]) for reactant in reactants]
+            productChlorines  = [sum([1 for atom in  product.molecule[0].atoms if atom.isChlorine()]) for product  in products ]
+            reactantIodines   = [sum([1 for atom in reactant.molecule[0].atoms if atom.isChlorine()]) for reactant in reactants]
+            productIodines    = [sum([1 for atom in  product.molecule[0].atoms if atom.isChlorine()]) for product  in products ]
             
-            reactantCarbons = [sum([1 for atom in reactant.molecule[0].atoms if atom.isCarbon()]) for reactant in reactants]
-            productCarbons  = [sum([1 for atom in  product.molecule[0].atoms if atom.isCarbon()]) for product  in products ]
-            reactantOxygens = [sum([1 for atom in reactant.molecule[0].atoms if atom.isOxygen()]) for reactant in reactants]
-            productOxygens  = [sum([1 for atom in  product.molecule[0].atoms if atom.isOxygen()]) for product  in products ]
-            
-            # Sort the reactants and products by carbon number, then by oxygen number
-            reactants = [(carbon, oxygen, reactant) for carbon, oxygen, reactant in zip(reactantCarbons,reactantOxygens,reactants)]
+            # Sort the reactants and products by C/O/N/S numbers
+            reactants = [(carbon, oxygen, nitrogen, silicon, sulfur, chlorine, iodine, reactant) for carbon, oxygen, nitrogen, silicon, sulfur, chlorine, iodine, reactant
+                         in zip(reactantCarbons,reactantOxygens,reactantNitrogens,reactantSilicons,reactantSulfurs,reactantChlorines, reactantIodines, reactants)]
             reactants.sort()
-            products = [(carbon, oxygen, product) for carbon, oxygen, product in zip(productCarbons,productOxygens,products)]
+            products = [(carbon, oxygen, nitrogen, silicon, sulfur, chlorine, iodine, product) for carbon, oxygen, nitrogen, silicon, sulfur, chlorine, iodine, product
+                        in zip(productCarbons,productOxygens,productNitrogens,productSilicons,productSulfurs,productChlorines, productIodines, products)]
             products.sort()
             
             while len(reactants) > 1 and len(products) > 1:
-                self.pairs.append((reactants[-1][2], products[-1][2]))
+                self.pairs.append((reactants[-1][-1], products[-1][-1]))
                 reactants.pop()
                 products.pop()
             for reactant in reactants:
                 for product in products:
-                    self.pairs.append((reactant[2], product[2]))
+                    self.pairs.append((reactant[-1], product[-1]))
     
     def draw(self, path):
         """
@@ -1146,9 +1162,54 @@ class Reaction:
         other.transitionState = deepcopy(self.transitionState)
         other.duplicate = self.duplicate
         other.pairs = deepcopy(self.pairs)
+        other.has_pdep_route = self.has_pdep_route
         other.comment = deepcopy(self.comment)
         
         return other
+
+    def ensure_species(self, reactant_resonance=False, product_resonance=True):
+        """
+        Ensure the reaction contains species objects in its reactant and product
+        attributes. If the reaction is found to hold molecule objects, it
+        modifies the reactant, product and pairs to hold
+        Species objects.
+
+        Generates resonance structures for Molecules if the corresponding options,
+        reactant_resonance and/or product_resonance, are True. Does not generate
+        resonance for reactants or products that start as Species objects.
+        """
+        from rmgpy.data.kinetics.common import ensure_species
+        # if already species' objects, return none
+        if isinstance(self.reactants[0], Species):
+            return None
+        # obtain species with all resonance isomers
+        if self.isForward:
+            ensure_species(self.reactants, resonance=reactant_resonance, keepIsomorphic=True)
+            ensure_species(self.products, resonance=product_resonance, keepIsomorphic=True)
+        else:
+            ensure_species(self.reactants, resonance=product_resonance, keepIsomorphic=True)
+            ensure_species(self.products, resonance=reactant_resonance, keepIsomorphic=True)
+
+        # convert reaction.pairs object to species
+        if self.pairs:
+            new_pairs = []
+            for reactant, product in self.pairs:
+                new_pair = []
+                for reactant0 in self.reactants:
+                    if reactant0.isIsomorphic(reactant):
+                        new_pair.append(reactant0)
+                        break
+                for product0 in self.products:
+                    if product0.isIsomorphic(product):
+                        new_pair.append(product0)
+                        break
+                new_pairs.append(new_pair)
+            self.pairs = new_pairs
+
+        try:
+            self.reverse.ensure_species()
+        except AttributeError:
+            pass
 
 def _isomorphicSpeciesList(list1, list2, checkIdentical=False, checkOnlyLabel = False):
     """

@@ -1,32 +1,32 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 """
 This module contains functionality for working with kinetics libraries.
@@ -73,6 +73,7 @@ class LibraryReaction(Reaction):
                  degeneracy=1,
                  pairs=None,
                  library=None,
+                 has_pdep_route=False,
                  entry=None
                  ):
         Reaction.__init__(self,
@@ -85,7 +86,8 @@ class LibraryReaction(Reaction):
                           transitionState=transitionState,
                           duplicate=duplicate,
                           degeneracy=degeneracy,
-                          pairs=pairs
+                          pairs=pairs,
+                          has_pdep_route=has_pdep_route
                           )
         self.library = library
         self.family = library
@@ -106,6 +108,7 @@ class LibraryReaction(Reaction):
                                   self.degeneracy,
                                   self.pairs,
                                   self.library,
+                                  self.has_pdep_route,
                                   self.entry
                                   ))
 
@@ -123,9 +126,9 @@ class KineticsLibrary(Database):
     A class for working with an RMG kinetics library.
     """
 
-    def __init__(self, label='', name='', solvent=None, shortDesc='', longDesc='', duplicatesChecked=True):
+    def __init__(self, label='', name='', solvent=None, shortDesc='', longDesc='', autoGenerated=False):
         Database.__init__(self, label=label, name=name, shortDesc=shortDesc, longDesc=longDesc)
-        self.duplicatesChecked=duplicatesChecked
+        self.autoGenerated=autoGenerated
         
     def __str__(self):
         return 'Kinetics Library {0}'.format(self.label)
@@ -139,35 +142,35 @@ class KineticsLibrary(Database):
         and returns at list of all of these LibraryReaction and TemplateReaction objects
         """
         rxns = []
-        for entry in self.entries.values():                
+        for entry in self.entries.values():
             if entry._longDesc and 'Originally from reaction library: ' in entry._longDesc:
-                lib = entry._longDesc.replace('Originally from reaction library: ','')
+                lib = [line for line in entry._longDesc.split('\n') if 'Originally from reaction library: ' in line]
+                lib = lib[0].replace('Originally from reaction library: ','')
                 lib = lib.replace('\n','')
-                logging.info(lib)
-                rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],\
-                 library=lib, specificCollider=entry.item.specificCollider, kinetics=entry.data, duplicate=entry.item.duplicate,\
+                rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],
+                 library=lib, specificCollider=entry.item.specificCollider, kinetics=entry.data, duplicate=entry.item.duplicate,
                  reversible=entry.item.reversible
                  )
             elif entry._longDesc and 'rate rule' in entry._longDesc: #template reaction
                 c = entry._longDesc.split('\n')
-                familyname = c[-1].replace('family: ','')
-                logging.info(familyname)
+                family_comments = [i for i in c if 'family: ' in i]
+                familyname = family_comments[0].replace('family: ','')
                 tstring = c[0]
                 ind = tstring.find('rate rule')
-                tstring = tstring[ind+9:]
+                tstring = tstring[ind+10:]
                 tstrings = tstring.split(';')
                 tstrings[0] = tstrings[0][1:]
                 tstrings[-1] = tstrings[-1][:-1]
-                logging.info(tstring)
-                rxn = TemplateReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],\
-                  specificCollider=entry.item.specificCollider, kinetics=entry.data, duplicate=entry.item.duplicate,\
+                rxn = TemplateReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],
+                  specificCollider=entry.item.specificCollider, kinetics=entry.data, duplicate=entry.item.duplicate,
                  reversible=entry.item.reversible,family=familyname,template=tstrings
                  )
-            else: #pdep or standard library reaction
-                rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],\
-                 library=self.label, specificCollider=entry.item.specificCollider, kinetics=entry.data, duplicate=entry.item.duplicate,\
-                 reversible=entry.item.reversible
-                 )
+            else:  # pdep or standard library reaction
+                rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],
+                                      library=self.label, specificCollider=entry.item.specificCollider,
+                                      kinetics=entry.data, duplicate=entry.item.duplicate,
+                                      reversible=entry.item.reversible, has_pdep_route=entry.item.has_pdep_route
+                                      )
             rxns.append(rxn)
         
         return rxns
@@ -180,10 +183,9 @@ class KineticsLibrary(Database):
         for r1 in reactions1:
             for r2 in reactions2:
                 if (r1.reactants == r2.reactants and
-                    r1.products == r2.products and
-                    r1.specificCollider == r2.specificCollider and
-                    r1.reversible == r2.reversible
-                    ):
+                        r1.products == r2.products and
+                        r1.specificCollider == r2.specificCollider and
+                        r1.reversible == r2.reversible):
                     r1.duplicate = True
                     r2.duplicate = True
                     
@@ -312,8 +314,8 @@ class KineticsLibrary(Database):
         self.shortDesc = local_context['shortDesc']
         self.longDesc = local_context['longDesc'].strip()
         
-        if 'duplicatesChecked' in local_context.keys():
-            self.duplicatesChecked = local_context['duplicatesChecked']
+        if 'autoGenerated' in local_context.keys():
+            self.autoGenerated = local_context['autoGenerated']
     
         # Load a unique set of the species in the kinetics library
         speciesDict = self.getSpecies(os.path.join(os.path.dirname(path),'dictionary.txt'))
@@ -372,10 +374,10 @@ class KineticsLibrary(Database):
             if len(rxn.products) > 3:
                 raise DatabaseError('RMG does not accept reactions with more than 3 products in its solver.  Reaction {0} in kinetics library {1} has {2} reactants.'.format(rxn, self.label, len(rxn.products)))
         
-        if self.duplicatesChecked:
-            self.checkForDuplicates()
-        else:
+        if self.autoGenerated:
             self.checkForDuplicates(markDuplicates=True)
+        else: 
+            self.checkForDuplicates()
             self.convertDuplicatesToMulti()
             
         
@@ -390,6 +392,7 @@ class KineticsLibrary(Database):
                   referenceType='',
                   shortDesc='',
                   longDesc='',
+                  has_pdep_route=False,
                   ):
         
 #        reactants = [Species(label=reactant1.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(reactant1)])]
@@ -401,7 +404,8 @@ class KineticsLibrary(Database):
 #        if product3 is not None: products.append(Species(label=product3.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(product3)]))
 #        
         # Make a blank reaction
-        rxn = Reaction(reactants=[], products=[], degeneracy=degeneracy, duplicate=duplicate, reversible=reversible)
+        rxn = Reaction(reactants=[], products=[], degeneracy=degeneracy, duplicate=duplicate, reversible=reversible,
+                       has_pdep_route=has_pdep_route)
 #        if not rxn.isBalanced():
 #            raise DatabaseError('Reaction {0} in kinetics library {1} was not balanced! Please reformulate.'.format(rxn, self.label))        
 #        label = str(rxn)
@@ -435,7 +439,7 @@ class KineticsLibrary(Database):
         f.write('longDesc = u"""\n')
         f.write(self.longDesc.strip() + '\n')
         f.write('"""\n')
-        f.write('duplicatesChecked={0}\n'.format(self.duplicatesChecked))
+        f.write('autoGenerated={0}\n'.format(self.autoGenerated))
         
         for entry in entries:
             self.saveEntry(f, entry)

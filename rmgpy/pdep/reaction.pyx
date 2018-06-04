@@ -1,31 +1,31 @@
 # cython: embedsignature=True, cdivision=True
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 """
 This module contains functions for computing the microcanonical rate 
@@ -165,6 +165,8 @@ def calculateMicrocanonicalRateCoefficient(reaction,
                 if reacDensStates[r,s] != 0:
                     kf[r,s] = kr[r,s] * prodDensStates[r,s] / reacDensStates[r,s]
         kf *= C0inv**(len(reaction.reactants) - len(reaction.products))
+    logging.debug('Finished finding microcanonical rate coefficients for path reaction {}'.format(reaction))
+    logging.debug('The forward and reverse rates are found to be  {0} and {1} respectively.'.format(kf, kr))
      
     return kf, kr
 
@@ -222,7 +224,9 @@ def applyRRKMTheory(transitionState,
         for r in range(Ngrains):
             if sumStates[r,s] > 0 and densStates[r,s] > 0:
                 k[r,s] = sumStates[r,s] / densStates[r,s] * dE
-            
+    logging.debug('Finished applying RRKM for path transition state {}'.format(transitionState))
+    logging.debug('The rate constant is found to be {}'.format(k))
+
     return k
 
 @cython.boundscheck(False)
@@ -305,7 +309,7 @@ def applyInverseLaplaceTransformMethod(transitionState,
             phi0 = numpy.zeros(Ngrains, numpy.float64)
             for r in range(Ngrains):
                 E = Elist[r] - Elist[0] - Ea
-                if E > 0:
+                if E > 1:
                     phi0[r] = (E/R)**(n-1.0)
             phi0 = phi0 * (dE / R) / scipy.special.gamma(n)
             # Evaluate the convolution
@@ -318,6 +322,8 @@ def applyInverseLaplaceTransformMethod(transitionState,
                             
     else:
         raise Exception('Unable to use inverse Laplace transform method for non-Arrhenius kinetics or for n < 0.')
+    logging.debug('Finished applying inverse lapace transform for path transition state {}'.format(transitionState))
+    logging.debug('The rate constant is found to be {}'.format(k))
     
     return k
 
@@ -383,6 +389,7 @@ def fitInterpolationModel(reaction, Tlist, Plist, K, model, Tmin, Tmax, Pmin, Pm
         logRMS = sqrt(logRMS / len(Tlist) / len(Plist))
         if logRMS > 0.5:
             logging.warning('RMS error for k(T,P) fit = {0:g} for reaction {1}.'.format(logRMS, reaction))
-    
+    logging.debug('Finished fitting model for path reaction {}'.format(reaction))
+    logging.debug('The kinetics fit is {0!r}'.format(kinetics))
     return kinetics
 

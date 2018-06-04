@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-atoms = {
-    'H': 1,
-}
-
 bonds = {}
 
 linear = False

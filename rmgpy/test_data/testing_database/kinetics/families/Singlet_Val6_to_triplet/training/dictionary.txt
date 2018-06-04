@@ -1,0 +1,8 @@
+O2(S)
+1 *1 O u0 p2 c0 {2,D}
+2 *2 O u0 p2 c0 {1,D}
+
+O2(T)
+multiplicity 3
+1 O u1 p2 c0 {2,S}
+2 O u1 p2 c0 {1,S}

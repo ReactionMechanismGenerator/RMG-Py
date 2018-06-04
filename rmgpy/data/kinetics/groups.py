@@ -1,32 +1,32 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 """
 This module contains functionality for working with kinetics family functional
@@ -141,9 +141,9 @@ class KineticsGroups(Database):
                 matched_node = self.descendTree(reactant, atoms, root=entry, strict=True)
                 if matched_node is not None:
                     template.append(matched_node)
-                else:
-                    logging.warning("Couldn't find match for {0} in {1}".format(entry,atomList))
-                    logging.warning(reactant.toAdjacencyList())
+                #else:
+                #    logging.warning("Couldn't find match for {0} in {1}".format(entry,atomList))
+                #    logging.warning(reactant.toAdjacencyList())
 
         # Get fresh templates (with duplicate nodes back in)
         forwardTemplate = self.top[:]
@@ -154,16 +154,24 @@ class KineticsGroups(Database):
         # template is a list of the actual matched nodes
         # forwardTemplate is a list of the top level nodes that should be matched
         if len(template) != len(forwardTemplate):
-#            print 'len(template):', len(template)
-#            print 'len(forwardTemplate):', len(forwardTemplate)
-            msg = 'Unable to find matching template for reaction {0} in reaction family {1}.'.format(str(reaction), str(self)) 
+            msg = 'Unable to find matching template for reaction {0} in reaction family {1}.'.format(str(reaction), str(self))
             msg += 'Trying to match {0} but matched {1}'.format(str(forwardTemplate),str(template))
-#            print 'reactants'
-#            for reactant in reaction.reactants:
-#                print reactant.toAdjacencyList() + '\n'
-#            print 'products'
-#            for product in reaction.products:
-#                print product.toAdjacencyList() + '\n'
+            logging.debug('len(template): {0}'.format(len(template)))
+            logging.debug('len(forwardTemplate): {0}'.format(len(forwardTemplate)))
+            logging.debug('reactants:')
+            for reactant in reaction.reactants:
+                if isinstance(reactant,Species):
+                    for mol in reactant.molecule:
+                        logging.debug(mol.toAdjacencyList())
+                else:
+                    logging.debug(reactant.toAdjacencyList())
+            logging.debug('products:')
+            for product in reaction.products:
+                if isinstance(product,Species):
+                    for mol in product.molecule:
+                        logging.debug(mol.toAdjacencyList())
+                else:
+                    logging.debug(product.toAdjacencyList())
             raise UndeterminableKineticsError(reaction, message=msg)
 
         return template

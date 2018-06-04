@@ -1,32 +1,32 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2015 Prof. William H. Green (whgreen@mit.edu),
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 import sys
 import os
@@ -77,8 +77,8 @@ def getMainExtensionModules():
         Extension('rmgpy.molecule.molecule', ['rmgpy/molecule/molecule.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.symmetry', ['rmgpy/molecule/symmetry.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.vf2', ['rmgpy/molecule/vf2.pyx'], include_dirs=['.']),
-        Extension('rmgpy.molecule.parser', ['rmgpy/molecule/parser.py'], include_dirs=['.']),
-        Extension('rmgpy.molecule.generator', ['rmgpy/molecule/generator.py'], include_dirs=['.']),
+        Extension('rmgpy.molecule.converter', ['rmgpy/molecule/converter.py'], include_dirs=['.']),
+        Extension('rmgpy.molecule.translator', ['rmgpy/molecule/translator.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.util', ['rmgpy/molecule/util.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.inchi', ['rmgpy/molecule/inchi.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.resonance', ['rmgpy/molecule/resonance.py'], include_dirs=['.']),
@@ -110,6 +110,7 @@ def getMainExtensionModules():
         Extension('rmgpy.quantity', ['rmgpy/quantity.py'], include_dirs=['.']),
         Extension('rmgpy.reaction', ['rmgpy/reaction.py'], include_dirs=['.']),
         Extension('rmgpy.species', ['rmgpy/species.py'], include_dirs=['.']),
+        Extension('rmgpy.chemkin', ['rmgpy/chemkin.pyx'], include_dirs=['.']),
     ]
 
 def getSolverExtensionModules():
@@ -191,9 +192,19 @@ if 'minimal' in sys.argv:
 from collections import OrderedDict
 ext_modules = list(OrderedDict.fromkeys(ext_modules))
 
-
-scripts=['cantherm.py', 'rmg.py', 'scripts/diffModels.py', 'scripts/generateFluxDiagram.py',
-         'scripts/generateReactions.py', 'scripts/mergeModels.py','scripts/sensitivity.py', 'scripts/thermoEstimator.py',
+scripts=['cantherm.py',
+         'rmg.py',
+         'scripts/checkModels.py',
+         'scripts/convertFAME.py',
+         'scripts/diffModels.py',
+         'scripts/generateChemkinHTML.py',
+         'scripts/generateFluxDiagram.py',
+         'scripts/generateReactions.py',
+         'scripts/machineWriteDatabase.py',
+         'scripts/mergeModels.py',
+         'scripts/simulate.py',
+         'scripts/standardizeModelSpeciesNames.py',
+         'scripts/thermoEstimator.py',
          'testing/databaseTest.py']
 
 modules = []
