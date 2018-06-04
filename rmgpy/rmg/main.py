@@ -562,7 +562,7 @@ class RMG(util.Subject):
         
         Tlist = []
         for x in self.reactionSystems:
-            if x.Trange:
+            if hasattr(x,'Trange') and x.Trange:
                 Tlist.append(x.Trange[1].value_si)
             elif x.T:
                 Tlist.append(x.T.value_si)
