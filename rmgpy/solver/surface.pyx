@@ -55,6 +55,8 @@ cdef class SurfaceReactor(ReactionSystem):
     cdef public double V
     cdef public bint constantVolume
 
+    cdef public list Trange
+    cdef public list Prange
     cdef public int nSimsTerm
     cdef public dict sensConditions
 
@@ -83,8 +85,14 @@ cdef class SurfaceReactor(ReactionSystem):
                                 sensitiveSpecies, 
                                 sensitivityThreshold)
 
-        self.T = Quantity(T)
-        self.initialP = Quantity(initialP)
+        if isinstance(T,list):
+            self.Trange = [Quantity(t) for t in T]
+        else:
+            self.T = Quantity(T)
+        if isinstance(initialP,list):
+            raise NotImplementedError("Can't do ranges of initial pressures for surface reactors yet")
+        else:
+            self.initialP = Quantity(initialP)
         self.initialGasMoleFractions = initialGasMoleFractions
         self.initialSurfaceCoverages = initialSurfaceCoverages
         self.surfaceVolumeRatio = Quantity(surfaceVolumeRatio)

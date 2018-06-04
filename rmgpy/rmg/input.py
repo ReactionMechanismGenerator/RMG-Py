@@ -362,10 +362,27 @@ def surfaceReactor(temperature,
         for spec, molfrac in initialGasMoleFractions.iteritems():
             logging.debug("{0} = {1}".format(spec, molfrac))
 
-    T = Quantity(temperature)
-    initialP = Quantity(initialPressure)
+    if not isinstance(temperature, list):
+        T = Quantity(temperature)
+    else:
+        if len(temperature) != 2:
+            raise InputError('Temperature ranges can either be in the form '
+                'of (number,units) or a list with 2 entries of the same format')
+        T = [Quantity(t) for t in temperature]
+
+    if not isinstance(initialPressure, list):
+        initialP = Quantity(initialPressure)
+    else:
+        if len(initialPressure) != 2:
+            raise InputError('Initial pressure ranges can either be in the form '
+                'of (number,units) or a list with 2 entries of the same format')
+        initialP = [Quantity(p) for p in initialPressure]
+
     if not isinstance(temperature, list) and not isinstance(initialPressure, list):
         nSimsTerm = 1
+    if any([isinstance(x, list) for x in initialGasMoleFractions.values()]) or \
+       any([isinstance(x, list) for x in initialSurfaceCoverages.values()]):
+        raise NotImplementedError("Can't do ranges on species concentrations for surface reactors yet.")
 
     termination = []
     if terminationConversion is not None:
@@ -380,6 +397,10 @@ def surfaceReactor(temperature,
     if sensitivity:
         for spec in sensitivity:
             sensitiveSpecies.append(speciesDict[spec])
+    if not isinstance(T, list):
+        sensitivityTemperature = T
+    if not isinstance(initialPressure, list):
+        sensitivityPressure = initialPressure
     sensConditions = None
     if sensitivity:
         raise NotImplementedError("Can't currently do sensitivity with surface reactors.")
