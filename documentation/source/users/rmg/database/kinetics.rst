@@ -219,6 +219,8 @@ There are currently 58 reaction families in RMG:
     :scale: 25%
 .. |f03| image:: images/kinetics_families/1,2_Insertion_CO.png
     :scale: 25%
+.. |f04| image:: images/kinetics_families/1,2_shiftC.png
+    :scale: 25%
 .. |f05| image:: images/kinetics_families/1,2_shiftS.png
     :scale: 25%
 .. |f06| image:: images/kinetics_families/1,3_Insertion_CO2.png
@@ -285,6 +287,8 @@ There are currently 58 reaction families in RMG:
     :scale: 25%
 .. |f37| image:: images/kinetics_families/Intra_R_Add_Exocyclic.png
     :scale: 25%
+.. |f38| image:: images/kinetics_families/Intra_R_Add_Exo_scission.png
+    :scale: 25%
 .. |f39| image:: images/kinetics_families/Intra_R_Add_ExoTetCyclic.png
     :scale: 25%
 .. |f40| image:: images/kinetics_families/Intra_Retro_Diels_alder_bicyclic.png
@@ -333,6 +337,7 @@ There are currently 58 reaction families in RMG:
     **1,2-Birad_to_alkene**                               |f01|
     **1,2_Insertion_carbene**                             |f02|
     **1,2_Insertion_CO**                                  |f03|
+    **1,2_shiftC**                                        |f04|
     **1,2_shiftS**                                        |f05|
     **1,3_Insertion_CO2**                                 |f06|
     **1,3_Insertion_ROR**                                 |f07|
@@ -366,6 +371,7 @@ There are currently 58 reaction families in RMG:
     **intra_OH_migration**                                |f35|
     **Intra_R_Add_Endocyclic**                            |f36|
     **Intra_R_Add_Exocyclic**                             |f37|
+    **Intra_R_Add_Exo_scission**                          |f38|
     **Intra_R_Add_ExoTetCyclic**                          |f39|
     **Intra_Retro_Diels_alder_bicyclic**                  |f40|
     **Intra_RH_Add_Endocyclic**                           |f41|

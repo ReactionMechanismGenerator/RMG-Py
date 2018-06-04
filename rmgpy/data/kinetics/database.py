@@ -107,86 +107,104 @@ class KineticsDatabase(object):
 
     def loadRecommendedFamiliesList(self, filepath):
         """
-        Load the list of recommended families from the given file
-        
-        The file is usually 'kinetics/families/recommended.py'.
-        This is stored as a dictionary of True or False values (checked here),
-        and should contain entries for every available family (checked in loadFamilies).
+        Load the recommended families from the given file.
+        The file is usually stored at 'kinetics/families/recommended.py'.
+
+        The old style was as a dictionary named `recommendedFamilies`
+        containing all family names as keys with True/False values.
+
+        The new style is as multiple sets with unique names which can be
+        used individually or in combination.
+
+        Both styles can be loaded by this method.
         """
+        import imp
+
+        # Load the recommended.py file as a module
         try:
-            global_context = {}
-            global_context['__builtins__'] = None
-            global_context['True'] = True
-            global_context['False'] = False
-            local_context = {}
-            local_context['__builtins__'] = None
-            f = open(filepath, 'r')
-            exec f in global_context, local_context
-            f.close()
-            self.recommendedFamilies = local_context['recommendedFamilies']
-        except Exception, e:
-            raise DatabaseError('Error while reading list of recommended families from {0}/recommended.py.\n{1}'.format(filepath,e))
-        for recommended in self.recommendedFamilies.values():
-            if not isinstance(recommended, bool):
-                raise DatabaseError("recommendedFamilies dictionary should contain only True or False values")
+            rec = imp.load_source('rec', filepath)
+        except Exception as e:
+            raise DatabaseError('Unable to load recommended.py file for kinetics families: {0!s}'.format(e))
+
+        # For backward compatibility, check for old-style recommendedFamilies dictionary
+        if hasattr(rec, 'recommendedFamilies'):
+            default = set()
+            for family, recommended in rec.recommendedFamilies.iteritems():
+                if recommended:
+                    default.add(family)
+            self.recommendedFamilies = {'default': default}
+        else:
+            self.recommendedFamilies = {name: value
+                                        for name, value in rec.__dict__.iteritems()
+                                        if not name.startswith('_')}
 
     def loadFamilies(self, path, families=None, depositories=None):
         """
         Load the kinetics families from the given `path` on disk, where `path`
         points to the top-level folder of the kinetics families.
+
+        The `families` argument accepts a single item or list of the following:
+            - Specific kinetics family labels
+            - Names of family sets defined in recommended.py
+            - 'all'
+            - 'none'
+
+        If all items begin with a `!` (e.g. ['!H_Abstraction']), then the
+        selection will be inverted to families NOT in the list.
         """
-        
-        familiesToLoad = []
         for (root, dirs, files) in os.walk(os.path.join(path)):
             if root == path:
                 break  # all we wanted was the list of dirs in the base path
 
-        if families == 'default':
-            logging.info('Loading default kinetics families from {0}'.format(path))
-            for d in dirs:  # load them in directory listing order, like other methods (better than a random dict order)
-                try:
-                    recommended = self.recommendedFamilies[d]
-                except KeyError:
-                    raise DatabaseError('Family {0} not found in recommendation list (probably at {1}/recommended.py)'.format(d, path))
-                if recommended:
-                    familiesToLoad.append(d)
-            for label, value in self.recommendedFamilies.iteritems():
-                if label not in dirs:
-                    raise DatabaseError('Family {0} found (in {1}/recommended.py) not found on disk.'.format(label, path))
+        all_families = set(dirs)
 
-        elif families == 'all':
-            # All families are loaded
-            logging.info('Loading all of the kinetics families from {0}'.format(path))
-            for d in dirs:
-                familiesToLoad.append(d)
-        elif families == 'none':
-            logging.info('Not loading any of the kinetics families from {0}'.format(path))
-            # Don't load any of the families
-            familiesToLoad = []
-        elif isinstance(families, list):
-            logging.info('Loading the user-specified kinetics families from {0}'.format(path))
-            # If all items in the list start with !, all families will be loaded except these
-            if len(families) == 0:
-                raise DatabaseError('Kinetics families should be a non-empty list, or set to `default`, `all`, or `none`.')
-            elif all([label.startswith('!') for label in families]):
-                for d in dirs:
-                    if '!{0}'.format(d) not in families:
-                        familiesToLoad.append(d)
-            elif any([label.startswith('!') for label in families]):
-                raise DatabaseError('Families list must either all or none have prefix "!", but not a mix.')
-            else:  # only the families given will be loaded
-                for d in dirs:
-                    if d in families:
-                        familiesToLoad.append(d)
-                for label in families:
-                    if label not in dirs:
-                        raise DatabaseError('Family {0} not found on disk.'.format(label))
+        # Convert input to a list to simplify processing
+        if not isinstance(families, list):
+            families = [families]
+
+        # Check for ! syntax, which allows specification of undesired families
+        if all(item.startswith('!') for item in families):
+            inverse = True
+            families = [family[1:] for family in families]
+        elif not any(item.startswith('!') for item in families):
+            inverse = False
         else:
-            raise DatabaseError('Kinetics families was not specified properly.  Should be set to `default`,`all`,`none`, or a list.')
-        
+            raise DatabaseError('Families list must either all or none have prefix "!", but not a mix.')
+
+        # Compile the set of selected families
+        selected_families = set()
+        for item in families:
+            if item.lower() == 'all':
+                selected_families = all_families
+                break
+            elif item.lower() == 'none':
+                selected_families = set()
+                break
+            elif item in self.recommendedFamilies:
+                family_set = self.recommendedFamilies[item]
+                missing_fams = [fam for fam in family_set if fam not in all_families]
+                if missing_fams:
+                    raise DatabaseError('Unable to load recommended set "{0}", '
+                                        'some families could not be found: {1}'.format(item, missing_fams))
+                selected_families.update(family_set)
+            elif item in all_families:
+                selected_families.add(item)
+            else:
+                raise DatabaseError('Unrecognized item "{0}" in list of families to load. '
+                                    'Items should be names of kinetics families, '
+                                    'a predefined subset from recommended.py, '
+                                    'or the "all" or "none" options.'.format(item))
+
+        # If families were specified using ! syntax, invert the selection
+        if inverse:
+            selected_families = all_families - selected_families
+
+        # Sort alphabetically for consistency, this also converts to a list
+        selected_families = sorted(selected_families)
+
         # Now we know what families to load, so let's load them
         self.families = {}
-        for label in familiesToLoad:
+        for label in selected_families:
             familyPath = os.path.join(path, label)
             family = KineticsFamily(label=label)
             family.load(familyPath, self.local_context, self.global_context, depositoryLabels=depositories)
@@ -243,24 +261,45 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
         
     def saveRecommendedFamilies(self, path):
         """ 
-        Save the list of recommended families in a dictionary stored at 
-        `path`/recommended.py
+        Save the recommended families to [path]/recommended.py.
+        The old style was as a dictionary named `recommendedFamilies`.
+        The new style is as multiple sets with different labels.
         """
         import codecs
         
         if not os.path.exists(path): os.mkdir(path)
-        f = codecs.open(os.path.join(path,'recommended.py'), 'w', 'utf-8')
-        f.write('''# This file contains a dictionary of kinetics families.  The families
+
+        with codecs.open(os.path.join(path,'recommended.py'), 'w', 'utf-8') as f:
+            if 'recommendedFamilies' in self.recommendedFamilies:
+                # For backwards compatibility with the old system of recommended families
+                f.write("""# This file contains a dictionary of kinetics families.  The families
 # set to `True` are recommended by RMG and turned on by default by setting
 # kineticsFamilies = 'default' in the RMG input file. Families set to `False` 
 # are not turned on by default because the family is severely lacking in data.
-# These families should only be turned on with caution.''')
-        f.write('\n\n')
-        f.write('recommendedFamilies = {\n')
-        for label in sorted(self.recommendedFamilies.keys()):
-            f.write("'{label}':{value},\n".format(label=label,value=self.recommendedFamilies[label]))
-        f.write('}')
-        f.close()
+# These families should only be turned on with caution.""")
+                f.write('\n\n')
+                f.write('recommendedFamilies = {\n')
+                for label in sorted(self.recommendedFamilies.keys()):
+                    f.write("'{label}':{value},\n".format(label=label,value=self.recommendedFamilies[label]))
+                f.write('}')
+            else:
+                f.write('''#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+This file contains multiple sets of suggested kinetics families for various
+systems of interest. They can be used by including the name of a set in the
+kineticsFamilies part of the input file. Multiple sets can be specified at the
+same time, and union of them will be loaded. These sets can also be specified
+along with individual families. Custom sets can be easily defined in this file 
+and immediately used in input files without any additional changes.
+"""
+''')
+                for name, item in self.recommendedFamilies.iteritems():
+                    f.write('\n{0} = {{\n'.format(name))
+                    for label in sorted(item):
+                        f.write("    '{0}',\n".format(label))
+                    f.write('}\n')
         
     def saveFamilies(self, path):
         """
