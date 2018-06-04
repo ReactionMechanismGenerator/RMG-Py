@@ -176,6 +176,73 @@ class TestSpecies(unittest.TestCase):
         for i, j in zip(spec.molecule, spec2.molecule):
             self.assertTrue(j.isIsomorphic(i), msg='i is not isomorphic with j, where i is {} and j is {}'.format(i.toSMILES(), j.toSMILES()))
 
+    def test_is_isomorphic_to_filtered_resonance_structure(self):
+        """
+        Test that a Species containing a non-representative resonance structure is isomorphic
+        with the "correct" Species containing only representative structures (which were not filtered out)
+
+        When generating resonance isomers for N/O/S atoms, a large number of resonance structures per species could
+        potentially be generated, yet most are filtered out and only the "correct" / "representative" structures
+        are kept. This test makes sure that if a non-representative structure (i.e., a structure that was filtered out)
+        is generated, RMG finds the Species it belongs to, if the last exists.
+        """
+
+        spc1_correct = Species().fromSMILES('[O]N=O')  # check charge separation with higher octet deviation
+        spc1_nonrepresentative = Species().fromAdjacencyList("""multiplicity 2
+                                                                1 N u1 p1 c0 {2,S} {3,S}
+                                                                2 O u0 p3 c-1 {1,S}
+                                                                3 O u0 p2 c+1 {1,S}""")
+        spc2_correct = Species().fromSMILES('[N]=NON=O')  # check atoms with val 6
+        spc2_nonrepresentative = Species().fromAdjacencyList("""multiplicity 2
+                                                                1 O u0 p2 c0 {2,S} {3,S}
+                                                                2 N u1 p1 c0 {1,S} {4,S}
+                                                                3 N u0 p2 c-1 {1,S} {5,S}
+                                                                4 N u0 p2 c0 {2,S}
+                                                                5 O u0 p2 c+1 {3,S}""")
+        spc3_correct = Species().fromSMILES('[O]S(O)=O')  # check O4tc penalty
+        spc3_nonrepresentative = Species().fromAdjacencyList("""multiplicity 2
+                                                                1 S u0 p1 c-1 {2,S} {3,S} {4,T}
+                                                                2 O u0 p2 c0 {1,S} {5,S}
+                                                                3 O u1 p2 c0 {1,S}
+                                                                4 O u0 p1 c+1 {1,T}
+                                                                5 H u0 p0 c0 {2,S}""")
+        spc4_correct = Species().fromSMILES('N#[N+][S-](O)O')  # check O4dc penalty
+        spc4_nonrepresentative = Species().fromAdjacencyList("""1 S u0 p0 c+1 {2,D} {3,D} {4,S}
+                                                                2 N u0 p1 c0 {1,D} {5,S}
+                                                                3 O u0 p1 c+1 {1,D} {6,S}
+                                                                4 O u0 p2 c0 {1,S} {7,S}
+                                                                5 N u0 p3 c-2 {2,S}
+                                                                6 H u0 p0 c0 {3,S}
+                                                                7 H u0 p0 c0 {4,S}""")
+        spc5_correct = Species().fromSMILES('[N]=NO')  # check val N > 8 penalty
+        spc5_nonrepresentative = Species().fromAdjacencyList("""multiplicity 2
+                                                                1 N u1 p0 c0 {2,S} {3,T}
+                                                                2 O u0 p2 c0 {1,S} {4,S}
+                                                                3 N u0 p1 c0 {1,T}
+                                                                4 H u0 p0 c0 {2,S}""")
+        spc6_correct = Species().fromSMILES('[O][S]')  # checks birad penalty
+        spc6_nonrepresentative = Species().fromAdjacencyList("""multiplicity 3
+                                                                1 O u0 p2 c0 {2,D}
+                                                                2 S u2 p1 c0 {1,D}""")
+        spc7_correct = Species().fromSMILES('N#[N+]SS[O-]')  # checks the S#S case
+        spc7_nonrepresentative = Species().fromAdjacencyList("""1 S u0 p1 c0 {2,S} {3,T}
+                                                                2 N u0 p0 c+1 {1,S} {4,T}
+                                                                3 S u0 p1 c0 {1,T} {5,S}
+                                                                4 N u0 p1 c0 {2,T}
+                                                                5 O u0 p3 c-1 {3,S}""")
+
+        # check that the structures are not isomorphic if resonance structures are not generated:
+        self.assertFalse(spc1_correct.isIsomorphic(spc1_nonrepresentative, generate_res=False))
+
+        # check that the nonrepresentative structure is isomorphic by generating resonance structures:
+        self.assertTrue(spc1_correct.isIsomorphic(spc1_nonrepresentative, generate_res=True))
+        self.assertTrue(spc2_correct.isIsomorphic(spc2_nonrepresentative, generate_res=True))
+        self.assertTrue(spc3_correct.isIsomorphic(spc3_nonrepresentative, generate_res=True))
+        self.assertTrue(spc4_correct.isIsomorphic(spc4_nonrepresentative, generate_res=True))
+        self.assertTrue(spc5_correct.isIsomorphic(spc5_nonrepresentative, generate_res=True))
+        self.assertTrue(spc6_correct.isIsomorphic(spc6_nonrepresentative, generate_res=True))
+        self.assertTrue(spc7_correct.isIsomorphic(spc7_nonrepresentative, generate_res=True))
+
     def testGetResonanceHybrid(self):
         """
         Tests that getResonanceHybrid returns an isomorphic structure

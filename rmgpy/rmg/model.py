@@ -233,9 +233,12 @@ class CoreEdgeReactionModel:
     def checkForExistingSpecies(self, molecule):
         """
         Check to see if an existing species contains the same
-        :class:`molecule.Molecule` as `molecule`. Returns ``True`` 
-        and the matched species (if found) or
-        ``False`` and ``None`` (if not found).
+        :class:`molecule.Molecule` as `molecule`.
+        Returns ``True``, `reactive`, and the matched species (if found) or
+        ``False``, ``False``, and ``None`` (if not found).
+        `reactive` is a boolean argument which is ``False`` if this molecule is an unrepresentative resonance structure
+        of an existing species (i.e., was found to be isomorphic only by generating its unfiltered resonance structures)
+        and True otherwise. It is emphasized that `reactive` relates to the :Class:`Molecule` attribute.
         """
         # Create obj to check against existing species
         # obj can be `Molecule` object or `Species` object
@@ -262,27 +265,46 @@ class CoreEdgeReactionModel:
                     if obj.isIsomorphic(mol):
                         self.speciesCache.pop(i)
                         self.speciesCache.insert(0, spec)
-                        return True, spec
+                        return True, True, spec
 
         # Return an existing species if a match is found
         formula = molecule.getFormula()
         try:
             speciesList = self.speciesDict[formula]
         except KeyError:
-            return False, None
+            return False, False, None
         for spec in speciesList:
             if spec.isIsomorphic(obj):
                 self.speciesCache.pop()
                 self.speciesCache.insert(0, spec)
-                return True, spec
+                return True, True, spec
+
+        # As a last resort, check using molecule.fingerprint if the object matches any existing species,
+        # and if it does, generate resonance structures w/o filtration and check for isomorphism
+        candidates = []
+        for spec in speciesList:
+            if spec.molecule[0].fingerprint == molecule.fingerprint:
+                candidates.append(spec)
+        if len(candidates) > 0:
+            mol_copy = molecule.copy(deep=True)
+            if not mol_copy.reactive:
+                mol_copy.reactive = True
+            structures = mol_copy.generate_resonance_structures(keep_isomorphic=False, filter_structures=False)
+            for spec in candidates:
+                for mol in spec.molecule:
+                    for structure in structures:
+                        if mol.isIsomorphic(structure):
+                            return True, False, spec
+
         # At this point we can conclude that the structure does not exist
-        return False, None
+        return False, False, None
 
     def makeNewSpecies(self, object, label='', reactive=True, checkForExisting=True):
         """
         Formally create a new species from the specified `object`, which can be
         either a :class:`Molecule` object or an :class:`rmgpy.species.Species`
-        object.
+        object. It is emphasized that `reactive` relates to the :Class:`Species` attribute, while `reactive_structure`
+        relates to the :Class:`Molecule` attribute.
         """
 
         if isinstance(object, rmgpy.species.Species):
@@ -297,8 +319,26 @@ class CoreEdgeReactionModel:
         # If desired, check to ensure that the species is new; return the
         # existing species if not new
         if checkForExisting:
-            found, spec = self.checkForExistingSpecies(molecule)
-            if found: return spec, False
+            if isinstance(object, rmgpy.species.Species) and len(object.molecule) > 1:
+                # If resonance structures were already generated (e.g., if object came from a reaction library), object
+                # may contain unreactive resonance structures. Make sure a reactive structure is sent to
+                # checkForExistingSpecies()
+                for mol in object.molecule:
+                    if mol.reactive:
+                        found, reactive_structure, spec = self.checkForExistingSpecies(mol)
+                        break
+                else:
+                    for mol in object.molecule:
+                        logging.info(mol.toAdjacencyList())
+                    raise AssertionError, "No reactive structures found in species {0}".format(object.molecule[0].toSMILES())
+            else:
+                found, reactive_structure, spec = self.checkForExistingSpecies(molecule)
+            if found and reactive_structure:
+                return spec, False
+            if found and not reactive_structure:
+                molecule.reactive=False
+                spec.molecule.append(molecule)
+                return spec, False
 
         # Check that the structure is not forbidden
 
@@ -315,7 +355,13 @@ class CoreEdgeReactionModel:
             spec = Species(index=speciesIndex, label=label, molecule=[molecule], reactive=reactive)
         
         spec.creationIteration = self.iterationNum
-        spec.generate_resonance_structures()
+        if isinstance(object, rmgpy.species.Species) and len(object.molecule) > 1:
+            # If resonance structures were already generated (e.g., if object came from a reaction library), object may
+            # contain unreactive resonance structures that we'd like to keep. In this case, don't re-generate the
+            # resonance structures, just keep the original ones.
+            spec.molecule = object.molecule
+        else:
+            spec.generate_resonance_structures()
         spec.molecularWeight = Quantity(spec.molecule[0].getMolecularWeight()*1000.,"amu")
         
         if not spec.thermo:

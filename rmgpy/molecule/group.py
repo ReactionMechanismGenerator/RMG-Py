@@ -1147,6 +1147,12 @@ class Group(Graph):
                         # if the group is not specified to specific element, charge will not be updated
                         pass
 
+    def getNetCharge(self):
+        """
+        Iterate through the atoms in the group and calculate the net charge
+        """
+        return sum([atom.charge[0] for atom in self.vertices if atom.charge != []])
+
     def merge(self, other):
         """
         Merge two groups so as to store them in a single

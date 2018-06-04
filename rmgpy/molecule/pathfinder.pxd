@@ -44,8 +44,18 @@ cpdef list add_inverse_allyls(list path)
 
 cpdef dict compute_atom_distance(list atom_indices, Molecule mol)
 
-cpdef list findAllDelocalizationPaths(Atom atom1)
+cpdef list find_allyl_delocalization_paths(Atom atom1)
 
-cpdef list findAllDelocalizationPathsLonePairRadical(Atom atom1)
+cpdef list find_lone_pair_radical_delocalization_paths(Atom atom1)
 
-cpdef list findAllDelocalizationPathsN5dd_N5ts(Atom atom1)
+cpdef list find_lone_pair_multiple_bond_delocalization_paths(Atom atom1)
+
+cpdef list find_lone_pair_radical_multiple_bond_delocalization_paths(Atom atom1)
+
+cpdef list find_N5ddc_N5tc_delocalization_paths(Atom atom1)
+
+cpdef list find_N5dc_delocalization_paths(Atom atom1)
+
+cpdef bint is_NOS_able_to_gain_lone_pair(Atom atom)
+
+cpdef bint is_NOS_able_to_lose_lone_pair(Atom atom)

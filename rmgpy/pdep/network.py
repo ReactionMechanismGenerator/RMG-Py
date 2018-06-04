@@ -602,6 +602,40 @@ class Network:
                 reac = products.index(rxn.reactants) + Nisom + Nreac
                 prod = isomers.index(rxn.products[0])
             else:
+                logging.info('\nUnexpected type of path reaction.')
+                logging.info('\nnetwork reactants:')
+                for index, reacts in enumerate(reactants, 1):
+                    logging.info('reactants {0}:'.format(index))
+                    for subindex, react in enumerate(reacts, 1):
+                        logging.info('reactant {0}:'.format(subindex))
+                        for mol in react.molecule:
+                            logging.info(mol.toAdjacencyList())
+                            logging.info('reactive = {0}\n'.format(mol.reactive))
+                logging.info('network products:')
+                for index, prods in enumerate(products, 1):
+                    logging.info('products {0}:'.format(index))
+                    for subindex, pro in enumerate(prods, 1):
+                        for mol in pro.molecule:
+                            logging.info(mol.toAdjacencyList())
+                            logging.info('reactive = {0}\n'.format(mol.reactive))
+                logging.info('network isomers:')
+                for index, iso in enumerate(isomers, 1):
+                    logging.info('isomer {0}:'.format(index))
+                    for mol in iso.molecule:
+                        logging.info(mol.toAdjacencyList())
+                        logging.info('reactive = {0}\n'.format(mol.reactive))
+                logging.info('rxn reactants:')
+                for index, react in enumerate(rxn.reactants, 1):
+                    logging.info('reactant {0}:'.format(index))
+                    for mol in react.molecule:
+                        logging.info(mol.toAdjacencyList())
+                        logging.info('reactive = {0}\n'.format(mol.reactive))
+                logging.info('rxn products:')
+                for index, pro in enumerate(rxn.products, 1):
+                    logging.info('product {0}:'.format(index))
+                    for mol in pro.molecule:
+                        logging.info(mol.toAdjacencyList())
+                        logging.info('reactive = {0}\n'.format(mol.reactive))
                 raise NetworkError('Unexpected type of path reaction "{0}"'.format(rxn))
         
             # Compute the microcanonical rate coefficient k(E)

@@ -635,12 +635,12 @@ class KineticsDrawer:
         x2 -= wellSpacing / 2.0
         if abs(E0_TS - E0_reac) > 0.1 and abs(E0_TS - E0_prod) > 0.1:
             if len(self.reaction.reactants) == 2:
-                if reac < prod:
+                if E0_reac < E0_prod:
                     x0 = x1 + wellSpacing * 0.5
                 else:
                     x0 = x2 - wellSpacing * 0.5
             elif len(self.reaction.products) == 2:
-                if reac < prod:
+                if E0_reac < E0_prod:
                     x0 = x2 - wellSpacing * 0.5
                 else:
                     x0 = x1 + wellSpacing * 0.5

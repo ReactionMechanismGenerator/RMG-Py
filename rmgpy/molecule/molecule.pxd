@@ -70,6 +70,8 @@ cdef class Atom(Vertex):
     cpdef bint isChlorine(self)
 
     cpdef bint isIodine(self)
+
+    cpdef bint isNOS(self)
     
     cpdef bint isSurfaceSite(self)
     
@@ -132,6 +134,7 @@ cdef class Molecule(Graph):
     cdef public bint implicitHydrogens
     cdef public float symmetryNumber
     cdef public int multiplicity
+    cdef public bint reactive
     cdef public object rdMol
     cdef public int rdMolConfId
     cdef str _fingerprint
@@ -236,7 +239,7 @@ cdef class Molecule(Graph):
 
     cpdef float calculateSymmetryNumber(self) except -1
 
-    cpdef list generate_resonance_structures(self, bint keepIsomorphic=?)
+    cpdef list generate_resonance_structures(self, bint keep_isomorphic=?, bint filter_structures=?)
 
     cpdef identifyRingMembership(self)
 

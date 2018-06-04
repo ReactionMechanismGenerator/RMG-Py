@@ -163,7 +163,7 @@ class Species(object):
         self._molecularWeight = quantity.Mass(value)
     molecularWeight = property(getMolecularWeight, setMolecularWeight, """The molecular weight of the species. (Note: value_si is in kg/molecule not kg/mole)""")
 
-    def generate_resonance_structures(self, keepIsomorphic=True):
+    def generate_resonance_structures(self, keep_isomorphic=True, filter_structures=True):
         """
         Generate all of the resonance structures of this species. The isomers are
         stored as a list in the `molecule` attribute. If the length of
@@ -173,21 +173,38 @@ class Species(object):
         if len(self.molecule) == 1:
             if not self.molecule[0].atomIDValid():
                 self.molecule[0].assignAtomIDs()
-            self.molecule = self.molecule[0].generate_resonance_structures(keepIsomorphic)
+            self.molecule = self.molecule[0].generate_resonance_structures(keep_isomorphic=keep_isomorphic,
+                                                                           filter_structures=filter_structures)
     
-    def isIsomorphic(self, other):
+    def isIsomorphic(self, other, generate_res=False):
         """
         Return ``True`` if the species is isomorphic to `other`, which can be
         either a :class:`Molecule` object or a :class:`Species` object.
+        If generate_res is ``True`` and other is a :class:`Species` object, the resonance structures of other will
+        be generated and isomorphically compared against self. This is useful for situations where a
+        "non-representative" resonance structure of self is generated, and it should be identified as the same Species,
+        and be assigned a reactive=False flag.
         """
         if isinstance(other, Molecule):
             for molecule in self.molecule:
                 if molecule.isIsomorphic(other):
                     return True
         elif isinstance(other, Species):
+            for molecule1 in self.molecule:
+                for molecule2 in other.molecule:
+                    if molecule1.isIsomorphic(molecule2):
+                        return True
+            if generate_res:
+                other_copy = other.copy(deep=True)
+                other_copy.generate_resonance_structures(keep_isomorphic=False)
                 for molecule1 in self.molecule:
-                    for molecule2 in other.molecule:
+                    for molecule2 in other_copy.molecule:
                         if molecule1.isIsomorphic(molecule2):
+                            # If they are isomorphic and this was found only by generating resonance structures, append
+                            # the structure in other to self.molecule as unreactive, since it is a non-representative
+                            # resonance structure of it, and return `True`.
+                            other_copy.molecule[0].reactive = False
+                            self.molecule.append(other_copy.molecule[0])
                             return True
         else:
             raise ValueError('Unexpected value "{0!r}" for other parameter; should be a Molecule or Species object.'.format(other))
@@ -203,14 +220,27 @@ class Species(object):
                 if molecule.isIdentical(other):
                     return True
         elif isinstance(other, Species):
-                for molecule1 in self.molecule:
-                    for molecule2 in other.molecule:
-                        if molecule1.isIdentical(molecule2):
-                            return True
+            for molecule1 in self.molecule:
+                for molecule2 in other.molecule:
+                    if molecule1.isIdentical(molecule2):
+                        return True
         else:
-            raise ValueError('Unexpected value "{0!r}" for other parameter; should be a Molecule or Species object.'.format(other))
+            raise ValueError('Unexpected value "{0!r}" for other parameter;'
+                             ' should be a Molecule or Species object.'.format(other))
         return False
 
+    def is_structure_in_list(self, species_list):
+        """
+        Return ``True`` if at least one Molecule in self is isomorphic with at least one other Molecule in at least
+        one Species in species list.
+        """
+        for species in species_list:
+            if isinstance(species, Species):
+                return self.isIsomorphic(species)
+            else:
+                raise TypeError('Unexpected value "{0!r}" for species_list parameter;'
+                                 ' should be a List of Species objects.'.format(species))
+        return False
     
     def fromAdjacencyList(self, adjlist):
         """
@@ -433,7 +463,7 @@ class Species(object):
         of all the resonance structures.
         """
         # get labeled resonance isomers
-        self.generate_resonance_structures(keepIsomorphic=True)
+        self.generate_resonance_structures(keep_isomorphic=True)
 
         # return if no resonance
         if len(self.molecule) == 1:
@@ -498,6 +528,13 @@ class Species(object):
         Return the value of the heat capacity at infinite temperature in J/mol*K.
         """
         return self.molecule[0].calculateCpInf()
+
+    def has_reactive_molecule(self):
+        """
+        `True` if the species has at least one reactive molecule, `False` otherwise
+        """
+        cython.declare(molecule=Molecule)
+        return any([molecule.reactive for molecule in self.molecule])
 
     def copy(self, deep=False):
         """

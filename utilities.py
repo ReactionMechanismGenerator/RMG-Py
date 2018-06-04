@@ -97,8 +97,9 @@ def check_dependencies():
                                   'Not found. Necessary for SMILES/InChI functionality for nitrogen compounds.')
         missing = True
     else:
+        version = openbabel.OBReleaseVersion()
         location = openbabel.__file__
-        print '{0:<30}{1}'.format('OpenBabel', location)
+        print '{0:<15}{1:<15}{2}'.format('OpenBabel', version, location)
 
     # Check for lpsolve
     try:
