@@ -55,6 +55,11 @@ cdef class SurfaceReactor(ReactionSystem):
     cdef public double V
     cdef public bint constantVolume
 
+    cdef public list Trange
+    cdef public list Prange
+    cdef public int nSimsTerm
+    cdef public dict sensConditions
+
     cdef public dict initialGasMoleFractions
     cdef public dict initialSurfaceCoverages
     cdef public ScalarQuantity surfaceVolumeRatio
@@ -69,22 +74,33 @@ cdef class SurfaceReactor(ReactionSystem):
                  initialSurfaceCoverages,
                  surfaceVolumeRatio,
                  surfaceSiteDensity,
-                 termination,
+                 nSimsTerm=None,
+                 termination=None,
                  sensitiveSpecies=None,
-                 sensitivityThreshold=1e-3):
+                 sensitivityThreshold=1e-3,
+                 sensConditions=None,
+                 ):
         ReactionSystem.__init__(self,
                                 termination, 
                                 sensitiveSpecies, 
                                 sensitivityThreshold)
 
-        self.T = Quantity(T)
-        self.initialP = Quantity(initialP)
+        if isinstance(T,list):
+            self.Trange = [Quantity(t) for t in T]
+        else:
+            self.T = Quantity(T)
+        if isinstance(initialP,list):
+            raise NotImplementedError("Can't do ranges of initial pressures for surface reactors yet")
+        else:
+            self.initialP = Quantity(initialP)
         self.initialGasMoleFractions = initialGasMoleFractions
         self.initialSurfaceCoverages = initialSurfaceCoverages
         self.surfaceVolumeRatio = Quantity(surfaceVolumeRatio)
         self.surfaceSiteDensity = Quantity(surfaceSiteDensity)
         self.V = 0 # will be set from ideal gas law in initializeModel
         self.constantVolume = True
+        self.sensConditions = sensConditions
+        self.nSimsTerm = nSimsTerm
         
     def convertInitialKeysToSpeciesObjects(self, speciesDict):
         """
@@ -114,7 +130,9 @@ cdef class SurfaceReactor(ReactionSystem):
                           sensitivity=False,
                           sens_atol=1e-6,
                           sens_rtol=1e-4,
-                          filterReactions=False):
+                          filterReactions=False,
+                          dict conditions=None,
+                          ):
         """
         Initialize a simulation of the simple reactor using the provided kinetic
         model.
@@ -122,8 +140,22 @@ cdef class SurfaceReactor(ReactionSystem):
 
         # First call the base class version of the method
         # This initializes the attributes declared in the base class
-        ReactionSystem.initializeModel(self, coreSpecies, coreReactions, edgeSpecies, edgeReactions, surfaceSpecies, surfaceReactions, pdepNetworks, atol, rtol, sensitivity, sens_atol, sens_rtol)
-
+        ReactionSystem.initializeModel(self,
+                                       coreSpecies=coreSpecies,
+                                       coreReactions=coreReactions,
+                                       edgeSpecies=edgeSpecies,
+                                       edgeReactions=edgeReactions,
+                                       surfaceSpecies=surfaceSpecies,
+                                       surfaceReactions=surfaceReactions,
+                                       pdepNetworks=pdepNetworks,
+                                       atol=atol,
+                                       rtol=rtol,
+                                       sensitivity=sensitivity,
+                                       sens_atol=sens_atol,
+                                       sens_rtol=sens_rtol,
+                                       filterReactions=filterReactions,
+                                       conditions=conditions,
+                                       )
         cdef numpy.ndarray[numpy.int_t, ndim=1] speciesOnSurface, reactionsOnSurface
         cdef int index
         #: 1 if it's on a surface, 0 if it's in the gas phase

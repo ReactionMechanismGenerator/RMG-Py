@@ -891,8 +891,15 @@ class Database:
         #except that the parent is listed in the attributes. However, we do need to check that everything down this
         #family line is consistent, which is done in the databaseTest unitTest
         elif isinstance(parentNode.item, Group) and isinstance(childNode.item, LogicOr):
-            return childNode.parent is parentNode
-        
+            ancestorNode = childNode.parent
+            while ancestorNode:
+                if ancestorNode is parentNode:
+                    return True
+                else:
+                    ancestorNode = ancestorNode.parent
+            else:
+                return False
+
         elif isinstance(parentNode.item,LogicOr):
             return childNode.label in parentNode.item.components
 

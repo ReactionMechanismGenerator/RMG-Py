@@ -33,6 +33,7 @@ import unittest
 import shutil 
 from nose.plugins.attrib import attr
 from main import RMG
+from main import RMG_Memory
 from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy import getPath
@@ -151,7 +152,19 @@ class TestMain(unittest.TestCase):
         self.rmg.reactionModel.addSeedMechanismToCore('testSeed_edge')  # try adding seed as seed mech
         self.assertTrue(len(self.rmg.reactionModel.core.species) > 0)
         self.assertTrue(len(self.rmg.reactionModel.core.reactions) > 0)
-
+    
+    def testRMGMemory(self):
+        """
+        test that RMG Memory objects function properly
+        """
+        for rxnsys in self.rmg.reactionSystems:
+            Rmem = RMG_Memory(rxnsys,None)
+            Rmem.generate_cond()
+            Rmem.get_cond()
+            Rmem.add_t_conv_N(1.0,.2,2)
+            Rmem.generate_cond()
+            Rmem.get_cond()
+        
     def testMakeCanteraInputFile(self):
         """
         This tests to ensure that a usable Cantera input file is created.

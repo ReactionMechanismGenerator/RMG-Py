@@ -268,6 +268,11 @@ cdef class Configuration:
                     else:
                         if species.molecularWeight is not None:
                             mass.append(species.molecularWeight.value_si)
+                        else:
+                            m = 0
+                            for atom in species.molecule[0].atoms:
+                                m += atom.element.mass
+                            mass.append(m * constants.amu * 1000)
                 assert len(mass) == 2
                 mu = 1.0/(1.0/mass[0] + 1.0/mass[1])
                 modes.insert(0, IdealGasTranslation(mass=(mu/constants.amu,"amu")))

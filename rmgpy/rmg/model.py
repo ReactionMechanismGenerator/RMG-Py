@@ -52,7 +52,7 @@ from rmgpy.data.kinetics.depository import DepositoryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 
-from rmgpy.kinetics import KineticsData
+from rmgpy.kinetics import KineticsData, Arrhenius
 import rmgpy.data.rmg
 from .react import reactAll
 
@@ -393,34 +393,16 @@ class CoreEdgeReactionModel:
         for rxn0 in shortlist:
             rxn_id0 = generateReactionId(rxn0)
 
-            if (rxn_id == rxn_id0) and isinstance(familyObj, KineticsLibrary):
-                # If the reaction comes from a kinetics library, then we can 
-                # retain duplicates if they are marked
-                if areIdenticalSpeciesReferences(rxn, rxn0) and not rxn.duplicate:
+            if rxn_id == rxn_id0 and areIdenticalSpeciesReferences(rxn, rxn0):
+                if isinstance(familyObj, KineticsLibrary) or isinstance(familyObj, KineticsFamily):
+                    if not rxn.duplicate:
+                        return True, rxn0
+                else:
                     return True, rxn0
-            elif ((rxn_id == rxn_id0) or (rxn_id == rxn_id0[::-1])) and \
-                        isinstance(familyObj, KineticsFamily):
-                # ensure TemplateReactions have the same templates and families in order
-                # to classify this as existing reaction. Also checks for reverse
-                # direction matching. Marks duplicate if identical species and different
-                # templates or families
-                if areIdenticalSpeciesReferences(rxn, rxn0):
-                    if rxn.family == rxn0.family:
-                        equal_templates = frozenset(rxn.template) == frozenset(rxn0.template)
-                        # check reverse template
-                        if not equal_templates and familyObj.ownReverse and \
-                                    rxn.reverse is not None:
-                            equal_templates = frozenset(rxn.reverse.template) == frozenset(rxn0.template)
-                        if equal_templates:
-                            return True, rxn0
-                        else:
-                            rxn.duplicate = True
-                            rxn0.duplicate = True
-                    else:
-                        rxn.duplicate = True
-                        rxn0.duplicate = True
-            elif (rxn_id == rxn_id0):
-                if areIdenticalSpeciesReferences(rxn, rxn0):
+            elif (isinstance(familyObj, KineticsFamily)
+                  and rxn_id == rxn_id0[::-1]
+                  and areIdenticalSpeciesReferences(rxn, rxn0)):
+                if not rxn.duplicate:
                     return True, rxn0
 
         # Now check seed mechanisms
@@ -610,9 +592,9 @@ class CoreEdgeReactionModel:
             for network in self.networkList:
                 network.updateConfigurations(self)
                 index = 0
+                isomers = [isomer.species[0] for isomer in network.isomers]
                 while index < len(self.core.species):
                     species = self.core.species[index]
-                    isomers = [isomer.species[0] for isomer in network.isomers]
                     if species in isomers and species not in network.explored:
                         network.explored.append(species)
                         continue
@@ -810,10 +792,10 @@ class CoreEdgeReactionModel:
             elif not (rxn.isIsomerization() or rxn.isDissociation() or rxn.isAssociation()):
                 # The reaction is not unimolecular in either direction, so it cannot be pressure-dependent
                 pdep = False
-            elif rxn.kinetics is not None and rxn.kinetics.isPressureDependent():
-                # The reaction already has pressure-dependent kinetics (e.g. from a reaction library)
-                pdep = False
-                
+            elif isinstance(rxn,LibraryReaction):
+                # Try generating the high pressure limit kinetics. If successful, set pdep to ``True``, and vice versa.
+                pdep = rxn.generate_high_p_limit_kinetics()
+
             # If pressure dependence is on, we only add reactions that are not unimolecular;
             # unimolecular reactions will be added after processing the associated networks
             if not pdep:
@@ -1429,7 +1411,16 @@ class CoreEdgeReactionModel:
                  reversible=rxn.reversible
                  )
             r, isNew = self.makeNewReaction(rxn) # updates self.newSpeciesList and self.newReactionlist
-            if not isNew: logging.info("This library reaction was not new: {0}".format(rxn))
+            if not isNew:
+                logging.info("This library reaction was not new: {0}".format(rxn))
+            elif self.pressureDependence and rxn.elementary_high_p and rxn.isUnimolecular()\
+                    and isinstance(rxn, LibraryReaction) and isinstance(rxn.kinetics, Arrhenius):
+                # This unimolecular library reaction is flagged as `elementary_high_p` and has Arrhenius type kinetics.
+                # We should calculate a pressure-dependent rate for it
+                if len(rxn.reactants) == 1:
+                    self.processNewReactions(newReactions=[rxn],newSpecies=rxn.reactants[0])
+                else:
+                    self.processNewReactions(newReactions=[rxn],newSpecies=rxn.products[0])
             
         # Perform species constraints and forbidden species checks
         
@@ -1509,7 +1500,16 @@ class CoreEdgeReactionModel:
                  reversible=rxn.reversible
                  )
             r, isNew = self.makeNewReaction(rxn) # updates self.newSpeciesList and self.newReactionlist
-            if not isNew: logging.info("This library reaction was not new: {0}".format(rxn))
+            if not isNew:
+                logging.info("This library reaction was not new: {0}".format(rxn))
+            elif self.pressureDependence and rxn.elementary_high_p and rxn.isUnimolecular()\
+                    and isinstance(rxn, LibraryReaction) and isinstance(rxn.kinetics, Arrhenius):
+                # This unimolecular library reaction is flagged as `elementary_high_p` and has Arrhenius type kinetics.
+                # We should calculate a pressure-dependent rate for it
+                if len(rxn.reactants) == 1:
+                    self.processNewReactions(newReactions=[rxn],newSpecies=rxn.reactants[0])
+                else:
+                    self.processNewReactions(newReactions=[rxn],newSpecies=rxn.products[0])
 
         # Perform species constraints and forbidden species checks
         for spec in self.newSpeciesList:
@@ -1534,7 +1534,10 @@ class CoreEdgeReactionModel:
             # Note that we haven't actually evaluated any fluxes at this point
             # Instead, we remove the comment below if the reaction is moved to
             # the core later in the mechanism generation
-            self.addReactionToEdge(rxn)
+            if not (self.pressureDependence and rxn.elementary_high_p and rxn.isUnimolecular()
+                    and isinstance(rxn, LibraryReaction) and isinstance(rxn.kinetics, Arrhenius)):
+                # Don't add to the edge library reactions that were already processed
+                self.addReactionToEdge(rxn)
 
         self.printEnlargeSummary(
             newCoreSpecies=[],

@@ -194,7 +194,11 @@ class KineticsDatabase(object):
         for label in familiesToLoad:
             familyPath = os.path.join(path, label)
             family = KineticsFamily(label=label)
-            family.load(familyPath, self.local_context, self.global_context, depositoryLabels=depositories)
+            try:
+                family.load(familyPath, self.local_context, self.global_context, depositoryLabels=depositories)
+            except:
+                logging.error("Error when loading reaction family {!r}".format(familyPath))
+                raise
             self.families[label] = family
 
     def loadLibraries(self, path, libraries=None):

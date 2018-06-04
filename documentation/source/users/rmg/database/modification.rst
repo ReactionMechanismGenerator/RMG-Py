@@ -3,9 +3,9 @@
 *********************
 Database Modification
 *********************
-Note that the RMG-Py database is written in Python code where line indentions
+Note that the RMG-Py database is written in Python code where line indentations
 determine the scope. When modifying the database, be sure to preserve all 
-line indentions shown in the examples.
+line indentations shown in the examples.
 
 Modifying the Thermo Database
 =============================
@@ -81,6 +81,25 @@ To conform to RMG's format, simply copy and modify an existing library.
 
 At the top of the reactions file fill in the name and short (one line) and long descriptions.
 The name must be identical to the folder's name. Then list the kinetics entries, each with a unique index number.
+
+There are two flags relevant for pressure dependent library reactions that one should consider using:
+
+1. **elementary_high_p**: Should be set to ``True`` for *elementary* unimolecular reactions (with only one reactant
+and/or product) with a kinetics entry that has information about the high pressure kinetics, i.e., Troe or Lindemann,
+PDepArrhenius or Chebyshev that are defined up to at least 100 bar, or Arrhenius that represents the high pressure limit
+(i.e., not the measured rate at some low or medium experimental pressure). If set to ``True``, RMG will use the high pressure
+limit rate when constructing pressure-dependent networks. The kinetics entry of the original library reaction will only be
+updated if it is an Arrhenius type (will be replaced with either PDepArrhenius or Chebyshev, as specified in the
+pressureDependent block of the input file). If set to ``False`` (the default value), RMG will not use the high pressure
+limit rate in network exploration, and will not convert Arrhenius kinetics of library reactions that have no template
+(a corresponding reaction family) into a pressure-dependent form.
+
+2. **allow_pdep_route**: If set to ``True`` and RMG discovers a pressure-dependent reaction with the same reactants and products,
+the latter *will* be considered in addition to the library reaction. This is useful for cases when more than one pathway connects
+the same reactants and products, and some of these pathways are well-skipping reactions. If set to ``False`` (the default value),
+similar network reactions will not be considered in the model generation.
+
+
 The following formats are accepted as kinetics entries:
 
 **Arrhenius** of the form :math:`k(T) = A \left( \frac{T}{T_0} \right)^n \exp \left( -\frac{E_\mathrm{a}}{RT} \right)`

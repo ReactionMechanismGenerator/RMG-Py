@@ -30,9 +30,9 @@
 
 import math
 import numpy
+import logging
 import os.path
 import rmgpy.constants as constants
-import logging
 from rmgpy.cantherm.common import checkConformerEnergy
 from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
 ################################################################################
@@ -46,7 +46,6 @@ class QchemLog:
 
     def __init__(self, path):
         self.path = path
-
 
     def getNumberOfAtoms(self):
         """
@@ -69,7 +68,8 @@ class QchemLog:
         # Close file when finished
         f.close()
         # Return the result
-        return Natoms    
+        return Natoms
+
     def loadForceConstantMatrix(self):
         """
         Return the force constant matrix (in Cartesian coordinates) from the 
@@ -176,7 +176,7 @@ class QchemLog:
         number = numpy.array(number, numpy.int)       
         return coord, number, mass
     
-    def loadConformer(self, symmetry=None, spinMultiplicity=None, opticalIsomers=1, symfromlog=None):
+    def loadConformer(self, symmetry=None, spinMultiplicity=0, opticalIsomers=1, symfromlog=None, label=''):
         """
         Load the molecular degree of freedom data from a output file created as
         the result of a Qchem "Freq"  calculation. As
@@ -184,7 +184,6 @@ class QchemLog:
         you can use the `symmetry` parameter to substitute your own value; if
         not provided, the value in the Qchem output file will be adopted.
         """
-
         modes = []; freq = []; mmass = []; rot = []
         E0 = 0.0
 #        symmetry = 1
@@ -192,10 +191,11 @@ class QchemLog:
         line = f.readline()
         while line != '':
             # Read spin multiplicity if not explicitly given
-            if '$molecule' in line and spinMultiplicity is None:
+            if '$molecule' in line and spinMultiplicity == 0:
                 line = f.readline()
                 if len(line.split()) == 2:
-                    spinMultiplicity = int(float(line.split()[1])) 
+                    spinMultiplicity = int(float(line.split()[1]))
+                    logging.debug('Conformer {0} is assigned a spin multiplicity of {1}'.format(label,spinMultiplicity))
             # The rest of the data we want is in the Thermochemistry section of the output
             elif 'VIBRATIONAL ANALYSIS' in line:
                 modes = []
@@ -394,8 +394,4 @@ class QchemLog:
         if frequency < 0:
             return frequency
         else:
-            raise Exception('Unable to find imaginary frequency in QChem output file.')    
-        
-
-
-
+            raise Exception('Unable to find imaginary frequency in QChem output file {0}'.format(self.path))

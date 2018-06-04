@@ -30,6 +30,7 @@
 
 import os
 import unittest
+from external.wip import work_in_progress
 
 from .main import RMG, CoreEdgeReactionModel
 from .model import Species
@@ -76,6 +77,7 @@ class TestRMGWorkFlow(unittest.TestCase):
         import rmgpy.data.rmg
         rmgpy.data.rmg.database = None
         
+    @work_in_progress
     def testDeterministicReactionTemplateMatching(self):
         """
         Test RMG work flow can match reaction template for kinetics estimation 
@@ -83,15 +85,19 @@ class TestRMGWorkFlow(unittest.TestCase):
 
         In this test, a change of molecules order in a reacting species should 
         not change the reaction template matched.
+
+        However, this is inherently impossible with the existing reaction
+        generation algorithm. Currently, the first reaction will be the one
+        that is kept if the reactions are identical. If different templates
+        are a result of different transition states, all are kept.
         
-        H + C=C=C=O -> O=C[C]=C
+        {O=C-[C]=C, [O]-C=C=C} -> H + C=C=C=O
         """
 
         # react
         spc = Species().fromSMILES("O=C[C]=C")
         spc.generate_resonance_structures()
-        newReactions = []		
-        newReactions.extend(react((spc,)))
+        newReactions = react((spc,))
 
         # try to pick out the target reaction 
         mol_H = Molecule().fromSMILES("[H]")
@@ -112,7 +118,7 @@ class TestRMGWorkFlow(unittest.TestCase):
         self.assertEqual(len(target_rxns_reverse), 2)
 
         # whatever order of molecules in spc, the reaction template matched should be same
-        self.assertEqual(target_rxns[0].template, target_rxns_reverse[-1].template)
+        self.assertEqual(target_rxns[0].template, target_rxns_reverse[0].template)
 
     def testCheckForExistingSpeciesForBiAromatics(self):
         """

@@ -38,16 +38,15 @@ import os.path
 import math
 import numpy
 import logging
-
-import rmgpy.constants as constants
 import rmgpy.quantity as quantity
 from rmgpy.kinetics import Chebyshev, PDepArrhenius
 from rmgpy.reaction import Reaction
 from rmgpy.kinetics.tunneling import Wigner, Eckart
 from rmgpy.data.kinetics.library import LibraryReaction
-
 from rmgpy.cantherm.output import prettify
 from rmgpy.chemkin import writeKineticsEntry
+from sensitivity import PDepSensitivity as sa
+from rmgpy.exceptions import InvalidMicrocanonicalRateError, ModifiedStrongCollisionError
 
 ################################################################################
 
@@ -104,7 +103,7 @@ class PressureDependenceJob(object):
         Pmin=None, Pmax=None, Pcount=0, Plist=None,
         maximumGrainSize=None, minimumGrainCount=0,
         method=None, interpolationModel=None, maximumAtoms=None,
-        activeKRotor=True, activeJRotor=True, rmgmode=False):
+        activeKRotor=True, activeJRotor=True, rmgmode=False, sensitivity_conditions=None):
         self.network = network
         
         self.Tmin = Tmin
@@ -142,6 +141,14 @@ class PressureDependenceJob(object):
         self.activeKRotor = activeKRotor
         self.activeJRotor = activeJRotor
         self.rmgmode = rmgmode
+
+        if sensitivity_conditions is not None:
+            if not isinstance(sensitivity_conditions[0], list):
+                sensitivity_conditions = [sensitivity_conditions]  # allow `[T, P]` as conditions input
+            self.sensitivity_conditions = [[quantity.Quantity(condition[0]), quantity.Quantity(condition[1])]
+                                           for condition in sensitivity_conditions]
+        else:
+            self.sensitivity_conditions = None
         
     @property
     def Tmin(self):
@@ -222,8 +229,9 @@ class PressureDependenceJob(object):
             rmgmode = self.rmgmode,
         )
 
-    def execute(self, outputFile, plot, format='pdf'):
-        self.network.printSummary()
+    def execute(self, outputFile, plot, format='pdf', print_summary=True):
+        if print_summary:
+            self.network.printSummary()
         
         if outputFile is not None:
             self.draw(os.path.dirname(outputFile), format)
@@ -238,6 +246,25 @@ class PressureDependenceJob(object):
             self.save(outputFile)
             if plot:
                 self.plot(os.path.dirname(outputFile))
+            if self.sensitivity_conditions is not None:
+                perturbation = 0.1  # kcal/mol
+                logging.info('\n\nRunning sensitivity analysis...')
+                for i in xrange(3):
+                    try:
+                        sa(self, os.path.dirname(outputFile), perturbation=perturbation)
+                    except (InvalidMicrocanonicalRateError, ModifiedStrongCollisionError):
+                        logging.warn("Could not complete the sensitivity analysis with a perturbation of {0}"
+                                     " kcal/mol, trying {1} kcal/mol instead.".format(
+                                        perturbation, perturbation / 2.0))
+                        perturbation /= 2.0
+                    else:
+                        break
+                else:
+                    logging.error("Could not complete the sensitivity analysis even with a perturbation of {0}"
+                                  " kcal/mol".format(perturbation))
+                    raise
+                logging.info("Completed the sensitivity analysis using a perturbation of {0} kcal/mol".format(
+                    perturbation))
         logging.debug('Finished pdep job for reaction {0}.'.format(self.network.label))
         logging.debug(repr(self.network))
 
@@ -391,7 +418,7 @@ class PressureDependenceJob(object):
     
     def save(self, outputFile):
         
-        logging.info('Saving pressure dependence results for {0} network...'.format(self.network.label))
+        logging.info('Saving pressure dependence results for network {0}...'.format(self.network.label))
         f = open(outputFile, 'a')
         f_chemkin = open(os.path.join(os.path.dirname(outputFile), 'chem.inp'), 'a')
     
@@ -467,7 +494,7 @@ class PressureDependenceJob(object):
 
         # Skip this step if matplotlib is not installed
         try:
-            import pylab
+            import matplotlib.pyplot as plt
         except ImportError:
             return
 
@@ -496,7 +523,7 @@ class PressureDependenceJob(object):
                     ' + '.join([product.label for product in reaction.products]),
                 )
                 
-                fig = pylab.figure(figsize=(10,6))
+                fig = plt.figure(figsize=(10,6))
                 
                 K2 = numpy.zeros((Tcount, Pcount))
                 if reaction.kinetics is not None:
@@ -510,27 +537,32 @@ class PressureDependenceJob(object):
                 K2 *= 1e6 ** (order-1)
                 kunits = {1: 's^-1', 2: 'cm^3/(mol*s)', 3: 'cm^6/(mol^2*s)'}[order]
 
-                pylab.subplot(1,2,1)
-                for p in range(Pcount):
-                    pylab.semilogy(1000.0 / Tlist, K[:,p], color=cm(1.*p/(Pcount-1)), marker='o', linestyle='')
+                plt.subplot(1,2,1)
+                for p in xrange(Pcount):
+                    plt.semilogy(1000.0 / Tlist, K[:,p], color=cm(1.*p/(Pcount-1)), marker='o', linestyle='',
+                                   label=str('%.2e' % (Plist[p]/1e+5)) + ' bar')
                     if reaction.kinetics is not None:
-                        pylab.semilogy(1000.0 / Tlist, K2[:,p], color=cm(1.*p/(Pcount-1)), marker='', linestyle='-')
-                pylab.xlabel('1000 / Temperature (1000/K)')
-                pylab.ylabel('Rate coefficient ({0})'.format(kunits))
-                pylab.title(reaction_str)
+                        plt.semilogy(1000.0 / Tlist, K2[:,p], color=cm(1.*p/(Pcount-1)), marker='', linestyle='-')
+                plt.xlabel('1000 / Temperature (1000/K)')
+                plt.ylabel('Rate coefficient ({0})'.format(kunits))
+                plt.title(reaction_str)
+                plt.legend()
                 
-                pylab.subplot(1,2,2)
-                for t in range(Tcount):
-                    pylab.loglog(Plist*1e-5, K[t,:], color=cm(1.*t/(Tcount-1)), marker='o', linestyle='')
-                    pylab.loglog(Plist*1e-5, K2[t,:], color=cm(1.*t/(Tcount-1)), marker='', linestyle='-')
-                pylab.xlabel('Pressure (bar)')
-                pylab.ylabel('Rate coefficient ({0})'.format(kunits))
-                pylab.title(reaction_str)
+                plt.subplot(1,2,2)
+                for t in xrange(Tcount):
+                    plt.loglog(Plist*1e-5, K[t,:], color=cm(1.*t/(Tcount-1)), marker='o', linestyle='',
+                                   label=str('%.0d' % Tlist[t]) + ' K')
+                    plt.loglog(Plist*1e-5, K2[t,:], color=cm(1.*t/(Tcount-1)), marker='', linestyle='-')
+                plt.xlabel('Pressure (bar)')
+                plt.ylabel('Rate coefficient ({0})'.format(kunits))
+                plt.title(reaction_str)
+                plt.legend()
                 
                 fig.subplots_adjust(left=0.10, bottom=0.13, right=0.95, top=0.92, wspace=0.3, hspace=0.3)
-
-                pylab.savefig(os.path.join(outputDirectory, 'kinetics_{0:d}.pdf'.format(count)))
-                pylab.close()
+                if not os.path.exists(os.path.join(outputDirectory, 'plots', '')):
+                    os.mkdir(os.path.join(outputDirectory, 'plots', ''))
+                plt.savefig(os.path.join(outputDirectory, 'plots', 'kinetics_{0:d}.pdf'.format(count)))
+                plt.close()
 
     def draw(self, outputDirectory, format='pdf'):
         """
@@ -633,7 +665,10 @@ class PressureDependenceJob(object):
                 if rxn.kinetics is not None:
                     if isinstance(rxn, LibraryReaction) and 'Reaction library:' not in rxn.kinetics.comment:
                         rxn.kinetics.comment += 'Reaction library: {0!r}'.format(rxn.library)
-                    f.write('    kinetics = {0!r},\n'.format(rxn.kinetics))
+                    if rxn.network_kinetics is not None:
+                        f.write('    kinetics = {0!r},\n'.format(rxn.network_kinetics))
+                    else:
+                        f.write('    kinetics = {0!r},\n'.format(rxn.kinetics))
                 if ts.tunneling is not None:
                     f.write('    tunneling = {0!r},\n'.format(ts.tunneling.__class__.__name__))
                 f.write(')\n\n')
