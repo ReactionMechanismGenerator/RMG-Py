@@ -55,6 +55,9 @@ cdef class SurfaceReactor(ReactionSystem):
     cdef public double V
     cdef public bint constantVolume
 
+    cdef public int nSimsTerm
+    cdef public dict sensConditions
+
     cdef public dict initialGasMoleFractions
     cdef public dict initialSurfaceCoverages
     cdef public ScalarQuantity surfaceVolumeRatio
@@ -69,9 +72,12 @@ cdef class SurfaceReactor(ReactionSystem):
                  initialSurfaceCoverages,
                  surfaceVolumeRatio,
                  surfaceSiteDensity,
-                 termination,
+                 nSimsTerm=None,
+                 termination=None,
                  sensitiveSpecies=None,
-                 sensitivityThreshold=1e-3):
+                 sensitivityThreshold=1e-3,
+                 sensConditions=None,
+                 ):
         ReactionSystem.__init__(self,
                                 termination, 
                                 sensitiveSpecies, 
@@ -85,6 +91,8 @@ cdef class SurfaceReactor(ReactionSystem):
         self.surfaceSiteDensity = Quantity(surfaceSiteDensity)
         self.V = 0 # will be set from ideal gas law in initializeModel
         self.constantVolume = True
+        self.sensConditions = sensConditions
+        self.nSimsTerm = nSimsTerm
         
     def convertInitialKeysToSpeciesObjects(self, speciesDict):
         """

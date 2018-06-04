@@ -337,6 +337,7 @@ def surfaceReactor(temperature,
                   initialSurfaceCoverages,
                   surfaceVolumeRatio,
                   surfaceSiteDensity,
+                   nSimsTerm=4,
                   terminationConversion=None,
                   terminationTime=None,
                   sensitivity=None,
@@ -363,6 +364,8 @@ def surfaceReactor(temperature,
 
     T = Quantity(temperature)
     initialP = Quantity(initialPressure)
+    if not isinstance(temperature, list) and not isinstance(initialPressure, list):
+        nSimsTerm = 1
 
     termination = []
     if terminationConversion is not None:
@@ -377,15 +380,26 @@ def surfaceReactor(temperature,
     if sensitivity:
         for spec in sensitivity:
             sensitiveSpecies.append(speciesDict[spec])
-    system = SurfaceReactor(T,
-                            initialP,
-                            initialGasMoleFractions,
-                            initialSurfaceCoverages,
-                            surfaceVolumeRatio,
-                            surfaceSiteDensity,
-                            termination,
-                            sensitiveSpecies,
-                            sensitivityThreshold)
+    sensConditions = None
+    if sensitivity:
+        raise NotImplementedError("Can't currently do sensitivity with surface reactors.")
+        """
+        The problem is inside base.pyx it reads the dictionary 'sensConditions'
+        and guesses whether they're all concentrations (liquid reactor) or 
+        mole fractions (simple reactor). In fact, some may be surface coverages.
+        """
+
+    system = SurfaceReactor(T=T,
+                            initialP=initialP,
+                            initialGasMoleFractions=initialGasMoleFractions,
+                            initialSurfaceCoverages=initialSurfaceCoverages,
+                            surfaceVolumeRatio=surfaceVolumeRatio,
+                            surfaceSiteDensity=surfaceSiteDensity,
+                            nSimsTerm=nSimsTerm,
+                            termination=termination,
+                            sensitiveSpecies=sensitiveSpecies,
+                            sensitivityThreshold=sensitivityThreshold,
+                            sensConditions=sensConditions)
     rmg.reactionSystems.append(system)
     system.log_initial_conditions(number=len(rmg.reactionSystems))
 
