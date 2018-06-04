@@ -9,7 +9,6 @@ scipy
 matplotlib
 cython>=0.19
 quantities
-guppy
 psutil
 xlwt
 MarkupSafe # this makes Jinja2 faster
@@ -37,3 +36,5 @@ pyzmq
 # SCOOP for parallel computing
 git+https://github.com/soravux/scoop.git@0.7.0
 
+# For unit tests
+mock

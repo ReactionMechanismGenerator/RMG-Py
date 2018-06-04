@@ -5,11 +5,11 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2009 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the "Software"),
+#   copy of this software and associated documentation files (the 'Software'),
 #   to deal in the Software without restriction, including without limitation
 #   the rights to use, copy, modify, merge, publish, distribute, sublicense,
 #   and/or sell copies of the Software, and to permit persons to whom the
@@ -18,10 +18,10 @@
 #   The above copyright notice and this permission notice shall be included in
 #   all copies or substantial portions of the Software.
 #
-#   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 #   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-#   THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 #   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #   DEALINGS IN THE SOFTWARE.
@@ -114,11 +114,8 @@ class QchemLog:
         last is returned.
         """
         atom = []; coord = []; number = []; 
-        try:
-            f = open(self.path, 'r')
-        except IndexError:
-            print('File not found')
-        f = open(self.path, 'r')  
+
+        f = open(self.path, 'r')
         line = f.readline()
         while line != '':
             if 'Final energy is' in line:
@@ -161,7 +158,6 @@ class QchemLog:
                 number.append('6')
             elif atom[i] == 'N':
                 mass[i] = 14.0030740048
-                number[i] = 7
                 number.append('7')
             elif atom[i] == 'O':
                 mass[i] = 15.99491461956
@@ -176,7 +172,7 @@ class QchemLog:
                 mass[i] = 35.4527
                 number.append('17')
             else:
-                print 'Atomic atom {0:d} not yet supported in loadGeometry().'.format(atom[i])
+                raise NotImplementedError('Atomic atom {0:d} not yet supported in loadGeometry().'.format(atom[i]))
         number = numpy.array(number, numpy.int)       
         return coord, number, mass
     
@@ -203,8 +199,7 @@ class QchemLog:
             # The rest of the data we want is in the Thermochemistry section of the output
             elif 'VIBRATIONAL ANALYSIS' in line:
                 modes = []
-                
-                inPartitionFunctions = False
+
                 line = f.readline()
                 while line != '':
 
@@ -255,7 +250,6 @@ class QchemLog:
                         else:
                             for i in range(3):
                                 inertia[i] *= (constants.a0/1e-10)**2
-                                pass
                                 rotation = NonlinearRotor(inertia=(inertia,"amu*angstrom^2"), symmetry=symmetry)
                                 #modes.append(rotation)
                             rot.append(rotation) 
@@ -282,9 +276,7 @@ class QchemLog:
         in the file is returned. The zero-point energy is *not* included in 
         the returned value.
         """
-        modes = []
-        E0 = None 
-        spinMultiplicity = 1
+        E0 = None
     
         f = open(self.path, 'r')
         line = f.readline()
@@ -315,9 +307,7 @@ class QchemLog:
         Load the unscaled zero-point energy in J/mol from a Qchem output file.
         """
 
-        modes = []
         ZPE = None
-        spinMultiplicity = 1
     
         f = open(self.path, 'r')
         line = f.readline()

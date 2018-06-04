@@ -4,9 +4,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2012 Prof. Richard H. West (r.west@neu.edu),
-#                           Prof. William H. Green (whgreen@mit.edu)
-#                           and the RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -83,6 +82,21 @@ class QMSettings():
                 symmetryPath = 'symmetry'
         self.symmetryPath = symmetryPath
 
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (QMSettings, (
+            self.software,
+            self.method,
+            self.fileStore,
+            self.scratchDirectory,
+            self.onlyCyclics,
+            self.maxRadicalNumber,
+            self.symmetryPath
+            )
+        )
+
     def checkAllSet(self):
         """
         Check that all the required settings are set.
@@ -129,7 +143,14 @@ class QMCalculator():
                                    maxRadicalNumber = maxRadicalNumber,
                                    )
         self.database = ThermoLibrary(name='QM Thermo Library')
-        
+    
+    def __reduce__(self):
+        """
+        A helper function used when pickling an object.
+        """
+        return (QMCalculator, (self.settings, self.database))
+
+
     def setDefaultOutputDirectory(self, outputDirectory):
         """
         IF the fileStore or scratchDirectory are not already set, put them in here.

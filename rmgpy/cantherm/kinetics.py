@@ -5,11 +5,11 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2009 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the "Software"),
+#   copy of this software and associated documentation files (the 'Software'),
 #   to deal in the Software without restriction, including without limitation
 #   the rights to use, copy, modify, merge, publish, distribute, sublicense,
 #   and/or sell copies of the Software, and to permit persons to whom the
@@ -18,10 +18,10 @@
 #   The above copyright notice and this permission notice shall be included in
 #   all copies or substantial portions of the Software.
 #
-#   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 #   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-#   THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 #   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #   DEALINGS IN THE SOFTWARE.
@@ -157,6 +157,8 @@ class KineticsJob:
         order = len(self.reaction.reactants)
         klist *= 1e6 ** (order-1)
         self.kunits = {1: 's^-1', 2: 'cm^3/(mol*s)', 3: 'cm^6/(mol^2*s)'}[order]
+        self.Kequnits = {2:'mol^2/cm^6', 1:'mol/cm^3', 0:'       ', -1:'cm^3/mol', -2:'cm^6/mol^2'}[len(self.reaction.products)-len(self.reaction.reactants)]
+        self.krunits = {1: 's^-1', 2: 'cm^3/(mol*s)', 3: 'cm^6/(mol^2*s)'}[len(self.reaction.products)]
         self.reaction.kinetics = Arrhenius().fitToData(Tlist, klist, kunits=self.kunits)
 
     def save(self, outputFile):
@@ -165,6 +167,11 @@ class KineticsJob:
         at `path` on disk.
         """
         reaction = self.reaction
+        
+        ks = []
+        k0s = []
+        k0revs = []
+        krevs = []
         
         logging.info('Saving kinetics for {0}...'.format(reaction))
         
@@ -178,7 +185,7 @@ class KineticsJob:
         f.write('#   ======= =========== =========== =========== ===============\n')
         
         if self.Tlist is None:
-            Tlist = [300,400,500,600,800,1000,1500,2000]
+            Tlist = numpy.array([300,400,500,600,800,1000,1500,2000])
         else:
             Tlist =self.Tlist.value_si
 
@@ -190,9 +197,36 @@ class KineticsJob:
             k = reaction.calculateTSTRateCoefficient(T) * factor
             tunneling = reaction.transitionState.tunneling
             kappa = k / k0
+            ks.append(k)
+            k0s.append(k0)
             f.write('#    {0:4g} K {1:11.3e} {2:11g} {3:11.3e} {4}\n'.format(T, k0, kappa, k, self.kunits))
         f.write('#   ======= =========== =========== =========== ===============\n')
+        f.write('\n\n')
         
+        f.write('#   ======= ============ =========== ============ ============= =========\n')
+        f.write('#   Temp.    Kc (eq)        Units     krev (TST)   krev (TST+T)   Units\n')
+        f.write('#   ======= ============ =========== ============ ============= =========\n')
+        
+        for n,T in enumerate(Tlist):
+            k = ks[n]
+            k0 = k0s[n]
+            Keq = reaction.getEquilibriumConstant(T)
+            k0rev = k0/Keq
+            krev =  k/Keq
+            k0revs.append(k0rev)
+            krevs.append(krev)
+            f.write('#    {0:4g} K {1:11.3e}   {2}  {3:11.3e}   {4:11.3e}      {5}\n'.format(T, Keq, self.Kequnits, k0rev, krev, self.krunits))
+
+            
+        f.write('#   ======= ============ =========== ============ ============= =========\n')
+        f.write('\n\n')
+        
+        kinetics0rev = Arrhenius().fitToData(Tlist, numpy.array(k0revs), kunits=self.krunits)
+        kineticsrev = Arrhenius().fitToData(Tlist, numpy.array(krevs), kunits=self.krunits)
+        
+        f.write('# krev (TST) = {0} \n'.format(kinetics0rev))
+        f.write('# krev (TST+T) = {0} \n\n'.format(kineticsrev))
+                
         # Reaction path degeneracy is INCLUDED in the kinetics itself!
         string = 'kinetics(label={0!r}, kinetics={1!r})'.format(reaction.label, reaction.kinetics)
         f.write('{0}\n\n'.format(prettify(string)))

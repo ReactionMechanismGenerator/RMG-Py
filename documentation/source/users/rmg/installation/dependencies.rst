@@ -20,11 +20,10 @@ Briefly, RMG depends on the following packages, almost all of which can be found
 * **gcc:** GNU compiler collection for C,C++, and Fortran. (MinGW is used in windows)
 * **gprof2dot:** converts Python profiling output to a dot graph
 * **graphviz:** generating flux diagrams
-* **guppy:** memory profiling tools
 * **jinja2:** Python templating language for html rendering
 * **markupsafe:** implements XML/HTML/XHTML markup safe strings for Python
 * **matplotlib:** library for making plots
-* **mencoder:** (optional) used to encode videos, necessary for generating video flux diagrams.  Must be installed separately.
+* **ffmpeg:** (optional) used to encode videos, necessary for generating video flux diagrams
 * **mopac:** semi-empirical software package for QM calculations
 * **nose:** advanced unit test controls
 * **numpy:** fast matrix operations

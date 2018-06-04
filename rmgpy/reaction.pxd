@@ -41,12 +41,14 @@ cdef class Reaction:
     cdef public str label
     cdef public list reactants
     cdef public list products
+    cdef public Species specificCollider
     cdef public bint reversible
     cdef public TransitionState transitionState
     cdef public KineticsModel kinetics
     cdef public bint duplicate
-    cdef public int degeneracy
+    cdef public float _degeneracy
     cdef public list pairs
+    cdef public str comment
     cdef public dict k_effective_cache
     
     cpdef bint isIsomerization(self)
@@ -61,9 +63,9 @@ cdef class Reaction:
 
     cpdef bint hasTemplate(self, list reactants, list products)
     
-    cpdef bint matchesMolecules(self, list reactants)
+    cpdef bint matchesSpecies(self, list reactants, list products=?)
 
-    cpdef bint isIsomorphic(self, Reaction other, bint eitherDirection=?)
+    cpdef bint isIsomorphic(self, Reaction other, bint eitherDirection=?, bint checkIdentical=?, bint checkOnlyLabel=?, bint checkTemplateRxnProducts=?)
 
     cpdef double getEnthalpyOfReaction(self, double T)
 
@@ -106,16 +108,6 @@ cdef class Reaction:
     cpdef generatePairs(self)
     
     cpdef copy(self)
+
+cpdef bint _isomorphicSpeciesList(list list1, list list2, bint checkIdentical=?, bint checkOnlyLabel=?)
     
-################################################################################
-
-cdef class ReactionModel:
-
-    cdef public list species
-    cdef public list reactions
-
-    cpdef generateStoichiometryMatrix(self)
-
-    cpdef numpy.ndarray getReactionRates(self, double T, double P, dict Ci)
-
-################################################################################

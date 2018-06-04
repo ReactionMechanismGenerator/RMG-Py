@@ -16,14 +16,14 @@ requirements:
     - cairo # [unix]
     - cairocffi # [unix]
     - coverage
-    - cython ==0.21
+    - cython >=0.25.2
     - gcc # [unix]
     - gcc ==4.8.2 # [linux32]
     - gprof2dot
-    - guppy
     - jinja2
     - libgcc # [unix]
     - libgfortran ==1.0 # [linux] You may need to comment this out for mac osx
+    - lpsolve55
     - markupsafe
     - matplotlib >=1.5
     - nose
@@ -31,7 +31,7 @@ requirements:
     - openbabel
     - psutil
     - pydas >=1.0.2
-    - pydot 
+    - pydot ==1.2.2
     - pydqed >=1.0.1
     - pyparsing
     - python
@@ -48,36 +48,42 @@ requirements:
     - cairo # [unix]
     - cairocffi # [unix]
     - cantera >=2.2
+    - coolprop
     - coverage
     - cython ==0.21
+    - ffmpeg
     - gprof2dot
     - graphviz
     - guppy
     - jinja2
     - libgcc # [unix]
     - libgfortran ==1.0 # [linux] You may need to comment this out for mac osx
+    - lpsolve55
     - markupsafe
     - matplotlib >=1.5
+    - mock
     - mopac
     - nose
     - numpy
     - openbabel
     - psutil
     - pydas >=1.0.2
-    - pydot 
+    - pydot ==1.2.2
     - pydqed >=1.0.1
     - pyparsing
     - python
     - pyzmq
     - quantities
     - rdkit >=2015.09.2
-    - rmgdatabase >=1.0.2
+    - rmgdatabase >=2.1.0
     - scipy
     - scoop
     - symmetry
     - xlwt
 
 test:
+  source_files:
+    - '*'
   requires:
     - nose
   imports:

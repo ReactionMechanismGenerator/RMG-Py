@@ -4,11 +4,11 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2009 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the "Software"),
+#   copy of this software and associated documentation files (the 'Software'),
 #   to deal in the Software without restriction, including without limitation
 #   the rights to use, copy, modify, merge, publish, distribute, sublicense,
 #   and/or sell copies of the Software, and to permit persons to whom the
@@ -17,10 +17,10 @@
 #   The above copyright notice and this permission notice shall be included in
 #   all copies or substantial portions of the Software.
 #
-#   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 #   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-#   THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 #   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #   DEALINGS IN THE SOFTWARE.
@@ -47,15 +47,20 @@ cdef class HeatCapacityModel:
     `Tmin`          The minimum temperature at which the model is valid, or ``None`` if unknown or undefined
     `Tmax`          The maximum temperature at which the model is valid, or ``None`` if unknown or undefined
     `E0`            The energy at zero Kelvin (including zero point energy)
+    `Cp0`           The heat capacity at zero Kelvin
+    `CpInf`         The heat capacity at infinity
     `comment`       Information about the model (e.g. its source)
     =============== ============================================================
 
     """
     
-    def __init__(self, Tmin=None, Tmax=None, E0=None, comment=''):
+    def __init__(self, Tmin=None, Tmax=None, E0=None, Cp0=None, CpInf=None, label='', comment=''):
         self.Tmin = Tmin
         self.Tmax = Tmax
         self.E0 = E0
+        self.Cp0 = Cp0
+        self.CpInf = CpInf
+        self.label = label
         self.comment = comment
         
     def __repr__(self):
@@ -63,13 +68,14 @@ cdef class HeatCapacityModel:
         Return a string representation that can be used to reconstruct the
         HeatCapacityModel object.
         """
-        return 'HeatCapacityModel(Tmin={0!r}, Tmax={1!r}, E0={2!r}, comment="""{3}""")'.format(self.Tmin, self.Tmax, self.E0, self.comment)
+        return 'HeatCapacityModel(Tmin={0!r}, Tmax={1!r}, E0={2!r}, Cp0={3!r}, Cp0={4!r}, label="""{5}""", comment="""{6}""")'.format(self.Tmin,
+                                 self.Tmax, self.E0, self.Cp0, self.CpInf, self.label, self.comment)
 
     def __reduce__(self):
         """
         A helper function used when pickling a HeatCapacityModel object.
         """
-        return (HeatCapacityModel, (self.Tmin, self.Tmax, self.E0, self.comment))
+        return (HeatCapacityModel, (self.Tmin, self.Tmax, self.E0, self.Cp0, self.CpInf, self.label, self.comment))
 
     property E0:
         """The ground state energy (J/mol) at zero Kelvin, including zero point energy, or ``None`` if not yet specified."""
@@ -91,6 +97,20 @@ cdef class HeatCapacityModel:
             return self._Tmax
         def __set__(self, value):
             self._Tmax = quantity.Temperature(value)
+
+    property Cp0:
+        """The heat capacity at zero temperature."""
+        def __get__(self):
+            return self._Cp0
+        def __set__(self, value):
+            self._Cp0 = quantity.HeatCapacity(value)
+
+    property CpInf:
+        """The heat capacity at infinite temperature."""
+        def __get__(self):
+            return self._CpInf
+        def __set__(self, value):
+            self._CpInf = quantity.HeatCapacity(value)
 
     cpdef bint isTemperatureValid(self, double T) except -2:
         """

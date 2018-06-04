@@ -5,8 +5,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2010 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -38,14 +38,16 @@ import os.path
 import re
 import codecs
 import math
+import numpy
 from copy import  deepcopy
 
-from rmgpy.data.base import Database, Entry, DatabaseError, getAllCombinations
+from rmgpy.data.base import Database, Entry, getAllCombinations
 
 from rmgpy.quantity import Quantity, ScalarQuantity
 from rmgpy.reaction import Reaction
-from rmgpy.kinetics import ArrheniusEP, StickingCoefficientBEP, SurfaceArrheniusBEP
-from .common import KineticsError, saveEntry
+from rmgpy.kinetics import ArrheniusEP, Arrhenius, StickingCoefficientBEP, SurfaceArrheniusBEP
+from .common import saveEntry
+from rmgpy.exceptions import KineticsError, DatabaseError
 
 ################################################################################
 
@@ -72,8 +74,12 @@ class KineticsRules(Database):
                   shortDesc='',
                   longDesc='',
                   rank=None,
+                  nodalDistance=None,
+                  treeDistances=None
                   ):
-            
+
+        if isinstance(kinetics,Arrhenius):
+            kinetics = kinetics.toArrheniusEP()
         entry = Entry(
             index = index,
             label = label,
@@ -84,6 +90,7 @@ class KineticsRules(Database):
             shortDesc = shortDesc,
             longDesc = longDesc.strip(),
             rank = rank,
+            nodalDistance=nodalDistance,
         )
         try:
             self.entries[label].append(entry)
@@ -440,17 +447,57 @@ class KineticsRules(Database):
         
         return entries
 
-    def fillRulesByAveragingUp(self, rootTemplate, alreadyDone):
+    def fillRulesByAveragingUp(self, rootTemplate, alreadyDone, verbose=False):
         """
         Fill in gaps in the kinetics rate rules by averaging child nodes.
+        If verbose is set to True, then exact sources of kinetics are saved in the kinetics comments
+        (warning: this uses up a lot of memory due to the extensively long comments)
         """
         rootLabel = ';'.join([g.label for g in rootTemplate])
         
         if rootLabel in alreadyDone:
             return alreadyDone[rootLabel]
+
+        # Generate the distance 1 pairings which must be averaged for this root template.
+        # The distance 1 template is created by taking the parent node from one or more trees
+        # and creating the combinations with children from a single remaining tree.  
+        # i.e. for some node (A,B), we want to fetch all combinations for the pairing of (A,B's children) and
+        # (A's children, B).  For node (A,B,C), we would retrieve all combinations of (A,B,C's children) 
+        # (A,B's children,C) etc...  
+        # If a particular node has no children, it is skipped from the children expansion altogether.
+
+        childrenList = []
+        distanceList = []
+        for i, parent in enumerate(rootTemplate):
+            # Start with the root template, and replace the ith member with its children
+            if parent.children:
+                childrenSet = [[group] for group in rootTemplate]
+                childrenSet[i] = parent.children
+                childrenList.extend(getAllCombinations(childrenSet))
+                distanceList.extend([k.nodalDistance for k in parent.children])
+                
+        if distanceList != []: #average the minimum distance neighbors
+            minDist = min(distanceList) 
+            closeChildrenList = [childrenList[i] for i in xrange(len(childrenList)) if distanceList[i]==minDist]
+        else:
+            closeChildrenList = []
+            
+        kineticsList = []
+        for template in childrenList:
+            label = ';'.join([g.label for g in template])
+            
+            if label in alreadyDone:
+                kinetics = alreadyDone[label]
+            else:
+                kinetics = self.fillRulesByAveragingUp(template, alreadyDone, verbose)
+            
+            if template in closeChildrenList and kinetics is not None:
+                kineticsList.append([kinetics, template])
         
-        # See if we already have a rate rule for this exact template 
+        # See if we already have a rate rule for this exact template instead
+        # and return it now that we have finished searching its children
         entry = self.getRule(rootTemplate)
+        
         if entry is not None and entry.rank > 0:
             # We already have a rate rule for this exact template
             # If the entry has rank of zero, then we have so little faith
@@ -460,40 +507,33 @@ class KineticsRules(Database):
             alreadyDone[rootLabel] = entry.data
             return entry.data
         
-        # Recursively descend to the child nodes
-        childrenList = [[group] for group in rootTemplate]
-        for group in childrenList:
-            parent = group.pop(0)
-            if len(parent.children) > 0:
-                group.extend(parent.children)
-            else:
-                group.append(parent)
-                
-        childrenList = getAllCombinations(childrenList)
-        kineticsList = []
-        for template in childrenList:
-            label = ';'.join([g.label for g in template])
-            if template == rootTemplate: 
-                continue
-            
-            if label in alreadyDone:
-                kinetics = alreadyDone[label]
-            else:
-                kinetics = self.fillRulesByAveragingUp(template, alreadyDone)
-            
-            if kinetics is not None:
-                kineticsList.append([kinetics, template])
-        
         if len(kineticsList) > 0:
             
-            # We found one or more results! Let's average them together
-            kinetics = self.__getAverageKinetics([k for k, t in kineticsList])
             if len(kineticsList) > 1:
-                kinetics.comment += 'Average of ({0})'.format(
-                    ' + '.join(k.comment if k.comment != '' else ';'.join(g.label for g in t) for k, t in kineticsList))
+                # We found one or more results! Let's average them together
+                kinetics = self.__getAverageKinetics([k for k, t in kineticsList])
+                
+                if verbose:
+                    kinetics.comment = 'Average of [{0}]'.format(
+                         ' + '.join(k.comment if k.comment != '' else ';'.join(g.label for g in t) for k, t in kineticsList))
+                
+                else:
+                    kinetics.comment = 'Average of [{0}]'.format(
+                     ' + '.join(';'.join(g.label for g in t) for k, t in kineticsList))
+
             else:
                 k,t = kineticsList[0]
-                kinetics.comment += k.comment if k.comment != '' else ';'.join(g.label for g in t)
+                kinetics = deepcopy(k)
+                # Even though we are using just a single set of kinetics, it's still considered
+                # an average.  It just happens that the other distance 1 children had no data.
+                
+                if verbose:
+                    kinetics.comment = 'Average of [{0}]'.format(k.comment if k.comment != '' else ';'.join(g.label for g in t))
+                else:
+                    kinetics.comment = 'Average of [{0}]'.format(';'.join(g.label for g in t))
+                
+
+            
             entry = Entry(
                 index = 0,
                 label = rootLabel,
@@ -568,74 +608,154 @@ class KineticsRules(Database):
         else:
             raise Exception('Invalid kinetics type {0!r} for {1!r}.'.format(type(kinetics), self))
         return averagedKinetics
-
+    
     def estimateKinetics(self, template, degeneracy=1):
         """
         Determine the appropriate kinetics for a reaction with the given
         `template` using rate rules.
+        
+        Returns a tuple (kinetics, entry) where `entry` is the database
+        entry used to determine the kinetics only if it is an exact match,
+        and is None if some averaging or use of a parent node took place.
         """
-        def getTemplateLabel(template):
-            # Get string format of the template in the form "(leaf1,leaf2)"
-            return '({0})'.format(';'.join([g.label for g in template]))
-    
+        entry = self.getRule(template)
         
         originalLeaves = getTemplateLabel(template)
         templateList = [template]
+        distanceList = [numpy.zeros(len(template))]
+        minNorm = numpy.inf
+        savedKinetics = []
+        
+        if entry is not None and entry.data:
+            savedKinetics = [[deepcopy(entry.data),template]]
+            templateList = []
+            minNorm = 0
+            
         while len(templateList) > 0:
             
             kineticsList = []
-            for t in templateList:
+            distances = []
+            for i,t in enumerate(templateList):
                 entry = self.getRule(t)
-                if entry is None: continue
+                if entry is None: 
+                    continue
                 kinetics = deepcopy(entry.data)
                 kineticsList.append([kinetics, t])
+                distances.append(distanceList[i])
+            
             
             if len(kineticsList) > 0:                 
-                                
-                if len(kineticsList) == 1:
-                    kinetics, t = kineticsList[0]
-                    # Check whether the exact rate rule for the original template (most specific
-                    # leaves) were found or not.
-                    matchedLeaves = getTemplateLabel(t)
-                    if matchedLeaves == originalLeaves:
-                        if 'Average' in kinetics.comment:
-                            kinetics.comment += 'Estimated using an average'
-                        else:
-                            kinetics.comment += 'Exact match found' 
-                    else:
-                    # Using a more general node to estimate original template
-                        if kinetics.comment:
-                            kinetics.comment += '\n'
-                        kinetics.comment +='Estimated using template ' + matchedLeaves
-                            
+                # Filter the kinetics to use templates with the lowest minimum euclidean distance 
+                # from the specified template
+                norms = [numpy.linalg.norm(d) for d in distances]
+                newMinNorm = min(norms)
+                if newMinNorm == minNorm:
+                    savedKinetics.extend([pair for pair, norm in zip(kineticsList,norms) if norm == min(norms)])
+                elif newMinNorm < minNorm:
+                    minNorm = newMinNorm
+                    savedKinetics = [pair for pair, norm in zip(kineticsList,norms) if norm == min(norms)]
+                
+            templateList0 = templateList #keep the old template list
+            distanceList0 = distanceList #keep thge old distance list
+            distanceList = []
+            templateList = []
+            
+            if minNorm > 0:  #filter out stuff too large to be used
+                toDelete = []
+                norms = [numpy.linalg.norm(d) for d in distanceList0]
+                for i in range(len(templateList0)):
+                    if norms[i] > minNorm:
+                        toDelete.append(i)
+                toDelete.reverse()
+                for k in toDelete:
+                    del templateList0[k]
+                    del distanceList0[k]
+                        
+            
+            for i,template0 in enumerate(templateList0):
+                for index in xrange(len(template0)):
+                    if not template0[index].parent: # We're at the top-level node in this subtreee
+                        continue
+                    dist = deepcopy(distanceList0[i])
+                    t = template0[:]
+                    dist[index] += t[index].nodalDistance
+                    t[index] = t[index].parent
+                     
+                    if t not in templateList:
+                        templateList.append(t)
+                        distanceList.append(dist)
+
+            if templateList != [] and minNorm != 0:
+                continue
+            
+        kineticsList = removeIdenticalKinetics(savedKinetics)
+        
+        if len(kineticsList) == 0:
+            raise KineticsError('Unable to determine kinetics for reaction with template {0} in family {1}.'.format(template, self.label))
+            
+        elif len(kineticsList) == 1:
+            kinetics, t = kineticsList[0]
+            # Check whether the exact rate rule for the original template (most specific
+            # leaves) were found or not.
+            matchedLeaves = getTemplateLabel(t)
+            if kinetics.comment:
+                kinetics.comment += '\n'
+            if matchedLeaves == originalLeaves:
+                if 'Average' in kinetics.comment:
+                    kinetics.comment += 'Estimated using an average'
                 else:
-                    # We found one or more results! Let's average them together
-                    kinetics = self.__getAverageKinetics([k for k, t in kineticsList])
-                    kinetics.comment += 'Estimated using average of templates {0}'.format(
+                    kinetics.comment += 'Exact match found' 
+            else:
+                #Using a more general node to estimate original template
+                kinetics.comment +='Estimated using template ' + matchedLeaves
+                            
+        else:
+            # We found one or more results! Let's average them together
+            kinetics = self.__getAverageKinetics([k for k, t in kineticsList])
+            # Unlike in the case of a single rule, the verbose comments for averaging are lost unless they are 
+            # appended in the following lines.  Verbose comments are filtered out in 
+            # rmgpy.rmg.model.CoreEdgeReactionModel.generateKinetics
+            kinetics.comment = 'Average of [{0}]'.format(
+                    ' + '.join(k.comment if k.comment != '' else ';'.join(g.label for g in t) for k, t in kineticsList))
+            kinetics.comment +='\n'
+            # Append standard portion of kinetics comments that appear in non-verbose mode.
+            kinetics.comment += 'Estimated using average of templates {0}'.format(
                         ' + '.join([getTemplateLabel(t) for k, t in kineticsList]),
                     )
                 
-                kinetics.comment +=  ' for rate rule ' + originalLeaves
-                kinetics.A.value_si *= degeneracy
-                if degeneracy > 1:
-                    kinetics.comment += "\n"
-                    kinetics.comment += "Multiplied by reaction path degeneracy {0}".format(degeneracy)
+        kinetics.comment += ' for rate rule ' + originalLeaves
+        kinetics.comment += '\nEuclidian distance = {}'.format(minNorm)
+        kinetics.A.value_si *= degeneracy
+        if degeneracy > 1:
+            kinetics.comment += "\n"
+            kinetics.comment += "Multiplied by reaction path degeneracy {0}".format(degeneracy)
+        
+        kinetics.comment += "\n"
+        kinetics.comment += "family: {0}".format(self.label.replace('/rules',''))
+        
+        return kinetics, (entry if 'Exact' in kinetics.comment else None)
 
-                return kinetics, entry if 'Exact' in kinetics.comment else None
+def removeIdenticalKinetics(kList):
+    """
+    removes all identical kinetics entries in kList
+    takes in a list of kinetics entries
+    returns the list with the identical kinetics entries removed
+    
+    does this based on strings, which should be fine for this specifically, since we shouldn't have any
+    identical kinetics entries in the families and all of the identical kinetics should look exactly the same
+    """
+    outSet = set()
+    outList = []
+    for k in kList:
+        sk = str(k)
+        if sk in outSet:
+            continue
+        else:
+            outSet.add(sk)
+            outList.append(k)
             
-            else:
-                # No results found
-                templateList0 = templateList
-                templateList = []
-                for template0 in templateList0:
-                    for index in range(len(template0)):
-                        if not template0[index].parent:
-                            # We're at the top-level node in this subtreee
-                            continue
-                        t = template0[:]
-                        t[index] = t[index].parent
-                        if t not in templateList:
-                            templateList.append(t)
-                
-        # If we're here then we couldn't estimate any kinetics, which is an exception
-        raise KineticsError('Unable to determine kinetics for reaction with template {0} in family {1}.'.format(template, self.label))
+    return outList
+
+def getTemplateLabel(template):
+    # Get string format of the template in the form "(leaf1,leaf2)"
+    return '[{0}]'.format(';'.join([g.label for g in template]))

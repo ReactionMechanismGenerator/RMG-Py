@@ -1,3 +1,30 @@
+################################################################################
+#
+#   RMG - Reaction Mechanism Generator
+#
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
+#
+#   Permission is hereby granted, free of charge, to any person obtaining a
+#   copy of this software and associated documentation files (the 'Software'),
+#   to deal in the Software without restriction, including without limitation
+#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#   and/or sell copies of the Software, and to permit persons to whom the
+#   Software is furnished to do so, subject to the following conditions:
+#
+#   The above copyright notice and this permission notice shall be included in
+#   all copies or substantial portions of the Software.
+#
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+#   DEALINGS IN THE SOFTWARE.
+#
+################################################################################
+
 import sys
 import os.path
 import numpy 
@@ -64,13 +91,13 @@ class ObservablesTestCase:
 
 
     """
-    def __init__(self, title='', oldDir='', newDir='', observables = {}, exptData = [], ck2cti=True):
+    def __init__(self, title='', oldDir='', newDir='', observables = None, exptData = None, ck2cti=True):
         self.title=title
         self.newDir=newDir
         self.oldDir=oldDir
         self.conditions=None
-        self.exptData=exptData
-        self.observables=observables
+        self.exptData=exptData if exptData else []
+        self.observables=observables if observables else {}
 
         # Detect if the transport file exists
         oldTransportPath = None
@@ -195,8 +222,8 @@ class ObservablesTestCase:
         failHeader='\nThe following observables did not match:\n'
         failHeaderPrinted=False
         for i in range(len(oldConditionData)):
-            timeOld, dataListOld = oldConditionData[i]
-            timeNew, dataListNew = newConditionData[i]
+            timeOld, dataListOld, reactionSensitivityDataOld = oldConditionData[i]
+            timeNew, dataListNew, reactionSensitivityDataOld = newConditionData[i]
 
             # Compare species observables
             if 'species' in self.observables:

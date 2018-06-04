@@ -5,8 +5,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2010 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -30,16 +30,17 @@
 
 import os
 import unittest 
+import numpy as np
 
 from rmgpy import settings
 from rmgpy.data.kinetics import TemplateReaction
-from rmgpy.data.rmg import RMGDatabase, database
+from rmgpy.data.rmg import RMGDatabase
 from rmgpy.molecule import Molecule
 from rmgpy.reaction import Reaction
+from rmgpy.species import Species
 
 from rmgpy.rmg.main import RMG
-from rmgpy.species import Species
-from rmgpy.rmg.react import *
+from rmgpy.rmg.react import react, reactAll, deflate, deflateReaction
 
 ###################################################
 
@@ -66,26 +67,15 @@ class TestReact(unittest.TestCase):
                                        reactionLibraries=[]
                                        )
 
-    def testReactMolecules(self):
-        """
-        Test that reaction generation for Molecule objects works.
-        """
-        
-        moleculeTuples = [(Molecule(SMILES='CC'), -1), (Molecule(SMILES='[CH3]'), -1)]
-
-        reactionList = reactMolecules(moleculeTuples)
-        
-        self.assertIsNotNone(reactionList)
-        self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in reactionList]))
-
     def testReact(self):
         """
         Test that reaction generation from the available families works.
         """
         spcA = Species().fromSMILES('[OH]')
         spcs = [Species().fromSMILES('CC'), Species().fromSMILES('[CH3]')]
+        spcTuples = [(spcA, spc) for spc in spcs]
 
-        reactionList = list(react(spcA, spcs))
+        reactionList = list(react(*spcTuples))
         self.assertIsNotNone(reactionList)
         self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in reactionList]))
 
@@ -93,9 +83,9 @@ class TestReact(unittest.TestCase):
         """
         Test that reaction deflate function works.
         """
-        molA = Molecule().fromSMILES('[OH]')
-        molB = Molecule().fromSMILES('CC')
-        molC = Molecule().fromSMILES('[CH3]')
+        molA = Species().fromSMILES('[OH]')
+        molB = Species().fromSMILES('CC')
+        molC = Species().fromSMILES('[CH3]')
 
         reactants = [molA, molB]
 
@@ -105,7 +95,7 @@ class TestReact(unittest.TestCase):
         rxn = Reaction(reactants=[molA, molB], products=[molC],
         pairs=[(molA, molC), (molB, molC)])
 
-        deflate(rxn, reactants, reactantIndices)
+        deflate([rxn], reactants, reactantIndices)
 
         for spc, t in zip(rxn.reactants, [int, int]):
             self.assertTrue(isinstance(spc, t))
@@ -119,7 +109,7 @@ class TestReact(unittest.TestCase):
         rxn = Reaction(reactants=[molA, molB], products=[molC],
                 pairs=[(molA, molC), (molB, molC)])
 
-        deflate(rxn, reactants, reactantIndices)
+        deflate([rxn], reactants, reactantIndices)
 
         for spc, t in zip(rxn.reactants, [Species, int]):
             self.assertTrue(isinstance(spc, t))
@@ -141,13 +131,70 @@ class TestReact(unittest.TestCase):
         spcs = [Species(index=indices['CC']).fromSMILES('CC'),
                 Species(index=indices['[CH3]']).fromSMILES('[CH3]')]
 
-        reactionList = list(react(spcA, spcs))
+        spcTuples = [(spcA, spc) for spc in spcs]
+
+        reactionList = list(react(*spcTuples))
         self.assertIsNotNone(reactionList)
         self.assertEquals(len(reactionList), 3)
         for rxn in reactionList:
             for i, reactant in enumerate(rxn.reactants):
                 rxn.reactants[i] = Molecule().fromSMILES(indices[reactant])
             self.assertTrue(rxn.isBalanced())
+
+    def testReactAll(self):
+        """
+        Test that the reactAll function works.
+        """
+
+        spcs = [
+                Species().fromSMILES('CC'),
+                Species().fromSMILES('[CH3]'),
+                Species().fromSMILES('[OH]')
+                ]
+
+        N = len(spcs)
+        rxns = reactAll(spcs, N, np.ones(N), np.ones([N,N]))
+        self.assertIsNotNone(rxns)
+        self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in rxns]))
+
+    def testDeflateReaction(self):
+        """
+        Test if the deflateReaction function works.
+        """
+
+        molA = Species().fromSMILES('[OH]')
+        molB = Species().fromSMILES('CC')
+        molC = Species().fromSMILES('[CH3]')
+
+        # both reactants were already part of the core:
+        reactantIndices = [1, 2]
+        molDict = {molA.molecule[0]: 1, molB.molecule[0]: 2}
+
+        rxn = Reaction(reactants=[molA, molB], products=[molC],
+        pairs=[(molA, molC), (molB, molC)])
+
+        deflateReaction(rxn, molDict)
+
+        for spc, t in zip(rxn.reactants, [int, int]):
+            self.assertTrue(isinstance(spc, t))
+        self.assertEquals(rxn.reactants, reactantIndices)
+        for spc in rxn.products:
+            self.assertTrue(isinstance(spc, Species))
+
+        # one of the reactants was not yet part of the core:
+        reactantIndices = [-1, 2]
+        molDict = {molA.molecule[0]: molA, molB.molecule[0]: 2}
+
+        rxn = Reaction(reactants=[molA, molB], products=[molC],
+                pairs=[(molA, molC), (molB, molC)])
+
+        deflateReaction(rxn, molDict)
+
+        for spc, t in zip(rxn.reactants, [Species, int]):
+            self.assertTrue(isinstance(spc, t), 'Species {} is not of type {}'.format(spc,t))
+        for spc in rxn.products:
+            self.assertTrue(isinstance(spc, Species))
+
 
     def tearDown(self):
         """

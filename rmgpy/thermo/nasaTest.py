@@ -5,11 +5,11 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2009 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the "Software"),
+#   copy of this software and associated documentation files (the 'Software'),
 #   to deal in the Software without restriction, including without limitation
 #   the rights to use, copy, modify, merge, publish, distribute, sublicense,
 #   and/or sell copies of the Software, and to permit persons to whom the
@@ -18,10 +18,10 @@
 #   The above copyright notice and this permission notice shall be included in
 #   all copies or substantial portions of the Software.
 #
-#   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 #   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-#   THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 #   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #   DEALINGS IN THE SOFTWARE.
@@ -34,6 +34,7 @@ This script contains unit tests of the :mod:`rmgpy.thermo.nasa` module.
 
 import unittest
 import numpy
+import os.path
 
 from rmgpy.thermo.nasa import NASA, NASAPolynomial
 import rmgpy.constants as constants
@@ -66,7 +67,13 @@ class TestNASA(unittest.TestCase):
             E0 = (self.E0, "J/mol"),
             comment = self.comment,
         )
-    
+    def tearDown(self):
+        """
+        Reset the database & liquid parameters for solution
+        """
+        import rmgpy.data.rmg
+        rmgpy.data.rmg.database = None
+        
     def test_polyLow(self):
         """
         Test that the NASA low-temperature polynomial was properly set.
@@ -231,3 +238,50 @@ class TestNASA(unittest.TestCase):
         # NasaPoly2 units use J/kmol rather than J/mol
         self.assertAlmostEqual(self.nasa.getEnthalpy(900), nasapoly2.h(900)/1000, 1)
         self.assertAlmostEqual(self.nasa.getEntropy(700), nasapoly2.s(700)/1000, 1)
+
+    def testToNASA(self):
+        """
+        Test if the entropy computed from other thermo implementations is close to what NASA computes.
+        """
+
+        from rmgpy import settings
+        from rmgpy.data.rmg import RMGDatabase, database
+        from rmgpy.species import Species
+
+        # Load databases
+        database = RMGDatabase()
+        database.loadThermo(os.path.join(settings['database.directory'], 'thermo'),thermoLibraries=['Narayanaswamy'])
+        database.loadSolvation(os.path.join(settings['database.directory'], 'solvation'))
+
+        spc = Species().fromSMILES('CC')
+        spc.getThermoData()
+
+        T = 1350.# not 298K!
+
+        # nasa to thermodata
+        nasa = spc.thermo
+        Snasa = nasa.getEntropy(T)
+
+        td = nasa.toThermoData()
+        Std = td.getEntropy(T)
+
+        self.assertAlmostEqual(Snasa, Std, -1)
+        self.assertEqual(td.comment,nasa.comment)
+
+
+        # thermodata to nasa
+        nasa = td.toNASA(Tmin=100.0, Tmax=5000.0, Tint=1000.0)
+        Snasa = nasa.getEntropy(T)
+
+        self.assertAlmostEqual(Snasa, Std, -1)
+        self.assertEqual(td.comment,nasa.comment)
+
+        # wilhoit to nasa
+        wilhoit=nasa.toWilhoit()
+        nasa = wilhoit.toNASA(Tmin=100.0, Tmax=5000.0, Tint=1000.0)
+        Snasa = nasa.getEntropy(T)
+
+        self.assertAlmostEqual(Snasa, Std, -1)
+        self.assertEqual(wilhoit.comment,nasa.comment)
+
+        # nasa to wilhoi performed in wilhoitTest

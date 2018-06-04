@@ -230,7 +230,10 @@ Symmetry
 --------
 
 The notion of symmetry is an essential part of molecules. 
-Molecular symmetry refers to the indistinguishable orientations of a molecule.
+Molecular symmetry refers to the indistinguishable orientations of a molecule and 
+can be represented by molecular groups or a symmetry number. RMG uses a symmetry number
+which is the number of superimposible configurations, which includes external symmetry and internal
+free rotors, which is described by detail by [Benson]_.
 This is macroscopically quantified as a decrease of the entropy S by a term  :math:`-R * ln(\sigma)`
 with R the universal gas constant and :math:`\sigma` the global symmetry number, 
 corresponding to the number of indistinguishable orientations of the molecule.
@@ -263,6 +266,14 @@ Chiral molecules belong to point groups that lack a superposable mirror image
 (i.e. point groups lacking :math:`\sigma_h`, :math:`\sigma_d`, :math:`\sigma_v`, and :math:`S_n`
 symmetry elements).
 	
+In RMG, chirality is incorportated into the symmetry attribute by dividing the symmetry by
+two which will increase entropy by :math:`+R * ln(2)`. RMG currently checks for each chiral
+center, defined by 4 different groups attached to a carbon, and halves the symmetry 
+for each chiral center.
+
+The effect of cis-trans isomers is currently not accounted for in RMG.
+
+
 References
 ==========
 
@@ -279,3 +290,5 @@ References
 .. [Yu] "Estimation method for the thermochemical properties of polycyclic aromatic molecules" (Ph.D), Joanna Yu, M.I.T (2005)
 
 .. [RDKit] Landrum, G. (2012). RDKit, http://rdkit.org.
+
+.. [Benson] Benson, S.W. (1965), https://en.wikipedia.org/wiki/Benson_group_increment_theory

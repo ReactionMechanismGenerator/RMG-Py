@@ -1,40 +1,78 @@
+################################################################################
+#
+#   RMG - Reaction Mechanism Generator
+#
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
+#
+#   Permission is hereby granted, free of charge, to any person obtaining a
+#   copy of this software and associated documentation files (the 'Software'),
+#   to deal in the Software without restriction, including without limitation
+#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#   and/or sell copies of the Software, and to permit persons to whom the
+#   Software is furnished to do so, subject to the following conditions:
+#
+#   The above copyright notice and this permission notice shall be included in
+#   all copies or substantial portions of the Software.
+#
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+#   DEALINGS IN THE SOFTWARE.
+#
+################################################################################
+
 import os
 import unittest
-import logging
-from external.wip import work_in_progress 
 
 from .main import RMG, CoreEdgeReactionModel
 from .model import Species
 from rmgpy import settings
-from rmgpy.data.rmg import RMGDatabase, database
+from rmgpy.data.rmg import RMGDatabase
 from rmgpy.molecule import Molecule
 from rmgpy.rmg.react import react
+from rmgpy.restart import saveRestartFile
+import rmgpy
+from rmgpy.data.base import ForbiddenStructures
+
+from rmg import *
 ###################################################
 
 class TestRMGWorkFlow(unittest.TestCase):
-
-    def setUp(self):
+    
+    @classmethod
+    def setUpClass(self):
         """
-        A method that is run before each unit test in this class.
+        A method that is run before all unit tests in this class.
         """
         # set-up RMG object
         self.rmg = RMG()
         self.rmg.reactionModel = CoreEdgeReactionModel()
 
-        self.rmg_dummy = RMG()
-        self.rmg_dummy.reactionModel = CoreEdgeReactionModel()
-
         # load kinetic database and forbidden structures
         self.rmg.database = RMGDatabase()
-        path = os.path.join(settings['database.directory'])
+        path = os.path.join(settings['test_data.directory'], 'testing_database')
 
-        # forbidden structure loading
-        self.rmg.database.loadForbiddenStructures(os.path.join(path, 'forbiddenStructures.py'))
         # kinetics family Disproportionation loading
         self.rmg.database.loadKinetics(os.path.join(path, 'kinetics'), \
-                                       kineticsFamilies=['R_Addition_MultipleBond'],reactionLibraries=[])
+                                       kineticsFamilies=['H_Abstraction','R_Addition_MultipleBond'],reactionLibraries=[])
 
-    @work_in_progress
+        #load empty forbidden structures 
+        for family in self.rmg.database.kinetics.families.values():
+            family.forbidden = ForbiddenStructures()
+        self.rmg.database.forbiddenStructures = ForbiddenStructures()
+
+    @classmethod
+    def tearDownClass(self):
+        """
+        Reset the loaded database
+        """
+        import rmgpy.data.rmg
+        rmgpy.data.rmg.database = None
+        
     def testDeterministicReactionTemplateMatching(self):
         """
         Test RMG work flow can match reaction template for kinetics estimation 
@@ -42,42 +80,36 @@ class TestRMGWorkFlow(unittest.TestCase):
 
         In this test, a change of molecules order in a reacting species should 
         not change the reaction template matched.
+        
+        H + C=C=C=O -> O=C[C]=C
         """
 
         # react
         spc = Species().fromSMILES("O=C[C]=C")
-        spc.generateResonanceIsomers()
+        spc.generate_resonance_structures()
         newReactions = []		
-        newReactions.extend(react(spc))
-
-        # process newly generated reactions to make sure no duplicated reactions
-        self.rmg.reactionModel.processNewReactions(newReactions, spc, None)
+        newReactions.extend(react((spc,)))
 
         # try to pick out the target reaction 
         mol_H = Molecule().fromSMILES("[H]")
         mol_C3H2O = Molecule().fromSMILES("C=C=C=O")
 
-        target_rxns = findTargetRxnsContaining(mol_H, mol_C3H2O, \
-                                               self.rmg.reactionModel.edge.reactions)
-        self.assertEqual(len(target_rxns), 1)
+        target_rxns = findTargetRxnsContaining(mol_H, mol_C3H2O, newReactions)
+        self.assertEqual(len(target_rxns), 2)
 
         # reverse the order of molecules in spc
         spc.molecule = list(reversed(spc.molecule))
 
         # react again
         newReactions_reverse = []
-        newReactions_reverse.extend(react(spc))
-
-        # process newly generated reactions again to make sure no duplicated reactions
-        self.rmg_dummy.reactionModel.processNewReactions(newReactions_reverse, spc, None)
+        newReactions_reverse.extend(react((spc,)))
 
         # try to pick out the target reaction 
-        target_rxns_reverse = findTargetRxnsContaining(mol_H, mol_C3H2O, \
-                                                       self.rmg_dummy.reactionModel.edge.reactions)
-        self.assertEqual(len(target_rxns_reverse), 1)
+        target_rxns_reverse = findTargetRxnsContaining(mol_H, mol_C3H2O, newReactions_reverse)
+        self.assertEqual(len(target_rxns_reverse), 2)
 
         # whatever order of molecules in spc, the reaction template matched should be same
-        self.assertEqual(target_rxns[0].template, target_rxns_reverse[0].template)
+        self.assertEqual(target_rxns[0].template, target_rxns_reverse[-1].template)
 
     def testCheckForExistingSpeciesForBiAromatics(self):
         """
@@ -90,7 +122,7 @@ class TestRMGWorkFlow(unittest.TestCase):
         rmg_test = RMG()
         rmg_test.reactionModel = CoreEdgeReactionModel()
         DPP = Species().fromSMILES('C1=CC=C(C=C1)CCCC1C=CC=CC=1')
-        DPP.generateResonanceIsomers()
+        DPP.generate_resonance_structures()
         formula = DPP.molecule[0].getFormula()
         if formula in rmg_test.reactionModel.speciesDict:
             rmg_test.reactionModel.speciesDict[formula].append(DPP)
@@ -134,7 +166,53 @@ class TestRMGWorkFlow(unittest.TestCase):
         found, spec = rmg_test.reactionModel.checkForExistingSpecies(mol_test)
         assert found == True
 
+    def testRestartFileGenerationAndParsing(self):
         
+        # react
+        spc1 = Species().fromSMILES("[H]")
+        spc2 = Species().fromSMILES("C=C=C=O")
+
+        self.rmg.reactionModel.core.species.append(spc1)
+        self.rmg.reactionModel.core.species.append(spc2)
+
+        newReactions = []
+        newReactions.extend(react((spc1,spc2)))
+
+        # process newly generated reactions to make sure no duplicated reactions
+        self.rmg.reactionModel.processNewReactions(newReactions, spc2, None)
+
+        # save restart file
+        restart_folder = os.path.join(os.path.dirname(rmgpy.__file__),'rmg/test_data/restartFile')
+        if not os.path.exists(restart_folder):
+            os.mkdir(restart_folder)
+
+        restart_path = os.path.join(restart_folder, 'restart.pkl')
+        saveRestartFile(restart_path, self.rmg)
+
+        # load the generated restart file
+        rmg_load = RMG()
+        rmg_load.loadRestartFile(restart_path)
+
+        core_species_num_orig = len(self.rmg.reactionModel.core.species)
+        core_rxn_num_orig = len(self.rmg.reactionModel.core.reactions)
+        core_species_num_load = len(rmg_load.reactionModel.core.species)
+        core_rxn_num_load = len(rmg_load.reactionModel.core.reactions)
+
+        edge_species_num_orig = len(self.rmg.reactionModel.edge.species)
+        edge_rxn_num_orig = len(self.rmg.reactionModel.edge.reactions)
+        edge_species_num_load = len(rmg_load.reactionModel.edge.species)
+        edge_rxn_num_load = len(rmg_load.reactionModel.edge.reactions)
+
+        self.assertEqual(core_species_num_orig, core_species_num_load)
+        self.assertEqual(core_rxn_num_orig, core_rxn_num_load)
+
+        self.assertEqual(edge_species_num_orig, edge_species_num_load)
+        self.assertEqual(edge_rxn_num_orig, edge_rxn_num_load)
+
+        import shutil
+        shutil.rmtree(restart_folder)
+
+
 def findTargetRxnsContaining(mol1, mol2, reactions):
     target_rxns = []
     for rxn in reactions:
@@ -147,3 +225,48 @@ def findTargetRxnsContaining(mol1, mol2, reactions):
                     if rxn_spec1.isIsomorphic(mol2):
                         target_rxns.append(rxn)
     return target_rxns
+
+
+class TestRMGScript(unittest.TestCase):
+    """
+    Contains unit tests for rmg.py
+    """
+
+    def test_parse_command_line_arguments_defaults(self):
+        """
+        Test the default values for the parseCommandLineArguments module
+        """
+
+        # Acquire default arguments
+        args = parse_command_line_arguments(['input.py'])
+
+        # Test default values
+        self.assertEqual(args.walltime, '00:00:00:00')
+        self.assertEqual(args.output_directory, os.path.abspath(os.path.dirname('./')))
+        self.assertEqual(args.debug, False)
+        self.assertEqual(args.file, 'input.py')
+        self.assertEqual(args.kineticsdatastore, False)
+        self.assertEqual(args.postprocess, False)
+        self.assertEqual(args.profile, False)
+        self.assertEqual(args.quiet, False)
+        self.assertEqual(args.restart, False)
+        self.assertEqual(args.verbose, False)
+
+    def test_parse_command_line_non_defaults(self):
+        """
+        Test user command line inputs into rmg.py
+        """
+
+        # Acquire arguments
+        args = parse_command_line_arguments(['other_name.py', '-d', '-o', '/test/output/dir/', '-r', '-P',
+                                            '-t', '01:20:33:45', '-k'])
+
+        # Test expected values
+        self.assertEqual(args.walltime, '01:20:33:45')
+        self.assertEqual(args.output_directory, '/test/output/dir/')
+        self.assertEqual(args.debug, True)
+        self.assertEqual(args.file, 'other_name.py')
+        self.assertEqual(args.kineticsdatastore, True)
+        self.assertEqual(args.postprocess, True)
+        self.assertEqual(args.profile, True)
+        self.assertEqual(args.restart, True)

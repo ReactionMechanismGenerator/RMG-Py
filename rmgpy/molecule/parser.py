@@ -1,3 +1,30 @@
+################################################################################
+#
+#   RMG - Reaction Mechanism Generator
+#
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
+#
+#   Permission is hereby granted, free of charge, to any person obtaining a
+#   copy of this software and associated documentation files (the 'Software'),
+#   to deal in the Software without restriction, including without limitation
+#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#   and/or sell copies of the Software, and to permit persons to whom the
+#   Software is furnished to do so, subject to the following conditions:
+#
+#   The above copyright notice and this permission notice shall be included in
+#   all copies or substantial portions of the Software.
+#
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+#   DEALINGS IN THE SOFTWARE.
+#
+################################################################################
+
 # global imports
 
 import cython
@@ -21,7 +48,7 @@ from rdkit import Chem
 
 from rmgpy.molecule import element as elements
 from .molecule import Atom, Bond, Molecule
-from .adjlist import PeriodicSystem, bond_orders, ConsistencyChecker
+from .adjlist import ConsistencyChecker
 
 import rmgpy.molecule.inchi as inchiutil
 import rmgpy.molecule.util as util
@@ -42,12 +69,30 @@ INCHI_LOOKUPS = {
             'He': '[He]',
         }
 SMILES_LOOKUPS = {
-            '[He]':# RDKit improperly handles helium and returns it in a triplet state
+    '[He]':  # RDKit improperly handles helium and returns it in a triplet state
             """
             He
             multiplicity 1
             1 He u0 p1
+            """,
+    '[Ar]':  # RDKit improperly handles argon
             """
+            Ar
+            multiplicity 1
+            1 Ar u0 p4
+            """,
+    '[C]':  # We'd return the quintuplet without this
+            """
+            multiplicity 3
+            1 C u2 p1 c0
+            """,
+    '[CH]':  # We'd return the quartet without this
+            """
+            multiplicity 2
+            1 C u1 p1 c0 {2,S}
+            2 H u0 p0 c0 {1,S}
+            """,
+
 }     
 
 def __fromSMILES(mol, smilesstr, backend):
@@ -77,10 +122,21 @@ def __fromInChI(mol, inchistr, backend):
     else:
         raise NotImplementedError('Unrecognized backend for InChI parsing: {0}'.format(backend))
 
+def __fromSMARTS(mol, smartsstr, backend):
+    """Replace the Molecule `mol` with that given by the SMARTS `smartsstr`
+       using the backend `backend`"""
+    if backend.lower() == 'rdkit':
+        rdkitmol = Chem.MolFromSmarts(smartsstr)
+        if rdkitmol is None:
+            raise ValueError("Could not interpret the SMARTS string {0!r}".format(smartsstr))
+        fromRDKitMol(mol, rdkitmol)
+        return mol
+    else:
+        raise NotImplementedError('Unrecognized backend for SMARTS parsing: {0}'.format(backend))
 
 def __parse(mol, identifier, type_identifier, backend):
     """
-    Parses the identifier based on the type of identifier (inchi/smi)
+    Parses the identifier based on the type of identifier (inchi/smi/sma)
     and the backend used.
     
     First, look up the identifier in a dictionary to see if it can be processed
@@ -93,17 +149,21 @@ def __parse(mol, identifier, type_identifier, backend):
 
     if __lookup(mol, identifier, type_identifier) is not None:
         if isCorrectlyParsed(mol, identifier):
-            return mol 
+            mol.updateAtomTypes()
+            return mol
 
     for _backend in (BACKENDS if backend=='try-all' else [backend]):
         if type_identifier == 'smi':
             __fromSMILES(mol, identifier, _backend)
         elif type_identifier == 'inchi':
             __fromInChI(mol, identifier, _backend)
+        elif type_identifier == 'sma':
+            __fromSMARTS(mol, identifier, _backend)
         else:
             raise NotImplementedError("Unknown identifier type {0}".format(type_identifier))
 
         if isCorrectlyParsed(mol, identifier):
+            mol.updateAtomTypes()
             return mol
         else:
             logging.debug('Backend %s is not able to parse identifier %s', _backend, identifier)
@@ -120,6 +180,7 @@ def parse_openbabel(mol, identifier, type_identifier):
     obmol.AddHydrogens()
     obmol.AssignSpinMultiplicity(True)
     fromOBMol(mol, obmol)
+    # mol.updateAtomTypes()
     return mol
 
 
@@ -160,7 +221,7 @@ def __lookup(mol, identifier, type_identifier):
         except KeyError:
             return None
 
-def check(mol, aug_inchi) :
+def check(mol, aug_inchi):
     """
     Check if the molecular structure is correct.
 
@@ -176,6 +237,8 @@ def check(mol, aug_inchi) :
                    )
 
     ConsistencyChecker.check_multiplicity(mol.getRadicalCount(), mol.multiplicity)
+    inchi, u_indices, p_indices = inchiutil.decompose(str(aug_inchi))
+    assert(mol.getRadicalCount() == len(u_indices))
     
     for at in mol.atoms:
         ConsistencyChecker.check_partial_charge(at)
@@ -289,15 +352,14 @@ def fromSMILES(mol, smilesstr, backend='try-all'):
     return __parse(mol, smilesstr, 'smi', backend)
 
 
-def fromSMARTS(mol, smartsstr):
+def fromSMARTS(mol, smartsstr, backend = 'rdkit'):
     """
     Convert a SMARTS string `smartsstr` to a molecular structure. Uses
     `RDKit <http://rdkit.org/>`_ to perform the conversion.
     This Kekulizes everything, removing all aromatic atom types.
     """
-    rdkitmol = Chem.MolFromSmarts(smartsstr)
-    fromRDKitMol(mol, rdkitmol)
-    return mol
+
+    return __parse(mol, smartsstr, 'sma', backend)
 
 
 def fromRDKitMol(mol, rdkitmol):
@@ -311,7 +373,7 @@ def fromRDKitMol(mol, rdkitmol):
                    charge=cython.int,
                    lonePairs=cython.int,
                    number=cython.int,
-                   order=cython.str,
+                   order=cython.float,
                    atom=Atom,
                    atom1=Atom,
                    atom2=Atom,
@@ -320,6 +382,7 @@ def fromRDKitMol(mol, rdkitmol):
     mol.vertices = []
     
     # Add hydrogen atoms to complete molecule if needed
+    rdkitmol.UpdatePropertyCache(strict=False)
     rdkitmol = Chem.AddHs(rdkitmol)
     Chem.rdmolops.Kekulize(rdkitmol, clearAromaticFlags=True)
     
@@ -343,15 +406,15 @@ def fromRDKitMol(mol, rdkitmol):
             rdkitatom2 = rdkitmol.GetAtomWithIdx(j + 1)
             rdkitbond = rdkitmol.GetBondBetweenAtoms(i, j)
             if rdkitbond is not None:
-                order = ''
+                order = 0
     
                 # Process bond type
                 rdbondtype = rdkitbond.GetBondType()
-                if rdbondtype.name == 'SINGLE': order = 'S'
-                elif rdbondtype.name == 'DOUBLE': order = 'D'
-                elif rdbondtype.name == 'TRIPLE': order = 'T'
-                elif rdbondtype.name == 'AROMATIC': order = 'B'
-                elif rdbondtype.name == 'QUADRUPLE': order = 'Q'
+                if rdbondtype.name == 'SINGLE': order = 1
+                elif rdbondtype.name == 'DOUBLE': order = 2
+                elif rdbondtype.name == 'TRIPLE': order = 3
+                elif rdbondtype.name == 'QUADRUPLE': order = 4
+                elif rdbondtype.name == 'AROMATIC': order = 1.5
     
                 bond = Bond(mol.vertices[i], mol.vertices[j], order)
                 mol.addBond(bond)
@@ -359,12 +422,13 @@ def fromRDKitMol(mol, rdkitmol):
     # Set atom types and connectivity values
     mol.update()
     mol.updateLonePairs()
-    
+
     # Assume this is always true
     # There are cases where 2 radicalElectrons is a singlet, but
     # the triplet is often more stable, 
     mol.multiplicity = mol.getRadicalCount() + 1
-    
+    # mol.updateAtomTypes()
+
     return mol
 
 def fromOBMol(mol, obmol):
@@ -400,16 +464,12 @@ def fromOBMol(mol, obmol):
     
     # iterate through bonds in obmol
     for obbond in openbabel.OBMolBondIter(obmol):
-        order = 0
         # Process bond type
         oborder = obbond.GetBondOrder()
-        if oborder == 1: order = 'S'
-        elif oborder == 2: order = 'D'
-        elif oborder == 3: order = 'T'
-        elif obbond.IsAromatic() : order = 'B'
-        elif oborder == 4: order = 'Q'
+        if oborder not in [1,2,3,4] and obbond.IsAromatic() : 
+            oborder = 1.5
 
-        bond = Bond(mol.vertices[obbond.GetBeginAtomIdx() - 1], mol.vertices[obbond.GetEndAtomIdx() - 1], order)#python array indices start at 0
+        bond = Bond(mol.vertices[obbond.GetBeginAtomIdx() - 1], mol.vertices[obbond.GetEndAtomIdx() - 1], oborder)#python array indices start at 0
         mol.addBond(bond)
 
     
@@ -436,7 +496,7 @@ def fixCharge(mol, u_indices):
         return
 
     is_charged = sum([abs(at.charge) for at in mol.atoms]) != 0
-    is_correct = mol.getNumberOfRadicalElectrons() == (mol.multiplicity - 1)
+    is_correct = mol.getRadicalCount() == (mol.multiplicity - 1)
     if mol.multiplicity < 3 or is_correct or not is_charged:
         return
 
@@ -579,7 +639,7 @@ def convert_3_atom_2_bond_path(start, mol):
 
         for at in mol.atoms:
             if at.number == 8:
-                order = sum([bond_orders[b.order] for _, b in at.bonds.iteritems()])
+                order = at.getBondOrdersForAtom()
                 not_correct = order >= 4
                 if not_correct:
                     return False
@@ -672,7 +732,7 @@ def fix_triplet_to_singlet(mol, p_indices):
 
     for at in mol.atoms:
         index = mol.atoms.index(at) + 1
-        if mol.getNumberOfRadicalElectrons() == 2 and index in p_indices:
+        if mol.getRadicalCount() == 2 and index in p_indices:
             at.lonePairs += 1
             at.radicalElectrons -= 2
             p_indices.remove(index)
@@ -770,15 +830,14 @@ def reset_lone_pairs(mol, p_indices):
     or to the default value.
 
     """
-
     for at in mol.atoms:
         index = mol.atoms.index(at) + 1 #1-based index
         count = p_indices.count(index)
         if count != 0:
             at.lonePairs = count
         else:    
-            order = sum([bond_orders[b.order] for _,b in mol.getBonds(at).iteritems()])
-            at.lonePairs = (PeriodicSystem.valence_electrons[at.symbol] - order - at.radicalElectrons - at.charge) / 2
+            order = at.getBondOrdersForAtom()
+            at.lonePairs = (elements.PeriodicSystem.valence_electrons[at.symbol] - order - at.radicalElectrons - at.charge) / 2
 
 def fix_unsaturated_bond_to_biradical(mol, inchi, u_indices):
     """
@@ -852,7 +911,7 @@ def fix_unsaturated_bond(mol, indices, aug_inchi):
     of atoms that should be unpaired electrons left. 
     """
 
-    correct = mol.getNumberOfRadicalElectrons() == (mol.multiplicity - 1)
+    correct = mol.getRadicalCount() == (mol.multiplicity - 1)
     
     if not correct and not indices:
         raise Exception( 'Cannot correct {} based on {} by converting unsaturated bonds into unpaired electrons...'\
@@ -862,5 +921,5 @@ def fix_unsaturated_bond(mol, indices, aug_inchi):
 
     while not correct and unsaturated and len(indices) > 1:
         mol = fix_unsaturated_bond_to_biradical(mol, aug_inchi.inchi, indices)
-        correct = mol.getNumberOfRadicalElectrons() == (mol.multiplicity - 1)
+        correct = mol.getRadicalCount() == (mol.multiplicity - 1)
         unsaturated = isUnsaturated(mol)

@@ -4,11 +4,11 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2009 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the "Software"),
+#   copy of this software and associated documentation files (the 'Software'),
 #   to deal in the Software without restriction, including without limitation
 #   the rights to use, copy, modify, merge, publish, distribute, sublicense,
 #   and/or sell copies of the Software, and to permit persons to whom the
@@ -17,10 +17,10 @@
 #   The above copyright notice and this permission notice shall be included in
 #   all copies or substantial portions of the Software.
 #
-#   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 #   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-#   THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 #   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #   DEALINGS IN THE SOFTWARE.
@@ -28,6 +28,7 @@
 ################################################################################
 import numpy
 import cython
+import logging
 
 from libc.math cimport sqrt, log
 
@@ -48,8 +49,6 @@ cdef class ThermoData(HeatCapacityModel):
     `Cpdata`        An array of heat capacities at the given temperatures
     `H298`          The standard enthalpy of formation at 298 K
     `S298`          The standard entropy at 298 K
-    `Cp0`           The heat capacity at zero temperature
-    `CpInf`         The heat capacity at infinite temperature
     `Tmin`          The minimum temperature at which the model is valid, or zero if unknown or undefined
     `Tmax`          The maximum temperature at which the model is valid, or zero if unknown or undefined
     `E0`            The energy at zero Kelvin (including zero point energy)
@@ -58,14 +57,12 @@ cdef class ThermoData(HeatCapacityModel):
     
     """
 
-    def __init__(self, Tdata=None, Cpdata=None, H298=None, S298=None, Cp0=None, CpInf=None, Tmin=None, Tmax=None, E0=None, comment=''):
-        HeatCapacityModel.__init__(self, Tmin=Tmin, Tmax=Tmax, E0=E0, comment=comment)
+    def __init__(self, Tdata=None, Cpdata=None, H298=None, S298=None, Cp0=None, CpInf=None, Tmin=None, Tmax=None, E0=None, label = '',comment=''):
+        HeatCapacityModel.__init__(self, Tmin=Tmin, Tmax=Tmax, E0=E0, Cp0=Cp0, CpInf=CpInf, label=label, comment=comment)
         self.H298 = H298
         self.S298 = S298
         self.Tdata = Tdata
         self.Cpdata = Cpdata
-        self.Cp0 = Cp0
-        self.CpInf = CpInf
     
     def __repr__(self):
         """
@@ -78,6 +75,7 @@ cdef class ThermoData(HeatCapacityModel):
         if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
         if self.E0 is not None: string += ', E0={0!r}'.format(self.E0)
+        if self.label != '': string +=', label="""{0}"""'.format(self.label)
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
@@ -86,7 +84,7 @@ cdef class ThermoData(HeatCapacityModel):
         """
         A helper function used when pickling a ThermoData object.
         """
-        return (ThermoData, (self.Tdata, self.Cpdata, self.H298, self.S298, self.Cp0, self.CpInf, self.Tmin, self.Tmax, self.E0, self.comment))
+        return (ThermoData, (self.Tdata, self.Cpdata, self.H298, self.S298, self.Cp0, self.CpInf, self.Tmin, self.Tmax, self.E0, self.label, self.comment))
 
     property Tdata:
         """An array of temperatures at which the heat capacity is known."""
@@ -115,20 +113,6 @@ cdef class ThermoData(HeatCapacityModel):
             return self._S298
         def __set__(self, value):
             self._S298 = quantity.Entropy(value)
-
-    property Cp0:
-        """The heat capacity at zero temperature."""
-        def __get__(self):
-            return self._Cp0
-        def __set__(self, value):
-            self._Cp0 = quantity.HeatCapacity(value)
-
-    property CpInf:
-        """The heat capacity at infinite temperature."""
-        def __get__(self):
-            return self._CpInf
-        def __set__(self, value):
-            self._CpInf = quantity.HeatCapacity(value)
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -320,6 +304,11 @@ cdef class ThermoData(HeatCapacityModel):
             slope = (Cphigh - Cplow) / (Thigh - Tlow)
             intercept = (Cplow * Thigh - Cphigh * Tlow) / (Thigh - Tlow)
             if slope > 0:
+                if CpInf < Cphigh:
+                    logging.warning("Cphigh is above the theoretical CpInf value for ThermoData object\n{0}."
+                    "\nThe thermo for this species is probably wrong! Setting CpInf = Cphigh for Entropy calculation"
+                    "at T = {1} K...".format(self,T))
+                    CpInf = Cphigh
                 T0 = (CpInf - Cphigh) / slope + Thigh
                 if T <= T0:
                     S += slope * (T - Thigh) + intercept * log(T / Thigh)
@@ -353,13 +342,15 @@ cdef class ThermoData(HeatCapacityModel):
 
         return self.getEnthalpy(T) - T * self.getEntropy(T)
 
-    cpdef Wilhoit toWilhoit(self):
+    cpdef Wilhoit toWilhoit(self, B=None):
         """
         Convert the Benson model to a Wilhoit model. For the conversion to
         succeed, you must have set the `Cp0` and `CpInf` attributes of the
         Benson model.
+
+        B: the characteristic temperature in Kelvin.
         """
-        if self.Cp0 == 0.0 or self.CpInf == 0.0:
+        if 0.0 in [self.Cp0.value_si, self.CpInf.value_si]:
             raise Exception('Cannot convert Benson model to Wilhoit model; first specify Cp0 and CpInf.')
         from rmgpy.thermo.wilhoit import Wilhoit
         
@@ -370,7 +361,11 @@ cdef class ThermoData(HeatCapacityModel):
         Cp0 = self._Cp0.value_si
         CpInf = self._CpInf.value_si
         
-        return Wilhoit().fitToData(Tdata, Cpdata, Cp0, CpInf, H298, S298)
+        
+        if B:
+            return Wilhoit(label=self.label,comment=self.comment).fitToDataForConstantB(Tdata, Cpdata, Cp0, CpInf, H298, S298, B=B)
+        else:
+            return Wilhoit(label=self.label,comment=self.comment).fitToData(Tdata, Cpdata, Cp0, CpInf, H298, S298)
 
     cpdef NASA toNASA(self, double Tmin, double Tmax, double Tint, bint fixedTint=False, bint weighting=True, int continuity=3):
         """

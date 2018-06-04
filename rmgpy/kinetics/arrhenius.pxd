@@ -49,6 +49,8 @@ cdef class Arrhenius(KineticsModel):
     
     cpdef changeRate(self, double factor)
 
+    cpdef ArrheniusEP toArrheniusEP(self, double alpha=?, double dHrxn=?)
+
 ################################################################################
 
 cdef class ArrheniusEP(KineticsModel):

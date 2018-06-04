@@ -1,6 +1,33 @@
 #!/usr/bin/env python
 # encoding: utf-8 -*-
 
+################################################################################
+#
+#   RMG - Reaction Mechanism Generator
+#
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
+#
+#   Permission is hereby granted, free of charge, to any person obtaining a
+#   copy of this software and associated documentation files (the 'Software'),
+#   to deal in the Software without restriction, including without limitation
+#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#   and/or sell copies of the Software, and to permit persons to whom the
+#   Software is furnished to do so, subject to the following conditions:
+#
+#   The above copyright notice and this permission notice shall be included in
+#   all copies or substantial portions of the Software.
+#
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+#   DEALINGS IN THE SOFTWARE.
+#
+################################################################################
+
 """
 This module contains unit tests of the rmgpy.reaction module.
 """
@@ -13,12 +40,13 @@ from rmgpy.quantity import Quantity
 from rmgpy.species import Species, TransitionState
 from rmgpy.molecule import Molecule
 from rmgpy.reaction import Reaction
+from rmgpy.quantity import Quantity
 from rmgpy.statmech.translation import Translation, IdealGasTranslation
 from rmgpy.statmech.rotation import Rotation, LinearRotor, NonlinearRotor, KRotor, SphericalTopRotor
 from rmgpy.statmech.vibration import Vibration, HarmonicOscillator
 from rmgpy.statmech.torsion import Torsion, HinderedRotor
 from rmgpy.statmech.conformer import Conformer
-from rmgpy.kinetics import Arrhenius, SurfaceArrhenius, StickingCoefficient
+from rmgpy.kinetics import Arrhenius, ArrheniusEP, SurfaceArrhenius, StickingCoefficient
 from rmgpy.thermo import Wilhoit, ThermoData, NASA, NASAPolynomial
 import rmgpy.constants as constants
 
@@ -84,6 +112,12 @@ class TestReactionIsomorphism(unittest.TestCase):
         self.assertFalse(r1.isIsomorphic(self.makeReaction('cde=ab'),eitherDirection=False))
         self.assertFalse(r1.isIsomorphic(self.makeReaction('ab=abc')))
         self.assertFalse(r1.isIsomorphic(self.makeReaction('abe=cde')))
+    def test2to3_usingCheckOnlyLabel(self):
+        r1 = self.makeReaction('AB=CDE')
+        self.assertTrue(r1.isIsomorphic(self.makeReaction('AB=CDE'),checkOnlyLabel=True))
+        self.assertTrue(r1.isIsomorphic(self.makeReaction('BA=EDC'),eitherDirection=False,checkOnlyLabel=True))
+        self.assertFalse(r1.isIsomorphic(self.makeReaction('Ab=CDE'),checkOnlyLabel=True))
+        self.assertFalse(r1.isIsomorphic(self.makeReaction('BA=EDd'),eitherDirection=False,checkOnlyLabel=True))
 
 
 class TestSurfaceReaction(unittest.TestCase):
@@ -323,8 +357,11 @@ class TestReaction(unittest.TestCase):
                 Tmax = (2500, 'K'),
             ),
             transitionState = TS,
+            degeneracy = 2,
         )
-    
+        self.reaction.kinetics.comment = '''
+        Multiplied by reaction path degeneracy 2.0
+        '''
         # CC(=O)O[O]
         acetylperoxy = Species(
             label='acetylperoxy',
@@ -520,7 +557,63 @@ class TestReaction(unittest.TestCase):
             kr0 = self.reaction2.getRateCoefficient(T, P) / self.reaction2.getEquilibriumConstant(T)
             kr = reverseKinetics.getRateCoefficient(T)
             self.assertAlmostEqual(kr0 / kr, 1.0, 0)
-
+    
+    def testFixBarrierHeight(self):
+        """
+        Test that fixBarrierHeight:
+            1) raises Ea to match endothermicity of reaction
+            2) forces Ea to be positive if forcePositive=True
+            3) Evans-Polanyi kinetics are handled so that negative Ea if Ea<E0 are set to min(0,E0)
+        """
+        
+        #setup
+        rxn = self.reaction2.copy()
+        revRxn = rxn.copy()
+        revRxn.reactants = rxn.products
+        revRxn.products = rxn.reactants
+        
+        #test that endothermicity is matched 
+        rxn.fixBarrierHeight()
+        Ea = rxn.kinetics.Ea.value_si
+        self.assertTrue(Ea==0.0)
+        
+        revRxn.fixBarrierHeight()
+        Ea = revRxn.kinetics.Ea.value_si
+        H0 = sum([spec.getThermoData().E0.value_si for spec in rxn.products]) \
+            - sum([spec.getThermoData().E0.value_si for spec in rxn.reactants])
+        self.assertAlmostEqual(Ea,-H0,3)
+        
+        #test that Ea is forced to be positive if forcePositive is set to True
+        Ea = Quantity((-10000.0,'J/mol'))
+        rxn.kinetics.Ea = Ea
+        rxn.fixBarrierHeight()
+        self.assertTrue(rxn.kinetics.Ea.value_si==Ea.value_si)
+        
+        rxn.fixBarrierHeight(forcePositive=True)
+        self.assertTrue(rxn.kinetics.Ea.value_si==0.0)
+        
+        #Test for ArrheniusEP handling
+        #if calculated Ea < 0 and Ea < E0, Ea is set to min(0,E0)
+        H298 = rxn.getEnthalpyOfReaction(298)
+        E0s = [-1000000.0,-10.0,0.0,10.0,1000000.0]
+        
+        for i,E0 in enumerate(E0s):
+            kinetics = ArrheniusEP(
+                A = (1.0, rxn.kinetics.A.units),
+                n = (0, rxn.kinetics.n.units),
+                alpha = 1.0,
+                E0 = (E0, 'J/mol'),
+            )
+            rxn.kinetics = kinetics
+            rxn.fixBarrierHeight()
+            Ea = rxn.kinetics.Ea.value_si
+            if i < 2:
+                self.assertTrue(Ea==E0)
+            elif i < 4:
+                self.assertTrue(Ea==0.0)
+            else:
+                self.assertTrue(Ea==E0+H298)
+            
     def testGenerateReverseRateCoefficientArrhenius(self):
         """
         Test the Reaction.generateReverseRateCoefficient() method works for the Arrhenius format.
@@ -555,7 +648,6 @@ class TestReaction(unittest.TestCase):
         """
         Test the Reaction.generateReverseRateCoefficient() method works for the ArrheniusEP format.
         """
-        from rmgpy.kinetics import ArrheniusEP
 
         original_kinetics = ArrheniusEP(
                     A = (2.65e12, 'cm^3/(mol*s)'),
@@ -1042,28 +1134,26 @@ class TestReaction(unittest.TestCase):
         
         self.assertEqual(self.reaction.duplicate, reaction.duplicate)
         self.assertEqual(self.reaction.degeneracy, reaction.degeneracy)   
-    
-    def testPickleLiquidReaction(self):
+
+    def testDegeneracyUpdatesRate(self):
         """
-        Test that a Reaction with a __k_effective_cache object can be successfully pickled and unpickled with no loss of information.
+        This method tests that a change in degeneracy will result in a modified rate constant
         """
-        global diffusionLimiter        
-        import cPickle
-        from rmgpy.kinetics.diffusionLimited import diffusionLimiter
 
-        rxn = Reaction()
-        reaction = cPickle.loads(cPickle.dumps(rxn,-1))
+        prefactor = self.reaction.kinetics.A.value_si
+        degeneracyFactor = 2
+        self.reaction.degeneracy *= degeneracyFactor
+        self.assertAlmostEqual(self.reaction.kinetics.A.value_si, degeneracyFactor * prefactor)
 
-        self.assertIsNone(reaction.k_effective_cache)
+    def testDegeneracyUpdatesKineticsComment(self):
+        """
+        This method tests that a change in degeneracy will result in a modified rate constant
+        """
 
-        diffusionLimiter.enabled = True
+        newDegeneracy = 8
+        self.reaction.degeneracy = newDegeneracy
+        self.assertIn('Multiplied by reaction path degeneracy 8.0', self.reaction.kinetics.comment)
 
-        rxn = Reaction()
-        reaction = cPickle.loads(cPickle.dumps(rxn,-1))
-
-        self.assertIsNotNone(reaction.k_effective_cache)
-
-        diffusionLimiter.enabled = False
 
 class TestReactionToCantera(unittest.TestCase):
     """
@@ -1269,7 +1359,7 @@ Thermo group additivity estimation: group(Os-OsH) + gauche(Os(RR)) + other(R) + 
         rmgObjects = [self.arrheniusBi, self.arrheniusBi_irreversible, self.arrheniusMono, self.arrheniusTri]
         
         ctObjects = [self.ct_arrheniusBi, self.ct_arrheniusBi_irreversible, self.ct_arrheniusMono, self.ct_arrheniusTri]
-        converted_ctObjects = [obj.toCantera(self.speciesList) for obj in rmgObjects]
+        converted_ctObjects = [obj.toCantera(self.speciesList, useChemkinIdentifier = True) for obj in rmgObjects]
         
         for converted_obj, ct_obj in zip(converted_ctObjects, ctObjects):
             # Check that the reaction class is the same
@@ -1285,7 +1375,7 @@ Thermo group additivity estimation: group(Os-OsH) + gauche(Os(RR)) + other(R) + 
         """
         rmgObjects = [self.multiArrhenius]
         ctObjects = [self.ct_multiArrhenius]
-        converted_ctObjects = [obj.toCantera(self.speciesList) for obj in rmgObjects]
+        converted_ctObjects = [obj.toCantera(self.speciesList, useChemkinIdentifier = True) for obj in rmgObjects]
                 
         for converted_obj, ct_obj in zip(converted_ctObjects, ctObjects):
             # Check that the same number of reactions are produced
@@ -1305,7 +1395,7 @@ Thermo group additivity estimation: group(Os-OsH) + gauche(Os(RR)) + other(R) + 
         """
         rmgObjects = [self.pdepArrhenius]
         ctObjects = [self.ct_pdepArrhenius]
-        converted_ctObjects = [obj.toCantera(self.speciesList) for obj in rmgObjects]
+        converted_ctObjects = [obj.toCantera(self.speciesList, useChemkinIdentifier = True) for obj in rmgObjects]
         
         for converted_obj, ct_obj in zip(converted_ctObjects, ctObjects):
             # Check that the reaction class is the same
@@ -1322,7 +1412,7 @@ Thermo group additivity estimation: group(Os-OsH) + gauche(Os(RR)) + other(R) + 
         
         rmgObjects = [self.multiPdepArrhenius]
         ctObjects = [self.ct_multiPdepArrhenius]
-        converted_ctObjects = [obj.toCantera(self.speciesList) for obj in rmgObjects]
+        converted_ctObjects = [obj.toCantera(self.speciesList, useChemkinIdentifier = True) for obj in rmgObjects]
                 
         for converted_obj, ct_obj in zip(converted_ctObjects, ctObjects):
             # Check that the same number of reactions are produced
@@ -1341,7 +1431,7 @@ Thermo group additivity estimation: group(Os-OsH) + gauche(Os(RR)) + other(R) + 
         """
         Tests formation of cantera reactions with Chebyshev kinetics.
         """
-        ct_chebyshev = self.chebyshev.toCantera(self.speciesList)
+        ct_chebyshev = self.chebyshev.toCantera(self.speciesList, useChemkinIdentifier = True)
         self.assertEqual(type(ct_chebyshev),type(self.ct_chebyshev))
         self.assertEqual(repr(ct_chebyshev),repr(self.ct_chebyshev))
         
@@ -1356,13 +1446,13 @@ Thermo group additivity estimation: group(Os-OsH) + gauche(Os(RR)) + other(R) + 
         """
         Tests formation of cantera reactions with Falloff kinetics.
         """
-        ct_thirdBody = self.thirdBody.toCantera(self.speciesList)
+        ct_thirdBody = self.thirdBody.toCantera(self.speciesList, useChemkinIdentifier = True)
         self.assertEqual(type(ct_thirdBody),type(self.ct_thirdBody))
         self.assertEqual(repr(ct_thirdBody),repr(self.ct_thirdBody))
         self.assertEqual(str(ct_thirdBody.rate), str(self.ct_thirdBody.rate))
         self.assertEqual(ct_thirdBody.efficiencies, self.ct_thirdBody.efficiencies)
         
-        ct_lindemann = self.lindemann.toCantera(self.speciesList)
+        ct_lindemann = self.lindemann.toCantera(self.speciesList, useChemkinIdentifier = True)
         self.assertEqual(type(ct_lindemann),type(self.ct_lindemann))
         self.assertEqual(repr(ct_lindemann), repr(self.ct_lindemann))
         self.assertEqual(ct_lindemann.efficiencies, self.ct_lindemann.efficiencies)
@@ -1371,7 +1461,7 @@ Thermo group additivity estimation: group(Os-OsH) + gauche(Os(RR)) + other(R) + 
         self.assertEqual(str(ct_lindemann.falloff), str(self.ct_lindemann.falloff))
         
         
-        ct_troe = self.troe.toCantera(self.speciesList)
+        ct_troe = self.troe.toCantera(self.speciesList, useChemkinIdentifier = True)
         self.assertEqual(type(ct_troe),type(self.ct_troe))
         self.assertEqual(repr(ct_troe), repr(self.ct_troe))
         self.assertEqual(ct_troe.efficiencies, self.ct_troe.efficiencies)

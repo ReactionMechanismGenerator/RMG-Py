@@ -5,8 +5,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2010 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -31,6 +31,7 @@
 import logging
 import quantities
 import os
+import numpy
 
 from rmgpy import settings
 
@@ -40,15 +41,11 @@ from rmgpy.solver.base import TerminationTime, TerminationConversion
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.solver.liquid import LiquidReactor
 from rmgpy.solver.surface import SurfaceReactor
-
+from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
 from model import CoreEdgeReactionModel
 
 from rmgpy.scoop_framework.util import broadcast, get
-
-################################################################################
-
-class InputError(Exception): pass
-
+from rmgpy.exceptions import InputError
 ################################################################################
 
 rmg = None
@@ -56,6 +53,7 @@ speciesDict = {}
 
 def database(
              thermoLibraries = None,
+             transportLibraries = None,
              reactionLibraries = None,
              frequenciesLibraries = None,
              seedMechanisms = None,
@@ -68,11 +66,24 @@ def database(
     # We don't actually load the database until after we're finished reading
     # the input file
     if isinstance(thermoLibraries, str): thermoLibraries = [thermoLibraries]
+    if isinstance(transportLibraries, str): transportLibraries = [transportLibraries]
     if isinstance(reactionLibraries, str): reactionLibraries = [reactionLibraries]
     if isinstance(seedMechanisms, str): seedMechanisms = [seedMechanisms]
     if isinstance(frequenciesLibraries, str): frequenciesLibraries = [frequenciesLibraries]
     rmg.databaseDirectory = settings['database.directory']
     rmg.thermoLibraries = thermoLibraries or []
+    rmg.transportLibraries = transportLibraries
+    # Modify reactionLibraries if the user didn't specify tuple input
+    if reactionLibraries:
+        index = 0
+        while index < len(reactionLibraries):
+            if isinstance(reactionLibraries[index],tuple):
+                pass
+            elif isinstance(reactionLibraries[index],str):
+                reactionLibraries[index] = (reactionLibraries[index], False)
+            else:
+                raise TypeError('reaction libraries must be input as tuples or strings')
+            index += 1
     rmg.reactionLibraries = reactionLibraries or []
     rmg.seedMechanisms = seedMechanisms or []
     rmg.statmechLibraries = frequenciesLibraries or []
@@ -299,10 +310,7 @@ def surfaceReactor(temperature,
     system.log_initial_conditions(number=len(rmg.reactionSystems))
 
 def simulator(atol, rtol, sens_atol=1e-6, sens_rtol=1e-4):
-    rmg.absoluteTolerance = atol
-    rmg.relativeTolerance = rtol
-    rmg.sensitivityAbsoluteTolerance = sens_atol
-    rmg.sensitivityRelativeTolerance = sens_rtol
+    rmg.simulatorSettingsList.append(SimulatorSettings(atol, rtol, sens_atol, sens_rtol))
     
 def solvation(solvent):
     # If solvation module in input file, set the RMG solvent variable
@@ -310,23 +318,31 @@ def solvation(solvent):
         raise InputError("solvent should be a string like 'water'")
     rmg.solvent = solvent
 
-def model(toleranceMoveToCore=None, toleranceKeepInEdge=0.0, toleranceInterruptSimulation=1.0, maximumEdgeSpecies=1000000, minCoreSizeForPrune=50, minSpeciesExistIterationsForPrune=2, filterReactions=False):
+def model(toleranceMoveToCore=None, toleranceMoveEdgeReactionToCore=numpy.inf,toleranceKeepInEdge=0.0, toleranceInterruptSimulation=1.0, 
+          toleranceMoveEdgeReactionToSurface=numpy.inf, toleranceMoveSurfaceSpeciesToCore=numpy.inf, toleranceMoveSurfaceReactionToCore=numpy.inf,
+          toleranceMoveEdgeReactionToSurfaceInterrupt=None,
+          toleranceMoveEdgeReactionToCoreInterrupt=None, maximumEdgeSpecies=1000000, minCoreSizeForPrune=50, 
+          minSpeciesExistIterationsForPrune=2, filterReactions=False, ignoreOverallFluxCriterion=False,
+          maxNumSpecies=None,maxNumObjsPerIter=1,terminateAtMaxObjects=False,toleranceThermoKeepSpeciesInEdge=numpy.inf,dynamicsTimeScale=(0.0,'sec')):
     """
-    How to generate the model. `toleranceMoveToCore` must be specified. Other parameters are optional and control the pruning.
+    How to generate the model. `toleranceMoveToCore` must be specified. 
+    toleranceMoveReactionToCore and toleranceReactionInterruptSimulation refers to an additional criterion for forcing an edge reaction to be included in the core
+    by default this criterion is turned off
+    Other parameters are optional and control the pruning.
+    ignoreOverallFluxCriterion=True will cause the toleranceMoveToCore to be only applied
+    to the pressure dependent network expansion and not movement of species from edge to core
     """
     if toleranceMoveToCore is None:
         raise InputError("You must provide a toleranceMoveToCore value. It should be less than or equal to toleranceInterruptSimulation which is currently {0}".format(toleranceInterruptSimulation))
     if toleranceMoveToCore > toleranceInterruptSimulation:
         raise InputError("toleranceMoveToCore must be less than or equal to toleranceInterruptSimulation, which is currently {0}".format(toleranceInterruptSimulation))
-
-    rmg.fluxToleranceKeepInEdge = toleranceKeepInEdge
-    rmg.fluxToleranceMoveToCore = toleranceMoveToCore
-    rmg.fluxToleranceInterrupt = toleranceInterruptSimulation
-    rmg.maximumEdgeSpecies = maximumEdgeSpecies
-    rmg.minCoreSizeForPrune = minCoreSizeForPrune
-    rmg.minSpeciesExistIterationsForPrune = minSpeciesExistIterationsForPrune
-    rmg.filterReactions = filterReactions
-
+    
+    rmg.modelSettingsList.append(ModelSettings(toleranceMoveToCore, toleranceMoveEdgeReactionToCore,toleranceKeepInEdge, toleranceInterruptSimulation, 
+          toleranceMoveEdgeReactionToSurface, toleranceMoveSurfaceSpeciesToCore, toleranceMoveSurfaceReactionToCore,
+          toleranceMoveEdgeReactionToSurfaceInterrupt,toleranceMoveEdgeReactionToCoreInterrupt, maximumEdgeSpecies, minCoreSizeForPrune, 
+          minSpeciesExistIterationsForPrune, filterReactions, ignoreOverallFluxCriterion, maxNumSpecies, maxNumObjsPerIter,terminateAtMaxObjects,
+          toleranceThermoKeepSpeciesInEdge,Quantity(dynamicsTimeScale)))
+    
 def quantumMechanics(
                     software,
                     method,
@@ -395,14 +411,25 @@ def pressureDependence(
     rmg.pressureDependence.activeKRotor = True
     rmg.pressureDependence.rmgmode = True
 
-def options(units='si', saveRestartPeriod=None, generateOutputHTML=False, generatePlots=False, saveSimulationProfiles=False, verboseComments=False, saveEdgeSpecies=False):
+def options(name='Seed', generateSeedEachIteration=False, saveSeedToDatabase=False, units='si', saveRestartPeriod=None, 
+            generateOutputHTML=False, generatePlots=False, saveSimulationProfiles=False, verboseComments=False, 
+            saveEdgeSpecies=False, keepIrreversible=False, wallTime='00:00:00:00'):
+    rmg.name = name
+    rmg.generateSeedEachIteration=generateSeedEachIteration
+    rmg.saveSeedToDatabase=saveSeedToDatabase
     rmg.units = units
     rmg.saveRestartPeriod = Quantity(saveRestartPeriod) if saveRestartPeriod else None
+    if generateOutputHTML:
+        logging.warning('Generate Output HTML option was turned on. Note that this will slow down model generation.')
     rmg.generateOutputHTML = generateOutputHTML 
     rmg.generatePlots = generatePlots
     rmg.saveSimulationProfiles = saveSimulationProfiles
     rmg.verboseComments = verboseComments
+    if saveEdgeSpecies:
+        logging.warning('Edge species saving was turned on. This will slow down model generation for large simulations.')
     rmg.saveEdgeSpecies = saveEdgeSpecies
+    rmg.keepIrreversible = keepIrreversible
+    rmg.wallTime = wallTime
 
 def generatedSpeciesConstraints(**kwargs):
 
@@ -415,6 +442,8 @@ def generatedSpeciesConstraints(**kwargs):
         'maximumSulfurAtoms',
         'maximumHeavyAtoms',
         'maximumRadicalElectrons',
+        'maximumSingletCarbenes',
+        'maximumCarbeneRadicals',
         'allowSingletO2',
         'maximumIsotopicAtoms'
     ]
@@ -425,7 +454,29 @@ def generatedSpeciesConstraints(**kwargs):
         
         rmg.speciesConstraints[key] = value
 
+def thermoCentralDatabase(host,
+                        port,
+                        username,
+                        password,
+                        application):
+    
+    from rmgpy.data.thermo import ThermoCentralDatabaseInterface
+    rmg.thermoCentralDatabase = ThermoCentralDatabaseInterface(host,
+                                                            port,
+                                                            username,
+                                                            password,
+                                                            application)
+                    
+
 ################################################################################
+
+def setGlobalRMG(rmg0):
+    """
+    sets the global variable rmg to rmg0. This is used to allow for unittesting
+    of above methods
+    """
+    global rmg
+    rmg = rmg0
 
 def readInputFile(path, rmg0):
     """
@@ -446,7 +497,7 @@ def readInputFile(path, rmg0):
     logging.info(f.read())
     f.seek(0)# return to beginning of file
 
-    rmg = rmg0
+    setGlobalRMG(rmg0)
     rmg.reactionModel = CoreEdgeReactionModel()
     rmg.initialSpecies = []
     rmg.reactionSystems = []
@@ -473,6 +524,7 @@ def readInputFile(path, rmg0):
         'pressureDependence': pressureDependence,
         'options': options,
         'generatedSpeciesConstraints': generatedSpeciesConstraints,
+        'thermoCentralDatabase': thermoCentralDatabase
     }
 
     try:
@@ -490,6 +542,11 @@ def readInputFile(path, rmg0):
     # convert keys from species names into species objects.
     for reactionSystem in rmg.reactionSystems:
         reactionSystem.convertInitialKeysToSpeciesObjects(speciesDict)
+
+    if rmg.quantumMechanics:
+        rmg.quantumMechanics.setDefaultOutputDirectory(rmg.outputDirectory)
+        rmg.quantumMechanics.initialize()
+    broadcast(rmg.quantumMechanics, 'quantumMechanics')
 
     logging.info('')
     
@@ -543,6 +600,11 @@ def readThermoInputFile(path, rmg0):
     finally:
         f.close()
 
+    if rmg.quantumMechanics:
+        rmg.quantumMechanics.setDefaultOutputDirectory(rmg.outputDirectory)
+        rmg.quantumMechanics.initialize()
+    broadcast(rmg.quantumMechanics, 'quantumMechanics')
+    
     logging.info('')    
 
 ################################################################################
@@ -699,7 +761,9 @@ def saveInputFile(path, rmg):
     f.write('    generatePlots = {0},\n'.format(rmg.generatePlots))
     f.write('    saveSimulationProfiles = {0},\n'.format(rmg.saveSimulationProfiles))
     f.write('    saveEdgeSpecies = {0},\n'.format(rmg.saveEdgeSpecies))
+    f.write('    keepIrreversible = {0},\n'.format(rmg.keepIrreversible))
     f.write('    verboseComments = {0},\n'.format(rmg.verboseComments))
+    f.write('    wallTime = {0},\n'.format(rmg.wallTime))
     f.write(')\n\n')
     
     f.close()
@@ -717,6 +781,10 @@ def getInput(name):
     if rmg:
         if name == 'speciesConstraints':
             return rmg.speciesConstraints
+        elif name == 'quantumMechanics':
+            return rmg.quantumMechanics
+        elif name == 'thermoCentralDatabase':
+            return rmg.thermoCentralDatabase
         else:
             raise Exception('Unrecognized keyword: {}'.format(name))
     else:

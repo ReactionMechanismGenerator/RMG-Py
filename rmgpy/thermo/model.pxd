@@ -29,8 +29,8 @@ from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
 
 cdef class HeatCapacityModel:
     
-    cdef public ScalarQuantity _Tmin, _Tmax, _E0
-    cdef public str comment
+    cdef public ScalarQuantity _Tmin, _Tmax, _E0, _Cp0, _CpInf
+    cdef public str comment,label
     
     cpdef bint isTemperatureValid(self, double T) except -2
 

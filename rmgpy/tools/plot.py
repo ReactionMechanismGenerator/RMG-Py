@@ -1,9 +1,37 @@
+################################################################################
+#
+#   RMG - Reaction Mechanism Generator
+#
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
+#
+#   Permission is hereby granted, free of charge, to any person obtaining a
+#   copy of this software and associated documentation files (the 'Software'),
+#   to deal in the Software without restriction, including without limitation
+#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#   and/or sell copies of the Software, and to permit persons to whom the
+#   Software is furnished to do so, subject to the following conditions:
+#
+#   The above copyright notice and this permission notice shall be included in
+#   all copies or substantial portions of the Software.
+#
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+#   DEALINGS IN THE SOFTWARE.
+#
+################################################################################
+
 import matplotlib as mpl
 # Force matplotlib to not use any Xwindows backend.
 # This must be called before pylab, matplotlib.pyplot, or matplotlib.backends is imported
 mpl.use('Agg')
 import matplotlib.pyplot as plt
 from rmgpy.tools.data import GenericData
+import numpy
         
 def parseCSVData(csvFile):
     """
@@ -22,7 +50,6 @@ def parseCSVData(csvFile):
     Where Time is returned as a GenericData object, and DataList is list of GenericData objects
     """
     import csv
-    import numpy
     import re
     
     # Pattern for matching indices or units
@@ -82,7 +109,6 @@ def findNearest(array, value):
     """
     Returns the index of the closest value in a sorted array
     """
-    import numpy
     idx = (numpy.abs(array-value)).argmin()
     return idx
 
@@ -181,7 +207,6 @@ class GenericPlot(object):
         Plot a generic barplot using just the yVars.
         idx is the index of the each y-variable to be plotted. if not given, the last value will be used
         """
-        import numpy
         mpl.rc('font',family='sans-serif')
         
         fig = plt.figure()
@@ -289,11 +314,11 @@ class SimulationPlot(GenericPlot):
     This should be formulated as 
     {'desired_name_for_species': 'corresponding_chemkin_name_of_species'}
     """
-    def __init__(self, xVar=None, yVar=None, title='', xlabel='', ylabel='', csvFile='', numSpecies=None, species={}):
+    def __init__(self, xVar=None, yVar=None, title='', xlabel='', ylabel='', csvFile='', numSpecies=None, species=None):
         GenericPlot.__init__(self, xVar=xVar, yVar=yVar, title=title, xlabel=xlabel, ylabel=ylabel)
         self.csvFile = csvFile
         self.numSpecies = numSpecies
-        self.species = species
+        self.species = species if species else {}
         
     def load(self):
         if self.xVar == None and self.yVar == None:
@@ -361,11 +386,11 @@ class ReactionSensitivityPlot(GenericPlot):
     barplot() will instead plot a horizontal bar plot of the sensitivities at a given
     time step.  If time step is not given, the end step will automatically be chosen
     """
-    def __init__(self, xVar=None, yVar=None, title='', xlabel='', ylabel='', csvFile='', numReactions=None, reactions={}):
+    def __init__(self, xVar=None, yVar=None, title='', xlabel='', ylabel='', csvFile='', numReactions=None, reactions=None):
         GenericPlot.__init__(self, xVar=xVar, yVar=yVar, title=title, xlabel=xlabel, ylabel=ylabel)
         self.csvFile = csvFile
         self.numReactions = numReactions
-        self.reactions = reactions
+        self.reactions = reactions if reactions else {}
         
     def load(self):
         if self.xVar == None and self.yVar == None:
@@ -419,8 +444,49 @@ class ReactionSensitivityPlot(GenericPlot):
         if self.numReactions:
             self.yVar = self.yVar[:self.numReactions]
         
-        self.xlabel = 'dln(c)/dln(k_i)'
+        if not self.xlabel:
+            self.xlabel = 'dln(c)/dln(k_i)'
         GenericPlot.barplot(self, filename=filename, idx=idx)
+
+    def uncertaintyPlot(self, totalVariance, t=None, filename=''):
+        """
+        Plot the top uncertainty contributions resulting from uncertainties in the
+        kinetic parameters.  The totalVariance must be specified.  Optionally,
+        the reaction time `t` in seconds can be specified for plotting the uncertainties.
+        The number of reaction uncertainties to plot is determined by self.numReactions
+        """
+
+        filename = filename if filename else "kinetics_uncertainty.png"
+        self.load()
+        if t:
+            idx = findNearest(self.xVar.data, t)
+        else:
+            idx = -1
+
+        reactionUncertainty = []
+
+        totalUncertainty = totalVariance
+
+        for reactionSens in self.yVar:
+            if isinstance(reactionSens,numpy.ndarray):
+                # The parameter uncertainties are an array which should have the same length as the sensitivity data
+                uncertaintyData = reactionSens*reactionSens.uncertainty
+                uncertaintyContribution = uncertaintyData[idx]**2
+            else:
+                uncertaintyContribution = (reactionSens.data[idx]*reactionSens.uncertainty)**2
+
+            reactionUncertainty.append([reactionSens.label, reactionSens.reaction, uncertaintyContribution])
+
+        # Normalize and create new list of GenericData
+        newYVar = []
+        for label, reaction, uncertainty in reactionUncertainty:
+            data = GenericData(label=label, reaction=reaction, data = [uncertainty/totalUncertainty*100])
+            newYVar.append(data)
+
+        newYVar.sort(key=lambda x: abs(x.data[0]), reverse = True)
+        newYVar = newYVar[:self.numReactions]
+
+        GenericPlot(xVar=None, yVar=newYVar, xlabel ="Uncertainty Contribution (%)").barplot(filename=filename)
         
 class ThermoSensitivityPlot(GenericPlot):
     """
@@ -433,11 +499,11 @@ class ThermoSensitivityPlot(GenericPlot):
     barplot() will instead plot a horizontal bar plot of the sensitivities at a given
     time step.  If time step is not given, the end step will automatically be chosen
     """
-    def __init__(self, xVar=None, yVar=None, title='', xlabel='', ylabel='', csvFile='', numSpecies=None, species={}):
+    def __init__(self, xVar=None, yVar=None, title='', xlabel='', ylabel='', csvFile='', numSpecies=None, species=None):
         GenericPlot.__init__(self, xVar=xVar, yVar=yVar, title=title, xlabel=xlabel, ylabel=ylabel)
         self.csvFile = csvFile
         self.numSpecies = numSpecies
-        self.species = species
+        self.species = species if species else {}
     
     def load(self):
         if self.xVar == None and self.yVar == None:
@@ -469,7 +535,8 @@ class ThermoSensitivityPlot(GenericPlot):
         self.yVar.sort(key=lambda x: abs(x.data[-1]), reverse = True)
         if self.numSpecies:
             self.yVar = self.yVar[:self.numSpecies]
-        self.ylabel = 'dln(c)/dln(G_i)'
+        if not self.ylabel:
+            self.ylabel = 'dln(c)/d(G_i) [(kcal/mol)^-1]'
         GenericPlot.plot(self, filename=filename)
     
     def barplot(self, filename='', t=None):
@@ -482,5 +549,49 @@ class ThermoSensitivityPlot(GenericPlot):
         self.yVar.sort(key=lambda x: abs(x.data[idx]), reverse = True)
         if self.numSpecies:
             self.yVar = self.yVar[:self.numSpecies]
-        self.xlabel = 'dln(c)/dln(G_i)'
+
+        if not self.xlabel:
+            self.xlabel = 'dln(c)/d(G_i) [(kcal/mol)^-1]'
         GenericPlot.barplot(self, filename=filename, idx=idx)
+
+
+    def uncertaintyPlot(self, totalVariance, t=None, filename=''):
+        """
+        Plot the top uncertainty contributions resulting from uncertainties in the
+        thermo parameters.  The totalVariance must be specified.  Optionally,
+        the reaction time `t` in seconds can be specified for plotting the uncertainties.
+        The number of thermo uncertainties to plot is determined by self.numSpecies
+        """
+
+        filename = filename if filename else "thermo_uncertainty.png"
+        self.load()
+        if t:
+            idx = findNearest(self.xVar.data, t)
+        else:
+            idx = -1
+
+        thermoUncertainty = []
+
+        totalUncertainty = totalVariance
+
+        for thermoSens in self.yVar:
+            if isinstance(thermoSens,numpy.ndarray):
+                # The parameter uncertainties are an array which should have the same length as the sensitivity data
+                uncertaintyData = thermoSens*thermoSens.uncertainty
+                uncertaintyContribution = uncertaintyData[idx]**2
+            else:
+                # The parameter uncertainty is a scalar
+                uncertaintyContribution = (thermoSens.data[idx]*thermoSens.uncertainty)**2
+            thermoUncertainty.append([thermoSens.label, thermoSens.species, uncertaintyContribution])
+
+
+        # Normalize and create new list of GenericData
+        newYVar = []
+        for label, species, uncertainty in thermoUncertainty:
+            data = GenericData(label=label, species = species, data = [uncertainty/totalUncertainty*100])
+            newYVar.append(data)
+
+
+        newYVar.sort(key=lambda x: abs(x.data[0]), reverse = True)
+        newYVar = newYVar[:self.numSpecies]
+        GenericPlot(xVar=None, yVar=newYVar, xlabel ="Uncertainty Contribution (%)").barplot(filename=filename)

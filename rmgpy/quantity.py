@@ -5,7 +5,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2009-2011 by the RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -37,6 +38,7 @@ import quantities as pq
 import re
 
 import rmgpy.constants as constants
+from rmgpy.exceptions import QuantityError
 
 ################################################################################
 
@@ -63,14 +65,6 @@ NOT_IMPLEMENTED_UNITS = [
                         'degR',
                         'R'
                         ]
-
-class QuantityError(Exception):
-    """
-    An exception to be raised when an error occurs while working with physical
-    quantities in RMG. Pass a string describing the circumstances of the
-    exceptional behavior.
-    """
-    pass
 
 ################################################################################
 
@@ -255,7 +249,7 @@ class ScalarQuantity(Units):
         Check the uncertainty type is valid, then set it.
         """
         if v not in ['+|-','*|/']:
-            raise QuantityError("Invalid uncertainty type")
+            raise QuantityError('Unexpected uncertainty type "{0}"; valid values are "+|-" and "*|/".'.format(v))
         self._uncertaintyType = v
 
     uncertaintyType = property(getUncertaintyType, setUncertaintyType)
@@ -463,7 +457,7 @@ class ArrayQuantity(Units):
         the units. This ensures you set the type first.
         """
         if v not in ['+|-','*|/']:
-            raise QuantityError("Invalid uncertainty type")
+            raise QuantityError('Unexpected uncertainty type "{0}"; valid values are "+|-" and "*|/".'.format(v))
         self._uncertaintyType = v
 
     uncertaintyType = property(getUncertaintyType, setUncertaintyType)
@@ -671,7 +665,7 @@ class UnitType:
             quantity.value_si *= self.extraDimensionality[dimensionality]
             quantity.units = self.units
         else:
-            raise QuantityError('Invalid units {0!r}.'.format(quantity.units))
+            raise QuantityError('Invalid units {0!r}. Try common units: {1}'.format(quantity.units,self.commonUnits))
         
         # Return the Quantity or ArrayQuantity object object
         return quantity
@@ -692,9 +686,10 @@ DipoleMoment = UnitType('C*m', extraDimensionality={
 Energy = Enthalpy = FreeEnergy = UnitType('J/mol',
     commonUnits=['kJ/mol', 'cal/mol', 'kcal/mol', 'eV/molecule'],
     extraDimensionality={'K': constants.R,
-                         'eV': constants.Na, # allow people to be lazy and neglect the "/molecule"
-                         },
-)
+                         # the following hack also allows 'J' and 'kJ' etc. to be specified without /mol[ecule]
+                         # so is not advisable (and fails unit tests)
+                         # 'eV': constants.Na, # allow people to be lazy and neglect the "/molecule"
+})
 
 
 Entropy = HeatCapacity = UnitType('J/(mol*K)', commonUnits=['kJ/(mol*K)', 'cal/(mol*K)', 'kcal/(mol*K)'])
@@ -768,7 +763,7 @@ def RateCoefficient(*args, **kwargs):
         factor = RATECOEFFICIENT_CONVERSION_FACTORS[dimensionality]
         quantity.value_si *= factor
     except KeyError:
-        raise QuantityError('Invalid units {0!r}.'.format(quantity.units))
+        raise QuantityError('Invalid units {0!r}. Common units are {1}'.format(quantity.units,RATECOEFFICIENT_COMMON_UNITS))
 
     # Return the Quantity or ArrayQuantity object object
     return quantity

@@ -9,11 +9,13 @@ heat capacity data in RMG-database format.
 """
 
 import os.path
+from rmgpy import settings
+from rmgpy.data.rmg import RMGDatabase
 from rmgpy.rmg.main import RMG
-from rmgpy.data.thermo import ThermoLibrary
-from rmgpy.chemkin import writeThermoEntry
+from rmgpy.chemkin import saveChemkinFile, saveSpeciesDictionary
 from rmgpy.rmg.model import Species
-
+from rmgpy.thermo.thermoengine import submit
+                     
 ################################################################################
 
 def runThermoEstimator(inputFile):
@@ -24,35 +26,35 @@ def runThermoEstimator(inputFile):
     rmg = RMG()
     rmg.loadThermoInput(inputFile)
     
-    # initialize and load the database as well as any QM settings
-    rmg.loadDatabase()
-    if rmg.quantumMechanics:
-        rmg.quantumMechanics.initialize()
+    rmg.database = RMGDatabase()
+    path = os.path.join(settings['database.directory'])
+
+    # forbidden structure loading
+    rmg.database.loadThermo(os.path.join(path, 'thermo'), rmg.thermoLibraries, depository=False)
    
     if rmg.solvent:
+        rmg.database.loadSolvation(os.path.join(path, 'solvation'))
         Species.solventData = rmg.database.solvation.getSolventData(rmg.solvent)
         Species.solventName = rmg.solvent
-        
-    # Generate the thermo for all the species and write them to chemkin format as well as
-    # ThermoLibrary format with values for H, S, and Cp's.
-    output = open(os.path.join(rmg.outputDirectory, 'output.txt'),'wb')
-    library = ThermoLibrary(name='Thermo Estimation Library')
+
     for species in rmg.initialSpecies:
-        species.getThermoData(rmg.database, quantumMechanics=rmg.reactionModel.quantumMechanics)
+        submit(species)
 
-        library.loadEntry(
-            index = len(library.entries) + 1,
-            label = species.label,
-            molecule = species.molecule[0].toAdjacencyList(),
-            thermo = species.thermo.toThermoData(),
-            shortDesc = species.thermo.comment,
-        )
-        output.write(writeThermoEntry(species))
-        output.write('\n')
+    # library = ThermoLibrary(name='Thermo Estimation Library')
+    # for spc in rmg.initialSpecies:
+    #     library.loadEntry(
+    #         index = len(library.entries) + 1,
+    #         label = species.label,
+    #         molecule = species.molecule[0].toAdjacencyList(),
+    #         thermo = species.getThermoData().toThermoData(),
+    #         shortDesc = species.getThermoData().comment,
+    #     )
+    # library.save(os.path.join(rmg.outputDirectory,'ThermoLibrary.py'))
     
-    output.close()
-    library.save(os.path.join(rmg.outputDirectory,'ThermoLibrary.py'))
 
+    # Save the thermo data to chemkin format output files and dictionary, with no reactions    
+    saveChemkinFile(os.path.join(rmg.outputDirectory, 'chem_annotated.inp'), species=rmg.initialSpecies, reactions=[])
+    saveSpeciesDictionary(os.path.join(rmg.outputDirectory, 'species_dictionary.txt'), species=rmg.initialSpecies)
 
 ################################################################################
 

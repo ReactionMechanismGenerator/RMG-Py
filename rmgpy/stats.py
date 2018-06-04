@@ -4,9 +4,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2012 Prof. Richard H. West (r.west@neu.edu),
-#                           Prof. William H. Green (whgreen@mit.edu)
-#                           and the RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -103,8 +102,8 @@ class ExecutionStatsWriter(object):
         try:
             import psutil
             process = psutil.Process(os.getpid())
-            rss, vms = process.memory_info()
-            self.memoryUse.append(rss / 1.0e6)
+            memory_info = process.memory_info()
+            self.memoryUse.append(memory_info.rss / 1.0e6)
             logging.info('    Memory used: %.2f MB' % (self.memoryUse[-1]))
         except:
             logging.info('    Memory used: memory usage was unable to be logged')
