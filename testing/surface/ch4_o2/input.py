@@ -41,7 +41,8 @@ species(
 #----------
 # Reaction systems
 surfaceReactor(
-    temperature=(1300,'K'),
+    temperature=[(900,'K'),(1500,'K')], # should be valid across this range
+    nSimsTerm=6, # to get validity over a T range, need this many successful terminations in a row
     initialPressure=(1.0, 'bar'),
     initialGasMoleFractions={
         "CH4": 0.1,
