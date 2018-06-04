@@ -609,7 +609,7 @@ def readReactionComments(reaction, comments, read = True):
             )
             
         elif 'Library reaction:' in line or 'Seed mechanism:' in line:
-            label = str(tokens[-1])
+            label = str(tokens[2])
             reaction = LibraryReaction(
                 index = reaction.index,
                 reactants = reaction.reactants, 
@@ -619,7 +619,7 @@ def readReactionComments(reaction, comments, read = True):
                 reversible = reaction.reversible,
                 duplicate = reaction.duplicate,
                 library = label,
-            )   
+            )
             
         elif 'PDep reaction:' in line:
             networkIndex = int(tokens[-1][1:])
