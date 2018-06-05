@@ -195,6 +195,19 @@ class TemplateReaction(Reaction):
         
         return other
 
+    def has_nitrogen(self):
+        """
+        returns True if the reaction involves N, False otherwise
+        """
+        for reactant in self.reactants:
+            if isinstance(reactant,Species):
+                if reactant.molecule[0].getNumAtoms('N') > 0:
+                    return True
+            elif isinstance(reactant,Molecule):
+                if reactant.getNumAtoms('N') > 0:
+                    return True
+        return False
+
 ################################################################################
 
 class ReactionRecipe:
