@@ -617,7 +617,8 @@ class CoreEdgeReactionModel:
                 # Add new species
                 reactionsMovedFromEdge = self.addSpeciesToCore(newSpecies)
 
-            elif isinstance(newObject, tuple) and isinstance(newObject[0], PDepNetwork) and self.pressureDependence:
+            elif isinstance(newObject, tuple) and isinstance(newObject[0], PDepNetwork)\
+                    and self.pressureDependence:
 
                 pdepNetwork, newSpecies = newObject
                 newReactions.extend(pdepNetwork.exploreIsomer(newSpecies))
@@ -850,7 +851,7 @@ class CoreEdgeReactionModel:
                 if not isNew: 
                     # The reaction is not new, so it should already be in the core or edge
                     continue
-                if allSpeciesInCore:
+                if allSpeciesInCore and (isinstance(rxn,LibraryReaction) or rxn.has_nitrogen()):
                     self.addReactionToCore(rxn)
                 else:
                     self.addReactionToEdge(rxn)
@@ -862,7 +863,8 @@ class CoreEdgeReactionModel:
                 # because of the way partial networks are explored
                 # Since PDepReactions are created as irreversible, not doing so
                 # would cause you to miss the reverse reactions!
-                self.addReactionToUnimolecularNetworks(rxn, newSpecies=newSpecies, network=pdepNetwork)
+                if isinstance(rxn,LibraryReaction) or rxn.has_nitrogen():
+                    self.addReactionToUnimolecularNetworks(rxn, newSpecies=newSpecies, network=pdepNetwork)
                 if isinstance(rxn, LibraryReaction):
                     # If reaction came from a reaction library, omit it from the core and edge so that it does 
                     # not get double-counted with the pdep network
@@ -1073,7 +1075,11 @@ class CoreEdgeReactionModel:
 
             # Move any identified reactions to the core
             for rxn in rxnList:
-                self.addReactionToCore(rxn)
+                if isinstance(rxn,TemplateReaction):
+                    if rxn.has_nitrogen():
+                        self.addReactionToCore(rxn)
+                else:
+                    self.addReactionToCore(rxn)
                 logging.debug("Moving reaction from edge to core: {0}".format(rxn))
         return rxnList
 
