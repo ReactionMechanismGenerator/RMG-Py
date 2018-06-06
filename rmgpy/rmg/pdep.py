@@ -38,6 +38,7 @@ import os.path
 
 import rmgpy.pdep.network
 import rmgpy.reaction
+from rmgpy.constants import R
 
 from rmgpy.pdep import Conformer, Configuration
 from rmgpy.rmg.react import react
@@ -317,6 +318,38 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         if not found:
             self.pathReactions.append(newReaction)
             self.invalidate()
+
+    def get_energy_filtered_reactions(self,T,tol):
+        """
+        Returns a list of products and isomers that are greater in Free Energy
+        than a*R*T + Gfsource(T)
+        """
+        dE = tol*R*T
+        for conf in self.isomers+self.products+self.reactants:
+            if len(conf.species) == len(self.source):
+                if len(self.source) == 1:
+                    if self.source[0].isIsomorphic(conf.species[0]):
+                        E0source = conf.E0
+                        break
+                elif len(self.source) == 2:
+                    boo00 = self.source[0].isIsomorphic(conf.species[0])
+                    boo01 = self.source[0].isIsomorphic(conf.species[1])
+                    if boo00 or boo01: # if we found source[0]
+                        boo10 = self.source[1].isIsomorphic(conf.species[0])
+                        boo11 = self.source[1].isIsomorphic(conf.species[1])
+                        if (boo00 and boo11) or (boo01 and boo10):
+                            E0source = conf.E0
+                            break
+        else:
+            raise ValueError('No isomer, product or reactant channel is isomorphic to the source')
+
+        filtered_rxns = []
+        for rxn in self.pathReactions:
+            E0 = rxn.transitionState.conformer.E0.value_si
+            if E0-E0source > dE:
+                filtered_rxns.append(rxn)
+                
+        return filtered_rxns
 
     def merge(self, other):
         """
