@@ -446,6 +446,76 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         return c
                 
     
+    def remove_disconnected_reactions(self):
+        """
+        gets rid of reactions/isomers/products not connected to the source by a reaction sequence
+        """
+        keptReactions = []
+        keptProducts = [self.source]
+        incomplete = True
+        while incomplete:
+            s = len(keptReactions)
+            for rxn in self.pathReactions:
+                if not rxn in keptReactions:
+                    if rxn.reactants in keptProducts:
+                        keptProducts.append(rxn.products)
+                        keptReactions.append(rxn)
+                    elif rxn.products in keptProducts:
+                        keptProducts.append(rxn.reactants)
+                        keptReactions.append(rxn)
+                        
+            incomplete = s != len(keptReactions)
+        
+        logging.info('Removing disconnected items')
+        for rxn in self.pathReactions:
+            if rxn not in keptReactions:
+                logging.info('Removing rxn: {}'.format(rxn))
+                self.pathReactions.remove(rxn)
+                
+        for prod in self.products:
+            if prod.species not in keptProducts:
+                logging.info('Removing product: {}'.format(prod))
+                self.products.remove(prod)
+            
+        for rct in self.reactants:
+            if rct.species not in keptProducts:
+                logging.info('Removing product: {}'.format(rct))
+                self.reactants.remove(react)
+        
+        for iso in self.isomers:
+            if iso.species not in keptProducts:
+                logging.info('Removing isomer: {}'.format(iso))
+                self.isomers.remove(iso)
+                if iso in self.explored:
+                    self.explored.remove(iso)
+
+    def remove_reactions(self,reactionModel,rxns):
+        """
+        removes a list of reactions from the network and all reactions/products
+        left disconnected by removing those reactions
+        """
+        for rxn in rxns:
+            self.pathReactions.remove(rxn)
+            
+        self.remove_disconnected_reactions()
+        
+        self.invalidate()
+        
+        assert self.pathReactions != [], 'Reduction process removed all reactions, cannot update network with no reactions'
+        
+        reactionModel.updateUnimolecularReactionNetworks()
+        
+        if reactionModel.pressureDependence.outputFile:
+            path = os.path.join(reactionModel.pressureDependence.outputFile,'pdep')
+            
+            for name in os.listdir(path): #remove the old reduced file
+                if name.endswith('reduced.py'):
+                    os.remove(os.path.join(path,name))
+                    
+            for name in os.listdir(path): #find the new file and name it network_reduced.py
+                if not name.endswith('full.py'):
+                    os.rename(os.path.join(path,name),os.path.join(path,'network_reduced.py'))
+
     def merge(self, other):
         """
         Merge the partial network `other` into this network.
