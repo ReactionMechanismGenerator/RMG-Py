@@ -152,6 +152,42 @@ class ExplorerJob(object):
         else:
             Plist = np.linspace(self.pdepjob.Pmin.value_si,self.pdepjob.Pmax.value_si,self.pdepjob.Pcount)
             
+        #generate the network
+        
+        incomplete = True
+        
+        while incomplete:
+            incomplete = False
+            for T in Tlist:
+                for P in Plist:
+                    if network.getLeakCoefficient(T=T,P=P) > self.explore_tol:
+                        spc = network.getMaximumLeakSpecies(T=T,P=P)
+                        logging.info('adding new isomer {0} to network'.format(spc))
+                        flags = np.array([s.molecule[0].getFormula()==form for s in reaction_model.core.species])
+                        reaction_model.enlarge((network,spc),reactEdge=False,unimolecularReact=flags,
+                                          bimolecularReact=np.zeros((len(reaction_model.core.species),len(reaction_model.core.species))))
+                    
+                        flags = np.array([s.molecule[0].getFormula()==form for s in reaction_model.core.species])
+                        reaction_model.enlarge(reactEdge=True,unimolecularReact=flags,
+                                          bimolecularReact=np.zeros((len(reaction_model.core.species),len(reaction_model.core.species))))
+                        incomplete = True
+        
+        #clean up output files
+        if outputFile is not None:
+            path = os.path.join(reaction_model.pressureDependence.outputFile,'pdep')
+            for name in os.listdir(path):
+                if name.endswith('.py') and '_' in name:
+                    if name.split('_')[-1].split('.')[0] != str(len(network.isomers)):
+                        os.remove(os.path.join(path,name))
+                    else:
+                        os.rename(os.path.join(path,name),os.path.join(path,'network_full.py'))    
+        
+        warns = []
+        
+        for rxn in jobRxns:
+            if rxn not in network.pathReactions:
+                warns.append('Reaction {0} in the input file was not explored during network expansion and was not included in the full network.  This is likely because your explore_tol value is too high.'.format(rxn))
+        
         
         
         
