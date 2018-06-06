@@ -550,10 +550,12 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         for spec in bathGas:
             # is this really the only/best way to weight them?
             self.bathGas[spec] = 1.0 / len(bathGas)
-
+        
         # Save input file
         if not self.label: self.label = str(self.index)
-        job.saveInputFile(os.path.join(outputDirectory, 'pdep', 'network{0:d}_{1:d}.py'.format(self.index, len(self.isomers))))
+        
+        if outputDirectory:
+            job.saveInputFile(os.path.join(outputDirectory, 'pdep', 'network{0:d}_{1:d}.py'.format(self.index, len(self.isomers))))
         
         self.printSummary(level=logging.INFO)
 
