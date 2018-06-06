@@ -35,6 +35,9 @@ functionality to RMG.
 
 import logging
 import os.path
+import numpy as np
+import mpmath as mp
+import scipy.optimize as opt
 
 import rmgpy.pdep.network
 import rmgpy.reaction
@@ -351,6 +354,72 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                 
         return filtered_rxns
 
+    def solve_SS_network(self,T,P):
+        """
+        calculates the steady state concentrations if all A => B + C
+        reactions are irreversible and the flux from/to the source
+        configuration is 1.0
+        """
+        A = np.zeros((len(self.isomers),len(self.isomers)))
+        b = np.zeros(len(self.isomers))
+        bimolecular = len(self.source) > 1
+        
+        isomerSpcs = [iso.species[0] for iso in self.isomers]
+        
+        for rxn in self.pathReactions:
+
+            if rxn.reactants[0] in isomerSpcs:
+                ind = isomerSpcs.index(rxn.reactants[0])
+                kf = rxn.getRateCoefficient(T,P)
+                A[ind,ind] -= kf
+            else:
+                ind = None
+            if rxn.products[0] in isomerSpcs:
+                ind2 = isomerSpcs.index(rxn.products[0])
+                kr = rxn.getRateCoefficient(T,P)/rxn.getEquilibriumConstant(T)
+                A[ind2,ind2] -= kr
+            else:
+                ind2 = None
+            
+            if ind and ind2:
+                A[ind,ind2] += kr
+                A[ind2,ind] += kf
+            
+            if bimolecular:
+                if rxn.reactants[0].species == self.source:
+                    kf = rxn.getRateCoefficient(T,P)
+                    b[ind2] += kf
+                elif rxn.products[0].species == self.source:
+                    kr = rxn.getRateCoefficient(T,P)/rxn.getEquilibriumConstant(T)
+                    b[ind] += kr
+        
+        
+        if not bimolecular:
+            ind = isomerSpcs.index(self.source[0])
+            b[ind] = -1.0 #flux at source
+        else:
+            b = -b/b.sum() #1.0 flux from source
+        
+        if len(b) == 1:
+            return np.array([b[0]/A[0,0]])
+        
+        con = np.linalg.cond(A) #this matrix can be very ill-conditioned so we enhance precision accordingly
+        mp.dps = 30+int(np.log10(con))
+        Amp = mp.matrix(A.tolist())
+        bmp = mp.matrix(b.tolist())
+        
+        c = mp.qr_solve(Amp,bmp)
+        
+        c = np.array(list(c[0]))
+         
+        if any(c<=0.0):
+            c, rnorm = opt.nnls(A,b)
+            
+        c = c.astype(np.float64)
+        
+        return c
+                
+    
     def merge(self, other):
         """
         Merge the partial network `other` into this network.
