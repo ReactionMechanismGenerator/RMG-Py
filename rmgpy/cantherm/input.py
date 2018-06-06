@@ -35,6 +35,10 @@ This module contains functionality for parsing CanTherm input files.
 import os.path
 import logging
 
+from rmgpy import settings
+from rmgpy.exceptions import InputError
+from rmgpy.data.rmg import RMGDatabase
+
 from rmgpy.species import Species, TransitionState
 
 from rmgpy.statmech.translation import Translation, IdealGasTranslation
@@ -75,7 +79,72 @@ networkDict = {}
 jobList = []
 
 ################################################################################
+def database(
+             thermoLibraries = None,
+             transportLibraries = None,
+             reactionLibraries = None,
+             frequenciesLibraries = None,
+             kineticsFamilies = 'default',
+             kineticsDepositories = 'default',
+             kineticsEstimator = 'rate rules',
+             ):
+    # This function just stores the information about the database to be loaded
+    # We don't actually load the database until after we're finished reading
+    # the input file
+    if isinstance(thermoLibraries, str): thermoLibraries = [thermoLibraries]
+    if isinstance(transportLibraries, str): transportLibraries = [transportLibraries]
+    if isinstance(reactionLibraries, str): reactionLibraries = [reactionLibraries]
+    if isinstance(frequenciesLibraries, str): frequenciesLibraries = [frequenciesLibraries]
+    databaseDirectory = settings['database.directory']
+    thermoLibraries = thermoLibraries or []
+    transportLibraries = transportLibraries
+    # Modify reactionLibraries if the user didn't specify tuple input
+    if reactionLibraries:
+        index = 0
+        while index < len(reactionLibraries):
+            if isinstance(reactionLibraries[index],tuple):
+                pass
+            elif isinstance(reactionLibraries[index],str):
+                reactionLibraries[index] = (reactionLibraries[index], False)
+            else:
+                raise TypeError('reaction libraries must be input as tuples or strings')
+            index += 1
+    reactionLibraries = reactionLibraries or []
+    kineticsEstimator = kineticsEstimator
+    if kineticsDepositories == 'default':
+        kineticsDepositories = ['training']
+    elif kineticsDepositories == 'all':
+        kineticsDepositories = None
+    else:
+        if not isinstance(kineticsDepositories,list):
+            raise InputError("kineticsDepositories should be either 'default', 'all', or a list of names eg. ['training','PrIMe'].")
+        kineticsDepositories = kineticsDepositories
 
+    if kineticsFamilies in ('default', 'all', 'none'):
+        kineticsFamilies = kineticsFamilies
+    else:
+        if not isinstance(kineticsFamilies,list):
+            raise InputError("kineticsFamilies should be either 'default', 'all', 'none', or a list of names eg. ['H_Abstraction','R_Recombination'] or ['!Intra_Disproportionation'].")
+        kineticsFamilies = kineticsFamilies
+    
+    database = RMGDatabase()
+    database.load(
+            path = databaseDirectory,
+            thermoLibraries = thermoLibraries,
+            transportLibraries = transportLibraries,
+            reactionLibraries = reactionLibraries,
+            seedMechanisms = [],
+            kineticsFamilies = kineticsFamilies,
+            kineticsDepositories = kineticsDepositories,
+            depository = False, # Don't bother loading the depository information, as we don't use it
+        )
+    
+    for family in database.kinetics.families.values(): #load training
+        family.addKineticsRulesFromTrainingSet(thermoDatabase=database.thermo)
+
+    for family in database.kinetics.families.values():
+        family.fillKineticsRulesByAveragingUp(verbose=True)
+        
 def species(label, *args, **kwargs):
     global speciesDict, jobList
     if label in speciesDict:
@@ -370,6 +439,7 @@ def loadInputFile(path):
         'species': species,
         'transitionState': transitionState,
         'network': network,
+        'database': database,
         # Jobs
         'kinetics': kinetics,
         'statmech': statmech,
