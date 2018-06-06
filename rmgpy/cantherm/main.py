@@ -271,7 +271,11 @@ class CanTherm:
         for job in self.jobList:
             if isinstance(job,KineticsJob) or isinstance(job, PressureDependenceJob):
                 job.execute(outputFile=outputFile, plot=self.plot)
-
+            if isinstance(job, ExplorerJob):
+                thermoLibrary,kineticsLibrary,speciesList = self.getLibraries()
+                job.execute(outputFile=outputFile, plot=self.plot, speciesList=speciesList, thermoLibrary=thermoLibrary, kineticsLibrary=kineticsLibrary)
+                    
+                    
         with open(chemkinFile, 'a') as f:
             f.write('END\n\n')
 
