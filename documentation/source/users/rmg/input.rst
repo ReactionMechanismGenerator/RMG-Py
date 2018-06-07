@@ -579,6 +579,26 @@ For example ::
 		toleranceMoveSurfaceReactionToCore=5.0,
 	)
 
+Advanced Setting: Reducing Edge Checking
+-----------------------------------------
+It is possible to reduce the frequency at which RMG calculates and checks the edge reactions in order to 
+speed up RMG.    
+
+This might look like::
+
+    model(
+        toleranceMoveToCore=0.5,
+        toleranceInterruptSimulation=0.5,
+        edgeCheckFrequency=0.1,
+	)
+
+- ``edgeCheckFrequency`` is the frequency at which RMG will calculate and check edge information.  Thus, 0.1 corresponds to checking every 10 time steps and the default value of 1 corresponds to checking every time step.  Note that it rounds the inverse of the frequency down.  
+
+Changing this value will change the model generated and setting this value low enough will cause you to 
+miss chemistry.  However, in general tests indicate that 0.1 is a relatively safe setting at which differences 
+are usually minimal.  
+
+
 On the fly Quantum Calculations
 ===============================
 
