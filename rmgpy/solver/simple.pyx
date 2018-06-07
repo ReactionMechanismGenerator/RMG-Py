@@ -106,9 +106,9 @@ cdef class SimpleReactor(ReactionSystem):
     
     cdef public list Trange
     cdef public list Prange
-    cdef public int nSimsTerm
+    cdef public int nSims
 
-    def __init__(self, T, P, initialMoleFractions, nSimsTerm=None, termination=None, sensitiveSpecies=None, sensitivityThreshold=1e-3,sensConditions=None):
+    def __init__(self, T, P, initialMoleFractions, nSims=None, termination=None, sensitiveSpecies=None, sensitivityThreshold=1e-3,sensConditions=None):
         ReactionSystem.__init__(self, termination, sensitiveSpecies, sensitivityThreshold)
         
         
@@ -134,14 +134,14 @@ cdef class SimpleReactor(ReactionSystem):
         self.pdepSpecificColliderKinetics = None
         self.specificColliderSpecies = None
         self.sensConditions = sensConditions
-        self.nSimsTerm = nSimsTerm
+        self.nSims = nSims
 
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
         return (self.__class__, 
-            (self.T, self.P, self.initialMoleFractions, self.nSimsTerm, self.termination))
+            (self.T, self.P, self.initialMoleFractions, self.nSims, self.termination))
 
 
     def convertInitialKeysToSpeciesObjects(self, speciesDict):

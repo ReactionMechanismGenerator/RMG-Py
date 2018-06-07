@@ -59,11 +59,12 @@ cdef class LiquidReactor(ReactionSystem):
     cdef public list constSPCIndices
     cdef public dict initialConcentrations
     cdef public list Trange
-    cdef public int nSimsTerm
+    cdef public int nSims
     cdef public dict sensConditions
     
-    def __init__(self, T, initialConcentrations, nSimsTerm=None, termination=None, sensitiveSpecies=None,
-                 sensitivityThreshold=1e-3, sensConditions=None, constSPCNames=None):
+
+    def __init__(self, T, initialConcentrations, nSims=None, termination=None, sensitiveSpecies=None, sensitivityThreshold=1e-3, sensConditions=None, constSPCNames=None):
+        
         ReactionSystem.__init__(self, termination, sensitiveSpecies, sensitivityThreshold)
         
         if type(T) != list:
@@ -81,7 +82,7 @@ cdef class LiquidReactor(ReactionSystem):
         self.constSPCIndices=None
         self.constSPCNames = constSPCNames #store index of constant species 
         self.sensConditions = sensConditions
-        self.nSimsTerm = nSimsTerm
+        self.nSims = nSims
         
     def convertInitialKeysToSpeciesObjects(self, speciesDict):
         """

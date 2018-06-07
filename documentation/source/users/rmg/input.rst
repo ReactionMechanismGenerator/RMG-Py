@@ -300,7 +300,7 @@ not make the algorithm non-deterministic.
     :align: center
     :height: 300px
 
-These variable condition reactors run a defined number of times (``nSimsTerm``) each reactor cycle. Use of these reactors tends to 
+These variable condition reactors run a defined number of times (``nSims``) each reactor cycle. Use of these reactors tends to 
 improve treatment of reaction conditions that otherwise would be between reactors and reduce the number of simulations needed by 
 focusing on reaction conditions at which the model terminates earlier.  An example with sensitivity analysis at a specified reaction condition 
 is available below::
@@ -308,7 +308,7 @@ is available below::
 	simpleReactor(
 		temperature=[(1000,'K'),(1500,'K')],
 		pressure=[(1.0,'bar'),(10.0,'bar')],
-		nSimsTerm=12,
+		nSims=12,
 		initialMoleFractions={
 		"ethane": [0.05,0.15],
 		"O2": 0.1,
@@ -326,17 +326,17 @@ is available below::
 		balanceSpecies = "N2",
 		)
 
-Note that increasing ``nSimsTerm`` improves convergence over the entire range, but convergence is only guaranteed at the 
-last set of ``nSimsTerm`` reaction conditions. Theoretically if ``nSimsTerm`` is set high enough the RMG model converges over the 
-entire interval.  Except at very small values for ``nSimsTerm`` the convergence achieved is usually as good or superior to 
+Note that increasing ``nSims`` improves convergence over the entire range, but convergence is only guaranteed at the 
+last set of ``nSims`` reaction conditions. Theoretically if ``nSims`` is set high enough the RMG model converges over the 
+entire interval.  Except at very small values for ``nSims`` the convergence achieved is usually as good or superior to 
 that achieved using the same number of evenly spaced fixed reactors.   
 
 If there is a particular reaction condition you expect to converge more slowly than the rest of the range 
 there is virtually no cost to using a single condition reactor (or a ranged reactor at a smaller range) at that condition 
-and a ranged reactor with a smaller value for nSimsTerm.  This is because the fixed reactor simulations will almost always
+and a ranged reactor with a smaller value for nSims.  This is because the fixed reactor simulations will almost always
 be useful and keep the overall RMG job from terminating while the ranged reactor samples the faster converging conditions.   
 
-What you should actually set ``nSimsTerm`` to is very system dependent.  The value you choose should be at least 2 + N 
+What you should actually set ``nSims`` to is very system dependent.  The value you choose should be at least 2 + N 
 where N is the number of dimensions the reactor spans (T=>N=1, T and P=>N=2, etc...).  There may be benefits to setting it as high
 as 2 + 5N.  The first should give you convergence over most of the interval that is almost always better than the same 
 number of fixed reactors.  The second should get you reasonably close to convergence over the entire range for N <= 2.  
