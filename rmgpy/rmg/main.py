@@ -606,9 +606,8 @@ class RMG(util.Subject):
                 
         self.Tmax = max(Tlist)
         
-        self.nSimsTerms = [0 for i in xrange(len(self.reactionSystems))]
-        
         self.rmg_memories = []
+        
         # Initiate first reaction discovery step after adding all core species
         if self.filterReactions:
             # Run the reaction system to update threshold and react flags
@@ -688,122 +687,124 @@ class RMG(util.Subject):
                 
                 for index, reactionSystem in enumerate(self.reactionSystems):
                     
-                    reactionSystem.prunableSpecies = prunableSpecies
+                    reactionSystem.prunableSpecies = prunableSpecies   #these lines reset pruning for a new cycle
                     reactionSystem.prunableNetworks = prunableNetworks
+                    reactionSystem.reset_max_edge_species_rate_ratios() 
                     
-                    reactorDone = True
-                    objectsToEnlarge = []
-                    self.reactionSystem = reactionSystem
-                    # Conduct simulation
-                    logging.info('Conducting simulation of reaction system %s...' % (index+1))
-                    prune = True
-                    
-                    self.reactionModel.adjustSurface()
-                    
-                    if numCoreSpecies < modelSettings.minCoreSizeForPrune:
-                        # Turn pruning off if we haven't reached minimum core size.
-                        prune = False
+                    for p in xrange(reactionSystem.nSimsTerm):
+                        reactorDone = True
+                        objectsToEnlarge = []
+                        self.reactionSystem = reactionSystem
+                        # Conduct simulation
+                        logging.info('Conducting simulation of reaction system %s...' % (index+1))
+                        prune = True
                         
-                    try: terminated,resurrected,obj,newSurfaceSpecies,newSurfaceReactions,t,x = reactionSystem.simulate(
-                        coreSpecies = self.reactionModel.core.species,
-                        coreReactions = self.reactionModel.core.reactions,
-                        edgeSpecies = self.reactionModel.edge.species,
-                        edgeReactions = self.reactionModel.edge.reactions,
-                        surfaceSpecies = self.reactionModel.surface.species,
-                        surfaceReactions = self.reactionModel.surface.reactions,
-                        pdepNetworks = self.reactionModel.networkList,
-                        prune = prune,
-                        modelSettings=modelSettings,
-                        simulatorSettings = simulatorSettings,
-                        conditions = self.rmg_memories[index].get_cond()
-                    )
-                    except:
-                        logging.error("Model core reactions:")
-                        if len(self.reactionModel.core.reactions) > 5:
-                            logging.error("Too many to print in detail")
-                        else:
-                            from rmgpy.cantherm.output import prettify
-                            logging.error(prettify(repr(self.reactionModel.core.reactions)))
+                        self.reactionModel.adjustSurface()
+                        
+                        if numCoreSpecies < modelSettings.minCoreSizeForPrune:
+                            # Turn pruning off if we haven't reached minimum core size.
+                            prune = False
+                            
+                        try: terminated,resurrected,obj,newSurfaceSpecies,newSurfaceReactions,t,x = reactionSystem.simulate(
+                            coreSpecies = self.reactionModel.core.species,
+                            coreReactions = self.reactionModel.core.reactions,
+                            edgeSpecies = self.reactionModel.edge.species,
+                            edgeReactions = self.reactionModel.edge.reactions,
+                            surfaceSpecies = self.reactionModel.surface.species,
+                            surfaceReactions = self.reactionModel.surface.reactions,
+                            pdepNetworks = self.reactionModel.networkList,
+                            prune = prune,
+                            modelSettings=modelSettings,
+                            simulatorSettings = simulatorSettings,
+                            conditions = self.rmg_memories[index].get_cond()
+                        )
+                        except:
+                            logging.error("Model core reactions:")
+                            if len(self.reactionModel.core.reactions) > 5:
+                                logging.error("Too many to print in detail")
+                            else:
+                                from rmgpy.cantherm.output import prettify
+                                logging.error(prettify(repr(self.reactionModel.core.reactions)))
+                            if self.generateSeedEachIteration:
+                                self.makeSeedMech()
+                            else:
+                                self.makeSeedMech(firstTime=True)
+                            raise
+                        
+                        self.rmg_memories[index].add_t_conv_N(t,x,len(obj))
+                        self.rmg_memories[index].generate_cond()
+                        log_conditions(self.rmg_memories,index)
+                        
                         if self.generateSeedEachIteration:
                             self.makeSeedMech()
-                        else:
-                            self.makeSeedMech(firstTime=True)
-                        raise
-                    
-                    self.rmg_memories[index].add_t_conv_N(t,x,len(obj))
-                    self.rmg_memories[index].generate_cond()
-                    log_conditions(self.rmg_memories,index)
-                    
-                    if self.generateSeedEachIteration:
-                        self.makeSeedMech()
+                            
+                        reactorDone = self.reactionModel.addNewSurfaceObjects(obj,newSurfaceSpecies,newSurfaceReactions,reactionSystem)
                         
-                    reactorDone = self.reactionModel.addNewSurfaceObjects(obj,newSurfaceSpecies,newSurfaceReactions,reactionSystem)
-                    
-                    allTerminated = allTerminated and terminated
-                    logging.info('')
-                        
-                    # If simulation is invalid, note which species should be added to
-                    # the core
-                    if obj != [] and not (obj is None):
-                        objectsToEnlarge = self.processToSpeciesNetworks(obj)
-
-                        reactorDone = False
-                    # Enlarge objects identified by the simulation for enlarging
-                    # These should be Species or Network objects
-                    logging.info('')
-
-                    objectsToEnlarge = list(set(objectsToEnlarge))
-
-                    # Add objects to enlarge to the core first
-                    for objectToEnlarge in objectsToEnlarge:
-                        self.reactionModel.enlarge(objectToEnlarge)
-                        
-                    if len(self.reactionModel.core.species) > numCoreSpecies or self.reactionModel.iterationNum == 1:
-                        tempModelSettings = deepcopy(modelSettings)
-                        tempModelSettings.fluxToleranceKeepInEdge = 0
-                        # If there were core species added, then react the edge
-                        # If there were no new core species, it means the pdep network needs be updated through another enlarge core step
-                        if modelSettings.filterReactions:
-                            # Run a raw simulation to get updated reaction system threshold values
-                            # Run with the same conditions as with pruning off
-                            if not resurrected:
-                                try:
-                                    reactionSystem.simulate(
-                                        coreSpecies = self.reactionModel.core.species,
-                                        coreReactions = self.reactionModel.core.reactions,
-                                        edgeSpecies = [],
-                                        edgeReactions = [],
-                                        surfaceSpecies = self.reactionModel.surface.species,
-                                        surfaceReactions = self.reactionModel.surface.reactions,
-                                        pdepNetworks = self.reactionModel.networkList,
-                                        modelSettings = tempModelSettings,
-                                        simulatorSettings = simulatorSettings,
-                                        conditions = self.rmg_memories[index].get_cond()
-                                    )
-                                except:
-                                    self.updateReactionThresholdAndReactFlags(
-                                        rxnSysUnimolecularThreshold = reactionSystem.unimolecularThreshold,
-                                        rxnSysBimolecularThreshold = reactionSystem.bimolecularThreshold, skipUpdate=True)
-                                    logging.warn('Reaction thresholds/flags for Reaction System {0} was not updated due to simulation failure'.format(index+1))
+                        allTerminated = allTerminated and terminated
+                        logging.info('')
+                            
+                        # If simulation is invalid, note which species should be added to
+                        # the core
+                        if obj != [] and not (obj is None):
+                            objectsToEnlarge = self.processToSpeciesNetworks(obj)
+    
+                            reactorDone = False
+                        # Enlarge objects identified by the simulation for enlarging
+                        # These should be Species or Network objects
+                        logging.info('')
+    
+                        objectsToEnlarge = list(set(objectsToEnlarge))
+    
+                        # Add objects to enlarge to the core first
+                        for objectToEnlarge in objectsToEnlarge:
+                            self.reactionModel.enlarge(objectToEnlarge)
+                            
+                        if len(self.reactionModel.core.species) > numCoreSpecies or self.reactionModel.iterationNum == 1:
+                            tempModelSettings = deepcopy(modelSettings)
+                            tempModelSettings.fluxToleranceKeepInEdge = 0
+                            # If there were core species added, then react the edge
+                            # If there were no new core species, it means the pdep network needs be updated through another enlarge core step
+                            if modelSettings.filterReactions:
+                                # Run a raw simulation to get updated reaction system threshold values
+                                # Run with the same conditions as with pruning off
+                                if not resurrected:
+                                    try:
+                                        reactionSystem.simulate(
+                                            coreSpecies = self.reactionModel.core.species,
+                                            coreReactions = self.reactionModel.core.reactions,
+                                            edgeSpecies = [],
+                                            edgeReactions = [],
+                                            surfaceSpecies = self.reactionModel.surface.species,
+                                            surfaceReactions = self.reactionModel.surface.reactions,
+                                            pdepNetworks = self.reactionModel.networkList,
+                                            modelSettings = tempModelSettings,
+                                            simulatorSettings = simulatorSettings,
+                                            conditions = self.rmg_memories[index].get_cond()
+                                        )
+                                    except:
+                                        self.updateReactionThresholdAndReactFlags(
+                                            rxnSysUnimolecularThreshold = reactionSystem.unimolecularThreshold,
+                                            rxnSysBimolecularThreshold = reactionSystem.bimolecularThreshold, skipUpdate=True)
+                                        logging.warn('Reaction thresholds/flags for Reaction System {0} was not updated due to simulation failure'.format(index+1))
+                                    else:
+                                        self.updateReactionThresholdAndReactFlags(
+                                            rxnSysUnimolecularThreshold = reactionSystem.unimolecularThreshold,
+                                            rxnSysBimolecularThreshold = reactionSystem.bimolecularThreshold,
+                                            rxnSysTrimolecularThreshold = reactionSystem.trimolecularThreshold
+                                        )
                                 else:
                                     self.updateReactionThresholdAndReactFlags(
                                         rxnSysUnimolecularThreshold = reactionSystem.unimolecularThreshold,
                                         rxnSysBimolecularThreshold = reactionSystem.bimolecularThreshold,
-                                        rxnSysTrimolecularThreshold = reactionSystem.trimolecularThreshold
-                                )
-                            else:
-                                self.updateReactionThresholdAndReactFlags(
-                                        rxnSysUnimolecularThreshold = reactionSystem.unimolecularThreshold,
-                                        rxnSysBimolecularThreshold = reactionSystem.bimolecularThreshold,
                                         rxnSysTrimolecularThreshold = reactionSystem.trimolecularThreshold,
                                         skipUpdate = True
-                                )
-                                logging.warn('Reaction thresholds/flags for Reaction System {0} was not updated due to resurrection'.format(index+1))
+                                    )
+                                    logging.warn('Reaction thresholds/flags for Reaction System {0} was not updated due to resurrection'.format(index+1))
 
         
-                            logging.info('')    
-                        else:
-                            self.updateReactionThresholdAndReactFlags()
+                                logging.info('')    
+                            else:
+                                self.updateReactionThresholdAndReactFlags()
                             
                         if not numpy.isinf(modelSettings.toleranceThermoKeepSpeciesInEdge):
                             self.reactionModel.setThermodynamicFilteringParameters(self.Tmax, toleranceThermoKeepSpeciesInEdge=modelSettings.toleranceThermoKeepSpeciesInEdge,
@@ -817,27 +818,22 @@ class RMG(util.Subject):
                                 unimolecularReact=self.unimolecularReact, 
                                 bimolecularReact=self.bimolecularReact,
                                 trimolecularReact=self.trimolecularReact)
-                        
+                            
                         if oldEdgeSize != len(self.reactionModel.edge.reactions) or oldCoreSize != len(self.reactionModel.core.reactions):
                             reactorDone = False
+                            
                         if not numpy.isinf(self.modelSettingsList[0].toleranceThermoKeepSpeciesInEdge):
                             self.reactionModel.thermoFilterDown(maximumEdgeSpecies=modelSettings.maximumEdgeSpecies)
-                    
-                    maxNumSpcsHit = len(self.reactionModel.core.species) >= modelSettings.maxNumSpecies
-
-                    if maxNumSpcsHit: #breaks the while loop 
-                        break
-                    
-                    if not reactorDone:
-                        self.nSimsTerms[index] = 0
-                        self.done = False
-                    
-                    if reactorDone and self.nSimsTerms[index]+1 < reactionSystem.nSimsTerm:
-                        logging.info('Reactor system {0} completed the {1}-th terminating simulation waiting for the {2} terminating simulation'.format(index,self.nSimsTerms[index]+1,reactionSystem.nSimsTerm))
-                        self.nSimsTerms[index] += 1
-                        self.done = False
                         
-                    self.saveEverything()
+                        maxNumSpcsHit = len(self.reactionModel.core.species) >= modelSettings.maxNumSpecies
+    
+                        if maxNumSpcsHit: #breaks the while loop 
+                            break
+                        
+                        if not reactorDone:
+                            self.done = False
+                        
+                        self.saveEverything()
                     
                 if not self.done: # There is something that needs exploring/enlarging
 
