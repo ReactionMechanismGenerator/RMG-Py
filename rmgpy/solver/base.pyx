@@ -241,7 +241,6 @@ cdef class ReactionSystem(DASx):
         self.coreSpeciesRates = numpy.zeros((self.numCoreSpecies), numpy.float64)
         self.edgeSpeciesRates = numpy.zeros((self.numEdgeSpecies), numpy.float64)
         self.networkLeakRates = numpy.zeros((self.numPdepNetworks), numpy.float64)
-        self.maxEdgeSpeciesRateRatios = numpy.zeros((len(self.prunableSpecies)), numpy.float64)
         self.maxNetworkLeakRateRatios = numpy.zeros((len(self.prunableNetworks)), numpy.float64)
         self.sensitivityCoefficients = numpy.zeros((self.numCoreSpecies, self.numCoreReactions), numpy.float64)
         self.unimolecularThreshold = numpy.zeros((self.numCoreSpecies), bool)
@@ -254,6 +253,14 @@ cdef class ReactionSystem(DASx):
     def initialize_solver(self):
         DASx.initialize(self, self.t0, self.y0, self.dydt0, self.senpar, self.atol_array, self.rtol_array)
     
+    def reset_max_edge_species_rate_ratios(self):
+        """
+        This function sets maxEdgeSpeciesRateRatios back to zero
+        for pruning of ranged reactors it is important to avoid doing this
+        every initialization
+        """
+        self.maxEdgeSpeciesRateRatios = numpy.zeros((len(self.prunableSpecies)), numpy.float64)
+        
     def set_prunable_indices(self,edgeSpecies,pdepNetworks):
         cdef object spc
         cdef list temp
