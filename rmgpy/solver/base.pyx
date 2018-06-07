@@ -703,6 +703,12 @@ cdef class ReactionSystem(DASx):
         unimolecular_threshold = self.unimolecular_threshold
         bimolecular_threshold = self.bimolecular_threshold
         trimolecular_threshold = self.trimolecular_threshold
+        
+        final_time = 0.0
+        for term in self.termination:
+            if isinstance(term,TerminationTime):
+                if term.time.value_si > final_time:
+                    final_time = term.time.value_si
 
         # Copy the initial conditions to use in evaluating conversions
         y0 = self.y.copy()
@@ -715,29 +721,39 @@ cdef class ReactionSystem(DASx):
             norm_sens_array = [[] for spec in self.sensitive_species]
             RTP = constants.R * self.T.value_si / self.P.value_si
             # identify sensitive species indices
-            sens_species_indices = np.array([species_index[spec] for spec in self.sensitive_species],
-                                               np.int)  # index within core_species list of the sensitive species
-
+            sens_species_indices = numpy.array([species_index[spec] for spec in self.sensitive_species], numpy.int)  # index within coreSpecies list of the sensitive species
+                
+        
         step_time = 1e-12
         prev_time = self.t
 
         first_time = True
-
         invalid_objects_print_boolean = True  
+        edge_check_iter = int(1.0/model_settings.edge_check_frequency)
+        iter_num = edge_check_iter
+        
         while not terminated:
             # Integrate forward in time by one time step
 
             if not first_time:
                 try:
                     self.step(step_time)
-                    if np.isnan(self.y).any():
-                        raise DASxError("nans in moles")
+                    if iter_num == edge_check_iter or (final_time != 0.0 and self.t >= final_time): 
+                        self.generate_edge_info(self.t, self.y)
+                        iter_num = 0
+                    else:
+                        iter_num += 1
+                        if self.t >= 0.9999 * step_time:
+                            step_time *= 10.0
+                        continue
                 except DASxError as e:
                     logging.error("Trying to step from time {0} to {1} resulted in a solver (DASPK) error: "
                                   "{2!s}".format(prev_time, step_time, e))
 
                     logging.info('Resurrecting Model...')
-
+                    
+                    self.generate_edge_info(self.t, self.y)
+                    
                     conversion = 0.0
                     for term in self.termination:
                         if isinstance(term, TerminationConversion):
@@ -779,9 +795,11 @@ cdef class ReactionSystem(DASx):
                         logging.error("Edge species net rates: {!r}".format(self.edge_species_rates))
                         logging.error("Network leak rates: {!r}".format(self.network_leak_rates))
                         raise ValueError('invalid_objects could not be filled during resurrection process')
-
+            else:
+                self.generate_edge_info(self.t,self.y)
+                
             y_core_species = self.y[:num_core_species]
-            total_moles = np.sum(y_core_species)
+            total_moles = numpy.sum(y_core_species)
             if sensitivity:
                 time_array.append(self.t)
                 mole_sens = self.y[num_core_species:]
