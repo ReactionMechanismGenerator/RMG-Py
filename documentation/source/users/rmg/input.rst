@@ -300,10 +300,9 @@ not make the algorithm non-deterministic.
     :align: center
     :height: 300px
 
-These variable condition reactors terminate after a defined number of 
-consecutive successfully terminating iterations (``nSimsTerm``). Use of these reactors tends to improve treatment of reaction 
-conditions that otherwise would be between reactors and reduce the number of simulations needed by focusing on reaction 
-conditions at which the model terminates earlier.  An example with sensitivity analysis at a specified reaction condition 
+These variable condition reactors run a defined number of times (``nSimsTerm``) each reactor cycle. Use of these reactors tends to 
+improve treatment of reaction conditions that otherwise would be between reactors and reduce the number of simulations needed by 
+focusing on reaction conditions at which the model terminates earlier.  An example with sensitivity analysis at a specified reaction condition 
 is available below::
 
 	simpleReactor(
@@ -333,9 +332,9 @@ entire interval.  Except at very small values for ``nSimsTerm`` the convergence 
 that achieved using the same number of evenly spaced fixed reactors.   
 
 If there is a particular reaction condition you expect to converge more slowly than the rest of the range 
-there is virually no cost to using a single condition reactor (or a ranged reactor at a smaller range) at that condition 
+there is virtually no cost to using a single condition reactor (or a ranged reactor at a smaller range) at that condition 
 and a ranged reactor with a smaller value for nSimsTerm.  This is because the fixed reactor simulations will almost always
-be useful and keep the overall RMG job from terminating when the ranged reactor samples the faster converging conditions.   
+be useful and keep the overall RMG job from terminating while the ranged reactor samples the faster converging conditions.   
 
 What you should actually set ``nSimsTerm`` to is very system dependent.  The value you choose should be at least 2 + N 
 where N is the number of dimensions the reactor spans (T=>N=1, T and P=>N=2, etc...).  There may be benefits to setting it as high
