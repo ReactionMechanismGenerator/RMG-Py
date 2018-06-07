@@ -134,7 +134,7 @@ def adjacencyList(string):
 def simpleReactor(temperature,
                   pressure,
                   initialMoleFractions,
-                  nSimsTerm=6,
+                  nSims=6,
                   terminationConversion=None,
                   terminationTime=None,
                   terminationRateRatio=None,
@@ -177,7 +177,7 @@ def simpleReactor(temperature,
         
         
     if not isinstance(temperature,list) and not isinstance(pressure,list) and all([not isinstance(x,list) for x in initialMoleFractions.values()]):
-        nSimsTerm=1
+        nSims=1
     
     termination = []
     if terminationConversion is not None:
@@ -210,7 +210,7 @@ def simpleReactor(temperature,
         sensConditions['P'] = Quantity(sensitivityPressure).value_si
 
     
-    system = SimpleReactor(T, P, initialMoleFractions, nSimsTerm, termination, sensitiveSpecies, sensitivityThreshold,sensConditions)
+    system = SimpleReactor(T, P, initialMoleFractions, nSims, termination, sensitiveSpecies, sensitivityThreshold,sensConditions)
     rmg.reactionSystems.append(system)
     
     assert balanceSpecies is None or isinstance(balanceSpecies,str), 'balanceSpecies should be the string corresponding to a single species'
@@ -231,7 +231,7 @@ def simpleReactor(temperature,
 def liquidReactor(temperature,
                   initialConcentrations,
                   terminationConversion=None,
-                  nSimsTerm = 4,
+                  nSims = 4,
                   terminationTime=None,
                   terminationRateRatio=None,
                   sensitivity=None,
@@ -261,7 +261,7 @@ def liquidReactor(temperature,
             initialConcentrations[spec] = [Quantity(conc[0]),Quantity(conc[1])]
             
     if not isinstance(temperature,list) and all([not isinstance(x,list) for x in initialConcentrations.itervalues()]):
-        nSimsTerm=1
+        nSims=1
         
     termination = []
     if terminationConversion is not None:
@@ -297,7 +297,7 @@ def liquidReactor(temperature,
         sensConditions = sensitivityConcentrations
         sensConditions['T'] = Quantity(sensitivityTemperature).value_si
         
-    system = LiquidReactor(T, initialConcentrations, nSimsTerm, termination, sensitiveSpecies, sensitivityThreshold, sensConditions, constantSpecies)
+    system = LiquidReactor(T, initialConcentrations, nSims, termination, sensitiveSpecies, sensitivityThreshold, sensConditions, constantSpecies)
     rmg.reactionSystems.append(system)
     
 def simulator(atol, rtol, sens_atol=1e-6, sens_rtol=1e-4):

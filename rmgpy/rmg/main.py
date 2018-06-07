@@ -647,7 +647,7 @@ class RMG(util.Subject):
                     reactionSystem.prunableNetworks = prunableNetworks
                     reactionSystem.reset_max_edge_species_rate_ratios() 
                     
-                    for p in xrange(reactionSystem.nSimsTerm):
+                    for p in xrange(reactionSystem.nSims):
                         reactorDone = True
                         objectsToEnlarge = []
                         self.reactionSystem = reactionSystem

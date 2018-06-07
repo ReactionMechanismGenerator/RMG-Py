@@ -31,7 +31,7 @@ species(
 simpleReactor(
     temperature=[(1000,'K'),(1500,'K')],
     pressure=[(1.0,'bar'),(10.0,'bar')],
-    nSimsTerm=3, 
+    nSims=3, 
     initialMoleFractions={
         "ethane": [0.05,0.15],
         "O2": 0.1,
