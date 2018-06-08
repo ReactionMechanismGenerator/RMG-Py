@@ -437,20 +437,22 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
         kB = 1.38064852e-23 #m2 * kg *s^-2 * K^-1
         h = 6.62607004e-34 #m2 kg / s
         boo = False
+        TST_limit = (kB*T)/h
+        collision_limit = Na*np.pi*Hrad_diam**2*np.sqrt(8*kB*T/(np.pi*mHrad/2))
         for entry in library.entries.values():
             k = entry.data.getRateCoefficient(T,P)
             rxn = entry.item
             if k < 0:
                 boo = True
                 logging.error('library reaction {0} from library {1}, had a negative rate at 1000 K, 1 bar'.format(rxn,library.label))
-            if len(rxn.reactants) == 1:
-                if k > (kB*T)/h:
+            if len(rxn.reactants) == 1 and not rxn.allow_max_rate_violation:
+                if k > TST_limit:
                     boo = True
-                    logging.error('library reaction {0} from library {1}, exceeds the TST limit at 1000 K, 1 bar'.format(rxn,library.label))
-            elif len(rxn.reactants) == 2:
-                if k > Na*np.pi*Hrad_diam**2*np.sqrt(8*kB*T/(np.pi*mHrad/2)):
+                    logging.error('library reaction {0} from library {1}, exceeds the TST limit at 1000 K, 1 bar of {2} mol/(m3*s) at {3} mol/(m3*s) and did not have allow_max_rate_violation=True'.format(rxn,library.label,TST_limit,k))
+            elif len(rxn.reactants) == 2 and not rxn.allow_max_rate_violation:
+                if k > collision_limit:
                     boo = True
-                    logging.error('library reaction {0} from library {1}, exceeds the collision limit at 1000 K, 1 bar'.format(rxn,library.label)) 
+                    logging.error('library reaction {0} from library {1}, exceeds the collision limit at 1000 K, 1 bar of {2} mol/(m3*s) at {3} mol/(m3*s) and did not have allow_max_rate_violation=True'.format(rxn,library.label,collision_limit,k)) 
         if boo:
             raise ValueError('library {0} has unreasonable rates'.format(library.label))
                 

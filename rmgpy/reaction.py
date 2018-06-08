@@ -105,6 +105,7 @@ class Reaction:
                  pairs=None,
                  allow_pdep_route=False,
                  elementary_high_p=False,
+                 allow_max_rate_violation=False,
                  comment='',
                  is_forward=None,
                  ):
@@ -125,7 +126,8 @@ class Reaction:
         self.comment = comment
         self.k_effective_cache = {}
         self.is_forward = is_forward
-        
+        self.allow_max_rate_violation = allow_max_rate_violation
+
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the

@@ -77,7 +77,8 @@ class LibraryReaction(Reaction):
                  library=None,
                  allow_pdep_route=False,
                  elementary_high_p=False,
-                 entry=None
+                 allow_max_rate_violation=False,
+                 entry=None,
                  ):
         Reaction.__init__(self,
                           index=index,
@@ -93,6 +94,7 @@ class LibraryReaction(Reaction):
                           pairs=pairs,
                           allow_pdep_route=allow_pdep_route,
                           elementary_high_p=elementary_high_p,
+                          allow_max_rate_violation=allow_max_rate_violation,
                           )
         self.library = library
         self.family = library
@@ -116,6 +118,7 @@ class LibraryReaction(Reaction):
                                   self.library,
                                   self.allow_pdep_route,
                                   self.elementary_high_p,
+                                  self.allow_max_rate_violation,
                                   self.entry
                                   ))
 
@@ -463,6 +466,7 @@ class KineticsLibrary(Database):
                   longDesc='',
                   allow_pdep_route=False,
                   elementary_high_p=False,
+                  allow_max_rate_violation=False,
                   ):
         
 #        reactants = [Species(label=reactant1.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(reactant1)])]
@@ -475,7 +479,7 @@ class KineticsLibrary(Database):
 #        
         # Make a blank reaction
         rxn = Reaction(reactants=[], products=[], degeneracy=degeneracy, duplicate=duplicate, reversible=reversible,
-                       allow_pdep_route=allow_pdep_route, elementary_high_p=elementary_high_p)
+                       allow_pdep_route=allow_pdep_route, elementary_high_p=elementary_high_p, allow_max_rate_violation=allow_max_rate_violation)
 #        if not rxn.isBalanced():
 #            raise DatabaseError('Reaction {0} in kinetics library {1} was not balanced! Please reformulate.'.format(rxn, self.label))        
 #        label = str(rxn)
