@@ -625,6 +625,12 @@ cdef class ReactionSystem(DASx):
         sensitivityAbsoluteTolerance = simulatorSettings.sens_atol
         sensitivityRelativeTolerance = simulatorSettings.sens_rtol
         filterReactions = modelSettings.filterReactions
+        bimolecularThresholdRateConstant = modelSettings.filterThreshold
+        # Maximum trimolecular rate constants are approximately three
+        # orders of magnitude smaller (accounting for the unit
+        # conversion from m^3/mol/s to m^6/mol^2/s) based on
+        # extending the Smoluchowski equation to three molecules
+        trimolecularThresholdRateConstant = bimolecularThresholdRateConstant / 1e3
         maxNumObjsPerIter = modelSettings.maxNumObjsPerIter
 
         #if not pruning always terminate at max objects, otherwise only do so if terminateAtMaxObjects=True
@@ -910,10 +916,9 @@ cdef class ReactionSystem(DASx):
                 # Calculate unimolecular and bimolecular thresholds for reaction
                 # Set the maximum unimolecular rate to be kB*T/h
                 unimolecularThresholdVal = toleranceMoveToCore * charRate / (2.08366122e10 * self.T.value_si)
-                # Set the maximum bimolecular rate to be 1e7 m^3/mol*s, or 1e13 cm^3/mol*s
-                bimolecularThresholdVal = toleranceMoveToCore * charRate / 1e7
-                # Set the maximum trimolecular rate to be 1e9 m^6/mol^2*s
-                trimolecularThresholdVal = toleranceMoveToCore * charRate / 1e9
+                # Set the maximum bi/trimolecular rate by using the user-defined rate constant threshold
+                bimolecularThresholdVal = toleranceMoveToCore * charRate / bimolecularThresholdRateConstant
+                trimolecularThresholdVal = toleranceMoveToCore * charRate / trimolecularThresholdRateConstant
                 for i in xrange(numCoreSpecies):
                     if not unimolecularThreshold[i]:
                         # Check if core species concentration has gone above threshold for unimolecular reaction

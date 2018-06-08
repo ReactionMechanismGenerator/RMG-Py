@@ -48,6 +48,7 @@ This module contains settings classes for manipulation of RMG run parameters
     `minCoreSizeForPrune`                           Minimum number of core species before pruning is allowed
     `minSpeciesExistIterationsForPrune`             Minimum number of iterations a species must exist before it can be pruned
     `filterReactions`                               Specify whether to filter reactions during model enlarging step
+    `filterThreshold`                               Bimolecular reaction filtering threshold rate constant
     `ignoreOverallFluxCriterion`                    flag indicating that the ordinary flux criterion should be ignored except for pdep purposes
     `maxNumSpecies`                                 Number of core species at which a stage/job will terminate
     `maxNumObjPerIter`                              Maximum number of objects that can be sent for enlargement from a single simulation
@@ -63,7 +64,7 @@ class ModelSettings(object):
     def __init__(self,toleranceMoveToCore=None, toleranceMoveEdgeReactionToCore=numpy.inf,toleranceKeepInEdge=0.0, toleranceInterruptSimulation=1.0, 
           toleranceMoveEdgeReactionToSurface=numpy.inf, toleranceMoveSurfaceSpeciesToCore=numpy.inf, toleranceMoveSurfaceReactionToCore=numpy.inf,
           toleranceMoveEdgeReactionToSurfaceInterrupt=None,toleranceMoveEdgeReactionToCoreInterrupt=None, maximumEdgeSpecies=1000000, minCoreSizeForPrune=50, 
-          minSpeciesExistIterationsForPrune=2, filterReactions=False, ignoreOverallFluxCriterion=False, maxNumSpecies=None, maxNumObjsPerIter=1,
+          minSpeciesExistIterationsForPrune=2, filterReactions=False, filterThreshold=1e8, ignoreOverallFluxCriterion=False, maxNumSpecies=None, maxNumObjsPerIter=1,
           terminateAtMaxObjects=False,toleranceThermoKeepSpeciesInEdge=numpy.inf,dynamicsTimeScale = Quantity((0.0,'sec'))):
 
         
@@ -75,6 +76,7 @@ class ModelSettings(object):
         self.minCoreSizeForPrune = minCoreSizeForPrune
         self.minSpeciesExistIterationsForPrune = minSpeciesExistIterationsForPrune
         self.filterReactions = filterReactions
+        self.filterThreshold = filterThreshold
         self.ignoreOverallFluxCriterion=ignoreOverallFluxCriterion
         self.toleranceMoveEdgeReactionToSurface = toleranceMoveEdgeReactionToSurface
         self.toleranceMoveSurfaceSpeciesToCore = toleranceMoveSurfaceSpeciesToCore

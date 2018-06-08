@@ -313,7 +313,7 @@ def model(toleranceMoveToCore=None, toleranceMoveEdgeReactionToCore=numpy.inf,to
           toleranceMoveEdgeReactionToSurface=numpy.inf, toleranceMoveSurfaceSpeciesToCore=numpy.inf, toleranceMoveSurfaceReactionToCore=numpy.inf,
           toleranceMoveEdgeReactionToSurfaceInterrupt=None,
           toleranceMoveEdgeReactionToCoreInterrupt=None, maximumEdgeSpecies=1000000, minCoreSizeForPrune=50, 
-          minSpeciesExistIterationsForPrune=2, filterReactions=False, ignoreOverallFluxCriterion=False,
+          minSpeciesExistIterationsForPrune=2, filterReactions=False, filterThreshold=1e8, ignoreOverallFluxCriterion=False,
           maxNumSpecies=None,maxNumObjsPerIter=1,terminateAtMaxObjects=False,toleranceThermoKeepSpeciesInEdge=numpy.inf,dynamicsTimeScale=(0.0,'sec')):
     """
     How to generate the model. `toleranceMoveToCore` must be specified. 
@@ -328,11 +328,30 @@ def model(toleranceMoveToCore=None, toleranceMoveEdgeReactionToCore=numpy.inf,to
     if toleranceMoveToCore > toleranceInterruptSimulation:
         raise InputError("toleranceMoveToCore must be less than or equal to toleranceInterruptSimulation, which is currently {0}".format(toleranceInterruptSimulation))
     
-    rmg.modelSettingsList.append(ModelSettings(toleranceMoveToCore, toleranceMoveEdgeReactionToCore,toleranceKeepInEdge, toleranceInterruptSimulation, 
-          toleranceMoveEdgeReactionToSurface, toleranceMoveSurfaceSpeciesToCore, toleranceMoveSurfaceReactionToCore,
-          toleranceMoveEdgeReactionToSurfaceInterrupt,toleranceMoveEdgeReactionToCoreInterrupt, maximumEdgeSpecies, minCoreSizeForPrune, 
-          minSpeciesExistIterationsForPrune, filterReactions, ignoreOverallFluxCriterion, maxNumSpecies, maxNumObjsPerIter,terminateAtMaxObjects,
-          toleranceThermoKeepSpeciesInEdge,Quantity(dynamicsTimeScale)))
+    rmg.modelSettingsList.append(
+        ModelSettings(
+            toleranceMoveToCore=toleranceMoveToCore,
+            toleranceMoveEdgeReactionToCore=toleranceMoveEdgeReactionToCore,
+            toleranceKeepInEdge=toleranceKeepInEdge,
+            toleranceInterruptSimulation=toleranceInterruptSimulation,
+            toleranceMoveEdgeReactionToSurface=toleranceMoveEdgeReactionToSurface,
+            toleranceMoveSurfaceSpeciesToCore=toleranceMoveSurfaceSpeciesToCore,
+            toleranceMoveSurfaceReactionToCore=toleranceMoveSurfaceReactionToCore,
+            toleranceMoveEdgeReactionToSurfaceInterrupt=toleranceMoveEdgeReactionToSurfaceInterrupt,
+            toleranceMoveEdgeReactionToCoreInterrupt=toleranceMoveEdgeReactionToCoreInterrupt,
+            maximumEdgeSpecies=maximumEdgeSpecies,
+            minCoreSizeForPrune=minCoreSizeForPrune,
+            minSpeciesExistIterationsForPrune=minSpeciesExistIterationsForPrune,
+            filterReactions=filterReactions,
+            filterThreshold=filterThreshold,
+            ignoreOverallFluxCriterion=ignoreOverallFluxCriterion,
+            maxNumSpecies=maxNumSpecies,
+            maxNumObjsPerIter=maxNumObjsPerIter,
+            terminateAtMaxObjects=terminateAtMaxObjects,
+            toleranceThermoKeepSpeciesInEdge=toleranceThermoKeepSpeciesInEdge,
+            dynamicsTimeScale=Quantity(dynamicsTimeScale)
+        )
+    )
     
 def quantumMechanics(
                     software,
@@ -692,6 +711,7 @@ def saveInputFile(path, rmg):
     f.write('    minCoreSizeForPrune = {0:d},\n'.format(rmg.minCoreSizeForPrune))
     f.write('    minSpeciesExistIterationsForPrune = {0:d},\n'.format(rmg.minSpeciesExistIterationsForPrune))
     f.write('    filterReactions = {0:d},\n'.format(rmg.filterReactions))
+    f.write('    filterThreshold = {0:g},\n'.format(rmg.filterThreshold))
     f.write(')\n\n')
 
     # Pressure Dependence
