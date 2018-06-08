@@ -34,18 +34,12 @@ the IPython --pylab mode, will render things inline in pretty SVG or PNG graphic
 If you are NOT running in IPython --pylab mode, it will do nothing.
 """
 
-def do_nothing(object):
-    pass
-    
 try:
-    import IPython
+    from IPython.core.interactiveshell import InteractiveShell
 except ImportError:
-    # Don't have IPython installed
-    display = do_nothing
+    def display(obj): pass
 else:
-    try:
-        displayer = IPython.core.display.display
-        display = lambda obj: displayer(obj, include='png')
-    except (NameError,AttributeError):
-        display = do_nothing #not runing in IPython --pylab mode.
-
+    if InteractiveShell.initialized():
+        from IPython.core.display import display
+    else:
+        def display(obj): pass
