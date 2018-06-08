@@ -1188,7 +1188,7 @@ class CoreEdgeReactionModel:
                     del(self.networkDict[source])
                 self.networkList.remove(network)
                     
-    def prune(self, reactionSystems, toleranceKeepInEdge, maximumEdgeSpecies, minSpeciesExistIterationsForPrune):
+    def prune(self, reactionSystems, toleranceKeepInEdge, toleranceMoveToCore, maximumEdgeSpecies, minSpeciesExistIterationsForPrune):
         """
         Remove species from the model edge based on the simulation results from
         the list of `reactionSystems`.
@@ -1245,8 +1245,12 @@ class CoreEdgeReactionModel:
                 pruneDueToRateCounter += 1
             # Keep removing species with the lowest rates until we are below the maximum edge species size
             elif numPrunableSpecies - len(speciesToPrune) > maximumEdgeSpecies:
-                logging.info('Pruning species {0} to make numEdgeSpecies smaller than maximumEdgeSpecies'.format(spec)) # repeated ~15 lines below
-                speciesToPrune.append((index, spec))
+                if maxEdgeSpeciesRateRatios[index] < toleranceMoveToCore:
+                    logging.info('Pruning species {0} to make numEdgeSpecies smaller than maximumEdgeSpecies'.format(spec))
+                    speciesToPrune.append((index, spec))
+                else:
+                    logging.warning('Attempted to prune a species that exceeded toleranceMoveToCore, pruning settings for this run are likely bad, either maximumEdgeSpecies needs to be set higher (~100000) or minSpeciesExistIterationsForPrune should be reduced (~2)')
+                    break
             else:
                 break
 
