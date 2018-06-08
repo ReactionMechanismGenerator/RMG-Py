@@ -31,7 +31,6 @@
 import os
 import unittest
 from external.wip import work_in_progress
-from nose.plugins.attrib import attr
 
 from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase, database
@@ -1356,7 +1355,37 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
                             expected_saturated_ring_submol.multiplicity)
         self.assertTrue(saturated_ring_submol.isIsomorphic(expected_saturated_ring_submol))
 
-@attr('auth')
+
+def getTestingTCDAuthenticationInfo():
+
+    try:
+        host = os.environ['TCD_HOST']
+        port = int(os.environ['TCD_PORT'])
+        username = os.environ['TCD_USER']
+        password = os.environ['TCD_PW']
+    except KeyError:
+        print('Thermo Central Database Authentication Environment Variables Not Completely Set!')
+        return None, 0, None, None
+
+    return host, port, username, password
+
+
+def isTCDAvailable():
+    """Check if TCD is available."""
+    import platform
+    import subprocess
+
+    host = getTestingTCDAuthenticationInfo()[0]
+    if host is not None:
+        arg = '-n' if platform.system() == 'Windows' else '-c'
+        result = subprocess.call(['ping', arg, '1', host]) == 0
+    else:
+        result = False
+
+    return result
+
+
+@unittest.skipIf(not isTCDAvailable(), 'TCD unavailable, skipping unit tests.')
 class TestThermoCentralDatabaseInterface(unittest.TestCase):
     """
     Contains unit tests for methods of ThermoCentralDatabaseInterface
@@ -1588,19 +1617,6 @@ class TestThermoCentralDatabaseInterface(unittest.TestCase):
 
         # clean up the table
         results_table.delete_many({"aug_inchi": expected_aug_inchi})
-
-def getTestingTCDAuthenticationInfo():
-
-    try:
-        host = os.environ['TCD_HOST']
-        port = int(os.environ['TCD_PORT'])
-        username = os.environ['TCD_USER']
-        password = os.environ['TCD_PW']
-    except KeyError:
-        print('Thermo Central Database Authentication Environment Variables Not Completely Set!')
-        return 'None', 0, 'None', 'None'
-
-    return host, port, username, password
 
 ################################################################################
 
