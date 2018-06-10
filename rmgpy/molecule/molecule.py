@@ -1180,7 +1180,7 @@ class Molecule(Graph):
 
         return element_count
 
-    def isIsomorphic(self, other, initialMap=None):
+    def isIsomorphic(self, other, initialMap=None,saveOrder=False):
         """
         Returns :data:`True` if two graphs are isomorphic and :data:`False`
         otherwise. The `initialMap` attribute can be used to specify a required
@@ -1202,10 +1202,10 @@ class Molecule(Graph):
         if self.multiplicity != other.multiplicity:
             return False
         # Do the full isomorphism comparison
-        result = Graph.isIsomorphic(self, other, initialMap)
+        result = Graph.isIsomorphic(self, other, initialMap, saveOrder=saveOrder)
         return result
 
-    def findIsomorphism(self, other, initialMap=None):
+    def findIsomorphism(self, other, initialMap=None, saveOrder=False):
         """
         Returns :data:`True` if `other` is isomorphic and :data:`False`
         otherwise, and the matching mapping. The `initialMap` attribute can be
@@ -1229,10 +1229,10 @@ class Molecule(Graph):
             return []
             
         # Do the isomorphism comparison
-        result = Graph.findIsomorphism(self, other, initialMap)
+        result = Graph.findIsomorphism(self, other, initialMap, saveOrder=saveOrder)
         return result
 
-    def isSubgraphIsomorphic(self, other, initialMap=None, generateInitialMap=False):
+    def isSubgraphIsomorphic(self, other, initialMap=None, generateInitialMap=False,saveOrder=False):
         """
         Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
         otherwise. The `initialMap` attribute can be used to specify a required
@@ -1275,10 +1275,10 @@ class Molecule(Graph):
                 return False
             
         # Do the isomorphism comparison
-        result = Graph.isSubgraphIsomorphic(self, other, initialMap)
+        result = Graph.isSubgraphIsomorphic(self, other, initialMap, saveOrder=saveOrder)
         return result
 
-    def findSubgraphIsomorphisms(self, other, initialMap=None):
+    def findSubgraphIsomorphisms(self, other, initialMap=None, saveOrder=False):
         """
         Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
         otherwise. Also returns the lists all of valid mappings. The
@@ -1315,7 +1315,7 @@ class Molecule(Graph):
                 return []
 
         # Do the isomorphism comparison
-        result = Graph.findSubgraphIsomorphisms(self, other, initialMap)
+        result = Graph.findSubgraphIsomorphisms(self, other, initialMap, saveOrder=saveOrder)
         return result
     
     def isAtomInCycle(self, atom):

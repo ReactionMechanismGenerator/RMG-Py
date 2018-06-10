@@ -1497,7 +1497,7 @@ class Group(Graph):
             if len(atom.radicalElectrons) >= 1:
                 self.radicalCount += atom.radicalElectrons[0]
 
-    def isIsomorphic(self, other, initialMap=None):
+    def isIsomorphic(self, other, initialMap=None, saveOrder=False):
         """
         Returns ``True`` if two graphs are isomorphic and ``False``
         otherwise. The `initialMap` attribute can be used to specify a required
@@ -1510,9 +1510,9 @@ class Group(Graph):
         if not isinstance(other, Group):
             raise TypeError('Got a {0} object for parameter "other", when a Group object is required.'.format(other.__class__))
         # Do the isomorphism comparison
-        return Graph.isIsomorphic(self, other, initialMap)
+        return Graph.isIsomorphic(self, other, initialMap, saveOrder=saveOrder)
 
-    def findIsomorphism(self, other, initialMap=None):
+    def findIsomorphism(self, other, initialMap=None, saveOrder=False):
         """
         Returns ``True`` if `other` is isomorphic and ``False``
         otherwise, and the matching mapping. The `initialMap` attribute can be
@@ -1527,9 +1527,9 @@ class Group(Graph):
         if not isinstance(other, Group):
             raise TypeError('Got a {0} object for parameter "other", when a Group object is required.'.format(other.__class__))
         # Do the isomorphism comparison
-        return Graph.findIsomorphism(self, other, initialMap)
+        return Graph.findIsomorphism(self, other, initialMap, saveOrder=saveOrder)
 
-    def isSubgraphIsomorphic(self, other, initialMap=None, generateInitialMap=False):
+    def isSubgraphIsomorphic(self, other, initialMap=None, generateInitialMap=False, saveOrder=False):
         """
         Returns ``True`` if `other` is subgraph isomorphic and ``False``
         otherwise. In other words, return ``True`` if self is more specific than other.
@@ -1566,9 +1566,9 @@ class Group(Graph):
         else:
             if group.multiplicity: return False
         # Do the isomorphism comparison
-        return Graph.isSubgraphIsomorphic(self, other, initialMap)
+        return Graph.isSubgraphIsomorphic(self, other, initialMap, saveOrder=saveOrder)
 
-    def findSubgraphIsomorphisms(self, other, initialMap=None):
+    def findSubgraphIsomorphisms(self, other, initialMap=None, saveOrder=False):
         """
         Returns ``True`` if `other` is subgraph isomorphic and ``False``
         otherwise. In other words, return ``True`` is self is more specific than other.
@@ -1600,9 +1600,9 @@ class Group(Graph):
             if group.multiplicity: return []
                 
         # Do the isomorphism comparison
-        return Graph.findSubgraphIsomorphisms(self, other, initialMap)
+        return Graph.findSubgraphIsomorphisms(self, other, initialMap, saveOrder=saveOrder)
     
-    def isIdentical(self, other):
+    def isIdentical(self, other, saveOrder=False):
         """
         Returns ``True`` if `other` is identical and ``False`` otherwise.
         The function `isIsomorphic` respects wildcards, while this function
@@ -1617,13 +1617,13 @@ class Group(Graph):
         # is the only case where that is true. Therefore
         # if we do both directions of isSubgraphIsmorphic, we need
         # to get True twice for it to be identical
-        if not self.isSubgraphIsomorphic(other):
+        if not self.isSubgraphIsomorphic(other, None, saveOrder=saveOrder):
             return False
-        elif not other.isSubgraphIsomorphic(self):
+        elif not other.isSubgraphIsomorphic(self, None, saveOrder=saveOrder):
             return False
         else:
             return True
-    
+
     def isAromaticRing(self):
         """
         This method returns a boolean telling if the group has a 5 or 6 cyclic with
