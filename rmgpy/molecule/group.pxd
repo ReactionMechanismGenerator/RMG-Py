@@ -163,15 +163,15 @@ cdef class Group(Graph):
 
     cpdef update_charge(self)
 
-    cpdef bint isIsomorphic(self, Graph other, dict initialMap=?) except -2
+    cpdef bint isIsomorphic(self, Graph other, dict initialMap=?, bint saveOrder=?) except -2
 
-    cpdef list findIsomorphism(self, Graph other, dict initialMap=?)
+    cpdef list findIsomorphism(self, Graph other, dict initialMap=?, bint saveOrder=?)
 
-    cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?, bint generateInitialMap=?) except -2
+    cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?, bint generateInitialMap=?, bint saveOrder=?) except -2
 
-    cpdef list findSubgraphIsomorphisms(self, Graph other, dict initialMap=?)
+    cpdef list findSubgraphIsomorphisms(self, Graph other, dict initialMap=?, bint saveOrder=?)
     
-    cpdef bint isIdentical(self, Graph other)
+    cpdef bint isIdentical(self, Graph other, bint saveOrder=?)
 
     cpdef bint isAromaticRing(self)
 

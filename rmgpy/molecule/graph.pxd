@@ -73,6 +73,8 @@ cdef Vertex _getEdgeVertex2(Edge edge)
 cdef class Graph:
 
     cdef public list vertices
+    
+    cdef public list ordered_vertices
 
     cpdef Vertex addVertex(self, Vertex vertex)
 
@@ -104,15 +106,17 @@ cdef class Graph:
 
     cpdef resetConnectivityValues(self)
 
-    cpdef sortVertices(self)
+    cpdef sortVertices(self, bint saveOrder=?)
+    
+    cpdef restore_vertex_order(self)
 
-    cpdef bint isIsomorphic(self, Graph other, dict initialMap=?) except -2
+    cpdef bint isIsomorphic(self, Graph other, dict initialMap=?, bint saveOrder=?) except -2
 
-    cpdef list findIsomorphism(self, Graph other, dict initialMap=?)
+    cpdef list findIsomorphism(self, Graph other, dict initialMap=?, bint saveOrder=?)
 
-    cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?) except -2
+    cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?, bint saveOrder=?) except -2
 
-    cpdef list findSubgraphIsomorphisms(self, Graph other, dict initialMap=?)
+    cpdef list findSubgraphIsomorphisms(self, Graph other, dict initialMap=?, bint saveOrder=?)
 
     cpdef bint isCyclic(self) except -2
 

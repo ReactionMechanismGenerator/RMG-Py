@@ -462,13 +462,17 @@ cdef class Graph:
             for vertex2 in vertex1.edges: count += vertex2.connectivity2
             vertex1.connectivity3 = count
 
-    cpdef sortVertices(self):
+    cpdef sortVertices(self, bint saveOrder=False):
         """
         Sort the vertices in the graph. This can make certain operations, e.g.
         the isomorphism functions, much more efficient.
         """
         cdef Vertex vertex
         cdef int index
+        
+        if saveOrder:
+            self.ordered_vertices = self.vertices[:]
+            
         # Only need to conduct sort if there is an invalid sorting label on any vertex
         for vertex in self.vertices:
             if vertex.sortingLabel < 0: break
@@ -480,37 +484,47 @@ cdef class Graph:
         self.vertices.sort(key=getVertexConnectivityValue)
         for index, vertex in enumerate(self.vertices):
             vertex.sortingLabel = index
-
-    cpdef bint isIsomorphic(self, Graph other, dict initialMap=None) except -2:
+    
+    cpdef restore_vertex_order(self):
+        """
+        reorder the vertices to what they were before sorting
+        if you saved the order
+        """
+        if not self.ordered_vertices or len(self.vertices) != len(self.ordered_vertices):
+            raise ValueError('Number of vertices has changed cannot restore original vertex order')
+        else:
+            self.vertices = self.ordered_vertices
+            
+    cpdef bint isIsomorphic(self, Graph other, dict initialMap=None, bint saveOrder=False) except -2:
         """
         Returns :data:`True` if two graphs are isomorphic and :data:`False`
         otherwise. Uses the VF2 algorithm of Vento and Foggia.
         """
-        return vf2.isIsomorphic(self, other, initialMap)
+        return vf2.isIsomorphic(self, other, initialMap, saveOrder=saveOrder)
 
-    cpdef list findIsomorphism(self, Graph other, dict initialMap=None):
+    cpdef list findIsomorphism(self, Graph other, dict initialMap=None, bint saveOrder=False):
         """
         Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
         otherwise, and the matching mapping.
         Uses the VF2 algorithm of Vento and Foggia.
         """
-        return vf2.findIsomorphism(self, other, initialMap)
+        return vf2.findIsomorphism(self, other, initialMap, saveOrder=saveOrder)
 
-    cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=None) except -2:
+    cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=None, bint saveOrder=False) except -2:
         """
         Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
         otherwise. Uses the VF2 algorithm of Vento and Foggia.
         """
-        return vf2.isSubgraphIsomorphic(self, other, initialMap)
+        return vf2.isSubgraphIsomorphic(self, other, initialMap, saveOrder=saveOrder)
 
-    cpdef list findSubgraphIsomorphisms(self, Graph other, dict initialMap=None):
+    cpdef list findSubgraphIsomorphisms(self, Graph other, dict initialMap=None, bint saveOrder=False):
         """
         Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
         otherwise. Also returns the lists all of valid mappings.
 
         Uses the VF2 algorithm of Vento and Foggia.
         """
-        return vf2.findSubgraphIsomorphisms(self, other, initialMap)
+        return vf2.findSubgraphIsomorphisms(self, other, initialMap, saveOrder=saveOrder)
 
     cpdef bint isCyclic(self) except -2:
         """
