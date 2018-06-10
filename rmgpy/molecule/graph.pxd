@@ -154,4 +154,4 @@ cdef class Graph:
     
     cpdef list getLargestRing(self, Vertex vertex)
     
-    cpdef bint isMappingValid(self, Graph other, dict mapping) except -2
+    cpdef bint isMappingValid(self, Graph other, dict mapping, bint equivalent=?) except -2

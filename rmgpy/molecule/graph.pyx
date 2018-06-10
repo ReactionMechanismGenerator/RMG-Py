@@ -1046,22 +1046,26 @@ cdef class Graph:
         return longest_cycle
         
         
-    cpdef bint isMappingValid(self, Graph other, dict mapping) except -2:
+    cpdef bint isMappingValid(self, Graph other, dict mapping, bint equivalent=True) except -2:
         """
         Check that a proposed `mapping` of vertices from `self` to `other`
         is valid by checking that the vertices and edges involved in the
-        mapping are mutually equivalent.
+        mapping are mutually equivalent.  If equivalent is true it checks
+        if atoms and edges are equivalent, if false it checks if they 
+        are specific cases of each other.  
         """
         cdef Vertex vertex1, vertex2
         cdef list vertices1, vertices2
         cdef bint selfHasEdge, otherHasEdge
         cdef int i, j
         
-        # Check that the mapped pairs of vertices are equivalent
-        for vertex1, vertex2 in mapping.items():
-            if not vertex1.equivalent(vertex2):
-                return False
+        method = 'equivalent' if equivalent else 'isSpecificCaseOf'
         
+        # Check that the mapped pairs of vertices compare True
+        for vertex1, vertex2 in mapping.items():
+            if not getattr(vertex1,method)(vertex2):
+                return False
+            
         # Check that any edges connected mapped vertices are equivalent
         vertices1 = mapping.keys()
         vertices2 = mapping.values()
@@ -1073,12 +1077,13 @@ cdef class Graph:
                     # Both graphs have the edge, so we must check it for equivalence
                     edge1 = self.getEdge(vertices1[i], vertices1[j])
                     edge2 = other.getEdge(vertices2[i], vertices2[j])
-                    if not edge1.equivalent(edge2):
+                    if not getattr(edge1,method)(edge2):
                         return False
                 elif selfHasEdge or otherHasEdge:
                     # Only one of the graphs has the edge, so the mapping must be invalid
                     return False
-        
-        # If we're here then the vertices and edges are equivalent, so the
+            
+        # If we're here then the vertices and edges compare True, so the
         # mapping is valid
         return True
+        
