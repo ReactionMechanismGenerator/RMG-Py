@@ -145,7 +145,7 @@ def process_reactions(database, libraries, families, compareKinetics=True, showA
                 max_num_aromatic_reactants = 0
                 for fam_rxn in fam_rxn_list:
                     num_aromatic_reactants = 0
-                    reactants = fam_rxn.reactants if fam_rxn.isForward else fam_rxn.products
+                    reactants = fam_rxn.reactants if fam_rxn.is_forward else fam_rxn.products
                     for r in reactants:
                         num_aromatic_reactants += r.molecule[0].isAromatic()
                     if num_aromatic_reactants > max_num_aromatic_reactants:
@@ -161,7 +161,7 @@ def process_reactions(database, libraries, families, compareKinetics=True, showA
             if len(fam_rxn_list) == 1:
                 fam_rxn = fam_rxn_list[0]
 
-                forward = fam_rxn.isForward
+                forward = fam_rxn.is_forward
 
                 # Find the labeled atoms using family and reactants & products from fam_rxn
                 database.kinetics.families[fam_rxn.family].addAtomLabelsForReaction(fam_rxn)
@@ -238,7 +238,7 @@ def process_reactions(database, libraries, families, compareKinetics=True, showA
                 if compareKinetics: oldKinetics = []
 
                 for i, rxn in enumerate(fam_rxn_list):
-                    forward = rxn.isForward
+                    forward = rxn.is_forward
 
                     template = database.kinetics.families[rxn.family].retrieveTemplate(rxn.template)
 
@@ -391,7 +391,7 @@ def manual_selection(master_dict, multiple_dict, database):
 
             fam_rxn = fam_rxn_list[choice]
 
-            forward = fam_rxn.isForward
+            forward = fam_rxn.is_forward
 
             # Find the labeled atoms using family and reactants & products from fam_rxn
             database.kinetics.families[fam_rxn.family].addAtomLabelsForReaction(fam_rxn)

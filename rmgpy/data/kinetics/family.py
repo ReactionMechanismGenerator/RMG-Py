@@ -67,14 +67,14 @@ class TemplateReaction(Reaction):
     to attributes inherited from :class:`Reaction`, this class includes the
     following attributes:
 
-    =========== ========================= =====================================
-    Attribute   Type                      Description
-    =========== ========================= =====================================
-    `family`    ``str``                   The kinetics family that the reaction was created from.
-    `estimator` ``str``                   Whether the kinetics came from rate rules or group additivity.
-    `reverse`   :class:`TemplateReaction` The reverse reaction, for families that are their own reverse.
-    `isForward` ``bool``                  Whether the reaction was generated in the forward direction of the family.
-    =========== ========================= =====================================
+    ============ ========================= =====================================
+    Attribute    Type                      Description
+    ============ ========================= =====================================
+    `family`     ``str``                   The kinetics family that the reaction was created from.
+    `estimator`  ``str``                   Whether the kinetics came from rate rules or group additivity.
+    `reverse`    :class:`TemplateReaction` The reverse reaction, for families that are their own reverse.
+    `is_forward`  ``bool``                 Whether the reaction was generated in the forward direction of the family.
+    ============ ========================= =====================================
     """
 
     def __init__(self,
@@ -92,7 +92,7 @@ class TemplateReaction(Reaction):
                 template=None,
                 estimator=None,
                 reverse=None,
-                isForward=None,
+                is_forward=None,
                 ):
         Reaction.__init__(self,
                           index=index,
@@ -104,13 +104,13 @@ class TemplateReaction(Reaction):
                           transitionState=transitionState,
                           duplicate=duplicate,
                           degeneracy=degeneracy,
-                          pairs=pairs
+                          pairs=pairs,
+                          is_forward=is_forward,
                           )
         self.family = family
         self.template = template
         self.estimator = estimator
         self.reverse = reverse
-        self.isForward = isForward
 
     def __reduce__(self):
         """
@@ -130,7 +130,7 @@ class TemplateReaction(Reaction):
                                    self.template,
                                    self.estimator,
                                    self.reverse,
-                                   self.isForward
+                                   self.is_forward
                                    ))
 
     def __repr__(self):
@@ -191,7 +191,7 @@ class TemplateReaction(Reaction):
         other.template = self.template
         other.estimator = self.estimator
         other.reverse = self.reverse
-        other.isForward = self.isForward
+        other.is_forward = self.is_forward
         
         return other
 
@@ -1423,7 +1423,7 @@ class KineticsFamily(Database):
             return True
         return False
 
-    def __createReaction(self, reactants, products, isForward):
+    def __createReaction(self, reactants, products, is_forward):
         """
         Create and return a new :class:`Reaction` object containing the
         provided `reactants` and `products` as lists of :class:`Molecule`
@@ -1436,12 +1436,12 @@ class KineticsFamily(Database):
 
         # Create and return template reaction object
         reaction = TemplateReaction(
-            reactants = reactants if isForward else products,
-            products = products if isForward else reactants,
+            reactants = reactants if is_forward else products,
+            products = products if is_forward else reactants,
             degeneracy = 1,
             reversible = self.reversible,
             family = self.label,
-            isForward = isForward,
+            is_forward = is_forward,
         )
         
         # Store the labeled atoms so we can recover them later
@@ -2005,7 +2005,7 @@ class KineticsFamily(Database):
         for entry in entries:
             if entry.item.isIsomorphic(reaction):
                 kineticsList.append([deepcopy(entry.data), entry, entry.item.isIsomorphic(reaction, eitherDirection=False)])
-        for kinetics, entry, isForward in kineticsList:
+        for kinetics, entry, is_forward in kineticsList:
             if kinetics is not None:
                 kinetics.comment += "Matched reaction {0} {1} in {2}\nThis reaction matched rate rule {3}".format(entry.index, 
                                                       entry.label, 
@@ -2036,7 +2036,7 @@ class KineticsFamily(Database):
         1. the kinetics
         2. the source - this will be `None` if from a template estimate
         3. the entry  - this will be `None` if from a template estimate
-        4. isForward a boolean denoting whether the matched entry is in the same
+        4. is_forward a boolean denoting whether the matched entry is in the same
            direction as the inputted reaction. This will always be True if using
            rates rules or group additivity. This can be `True` or `False` if using
            a depository
@@ -2053,11 +2053,11 @@ class KineticsFamily(Database):
         for depository in depositories:
             kineticsList0 = self.getKineticsFromDepository(depository, reaction, template, degeneracy)
             if len(kineticsList0) > 0 and not returnAllKinetics:
-                kinetics, entry, isForward = self.__selectBestKinetics(kineticsList0)
-                return kinetics, depository, entry, isForward
+                kinetics, entry, is_forward = self.__selectBestKinetics(kineticsList0)
+                return kinetics, depository, entry, is_forward
             else:
-                for kinetics, entry, isForward in kineticsList0:
-                    kineticsList.append([kinetics, depository, entry, isForward])
+                for kinetics, entry, is_forward in kineticsList0:
+                    kineticsList.append([kinetics, depository, entry, is_forward])
         
         # If estimator type of rate rules or group additivity is given, retrieve the kinetics. 
         if estimator:

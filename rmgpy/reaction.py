@@ -425,8 +425,8 @@ class Reaction:
         """
         if checkTemplateRxnProducts:
             try:
-                species1 = self.products if self.isForward else self.reactants
-                species2 = other.products if other.isForward else other.reactants
+                species1 = self.products if self.is_forward else self.reactants
+                species2 = other.products if other.is_forward else other.reactants
             except AttributeError:
                 raise TypeError('Only use checkTemplateRxnProducts flag for TemplateReactions.')
 
@@ -1116,7 +1116,7 @@ class Reaction:
         if isinstance(self.reactants[0], Species):
             return None
         # obtain species with all resonance isomers
-        if self.isForward:
+        if self.is_forward:
             ensure_species(self.reactants, resonance=reactant_resonance, keep_isomorphic=True)
             ensure_species(self.products, resonance=product_resonance, keep_isomorphic=True)
         else:
