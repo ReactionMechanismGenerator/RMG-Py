@@ -736,7 +736,7 @@ This example also includes the ``sensitivity_conditions`` attribute which invoke
     )
 
 The output of a sensitivity analysis is saved into a ``sensitivity`` folder in the output directory. A text file, named
-with the network label, delineates the semi-normalized sensitivity coefficients ``dln(r)/dE0`` in units of ``mol/J``
+with the network label, delineates the semi-normalized sensitivity coefficients ``dln(k)/dE0`` in units of ``mol/J``
 for all network reactions (both directions if reversible) at all requested conditions. Horizontal bar figures are
 automatically generated per network reaction, showing the semi-normalized sensitivity coefficients at all conditions.
 
