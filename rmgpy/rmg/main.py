@@ -456,6 +456,10 @@ class RMG(util.Subject):
             diffusionLimiter.enable(solventData, self.database.solvation)
             logging.info("Setting solvent data for {0}".format(self.solvent))
 
+            # Set solvent viscosity for reaction filtering
+            for reactionSystem in self.reactionSystems:
+                reactionSystem.viscosity = solventData.getSolventViscosity(reactionSystem.T.value_si)
+
         try:
             self.wallTime = kwargs['walltime']
         except KeyError:

@@ -625,12 +625,6 @@ cdef class ReactionSystem(DASx):
         sensitivityAbsoluteTolerance = simulatorSettings.sens_atol
         sensitivityRelativeTolerance = simulatorSettings.sens_rtol
         filterReactions = modelSettings.filterReactions
-        bimolecularThresholdRateConstant = modelSettings.filterThreshold
-        # Maximum trimolecular rate constants are approximately three
-        # orders of magnitude smaller (accounting for the unit
-        # conversion from m^3/mol/s to m^6/mol^2/s) based on
-        # extending the Smoluchowski equation to three molecules
-        trimolecularThresholdRateConstant = bimolecularThresholdRateConstant / 1e3
         maxNumObjsPerIter = modelSettings.maxNumObjsPerIter
 
         #if not pruning always terminate at max objects, otherwise only do so if terminateAtMaxObjects=True
@@ -913,10 +907,11 @@ cdef class ReactionSystem(DASx):
                     logging.info('Surface now has {0} Species and {1} Reactions'.format(len(self.surfaceSpeciesIndices),len(self.surfaceReactionIndices)))
                     
             if filterReactions:
-                # Calculate unimolecular and bimolecular thresholds for reaction
-                # Set the maximum unimolecular rate to be kB*T/h
-                unimolecularThresholdVal = toleranceMoveToCore * charRate / (2.08366122e10 * self.T.value_si)
-                # Set the maximum bi/trimolecular rate by using the user-defined rate constant threshold
+                # Calculate thresholds for reactions
+                (unimolecularThresholdRateConstant,
+                 bimolecularThresholdRateConstant,
+                 trimolecularThresholdRateConstant) = self.get_threshold_rate_constants(modelSettings)
+                unimolecularThresholdVal = toleranceMoveToCore * charRate / unimolecularThresholdRateConstant
                 bimolecularThresholdVal = toleranceMoveToCore * charRate / bimolecularThresholdRateConstant
                 trimolecularThresholdVal = toleranceMoveToCore * charRate / trimolecularThresholdRateConstant
                 for i in xrange(numCoreSpecies):

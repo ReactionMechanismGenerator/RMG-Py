@@ -54,6 +54,7 @@ cdef class LiquidReactor(ReactionSystem):
     cdef public ScalarQuantity P    
     cdef public double V
     cdef public bint constantVolume
+    cdef public double viscosity
     cdef public list constSPCNames
     cdef public list constSPCIndices
     cdef public dict initialConcentrations
@@ -61,8 +62,8 @@ cdef class LiquidReactor(ReactionSystem):
     cdef public int nSimsTerm
     cdef public dict sensConditions
     
-    def __init__(self, T, initialConcentrations, nSimsTerm=None, termination=None, sensitiveSpecies=None, sensitivityThreshold=1e-3, sensConditions=None, constSPCNames=None):
-        
+    def __init__(self, T, initialConcentrations, nSimsTerm=None, termination=None, sensitiveSpecies=None,
+                 sensitivityThreshold=1e-3, sensConditions=None, constSPCNames=None):
         ReactionSystem.__init__(self, termination, sensitiveSpecies, sensitivityThreshold)
         
         if type(T) != list:
@@ -74,6 +75,8 @@ cdef class LiquidReactor(ReactionSystem):
         self.initialConcentrations = initialConcentrations # should be passed in SI
         self.V = 0 # will be set from initialConcentrations in initializeModel
         self.constantVolume = True
+        self.viscosity = 0  # in Pa*s
+
         #Constant concentration attributes
         self.constSPCIndices=None
         self.constSPCNames = constSPCNames #store index of constant species 
@@ -152,6 +155,22 @@ cdef class LiquidReactor(ReactionSystem):
             if rxn.reversible:
                 self.Keq[j] = rxn.getEquilibriumConstant(self.T.value_si)
                 self.kb[j] = self.kf[j] / self.Keq[j]
+
+    def get_threshold_rate_constants(self, modelSettings):
+        """
+        Get the threshold rate constants for reaction filtering.
+
+        modelSettings is not used here, but is needed so that the method
+        matches the one in simpleReactor.
+        """
+        # Set the maximum unimolecular rate to be kB*T/h
+        unimolecular_threshold_rate_constant = 2.08366122e10 * self.T.value_si
+        # Set the maximum bi/trimolecular rates based on the Smoluchowski and Stokes-Einstein equations
+        bimolecular_threshold_rate_constant = 22.2 * self.T.value_si / self.viscosity
+        trimolecular_threshold_rate_constant = 0.11 * self.T.value_si / self.viscosity
+        return (unimolecular_threshold_rate_constant,
+                bimolecular_threshold_rate_constant,
+                trimolecular_threshold_rate_constant)
 
     def set_initial_conditions(self):
         """

@@ -242,7 +242,23 @@ cdef class SimpleReactor(ReactionSystem):
             if rxn.reversible:
                 self.Keq[j] = rxn.getEquilibriumConstant(self.T.value_si)
                 self.kb[j] = self.kf[j] / self.Keq[j]
-
+                
+    def get_threshold_rate_constants(self, modelSettings):
+        """
+        Get the threshold rate constants for reaction filtering.
+        """
+        # Set the maximum unimolecular rate to be kB*T/h
+        unimolecular_threshold_rate_constant = 2.08366122e10 * self.T.value_si
+        # Set the maximum bi/trimolecular rate by using the user-defined rate constant threshold
+        bimolecular_threshold_rate_constant = modelSettings.filterThreshold
+        # Maximum trimolecular rate constants are approximately three
+        # orders of magnitude smaller (accounting for the unit
+        # conversion from m^3/mol/s to m^6/mol^2/s) based on
+        # extending the Smoluchowski equation to three molecules
+        trimolecular_threshold_rate_constant = modelSettings.filterThreshold / 1e3
+        return (unimolecular_threshold_rate_constant,
+                bimolecular_threshold_rate_constant,
+                trimolecular_threshold_rate_constant)
 
     def set_colliders(self, coreReactions, edgeReactions, coreSpecies):
         """
