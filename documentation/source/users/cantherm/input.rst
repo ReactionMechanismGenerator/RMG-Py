@@ -621,7 +621,7 @@ in the following format, e.g.::
     )
 
 The output of a sensitivity analysis is saved into a ``sensitivity`` folder in the output directory. A text file, named
-with the reaction label, delineates the semi-normalized sensitivity coefficients ``dln(r)/dE0`` in units of ``mol/J``
+with the reaction label, delineates the semi-normalized sensitivity coefficients ``dln(k)/dE0`` in units of ``mol/J``
 at all requested conditions. A horizontal bar figure is automatically generated per reaction with subplots for both the
 forward and reverse direction at all conditions.
 

@@ -187,14 +187,14 @@ class KineticsSensitivity(object):
             ax[i][0].set_yticks(y_pos)
             ax[i][0].set_yticklabels(labels)
             ax[i][0].invert_yaxis()  # labels read top-to-bottom
-            ax[i][0].set_xlabel('dln(r)/dE0 (mol/J)')
+            ax[i][0].set_xlabel(r'Sensitivity: $\frac{\partial\:\ln{k}}{\partial\:E0}$, ($\frac{J}{mol}$)')
             ax[i][0].set_title('Forward, {0}'.format(condition))
             ax[i][0].set_xlim([min_sa, max_sa])
             ax[i][1].barh(y_pos, r_values, align='center', color='blue')
             ax[i][1].set_yticks(y_pos)
             ax[i][1].set_yticklabels(labels)
             ax[i][1].invert_yaxis()  # labels read top-to-bottom
-            ax[i][1].set_xlabel('dln(r)/dE0 (mol/J)')
+            ax[i][1].set_xlabel(r'Sensitivity: $\frac{\partial\:\ln{k}}{\partial\:E0}$, ($\frac{J}{mol}$)')
             ax[i][1].set_title('Reverse, {0}'.format(condition))
             ax[i][1].set_xlim([min_sa, max_sa])
             plt.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
@@ -365,7 +365,7 @@ class PDepSensitivity(object):
                 axis.set_yticks(y_pos)
                 axis.set_yticklabels(labels)
                 axis.invert_yaxis()  # labels read top-to-bottom
-                axis.set_xlabel('dln(r)/dE0 (mol/J)')
+                axis.set_xlabel(r'Sensitivity: $\frac{\partial\:\ln{k}}{\partial\:E0}$, ($\frac{J}{mol}$)')
                 # axis.ticklabel_format('sci')
                 axis.set_title('{0}, {1}'.format(condition[0], condition[1]))
                 axis.set_xlim([min_sa, max_sa])
