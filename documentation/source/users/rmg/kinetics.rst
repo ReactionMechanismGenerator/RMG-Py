@@ -21,30 +21,58 @@ In the case where multiple rules or training set reactions fall under the same
 template node, we use a user-defined rank to determine the priority of kinetic
 parameters
 
-+-------+------------------------------------------------------+
-|Rank   |Example methods                                       |
-+=======+======================================================+
-|Rank 1 |Experiment                                            |
-+-------+------------------------------------------------------+
-|Rank 2 |High level calculation: CCSD(T)-F12, MS-Tor, 2d rotors|
-+-------+------------------------------------------------------+
-|Rank 3 |Mid level calculation:  CBS-QB3, 1-d rotors           |
-+-------+------------------------------------------------------+
-|Rank 4 |Low level calculation: no rotor treatment             |
-+-------+------------------------------------------------------+
-|Rank 5 |User's estimates without supporting methods           |
-+-------+------------------------------------------------------+
-|Rank 10|Averaged value from child nodes' rate rules           |
-+-------+------------------------------------------------------+
-|Rank 0 |Untrusted method and never used in generation         |
-+-------+------------------------------------------------------+
++-------+--------------------------------------------------------------------------------------+
+|Rank   |Example methods                                                                       |
++=======+======================================================================================+
+|Rank 1 |Experiment/FCI                                                                        |
++-------+--------------------------------------------------------------------------------------+
+|Rank 2 |W4/HEAT with very good (2-d if necessary) rotors                                      |
++-------+--------------------------------------------------------------------------------------+
+|Rank 3 |CCSD(T)-F12/cc-PVnZ with n>2 or CCSD(T)-F12/CBS with good (2-d if necessary) rotors   |
++-------+--------------------------------------------------------------------------------------+
+|Rank 4 |CCSD(T)-F12/DZ, with good (2-d if necessary) rotors                                   |
++-------+--------------------------------------------------------------------------------------+
+|Rank 5 |CBS-QB3 with 1-d rotors                                                               |
++-------+--------------------------------------------------------------------------------------+
+|Rank 6 |Double-hybrid DFT with 1-D rotors                                                     |
++-------+--------------------------------------------------------------------------------------+
+|Rank 7 |Hybrid DFT (w/ dispersion) (rotors if necessary)                                      |
++-------+--------------------------------------------------------------------------------------+
+|Rank 8 |B3LYP & lower DFT (rotors if necessary)                                               |
++-------+--------------------------------------------------------------------------------------+
+|Rank 9 |Group Additivity                                                                      |
++-------+--------------------------------------------------------------------------------------+
+|Rank 10|Direct Estimate/Guess                                                                 |
++-------+--------------------------------------------------------------------------------------+
+|Rank 11|Average of Rates                                                                      |
++-------+--------------------------------------------------------------------------------------+
+|Rank 0 |General Estimate (Never used in generation)                                           |
++-------+--------------------------------------------------------------------------------------+
 
 The rank of 0 is assigned to kinetics that are generally default values for top level nodes 
 that we have little faith in.  It is never used in generation and its value will in fact be overriden
-by averages of its child nodes, which generates an averaged rate rule with rank 10.  
+by averages of its child nodes, which generates an averaged rate rule with rank 11.  
 
-Only non-zero rules are used in generation.  A rank of 1 is assigned to the most trustworthy kinetics, while a rank of 10 is considered very poor (ie. averaged kinetics).
+Only non-zero rules are used in generation.  A rank of 1 is assigned to the most trustworthy kinetics, while a rank of 10 is considered very poor.
 Thus, a rate rule of rank 3 will be given priority over a rate rule of rank 5.  
+
+Short Glossary:  
+
+FCI (Full Configuration Interaction):  Exact solution to Schrodinger equation within the chosen basis
+set and Born-Oppenheimer approximation; possible for about 12 electrons with reasonably sized basis set
+(cost grows factorially with number of electrons).  
+
+Wn (Weizmann-n):  Composite methods often with sub-kJ/mol accuracies; W1 is possible for about 9 heavy 
+atoms; W1 aims to reproduce CCSD(T)/CBS; W4 aims to reproduce CCSDTQ5/CBS.  
+
+HEAT (High Accuracy Extrapolated ab inito thermochemistry):  Sub-kJ/mol accuracies; essentially
+CCSDTQ with various corrections; similar in cost to Wn.  
+
+CBS (Complete Basis Set):  Typically obtained by extrapolating to the complete basis set limit,
+i.e., successive cc-pVDZ, cc-pVTZ, cc-pVQZ, etc. calculations with some extrapolation formula.  
+
+CCSD(T)-F12:  Coupled cluster with explicit electron correlation; chemical accuracy (1 kcal/mol)
+possible with double-zeta basis sets.  
 
 Kinetic Families
 ----------------
