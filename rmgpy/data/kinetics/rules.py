@@ -539,7 +539,7 @@ class KineticsRules(Database):
                 label = rootLabel,
                 item = rootTemplate,
                 data = kinetics,
-                rank = 10, # Indicates this is an averaged estimate
+                rank = 11, # Indicates this is an averaged estimate
             )
             self.entries[entry.label] = [entry]
             alreadyDone[rootLabel] = entry.data
