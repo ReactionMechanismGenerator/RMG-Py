@@ -573,7 +573,8 @@ class CoreEdgeReactionModel:
 
         return forward
 
-    def enlarge(self, newObject=None, reactEdge=False, unimolecularReact=None, bimolecularReact=None):
+    def enlarge(self, newObject=None, reactEdge=False,
+                unimolecularReact=None, bimolecularReact=None, trimolecularReact=None):
         """
         Enlarge a reaction model by processing the objects in the list `newObject`. 
         If `newObject` is a
@@ -671,7 +672,8 @@ class CoreEdgeReactionModel:
         else:
             # We are reacting the edge
 
-            rxns = reactAll(self.core.species, numOldCoreSpecies, unimolecularReact, bimolecularReact)
+            rxns = reactAll(self.core.species, numOldCoreSpecies,
+                            unimolecularReact, bimolecularReact, trimolecularReact=trimolecularReact)
             spcs = [self.retrieveNewSpecies(rxn) for rxn in rxns]
             
             for rxn, spc in zip(rxns, spcs):

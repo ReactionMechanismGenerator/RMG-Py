@@ -40,7 +40,7 @@ from rmgpy.kinetics import Arrhenius, ArrheniusEP, ThirdBody, Lindemann, Troe, \
                            Chebyshev, KineticsData
 from rmgpy.molecule import Molecule, Group
 from rmgpy.species import Species
-from rmgpy.reaction import Reaction
+from rmgpy.reaction import Reaction, isomorphic_species_lists
 from rmgpy.data.base import LogicNode
 
 from .family import  KineticsFamily
@@ -465,13 +465,38 @@ and immediately used in input files without any additional changes.
         # Check if the reactants are the same
         # If they refer to the same memory address, then make a deep copy so
         # they can be manipulated independently
-        same_reactants = False
+        same_reactants = 0
         if len(reactants) == 2:
             if reactants[0] is reactants[1]:
                 reactants[1] = reactants[1].copy(deep=True)
-                same_reactants = True
+                same_reactants = 2
             elif reactants[0].isIsomorphic(reactants[1]):
-                same_reactants = True
+                same_reactants = 2
+        elif len(reactants) == 3:
+            same_01 = reactants[0] is reactants[1]
+            same_02 = reactants[0] is reactants[2]
+            if same_01 and same_02:
+                same_reactants = 3
+                reactants[1] = reactants[1].copy(deep=True)
+                reactants[2] = reactants[2].copy(deep=True)
+            elif same_01:
+                same_reactants = 2
+                reactants[1] = reactants[1].copy(deep=True)
+            elif same_02:
+                same_reactants = 2
+                reactants[2] = reactants[2].copy(deep=True)
+            elif reactants[1] is reactants[2]:
+                same_reactants = 2
+                reactants[2] = reactants[2].copy(deep=True)
+            else:
+                same_01 = reactants[0].isIsomorphic(reactants[1])
+                same_02 = reactants[0].isIsomorphic(reactants[2])
+                if same_01 and same_02:
+                    same_reactants = 3
+                elif same_01 or same_02:
+                    same_reactants = 2
+                elif reactants[1].isIsomorphic(reactants[2]):
+                    same_reactants = 2
 
         # Label reactant atoms for proper degeneracy calculation (cannot be in tuple)
         if isinstance(reactants, tuple):
@@ -532,17 +557,6 @@ and immediately used in input files without any additional changes.
         of the reactants and products. For this reason you must also pass
         the `thermoDatabase` to use to generate the thermo data.
         """
-        
-        def matchSpeciesToMolecules(species, molecules):
-            if len(species) == len(molecules) == 1:
-                return species[0].isIsomorphic(molecules[0])
-            elif len(species) == len(molecules) == 2:
-                if species[0].isIsomorphic(molecules[0]) and species[1].isIsomorphic(molecules[1]):
-                    return True
-                elif species[0].isIsomorphic(molecules[1]) and species[1].isIsomorphic(molecules[0]):
-                    return True
-            return False
-
         reaction = None; template = None
 
         # Get the indicated reaction family
@@ -588,9 +602,11 @@ and immediately used in input files without any additional changes.
             # Remove from that set any reactions that don't produce the desired reactants and products
             forward = []; reverse = []
             for rxn in generatedReactions:
-                if matchSpeciesToMolecules(reaction.reactants, rxn.reactants) and matchSpeciesToMolecules(reaction.products, rxn.products):
+                if (isomorphic_species_lists(reaction.reactants, rxn.reactants)
+                        and isomorphic_species_lists(reaction.products, rxn.products)):
                     forward.append(rxn)
-                if matchSpeciesToMolecules(reaction.reactants, rxn.products) and matchSpeciesToMolecules(reaction.products, rxn.reactants):
+                if (isomorphic_species_lists(reaction.reactants, rxn.products)
+                        and isomorphic_species_lists(reaction.products, rxn.reactants)):
                     reverse.append(rxn)
 
             # We should now know whether the reaction is given in the forward or
@@ -608,7 +624,11 @@ and immediately used in input files without any additional changes.
                 kdata = numpy.zeros_like(Tdata)
                 for i in range(Tdata.shape[0]):
                     kdata[i] = entry.data.getRateCoefficient(Tdata[i]) / reaction.getEquilibriumConstant(Tdata[i])
-                kunits = 'm^3/(mol*s)' if len(reverse[0].reactants) == 2 else 's^-1'
+                try:
+                    kunits = ('s^-1', 'm^3/(mol*s)', 'm^6/(mol^2*s)')[len(reverse[0].reactants)-1]
+                except IndexError:
+                    raise NotImplementedError('Cannot reverse reactions with {} products'.format(
+                                              len(reverse[0].reactants)))
                 kinetics = Arrhenius().fitToData(Tdata, kdata, kunits, T0=1.0)
                 kinetics.Tmin = entry.data.Tmin
                 kinetics.Tmax = entry.data.Tmax

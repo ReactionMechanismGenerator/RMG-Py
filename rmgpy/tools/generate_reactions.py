@@ -91,10 +91,11 @@ def execute(rmg, **kwargs):
     Returns an RMG object.
     """
     rmg.initialize(**kwargs)
-    
+
     rmg.reactionModel.enlarge(reactEdge=True,
                               unimolecularReact=rmg.unimolecularReact,
-                              bimolecularReact=rmg.bimolecularReact)
+                              bimolecularReact=rmg.bimolecularReact,
+                              trimolecularReact=rmg.trimolecularReact)
     # Show all core and edge species and reactions in the output
     rmg.reactionModel.outputSpeciesList.extend(rmg.reactionModel.edge.species)
     rmg.reactionModel.outputReactionList.extend(rmg.reactionModel.edge.reactions)

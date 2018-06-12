@@ -396,11 +396,13 @@ the model does not converge with normal parameter settings.  See :ref:`Filtering
         toleranceMoveToCore=0.1,
         toleranceInterruptSimulation=0.1,
         filterReactions=True,
+        filterThreshold=5e8,
     )
 
 **Additional parameters:**
 
-- ``filterReactions``: set to ``True`` if reaction filtering is turned on.  By default it is set to False.
+- ``filterReactions``: set to ``True`` if reaction filtering is turned on. By default it is set to False.
+- ``filterThreshold``: click :ref:`here <filterReactionsTheory>` for more description about its effect. Default: ``5e8``
 
 .. _pruning:
 
@@ -737,6 +739,8 @@ Miscellaneous options::
         saveSimulationProfiles=True,
         verboseComments=False,
         saveEdgeSpecies=True,
+        keepIrreversible=True,
+        trimolecularProductReversible=False,
     )
 
 The ``name`` field is the name of any generated seed mechanisms
@@ -761,6 +765,8 @@ Setting ``verboseComments`` to ``True`` will make RMG generate chemkin files wit
 Setting ``saveEdgeSpecies`` to ``True`` will make RMG generate chemkin files of the edge reactions in addition to the core model in files such as ``chem_edge.inp`` and ``chem_edge_annotated.inp`` files located inside the ``chemkin`` folder.  These files will be helpful in viewing RMG's estimate for edge reactions and seeing if certain reactions one expects are actually in the edge or not.
 
 Setting ``keepIrreversible`` to ``True`` will make RMG import library reactions as is, whether they are reversible or irreversible in the library. Otherwise, if ``False`` (default value), RMG will force all library reactions to be reversible, and will assign the forward rate from the relevant library.
+
+Setting ``trimolecularProductReversible`` to ``False`` will not allow families with three products to react in the reverse direction. Default is ``True``.
 
 
 Species Constraints

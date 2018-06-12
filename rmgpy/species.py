@@ -85,11 +85,7 @@ class Species(object):
     `creationIteration`     Iteration which the species is created within the reaction mechanism generation algorithm
     ======================= ====================================================
 
-    note: :class:`rmg.model.Species` inherits from this class, and adds some extra methods.
     """
-
-    # these are class level attributes?
-
 
     def __init__(self, index=-1, label='', thermo=None, conformer=None, 
                  molecule=None, transportData=None, molecularWeight=None, 

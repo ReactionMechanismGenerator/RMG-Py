@@ -67,9 +67,11 @@ def saveRestartFile(path, rmg, delay=0):
     rmg_restart.reactionModel = rmg.reactionModel
     rmg_restart.unimolecularReact = rmg.unimolecularReact
     rmg_restart.bimolecularReact = rmg.bimolecularReact
+    rmg_restart.trimolecularReact = rmg.trimolecularReact
     if rmg.filterReactions:
         rmg_restart.unimolecularThreshold = rmg.unimolecularThreshold
         rmg_restart.bimolecularThreshold = rmg.bimolecularThreshold
+        rmg_restart.trimolecularThreshold = rmg.trimolecularThreshold
     
     f = open(path, 'wb')
     cPickle.dump(rmg_restart, f, cPickle.HIGHEST_PROTOCOL)
