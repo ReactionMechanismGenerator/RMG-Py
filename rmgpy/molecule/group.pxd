@@ -28,7 +28,7 @@
 from .graph cimport Vertex, Edge, Graph
 from .atomtype cimport AtomType
 cimport rmgpy.molecule.molecule as mol
-
+from cpython cimport bool
 ################################################################################
 
 cdef class GroupAtom(Vertex):
@@ -39,6 +39,9 @@ cdef class GroupAtom(Vertex):
     cdef public str label
     cdef public list lonePairs
     cdef public dict props
+
+    cdef public bool reg_dim_atm
+    cdef public bool reg_dim_u
 
     cpdef Vertex copy(self)
 
@@ -77,6 +80,7 @@ cdef class GroupAtom(Vertex):
 cdef class GroupBond(Edge):
 
     cdef public list order
+    cdef public bool reg_dim
 
     cpdef Edge copy(self)
 
@@ -162,7 +166,7 @@ cdef class Group(Graph):
 
     cpdef list findIsomorphism(self, Graph other, dict initialMap=?)
 
-    cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?) except -2
+    cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?, bint generateInitialMap=?) except -2
 
     cpdef list findSubgraphIsomorphisms(self, Graph other, dict initialMap=?)
     
