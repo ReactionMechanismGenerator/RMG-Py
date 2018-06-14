@@ -894,6 +894,8 @@ class KineticsFamily(Database):
         # Write reverse name
         if not self.ownReverse:
             f.write('reverse = "{0}"\n\n'.format(self.reverse))
+        
+        f.write('reversible = {0}\n'.format(self.reversible))
 
         # Write the recipe
         f.write('recipe(actions=[\n')
