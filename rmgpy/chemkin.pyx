@@ -1996,31 +1996,23 @@ def saveChemkin(reactionModel, path, verbose_path, dictionaryPath=None, transpor
     """
     Save a Chemkin file for the current model as well as any desired output
     species and reactions to `path`. If `saveEdgeSpecies` is True, then 
-    a chemkin file and dictionary file for the core and edge species and reactions
-    will be saved.  
+    a chemkin file and dictionary file for the core AND edge species and reactions
+    will be saved.  It also saves verbose versions of each file.
     """
-    
-    if saveEdgeSpecies == False:
-        speciesList = reactionModel.core.species + reactionModel.outputSpeciesList
-        rxnList = reactionModel.core.reactions + reactionModel.outputReactionList
-        saveChemkinFile(path, speciesList, rxnList, verbose = False, checkForDuplicates=False) # We should already have marked everything as duplicates by now        
-        logging.info('Saving current model to verbose Chemkin file...')
-        saveChemkinFile(verbose_path, speciesList, rxnList, verbose = True, checkForDuplicates=False)
-        if dictionaryPath:
-            saveSpeciesDictionary(dictionaryPath, speciesList)
-        if transportPath:
-            saveTransportFile(transportPath, speciesList)
-        
-    else:
+    if saveEdgeSpecies:
         speciesList = reactionModel.core.species + reactionModel.edge.species
         rxnList = reactionModel.core.reactions + reactionModel.edge.reactions
-        saveChemkinFile(path, speciesList, rxnList, verbose = False, checkForDuplicates=False)        
-        logging.info('Saving current core and edge to verbose Chemkin file...')
-        saveChemkinFile(verbose_path, speciesList, rxnList, verbose = True, checkForDuplicates=False)
-        if dictionaryPath:
-            saveSpeciesDictionary(dictionaryPath, speciesList)
-        if transportPath:
-            saveTransportFile(transportPath, speciesList)
+    else:
+        speciesList = reactionModel.core.species + reactionModel.outputSpeciesList
+        rxnList = reactionModel.core.reactions + reactionModel.outputReactionList
+
+    saveChemkinFile(path, speciesList, rxnList, verbose = False, checkForDuplicates=False) # We should already have marked everything as duplicates by now
+    logging.info('Saving verbose version of Chemkin file...')
+    saveChemkinFile(verbose_path, speciesList, rxnList, verbose=True, checkForDuplicates=False)
+    if dictionaryPath:
+        saveSpeciesDictionary(dictionaryPath, speciesList)
+    if transportPath:
+        saveTransportFile(transportPath, speciesList)
 
 def saveChemkinFiles(rmg):
     """
