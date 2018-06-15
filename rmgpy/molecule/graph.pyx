@@ -462,13 +462,17 @@ cdef class Graph:
             for vertex2 in vertex1.edges: count += vertex2.connectivity2
             vertex1.connectivity3 = count
 
-    cpdef sortVertices(self):
+    cpdef sortVertices(self, bint saveOrder=False):
         """
         Sort the vertices in the graph. This can make certain operations, e.g.
         the isomorphism functions, much more efficient.
         """
         cdef Vertex vertex
         cdef int index
+        
+        if saveOrder:
+            self.ordered_vertices = self.vertices[:]
+            
         # Only need to conduct sort if there is an invalid sorting label on any vertex
         for vertex in self.vertices:
             if vertex.sortingLabel < 0: break
@@ -480,37 +484,47 @@ cdef class Graph:
         self.vertices.sort(key=getVertexConnectivityValue)
         for index, vertex in enumerate(self.vertices):
             vertex.sortingLabel = index
-
-    cpdef bint isIsomorphic(self, Graph other, dict initialMap=None) except -2:
+    
+    cpdef restore_vertex_order(self):
+        """
+        reorder the vertices to what they were before sorting
+        if you saved the order
+        """
+        if not self.ordered_vertices or len(self.vertices) != len(self.ordered_vertices):
+            raise ValueError('Number of vertices has changed cannot restore original vertex order')
+        else:
+            self.vertices = self.ordered_vertices
+            
+    cpdef bint isIsomorphic(self, Graph other, dict initialMap=None, bint saveOrder=False) except -2:
         """
         Returns :data:`True` if two graphs are isomorphic and :data:`False`
         otherwise. Uses the VF2 algorithm of Vento and Foggia.
         """
-        return vf2.isIsomorphic(self, other, initialMap)
+        return vf2.isIsomorphic(self, other, initialMap, saveOrder=saveOrder)
 
-    cpdef list findIsomorphism(self, Graph other, dict initialMap=None):
+    cpdef list findIsomorphism(self, Graph other, dict initialMap=None, bint saveOrder=False):
         """
         Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
         otherwise, and the matching mapping.
         Uses the VF2 algorithm of Vento and Foggia.
         """
-        return vf2.findIsomorphism(self, other, initialMap)
+        return vf2.findIsomorphism(self, other, initialMap, saveOrder=saveOrder)
 
-    cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=None) except -2:
+    cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=None, bint saveOrder=False) except -2:
         """
         Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
         otherwise. Uses the VF2 algorithm of Vento and Foggia.
         """
-        return vf2.isSubgraphIsomorphic(self, other, initialMap)
+        return vf2.isSubgraphIsomorphic(self, other, initialMap, saveOrder=saveOrder)
 
-    cpdef list findSubgraphIsomorphisms(self, Graph other, dict initialMap=None):
+    cpdef list findSubgraphIsomorphisms(self, Graph other, dict initialMap=None, bint saveOrder=False):
         """
         Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
         otherwise. Also returns the lists all of valid mappings.
 
         Uses the VF2 algorithm of Vento and Foggia.
         """
-        return vf2.findSubgraphIsomorphisms(self, other, initialMap)
+        return vf2.findSubgraphIsomorphisms(self, other, initialMap, saveOrder=saveOrder)
 
     cpdef bint isCyclic(self) except -2:
         """
@@ -1032,22 +1046,26 @@ cdef class Graph:
         return longest_cycle
         
         
-    cpdef bint isMappingValid(self, Graph other, dict mapping) except -2:
+    cpdef bint isMappingValid(self, Graph other, dict mapping, bint equivalent=True) except -2:
         """
         Check that a proposed `mapping` of vertices from `self` to `other`
         is valid by checking that the vertices and edges involved in the
-        mapping are mutually equivalent.
+        mapping are mutually equivalent.  If equivalent is true it checks
+        if atoms and edges are equivalent, if false it checks if they 
+        are specific cases of each other.  
         """
         cdef Vertex vertex1, vertex2
         cdef list vertices1, vertices2
         cdef bint selfHasEdge, otherHasEdge
         cdef int i, j
         
-        # Check that the mapped pairs of vertices are equivalent
-        for vertex1, vertex2 in mapping.items():
-            if not vertex1.equivalent(vertex2):
-                return False
+        method = 'equivalent' if equivalent else 'isSpecificCaseOf'
         
+        # Check that the mapped pairs of vertices compare True
+        for vertex1, vertex2 in mapping.items():
+            if not getattr(vertex1,method)(vertex2):
+                return False
+            
         # Check that any edges connected mapped vertices are equivalent
         vertices1 = mapping.keys()
         vertices2 = mapping.values()
@@ -1059,12 +1077,13 @@ cdef class Graph:
                     # Both graphs have the edge, so we must check it for equivalence
                     edge1 = self.getEdge(vertices1[i], vertices1[j])
                     edge2 = other.getEdge(vertices2[i], vertices2[j])
-                    if not edge1.equivalent(edge2):
+                    if not getattr(edge1,method)(edge2):
                         return False
                 elif selfHasEdge or otherHasEdge:
                     # Only one of the graphs has the edge, so the mapping must be invalid
                     return False
-        
-        # If we're here then the vertices and edges are equivalent, so the
+            
+        # If we're here then the vertices and edges compare True, so the
         # mapping is valid
         return True
+        

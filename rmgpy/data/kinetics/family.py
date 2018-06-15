@@ -33,14 +33,18 @@ This module contains functionality for working with kinetics families.
 """
 
 import os.path
+import numpy as np
 import logging
 import codecs
 from copy import deepcopy
+from collections import OrderedDict
 
 from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStructures,\
                             getAllCombinations
 from rmgpy.reaction import Reaction, isomorphic_species_lists
+from rmgpy import settings
+from rmgpy.reaction import Reaction
 from rmgpy.kinetics import Arrhenius
 from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.molecule.resonance import generate_aromatic_resonance_structures
@@ -63,14 +67,14 @@ class TemplateReaction(Reaction):
     to attributes inherited from :class:`Reaction`, this class includes the
     following attributes:
 
-    =========== ========================= =====================================
-    Attribute   Type                      Description
-    =========== ========================= =====================================
-    `family`    ``str``                   The kinetics family that the reaction was created from.
-    `estimator` ``str``                   Whether the kinetics came from rate rules or group additivity.
-    `reverse`   :class:`TemplateReaction` The reverse reaction, for families that are their own reverse.
-    `isForward` ``bool``                  Whether the reaction was generated in the forward direction of the family.
-    =========== ========================= =====================================
+    ============ ========================= =====================================
+    Attribute    Type                      Description
+    ============ ========================= =====================================
+    `family`     ``str``                   The kinetics family that the reaction was created from.
+    `estimator`  ``str``                   Whether the kinetics came from rate rules or group additivity.
+    `reverse`    :class:`TemplateReaction` The reverse reaction, for families that are their own reverse.
+    `is_forward`  ``bool``                 Whether the reaction was generated in the forward direction of the family.
+    ============ ========================= =====================================
     """
 
     def __init__(self,
@@ -88,7 +92,7 @@ class TemplateReaction(Reaction):
                 template=None,
                 estimator=None,
                 reverse=None,
-                isForward=None,
+                is_forward=None,
                 ):
         Reaction.__init__(self,
                           index=index,
@@ -100,13 +104,13 @@ class TemplateReaction(Reaction):
                           transitionState=transitionState,
                           duplicate=duplicate,
                           degeneracy=degeneracy,
-                          pairs=pairs
+                          pairs=pairs,
+                          is_forward=is_forward,
                           )
         self.family = family
         self.template = template
         self.estimator = estimator
         self.reverse = reverse
-        self.isForward = isForward
 
     def __reduce__(self):
         """
@@ -126,7 +130,7 @@ class TemplateReaction(Reaction):
                                    self.template,
                                    self.estimator,
                                    self.reverse,
-                                   self.isForward
+                                   self.is_forward
                                    ))
 
     def __repr__(self):
@@ -187,7 +191,7 @@ class TemplateReaction(Reaction):
         other.template = self.template
         other.estimator = self.estimator
         other.reverse = self.reverse
-        other.isForward = self.isForward
+        other.is_forward = self.is_forward
         
         return other
 
@@ -1047,6 +1051,7 @@ class KineticsFamily(Database):
             logging.info('Must be because you turned off the training depository.')
             return
         
+        tentries = depository.entries
         
         index = max([e.index for e in self.rules.getEntries()] or [0]) + 1
         
@@ -1061,6 +1066,8 @@ class KineticsFamily(Database):
                 # this family; save them so we can try this
                 reverse_entries.append(entry)
                 continue
+            
+            tentries[entry.index].item.is_forward = True
             
             assert isinstance(entry.data, Arrhenius)
             data = deepcopy(entry.data)
@@ -1089,6 +1096,8 @@ class KineticsFamily(Database):
         # Process the entries that are stored in the reverse direction of the
         # family definition
         for entry in reverse_entries:
+            
+            tentries[entry.index].item.is_forward = False
             
             assert isinstance(entry.data, Arrhenius)
             data = deepcopy(entry.data)
@@ -1419,7 +1428,7 @@ class KineticsFamily(Database):
             return True
         return False
 
-    def __createReaction(self, reactants, products, isForward):
+    def __createReaction(self, reactants, products, is_forward):
         """
         Create and return a new :class:`Reaction` object containing the
         provided `reactants` and `products` as lists of :class:`Molecule`
@@ -1432,12 +1441,12 @@ class KineticsFamily(Database):
 
         # Create and return template reaction object
         reaction = TemplateReaction(
-            reactants = reactants if isForward else products,
-            products = products if isForward else reactants,
+            reactants = reactants if is_forward else products,
+            products = products if is_forward else reactants,
             degeneracy = 1,
             reversible = self.reversible,
             family = self.label,
-            isForward = isForward,
+            is_forward = is_forward,
         )
         
         # Store the labeled atoms so we can recover them later
@@ -2001,7 +2010,7 @@ class KineticsFamily(Database):
         for entry in entries:
             if entry.item.isIsomorphic(reaction):
                 kineticsList.append([deepcopy(entry.data), entry, entry.item.isIsomorphic(reaction, eitherDirection=False)])
-        for kinetics, entry, isForward in kineticsList:
+        for kinetics, entry, is_forward in kineticsList:
             if kinetics is not None:
                 kinetics.comment += "Matched reaction {0} {1} in {2}\nThis reaction matched rate rule {3}".format(entry.index, 
                                                       entry.label, 
@@ -2032,7 +2041,7 @@ class KineticsFamily(Database):
         1. the kinetics
         2. the source - this will be `None` if from a template estimate
         3. the entry  - this will be `None` if from a template estimate
-        4. isForward a boolean denoting whether the matched entry is in the same
+        4. is_forward a boolean denoting whether the matched entry is in the same
            direction as the inputted reaction. This will always be True if using
            rates rules or group additivity. This can be `True` or `False` if using
            a depository
@@ -2049,11 +2058,11 @@ class KineticsFamily(Database):
         for depository in depositories:
             kineticsList0 = self.getKineticsFromDepository(depository, reaction, template, degeneracy)
             if len(kineticsList0) > 0 and not returnAllKinetics:
-                kinetics, entry, isForward = self.__selectBestKinetics(kineticsList0)
-                return kinetics, depository, entry, isForward
+                kinetics, entry, is_forward = self.__selectBestKinetics(kineticsList0)
+                return kinetics, depository, entry, is_forward
             else:
-                for kinetics, entry, isForward in kineticsList0:
-                    kineticsList.append([kinetics, depository, entry, isForward])
+                for kinetics, entry, is_forward in kineticsList0:
+                    kineticsList.append([kinetics, depository, entry, is_forward])
         
         # If estimator type of rate rules or group additivity is given, retrieve the kinetics. 
         if estimator:
@@ -2294,7 +2303,454 @@ class KineticsFamily(Database):
                 return depository
         else:
             raise DatabaseError('Could not find training depository in family {0}.'.format(self.label))
+
+            
+    def addEntry(self,parent,grp,name):
+        """
+        Adds a group entry with parent parent
+        group structure grp
+        and group name name
+        """
+        ind = len(self.groups.entries)-1
+        entry = Entry(index=ind,label=name,item=grp,parent=parent)
+        self.groups.entries[name] = entry
+        self.rules.entries[name] = []
+        if entry.parent:
+            entry.parent.children.append(entry)
+    
+    def getEntriesReactions(self,template):
+        """
+        retrieves all training reactions whose kinetics
+        are associated with the entry template
+        """
+        entries = self.rules.entries[template]
+        tentries = self.getTrainingDepository().entries
+        rxnEntries = []
+        for entry in entries:
+            rxnEntries.append(tentries[entry.index].item)
+        return rxnEntries
+    
+    def getTemplateKinetics(self,template):
+        """
+        retrives a list of all the kinetics objects
+        associated with a given template
+        """
+        return [entry.data for entry in self.rules.entries[template]]
+    
+    def splitReactions(self,rxns,oldlabel,newgrp):
+        """
+        divides the reactions in rxns between the new
+        group structure newgrp and the old structure with 
+        label oldlabel
+        returns a list of reactions associated with the new group
+        the list of reactions associated with the old group
+        and a list of the indices of all of the reactions
+        associated with the new group
+        """
+        new = []
+        comp = []
+        newInds = []
+        kinetics = self.getTemplateKinetics(oldlabel)
         
+        for i,rxn in enumerate(rxns):
+            reactants = rxn.reactants if rxn.is_forward else rxn.products
+            rmol = reactants[0].molecule[0]
+            for r in reactants[1:]:
+                rmol.merge(r.molecule[0])
+            
+            if rmol.isSubgraphIsomorphic(newgrp,generateInitialMap=True, saveOrder=True):
+                new.append(kinetics[i])
+                newInds.append(i)
+            else:
+                comp.append(kinetics[i])
+        
+        return new,comp,newInds    
+    
+    def evalExt(self,parent,ext,extname,obj=None,T=1000.0):
+        """
+        evaluates the objective function obj
+        for the extension ext with name extname to the parent entry parent
+        """
+        rxns = self.getEntriesReactions(parent.label)
+        new,old,newInds = self.splitReactions(rxns,parent.label,ext)
+        if len(new) == 0:
+            return np.inf,False
+        elif len(old) == 0:
+            return np.inf,True
+        else:
+            if obj:
+                ob,boo = getObjectiveFunction(new,old,obj,T=T)
+            else:
+                ob,boo = getObjectiveFunction(new,old,T=T)
+            return ob,True
+    
+    def getExtensionEdge(self,parent,obj,T):
+        """
+        finds the set of all extension groups to parent such that
+        1) the extension group divides the set of reactions under parent
+        2) No generalization of the extension group divides the set of reactions under parent
+                    
+        We find this by generating all possible extensions of the initial group.  Extensions that split reactions are added
+        to the list.  All extensions that do not split reactions and do not create bonds are ignored 
+        (although those that match every reaction are labeled so we don't search them twice).  Those that match
+        all reactions and involve bond creation undergo this process again.  
+        
+        Principle:  Say you have two elementary changes to a group ext1 and ext2 if applying ext1 and ext2 results in a 
+        split at least one of ext1 and ext2 must result in a split
+        
+        Speed of this algorithm relies heavily on searching non bond creation dimensions once.
+        """
+        outExts = [[]]
+        grps = [parent.item]
+        names = [parent.label]
+        atmInds = [None]
+        
+        while grps != []:
+            grp = grps[-1]
+            
+            if atmInds[-1]:
+                if len(atmInds[-1]) == 1:
+                    exts = grp.getExtensions(basename=names[-1],atmInd=atmInds[-1][0])
+                elif len(atmInds[-1]) == 2:
+                    exts = grp.getExtensions(basename=names[-1],atmInd=atmInds[-1][0],atmInd2=atmInds[-1][1])
+            else:
+                exts = grp.getExtensions(basename=names[-1])
+            
+            regDict = dict()
+            extInds = []
+            for i,(grp2,grpc,name,typ,indc) in enumerate(exts):
+
+                if typ != 'intNewBondExt' and typ != 'extNewBondExt' and (typ,indc) not in regDict.keys():
+                    regDict[(typ,indc)] = ([],[])
+                val,boo = self.evalExt(parent,grp2,name,obj,T)
+                    
+                if val != np.inf:
+                    outExts[-1].append(exts[i]) #this extension splits reactions (optimization dim)
+                    if typ == 'atomExt':
+                        regDict[(typ,indc)][0].extend(grp2.atoms[indc[0]].atomType)
+                    elif typ == 'elExt':
+                        regDict[(typ,indc)][0].extend(grp2.atoms[indc[0]].radicalElectrons)
+                    elif typ == 'bondExt':
+                        regDict[(typ,indc)][0].extend(grp2.getBond(grp2.atoms[indc[0]],grp2.atoms[indc[1]]).order)
+                        
+                elif boo: #this extension matches all reactions (regularization dim)
+                    if typ == 'intNewBondExt' or typ == 'extNewBondExt':
+                        extInds.append(i)  #these are bond formation extensions, we want to expand these until we get splits 
+                    elif typ == 'atomExt':
+                        regDict[(typ,indc)][0].extend(grp2.atoms[indc[0]].atomType)
+                    elif typ == 'elExt':
+                        regDict[(typ,indc)][0].extend(grp2.atoms[indc[0]].radicalElectrons)
+                    elif typ == 'bondExt':
+                        regDict[(typ,indc)][0].extend(grp2.getBond(grp2.atoms[indc[0]],grp2.atoms[indc[1]]).order)
+
+                else:                    
+                    #this extension matches no reactions
+                    if typ == 'atomExt':
+                        regDict[(typ,indc)][1].extend(grp2.atoms[indc[0]].atomType)
+                    elif typ == 'elExt':
+                        regDict[(typ,indc)][1].extend(grp2.atoms[indc[0]].radicalElectrons)
+                    elif typ == 'bondExt':
+                        regDict[(typ,indc)][1].extend(grp2.getBond(grp2.atoms[indc[0]],grp2.atoms[indc[1]]).order)
+            
+                    
+            for typr,indcr in regDict.keys(): #have to label the regularization dimensions in all relevant groups
+                regVal = regDict[(typr,indcr)][0]
+                #parent
+                if typr != 'intNewBondExt' and typr != 'extNewBondExt': #these dimensions should be regularized
+                    if typr == 'atomExt':
+                        grp.atoms[indcr[0]].reg_dim_atm = regVal
+                    elif typr == 'elExt':
+                        grp.atoms[indcr[0]].reg_dim_u = regVal
+                    elif typr == 'bondExt':
+                        atms = grp.atoms
+                        bd = grp.getBond(atms[indcr[0]],atms[indcr[1]])
+                        bd.reg_dim = regVal
+                            
+                #extensions being sent out
+                if typr != 'intNewBondExt' and typr != 'extNewBondExt': #these dimensions should be regularized
+                    for grp2,grpc,name,typ,indc in outExts[-1]: #returned groups
+                        if typr == 'atomExt':
+                            grp2.atoms[indcr[0]].reg_dim_atm = regVal
+                            if grpc:
+                                grpc.atoms[indcr[0]].reg_dim_atm = regVal
+                        elif typr == 'elExt':
+                            grp2.atoms[indcr[0]].reg_dim_u = regVal
+                            if grpc:
+                                grpc.atoms[indcr[0]].reg_dim_u = regVal
+                        elif typr == 'bondExt':
+                            atms = grp2.atoms
+                            bd = grp2.getBond(atms[indcr[0]],atms[indcr[1]])
+                            bd.reg_dim = regVal
+                            if grpc:
+                                atms = grpc.atoms
+                                bd = grp2.getBond(atms[indcr[0]],atms[indcr[1]])
+                                bd.reg_dim = regVal
+            
+            #extensions being expanded
+            for typr,indcr in regDict.keys(): #have to label the regularization dimensions in all relevant groups
+                regVal = regDict[(typr,indcr)][0]
+                if typr != 'intNewBondExt' and typr != 'extNewBondExt': #these dimensions should be regularized
+                    for ind2 in extInds: #groups for expansion
+                        grp2,grpc,name,typ,indc = exts[ind2]
+                        if typr == 'atomExt':
+                            grp2.atoms[indcr[0]].reg_dim_atm = regVal
+                            if grpc:
+                                grpc.atoms[indcr[0]].reg_dim_atm = regVal
+                        elif typr == 'elExt':
+                            grp2.atoms[indcr[0]].reg_dim_u = regVal
+                            if grpc:
+                                grpc.atoms[indcr[0]].reg_dim_u = regVal
+                        elif typr == 'bondExt':
+                            atms = grp2.atoms
+                            bd = grp2.getBond(atms[indcr[0]],atms[indcr[1]])
+                            bd.reg_dim = regVal
+                            if grpc:
+                                atms = grpc.atoms
+                                bd = grp2.getBond(atms[indcr[0]],atms[indcr[1]])
+                                bd.reg_dim = regVal
+            
+            outExts.append([])
+            grps.pop()
+            names.pop()
+            atmInds.pop()
+            
+            for ind in extInds: #collect the groups to be expanded
+                grpr,grpcr,namer,typr,indcr = exts[ind]
+                grps.append(grpr)
+                names.append(namer)
+                atmInds.append(indcr)
+        
+        out = []
+        for x in outExts: #compile all of the valid extensions together, may be some duplicates here, but I don't think it's currently worth identifying them
+            out.extend(x)
+        
+        return out
+            
+                    
+    def extendNode(self,parent,thermoDatabase=None,obj=None,T=1000.0):
+        """
+        Constructs an extension to the group parent based on evaluation 
+        of the objective function obj
+        """
+        
+        exts = self.getExtensionEdge(parent,obj=obj,T=T)
+        
+        vals = []
+        for grp,grpc,name,typ,einds in exts:
+            val,boo = self.evalExt(parent,grp,name,obj,T)
+            vals.append(val) 
+            
+        min_val = min(vals)
+        
+        min_ind = vals.index(min_val)
+        
+        ext = exts[min_ind]
+        
+        extname = ext[2]
+        
+        self.addEntry(parent,ext[0],extname)
+        
+        complement = not ext[1] is None
+        
+        if complement:
+            frags = extname.split('_')
+            frags[-1] = 'N-'+frags[-1]
+            cextname = ''
+            for k in frags:
+                cextname += k
+                cextname += '_'
+            cextname = cextname[:-1]
+    
+            self.addEntry(parent,ext[1],cextname)
+        
+        rxns = self.getEntriesReactions(parent.label)
+        new,left,newInds = self.splitReactions(rxns,parent.label,ext[0])
+        
+        compEntries = []
+        newEntries = []
+
+        for i,entry in enumerate(self.rules.entries[parent.label]):
+            if i in newInds:
+                entry.label = extname
+                newEntries.append(entry)
+            else:
+                if complement:
+                    entry.label = cextname
+                compEntries.append(entry)
+        
+        self.rules.entries[extname] = newEntries
+        
+        if complement:
+            self.rules.entries[parent.label] = []
+            self.rules.entries[cextname] = compEntries
+        else:
+            self.rules.entries[parent.label] = compEntries
+            
+        return
+    
+    def generateTree(self,obj=None,thermoDatabase=None,T=1000.0):
+        """
+        Generate a tree by greedy optimization based on the objective function obj
+        the optimization is done by iterating through every group and if the group has
+        more than one training reaction associated with it a set of potential more specific extensions 
+        are generated and the extension that optimizing the objective function combination is chosen 
+        and the iteration starts over at the beginning
+        
+        additionally the tree structure is simplified on the fly by removing groups that have no kinetics data associated
+        if their parent has no kinetics data associated and they either have only one child or
+        have two children one of which has no kinetics data and no children
+        (its parent becomes the parent of its only relevant child node)
+        """
+        boo = True #if the for loop doesn't break becomes false and the while loop terminates
+        while boo:
+            for entry in self.groups.entries.itervalues():
+                if not isinstance(entry.item, Group): #skip logic nodes
+                    continue
+                if entry.index != -1 and len(self.rules.entries[entry.label])>1:
+                    self.extendNode(entry,thermoDatabase,obj,T)
+                    break
+                elif entry.parent is None or entry.parent.parent is None or not isinstance(entry.parent.item,Group) or not isinstance(entry.parent.parent.item,Group):
+                    pass
+                elif len(self.rules.entries[entry.parent.label])>0 or len(self.rules.entries[entry.label])>0:
+                    pass
+                elif len(entry.parent.children) == 1:
+                    label = entry.parent.label
+                    entry.parent.parent.children.remove(entry.parent)
+                    entry.parent = entry.parent.parent
+                    entry.parent.children.append(entry)
+                    del self.groups.entries[label]   
+                    del self.rules.entries[label]
+                    break
+                elif len(entry.parent.children) == 2: 
+                    child = [c for c in entry.parent.children if c != entry][0]
+                    if len(self.rules.entries[child.label]) == 0 and len(child.children) == 0:
+                        label = entry.parent.label
+                        entry.parent.parent.children.remove(entry.parent)
+                        entry.parent.parent.children.append(entry)
+                        entry.parent = entry.parent.parent
+                        del self.groups.entries[label]   
+                        del self.rules.entries[label]
+                        clabel = child.label
+                        del self.groups.entries[clabel]
+                        del self.rules.entries[clabel]
+                        break
+            else:
+                boo = False
+            
+            #fix indicies
+            iters = 0
+            for entry in self.groups.entries.itervalues():
+                if entry.index != -1:
+                    entry.index = iters
+                    iters += 1
+        
+        return
+    
+    def simpleRegularization(self, node):
+        """
+        Simplest regularization algorithm
+        All nodes are made as specific as their descendant reactions
+        Training reactions are assumed to not generalize 
+        For example if an particular atom at a node is Oxygen for all of its
+        descendent reactions a reaction where it is Sulfur will never hit that node
+        unless it is the top node even if the tree did not split on the identity 
+        of that atom
+        """
+        grp = node.item
+        
+        if isinstance(node.item,Group):
+            for i,atm1 in enumerate(grp.atoms):
+                if atm1.reg_dim_atm != [] and set(atm1.reg_dim_atm) != set(atm1.atomType):
+                    self.extendRegularization(node,[i],atm1.reg_dim_atm,'atomtype')
+                if atm1.reg_dim_u != [] and set(atm1.reg_dim_u) != set(atm1.radicalElectrons):
+                    self.extendRegularization(node,[i],atm1.reg_dim_u,'unpaired')
+                for j,atm2 in enumerate(grp.atoms[i:]):
+                    if grp.hasBond(atm1,atm2):
+                        bd = grp.getBond(atm1,atm2)
+                        if bd.reg_dim != [] and set(bd.reg_dim) != set(bd.order):
+                            self.extendRegularization(node,[i,j],bd.reg_dim,'bond')    
+        
+        for child in node.children:
+            self.simpleRegularization(child)
+            
+    def extendRegularization(self, node, inds, regs, typ):
+        """
+        Applies a regularization down the tree from a given parent node
+        """
+        grp = node.item
+        
+        if isinstance(grp,Group):
+            if typ == 'atomtype':
+                grp.atoms[inds[0]].atomType = list(set(grp.atoms[inds[0]].atomType) & set(regs))
+                for child in node.children:
+                    self.extendRegularization(child,inds,regs,typ)
+            elif typ == 'unpaired':
+                grp.atoms[inds[0]].radicalElectrons = list(set(grp.atoms[inds[0]].radicalElectrons) & set(regs))
+                for child in node.children:
+                    self.extendRegularization(child,inds,regs,typ)
+            elif typ == 'bond':
+                bd = grp.getBond(grp.atoms[inds[0]],grp.atoms[inds[1]])
+                bd.order = list(set(bd.order) & set(regs))
+                for child in node.children:
+                    self.extendRegularization(child,inds,regs,typ)
+            else:
+                raise ValueError('regularization type of {0} is unimplemented'.format(typ))
+    
+    def regularize(self, regularization=simpleRegularization):
+        """
+        Regularizes the tree according to the regularization function regularization
+        """
+        regularization(self,self.getRootTemplate()[0])
+        
+    def prepareTreeForGeneration(self,thermoDatabase=None):
+        """
+        clears groups and rules in the tree, generates an appropriate
+        root group to start from and then reads training reactions
+        Note this only works if a single top node (not a logic node)
+        can be generated
+        """
+        #find the starting node
+        grp = None
+        
+        rtmps = self.getRootTemplate()
+        
+        if not isinstance(rtmps[0].item,Group):
+            raise ValueError('each tree top node must be a group not a logic node to prepare the tree automatically')
+        
+        for ent in rtmps:
+            if grp is None:
+                grp = ent.item
+            else:
+                grp.mergeGroups(ent.item)
+        
+        
+        #clear everything
+        self.groups.entries = {x.label:x for x in self.groups.entries.itervalues() if x.index == -1}
+        self.rules.entries = OrderedDict()
+        
+        #add the starting node
+        self.addEntry(None,grp,'Root')
+        self.groups.top = [self.groups.entries['Root']]
+        self.forwardTemplate.reactants = [self.groups.entries['Root']]
+
+        #fill with training reactions
+        self.addKineticsRulesFromTrainingSet(thermoDatabase)
+        
+        return
+    
+    def saveGeneratedTree(self,path=None):
+        """
+        clears the rules and saves the family to its 
+        current location in database
+        """
+        if path is None:
+            path = settings['database.directory']
+            path = os.path.join(path,'kinetics','families',self.label)
+        
+        self.rules.entries = OrderedDict() #have to clear the new rules made
+        
+        self.save(path)
+    
     def retrieveOriginalEntry(self, templateLabel):
         """
         Retrieves the original entry, be it a rule or training reaction, given
@@ -2533,3 +2989,25 @@ class KineticsFamily(Database):
             allGroups = all([isinstance(entry.item, Group) for entry in groupList])
 
         return groupList
+
+def informationGain(ks1,ks2):
+    """
+    calculates the information gain as the sum of the products of the standard deviations at each
+    node and the number of reactions at that node
+    """
+    return len(ks1)*np.std(ks1)+len(ks2)*np.std(ks2)
+ 
+def getObjectiveFunction(kinetics1,kinetics2,obj=informationGain,T=1000.0):
+    """
+    Returns the value of four potential objective functions to minimize
+    Uncertainty = N1*std(Ln(k))_1 + N1*std(Ln(k))_1
+    Mean difference: -abs(mean(Ln(k))_1-mean(Ln(k))_2)
+    Error using mean: Err_1 + Err_2
+    Split: abs(N1-N2)
+    """
+    ks1 = np.array([np.log(k.getRateCoefficient(T)) for k in kinetics1])
+    ks2 = np.array([np.log(k.getRateCoefficient(T)) for k in kinetics2])
+    N1 = len(ks1)
+    
+    return obj(ks1,ks2), N1 == 0
+
