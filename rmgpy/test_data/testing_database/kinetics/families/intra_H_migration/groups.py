@@ -9,6 +9,8 @@ longDesc = u"""
 
 template(reactants=["RnH"], products=["RnH"], ownReverse=True)
 
+reversible = True
+
 recipe(actions=[
     ['BREAK_BOND', '*2', 1, '*3'],
     ['FORM_BOND', '*1', 1, '*3'],
