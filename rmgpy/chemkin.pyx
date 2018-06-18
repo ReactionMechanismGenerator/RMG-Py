@@ -1961,6 +1961,53 @@ def saveChemkinFile(path, species, reactions, verbose = True, checkForDuplicates
     f.close()
     logging.info("Chemkin file contains {0} reactions.".format(__chemkin_reaction_count))
     __chemkin_reaction_count = None
+    
+def saveChemkinSurfaceFile(path, species, reactions, verbose = True, checkForDuplicates=True):
+    """
+    Save a Chemkin *surface* input file to `path` on disk containing the provided lists
+    of `species` and `reactions`.
+    If checkForDuplicates is False then we don't check for unlabeled duplicate reactions,
+    thus saving time (eg. if you are sure you've already labeled them as duplicate).
+    """
+    # Check for duplicate
+    if checkForDuplicates:
+        markDuplicateReactions(reactions)
+    
+    f = open(path, 'w')
+    
+    sorted_species = sorted(species, key=lambda species: species.index)
+
+    # Species section
+    f.write('SITE\n')
+    # todo: add site name and surface site density
+    for spec in sorted_species:
+        label = getSpeciesIdentifier(spec)
+        # todo: add /2/ to bidentate species etc.
+        if verbose:
+            f.write('    {0!s:<16}    ! {1}\n'.format(label, str(spec)))
+        else:
+            f.write('    {0!s:<16}\n'.format(label))
+    f.write('END\n\n\n\n')
+
+    # Thermodynamics section
+    f.write('THERM ALL\n')
+    f.write('    300.000  1000.000  5000.000\n\n')
+    for spec in sorted_species:
+        f.write(writeThermoEntry(spec, verbose=verbose))
+        f.write('\n')
+    f.write('END\n\n\n\n')
+
+    # Reactions section
+    f.write('REACTIONS    KCAL/MOLE   MOLES\n\n')
+    global __chemkin_reaction_count
+    __chemkin_reaction_count = 0
+    for rxn in reactions:
+        f.write(writeKineticsEntry(rxn, speciesList=species, verbose=verbose))
+        f.write('\n')
+    f.write('END\n\n')
+    f.close()
+    logging.info("Chemkin file contains {0} reactions.".format(__chemkin_reaction_count))
+    __chemkin_reaction_count = None
 
 def saveJavaKineticsLibrary(path, species, reactions):
     """
@@ -2018,9 +2065,42 @@ def saveChemkin(reactionModel, path, verbose_path, dictionaryPath=None, transpor
         speciesList = reactionModel.core.species + reactionModel.outputSpeciesList
         rxnList = reactionModel.core.reactions + reactionModel.outputReactionList
 
-    saveChemkinFile(path, speciesList, rxnList, verbose = False, checkForDuplicates=False) # We should already have marked everything as duplicates by now
-    logging.info('Saving verbose version of Chemkin file...')
-    saveChemkinFile(verbose_path, speciesList, rxnList, verbose=True, checkForDuplicates=False)
+    if any([s.containsSurfaceSite() for s in reactionModel.species]):
+        # it's a surface model
+        root, ext = os.path.splitext(path)
+        gas_path = root + '-gas' + ext
+        surface_path = root + '-surface' + ext
+        root, ext = os.path.splitext(verbose_path)
+        gas_verbose_path = root + '-gas' + ext
+        surface_verbose_path = root + '-surface' + ext
+
+        surface_speciesList = []
+        gas_speciesList = []
+        surface_rxnList = []
+        gas_rxnList = []
+
+        for s in speciesList:
+            if s.containsSurfaceSite():
+                surface_speciesList.append(s)
+            else:
+                gas_speciesList.append(s)
+        for r in rxnList:
+            if r.isSurfaceReaction():
+                surface_rxnList.append(r)
+            else:
+                gas_rxnList.append(r)
+
+        saveChemkinFile(gas_path, gas_speciesList, gas_rxnList, verbose=False, checkForDuplicates=False) # We should already have marked everything as duplicates by now
+        saveChemkinSurfaceFile(surface_path, surface_speciesList, surface_rxnList, verbose=False, checkForDuplicates=False) # We should already have marked everything as duplicates by now
+        logging.info('Saving verbose version of Chemkin files...')
+        saveChemkinFile(gas_path, gas_speciesList, gas_rxnList, verbose=True, checkForDuplicates=False) # We should already have marked everything as duplicates by now
+        saveChemkinSurfaceFile(surface_path, surface_speciesList, surface_rxnList, verbose=True, checkForDuplicates=False) # We should already have marked everything as duplicates by now
+
+    else:
+        # Gas phase only
+        saveChemkinFile(path, speciesList, rxnList, verbose = False, checkForDuplicates=False) # We should already have marked everything as duplicates by now
+        logging.info('Saving verbose version of Chemkin file...')
+        saveChemkinFile(verbose_path, speciesList, rxnList, verbose=True, checkForDuplicates=False)
     if dictionaryPath:
         saveSpeciesDictionary(dictionaryPath, speciesList)
     if transportPath:
