@@ -55,4 +55,5 @@ options(
     generatePlots=False,
     saveEdgeSpecies=True,
     saveSimulationProfiles=True,
+    verboseComments=True,
 )
