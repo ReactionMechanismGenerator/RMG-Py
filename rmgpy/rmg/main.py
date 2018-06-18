@@ -856,13 +856,19 @@ class RMG(util.Subject):
                 plot_sensitivity(self.outputDirectory, index, reactionSystem.sensitiveSpecies)
 
         # generate Cantera files chem.cti & chem_annotated.cti in a designated `cantera` output folder
-        try:
+
+        if any([s.containsSurfaceSite() for s in self.reactionModel.core.species]):
+            self.generateCanteraFiles(os.path.join(self.outputDirectory, 'chemkin', 'chem-gas.inp'))
+            self.generateCanteraFiles(os.path.join(self.outputDirectory, 'chemkin', 'chem-surface.inp'))
+            self.generateCanteraFiles(os.path.join(self.outputDirectory, 'chemkin', 'chem_annotated.inp'))
+        else:  # gas phase only
             self.generateCanteraFiles(os.path.join(self.outputDirectory, 'chemkin', 'chem.inp'))
             self.generateCanteraFiles(os.path.join(self.outputDirectory, 'chemkin', 'chem_annotated.inp'))
-        except EnvironmentError:
-            logging.error('Could not generate Cantera files due to EnvironmentError. Check read\write privileges in output directory.')
-        except Exception:
-            logging.exception('Could not generate Cantera files for some reason.')
+            # except EnvironmentError:
+            #     logging.error('Could not generate Cantera files due to EnvironmentError. Check read\write privileges in output directory.')
+            # except Exception:
+            #     logging.exception('Could not generate Cantera files for some reason.')
+
         self.check_model()
         # Write output file
         logging.info('')
