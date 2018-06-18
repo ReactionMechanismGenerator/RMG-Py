@@ -1963,6 +1963,59 @@ def saveChemkinFile(path, species, reactions, verbose = True, checkForDuplicates
     f.close()
     logging.info("Chemkin file contains {0} reactions.".format(__chemkin_reaction_count))
     __chemkin_reaction_count = None
+    
+def saveChemkinSurfaceFile(path, species, reactions, verbose = True, checkForDuplicates=True):
+    """
+    Save a Chemkin *surface* input file to `path` on disk containing the provided lists
+    of `species` and `reactions`.
+    If checkForDuplicates is False then we don't check for unlabeled duplicate reactions,
+    thus saving time (eg. if you are sure you've already labeled them as duplicate).
+    """
+    # Check for duplicate
+    if checkForDuplicates:
+        markDuplicateReactions(reactions)
+    
+    f = open(path, 'w')
+    
+    sorted_species = sorted(species, key=lambda species: species.index)
+
+    site_name = 'unknown'
+    for s in sorted_species:
+        if s.isSurfaceSite():
+            site_name = s.toChemkin()
+            break
+
+    # Species section
+    f.write('SITE/{}/   SDEN/2.9E-9/\n'.format(site_name))
+    # todo: add surface site density from reactor simulation
+    for spec in sorted_species:
+        label = getSpeciesIdentifier(spec)
+        # todo: add /2/ to bidentate species etc.
+        if verbose:
+            f.write('    {0!s:<16}    ! {1}\n'.format(label, str(spec)))
+        else:
+            f.write('    {0!s:<16}\n'.format(label))
+    f.write('END\n\n\n\n')
+
+    # Thermodynamics section
+    f.write('THERM ALL\n')
+    f.write('    300.000  1000.000  5000.000\n\n')
+    for spec in sorted_species:
+        f.write(writeThermoEntry(spec, verbose=verbose))
+        f.write('\n')
+    f.write('END\n\n\n\n')
+
+    # Reactions section
+    f.write('REACTIONS    KCAL/MOLE   MOLES\n\n')
+    global __chemkin_reaction_count
+    __chemkin_reaction_count = 0
+    for rxn in reactions:
+        f.write(writeKineticsEntry(rxn, speciesList=species, verbose=verbose))
+        f.write('\n')
+    f.write('END\n\n')
+    f.close()
+    logging.info("Chemkin file contains {0} reactions.".format(__chemkin_reaction_count))
+    __chemkin_reaction_count = None
 
 def saveJavaKineticsLibrary(path, species, reactions):
     """
@@ -2020,9 +2073,42 @@ def saveChemkin(reactionModel, path, verbose_path, dictionaryPath=None, transpor
         speciesList = reactionModel.core.species + reactionModel.outputSpeciesList
         rxnList = reactionModel.core.reactions + reactionModel.outputReactionList
 
-    saveChemkinFile(path, speciesList, rxnList, verbose = False, checkForDuplicates=False) # We should already have marked everything as duplicates by now
-    logging.info('Saving verbose version of Chemkin file...')
-    saveChemkinFile(verbose_path, speciesList, rxnList, verbose=True, checkForDuplicates=False)
+    if any([s.containsSurfaceSite() for s in reactionModel.core.species]):
+        # it's a surface model
+        root, ext = os.path.splitext(path)
+        gas_path = root + '-gas' + ext
+        surface_path = root + '-surface' + ext
+        root, ext = os.path.splitext(verbose_path)
+        gas_verbose_path = root + '-gas' + ext
+        surface_verbose_path = root + '-surface' + ext
+
+        surface_speciesList = []
+        gas_speciesList = []
+        surface_rxnList = []
+        gas_rxnList = []
+
+        for s in speciesList:
+            if s.containsSurfaceSite():
+                surface_speciesList.append(s)
+            else:
+                gas_speciesList.append(s)
+        for r in rxnList:
+            if r.isSurfaceReaction():
+                surface_rxnList.append(r)
+            else:
+                gas_rxnList.append(r)
+
+        saveChemkinFile(gas_path, gas_speciesList, gas_rxnList, verbose=False, checkForDuplicates=False) # We should already have marked everything as duplicates by now
+        saveChemkinSurfaceFile(surface_path, surface_speciesList, surface_rxnList, verbose=False, checkForDuplicates=False) # We should already have marked everything as duplicates by now
+        logging.info('Saving verbose version of Chemkin files...')
+        saveChemkinFile(gas_path, gas_speciesList, gas_rxnList, verbose=True, checkForDuplicates=False) # We should already have marked everything as duplicates by now
+        saveChemkinSurfaceFile(surface_path, surface_speciesList, surface_rxnList, verbose=True, checkForDuplicates=False) # We should already have marked everything as duplicates by now
+
+    else:
+        # Gas phase only
+        saveChemkinFile(path, speciesList, rxnList, verbose = False, checkForDuplicates=False) # We should already have marked everything as duplicates by now
+        logging.info('Saving verbose version of Chemkin file...')
+        saveChemkinFile(verbose_path, speciesList, rxnList, verbose=True, checkForDuplicates=False)
     if dictionaryPath:
         saveSpeciesDictionary(dictionaryPath, speciesList)
     if transportPath:
@@ -2031,7 +2117,11 @@ def saveChemkin(reactionModel, path, verbose_path, dictionaryPath=None, transpor
 def saveChemkinFiles(rmg):
     """
     Save the current reaction model to a set of Chemkin files.
-    """        
+    """
+
+    # todo: make this an attribute or method of reactionModel
+    is_surface_model = any([s.containsSurfaceSite() for s in rmg.reactionModel.core.species])
+
     logging.info('Saving current model core to Chemkin file...')
     this_chemkin_path = os.path.join(rmg.outputDirectory, 'chemkin', 'chem{0:04d}.inp'.format(len(rmg.reactionModel.core.species)))
     latest_chemkin_path = os.path.join(rmg.outputDirectory, 'chemkin','chem.inp')
@@ -2039,9 +2129,22 @@ def saveChemkinFiles(rmg):
     latest_dictionary_path = os.path.join(rmg.outputDirectory, 'chemkin','species_dictionary.txt')
     latest_transport_path = os.path.join(rmg.outputDirectory, 'chemkin', 'tran.dat')
     saveChemkin(rmg.reactionModel, this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path, latest_transport_path, False)
-    if os.path.exists(latest_chemkin_path):
-        os.unlink(latest_chemkin_path)
-    shutil.copy2(this_chemkin_path,latest_chemkin_path)
+
+    if is_surface_model:
+        paths = []
+        for phase in ['surface', 'gas']:
+            root, ext = os.path.splitext(this_chemkin_path)
+            path1 = root + '-' + phase + ext
+            root, ext = os.path.splitext(latest_chemkin_path)
+            path2 = root + '-' + phase + ext
+            paths.append((path1, path2))
+    else:
+        paths = [(this_chemkin_path, latest_chemkin_path)]
+
+    for this_chemkin_path, latest_chemkin_path in paths:
+        if os.path.exists(latest_chemkin_path):
+            os.unlink(latest_chemkin_path)
+        shutil.copy2(this_chemkin_path,latest_chemkin_path)
     
     if rmg.saveEdgeSpecies == True:
         logging.info('Saving current model core and edge to Chemkin file...')
@@ -2051,9 +2154,23 @@ def saveChemkinFiles(rmg):
         latest_dictionary_path = os.path.join(rmg.outputDirectory, 'chemkin','species_edge_dictionary.txt')
         latest_transport_path = None
         saveChemkin(rmg.reactionModel, this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path, latest_transport_path, rmg.saveEdgeSpecies)
-        if os.path.exists(latest_chemkin_path):
-            os.unlink(latest_chemkin_path)
-        shutil.copy2(this_chemkin_path,latest_chemkin_path)
+
+        if is_surface_model:
+            paths = []
+            for phase in ['surface', 'gas']:
+                root, ext = os.path.splitext(this_chemkin_path)
+                path1 = root + '-' + phase + ext
+                root, ext = os.path.splitext(latest_chemkin_path)
+                path2 = root + '-' + phase + ext
+                paths.append((path1, path2))
+        else:
+            paths = [(this_chemkin_path, latest_chemkin_path)]
+
+        for this_chemkin_path, latest_chemkin_path in paths:
+            if os.path.exists(latest_chemkin_path):
+                os.unlink(latest_chemkin_path)
+            shutil.copy2(this_chemkin_path,latest_chemkin_path)
+
 
 def writeElementsSection(f):
     """
@@ -2065,16 +2182,16 @@ def writeElementsSection(f):
     s = 'ELEMENTS\n'
 
     # map of isotope elements with chemkin-compatible element representation:
-
     elements = ('H', ('H', 2), ('H',3), 'C', ('C', 13), 'O', ('O',18), 'N', 'Ne', 'Ar', 'He', 'Si', 'S', 'Cl')
     for el in elements:
         if isinstance(el, tuple):
             symbol, isotope = el
             chemkinName = getElement(symbol, isotope=isotope).chemkinName
             mass = 1000 * getElement(symbol, isotope=isotope).mass
-            s += '\t' + chemkinName + ' /' +  '{0:.3f}'.format(mass) + '/' + '\n'
+            s += '\t{0} /{1:.3f}/\n'.format(chemkinName, mass)
         else:
             s += '\t' + el + '\n'
+    s += '\tX /195.083/\n'
     s += 'END\n\n'
 
     f.write(s)
