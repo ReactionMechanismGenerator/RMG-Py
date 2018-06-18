@@ -1974,7 +1974,7 @@ def saveChemkinSurfaceFile(path, species, reactions, verbose = True, checkForDup
             break
 
     # Species section
-    f.write('SITE/{}/   SDEN/2e9E-9/\n'.format(site_name))
+    f.write('SITE/{}/   SDEN/2.9E-9/\n'.format(site_name))
     # todo: add surface site density from reactor simulation
     for spec in sorted_species:
         label = getSpeciesIdentifier(spec)
