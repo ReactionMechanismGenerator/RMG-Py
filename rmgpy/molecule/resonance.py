@@ -1007,11 +1007,14 @@ def _clar_optimization(mol, constraints=None, maxNum=None):
         for constraint in constraints:
             try:
                 lpsolve('add_constraint', lp, constraint[0], '<=', constraint[1])
-            except:
-                logging.error('Unable to add constraint: {0} <= {1}'.format(constraint[0], constraint[1]))
-                logging.error('Cannot complete Clar optimization for {0}.'.format(str(mol)))
-                logging.error(mol.toAdjacencyList())
-                raise
+            except Exception as e:
+                logging.debug('Unable to add constraint: {0} <= {1}'.format(constraint[0], constraint[1]))
+                logging.debug(mol.toAdjacencyList())
+                if str(e) == 'invalid vector.':
+                    raise ILPSolutionError('Unable to add constraint, likely due to '
+                                           'inconsistent aromatic ring perception.')
+                else:
+                    raise e
 
     status = lpsolve('solve', lp)
     objVal, solution = lpsolve('get_solution', lp)[0:2]
