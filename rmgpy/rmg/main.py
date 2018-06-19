@@ -626,7 +626,6 @@ class RMG(util.Subject):
                     rtol=self.simulatorSettingsList[0].rtol,
                     filterReactions=True,
                     conditions = self.rmg_memories[index].get_cond(),
-                    trimolecular = self.trimolecular,
                 )
 
                 self.updateReactionThresholdAndReactFlags(
