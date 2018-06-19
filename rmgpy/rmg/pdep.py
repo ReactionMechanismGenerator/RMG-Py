@@ -744,6 +744,8 @@ class PDepNetwork(rmgpy.pdep.network.Network):
 
         # Set collision model
         bathGas = [spec for spec in reactionModel.core.species if not spec.reactive]
+        assert len(bathGas) > 0, 'No unreactive species to identify as bath gas'
+        
         self.bathGas = {}
         for spec in bathGas:
             # is this really the only/best way to weight them?
