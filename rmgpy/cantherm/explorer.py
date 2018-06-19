@@ -83,15 +83,9 @@ class ExplorerJob(object):
         kineticsDatabase.libraries['kineticsjobs'] = kineticsLibrary
         kineticsDatabase.libraryOrder.insert(0,('kineticsjobs','Reaction Library'))
         
-        reaction_model.addSeedMechanismToCore('kineticsjobs')
-        
         jobRxns = [rxn for rxn in reaction_model.core.reactions]
         
         self.jobRxns = jobRxns
-        
-        for lib in kineticsDatabase.libraryOrder:
-            if lib[0] != 'kineticsjobs':
-                reaction_model.addReactionLibraryToEdge(lib[0])
         
         if outputFile is not None:
             if not os.path.exists(os.path.join(reaction_model.pressureDependence.outputFile,'pdep')):
@@ -111,21 +105,25 @@ class ExplorerJob(object):
 
         form = mmol.getFormula()
         
-        for spec in self.pdepjob.network.bathGas.keys():
+        for spec in self.pdepjob.network.bathGas.keys()+self.source:
             nspec,isNew = reaction_model.makeNewSpecies(spec,reactive=False)
             flags = np.array([s.molecule[0].getFormula()==form for s in reaction_model.core.species])
             reaction_model.enlarge(nspec,reactEdge=False,unimolecularReact=flags,
                     bimolecularReact=np.zeros((len(reaction_model.core.species),len(reaction_model.core.species))))
+        
+        reaction_model.addSeedMechanismToCore('kineticsjobs')
+        
+        for lib in kineticsDatabase.libraryOrder:
+            if lib[0] != 'kineticsjobs':
+                reaction_model.addReactionLibraryToEdge(lib[0])
         
         for spc in reaction_model.core.species:
             for i,item in enumerate(self.source):
                 if spc.isIsomorphic(item):
                     self.source[i] = spc
         
-        
         #react initial species
         flags = np.array([s.molecule[0].getFormula()==form for s in reaction_model.core.species])
-        logging.info('flags: {0}'.format(flags))
         reaction_model.enlarge(reactEdge=True,unimolecularReact=flags,
                       bimolecularReact=np.zeros((len(reaction_model.core.species),len(reaction_model.core.species))))
         
