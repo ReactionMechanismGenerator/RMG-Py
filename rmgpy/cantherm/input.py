@@ -489,6 +489,9 @@ def loadInputFile(path):
     
     directory = os.path.dirname(path)
     
+    for rxn in reactionDict.values():
+        rxn.elementary_high_p = True
+        
     for job in jobList:
         if isinstance(job, StatMechJob):
             job.path = os.path.join(directory, job.path)
@@ -499,4 +502,4 @@ def loadInputFile(path):
             job.applyBondEnergyCorrections = useBondCorrections
             job.atomEnergies = atomEnergies
     
-    return jobList
+    return jobList, reactionDict, speciesDict, transitionStateDict, networkDict
