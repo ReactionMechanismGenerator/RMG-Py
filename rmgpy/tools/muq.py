@@ -81,6 +81,29 @@ class ReactorModPiece(ModPiece):
         # The size of the uncertain inputs: [parameters affecting k, parameters affecting free energy G]         
         self.inputSize = [len(kParams) + len(gParams)]
 
+        if not self.correlated:
+            # Convert input indices (RMG indices) into species list indices
+            new_kParams = []
+            for ind in kParams:
+                for i, rxn in enumerate(cantera.reactionList):
+                    if rxn.index == ind:
+                        new_kParams.append(i)
+                        print 'Replacing reaction index {0} with {1} for reaction {2!s}'.format(ind, i, rxn)
+                        break
+                else:
+                    raise ValueError('Could not find requested index {0} in reaction list.'.format(ind))
+            new_gParams = []
+            for ind in gParams:
+                for i, spc in enumerate(cantera.speciesList):
+                    if spc.index == ind:
+                        new_gParams.append(i)
+                        print 'Replacing species index {0} with {1} for species {2!s}'.format(ind, i, spc)
+                        break
+                else:
+                    raise ValueError('Could not find requested index {0} in species list.'.format(ind))
+            kParams = new_kParams
+            gParams = new_gParams
+
         # for uncorrelated case, these are indices of reactions
         # for correlated case, this is the list of labels for the uncertain parameters to be perturbed, i.e. 'H_Abstraction CHO/Oa'
         self.kParams = kParams
