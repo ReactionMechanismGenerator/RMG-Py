@@ -269,9 +269,11 @@ class CanTherm:
 
         # run kinetics and pdep jobs (and outputing chemkin stuff)
         for job in self.jobList:
-            if isinstance(job,KineticsJob) or isinstance(job, PressureDependenceJob):
+            if isinstance(job,KineticsJob):
                 job.execute(outputFile=outputFile, plot=self.plot)
-            if isinstance(job, ExplorerJob):
+            elif isinstance(job, PressureDependenceJob) and not any([isinstance(job,ExplorerJob) for job in self.jobList]): #if there is an explorer job the pdep job will be run in the explorer job
+                job.execute(outputFile=outputFile, plot=self.plot)
+            elif isinstance(job, ExplorerJob):
                 thermoLibrary,kineticsLibrary,speciesList = self.getLibraries()
                 job.execute(outputFile=outputFile, plot=self.plot, speciesList=speciesList, thermoLibrary=thermoLibrary, kineticsLibrary=kineticsLibrary)
                     
