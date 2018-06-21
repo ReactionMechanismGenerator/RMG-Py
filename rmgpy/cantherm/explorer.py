@@ -36,9 +36,10 @@ from copy import deepcopy
 
 from rmgpy.rmg.model import CoreEdgeReactionModel
 from rmgpy.data.rmg import getDB
+from rmgpy.exceptions import InputError
 
 class ExplorerJob(object):
-    def __init__(self, source, pdepjob, explore_tol, energy_tol=np.inf, flux_tol=0.0):
+    def __init__(self, source, pdepjob, explore_tol, energy_tol=np.inf, flux_tol=0.0, bathGas=None):
         self.source = source
         self.explore_tol = explore_tol
         self.energy_tol = energy_tol
@@ -48,6 +49,13 @@ class ExplorerJob(object):
         
         if not hasattr(self.pdepjob,'outputFile'):
             self.pdepjob.outputFile = None
+        
+        if bathGas:
+            self.bathGas = bathGas
+        elif self.pdepjob.network and self.pdepjob.network.bathGas:
+            self.bathGas = self.pdepjob.network.bathGas
+        else:
+            raise InputError('bathGas not specified in explorer block')
 
     def copy(self):
         """
@@ -105,7 +113,7 @@ class ExplorerJob(object):
 
         form = mmol.getFormula()
         
-        for spec in self.pdepjob.network.bathGas.keys()+self.source:
+        for spec in self.bathGas.keys()+self.source:
             nspec,isNew = reaction_model.makeNewSpecies(spec,reactive=False)
             flags = np.array([s.molecule[0].getFormula()==form for s in reaction_model.core.species])
             reaction_model.enlarge(nspec,reactEdge=False,unimolecularReact=flags,
@@ -135,6 +143,8 @@ class ExplorerJob(object):
                 break
         else:
             raise ValueError('did not generate a network with the requested source')
+        
+        network.bathGas = self.bathGas
         
         self.network = network
         

@@ -57,6 +57,7 @@ from rmgpy.cantherm.explorer import ExplorerJob
 from rmgpy.data.thermo import ThermoLibrary
 from rmgpy.data.base import Entry
 from rmgpy.data.kinetics.library import KineticsLibrary
+from rmgpy.exceptions import InputError
 
 ################################################################################
 
@@ -272,6 +273,8 @@ class CanTherm:
             if isinstance(job,KineticsJob):
                 job.execute(outputFile=outputFile, plot=self.plot)
             elif isinstance(job, PressureDependenceJob) and not any([isinstance(job,ExplorerJob) for job in self.jobList]): #if there is an explorer job the pdep job will be run in the explorer job
+                if job.network is None:
+                    raise InputError('No network matched the label of the pressureDependence block and there is no explorer block to generate a network')
                 job.execute(outputFile=outputFile, plot=self.plot)
             elif isinstance(job, ExplorerJob):
                 thermoLibrary,kineticsLibrary,speciesList = self.getLibraries()

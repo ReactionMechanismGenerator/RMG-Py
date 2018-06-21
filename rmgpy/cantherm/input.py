@@ -373,9 +373,15 @@ def pressureDependence(label,
                        activeKRotor=True, activeJRotor=True, rmgmode=False,
                        sensitivity_conditions=None):
     global jobList, networkDict
+    
     if isinstance(interpolationModel, str):
         interpolationModel = (interpolationModel,)
-    job = PressureDependenceJob(network = networkDict[label],
+        
+    nwk = None
+    if label in networkDict.keys():
+        nwk = networkDict[label]
+        
+    job = PressureDependenceJob(network = nwk,
         Tmin=Tmin, Tmax=Tmax, Tcount=Tcount, Tlist=Tlist,
         Pmin=Pmin, Pmax=Pmax, Pcount=Pcount, Plist=Plist,
         maximumGrainSize=maximumGrainSize, minimumGrainCount=minimumGrainCount,
@@ -384,7 +390,7 @@ def pressureDependence(label,
         rmgmode=rmgmode, sensitivity_conditions=sensitivity_conditions)
     jobList.append(job)
 
-def explorer(source, explore_tol=(0.01,'s^-1'), energy_tol=np.inf, flux_tol=0.0):
+def explorer(source, explore_tol=(0.01,'s^-1'), energy_tol=np.inf, flux_tol=0.0, bathGas=None):
     global jobList,speciesDict
     for job in jobList:
         if isinstance(job, PressureDependenceJob):
@@ -397,8 +403,13 @@ def explorer(source, explore_tol=(0.01,'s^-1'), energy_tol=np.inf, flux_tol=0.0)
     
     explore_tol = Quantity(explore_tol)
     
+    if bathGas:
+        bathGas0 = bathGas or {}; bathGas = {}
+        for spec, fraction in bathGas0.items():
+            bathGas[speciesDict[spec]] = fraction
+        
     job = ExplorerJob(source=source,pdepjob=pdepjob,explore_tol=explore_tol.value_si,
-                energy_tol=energy_tol,flux_tol=flux_tol)
+                energy_tol=energy_tol,flux_tol=flux_tol,bathGas=bathGas)
     jobList.append(job)
     
 def SMILES(smiles):
