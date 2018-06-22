@@ -826,14 +826,14 @@ class RMG(util.Subject):
                             self.reactionModel.thermoFilterDown(maximumEdgeSpecies=modelSettings.maximumEdgeSpecies)
                         
                         maxNumSpcsHit = len(self.reactionModel.core.species) >= modelSettings.maxNumSpecies
-    
-                        if maxNumSpcsHit: #breaks the while loop 
-                            break
                         
                         if not reactorDone:
                             self.done = False
                         
                         self.saveEverything()
+                        
+                        if maxNumSpcsHit: #breaks the while loop 
+                            break
                     
                 if not self.done: # There is something that needs exploring/enlarging
 
