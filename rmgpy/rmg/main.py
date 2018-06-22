@@ -825,8 +825,6 @@ class RMG(util.Subject):
                     
                     maxNumSpcsHit = len(self.reactionModel.core.species) >= modelSettings.maxNumSpecies
 
-                    if maxNumSpcsHit: #breaks the while loop 
-                        break
                     
                     if not reactorDone:
                         self.nSimsTerms[index] = 0
@@ -838,6 +836,9 @@ class RMG(util.Subject):
                         self.done = False
                         
                     self.saveEverything()
+
+                    if maxNumSpcsHit: #breaks the while loop
+                        break
                     
                 if not self.done: # There is something that needs exploring/enlarging
 
