@@ -34,16 +34,20 @@ import logging
 import shutil
 from copy import deepcopy
 
+import rmgpy
+from rmgpy.rmg.main import RMG
 from rmgpy.rmg.model import CoreEdgeReactionModel
 from rmgpy.data.rmg import getDB
 from rmgpy.exceptions import InputError
 
 class ExplorerJob(object):
-    def __init__(self, source, pdepjob, explore_tol, energy_tol=np.inf, flux_tol=0.0, bathGas=None):
+    def __init__(self, source, pdepjob, explore_tol, energy_tol=np.inf, flux_tol=0.0, 
+                 bathGas=None, maximumRadicalElectrons=np.inf):
         self.source = source
         self.explore_tol = explore_tol
         self.energy_tol = energy_tol
         self.flux_tol = flux_tol
+        self.maximumRadicalElectrons = maximumRadicalElectrons
         
         self.pdepjob = pdepjob
         
@@ -72,6 +76,12 @@ class ExplorerJob(object):
     def execute(self, outputFile, plot, format='pdf', print_summary=True, speciesList=None, thermoLibrary=None, kineticsLibrary=None):
         
         logging.info('Exploring network...')
+        
+        rmg = RMG()
+        
+        rmg.speciesConstraints = {'allowed' : ['input species', 'seed mechanisms', 'reaction libraries'], 'maximumRadicalElectrons' : self.maximumRadicalElectrons, 'explicitlyAllowedMolecules': []}
+
+        rmgpy.rmg.input.rmg = rmg
         
         reaction_model = CoreEdgeReactionModel()
         
