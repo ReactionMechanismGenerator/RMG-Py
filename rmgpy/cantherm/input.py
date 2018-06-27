@@ -39,6 +39,10 @@ import numpy as np
 from rmgpy import settings
 from rmgpy.exceptions import InputError
 from rmgpy.data.rmg import RMGDatabase
+from rmgpy.data.rmg import getDB
+
+from rmgpy.rmg.model import CoreEdgeReactionModel
+from rmgpy.rmg.react import react
 
 from rmgpy.species import Species, TransitionState
 from rmgpy.quantity import Quantity
@@ -58,6 +62,7 @@ from rmgpy.kinetics.chebyshev import Chebyshev
 from rmgpy.kinetics.falloff import ThirdBody, Lindemann, Troe
 from rmgpy.kinetics.kineticsdata import KineticsData, PDepKineticsData
 from rmgpy.kinetics.tunneling import Wigner, Eckart
+from rmgpy.kinetics.model import PDepKineticsModel, TunnelingModel
 
 from rmgpy.pdep.configuration import Configuration
 from rmgpy.pdep.network import Network  
@@ -242,7 +247,7 @@ def transitionState(label, *args, **kwargs):
         
     return ts
 
-def reaction(label, reactants, products, transitionState, kinetics=None, tunneling=''):
+def reaction(label, reactants, products, transitionState=None, kinetics=None, tunneling=''):
     global reactionDict, speciesDict, transitionStateDict
     #label = 'reaction'+transitionState
     if label in reactionDict:
@@ -252,17 +257,50 @@ def reaction(label, reactants, products, transitionState, kinetics=None, tunneli
     logging.info('Loading reaction {0}...'.format(label))
     reactants = sorted([speciesDict[spec] for spec in reactants])
     products = sorted([speciesDict[spec] for spec in products])
-    transitionState = transitionStateDict[transitionState]
+    if transitionState:
+        transitionState = transitionStateDict[transitionState]
     if tunneling.lower() == 'wigner':
         transitionState.tunneling = Wigner(frequency=None)
     elif tunneling.lower() == 'eckart':
         transitionState.tunneling = Eckart(frequency=None, E0_reac=None, E0_TS=None, E0_prod=None)
-    elif tunneling == '' or tunneling is None:
+    elif transitionState and (tunneling == '' or tunneling is None):
         transitionState.tunneling = None
-    elif not isinstance(tunneling, TunnelingModel):
+    elif transitionState and not isinstance(tunneling, TunnelingModel):
         raise ValueError('Unknown tunneling model {0!r}.'.format(tunneling))
     rxn = Reaction(label=label, reactants=reactants, products=products, transitionState=transitionState, kinetics=kinetics)
-    reactionDict[label] = rxn
+    
+    if rxn.transitionState is None and rxn.kinetics is None:
+        logging.info('estimating rate of reaction {0} using RMG-database')
+        if not all([m.molecule != [] for m in rxn.reactants+rxn.products]):
+            raise ValueError('chemical structures of reactants and products not available for RMG estimation of reaction {0}'.format(label))
+        for spc in rxn.reactants+rxn.products:
+            print spc.label
+            print spc.molecule
+        db = getDB('kinetics')
+        rxns = db.generate_reactions_from_libraries(reactants=rxn.reactants,products=rxn.products)
+        rxns = [r for r in rxns if r.elementary_high_p]
+        
+        if rxns != []:
+            for r in rxns:
+                if isinstance(rxn.kinetics, PDepKineticsModel):
+                    boo = rxn.generate_high_p_limit_kinetics()
+                if boo:
+                    rxn = r
+                    break
+                
+        if rxns == [] or not boo:
+            logging.info('No library reactions tagged with elementary_high_p found for reaction {0}, generating reactions from RMG families'.format(label))
+            rxn = list(db.generate_reactions_from_families(reactants=rxn.reactants,products=rxn.products))
+            model = CoreEdgeReactionModel()
+            model.verboseComments = True
+            for r in rxn:
+                model.applyKineticsToReaction(r)
+    
+    if isinstance(rxn,Reaction):
+        reactionDict[label] = rxn
+    else:
+        for i in xrange(len(rxn)):
+            reactionDict[label+str(i)] = rxn[i]
     
     return rxn
 
