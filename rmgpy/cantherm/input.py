@@ -205,6 +205,19 @@ def species(label, *args, **kwargs):
         spec.thermo = thermo
         spec.reactive = reactive
         
+        if spec.thermo is None and spec.conformer.E0 is None:
+            if spec.molecule == []:
+                raise InputError('Thermo, E0 and structure not specified cannot estimate properties of species {0}'.format(spec.label))
+            logging.info('No E0 or thermo found, estimating thermo and E0 of species {0} using RMG-Database'.format(spec.label))
+            db = getDB('thermo')
+            spec.thermo = db.getThermoData(spec)
+            if spec.thermo.E0 is None:
+                th = spec.thermo.toWilhoit()
+                spec.conformer.E0 = th.E0
+                spec.thermo.E0 = th.E0
+            else:
+                spec.conformer.E0 = spec.thermo.E0
+        
     return spec
 
 def transitionState(label, *args, **kwargs):
