@@ -137,7 +137,14 @@ the one that gets used.
 
 Kinetics Depositories
 ---------------------
-::
+Kinetics depositories store reactions which can be used for rate estimation.
+Depositories are divided by the sources of the data. Currently, RMG database
+has two depositories. The main depository is `training` which contains
+reactions from various sources. This depository is loaded by default and
+can be disabled by adding `'!training'` to the list of depositories.
+The `NIST` depository contains reactions taken from NIST's gas kinetics database.
+The `kineticsDepositories` argument in the input file accepts a list of
+strings describing which depositories to include.::
 
 	kineticsDepositories = ['training']
 
