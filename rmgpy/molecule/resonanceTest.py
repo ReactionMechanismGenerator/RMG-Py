@@ -184,8 +184,8 @@ class ResonanceTest(unittest.TestCase):
         self.assertEqual(mol_list[0].vertices[0].lonePairs + mol_list[0].vertices[1].lonePairs, 3)
         self.assertEqual(mol_list[1].vertices[0].lonePairs + mol_list[1].vertices[1].lonePairs, 4)
 
-    def testN5dc(self):
-        """Test the N5dc resonance transformation
+    def testN5dcRadical(self):
+        """Test the N5dc radical resonance transformation
 
         We should see N=[N+]([O])([O-]) <=> [NH-][N+]([O])=O
         Two isomorphic structures should be included in molList: N=[N+]([O])([O-]) <=> N=[N+]([O-])([O])"""
@@ -202,6 +202,19 @@ class ResonanceTest(unittest.TestCase):
                     negatively_charged_nitrogen += 1
         self.assertEquals(isomorphic_counter, 2)
         self.assertEquals(negatively_charged_nitrogen, 2)
+
+    def testN5dc(self):
+        """Test the N5dc resonance transformation
+
+        We should see N[N+]([O-])=O <=> N[N+](=O)[O-], which are isomorphic"""
+        mol = Molecule(SMILES="N[N+]([O-])=O")
+        mol_list = generate_resonance_structures(mol, keep_isomorphic=True)
+        self.assertEqual(len(mol_list), 2)
+        isomorphic_counter = 0
+        for mol1 in mol_list:
+            if mol1.isIsomorphic(mol):
+                isomorphic_counter += 1
+        self.assertEquals(isomorphic_counter, 2)
 
     def testStyryl1(self):
         """Test resonance structure generation for styryl, with radical on branch

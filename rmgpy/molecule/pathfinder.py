@@ -413,7 +413,7 @@ def find_N5ddc_N5tc_delocalization_paths(atom1):
     return paths
 
 
-def find_N5dc_delocalization_paths(atom1):
+def find_N5dc_radical_delocalization_paths(atom1):
     """
     Find all the resonance structures of an N5dc nitrogen atom with a single bond to a radical N/O/S site, another
     single bond to a negatively charged N/O/S site, and one double bond (not participating in this transformation)
@@ -425,16 +425,40 @@ def find_N5dc_delocalization_paths(atom1):
     """
     cython.declare(paths=list, atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
 
-    paths = []
+    path = []
 
     for atom2, bond12 in atom1.edges.items():
         if atom2.radicalElectrons and bond12.isSingle() and not atom2.charge and is_NOS_able_to_gain_lone_pair(atom2):
-            for atom3, bond23 in atom1.edges.items():
-                if (atom2 is not atom3 and bond23.isSingle() and atom3.charge < 0
+            for atom3, bond13 in atom1.edges.items():
+                if (atom2 is not atom3 and bond13.isSingle() and atom3.charge < 0
                         and is_NOS_able_to_lose_lone_pair(atom3)):
-                    paths.append([atom2, atom3])
-                    return paths  # there could only be one such path per atom1, return if found
-    return paths
+                    path.append([atom2, atom3])
+                    return path  # there could only be one such path per atom1, return if found
+    return path
+
+
+def find_N5dc_delocalization_paths(atom1):
+    """
+    Find all the resonance structures of an N5dc nitrogen atom with a double bond to a N/O/S site, another
+    single bond to a negatively charged N/O/S site, and one single bond (not participating in this transformation)
+    Example:
+    - N[N+]([O-])=O <=> N[N+](=O)[O-], these structures are isomorphic but not identical, the transition is
+    important for correct degeneracy calculations
+    In this transition atom1 is the middle N+ (N5dc), atom2 double bonded to atom1, and atom3 is negatively charged
+    A "if atom1.atomType.label == 'N5dc'" check should be done before calling this function
+    """
+    cython.declare(paths=list, atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
+
+    path = []
+
+    for atom2, bond12 in atom1.edges.items():
+        if atom2.isNOS() and bond12.isDouble() and not atom2.charge and is_NOS_able_to_gain_lone_pair(atom2):
+            for atom3, bond13 in atom1.edges.items():
+                if (atom2 is not atom3 and bond13.isSingle() and atom3.charge < 0
+                        and is_NOS_able_to_lose_lone_pair(atom3)):
+                    path.append([atom2, atom3, bond12, bond13])
+                    return path  # there could only be one such path per atom1, return if found
+    return path
 
 
 def is_NOS_able_to_gain_lone_pair(atom):
