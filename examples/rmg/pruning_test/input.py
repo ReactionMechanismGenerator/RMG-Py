@@ -31,7 +31,7 @@ species(
 simpleReactor(
     temperature=[(1000,'K'),(1500,'K')],
     pressure=[(1.0,'bar'),(10.0,'bar')],
-    nSims=12, 
+    nSims=3, 
     initialMoleFractions={
         "ethane": [0.05,0.15],
         "O2": 0.1,
@@ -50,11 +50,13 @@ simulator(
 )
 
 model(
-    toleranceKeepInEdge=0.0,
-    toleranceMoveToCore=0.1,
-    toleranceInterruptSimulation=0.1,
-    maximumEdgeSpecies=100000,
+    toleranceKeepInEdge=0.001,
+    toleranceMoveToCore=0.01,
+    toleranceInterruptSimulation=1e8,
+    maximumEdgeSpecies=20,
     filterReactions=True,
+    minCoreSizeForPrune=5,
+    
 )
 
 options(
