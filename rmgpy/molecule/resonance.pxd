@@ -46,6 +46,8 @@ cpdef list generate_lone_pair_radical_multiple_bond_resonance_structures(Molecul
 
 cpdef list generate_N5ddc_N5tc_resonance_structures(Molecule mol)
 
+cpdef list generate_N5dc_radical_resonance_structures(Molecule mol)
+
 cpdef list generate_N5dc_resonance_structures(Molecule mol)
 
 cpdef list generate_isomorphic_resonance_structures(Molecule mol, bint saturate_h=?)
