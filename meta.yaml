@@ -11,7 +11,8 @@ build:
 
 requirements:
   build:
-    - {{ compiler('c') }}
+    - {{ compiler('c') }} # [unix]
+    - mingwpy # [win]
   host:
     - boost ==1.56.0
     - cython >=0.25.2
@@ -73,7 +74,8 @@ test:
   imports:
     - rmgpy
   commands:
-    - rmg.py examples/rmg/minimal/input.py
+    - rmg.py examples/rmg/minimal/input.py # [unix]
+    - python %SCRIPTS%\rmg.py examples\rmg\minimal\input.py # [win]
 
 about:
   home: http://github.com/ReactionMechanismGenerator/RMG-Py
