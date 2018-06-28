@@ -65,7 +65,6 @@ class TestFailsSpeciesConstraints(unittest.TestCase):
             maximumRadicalElectrons=2,
             maximumSingletCarbenes=1,
             maximumCarbeneRadicals=0,
-            maximumIsotopicAtoms=2,
         )
 
     @classmethod
@@ -216,27 +215,5 @@ class TestFailsSpeciesConstraints(unittest.TestCase):
 3 C u1 p0 c0 {1,S} {4,S} {5,S}
 4 H u0 p0 c0 {3,S}
 5 H u0 p0 c0 {3,S}
-""")
-        self.assertTrue(failsSpeciesConstraints(mol2))
-
-    def testIsotopeConstraint(self):
-        """
-        Test that we can constrain the max number of isotopic atoms.
-        """
-        mol1 = Molecule().fromAdjacencyList("""
-1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
-2 D u0 p0 c0 {1,S}
-3 D u0 p0 c0 {1,S}
-4 H u0 p0 c0 {1,S}
-5 H u0 p0 c0 {1,S}
-""")
-        self.assertFalse(failsSpeciesConstraints(mol1))
-
-        mol2 = Molecule().fromAdjacencyList("""
-1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
-2 D u0 p0 c0 {1,S}
-3 D u0 p0 c0 {1,S}
-4 D u0 p0 c0 {1,S}
-5 H u0 p0 c0 {1,S}
 """)
         self.assertTrue(failsSpeciesConstraints(mol2))
