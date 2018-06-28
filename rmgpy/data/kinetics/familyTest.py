@@ -94,9 +94,11 @@ class TestFamily(unittest.TestCase):
         Test the getTopLevelGroups() function
         """
         topGroups = self.family.getTopLevelGroups(self.family.groups.entries["RnH"])
-        self.assertEquals(len(topGroups), 2)
+        self.assertEquals(len(topGroups), 4)
         self.assertIn(self.family.groups.entries["R5Hall"], topGroups)
         self.assertIn(self.family.groups.entries["R6Hall"], topGroups)
+        self.assertIn(self.family.groups.entries["R2Hall"], topGroups)
+        self.assertIn(self.family.groups.entries["R3Hall"], topGroups)
 
     def testReactBenzeneBond(self):
         """

@@ -2182,7 +2182,7 @@ class KineticsFamily(Database):
         if len(reactants0) == 1:
             molecule = reactants0[0]
             mappings = self.__matchReactantToTemplate(molecule, template.reactants[0])
-
+            mappings = [[map0] for map0 in mappings]
             num_mappings = len(mappings)
             reactant_structures = [molecule]
         elif len(reactants0) == 2:
