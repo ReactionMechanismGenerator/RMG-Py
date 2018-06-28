@@ -35,6 +35,7 @@ This module contains functionality for working with kinetics families.
 import os.path
 import numpy as np
 import logging
+import warnings
 import codecs
 from copy import deepcopy
 from collections import OrderedDict
@@ -438,6 +439,8 @@ class KineticsFamily(Database):
         Load an old-style RMG kinetics group additivity database from the
         location `path`.
         """
+        warnings.warn("The old kinetics databases are no longer supported and may be"
+                      " removed in version 2.3.", DeprecationWarning)
         self.label = os.path.basename(path)
         self.name = self.label
 
@@ -504,7 +507,8 @@ class KineticsFamily(Database):
         """
         Load an old-style RMG reaction family template from the location `path`.
         """
-
+        warnings.warn("The old kinetics databases are no longer supported and"
+                      " may be removed in version 2.3.", DeprecationWarning)
         self.forwardTemplate = Reaction(reactants=[], products=[])
         self.forwardRecipe = ReactionRecipe()
         self.ownReverse = False
@@ -546,6 +550,8 @@ class KineticsFamily(Database):
         """
         Save the old RMG kinetics groups to the given `path` on disk.
         """
+        warnings.warn("The old kinetics databases are no longer supported and"
+                      " may be removed in version 2.3.", DeprecationWarning)
         if not os.path.exists(path): os.mkdir(path)
         
         self.groups.saveOldDictionary(os.path.join(path, 'dictionary.txt'))
@@ -563,6 +569,8 @@ class KineticsFamily(Database):
         """
         Save an old-style RMG reaction family template from the location `path`.
         """
+        warnings.warn("The old kinetics databases are no longer supported and"
+                      " may be removed in version 2.3.", DeprecationWarning)
         ftemp = open(path, 'w')
         
         # Write the template

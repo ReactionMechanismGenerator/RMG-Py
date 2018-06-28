@@ -39,7 +39,7 @@ import re
 import math
 import numpy
 import pydot
-
+import warnings
 from rmgpy.solver.base import TerminationTime, TerminationConversion
 from rmgpy.solver.liquid import LiquidReactor
 from rmgpy.kinetics.diffusionLimited import diffusionLimiter
@@ -532,6 +532,9 @@ def createFluxDiagram(inputFile, chemkinFile, speciesDict, savePath=None, specie
     a speciesDict txt file, plus an optional chemkinOutput file.
     """
 
+    if java==True:
+        warnings.warn("RMG-Java loading is no longer supported and may be"\
+            "removed in version 2.3.", DeprecationWarning)
     if speciesPath is None:
         speciesPath = os.path.join(os.path.dirname(inputFile), 'species')
         generateImages = True
