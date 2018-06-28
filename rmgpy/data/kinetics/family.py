@@ -2250,6 +2250,8 @@ class KineticsFamily(Database):
         
         Returns just the kinetics, or None.
         """
+        warnings.warn("Group additivity is no longer supported and may be"
+                      " removed in version 2.3.", DeprecationWarning)
         # Start with the generic kinetics of the top-level nodes
         kinetics = None
         root = self.getRootTemplate()
