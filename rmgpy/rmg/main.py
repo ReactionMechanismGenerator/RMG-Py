@@ -826,15 +826,19 @@ class RMG(util.Subject):
                             self.reactionModel.thermoFilterDown(maximumEdgeSpecies=modelSettings.maximumEdgeSpecies)
                         
                         maxNumSpcsHit = len(self.reactionModel.core.species) >= modelSettings.maxNumSpecies
-                        
+
+                        self.saveEverything()
+
+                        if maxNumSpcsHit:  # breaks the nSims loop
+                            # self.done is still True, which will break the while loop
+                            break
+
                         if not reactorDone:
                             self.done = False
                         
-                        self.saveEverything()
-                        
-                        if maxNumSpcsHit: #breaks the while loop 
-                            break
-                    
+                    if maxNumSpcsHit:  # breaks the reactionSystems loop
+                        break
+
                 if not self.done: # There is something that needs exploring/enlarging
 
                     # If we reached our termination conditions, then try to prune
