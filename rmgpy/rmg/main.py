@@ -569,6 +569,8 @@ class RMG(util.Subject):
             self.attach(OutputHTMLWriter(self.outputDirectory))
 
         if self.saveRestartPeriod:
+            warnings.warn("The option saveRestartPeriod is no longer supported and may be"
+                          " removed in version 2.3.", DeprecationWarning)
             self.attach(RestartWriter()) 
 
         if self.quantumMechanics:
