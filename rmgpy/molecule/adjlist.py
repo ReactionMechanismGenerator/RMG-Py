@@ -33,6 +33,7 @@ This module contains functionality for reading from and writing to the
 adjacency list format used by Reaction Mechanism Generator (RMG).
 """
 import logging
+import warnings
 import re
 from .molecule import Atom, Bond, getAtomType
 from .group import GroupAtom, GroupBond
@@ -929,6 +930,8 @@ def toOldAdjacencyList(atoms, multiplicity=None, label=None, group=False, remove
     Convert a chemical graph defined by a list of `atoms` into a string old-style 
     adjacency list that can be used in RMG-Java.  Currently not working for groups.
     """
+    warnings.warn("The old adjacency lists are no longer supported and may be"
+                  " removed in version 2.3.", DeprecationWarning)
     adjlist = ''
     
     if group:
