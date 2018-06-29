@@ -73,7 +73,7 @@ class Species(object):
     `thermo`                The heat capacity model for the species
     `conformer`             The molecular conformer for the species
     `molecule`              A list of the :class:`Molecule` objects describing the molecular structure
-    `transportData`          A set of transport collision parameters
+    `transportData`         A set of transport collision parameters
     `molecularWeight`       The molecular weight of the species
     `energyTransferModel`   The collisional energy transfer model to use
     `reactive`              ``True`` if the species participates in reaction families, ``False`` if not
@@ -154,11 +154,16 @@ class Species(object):
         """
         return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.transportData, self.molecularWeight, self.energyTransferModel, self.reactive, self.props))
 
-    def getMolecularWeight(self):
+    @property
+    def molecularWeight(self):
+        """The molecular weight of the species. (Note: value_si is in kg/molecule not kg/mol)"""
+        if self._molecularWeight is None and self.molecule is not None and len(self.molecule) > 0:
+            self._molecularWeight = quantity.Mass(self.molecule[0].getMolecularWeight(), 'kg/mol')
         return self._molecularWeight
-    def setMolecularWeight(self, value):
+
+    @molecularWeight.setter
+    def molecularWeight(self, value):
         self._molecularWeight = quantity.Mass(value)
-    molecularWeight = property(getMolecularWeight, setMolecularWeight, """The molecular weight of the species. (Note: value_si is in kg/molecule not kg/mole)""")
 
     def generate_resonance_structures(self, keep_isomorphic=True, filter_structures=True):
         """
