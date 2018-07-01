@@ -39,6 +39,7 @@ Currently supported resonance types:
 
 - All species:
     - ``generate_allyl_delocalization_resonance_structures``: single radical shift with double or triple bond
+    - ``generate_lone_pair_multiple_bond_resonance_structures``: lone pair shift with double or triple bond in a 3-atom system (between nonadjacent atoms)
     - ``generate_adj_lone_pair_radical_resonance_structures``: single radical shift with lone pair between adjacent atoms
     - ``generate_adj_lone_pair_multiple_bond_resonance_structures``: multiple bond shift with lone pair between adjacent atoms
     - ``generate_adj_lone_pair_radical_multiple_bond_resonance_structures``: multiple bond and radical shift with lone pair and radical  between adjacent atoms
@@ -78,6 +79,7 @@ def populate_resonance_algorithms(features=None):
     if features is None:
         method_list = [
             generate_allyl_delocalization_resonance_structures,
+            generate_lone_pair_multiple_bond_resonance_structures,
             generate_adj_lone_pair_radical_resonance_structures,
             generate_adj_lone_pair_multiple_bond_resonance_structures,
             generate_adj_lone_pair_radical_multiple_bond_resonance_structures,
@@ -100,6 +102,7 @@ def populate_resonance_algorithms(features=None):
             method_list.append(generate_N5dc_radical_resonance_structures)
             method_list.append(generate_N5dc_resonance_structures)
         if features['hasLonePairs']:
+            method_list.append(generate_lone_pair_multiple_bond_resonance_structures)
             method_list.append(generate_adj_lone_pair_radical_resonance_structures)
             method_list.append(generate_adj_lone_pair_multiple_bond_resonance_structures)
             method_list.append(generate_adj_lone_pair_radical_multiple_bond_resonance_structures)
@@ -335,7 +338,7 @@ def generate_allyl_delocalization_resonance_structures(mol):
                 atom3.incrementRadical()
                 bond12.incrementOrder()
                 bond23.decrementOrder()
-                # Make a copy of isomer
+                # Make a copy of structure
                 structure = mol.copy(deep=True)
                 # Also copy the connectivity values, since they are the same
                 # for all resonance structures
@@ -351,6 +354,55 @@ def generate_allyl_delocalization_resonance_structures(mol):
                 atom3.decrementRadical()
                 bond12.decrementOrder()
                 bond23.incrementOrder()
+                try:
+                    structure.updateAtomTypes(logSpecies=False)
+                except AtomTypeError:
+                    pass  # Don't append resonance structure if it creates an undefined atomType
+                else:
+                    structures.append(structure)
+    return structures
+
+
+def generate_lone_pair_multiple_bond_resonance_structures(mol):
+    """
+    Generate all of the resonance structures formed by lone electron pair - multiple bond shifts in 3-atom systems.
+    Examples: aniline (Nc1ccccc1), azide, [:NH2]C=[::O] <=> [NH2+]=C[:::O-]
+    (where ':' denotes a lone pair, '.' denotes a radical, '-' not in [] denotes a single bond, '-'/'+' denote charge)
+    """
+    cython.declare(structures=list, paths=list, index=cython.int, structure=Molecule)
+    cython.declare(atom=Atom, atom1=Atom, atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
+    cython.declare(v1=Vertex, v2=Vertex)
+
+    structures = []
+    for atom in mol.vertices:
+        if atom.lonePairs >= 1:
+            paths = pathfinder.find_lone_pair_multiple_bond_paths(atom)
+            for atom1, atom2, atom3, bond12, bond23 in paths:
+                # Adjust to (potentially) new resonance structure
+                atom1.decrementLonePairs()
+                atom3.incrementLonePairs()
+                bond12.incrementOrder()
+                bond23.decrementOrder()
+                atom1.updateCharge()
+                atom3.updateCharge()
+                # Make a copy of structure
+                structure = mol.copy(deep=True)
+                # Also copy the connectivity values, since they are the same
+                # for all resonance structures
+                for index in xrange(len(mol.vertices)):
+                    v1 = mol.vertices[index]
+                    v2 = structure.vertices[index]
+                    v2.connectivity1 = v1.connectivity1
+                    v2.connectivity2 = v1.connectivity2
+                    v2.connectivity3 = v1.connectivity3
+                    v2.sortingLabel = v1.sortingLabel
+                # Restore current structure
+                atom1.incrementLonePairs()
+                atom3.decrementLonePairs()
+                bond12.decrementOrder()
+                bond23.incrementOrder()
+                atom1.updateCharge()
+                atom3.updateCharge()
                 try:
                     structure.updateAtomTypes(logSpecies=False)
                 except AtomTypeError:

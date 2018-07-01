@@ -46,6 +46,8 @@ cpdef dict compute_atom_distance(list atom_indices, Molecule mol)
 
 cpdef list find_allyl_delocalization_paths(Atom atom1)
 
+cpdef list find_lone_pair_multiple_bond_paths(Atom atom1)
+
 cpdef list find_adj_lone_pair_radical_delocalization_paths(Atom atom1)
 
 cpdef list find_adj_lone_pair_multiple_bond_delocalization_paths(Atom atom1)

@@ -243,8 +243,7 @@ def compute_atom_distance(atom_indices, mol):
 
 def find_allyl_delocalization_paths(atom1):
     """
-    Find all the delocalization paths allyl to the radical center indicated
-    by `atom1`. Used to generate resonance isomers.
+    Find all the delocalization paths allyl to the radical center indicated by `atom1`.
     """
     cython.declare(paths=list, atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
     
@@ -252,14 +251,36 @@ def find_allyl_delocalization_paths(atom1):
     if atom1.radicalElectrons <= 0:
         return []
 
-    # Find all delocalization paths
     paths = []
     for atom2, bond12 in atom1.edges.items():
         # Vinyl bond must be capable of gaining an order
-        if (bond12.isSingle() or bond12.isDouble()) and atom1.radicalElectrons:
+        if bond12.isSingle() or bond12.isDouble():
             for atom3, bond23 in atom2.edges.items():
                 # Allyl bond must be capable of losing an order without breaking
                 if atom1 is not atom3 and (bond23.isDouble() or bond23.isTriple()):
+                    paths.append([atom1, atom2, atom3, bond12, bond23])
+    return paths
+
+
+def find_lone_pair_multiple_bond_paths(atom1):
+    """
+    Find all the delocalization paths between lone electron pair and multiple bond in a 3-atom system
+    `atom1` indicates the delocalized lone pair site.
+    """
+    cython.declare(paths=list, atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
+
+    # No paths if atom1 has no lone pairs or cannot lose it
+    if atom1.lonePairs <= 0 or not (atom1.isCarbon() or is_NOS_able_to_lose_lone_pair(atom1)):
+        return []
+
+    paths = []
+    for atom2, bond12 in atom1.edges.items():
+        # Bond must be capable of gaining an order
+        if bond12.isSingle() or bond12.isDouble():
+            for atom3, bond23 in atom2.edges.items():
+                # Bond must be capable of losing an order without breaking, atom3 must be able to gain a lone pair
+                if atom1 is not atom3 and (bond23.isDouble() or bond23.isTriple())\
+                        and (atom3.isCarbon() or is_NOS_able_to_gain_lone_pair(atom3)):
                     paths.append([atom1, atom2, atom3, bond12, bond23])
     return paths
 
