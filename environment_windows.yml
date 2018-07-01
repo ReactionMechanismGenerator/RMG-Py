@@ -1,16 +1,18 @@
 name: rmg_env
 channels:
-  - rmg
   - defaults
+  - cantera
+  - rdkit
+  - rmg
 dependencies:
   - mingwpy
   - python
   - numpy >=1.10.0
-  - cantera >=2.3.0a3
+  - cantera
   - coolprop
   - cython >=0.25.2
   - matplotlib >=1.5
-  - rdkit >=2015.09.2
+  - rdkit
   - lpsolve55
   - quantities
   - scipy
