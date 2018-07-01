@@ -322,6 +322,13 @@ def _generate_resonance_structures(mol_list, method_list, keep_isomorphic=False,
         # Move to the next resonance structure
         index += 1
 
+    # check net charge
+    for mol in mol_list:
+        if mol.getNetCharge() != 0:
+            raise ResonanceError('Resonance generation gave a net charged molecule:\n{0}'
+                                 'Ions are not yet supported in RMG.'.format(
+                mol.toAdjacencyList()))
+
     return mol_list
 
 
