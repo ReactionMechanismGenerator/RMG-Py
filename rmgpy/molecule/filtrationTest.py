@@ -29,10 +29,11 @@
 ###############################################################################
 
 import unittest
-import molecule
 
-from .resonance import generate_resonance_structures
-from .filtration import get_octet_deviation_list, get_octet_deviation, filter_structures,charge_filtration, get_charge_span_list
+from rmgpy.molecule.molecule import Molecule
+from rmgpy.molecule.resonance import generate_resonance_structures
+from rmgpy.molecule.filtration import get_octet_deviation_list, get_octet_deviation, filter_structures,charge_filtration, get_charge_span_list
+
 ################################################################################
 
 
@@ -59,9 +60,9 @@ class FiltrationTest(unittest.TestCase):
         3 O u0 p3 c-1 {1,S}
         """
 
-        mol1 = molecule.Molecule().fromAdjacencyList(adj1)
-        mol2 = molecule.Molecule().fromAdjacencyList(adj2)
-        mol3 = molecule.Molecule().fromAdjacencyList(adj3)
+        mol1 = Molecule().fromAdjacencyList(adj1)
+        mol2 = Molecule().fromAdjacencyList(adj2)
+        mol3 = Molecule().fromAdjacencyList(adj3)
 
         mol_list = [mol1,mol2,mol3]
         octet_deviation_list = get_octet_deviation_list(mol_list)
@@ -80,7 +81,7 @@ class FiltrationTest(unittest.TestCase):
         3 N u0 p1 c0 {1,T}
         4 H u0 p0 c0 {2,S}
         """
-        mol = molecule.Molecule().fromAdjacencyList(adj)
+        mol = Molecule().fromAdjacencyList(adj)
         octet_deviation = get_octet_deviation(mol)
         self.assertEqual(octet_deviation, 2)
 
@@ -91,7 +92,7 @@ class FiltrationTest(unittest.TestCase):
         2 O u0 p3 c-1 {1,S}
         3 O u0 p1 c+1 {1,T}
         """
-        mol = molecule.Molecule().fromAdjacencyList(adj)
+        mol = Molecule().fromAdjacencyList(adj)
         octet_deviation = get_octet_deviation(mol)
         self.assertEqual(octet_deviation, 1)
         self.assertEqual(mol.vertices[2].atomType.label, 'O4tc')
@@ -104,7 +105,7 @@ class FiltrationTest(unittest.TestCase):
         2 O u0 p2 c0 {1,D}
         3 O u0 p2 c0 {1,D}
         """
-        mol = molecule.Molecule().fromAdjacencyList(adj)
+        mol = Molecule().fromAdjacencyList(adj)
         mol.update()
         mol_list = generate_resonance_structures(mol, keep_isomorphic=False, filter_structures=True)
         for mol in mol_list:
@@ -130,7 +131,7 @@ class FiltrationTest(unittest.TestCase):
         10 H u0 p0 c0 {2,S}
         11 O u0 p2 c0 {3,D}
         """
-        mol = molecule.Molecule().fromAdjacencyList(adj)
+        mol = Molecule().fromAdjacencyList(adj)
         octet_deviation = get_octet_deviation(mol)
         self.assertEqual(octet_deviation, 1)
 
@@ -199,13 +200,13 @@ class FiltrationTest(unittest.TestCase):
         5 O u0 p3 c-1 {3,S}
         """
 
-        mol_list = [molecule.Molecule().fromAdjacencyList(adj1),
-        molecule.Molecule().fromAdjacencyList(adj2),
-        molecule.Molecule().fromAdjacencyList(adj3),
-        molecule.Molecule().fromAdjacencyList(adj4),
-        molecule.Molecule().fromAdjacencyList(adj5),
-        molecule.Molecule().fromAdjacencyList(adj6),
-        molecule.Molecule().fromAdjacencyList(adj7)]
+        mol_list = [Molecule().fromAdjacencyList(adj1),
+        Molecule().fromAdjacencyList(adj2),
+        Molecule().fromAdjacencyList(adj3),
+        Molecule().fromAdjacencyList(adj4),
+        Molecule().fromAdjacencyList(adj5),
+        Molecule().fromAdjacencyList(adj6),
+        Molecule().fromAdjacencyList(adj7)]
 
         for mol in mol_list:
             mol.update()  # the charge_filtration uses the atom.sortingLabel attribute

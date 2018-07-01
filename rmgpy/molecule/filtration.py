@@ -43,9 +43,10 @@ The rules this module follows are (by order of importance):
 """
 
 import logging
-from .molecule import Molecule
-from .element import PeriodicSystem
-from .pathfinder import find_shortest_path
+
+from rmgpy.molecule.molecule import Molecule
+from rmgpy.molecule.element import PeriodicSystem
+from rmgpy.molecule.pathfinder import find_shortest_path
 from rmgpy.exceptions import ResonanceError
 
 
@@ -54,7 +55,6 @@ def filter_structures(mol_list, mark_unreactive=True):
     We often get too many resonance structures from the combination of all rules, particularly for species containing
     lone pairs. This method filters them out by minimizing the number of C/N/O/S atoms without a full octet.
     """
-
     if not all([(mol.multiplicity == mol_list[0].multiplicity) for mol in mol_list]):
         raise ValueError("Cannot filter structures with different multiplicities!")
 
@@ -81,7 +81,6 @@ def get_octet_deviation_list(mol_list):
     """
     Returns the a list of octet deviations for a respective list of :class:Molecule objects
     """
-
     octet_deviation_list = []
     for mol in mol_list:
         octet_deviation_list.append(get_octet_deviation(mol))
@@ -93,7 +92,6 @@ def get_octet_deviation(mol):
     """
     Returns the octet deviation for a :class:Molecule object
     """
-
     if not isinstance(mol, Molecule):
         raise ValueError("Octet deviation could only be determined for Molecule objects.")
 
@@ -156,7 +154,6 @@ def octet_filtration(mol_list, octet_deviation_list):
     charge-strained species are still kept (e.g., [NH]N=S=O <-> [NH+]#[N+][S-][O-]), we also generate during the same
     loop a charge_span_list to keep track of the charge spans. This is used for further filtering.
     """
-
     filtered_list = []
     charge_span_list = []
     for index, mol in enumerate(mol_list):
@@ -172,7 +169,6 @@ def get_charge_span_list(mol_list):
     Returns the a list of charge spans for a respective list of :class:Molecule objects
     This is also calculated in the octet_filtration() method along with the octet filtration process
     """
-
     charge_span_list = []
     for mol in mol_list:
         charge_span_list.append(mol.getChargeSpan())
@@ -201,7 +197,6 @@ def charge_filtration(filtered_list, charge_span_list):
     - The azide structure is know to have three resonance structures: [NH-][N+]#N <=> N=[N+]=[N-] <=> [NH+]#[N+][N-2];
       here we'll lose the third one, which is theoretically "true", but doesn't contribute to reactivity.
     """
-
     min_charge_span = min(charge_span_list)
     if len(set(charge_span_list)) > 1:
         # Proceed only if there are structures with different charge spans and the species is a radical.
@@ -291,7 +286,6 @@ def mark_unreactive_structures(filtered_list, mol_list):
     Mark selected structures in filtered_list with the Molecule.reactive flag set to `False` (it is `True` by default)
     Changes the filtered_list object, and does not return anything
     """
-
     # sort all structures in filtered_list so that the reactive ones are first
     filtered_list.sort(key=lambda mol: mol.reactive, reverse=True)
 
@@ -321,7 +315,6 @@ def check_reactive(filtered_list):
     Check that there's at least one reactive structure in the returned list.
     If not, raise an error (does not return anything)
     """
-
     if not any([mol.reactive for mol in filtered_list]):
         logging.info('\n\n')
         logging.error('No reactive structures were attributed to species {0}'.format(filtered_list[0].toSMILES()))
