@@ -44,7 +44,7 @@ jobs:
         - conda list
         # Setup MOPAC license key
         - yes 'Yes' | $HOME/miniconda/envs/rmg_env/bin/mopac $MOPACKEY > /dev/null
-        - make
+        - make -j2
       script:
         - make test-unittests
         - make test-functional
