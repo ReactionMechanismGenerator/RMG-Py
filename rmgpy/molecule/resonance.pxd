@@ -38,11 +38,11 @@ cpdef list _generate_resonance_structures(list mol_list, list method_list, bint 
 
 cpdef list generate_allyl_delocalization_resonance_structures(Molecule mol)
 
-cpdef list generate_lone_pair_radical_resonance_structures(Molecule mol)
+cpdef list generate_adj_lone_pair_radical_resonance_structures(Molecule mol)
 
-cpdef list generate_lone_pair_multiple_bond_resonance_structures(Molecule mol)
+cpdef list generate_adj_lone_pair_multiple_bond_resonance_structures(Molecule mol)
 
-cpdef list generate_lone_pair_radical_multiple_bond_resonance_structures(Molecule mol)
+cpdef list generate_adj_lone_pair_radical_multiple_bond_resonance_structures(Molecule mol)
 
 cpdef list generate_N5ddc_N5tc_resonance_structures(Molecule mol)
 

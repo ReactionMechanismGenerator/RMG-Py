@@ -39,9 +39,9 @@ Currently supported resonance types:
 
 - All species:
     - ``generate_allyl_delocalization_resonance_structures``: single radical shift with double or triple bond
-    - ``generate_lone_pair_radical_resonance_structures``: single radical shift with lone pair
-    - ``generate_lone_pair_multiple_bond_resonance_structures``: multiple bond shift with lone pair
-    - ``generate_lone_pair_radical_multiple_bond_resonance_structures``: multiple bond and radical shift with lone pair and radical
+    - ``generate_adj_lone_pair_radical_resonance_structures``: single radical shift with lone pair between adjacent atoms
+    - ``generate_adj_lone_pair_multiple_bond_resonance_structures``: multiple bond shift with lone pair between adjacent atoms
+    - ``generate_adj_lone_pair_radical_multiple_bond_resonance_structures``: multiple bond and radical shift with lone pair and radical  between adjacent atoms
     - ``generate_N5ddc_N5tc_resonance_structures``: shift between nitrogen with two double bonds and single + triple bond
     - ``generate_N5dc_radical_resonance_structures``: shift between radical and lone pair mediated by an N5dc atom
     - ``generate_N5dc_resonance_structures``: shift between double bond and lone pair mediated by an N5dc atom
@@ -78,9 +78,9 @@ def populate_resonance_algorithms(features=None):
     if features is None:
         method_list = [
             generate_allyl_delocalization_resonance_structures,
-            generate_lone_pair_radical_resonance_structures,
-            generate_lone_pair_multiple_bond_resonance_structures,
-            generate_lone_pair_radical_multiple_bond_resonance_structures,
+            generate_adj_lone_pair_radical_resonance_structures,
+            generate_adj_lone_pair_multiple_bond_resonance_structures,
+            generate_adj_lone_pair_radical_multiple_bond_resonance_structures,
             generate_N5ddc_N5tc_resonance_structures,
             generate_N5dc_radical_resonance_structures,
             generate_N5dc_resonance_structures,
@@ -100,9 +100,9 @@ def populate_resonance_algorithms(features=None):
             method_list.append(generate_N5dc_radical_resonance_structures)
             method_list.append(generate_N5dc_resonance_structures)
         if features['hasLonePairs']:
-            method_list.append(generate_lone_pair_radical_resonance_structures)
-            method_list.append(generate_lone_pair_multiple_bond_resonance_structures)
-            method_list.append(generate_lone_pair_radical_multiple_bond_resonance_structures)
+            method_list.append(generate_adj_lone_pair_radical_resonance_structures)
+            method_list.append(generate_adj_lone_pair_multiple_bond_resonance_structures)
+            method_list.append(generate_adj_lone_pair_radical_multiple_bond_resonance_structures)
 
     return method_list
 
@@ -360,9 +360,9 @@ def generate_allyl_delocalization_resonance_structures(mol):
     return structures
 
 
-def generate_lone_pair_radical_resonance_structures(mol):
+def generate_adj_lone_pair_radical_resonance_structures(mol):
     """
-    Generate all of the resonance structures formed by lone electron pair - radical shifts.
+    Generate all of the resonance structures formed by lone electron pair - radical shifts between adjacent atoms.
     These resonance transformations do not involve changing bond orders.
     NO2 example: O=[:N]-[::O.] <=> O=[N.+]-[:::O-]
     (where ':' denotes a lone pair, '.' denotes a radical, '-' not in [] denotes a single bond, '-'/'+' denote charge)
@@ -374,7 +374,7 @@ def generate_lone_pair_radical_resonance_structures(mol):
     structures = []
     if mol.isRadical():  # Iterate over radicals in structure
         for atom in mol.vertices:
-            paths = pathfinder.find_lone_pair_radical_delocalization_paths(atom)
+            paths = pathfinder.find_adj_lone_pair_radical_delocalization_paths(atom)
             for atom1, atom2 in paths:
                 # Adjust to (potentially) new resonance structure
                 atom1.decrementRadical()
@@ -410,9 +410,9 @@ def generate_lone_pair_radical_resonance_structures(mol):
     return structures
 
 
-def generate_lone_pair_multiple_bond_resonance_structures(mol):
+def generate_adj_lone_pair_multiple_bond_resonance_structures(mol):
     """
-    Generate all of the resonance structures formed by lone electron pair - multiple bond shifts.
+    Generate all of the resonance structures formed by lone electron pair - multiple bond shifts between adjacent atoms.
     Example: [:NH]=[CH2] <=> [::NH-]-[CH2+]
     (where ':' denotes a lone pair, '.' denotes a radical, '-' not in [] denotes a single bond, '-'/'+' denote charge)
     Here atom1 refers to the N/S/O atom, atom 2 refers to the any R!H (atom2's lonePairs aren't affected)
@@ -424,7 +424,7 @@ def generate_lone_pair_multiple_bond_resonance_structures(mol):
 
     structures = []
     for atom in mol.vertices:
-        paths = pathfinder.find_lone_pair_multiple_bond_delocalization_paths(atom)
+        paths = pathfinder.find_adj_lone_pair_multiple_bond_delocalization_paths(atom)
         for atom1, atom2, bond12, direction in paths:
             if direction == 1:  # The direction <increasing> the bond order
                 atom1.decrementLonePairs()
@@ -463,13 +463,13 @@ def generate_lone_pair_multiple_bond_resonance_structures(mol):
     return structures
 
 
-def generate_lone_pair_radical_multiple_bond_resonance_structures(mol):
+def generate_adj_lone_pair_radical_multiple_bond_resonance_structures(mol):
     """
-    Generate all of the resonance structures formed by lone electron pair - radical - multiple bond shifts.
+    Generate all of the resonance structures formed by lone electron pair - radical - multiple bond shifts between adjacent atoms.
     Example: [:N.]=[CH2] <=> [::N]-[.CH2]
     (where ':' denotes a lone pair, '.' denotes a radical, '-' not in [] denotes a single bond, '-'/'+' denote charge)
     Here atom1 refers to the N/S/O atom, atom 2 refers to the any R!H (atom2's lonePairs aren't affected)
-    This function is similar to generate_lone_pair_multiple_bond_resonance_structures() except for dealing with the
+    This function is similar to generate_adj_lone_pair_multiple_bond_resonance_structures() except for dealing with the
     radical transformations.
     (In direction 1 atom1 <losses> a lone pair, gains a radical, and atom2 looses a radical.
     In direction 2 atom1 <gains> a lone pair, looses a radical, and atom2 gains a radical)
@@ -481,7 +481,7 @@ def generate_lone_pair_radical_multiple_bond_resonance_structures(mol):
     structures = []
     if mol.isRadical():  # Iterate over radicals in structure
         for atom in mol.vertices:
-            paths = pathfinder.find_lone_pair_radical_multiple_bond_delocalization_paths(atom)
+            paths = pathfinder.find_adj_lone_pair_radical_multiple_bond_delocalization_paths(atom)
             for atom1, atom2, bond12, direction in paths:
                 if direction == 1:  # The direction <increasing> the bond order
                     atom1.decrementLonePairs()
