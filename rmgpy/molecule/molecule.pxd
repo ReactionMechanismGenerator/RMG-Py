@@ -223,6 +223,8 @@ cdef class Molecule(Graph):
     
     cpdef bint isRadical(self) except -2
 
+    cpdef bint has_lone_pairs(self) except -2
+
     cpdef bint isArylRadical(self, list aromaticRings=?) except -2
 
     cpdef float calculateSymmetryNumber(self) except -1

@@ -1746,6 +1746,17 @@ class Molecule(Graph):
                 return True
         return False
 
+    def has_lone_pairs(self):
+        """
+        Return ``True`` if the molecule contains at least one lone electron pair,
+        or ``False`` otherwise.
+        """
+        cython.declare(atom=Atom)
+        for atom in self.vertices:
+            if atom.lonePairs > 0:
+                return True
+        return False
+
     def isArylRadical(self, aromaticRings=None):
         """
         Return ``True`` if the molecule only contains aryl radicals,
