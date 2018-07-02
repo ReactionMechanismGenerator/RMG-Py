@@ -1591,6 +1591,14 @@ class CoreEdgeReactionModel:
                 # Don't add to the edge library reactions that were already processed
                 self.addReactionToEdge(rxn)
 
+        if self.saveEdgeSpecies:
+            from rmgpy.chemkin import markDuplicateReaction
+            newEdgeReactions = self.edge.reactions[numOldEdgeReactions:]
+            checkedReactions = self.core.reactions + self.edge.reactions[:numOldEdgeReactions]
+            for rxn in newEdgeReactions:
+                markDuplicateReaction(rxn, checkedReactions)
+                checkedReactions.append(rxn)
+
         self.printEnlargeSummary(
             newCoreSpecies=[],
             newCoreReactions=[],
