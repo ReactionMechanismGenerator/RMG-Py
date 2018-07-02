@@ -68,7 +68,7 @@ class FiltrationTest(unittest.TestCase):
         octet_deviation_list = get_octet_deviation_list(mol_list)
         filtered_list = filter_structures(mol_list)
 
-        self.assertEqual(octet_deviation_list,[1,3,3])
+        self.assertEqual(octet_deviation_list,[1, 4, 3])
         self.assertEqual(len(filtered_list), 1)
         self.assertTrue(all([atom.charge == 0 for atom in filtered_list[0].vertices]))
 
@@ -133,7 +133,46 @@ class FiltrationTest(unittest.TestCase):
         """
         mol = Molecule().fromAdjacencyList(adj)
         octet_deviation = get_octet_deviation(mol)
-        self.assertEqual(octet_deviation, 1)
+        self.assertEqual(octet_deviation, 3.0)
+
+    def radical_site_test(self):
+        """Test that a charged molecule isn't filtered if it introduces new radical site"""
+        adj1 = """
+        multiplicity 2
+        1 O u1 p2 c0 {3,S}
+        2 O u0 p2 c0 {3,D}
+        3 N u0 p1 c0 {1,S} {2,D}
+        """
+        adj2 = """
+        multiplicity 2
+        1 O u0 p3 c-1 {3,S}
+        2 O u0 p2 c0 {3,D}
+        3 N u1 p0 c+1 {1,S} {2,D}
+        """
+        adj3 = """
+        multiplicity 2
+        1 O u1 p2 c0 {3,S}
+        2 O u0 p3 c-1 {3,S}
+        3 N u0 p1 c+1 {1,S} {2,S}
+        """
+
+        mol_list = [Molecule().fromAdjacencyList(adj1),
+                    Molecule().fromAdjacencyList(adj2),
+                    Molecule().fromAdjacencyList(adj3)]
+
+        for mol in mol_list:
+            mol.update()  # the charge_filtration uses the atom.sortingLabel attribute
+
+        filtered_list = charge_filtration(mol_list, get_charge_span_list(mol_list))
+        self.assertEqual(len(filtered_list), 2)
+        self.assertTrue(any([mol.getChargeSpan() == 1 for mol in filtered_list]))
+        for mol in filtered_list:
+            if mol.getChargeSpan() == 1:
+                for atom in mol.vertices:
+                    if atom.charge == -1:
+                        self.assertTrue(atom.isOxygen())
+                    if atom.charge == 1:
+                        self.assertTrue(atom.isNitrogen())
 
     def electronegativity_test(self):
         """Test that structures with charge separation are only kept if they obey the electronegativity rule
@@ -201,12 +240,12 @@ class FiltrationTest(unittest.TestCase):
         """
 
         mol_list = [Molecule().fromAdjacencyList(adj1),
-        Molecule().fromAdjacencyList(adj2),
-        Molecule().fromAdjacencyList(adj3),
-        Molecule().fromAdjacencyList(adj4),
-        Molecule().fromAdjacencyList(adj5),
-        Molecule().fromAdjacencyList(adj6),
-        Molecule().fromAdjacencyList(adj7)]
+                    Molecule().fromAdjacencyList(adj2),
+                    Molecule().fromAdjacencyList(adj3),
+                    Molecule().fromAdjacencyList(adj4),
+                    Molecule().fromAdjacencyList(adj5),
+                    Molecule().fromAdjacencyList(adj6),
+                    Molecule().fromAdjacencyList(adj7)]
 
         for mol in mol_list:
             mol.update()  # the charge_filtration uses the atom.sortingLabel attribute

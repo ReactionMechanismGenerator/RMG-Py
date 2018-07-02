@@ -206,7 +206,7 @@ class TestSpecies(unittest.TestCase):
                                                                 3 O u1 p2 c0 {1,S}
                                                                 4 O u0 p1 c+1 {1,T}
                                                                 5 H u0 p0 c0 {2,S}""")
-        spc4_correct = Species().fromSMILES('N#[N+][S-](O)O')  # check O4dc penalty
+        spc4_correct = Species().fromSMILES('OS(=[N+]=[N-])O')  # check O4dc penalty
         spc4_nonrepresentative = Species().fromAdjacencyList("""1 S u0 p0 c+1 {2,D} {3,D} {4,S}
                                                                 2 N u0 p1 c0 {1,D} {5,S}
                                                                 3 O u0 p1 c+1 {1,D} {6,S}
@@ -224,7 +224,7 @@ class TestSpecies(unittest.TestCase):
         spc6_nonrepresentative = Species().fromAdjacencyList("""multiplicity 3
                                                                 1 O u0 p2 c0 {2,D}
                                                                 2 S u2 p1 c0 {1,D}""")
-        spc7_correct = Species().fromSMILES('N#[N+]SS[O-]')  # checks the S#S case
+        spc7_correct = Species().fromSMILES('[N-]=[N+]=S=S=O')  # checks the S#S case
         spc7_nonrepresentative = Species().fromAdjacencyList("""1 S u0 p1 c0 {2,S} {3,T}
                                                                 2 N u0 p0 c+1 {1,S} {4,T}
                                                                 3 S u0 p1 c0 {1,T} {5,S}

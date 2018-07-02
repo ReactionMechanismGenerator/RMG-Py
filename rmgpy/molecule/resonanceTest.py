@@ -144,8 +144,7 @@ class ResonanceTest(unittest.TestCase):
         """Test resonance structure generation for ethyl azide
 
         Simple case for N5ddc <=> N5tc resonance
-        Azides are described by three resonance structures: N=[N+]=[N-] <=> [NH-][N+]#N <=> [NH+]#[N+][N-2]
-        However, since the third does not contribute to reactivity and has a higher charge span, it is filtered out"""
+        Azides are described by three resonance structures: N=[N+]=[N-] <=> [NH-][N+]#N <=> [NH+]#[N+][N-2]"""
         molList = generate_resonance_structures(Molecule(SMILES="CCN=[N+]=[N-]"))
         self.assertEqual(len(molList), 2)
         self.assertTrue(all([any([atom.charge != 0 for atom in mol.vertices]) for mol in molList]))
@@ -210,11 +209,7 @@ class ResonanceTest(unittest.TestCase):
         mol = Molecule(SMILES="N[N+]([O-])=O")
         mol_list = generate_resonance_structures(mol, keep_isomorphic=True)
         self.assertEqual(len(mol_list), 2)
-        isomorphic_counter = 0
-        for mol1 in mol_list:
-            if mol1.isIsomorphic(mol):
-                isomorphic_counter += 1
-        self.assertEquals(isomorphic_counter, 2)
+        self.assertTrue(mol_list[0].isIsomorphic(mol_list[1]))
 
     def testStyryl1(self):
         """Test resonance structure generation for styryl, with radical on branch

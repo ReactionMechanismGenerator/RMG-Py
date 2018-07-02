@@ -405,6 +405,23 @@ class FindAllylDelocalizationPathsTest(unittest.TestCase):
         self.assertTrue(paths)
 
 
+class FindLonePairMultipleBondPathsTest(unittest.TestCase):
+    """
+    test the find_lone_pair_multiple_bond_paths method
+    """
+    def test_azide(self):
+        smiles = "[N-]=[N+]=N"
+        mol = Molecule().fromSMILES(smiles)
+        paths = find_lone_pair_multiple_bond_paths(mol.atoms[2])
+        self.assertTrue(paths)
+
+    def test_NH2CHO(self):
+        smiles = 'NC=O'
+        mol = Molecule().fromSMILES(smiles)
+        paths = find_lone_pair_multiple_bond_paths(mol.atoms[0])
+        self.assertTrue(paths)
+
+
 class FindAdjLonePairRadicalDelocalizationPaths(unittest.TestCase):
     """
     test the find_lone_pair_radical_delocalization_paths method
