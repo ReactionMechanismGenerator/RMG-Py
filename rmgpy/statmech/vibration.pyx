@@ -87,6 +87,7 @@ cdef class HarmonicOscillator(Vibration):
     def __init__(self, frequencies=None, quantum=True):
         Vibration.__init__(self, quantum)
         self.frequencies = quantity.Frequency(frequencies)
+        self.quantum = quantum
 
     def __repr__(self):
         """
