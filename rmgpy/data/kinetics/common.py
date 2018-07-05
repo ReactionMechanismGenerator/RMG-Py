@@ -87,6 +87,8 @@ def saveEntry(f, entry):
                 f.write('    allow_pdep_route = {0!r},\n'.format(entry.item.allow_pdep_route))
             if entry.item.elementary_high_p:
                 f.write('    elementary_high_p = {0!r},\n'.format(entry.item.elementary_high_p))
+            if entry.item.allow_max_rate_violation:
+                f.write('    allow_max_rate_violation = {0!r},\n'.format(entry.item.allow_max_rate_violation))
     #Entries for groups with have a group or logicNode for its item
     elif isinstance(entry.item, Group):
         f.write('    group = \n')

@@ -933,7 +933,32 @@ class TestMultiPDepArrhenius(unittest.TestCase):
                 kexp = kexplist[i,j]
                 kact = self.kinetics.getRateCoefficient(Tlist[i], Plist[j])
                 self.assertAlmostEqual(kexp, kact, delta=1e-4*kexp)
-        
+
+    def test_getRateCoefficient_diff_plist(self):
+        """
+        Test the MultiPDepArrhenius.getRateCoefficient() when plists are different.
+        """
+        # modify the MultiPDepArrhenius object with an additional entry
+        pressures = numpy.array([1e-1, 1e-1, 1e1])
+        self.kinetics.arrhenius[0].pressures = (pressures,"bar")
+        self.kinetics.arrhenius[0].arrhenius.insert(0, self.kinetics.arrhenius[0].arrhenius[0])
+
+        Tlist = numpy.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000])
+        Plist = numpy.array([1e4, 1e5, 1e6])
+        kexplist = numpy.array([
+            [2.85400e-08, 4.00384e-03, 2.73563e-01, 8.50699e+00, 1.20181e+02, 7.56312e+02, 2.84724e+03, 7.71702e+03,
+             1.67743e+04, 3.12290e+04],
+            [2.85400e-07, 4.00384e-02, 2.73563e+00, 8.50699e+01, 1.20181e+03, 7.56312e+03, 2.84724e+04, 7.71702e+04,
+             1.67743e+05, 3.12290e+05],
+            [2.85400e-06, 4.00384e-01, 2.73563e+01, 8.50699e+02, 1.20181e+04, 7.56312e+04, 2.84724e+05, 7.71702e+05,
+             1.67743e+06, 3.12290e+06],
+        ]).T
+        for i in range(Tlist.shape[0]):
+            for j in range(Plist.shape[0]):
+                kexp = kexplist[i, j]
+                kact = self.kinetics.getRateCoefficient(Tlist[i], Plist[j])
+                self.assertAlmostEqual(kexp, kact, delta=1e-4 * kexp)
+
     def test_pickle(self):
         """
         Test that a MultiPDepArrhenius object can be pickled and unpickled with
