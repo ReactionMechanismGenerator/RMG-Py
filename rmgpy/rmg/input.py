@@ -29,6 +29,7 @@
 ###############################################################################
 
 import logging
+import warnings
 import quantities
 import os
 import numpy
@@ -764,6 +765,8 @@ def saveInputFile(path, rmg):
     f.write('options(\n')
     f.write('    units = "{0}",\n'.format(rmg.units))
     if rmg.saveRestartPeriod:
+        warnings.warn("The option saveRestartPeriod is no longer supported and may be"
+                      " removed in version 2.3.", DeprecationWarning)
         f.write('    saveRestartPeriod = ({0},"{1}"),\n'.format(rmg.saveRestartPeriod.getValue(), rmg.saveRestartPeriod.units))
     else:
         f.write('    saveRestartPeriod = None,\n')

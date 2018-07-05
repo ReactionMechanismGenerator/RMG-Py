@@ -34,6 +34,7 @@ groups, including support for using group additivity to estimate rate
 coefficients.
 """
 import logging
+import warnings
 import math
 import numpy
 from copy import deepcopy
@@ -185,7 +186,8 @@ class KineticsGroups(Database):
         
         Returns just the kinetics.
         """
-
+        warnings.warn("Group additivity is no longer supported and may be"
+                      " removed in version 2.3.", DeprecationWarning)
         # Start with the generic kinetics of the top-level nodes
         # Make a copy so we don't modify the original
         kinetics = deepcopy(referenceKinetics)
@@ -310,7 +312,8 @@ class KineticsGroups(Database):
         changed significantly since the last time they were fitted, or ``False``
         otherwise.
         """
-        
+        warnings.warn("Group additivity is no longer supported and may be"
+                      " removed in version 2.3.", DeprecationWarning)
         # keep track of previous values so we can detect if they change
         old_entries = dict()
         for label,entry in self.entries.items():

@@ -35,6 +35,7 @@ import shutil
 import math
 import re
 import logging
+import warnings
 import textwrap
 import os.path
 import numpy
@@ -1198,6 +1199,9 @@ def readReactionsBlock(f, speciesDict, readComments = True):
 
         elif len(tokens) > 0 and tokens[0].lower() == 'unit:':
             # RMG-Java kinetics library file
+            warnings.warn("The RMG-Java kinetic library files are"
+                          " no longer supported and may be"
+                          " removed in version 2.3.", DeprecationWarning)
             found = True
             while 'reactions:' not in line.lower():
                 line = f.readline()
@@ -1296,6 +1300,8 @@ def readReactionsBlock(f, speciesDict, readComments = True):
         commentsList.pop(-1)
     elif kineticsList[0] == '' and commentsList[0] == '':
         # True for Chemkin files generated from RMG-Java
+        warnings.warn("RMG-Java loading is no longer supported and may be"
+                      " removed in version 2.3.", DeprecationWarning)
         kineticsList.pop(0)
         commentsList.pop(0)
     else:
@@ -1333,6 +1339,8 @@ def saveHTMLFile(path, readComments = True):
     """
     Save an output HTML file from the contents of a RMG-Java output folder
     """
+    warnings.warn("RMG-Java loading is no longer supported and may be"
+                  " removed in version 2.3.", DeprecationWarning)
     from rmgpy.rmg.model import CoreEdgeReactionModel
     from rmgpy.rmg.output import saveOutputHTML
     chemkinPath= os.path.join(path, 'chemkin', 'chem.inp')
@@ -1504,6 +1512,8 @@ def writeReactionString(reaction, javaLibrary = False):
                                     " reaction {0}".format(reaction.label)
 
     if javaLibrary:
+        warnings.warn("Writing RMG-Java format is no longer supported and may be"
+                      " removed in version 2.3.", DeprecationWarning)
         thirdBody = ''
         if kinetics.isPressureDependent():
             if (isinstance(kinetics, _kinetics.ThirdBody) and
@@ -1670,6 +1680,8 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
         string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(1, 0, 0)
         
     if javaLibrary:
+        warnings.warn("RMG-Java libraries are no longer supported and may be"
+                      " removed in version 2.3.", DeprecationWarning)
         # Assume uncertainties are zero (when parsing from chemkin), may need to adapt later
         string += '{0:<9.1f} {1:<9.1f} {2:<9.1f}'.format(0, 0, 0)
 
@@ -1939,6 +1951,8 @@ def saveJavaKineticsLibrary(path, species, reactions):
     and reactions.txt given a list of reactions, with species.txt containing the
     RMG-Java formatted dictionary.
     """
+    warnings.warn("Java kinetics libararies are no longer supported and may be"\
+            "removed in version 2.3.", DeprecationWarning)
     # Check for duplicate
     markDuplicateReactions(reactions)
     

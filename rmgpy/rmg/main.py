@@ -36,6 +36,7 @@ Generator (RMG).
 import os.path
 import sys
 import logging
+import warnings
 import time
 import shutil
 import numpy
@@ -568,6 +569,8 @@ class RMG(util.Subject):
             self.attach(OutputHTMLWriter(self.outputDirectory))
 
         if self.saveRestartPeriod:
+            warnings.warn("The option saveRestartPeriod is no longer supported and may be"
+                          " removed in version 2.3.", DeprecationWarning)
             self.attach(RestartWriter()) 
 
         if self.quantumMechanics:
@@ -1447,7 +1450,8 @@ class RMG(util.Subject):
         Load an RMG-Java job from the input file located at `inputFile`, or
         from the `inputFile` attribute if not given as a parameter.
         """
-        
+        warnings.warn("The RMG-Java input is no longer supported and may be"
+                      " removed in version 2.3.", DeprecationWarning)
         # NOTE: This function is currently incomplete!
         # It only loads a subset of the available information.
     
@@ -1599,6 +1603,8 @@ class RMG(util.Subject):
         Read a meaningful line from an RMG-Java condition file object `f`,
         returning the line with any comments removed.
         """
+        warnings.warn("The RMG-Java input is no longer supported and may be"
+                      " removed in version 2.3.", DeprecationWarning)
         line = f.readline()
         if line != '':
             line = line.strip()
