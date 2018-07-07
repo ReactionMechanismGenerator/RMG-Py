@@ -33,19 +33,19 @@ This module contains the main execution functionality for Reaction Mechanism
 Generator (RMG).
 """
 
-import os.path
 import sys
-import logging
 import warnings
 import time
+import logging
+import os
 import shutil
-import numpy
-np = numpy
+
+import numpy as np
 import gc
 import copy
-
 from copy import deepcopy
 from scipy.optimize import brute
+from cantera import ck2cti
 
 from rmgpy.rmg.settings import ModelSettings
 from rmgpy.constraints import failsSpeciesConstraints
@@ -53,9 +53,10 @@ from rmgpy.molecule import Molecule
 from rmgpy.solver.base import TerminationTime, TerminationConversion
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.data.rmg import RMGDatabase
-from rmgpy.exceptions import ForbiddenStructureException, DatabaseError
+from rmgpy.exceptions import ForbiddenStructureException, DatabaseError, CoreError
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
+from rmgpy.rmg.pdep import PDepReaction
 
 from rmgpy.data.thermo import ThermoLibrary
 from rmgpy.data.base import Entry
@@ -76,8 +77,6 @@ from rmgpy.qm.main import QMDatabaseWriter
 from rmgpy.stats import ExecutionStatsWriter
 from rmgpy.thermo.thermoengine import submit
 from rmgpy.tools.simulate import plot_sensitivity
-from cantera import ck2cti
-from rmgpy.exceptions import CoreError
 ################################################################################
 
 solvent = None
@@ -147,6 +146,10 @@ class RMG(util.Subject):
         self.clear()
         self.modelSettingsList = []
         self.simulatorSettingsList = []
+        self.Tmin = 0.0
+        self.Tmax = 0.0
+        self.Pmin = 0.0
+        self.Pmax = 0.0
     
     def clear(self):
         """
@@ -599,15 +602,16 @@ class RMG(util.Subject):
         self.register_listeners()
 
         self.done = False
-        
-        Tlist = []
-        for x in self.reactionSystems:
-            if x.Trange:
-                Tlist.append(x.Trange[1].value_si)
-            elif x.T:
-                Tlist.append(x.T.value_si)
-                
-        self.Tmax = max(Tlist)
+
+        # determine min and max values for T and P (don't determine P values for liquid reactors)
+        self.Tmin = min([r_sys.Trange[0] if r_sys.Trange else r_sys.T for r_sys in self.reactionSystems]).value_si
+        self.Tmax = max([r_sys.Trange[1] if r_sys.Trange else r_sys.T for r_sys in self.reactionSystems]).value_si
+        try:
+            self.Pmin = min([x.Prange[0] if x.Prange else x.P for x in self.reactionSystems]).value_si
+            self.Pmax = max([x.Prange[1] if x.Prange else x.P for x in self.reactionSystems]).value_si
+        except AttributeError:
+            # For LiquidReactor, Pmin and Pmax remain with the default value of `None`
+            pass
         
         self.rmg_memories = []
         
@@ -641,7 +645,7 @@ class RMG(util.Subject):
                 self.rmg_memories[index].generate_cond()
                 log_conditions(self.rmg_memories,index)
 
-        if not numpy.isinf(self.modelSettingsList[0].toleranceThermoKeepSpeciesInEdge):
+        if not np.isinf(self.modelSettingsList[0].toleranceThermoKeepSpeciesInEdge):
             self.reactionModel.setThermodynamicFilteringParameters(self.Tmax,toleranceThermoKeepSpeciesInEdge=self.modelSettingsList[0].toleranceThermoKeepSpeciesInEdge,
                                                               minCoreSizeForPrune=self.modelSettingsList[0].minCoreSizeForPrune, 
                                                               maximumEdgeSpecies =self.modelSettingsList[0].maximumEdgeSpecies,
@@ -652,7 +656,7 @@ class RMG(util.Subject):
             bimolecularReact=self.bimolecularReact,
             trimolecularReact=self.trimolecularReact)
         
-        if not numpy.isinf(self.modelSettingsList[0].toleranceThermoKeepSpeciesInEdge):
+        if not np.isinf(self.modelSettingsList[0].toleranceThermoKeepSpeciesInEdge):
             self.reactionModel.thermoFilterDown(maximumEdgeSpecies=self.modelSettingsList[0].maximumEdgeSpecies)
         
         logging.info('Completed initial enlarge edge step...')
@@ -809,7 +813,7 @@ class RMG(util.Subject):
                             else:
                                 self.updateReactionThresholdAndReactFlags()
                             
-                        if not numpy.isinf(modelSettings.toleranceThermoKeepSpeciesInEdge):
+                        if not np.isinf(modelSettings.toleranceThermoKeepSpeciesInEdge):
                             self.reactionModel.setThermodynamicFilteringParameters(self.Tmax, toleranceThermoKeepSpeciesInEdge=modelSettings.toleranceThermoKeepSpeciesInEdge,
                                                               minCoreSizeForPrune=modelSettings.minCoreSizeForPrune, 
                                                               maximumEdgeSpecies=modelSettings.maximumEdgeSpecies,
@@ -825,7 +829,7 @@ class RMG(util.Subject):
                         if oldEdgeSize != len(self.reactionModel.edge.reactions) or oldCoreSize != len(self.reactionModel.core.reactions):
                             reactorDone = False
                             
-                        if not numpy.isinf(self.modelSettingsList[0].toleranceThermoKeepSpeciesInEdge):
+                        if not np.isinf(self.modelSettingsList[0].toleranceThermoKeepSpeciesInEdge):
                             self.reactionModel.thermoFilterDown(maximumEdgeSpecies=modelSettings.maximumEdgeSpecies)
                         
                         maxNumSpcsHit = len(self.reactionModel.core.species) >= modelSettings.maxNumSpecies
@@ -951,6 +955,53 @@ class RMG(util.Subject):
                         'please open a GitHub issue with the following output:'
                         '\n{2}\n{3}'.format(spc.label, spc2.label, spc.toAdjacencyList(), spc2.toAdjacencyList())
                     )
+
+        # Check all core reactions (in both directions) for collision limit violation
+        violators = []
+        num_rxn_violators = 0
+        for rxn in self.reactionModel.core.reactions:
+            violator_list = rxn.check_collision_limit_violation(t_min=self.Tmin, t_max=self.Tmax,
+                                                            p_min=self.Pmin, p_max=self.Pmax)
+            if violator_list:
+                violators.extend(violator_list)
+                num_rxn_violators += 1
+        # Whether or not violators were found, rename 'collision_rate_violators.log' if it exists
+        if os.path.isfile('collision_rate_violators.log'):
+            # If there are no violators, yet the violators log exists (probably from a previous run
+            # in the same folder), rename it.
+            if os.path.isfile('collision_rate_violators_OLD.log'):
+                os.remove('collision_rate_violators_OLD.log')
+            os.rename('collision_rate_violators.log', 'collision_rate_violators_OLD.log')
+        if violators:
+            logging.info("\n")
+            logging.warning("{0} CORE reactions violate the collision rate limit!"
+                            "\nSee the 'collision_rate_violators.log' for details.\n\n".format(num_rxn_violators))
+            with open('collision_rate_violators.log', 'w') as violators_f:
+                violators_f.write('*** Collision rate limit violators report ***\n'
+                                  '"Violation factor" is the ratio of the rate coefficient to the collision limit'
+                                  ' rate at the relevant conditions\n\n')
+                for violator in violators:
+                    rxn_string = str(violator[0])
+                    kinetics = violator[0].kinetics
+                    comment=''
+                    if isinstance(violator[0], TemplateReaction):
+                        comment = violator[0].kinetics.comment
+                        violator[0].kinetics.comment = ''  # the comment is printed better when outside of the object
+                    if isinstance(violator[0], LibraryReaction):
+                        comment = 'Kinetic library: {0}'.format(violator[0].library)
+                    if isinstance(violator[0], PDepReaction):
+                        comment = 'Network #{0}'.format(violator[0].network)
+                    direction = violator[1]
+                    ratio = violator[2]
+                    condition = violator[3]
+                    violators_f.write('{0}\n{1}\n{2}\nDirection: {3}\nViolation factor: {4:.2f}\n'
+                                      'Violation condition: {5}\n\n'.format(
+                                        rxn_string, kinetics, comment, direction, ratio, condition))
+                    if isinstance(violator[0], TemplateReaction):
+                        # although this is the end of the run, restore the original comment
+                        violator[0].kinetics.comment = comment
+        else:
+            logging.info("No collision rate violators found.")
 
     def makeSeedMech(self,firstTime=False):
         """
@@ -1169,19 +1220,19 @@ class RMG(util.Subject):
     def initializeReactionThresholdAndReactFlags(self):
         numCoreSpecies = len(self.reactionModel.core.species)
         if self.filterReactions:
-            self.unimolecularReact = numpy.zeros((numCoreSpecies),bool)
-            self.bimolecularReact = numpy.zeros((numCoreSpecies, numCoreSpecies),bool)
-            self.unimolecularThreshold = numpy.zeros((numCoreSpecies),bool)
-            self.bimolecularThreshold = numpy.zeros((numCoreSpecies, numCoreSpecies),bool)
+            self.unimolecularReact = np.zeros((numCoreSpecies),bool)
+            self.bimolecularReact = np.zeros((numCoreSpecies, numCoreSpecies),bool)
+            self.unimolecularThreshold = np.zeros((numCoreSpecies),bool)
+            self.bimolecularThreshold = np.zeros((numCoreSpecies, numCoreSpecies),bool)
             if self.trimolecular:
-                self.trimolecularReact = numpy.zeros((numCoreSpecies, numCoreSpecies, numCoreSpecies), bool)
-                self.trimolecularThreshold = numpy.zeros((numCoreSpecies, numCoreSpecies, numCoreSpecies), bool)
+                self.trimolecularReact = np.zeros((numCoreSpecies, numCoreSpecies, numCoreSpecies), bool)
+                self.trimolecularThreshold = np.zeros((numCoreSpecies, numCoreSpecies, numCoreSpecies), bool)
         else:
             # By default, react everything
-            self.unimolecularReact = numpy.ones((numCoreSpecies),bool)
-            self.bimolecularReact = numpy.ones((numCoreSpecies, numCoreSpecies),bool)
+            self.unimolecularReact = np.ones((numCoreSpecies),bool)
+            self.bimolecularReact = np.ones((numCoreSpecies, numCoreSpecies),bool)
             if self.trimolecular:
-                self.trimolecularReact = numpy.ones((numCoreSpecies, numCoreSpecies, numCoreSpecies),bool)
+                self.trimolecularReact = np.ones((numCoreSpecies, numCoreSpecies, numCoreSpecies),bool)
             # No need to initialize reaction threshold arrays in this case
     
     def updateReactionThresholdAndReactFlags(self,
@@ -1200,12 +1251,12 @@ class RMG(util.Subject):
         if self.filterReactions:
             if stale:
                 # Reset and expand the react arrays if there were new core species added
-                self.unimolecularReact = numpy.zeros((numCoreSpecies), bool)
-                self.bimolecularReact = numpy.zeros((numCoreSpecies, numCoreSpecies), bool)
+                self.unimolecularReact = np.zeros((numCoreSpecies), bool)
+                self.bimolecularReact = np.zeros((numCoreSpecies, numCoreSpecies), bool)
 
                 # Expand the threshold arrays if there were new core species added
-                unimolecularThreshold = numpy.zeros((numCoreSpecies), bool)
-                bimolecularThreshold = numpy.zeros((numCoreSpecies, numCoreSpecies), bool)
+                unimolecularThreshold = np.zeros((numCoreSpecies), bool)
+                bimolecularThreshold = np.zeros((numCoreSpecies, numCoreSpecies), bool)
 
                 # Broadcast original thresholds
                 unimolecularThreshold[:prevNumCoreSpecies] = self.unimolecularThreshold
@@ -1214,8 +1265,8 @@ class RMG(util.Subject):
                 self.bimolecularThreshold = bimolecularThreshold
 
                 if self.trimolecular:
-                    self.trimolecularReact = numpy.zeros((numCoreSpecies, numCoreSpecies, numCoreSpecies), bool)
-                    trimolecularThreshold = numpy.zeros((numCoreSpecies, numCoreSpecies, numCoreSpecies), bool)
+                    self.trimolecularReact = np.zeros((numCoreSpecies, numCoreSpecies, numCoreSpecies), bool)
+                    trimolecularThreshold = np.zeros((numCoreSpecies, numCoreSpecies, numCoreSpecies), bool)
                     trimolecularThreshold[:prevNumCoreSpecies,
                                           :prevNumCoreSpecies,
                                           :prevNumCoreSpecies] = self.trimolecularThreshold
@@ -1250,10 +1301,10 @@ class RMG(util.Subject):
             # We are not filtering reactions
             if stale:
                 # Reset and expand the react arrays if there were new core species added
-                self.unimolecularReact = numpy.zeros((numCoreSpecies), bool)
-                self.bimolecularReact = numpy.zeros((numCoreSpecies, numCoreSpecies), bool)
+                self.unimolecularReact = np.zeros((numCoreSpecies), bool)
+                self.bimolecularReact = np.zeros((numCoreSpecies, numCoreSpecies), bool)
                 if self.trimolecular:
-                    self.trimolecularReact = numpy.zeros((numCoreSpecies, numCoreSpecies, numCoreSpecies), bool)
+                    self.trimolecularReact = np.zeros((numCoreSpecies, numCoreSpecies, numCoreSpecies), bool)
                 
                 # React all the new core species unimolecularly
                 for i in xrange(prevNumCoreSpecies, numCoreSpecies):
@@ -1585,7 +1636,7 @@ class RMG(util.Subject):
         
         assert len(Tlist) > 0
         assert len(Plist) > 0
-        concentrationList = numpy.array(concentrationList)
+        concentrationList = np.array(concentrationList)
         assert concentrationList.shape[1] > 0  # An arbitrary number of concentrations is acceptable, and should be run for each reactor system 
         
         # Make a reaction system for each (T,P) combination
@@ -1593,7 +1644,7 @@ class RMG(util.Subject):
             for P in Plist:
                 for i in range(concentrationList.shape[1]):
                     concentrations = concentrationList[:,i]
-                    totalConc = numpy.sum(concentrations)
+                    totalConc = np.sum(concentrations)
                     initialMoleFractions = dict([(self.initialSpecies[i], concentrations[i] / totalConc) for i in range(len(self.initialSpecies))])
                     reactionSystem = SimpleReactor(T, P, initialMoleFractions=initialMoleFractions, termination=termination)
                     self.reactionSystems.append(reactionSystem)
