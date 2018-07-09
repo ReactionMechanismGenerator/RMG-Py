@@ -1401,6 +1401,9 @@ class ThermoDatabase(object):
         # (groupAdditivity=True means it appends the comments)
         addThermoData(thermo, adsorptionThermo, groupAdditivity=True)
 
+        if thermo.label:
+            thermo.label += 'X'
+
         findCp0andCpInf(species, thermo)
         return thermo
         
