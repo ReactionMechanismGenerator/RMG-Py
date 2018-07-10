@@ -1522,7 +1522,7 @@ class KineticsFamily(Database):
             return True
         return False
 
-    def __createReaction(self, reactants, products, is_forward):
+    def __createReaction(self, reactants, products, is_forward, checkDifferences=True):
         """
         Create and return a new :class:`Reaction` object containing the
         provided `reactants` and `products` as lists of :class:`Molecule`
@@ -1530,7 +1530,7 @@ class KineticsFamily(Database):
         """
 
         # Make sure the products are in fact different than the reactants
-        if isomorphic_species_lists(reactants, products):
+        if checkDifferences and isomorphic_species_lists(reactants, products):
             return None
 
         # Create and return template reaction object
