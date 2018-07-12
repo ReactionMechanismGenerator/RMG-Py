@@ -1232,7 +1232,7 @@ class Group(Graph):
             
         #generate appropriate R and R!H
         if R is None:
-            R = ['H','C','N','O','Si','S','Cl'] #set of possible R elements/atoms
+            R = elements.BDE_elements #set of possible R elements/atoms
             R = [atomTypes[x] for x in R]
         
         Rbonds = [1,2,3,1.5]

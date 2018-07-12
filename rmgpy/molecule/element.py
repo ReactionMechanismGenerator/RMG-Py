@@ -319,6 +319,8 @@ elementList = [
 #Bond Dissociation Energies
 #Reference: Huheey, pps. A-21 to A-34; T.L. Cottrell, "The Strengths of Chemical Bonds," 2nd ed., Butterworths, London, 1958; B. deB. Darwent, "National Standard Reference Data Series," National Bureau of Standards, No. 31, Washington, DC, 1970; S.W. Benson, J. Chem. Educ., 42, 502 (1965).
 #(C,C,1.5) was taken from an unsourced table that had similar values to those used below, should be replaced if a sourced value becomes available
+
+BDE_elements = ['C','N','H','O','S','Cl','Si'] # elements supported by BDE
 BDEDict = {('H','H',1.0):(432.0,'kJ/mol'),('H','C',1):(411.0,'kJ/mol'),
           ('H','N',1):(386.0,'kJ/mol'), ('H','O',1.0):(459.0,'kJ/mol'),
           ('H','S',1):(363.0,'kJ/mol'), ('H','Cl',1): (428.0,'kJ/mol'),
