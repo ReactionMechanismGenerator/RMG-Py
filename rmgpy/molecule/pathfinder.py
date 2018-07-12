@@ -37,6 +37,7 @@ import itertools
 
 from Queue import Queue
 
+from rmgpy.molecule.molecule import Atom, Bond
 
 def find_butadiene(start, end):
     """
@@ -269,7 +270,9 @@ def find_lone_pair_radical_delocalization_paths(atom1):
     by `atom1`. Used to generate resonance isomers in adjacent N/O/S atoms.
     Two adjacent O atoms are not allowed since (a) currently RMG has no good thermo/kinetics for R[:O+.][:::O-] which
     could have been generated as a resonance structure of R[::O][::O.].
+
     The radical site (atom1) could be either:
+
     - `N u1 p0`, eg O=[N.+][:::O-]
     - `N u1 p1`, eg R[:NH][:NH.]
     - `O u1 p1`, eg [:O.+]=[::N-]; not allowed when adjacent to another O atom
@@ -278,7 +281,9 @@ def find_lone_pair_radical_delocalization_paths(atom1):
     - `S u1 p1`, eg O[:S.+][O-]
     - `S u1 p2`, eg O=N[::S.]
     - any of the above with more than 1 radical where possible
+
     The non-radical site (atom2) could respectively be:
+
     - `N u0 p1`
     - `N u0 p2`
     - `O u0 p2`
@@ -286,6 +291,7 @@ def find_lone_pair_radical_delocalization_paths(atom1):
     - `S u0 p1`
     - `S u0 p2`
     - `S u0 p3`
+
     (where ':' denotes a lone pair, '.' denotes a radical, '-' not in [] denotes a single bond, '-'/'+' denote charge)
     The bond between the sites does not have to be single, e.g.: [:O.+]=[::N-] <=> [::O]=[:N.]
     """
@@ -307,14 +313,18 @@ def find_lone_pair_radical_delocalization_paths(atom1):
 def find_lone_pair_multiple_bond_delocalization_paths(atom1):
     """
     Find all the delocalization paths of a N/O/S atom1 which either:
+
     - Has a lonePair and is bonded by a single/double bond (e.g., [::NH-]-[CH2+], [::N-]=[CH+]) -- direction 1
     - Can obtain a lonePair and is bonded by a double/triple bond (e.g., [:NH]=[CH2], [:N]#[CH]) -- direction 2
+
     Giving the following resonance transitions, for example:
+
     - [::NH-]-[CH2+] <=> [:NH]=[CH2]
     - [:N]#[CH] <=> [::N-]=[CH+]
     - N#[N+][O-] <=> <=> [N-]=[N+]=O
     - C[N+](=O)[NH-] <=> <=> C[N+]([O-])=[NH]
     - other examples: S#N, N#[S], O=S([O])=O, [NH]=[N+]=[N-]
+
     Direction "1" is the direction <increasing> the bond order as in [::NH-]-[CH2+] <=> [:NH]=[CH2]
     Direction "2" is the direction <decreasing> the bond order as in [:NH]=[CH2] <=> [::NH-]-[CH2+]
     (where ':' denotes a lone pair, '.' denotes a radical, '-' not in [] denotes a single bond, '-'/'+' denote charge)
@@ -342,11 +352,15 @@ def find_lone_pair_multiple_bond_delocalization_paths(atom1):
 def find_lone_pair_radical_multiple_bond_delocalization_paths(atom1):
     """
     Find all the delocalization paths of a N/O/S atom1 which either:
+
     - Has a lonePair and is bonded by a single/double bond to a radical atom (e.g., [::N]-[.CH2])
     - Can obtain a lonePair, has a radical, and is bonded by a double/triple bond (e.g., [:N.]=[CH2])
+
     Giving the following resonance transitions, for example:
+
     - [::N]-[.CH2] <=> [:N.]=[CH2]
     - O[:S](=O)[::O.] <=> O[S.](=O)=[::O]
+
     Direction "1" is the direction <increasing> the bond order as in [::N]-[.CH2] <=> [:N.]=[CH2]
     Direction "2" is the direction <decreasing> the bond order as in [:N.]=[CH2] <=> [::N]-[.CH2]
     (where ':' denotes a lone pair, '.' denotes a radical, '-' not in [] denotes a single bond, '-'/'+' denote charge)
@@ -375,10 +389,13 @@ def find_N5ddc_N5tc_delocalization_paths(atom1):
     """
     Find all the resonance structures of nitrogen atoms with two double bonds (atomType N5ddc)
     and nitrogen atoms with one triple and one single bond (atomType N5tc).
+
     Examples:
+
     - N2O (N#[N+][O-] <-> [N-]=[N+]=O)
     - Azide (N#[N+][NH-] <-> [N-]=[N+]=N <-> [N-2][N+]#[NH+])
     - N#N group on sulfur (O[S-](O)[N+]#N <-> OS(O)=[N+]=[N-] <-> O[S+](O)#[N+][N-2])
+
     In this transition atom1 is the middle N+ (N5ddc or N5tc)
     A "if atom.atomType.label in ['N5ddc','N5tc']" check should be done before calling this function
     """

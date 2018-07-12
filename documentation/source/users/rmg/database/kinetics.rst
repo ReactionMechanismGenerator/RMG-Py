@@ -122,7 +122,7 @@ Below is a list of pre-packaged kinetics library reactions in RMG:
 +-------------------------------------------------------------+------------------------------------------------------------------------------------------+
 |GRI-HCO                                                      |The `HCO <=> H + CO` reaction                                                             |
 +-------------------------------------------------------------+------------------------------------------------------------------------------------------+
-|GRI-Mech3.0                                                  |Gas Research Institute natural gas mechanism optimized for 1 atm (discountinued Feb. 2000)|
+|GRI-Mech3.0                                                  |Gas Research Institute natural gas mechanism optimized for 1 atm (discontinued Feb. 2000) |
 +-------------------------------------------------------------+------------------------------------------------------------------------------------------+
 |GRI-Mech3.0-N                                                |GRI-Mech3.0 including nitrogen chemistry (NOx from N2)                                    |
 +-------------------------------------------------------------+------------------------------------------------------------------------------------------+
@@ -197,7 +197,7 @@ Below is a list of pre-packaged kinetics library reactions in RMG:
 
 
 
-.. _kineticsFamilies:
+.. _kinetics_families_db:
 
 Families
 ========

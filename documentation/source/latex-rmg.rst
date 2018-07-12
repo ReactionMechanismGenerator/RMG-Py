@@ -9,13 +9,13 @@ steps using a general understanding of how molecules react. This documentation i
 +---------------------------------------------+----------------------------------------------------------------------------------------+
 | I want to...                                | Resource                                                                               |
 +=============================================+========================================================================================+
-| analyze models & search databases           | `RMG website resources <http://rmg.mit.edu/>`__  (no download needed                   |
+| analyze models & search databases           | `RMG website resources <http://rmg.mit.edu/>`__  (no download needed)                  |
 +---------------------------------------------+----------------------------------------------------------------------------------------+
 | make transition state theory calculations   | Run Cantherm with the Canterm User's Guide                                             |
 +---------------------------------------------+----------------------------------------------------------------------------------------+
 | create mechanisms automatically             | Download RMG with the RMG User's Guide                                                 |
 +---------------------------------------------+----------------------------------------------------------------------------------------+
-| post an issue with RMG                      | `github issues page <https://github.com/ReactionMechanismGenerator/RMG-Py/issues>`__   |
+| post an issue with RMG                      | `GitHub issues page <https://github.com/ReactionMechanismGenerator/RMG-Py/issues>`__   |
 +---------------------------------------------+----------------------------------------------------------------------------------------+
 | contribute to RMG project                   | `RMG developer's wiki <https://github.com/ReactionMechanismGenerator/RMG-Py/wiki>`__   |
 +---------------------------------------------+----------------------------------------------------------------------------------------+
