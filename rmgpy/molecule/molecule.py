@@ -57,6 +57,7 @@ import rmgpy.molecule.resonance as resonance
 from .kekulize import kekulize
 from .adjlist import Saturator
 from rmgpy.exceptions import DependencyError
+from rmgpy.molecule.element import BDEs
 
 ################################################################################
 
@@ -516,7 +517,17 @@ class Bond(Edge):
     @property
     def atom2(self):
         return self.vertex2
-
+    
+    def getBDE(self):
+        """
+        estimate the bond dissociation energy in J/mol of the bond based on the order of the bond
+        and the atoms involved in the bond
+        """
+        try:
+            return BDEs[(self.atom1.element.symbol,self.atom2.element.symbol,self.order)]
+        except KeyError:
+            raise KeyError('Bond Dissociation energy not known for combination: ({0},{1},{2})'.format(self.atom1.element.symbol, self.atom2.element.symbol,self.order))
+    
     def equivalent(self, other):
         """
         Return ``True`` if `other` is indistinguishable from this bond, or
