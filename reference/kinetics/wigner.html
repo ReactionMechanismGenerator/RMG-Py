@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>rmgpy.kinetics.Wigner &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,10 +43,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="troe.html" title="rmgpy.kinetics.Troe"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Kinetics (<code class="docutils literal"><span class="pre">rmgpy.kinetics</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Kinetics (<code class="docutils literal notranslate"><span class="pre">rmgpy.kinetics</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -88,11 +79,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </table>
 <p>An early formulation for incorporating the effect of tunneling is that of
 Wigner <a class="reference internal" href="#wigner" id="id1">[1932Wigner]</a>:</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[\kappa(T) = 1 + \frac{1}{24} \left( \frac{h \left| \nu_\mathrm{TS} \right|}{ k_\mathrm{B} T} \right)^2\]</div>
-<p>where <span class="math">\(h\)</span> is the Planck constant, <span class="math">\(\nu_\mathrm{TS}\)</span> is the
-negative frequency, <span class="math">\(k_\mathrm{B}\)</span> is the Boltzmann constant, and
-<span class="math">\(T\)</span> is the absolute temperature.</p>
+<p>where <span class="math notranslate nohighlight">\(h\)</span> is the Planck constant, <span class="math notranslate nohighlight">\(\nu_\mathrm{TS}\)</span> is the
+negative frequency, <span class="math notranslate nohighlight">\(k_\mathrm{B}\)</span> is the Boltzmann constant, and
+<span class="math notranslate nohighlight">\(T\)</span> is the absolute temperature.</p>
 <p>The Wigner formula represents the first correction term in a perturbative
 expansion for a parabolic barrier <a class="reference internal" href="#bell" id="id2">[1959Bell]</a>, and is therefore only accurate
 in the limit of a small tunneling correction. There are many cases for which
@@ -108,7 +99,7 @@ the reaction at the temperature <cite>T</cite> in K.</p>
 <dl class="method">
 <dt id="rmgpy.kinetics.Wigner.calculateTunnelingFunction">
 <code class="descname">calculateTunnelingFunction</code><span class="sig-paren">(</span><em>self</em>, <em>ndarray Elist</em><span class="sig-paren">)</span> &#x2192; ndarray<a class="headerlink" href="#rmgpy.kinetics.Wigner.calculateTunnelingFunction" title="Permalink to this definition">¶</a></dt>
-<dd><p>Raises <code class="xref py py-class docutils literal"><span class="pre">NotImplementedError</span></code>, as the Wigner tunneling model
+<dd><p>Raises <code class="xref py py-class docutils literal notranslate"><span class="pre">NotImplementedError</span></code>, as the Wigner tunneling model
 does not have a well-defined energy-dependent tunneling function.</p>
 </dd></dl>
 
@@ -183,12 +174,14 @@ does not have a well-defined energy-dependent tunneling function.</p>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -214,15 +207,15 @@ does not have a well-defined energy-dependent tunneling function.</p>
           <a href="troe.html" title="rmgpy.kinetics.Troe"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Kinetics (<code class="docutils literal"><span class="pre">rmgpy.kinetics</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Kinetics (<code class="docutils literal notranslate"><span class="pre">rmgpy.kinetics</span></code>)</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

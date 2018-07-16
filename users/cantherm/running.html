@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>5. Running CanTherm &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,7 +43,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="input_pdep.html" title="4. Creating Input Files for Pressure Dependent Calculations"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">CanTherm User’s Guide</a> &#187;</li> 
@@ -67,34 +58,34 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   <div class="section" id="running-cantherm">
 <h1>5. Running CanTherm<a class="headerlink" href="#running-cantherm" title="Permalink to this headline">¶</a></h1>
 <p>To execute a CanTherm job, invoke the command</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ python cantherm.py INPUTFILE
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python cantherm.py INPUTFILE
 </pre></div>
 </div>
 <p>The absolute or relative paths to the cantherm.py file as well as to the input file must be given.</p>
-<p>The job will run and the results will be saved to <code class="docutils literal"><span class="pre">output.py</span></code> in the same
+<p>The job will run and the results will be saved to <code class="docutils literal notranslate"><span class="pre">output.py</span></code> in the same
 directory as the input file. If you wish to save the output elsewhere, use
-the <code class="docutils literal"><span class="pre">-o</span></code>/<code class="docutils literal"><span class="pre">--output</span></code> option, e.g.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ python cantherm.py INPUTFILE -o OUTPUTFILE
+the <code class="docutils literal notranslate"><span class="pre">-o</span></code>/<code class="docutils literal notranslate"><span class="pre">--output</span></code> option, e.g.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python cantherm.py INPUTFILE -o OUTPUTFILE
 </pre></div>
 </div>
 <div class="section" id="drawing-potential-energy-surface">
 <h2>5.1. Drawing Potential Energy Surface<a class="headerlink" href="#drawing-potential-energy-surface" title="Permalink to this headline">¶</a></h2>
 <p>CanTherm contains functionality for automatically generating an image of the
 potential energy surface for a reaction network. This is done automatically
-and outputted in pdf format to a file called <code class="docutils literal"><span class="pre">network.pdf</span></code>.</p>
+and outputted in pdf format to a file called <code class="docutils literal notranslate"><span class="pre">network.pdf</span></code>.</p>
 </div>
 <div class="section" id="log-verbosity">
 <h2>5.2. Log Verbosity<a class="headerlink" href="#log-verbosity" title="Permalink to this headline">¶</a></h2>
 <p>You can manipulate the amount of information logged to the console window using
-the <code class="docutils literal"><span class="pre">-q</span></code>/<code class="docutils literal"><span class="pre">--quiet</span></code> flag (for quiet mode) or the <code class="docutils literal"><span class="pre">-v</span></code>/<code class="docutils literal"><span class="pre">--verbose</span></code> flag
+the <code class="docutils literal notranslate"><span class="pre">-q</span></code>/<code class="docutils literal notranslate"><span class="pre">--quiet</span></code> flag (for quiet mode) or the <code class="docutils literal notranslate"><span class="pre">-v</span></code>/<code class="docutils literal notranslate"><span class="pre">--verbose</span></code> flag
 (for verbose mode). The former causes the amount of logging information shown
 to decrease; the latter causes it to increase.</p>
 </div>
 <div class="section" id="help">
 <h2>5.3. Help<a class="headerlink" href="#help" title="Permalink to this headline">¶</a></h2>
-<p>To view help information and all available options, use the <code class="docutils literal"><span class="pre">-h</span></code>/<code class="docutils literal"><span class="pre">--help</span></code>
+<p>To view help information and all available options, use the <code class="docutils literal notranslate"><span class="pre">-h</span></code>/<code class="docutils literal notranslate"><span class="pre">--help</span></code>
 flag, e.g.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ python cantherm.py -h
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python cantherm.py -h
 </pre></div>
 </div>
 </div>
@@ -159,12 +150,14 @@ flag, e.g.</p>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -190,7 +183,7 @@ flag, e.g.</p>
           <a href="input_pdep.html" title="4. Creating Input Files for Pressure Dependent Calculations"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" >CanTherm User’s Guide</a> &#187;</li> 
@@ -198,7 +191,7 @@ flag, e.g.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

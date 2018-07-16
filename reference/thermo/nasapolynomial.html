@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>rmgpy.thermo.NASAPolynomial &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,10 +43,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="nasa.html" title="rmgpy.thermo.NASA"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Thermodynamics (<code class="docutils literal"><span class="pre">rmgpy.thermo</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Thermodynamics (<code class="docutils literal notranslate"><span class="pre">rmgpy.thermo</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -102,20 +93,20 @@ The attributes are:</p>
 </table>
 <p>The NASA polynomial is another representation of the heat capacity, enthalpy,
 and entropy using seven or nine coefficients
-<span class="math">\(\mathbf{a} = \left[a_{-2}\ a_{-1}\ a_0\ a_1\ a_2\ a_3\ a_4\ a_5\ a_6 \right]\)</span>.
+<span class="math notranslate nohighlight">\(\mathbf{a} = \left[a_{-2}\ a_{-1}\ a_0\ a_1\ a_2\ a_3\ a_4\ a_5\ a_6 \right]\)</span>.
 The relevant thermodynamic parameters are evaluated via the expressions</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[\frac{C_\mathrm{p}(T)}{R} = a_{-2} T^{-2} + a_{-1} T^{-1} + a_0 + a_1 T + a_2 T^2 + a_3 T^3 + a_4 T^4\]</div>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[\frac{H(T)}{RT} = - a_{-2} T^{-2} + a_{-1} T^{-1} \ln T + a_0 + \frac{1}{2} a_1 T + \frac{1}{3} a_2 T^2 + \frac{1}{4} a_3 T^3 + \frac{1}{5} a_4 T^4 + \frac{a_5}{T}\]</div>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[\frac{S(T)}{R} = -\frac{1}{2} a_{-2} T^{-2} - a_{-1} T^{-1} + a_0 \ln T + a_1 T + \frac{1}{2} a_2 T^2 + \frac{1}{3} a_3 T^3 + \frac{1}{4} a_4 T^4 + a_6\]</div>
-<p>In the seven-coefficient version, <span class="math">\(a_{-2} = a_{-1} = 0\)</span>.</p>
+<p>In the seven-coefficient version, <span class="math notranslate nohighlight">\(a_{-2} = a_{-1} = 0\)</span>.</p>
 <p>As simple polynomial expressions, the NASA polynomial is faster to evaluate
 when compared to the Wilhoit model; however, it does not have the nice
 physical behavior of the Wilhoit representation. Often multiple NASA polynomials
 are used to accurately represent the thermodynamics of a system over a wide
-temperature range; the <a class="reference internal" href="nasa.html#rmgpy.thermo.NASA" title="rmgpy.thermo.NASA"><code class="xref py py-class docutils literal"><span class="pre">NASA</span></code></a> class is available for this purpose.</p>
+temperature range; the <a class="reference internal" href="nasa.html#rmgpy.thermo.NASA" title="rmgpy.thermo.NASA"><code class="xref py py-class docutils literal notranslate"><span class="pre">NASA</span></code></a> class is available for this purpose.</p>
 <dl class="attribute">
 <dt id="rmgpy.thermo.NASAPolynomial.Cp0">
 <code class="descname">Cp0</code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.Cp0" title="Permalink to this definition">¶</a></dt>
@@ -131,19 +122,19 @@ temperature range; the <a class="reference internal" href="nasa.html#rmgpy.therm
 <dl class="attribute">
 <dt id="rmgpy.thermo.NASAPolynomial.E0">
 <code class="descname">E0</code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.E0" title="Permalink to this definition">¶</a></dt>
-<dd><p>The ground state energy (J/mol) at zero Kelvin, including zero point energy, or <code class="docutils literal"><span class="pre">None</span></code> if not yet specified.</p>
+<dd><p>The ground state energy (J/mol) at zero Kelvin, including zero point energy, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not yet specified.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.thermo.NASAPolynomial.Tmax">
 <code class="descname">Tmax</code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.Tmax" title="Permalink to this definition">¶</a></dt>
-<dd><p>The maximum temperature at which the model is valid, or <code class="docutils literal"><span class="pre">None</span></code> if not defined.</p>
+<dd><p>The maximum temperature at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.thermo.NASAPolynomial.Tmin">
 <code class="descname">Tmin</code><a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.Tmin" title="Permalink to this definition">¶</a></dt>
-<dd><p>The minimum temperature at which the model is valid, or <code class="docutils literal"><span class="pre">None</span></code> if not defined.</p>
+<dd><p>The minimum temperature at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -261,25 +252,25 @@ temperature <cite>T</cite> in K.</p>
 <dl class="method">
 <dt id="rmgpy.thermo.NASAPolynomial.isIdenticalTo">
 <code class="descname">isIdenticalTo</code><span class="sig-paren">(</span><em>self</em>, <em>HeatCapacityModel other</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns <code class="docutils literal"><span class="pre">True</span></code> if <cite>self</cite> and <cite>other</cite> report very similar thermo values
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>self</cite> and <cite>other</cite> report very similar thermo values
 for heat capacity, enthalpy, entropy, and free energy over a wide
-range of temperatures, or <code class="docutils literal"><span class="pre">False</span></code> otherwise.</p>
+range of temperatures, or <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.thermo.NASAPolynomial.isSimilarTo">
 <code class="descname">isSimilarTo</code><span class="sig-paren">(</span><em>self</em>, <em>HeatCapacityModel other</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.isSimilarTo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns <code class="docutils literal"><span class="pre">True</span></code> if <cite>self</cite> and <cite>other</cite> report similar thermo values
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>self</cite> and <cite>other</cite> report similar thermo values
 for heat capacity, enthalpy, entropy, and free energy over a wide
-range of temperatures, or <code class="docutils literal"><span class="pre">False</span></code> otherwise.</p>
+range of temperatures, or <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.thermo.NASAPolynomial.isTemperatureValid">
 <code class="descname">isTemperatureValid</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.thermo.NASAPolynomial.isTemperatureValid" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the temperature <cite>T</cite> in K is within the valid
-temperature range of the thermodynamic data, or <code class="docutils literal"><span class="pre">False</span></code> if not. If
-the minimum and maximum temperature are not defined, <code class="docutils literal"><span class="pre">True</span></code> is
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the temperature <cite>T</cite> in K is within the valid
+temperature range of the thermodynamic data, or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not. If
+the minimum and maximum temperature are not defined, <code class="docutils literal notranslate"><span class="pre">True</span></code> is
 returned.</p>
 </dd></dl>
 
@@ -327,7 +318,7 @@ returned.</p>
                         title="previous chapter">rmgpy.thermo.NASA</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="../exceptions.html"
-                        title="next chapter">RMG Exceptions (<code class="docutils literal"><span class="pre">rmgpy.exceptions</span></code>)</a></p>
+                        title="next chapter">RMG Exceptions (<code class="docutils literal notranslate"><span class="pre">rmgpy.exceptions</span></code>)</a></p>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -342,12 +333,14 @@ returned.</p>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -373,15 +366,15 @@ returned.</p>
           <a href="nasa.html" title="rmgpy.thermo.NASA"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Thermodynamics (<code class="docutils literal"><span class="pre">rmgpy.thermo</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Thermodynamics (<code class="docutils literal notranslate"><span class="pre">rmgpy.thermo</span></code>)</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>12.1. Introduction &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,7 +43,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="index.html" title="12. Databases"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User’s Guide</a> &#187;</li>
@@ -447,7 +438,7 @@ table below shows all atoms types in RMG.</p>
 </tbody>
 </table>
 <p>Additionally, groups can also be defined as unions of other groups. For example,:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;X_H_or_Xrad_H&quot;</span><span class="p">,</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;X_H_or_Xrad_H&quot;</span><span class="p">,</span>
 <span class="n">group</span><span class="o">=</span><span class="n">OR</span><span class="p">{</span><span class="n">X_H</span><span class="p">,</span> <span class="n">Xrad_H</span><span class="p">},</span>
 </pre></div>
 </div>
@@ -458,11 +449,11 @@ table below shows all atoms types in RMG.</p>
 ban pathways in a specific kinetic family.</p>
 <p>Globally forbidden structures will ban all reactions containing either reactants
 or products that are forbidden.  These groups are stored in in the file located at
-<code class="docutils literal"><span class="pre">RMG-database/input/forbiddenStructures.py</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">RMG-database/input/forbiddenStructures.py</span></code>.</p>
 <p>To ban certain specific pathways in the kinetics
 families, a <cite>forbidden</cite> group must be created, like the following group
-in the <code class="docutils literal"><span class="pre">intra_H_migration</span></code> family:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">forbidden</span><span class="p">(</span>
+in the <code class="docutils literal notranslate"><span class="pre">intra_H_migration</span></code> family:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">forbidden</span><span class="p">(</span>
     <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;bridged56_1254&quot;</span><span class="p">,</span>
     <span class="n">group</span> <span class="o">=</span>
 <span class="sd">&quot;&quot;&quot;</span>
@@ -484,15 +475,15 @@ in the <code class="docutils literal"><span class="pre">intra_H_migration</span>
 </pre></div>
 </div>
 <p>Forbidden groups should be placed inside the groups.py file located inside the
-specific kinetics family’s folder <code class="docutils literal"><span class="pre">RMG-database/input/kinetics/family_name/</span></code>
+specific kinetics family’s folder <code class="docutils literal notranslate"><span class="pre">RMG-database/input/kinetics/family_name/</span></code>
 alongside normal group entries. The starred atoms in the forbidden group
 ban the specified reaction recipe from occurring in matched products and reactants.</p>
 <p>In addition for forbidding groups, there is the option of forbidding specific
 molecules or species. Forbidding a molecule will prevent that exact structure
 from being generated, while forbidding a species will prevent any of its resonance
 structures from being generated. To specify a forbidden molecule or species, simply
-replace the <code class="docutils literal"><span class="pre">group</span></code> keyword with <code class="docutils literal"><span class="pre">molecule</span></code> or <code class="docutils literal"><span class="pre">species</span></code>:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># This forbids a molecule</span>
+replace the <code class="docutils literal notranslate"><span class="pre">group</span></code> keyword with <code class="docutils literal notranslate"><span class="pre">molecule</span></code> or <code class="docutils literal notranslate"><span class="pre">species</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># This forbids a molecule</span>
 <span class="n">forbidden</span><span class="p">(</span>
     <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;C_quintet&quot;</span><span class="p">,</span>
     <span class="n">molecule</span> <span class="o">=</span>
@@ -599,12 +590,14 @@ Templates can be filled in with kinetic parameters from the training set or rule
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -630,7 +623,7 @@ Templates can be filled in with kinetic parameters from the training set or rule
           <a href="index.html" title="12. Databases"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User’s Guide</a> &#187;</li>
@@ -639,7 +632,7 @@ Templates can be filled in with kinetic parameters from the training set or rule
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

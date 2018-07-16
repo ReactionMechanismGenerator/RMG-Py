@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>rmgpy.qm.mopac &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,10 +43,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="gaussian.html" title="rmgpy.qm.gaussian"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">QMTP (<code class="docutils literal"><span class="pre">rmgpy.qm</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">QMTP (<code class="docutils literal notranslate"><span class="pre">rmgpy.qm</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -70,7 +61,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <dt id="rmgpy.qm.mopac.Mopac">
 <em class="property">class </em><code class="descclassname">rmgpy.qm.mopac.</code><code class="descname">Mopac</code><a class="headerlink" href="#rmgpy.qm.mopac.Mopac" title="Permalink to this definition">¶</a></dt>
 <dd><p>A base class for all QM calculations that use MOPAC.</p>
-<p>Classes such as <code class="xref py py-class docutils literal"><span class="pre">MopacMol</span></code> will inherit from this class.</p>
+<p>Classes such as <a class="reference internal" href="#rmgpy.qm.mopac.MopacMol" title="rmgpy.qm.mopac.MopacMol"><code class="xref py py-class docutils literal notranslate"><span class="pre">MopacMol</span></code></a> will inherit from this class.</p>
 <dl class="attribute">
 <dt id="rmgpy.qm.mopac.Mopac.failureKeys">
 <code class="descname">failureKeys</code><em class="property"> = ['IMAGINARY FREQUENCIES', 'EXCESS NUMBER OF OPTIMIZATION CYCLES', 'NOT ENOUGH TIME FOR ANOTHER CYCLE']</em><a class="headerlink" href="#rmgpy.qm.mopac.Mopac.failureKeys" title="Permalink to this definition">¶</a></dt>
@@ -119,7 +110,7 @@ If all succeed, then it will return True.</p>
 <dt id="rmgpy.qm.mopac.MopacMol">
 <em class="property">class </em><code class="descclassname">rmgpy.qm.mopac.</code><code class="descname">MopacMol</code><span class="sig-paren">(</span><em>molecule</em>, <em>settings</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol" title="Permalink to this definition">¶</a></dt>
 <dd><p>A base Class for calculations of molecules using MOPAC.</p>
-<p>Inherits from both <code class="xref py py-class docutils literal"><span class="pre">QMMolecule</span></code> and <code class="xref py py-class docutils literal"><span class="pre">Mopac</span></code>.</p>
+<p>Inherits from both <code class="xref py py-class docutils literal notranslate"><span class="pre">QMMolecule</span></code> and <a class="reference internal" href="#rmgpy.qm.mopac.Mopac" title="rmgpy.qm.mopac.Mopac"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mopac</span></code></a>.</p>
 <dl class="method">
 <dt id="rmgpy.qm.mopac.MopacMol.calculateChiralityCorrection">
 <code class="descname">calculateChiralityCorrection</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.calculateChiralityCorrection" title="Permalink to this definition">¶</a></dt>
@@ -156,7 +147,7 @@ self.qmData and self.pointGroup need to be generated before this method is calle
 <dt id="rmgpy.qm.mopac.MopacMol.determinePointGroup">
 <code class="descname">determinePointGroup</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.determinePointGroup" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine point group using the SYMMETRY Program</p>
-<p>Stores the resulting <code class="xref py py-class docutils literal"><span class="pre">PointGroup</span></code> in self.pointGroup</p>
+<p>Stores the resulting <code class="xref py py-class docutils literal notranslate"><span class="pre">PointGroup</span></code> in self.pointGroup</p>
 </dd></dl>
 
 <dl class="method">
@@ -286,7 +277,7 @@ If all succeed, then it will return True.</p>
 <dl class="method">
 <dt id="rmgpy.qm.mopac.MopacMol.writeInputFile">
 <code class="descname">writeInputFile</code><span class="sig-paren">(</span><em>attempt</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMol.writeInputFile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Using the <code class="xref py py-class docutils literal"><span class="pre">Geometry</span></code> object, write the input file
+<dd><p>Using the <code class="xref py py-class docutils literal notranslate"><span class="pre">Geometry</span></code> object, write the input file
 for the <cite>attempt</cite>.</p>
 </dd></dl>
 
@@ -334,7 +325,7 @@ self.qmData and self.pointGroup need to be generated before this method is calle
 <dt id="rmgpy.qm.mopac.MopacMolPM3.determinePointGroup">
 <code class="descname">determinePointGroup</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.determinePointGroup" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine point group using the SYMMETRY Program</p>
-<p>Stores the resulting <code class="xref py py-class docutils literal"><span class="pre">PointGroup</span></code> in self.pointGroup</p>
+<p>Stores the resulting <code class="xref py py-class docutils literal notranslate"><span class="pre">PointGroup</span></code> in self.pointGroup</p>
 </dd></dl>
 
 <dl class="method">
@@ -459,7 +450,7 @@ If all succeed, then it will return True.</p>
 <dl class="method">
 <dt id="rmgpy.qm.mopac.MopacMolPM3.writeInputFile">
 <code class="descname">writeInputFile</code><span class="sig-paren">(</span><em>attempt</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM3.writeInputFile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Using the <code class="xref py py-class docutils literal"><span class="pre">Geometry</span></code> object, write the input file
+<dd><p>Using the <code class="xref py py-class docutils literal notranslate"><span class="pre">Geometry</span></code> object, write the input file
 for the <cite>attempt</cite>.</p>
 </dd></dl>
 
@@ -507,7 +498,7 @@ self.qmData and self.pointGroup need to be generated before this method is calle
 <dt id="rmgpy.qm.mopac.MopacMolPM6.determinePointGroup">
 <code class="descname">determinePointGroup</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.determinePointGroup" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine point group using the SYMMETRY Program</p>
-<p>Stores the resulting <code class="xref py py-class docutils literal"><span class="pre">PointGroup</span></code> in self.pointGroup</p>
+<p>Stores the resulting <code class="xref py py-class docutils literal notranslate"><span class="pre">PointGroup</span></code> in self.pointGroup</p>
 </dd></dl>
 
 <dl class="method">
@@ -632,7 +623,7 @@ If all succeed, then it will return True.</p>
 <dl class="method">
 <dt id="rmgpy.qm.mopac.MopacMolPM6.writeInputFile">
 <code class="descname">writeInputFile</code><span class="sig-paren">(</span><em>attempt</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM6.writeInputFile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Using the <code class="xref py py-class docutils literal"><span class="pre">Geometry</span></code> object, write the input file
+<dd><p>Using the <code class="xref py py-class docutils literal notranslate"><span class="pre">Geometry</span></code> object, write the input file
 for the <cite>attempt</cite>.</p>
 </dd></dl>
 
@@ -680,7 +671,7 @@ self.qmData and self.pointGroup need to be generated before this method is calle
 <dt id="rmgpy.qm.mopac.MopacMolPM7.determinePointGroup">
 <code class="descname">determinePointGroup</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.determinePointGroup" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine point group using the SYMMETRY Program</p>
-<p>Stores the resulting <code class="xref py py-class docutils literal"><span class="pre">PointGroup</span></code> in self.pointGroup</p>
+<p>Stores the resulting <code class="xref py py-class docutils literal notranslate"><span class="pre">PointGroup</span></code> in self.pointGroup</p>
 </dd></dl>
 
 <dl class="method">
@@ -805,7 +796,7 @@ If all succeed, then it will return True.</p>
 <dl class="method">
 <dt id="rmgpy.qm.mopac.MopacMolPM7.writeInputFile">
 <code class="descname">writeInputFile</code><span class="sig-paren">(</span><em>attempt</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.qm.mopac.MopacMolPM7.writeInputFile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Using the <code class="xref py py-class docutils literal"><span class="pre">Geometry</span></code> object, write the input file
+<dd><p>Using the <code class="xref py py-class docutils literal notranslate"><span class="pre">Geometry</span></code> object, write the input file
 for the <cite>attempt</cite>.</p>
 </dd></dl>
 
@@ -847,7 +838,7 @@ for the <cite>attempt</cite>.</p>
                         title="previous chapter">rmgpy.qm.gaussian</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="../quantity/index.html"
-                        title="next chapter">Physical quantities (<code class="docutils literal"><span class="pre">rmgpy.quantity</span></code>)</a></p>
+                        title="next chapter">Physical quantities (<code class="docutils literal notranslate"><span class="pre">rmgpy.quantity</span></code>)</a></p>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -862,12 +853,14 @@ for the <cite>attempt</cite>.</p>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -893,15 +886,15 @@ for the <cite>attempt</cite>.</p>
           <a href="gaussian.html" title="rmgpy.qm.gaussian"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >QMTP (<code class="docutils literal"><span class="pre">rmgpy.qm</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >QMTP (<code class="docutils literal notranslate"><span class="pre">rmgpy.qm</span></code>)</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

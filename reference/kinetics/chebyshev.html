@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>rmgpy.kinetics.Chebyshev &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,10 +43,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="multipdeparrhenius.html" title="rmgpy.kinetics.MultiPDepArrhenius"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Kinetics (<code class="docutils literal"><span class="pre">rmgpy.kinetics</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Kinetics (<code class="docutils literal notranslate"><span class="pre">rmgpy.kinetics</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -69,7 +60,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <dl class="class">
 <dt id="rmgpy.kinetics.Chebyshev">
 <em class="property">class </em><code class="descclassname">rmgpy.kinetics.</code><code class="descname">Chebyshev</code><span class="sig-paren">(</span><em>coeffs=None</em>, <em>kunits=''</em>, <em>highPlimit=None</em>, <em>Tmin=None</em>, <em>Tmax=None</em>, <em>Pmin=None</em>, <em>Pmax=None</em>, <em>comment=''</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Chebyshev" title="Permalink to this definition">¶</a></dt>
-<dd><p>A model of a phenomenological rate coefficient <span class="math">\(k(T,P)\)</span> using a
+<dd><p>A model of a phenomenological rate coefficient <span class="math notranslate nohighlight">\(k(T,P)\)</span> using a
 set of Chebyshev polynomials in temperature and pressure. The attributes
 are:</p>
 <table border="1" class="docutils">
@@ -84,7 +75,7 @@ are:</p>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><cite>coeffs</cite></td>
-<td>Matrix of Chebyshev coefficients, such that the resulting <span class="math">\(k(T,P)\)</span> has units of cm^3, mol, s</td>
+<td>Matrix of Chebyshev coefficients, such that the resulting <span class="math notranslate nohighlight">\(k(T,P)\)</span> has units of cm^3, mol, s</td>
 </tr>
 <tr class="row-odd"><td><cite>kunits</cite></td>
 <td>The units of the rate coefficient</td>
@@ -113,48 +104,48 @@ are:</p>
 </tbody>
 </table>
 <p>The Chebyshev polynomial formulation is a means of fitting a wide range of
-complex <span class="math">\(k(T,P)\)</span> behavior. However, there is no meaningful physical
+complex <span class="math notranslate nohighlight">\(k(T,P)\)</span> behavior. However, there is no meaningful physical
 interpretation of the polynomial-based fit, and one must take care to minimize
 the magnitude of Runge’s phenomenon. The formulation is as follows:</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[\log k(T,P) = \sum_{t=1}^{N_T} \sum_{p=1}^{N_P} \alpha_{tp} \phi_t(\tilde{T}) \phi_p(\tilde{P})\]</div>
-<p>Above, <span class="math">\(\alpha_{tp}\)</span> is a constant, <span class="math">\(\phi_n(x)\)</span> is the
-Chebyshev polynomial of degree <span class="math">\(n\)</span> evaluated at <span class="math">\(x\)</span>, and</p>
-<div class="math">
+<p>Above, <span class="math notranslate nohighlight">\(\alpha_{tp}\)</span> is a constant, <span class="math notranslate nohighlight">\(\phi_n(x)\)</span> is the
+Chebyshev polynomial of degree <span class="math notranslate nohighlight">\(n\)</span> evaluated at <span class="math notranslate nohighlight">\(x\)</span>, and</p>
+<div class="math notranslate nohighlight">
 \[\tilde{T} \equiv \frac{2T^{-1} - T_\mathrm{min}^{-1} - T_\mathrm{max}^{-1}}{T_\mathrm{max}^{-1} - T_\mathrm{min}^{-1}}\]</div>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[\tilde{P} \equiv \frac{2 \log P - \log P_\mathrm{min} - \log P_\mathrm{max}}{\log P_\mathrm{max} - \log P_\mathrm{min}}\]</div>
 <p>are reduced temperature and reduced pressure designed to map the ranges
-<span class="math">\((T_\mathrm{min}, T_\mathrm{max})\)</span> and
-<span class="math">\((P_\mathrm{min}, P_\mathrm{max})\)</span> to <span class="math">\((-1, 1)\)</span>.</p>
+<span class="math notranslate nohighlight">\((T_\mathrm{min}, T_\mathrm{max})\)</span> and
+<span class="math notranslate nohighlight">\((P_\mathrm{min}, P_\mathrm{max})\)</span> to <span class="math notranslate nohighlight">\((-1, 1)\)</span>.</p>
 <dl class="attribute">
 <dt id="rmgpy.kinetics.Chebyshev.Pmax">
 <code class="descname">Pmax</code><a class="headerlink" href="#rmgpy.kinetics.Chebyshev.Pmax" title="Permalink to this definition">¶</a></dt>
-<dd><p>The maximum pressure at which the model is valid, or <code class="docutils literal"><span class="pre">None</span></code> if not defined.</p>
+<dd><p>The maximum pressure at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.kinetics.Chebyshev.Pmin">
 <code class="descname">Pmin</code><a class="headerlink" href="#rmgpy.kinetics.Chebyshev.Pmin" title="Permalink to this definition">¶</a></dt>
-<dd><p>The minimum pressure at which the model is valid, or <code class="docutils literal"><span class="pre">None</span></code> if not defined.</p>
+<dd><p>The minimum pressure at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.kinetics.Chebyshev.Tmax">
 <code class="descname">Tmax</code><a class="headerlink" href="#rmgpy.kinetics.Chebyshev.Tmax" title="Permalink to this definition">¶</a></dt>
-<dd><p>The maximum temperature at which the model is valid, or <code class="docutils literal"><span class="pre">None</span></code> if not defined.</p>
+<dd><p>The maximum temperature at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.kinetics.Chebyshev.Tmin">
 <code class="descname">Tmin</code><a class="headerlink" href="#rmgpy.kinetics.Chebyshev.Tmin" title="Permalink to this definition">¶</a></dt>
-<dd><p>The minimum temperature at which the model is valid, or <code class="docutils literal"><span class="pre">None</span></code> if not defined.</p>
+<dd><p>The minimum temperature at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.Chebyshev.changeRate">
 <code class="descname">changeRate</code><span class="sig-paren">(</span><em>self</em>, <em>double factor</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Chebyshev.changeRate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Changes kinetics rates by a multiple <code class="docutils literal"><span class="pre">factor</span></code>.</p>
+<dd><p>Changes kinetics rates by a multiple <code class="docutils literal notranslate"><span class="pre">factor</span></code>.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -244,39 +235,39 @@ evaluating the Chebyshev expression.</p>
 <dl class="method">
 <dt id="rmgpy.kinetics.Chebyshev.isIdenticalTo">
 <code class="descname">isIdenticalTo</code><span class="sig-paren">(</span><em>self</em>, <em>KineticsModel otherKinetics</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.kinetics.Chebyshev.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Checks to see if kinetics matches that of other kinetics and returns <code class="docutils literal"><span class="pre">True</span></code>
+<dd><p>Checks to see if kinetics matches that of other kinetics and returns <code class="docutils literal notranslate"><span class="pre">True</span></code>
 if coeffs, kunits, Tmin,</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.Chebyshev.isPressureDependent">
 <code class="descname">isPressureDependent</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.kinetics.Chebyshev.isPressureDependent" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> since all objects derived from PDepKineticsModel
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> since all objects derived from PDepKineticsModel
 represent pressure-dependent kinetics.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.Chebyshev.isPressureValid">
 <code class="descname">isPressureValid</code><span class="sig-paren">(</span><em>self</em>, <em>double P</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.kinetics.Chebyshev.isPressureValid" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the pressure <cite>P</cite> in Pa is within the valid
-pressure range of the kinetic data, or <code class="docutils literal"><span class="pre">False</span></code> if not. If
-the minimum and maximum pressure are not defined, <code class="docutils literal"><span class="pre">True</span></code> is
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the pressure <cite>P</cite> in Pa is within the valid
+pressure range of the kinetic data, or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not. If
+the minimum and maximum pressure are not defined, <code class="docutils literal notranslate"><span class="pre">True</span></code> is
 returned.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.Chebyshev.isSimilarTo">
 <code class="descname">isSimilarTo</code><span class="sig-paren">(</span><em>self</em>, <em>KineticsModel otherKinetics</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.kinetics.Chebyshev.isSimilarTo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns <code class="docutils literal"><span class="pre">True</span></code> if rates of reaction at temperatures 500,1000,1500,2000 K
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if rates of reaction at temperatures 500,1000,1500,2000 K
 and 1 and 10 bar are within +/ .5 for log(k), in other words, within a factor of 3.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.Chebyshev.isTemperatureValid">
 <code class="descname">isTemperatureValid</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.kinetics.Chebyshev.isTemperatureValid" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the temperature <cite>T</cite> in K is within the valid
-temperature range of the kinetic data, or <code class="docutils literal"><span class="pre">False</span></code> if not. If
-the minimum and maximum temperature are not defined, <code class="docutils literal"><span class="pre">True</span></code> is
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the temperature <cite>T</cite> in K is within the valid
+temperature range of the kinetic data, or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not. If
+the minimum and maximum temperature are not defined, <code class="docutils literal notranslate"><span class="pre">True</span></code> is
 returned.</p>
 </dd></dl>
 
@@ -353,12 +344,14 @@ where T’s are in units of K, P’s in units of Pa, and coeffs is 2D array of (
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -384,15 +377,15 @@ where T’s are in units of K, P’s in units of Pa, and coeffs is 2D array of (
           <a href="multipdeparrhenius.html" title="rmgpy.kinetics.MultiPDepArrhenius"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Kinetics (<code class="docutils literal"><span class="pre">rmgpy.kinetics</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Kinetics (<code class="docutils literal notranslate"><span class="pre">rmgpy.kinetics</span></code>)</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

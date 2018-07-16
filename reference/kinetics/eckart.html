@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>rmgpy.kinetics.Eckart &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,10 +43,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="wigner.html" title="rmgpy.kinetics.Wigner"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Kinetics (<code class="docutils literal"><span class="pre">rmgpy.kinetics</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Kinetics (<code class="docutils literal notranslate"><span class="pre">rmgpy.kinetics</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -100,45 +91,45 @@ this results in the so-called “symmetric” Eckart model. Providing
 <cite>E0_prod</cite>, and thereby using the “asymmetric” Eckart model, is the
 recommended approach.</p>
 <p>The Eckart tunneling model is based around a potential of the form</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[V(x) = \frac{\hbar^2}{2m} \left[ \frac{A e^x}{1 + e^x} + \frac{B e^x}{\left( 1 + e^x \right)^2} \right]\]</div>
-<p>where <span class="math">\(x\)</span> represents the reaction coordinate and <span class="math">\(A\)</span> and <span class="math">\(B\)</span>
-are parameters. The potential is symmetric if <span class="math">\(A = 0\)</span> and asymmetric if
-<span class="math">\(A \ne 0\)</span>. If we add the constraint
-<span class="math">\(\left| B \right| &gt; \left| A \right|\)</span> then the potential has a maximum
+<p>where <span class="math notranslate nohighlight">\(x\)</span> represents the reaction coordinate and <span class="math notranslate nohighlight">\(A\)</span> and <span class="math notranslate nohighlight">\(B\)</span>
+are parameters. The potential is symmetric if <span class="math notranslate nohighlight">\(A = 0\)</span> and asymmetric if
+<span class="math notranslate nohighlight">\(A \ne 0\)</span>. If we add the constraint
+<span class="math notranslate nohighlight">\(\left| B \right| &gt; \left| A \right|\)</span> then the potential has a maximum
 at</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[x_\mathrm{max} = \ln \left( \frac{B + A}{B - A} \right)\]</div>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[V(x_\mathrm{max}) = \frac{\hbar^2}{2m} \frac{(A + B)^2}{4B}\]</div>
 <p>The one-dimensional Schrodinger equation with the Eckart potential is
 analytically solvable. The resulting microcanonical tunneling factor
-<span class="math">\(\kappa(E)\)</span> is a function of the total energy of the molecular system:</p>
-<div class="math">
+<span class="math notranslate nohighlight">\(\kappa(E)\)</span> is a function of the total energy of the molecular system:</p>
+<div class="math notranslate nohighlight">
 \[\kappa(E) = 1 - \frac{\cosh (2 \pi a - 2 \pi b) + \cosh (2 \pi d)}{\cosh (2 \pi a + 2 \pi b) + \cosh (2 \pi d)}\]</div>
 <p>where</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[2 \pi a = \frac{2 \sqrt{\alpha_1 \xi}}{\alpha_1^{-1/2} + \alpha_2^{-1/2}}\]</div>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[2 \pi b = \frac{2 \sqrt{\left| (\xi - 1) \alpha_1 + \alpha_2 \right|}}{\alpha_1^{-1/2} + \alpha_2^{-1/2}}\]</div>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[2 \pi d = 2 \sqrt{\left| \alpha_1 \alpha_2 - 4 \pi^2 / 16 \right|}\]</div>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[\alpha_1 = 2 \pi \frac{\Delta V_1}{h \left| \nu_\mathrm{TS} \right|}\]</div>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[\alpha_2 = 2 \pi \frac{\Delta V_2}{h \left| \nu_\mathrm{TS} \right|}\]</div>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[\xi = \frac{E}{\Delta V_1}\]</div>
-<p><span class="math">\(\Delta V_1\)</span> and <span class="math">\(\Delta V_2\)</span> are the thermal energy
+<p><span class="math notranslate nohighlight">\(\Delta V_1\)</span> and <span class="math notranslate nohighlight">\(\Delta V_2\)</span> are the thermal energy
 difference between the transition state and the reactants and products,
-respectively; <span class="math">\(\nu_\mathrm{TS}\)</span> is the negative frequency,
-<span class="math">\(h\)</span> is the Planck constant.</p>
+respectively; <span class="math notranslate nohighlight">\(\nu_\mathrm{TS}\)</span> is the negative frequency,
+<span class="math notranslate nohighlight">\(h\)</span> is the Planck constant.</p>
 <p>Applying a Laplace transform gives the canonical tunneling factor as a function
-of temperature <span class="math">\(T\)</span> (expressed as <span class="math">\(\beta \equiv 1 / k_\mathrm{B} T\)</span>):</p>
-<div class="math">
+of temperature <span class="math notranslate nohighlight">\(T\)</span> (expressed as <span class="math notranslate nohighlight">\(\beta \equiv 1 / k_\mathrm{B} T\)</span>):</p>
+<div class="math notranslate nohighlight">
 \[\kappa(T) = e^{\beta \Delta V_1} \int_0^\infty \kappa(E) e^{- \beta E} \ dE\]</div>
 <p>If product data is not available, then it is assumed that
-<span class="math">\(\alpha_2 \approx \alpha_1\)</span>.</p>
+<span class="math notranslate nohighlight">\(\alpha_2 \approx \alpha_1\)</span>.</p>
 <p>The Eckart correction requires information about the reactants as well
 as the transition state. For best results, information about the
 products should also be given. (The former is called the symmetric
@@ -221,7 +212,7 @@ the reaction at the energies <cite>Elist</cite> in J/mol.</p>
                         title="previous chapter">rmgpy.kinetics.Wigner</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="../molecule/index.html"
-                        title="next chapter">Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a></p>
+                        title="next chapter">Molecular representations (<code class="docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a></p>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -236,12 +227,14 @@ the reaction at the energies <cite>Elist</cite> in J/mol.</p>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -267,15 +260,15 @@ the reaction at the energies <cite>Elist</cite> in J/mol.</p>
           <a href="wigner.html" title="rmgpy.kinetics.Wigner"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Kinetics (<code class="docutils literal"><span class="pre">rmgpy.kinetics</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Kinetics (<code class="docutils literal notranslate"><span class="pre">rmgpy.kinetics</span></code>)</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

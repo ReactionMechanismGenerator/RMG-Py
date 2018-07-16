@@ -4,27 +4,19 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>9.11. Reaction Reduction in an RMG Job &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="10. Species Representation" href="../species.html" />
+    <link rel="next" title="9.12. Isotopes" href="isotopes.html" />
     <link rel="prev" title="9.10. Standardize Model Species Names" href="standardizeModelSpeciesNames.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -46,13 +37,13 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../species.html" title="10. Species Representation"
+          <a href="isotopes.html" title="9.12. Isotopes"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="standardizeModelSpeciesNames.html" title="9.10. Standardize Model Species Names"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User’s Guide</a> &#187;</li>
@@ -67,8 +58,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="reaction-reduction-in-an-rmg-job">
 <span id="reduction"></span><h1>9.11. Reaction Reduction in an RMG Job<a class="headerlink" href="#reaction-reduction-in-an-rmg-job" title="Permalink to this headline">¶</a></h1>
-<p>This script is located at <code class="docutils literal"><span class="pre">RMG-Py/rmgpy/reduction/main.py</span></code> instead of the usual
-<code class="docutils literal"><span class="pre">RMG-Py/scripts</span></code> folder.</p>
+<p>This script is located at <code class="docutils literal notranslate"><span class="pre">RMG-Py/rmgpy/reduction/main.py</span></code> instead of the usual
+<code class="docutils literal notranslate"><span class="pre">RMG-Py/scripts</span></code> folder.</p>
 <p>RMG’s method of generating reactions between all species in a core mechanism and
 including them in the resulting model
 is a robust process to obtain all chemistry. However, the huge number of cross reactions
@@ -79,43 +70,43 @@ script was written that eliminates unimportant reactions up to a set threshold.
 Though this method will reduce number of reactions and guarantee target species
 concentrations at the given conditions are minimally affected, no guarantee is given
 that it will result in optimally reduced mechanism.</p>
-<p>To reduce an RMG job, you will need an additional file <code class="docutils literal"><span class="pre">reduction_input.py</span></code>.
+<p>To reduce an RMG job, you will need an additional file <code class="docutils literal notranslate"><span class="pre">reduction_input.py</span></code>.
 This file contains two terms that tell the reduction algorithm what to do. The
-example file located in <code class="docutils literal"><span class="pre">rmgpy/reduction/test_data/minimal/chemkin</span></code> is written
+example file located in <code class="docutils literal notranslate"><span class="pre">rmgpy/reduction/test_data/minimal/chemkin</span></code> is written
 as followed.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">targets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ethane&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">targets</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ethane&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">]</span>
 <span class="n">tolerance</span> <span class="o">=</span> <span class="o">.</span><span class="mi">05</span>
 </pre></div>
 </div>
-<p><code class="docutils literal"><span class="pre">targets</span></code> is a list of species labels whose concentration change should be minimized, and <code class="docutils literal"><span class="pre">tolerance</span></code>
+<p><code class="docutils literal notranslate"><span class="pre">targets</span></code> is a list of species labels whose concentration change should be minimized, and <code class="docutils literal notranslate"><span class="pre">tolerance</span></code>
 is the percent change the user can tolerate at the end of simulation. In the above
 example, this would be 5%.
-Higher values of <code class="docutils literal"><span class="pre">tolerance</span></code> lead to fewer final reactions with more error in
+Higher values of <code class="docutils literal notranslate"><span class="pre">tolerance</span></code> lead to fewer final reactions with more error in
 output rates.</p>
 <p>To run a simulation, type</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>python $RMG/rmgpy/reduction/main.py input.py reduction_input.py chem_annotated.inp species_dictionary.txt
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>python $RMG/rmgpy/reduction/main.py input.py reduction_input.py chem_annotated.inp species_dictionary.txt
 </pre></div>
 </div>
 <p>A command line interface to the reduction driver script is contained in
-<code class="docutils literal"><span class="pre">rmgpy/reduction/main.py</span></code>. It accepts four files:</p>
+<code class="docutils literal notranslate"><span class="pre">rmgpy/reduction/main.py</span></code>. It accepts four files:</p>
 <ul class="simple">
-<li><code class="docutils literal"><span class="pre">input.py</span></code>: RMG-Py input file containing the settings to evaluate state variables.</li>
-<li><code class="docutils literal"><span class="pre">reduction_input.py</span></code>: Reduction input file containing the target variables and associated error tolerances to allow in the reduced model</li>
-<li><code class="docutils literal"><span class="pre">chem_annotated.inp</span></code>: the reaction mechanism to reduce.</li>
-<li><code class="docutils literal"><span class="pre">species_dictionary.txt</span></code>: the species dictionary associated with the reaction mechanism to reduce.</li>
+<li><code class="docutils literal notranslate"><span class="pre">input.py</span></code>: RMG-Py input file containing the settings to evaluate state variables.</li>
+<li><code class="docutils literal notranslate"><span class="pre">reduction_input.py</span></code>: Reduction input file containing the target variables and associated error tolerances to allow in the reduced model</li>
+<li><code class="docutils literal notranslate"><span class="pre">chem_annotated.inp</span></code>: the reaction mechanism to reduce.</li>
+<li><code class="docutils literal notranslate"><span class="pre">species_dictionary.txt</span></code>: the species dictionary associated with the reaction mechanism to reduce.</li>
 </ul>
 <p>The algorithm will reduce the number of reactions until the tolerance is no
-longer met. If everything goes as planned, a <code class="docutils literal"><span class="pre">chem_reduced.inp</span></code> is generated
+longer met. If everything goes as planned, a <code class="docutils literal notranslate"><span class="pre">chem_reduced.inp</span></code> is generated
 containing the reduced mechanism. In addition, a number of files
-<code class="docutils literal"><span class="pre">chem_reduced_{i}.inp</span></code> are created and correspond to the intermediate
+<code class="docutils literal notranslate"><span class="pre">chem_reduced_{i}.inp</span></code> are created and correspond to the intermediate
 reduced mechanisms. They can be used in place of the final reduced model, in case
 the reduction algorithm does not terminate normally.</p>
-<p>You can go to <code class="docutils literal"><span class="pre">$RMG/examples/reduction</span></code> to try this module.</p>
+<p>You can go to <code class="docutils literal notranslate"><span class="pre">$RMG/examples/reduction</span></code> to try this module.</p>
 <div class="section" id="background">
 <h2>9.11.1. Background<a class="headerlink" href="#background" title="Permalink to this headline">¶</a></h2>
 <p>The reduction algorithm computes the ratio of species reaction rate
-(<span class="math">\(r_{ij}\)</span>) to the total rate of formation/consumption (<span class="math">\(R_i\)</span>) of all species i,
-and compares this ratio to a tolerance (<span class="math">\(\epsilon\)</span>), with values of epsilon
+(<span class="math notranslate nohighlight">\(r_{ij}\)</span>) to the total rate of formation/consumption (<span class="math notranslate nohighlight">\(R_i\)</span>) of all species i,
+and compares this ratio to a tolerance (<span class="math notranslate nohighlight">\(\epsilon\)</span>), with values of epsilon
 between 0 and 1. If the ratio of a reaction is greater than epsilon it
 is deemed <em>important</em> for the species in question. When a reaction is
 not important for a single species, at any given time between t=0 and
@@ -177,8 +168,8 @@ mechanism.</p>
   <p class="topless"><a href="standardizeModelSpeciesNames.html"
                         title="previous chapter">9.10. Standardize Model Species Names</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="../species.html"
-                        title="next chapter">10. Species Representation</a></p>
+  <p class="topless"><a href="isotopes.html"
+                        title="next chapter">9.12. Isotopes</a></p>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -193,12 +184,14 @@ mechanism.</p>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -218,13 +211,13 @@ mechanism.</p>
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../species.html" title="10. Species Representation"
+          <a href="isotopes.html" title="9.12. Isotopes"
              >next</a> |</li>
         <li class="right" >
           <a href="standardizeModelSpeciesNames.html" title="9.10. Standardize Model Species Names"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User’s Guide</a> &#187;</li>
@@ -233,7 +226,7 @@ mechanism.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>rmgpy.thermo.Wilhoit &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,10 +43,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="thermodata.html" title="rmgpy.thermo.ThermoData"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Thermodynamics (<code class="docutils literal"><span class="pre">rmgpy.thermo</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Thermodynamics (<code class="docutils literal notranslate"><span class="pre">rmgpy.thermo</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -119,36 +110,36 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <p>The Wilhoit polynomial is an expression for heat capacity that is guaranteed to
 give the correct limits at zero and infinite temperature, and gives a very
 reasonable shape to the heat capacity profile in between:</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[C_\mathrm{p}(T) = C_\mathrm{p}(0) + \left[ C_\mathrm{p}(\infty) -
 C_\mathrm{p}(0) \right] y^2 \left[ 1 + (y - 1) \sum_{i=0}^3 a_i y^i \right]\]</div>
-<p>Above, <span class="math">\(y \equiv T/(T + B)\)</span> is a scaled temperature that ranges
-from zero to one based on the value of the coefficient <span class="math">\(B\)</span>, and
-<span class="math">\(a_0\)</span>, <span class="math">\(a_1\)</span>, <span class="math">\(a_2\)</span>, and <span class="math">\(a_3\)</span> are the Wilhoit
+<p>Above, <span class="math notranslate nohighlight">\(y \equiv T/(T + B)\)</span> is a scaled temperature that ranges
+from zero to one based on the value of the coefficient <span class="math notranslate nohighlight">\(B\)</span>, and
+<span class="math notranslate nohighlight">\(a_0\)</span>, <span class="math notranslate nohighlight">\(a_1\)</span>, <span class="math notranslate nohighlight">\(a_2\)</span>, and <span class="math notranslate nohighlight">\(a_3\)</span> are the Wilhoit
 polynomial coefficients.</p>
 <p>The enthalpy is given by</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[\begin{split}H(T) &amp; = H_0 +
 C_\mathrm{p}(0) T + \left[ C_\mathrm{p}(\infty) - C_\mathrm{p}(0) \right] T \\
 &amp; \left\{ \left[ 2 + \sum_{i=0}^3 a_i \right]
 \left[ \frac{1}{2}y - 1 + \left( \frac{1}{y} - 1 \right) \ln \frac{T}{y} \right]
 + y^2 \sum_{i=0}^3 \frac{y^i}{(i+2)(i+3)} \sum_{j=0}^3 f_{ij} a_j
 \right\}\end{split}\]</div>
-<p>where <span class="math">\(f_{ij} = 3 + j\)</span> if <span class="math">\(i = j\)</span>, <span class="math">\(f_{ij} = 1\)</span> if
-<span class="math">\(i &gt; j\)</span>, and <span class="math">\(f_{ij} = 0\)</span> if <span class="math">\(i &lt; j\)</span>.</p>
+<p>where <span class="math notranslate nohighlight">\(f_{ij} = 3 + j\)</span> if <span class="math notranslate nohighlight">\(i = j\)</span>, <span class="math notranslate nohighlight">\(f_{ij} = 1\)</span> if
+<span class="math notranslate nohighlight">\(i &gt; j\)</span>, and <span class="math notranslate nohighlight">\(f_{ij} = 0\)</span> if <span class="math notranslate nohighlight">\(i &lt; j\)</span>.</p>
 <p>The entropy is given by</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[S(T) = S_0 +
 C_\mathrm{p}(\infty) \ln T - \left[ C_\mathrm{p}(\infty) - C_\mathrm{p}(0) \right]
 \left[ \ln y + \left( 1 + y \sum_{i=0}^3 \frac{a_i y^i}{2+i} \right) y
 \right]\]</div>
-<p>The low-temperature limit <span class="math">\(C_\mathrm{p}(0)\)</span> is <span class="math">\(3.5R\)</span> for linear
-molecules and <span class="math">\(4R\)</span> for nonlinear molecules. The high-temperature limit
-<span class="math">\(C_\mathrm{p}(\infty)\)</span> is taken to be
-<span class="math">\(\left[ 3 N_\mathrm{atoms} - 1.5 \right] R\)</span> for linear molecules and
-<span class="math">\(\left[ 3 N_\mathrm{atoms} - (2 + 0.5 N_\mathrm{rotors}) \right] R\)</span>
-for nonlinear molecules, for a molecule composed of <span class="math">\(N_\mathrm{atoms}\)</span>
-atoms and <span class="math">\(N_\mathrm{rotors}\)</span> internal rotors.</p>
+<p>The low-temperature limit <span class="math notranslate nohighlight">\(C_\mathrm{p}(0)\)</span> is <span class="math notranslate nohighlight">\(3.5R\)</span> for linear
+molecules and <span class="math notranslate nohighlight">\(4R\)</span> for nonlinear molecules. The high-temperature limit
+<span class="math notranslate nohighlight">\(C_\mathrm{p}(\infty)\)</span> is taken to be
+<span class="math notranslate nohighlight">\(\left[ 3 N_\mathrm{atoms} - 1.5 \right] R\)</span> for linear molecules and
+<span class="math notranslate nohighlight">\(\left[ 3 N_\mathrm{atoms} - (2 + 0.5 N_\mathrm{rotors}) \right] R\)</span>
+for nonlinear molecules, for a molecule composed of <span class="math notranslate nohighlight">\(N_\mathrm{atoms}\)</span>
+atoms and <span class="math notranslate nohighlight">\(N_\mathrm{rotors}\)</span> internal rotors.</p>
 <dl class="attribute">
 <dt id="rmgpy.thermo.Wilhoit.B">
 <code class="descname">B</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.B" title="Permalink to this definition">¶</a></dt>
@@ -190,13 +181,13 @@ atoms and <span class="math">\(N_\mathrm{rotors}\)</span> internal rotors.</p>
 <dl class="attribute">
 <dt id="rmgpy.thermo.Wilhoit.Tmax">
 <code class="descname">Tmax</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.Tmax" title="Permalink to this definition">¶</a></dt>
-<dd><p>The maximum temperature at which the model is valid, or <code class="docutils literal"><span class="pre">None</span></code> if not defined.</p>
+<dd><p>The maximum temperature at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.thermo.Wilhoit.Tmin">
 <code class="descname">Tmin</code><a class="headerlink" href="#rmgpy.thermo.Wilhoit.Tmin" title="Permalink to this definition">¶</a></dt>
-<dd><p>The minimum temperature at which the model is valid, or <code class="docutils literal"><span class="pre">None</span></code> if not defined.</p>
+<dd><p>The minimum temperature at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -248,8 +239,8 @@ Discrepancy of 0 means they are identical</p>
 <code class="descname">fitToData</code><span class="sig-paren">(</span><em>self</em>, <em>ndarray Tdata</em>, <em>ndarray Cpdata</em>, <em>double Cp0</em>, <em>double CpInf</em>, <em>double H298</em>, <em>double S298</em>, <em>double B0=500.0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.thermo.Wilhoit.fitToData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fit a Wilhoit model to the data points provided, allowing the
 characteristic temperature <cite>B</cite> to vary so as to improve the fit. This
-procedure requires an optimization, using the <code class="docutils literal"><span class="pre">fminbound</span></code> function
-in the <code class="docutils literal"><span class="pre">scipy.optimize</span></code> module. The data consists of a set
+procedure requires an optimization, using the <code class="docutils literal notranslate"><span class="pre">fminbound</span></code> function
+in the <code class="docutils literal notranslate"><span class="pre">scipy.optimize</span></code> module. The data consists of a set
 of heat capacity points <cite>Cpdata</cite> in J/mol*K at a given set of
 temperatures <cite>Tdata</cite> in K, along with the enthalpy <cite>H298</cite> in kJ/mol and
 entropy <cite>S298</cite> in J/mol*K at 298 K. The linearity of the molecule,
@@ -298,25 +289,25 @@ temperature <cite>T</cite> in K.</p>
 <dl class="method">
 <dt id="rmgpy.thermo.Wilhoit.isIdenticalTo">
 <code class="descname">isIdenticalTo</code><span class="sig-paren">(</span><em>self</em>, <em>HeatCapacityModel other</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.thermo.Wilhoit.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns <code class="docutils literal"><span class="pre">True</span></code> if <cite>self</cite> and <cite>other</cite> report very similar thermo values
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>self</cite> and <cite>other</cite> report very similar thermo values
 for heat capacity, enthalpy, entropy, and free energy over a wide
-range of temperatures, or <code class="docutils literal"><span class="pre">False</span></code> otherwise.</p>
+range of temperatures, or <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.thermo.Wilhoit.isSimilarTo">
 <code class="descname">isSimilarTo</code><span class="sig-paren">(</span><em>self</em>, <em>HeatCapacityModel other</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.thermo.Wilhoit.isSimilarTo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns <code class="docutils literal"><span class="pre">True</span></code> if <cite>self</cite> and <cite>other</cite> report similar thermo values
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>self</cite> and <cite>other</cite> report similar thermo values
 for heat capacity, enthalpy, entropy, and free energy over a wide
-range of temperatures, or <code class="docutils literal"><span class="pre">False</span></code> otherwise.</p>
+range of temperatures, or <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.thermo.Wilhoit.isTemperatureValid">
 <code class="descname">isTemperatureValid</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.thermo.Wilhoit.isTemperatureValid" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the temperature <cite>T</cite> in K is within the valid
-temperature range of the thermodynamic data, or <code class="docutils literal"><span class="pre">False</span></code> if not. If
-the minimum and maximum temperature are not defined, <code class="docutils literal"><span class="pre">True</span></code> is
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the temperature <cite>T</cite> in K is within the valid
+temperature range of the thermodynamic data, or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not. If
+the minimum and maximum temperature are not defined, <code class="docutils literal notranslate"><span class="pre">True</span></code> is
 returned.</p>
 </dd></dl>
 
@@ -329,25 +320,25 @@ returned.</p>
 <dl class="method">
 <dt id="rmgpy.thermo.Wilhoit.toNASA">
 <code class="descname">toNASA</code><span class="sig-paren">(</span><em>self</em>, <em>double Tmin</em>, <em>double Tmax</em>, <em>double Tint</em>, <em>bool fixedTint=False</em>, <em>bool weighting=True</em>, <em>int continuity=3</em><span class="sig-paren">)</span> &#x2192; NASA<a class="headerlink" href="#rmgpy.thermo.Wilhoit.toNASA" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert the Wilhoit object to a <a class="reference internal" href="nasa.html#rmgpy.thermo.NASA" title="rmgpy.thermo.NASA"><code class="xref py py-class docutils literal"><span class="pre">NASA</span></code></a> object. You must specify
+<dd><p>Convert the Wilhoit object to a <a class="reference internal" href="nasa.html#rmgpy.thermo.NASA" title="rmgpy.thermo.NASA"><code class="xref py py-class docutils literal notranslate"><span class="pre">NASA</span></code></a> object. You must specify
 the minimum and maximum temperatures of the fit <cite>Tmin</cite> and <cite>Tmax</cite> in K,
 as well as the intermediate temperature <cite>Tint</cite> in K to use as the bridge
 between the two fitted polynomials. The remaining parameters can be
 used to modify the fitting algorithm used:</p>
 <ul>
-<li><p class="first"><cite>fixedTint</cite> - <code class="docutils literal"><span class="pre">False</span></code> to allow <cite>Tint</cite> to vary in order to improve the fit, or <code class="docutils literal"><span class="pre">True</span></code> to keep it fixed</p>
+<li><p class="first"><cite>fixedTint</cite> - <code class="docutils literal notranslate"><span class="pre">False</span></code> to allow <cite>Tint</cite> to vary in order to improve the fit, or <code class="docutils literal notranslate"><span class="pre">True</span></code> to keep it fixed</p>
 </li>
-<li><p class="first"><cite>weighting</cite> - <code class="docutils literal"><span class="pre">True</span></code> to weight the fit by <span class="math">\(T^{-1}\)</span> to emphasize good fit at lower temperatures, or <code class="docutils literal"><span class="pre">False</span></code> to not use weighting</p>
+<li><p class="first"><cite>weighting</cite> - <code class="docutils literal notranslate"><span class="pre">True</span></code> to weight the fit by <span class="math notranslate nohighlight">\(T^{-1}\)</span> to emphasize good fit at lower temperatures, or <code class="docutils literal notranslate"><span class="pre">False</span></code> to not use weighting</p>
 </li>
 <li><p class="first"><cite>continuity</cite> - The number of continuity constraints to enforce at <cite>Tint</cite>:</p>
 <blockquote>
 <div><ul class="simple">
-<li>0: no constraints on continuity of <span class="math">\(C_\mathrm{p}(T)\)</span> at <cite>Tint</cite></li>
-<li>1: constrain <span class="math">\(C_\mathrm{p}(T)\)</span> to be continous at <cite>Tint</cite></li>
-<li>2: constrain <span class="math">\(C_\mathrm{p}(T)\)</span> and <span class="math">\(\frac{d C_\mathrm{p}}{dT}\)</span> to be continuous at <cite>Tint</cite></li>
-<li>3: constrain <span class="math">\(C_\mathrm{p}(T)\)</span>, <span class="math">\(\frac{d C_\mathrm{p}}{dT}\)</span>, and <span class="math">\(\frac{d^2 C_\mathrm{p}}{dT^2}\)</span> to be continuous at <cite>Tint</cite></li>
-<li>4: constrain <span class="math">\(C_\mathrm{p}(T)\)</span>, <span class="math">\(\frac{d C_\mathrm{p}}{dT}\)</span>, <span class="math">\(\frac{d^2 C_\mathrm{p}}{dT^2}\)</span>, and <span class="math">\(\frac{d^3 C_\mathrm{p}}{dT^3}\)</span> to be continuous at <cite>Tint</cite></li>
-<li>5: constrain <span class="math">\(C_\mathrm{p}(T)\)</span>, <span class="math">\(\frac{d C_\mathrm{p}}{dT}\)</span>, <span class="math">\(\frac{d^2 C_\mathrm{p}}{dT^2}\)</span>, <span class="math">\(\frac{d^3 C_\mathrm{p}}{dT^3}\)</span>, and <span class="math">\(\frac{d^4 C_\mathrm{p}}{dT^4}\)</span> to be continuous at <cite>Tint</cite></li>
+<li>0: no constraints on continuity of <span class="math notranslate nohighlight">\(C_\mathrm{p}(T)\)</span> at <cite>Tint</cite></li>
+<li>1: constrain <span class="math notranslate nohighlight">\(C_\mathrm{p}(T)\)</span> to be continous at <cite>Tint</cite></li>
+<li>2: constrain <span class="math notranslate nohighlight">\(C_\mathrm{p}(T)\)</span> and <span class="math notranslate nohighlight">\(\frac{d C_\mathrm{p}}{dT}\)</span> to be continuous at <cite>Tint</cite></li>
+<li>3: constrain <span class="math notranslate nohighlight">\(C_\mathrm{p}(T)\)</span>, <span class="math notranslate nohighlight">\(\frac{d C_\mathrm{p}}{dT}\)</span>, and <span class="math notranslate nohighlight">\(\frac{d^2 C_\mathrm{p}}{dT^2}\)</span> to be continuous at <cite>Tint</cite></li>
+<li>4: constrain <span class="math notranslate nohighlight">\(C_\mathrm{p}(T)\)</span>, <span class="math notranslate nohighlight">\(\frac{d C_\mathrm{p}}{dT}\)</span>, <span class="math notranslate nohighlight">\(\frac{d^2 C_\mathrm{p}}{dT^2}\)</span>, and <span class="math notranslate nohighlight">\(\frac{d^3 C_\mathrm{p}}{dT^3}\)</span> to be continuous at <cite>Tint</cite></li>
+<li>5: constrain <span class="math notranslate nohighlight">\(C_\mathrm{p}(T)\)</span>, <span class="math notranslate nohighlight">\(\frac{d C_\mathrm{p}}{dT}\)</span>, <span class="math notranslate nohighlight">\(\frac{d^2 C_\mathrm{p}}{dT^2}\)</span>, <span class="math notranslate nohighlight">\(\frac{d^3 C_\mathrm{p}}{dT^3}\)</span>, and <span class="math notranslate nohighlight">\(\frac{d^4 C_\mathrm{p}}{dT^4}\)</span> to be continuous at <cite>Tint</cite></li>
 </ul>
 </div></blockquote>
 </li>
@@ -355,14 +346,14 @@ used to modify the fitting algorithm used:</p>
 <p>Note that values of <cite>continuity</cite> of 5 or higher effectively constrain all
 the coefficients to be equal and should be equivalent to fitting only one
 polynomial (rather than two).</p>
-<p>Returns the fitted <a class="reference internal" href="nasa.html#rmgpy.thermo.NASA" title="rmgpy.thermo.NASA"><code class="xref py py-class docutils literal"><span class="pre">NASA</span></code></a> object containing the two fitted
-<a class="reference internal" href="nasapolynomial.html#rmgpy.thermo.NASAPolynomial" title="rmgpy.thermo.NASAPolynomial"><code class="xref py py-class docutils literal"><span class="pre">NASAPolynomial</span></code></a> objects.</p>
+<p>Returns the fitted <a class="reference internal" href="nasa.html#rmgpy.thermo.NASA" title="rmgpy.thermo.NASA"><code class="xref py py-class docutils literal notranslate"><span class="pre">NASA</span></code></a> object containing the two fitted
+<a class="reference internal" href="nasapolynomial.html#rmgpy.thermo.NASAPolynomial" title="rmgpy.thermo.NASAPolynomial"><code class="xref py py-class docutils literal notranslate"><span class="pre">NASAPolynomial</span></code></a> objects.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.thermo.Wilhoit.toThermoData">
 <code class="descname">toThermoData</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; ThermoData<a class="headerlink" href="#rmgpy.thermo.Wilhoit.toThermoData" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert the Wilhoit model to a <a class="reference internal" href="thermodata.html#rmgpy.thermo.ThermoData" title="rmgpy.thermo.ThermoData"><code class="xref py py-class docutils literal"><span class="pre">ThermoData</span></code></a> object.</p>
+<dd><p>Convert the Wilhoit model to a <a class="reference internal" href="thermodata.html#rmgpy.thermo.ThermoData" title="rmgpy.thermo.ThermoData"><code class="xref py py-class docutils literal notranslate"><span class="pre">ThermoData</span></code></a> object.</p>
 </dd></dl>
 
 </dd></dl>
@@ -418,12 +409,14 @@ polynomial (rather than two).</p>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -449,15 +442,15 @@ polynomial (rather than two).</p>
           <a href="thermodata.html" title="rmgpy.thermo.ThermoData"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Thermodynamics (<code class="docutils literal"><span class="pre">rmgpy.thermo</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Thermodynamics (<code class="docutils literal notranslate"><span class="pre">rmgpy.thermo</span></code>)</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

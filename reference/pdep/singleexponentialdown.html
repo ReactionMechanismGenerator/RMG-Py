@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>rmgpy.pdep.SingleExponentialDown &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,10 +43,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="index.html" title="Pressure dependence (rmgpy.pdep)"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Pressure dependence (<code class="docutils literal"><span class="pre">rmgpy.pdep</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Pressure dependence (<code class="docutils literal notranslate"><span class="pre">rmgpy.pdep</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -94,18 +85,18 @@ transfer. The attributes are:</p>
 </tbody>
 </table>
 <p>Based around the collisional energy transfer probability function</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[P(E, E^\prime) = C(E^\prime) \exp \left( -\frac{E^\prime - E}{\alpha} \right) \hspace{40pt} E &lt; E^\prime\]</div>
-<p>where the parameter <span class="math">\(\alpha = \left&lt; \Delta E_\mathrm{d} \right&gt;\)</span>
+<p>where the parameter <span class="math notranslate nohighlight">\(\alpha = \left&lt; \Delta E_\mathrm{d} \right&gt;\)</span>
 represents the average energy transferred in a deactivating collision. This
 is the most commonly-used collision model, simply because it only has one
-parameter to determine. The parameter <span class="math">\(\alpha\)</span> is specified using the
+parameter to determine. The parameter <span class="math notranslate nohighlight">\(\alpha\)</span> is specified using the
 equation</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[\alpha = \alpha_0 \left( \frac{T}{T_0} \right)^n\]</div>
-<p>where <span class="math">\(\alpha_0\)</span> is the value of <span class="math">\(\alpha\)</span> at temperature
-<span class="math">\(T_0\)</span> in K. Set the exponent <span class="math">\(n\)</span> to zero to obtain a
-temperature-independent value for <span class="math">\(\alpha\)</span>.</p>
+<p>where <span class="math notranslate nohighlight">\(\alpha_0\)</span> is the value of <span class="math notranslate nohighlight">\(\alpha\)</span> at temperature
+<span class="math notranslate nohighlight">\(T_0\)</span> in K. Set the exponent <span class="math notranslate nohighlight">\(n\)</span> to zero to obtain a
+temperature-independent value for <span class="math notranslate nohighlight">\(\alpha\)</span>.</p>
 <dl class="attribute">
 <dt id="rmgpy.pdep.SingleExponentialDown.T0">
 <code class="descname">T0</code><a class="headerlink" href="#rmgpy.pdep.SingleExponentialDown.T0" title="Permalink to this definition">¶</a></dt>
@@ -143,7 +134,7 @@ described by Chang, Bozzelli, and Dean <a class="reference internal" href="../..
 <dt id="rmgpy.pdep.SingleExponentialDown.generateCollisionMatrix">
 <code class="descname">generateCollisionMatrix</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em>, <em>ndarray densStates</em>, <em>ndarray Elist</em>, <em>ndarray Jlist=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.SingleExponentialDown.generateCollisionMatrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate and return the collision matrix
-<span class="math">\(\matrix{M}_\mathrm{coll} / \omega = \matrix{P} - \matrix{I}\)</span>
+<span class="math notranslate nohighlight">\(\matrix{M}_\mathrm{coll} / \omega = \matrix{P} - \matrix{I}\)</span>
 corresponding to this collision model for a given set of energies
 <cite>Elist</cite> in J/mol, temperature <cite>T</cite> in K, and isomer density of states
 <cite>densStates</cite>.</p>
@@ -152,7 +143,7 @@ corresponding to this collision model for a given set of energies
 <dl class="method">
 <dt id="rmgpy.pdep.SingleExponentialDown.getAlpha">
 <code class="descname">getAlpha</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.pdep.SingleExponentialDown.getAlpha" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the value of the <span class="math">\(\alpha\)</span> parameter - the average energy
+<dd><p>Return the value of the <span class="math notranslate nohighlight">\(\alpha\)</span> parameter - the average energy
 transferred in a deactivating collision - in J/mol at temperature <cite>T</cite>
 in K.</p>
 </dd></dl>
@@ -198,7 +189,7 @@ in K.</p>
         <div class="menuitem">
   <h4>Previous topic</h4>
   <p class="topless"><a href="index.html"
-                        title="previous chapter">Pressure dependence (<code class="docutils literal"><span class="pre">rmgpy.pdep</span></code>)</a></p>
+                        title="previous chapter">Pressure dependence (<code class="docutils literal notranslate"><span class="pre">rmgpy.pdep</span></code>)</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="reaction.html"
                         title="next chapter">Reaction events</a></p>
@@ -216,12 +207,14 @@ in K.</p>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -247,15 +240,15 @@ in K.</p>
           <a href="index.html" title="Pressure dependence (rmgpy.pdep)"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Pressure dependence (<code class="docutils literal"><span class="pre">rmgpy.pdep</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Pressure dependence (<code class="docutils literal notranslate"><span class="pre">rmgpy.pdep</span></code>)</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Writing Chemkin files &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,10 +43,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="reader.html" title="Reading Chemkin files"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Chemkin files (<code class="docutils literal"><span class="pre">rmgpy.chemkin</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Chemkin files (<code class="docutils literal notranslate"><span class="pre">rmgpy.chemkin</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -99,11 +90,11 @@ Columns 17 through 80 are free-format, and they contain the molecular parameters
 If the index is 0, the molecule is a single atom.
 If the index is 1 the molecule is linear, and
 if it is 2, the molecule is nonlinear.</li>
-<li>The Lennard-Jones potential well depth  <span class="math">\(\epsilon / k_B\)</span> in Kelvins.</li>
-<li>The Lennard-Jones collision diameter <span class="math">\(\sigma\)</span> in Angstroms.</li>
-<li>The dipole moment <span class="math">\(\mu\)</span> in Debye. Note: a Debye is <span class="math">\(10^{-18} cm^{3/2}erg^{1/2}\)</span>.</li>
-<li>The polarizability <span class="math">\(\alpha\)</span> in cubic Angstroms.</li>
-<li>The rotational relaxation collision number <span class="math">\(Z_rot\)</span> at 298K.</li>
+<li>The Lennard-Jones potential well depth  <span class="math notranslate nohighlight">\(\epsilon / k_B\)</span> in Kelvins.</li>
+<li>The Lennard-Jones collision diameter <span class="math notranslate nohighlight">\(\sigma\)</span> in Angstroms.</li>
+<li>The dipole moment <span class="math notranslate nohighlight">\(\mu\)</span> in Debye. Note: a Debye is <span class="math notranslate nohighlight">\(10^{-18} cm^{3/2}erg^{1/2}\)</span>.</li>
+<li>The polarizability <span class="math notranslate nohighlight">\(\alpha\)</span> in cubic Angstroms.</li>
+<li>The rotational relaxation collision number <span class="math notranslate nohighlight">\(Z_rot\)</span> at 298K.</li>
 <li>After the last number, a comment field can be enclosed in parenthesis.</li>
 </ol>
 </dd></dl>
@@ -205,7 +196,7 @@ you may have undetected duplicate reactions.</p>
                         title="previous chapter">Reading Chemkin files</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="../constants.html"
-                        title="next chapter">Physical constants (<code class="docutils literal"><span class="pre">rmgpy.constants</span></code>)</a></p>
+                        title="next chapter">Physical constants (<code class="docutils literal notranslate"><span class="pre">rmgpy.constants</span></code>)</a></p>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -220,12 +211,14 @@ you may have undetected duplicate reactions.</p>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -251,15 +244,15 @@ you may have undetected duplicate reactions.</p>
           <a href="reader.html" title="Reading Chemkin files"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Chemkin files (<code class="docutils literal"><span class="pre">rmgpy.chemkin</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Chemkin files (<code class="docutils literal notranslate"><span class="pre">rmgpy.chemkin</span></code>)</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

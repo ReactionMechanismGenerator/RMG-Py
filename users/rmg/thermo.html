@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>13. Thermochemistry Estimation &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,7 +43,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="database/modification.html" title="12.4. Database Modification"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG User’s Guide</a> &#187;</li> 
@@ -94,7 +85,7 @@ of a molecule based on the sub-molecular fragments present in the molecule.
 The Benson group additivity framework is such an example of a group contribution method
 that has proven to provide accurate estimates of the ideal gas thermochemistry
 for a large range of molecules.</p>
-<p>Benson’s Group Additivity approach (<a class="reference internal" href="#id8" id="id1">[Benson]</a>), divides a molecule into functional
+<p>Benson’s Group Additivity approach (<a class="reference internal" href="#benson1976" id="id1">[Benson1976]</a>), divides a molecule into functional
 groups, and the contribution of each functional group to the overall thermochemistry is
 included. For example, the molecule 2-methylnonane consists of three types of groups:</p>
 <ul class="simple">
@@ -104,11 +95,11 @@ included. For example, the molecule 2-methylnonane consists of three types of gr
 </ul>
 <img alt="../../_images/BensonGA.PNG" class="align-center" src="../../_images/BensonGA.PNG" />
 <p>Thermochemistry for the molecule X is calculated by summing up the values for each
-of the contributions <span class="math">\(C_{i}\)</span>. E.g.:</p>
-<div class="math">
+of the contributions <span class="math notranslate nohighlight">\(C_{i}\)</span>. E.g.:</p>
+<div class="math notranslate nohighlight">
 \[\Delta_fH_{298}^{o}(X) = \sum_{i}GAV(C_{i})\]</div>
 <p>The term ‘group additive value’ (GAV) denotes a polyvalent (ligancy &gt; 1) monoatomic central atom
-<span class="math">\(C_{i}\)</span> surrounded by its nearest-neighbor ligands.</p>
+<span class="math notranslate nohighlight">\(C_{i}\)</span> surrounded by its nearest-neighbor ligands.</p>
 <p>Values for each central atomtype (e.g. “tertiary carbon atom”) and its surrounding ligands can be found in the thermo
 group database, named group.py, of RMG. More information can be found here: <a class="reference internal" href="database/thermo.html#thermodatabase"><span class="std std-ref">Thermo Database</span></a>.</p>
 <div class="section" id="nnis">
@@ -119,7 +110,7 @@ atoms separated by at least 2 atoms, such as alkane 1,4-gauche, alkane 1,5 (cf. 
 alkene single and double cis, ene-yne cis and ortho interactions.</p>
 <img alt="../../_images/15Alkanae.png" class="align-center" src="../../_images/15Alkanae.png" />
 <p>As a result, thermochemistry of the molecule X is determined as :</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[\Delta_fH_{298}^{o}(X) = \sum_{i}GAV(C_{i}) + \sum_{j}NNI_{j}\]</div>
 <p>RMG contains a database with NNIs, named gauche.py and int15.py. More information on the nature on the available NNIs, and corresponding values
 can be found here: <a class="reference internal" href="database/thermo.html#thermodatabase"><span class="std std-ref">Thermo Database</span></a>.</p>
@@ -133,7 +124,7 @@ type of ring. For example, due to the significant ring strained induced in norbo
 ring correction (RSC) needs to be added to the sum of the GAVs of the individual carbon atoms:</p>
 <img alt="../../_images/norbornane.png" class="align-center" src="../../_images/norbornane.png" />
 <p>As a result, thermochemistry of the molecule X is determined as :</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[\Delta_fH_{298}^{o}(X) = \sum_{i}GAV(C_{i}) + RSC\]</div>
 <p>RMG contains a database with single-ring corrections, ‘ring.py’ and polycyclic ring corrections,
 ‘polycyclic.py’. More information on the nature on the available NNIs, and corresponding values
@@ -148,13 +139,13 @@ enthalpy of formation of a radical (R*) is calculated from the enthalpy
 of formation of the corresponding parent molecule (R-H) by adding a
 HBI to account for the loss of a hydrogen atom. Hence, for
 standard enthalpies of formation the HBI is defined as</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[HBI = \Delta_fH_{298}^{o}(R^*) - \Delta_fH_{298}^{o}(R-H)
 = BDE(R-H) - \Delta_fH_{298}^{o}(H*)\]</div>
 <p>with BDE the bond dissociation enthalpy of the R-H bond at the radical position.
 Similar expressions are valid for the entropy and heat capacity.</p>
 <p>As a result the thermochemistry of the radical is calculated as follows:</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[ \begin{align}\begin{aligned}\Delta_fH_{298}^{o}(R^*) = HBI(\Delta_fH_{298}^{o}) + \Delta_fH_{298}^{o}(R-H)\\C_{p}^{o}(R^*) = HBI(C_{p}^{o}) + C_{p}^{o}(R-H)\\S_{298}^{o}(R^*) = HBI(S_{298}^{o}) + S_{298}^{o}(R-H)\end{aligned}\end{align} \]</div>
 <p>The HBI method is the default method use to estimate thermochemistry of radicals. Thus,
 the effect of resonance stabilization on the enthalpy of the radical will be accounted for
@@ -274,12 +265,12 @@ and levels of theory that are currently  supported in the QMTP interface of RMG.
 Molecular symmetry refers to the indistinguishable orientations of a molecule and
 can be represented by molecular groups or a symmetry number. RMG uses a symmetry number
 which is the number of superimposible configurations, which includes external symmetry and internal
-free rotors, which is described by detail by <a class="reference internal" href="#id8" id="id5">[Benson]</a>.
-This is macroscopically quantified as a decrease of the entropy S by a term  <span class="math">\(-R * ln(\sigma)\)</span>
-with R the universal gas constant and <span class="math">\(\sigma\)</span> the global symmetry number,
+free rotors, which is described by detail by <a class="reference internal" href="#benson" id="id5">[Benson]</a>.
+This is macroscopically quantified as a decrease of the entropy S by a term  <span class="math notranslate nohighlight">\(-R * ln(\sigma)\)</span>
+with R the universal gas constant and <span class="math notranslate nohighlight">\(\sigma\)</span> the global symmetry number,
 corresponding to the number of indistinguishable orientations of the molecule.</p>
-<p>In RMG, <span class="math">\(\sigma\)</span> is calculated  as the product of contributions of three symmetry center types : atoms, bonds and axes, cf. below.</p>
-<div class="math">
+<p>In RMG, <span class="math notranslate nohighlight">\(\sigma\)</span> is calculated  as the product of contributions of three symmetry center types : atoms, bonds and axes, cf. below.</p>
+<div class="math notranslate nohighlight">
 \[\sigma = \prod_{i}\sigma_{atom,i}.\prod_{j}\sigma_{bond,j}.\prod_{k}\sigma_{axis,k}\]</div>
 <p>More information can be found in the Ph.D Thesis of Joanna Yu <a class="reference internal" href="#yu" id="id6">[Yu]</a>.</p>
 <p>For molecules whose thermochemistry is calculated through group contribution techniques, the
@@ -291,15 +282,15 @@ three-dimensional geometry and calculates the corresponding point group.</p>
 <div class="section" id="chirality">
 <h3>13.4.2. Chirality<a class="headerlink" href="#chirality" title="Permalink to this headline">¶</a></h3>
 <p>RMG does not take stereochemistry into account, effectively assuming a racemic mixture of mirror image enantiomers.
-As a result, a chirality contribution of <span class="math">\(+R * ln(2)\)</span> is included in the entropy of the molecule.</p>
+As a result, a chirality contribution of <span class="math notranslate nohighlight">\(+R * ln(2)\)</span> is included in the entropy of the molecule.</p>
 <p>Chirality for molecules whose thermochemistry is determiend using group contribution techniques is detected
 using graph algorithms similar to those used for determining the symmetry number. If the thermochemistry is calculated through the QMTP process, chirality is detected using
 the point group information obtained via the software SYMMETRY.</p>
 <p>Chiral molecules belong to point groups that lack a superposable mirror image
-(i.e. point groups lacking <span class="math">\(\sigma_h\)</span>, <span class="math">\(\sigma_d\)</span>, <span class="math">\(\sigma_v\)</span>, and <span class="math">\(S_n\)</span>
+(i.e. point groups lacking <span class="math notranslate nohighlight">\(\sigma_h\)</span>, <span class="math notranslate nohighlight">\(\sigma_d\)</span>, <span class="math notranslate nohighlight">\(\sigma_v\)</span>, and <span class="math notranslate nohighlight">\(S_n\)</span>
 symmetry elements).</p>
 <p>In RMG, chirality is incorportated into the symmetry attribute by dividing the symmetry by
-two which will increase entropy by <span class="math">\(+R * ln(2)\)</span>. RMG currently checks for each chiral
+two which will increase entropy by <span class="math notranslate nohighlight">\(+R * ln(2)\)</span>. RMG currently checks for each chiral
 center, defined by 4 different groups attached to a carbon, and halves the symmetry
 for each chiral center.</p>
 <p>The effect of cis-trans isomers is currently not accounted for in RMG.</p>
@@ -307,10 +298,16 @@ for each chiral center.</p>
 </div>
 <div class="section" id="references">
 <h2>13.5. References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<table class="docutils citation" frame="void" id="benson1976" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[Benson1976]</a></td><td>Benson, Sidney William. “Thermochemical kinetics.” (1976)</td></tr>
+</tbody>
+</table>
 <table class="docutils citation" frame="void" id="benson" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
-<tr><td class="label">[Benson]</td><td>Benson, Sidney William. “Thermochemical kinetics.” (1976)</td></tr>
+<tr><td class="label"><a class="fn-backref" href="#id5">[Benson]</a></td><td>Benson, S.W. (1965), <a class="reference external" href="https://en.wikipedia.org/wiki/Benson_group_increment_theory">https://en.wikipedia.org/wiki/Benson_group_increment_theory</a></td></tr>
 </tbody>
 </table>
 <table class="docutils citation" frame="void" id="lay" rules="none">
@@ -341,16 +338,6 @@ for each chiral center.</p>
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
 <tr><td class="label"><a class="fn-backref" href="#id3">[RDKit]</a></td><td>Landrum, G. (2012). RDKit, <a class="reference external" href="http://rdkit.org">http://rdkit.org</a>.</td></tr>
-</tbody>
-</table>
-<table class="docutils citation" frame="void" id="id8" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label">[Benson]</td><td><div class="first system-message">
-<p class="system-message-title">System Message: WARNING/2 (<tt class="docutils">/home/ampayne/RMG/Documentation_Update/RMG-Py/documentation/source/users/rmg/thermo.rst</tt>, line 294); <em><a href="#id8">backlink</a></em></p>
-Duplicate explicit target name: “benson”.</div>
-<p class="last">Benson, S.W. (1965), <a class="reference external" href="https://en.wikipedia.org/wiki/Benson_group_increment_theory">https://en.wikipedia.org/wiki/Benson_group_increment_theory</a></p>
-</td></tr>
 </tbody>
 </table>
 </div>
@@ -429,12 +416,14 @@ Duplicate explicit target name: “benson”.</div>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -460,7 +449,7 @@ Duplicate explicit target name: “benson”.</div>
           <a href="database/modification.html" title="12.4. Database Modification"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" >RMG User’s Guide</a> &#187;</li> 
@@ -468,7 +457,7 @@ Duplicate explicit target name: “benson”.</div>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

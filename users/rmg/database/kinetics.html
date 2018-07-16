@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>12.3. Kinetics Database &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,7 +43,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="thermo.html" title="12.2. Thermo Database"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User’s Guide</a> &#187;</li>
@@ -70,24 +61,24 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <p>This section describes the general usage of RMG’s kinetic database. See <a class="reference internal" href="modification.html#kinetic-database-modification"><span class="std std-ref">Modifying the Kinetics Database</span></a> for
 instructions on modifying the database.</p>
 <p>Pressure independent reaction rates in RMG are calculated using a modified
-Arrhenius equation, designating the reaction coefficient as <span class="math">\(k(T)\)</span> at
-temperature <span class="math">\(T\)</span>.</p>
-<div class="math">
+Arrhenius equation, designating the reaction coefficient as <span class="math notranslate nohighlight">\(k(T)\)</span> at
+temperature <span class="math notranslate nohighlight">\(T\)</span>.</p>
+<div class="math notranslate nohighlight">
 \[k(T) = A\left(\frac{T}{T_0}\right)^ne^{-(E_0 + \alpha \Delta H_{rxn})/(RT)}\]</div>
-<p><span class="math">\(R\)</span> is the universal gas constant. The <strong>kinetic parameters</strong> determining
+<p><span class="math notranslate nohighlight">\(R\)</span> is the universal gas constant. The <strong>kinetic parameters</strong> determining
 the rate coefficient are:</p>
 <ul class="simple">
-<li><span class="math">\(A\)</span>:    the pre-exponential A-factor</li>
-<li><span class="math">\(T_0\)</span>:  the reference temperature</li>
-<li><span class="math">\(n\)</span>:    the temperature exponent</li>
-<li><span class="math">\(E_0\)</span>:  the activation energy for a thermoneutral reaction (a barrier height intrinsic to the kinetics family)</li>
-<li><span class="math">\(\alpha\)</span>:       the Evans-Polanyi coefficient (characterizes the position of the transition state along the reaction coordinate, <span class="math">\(0 \le \alpha \le 1\)</span>)</li>
-<li><span class="math">\(\Delta H_{rxn}\)</span>: the enthalpy of reaction</li>
+<li><span class="math notranslate nohighlight">\(A\)</span>:    the pre-exponential A-factor</li>
+<li><span class="math notranslate nohighlight">\(T_0\)</span>:  the reference temperature</li>
+<li><span class="math notranslate nohighlight">\(n\)</span>:    the temperature exponent</li>
+<li><span class="math notranslate nohighlight">\(E_0\)</span>:  the activation energy for a thermoneutral reaction (a barrier height intrinsic to the kinetics family)</li>
+<li><span class="math notranslate nohighlight">\(\alpha\)</span>:       the Evans-Polanyi coefficient (characterizes the position of the transition state along the reaction coordinate, <span class="math notranslate nohighlight">\(0 \le \alpha \le 1\)</span>)</li>
+<li><span class="math notranslate nohighlight">\(\Delta H_{rxn}\)</span>: the enthalpy of reaction</li>
 </ul>
-<p>When Evans-Polanyi corrections are used, <span class="math">\(\Delta H_{rxn}\)</span> is calculated
+<p>When Evans-Polanyi corrections are used, <span class="math notranslate nohighlight">\(\Delta H_{rxn}\)</span> is calculated
 using RMG’s thermo database, instead of being specified in the kinetic database.
-When Evans-Polanyi corrections are not used, <span class="math">\(\Delta H_{rxn}\)</span> and <span class="math">\(\alpha\)</span>
-are set to zero, and <span class="math">\(E_0\)</span> is the activation energy of the reaction.</p>
+When Evans-Polanyi corrections are not used, <span class="math notranslate nohighlight">\(\Delta H_{rxn}\)</span> and <span class="math notranslate nohighlight">\(\alpha\)</span>
+are set to zero, and <span class="math notranslate nohighlight">\(E_0\)</span> is the activation energy of the reaction.</p>
 <div class="section" id="libraries">
 <h2>12.3.1. Libraries<a class="headerlink" href="#libraries" title="Permalink to this headline">¶</a></h2>
 <p>Kinetic libraries delineate kinetic parameters for specific reactions.
@@ -215,7 +206,7 @@ families and are universally important to combustion systems.</p>
 <td>The <cite>HCO &lt;=&gt; H + CO</cite> reaction</td>
 </tr>
 <tr class="row-even"><td>GRI-Mech3.0</td>
-<td>Gas Research Institute natural gas mechanism optimized for 1 atm (discountinued Feb. 2000)</td>
+<td>Gas Research Institute natural gas mechanism optimized for 1 atm (discontinued Feb. 2000)</td>
 </tr>
 <tr class="row-odd"><td>GRI-Mech3.0-N</td>
 <td>GRI-Mech3.0 including nitrogen chemistry (NOx from N2)</td>
@@ -326,7 +317,7 @@ families and are universally important to combustion systems.</p>
 </table>
 </div>
 <div class="section" id="families">
-<span id="kineticsfamilies"></span><h2>12.3.2. Families<a class="headerlink" href="#families" title="Permalink to this headline">¶</a></h2>
+<span id="kinetics-families-db"></span><h2>12.3.2. Families<a class="headerlink" href="#families" title="Permalink to this headline">¶</a></h2>
 <p>Allowable reactions in RMG are divided up into classes called <strong>reaction families</strong>.
 All reactions not listed in a kinetic library have their kinetic parameters
 estimated from the reaction families.</p>
@@ -352,104 +343,110 @@ estimated from the reaction families.</p>
 <tr class="row-odd"><td><strong>1,2_Insertion_CO</strong></td>
 <td><a class="reference internal" href="../../../_images/1,2_Insertion_CO.png"><img alt="f03" src="../../../_images/1,2_Insertion_CO.png" style="width: 408.75px; height: 74.0px;" /></a></td>
 </tr>
-<tr class="row-even"><td><strong>1,2_shiftS</strong></td>
+<tr class="row-even"><td><strong>1,2_shiftC</strong></td>
+<td><a class="reference internal" href="../../../_images/1,2_shiftC.png"><img alt="f04" src="../../../_images/1,2_shiftC.png" style="width: 497.0px; height: 112.25px;" /></a></td>
+</tr>
+<tr class="row-odd"><td><strong>1,2_shiftS</strong></td>
 <td><a class="reference internal" href="../../../_images/1,2_shiftS.png"><img alt="f05" src="../../../_images/1,2_shiftS.png" style="width: 360.0px; height: 23.25px;" /></a></td>
 </tr>
-<tr class="row-odd"><td><strong>1,3_Insertion_CO2</strong></td>
+<tr class="row-even"><td><strong>1,3_Insertion_CO2</strong></td>
 <td><a class="reference internal" href="../../../_images/1,3_Insertion_CO2.png"><img alt="f06" src="../../../_images/1,3_Insertion_CO2.png" style="width: 508.0px; height: 69.0px;" /></a></td>
 </tr>
-<tr class="row-even"><td><strong>1,3_Insertion_ROR</strong></td>
+<tr class="row-odd"><td><strong>1,3_Insertion_ROR</strong></td>
 <td><a class="reference internal" href="../../../_images/1,3_Insertion_ROR.png"><img alt="f07" src="../../../_images/1,3_Insertion_ROR.png" style="width: 552.0px; height: 28.25px;" /></a></td>
 </tr>
-<tr class="row-odd"><td><strong>1,3_Insertion_RSR</strong></td>
+<tr class="row-even"><td><strong>1,3_Insertion_RSR</strong></td>
 <td><a class="reference internal" href="../../../_images/1,3_Insertion_RSR.png"><img alt="f08" src="../../../_images/1,3_Insertion_RSR.png" style="width: 552.0px; height: 27.75px;" /></a></td>
 </tr>
-<tr class="row-even"><td><strong>1,4_Cyclic_birad_scission</strong></td>
+<tr class="row-odd"><td><strong>1,4_Cyclic_birad_scission</strong></td>
 <td><a class="reference internal" href="../../../_images/1,4_Cyclic_birad_scission.png"><img alt="f09" src="../../../_images/1,4_Cyclic_birad_scission.png" style="width: 471.25px; height: 51.5px;" /></a></td>
 </tr>
-<tr class="row-odd"><td><strong>1,4_Linear_birad_scission</strong></td>
+<tr class="row-even"><td><strong>1,4_Linear_birad_scission</strong></td>
 <td><a class="reference internal" href="../../../_images/1,4_Linear_birad_scission.png"><img alt="f10" src="../../../_images/1,4_Linear_birad_scission.png" style="width: 447.5px; height: 28.5px;" /></a></td>
 </tr>
-<tr class="row-even"><td><strong>1+2_Cycloaddition</strong></td>
+<tr class="row-odd"><td><strong>1+2_Cycloaddition</strong></td>
 <td><a class="reference internal" href="../../../_images/1+2_Cycloaddition.png"><img alt="f11" src="../../../_images/1+2_Cycloaddition.png" style="width: 334.25px; height: 63.75px;" /></a></td>
 </tr>
-<tr class="row-odd"><td><strong>2+2_cycloaddition_CCO</strong></td>
+<tr class="row-even"><td><strong>2+2_cycloaddition_CCO</strong></td>
 <td><a class="reference internal" href="../../../_images/2+2_cycloaddition_CCO.png"><img alt="f12" src="../../../_images/2+2_cycloaddition_CCO.png" style="width: 311.5px; height: 117.25px;" /></a></td>
 </tr>
-<tr class="row-even"><td><strong>2+2_cycloaddition_Cd</strong></td>
+<tr class="row-odd"><td><strong>2+2_cycloaddition_Cd</strong></td>
 <td><a class="reference internal" href="../../../_images/2+2_cycloaddition_Cd.png"><img alt="f13" src="../../../_images/2+2_cycloaddition_Cd.png" style="width: 290.0px; height: 71.5px;" /></a></td>
 </tr>
-<tr class="row-odd"><td><strong>2+2_cycloaddition_CO</strong></td>
+<tr class="row-even"><td><strong>2+2_cycloaddition_CO</strong></td>
 <td><a class="reference internal" href="../../../_images/2+2_cycloaddition_CO.png"><img alt="f14" src="../../../_images/2+2_cycloaddition_CO.png" style="width: 293.0px; height: 71.75px;" /></a></td>
 </tr>
-<tr class="row-even"><td><strong>2+2_cycloaddition_CS</strong></td>
+<tr class="row-odd"><td><strong>2+2_cycloaddition_CS</strong></td>
 <td><a class="reference internal" href="../../../_images/2+2_cycloaddition_CS.png"><img alt="f15" src="../../../_images/2+2_cycloaddition_CS.png" style="width: 291.0px; height: 71.75px;" /></a></td>
 </tr>
-<tr class="row-odd"><td><strong>6_membered_central_C-C_shift</strong></td>
+<tr class="row-even"><td><strong>6_membered_central_C-C_shift</strong></td>
 <td><a class="reference internal" href="../../../_images/6_membered_central_C-C_shift.png"><img alt="f16" src="../../../_images/6_membered_central_C-C_shift.png" style="width: 330.25px; height: 70.25px;" /></a></td>
 </tr>
-<tr class="row-even"><td><strong>Birad_recombination</strong></td>
+<tr class="row-odd"><td><strong>Birad_recombination</strong></td>
 <td><a class="reference internal" href="../../../_images/Birad_recombination.png"><img alt="f17" src="../../../_images/Birad_recombination.png" style="width: 318.25px; height: 53.75px;" /></a></td>
 </tr>
-<tr class="row-odd"><td><strong>Birad_R_Recombination</strong></td>
+<tr class="row-even"><td><strong>Birad_R_Recombination</strong></td>
 <td><a class="reference internal" href="../../../_images/Birad_R_Recombination.png"><img alt="f18" src="../../../_images/Birad_R_Recombination.png" style="width: 301.5px; height: 27.25px;" /></a></td>
 </tr>
-<tr class="row-even"><td><strong>CO_Disproportionation</strong></td>
+<tr class="row-odd"><td><strong>CO_Disproportionation</strong></td>
 <td><a class="reference internal" href="../../../_images/CO_Disproportionation.png"><img alt="f19" src="../../../_images/CO_Disproportionation.png" style="width: 494.25px; height: 30.5px;" /></a></td>
 </tr>
-<tr class="row-odd"><td><strong>Concerted_Intra_Diels_alder_monocyclic_1,2_shiftH</strong></td>
+<tr class="row-even"><td><strong>Concerted_Intra_Diels_alder_monocyclic_1,2_shiftH</strong></td>
 <td><a class="reference internal" href="../../../_images/Concerted_Intra_Diels_alder_monocyclic_1,2_shiftH.png"><img alt="f20" src="../../../_images/Concerted_Intra_Diels_alder_monocyclic_1,2_shiftH.png" style="width: 560.75px; height: 163.75px;" /></a></td>
 </tr>
-<tr class="row-even"><td><strong>Cyclic_Ether_Formation</strong></td>
+<tr class="row-odd"><td><strong>Cyclic_Ether_Formation</strong></td>
 <td><a class="reference internal" href="../../../_images/Cyclic_Ether_Formation.png"><img alt="f21" src="../../../_images/Cyclic_Ether_Formation.png" style="width: 449.0px; height: 54.0px;" /></a></td>
 </tr>
-<tr class="row-odd"><td><strong>Cyclic_Thioether_Formation</strong></td>
+<tr class="row-even"><td><strong>Cyclic_Thioether_Formation</strong></td>
 <td><a class="reference internal" href="../../../_images/Cyclic_Thioether_Formation.png"><img alt="f22" src="../../../_images/Cyclic_Thioether_Formation.png" style="width: 498.25px; height: 54.0px;" /></a></td>
 </tr>
-<tr class="row-even"><td><strong>Cyclopentadiene_scission</strong></td>
+<tr class="row-odd"><td><strong>Cyclopentadiene_scission</strong></td>
 <td><a class="reference internal" href="../../../_images/Cyclopentadiene_scission.png"><img alt="f23" src="../../../_images/Cyclopentadiene_scission.png" style="width: 442.5px; height: 95.25px;" /></a></td>
 </tr>
-<tr class="row-odd"><td><strong>Diels_alder_addition</strong></td>
+<tr class="row-even"><td><strong>Diels_alder_addition</strong></td>
 <td><a class="reference internal" href="../../../_images/Diels_alder_addition.png"><img alt="f24" src="../../../_images/Diels_alder_addition.png" style="width: 358.25px; height: 116.75px;" /></a></td>
 </tr>
-<tr class="row-even"><td><strong>Disproportionation</strong></td>
+<tr class="row-odd"><td><strong>Disproportionation</strong></td>
 <td><a class="reference internal" href="../../../_images/Disproportionation.png"><img alt="f25" src="../../../_images/Disproportionation.png" style="width: 495.0px; height: 30.5px;" /></a></td>
 </tr>
-<tr class="row-odd"><td><strong>H_Abstraction</strong></td>
+<tr class="row-even"><td><strong>H_Abstraction</strong></td>
 <td><a class="reference internal" href="../../../_images/H_Abstraction.png"><img alt="f26" src="../../../_images/H_Abstraction.png" style="width: 367.5px; height: 29.0px;" /></a></td>
 </tr>
-<tr class="row-even"><td><strong>HO2_Elimination_from_PeroxyRadical</strong></td>
+<tr class="row-odd"><td><strong>HO2_Elimination_from_PeroxyRadical</strong></td>
 <td><a class="reference internal" href="../../../_images/HO2_Elimination_from_PeroxyRadical.png"><img alt="f27" src="../../../_images/HO2_Elimination_from_PeroxyRadical.png" style="width: 553.75px; height: 32.5px;" /></a></td>
 </tr>
-<tr class="row-odd"><td><strong>Intra_2+2_cycloaddition_Cd</strong></td>
+<tr class="row-even"><td><strong>Intra_2+2_cycloaddition_Cd</strong></td>
 <td><a class="reference internal" href="../../../_images/Intra_2+2_cycloaddition_Cd.png"><img alt="f28" src="../../../_images/Intra_2+2_cycloaddition_Cd.png" style="width: 304.5px; height: 70.0px;" /></a></td>
 </tr>
-<tr class="row-even"><td><strong>Intra_5_membered_conjugated_C=C_C=C_addition</strong></td>
+<tr class="row-odd"><td><strong>Intra_5_membered_conjugated_C=C_C=C_addition</strong></td>
 <td><a class="reference internal" href="../../../_images/Intra_5_membered_conjugated_C=C_C=C_addition.png"><img alt="f29" src="../../../_images/Intra_5_membered_conjugated_C=C_C=C_addition.png" style="width: 450.75px; height: 102.0px;" /></a></td>
 </tr>
-<tr class="row-odd"><td><strong>Intra_Diels_alder_monocyclic</strong></td>
+<tr class="row-even"><td><strong>Intra_Diels_alder_monocyclic</strong></td>
 <td><a class="reference internal" href="../../../_images/Intra_Diels_alder_monocyclic.png"><img alt="f30" src="../../../_images/Intra_Diels_alder_monocyclic.png" style="width: 477.0px; height: 117.0px;" /></a></td>
 </tr>
-<tr class="row-even"><td><strong>Intra_Disproportionation</strong></td>
+<tr class="row-odd"><td><strong>Intra_Disproportionation</strong></td>
 <td><a class="reference internal" href="../../../_images/Intra_Disproportionation.png"><img alt="f31" src="../../../_images/Intra_Disproportionation.png" style="width: 481.0px; height: 30.5px;" /></a></td>
 </tr>
-<tr class="row-odd"><td><strong>Intra_ene_reaction</strong></td>
+<tr class="row-even"><td><strong>Intra_ene_reaction</strong></td>
 <td><a class="reference internal" href="../../../_images/Intra_ene_reaction.png"><img alt="f32" src="../../../_images/Intra_ene_reaction.png" style="width: 412.5px; height: 108.0px;" /></a></td>
 </tr>
-<tr class="row-even"><td><strong>intra_H_migration</strong></td>
+<tr class="row-odd"><td><strong>intra_H_migration</strong></td>
 <td><a class="reference internal" href="../../../_images/intra_H_migration.png"><img alt="f33" src="../../../_images/intra_H_migration.png" style="width: 411.25px; height: 30.0px;" /></a></td>
 </tr>
-<tr class="row-odd"><td><strong>intra_NO2_ONO_conversion</strong></td>
+<tr class="row-even"><td><strong>intra_NO2_ONO_conversion</strong></td>
 <td><a class="reference internal" href="../../../_images/intra_NO2_ONO_conversion.png"><img alt="f34" src="../../../_images/intra_NO2_ONO_conversion.png" style="width: 438.5px; height: 73.75px;" /></a></td>
 </tr>
-<tr class="row-even"><td><strong>intra_OH_migration</strong></td>
+<tr class="row-odd"><td><strong>intra_OH_migration</strong></td>
 <td><a class="reference internal" href="../../../_images/intra_OH_migration.png"><img alt="f35" src="../../../_images/intra_OH_migration.png" style="width: 446.75px; height: 29.0px;" /></a></td>
 </tr>
-<tr class="row-odd"><td><strong>Intra_R_Add_Endocyclic</strong></td>
+<tr class="row-even"><td><strong>Intra_R_Add_Endocyclic</strong></td>
 <td><a class="reference internal" href="../../../_images/Intra_R_Add_Endocyclic.png"><img alt="f36" src="../../../_images/Intra_R_Add_Endocyclic.png" style="width: 387.0px; height: 57.25px;" /></a></td>
 </tr>
-<tr class="row-even"><td><strong>Intra_R_Add_Exocyclic</strong></td>
+<tr class="row-odd"><td><strong>Intra_R_Add_Exocyclic</strong></td>
 <td><a class="reference internal" href="../../../_images/Intra_R_Add_Exocyclic.png"><img alt="f37" src="../../../_images/Intra_R_Add_Exocyclic.png" style="width: 401.0px; height: 57.25px;" /></a></td>
+</tr>
+<tr class="row-even"><td><strong>Intra_R_Add_Exo_scission</strong></td>
+<td><a class="reference internal" href="../../../_images/Intra_R_Add_Exo_scission.png"><img alt="f38" src="../../../_images/Intra_R_Add_Exo_scission.png" style="width: 470.25px; height: 23.25px;" /></a></td>
 </tr>
 <tr class="row-odd"><td><strong>Intra_R_Add_ExoTetCyclic</strong></td>
 <td><a class="reference internal" href="../../../_images/Intra_R_Add_ExoTetCyclic.png"><img alt="f39" src="../../../_images/Intra_R_Add_ExoTetCyclic.png" style="width: 435.75px; height: 56.25px;" /></a></td>
@@ -667,12 +664,14 @@ rules.py. For more information on modification see <a class="reference internal"
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -698,7 +697,7 @@ rules.py. For more information on modification see <a class="reference internal"
           <a href="thermo.html" title="12.2. Thermo Database"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User’s Guide</a> &#187;</li>
@@ -707,7 +706,7 @@ rules.py. For more information on modification see <a class="reference internal"
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

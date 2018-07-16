@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>2. Prune Edge Species &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,7 +43,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="enlarger.html" title="1. Rate-based Model Enlarging Algorithm"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >Theory Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG Theory Guide</a> &#187;</li> 
@@ -74,19 +65,19 @@ in order to achieve both low memory consumption and mechanism accuracy. Pruning 
 <h2>2.1. Key Parameters in Pruning<a class="headerlink" href="#key-parameters-in-pruning" title="Permalink to this headline">¶</a></h2>
 <ul>
 <li><p class="first">toleranceKeepInEdge</p>
-<p>Any edge species to prune should have peak flux along the whole conversion course lower than toleranceKeepInEdge <span class="math">\(*\)</span> characteristic flux. Thus, larger values will lead to smaller edge mechanisms.</p>
+<p>Any edge species to prune should have peak flux along the whole conversion course lower than toleranceKeepInEdge <span class="math notranslate nohighlight">\(*\)</span> characteristic flux. Thus, larger values will lead to smaller edge mechanisms.</p>
 </li>
 <li><p class="first">toleranceMoveToCore</p>
-<p>Any edge species to enter core model should have flux at some point larger than toleranceMoveToCore <span class="math">\(*\)</span> characteristic flux Thus, in general, smaller values will lead to larger core mechanisms.</p>
+<p>Any edge species to enter core model should have flux at some point larger than toleranceMoveToCore <span class="math notranslate nohighlight">\(*\)</span> characteristic flux Thus, in general, smaller values will lead to larger core mechanisms.</p>
 </li>
 <li><p class="first">toleranceInterrupSimulation</p>
-<p>Once flux of any edge species exceeds toleranceInterruptSimulation <span class="math">\(*\)</span> characteristic flux, dynamic simulation will be stopped.
+<p>Once flux of any edge species exceeds toleranceInterruptSimulation <span class="math notranslate nohighlight">\(*\)</span> characteristic flux, dynamic simulation will be stopped.
 Usually this tolerance will be set a very high value so that any flux’s exceeding that means mechanism is too incomplete to continue
 dynamic simulation.</p>
 </li>
 <li><p class="first">maximumEdgeSpecies</p>
 <p>If dynamic simulation isn’t interrupted in half way and total number of the edge species whose peak fluxes are higher than
-toleranceKeepInEdge <span class="math">\(*\)</span> characteristic flux exceeds maximumEdgeSpecies, such excessive amount of edge species with lowest peak fluxes will be pruned.</p>
+toleranceKeepInEdge <span class="math notranslate nohighlight">\(*\)</span> characteristic flux exceeds maximumEdgeSpecies, such excessive amount of edge species with lowest peak fluxes will be pruned.</p>
 </li>
 <li><p class="first">minCoreSizeForPrune</p>
 <p>Ensures that a minimum number of species are in the core before pruning occurs, in order to avoid pruning the model when it is far away from completeness.  The default value is set to 50 species.</p>
@@ -102,19 +93,19 @@ toleranceKeepInEdge <span class="math">\(*\)</span> characteristic flux exceeds 
 <img alt="../../_images/fluxDiagram.png" src="../../_images/fluxDiagram.png" />
 <p class="caption"><span class="caption-text">The goal of pruning is to delete those “useless” edge species. So “usefulness” should be defined and it’s natural to have flux as a
 criterion for “usefulness”. Since flux changes with reactant conversion, peak flux is chosen here to make decision of pruning or not.
-Every time pruning is triggered, edge species with peak flux lower than toleranceKeepInEdge <span class="math">\(*\)</span> characteristic flux will be deleted.</span></p>
+Every time pruning is triggered, edge species with peak flux lower than toleranceKeepInEdge <span class="math notranslate nohighlight">\(*\)</span> characteristic flux will be deleted.</span></p>
 </div>
 <div class="figure" id="id2">
 <img alt="../../_images/fluxDiagramWithTolerance.png" src="../../_images/fluxDiagramWithTolerance.png" />
 <p class="caption"><span class="caption-text">However, pruning is not always triggered because of toleranceInterruptSimulation. As mentioned above, in order to prune, RMG needs to figure out
 the peak flux of each edge species, which requires dynamic simulation to complete. If some run of dynamic simulation is terminated in half way
 by toleranceInterruptSimulation, pruning is rejected although there might be some edge species with peak fluxes lower than
-toleranceKeepInEdge <span class="math">\(*\)</span> characteristic flux. Since pruning requires to complete dynamic simulation, setting toleranceInterruptSimulation to be positive infinity,
+toleranceKeepInEdge <span class="math notranslate nohighlight">\(*\)</span> characteristic flux. Since pruning requires to complete dynamic simulation, setting toleranceInterruptSimulation to be positive infinity,
 as an extreme case, means always enabling pruning. Another extreme case would be that it has same value as toleranceMoveToCore where
 no pruning occurs.</span></p>
 <div class="legend">
 In summary, each run of dynamic simulation will proceed towards terminationConversion unless some flux exceeds
-toleranceInterruptSimulation <span class="math">\(*\)</span> characteristic flux.Following complete simulation is the pruning of edge species whose flux is not high enough be kept
+toleranceInterruptSimulation <span class="math notranslate nohighlight">\(*\)</span> characteristic flux.Following complete simulation is the pruning of edge species whose flux is not high enough be kept
 in the edge, which is followed by pruning of excessive amount of edge species to make sure total edge species number is no greater than maximumEdgeSpecies.</div>
 </div>
 </div>
@@ -178,12 +169,14 @@ in the edge, which is followed by pruning of excessive amount of edge species to
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -209,7 +202,7 @@ in the edge, which is followed by pruning of excessive amount of edge species to
           <a href="enlarger.html" title="1. Rate-based Model Enlarging Algorithm"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >Theory Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" >RMG Theory Guide</a> &#187;</li> 
@@ -217,7 +210,7 @@ in the edge, which is followed by pruning of excessive amount of edge species to
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

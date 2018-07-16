@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>10. Species Representation &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -25,7 +17,7 @@
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="11. Group Representation" href="group.html" />
-    <link rel="prev" title="9.11. Reaction Reduction in an RMG Job" href="modules/reduction.html" />
+    <link rel="prev" title="9.12. Isotopes" href="modules/isotopes.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -49,10 +40,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="group.html" title="11. Group Representation"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="modules/reduction.html" title="9.11. Reaction Reduction in an RMG Job"
+          <a href="modules/isotopes.html" title="9.12. Isotopes"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG User’s Guide</a> &#187;</li> 
@@ -78,7 +69,7 @@ more information on adjacency lists, see the <a class="reference internal" href=
 <p>Species objects in the input file can also be constructed using other common representations
 such as SMILES, SMARTS, and InChIs.  The following can all be used to represent the methane
 species:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">species</span><span class="p">(</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">species</span><span class="p">(</span>
     <span class="n">label</span><span class="o">=</span><span class="s1">&#39;CH4&#39;</span><span class="p">,</span>
     <span class="n">reactive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">structure</span><span class="o">=</span><span class="n">SMILES</span><span class="p">(</span><span class="s2">&quot;C&quot;</span><span class="p">),</span>
@@ -87,7 +78,7 @@ species:</p>
 </div>
 <p>Replacing the structure with any of the following representations will also produce
 the same species:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">structure</span><span class="o">=</span><span class="n">adjacencyList</span><span class="p">(</span><span class="s2">&quot;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">structure</span><span class="o">=</span><span class="n">adjacencyList</span><span class="p">(</span><span class="s2">&quot;</span>
 <span class="mi">1</span> <span class="n">C</span> <span class="n">u0</span> <span class="n">p0</span> <span class="n">c0</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">3</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">4</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">5</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
 <span class="mi">2</span> <span class="n">H</span> <span class="n">u0</span> <span class="n">p0</span> <span class="n">c0</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
 <span class="mi">3</span> <span class="n">H</span> <span class="n">u0</span> <span class="n">p0</span> <span class="n">c0</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
@@ -109,25 +100,25 @@ species names, use the Molecule Search tool found here: <a class="reference exte
 <span id="id1"></span><h2>10.1. Representing Oxygen<a class="headerlink" href="#representing-oxygen" title="Permalink to this headline">¶</a></h2>
 <p>Special care should be taken when constructing a mechanism that involves
 molecular oxygen. The ground electronic state of molecular oxygen,
-<span class="math">\(^3\Sigma^-_g\)</span>, does <em>not</em> contain a double bond, but instead a single
+<span class="math notranslate nohighlight">\(^3\Sigma^-_g\)</span>, does <em>not</em> contain a double bond, but instead a single
 bond and two lone electrons. In RMG’s adjaceny list notation the ground state
 of oxygen is represented as</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="mi">1</span> <span class="n">O</span> <span class="n">u1</span> <span class="n">p2</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">1</span> <span class="n">O</span> <span class="n">u1</span> <span class="n">p2</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
 <span class="mi">2</span> <span class="n">O</span> <span class="n">u1</span> <span class="n">p2</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
 </pre></div>
 </div>
 <p>You should use the above adjacency list to represent molecular oxygen in
 your condition files, seed mechanisms, etc. The triplet form is 22 kcal/mol
-more stable than the first singlet excited state, <span class="math">\(^1\Delta_g\)</span>, which
+more stable than the first singlet excited state, <span class="math notranslate nohighlight">\(^1\Delta_g\)</span>, which
 does contain a double bond. The adjacency list for singlet oxygen is</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="mi">1</span> <span class="n">O</span> <span class="n">u0</span> <span class="n">p2</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span><span class="n">D</span><span class="p">}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">1</span> <span class="n">O</span> <span class="n">u0</span> <span class="n">p2</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span><span class="n">D</span><span class="p">}</span>
 <span class="mi">2</span> <span class="n">O</span> <span class="n">u0</span> <span class="n">p2</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="n">D</span><span class="p">}</span>
 </pre></div>
 </div>
 <p>Selecting the correct structure for oxygen is important, as the reactions
 generated from a double bond are significantly different than those generated
 from a radical or diradical. For example, the reaction</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[\mathrm{CH_4} + \mathrm{O_2} \rightarrow \mathrm{CH_3} + \mathrm{HO_2}\]</div>
 <p>would occur for both triplet and singlet oxygen, but in entirely different
 families. For triplet oxygen the above represents a hydrogen abstraction, while
@@ -136,13 +127,13 @@ for singlet oxygen it represents the reverse of a disproportionation reaction.</
 oxygen-related chemistry that was present in RMG databases consistent with the
 single-bonded biradical representation.</p>
 <p>Conversion between triplet and singlet forms is possible through the primary
-reaction library <code class="docutils literal"><span class="pre">OxygenSingTrip</span></code>; the reactions involved are very slow, however,
+reaction library <code class="docutils literal notranslate"><span class="pre">OxygenSingTrip</span></code>; the reactions involved are very slow, however,
 and are likely to be absent from any mechanisms generated. At this point, no other
 reactions of singlet oxygen have been included in RMG.</p>
 <p>In order to allow the singlet form of O2 to be used in RMG, please allow it explicitly by
-setting <code class="docutils literal"><span class="pre">allowSingletO2</span></code> to <code class="docutils literal"><span class="pre">True</span></code> in the <code class="docutils literal"><span class="pre">generateSpeciesConstraints</span></code> section of the
+setting <code class="docutils literal notranslate"><span class="pre">allowSingletO2</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code> in the <code class="docutils literal notranslate"><span class="pre">generateSpeciesConstraints</span></code> section of the
 RMG input file.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">generatedSpeciesConstraints</span><span class="p">(</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">generatedSpeciesConstraints</span><span class="p">(</span>
     <span class="n">allowSingletO2</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
@@ -188,8 +179,8 @@ RMG input file.</p>
         </div>
         <div class="menuitem">
   <h4>Previous topic</h4>
-  <p class="topless"><a href="modules/reduction.html"
-                        title="previous chapter">9.11. Reaction Reduction in an RMG Job</a></p>
+  <p class="topless"><a href="modules/isotopes.html"
+                        title="previous chapter">9.12. Isotopes</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="group.html"
                         title="next chapter">11. Group Representation</a></p>
@@ -207,12 +198,14 @@ RMG input file.</p>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -235,10 +228,10 @@ RMG input file.</p>
           <a href="group.html" title="11. Group Representation"
              >next</a> |</li>
         <li class="right" >
-          <a href="modules/reduction.html" title="9.11. Reaction Reduction in an RMG Job"
+          <a href="modules/isotopes.html" title="9.12. Isotopes"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" >RMG User’s Guide</a> &#187;</li> 
@@ -246,7 +239,7 @@ RMG input file.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

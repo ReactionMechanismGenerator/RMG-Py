@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>6. Parsing Output Files &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,7 +43,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="running.html" title="5. Running CanTherm"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">CanTherm User’s Guide</a> &#187;</li> 
@@ -69,53 +60,53 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <div class="section" id="thermodynamic-and-high-pressure-limit-kinetics-calculations">
 <h2>6.1. Thermodynamic and High-pressure Limit Kinetics Calculations<a class="headerlink" href="#thermodynamic-and-high-pressure-limit-kinetics-calculations" title="Permalink to this headline">¶</a></h2>
 <p>The syntax of CanTherm output files closely mirrors that of the input files.
-For each <code class="docutils literal"><span class="pre">thermo()</span></code> function in the input file, there will be a corresponding
-<code class="docutils literal"><span class="pre">thermo()</span></code> function in the output file containing the computed thermodynamic
-model. Similarly, For each <code class="docutils literal"><span class="pre">kinetics()</span></code> function in the input file, there will
-be a corresponding <code class="docutils literal"><span class="pre">kinetics()</span></code> function in the output file containing the
+For each <code class="docutils literal notranslate"><span class="pre">thermo()</span></code> function in the input file, there will be a corresponding
+<code class="docutils literal notranslate"><span class="pre">thermo()</span></code> function in the output file containing the computed thermodynamic
+model. Similarly, For each <code class="docutils literal notranslate"><span class="pre">kinetics()</span></code> function in the input file, there will
+be a corresponding <code class="docutils literal notranslate"><span class="pre">kinetics()</span></code> function in the output file containing the
 computed kinetics model.</p>
 </div>
 <div class="section" id="pressure-dependent-calculations">
 <h2>6.2. Pressure-Dependent Calculations<a class="headerlink" href="#pressure-dependent-calculations" title="Permalink to this headline">¶</a></h2>
 <p>The output file contains the entire contents of the input file. In
-addition, the output file contains a block of <code class="docutils literal"><span class="pre">pdepreaction()</span></code> calls. The
-parameters of each <code class="docutils literal"><span class="pre">pdepreaction()</span></code> block match those of the <code class="docutils literal"><span class="pre">reaction()</span></code>
+addition, the output file contains a block of <code class="docutils literal notranslate"><span class="pre">pdepreaction()</span></code> calls. The
+parameters of each <code class="docutils literal notranslate"><span class="pre">pdepreaction()</span></code> block match those of the <code class="docutils literal notranslate"><span class="pre">reaction()</span></code>
 block from the input file, except that no transition state data is given and
-the <code class="docutils literal"><span class="pre">kinetics</span></code> are by definition pressure-dependent.</p>
-<p>A <code class="docutils literal"><span class="pre">pdepreaction()</span></code> item is printed for each reaction pathway possible in the
+the <code class="docutils literal notranslate"><span class="pre">kinetics</span></code> are by definition pressure-dependent.</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">pdepreaction()</span></code> item is printed for each reaction pathway possible in the
 network. Each reaction is reversible. Reactions in the opposite direction are
 provided as commented out, so a user can choose to use them if she/he desires.</p>
 </div>
 <div class="section" id="chemkin-output-file">
 <h2>6.3. Chemkin Output File<a class="headerlink" href="#chemkin-output-file" title="Permalink to this headline">¶</a></h2>
-<p>In addition to the <code class="docutils literal"><span class="pre">output.py</span></code> which contains the thermodynamic,
+<p>In addition to the <code class="docutils literal notranslate"><span class="pre">output.py</span></code> which contains the thermodynamic,
 kinetic, and pressure dependent results from a cantherm run, a Chemkin
-input file, <code class="docutils literal"><span class="pre">chem.inp</span></code> is also returned. This file contains species and their
-thermodynamic parameters for each species that has the <code class="docutils literal"><span class="pre">thermo()</span></code> in the
+input file, <code class="docutils literal notranslate"><span class="pre">chem.inp</span></code> is also returned. This file contains species and their
+thermodynamic parameters for each species that has the <code class="docutils literal notranslate"><span class="pre">thermo()</span></code> in the
 input file. The file also contains kinetics, both pressure dependent and high
-pressure limit, which have the <code class="docutils literal"><span class="pre">kinetics()</span></code> or <code class="docutils literal"><span class="pre">pressureDependence()</span></code> module
+pressure limit, which have the <code class="docutils literal notranslate"><span class="pre">kinetics()</span></code> or <code class="docutils literal notranslate"><span class="pre">pressureDependence()</span></code> module
 called.</p>
 <p>For the output file to function, all the names of species should be in valid
 chemkin format. The butanol and ethyl examples both show how to obtain a valid
 chemkin file.</p>
-<p>The <code class="docutils literal"><span class="pre">chem.inp</span></code> file can be used in Chemkin software package or converted to
+<p>The <code class="docutils literal notranslate"><span class="pre">chem.inp</span></code> file can be used in Chemkin software package or converted to
 a Cantera input file for use in Cantera software.</p>
 </div>
 <div class="section" id="log-file">
 <h2>6.4. Log File<a class="headerlink" href="#log-file" title="Permalink to this headline">¶</a></h2>
 <p>A log file containing similar information to that displayed on the console
 during CanTherm execution is also automatically saved. This file has the name
-<code class="docutils literal"><span class="pre">cantherm.log</span></code> and is found in the same directory as the output file. The
+<code class="docutils literal notranslate"><span class="pre">cantherm.log</span></code> and is found in the same directory as the output file. The
 log file accepts logging messages at an equal or greater level of detail than
 the console; thus, it is often useful (and recommended) to examine both if
 something unexpected has occurred.</p>
-<p>The <code class="docutils literal"><span class="pre">examples/cantherm</span></code> directory contains both CanTherm input files and the resulting
+<p>The <code class="docutils literal notranslate"><span class="pre">examples/cantherm</span></code> directory contains both CanTherm input files and the resulting
 output files.</p>
 </div>
 <div class="section" id="species-dictionary">
 <h2>6.5. Species Dictionary<a class="headerlink" href="#species-dictionary" title="Permalink to this headline">¶</a></h2>
-<p>Any species that had the <code class="docutils literal"><span class="pre">thermo()</span></code> method called and had the structure defined in the cantherm
-input file will also have an RMG style adjacency list representation in <code class="docutils literal"><span class="pre">species_dictionary.txt</span></code>.
+<p>Any species that had the <code class="docutils literal notranslate"><span class="pre">thermo()</span></code> method called and had the structure defined in the cantherm
+input file will also have an RMG style adjacency list representation in <code class="docutils literal notranslate"><span class="pre">species_dictionary.txt</span></code>.
 This allows the user to input the corresponding thermo and kinetics into RMG in various ways
 described in the RMG user guide.</p>
 </div>
@@ -182,12 +173,14 @@ described in the RMG user guide.</p>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -213,7 +206,7 @@ described in the RMG user guide.</p>
           <a href="running.html" title="5. Running CanTherm"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" >CanTherm User’s Guide</a> &#187;</li> 
@@ -221,7 +214,7 @@ described in the RMG user guide.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

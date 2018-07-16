@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>1. Rate-based Model Enlarging Algorithm &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,7 +43,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="index.html" title="RMG Theory Guide"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >Theory Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG Theory Guide</a> &#187;</li> 
@@ -82,13 +73,13 @@ species is monitored for significant species to be included in the core. The
 process continues until all significant species and reactions have been
 included in the model. The definition of a “significant” rate can be specified by the user
 by taking the following definition for a single species rate:</p>
-<p><span class="math">\(R_i = \frac{dC_i}{dt}\)</span></p>
+<p><span class="math notranslate nohighlight">\(R_i = \frac{dC_i}{dt}\)</span></p>
 <p>and the following definition for the reaction system’s characteristic rate, which is the sum of
 all <strong>core</strong> species rates:</p>
-<p><span class="math">\(R_{char} = \sqrt{\sum\limits_{j} R_{j}^2}\quad    \quad  \textrm{species $j$ $\in$  core}\)</span></p>
-<p>When a <span class="math">\(\textrm{species $i$ $\in$ edge}\)</span>  exceeds a “significant” rate equal to <span class="math">\(\epsilon R_{char}\)</span>,
-it is added to the core. The parameter <span class="math">\(\epsilon\)</span> is the user-specified
-<code class="docutils literal"><span class="pre">toleranceMoveToCore</span></code> that can be adjusted under the <a class="reference internal" href="../../users/rmg/input.html#modeltolerances"><span class="std std-ref">model tolerances</span></a>
+<p><span class="math notranslate nohighlight">\(R_{char} = \sqrt{\sum\limits_{j} R_{j}^2}\quad    \quad  \textrm{species $j$ $\in$  core}\)</span></p>
+<p>When a <span class="math notranslate nohighlight">\(\textrm{species $i$ $\in$ edge}\)</span>  exceeds a “significant” rate equal to <span class="math notranslate nohighlight">\(\epsilon R_{char}\)</span>,
+it is added to the core. The parameter <span class="math notranslate nohighlight">\(\epsilon\)</span> is the user-specified
+<code class="docutils literal notranslate"><span class="pre">toleranceMoveToCore</span></code> that can be adjusted under the <a class="reference internal" href="../../users/rmg/input.html#modeltolerances"><span class="std std-ref">model tolerances</span></a>
 in the <a class="reference internal" href="../../users/rmg/input.html#input"><span class="std std-ref">RMG Input File</span></a>.</p>
 <p>For more information on rate-based model enlargement, please refer to the papers <a class="reference internal" href="#gao2016" id="id1">[Gao2016]</a> or <a class="reference internal" href="#susnow1997" id="id2">[Susnow1997]</a>.</p>
 <table class="docutils citation" frame="void" id="gao2016" rules="none">
@@ -106,7 +97,7 @@ in the <a class="reference internal" href="../../users/rmg/input.html#input"><sp
 <div class="section" id="filtering-reactions-within-the-rate-based-algorithm">
 <span id="filterreactionstheory"></span><h2>1.1. Filtering Reactions within the Rate-based Algorithm<a class="headerlink" href="#filtering-reactions-within-the-rate-based-algorithm" title="Permalink to this headline">¶</a></h2>
 <p>Filtering reactions in the react step in the flux-based algorithm attempts to speed up model generation by attacking the pain point.  RMG has trouble
-converging when generating models for large molecules because it searches for reactions on the order of <span class="math">\((n_{reaction\: sites})^{{n_{species}}}\)</span>.</p>
+converging when generating models for large molecules because it searches for reactions on the order of <span class="math notranslate nohighlight">\((n_{reaction\: sites})^{{n_{species}}}\)</span>.</p>
 <p>The original algorithm performs in the following manner:</p>
 <ol class="arabic simple">
 <li>Reacts species together (slow)</li>
@@ -117,15 +108,36 @@ throughout the simulation.</p>
 <div class="figure">
 <img alt="../../_images/fluxAlgorithmWithReactionFiltering.png" src="../../_images/fluxAlgorithmWithReactionFiltering.png" />
 </div>
-<p>Here, <code class="docutils literal"><span class="pre">unimolecularThreshold</span></code> and <code class="docutils literal"><span class="pre">bimolecularThreshold</span></code> are binary arrays storing flag for whether a species or a pair of species are above a reaction threshold.
-For a unimolecular rate, this threshold is set to <code class="docutils literal"><span class="pre">True</span></code> if the unimolecular rate of <span class="math">\(\textrm{reaction $k$}\)</span> for a species A</p>
-<p><span class="math">\(R_{unimolecular} = k_{threshold}C_A &gt; \epsilon R_{char}\)</span></p>
-<p>at any given time <span class="math">\(t\)</span> in the reaction system, where <span class="math">\(k_{threshold} = \frac{k_B T}{h}\)</span></p>
-<p>For a bimolecular reaction occuring between species A and B, this threshold is set to <code class="docutils literal"><span class="pre">True</span></code> if the bimolecular rate</p>
-<p><span class="math">\(R_{bimolecular} = k_{threshold}C_A C_B &gt; \epsilon R_{char}\)</span></p>
-<p>at any given time <span class="math">\(t\)</span> in the reaction system, where <span class="math">\(k_{threshold} = 1 \times 10^{13} \frac{cm^3}{mol* s}\)</span> which is considered the diffusion limiting rate.</p>
-<p>Two additional binary arrays <code class="docutils literal"><span class="pre">unimolecularReact</span></code> and <code class="docutils literal"><span class="pre">bimolecularReact</span></code> store flags for when the <code class="docutils literal"><span class="pre">unimolecularThreshold</span></code> or <code class="docutils literal"><span class="pre">bimolecularThreshold</span></code> flag
-shifts from <code class="docutils literal"><span class="pre">False</span></code> to <code class="docutils literal"><span class="pre">True</span></code>.  RMG reacts species when the flag is set to <code class="docutils literal"><span class="pre">True</span></code>.</p>
+<p>Here, <code class="docutils literal notranslate"><span class="pre">unimolecularThreshold</span></code>, <code class="docutils literal notranslate"><span class="pre">bimolecularThreshold</span></code>, and <code class="docutils literal notranslate"><span class="pre">trimolecularThreshold</span></code> are binary arrays storing flags for whether a species or a pair of species are above a reaction threshold.
+For a unimolecular rate, this threshold is set to <code class="docutils literal notranslate"><span class="pre">True</span></code> if the unimolecular rate of <span class="math notranslate nohighlight">\(\textrm{reaction $k$}\)</span> for a species A</p>
+<p><span class="math notranslate nohighlight">\(R_{unimolecular} = k_{threshold}C_A &gt; \epsilon R_{char}\)</span></p>
+<p>at any given time <span class="math notranslate nohighlight">\(t\)</span> in the reaction system, where <span class="math notranslate nohighlight">\(k_{threshold} = \frac{k_B T}{h}\)</span></p>
+<p>For a bimolecular reaction occuring between species A and B, this threshold is set to <code class="docutils literal notranslate"><span class="pre">True</span></code> if the bimolecular rate</p>
+<p><span class="math notranslate nohighlight">\(R_{bimolecular} = k_{threshold}C_A C_B &gt; \epsilon R_{char}\)</span></p>
+<p>where <span class="math notranslate nohighlight">\(k_{threshold} = filterThreshold\)</span>. <code class="docutils literal notranslate"><span class="pre">filterThreshold</span></code> is set by the user in the input file and its
+default value is <span class="math notranslate nohighlight">\(10^{8} \frac{m^3}{mol\cdot s}\)</span>. This is on the same order of magnitude as the collision limit for two hydrogen atoms
+at 1000 K. In general, it is recommended to set <code class="docutils literal notranslate"><span class="pre">filterThreshold</span></code> such that <span class="math notranslate nohighlight">\(k_{threshold}\)</span> is slightly greater
+than the maximum rate constants one expects to be present in the system of interest. This will ensure that very fast
+reactions are not accidentally filtered out.</p>
+<p>Similarly, for a trimolecular reaction, the following expression is used:</p>
+<p><span class="math notranslate nohighlight">\(R_{trimolecular} = k_{threshold}C_A C_B C_C &gt; \epsilon R_{char}\)</span></p>
+<p>where <span class="math notranslate nohighlight">\(k_{threshold} = 10^{-3} \cdot filterThreshold \frac{m^6}{mol^2\cdot s}\)</span>.
+Based on extending Smoluchowski theory to multiple molecules, the diffusion limit rate constant for trimolecular
+reactions (in <span class="math notranslate nohighlight">\(\frac{m^6}{mol^2\cdot s}\)</span>) is approximately three orders of magnitude smaller than the rate
+constant for bimolecular reactions (in <span class="math notranslate nohighlight">\(\frac{m^3}{mol\cdot s}\)</span>). It is assumed here that Smoluchowski theory
+gives a sufficient approximation to collision theory in the gas phase.</p>
+<p>When the liquid-phase reactor is used, the diffusion limits are calculated using the Stokes-Einstein equation instead.
+For bimolecular reactions, this results in</p>
+<p><span class="math notranslate nohighlight">\(k_{threshold}[m^3/mol/s] = 22.2\frac{T[K]}{\mu[Pa\cdot s]}\)</span></p>
+<p>and for trimolecular</p>
+<p><span class="math notranslate nohighlight">\(k_{threshold}[m^6/mol^2/s] = 0.11\frac{T[K]}{\mu[Pa\cdot s]}\)</span></p>
+<p>where <span class="math notranslate nohighlight">\(\mu\)</span> is the solvent viscosity. The coefficients in the above equations were obtained by using a
+representative value of the molecular radius of 2 Angstrom. More details on the calculation of diffusion limits in the
+liquid phase can be found in <a class="reference internal" href="../../users/rmg/liquids.html#liquids"><span class="std std-ref">the description of liquid-phase systems</span></a> under
+<a class="reference internal" href="../../users/rmg/liquids.html#diffusionlimited"><span class="std std-ref">diffusion-limited kinetics</span></a>.</p>
+<p>Three additional binary arrays <code class="docutils literal notranslate"><span class="pre">unimolecularReact</span></code>, <code class="docutils literal notranslate"><span class="pre">bimolecularReact</span></code>, and <code class="docutils literal notranslate"><span class="pre">trimolecularReact</span></code> store flags for
+when the <code class="docutils literal notranslate"><span class="pre">unimolecularThreshold</span></code>, <code class="docutils literal notranslate"><span class="pre">bimolecularThreshold</span></code>, or <code class="docutils literal notranslate"><span class="pre">trimolecularThreshold</span></code> flag
+shifts from <code class="docutils literal notranslate"><span class="pre">False</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code>.  RMG reacts species when the flag is set to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
 </div>
 </div>
 
@@ -186,12 +198,14 @@ shifts from <code class="docutils literal"><span class="pre">False</span></code>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -217,7 +231,7 @@ shifts from <code class="docutils literal"><span class="pre">False</span></code>
           <a href="index.html" title="RMG Theory Guide"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >Theory Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" >RMG Theory Guide</a> &#187;</li> 
@@ -225,7 +239,7 @@ shifts from <code class="docutils literal"><span class="pre">False</span></code>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

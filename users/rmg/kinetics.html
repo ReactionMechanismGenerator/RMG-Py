@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>14. Kinetics Estimation &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,7 +43,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="thermo.html" title="13. Thermochemistry Estimation"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG User’s Guide</a> &#187;</li> 
@@ -84,8 +75,8 @@ template node, we use a user-defined rank to determine the priority of kinetic
 parameters</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="11%" />
-<col width="89%" />
+<col width="8%" />
+<col width="92%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Rank</th>
@@ -94,33 +85,60 @@ parameters</p>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>Rank 1</td>
-<td>Experiment</td>
+<td>Experiment/FCI</td>
 </tr>
 <tr class="row-odd"><td>Rank 2</td>
-<td>High level calculation: CCSD(T)-F12, MS-Tor, 2d rotors</td>
+<td>W4/HEAT with very good (2-d if necessary) rotors</td>
 </tr>
 <tr class="row-even"><td>Rank 3</td>
-<td>Mid level calculation:  CBS-QB3, 1-d rotors</td>
+<td>CCSD(T)-F12/cc-PVnZ with n&gt;2 or CCSD(T)-F12/CBS with good (2-d if necessary) rotors</td>
 </tr>
 <tr class="row-odd"><td>Rank 4</td>
-<td>Low level calculation: no rotor treatment</td>
+<td>CCSD(T)-F12/DZ, with good (2-d if necessary) rotors</td>
 </tr>
 <tr class="row-even"><td>Rank 5</td>
-<td>User’s estimates without supporting methods</td>
+<td>CBS-QB3 with 1-d rotors</td>
+</tr>
+<tr class="row-odd"><td>Rank 6</td>
+<td>Double-hybrid DFT with 1-D rotors</td>
+</tr>
+<tr class="row-even"><td>Rank 7</td>
+<td>Hybrid DFT (w/ dispersion) (rotors if necessary)</td>
+</tr>
+<tr class="row-odd"><td>Rank 8</td>
+<td>B3LYP &amp; lower DFT (rotors if necessary)</td>
+</tr>
+<tr class="row-even"><td>Rank 9</td>
+<td>Group Additivity</td>
 </tr>
 <tr class="row-odd"><td>Rank 10</td>
-<td>Averaged value from child nodes’ rate rules</td>
+<td>Direct Estimate/Guess</td>
 </tr>
-<tr class="row-even"><td>Rank 0</td>
-<td>Untrusted method and never used in generation</td>
+<tr class="row-even"><td>Rank 11</td>
+<td>Average of Rates</td>
+</tr>
+<tr class="row-odd"><td>Rank 0</td>
+<td>General Estimate (Never used in generation)</td>
 </tr>
 </tbody>
 </table>
 <p>The rank of 0 is assigned to kinetics that are generally default values for top level nodes
 that we have little faith in.  It is never used in generation and its value will in fact be overriden
-by averages of its child nodes, which generates an averaged rate rule with rank 10.</p>
-<p>Only non-zero rules are used in generation.  A rank of 1 is assigned to the most trustworthy kinetics, while a rank of 10 is considered very poor (ie. averaged kinetics).
+by averages of its child nodes, which generates an averaged rate rule with rank 11.</p>
+<p>Only non-zero rules are used in generation.  A rank of 1 is assigned to the most trustworthy kinetics, while a rank of 10 is considered very poor.
 Thus, a rate rule of rank 3 will be given priority over a rate rule of rank 5.</p>
+<p>Short Glossary:</p>
+<p>FCI (Full Configuration Interaction):  Exact solution to Schrodinger equation within the chosen basis
+set and Born-Oppenheimer approximation; possible for about 12 electrons with reasonably sized basis set
+(cost grows factorially with number of electrons).</p>
+<p>Wn (Weizmann-n):  Composite methods often with sub-kJ/mol accuracies; W1 is possible for about 9 heavy
+atoms; W1 aims to reproduce CCSD(T)/CBS; W4 aims to reproduce CCSDTQ5/CBS.</p>
+<p>HEAT (High Accuracy Extrapolated ab inito thermochemistry):  Sub-kJ/mol accuracies; essentially
+CCSDTQ with various corrections; similar in cost to Wn.</p>
+<p>CBS (Complete Basis Set):  Typically obtained by extrapolating to the complete basis set limit,
+i.e., successive cc-pVDZ, cc-pVTZ, cc-pVQZ, etc. calculations with some extrapolation formula.</p>
+<p>CCSD(T)-F12:  Coupled cluster with explicit electron correlation; chemical accuracy (1 kcal/mol)
+possible with double-zeta basis sets.</p>
 </div>
 <div class="section" id="kinetic-families">
 <h2>14.2. Kinetic Families<a class="headerlink" href="#kinetic-families" title="Permalink to this headline">¶</a></h2>
@@ -144,11 +162,11 @@ those will be returned as an estimated match.</p>
 checked. For this example, this set would include every combination of
 {C_pri, C_sec, C_ter} with {O_pri_rad, O_sec_rad}. If any these templates have kinetics,
 an average of their parameters will be returned as an estimated match. The
-average for <span class="math">\(A\)</span> is a geometric mean, while the average for <span class="math">\(n\)</span>,
-<span class="math">\(E_a\)</span>, and <span class="math">\(\alpha\)</span> are arithmetic means.</p>
+average for <span class="math notranslate nohighlight">\(A\)</span> is a geometric mean, while the average for <span class="math notranslate nohighlight">\(n\)</span>,
+<span class="math notranslate nohighlight">\(E_a\)</span>, and <span class="math notranslate nohighlight">\(\alpha\)</span> are arithmetic means.</p>
 <p>If there are still no “sibling” kinetics, then the groups will continue to fall
 up to more and more general nodes. In the worst case, the root nodes may be used.</p>
-<p>A <a class="reference internal" href="input.html#kineticsfamilies"><span class="std std-ref">Full List of the Kinetics Families</span></a> in RMG is available.</p>
+<p>A <a class="reference internal" href="database/kinetics.html#kinetics-families-db"><span class="std std-ref">Full List of the Kinetics Families</span></a> in RMG is available.</p>
 </div>
 </div>
 
@@ -210,12 +228,14 @@ up to more and more general nodes. In the worst case, the root nodes may be used
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -241,7 +261,7 @@ up to more and more general nodes. In the worst case, the root nodes may be used
           <a href="thermo.html" title="13. Thermochemistry Estimation"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" >RMG User’s Guide</a> &#187;</li> 
@@ -249,7 +269,7 @@ up to more and more general nodes. In the worst case, the root nodes may be used
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

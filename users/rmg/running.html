@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>6. Running a Job &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,7 +43,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="examples.html" title="5. Example Input Files"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG User’s Guide</a> &#187;</li> 
@@ -68,15 +59,15 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <span id="running"></span><h1>6. Running a Job<a class="headerlink" href="#running-a-job" title="Permalink to this headline">¶</a></h1>
 <p>Running RMG job is easy and under different situations you might want add additional flag as the following examples.</p>
 <p>Basic run:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">rmg</span><span class="o">.</span><span class="n">py</span> <span class="nb">input</span><span class="o">.</span><span class="n">py</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">rmg</span><span class="o">.</span><span class="n">py</span> <span class="nb">input</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 <p>Run with a restart file (restart file should be located in same folder as input.py):</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">rmg</span><span class="o">.</span><span class="n">py</span> <span class="nb">input</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">r</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">rmg</span><span class="o">.</span><span class="n">py</span> <span class="nb">input</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">r</span>
 </pre></div>
 </div>
 <p>Run with CPU profiling:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">rmg</span><span class="o">.</span><span class="n">py</span> <span class="nb">input</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">p</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">rmg</span><span class="o">.</span><span class="n">py</span> <span class="nb">input</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">p</span>
 </pre></div>
 </div>
 <p>We recommend you make a job-specific directory for each RMG simulation. Some jobs can take quite a while to complete, so we also recommend using a job scheduler (if working in an linux environment).</p>
@@ -85,18 +76,18 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h2>6.1. Running RMG in parallel with SLURM<a class="headerlink" href="#running-rmg-in-parallel-with-slurm" title="Permalink to this headline">¶</a></h2>
 <p>RMG has the capability to run using multiple cores. Here is an example
 job submission script for an RMG-Py job with a SLURM scheduler</p>
-<p>The job named <code class="docutils literal"><span class="pre">min_par</span></code> reserves 24 CPUs on a single node
-(<code class="docutils literal"><span class="pre">-np</span> <span class="pre">24</span></code>), but uses only 12 workers (= 12 CPUs) in parallel during
+<p>The job named <code class="docutils literal notranslate"><span class="pre">min_par</span></code> reserves 24 CPUs on a single node
+(<code class="docutils literal notranslate"><span class="pre">-np</span> <span class="pre">24</span></code>), but uses only 12 workers (= 12 CPUs) in parallel during
 the RMG-Py simulation.</p>
 <p>Make sure that:</p>
 <ul class="simple">
-<li>the queue named <code class="docutils literal"><span class="pre">debug</span></code> exists on your SLURM scheduler.</li>
+<li>the queue named <code class="docutils literal notranslate"><span class="pre">debug</span></code> exists on your SLURM scheduler.</li>
 <li>you modify the path to the parent folder of the RMG-Py installation folder</li>
-<li>you have an anaconda environment named <code class="docutils literal"><span class="pre">rmg_env</span></code> that contains RMG-Py’s dependencies</li>
-<li>the working directory from which you launched the job contains the RMG-Py input file <code class="docutils literal"><span class="pre">input.py</span></code></li>
+<li>you have an anaconda environment named <code class="docutils literal notranslate"><span class="pre">rmg_env</span></code> that contains RMG-Py’s dependencies</li>
+<li>the working directory from which you launched the job contains the RMG-Py input file <code class="docutils literal notranslate"><span class="pre">input.py</span></code></li>
 </ul>
-<p><code class="docutils literal"><span class="pre">-v</span></code> adds verbosity to the output log file.</p>
-<div class="code bash highlight-default"><div class="highlight"><pre><span></span>#!/bin/bash
+<p><code class="docutils literal notranslate"><span class="pre">-v</span></code> adds verbosity to the output log file.</p>
+<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span>#!/bin/bash
 #SBATCH -p debug
 #SBATCH -J min_par
 #SBATCH -n 24
@@ -118,21 +109,21 @@ source deactivate
 <h2>6.2. Running RMG in parallel with SGE<a class="headerlink" href="#running-rmg-in-parallel-with-sge" title="Permalink to this headline">¶</a></h2>
 <p>RMG has the capability to run using multiple cores. Here is an example
 using the SGE scheduler.</p>
-<p>In order to help understand, the example job is also named <code class="docutils literal"><span class="pre">min_par</span></code>
-reserving 24 CPUs on a single node (<code class="docutils literal"><span class="pre">#$</span> <span class="pre">-pe</span> <span class="pre">singlenode</span> <span class="pre">24</span></code>), but uses
+<p>In order to help understand, the example job is also named <code class="docutils literal notranslate"><span class="pre">min_par</span></code>
+reserving 24 CPUs on a single node (<code class="docutils literal notranslate"><span class="pre">#$</span> <span class="pre">-pe</span> <span class="pre">singlenode</span> <span class="pre">24</span></code>), but uses
 only 12 workers (= 12 CPUs) in parallel during the RMG-Py simulation.</p>
 <p>Make sure that:</p>
 <ul class="simple">
-<li>the queue named <code class="docutils literal"><span class="pre">normal</span></code> exists on your SGE scheduler</li>
+<li>the queue named <code class="docutils literal notranslate"><span class="pre">normal</span></code> exists on your SGE scheduler</li>
 <li>you modify the path to the parent folder of the RMG-Py installation
 folder</li>
-<li>you have an anaconda environment named <code class="docutils literal"><span class="pre">rmg_env</span></code> that contains
+<li>you have an anaconda environment named <code class="docutils literal notranslate"><span class="pre">rmg_env</span></code> that contains
 RMG-Py’s dependencies</li>
 <li>the working directory from which you launched the job
-contains the RMG-Py input file <code class="docutils literal"><span class="pre">input.py</span></code></li>
+contains the RMG-Py input file <code class="docutils literal notranslate"><span class="pre">input.py</span></code></li>
 </ul>
-<p><code class="docutils literal"><span class="pre">-v</span></code> adds verbosity to the output log file</p>
-<div class="code bash highlight-default"><div class="highlight"><pre><span></span>#! /bin/bash
+<p><code class="docutils literal notranslate"><span class="pre">-v</span></code> adds verbosity to the output log file</p>
+<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span>#! /bin/bash
 
 #$ -o job.log
 #$ -l normal
@@ -211,12 +202,14 @@ source deactivate
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -242,7 +235,7 @@ source deactivate
           <a href="examples.html" title="5. Example Input Files"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" >RMG User’s Guide</a> &#187;</li> 
@@ -250,7 +243,7 @@ source deactivate
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>rmgpy.quantity.ArrayQuantity &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,10 +43,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="scalarquantity.html" title="rmgpy.quantity.ScalarQuantity"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Physical quantities (<code class="docutils literal"><span class="pre">rmgpy.quantity</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Physical quantities (<code class="docutils literal notranslate"><span class="pre">rmgpy.quantity</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -69,7 +60,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <dl class="class">
 <dt id="rmgpy.quantity.ArrayQuantity">
 <em class="property">class </em><code class="descclassname">rmgpy.quantity.</code><code class="descname">ArrayQuantity</code><span class="sig-paren">(</span><em>value</em>, <em>units=''</em>, <em>uncertainty=None</em>, <em>uncertaintyType='+|-'</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.quantity.ArrayQuantity" title="Permalink to this definition">¶</a></dt>
-<dd><p>The <a class="reference internal" href="#rmgpy.quantity.ArrayQuantity" title="rmgpy.quantity.ArrayQuantity"><code class="xref py py-class docutils literal"><span class="pre">ArrayQuantity</span></code></a> class provides a representation of an array of
+<dd><p>The <a class="reference internal" href="#rmgpy.quantity.ArrayQuantity" title="rmgpy.quantity.ArrayQuantity"><code class="xref py py-class docutils literal notranslate"><span class="pre">ArrayQuantity</span></code></a> class provides a representation of an array of
 physical quantity values, with optional units and uncertainty information.
 The attributes are:</p>
 <table border="1" class="docutils">
@@ -93,7 +84,7 @@ The attributes are:</p>
 <td>The numeric uncertainty in the value (unitless if multiplicative)</td>
 </tr>
 <tr class="row-odd"><td><cite>uncertaintyType</cite></td>
-<td>The type of uncertainty: <code class="docutils literal"><span class="pre">'+|-'</span></code> for additive, <code class="docutils literal"><span class="pre">'*|/'</span></code> for multiplicative</td>
+<td>The type of uncertainty: <code class="docutils literal notranslate"><span class="pre">'+|-'</span></code> for additive, <code class="docutils literal notranslate"><span class="pre">'*|/'</span></code> for multiplicative</td>
 </tr>
 <tr class="row-even"><td><cite>value_si</cite></td>
 <td>The numeric value of the quantity in the corresponding SI units</td>
@@ -106,7 +97,7 @@ The attributes are:</p>
 <p>It is often more convenient to perform computations using SI units instead
 of the given units of the quantity. For this reason, the SI equivalent of
 the <cite>value</cite> attribute can be directly accessed using the <cite>value_si</cite>
-attribute. This value is cached on the <a class="reference internal" href="#rmgpy.quantity.ArrayQuantity" title="rmgpy.quantity.ArrayQuantity"><code class="xref py py-class docutils literal"><span class="pre">ArrayQuantity</span></code></a> object for
+attribute. This value is cached on the <a class="reference internal" href="#rmgpy.quantity.ArrayQuantity" title="rmgpy.quantity.ArrayQuantity"><code class="xref py py-class docutils literal notranslate"><span class="pre">ArrayQuantity</span></code></a> object for
 speed.</p>
 <dl class="method">
 <dt id="rmgpy.quantity.ArrayQuantity.copy">
@@ -117,10 +108,10 @@ speed.</p>
 <dl class="method">
 <dt id="rmgpy.quantity.ArrayQuantity.equals">
 <code class="descname">equals</code><span class="sig-paren">(</span><em>self</em>, <em>quantity</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.quantity.ArrayQuantity.equals" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the everything in a quantity object matches
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the everything in a quantity object matches
 the parameters in this object.  If there are lists of values or uncertainties,
 each item in the list must be matching and in the same order.
-Otherwise, return <code class="docutils literal"><span class="pre">False</span></code>
+Otherwise, return <code class="docutils literal notranslate"><span class="pre">False</span></code>
 (Originally intended to return warning if units capitalization was
 different, however, Quantity object only parses units matching in case, so
 this will not be a problem.)</p>
@@ -149,7 +140,7 @@ of`units` to the SI equivalent units.</p>
 <dl class="method">
 <dt id="rmgpy.quantity.ArrayQuantity.getUncertaintyType">
 <code class="descname">getUncertaintyType</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; str<a class="headerlink" href="#rmgpy.quantity.ArrayQuantity.getUncertaintyType" title="Permalink to this definition">¶</a></dt>
-<dd><p>The type of uncertainty: <code class="docutils literal"><span class="pre">'+|-'</span></code> for additive, <code class="docutils literal"><span class="pre">'*|/'</span></code> for multiplicative</p>
+<dd><p>The type of uncertainty: <code class="docutils literal notranslate"><span class="pre">'+|-'</span></code> for additive, <code class="docutils literal notranslate"><span class="pre">'*|/'</span></code> for multiplicative</p>
 </dd></dl>
 
 <dl class="method">
@@ -161,15 +152,15 @@ of`units` to the SI equivalent units.</p>
 <dl class="method">
 <dt id="rmgpy.quantity.ArrayQuantity.isUncertaintyAdditive">
 <code class="descname">isUncertaintyAdditive</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.quantity.ArrayQuantity.isUncertaintyAdditive" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the uncertainty is specified in additive format
-and <code class="docutils literal"><span class="pre">False</span></code> otherwise.</p>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the uncertainty is specified in additive format
+and <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.quantity.ArrayQuantity.isUncertaintyMultiplicative">
 <code class="descname">isUncertaintyMultiplicative</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.quantity.ArrayQuantity.isUncertaintyMultiplicative" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the uncertainty is specified in multiplicative
-format and <code class="docutils literal"><span class="pre">False</span></code> otherwise.</p>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the uncertainty is specified in multiplicative
+format and <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
 </dd></dl>
 
 <dl class="method">
@@ -201,7 +192,7 @@ the units. This ensures you set the type first.</p>
 <dt id="rmgpy.quantity.ArrayQuantity.uncertaintyType">
 <code class="descname">uncertaintyType</code><a class="headerlink" href="#rmgpy.quantity.ArrayQuantity.uncertaintyType" title="Permalink to this definition">¶</a></dt>
 <dd><p>ArrayQuantity.getUncertaintyType(self) -&gt; str</p>
-<p>The type of uncertainty: <code class="docutils literal"><span class="pre">'+|-'</span></code> for additive, <code class="docutils literal"><span class="pre">'*|/'</span></code> for multiplicative</p>
+<p>The type of uncertainty: <code class="docutils literal notranslate"><span class="pre">'+|-'</span></code> for additive, <code class="docutils literal notranslate"><span class="pre">'*|/'</span></code> for multiplicative</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -282,12 +273,14 @@ the units. This ensures you set the type first.</p>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -313,15 +306,15 @@ the units. This ensures you set the type first.</p>
           <a href="scalarquantity.html" title="rmgpy.quantity.ScalarQuantity"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Physical quantities (<code class="docutils literal"><span class="pre">rmgpy.quantity</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Physical quantities (<code class="docutils literal notranslate"><span class="pre">rmgpy.quantity</span></code>)</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

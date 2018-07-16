@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>rmgpy.statmech.Conformer &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,10 +43,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="schrodinger.html" title="rmgpy.statmech.schrodinger"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Statistical mechanics (<code class="docutils literal"><span class="pre">rmgpy.statmech</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Statistical mechanics (<code class="docutils literal notranslate"><span class="pre">rmgpy.statmech</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -138,7 +129,7 @@ Otherwise, all atoms will be used.</p>
 <dl class="method">
 <dt id="rmgpy.statmech.Conformer.getDensityOfStates">
 <code class="descname">getDensityOfStates</code><span class="sig-paren">(</span><em>self</em>, <em>ndarray Elist</em><span class="sig-paren">)</span> &#x2192; ndarray<a class="headerlink" href="#rmgpy.statmech.Conformer.getDensityOfStates" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the density of states <span class="math">\(\rho(E) \ dE\)</span> at the specified
+<dd><p>Return the density of states <span class="math notranslate nohighlight">\(\rho(E) \ dE\)</span> at the specified
 energies <cite>Elist</cite> above the ground state.</p>
 </dd></dl>
 
@@ -178,7 +169,7 @@ torsional rotation around the axis defined by the two atoms in
 <cite>pivots</cite>. The list <cite>top1</cite> contains the atoms that should be considered
 as part of the rotating top; this list should contain the pivot atom
 connecting the top to the rest of the molecule.    The procedure used is
-that of Pitzer <a class="footnote-reference" href="#id3" id="id1">[1]</a>, which is described as <span class="math">\(I^{(2,option)}\)</span> by East
+that of Pitzer <a class="footnote-reference" href="#id3" id="id1">[1]</a>, which is described as <span class="math notranslate nohighlight">\(I^{(2,option)}\)</span> by East
 and Radom <a class="footnote-reference" href="#id4" id="id2">[2]</a>. In this procedure, the molecule is divided into two
 tops: those at either end of the hindered rotor bond. The moment of
 inertia of each top is evaluated using an axis determined by option.
@@ -205,7 +196,7 @@ centers of mass of both groups</td>
 </tr>
 </tbody>
 </table>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[\frac{1}{I^{(2,option)}} = \frac{1}{I_1} + \frac{1}{I_2}\]</div>
 <table class="docutils footnote" frame="void" id="id3" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
@@ -239,7 +230,7 @@ and raises an exception if it is not.</p>
 <dl class="method">
 <dt id="rmgpy.statmech.Conformer.getPartitionFunction">
 <code class="descname">getPartitionFunction</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.statmech.Conformer.getPartitionFunction" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the partition function <span class="math">\(Q(T)\)</span> for the system at the
+<dd><p>Return the partition function <span class="math notranslate nohighlight">\(Q(T)\)</span> for the system at the
 specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
@@ -254,7 +245,7 @@ kg*m^2, while the principal axes have unit length.</p>
 <dl class="method">
 <dt id="rmgpy.statmech.Conformer.getSumOfStates">
 <code class="descname">getSumOfStates</code><span class="sig-paren">(</span><em>self</em>, <em>ndarray Elist</em><span class="sig-paren">)</span> &#x2192; ndarray<a class="headerlink" href="#rmgpy.statmech.Conformer.getSumOfStates" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the sum of states <span class="math">\(N(E)\)</span> at the specified energies <cite>Elist</cite>
+<dd><p>Return the sum of states <span class="math notranslate nohighlight">\(N(E)\)</span> at the specified energies <cite>Elist</cite>
 in kJ/mol above the ground state.</p>
 </dd></dl>
 
@@ -263,9 +254,9 @@ in kJ/mol above the ground state.</p>
 <code class="descname">getSymmetricTopRotors</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.statmech.Conformer.getSymmetricTopRotors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return objects representing the external J-rotor and K-rotor under the
 symmetric top approximation. For nonlinear molecules, the J-rotor is
-a 2D rigid rotor with a rotational constant <span class="math">\(B\)</span> determined as the
+a 2D rigid rotor with a rotational constant <span class="math notranslate nohighlight">\(B\)</span> determined as the
 geometric mean of the two most similar rotational constants. The
-K-rotor is a 1D rigid rotor with a rotational constant <span class="math">\(A-B\)</span>
+K-rotor is a 1D rigid rotor with a rotational constant <span class="math notranslate nohighlight">\(A-B\)</span>
 determined by the difference between the remaining molecular rotational
 constant and the J-rotor rotational constant.</p>
 </dd></dl>
@@ -347,7 +338,7 @@ used.</p>
                         title="previous chapter">rmgpy.statmech.schrodinger</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="../thermo/index.html"
-                        title="next chapter">Thermodynamics (<code class="docutils literal"><span class="pre">rmgpy.thermo</span></code>)</a></p>
+                        title="next chapter">Thermodynamics (<code class="docutils literal notranslate"><span class="pre">rmgpy.thermo</span></code>)</a></p>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -362,12 +353,14 @@ used.</p>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -393,15 +386,15 @@ used.</p>
           <a href="schrodinger.html" title="rmgpy.statmech.schrodinger"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Statistical mechanics (<code class="docutils literal"><span class="pre">rmgpy.statmech</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Statistical mechanics (<code class="docutils literal notranslate"><span class="pre">rmgpy.statmech</span></code>)</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

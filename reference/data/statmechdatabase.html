@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>rmgpy.data.statmech.StatmechDatabase &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,10 +43,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="reactionrecipe.html" title="rmgpy.data.kinetics.ReactionRecipe"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Database (<code class="docutils literal"><span class="pre">rmgpy.data</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Database (<code class="docutils literal notranslate"><span class="pre">rmgpy.data</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -73,7 +64,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <dl class="method">
 <dt id="rmgpy.data.statmech.StatmechDatabase.getStatmechData">
 <code class="descname">getStatmechData</code><span class="sig-paren">(</span><em>molecule</em>, <em>thermoModel=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.getStatmechData" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the thermodynamic parameters for a given <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code>
+<dd><p>Return the thermodynamic parameters for a given <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code>
 object <cite>molecule</cite>. This function first searches the loaded libraries
 in order, returning the first match found, before falling back to
 estimation via group additivity.</p>
@@ -82,7 +73,7 @@ estimation via group additivity.</p>
 <dl class="method">
 <dt id="rmgpy.data.statmech.StatmechDatabase.getStatmechDataFromDepository">
 <code class="descname">getStatmechDataFromDepository</code><span class="sig-paren">(</span><em>molecule</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.getStatmechDataFromDepository" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return statmech data for the given <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> object <cite>molecule</cite>
+<dd><p>Return statmech data for the given <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> object <cite>molecule</cite>
 by searching the entries in the depository.
 Returns a list of tuples  (statmechData, depository, entry).</p>
 </dd></dl>
@@ -90,7 +81,7 @@ Returns a list of tuples  (statmechData, depository, entry).</p>
 <dl class="method">
 <dt id="rmgpy.data.statmech.StatmechDatabase.getStatmechDataFromGroups">
 <code class="descname">getStatmechDataFromGroups</code><span class="sig-paren">(</span><em>molecule</em>, <em>thermoModel</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.getStatmechDataFromGroups" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return statmech data for the given <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> object <cite>molecule</cite>
+<dd><p>Return statmech data for the given <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> object <cite>molecule</cite>
 by estimating using characteristic group frequencies and fitting the
 remaining internal modes to heat capacity data from the given thermo
 model <cite>thermoModel</cite>. This always returns valid degrees of freedom data.</p>
@@ -99,9 +90,9 @@ model <cite>thermoModel</cite>. This always returns valid degrees of freedom dat
 <dl class="method">
 <dt id="rmgpy.data.statmech.StatmechDatabase.getStatmechDataFromLibrary">
 <code class="descname">getStatmechDataFromLibrary</code><span class="sig-paren">(</span><em>molecule</em>, <em>library</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmech.StatmechDatabase.getStatmechDataFromLibrary" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return statmech data for the given <code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> object <cite>molecule</cite>
-by searching the entries in the specified <code class="xref py py-class docutils literal"><span class="pre">StatmechLibrary</span></code> object
-<cite>library</cite>. Returns <code class="docutils literal"><span class="pre">None</span></code> if no data was found.</p>
+<dd><p>Return statmech data for the given <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> object <cite>molecule</cite>
+by searching the entries in the specified <a class="reference internal" href="statmechlibrary.html#rmgpy.data.statmech.StatmechLibrary" title="rmgpy.data.statmech.StatmechLibrary"><code class="xref py py-class docutils literal notranslate"><span class="pre">StatmechLibrary</span></code></a> object
+<cite>library</cite>. Returns <code class="docutils literal notranslate"><span class="pre">None</span></code> if no data was found.</p>
 </dd></dl>
 
 <dl class="method">
@@ -227,12 +218,14 @@ points to the top-level folder of the statmech libraries.</p>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -258,15 +251,15 @@ points to the top-level folder of the statmech libraries.</p>
           <a href="reactionrecipe.html" title="rmgpy.data.kinetics.ReactionRecipe"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Database (<code class="docutils literal"><span class="pre">rmgpy.data</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Database (<code class="docutils literal notranslate"><span class="pre">rmgpy.data</span></code>)</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>3. Dynamics Criterion &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,7 +43,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="prune.html" title="2. Prune Edge Species"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >Theory Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG Theory Guide</a> &#187;</li> 
@@ -74,24 +65,24 @@ This allows it to pick up key low-flux chain branching reactions and better repr
 species concentrations.</p>
 <div class="section" id="calculating-the-dynamics-criterion">
 <h2>3.1. Calculating the Dynamics Criterion<a class="headerlink" href="#calculating-the-dynamics-criterion" title="Permalink to this headline">¶</a></h2>
-<p>Let us define rates of production <span class="math">\(P_i(t)\)</span> and consumption <span class="math">\(L_i(t)\)</span> for a given species
-<span class="math">\(\frac{dc_i}{dt} = P_i(t) - L_i(t)\)</span></p>
+<p>Let us define rates of production <span class="math notranslate nohighlight">\(P_i(t)\)</span> and consumption <span class="math notranslate nohighlight">\(L_i(t)\)</span> for a given species
+<span class="math notranslate nohighlight">\(\frac{dc_i}{dt} = P_i(t) - L_i(t)\)</span></p>
 <p>Let us define a dimensionless concentration variable we will refer to as the
 accumulation number Ac for a given species</p>
-<p><span class="math">\(Ac_{spc,i} = \frac{P_i}{L_i} \approx \frac{\bar{c_{i}}}{c_{i0}}\)</span></p>
-<p>where <span class="math">\(\bar{c_i}\)</span> is the steady state concentration or more specifically the
-concentration at which <span class="math">\(P_i = L_i\)</span> assuming <span class="math">\(L_i\)</span> scales with <span class="math">\(c_i\)</span>
-and <span class="math">\(c_{i0}\)</span> is the current concentration.</p>
+<p><span class="math notranslate nohighlight">\(Ac_{spc,i} = \frac{P_i}{L_i} \approx \frac{\bar{c_{i}}}{c_{i0}}\)</span></p>
+<p>where <span class="math notranslate nohighlight">\(\bar{c_i}\)</span> is the steady state concentration or more specifically the
+concentration at which <span class="math notranslate nohighlight">\(P_i = L_i\)</span> assuming <span class="math notranslate nohighlight">\(L_i\)</span> scales with <span class="math notranslate nohighlight">\(c_i\)</span>
+and <span class="math notranslate nohighlight">\(c_{i0}\)</span> is the current concentration.</p>
 <p>This species accumulation number is a measure of how far species i is from steady state.</p>
 <p>Since this number can only be calculated for core species, by itself it is only a
 measure of the behavior of species i within the reaction network.</p>
 <p>However if we consider models with and without some edge reaction j we can define</p>
-<p><span class="math">\(\Pi_{Ac,i,j} = \frac{Ac_{spc,i,withj}}{Ac_{spc,i,withoutj}}\)</span></p>
+<p><span class="math notranslate nohighlight">\(\Pi_{Ac,i,j} = \frac{Ac_{spc,i,withj}}{Ac_{spc,i,withoutj}}\)</span></p>
 <p>Which is a measure of how much the concentration of species i is impacted by
 reaction j.</p>
 <p>In order to directly compare multiple reactions we can then sum over all
 core species involved in reaction j to get our criterion the dynamics number.</p>
-<p><span class="math">\(\sum_{i\in core} |Ln(\Pi_{Ac,i,j})| = Dy &gt; \epsilon\)</span></p>
+<p><span class="math notranslate nohighlight">\(\sum_{i\in core} |Ln(\Pi_{Ac,i,j})| = Dy &gt; \epsilon\)</span></p>
 </div>
 <div class="section" id="surface-algorithm">
 <h2>3.2. Surface Algorithm<a class="headerlink" href="#surface-algorithm" title="Permalink to this headline">¶</a></h2>
@@ -205,12 +196,14 @@ ever exceeds this value.  Note this is done on the fly during simulation.</p>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -236,7 +229,7 @@ ever exceeds this value.  Note this is done on the fly during simulation.</p>
           <a href="prune.html" title="2. Prune Edge Species"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >Theory Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" >RMG Theory Guide</a> &#187;</li> 
@@ -244,7 +237,7 @@ ever exceeds this value.  Note this is done on the fly during simulation.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

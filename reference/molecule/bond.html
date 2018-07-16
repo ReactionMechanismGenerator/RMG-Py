@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>rmgpy.molecule.Bond &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,10 +43,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="atom.html" title="rmgpy.molecule.Atom"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -84,15 +75,15 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><cite>order</cite></td>
-<td><code class="docutils literal"><span class="pre">float</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">float</span></code></td>
 <td>The <a class="reference internal" href="#id1"><span class="std std-ref">bond type</span></a></td>
 </tr>
 <tr class="row-odd"><td><cite>atom1</cite></td>
-<td><code class="docutils literal"><span class="pre">Atom</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">Atom</span></code></td>
 <td>An Atom object connecting to the bond</td>
 </tr>
 <tr class="row-even"><td><cite>atom2</cite></td>
-<td><code class="docutils literal"><span class="pre">Atom</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">Atom</span></code></td>
 <td>An Atom object connecting to the bond</td>
 </tr>
 </tbody>
@@ -123,9 +114,9 @@ decrease the order by one.</p>
 <dl class="method">
 <dt id="rmgpy.molecule.Bond.equivalent">
 <code class="descname">equivalent</code><span class="sig-paren">(</span><em>self</em>, <em>Edge other</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Bond.equivalent" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if <cite>other</cite> is indistinguishable from this bond, or
-<code class="docutils literal"><span class="pre">False</span></code> otherwise. <cite>other</cite> can be either a <code class="xref py py-class docutils literal"><span class="pre">Bond</span></code> or a
-<code class="xref py py-class docutils literal"><span class="pre">GroupBond</span></code> object.</p>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>other</cite> is indistinguishable from this bond, or
+<code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise. <cite>other</cite> can be either a <a class="reference internal" href="#rmgpy.molecule.Bond" title="rmgpy.molecule.Bond"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bond</span></code></a> or a
+<a class="reference internal" href="groupbond.html#rmgpy.molecule.GroupBond" title="rmgpy.molecule.GroupBond"><code class="xref py py-class docutils literal notranslate"><span class="pre">GroupBond</span></code></a> object.</p>
 </dd></dl>
 
 <dl class="method">
@@ -144,7 +135,7 @@ decrease the order by one.</p>
 <dt id="rmgpy.molecule.Bond.getOtherVertex">
 <code class="descname">getOtherVertex</code><span class="sig-paren">(</span><em>self</em>, <em>Vertex vertex</em><span class="sig-paren">)</span> &#x2192; Vertex<a class="headerlink" href="#rmgpy.molecule.Bond.getOtherVertex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given a vertex that makes up part of the edge, return the other vertex.
-Raise a <code class="xref py py-class docutils literal"><span class="pre">ValueError</span></code> if the given vertex is not part of the
+Raise a <code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code> if the given vertex is not part of the
 edge.</p>
 </dd></dl>
 
@@ -158,28 +149,28 @@ increase the order by one.</p>
 <dl class="method">
 <dt id="rmgpy.molecule.Bond.isBenzene">
 <code class="descname">isBenzene</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Bond.isBenzene" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the bond represents a benzene bond or <code class="docutils literal"><span class="pre">False</span></code> if
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the bond represents a benzene bond or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Bond.isDouble">
 <code class="descname">isDouble</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Bond.isDouble" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the bond represents a double bond or <code class="docutils literal"><span class="pre">False</span></code> if
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the bond represents a double bond or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Bond.isHydrogenBond">
 <code class="descname">isHydrogenBond</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Bond.isHydrogenBond" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the bond represents a hydrogen bond or <code class="docutils literal"><span class="pre">False</span></code> if
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the bond represents a hydrogen bond or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Bond.isOrder">
 <code class="descname">isOrder</code><span class="sig-paren">(</span><em>self</em>, <em>float otherOrder</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Bond.isOrder" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the bond is of order otherOrder or <code class="docutils literal"><span class="pre">False</span></code> if
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the bond is of order otherOrder or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
 not. This compares floats that takes into account floating point error</p>
 <p>NOTE: we can replace the absolute value relation with math.isclose when
 we swtich to python 3.5+</p>
@@ -188,22 +179,22 @@ we swtich to python 3.5+</p>
 <dl class="method">
 <dt id="rmgpy.molecule.Bond.isSingle">
 <code class="descname">isSingle</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Bond.isSingle" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the bond represents a single bond or <code class="docutils literal"><span class="pre">False</span></code> if
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the bond represents a single bond or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Bond.isSpecificCaseOf">
 <code class="descname">isSpecificCaseOf</code><span class="sig-paren">(</span><em>self</em>, <em>Edge other</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Bond.isSpecificCaseOf" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if <cite>self</cite> is a specific case of <cite>other</cite>, or <code class="docutils literal"><span class="pre">False</span></code>
-otherwise. <cite>other</cite> can be either a <code class="xref py py-class docutils literal"><span class="pre">Bond</span></code> or a
-<code class="xref py py-class docutils literal"><span class="pre">GroupBond</span></code> object.</p>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>self</cite> is a specific case of <cite>other</cite>, or <code class="docutils literal notranslate"><span class="pre">False</span></code>
+otherwise. <cite>other</cite> can be either a <a class="reference internal" href="#rmgpy.molecule.Bond" title="rmgpy.molecule.Bond"><code class="xref py py-class docutils literal notranslate"><span class="pre">Bond</span></code></a> or a
+<a class="reference internal" href="groupbond.html#rmgpy.molecule.GroupBond" title="rmgpy.molecule.GroupBond"><code class="xref py py-class docutils literal notranslate"><span class="pre">GroupBond</span></code></a> object.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Bond.isTriple">
 <code class="descname">isTriple</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Bond.isTriple" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the bond represents a triple bond or <code class="docutils literal"><span class="pre">False</span></code> if
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the bond represents a triple bond or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
 
@@ -255,16 +246,16 @@ following bond types:</p>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">S</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">S</span></code></td>
 <td>a single bond</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">D</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">D</span></code></td>
 <td>a double bond</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">T</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">T</span></code></td>
 <td>a triple bond</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">B</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">B</span></code></td>
 <td>a benzene bond</td>
 </tr>
 </tbody>
@@ -330,12 +321,14 @@ following bond types:</p>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -361,15 +354,15 @@ following bond types:</p>
           <a href="atom.html" title="rmgpy.molecule.Atom"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Molecular representations (<code class="docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

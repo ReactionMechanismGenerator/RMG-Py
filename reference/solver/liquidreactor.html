@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>rmgpy.solver.LiquidReactor &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,10 +43,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="simplereactor.html" title="rmgpy.solver.SimpleReactor"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Reaction system simulation (<code class="docutils literal"><span class="pre">rmgpy.solver</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Reaction system simulation (<code class="docutils literal notranslate"><span class="pre">rmgpy.solver</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -68,7 +59,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.solver.LiquidReactor<a class="headerlink" href="#rmgpy-solver-liquidreactor" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.solver.LiquidReactor">
-<em class="property">class </em><code class="descclassname">rmgpy.solver.</code><code class="descname">LiquidReactor</code><span class="sig-paren">(</span><em>T</em>, <em>initialConcentrations</em>, <em>termination</em>, <em>sensitiveSpecies=None</em>, <em>sensitivityThreshold=1e-3</em>, <em>constSPCNames=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.solver.</code><code class="descname">LiquidReactor</code><span class="sig-paren">(</span><em>T</em>, <em>initialConcentrations</em>, <em>nSims=None</em>, <em>termination=None</em>, <em>sensitiveSpecies=None</em>, <em>sensitivityThreshold=1e-3</em>, <em>sensConditions=None</em>, <em>constSPCNames=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor" title="Permalink to this definition">¶</a></dt>
 <dd><p>A reaction system consisting of a homogeneous, isothermal, constant volume batch
 reactor. These assumptions allow for a number of optimizations that enable
 this solver to complete very rapidly, even for large kinetic models.</p>
@@ -91,6 +82,12 @@ this solver to complete very rapidly, even for large kinetic models.</p>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="rmgpy.solver.LiquidReactor.Trange">
+<code class="descname">Trange</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.Trange" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Trange</em> – list</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="rmgpy.solver.LiquidReactor.V">
 <code class="descname">V</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.V" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>V</em> – ‘double’</p>
@@ -108,8 +105,8 @@ done after the while loop before the simulate call ends</p>
 <code class="descname">advance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.advance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Simulate from the current value of the independent variable to a
 specified value <cite>tout</cite>, taking as many steps as necessary. The resulting
-values of <span class="math">\(t\)</span>, <span class="math">\(\mathbf{y}\)</span>, and
-<span class="math">\(\frac{d \mathbf{y}}{dt}\)</span> can then be accessed via the <cite>t</cite>, <cite>y</cite>,
+values of <span class="math notranslate nohighlight">\(t\)</span>, <span class="math notranslate nohighlight">\(\mathbf{y}\)</span>, and
+<span class="math notranslate nohighlight">\(\frac{d \mathbf{y}}{dt}\)</span> can then be accessed via the <cite>t</cite>, <cite>y</cite>,
 and <cite>dydt</cite> attributes.</p>
 </dd></dl>
 
@@ -161,7 +158,7 @@ product side of a reaction.</dd>
 <dl class="attribute">
 <dt id="rmgpy.solver.LiquidReactor.constSPCNames">
 <code class="descname">constSPCNames</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.constSPCNames" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>constSPCNames</em> – object</p>
+<dd><p><em>constSPCNames</em> – list</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -273,6 +270,14 @@ edge to surface based on the layering constraint</p>
 from the species index dictionary.</p>
 </dd></dl>
 
+<dl class="method">
+<dt id="rmgpy.solver.LiquidReactor.get_threshold_rate_constants">
+<code class="descname">get_threshold_rate_constants</code><span class="sig-paren">(</span><em>self</em>, <em>modelSettings</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.get_threshold_rate_constants" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the threshold rate constants for reaction filtering.</p>
+<p>modelSettings is not used here, but is needed so that the method
+matches the one in simpleReactor.</p>
+</dd></dl>
+
 <dl class="attribute">
 <dt id="rmgpy.solver.LiquidReactor.initialConcentrations">
 <code class="descname">initialConcentrations</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.initialConcentrations" title="Permalink to this definition">¶</a></dt>
@@ -294,7 +299,7 @@ individual values for each dependent variable.</p>
 
 <dl class="method">
 <dt id="rmgpy.solver.LiquidReactor.initializeModel">
-<code class="descname">initializeModel</code><span class="sig-paren">(</span><em>self</em>, <em>list coreSpecies</em>, <em>list coreReactions</em>, <em>list edgeSpecies</em>, <em>list edgeReactions</em>, <em>list surfaceSpecies=None</em>, <em>list surfaceReactions=None</em>, <em>list pdepNetworks=None</em>, <em>atol=1e-16</em>, <em>rtol=1e-8</em>, <em>sensitivity=False</em>, <em>sens_atol=1e-6</em>, <em>sens_rtol=1e-4</em>, <em>filterReactions=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.initializeModel" title="Permalink to this definition">¶</a></dt>
+<code class="descname">initializeModel</code><span class="sig-paren">(</span><em>self</em>, <em>list coreSpecies</em>, <em>list coreReactions</em>, <em>list edgeSpecies</em>, <em>list edgeReactions</em>, <em>list surfaceSpecies=None</em>, <em>list surfaceReactions=None</em>, <em>list pdepNetworks=None</em>, <em>atol=1e-16</em>, <em>rtol=1e-8</em>, <em>sensitivity=False</em>, <em>sens_atol=1e-6</em>, <em>sens_rtol=1e-4</em>, <em>filterReactions=False</em>, <em>dict conditions=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.initializeModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize a simulation of the liquid reactor using the provided kinetic
 model.</p>
 </dd></dl>
@@ -369,6 +374,12 @@ model.</p>
 <dt id="rmgpy.solver.LiquidReactor.maxNetworkLeakRateRatios">
 <code class="descname">maxNetworkLeakRateRatios</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.maxNetworkLeakRateRatios" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>maxNetworkLeakRateRatios</em> – numpy.ndarray</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.LiquidReactor.nSims">
+<code class="descname">nSims</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.nSims" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>nSims</em> – ‘int’</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -468,6 +479,14 @@ model.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.solver.LiquidReactor.reset_max_edge_species_rate_ratios">
+<code class="descname">reset_max_edge_species_rate_ratios</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.reset_max_edge_species_rate_ratios" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function sets maxEdgeSpeciesRateRatios back to zero
+for pruning of ranged reactors it is important to avoid doing this
+every initialization</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.solver.LiquidReactor.residual">
 <code class="descname">residual</code><span class="sig-paren">(</span><em>self</em>, <em>double t</em>, <em>ndarray y</em>, <em>ndarray dydt</em>, <em>ndarray senpar=numpy.zeros(1</em>, <em>numpy.float64)</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.residual" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the residual function for the governing DAE system for the
@@ -478,6 +497,12 @@ liquid reaction system.</p>
 <dt id="rmgpy.solver.LiquidReactor.rtol_array">
 <code class="descname">rtol_array</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.rtol_array" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>rtol_array</em> – numpy.ndarray</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.LiquidReactor.sensConditions">
+<code class="descname">sensConditions</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.sensConditions" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>sensConditions</em> – dict</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -530,7 +555,7 @@ equal to the residual.</p>
 
 <dl class="method">
 <dt id="rmgpy.solver.LiquidReactor.simulate">
-<code class="descname">simulate</code><span class="sig-paren">(</span><em>self</em>, <em>list coreSpecies</em>, <em>list coreReactions</em>, <em>list edgeSpecies</em>, <em>list edgeReactions</em>, <em>list surfaceSpecies</em>, <em>list surfaceReactions</em>, <em>list pdepNetworks=None</em>, <em>bool prune=False</em>, <em>bool sensitivity=False</em>, <em>list sensWorksheet=None</em>, <em>modelSettings=None</em>, <em>simulatorSettings=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.simulate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">simulate</code><span class="sig-paren">(</span><em>self</em>, <em>list coreSpecies</em>, <em>list coreReactions</em>, <em>list edgeSpecies</em>, <em>list edgeReactions</em>, <em>list surfaceSpecies</em>, <em>list surfaceReactions</em>, <em>list pdepNetworks=None</em>, <em>bool prune=False</em>, <em>bool sensitivity=False</em>, <em>list sensWorksheet=None</em>, <em>modelSettings=None</em>, <em>simulatorSettings=None</em>, <em>dict conditions=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.simulate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Simulate the reaction system with the provided reaction model,
 consisting of lists of core species, core reactions, edge species, and
 edge reactions. As the simulation proceeds the system is monitored for
@@ -538,7 +563,7 @@ validity. If the model becomes invalid (e.g. due to an excessively
 large edge flux), the simulation is interrupted and the object causing
 the model to be invalid is returned. If the simulation completes to
 the desired termination criteria and the model remains valid throughout,
-<code class="docutils literal"><span class="pre">None</span></code> is returned.</p>
+<code class="docutils literal notranslate"><span class="pre">None</span></code> is returned.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -558,8 +583,8 @@ the desired termination criteria and the model remains valid throughout,
 <code class="descname">step</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.LiquidReactor.step" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform one simulation step from the current value of the independent
 variable toward (but not past) a specified value <cite>tout</cite>. The resulting
-values of <span class="math">\(t\)</span>, <span class="math">\(\mathbf{y}\)</span>, and
-<span class="math">\(\frac{d \mathbf{y}}{dt}\)</span> can then be accessed via the <cite>t</cite>, <cite>y</cite>,
+values of <span class="math notranslate nohighlight">\(t\)</span>, <span class="math notranslate nohighlight">\(\mathbf{y}\)</span>, and
+<span class="math notranslate nohighlight">\(\frac{d \mathbf{y}}{dt}\)</span> can then be accessed via the <cite>t</cite>, <cite>y</cite>,
 and <cite>dydt</cite> attributes.</p>
 </dd></dl>
 
@@ -588,6 +613,18 @@ and <cite>dydt</cite> attributes.</p>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="rmgpy.solver.LiquidReactor.trimolecular">
+<code class="descname">trimolecular</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.trimolecular" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>trimolecular</em> – ‘bool’</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.LiquidReactor.trimolecularThreshold">
+<code class="descname">trimolecularThreshold</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.trimolecularThreshold" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>trimolecularThreshold</em> – numpy.ndarray</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="rmgpy.solver.LiquidReactor.unimolecularThreshold">
 <code class="descname">unimolecularThreshold</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.unimolecularThreshold" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>unimolecularThreshold</em> – numpy.ndarray</p>
@@ -597,6 +634,12 @@ and <cite>dydt</cite> attributes.</p>
 <dt id="rmgpy.solver.LiquidReactor.validLayeringIndices">
 <code class="descname">validLayeringIndices</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.validLayeringIndices" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>validLayeringIndices</em> – numpy.ndarray</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.LiquidReactor.viscosity">
+<code class="descname">viscosity</code><a class="headerlink" href="#rmgpy.solver.LiquidReactor.viscosity" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>viscosity</em> – ‘double’</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -658,12 +701,14 @@ and <cite>dydt</cite> attributes.</p>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -689,15 +734,15 @@ and <cite>dydt</cite> attributes.</p>
           <a href="simplereactor.html" title="rmgpy.solver.SimpleReactor"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Reaction system simulation (<code class="docutils literal"><span class="pre">rmgpy.solver</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Reaction system simulation (<code class="docutils literal notranslate"><span class="pre">rmgpy.solver</span></code>)</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

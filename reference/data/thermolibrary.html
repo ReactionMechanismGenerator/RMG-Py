@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>rmgpy.data.thermo.ThermoLibrary &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,10 +43,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="thermogroups.html" title="rmgpy.data.thermo.ThermoGroups"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Database (<code class="docutils literal"><span class="pre">rmgpy.data</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Database (<code class="docutils literal notranslate"><span class="pre">rmgpy.data</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -90,7 +81,7 @@ Both <cite>node</cite> and <cite>nodeOther</cite> must be Entry types with items
 matches the local structure around <cite>atoms</cite> in <cite>structure</cite>.</p>
 <p>If root=None then uses the first matching top node.</p>
 <p>Returns None if there is no matching root.</p>
-<p>Set strict to <code class="docutils literal"><span class="pre">True</span></code> if all labels in final matched node must match that of the
+<p>Set strict to <code class="docutils literal notranslate"><span class="pre">True</span></code> if all labels in final matched node must match that of the
 structure.  This is used in kinetics groups to find the correct reaction template, but
 not generally used in other GAVs due to species generally not being prelabeled.</p>
 </dd></dl>
@@ -125,7 +116,7 @@ saved to the output file.</p>
 
 <dl class="method">
 <dt id="rmgpy.data.thermo.ThermoLibrary.getSpecies">
-<code class="descname">getSpecies</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoLibrary.getSpecies" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getSpecies</code><span class="sig-paren">(</span><em>path</em>, <em>resonance=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoLibrary.getSpecies" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the dictionary containing all of the species in a kinetics library or depository.</p>
 </dd></dl>
 
@@ -155,8 +146,8 @@ be set to ‘’ if not desired.</p>
 <dd><p>Parse an old-style RMG database dictionary located at <cite>path</cite>. An RMG
 dictionary is a list of key-value pairs of a one-line string key and a
 multi-line string value. Each record is separated by at least one empty
-line. Returns a <code class="docutils literal"><span class="pre">dict</span></code> object with the values converted to
-<code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> or <code class="xref py py-class docutils literal"><span class="pre">Group</span></code> objects depending on the
+line. Returns a <code class="docutils literal notranslate"><span class="pre">dict</span></code> object with the values converted to
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> or <code class="xref py py-class docutils literal notranslate"><span class="pre">Group</span></code> objects depending on the
 value of <cite>pattern</cite>.</p>
 </dd></dl>
 
@@ -192,7 +183,7 @@ Both <cite>node</cite> and <cite>nodeOther</cite> must be Entry types with items
 <dl class="method">
 <dt id="rmgpy.data.thermo.ThermoLibrary.matchNodeToStructure">
 <code class="descname">matchNodeToStructure</code><span class="sig-paren">(</span><em>node</em>, <em>structure</em>, <em>atoms</em>, <em>strict=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoLibrary.matchNodeToStructure" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="xref py py-data docutils literal"><span class="pre">True</span></code> if the <cite>structure</cite> centered at <cite>atom</cite> matches the
+<dd><p>Return <code class="xref py py-data docutils literal notranslate"><span class="pre">True</span></code> if the <cite>structure</cite> centered at <cite>atom</cite> matches the
 structure at <cite>node</cite> in the dictionary. The structure at <cite>node</cite> should
 have atoms with the appropriate labels because they are set on loading
 and never change. However, the atoms in <cite>structure</cite> may not have the
@@ -223,7 +214,7 @@ be found in node.  However the reverse is not true, unless <cite>strict</cite> i
 <td>Dictionary of {label: atom} in the structure.  A possible dictionary is the one produced by structure.getLabeledAtoms()</td>
 </tr>
 <tr class="row-odd"><td><cite>strict</cite></td>
-<td>If set to <code class="docutils literal"><span class="pre">True</span></code>, ensures that all the node’s atomLabels are matched by in the structure</td>
+<td>If set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, ensures that all the node’s atomLabels are matched by in the structure</td>
 </tr>
 </tbody>
 </table>
@@ -337,7 +328,7 @@ syntax.</p>
                         title="previous chapter">rmgpy.data.thermo.ThermoGroups</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="../kinetics/index.html"
-                        title="next chapter">Kinetics (<code class="docutils literal"><span class="pre">rmgpy.kinetics</span></code>)</a></p>
+                        title="next chapter">Kinetics (<code class="docutils literal notranslate"><span class="pre">rmgpy.kinetics</span></code>)</a></p>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -352,12 +343,14 @@ syntax.</p>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -383,15 +376,15 @@ syntax.</p>
           <a href="thermogroups.html" title="rmgpy.data.thermo.ThermoGroups"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Database (<code class="docutils literal"><span class="pre">rmgpy.data</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Database (<code class="docutils literal notranslate"><span class="pre">rmgpy.data</span></code>)</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

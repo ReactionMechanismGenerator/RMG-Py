@@ -1,0 +1,236 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>9.12. Isotopes &#8212; RMG-Py 2.1.0 Documentation</title>
+    <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="10. Species Representation" href="../species.html" />
+    <link rel="prev" title="9.11. Reaction Reduction in an RMG Job" href="reduction.html" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+  MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+    ce: ["Extension","mhchem"],
+  });
+});
+</script>
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../species.html" title="10. Species Representation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="reduction.html" title="9.11. Reaction Reduction in an RMG Job"
+             accesskey="P">previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../../index.html">2.2.0 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User’s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">9. Standalone Modules</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="isotopes">
+<span id="id1"></span><h1>9.12. Isotopes<a class="headerlink" href="#isotopes" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="describing-isotopes-in-adjacency-lists">
+<h2>9.12.1. Describing isotopes in adjacency lists<a class="headerlink" href="#describing-isotopes-in-adjacency-lists" title="Permalink to this headline">¶</a></h2>
+<p>Isotopic enrichment can be indicated in a molecular structure’s adjacency list.
+The example below is methane with an isotopically labeled carbon of isotope
+number 13, which is indicated with <code class="docutils literal notranslate"><span class="pre">i13</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">1</span> <span class="n">C</span> <span class="n">u0</span> <span class="n">p0</span> <span class="n">c0</span> <span class="n">i13</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">3</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">4</span><span class="p">,</span><span class="n">S</span><span class="p">}</span> <span class="p">{</span><span class="mi">5</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
+<span class="mi">2</span> <span class="n">H</span> <span class="n">u0</span> <span class="n">p0</span> <span class="n">c0</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
+<span class="mi">3</span> <span class="n">H</span> <span class="n">u0</span> <span class="n">p0</span> <span class="n">c0</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
+<span class="mi">4</span> <span class="n">H</span> <span class="n">u0</span> <span class="n">p0</span> <span class="n">c0</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
+<span class="mi">5</span> <span class="n">H</span> <span class="n">u0</span> <span class="n">p0</span> <span class="n">c0</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="running-the-rmg-isotopes-algorithm">
+<h2>9.12.2. Running the RMG isotopes algorithm<a class="headerlink" href="#running-the-rmg-isotopes-algorithm" title="Permalink to this headline">¶</a></h2>
+<p>The isotopes script is located in the folder scripts. To run the algorithm,
+ensure the RMG packages are loaded and type:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">rmg</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">isotopes</span><span class="o">.</span><span class="n">py</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="nb">input</span><span class="o">/</span><span class="n">file</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>The input file is identical to a standard RMG input file and should contain the
+conditions you want to run (unless you are inputting an already completed RMG
+model). Without any options, the script will run the original RMG input file to
+generate a model. Once the RMG job is finished, it will create new species for
+all isotopologues of previously generated species and then generate all
+reactions between the isotopologues.</p>
+<p>Some arguments can be used to alter the behavior of the script. If you already
+have a model (which includes atom mapping in RMG’s format) which you would like
+to add isotope labels to, you can use the option <code class="docutils literal notranslate"><span class="pre">--original</span> <span class="pre">path/to/model/directory</span></code>
+with the desired model files stored within with structure <code class="docutils literal notranslate"><span class="pre">chemkin/chem_annotated.inp</span></code>
+and <code class="docutils literal notranslate"><span class="pre">chemkin/species_dictionary.txt</span></code>. With this option, the isotope script
+will use the specified model instead of re-running an RMG job.</p>
+<p>If you only desire the reactions contained in the specific RMG job,
+you can add <code class="docutils literal notranslate"><span class="pre">--useOriginalReactions</span></code> in addition to <code class="docutils literal notranslate"><span class="pre">--original</span></code>.
+This will create a full set of isotopically labeled versions of the reactions
+you input and avoid a time-consuming generate reactions proceedure.</p>
+<p>The arguement <code class="docutils literal notranslate"><span class="pre">--maximumIsotopicAtoms</span> <span class="pre">[integer]</span></code> limits the number of enriched
+atoms in any isotopologue in the model. This is beneficial for decreasing model
+size, runtime of model creation and runtime necessary for analysis.</p>
+<p>Adding kinetic isotope effects which are described in this paper can be obtained
+through the argument <code class="docutils literal notranslate"><span class="pre">--kineticIsotopeEffect</span> <span class="pre">simple</span></code>. Currently this is the
+only supported method, though this can be extended to other effects.</p>
+<p>If you have a desired output folder, <code class="docutils literal notranslate"><span class="pre">--output</span> <span class="pre">output_folder_name</span></code> can direct
+all output files to the specified folder. The default is to create a folder
+named ‘iso’.</p>
+<p>There are some limitations in what can be used in isotope models. In general,
+RMG Reaction libraries and other methods of kinetic estimation that do not
+involve atom mapping to reaction recipes are not compatible (though they can be
+functional if all isotopologues are included in the reaction library). The
+algorithm also does not function with pressure dependent mechanisms generated
+by RMG, and has only been tested for gas phase kinetics. This algorithm currently
+only works for Carbon-13 enrichments.</p>
+<p>Following the generation, a number of diagnostics check model accuracy.
+Isotopologues are checked to ensure their symmetries are consistent.
+Then, the reaction path degeneracy among reactions differing only in isotope
+labeling is checked to ensure it is consistent with the symmetry values of reactions.
+If one of these checks throws a warning, the model will likely exhibit non-natural
+fluctuations in enrichment ten to one hundred times larger than from non-hydrogen
+kinetic isotope effects.</p>
+</div>
+<div class="section" id="output-from-script">
+<h2>9.12.3. Output from script<a class="headerlink" href="#output-from-script" title="Permalink to this headline">¶</a></h2>
+<p>The isotope generation script will output two files inside the nested folders
+<code class="docutils literal notranslate"><span class="pre">iso/chemkin</span></code>, unless <code class="docutils literal notranslate"><span class="pre">--output</span></code> is specified. The file
+<code class="docutils literal notranslate"><span class="pre">species_dictionary.txt</span></code> lists the structure of all isotopologue using the
+RMG adjacency list structure. The other file of importance <code class="docutils literal notranslate"><span class="pre">chem_annotated.inp</span></code>
+is a chemkin input file containing elements, species, thermo, and reactions of
+the entire system.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+  <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    <div class="sphinxsidebarwrapper">
+        <div class="sidebarlogo"><a href="../../../index.html">
+            <img src="../../../_static/rmg-logo-small.png" alt="RMG" />
+        </a></div>
+      <div id="sidebar">
+        <div id="rmgsidebar">
+          <a href="http://rmg.mit.edu">
+            <div class="menuitem">
+              <img src="../../../_static/rmg-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG Website</div>
+              <div class="menutext menudesc">Interactive website for RMG-Py</div>
+            </div>
+          </a>
+          <a href="https://github.com/ReactionMechanismGenerator/RMG-Py">
+            <div class="menuitem">
+              <img src="../../../_static/github-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG GitHub</div>
+              <div class="menutext menudesc">View source and post issues</div>
+            </div>
+          </a>
+        </div>
+        <div class="menuitem">
+  <h3><a href="../../../contents.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">9.12. Isotopes</a><ul>
+<li><a class="reference internal" href="#describing-isotopes-in-adjacency-lists">9.12.1. Describing isotopes in adjacency lists</a></li>
+<li><a class="reference internal" href="#running-the-rmg-isotopes-algorithm">9.12.2. Running the RMG isotopes algorithm</a></li>
+<li><a class="reference internal" href="#output-from-script">9.12.3. Output from script</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+        <div class="menuitem">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="reduction.html"
+                        title="previous chapter">9.11. Reaction Reduction in an RMG Job</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../species.html"
+                        title="next chapter">10. Species Representation</a></p>
+        </div>
+        <div class="menuitem">
+<div role="note" aria-label="source link">
+    <h3>This Page</h3>
+        <ul class="this-page-menu">
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/modules/isotopes.rst"
+                   rel="nofollow">View Source</a></li>
+        </ul>
+</div>
+        </div>
+        <div class="menuitem">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+    </div>
+  </div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../species.html" title="10. Species Representation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="reduction.html" title="9.11. Reaction Reduction in an RMG Job"
+             >previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../../index.html">2.2.0 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User’s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="index.html" >9. Standalone Modules</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
+    </div>
+  </body>
+</html>

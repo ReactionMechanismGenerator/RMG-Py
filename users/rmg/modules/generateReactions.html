@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>9.4. Generate Reactions &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,7 +43,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="mergeModels.html" title="9.3. Merging Models"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User’s Guide</a> &#187;</li>
@@ -69,12 +60,12 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <span id="generatereactions"></span><h1>9.4. Generate Reactions<a class="headerlink" href="#generate-reactions" title="Permalink to this headline">¶</a></h1>
 <p>The script generateReactions.py generates reactions between all species mentioned in an input file.
 To call this method type:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">generateReactions</span><span class="o">.</span><span class="n">py</span> <span class="n">Input_File</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">generateReactions</span><span class="o">.</span><span class="n">py</span> <span class="n">Input_File</span>
 </pre></div>
 </div>
-<p>where <code class="docutils literal"><span class="pre">Input_File</span></code> is a file similar to a general RMG input file which contains all the species
-for RMG to generate reactions between.  An example file is placed in <code class="docutils literal"><span class="pre">$RMGPy/examples/generateReactions/input.py</span></code></p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Data sources for kinetics</span>
+<p>where <code class="docutils literal notranslate"><span class="pre">Input_File</span></code> is a file similar to a general RMG input file which contains all the species
+for RMG to generate reactions between.  An example file is placed in <code class="docutils literal notranslate"><span class="pre">$RMGPy/examples/generateReactions/input.py</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Data sources for kinetics</span>
 <span class="n">database</span><span class="p">(</span>
     <span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;BurkeH2O2&#39;</span><span class="p">,</span><span class="s1">&#39;primaryThermoLibrary&#39;</span><span class="p">,</span><span class="s1">&#39;DFT_QCI_thermo&#39;</span><span class="p">,</span><span class="s1">&#39;CBS_QB3_1dHR&#39;</span><span class="p">],</span>
     <span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[],</span>  
@@ -144,7 +135,7 @@ for RMG to generate reactions between.  An example file is placed in <code class
 <span class="c1">#)</span>
 </pre></div>
 </div>
-<p>This method will produce an <code class="docutils literal"><span class="pre">output.html</span></code> file in the directory of <code class="docutils literal"><span class="pre">input.py</span></code> which contains the all the reactions produced between the species.</p>
+<p>This method will produce an <code class="docutils literal notranslate"><span class="pre">output.html</span></code> file in the directory of <code class="docutils literal notranslate"><span class="pre">input.py</span></code> which contains the all the reactions produced between the species.</p>
 <p>This method is also available to use with a web browser from the RMG website: <a class="reference external" href="http://rmg.mit.edu/tools/populate_reactions">Populate Reactions</a>.</p>
 </div>
 
@@ -197,12 +188,14 @@ for RMG to generate reactions between.  An example file is placed in <code class
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -228,7 +221,7 @@ for RMG to generate reactions between.  An example file is placed in <code class
           <a href="mergeModels.html" title="9.3. Merging Models"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User’s Guide</a> &#187;</li>
@@ -237,7 +230,7 @@ for RMG to generate reactions between.  An example file is placed in <code class
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

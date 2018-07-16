@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>The master equation &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,10 +43,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="network.html" title="rmgpy.pdep.Network"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Pressure dependence (<code class="docutils literal"><span class="pre">rmgpy.pdep</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Pressure dependence (<code class="docutils literal notranslate"><span class="pre">rmgpy.pdep</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -72,209 +63,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <dd><p>Generate the full master equation matrix for the network.</p>
 </dd></dl>
 
-<p>Throughout this document we will utilize the following terminology:</p>
-<ul class="simple">
-<li>An <strong>isomer</strong> is a unimolecular configuration on the potential energy surface.</li>
-<li>A <strong>reactant channel</strong> is a bimolecular configuration that associates to form
-an isomer. Dissociation from the isomer back to reactants is allowed.</li>
-<li>A <strong>product channel</strong> is a bimolecular configuration that is formed by
-dissociation of an isomer. Reassociation of products to the isomer is <em>not</em>
-allowed.</li>
-</ul>
-<p>The isomers are the configurations for which we must model the energy states.
-We designate <span class="math">\(p_i(E, J, t)\)</span> as the population of isomer <span class="math">\(i\)</span> having
-total energy <span class="math">\(E\)</span> and total angular momentum quantum number <span class="math">\(J\)</span> at
-time <span class="math">\(t\)</span>. At long times, statistical mechanics requires that the
-population of each isomer approach a Boltzmann distribution <span class="math">\(b_i(E, J)\)</span>:</p>
-<div class="math">
-\[\lim_{t \rightarrow \infty} p_i(E, J, t) \propto b_i(E, J)\]</div>
-<p>We can simplify by eliminating the angular momentum quantum number to get</p>
-<div class="math">
-\[p_i(E, t) = \sum_J p_i(E, J, t)\]</div>
-<p>Let us also denote the (time-dependent) total population of isomer <span class="math">\(i\)</span>
-by <span class="math">\(x_i(t)\)</span>:</p>
-<div class="math">
-\[x_i(t) \equiv \sum_J \int_0^\infty p_i(E, J, t) \ dE\]</div>
-<p>The two molecules of a reactant or product channel are free to move apart from
-one another and interact independently with other molecules in the system.
-Accordingly, we treat these channels as fully thermalized, leaving as the only
-variable the total concentrations <span class="math">\(y_{n\mathrm{A}}(t)\)</span> and
-<span class="math">\(y_{n\mathrm{B}}(t)\)</span> of the molecules <span class="math">\(\mathrm{A}_n\)</span> and <span class="math">\(\mathrm{B}_n\)</span>
-of reactant channel <span class="math">\(n\)</span>. (Since the product channels act as infinite
-sinks, their populations do not need to be considered explicitly.)</p>
-<p>Finally, we will use <span class="math">\(N_\mathrm{isom}\)</span>, <span class="math">\(N_\mathrm{reac}\)</span>, and
-<span class="math">\(N_\mathrm{prod}\)</span> as the numbers of isomers, reactant channels, and
-product channels, respectively, in the system.</p>
-<p>The governing equation for the population distributions <span class="math">\(p_i(E, J, t)\)</span>
-of each isomer <span class="math">\(i\)</span> and the reactant concentrations
-<span class="math">\(y_{n\mathrm{A}}(t)\)</span> and <span class="math">\(y_{n\mathrm{B}}(t)\)</span> combines the
-collision and reaction models to give a linear integro-differential equation:</p>
-<div class="math">
-\[ \begin{align}\begin{aligned}\begin{split}\frac{d}{dt} p_i(E, J, t) &amp;= \omega_i(T, P) \sum_{J'} \int_0^\infty P_i(E, J, E', J') p_i(E', J', t) \ dE' - \omega_i(T, P) p_i(E, J, t) \\
-                       &amp;  \mbox{} + \sum_{j \ne i}^{N_\mathrm{isom}} k_{ij}(E, J) p_j(E, J, t) - \sum_{j \ne i}^{N_\mathrm{isom}} k_{ji}(E, J) p_i(E, J, t) \\
-                       &amp;  \mbox{} + \sum_{n=1}^{N_\mathrm{reac}} y_{n\mathrm{A}}(t) y_{n\mathrm{B}}(t) f_{in}(E, J) b_n(E, J, t) - \sum_{n=1}^{N_\mathrm{reac} + N_\mathrm{prod}} g_{ni}(E, J) p_i(E, J, t) \\\end{split}\\\begin{split}\frac{d}{dt} y_{n\mathrm{A}}(t) = \frac{d}{dt} y_{n\mathrm{B}}(t) &amp;= \sum_{i=1}^{N_\mathrm{isom}} \int_0^\infty g_{ni}(E, J) p_i(E, J, t) \ dE \\
-                                                                  &amp;  \mbox{} - \sum_{i=1}^{N_\mathrm{isom}} y_{n\mathrm{A}}(t) y_{n\mathrm{B}}(t) \int_0^\infty f_{in}(E, J) b_n(E, J, t) \  dE\end{split}\end{aligned}\end{align} \]</div>
-<p>A summary of the variables is given below:</p>
-<table border="1" class="docutils">
-<colgroup>
-<col width="26%" />
-<col width="74%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Variable</th>
-<th class="head">Meaning</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td><span class="math">\(p_i(E, J, t)\)</span></td>
-<td>Population distribution of isomer <span class="math">\(i\)</span></td>
-</tr>
-<tr class="row-odd"><td><span class="math">\(y_{n\mathrm{A}}(t)\)</span></td>
-<td>Total population of species <span class="math">\(\mathrm{A}_n\)</span> in reactant channel <span class="math">\(n\)</span></td>
-</tr>
-<tr class="row-even"><td><span class="math">\(\omega_i(T, P)\)</span></td>
-<td>Collision frequency of isomer <span class="math">\(i\)</span></td>
-</tr>
-<tr class="row-odd"><td><span class="math">\(P_i(E, J, E', J')\)</span></td>
-<td>Collisional transfer probability from <span class="math">\((E', J')\)</span> to <span class="math">\((E, J)\)</span> for isomer <span class="math">\(i\)</span></td>
-</tr>
-<tr class="row-even"><td><span class="math">\(k_{ij}(E, J)\)</span></td>
-<td>Microcanonical rate coefficient for isomerization from isomer <span class="math">\(j\)</span> to isomer <span class="math">\(i\)</span></td>
-</tr>
-<tr class="row-odd"><td><span class="math">\(f_{im}(E, J)\)</span></td>
-<td>Microcanonical rate coefficient for association from reactant channel <span class="math">\(m\)</span> to isomer <span class="math">\(i\)</span></td>
-</tr>
-<tr class="row-even"><td><span class="math">\(g_{nj}(E, J)\)</span></td>
-<td>Microcanonical rate coefficient for dissociation from isomer <span class="math">\(j\)</span> to reactant or product channel <span class="math">\(n\)</span></td>
-</tr>
-<tr class="row-odd"><td><span class="math">\(b_n(E, J, t)\)</span></td>
-<td>Boltzmann distribution for reactant channel <span class="math">\(n\)</span></td>
-</tr>
-<tr class="row-even"><td><span class="math">\(N_\mathrm{isom}\)</span></td>
-<td>Total number of isomers</td>
-</tr>
-<tr class="row-odd"><td><span class="math">\(N_\mathrm{reac}\)</span></td>
-<td>Total number of reactant channels</td>
-</tr>
-<tr class="row-even"><td><span class="math">\(N_\mathrm{prod}\)</span></td>
-<td>Total number of product channels</td>
-</tr>
-</tbody>
-</table>
-<p>The above is called the two-dimensional master equation because it contains two
-dimensions: total energy <span class="math">\(E\)</span> and total angular momentum quantum number
-<span class="math">\(J\)</span>. In the first equation (for isomers), the first pair of terms
-correspond to collision, the second pair to isomerization, and the final pair
-to association/dissociation. Similarly, in the second equation above (for
-reactant channels), the pair of terms refer to dissociation/association.</p>
-<p>We can also simplify the above to the one-dimensional form, which
-only has <span class="math">\(E\)</span> as a dimension:</p>
-<div class="math">
-\[ \begin{align}\begin{aligned}\begin{split}\frac{d}{dt} p_i(E, t) &amp;= \omega_i(T, P) \int_0^\infty P_i(E, E') p_i(E', t) \ dE' - \omega_i(T, P) p_i(E, t) \\
-                       &amp;  \mbox{} + \sum_{j \ne i}^{N_\mathrm{isom}} k_{ij}(E) p_j(E, t) - \sum_{j \ne i}^{N_\mathrm{isom}} k_{ji}(E) p_i(E, t) \\
-                       &amp;  \mbox{} + \sum_{n=1}^{N_\mathrm{reac}} y_{n\mathrm{A}}(t) y_{n\mathrm{B}}(t) f_{in}(E) b_n(E, t) - \sum_{n=1}^{N_\mathrm{reac} + N_\mathrm{prod}} g_{ni}(E) p_i(E, t) \\\end{split}\\\begin{split}\frac{d}{dt} y_{n\mathrm{A}}(t) = \frac{d}{dt} y_{n\mathrm{B}}(t) &amp;= \sum_{i=1}^{N_\mathrm{isom}} \int_0^\infty g_{ni}(E) p_i(E, t) \ dE \\
-                                                                  &amp;  \mbox{} - \sum_{i=1}^{N_\mathrm{isom}} y_{n\mathrm{A}}(t) y_{n\mathrm{B}}(t) \int_0^\infty f_{in}(E) b_n(E, t) \ dE\end{split}\end{aligned}\end{align} \]</div>
-<p>The equations as given are nonlinear, both due to the presence of the
-bimolecular reactants and because both <span class="math">\(\omega_i\)</span> and
-<span class="math">\(P_i(E, E')\)</span> depend on the composition, which is changing with time.
-The rate coefficients can be derived from considering the pseudo-first-order
-situation where <span class="math">\(y_{n\mathrm{A}}(t) \ll y_{n\mathrm{B}}(t)\)</span>, and all
-<span class="math">\(y(t)\)</span> are negligible compared to the bath gas <span class="math">\(\mathrm{M}\)</span>. From these
-assumptions the changes in <span class="math">\(\omega_i\)</span>, <span class="math">\(P_i(E, E')\)</span>, and all
-<span class="math">\(y_{n\mathrm{B}}\)</span> can be neglected, which yields a linear equation system.</p>
-<p>Except for the simplest of unimolecular reaction networks, both the
-one-dimensional and two-dimensional master equation must be solved numerically.
-To do this we must discretize and truncate the energy domain into a finite
-number of discrete bins called <em>grains</em>. This converts the linear
-integro-differential equation into a system of first-order ordinary
-differential equations:</p>
-<div class="math">
-\[\begin{split}\frac{d}{dt} \begin{bmatrix}
-\mathbf{p}_1 \\
-\mathbf{p}_2 \\
-\vdots \\
-y_{1\mathrm{A}} \\
-y_{2\mathrm{A}} \\
-\vdots
-\end{bmatrix} = \begin{bmatrix}
-\mathbf{M}_1 &amp; \mathbf{K}_{12} &amp; \ldots &amp; \mathbf{F}_{11} \mathbf{b}_1 y_{1\mathrm{B}} &amp; \mathbf{F}_{12} \mathbf{b}_2 y_{2\mathrm{B}} &amp; \ldots \\
-\mathbf{K}_{21} &amp; \mathbf{M}_2 &amp; \ldots &amp; \mathbf{F}_{21} \mathbf{b}_1 y_{1\mathrm{B}} &amp; \mathbf{F}_{22} \mathbf{b}_2 y_{2\mathrm{B}} &amp; \ldots \\
-\vdots &amp; \vdots &amp; \ddots &amp; \vdots &amp; \vdots &amp; \ddots \\
-(\mathbf{g}_{11})^T &amp; (\mathbf{g}_{12})^T &amp; \ldots &amp; h_1 &amp; 0 &amp; \ldots \\
-(\mathbf{g}_{21})^T &amp; (\mathbf{g}_{22})^T &amp; \ldots &amp; 0 &amp; h_2 &amp; \ldots \\
-\vdots &amp; \vdots &amp; \ddots &amp; \vdots &amp; \vdots &amp; \ddots
-\end{bmatrix} \begin{bmatrix}
-\mathbf{p}_1 \\
-\mathbf{p}_2 \\
-\vdots \\
-y_{1\mathrm{A}} \\
-y_{2\mathrm{A}} \\
-\vdots
-\end{bmatrix}\end{split}\]</div>
-<p>The diagonal matrices <span class="math">\(\mathrm{K}_{ij}\)</span> and <span class="math">\(\mathrm{F}_{in}\)</span> and
-the vector <span class="math">\(\mathrm{g}_{ni}\)</span> contain the microcanonical rate coefficients
-for isomerization, association, and dissociation, respectively:</p>
-<div class="math">
-\[\begin{split}(\mathbf{K}_{ij})_{rs} &amp;= \begin{cases}
-\frac{1}{\Delta E_r} \int_{E_r - \Delta E_r/2}^{E_r + \Delta E_r/2} k_{ij}(E) \, dE &amp; r = s \\
-0 &amp; r \ne s
-\end{cases} \\
-(\mathbf{F}_{in})_{rs} &amp;= \begin{cases}
-\frac{1}{\Delta E_r} \int_{E_r - \Delta E_r/2}^{E_r + \Delta E_r/2} f_{in}(E) \, dE &amp; r = s \\
-0 &amp; r \ne s
-\end{cases} \\
-(\mathbf{g}_{ni})_r &amp;= \frac{1}{\Delta E_r} \int_{E_r - \Delta E_r/2}^{E_r + \Delta E_r/2} g_{ni}(E) \, dE\end{split}\]</div>
-<p>The matrices <span class="math">\(\mathbf{M}_i\)</span> represent the collisional transfer
-probabilities minus the rates of reactive loss to other isomers and to
-reactants and products:</p>
-<div class="math">
-\[\begin{split}(\mathbf{M}_i)_{rs} = \begin{cases}
-\omega_i \left[ P_i(E_r, E_r) - 1 \right] - \sum_{j \ne i}^{N_\mathrm{isom}} k_{ij}(E_r) - \sum_{n=1}^{N_\mathrm{reac} + N_\mathrm{prod}} g_{ni}(E_r) &amp; r = s \\
-\omega_i P_i(E_r, E_s) &amp; r \ne s
-\end{cases}\end{split}\]</div>
-<p>The scalars <span class="math">\(h_n\)</span> are simply the total rate coefficient for loss of
-reactant channel <span class="math">\(n\)</span> due to chemical reactions:</p>
-<div class="math">
-\[h_n = - \sum_{i=1}^{N_\mathrm{isom}} \sum_{r=1}^{N_\mathrm{grains}} y_{n\mathrm{B}} f_{in}(E_r) b_n(E_r)\]</div>
-<p>The interested reader is referred to any of a variety of other sources for
-alternative presentations, of which an illustrative sampling is given here
-<a class="reference internal" href="../../theory/pdep/master_equation.html#gilbert1990" id="id1">[Gilbert1990]</a> <a class="reference internal" href="../../theory/pdep/master_equation.html#baer1996" id="id2">[Baer1996]</a> <a class="reference internal" href="../../theory/pdep/master_equation.html#holbrook1996" id="id3">[Holbrook1996]</a> <a class="reference internal" href="../../theory/pdep/master_equation.html#forst2003" id="id4">[Forst2003]</a> <a class="reference internal" href="../../theory/pdep/master_equation.html#pilling2003" id="id5">[Pilling2003]</a>.</p>
-<table class="docutils citation" frame="void" id="gilbert1990" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id1">[Gilbert1990]</a></td><td>R. G. Gilbert and S. C. Smith. <em>Theory of Unimolecular and
-Recombination Reactions</em>. Blackwell Sci. (1990).</td></tr>
-</tbody>
-</table>
-<table class="docutils citation" frame="void" id="baer1996" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id2">[Baer1996]</a></td><td>T. Baer and W. L. Hase. <em>Unimolecular Reaction Dynamics</em>.
-Oxford University Press (1996).</td></tr>
-</tbody>
-</table>
-<table class="docutils citation" frame="void" id="holbrook1996" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id3">[Holbrook1996]</a></td><td>K. A. Holbrook, M. J. Pilling, and S. H. Robertson.
-<em>Unimolecular Reactions</em>. Second Edition. John Wiley and Sons (1996).</td></tr>
-</tbody>
-</table>
-<table class="docutils citation" frame="void" id="forst2003" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id4">[Forst2003]</a></td><td>W. Forst. <em>Unimolecular Reactions: A Concise Introduction</em>.
-Cambridge University Press (2003).</td></tr>
-</tbody>
-</table>
-<table class="docutils citation" frame="void" id="pilling2003" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id5">[Pilling2003]</a></td><td>M. J. Pilling and S. H. Robertson. <em>Annu. Rev. Phys. Chem.</em>
-<strong>54</strong>, p. 245-275 (2003).
-<a class="reference external" href="http://dx.doi.org/10.1146/annurev.physchem.54.011002.103822">doi:10.1146/annurev.physchem.54.011002.103822</a></td></tr>
-</tbody>
-</table>
+<p>An in-depth explanation can be found in the <a class="reference internal" href="../../theory/pdep/master_equation.html"><span class="doc">Master Equation</span></a> section of the theory guide.</p>
 </div>
 
 
@@ -326,12 +115,14 @@ Cambridge University Press (2003).</td></tr>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -357,15 +148,15 @@ Cambridge University Press (2003).</td></tr>
           <a href="network.html" title="rmgpy.pdep.Network"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Pressure dependence (<code class="docutils literal"><span class="pre">rmgpy.pdep</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Pressure dependence (<code class="docutils literal notranslate"><span class="pre">rmgpy.pdep</span></code>)</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

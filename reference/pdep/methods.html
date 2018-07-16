@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Methods for estimating k(T,P) values &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,10 +43,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="mastereqn.html" title="The master equation"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Pressure dependence (<code class="docutils literal"><span class="pre">rmgpy.pdep</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Pressure dependence (<code class="docutils literal notranslate"><span class="pre">rmgpy.pdep</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -68,9 +59,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>Methods for estimating k(T,P) values<a class="headerlink" href="#methods-for-estimating-k-t-p-values" title="Permalink to this headline">¶</a></h1>
 <p>The objective of each of the methods described in this section is to reduce
 the master equation into a small number of phenomenological rate coefficients
-<span class="math">\(k(T,P)\)</span>. All of the methods share a common formalism in that they seek
-to express the population distribution vector <span class="math">\(\mathbf{p}_i\)</span> for each
-unimolecular isomer <span class="math">\(i\)</span> as a linear combination of the total populations
+<span class="math notranslate nohighlight">\(k(T,P)\)</span>. All of the methods share a common formalism in that they seek
+to express the population distribution vector <span class="math notranslate nohighlight">\(\mathbf{p}_i\)</span> for each
+unimolecular isomer <span class="math notranslate nohighlight">\(i\)</span> as a linear combination of the total populations
 of all unimolecular isomers and bimolecular reactant channels.</p>
 <div class="section" id="the-modified-strong-collision-method">
 <h2>The modified strong collision method<a class="headerlink" href="#the-modified-strong-collision-method" title="Permalink to this headline">¶</a></h2>
@@ -83,13 +74,13 @@ collision model, collisional stabilization of a reactive isomer is treated as a
 single-step process, ignoring the effects of collisional energy redistribution
 within the reactive energy space. An attempt to correct for the effect of
 collisional energy redistribution is made by modifying the collision frequency
-<span class="math">\(\omega_i(T,P)\)</span> with a collision efficiency <span class="math">\(\beta_i(T)\)</span> estimated
+<span class="math notranslate nohighlight">\(\omega_i(T,P)\)</span> with a collision efficiency <span class="math notranslate nohighlight">\(\beta_i(T)\)</span> estimated
 from the low-pressure limit fall-off of a single isomer.</p>
 <p>By approximating the reactive populations as existing in pseudo-steady state,
 the master equation is converted to a matrix equation is at each energy. Solving
 these small matrix equations gives the pseudo-steady state populations of each
 isomer as a function of the total population of each isomer and reactant
-channel, which are then applied to determine the <span class="math">\(k(T,P)\)</span> values.</p>
+channel, which are then applied to determine the <span class="math notranslate nohighlight">\(k(T,P)\)</span> values.</p>
 <p>In practice, the modified strong collision method is the fastest and most
 robust of the methods, and is reasonably accurate over a wide range of
 temperatures and pressures.</p>
@@ -110,13 +101,13 @@ assumed to be in pseudo-steady state. Applying these approximations converts
 the master equation into a single large matrix equation. Solving this matrix
 equation gives the pseudo-steady state populations of each isomer as a function
 of the total population of each isomer and reactant channel, which are then
-applied to determine the <span class="math">\(k(T,P)\)</span> values.</p>
+applied to determine the <span class="math notranslate nohighlight">\(k(T,P)\)</span> values.</p>
 <p>The reservoir state method is only slightly more expensive than the modified
 strong collision method. At low temperatures the approximations used are very
-good, and the resulting <span class="math">\(k(T,P)\)</span> values are more accurate than the
+good, and the resulting <span class="math notranslate nohighlight">\(k(T,P)\)</span> values are more accurate than the
 modified strong collision values. However, at high temperatures the thermalized
 reservoir approximation breaks down, resulting in very inaccurate
-<span class="math">\(k(T,P)\)</span> values. Thus, the reservoir state method is not robustly
+<span class="math notranslate nohighlight">\(k(T,P)\)</span> values. Thus, the reservoir state method is not robustly
 applicable over a wide range of temperatures and pressures.</p>
 </dd></dl>
 
@@ -130,7 +121,7 @@ applicable over a wide range of temperatures and pressures.</p>
 is diagonized to determine its eigenmodes. Only the slowest of these modes are
 relevant to the chemistry; the rest involve internal energy relaxation due to
 collisions. Keeping only these “chemically-significant” eigenmodes allows for
-reduction to <span class="math">\(k(T,P)\)</span> values.</p>
+reduction to <span class="math notranslate nohighlight">\(k(T,P)\)</span> values.</p>
 <p>The chemically-significant eigenvalues method is the most accurate method,
 and is considered to be exact as long as the chemically-significant eigenmodes
 are separable and distinct from the internal energy relaxation eigenmodes.
@@ -186,7 +177,7 @@ is also substantially more expensive to apply than the other methods.</p>
                         title="previous chapter">The master equation</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="../qm/index.html"
-                        title="next chapter">QMTP (<code class="docutils literal"><span class="pre">rmgpy.qm</span></code>)</a></p>
+                        title="next chapter">QMTP (<code class="docutils literal notranslate"><span class="pre">rmgpy.qm</span></code>)</a></p>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -201,12 +192,14 @@ is also substantially more expensive to apply than the other methods.</p>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -232,15 +225,15 @@ is also substantially more expensive to apply than the other methods.</p>
           <a href="mastereqn.html" title="The master equation"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Pressure dependence (<code class="docutils literal"><span class="pre">rmgpy.pdep</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Pressure dependence (<code class="docutils literal notranslate"><span class="pre">rmgpy.pdep</span></code>)</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

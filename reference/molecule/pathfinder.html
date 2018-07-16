@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>rmgpy.molecule.pathfinder &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,10 +43,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="kekulize.html" title="rmgpy.molecule.kekulize"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -106,24 +97,49 @@ of atoms in a dictionary.</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="rmgpy.molecule.pathfinder.findAllDelocalizationPaths">
-<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">findAllDelocalizationPaths</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.findAllDelocalizationPaths" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.molecule.pathfinder.find_N5dc_delocalization_paths">
+<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">find_N5dc_delocalization_paths</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.find_N5dc_delocalization_paths" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find all the resonance structures of an N5dc nitrogen atom with a double bond to a N/O/S site, another
+single bond to a negatively charged N/O/S site, and one single bond (not participating in this transformation)
+Example:
+- N[N+]([O-])=O &lt;=&gt; N[N+](=O)[O-], these structures are isomorphic but not identical, the transition is
+important for correct degeneracy calculations
+In this transition atom1 is the middle N+ (N5dc), atom2 double bonded to atom1, and atom3 is negatively charged
+A “if atom1.atomType.label == ‘N5dc’” check should be done before calling this function</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.pathfinder.find_N5dc_radical_delocalization_paths">
+<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">find_N5dc_radical_delocalization_paths</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.find_N5dc_radical_delocalization_paths" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find all the resonance structures of an N5dc nitrogen atom with a single bond to a radical N/O/S site, another
+single bond to a negatively charged N/O/S site, and one double bond (not participating in this transformation)
+Example:
+- N=[N+]([O])([O-]) &lt;=&gt; N=[N+]([O-])([O]), these structures are isomorphic but not identical, the transition is
+important for correct degeneracy calculations
+In this transition atom1 is the middle N+ (N5dc), atom2 is the radical site, and atom3 is negatively charged
+A “if atom1.atomType.label == ‘N5dc’” check should be done before calling this function</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.pathfinder.find_N5ddc_N5tc_delocalization_paths">
+<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">find_N5ddc_N5tc_delocalization_paths</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.find_N5ddc_N5tc_delocalization_paths" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find all the resonance structures of nitrogen atoms with two double bonds (atomType N5ddc)
+and nitrogen atoms with one triple and one single bond (atomType N5tc).</p>
+<p>Examples:</p>
+<ul class="simple">
+<li>N2O (N#[N+][O-] &lt;-&gt; [N-]=[N+]=O)</li>
+<li>Azide (N#[N+][NH-] &lt;-&gt; [N-]=[N+]=N &lt;-&gt; [N-2][N+]#[NH+])</li>
+<li>N#N group on sulfur (O[S-](O)[N+]#N &lt;-&gt; OS(O)=[N+]=[N-] &lt;-&gt; O[S+](O)#[N+][N-2])</li>
+</ul>
+<p>In this transition atom1 is the middle N+ (N5ddc or N5tc)
+A “if atom.atomType.label in [‘N5ddc’,’N5tc’]” check should be done before calling this function</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.pathfinder.find_allyl_delocalization_paths">
+<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">find_allyl_delocalization_paths</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.find_allyl_delocalization_paths" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find all the delocalization paths allyl to the radical center indicated
 by <cite>atom1</cite>. Used to generate resonance isomers.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="rmgpy.molecule.pathfinder.findAllDelocalizationPathsLonePairRadical">
-<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">findAllDelocalizationPathsLonePairRadical</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.findAllDelocalizationPathsLonePairRadical" title="Permalink to this definition">¶</a></dt>
-<dd><p>Find all the delocalization paths of lone electron pairs next to the radical center indicated
-by <cite>atom1</cite>. Used to generate resonance isomers in adjacent N and O as in NO2.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="rmgpy.molecule.pathfinder.findAllDelocalizationPathsN5dd_N5ts">
-<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">findAllDelocalizationPathsN5dd_N5ts</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.findAllDelocalizationPathsN5dd_N5ts" title="Permalink to this definition">¶</a></dt>
-<dd><p>Find all the resonance structures of nitrogen atoms with two double bonds (N5dd)
-and nitrogen atoms with one triple and one single bond (N5ts)</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -154,9 +170,99 @@ None if nothing was found.</p>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="rmgpy.molecule.pathfinder.find_lone_pair_multiple_bond_delocalization_paths">
+<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">find_lone_pair_multiple_bond_delocalization_paths</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.find_lone_pair_multiple_bond_delocalization_paths" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Find all the delocalization paths of a N/O/S atom1 which either</em> –</p>
+<ul class="simple">
+<li>Has a lonePair and is bonded by a single/double bond (e.g., [::NH-]-[CH2+], [::N-]=[CH+]) – direction 1</li>
+<li>Can obtain a lonePair and is bonded by a double/triple bond (e.g., [:NH]=[CH2], [:N]#[CH]) – direction 2</li>
+</ul>
+<p>Giving the following resonance transitions, for example:</p>
+<ul class="simple">
+<li>[::NH-]-[CH2+] &lt;=&gt; [:NH]=[CH2]</li>
+<li>[:N]#[CH] &lt;=&gt; [::N-]=[CH+]</li>
+<li>N#[N+][O-] &lt;=&gt; &lt;=&gt; [N-]=[N+]=O</li>
+<li>C[N+](=O)[NH-] &lt;=&gt; &lt;=&gt; C[N+]([O-])=[NH]</li>
+<li>other examples: S#N, N#[S], O=S([O])=O, [NH]=[N+]=[N-]</li>
+</ul>
+<p>Direction “1” is the direction &lt;increasing&gt; the bond order as in [::NH-]-[CH2+] &lt;=&gt; [:NH]=[CH2]
+Direction “2” is the direction &lt;decreasing&gt; the bond order as in [:NH]=[CH2] &lt;=&gt; [::NH-]-[CH2+]
+(where ‘:’ denotes a lone pair, ‘.’ denotes a radical, ‘-‘ not in [] denotes a single bond, ‘-‘/’+’ denote charge)
+(In direction 1 atom1 &lt;losses&gt; a lone pair, in direction 2 atom1 &lt;gains&gt; a lone pair)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.pathfinder.find_lone_pair_radical_delocalization_paths">
+<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">find_lone_pair_radical_delocalization_paths</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.find_lone_pair_radical_delocalization_paths" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find all the delocalization paths of lone electron pairs next to the radical center indicated
+by <cite>atom1</cite>. Used to generate resonance isomers in adjacent N/O/S atoms.
+Two adjacent O atoms are not allowed since (a) currently RMG has no good thermo/kinetics for R[:O+.][:::O-] which
+could have been generated as a resonance structure of R[::O][::O.].</p>
+<p>The radical site (atom1) could be either:</p>
+<ul class="simple">
+<li><cite>N u1 p0</cite>, eg O=[N.+][:::O-]</li>
+<li><cite>N u1 p1</cite>, eg R[:NH][:NH.]</li>
+<li><cite>O u1 p1</cite>, eg [:O.+]=[::N-]; not allowed when adjacent to another O atom</li>
+<li><cite>O u1 p2</cite>, eg O=N[::O.]; not allowed when adjacent to another O atom</li>
+<li><cite>S u1 p0</cite>, eg O[S.+]([O-])=O</li>
+<li><cite>S u1 p1</cite>, eg O[:S.+][O-]</li>
+<li><cite>S u1 p2</cite>, eg O=N[::S.]</li>
+<li>any of the above with more than 1 radical where possible</li>
+</ul>
+<p>The non-radical site (atom2) could respectively be:</p>
+<ul class="simple">
+<li><cite>N u0 p1</cite></li>
+<li><cite>N u0 p2</cite></li>
+<li><cite>O u0 p2</cite></li>
+<li><cite>O u0 p3</cite></li>
+<li><cite>S u0 p1</cite></li>
+<li><cite>S u0 p2</cite></li>
+<li><cite>S u0 p3</cite></li>
+</ul>
+<p>(where ‘:’ denotes a lone pair, ‘.’ denotes a radical, ‘-‘ not in [] denotes a single bond, ‘-‘/’+’ denote charge)
+The bond between the sites does not have to be single, e.g.: [:O.+]=[::N-] &lt;=&gt; [::O]=[:N.]</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.pathfinder.find_lone_pair_radical_multiple_bond_delocalization_paths">
+<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">find_lone_pair_radical_multiple_bond_delocalization_paths</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.find_lone_pair_radical_multiple_bond_delocalization_paths" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Find all the delocalization paths of a N/O/S atom1 which either</em> –</p>
+<ul class="simple">
+<li>Has a lonePair and is bonded by a single/double bond to a radical atom (e.g., [::N]-[.CH2])</li>
+<li>Can obtain a lonePair, has a radical, and is bonded by a double/triple bond (e.g., [:N.]=[CH2])</li>
+</ul>
+<p>Giving the following resonance transitions, for example:</p>
+<ul class="simple">
+<li>[::N]-[.CH2] &lt;=&gt; [:N.]=[CH2]</li>
+<li>O[:S](=O)[::O.] &lt;=&gt; O[S.](=O)=[::O]</li>
+</ul>
+<p>Direction “1” is the direction &lt;increasing&gt; the bond order as in [::N]-[.CH2] &lt;=&gt; [:N.]=[CH2]
+Direction “2” is the direction &lt;decreasing&gt; the bond order as in [:N.]=[CH2] &lt;=&gt; [::N]-[.CH2]
+(where ‘:’ denotes a lone pair, ‘.’ denotes a radical, ‘-‘ not in [] denotes a single bond, ‘-‘/’+’ denote charge)
+(In direction 1 atom1 &lt;losses&gt; a lone pair, gains a radical, and atom2 looses a radical.
+In direction 2 atom1 &lt;gains&gt; a lone pair, looses a radical, and atom2 gains a radical)</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="rmgpy.molecule.pathfinder.find_shortest_path">
 <code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">find_shortest_path</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.find_shortest_path" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.pathfinder.is_NOS_able_to_gain_lone_pair">
+<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">is_NOS_able_to_gain_lone_pair</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.is_NOS_able_to_gain_lone_pair" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper function
+Returns True if atom is N/O/S and is able to &lt;gain&gt; an additional lone pair, False otherwise
+We don’t allow O to remain with no lone pairs</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.pathfinder.is_NOS_able_to_lose_lone_pair">
+<code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">is_NOS_able_to_lose_lone_pair</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.is_NOS_able_to_lose_lone_pair" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper function
+Returns True if atom is N/O/S and is able to &lt;loose&gt; a lone pair, False otherwise
+We don’t allow O to remain with no lone pairs</p>
+</dd></dl>
 
 </div>
 
@@ -209,12 +315,14 @@ None if nothing was found.</p>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -240,15 +348,15 @@ None if nothing was found.</p>
           <a href="kekulize.html" title="rmgpy.molecule.kekulize"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Molecular representations (<code class="docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

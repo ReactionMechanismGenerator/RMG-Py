@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Reading Chemkin files &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,10 +43,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="index.html" title="Chemkin files (rmgpy.chemkin)"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Chemkin files (<code class="docutils literal"><span class="pre">rmgpy.chemkin</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Chemkin files (<code class="docutils literal notranslate"><span class="pre">rmgpy.chemkin</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -100,7 +91,7 @@ properties on the species in <cite>speciesDict</cite>.</p>
 <code class="descclassname">rmgpy.chemkin.</code><code class="descname">readKineticsEntry</code><span class="sig-paren">(</span><em>entry</em>, <em>speciesDict</em>, <em>Aunits</em>, <em>Eunits</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.readKineticsEntry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read a kinetics <cite>entry</cite> for a single reaction as loaded from a Chemkin
 file. The associated mapping of labels to species <cite>speciesDict</cite> should also
-be provided. Returns a <code class="xref py py-class docutils literal"><span class="pre">Reaction</span></code> object with the reaction and its
+be provided. Returns a <code class="xref py py-class docutils literal notranslate"><span class="pre">Reaction</span></code> object with the reaction and its
 associated kinetics.</p>
 </dd></dl>
 
@@ -118,7 +109,7 @@ LibraryReaction.</p>
 <dt id="rmgpy.chemkin.readReactionsBlock">
 <code class="descclassname">rmgpy.chemkin.</code><code class="descname">readReactionsBlock</code><span class="sig-paren">(</span><em>f</em>, <em>speciesDict</em>, <em>readComments=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.readReactionsBlock" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read a reactions block from a Chemkin file stream.</p>
-<p>This function can also read the <code class="docutils literal"><span class="pre">reactions.txt</span></code> and <code class="docutils literal"><span class="pre">pdepreactions.txt</span></code>
+<p>This function can also read the <code class="docutils literal notranslate"><span class="pre">reactions.txt</span></code> and <code class="docutils literal notranslate"><span class="pre">pdepreactions.txt</span></code>
 files from RMG-Java kinetics libraries, which have a similar syntax.</p>
 </dd></dl>
 
@@ -126,7 +117,7 @@ files from RMG-Java kinetics libraries, which have a similar syntax.</p>
 <dt id="rmgpy.chemkin.readThermoEntry">
 <code class="descclassname">rmgpy.chemkin.</code><code class="descname">readThermoEntry</code><span class="sig-paren">(</span><em>entry</em>, <em>Tmin=0</em>, <em>Tint=0</em>, <em>Tmax=0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.chemkin.readThermoEntry" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read a thermodynamics <cite>entry</cite> for one species in a Chemkin file. Returns
-the label of the species and the thermodynamics model as a <code class="xref py py-class docutils literal"><span class="pre">NASA</span></code>
+the label of the species and the thermodynamics model as a <code class="xref py py-class docutils literal notranslate"><span class="pre">NASA</span></code>
 object.</p>
 <p>Format specification at <a class="reference external" href="http://www2.galcit.caltech.edu/EDL/public/formats/chemkin.html">http://www2.galcit.caltech.edu/EDL/public/formats/chemkin.html</a></p>
 </dd></dl>
@@ -182,7 +173,7 @@ If the comment is encoded with latin-1, it is converted to utf-8.</p>
         <div class="menuitem">
   <h4>Previous topic</h4>
   <p class="topless"><a href="index.html"
-                        title="previous chapter">Chemkin files (<code class="docutils literal"><span class="pre">rmgpy.chemkin</span></code>)</a></p>
+                        title="previous chapter">Chemkin files (<code class="docutils literal notranslate"><span class="pre">rmgpy.chemkin</span></code>)</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="writer.html"
                         title="next chapter">Writing Chemkin files</a></p>
@@ -200,12 +191,14 @@ If the comment is encoded with latin-1, it is converted to utf-8.</p>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -231,15 +224,15 @@ If the comment is encoded with latin-1, it is converted to utf-8.</p>
           <a href="index.html" title="Chemkin files (rmgpy.chemkin)"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Chemkin files (<code class="docutils literal"><span class="pre">rmgpy.chemkin</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Chemkin files (<code class="docutils literal notranslate"><span class="pre">rmgpy.chemkin</span></code>)</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

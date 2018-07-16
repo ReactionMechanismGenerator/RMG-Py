@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Physical quantities (rmgpy.quantity) &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,7 +43,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../qm/mopac.html" title="rmgpy.qm.mopac"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">RMG API Reference</a> &#187;</li> 
       </ul>
@@ -64,26 +55,26 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <div class="section" id="module-rmgpy.quantity">
-<span id="physical-quantities-rmgpy-quantity"></span><h1>Physical quantities (<a class="reference internal" href="#module-rmgpy.quantity" title="rmgpy.quantity"><code class="xref py py-mod docutils literal"><span class="pre">rmgpy.quantity</span></code></a>)<a class="headerlink" href="#module-rmgpy.quantity" title="Permalink to this headline">¶</a></h1>
+<span id="physical-quantities-rmgpy-quantity"></span><h1>Physical quantities (<a class="reference internal" href="#module-rmgpy.quantity" title="rmgpy.quantity"><code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.quantity</span></code></a>)<a class="headerlink" href="#module-rmgpy.quantity" title="Permalink to this headline">¶</a></h1>
 <p>A physical quantity is defined by a numerical value and a unit of measurement.</p>
-<p>The <a class="reference internal" href="#module-rmgpy.quantity" title="rmgpy.quantity"><code class="xref py py-mod docutils literal"><span class="pre">rmgpy.quantity</span></code></a> module contains classes and methods for working with
+<p>The <a class="reference internal" href="#module-rmgpy.quantity" title="rmgpy.quantity"><code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.quantity</span></code></a> module contains classes and methods for working with
 physical quantities. Physical quantities are represented by either the
-<a class="reference internal" href="scalarquantity.html#rmgpy.quantity.ScalarQuantity" title="rmgpy.quantity.ScalarQuantity"><code class="xref py py-class docutils literal"><span class="pre">ScalarQuantity</span></code></a> or
-<a class="reference internal" href="arrayquantity.html#rmgpy.quantity.ArrayQuantity" title="rmgpy.quantity.ArrayQuantity"><code class="xref py py-class docutils literal"><span class="pre">ArrayQuantity</span></code></a> class depending on
+<a class="reference internal" href="scalarquantity.html#rmgpy.quantity.ScalarQuantity" title="rmgpy.quantity.ScalarQuantity"><code class="xref py py-class docutils literal notranslate"><span class="pre">ScalarQuantity</span></code></a> or
+<a class="reference internal" href="arrayquantity.html#rmgpy.quantity.ArrayQuantity" title="rmgpy.quantity.ArrayQuantity"><code class="xref py py-class docutils literal notranslate"><span class="pre">ArrayQuantity</span></code></a> class depending on
 whether a scalar or vector (or tensor) value is used. The
-<a class="reference internal" href="quantity.html#rmgpy.quantity.Quantity" title="rmgpy.quantity.Quantity"><code class="xref py py-func docutils literal"><span class="pre">Quantity</span></code></a> function automatically chooses the
+<a class="reference internal" href="quantity.html#rmgpy.quantity.Quantity" title="rmgpy.quantity.Quantity"><code class="xref py py-func docutils literal notranslate"><span class="pre">Quantity</span></code></a> function automatically chooses the
 appropriate class based on the input value. In both cases, the value of a
-physical quantity is available from the <code class="docutils literal"><span class="pre">value</span></code> attribute, and the units from
-the <code class="docutils literal"><span class="pre">units</span></code> attribute.</p>
+physical quantity is available from the <code class="docutils literal notranslate"><span class="pre">value</span></code> attribute, and the units from
+the <code class="docutils literal notranslate"><span class="pre">units</span></code> attribute.</p>
 <p>For efficient computation, the value is stored internally in the SI equivalent
-units. The SI value can be accessed directly using the <code class="docutils literal"><span class="pre">value_si</span></code> attribute.
-Usually it is good practice to read the <code class="docutils literal"><span class="pre">value_si</span></code> attribute into a local
+units. The SI value can be accessed directly using the <code class="docutils literal notranslate"><span class="pre">value_si</span></code> attribute.
+Usually it is good practice to read the <code class="docutils literal notranslate"><span class="pre">value_si</span></code> attribute into a local
 variable and then use it for computations, especially if it is referred to
 multiple times in the calculation.</p>
 <p>Physical quantities also allow for storing of uncertainty values for both
-scalars and arrays. The <code class="docutils literal"><span class="pre">uncertaintyType</span></code> attribute indicates whether the
-given uncertainties are additive (<code class="docutils literal"><span class="pre">&quot;+|-&quot;</span></code>) or multiplicative (<code class="docutils literal"><span class="pre">&quot;*|/&quot;</span></code>),
-and the <code class="docutils literal"><span class="pre">uncertainty</span></code> attribute contains the stored uncertainties. For
+scalars and arrays. The <code class="docutils literal notranslate"><span class="pre">uncertaintyType</span></code> attribute indicates whether the
+given uncertainties are additive (<code class="docutils literal notranslate"><span class="pre">&quot;+|-&quot;</span></code>) or multiplicative (<code class="docutils literal notranslate"><span class="pre">&quot;*|/&quot;</span></code>),
+and the <code class="docutils literal notranslate"><span class="pre">uncertainty</span></code> attribute contains the stored uncertainties. For
 additive uncertainties these are stored in the given units (not the SI
 equivalent), since they are generally not needed for efficient computations.
 For multiplicative uncertainties, the uncertainty values are by definition
@@ -101,13 +92,13 @@ dimensionless.</p>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><a class="reference internal" href="scalarquantity.html#rmgpy.quantity.ScalarQuantity" title="rmgpy.quantity.ScalarQuantity"><code class="xref py py-class docutils literal"><span class="pre">ScalarQuantity</span></code></a></td>
+<tr class="row-even"><td><a class="reference internal" href="scalarquantity.html#rmgpy.quantity.ScalarQuantity" title="rmgpy.quantity.ScalarQuantity"><code class="xref py py-class docutils literal notranslate"><span class="pre">ScalarQuantity</span></code></a></td>
 <td>A scalar physical quantity, with units and uncertainty</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="arrayquantity.html#rmgpy.quantity.ArrayQuantity" title="rmgpy.quantity.ArrayQuantity"><code class="xref py py-class docutils literal"><span class="pre">ArrayQuantity</span></code></a></td>
+<tr class="row-odd"><td><a class="reference internal" href="arrayquantity.html#rmgpy.quantity.ArrayQuantity" title="rmgpy.quantity.ArrayQuantity"><code class="xref py py-class docutils literal notranslate"><span class="pre">ArrayQuantity</span></code></a></td>
 <td>An array physical quantity, with units and uncertainty</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="quantity.html#rmgpy.quantity.Quantity" title="rmgpy.quantity.Quantity"><code class="xref py py-func docutils literal"><span class="pre">Quantity()</span></code></a></td>
+<tr class="row-even"><td><a class="reference internal" href="quantity.html#rmgpy.quantity.Quantity" title="rmgpy.quantity.Quantity"><code class="xref py py-func docutils literal notranslate"><span class="pre">Quantity()</span></code></a></td>
 <td>Return a scalar or array physical quantity</td>
 </tr>
 </tbody>
@@ -137,85 +128,85 @@ units - which should reduce errors. RMG recognizes the following unit types:</p>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><code class="xref py py-func docutils literal"><span class="pre">Acceleration()</span></code></td>
+<tr class="row-even"><td><code class="xref py py-func docutils literal notranslate"><span class="pre">Acceleration()</span></code></td>
 <td>acceleration</td>
-<td><span class="math">\(\mathrm{m/s^2}\)</span></td>
+<td><span class="math notranslate nohighlight">\(\mathrm{m/s^2}\)</span></td>
 </tr>
-<tr class="row-odd"><td><code class="xref py py-func docutils literal"><span class="pre">Area()</span></code></td>
+<tr class="row-odd"><td><code class="xref py py-func docutils literal notranslate"><span class="pre">Area()</span></code></td>
 <td>area</td>
-<td><span class="math">\(\mathrm{m^2}\)</span></td>
+<td><span class="math notranslate nohighlight">\(\mathrm{m^2}\)</span></td>
 </tr>
-<tr class="row-even"><td><code class="xref py py-func docutils literal"><span class="pre">Concentration()</span></code></td>
+<tr class="row-even"><td><code class="xref py py-func docutils literal notranslate"><span class="pre">Concentration()</span></code></td>
 <td>concentration</td>
-<td><span class="math">\(\mathrm{mol/cm^3}\)</span></td>
+<td><span class="math notranslate nohighlight">\(\mathrm{mol/cm^3}\)</span></td>
 </tr>
-<tr class="row-odd"><td><code class="xref py py-func docutils literal"><span class="pre">Dimensionless()</span></code></td>
+<tr class="row-odd"><td><code class="xref py py-func docutils literal notranslate"><span class="pre">Dimensionless()</span></code></td>
 <td>dimensionless</td>
 <td>&#160;</td>
 </tr>
-<tr class="row-even"><td><code class="xref py py-func docutils literal"><span class="pre">Energy()</span></code></td>
+<tr class="row-even"><td><code class="xref py py-func docutils literal notranslate"><span class="pre">Energy()</span></code></td>
 <td>energy</td>
-<td><span class="math">\(\mathrm{J/mol}\)</span></td>
+<td><span class="math notranslate nohighlight">\(\mathrm{J/mol}\)</span></td>
 </tr>
-<tr class="row-odd"><td><code class="xref py py-func docutils literal"><span class="pre">Entropy()</span></code></td>
+<tr class="row-odd"><td><code class="xref py py-func docutils literal notranslate"><span class="pre">Entropy()</span></code></td>
 <td>entropy</td>
-<td><span class="math">\(\mathrm{J/mol \cdot K}\)</span></td>
+<td><span class="math notranslate nohighlight">\(\mathrm{J/mol \cdot K}\)</span></td>
 </tr>
-<tr class="row-even"><td><code class="xref py py-func docutils literal"><span class="pre">Flux()</span></code></td>
+<tr class="row-even"><td><code class="xref py py-func docutils literal notranslate"><span class="pre">Flux()</span></code></td>
 <td>flux</td>
-<td><span class="math">\(\mathrm{mol/cm^2 \cdot s}\)</span></td>
+<td><span class="math notranslate nohighlight">\(\mathrm{mol/cm^2 \cdot s}\)</span></td>
 </tr>
-<tr class="row-odd"><td><code class="xref py py-func docutils literal"><span class="pre">Frequency()</span></code></td>
+<tr class="row-odd"><td><code class="xref py py-func docutils literal notranslate"><span class="pre">Frequency()</span></code></td>
 <td>frequency</td>
-<td><span class="math">\(\mathrm{cm^{-1}}\)</span></td>
+<td><span class="math notranslate nohighlight">\(\mathrm{cm^{-1}}\)</span></td>
 </tr>
-<tr class="row-even"><td><code class="xref py py-func docutils literal"><span class="pre">Force()</span></code></td>
+<tr class="row-even"><td><code class="xref py py-func docutils literal notranslate"><span class="pre">Force()</span></code></td>
 <td>force</td>
-<td><span class="math">\(\mathrm{N}\)</span></td>
+<td><span class="math notranslate nohighlight">\(\mathrm{N}\)</span></td>
 </tr>
-<tr class="row-odd"><td><code class="xref py py-func docutils literal"><span class="pre">Inertia()</span></code></td>
+<tr class="row-odd"><td><code class="xref py py-func docutils literal notranslate"><span class="pre">Inertia()</span></code></td>
 <td>inertia</td>
-<td><span class="math">\(\mathrm{kg \cdot m^2}\)</span></td>
+<td><span class="math notranslate nohighlight">\(\mathrm{kg \cdot m^2}\)</span></td>
 </tr>
-<tr class="row-even"><td><code class="xref py py-func docutils literal"><span class="pre">Length()</span></code></td>
+<tr class="row-even"><td><code class="xref py py-func docutils literal notranslate"><span class="pre">Length()</span></code></td>
 <td>length</td>
-<td><span class="math">\(\mathrm{m}\)</span></td>
+<td><span class="math notranslate nohighlight">\(\mathrm{m}\)</span></td>
 </tr>
-<tr class="row-odd"><td><code class="xref py py-func docutils literal"><span class="pre">Mass()</span></code></td>
+<tr class="row-odd"><td><code class="xref py py-func docutils literal notranslate"><span class="pre">Mass()</span></code></td>
 <td>mass</td>
-<td><span class="math">\(\mathrm{kg}\)</span></td>
+<td><span class="math notranslate nohighlight">\(\mathrm{kg}\)</span></td>
 </tr>
-<tr class="row-even"><td><code class="xref py py-func docutils literal"><span class="pre">Momentum()</span></code></td>
+<tr class="row-even"><td><code class="xref py py-func docutils literal notranslate"><span class="pre">Momentum()</span></code></td>
 <td>momentum</td>
-<td><span class="math">\(\mathrm{kg \cdot m/s^2}\)</span></td>
+<td><span class="math notranslate nohighlight">\(\mathrm{kg \cdot m/s^2}\)</span></td>
 </tr>
-<tr class="row-odd"><td><code class="xref py py-func docutils literal"><span class="pre">Power()</span></code></td>
+<tr class="row-odd"><td><code class="xref py py-func docutils literal notranslate"><span class="pre">Power()</span></code></td>
 <td>power</td>
-<td><span class="math">\(\mathrm{W}\)</span></td>
+<td><span class="math notranslate nohighlight">\(\mathrm{W}\)</span></td>
 </tr>
-<tr class="row-even"><td><code class="xref py py-func docutils literal"><span class="pre">Pressure()</span></code></td>
+<tr class="row-even"><td><code class="xref py py-func docutils literal notranslate"><span class="pre">Pressure()</span></code></td>
 <td>pressure</td>
-<td><span class="math">\(\mathrm{Pa}\)</span></td>
+<td><span class="math notranslate nohighlight">\(\mathrm{Pa}\)</span></td>
 </tr>
-<tr class="row-odd"><td><code class="xref py py-func docutils literal"><span class="pre">RateCoefficient()</span></code></td>
+<tr class="row-odd"><td><code class="xref py py-func docutils literal notranslate"><span class="pre">RateCoefficient()</span></code></td>
 <td>rate coefficient</td>
-<td><span class="math">\(\mathrm{s^{-1}}\)</span>, <span class="math">\(\mathrm{m^3/mol \cdot s}\)</span>, <span class="math">\(\mathrm{m^6/mol^2 \cdot s}\)</span>, <span class="math">\(\mathrm{m^9/mol^3 \cdot s}\)</span></td>
+<td><span class="math notranslate nohighlight">\(\mathrm{s^{-1}}\)</span>, <span class="math notranslate nohighlight">\(\mathrm{m^3/mol \cdot s}\)</span>, <span class="math notranslate nohighlight">\(\mathrm{m^6/mol^2 \cdot s}\)</span>, <span class="math notranslate nohighlight">\(\mathrm{m^9/mol^3 \cdot s}\)</span></td>
 </tr>
-<tr class="row-even"><td><code class="xref py py-func docutils literal"><span class="pre">Temperature()</span></code></td>
+<tr class="row-even"><td><code class="xref py py-func docutils literal notranslate"><span class="pre">Temperature()</span></code></td>
 <td>temperature</td>
-<td><span class="math">\(\mathrm{K}\)</span></td>
+<td><span class="math notranslate nohighlight">\(\mathrm{K}\)</span></td>
 </tr>
-<tr class="row-odd"><td><code class="xref py py-func docutils literal"><span class="pre">Time()</span></code></td>
+<tr class="row-odd"><td><code class="xref py py-func docutils literal notranslate"><span class="pre">Time()</span></code></td>
 <td>time</td>
-<td><span class="math">\(\mathrm{s}\)</span></td>
+<td><span class="math notranslate nohighlight">\(\mathrm{s}\)</span></td>
 </tr>
-<tr class="row-even"><td><code class="xref py py-func docutils literal"><span class="pre">Velocity()</span></code></td>
+<tr class="row-even"><td><code class="xref py py-func docutils literal notranslate"><span class="pre">Velocity()</span></code></td>
 <td>velocity</td>
-<td><span class="math">\(\mathrm{m/s}\)</span></td>
+<td><span class="math notranslate nohighlight">\(\mathrm{m/s}\)</span></td>
 </tr>
-<tr class="row-odd"><td><code class="xref py py-func docutils literal"><span class="pre">Volume()</span></code></td>
+<tr class="row-odd"><td><code class="xref py py-func docutils literal notranslate"><span class="pre">Volume()</span></code></td>
 <td>volume</td>
-<td><span class="math">\(\mathrm{m^3}\)</span></td>
+<td><span class="math notranslate nohighlight">\(\mathrm{m^3}\)</span></td>
 </tr>
 </tbody>
 </table>
@@ -232,11 +223,11 @@ order, but only that it matches one of the possibilities.</p>
 <p>The table above gives the SI unit that RMG uses internally to work with
 physical quantities. This does not necessarily correspond with the units used
 when outputting values. For example, pressures are often output in units of
-<span class="math">\(\mathrm{bar}\)</span> instead of <span class="math">\(\mathrm{Pa}\)</span>, and moments of inertia in
-<span class="math">\(\mathrm{amu*angstrom^2}\)</span> instead of <span class="math">\(\mathrm{kg*m^2}\)</span>. The
+<span class="math notranslate nohighlight">\(\mathrm{bar}\)</span> instead of <span class="math notranslate nohighlight">\(\mathrm{Pa}\)</span>, and moments of inertia in
+<span class="math notranslate nohighlight">\(\mathrm{amu*angstrom^2}\)</span> instead of <span class="math notranslate nohighlight">\(\mathrm{kg*m^2}\)</span>. The
 recommended rule of thumb is to use prefixed SI units (or aliases thereof) in
-the output; for example, use <span class="math">\(\mathrm{kJ/mol}\)</span> instead of
-<span class="math">\(\mathrm{kcal/mol}\)</span> for energy values.</p>
+the output; for example, use <span class="math notranslate nohighlight">\(\mathrm{kJ/mol}\)</span> instead of
+<span class="math notranslate nohighlight">\(\mathrm{kcal/mol}\)</span> for energy values.</p>
 <div class="toctree-wrapper compound">
 </div>
 </div>
@@ -271,7 +262,7 @@ the output; for example, use <span class="math">\(\mathrm{kJ/mol}\)</span> inste
         <div class="menuitem">
   <h3><a href="../../contents.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Physical quantities (<code class="docutils literal"><span class="pre">rmgpy.quantity</span></code>)</a><ul>
+<li><a class="reference internal" href="#">Physical quantities (<code class="docutils literal notranslate"><span class="pre">rmgpy.quantity</span></code>)</a><ul>
 <li><a class="reference internal" href="#quantity-objects">Quantity objects</a></li>
 <li><a class="reference internal" href="#unit-types">Unit types</a></li>
 </ul>
@@ -300,12 +291,14 @@ the output; for example, use <span class="math">\(\mathrm{kJ/mol}\)</span> inste
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -331,14 +324,14 @@ the output; for example, use <span class="math">\(\mathrm{kJ/mol}\)</span> inste
           <a href="../qm/mopac.html" title="rmgpy.qm.mopac"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

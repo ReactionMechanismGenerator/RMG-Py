@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Translational degrees of freedom &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,10 +43,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="index.html" title="Statistical mechanics (rmgpy.statmech)"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Statistical mechanics (<code class="docutils literal"><span class="pre">rmgpy.statmech</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Statistical mechanics (<code class="docutils literal notranslate"><span class="pre">rmgpy.statmech</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -86,49 +77,49 @@ square well by an ideal gas. The attributes are:</p>
 <td>The mass of the translating object</td>
 </tr>
 <tr class="row-odd"><td><cite>quantum</cite></td>
-<td><code class="docutils literal"><span class="pre">True</span></code> to use the quantum mechanical model, <code class="docutils literal"><span class="pre">False</span></code> to use the classical model</td>
+<td><code class="docutils literal notranslate"><span class="pre">True</span></code> to use the quantum mechanical model, <code class="docutils literal notranslate"><span class="pre">False</span></code> to use the classical model</td>
 </tr>
 </tbody>
 </table>
-<p>Translational energies are much smaller than <span class="math">\(k_\mathrm{B} T\)</span> except
+<p>Translational energies are much smaller than <span class="math notranslate nohighlight">\(k_\mathrm{B} T\)</span> except
 for temperatures approaching absolute zero, so a classical treatment of
 translation is more than adequate.</p>
 <p>The translation of an <em>ideal gas</em> – a gas composed of randomly-moving,
 noninteracting particles of negligible size – in three dimensions can be
 modeled using the particle-in-a-box model. In this model, a gas particle is
-confined to a three-dimensional box of size <span class="math">\(L_x L_y L_z = V\)</span> with the
+confined to a three-dimensional box of size <span class="math notranslate nohighlight">\(L_x L_y L_z = V\)</span> with the
 following potential:</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[\begin{split}V(x,y,z) = \begin{cases}
 0 &amp; 0 \le x \le L_x, 0 \le y \le L_y, 0 \le z \le L_z \\
 \infty &amp; \mathrm{otherwise}
 \end{cases}\end{split}\]</div>
 <p>The time-independent Schrodinger equation for this system (within the box) is
 given by</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[-\frac{\hbar^2}{2M} \left( \frac{\partial^2}{\partial x^2} + \frac{\partial^2}{\partial y^2} + \frac{\partial^2}{\partial z^2} \right) \Psi(x,y,z) = E \Psi(x,y,z)\]</div>
-<p>where <span class="math">\(M\)</span> is the total mass of the particle. Because the box is finite in
+<p>where <span class="math notranslate nohighlight">\(M\)</span> is the total mass of the particle. Because the box is finite in
 all dimensions, the solution of the above is quantized with the following
 energy levels:</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[E_{n_x,n_y,n_z} = \frac{\hbar^2}{2M} \left[ \left( \frac{n_x \pi}{L_x} \right)^2 + \left( \frac{n_y \pi}{L_y} \right)^2 + \left( \frac{n_z \pi}{L_z} \right)^2 \right] \hspace{2em} n_x, n_y, n_z = 1, 2, \ldots\]</div>
-<p>Above we have introduced <span class="math">\(n_x\)</span>, <span class="math">\(n_y\)</span>, and <span class="math">\(n_z\)</span> as quantum
+<p>Above we have introduced <span class="math notranslate nohighlight">\(n_x\)</span>, <span class="math notranslate nohighlight">\(n_y\)</span>, and <span class="math notranslate nohighlight">\(n_z\)</span> as quantum
 numbers. The quantum mechanical partition function is obtained by summing over
 the above energy levels:</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[Q_\mathrm{trans}(T) = \sum_{n_x=1}^\infty \sum_{n_y=1}^\infty \sum_{n_z=1}^\infty \exp \left( -\frac{E_{n_x,n_y,n_z}}{k_\mathrm{B} T} \right)\]</div>
 <p>In almost all cases the temperature of interest is large relative to the
 energy spacing; in this limit we can obtain a closed-form analytical expression
 for the translational partition function in the classical limit:</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[Q_\mathrm{trans}^\mathrm{cl}(T) = \left( \frac{2 \pi M k_\mathrm{B} T}{h^2} \right)^{3/2} V\]</div>
 <p>For a constant-pressure problem we can use the ideal gas law to replace
-<span class="math">\(V\)</span> with <span class="math">\(k_\mathrm{B} T/P\)</span>. This gives the partition function a
-temperature dependence of <span class="math">\(T^{5/2}\)</span>.</p>
+<span class="math notranslate nohighlight">\(V\)</span> with <span class="math notranslate nohighlight">\(k_\mathrm{B} T/P\)</span>. This gives the partition function a
+temperature dependence of <span class="math notranslate nohighlight">\(T^{5/2}\)</span>.</p>
 <dl class="method">
 <dt id="rmgpy.statmech.IdealGasTranslation.getDensityOfStates">
 <code class="descname">getDensityOfStates</code><span class="sig-paren">(</span><em>self</em>, <em>ndarray Elist</em>, <em>ndarray densStates0=None</em><span class="sig-paren">)</span> &#x2192; ndarray<a class="headerlink" href="#rmgpy.statmech.IdealGasTranslation.getDensityOfStates" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the density of states <span class="math">\(\rho(E) \ dE\)</span> at the specified
+<dd><p>Return the density of states <span class="math notranslate nohighlight">\(\rho(E) \ dE\)</span> at the specified
 energies <cite>Elist</cite> in J/mol above the ground state. If an initial density
 of states <cite>densStates0</cite> is given, the rotor density of states will be
 convoluted into these states.</p>
@@ -158,14 +149,14 @@ specified temperature <cite>T</cite> in K.</p>
 <dl class="method">
 <dt id="rmgpy.statmech.IdealGasTranslation.getPartitionFunction">
 <code class="descname">getPartitionFunction</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.statmech.IdealGasTranslation.getPartitionFunction" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the value of the partition function <span class="math">\(Q(T)\)</span> at the
+<dd><p>Return the value of the partition function <span class="math notranslate nohighlight">\(Q(T)\)</span> at the
 specified temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.statmech.IdealGasTranslation.getSumOfStates">
 <code class="descname">getSumOfStates</code><span class="sig-paren">(</span><em>self</em>, <em>ndarray Elist</em>, <em>ndarray sumStates0=None</em><span class="sig-paren">)</span> &#x2192; ndarray<a class="headerlink" href="#rmgpy.statmech.IdealGasTranslation.getSumOfStates" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the sum of states <span class="math">\(N(E)\)</span> at the specified energies <cite>Elist</cite>
+<dd><p>Return the sum of states <span class="math notranslate nohighlight">\(N(E)\)</span> at the specified energies <cite>Elist</cite>
 in J/mol above the ground state. If an initial sum of states
 <cite>sumStates0</cite> is given, the rotor sum of states will be convoluted into
 these states.</p>
@@ -218,7 +209,7 @@ these states.</p>
         <div class="menuitem">
   <h4>Previous topic</h4>
   <p class="topless"><a href="index.html"
-                        title="previous chapter">Statistical mechanics (<code class="docutils literal"><span class="pre">rmgpy.statmech</span></code>)</a></p>
+                        title="previous chapter">Statistical mechanics (<code class="docutils literal notranslate"><span class="pre">rmgpy.statmech</span></code>)</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="linearrotor.html"
                         title="next chapter">rmgpy.statmech.LinearRotor</a></p>
@@ -236,12 +227,14 @@ these states.</p>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -267,15 +260,15 @@ these states.</p>
           <a href="index.html" title="Statistical mechanics (rmgpy.statmech)"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Statistical mechanics (<code class="docutils literal"><span class="pre">rmgpy.statmech</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Statistical mechanics (<code class="docutils literal notranslate"><span class="pre">rmgpy.statmech</span></code>)</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

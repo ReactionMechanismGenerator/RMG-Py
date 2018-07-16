@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>12.4. Database Modification &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,7 +43,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="kinetics.html" title="12.3. Kinetics Database"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User’s Guide</a> &#187;</li>
@@ -67,9 +58,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="database-modification">
 <span id="databasemodification"></span><h1>12.4. Database Modification<a class="headerlink" href="#database-modification" title="Permalink to this headline">¶</a></h1>
-<p>Note that the RMG-Py database is written in Python code where line indentions
+<p>Note that the RMG-Py database is written in Python code where line indentations
 determine the scope. When modifying the database, be sure to preserve all
-line indentions shown in the examples.</p>
+line indentations shown in the examples.</p>
 <div class="section" id="modifying-the-thermo-database">
 <h2>12.4.1. Modifying the Thermo Database<a class="headerlink" href="#modifying-the-thermo-database" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="creating-thermo-libraries">
@@ -103,16 +94,16 @@ add to the training set instead of modifying the kinetic groups.</p>
 <p>There are several places in the RMG-database and RMG-Py source code where reaction family details are hard-coded. You should check all these when you create a new reaction family. Here are some of the places:</p>
 <ul class="simple">
 <li><dl class="first docutils">
-<dt><code class="docutils literal"><span class="pre">RMG-database/input/kinetics/families/[family</span> <span class="pre">name]</span></code></dt>
+<dt><code class="docutils literal notranslate"><span class="pre">RMG-database/input/kinetics/families/[family</span> <span class="pre">name]</span></code></dt>
 <dd><ul class="first last">
 <li>add folder for your family name</li>
-<li>create <code class="docutils literal"><span class="pre">groups.py</span></code>, <code class="docutils literal"><span class="pre">rules.py</span></code> and a template folder with species dictionary and <code class="docutils literal"><span class="pre">reactions.py</span></code>.</li>
+<li>create <code class="docutils literal notranslate"><span class="pre">groups.py</span></code>, <code class="docutils literal notranslate"><span class="pre">rules.py</span></code> and a template folder with species dictionary and <code class="docutils literal notranslate"><span class="pre">reactions.py</span></code>.</li>
 <li>fill the files with rate data that you plan to use.</li>
 <li><dl class="first docutils">
 <dt>Many tools exist to help with the conversion process:</dt>
 <dd><ul class="first last">
-<li><code class="docutils literal"><span class="pre">convertKineticsLibraryToTrainingReactions.ipynb</span></code> in <code class="docutils literal"><span class="pre">RMG-database/scripts</span></code></li>
-<li><code class="docutils literal"><span class="pre">importChemkinLibrary.py</span></code> in <code class="docutils literal"><span class="pre">RMG-database/scripts</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">convertKineticsLibraryToTrainingReactions.ipynb</span></code> in <code class="docutils literal notranslate"><span class="pre">RMG-database/scripts</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">importChemkinLibrary.py</span></code> in <code class="docutils literal notranslate"><span class="pre">RMG-database/scripts</span></code></li>
 </ul>
 </dd>
 </dl>
@@ -124,9 +115,9 @@ add to the training set instead of modifying the kinetic groups.</p>
 <li><dl class="first docutils">
 <dt>rmgpy.data.kinetics.family</dt>
 <dd><ul class="first last">
-<li><code class="docutils literal"><span class="pre">applyRecipe</span></code>: swapping the atom labels (eg. <cite>*1</cite> and <cite>*2</cite>) around</li>
-<li><code class="docutils literal"><span class="pre">getReactionPairs</span></code>: figuring out which species becomes which for flux analyses</li>
-<li><code class="docutils literal"><span class="pre">__generateReactions</span></code>: correcting degeneracy eg. dividing by 2 for radical recombination</li>
+<li><code class="docutils literal notranslate"><span class="pre">applyRecipe</span></code>: swapping the atom labels (eg. <cite>*1</cite> and <cite>*2</cite>) around</li>
+<li><code class="docutils literal notranslate"><span class="pre">getReactionPairs</span></code>: figuring out which species becomes which for flux analyses</li>
+<li><code class="docutils literal notranslate"><span class="pre">__generateReactions</span></code>: correcting degeneracy eg. dividing by 2 for radical recombination</li>
 </ul>
 </dd>
 </dl>
@@ -134,8 +125,8 @@ add to the training set instead of modifying the kinetic groups.</p>
 <li><dl class="first docutils">
 <dt>rmgpy.data.kinetics.rules</dt>
 <dd><ul class="first last">
-<li><code class="docutils literal"><span class="pre">processOldLibraryEntry</span></code>: determining units when importing RMG-Java database</li>
-<li><code class="docutils literal"><span class="pre">getAllRules</span></code>: for radical recombination add reverse templates</li>
+<li><code class="docutils literal notranslate"><span class="pre">processOldLibraryEntry</span></code>: determining units when importing RMG-Java database</li>
+<li><code class="docutils literal notranslate"><span class="pre">getAllRules</span></code>: for radical recombination add reverse templates</li>
 </ul>
 </dd>
 </dl>
@@ -143,7 +134,7 @@ add to the training set instead of modifying the kinetic groups.</p>
 <li><dl class="first docutils">
 <dt>rmgpy.data.kinetics.groups</dt>
 <dd><ul class="first last">
-<li><code class="docutils literal"><span class="pre">getReactionTemplate</span></code>: for radical recombination duplicate the template</li>
+<li><code class="docutils literal notranslate"><span class="pre">getReactionTemplate</span></code>: for radical recombination duplicate the template</li>
 </ul>
 </dd>
 </dl>
@@ -161,17 +152,31 @@ add to the training set instead of modifying the kinetic groups.</p>
 <div class="section" id="creating-kinetics-libraries">
 <h3>12.4.2.2. Creating Kinetics Libraries<a class="headerlink" href="#creating-kinetics-libraries" title="Permalink to this headline">¶</a></h3>
 <p>To add a reaction library, simply create a folder bearing the library’s name under
-<code class="docutils literal"><span class="pre">RMG-database/input/kinetics/libraries</span></code>. You’ll need to create two files:
-<code class="docutils literal"><span class="pre">dictionary.txt</span></code> and <code class="docutils literal"><span class="pre">reactions.py</span></code>. The dictionary file contains the Adjacency lists
+<code class="docutils literal notranslate"><span class="pre">RMG-database/input/kinetics/libraries</span></code>. You’ll need to create two files:
+<code class="docutils literal notranslate"><span class="pre">dictionary.txt</span></code> and <code class="docutils literal notranslate"><span class="pre">reactions.py</span></code>. The dictionary file contains the Adjacency lists
 for all relevant species (can be generated using the <a class="reference external" href="http://rmg.mit.edu/molecule_search">Molecule Search</a>
 function of the rmg website, while the reactions file specifies the kinetics.
 To conform to RMG’s format, simply copy and modify an existing library.</p>
 <p>At the top of the reactions file fill in the name and short (one line) and long descriptions.
-The name must be identical to the folder’s name. Then list the kinetics entries, each with a unique index number.
-The following formats are accepted as kinetics entries:</p>
-<p><strong>Arrhenius</strong> of the form <span class="math">\(k(T) = A \left( \frac{T}{T_0} \right)^n \exp \left( -\frac{E_\mathrm{a}}{RT} \right)\)</span>
+The name must be identical to the folder’s name. Then list the kinetics entries, each with a unique index number.</p>
+<p>There are two flags relevant for pressure dependent library reactions that one should consider using:</p>
+<p>1. <strong>elementary_high_p</strong>: Should be set to <code class="docutils literal notranslate"><span class="pre">True</span></code> for <em>elementary</em> unimolecular reactions (with only one reactant
+and/or product) with a kinetics entry that has information about the high pressure kinetics, i.e., Troe or Lindemann,
+PDepArrhenius or Chebyshev that are defined up to at least 100 bar, or Arrhenius that represents the high pressure limit
+(i.e., not the measured rate at some low or medium experimental pressure). If set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, RMG will use the high pressure
+limit rate when constructing pressure-dependent networks. The kinetics entry of the original library reaction will only be
+updated if it is an Arrhenius type (will be replaced with either PDepArrhenius or Chebyshev, as specified in the
+pressureDependent block of the input file). If set to <code class="docutils literal notranslate"><span class="pre">False</span></code> (the default value), RMG will not use the high pressure
+limit rate in network exploration, and will not convert Arrhenius kinetics of library reactions that have no template
+(a corresponding reaction family) into a pressure-dependent form.</p>
+<p>2. <strong>allow_pdep_route</strong>: If set to <code class="docutils literal notranslate"><span class="pre">True</span></code> and RMG discovers a pressure-dependent reaction with the same reactants and products,
+the latter <em>will</em> be considered in addition to the library reaction. This is useful for cases when more than one pathway connects
+the same reactants and products, and some of these pathways are well-skipping reactions. If set to <code class="docutils literal notranslate"><span class="pre">False</span></code> (the default value),
+similar network reactions will not be considered in the model generation.</p>
+<p>The following formats are accepted as kinetics entries:</p>
+<p><strong>Arrhenius</strong> of the form <span class="math notranslate nohighlight">\(k(T) = A \left( \frac{T}{T_0} \right)^n \exp \left( -\frac{E_\mathrm{a}}{RT} \right)\)</span>
 (see <a class="reference external" href="http://reactionmechanismgenerator.github.io/RMG-Py/reference/kinetics/arrhenius.html">Arrhenius Class</a> for details):</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
 <span class="n">index</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
 <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;H + O2 &lt;=&gt; O + OH&quot;</span><span class="p">,</span>
 <span class="n">degeneracy</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
@@ -183,7 +188,7 @@ The following formats are accepted as kinetics entries:</p>
 </div>
 <p><strong>MultiArrhenius</strong> is the sum of multiple Arrhenius expressions (all apply to the same temperature range)
 (see <a class="reference external" href="http://reactionmechanismgenerator.github.io/RMG-Py/reference/kinetics/multiarrhenius.html">MultiArrhenius Class</a> for details):</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
 <span class="n">index</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
 <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;O + H2 &lt;=&gt; H + OH&quot;</span><span class="p">,</span>
 <span class="n">degeneracy</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
@@ -193,11 +198,11 @@ The following formats are accepted as kinetics entries:</p>
         <span class="n">Arrhenius</span><span class="p">(</span><span class="n">A</span><span class="o">=</span><span class="p">(</span><span class="mf">6.687e+14</span><span class="p">,</span> <span class="s1">&#39;cm^3/(mol*s)&#39;</span><span class="p">),</span> <span class="n">n</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">Ea</span><span class="o">=</span><span class="p">(</span><span class="mi">19180</span><span class="p">,</span> <span class="s1">&#39;cal/mol&#39;</span><span class="p">),</span> <span class="n">T0</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">))]))</span>
 </pre></div>
 </div>
-<p><strong>ThirdBody</strong> for pressure dependent reactions of the sort <code class="docutils literal"><span class="pre">H2</span> <span class="pre">+</span> <span class="pre">M</span> <span class="pre">&lt;=&gt;</span> <span class="pre">H</span> <span class="pre">+</span> <span class="pre">H</span> <span class="pre">+</span> <span class="pre">M</span></code>. <code class="docutils literal"><span class="pre">efficiencies</span></code> are optional and specify
+<p><strong>ThirdBody</strong> for pressure dependent reactions of the sort <code class="docutils literal notranslate"><span class="pre">H2</span> <span class="pre">+</span> <span class="pre">M</span> <span class="pre">&lt;=&gt;</span> <span class="pre">H</span> <span class="pre">+</span> <span class="pre">H</span> <span class="pre">+</span> <span class="pre">M</span></code>. <code class="docutils literal notranslate"><span class="pre">efficiencies</span></code> are optional and specify
 the factor by which the rate is multiplies if the mentioned species is the third body collider. Note that for complex efficiency
-behaviour, an efficiency of <code class="docutils literal"><span class="pre">0</span></code> can be set, and a seperate specific reaction can be defined
+behaviour, an efficiency of <code class="docutils literal notranslate"><span class="pre">0</span></code> can be set, and a seperate specific reaction can be defined
 (see <a class="reference external" href="http://reactionmechanismgenerator.github.io/RMG-Py/reference/kinetics/thirdbody.html">ThirdBody Class</a> for details):</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
 <span class="n">index</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
 <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;H2 &lt;=&gt; H + H&quot;</span><span class="p">,</span>
 <span class="n">degeneracy</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
@@ -214,7 +219,7 @@ behaviour, an efficiency of <code class="docutils literal"><span class="pre">0</
 </div>
 <p><strong>Troe</strong> for pressure dependent reactions
 (see <a class="reference external" href="http://reactionmechanismgenerator.github.io/RMG-Py/reference/kinetics/troe.html">Troe Class</a> for details):</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
 <span class="n">index</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
 <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;H + O2 &lt;=&gt; HO2&quot;</span><span class="p">,</span>
 <span class="n">degeneracy</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
@@ -227,7 +232,7 @@ behaviour, an efficiency of <code class="docutils literal"><span class="pre">0</
 </div>
 <p><strong>Lindemann</strong>
 (see <a class="reference external" href="http://reactionmechanismgenerator.github.io/RMG-Py/reference/kinetics/lindemann.html">Lindemann Class</a> for details):</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
     <span class="n">index</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span>
     <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;CO + O &lt;=&gt; CO2&quot;</span><span class="p">,</span>
     <span class="n">degeneracy</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
@@ -238,9 +243,9 @@ behaviour, an efficiency of <code class="docutils literal"><span class="pre">0</
 </pre></div>
 </div>
 <p><strong>PDepArrhenius</strong> where each Arrhenius expression corresponds to a different pressure, as specified.
-Allowed pressure units are <code class="docutils literal"><span class="pre">Pa</span></code>, <code class="docutils literal"><span class="pre">bar</span></code>, <code class="docutils literal"><span class="pre">atm</span></code>, <code class="docutils literal"><span class="pre">torr</span></code>, <code class="docutils literal"><span class="pre">psi</span></code>, <code class="docutils literal"><span class="pre">mbar</span></code>
+Allowed pressure units are <code class="docutils literal notranslate"><span class="pre">Pa</span></code>, <code class="docutils literal notranslate"><span class="pre">bar</span></code>, <code class="docutils literal notranslate"><span class="pre">atm</span></code>, <code class="docutils literal notranslate"><span class="pre">torr</span></code>, <code class="docutils literal notranslate"><span class="pre">psi</span></code>, <code class="docutils literal notranslate"><span class="pre">mbar</span></code>
 (see <a class="reference external" href="http://reactionmechanismgenerator.github.io/RMG-Py/reference/kinetics/pdeparrhenius.html">PDepArrhenius Class</a> for details):</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
     <span class="n">index</span> <span class="o">=</span> <span class="mi">7</span><span class="p">,</span>
     <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;HCO &lt;=&gt; H + CO&quot;</span><span class="p">,</span>
     <span class="n">degeneracy</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
@@ -256,7 +261,7 @@ Allowed pressure units are <code class="docutils literal"><span class="pre">Pa</
 </div>
 <p><strong>MultiPDepArrhenius</strong>
 (see <a class="reference external" href="http://reactionmechanismgenerator.github.io/RMG-Py/reference/kinetics/multipdeparrhenius.html">MultiPDepArrhenius Class</a> for details):</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
     <span class="n">index</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
     <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;N2H2 &lt;=&gt; NNH + H&quot;</span><span class="p">,</span>
     <span class="n">degeneracy</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
@@ -279,7 +284,7 @@ Allowed pressure units are <code class="docutils literal"><span class="pre">Pa</
 </div>
 <p><strong>Chebyshev</strong>
 (see <a class="reference external" href="http://reactionmechanismgenerator.github.io/RMG-Py/reference/kinetics/chebyshev.html">Chebyshev Class</a> for details):</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
     <span class="n">index</span> <span class="o">=</span> <span class="mi">9</span><span class="p">,</span>
     <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;CH3 + OH &lt;=&gt; CH2(S) + H2O&quot;</span><span class="p">,</span>
     <span class="n">degeneracy</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
@@ -298,8 +303,8 @@ Allowed pressure units are <code class="docutils literal"><span class="pre">Pa</
 </div>
 <div class="section" id="adding-a-specific-collider">
 <h3>12.4.2.3. Adding a specific collider<a class="headerlink" href="#adding-a-specific-collider" title="Permalink to this headline">¶</a></h3>
-<p>Only the <code class="docutils literal"><span class="pre">Troe</span></code> and <code class="docutils literal"><span class="pre">Lindemann</span></code> pressure dependent formats could be defined with a specific species as a third body collider, if needed. For example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
+<p>Only the <code class="docutils literal notranslate"><span class="pre">Troe</span></code> and <code class="docutils literal notranslate"><span class="pre">Lindemann</span></code> pressure dependent formats could be defined with a specific species as a third body collider, if needed. For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
     <span class="n">index</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
     <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;SO2 + O &lt;=&gt; SO3&quot;</span><span class="p">,</span>
     <span class="n">degeneracy</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
@@ -338,7 +343,7 @@ of thumb is to see if the all neighbours of the reacting atoms are as specified
 as possible. For example, assume your species is ethanol</p>
 <a class="reference internal image-reference" href="../../../_images/ethanol.png"><img alt="../../../_images/ethanol.png" class="align-center" src="../../../_images/ethanol.png" style="width: 100.5px; height: 121.5px;" /></a>
 <p>and RMG suggests the group:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;C_sec&quot;</span><span class="p">,</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;C_sec&quot;</span><span class="p">,</span>
 <span class="n">group</span> <span class="o">=</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">1 *1 Cs  0 {2,S} {3,S} {4,S}</span>
@@ -350,7 +355,7 @@ as possible. For example, assume your species is ethanol</p>
 </div>
 <p>If you use the suggested groups you will not capture the effect of the alcohol
 group. Therefore it is better to make a new group.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;C/H2/CsO&quot;</span><span class="p">,</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;C/H2/CsO&quot;</span><span class="p">,</span>
 <span class="n">group</span> <span class="o">=</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">1 *1 Cs  0 {2,S} {3,S} {4,S} {5,S}</span>
@@ -368,7 +373,7 @@ next section for instructions on creating the new group.</p>
 <div class="section" id="creating-a-new-group">
 <h3>12.4.2.6. Creating a New Group<a class="headerlink" href="#creating-a-new-group" title="Permalink to this headline">¶</a></h3>
 <p>In the family’s groups.py, you will need to add an entry of the format:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
         <span class="n">index</span> <span class="o">=</span> <span class="mi">61</span><span class="p">,</span>
         <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;C_sec&quot;</span><span class="p">,</span>
         <span class="n">group</span> <span class="o">=</span>
@@ -396,7 +401,7 @@ next section for instructions on creating the new group.</p>
 <p>Next, you must enter your new group into the tree. At the bottom of groups.py
 you will find the trees. Place your group in the appropriate position. In the
 example given in the previous section, the new group would be added under the C_sec.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">L1</span><span class="p">:</span> <span class="n">X_H</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">L1</span><span class="p">:</span> <span class="n">X_H</span>
         <span class="n">L2</span><span class="p">:</span> <span class="n">H2</span>
         <span class="n">L2</span><span class="p">:</span> <span class="n">Cs_H</span>
                 <span class="n">L3</span><span class="p">:</span> <span class="n">C_pri</span>
@@ -412,7 +417,7 @@ example given in the previous section, the new group would be added under the C_
 cases, your kinetic parameters describe a specific reaction in which case you
 will want to add your reaction to the training set.</p>
 <p>The rule must be added into rules.py in the form:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">entry</span><span class="p">(</span>
         <span class="n">index</span> <span class="o">=</span> <span class="mi">150</span><span class="p">,</span>
         <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;C/H/Cs3;O_rad/NonDeO&quot;</span><span class="p">,</span>
         <span class="n">group1</span> <span class="o">=</span>
@@ -459,8 +464,8 @@ will want to add your reaction to the training set.</p>
 <li><dl class="first docutils">
 <dt>The value and units of kinetic parameters must be given.</dt>
 <dd><ul class="first last">
-<li>Multiplicative uncertainty is given as <code class="docutils literal"><span class="pre">'*\|/,'</span> <span class="pre">5</span></code> meaning within a factor of 5</li>
-<li>Additive uncertainty is given as <code class="docutils literal"><span class="pre">'+\|/-',</span> <span class="pre">2</span></code> meaning plus or minus 2.</li>
+<li>Multiplicative uncertainty is given as <code class="docutils literal notranslate"><span class="pre">'*\|/,'</span> <span class="pre">5</span></code> meaning within a factor of 5</li>
+<li>Additive uncertainty is given as <code class="docutils literal notranslate"><span class="pre">'+\|/-',</span> <span class="pre">2</span></code> meaning plus or minus 2.</li>
 </ul>
 </dd>
 </dl>
@@ -478,8 +483,8 @@ training set, which in turn benefits the kinetics of similar reactions.  The new
 are formed by matching the reaction to the most most specific template nodes within
 the reaction’s respective family. If you do not want the
 training depository reactions to create new rate rules in the database, set the option for
-<code class="docutils literal"><span class="pre">kineticsDepositories</span></code> within the <code class="docutils literal"><span class="pre">database</span></code> field in your input file to</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;!training&#39;</span><span class="p">],</span>
+<code class="docutils literal notranslate"><span class="pre">kineticsDepositories</span></code> within the <code class="docutils literal notranslate"><span class="pre">database</span></code> field in your input file to</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;!training&#39;</span><span class="p">],</span>
 </pre></div>
 </div>
 <p>Currently, RMG’s rate rule estimates overrides all kinetics depository kinetics, including training
@@ -506,8 +511,8 @@ thermo database to estimate the kinetics in the forward direction.  Therefore th
 depending on the order of thermo libraries used when running a job.</p>
 </div>
 <p>If adding the training reaction manually, first identify the reaction family of the reaction, then
-go to the family’s folder in <code class="docutils literal"><span class="pre">RMG-database/input/kinetics/families/</span></code>.  Create a new kinetics entry
-in the <code class="docutils literal"><span class="pre">training.py</span></code> file.  Make sure to apply the reaction recipe labels properly for the
+go to the family’s folder in <code class="docutils literal notranslate"><span class="pre">RMG-database/input/kinetics/families/</span></code>.  Create a new kinetics entry
+in the <code class="docutils literal notranslate"><span class="pre">training.py</span></code> file.  Make sure to apply the reaction recipe labels properly for the
 reactants and products.</p>
 </div>
 <div class="section" id="pitfalls">
@@ -606,12 +611,14 @@ activation energy truly does reflect the reaction barrier height.</p>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -637,7 +644,7 @@ activation energy truly does reflect the reaction barrier height.</p>
           <a href="kinetics.html" title="12.3. Kinetics Database"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User’s Guide</a> &#187;</li>
@@ -646,7 +653,7 @@ activation energy truly does reflect the reaction barrier height.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

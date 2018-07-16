@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>rmgpy.kinetics.Troe &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,10 +43,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="lindemann.html" title="rmgpy.kinetics.Lindemann"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Kinetics (<code class="docutils literal"><span class="pre">rmgpy.kinetics</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Kinetics (<code class="docutils literal notranslate"><span class="pre">rmgpy.kinetics</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -69,7 +60,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <dl class="class">
 <dt id="rmgpy.kinetics.Troe">
 <em class="property">class </em><code class="descclassname">rmgpy.kinetics.</code><code class="descname">Troe</code><span class="sig-paren">(</span><em>arrheniusHigh=None</em>, <em>arrheniusLow=None</em>, <em>alpha=0.0</em>, <em>T3=None</em>, <em>T1=None</em>, <em>T2=None</em>, <em>Tmin=None</em>, <em>Tmax=None</em>, <em>Pmin=None</em>, <em>Pmax=None</em>, <em>efficiencies=None</em>, <em>comment=''</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Troe" title="Permalink to this definition">¶</a></dt>
-<dd><p>A kinetic model of a phenomenological rate coefficient <span class="math">\(k(T, P)\)</span>
+<dd><p>A kinetic model of a phenomenological rate coefficient <span class="math notranslate nohighlight">\(k(T, P)\)</span>
 using the Troe formulation. The attributes are:</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -89,16 +80,16 @@ using the Troe formulation. The attributes are:</p>
 <td>The Arrhenius kinetics at the low-pressure limit</td>
 </tr>
 <tr class="row-even"><td><cite>alpha</cite></td>
-<td>The <span class="math">\(\alpha\)</span> parameter</td>
+<td>The <span class="math notranslate nohighlight">\(\alpha\)</span> parameter</td>
 </tr>
 <tr class="row-odd"><td><cite>T1</cite></td>
-<td>The <span class="math">\(T_1\)</span> parameter</td>
+<td>The <span class="math notranslate nohighlight">\(T_1\)</span> parameter</td>
 </tr>
 <tr class="row-even"><td><cite>T2</cite></td>
-<td>The <span class="math">\(T_2\)</span> parameter</td>
+<td>The <span class="math notranslate nohighlight">\(T_2\)</span> parameter</td>
 </tr>
 <tr class="row-odd"><td><cite>T3</cite></td>
-<td>The <span class="math">\(T_3\)</span> parameter</td>
+<td>The <span class="math notranslate nohighlight">\(T_3\)</span> parameter</td>
 </tr>
 <tr class="row-even"><td><cite>Tmin</cite></td>
 <td>The minimum temperature at which the model is valid, or zero if unknown or undefined</td>
@@ -121,58 +112,58 @@ using the Troe formulation. The attributes are:</p>
 </tbody>
 </table>
 <p>The Troe model attempts to make the Lindemann model quantitative by introducing
-a broadening factor <span class="math">\(F\)</span>. The formulation is as follows:</p>
-<div class="math">
+a broadening factor <span class="math notranslate nohighlight">\(F\)</span>. The formulation is as follows:</p>
+<div class="math notranslate nohighlight">
 \[k(T,P) = k_\infty(T) \left[ \frac{P_\mathrm{r}}{1 + P_\mathrm{r}} \right] F\]</div>
 <p>where</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[ \begin{align}\begin{aligned}P_\mathrm{r} &amp;= \frac{k_0(T)}{k_\infty(T)} [\mathrm{M}]\\k_0(T) &amp;= A_0 T^{n_0} \exp \left( - \frac{E_0}{RT} \right)\\k_\infty(T) &amp;= A_\infty T^{n_\infty} \exp \left( - \frac{E_\infty}{RT} \right)\end{aligned}\end{align} \]</div>
-<p>and <span class="math">\([\mathrm{M}] \approx P/RT\)</span> is the concentration of the bath gas. The
-Arrhenius expressions <span class="math">\(k_0(T)\)</span> and <span class="math">\(k_\infty(T)\)</span> represent the
+<p>and <span class="math notranslate nohighlight">\([\mathrm{M}] \approx P/RT\)</span> is the concentration of the bath gas. The
+Arrhenius expressions <span class="math notranslate nohighlight">\(k_0(T)\)</span> and <span class="math notranslate nohighlight">\(k_\infty(T)\)</span> represent the
 low-pressure and high-pressure limit kinetics, respectively. The broadening
-factor <span class="math">\(F\)</span> is computed via</p>
-<div class="math">
+factor <span class="math notranslate nohighlight">\(F\)</span> is computed via</p>
+<div class="math notranslate nohighlight">
 \[ \begin{align}\begin{aligned}\log F &amp;= \left\{1 + \left[ \frac{\log P_\mathrm{r} + c}{n - d (\log P_\mathrm{r} + c)} \right]^2 \right\}^{-1} \log F_\mathrm{cent}\\c &amp;= -0.4 - 0.67 \log F_\mathrm{cent}\\n &amp;= 0.75 - 1.27 \log F_\mathrm{cent}\\d &amp;= 0.14\\F_\mathrm{cent} &amp;= (1 - \alpha) \exp \left( -T/T_3 \right) + \alpha \exp \left( -T/T_1 \right) + \exp \left( -T_2/T \right)\end{aligned}\end{align} \]</div>
 <dl class="attribute">
 <dt id="rmgpy.kinetics.Troe.Pmax">
 <code class="descname">Pmax</code><a class="headerlink" href="#rmgpy.kinetics.Troe.Pmax" title="Permalink to this definition">¶</a></dt>
-<dd><p>The maximum pressure at which the model is valid, or <code class="docutils literal"><span class="pre">None</span></code> if not defined.</p>
+<dd><p>The maximum pressure at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.kinetics.Troe.Pmin">
 <code class="descname">Pmin</code><a class="headerlink" href="#rmgpy.kinetics.Troe.Pmin" title="Permalink to this definition">¶</a></dt>
-<dd><p>The minimum pressure at which the model is valid, or <code class="docutils literal"><span class="pre">None</span></code> if not defined.</p>
+<dd><p>The minimum pressure at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.kinetics.Troe.T1">
 <code class="descname">T1</code><a class="headerlink" href="#rmgpy.kinetics.Troe.T1" title="Permalink to this definition">¶</a></dt>
-<dd><p>The Troe <span class="math">\(T_1\)</span> parameter.</p>
+<dd><p>The Troe <span class="math notranslate nohighlight">\(T_1\)</span> parameter.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.kinetics.Troe.T2">
 <code class="descname">T2</code><a class="headerlink" href="#rmgpy.kinetics.Troe.T2" title="Permalink to this definition">¶</a></dt>
-<dd><p>The Troe <span class="math">\(T_2\)</span> parameter.</p>
+<dd><p>The Troe <span class="math notranslate nohighlight">\(T_2\)</span> parameter.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.kinetics.Troe.T3">
 <code class="descname">T3</code><a class="headerlink" href="#rmgpy.kinetics.Troe.T3" title="Permalink to this definition">¶</a></dt>
-<dd><p>The Troe <span class="math">\(T_3\)</span> parameter.</p>
+<dd><p>The Troe <span class="math notranslate nohighlight">\(T_3\)</span> parameter.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.kinetics.Troe.Tmax">
 <code class="descname">Tmax</code><a class="headerlink" href="#rmgpy.kinetics.Troe.Tmax" title="Permalink to this definition">¶</a></dt>
-<dd><p>The maximum temperature at which the model is valid, or <code class="docutils literal"><span class="pre">None</span></code> if not defined.</p>
+<dd><p>The maximum temperature at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.kinetics.Troe.Tmin">
 <code class="descname">Tmin</code><a class="headerlink" href="#rmgpy.kinetics.Troe.Tmin" title="Permalink to this definition">¶</a></dt>
-<dd><p>The minimum temperature at which the model is valid, or <code class="docutils literal"><span class="pre">None</span></code> if not defined.</p>
+<dd><p>The minimum temperature at which the model is valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -196,7 +187,7 @@ factor <span class="math">\(F\)</span> is computed via</p>
 <dl class="method">
 <dt id="rmgpy.kinetics.Troe.changeRate">
 <code class="descname">changeRate</code><span class="sig-paren">(</span><em>self</em>, <em>double factor</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Troe.changeRate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Changes kinetics rate by a multiple <code class="docutils literal"><span class="pre">factor</span></code>.</p>
+<dd><p>Changes kinetics rate by a multiple <code class="docutils literal notranslate"><span class="pre">factor</span></code>.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -243,10 +234,10 @@ a numpy array.  This function helps assist rapid effective pressure calculations
 <dl class="method">
 <dt id="rmgpy.kinetics.Troe.getRateCoefficient">
 <code class="descname">getRateCoefficient</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em>, <em>double P=0.0</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.kinetics.Troe.getRateCoefficient" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the value of the rate coefficient <span class="math">\(k(T)\)</span> in units of m^3,
+<dd><p>Return the value of the rate coefficient <span class="math notranslate nohighlight">\(k(T)\)</span> in units of m^3,
 mol, and s at the specified temperature <cite>T</cite> in K and pressure <cite>P</cite> in
 Pa. If you wish to consider collision efficiencies, then you should
-first use <code class="xref py py-meth docutils literal"><span class="pre">getEffectivePressure()</span></code> to compute the effective
+first use <a class="reference internal" href="#rmgpy.kinetics.Troe.getEffectivePressure" title="rmgpy.kinetics.Troe.getEffectivePressure"><code class="xref py py-meth docutils literal notranslate"><span class="pre">getEffectivePressure()</span></code></a> to compute the effective
 pressure, and pass that value as the pressure to this method.</p>
 </dd></dl>
 
@@ -259,39 +250,39 @@ pressure, and pass that value as the pressure to this method.</p>
 <dl class="method">
 <dt id="rmgpy.kinetics.Troe.isIdenticalTo">
 <code class="descname">isIdenticalTo</code><span class="sig-paren">(</span><em>self</em>, <em>KineticsModel otherKinetics</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.kinetics.Troe.isIdenticalTo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Checks to see if kinetics matches that of other kinetics and returns <code class="docutils literal"><span class="pre">True</span></code>
+<dd><p>Checks to see if kinetics matches that of other kinetics and returns <code class="docutils literal notranslate"><span class="pre">True</span></code>
 if coeffs, kunits, Tmin,</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.Troe.isPressureDependent">
 <code class="descname">isPressureDependent</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.kinetics.Troe.isPressureDependent" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> since all objects derived from PDepKineticsModel
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> since all objects derived from PDepKineticsModel
 represent pressure-dependent kinetics.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.Troe.isPressureValid">
 <code class="descname">isPressureValid</code><span class="sig-paren">(</span><em>self</em>, <em>double P</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.kinetics.Troe.isPressureValid" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the pressure <cite>P</cite> in Pa is within the valid
-pressure range of the kinetic data, or <code class="docutils literal"><span class="pre">False</span></code> if not. If
-the minimum and maximum pressure are not defined, <code class="docutils literal"><span class="pre">True</span></code> is
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the pressure <cite>P</cite> in Pa is within the valid
+pressure range of the kinetic data, or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not. If
+the minimum and maximum pressure are not defined, <code class="docutils literal notranslate"><span class="pre">True</span></code> is
 returned.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.Troe.isSimilarTo">
 <code class="descname">isSimilarTo</code><span class="sig-paren">(</span><em>self</em>, <em>KineticsModel otherKinetics</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.kinetics.Troe.isSimilarTo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns <code class="docutils literal"><span class="pre">True</span></code> if rates of reaction at temperatures 500,1000,1500,2000 K
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if rates of reaction at temperatures 500,1000,1500,2000 K
 and 1 and 10 bar are within +/ .5 for log(k), in other words, within a factor of 3.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.kinetics.Troe.isTemperatureValid">
 <code class="descname">isTemperatureValid</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.kinetics.Troe.isTemperatureValid" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the temperature <cite>T</cite> in K is within the valid
-temperature range of the kinetic data, or <code class="docutils literal"><span class="pre">False</span></code> if not. If
-the minimum and maximum temperature are not defined, <code class="docutils literal"><span class="pre">True</span></code> is
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the temperature <cite>T</cite> in K is within the valid
+temperature range of the kinetic data, or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not. If
+the minimum and maximum temperature are not defined, <code class="docutils literal notranslate"><span class="pre">True</span></code> is
 returned.</p>
 </dd></dl>
 
@@ -361,12 +352,14 @@ for a cantera FalloffReaction.</p>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -392,15 +385,15 @@ for a cantera FalloffReaction.</p>
           <a href="lindemann.html" title="rmgpy.kinetics.Lindemann"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Kinetics (<code class="docutils literal"><span class="pre">rmgpy.kinetics</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Kinetics (<code class="docutils literal notranslate"><span class="pre">rmgpy.kinetics</span></code>)</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

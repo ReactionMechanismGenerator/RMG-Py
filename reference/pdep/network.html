@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>rmgpy.pdep.Network &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,10 +43,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="configuration.html" title="rmgpy.pdep.Configuration"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Pressure dependence (<code class="docutils literal"><span class="pre">rmgpy.pdep</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Pressure dependence (<code class="docutils literal notranslate"><span class="pre">rmgpy.pdep</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -136,37 +127,37 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <td>A list of ground state energies of isomers, reactants, and products</td>
 </tr>
 <tr class="row-even"><td><cite>activeKRotor</cite></td>
-<td><code class="docutils literal"><span class="pre">True</span></code> if the K-rotor is treated as active, <code class="docutils literal"><span class="pre">False</span></code> if treated as adiabatic</td>
+<td><code class="docutils literal notranslate"><span class="pre">True</span></code> if the K-rotor is treated as active, <code class="docutils literal notranslate"><span class="pre">False</span></code> if treated as adiabatic</td>
 </tr>
 <tr class="row-odd"><td><cite>activeJRotor</cite></td>
-<td><code class="docutils literal"><span class="pre">True</span></code> if the J-rotor is treated as active, <code class="docutils literal"><span class="pre">False</span></code> if treated as adiabatic</td>
+<td><code class="docutils literal notranslate"><span class="pre">True</span></code> if the J-rotor is treated as active, <code class="docutils literal notranslate"><span class="pre">False</span></code> if treated as adiabatic</td>
 </tr>
 <tr class="row-even"><td><cite>rmgmode</cite></td>
-<td><code class="docutils literal"><span class="pre">True</span></code> if in RMG mode, <code class="docutils literal"><span class="pre">False</span></code> otherwise</td>
+<td><code class="docutils literal notranslate"><span class="pre">True</span></code> if in RMG mode, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise</td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
 <dt id="rmgpy.pdep.Network.applyChemicallySignificantEigenvaluesMethod">
 <code class="descname">applyChemicallySignificantEigenvaluesMethod</code><span class="sig-paren">(</span><em>lumpingOrder=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Network.applyChemicallySignificantEigenvaluesMethod" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the phenomenological rate coefficients <span class="math">\(k(T,P)\)</span> at the
+<dd><p>Compute the phenomenological rate coefficients <span class="math notranslate nohighlight">\(k(T,P)\)</span> at the
 current conditions using the chemically-significant eigenvalues method.
 If a <cite>lumpingOrder</cite> is provided, the algorithm will attempt to lump the
 configurations (given by index) in the order provided, and return a
-reduced set of <span class="math">\(k(T,P)\)</span> values.</p>
+reduced set of <span class="math notranslate nohighlight">\(k(T,P)\)</span> values.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.pdep.Network.applyModifiedStrongCollisionMethod">
 <code class="descname">applyModifiedStrongCollisionMethod</code><span class="sig-paren">(</span><em>efficiencyModel='default'</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Network.applyModifiedStrongCollisionMethod" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the phenomenological rate coefficients <span class="math">\(k(T,P)\)</span> at the
+<dd><p>Compute the phenomenological rate coefficients <span class="math notranslate nohighlight">\(k(T,P)\)</span> at the
 current conditions using the modified strong collision method.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.pdep.Network.applyReservoirStateMethod">
 <code class="descname">applyReservoirStateMethod</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Network.applyReservoirStateMethod" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the phenomenological rate coefficients <span class="math">\(k(T,P)\)</span> at the
+<dd><p>Compute the phenomenological rate coefficients <span class="math notranslate nohighlight">\(k(T,P)\)</span> at the
 current conditions using the reservoir state method.</p>
 </dd></dl>
 
@@ -192,7 +183,7 @@ applied to each temperature in the range of interest by interpolation.</p>
 <dd><p>Return an array containing the fraction of each isomer and reactant
 channel present at equilibrium, as determined from the Gibbs free
 energy and using the concentration equilibrium constant
-<span class="math">\(K_\mathrm{c}\)</span>. These values are ratios, and the absolute
+<span class="math notranslate nohighlight">\(K_\mathrm{c}\)</span>. These values are ratios, and the absolute
 magnitude is not guaranteed; however, the implementation scales the
 elements of the array so that they sum to unity.</p>
 </dd></dl>
@@ -201,7 +192,7 @@ elements of the array so that they sum to unity.</p>
 <dt id="rmgpy.pdep.Network.calculateMicrocanonicalRates">
 <code class="descname">calculateMicrocanonicalRates</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Network.calculateMicrocanonicalRates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate and return arrays containing the microcanonical rate
-coefficients <span class="math">\(k(E)\)</span> for the isomerization, dissociation, and
+coefficients <span class="math notranslate nohighlight">\(k(E)\)</span> for the isomerization, dissociation, and
 association path reactions in the network.</p>
 </dd></dl>
 
@@ -258,7 +249,7 @@ default.</p>
 <dd><p>Select a suitable list of energies to use for subsequent calculations.
 This is done by finding the minimum and maximum energies on the
 potential energy surface, then adding a multiple of
-<span class="math">\(k_\mathrm{B} T\)</span> onto the maximum energy.</p>
+<span class="math notranslate nohighlight">\(k_\mathrm{B} T\)</span> onto the maximum energy.</p>
 <p>You must specify either the desired grain spacing <cite>grainSize</cite> in J/mol
 or the desired number of grains <cite>Ngrains</cite>, as well as a temperature
 <cite>T</cite> in K to use for the equilibrium calculation. You can specify both
@@ -298,7 +289,7 @@ population profiles for each configuration.</p>
 <dd><p>Directly solve the reduced master equation using a stiff ODE solver.
 Pass the output time points <cite>tlist</cite> in s and the initial total
 populations <cite>x0</cite>. Be sure to run one of the methods for generating
-<span class="math">\(k(T,P)\)</span> values before calling this method.
+<span class="math notranslate nohighlight">\(k(T,P)\)</span> values before calling this method.
 Returns the times in s, population distributions for each isomer, and total
 population profiles for each configuration.</p>
 </dd></dl>
@@ -356,12 +347,14 @@ population profiles for each configuration.</p>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -387,15 +380,15 @@ population profiles for each configuration.</p>
           <a href="configuration.html" title="rmgpy.pdep.Configuration"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Pressure dependence (<code class="docutils literal"><span class="pre">rmgpy.pdep</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Pressure dependence (<code class="docutils literal notranslate"><span class="pre">rmgpy.pdep</span></code>)</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

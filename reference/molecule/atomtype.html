@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>rmgpy.molecule.AtomType &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,10 +43,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="element.html" title="rmgpy.molecule.Element"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -89,47 +80,47 @@ involving this atom type are taken. The attributes are:</p>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><cite>label</cite></td>
-<td><code class="docutils literal"><span class="pre">str</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">str</span></code></td>
 <td>A unique label for the atom type</td>
 </tr>
 <tr class="row-odd"><td><cite>generic</cite></td>
-<td><code class="docutils literal"><span class="pre">list</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">list</span></code></td>
 <td>The atom types that are more generic than this one</td>
 </tr>
 <tr class="row-even"><td><cite>specific</cite></td>
-<td><code class="docutils literal"><span class="pre">list</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">list</span></code></td>
 <td>The atom types that are more specific than this one</td>
 </tr>
 <tr class="row-odd"><td><cite>incrementBond</cite></td>
-<td><code class="docutils literal"><span class="pre">list</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">list</span></code></td>
 <td>The atom type(s) that result when an adjacent bond’s order is incremented</td>
 </tr>
 <tr class="row-even"><td><cite>decrementBond</cite></td>
-<td><code class="docutils literal"><span class="pre">list</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">list</span></code></td>
 <td>The atom type(s) that result when an adjacent bond’s order is decremented</td>
 </tr>
 <tr class="row-odd"><td><cite>formBond</cite></td>
-<td><code class="docutils literal"><span class="pre">list</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">list</span></code></td>
 <td>The atom type(s) that result when a new single bond is formed to this atom type</td>
 </tr>
 <tr class="row-even"><td><cite>breakBond</cite></td>
-<td><code class="docutils literal"><span class="pre">list</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">list</span></code></td>
 <td>The atom type(s) that result when an existing single bond to this atom type is broken</td>
 </tr>
 <tr class="row-odd"><td><cite>incrementRadical</cite></td>
-<td><code class="docutils literal"><span class="pre">list</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">list</span></code></td>
 <td>The atom type(s) that result when the number of radical electrons is incremented</td>
 </tr>
 <tr class="row-even"><td><cite>decrementRadical</cite></td>
-<td><code class="docutils literal"><span class="pre">list</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">list</span></code></td>
 <td>The atom type(s) that result when the number of radical electrons is decremented</td>
 </tr>
 <tr class="row-odd"><td><cite>incrementLonePair</cite></td>
-<td><code class="docutils literal"><span class="pre">list</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">list</span></code></td>
 <td>The atom type(s) that result when the number of lone electron pairs is incremented</td>
 </tr>
 <tr class="row-even"><td><cite>decrementLonePair</cite></td>
-<td><code class="docutils literal"><span class="pre">list</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">list</span></code></td>
 <td>The atom type(s) that result when the number of lone electron pairs is decremented</td>
 </tr>
 <tr class="row-odd"><td colspan="3">The following features are what are required in a given atomtype. Any int in the list is acceptable. An empty list is a wildcard</td>
@@ -217,9 +208,9 @@ involving this atom type are taken. The attributes are:</p>
 <dl class="method">
 <dt id="rmgpy.molecule.AtomType.equivalent">
 <code class="descname">equivalent</code><span class="sig-paren">(</span><em>self</em>, <em>AtomType other</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.AtomType.equivalent" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns <code class="docutils literal"><span class="pre">True</span></code> if two atom types <cite>atomType1</cite> and <cite>atomType2</cite> are
-equivalent or <code class="docutils literal"><span class="pre">False</span></code>  otherwise. This function respects wildcards,
-e.g. <code class="docutils literal"><span class="pre">R!H</span></code> is equivalent to <code class="docutils literal"><span class="pre">C</span></code>.</p>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if two atom types <cite>atomType1</cite> and <cite>atomType2</cite> are
+equivalent or <code class="docutils literal notranslate"><span class="pre">False</span></code>  otherwise. This function respects wildcards,
+e.g. <code class="docutils literal notranslate"><span class="pre">R!H</span></code> is equivalent to <code class="docutils literal notranslate"><span class="pre">C</span></code>.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -261,8 +252,8 @@ e.g. <code class="docutils literal"><span class="pre">R!H</span></code> is equiv
 <dl class="method">
 <dt id="rmgpy.molecule.AtomType.isSpecificCaseOf">
 <code class="descname">isSpecificCaseOf</code><span class="sig-paren">(</span><em>self</em>, <em>AtomType other</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.AtomType.isSpecificCaseOf" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns <code class="docutils literal"><span class="pre">True</span></code> if atom type <cite>atomType1</cite> is a specific case of
-atom type <cite>atomType2</cite> or <code class="docutils literal"><span class="pre">False</span></code>  otherwise.</p>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if atom type <cite>atomType1</cite> is a specific case of
+atom type <cite>atomType2</cite> or <code class="docutils literal notranslate"><span class="pre">False</span></code>  otherwise.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -323,8 +314,8 @@ atom type <cite>atomType2</cite> or <code class="docutils literal"><span class="
 <dl class="function">
 <dt id="rmgpy.molecule.getAtomType">
 <code class="descclassname">rmgpy.molecule.</code><code class="descname">getAtomType</code><span class="sig-paren">(</span><em>atom</em>, <em>dict bonds</em><span class="sig-paren">)</span> &#x2192; AtomType<a class="headerlink" href="#rmgpy.molecule.getAtomType" title="Permalink to this definition">¶</a></dt>
-<dd><p>Determine the appropriate atom type for an <code class="xref py py-class docutils literal"><span class="pre">Atom</span></code> object <cite>atom</cite>
-with local bond structure <cite>bonds</cite>, a <code class="docutils literal"><span class="pre">dict</span></code> containing atom-bond pairs.</p>
+<dd><p>Determine the appropriate atom type for an <a class="reference internal" href="atom.html#rmgpy.molecule.Atom" title="rmgpy.molecule.Atom"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atom</span></code></a> object <cite>atom</cite>
+with local bond structure <cite>bonds</cite>, a <code class="docutils literal notranslate"><span class="pre">dict</span></code> containing atom-bond pairs.</p>
 </dd></dl>
 
 <p>The atom type of an atom describes the atom itself and (often) something about
@@ -345,278 +336,278 @@ molecular substructure patterns via an RMG-style adjacency list.</p>
 <tbody valign="top">
 <tr class="row-even"><td colspan="2"><em>General atom types</em></td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">R</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">R</span></code></td>
 <td>any atom with any local bond structure</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">R!H</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">R!H</span></code></td>
 <td>any non-hydrogen atom with any local bond structure</td>
 </tr>
 <tr class="row-odd"><td colspan="2"><em>Hydrogen atom types</em></td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">H</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">H</span></code></td>
 <td>hydrogen atom with up to one single bond</td>
 </tr>
 <tr class="row-odd"><td colspan="2"><em>Carbon atom types</em></td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">C</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">C</span></code></td>
 <td>carbon atom with any local bond structure</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Ca</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">Ca</span></code></td>
 <td>carbon atom with two lone pairs and no bonds</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">Cs</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">Cs</span></code></td>
 <td>carbon atom with up to four single bonds</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Csc</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">Csc</span></code></td>
 <td>charged carbon atom with up to three single bonds</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">Cd</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">Cd</span></code></td>
 <td>carbon atom with one double bond (not to O or S) and up to two single bonds</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Cdc</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">Cdc</span></code></td>
 <td>charged carbon atom with one double bond and up to one single bond</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">CO</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">CO</span></code></td>
 <td>carbon atom with one double bond to oxygen and up to two single bonds</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">CS</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">CS</span></code></td>
 <td>carbon atom with one double bond to sulfur and up to two single bonds</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">Cdd</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">Cdd</span></code></td>
 <td>carbon atom with two double bonds</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Ct</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">Ct</span></code></td>
 <td>carbon atom with one triple bond and up to one single bond</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">Cb</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">Cb</span></code></td>
 <td>carbon atom with up to two benzene bonds and up to one single bond</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Cbf</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">Cbf</span></code></td>
 <td>carbon atom with three benzene bonds</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">C2s</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">C2s</span></code></td>
 <td>carbon atom with one lone pair (valance 2) and up to two single bonds</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">C2sc</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">C2sc</span></code></td>
 <td>charged carbon atom with one lone pair (valance 2) and up to three single bonds</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">C2d</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">C2d</span></code></td>
 <td>carbon atom with one lone pair (valance 2) and one double bond</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">C2dc</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">C2dc</span></code></td>
 <td>charged carbon atom with one lone pair (valance 2), one double bond and up to one single bond</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">C2tc</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">C2tc</span></code></td>
 <td>charged carbon atom with one lone pair (valance 2), one triple bond</td>
 </tr>
 <tr class="row-odd"><td colspan="2"><em>Nitrogen atom types</em></td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">N</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">N</span></code></td>
 <td>nitrogen atom with any local bond structure</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">N0sc</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">N0sc</span></code></td>
 <td>charged nitrogen atom with three lone pairs (valance 0) with up to one single bond</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">N1s</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">N1s</span></code></td>
 <td>nitrogen atom with two lone pairs (valance 1) and up to one single bond</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">N1sc</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">N1sc</span></code></td>
 <td>charged nitrogen atom with two lone pairs (valance 1) up to two single bonds</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">N1dc</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">N1dc</span></code></td>
 <td>charged nitrogen atom with two lone pairs (valance 1), one double bond</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">N3s</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">N3s</span></code></td>
 <td>nitrogen atom with one lone pair (valance 3) with up to three single bonds</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">N3d</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">N3d</span></code></td>
 <td>nitrogen atom with one lone pair (valance 3), one double bond and up to one single bond</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">N3t</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">N3t</span></code></td>
 <td>nitrogen atom with one lone pair (valance 3) and one triple bond</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">N3b</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">N3b</span></code></td>
 <td>nitrogen atom with one lone pair (valance 3) and two benzene bonds</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">N5sc</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">N5sc</span></code></td>
 <td>charged nitrogen atom with no lone pairs (valance 5) with up to four single bonds</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">N5dc</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">N5dc</span></code></td>
 <td>charged nitrogen atom with no lone pairs (valance 5), one double bond and up to two single bonds</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">N5ddc</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">N5ddc</span></code></td>
 <td>charged nitrogen atom with with no lone pairs (valance 5) and two double bonds</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">N5dddc</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">N5dddc</span></code></td>
 <td>charged nitrogen atom with with no lone pairs (valance 5) and three double bonds</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">N5t</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">N5t</span></code></td>
 <td>nitrogen atom with with no lone pairs (valance 5), one triple bond and up to two single bonds</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">N5tc</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">N5tc</span></code></td>
 <td>charged nitrogen atom with with no lone pairs (valance 5), one triple bond and up to one single bond</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">N5b</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">N5b</span></code></td>
 <td>nitrogen atom with with no lone pairs (valance 5) and two benzene bonds (one of the lone pairs also participates in the aromatic bond) and up to one single bond</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">N5bd</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">N5bd</span></code></td>
 <td>nitrogen atom with with no lone pairs (valance 5), two benzene bonds, and one double bond</td>
 </tr>
 <tr class="row-odd"><td colspan="2"><em>Oxygen atom types</em></td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">O</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">O</span></code></td>
 <td>oxygen atom with any local bond structure</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Oa</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">Oa</span></code></td>
 <td>oxygen atom with three lone pairs and no bonds</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">O0sc</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">O0sc</span></code></td>
 <td>charged oxygen with three lone pairs (valance 0) and up to one single bond</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">O0dc</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">O0dc</span></code></td>
 <td>charged oxygen atom with three lone pairs (valance 0) and one double bond</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">O2s</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">O2s</span></code></td>
 <td>oxygen atom with two lone pairs (valance 2) and up to two single bonds</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">O2sc</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">O2sc</span></code></td>
 <td>charged oxygen atom with two lone pairs (valance 2) and up to one single bond</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">O2d</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">O2d</span></code></td>
 <td>oxygen atom with two lone pairs (valance 2) and one doubel bond</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">O4sc</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">O4sc</span></code></td>
 <td>charged oxygen atom with one one pair (valance 4) and up to three single bonds</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">O4dc</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">O4dc</span></code></td>
 <td>charged oxygen atom with one one pair (valance 4), one double bond and up to one single bond</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">O4tc</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">O4tc</span></code></td>
 <td>charged oxygen atom with one one pair (valance 4) and one triple bond</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">O4b</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">O4b</span></code></td>
 <td>oxygen atom with one one pair (valance 4) and and two benzene bonds</td>
 </tr>
 <tr class="row-odd"><td colspan="2"><em>Silicon atom types</em></td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">Si</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">Si</span></code></td>
 <td>silicon atom with any local bond structure</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Sis</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">Sis</span></code></td>
 <td>silicon atom with four single bonds</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">Sid</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">Sid</span></code></td>
 <td>silicon atom with one double bond (to carbon) and two single bonds</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">SiO</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">SiO</span></code></td>
 <td>silicon atom with one double bond (to oxygen) and two single bonds</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">Sidd</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">Sidd</span></code></td>
 <td>silicon atom with two double bonds</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Sit</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">Sit</span></code></td>
 <td>silicon atom with one triple bond and one single bond</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">Sib</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">Sib</span></code></td>
 <td>silicon atom with two benzene bonds and one single bond</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Sibf</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">Sibf</span></code></td>
 <td>silicon atom with three benzene bonds</td>
 </tr>
 <tr class="row-even"><td colspan="2"><em>Sulfur atom types</em></td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">S</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">S</span></code></td>
 <td>sulfur atom with any local bond structure</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">Sa</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">Sa</span></code></td>
 <td>sulfur atom with three lone pairs and no bonds</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">S0sc</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">S0sc</span></code></td>
 <td>charged sulfur atom with three lone pairs (valance 0) and up to one single bonds</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">S2s</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">S2s</span></code></td>
 <td>sulfur atom with two lone pairs (valance 2) and up to two single bonds</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">S2sc</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">S2sc</span></code></td>
 <td>charged sulfur atom with two lone pairs (valance 2) and up to three single bonds</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">S2d</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">S2d</span></code></td>
 <td>sulfur atom with two lone pairs (valance 2) and one double bond</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">S2dc</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">S2dc</span></code></td>
 <td>charged sulfur atom with two lone pairs (valance 2), one double bond and up to one single bond</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">S2tc</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">S2tc</span></code></td>
 <td>charged sulfur atom with two lone pairs (valance 2) and one triple bond</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">S4s</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">S4s</span></code></td>
 <td>sulfur atom with one lone pair (valance 4) and up to four single bonds</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">S4sc</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">S4sc</span></code></td>
 <td>charged sulfur atom with one lone pair (valance 4) and up to five single bonds</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">S4d</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">S4d</span></code></td>
 <td>sulfur atom with one lone pair (valance 4), one double bond and up to two single bonds</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">S4dd</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">S4dd</span></code></td>
 <td>sulfur atom with one lone pair (valance 4) and two double bonds</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">S4dc</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">S4dc</span></code></td>
 <td>charged sulfur atom with one lone pair (valance 4), one to three double bonds and up to three single bonds</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">S4b</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">S4b</span></code></td>
 <td>sulfur atom with one lone pair (valance 4) and two benzene bonds (one of the lone pairs also participates in the aromatic bond)</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">S4t</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">S4t</span></code></td>
 <td>sulfur atom with one lone pair (valance 4), one triple bond and up to one single bond</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">S4tdc</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">S4tdc</span></code></td>
 <td>charged sulfur atom with one lone pair (valance 4) one to two triple bonds, up to two double bonds, and up to three single bonds</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">S6s</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">S6s</span></code></td>
 <td>sulfur atom with no lone pairs (valance 6) and up to six single bonds</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">S6sc</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">S6sc</span></code></td>
 <td>charged sulfur atom with no lone pairs (valance 6) and up to seven single bonds</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">S6d</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">S6d</span></code></td>
 <td>sulfur atom with no lone pairs (valance 6), one double bond and up to four single bonds</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">S6dd</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">S6dd</span></code></td>
 <td>sulfur atom with no lone pairs (valance 6), two double bonds and up to two single bonds</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">S6ddd</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">S6ddd</span></code></td>
 <td>sulfur atom with no lone pairs (valance 6) and three double bonds</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">S6dc</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">S6dc</span></code></td>
 <td>charged sulfur atom with no lone pairs (valance 6), one to three double bonds and up to five single bonds</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">S6t</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">S6t</span></code></td>
 <td>sulfur atom with no lone pairs (valance 6), one triple bond and up to three single bonds</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">S6td</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">S6td</span></code></td>
 <td>sulfur atom with no lone pairs (valance 6), one triple bond, one double bond and up to one single bond</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">S6tt</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">S6tt</span></code></td>
 <td>sulfur atom with no lone pairs (valance 6) and two triple bonds</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">S6tdc</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">S6tdc</span></code></td>
 <td>charged sulfur atom with no lone pairs (valance 6), one to two triple bonds, up to two double bonds, and up to four single bonds</td>
 </tr>
 <tr class="row-odd"><td colspan="2"><em>Chlorine atom types</em></td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">Cl</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">Cl</span></code></td>
 <td>chlorine atom with any local bond structure</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">Cl1s</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">Cl1s</span></code></td>
 <td>chlorine atom with three lone pairs and zero to one single bonds</td>
 </tr>
 <tr class="row-even"><td colspan="2"><em>Iodine atom types</em></td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal"><span class="pre">I</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">I</span></code></td>
 <td>iodine atom with any local bond structure</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal"><span class="pre">I1s</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">I1s</span></code></td>
 <td>iodine atom with three lone pairs and zero to one single bonds</td>
 </tr>
 </tbody>
@@ -672,12 +663,14 @@ molecular substructure patterns via an RMG-style adjacency list.</p>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -703,15 +696,15 @@ molecular substructure patterns via an RMG-style adjacency list.</p>
           <a href="element.html" title="rmgpy.molecule.Element"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Molecular representations (<code class="docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

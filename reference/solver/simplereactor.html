@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>rmgpy.solver.SimpleReactor &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,10 +43,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="reactionsystem.html" title="rmgpy.solver.ReactionSystem"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Reaction system simulation (<code class="docutils literal"><span class="pre">rmgpy.solver</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Reaction system simulation (<code class="docutils literal notranslate"><span class="pre">rmgpy.solver</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -68,7 +59,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.solver.SimpleReactor<a class="headerlink" href="#rmgpy-solver-simplereactor" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.solver.SimpleReactor">
-<em class="property">class </em><code class="descclassname">rmgpy.solver.</code><code class="descname">SimpleReactor</code><span class="sig-paren">(</span><em>T</em>, <em>P</em>, <em>initialMoleFractions</em>, <em>termination</em>, <em>sensitiveSpecies=None</em>, <em>sensitivityThreshold=1e-3</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SimpleReactor" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.solver.</code><code class="descname">SimpleReactor</code><span class="sig-paren">(</span><em>T</em>, <em>P</em>, <em>initialMoleFractions</em>, <em>nSims=None</em>, <em>termination=None</em>, <em>sensitiveSpecies=None</em>, <em>sensitivityThreshold=1e-3</em>, <em>sensConditions=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SimpleReactor" title="Permalink to this definition">¶</a></dt>
 <dd><p>A reaction system consisting of a homogeneous, isothermal, isobaric batch
 reactor. These assumptions allow for a number of optimizations that enable
 this solver to complete very rapidly, even for large kinetic models.</p>
@@ -85,9 +76,21 @@ this solver to complete very rapidly, even for large kinetic models.</p>
 </dd></dl>
 
 <dl class="attribute">
+<dt id="rmgpy.solver.SimpleReactor.Prange">
+<code class="descname">Prange</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.Prange" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Prange</em> – list</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.T">
 <code class="descname">T</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.T" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>T</em> – rmgpy.quantity.ScalarQuantity</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.SimpleReactor.Trange">
+<code class="descname">Trange</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.Trange" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>Trange</em> – list</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -108,8 +111,8 @@ done after the while loop before the simulate call ends</p>
 <code class="descname">advance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.advance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Simulate from the current value of the independent variable to a
 specified value <cite>tout</cite>, taking as many steps as necessary. The resulting
-values of <span class="math">\(t\)</span>, <span class="math">\(\mathbf{y}\)</span>, and
-<span class="math">\(\frac{d \mathbf{y}}{dt}\)</span> can then be accessed via the <cite>t</cite>, <cite>y</cite>,
+values of <span class="math notranslate nohighlight">\(t\)</span>, <span class="math notranslate nohighlight">\(\mathbf{y}\)</span>, and
+<span class="math notranslate nohighlight">\(\frac{d \mathbf{y}}{dt}\)</span> can then be accessed via the <cite>t</cite>, <cite>y</cite>,
 and <cite>dydt</cite> attributes.</p>
 </dd></dl>
 
@@ -129,7 +132,7 @@ and <cite>dydt</cite> attributes.</p>
 <dt id="rmgpy.solver.SimpleReactor.calculate_effective_pressure">
 <code class="descname">calculate_effective_pressure</code><span class="sig-paren">(</span><em>self</em>, <em>rxn</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.calculate_effective_pressure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the effective pressure for a reaction as:</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[P_{eff} = P * \sum_i \frac{y_i * eff_i}{\sum_j y_j}\]</div>
 <dl class="docutils">
 <dt>with:</dt>
@@ -140,7 +143,7 @@ and <cite>dydt</cite> attributes.</p>
 </dd>
 </dl>
 <p>or as:</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[P_{eff} = \frac{P * y_{specificCollider}}{\sum_j y_j}\]</div>
 <p>if a specificCollider is mentioned.</p>
 </dd></dl>
@@ -281,6 +284,12 @@ edge to surface based on the layering constraint</p>
 from the species index dictionary.</p>
 </dd></dl>
 
+<dl class="method">
+<dt id="rmgpy.solver.SimpleReactor.get_threshold_rate_constants">
+<code class="descname">get_threshold_rate_constants</code><span class="sig-paren">(</span><em>self</em>, <em>modelSettings</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.get_threshold_rate_constants" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the threshold rate constants for reaction filtering.</p>
+</dd></dl>
+
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.initialMoleFractions">
 <code class="descname">initialMoleFractions</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.initialMoleFractions" title="Permalink to this definition">¶</a></dt>
@@ -302,7 +311,7 @@ individual values for each dependent variable.</p>
 
 <dl class="method">
 <dt id="rmgpy.solver.SimpleReactor.initializeModel">
-<code class="descname">initializeModel</code><span class="sig-paren">(</span><em>self</em>, <em>list coreSpecies</em>, <em>list coreReactions</em>, <em>list edgeSpecies</em>, <em>list edgeReactions</em>, <em>list surfaceSpecies=None</em>, <em>list surfaceReactions=None</em>, <em>list pdepNetworks=None</em>, <em>atol=1e-16</em>, <em>rtol=1e-8</em>, <em>sensitivity=False</em>, <em>sens_atol=1e-6</em>, <em>sens_rtol=1e-4</em>, <em>filterReactions=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.initializeModel" title="Permalink to this definition">¶</a></dt>
+<code class="descname">initializeModel</code><span class="sig-paren">(</span><em>self</em>, <em>list coreSpecies</em>, <em>list coreReactions</em>, <em>list edgeSpecies</em>, <em>list edgeReactions</em>, <em>list surfaceSpecies=None</em>, <em>list surfaceReactions=None</em>, <em>list pdepNetworks=None</em>, <em>atol=1e-16</em>, <em>rtol=1e-8</em>, <em>sensitivity=False</em>, <em>sens_atol=1e-6</em>, <em>sens_rtol=1e-4</em>, <em>filterReactions=False</em>, <em>dict conditions=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.initializeModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize a simulation of the simple reactor using the provided kinetic
 model.</p>
 </dd></dl>
@@ -377,6 +386,12 @@ model.</p>
 <dt id="rmgpy.solver.SimpleReactor.maxNetworkLeakRateRatios">
 <code class="descname">maxNetworkLeakRateRatios</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.maxNetworkLeakRateRatios" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>maxNetworkLeakRateRatios</em> – numpy.ndarray</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.SimpleReactor.nSims">
+<code class="descname">nSims</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.nSims" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>nSims</em> – ‘int’</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -500,6 +515,14 @@ model.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.solver.SimpleReactor.reset_max_edge_species_rate_ratios">
+<code class="descname">reset_max_edge_species_rate_ratios</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.reset_max_edge_species_rate_ratios" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function sets maxEdgeSpeciesRateRatios back to zero
+for pruning of ranged reactors it is important to avoid doing this
+every initialization</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.solver.SimpleReactor.residual">
 <code class="descname">residual</code><span class="sig-paren">(</span><em>self</em>, <em>double t</em>, <em>ndarray y</em>, <em>ndarray dydt</em>, <em>ndarray senpar=numpy.zeros(1</em>, <em>numpy.float64)</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.residual" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the residual function for the governing DAE system for the
@@ -510,6 +533,12 @@ simple reaction system.</p>
 <dt id="rmgpy.solver.SimpleReactor.rtol_array">
 <code class="descname">rtol_array</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.rtol_array" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>rtol_array</em> – numpy.ndarray</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.SimpleReactor.sensConditions">
+<code class="descname">sensConditions</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.sensConditions" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>sensConditions</em> – dict</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -569,7 +598,7 @@ equal to the residual.</p>
 
 <dl class="method">
 <dt id="rmgpy.solver.SimpleReactor.simulate">
-<code class="descname">simulate</code><span class="sig-paren">(</span><em>self</em>, <em>list coreSpecies</em>, <em>list coreReactions</em>, <em>list edgeSpecies</em>, <em>list edgeReactions</em>, <em>list surfaceSpecies</em>, <em>list surfaceReactions</em>, <em>list pdepNetworks=None</em>, <em>bool prune=False</em>, <em>bool sensitivity=False</em>, <em>list sensWorksheet=None</em>, <em>modelSettings=None</em>, <em>simulatorSettings=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.simulate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">simulate</code><span class="sig-paren">(</span><em>self</em>, <em>list coreSpecies</em>, <em>list coreReactions</em>, <em>list edgeSpecies</em>, <em>list edgeReactions</em>, <em>list surfaceSpecies</em>, <em>list surfaceReactions</em>, <em>list pdepNetworks=None</em>, <em>bool prune=False</em>, <em>bool sensitivity=False</em>, <em>list sensWorksheet=None</em>, <em>modelSettings=None</em>, <em>simulatorSettings=None</em>, <em>dict conditions=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.simulate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Simulate the reaction system with the provided reaction model,
 consisting of lists of core species, core reactions, edge species, and
 edge reactions. As the simulation proceeds the system is monitored for
@@ -577,7 +606,7 @@ validity. If the model becomes invalid (e.g. due to an excessively
 large edge flux), the simulation is interrupted and the object causing
 the model to be invalid is returned. If the simulation completes to
 the desired termination criteria and the model remains valid throughout,
-<code class="docutils literal"><span class="pre">None</span></code> is returned.</p>
+<code class="docutils literal notranslate"><span class="pre">None</span></code> is returned.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -603,8 +632,8 @@ the desired termination criteria and the model remains valid throughout,
 <code class="descname">step</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SimpleReactor.step" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform one simulation step from the current value of the independent
 variable toward (but not past) a specified value <cite>tout</cite>. The resulting
-values of <span class="math">\(t\)</span>, <span class="math">\(\mathbf{y}\)</span>, and
-<span class="math">\(\frac{d \mathbf{y}}{dt}\)</span> can then be accessed via the <cite>t</cite>, <cite>y</cite>,
+values of <span class="math notranslate nohighlight">\(t\)</span>, <span class="math notranslate nohighlight">\(\mathbf{y}\)</span>, and
+<span class="math notranslate nohighlight">\(\frac{d \mathbf{y}}{dt}\)</span> can then be accessed via the <cite>t</cite>, <cite>y</cite>,
 and <cite>dydt</cite> attributes.</p>
 </dd></dl>
 
@@ -630,6 +659,18 @@ and <cite>dydt</cite> attributes.</p>
 <dt id="rmgpy.solver.SimpleReactor.termination">
 <code class="descname">termination</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.termination" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>termination</em> – list</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.SimpleReactor.trimolecular">
+<code class="descname">trimolecular</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.trimolecular" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>trimolecular</em> – ‘bool’</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.SimpleReactor.trimolecularThreshold">
+<code class="descname">trimolecularThreshold</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.trimolecularThreshold" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>trimolecularThreshold</em> – numpy.ndarray</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -703,12 +744,14 @@ and <cite>dydt</cite> attributes.</p>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -734,15 +777,15 @@ and <cite>dydt</cite> attributes.</p>
           <a href="reactionsystem.html" title="rmgpy.solver.ReactionSystem"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Reaction system simulation (<code class="docutils literal"><span class="pre">rmgpy.solver</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Reaction system simulation (<code class="docutils literal notranslate"><span class="pre">rmgpy.solver</span></code>)</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

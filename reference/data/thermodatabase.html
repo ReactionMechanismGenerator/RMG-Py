@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>rmgpy.data.thermo.ThermoDatabase &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,10 +43,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="templatereaction.html" title="rmgpy.data.kinetics.TemplateReaction"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Database (<code class="docutils literal"><span class="pre">rmgpy.data</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Database (<code class="docutils literal notranslate"><span class="pre">rmgpy.data</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -74,9 +65,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <dt id="rmgpy.data.thermo.ThermoDatabase.computeGroupAdditivityThermo">
 <code class="descname">computeGroupAdditivityThermo</code><span class="sig-paren">(</span><em>molecule</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.computeGroupAdditivityThermo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the set of thermodynamic parameters corresponding to a given
-<code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> object <cite>molecule</cite> by estimation using the group
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> object <cite>molecule</cite> by estimation using the group
 additivity values. If no group additivity values are loaded, a
-<code class="xref py py-class docutils literal"><span class="pre">DatabaseError</span></code> is raised.</p>
+<code class="xref py py-class docutils literal notranslate"><span class="pre">DatabaseError</span></code> is raised.</p>
 <p>The entropy is not corrected for the symmetry of the molecule.
 This should be done later by the calling function.</p>
 </dd></dl>
@@ -96,9 +87,9 @@ This should be done later by the calling function.</p>
 <dt id="rmgpy.data.thermo.ThermoDatabase.estimateThermoViaGroupAdditivity">
 <code class="descname">estimateThermoViaGroupAdditivity</code><span class="sig-paren">(</span><em>molecule</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.estimateThermoViaGroupAdditivity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the set of thermodynamic parameters corresponding to a given
-<code class="xref py py-class docutils literal"><span class="pre">Molecule</span></code> object <cite>molecule</cite> by estimation using the group
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> object <cite>molecule</cite> by estimation using the group
 additivity values. If no group additivity values are loaded, a
-<code class="xref py py-class docutils literal"><span class="pre">DatabaseError</span></code> is raised.</p>
+<code class="xref py py-class docutils literal notranslate"><span class="pre">DatabaseError</span></code> is raised.</p>
 <p>The entropy is not corrected for the symmetry of the molecule.
 This should be done later by the calling function.</p>
 </dd></dl>
@@ -128,7 +119,7 @@ and a GAV HBI correction.</p>
 <dt id="rmgpy.data.thermo.ThermoDatabase.getAllThermoData">
 <code class="descname">getAllThermoData</code><span class="sig-paren">(</span><em>species</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.getAllThermoData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return all possible sets of thermodynamic parameters for a given
-<code class="xref py py-class docutils literal"><span class="pre">Species</span></code> object <cite>species</cite>. The hits from the depository come
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Species</span></code> object <cite>species</cite>. The hits from the depository come
 first, then the libraries (in order), and then the group additivity
 estimate. This method is useful for a generic search job.</p>
 <p>Returns: a list of tuples (ThermoData, source, entry)
@@ -145,7 +136,7 @@ from them, returning them as lists.</p>
 <dl class="method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.getThermoData">
 <code class="descname">getThermoData</code><span class="sig-paren">(</span><em>species</em>, <em>trainingSet=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.getThermoData" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the thermodynamic parameters for a given <code class="xref py py-class docutils literal"><span class="pre">Species</span></code>
+<dd><p>Return the thermodynamic parameters for a given <code class="xref py py-class docutils literal notranslate"><span class="pre">Species</span></code>
 object <cite>species</cite>. This function first searches the loaded libraries
 in order, returning the first match found, before falling back to
 estimation via group additivity.</p>
@@ -159,8 +150,8 @@ corrected.</p>
 <dt id="rmgpy.data.thermo.ThermoDatabase.getThermoDataFromDepository">
 <code class="descname">getThermoDataFromDepository</code><span class="sig-paren">(</span><em>species</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.getThermoDataFromDepository" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return all possible sets of thermodynamic parameters for a given
-<code class="xref py py-class docutils literal"><span class="pre">Species</span></code> object <cite>species</cite> from the depository. If no
-depository is loaded, a <code class="xref py py-class docutils literal"><span class="pre">DatabaseError</span></code> is raised.</p>
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Species</span></code> object <cite>species</cite> from the depository. If no
+depository is loaded, a <code class="xref py py-class docutils literal notranslate"><span class="pre">DatabaseError</span></code> is raised.</p>
 <p>Returns: a list of tuples (thermoData, depository, entry) without any Cp0 or CpInf data.</p>
 </dd></dl>
 
@@ -168,9 +159,9 @@ depository is loaded, a <code class="xref py py-class docutils literal"><span cl
 <dt id="rmgpy.data.thermo.ThermoDatabase.getThermoDataFromGroups">
 <code class="descname">getThermoDataFromGroups</code><span class="sig-paren">(</span><em>species</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.getThermoDataFromGroups" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the set of thermodynamic parameters corresponding to a given
-<code class="xref py py-class docutils literal"><span class="pre">Species</span></code> object <cite>species</cite> by estimation using the group
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Species</span></code> object <cite>species</cite> by estimation using the group
 additivity values. If no group additivity values are loaded, a
-<code class="xref py py-class docutils literal"><span class="pre">DatabaseError</span></code> is raised.</p>
+<code class="xref py py-class docutils literal notranslate"><span class="pre">DatabaseError</span></code> is raised.</p>
 <p>The resonance isomer (molecule) with the lowest H298 is used, and as a side-effect
 the resonance isomers (items in <cite>species.molecule</cite> list) are sorted in ascending order.</p>
 <p>This does not account for symmetry. The method calling this sould correct for it.</p>
@@ -180,7 +171,7 @@ the resonance isomers (items in <cite>species.molecule</cite> list) are sorted i
 <dl class="method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.getThermoDataFromLibraries">
 <code class="descname">getThermoDataFromLibraries</code><span class="sig-paren">(</span><em>species</em>, <em>trainingSet=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.getThermoDataFromLibraries" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the thermodynamic parameters for a given <code class="xref py py-class docutils literal"><span class="pre">Species</span></code>
+<dd><p>Return the thermodynamic parameters for a given <code class="xref py py-class docutils literal notranslate"><span class="pre">Species</span></code>
 object <cite>species</cite>. This function first searches the loaded libraries
 in order, returning the first match found, before failing and returning None.
 <cite>trainingSet</cite> is used to identify if function is called during training set or not.
@@ -193,11 +184,11 @@ rate calculation.</p>
 <dt id="rmgpy.data.thermo.ThermoDatabase.getThermoDataFromLibrary">
 <code class="descname">getThermoDataFromLibrary</code><span class="sig-paren">(</span><em>species</em>, <em>library</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.getThermoDataFromLibrary" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the set of thermodynamic parameters corresponding to a given
-<code class="xref py py-class docutils literal"><span class="pre">Species</span></code> object <cite>species</cite> from the specified thermodynamics
+<code class="xref py py-class docutils literal notranslate"><span class="pre">Species</span></code> object <cite>species</cite> from the specified thermodynamics
 <cite>library</cite>. If <cite>library</cite> is a string, the list of libraries is searched
 for a library with that name. If no match is found in that library,
-<code class="docutils literal"><span class="pre">None</span></code> is returned. If no corresponding library is found, a
-<code class="xref py py-class docutils literal"><span class="pre">DatabaseError</span></code> is raised.</p>
+<code class="docutils literal notranslate"><span class="pre">None</span></code> is returned. If no corresponding library is found, a
+<code class="xref py py-class docutils literal notranslate"><span class="pre">DatabaseError</span></code> is raised.</p>
 <p>Returns a tuple: (ThermoData, library, entry)  or None.</p>
 </dd></dl>
 
@@ -256,7 +247,7 @@ Return a list of indices with the desired order associated with the index of the
 <code class="descname">recordPolycylicGenericNodes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.recordPolycylicGenericNodes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Identify generic nodes in tree for polycyclic groups.
 Saves them as a list in the <cite>genericNodes</cite> attribute
-in the polycyclic <code class="xref py py-class docutils literal"><span class="pre">ThermoGroups</span></code> object, which
+in the polycyclic <a class="reference internal" href="thermogroups.html#rmgpy.data.thermo.ThermoGroups" title="rmgpy.data.thermo.ThermoGroups"><code class="xref py py-class docutils literal notranslate"><span class="pre">ThermoGroups</span></code></a> object, which
 must be pre-loaded.</p>
 <p>Necessary for polycyclic heuristic.</p>
 </dd></dl>
@@ -266,7 +257,7 @@ must be pre-loaded.</p>
 <code class="descname">recordRingGenericNodes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.recordRingGenericNodes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Identify generic nodes in tree for ring groups.
 Saves them as a list in the <cite>genericNodes</cite> attribute
-in the ring <code class="xref py py-class docutils literal"><span class="pre">ThermoGroups</span></code> object, which
+in the ring <a class="reference internal" href="thermogroups.html#rmgpy.data.thermo.ThermoGroups" title="rmgpy.data.thermo.ThermoGroups"><code class="xref py py-class docutils literal notranslate"><span class="pre">ThermoGroups</span></code></a> object, which
 must be pre-loaded.</p>
 <p>Necessary for polycyclic heuristic.</p>
 </dd></dl>
@@ -359,12 +350,14 @@ points to the top-level folder of the thermo libraries.</p>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -390,15 +383,15 @@ points to the top-level folder of the thermo libraries.</p>
           <a href="templatereaction.html" title="rmgpy.data.kinetics.TemplateReaction"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Database (<code class="docutils literal"><span class="pre">rmgpy.data</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Database (<code class="docutils literal notranslate"><span class="pre">rmgpy.data</span></code>)</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

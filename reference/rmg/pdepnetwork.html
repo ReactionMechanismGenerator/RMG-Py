@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>rmgpy.rmg.pdep.PDepNetwork &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,10 +43,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="output.html" title="Saving RMG output"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Reaction mechanism generation (<code class="docutils literal"><span class="pre">rmgpy.rmg</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Reaction mechanism generation (<code class="docutils literal notranslate"><span class="pre">rmgpy.rmg</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -71,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <em class="property">class </em><code class="descclassname">rmgpy.rmg.pdep.</code><code class="descname">PDepNetwork</code><span class="sig-paren">(</span><em>index=-1</em>, <em>source=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork" title="Permalink to this definition">¶</a></dt>
 <dd><p>A representation of a <em>partial</em> unimolecular reaction network. Each partial
 network has a single <cite>source</cite> isomer or reactant channel, and is responsible
-only for <span class="math">\(k(T,P)\)</span> values for net reactions with source as the
+only for <span class="math notranslate nohighlight">\(k(T,P)\)</span> values for net reactions with source as the
 reactant. Multiple partial networks can have the same source, but networks
 with the same source and any explored isomers must be combined.</p>
 <table border="1" class="docutils">
@@ -88,11 +79,11 @@ with the same source and any explored isomers must be combined.</p>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><cite>source</cite></td>
-<td><code class="docutils literal"><span class="pre">list</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">list</span></code></td>
 <td>The isomer or reactant channel that acts as the source</td>
 </tr>
 <tr class="row-odd"><td><cite>explored</cite></td>
-<td><code class="docutils literal"><span class="pre">list</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">list</span></code></td>
 <td>A list of the unimolecular isomers whose reactions have been fully explored</td>
 </tr>
 </tbody>
@@ -107,24 +98,24 @@ no action is taken.</p>
 <dl class="method">
 <dt id="rmgpy.rmg.pdep.PDepNetwork.applyChemicallySignificantEigenvaluesMethod">
 <code class="descname">applyChemicallySignificantEigenvaluesMethod</code><span class="sig-paren">(</span><em>lumpingOrder=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.applyChemicallySignificantEigenvaluesMethod" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the phenomenological rate coefficients <span class="math">\(k(T,P)\)</span> at the
+<dd><p>Compute the phenomenological rate coefficients <span class="math notranslate nohighlight">\(k(T,P)\)</span> at the
 current conditions using the chemically-significant eigenvalues method.
 If a <cite>lumpingOrder</cite> is provided, the algorithm will attempt to lump the
 configurations (given by index) in the order provided, and return a
-reduced set of <span class="math">\(k(T,P)\)</span> values.</p>
+reduced set of <span class="math notranslate nohighlight">\(k(T,P)\)</span> values.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.rmg.pdep.PDepNetwork.applyModifiedStrongCollisionMethod">
 <code class="descname">applyModifiedStrongCollisionMethod</code><span class="sig-paren">(</span><em>efficiencyModel='default'</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.applyModifiedStrongCollisionMethod" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the phenomenological rate coefficients <span class="math">\(k(T,P)\)</span> at the
+<dd><p>Compute the phenomenological rate coefficients <span class="math notranslate nohighlight">\(k(T,P)\)</span> at the
 current conditions using the modified strong collision method.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.rmg.pdep.PDepNetwork.applyReservoirStateMethod">
 <code class="descname">applyReservoirStateMethod</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.applyReservoirStateMethod" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the phenomenological rate coefficients <span class="math">\(k(T,P)\)</span> at the
+<dd><p>Compute the phenomenological rate coefficients <span class="math notranslate nohighlight">\(k(T,P)\)</span> at the
 current conditions using the reservoir state method.</p>
 </dd></dl>
 
@@ -150,7 +141,7 @@ applied to each temperature in the range of interest by interpolation.</p>
 <dd><p>Return an array containing the fraction of each isomer and reactant
 channel present at equilibrium, as determined from the Gibbs free
 energy and using the concentration equilibrium constant
-<span class="math">\(K_\mathrm{c}\)</span>. These values are ratios, and the absolute
+<span class="math notranslate nohighlight">\(K_\mathrm{c}\)</span>. These values are ratios, and the absolute
 magnitude is not guaranteed; however, the implementation scales the
 elements of the array so that they sum to unity.</p>
 </dd></dl>
@@ -159,7 +150,7 @@ elements of the array so that they sum to unity.</p>
 <dt id="rmgpy.rmg.pdep.PDepNetwork.calculateMicrocanonicalRates">
 <code class="descname">calculateMicrocanonicalRates</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.calculateMicrocanonicalRates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate and return arrays containing the microcanonical rate
-coefficients <span class="math">\(k(E)\)</span> for the isomerization, dissociation, and
+coefficients <span class="math notranslate nohighlight">\(k(E)\)</span> for the isomerization, dissociation, and
 association path reactions in the network.</p>
 </dd></dl>
 
@@ -194,9 +185,9 @@ keys and the fraction of the total leak coefficient as the values.</p>
 <dl class="method">
 <dt id="rmgpy.rmg.pdep.PDepNetwork.getLeakCoefficient">
 <code class="descname">getLeakCoefficient</code><span class="sig-paren">(</span><em>T</em>, <em>P</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.getLeakCoefficient" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the pressure-dependent rate coefficient <span class="math">\(k(T,P)\)</span> describing
+<dd><p>Return the pressure-dependent rate coefficient <span class="math notranslate nohighlight">\(k(T,P)\)</span> describing
 the total rate of “leak” from this network. This is defined as the sum
-of the <span class="math">\(k(T,P)\)</span> values for all net reactions to nonexplored
+of the <span class="math notranslate nohighlight">\(k(T,P)\)</span> values for all net reactions to nonexplored
 unimolecular isomers.</p>
 </dd></dl>
 
@@ -266,7 +257,7 @@ default.</p>
 <dd><p>Select a suitable list of energies to use for subsequent calculations.
 This is done by finding the minimum and maximum energies on the
 potential energy surface, then adding a multiple of
-<span class="math">\(k_\mathrm{B} T\)</span> onto the maximum energy.</p>
+<span class="math notranslate nohighlight">\(k_\mathrm{B} T\)</span> onto the maximum energy.</p>
 <p>You must specify either the desired grain spacing <cite>grainSize</cite> in J/mol
 or the desired number of grains <cite>Ngrains</cite>, as well as a temperature
 <cite>T</cite> in K to use for the equilibrium calculation. You can specify both
@@ -306,7 +297,7 @@ population profiles for each configuration.</p>
 <dd><p>Directly solve the reduced master equation using a stiff ODE solver.
 Pass the output time points <cite>tlist</cite> in s and the initial total
 populations <cite>x0</cite>. Be sure to run one of the methods for generating
-<span class="math">\(k(T,P)\)</span> values before calling this method.
+<span class="math notranslate nohighlight">\(k(T,P)\)</span> values before calling this method.
 Returns the times in s, population distributions for each isomer, and total
 population profiles for each configuration.</p>
 </dd></dl>
@@ -314,7 +305,7 @@ population profiles for each configuration.</p>
 <dl class="method">
 <dt id="rmgpy.rmg.pdep.PDepNetwork.update">
 <code class="descname">update</code><span class="sig-paren">(</span><em>reactionModel</em>, <em>pdepSettings</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.update" title="Permalink to this definition">¶</a></dt>
-<dd><p>Regenerate the <span class="math">\(k(T,P)\)</span> values for this partial network if the
+<dd><p>Regenerate the <span class="math notranslate nohighlight">\(k(T,P)\)</span> values for this partial network if the
 network is marked as invalid.</p>
 </dd></dl>
 
@@ -380,12 +371,14 @@ based on which species are in the model core.</p>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -411,15 +404,15 @@ based on which species are in the model core.</p>
           <a href="output.html" title="Saving RMG output"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Reaction mechanism generation (<code class="docutils literal"><span class="pre">rmgpy.rmg</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Reaction mechanism generation (<code class="docutils literal notranslate"><span class="pre">rmgpy.rmg</span></code>)</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>9.2. Model Comparison &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,7 +43,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="generateChemkinHTML.html" title="9.1. HTML Chemkin Output"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User’s Guide</a> &#187;</li>
@@ -67,22 +58,22 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="model-comparison">
 <span id="diffmodels"></span><h1>9.2. Model Comparison<a class="headerlink" href="#model-comparison" title="Permalink to this headline">¶</a></h1>
-<p>The script <code class="docutils literal"><span class="pre">diffModels</span></code> compares two RMG generated models to determine their differences.
+<p>The script <code class="docutils literal notranslate"><span class="pre">diffModels</span></code> compares two RMG generated models to determine their differences.
 To use this method you will need the chemkin and species dictionary outputs from RMG. These can be found in the
-<code class="docutils literal"><span class="pre">chemkin</span></code> folder from the directory of the <code class="docutils literal"><span class="pre">input.py</span></code> file used for the RMG run.  The syntax is as follows:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">diffModels</span><span class="o">.</span><span class="n">py</span> <span class="n">CHEMKIN1</span> <span class="n">SPECIESDICT1</span> <span class="o">--</span><span class="n">thermo1</span> <span class="n">THERMO1</span> <span class="n">CHEMKIN2</span> <span class="n">SPECIESDICT2</span> <span class="o">--</span><span class="n">thermo2</span> <span class="n">THERMO2</span> <span class="o">--</span><span class="n">web</span>
+<code class="docutils literal notranslate"><span class="pre">chemkin</span></code> folder from the directory of the <code class="docutils literal notranslate"><span class="pre">input.py</span></code> file used for the RMG run.  The syntax is as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">diffModels</span><span class="o">.</span><span class="n">py</span> <span class="n">CHEMKIN1</span> <span class="n">SPECIESDICT1</span> <span class="o">--</span><span class="n">thermo1</span> <span class="n">THERMO1</span> <span class="n">CHEMKIN2</span> <span class="n">SPECIESDICT2</span> <span class="o">--</span><span class="n">thermo2</span> <span class="n">THERMO2</span> <span class="o">--</span><span class="n">web</span>
 </pre></div>
 </div>
-<p>where <code class="docutils literal"><span class="pre">CHEMKIN</span></code> represents the chemkin input file (<code class="docutils literal"><span class="pre">chem00XX.inp</span></code>), <code class="docutils literal"><span class="pre">SPECIESDICT</span></code>
-is the species diectionary from RMG (<code class="docutils literal"><span class="pre">species_dictionary.txt</span></code>) and  the optional <code class="docutils literal"><span class="pre">--thermo</span></code> flag can be used
-to add separate thermo CHEMKIN files <code class="docutils literal"><span class="pre">THERMO</span></code>.  The numbers (<code class="docutils literal"><span class="pre">1</span></code> and <code class="docutils literal"><span class="pre">2</span></code>) represent
-which model to each file is from.  The optional <code class="docutils literal"><span class="pre">--web</span></code> flag is used for running this script through the
+<p>where <code class="docutils literal notranslate"><span class="pre">CHEMKIN</span></code> represents the chemkin input file (<code class="docutils literal notranslate"><span class="pre">chem00XX.inp</span></code>), <code class="docutils literal notranslate"><span class="pre">SPECIESDICT</span></code>
+is the species diectionary from RMG (<code class="docutils literal notranslate"><span class="pre">species_dictionary.txt</span></code>) and  the optional <code class="docutils literal notranslate"><span class="pre">--thermo</span></code> flag can be used
+to add separate thermo CHEMKIN files <code class="docutils literal notranslate"><span class="pre">THERMO</span></code>.  The numbers (<code class="docutils literal notranslate"><span class="pre">1</span></code> and <code class="docutils literal notranslate"><span class="pre">2</span></code>) represent
+which model to each file is from.  The optional <code class="docutils literal notranslate"><span class="pre">--web</span></code> flag is used for running this script through the
 RMG-website.</p>
 <p>Running the script without any optional flags looks like:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">diffModels</span><span class="o">.</span><span class="n">py</span> <span class="n">CHEMKIN1</span> <span class="n">SPECIESDICT1</span> <span class="n">CHEMKIN2</span> <span class="n">SPECIESDICT2</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">diffModels</span><span class="o">.</span><span class="n">py</span> <span class="n">CHEMKIN1</span> <span class="n">SPECIESDICT1</span> <span class="n">CHEMKIN2</span> <span class="n">SPECIESDICT2</span>
 </pre></div>
 </div>
-<p>Output of each comparison is printed, and the method then produces a html file (<code class="docutils literal"><span class="pre">diff.html</span></code>)
+<p>Output of each comparison is printed, and the method then produces a html file (<code class="docutils literal notranslate"><span class="pre">diff.html</span></code>)
 for easy viewing of the comparison.</p>
 <p>This method is also available to use with a web browser from the RMG website: <a class="reference external" href="http://rmg.mit.edu/tools/compare">Model Comparison Tool</a>.</p>
 </div>
@@ -136,12 +127,14 @@ for easy viewing of the comparison.</p>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -167,7 +160,7 @@ for easy viewing of the comparison.</p>
           <a href="generateChemkinHTML.html" title="9.1. HTML Chemkin Output"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User’s Guide</a> &#187;</li>
@@ -176,7 +169,7 @@ for easy viewing of the comparison.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>rmgpy.molecule.graph.Vertex &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,10 +43,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="index.html" title="Molecular representations (rmgpy.molecule)"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -86,23 +77,23 @@ useful for accelerating isomorphism searches, as proposed by
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><cite>connectivity1</cite></td>
-<td><code class="docutils literal"><span class="pre">int</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">int</span></code></td>
 <td>The number of nearest neighbors</td>
 </tr>
 <tr class="row-odd"><td><cite>connectivity2</cite></td>
-<td><code class="docutils literal"><span class="pre">int</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">int</span></code></td>
 <td>The sum of the neighbors’ <cite>connectivity1</cite> values</td>
 </tr>
 <tr class="row-even"><td><cite>connectivity3</cite></td>
-<td><code class="docutils literal"><span class="pre">int</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">int</span></code></td>
 <td>The sum of the neighbors’ <cite>connectivity2</cite> values</td>
 </tr>
 <tr class="row-odd"><td><cite>edges</cite></td>
-<td><code class="docutils literal"><span class="pre">dict</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">dict</span></code></td>
 <td>Dictionary of edges with keys being neighboring vertices</td>
 </tr>
 <tr class="row-even"><td><cite>sortingLabel</cite></td>
-<td><code class="docutils literal"><span class="pre">int</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">int</span></code></td>
 <td>An integer label used to sort the vertices</td>
 </tr>
 </tbody>
@@ -130,7 +121,7 @@ useful for accelerating isomorphism searches, as proposed by
 <code class="descname">copy</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; Vertex<a class="headerlink" href="#rmgpy.molecule.graph.Vertex.copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a copy of the vertex. The default implementation assumes that no
 semantic information is associated with each vertex, and therefore
-simply returns a new <code class="xref py py-class docutils literal"><span class="pre">Vertex</span></code> object.</p>
+simply returns a new <a class="reference internal" href="#rmgpy.molecule.graph.Vertex" title="rmgpy.molecule.graph.Vertex"><code class="xref py py-class docutils literal notranslate"><span class="pre">Vertex</span></code></a> object.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -142,8 +133,8 @@ simply returns a new <code class="xref py py-class docutils literal"><span class
 <dl class="method">
 <dt id="rmgpy.molecule.graph.Vertex.equivalent">
 <code class="descname">equivalent</code><span class="sig-paren">(</span><em>self</em>, <em>Vertex other</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.graph.Vertex.equivalent" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="xref py py-data docutils literal"><span class="pre">True</span></code> if two vertices <cite>self</cite> and <cite>other</cite> are semantically
-equivalent, or <code class="xref py py-data docutils literal"><span class="pre">False</span></code> if not. You should reimplement this
+<dd><p>Return <code class="xref py py-data docutils literal notranslate"><span class="pre">True</span></code> if two vertices <cite>self</cite> and <cite>other</cite> are semantically
+equivalent, or <code class="xref py py-data docutils literal notranslate"><span class="pre">False</span></code> if not. You should reimplement this
 function in a derived class if your vertices have semantic information.</p>
 </dd></dl>
 
@@ -156,8 +147,8 @@ function in a derived class if your vertices have semantic information.</p>
 <dl class="method">
 <dt id="rmgpy.molecule.graph.Vertex.isSpecificCaseOf">
 <code class="descname">isSpecificCaseOf</code><span class="sig-paren">(</span><em>self</em>, <em>Vertex other</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.graph.Vertex.isSpecificCaseOf" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if <cite>self</cite> is semantically more specific than <cite>other</cite>,
-or <code class="docutils literal"><span class="pre">False</span></code> if not. You should reimplement this function in a derived
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>self</cite> is semantically more specific than <cite>other</cite>,
+or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not. You should reimplement this function in a derived
 class if your edges have semantic information.</p>
 </dd></dl>
 
@@ -220,7 +211,7 @@ class if your edges have semantic information.</p>
         <div class="menuitem">
   <h4>Previous topic</h4>
   <p class="topless"><a href="index.html"
-                        title="previous chapter">Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a></p>
+                        title="previous chapter">Molecular representations (<code class="docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="edge.html"
                         title="next chapter">rmgpy.molecule.graph.Edge</a></p>
@@ -238,12 +229,14 @@ class if your edges have semantic information.</p>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -269,15 +262,15 @@ class if your edges have semantic information.</p>
           <a href="index.html" title="Molecular representations (rmgpy.molecule)"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Molecular representations (<code class="docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>9.5. Simulation and Sensitivity Analysis &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,7 +43,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="generateReactions.html" title="9.4. Generate Reactions"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User’s Guide</a> &#187;</li>
@@ -72,14 +63,14 @@ some dependency restrictions. (See <a class="reference internal" href="../instal
 Sensitivity analysis or a simulation (without sensitivity) can be conducted in a standalone system for an existing
 kinetics model in Chemkin format.</p>
 <p>To run a simulation and/or sensitivity analysis, use the simulate module in RMG-Py/scripts:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">simulate</span><span class="o">.</span><span class="n">py</span> <span class="nb">input</span><span class="o">.</span><span class="n">py</span> <span class="n">chem</span><span class="o">.</span><span class="n">inp</span> <span class="n">species_dictionary</span><span class="o">.</span><span class="n">txt</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">simulate</span><span class="o">.</span><span class="n">py</span> <span class="nb">input</span><span class="o">.</span><span class="n">py</span> <span class="n">chem</span><span class="o">.</span><span class="n">inp</span> <span class="n">species_dictionary</span><span class="o">.</span><span class="n">txt</span>
 </pre></div>
 </div>
-<p>where <code class="docutils literal"><span class="pre">chem.inp</span></code> is the CHEMKIN file and the <code class="docutils literal"><span class="pre">species_dictionary.txt</span></code> contains the dictionary of
-species associated with the CHEMKIN file.  <code class="docutils literal"><span class="pre">input.py</span></code> is an input file similar to one used for an RMG job but
-does not generate a RMG job.  See the following <code class="docutils literal"><span class="pre">input.py</span></code> example file found under the
-<code class="docutils literal"><span class="pre">$RMGPy/examples/sensitivity/input.py</span></code> folder</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># Data sources</span>
+<p>where <code class="docutils literal notranslate"><span class="pre">chem.inp</span></code> is the CHEMKIN file and the <code class="docutils literal notranslate"><span class="pre">species_dictionary.txt</span></code> contains the dictionary of
+species associated with the CHEMKIN file.  <code class="docutils literal notranslate"><span class="pre">input.py</span></code> is an input file similar to one used for an RMG job but
+does not generate a RMG job.  See the following <code class="docutils literal notranslate"><span class="pre">input.py</span></code> example file found under the
+<code class="docutils literal notranslate"><span class="pre">$RMGPy/examples/sensitivity/input.py</span></code> folder</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Data sources</span>
 <span class="n">database</span><span class="p">(</span>
     <span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;primaryThermoLibrary&#39;</span><span class="p">],</span>
     <span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[],</span>
@@ -140,14 +131,14 @@ does not generate a RMG job.  See the following <code class="docutils literal"><
 </pre></div>
 </div>
 <p>The names of species named in the input file must coincide with the names specified in the CHEMKIN file.</p>
-<p>Other options that can be specified for the <code class="docutils literal"><span class="pre">simulate.py</span></code> scripts are:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">dlim</span>      <span class="n">Turn</span> <span class="n">off</span> <span class="n">diffusion</span><span class="o">-</span><span class="n">limited</span> <span class="n">rates</span> <span class="k">for</span> <span class="n">LiquidReactor</span>
+<p>Other options that can be specified for the <code class="docutils literal notranslate"><span class="pre">simulate.py</span></code> scripts are:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">dlim</span>      <span class="n">Turn</span> <span class="n">off</span> <span class="n">diffusion</span><span class="o">-</span><span class="n">limited</span> <span class="n">rates</span> <span class="k">for</span> <span class="n">LiquidReactor</span>
 <span class="o">-</span><span class="n">f</span><span class="p">,</span> <span class="o">--</span><span class="n">foreign</span>  <span class="n">Not</span> <span class="n">an</span> <span class="n">RMG</span> <span class="n">generated</span> <span class="n">Chemkin</span> <span class="n">file</span> <span class="p">(</span><span class="n">will</span> <span class="n">be</span> <span class="n">checked</span> <span class="k">for</span> <span class="n">duplicates</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Sensitivity analysis is conducted for the list of species given for the <code class="docutils literal"><span class="pre">sensitivity</span></code> argument in the input file.
+<p>Sensitivity analysis is conducted for the list of species given for the <code class="docutils literal notranslate"><span class="pre">sensitivity</span></code> argument in the input file.
 The normalized concentration sensitivities with respect to the reaction rate coefficients dln(C_i)/dln(k_j) are saved to a csv file
-with the file name <code class="docutils literal"><span class="pre">sensitivity_1_SPC_1.csv</span></code> with the first index value indicating the reactor system and the second naming the index of the species
+with the file name <code class="docutils literal notranslate"><span class="pre">sensitivity_1_SPC_1.csv</span></code> with the first index value indicating the reactor system and the second naming the index of the species
 the sensitivity analysis is conducted for.  Sensitivities to thermo of individual species is also saved as semi normalized sensitivities
 dln(C_i)/d(G_j) where the units are given in 1/(kcal mol-1). The sensitivityThreshold is set to some value so that only
 sensitivities for dln(C_i)/dln(k_j) &gt; sensitivityThreshold  or dlnC_i/d(G_j) &gt; sensitivityThreshold are saved to this file.</p>
@@ -202,12 +193,14 @@ sensitivities for dln(C_i)/dln(k_j) &gt; sensitivityThreshold  or dlnC_i/d(G_j) 
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -233,7 +226,7 @@ sensitivities for dln(C_i)/dln(k_j) &gt; sensitivityThreshold  or dlnC_i/d(G_j) 
           <a href="generateReactions.html" title="9.4. Generate Reactions"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User’s Guide</a> &#187;</li>
@@ -242,7 +235,7 @@ sensitivities for dln(C_i)/dln(k_j) &gt; sensitivityThreshold  or dlnC_i/d(G_j) 
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

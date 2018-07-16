@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>rmgpy.molecule.Atom &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,10 +43,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="recipe.html" title="Reaction recipes"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -68,7 +59,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.molecule.Atom<a class="headerlink" href="#rmgpy-molecule-atom" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.molecule.Atom">
-<em class="property">class </em><code class="descclassname">rmgpy.molecule.</code><code class="descname">Atom</code><span class="sig-paren">(</span><em>element=None</em>, <em>radicalElectrons=0</em>, <em>charge=0</em>, <em>label=''</em>, <em>lonePairs=-100</em>, <em>coords=numpy.array([])</em>, <em>id=-1</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.molecule.</code><code class="descname">Atom</code><span class="sig-paren">(</span><em>element=None</em>, <em>radicalElectrons=0</em>, <em>charge=0</em>, <em>label=''</em>, <em>lonePairs=-100</em>, <em>coords=numpy.array([])</em>, <em>id=-1</em>, <em>props=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom" title="Permalink to this definition">¶</a></dt>
 <dd><p>An atom. The attributes are:</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -84,58 +75,62 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><cite>atomType</cite></td>
-<td><code class="xref py py-class docutils literal"><span class="pre">AtomType</span></code></td>
+<td><a class="reference internal" href="atomtype.html#rmgpy.molecule.AtomType" title="rmgpy.molecule.AtomType"><code class="xref py py-class docutils literal notranslate"><span class="pre">AtomType</span></code></a></td>
 <td>The <a class="reference internal" href="atomtype.html#atom-types"><span class="std std-ref">atom type</span></a></td>
 </tr>
 <tr class="row-odd"><td><cite>element</cite></td>
-<td><code class="xref py py-class docutils literal"><span class="pre">Element</span></code></td>
+<td><a class="reference internal" href="element.html#rmgpy.molecule.Element" title="rmgpy.molecule.Element"><code class="xref py py-class docutils literal notranslate"><span class="pre">Element</span></code></a></td>
 <td>The chemical element the atom represents</td>
 </tr>
 <tr class="row-even"><td><cite>radicalElectrons</cite></td>
-<td><code class="docutils literal"><span class="pre">short</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">short</span></code></td>
 <td>The number of radical electrons</td>
 </tr>
 <tr class="row-odd"><td><cite>charge</cite></td>
-<td><code class="docutils literal"><span class="pre">short</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">short</span></code></td>
 <td>The formal charge of the atom</td>
 </tr>
 <tr class="row-even"><td><cite>label</cite></td>
-<td><code class="docutils literal"><span class="pre">str</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">str</span></code></td>
 <td>A string label that can be used to tag individual atoms</td>
 </tr>
 <tr class="row-odd"><td><cite>coords</cite></td>
-<td><code class="docutils literal"><span class="pre">numpy</span> <span class="pre">array</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">numpy</span> <span class="pre">array</span></code></td>
 <td>The (x,y,z) coordinates in Angstrom</td>
 </tr>
 <tr class="row-even"><td><cite>lonePairs</cite></td>
-<td><code class="docutils literal"><span class="pre">short</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">short</span></code></td>
 <td>The number of lone electron pairs</td>
 </tr>
 <tr class="row-odd"><td><cite>id</cite></td>
-<td><code class="docutils literal"><span class="pre">int</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">int</span></code></td>
 <td>Number assignment for atom tracking purposes</td>
 </tr>
 <tr class="row-even"><td><cite>bonds</cite></td>
-<td><code class="docutils literal"><span class="pre">dict</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">dict</span></code></td>
 <td>Dictionary of bond objects with keys being neighboring atoms</td>
 </tr>
-<tr class="row-odd"><td><cite>mass</cite></td>
-<td><code class="docutils literal"><span class="pre">int</span></code></td>
+<tr class="row-odd"><td><cite>props</cite></td>
+<td><code class="docutils literal notranslate"><span class="pre">dict</span></code></td>
+<td>Dictionary for storing additional atom properties</td>
+</tr>
+<tr class="row-even"><td><cite>mass</cite></td>
+<td><code class="docutils literal notranslate"><span class="pre">int</span></code></td>
 <td>atomic mass of element (read only)</td>
 </tr>
-<tr class="row-even"><td><cite>number</cite></td>
-<td><code class="docutils literal"><span class="pre">int</span></code></td>
+<tr class="row-odd"><td><cite>number</cite></td>
+<td><code class="docutils literal notranslate"><span class="pre">int</span></code></td>
 <td>atomic number of element (read only)</td>
 </tr>
-<tr class="row-odd"><td><cite>symbol</cite></td>
-<td><code class="docutils literal"><span class="pre">str</span></code></td>
+<tr class="row-even"><td><cite>symbol</cite></td>
+<td><code class="docutils literal notranslate"><span class="pre">str</span></code></td>
 <td>atomic symbol of element (read only)</td>
 </tr>
 </tbody>
 </table>
-<p>Additionally, the <code class="docutils literal"><span class="pre">mass</span></code>, <code class="docutils literal"><span class="pre">number</span></code>, and <code class="docutils literal"><span class="pre">symbol</span></code> attributes of the
+<p>Additionally, the <code class="docutils literal notranslate"><span class="pre">mass</span></code>, <code class="docutils literal notranslate"><span class="pre">number</span></code>, and <code class="docutils literal notranslate"><span class="pre">symbol</span></code> attributes of the
 atom’s element can be read (but not written) directly from the atom object,
-e.g. <code class="docutils literal"><span class="pre">atom.symbol</span></code> instead of <code class="docutils literal"><span class="pre">atom.element.symbol</span></code>.</p>
+e.g. <code class="docutils literal notranslate"><span class="pre">atom.symbol</span></code> instead of <code class="docutils literal notranslate"><span class="pre">atom.element.symbol</span></code>.</p>
 <dl class="method">
 <dt id="rmgpy.molecule.Atom.applyAction">
 <code class="descname">applyAction</code><span class="sig-paren">(</span><em>self</em>, <em>action</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom.applyAction" title="Permalink to this definition">¶</a></dt>
@@ -216,17 +211,12 @@ where <cite>radical</cite> specifies the number of radical electrons to remove.<
 <dl class="method">
 <dt id="rmgpy.molecule.Atom.equivalent">
 <code class="descname">equivalent</code><span class="sig-paren">(</span><em>self</em>, <em>Vertex other</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Atom.equivalent" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if <cite>other</cite> is indistinguishable from this atom, or
-<code class="docutils literal"><span class="pre">False</span></code> otherwise. If <cite>other</cite> is an <code class="xref py py-class docutils literal"><span class="pre">Atom</span></code> object, then all
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>other</cite> is indistinguishable from this atom, or
+<code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise. If <cite>other</cite> is an <a class="reference internal" href="#rmgpy.molecule.Atom" title="rmgpy.molecule.Atom"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atom</span></code></a> object, then all
 attributes except <cite>label</cite> and ‘ID’ must match exactly. If <cite>other</cite> is an
-<code class="xref py py-class docutils literal"><span class="pre">GroupAtom</span></code> object, then the atom must match any of the
+<a class="reference internal" href="groupatom.html#rmgpy.molecule.GroupAtom" title="rmgpy.molecule.GroupAtom"><code class="xref py py-class docutils literal notranslate"><span class="pre">GroupAtom</span></code></a> object, then the atom must match any of the
 combinations in the atom pattern.</p>
 </dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.molecule.Atom.getAtomConnectivityValue">
-<code class="descname">getAtomConnectivityValue</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom.getAtomConnectivityValue" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Atom.getBondOrdersForAtom">
@@ -239,9 +229,12 @@ than three <cite>B</cite> bonds, the order for  each is 3/2.0</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.molecule.Atom.getDescriptor">
-<code class="descname">getDescriptor</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom.getDescriptor" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="rmgpy.molecule.Atom.get_descriptor">
+<code class="descname">get_descriptor</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom.get_descriptor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a tuple used for sorting atoms.
+Currently uses atomic number, connectivity value,
+radical electrons, lone pairs, and charge</p>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.Atom.id">
@@ -271,80 +264,87 @@ where <cite>radical</cite> specifies the number of radical electrons to add.</p>
 <dl class="method">
 <dt id="rmgpy.molecule.Atom.isCarbon">
 <code class="descname">isCarbon</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Atom.isCarbon" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the atom represents a carbon atom or <code class="docutils literal"><span class="pre">False</span></code> if
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represents a carbon atom or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Atom.isChlorine">
 <code class="descname">isChlorine</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Atom.isChlorine" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the atom represents a chlorine atom or <code class="docutils literal"><span class="pre">False</span></code> if
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represents a chlorine atom or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Atom.isFluorine">
 <code class="descname">isFluorine</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Atom.isFluorine" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the atom represents a fluorine atom or <code class="docutils literal"><span class="pre">False</span></code> if
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represents a fluorine atom or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Atom.isHydrogen">
 <code class="descname">isHydrogen</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Atom.isHydrogen" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the atom represents a hydrogen atom or <code class="docutils literal"><span class="pre">False</span></code> if
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represents a hydrogen atom or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Atom.isIodine">
 <code class="descname">isIodine</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Atom.isIodine" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the atom represents an iodine atom or <code class="docutils literal"><span class="pre">False</span></code> if
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represents an iodine atom or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
 not.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Atom.isNOS">
+<code class="descname">isNOS</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Atom.isNOS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represent either nitrogen, sulfur, or oxygen
+<code class="docutils literal notranslate"><span class="pre">False</span></code> if it does not.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Atom.isNitrogen">
 <code class="descname">isNitrogen</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom.isNitrogen" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the atom represents a nitrogen atom or <code class="docutils literal"><span class="pre">False</span></code> if
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represents a nitrogen atom or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Atom.isNonHydrogen">
 <code class="descname">isNonHydrogen</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Atom.isNonHydrogen" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the atom does not represent a hydrogen atom or
-<code class="docutils literal"><span class="pre">False</span></code> if it does.</p>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom does not represent a hydrogen atom or
+<code class="docutils literal notranslate"><span class="pre">False</span></code> if it does.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Atom.isOxygen">
 <code class="descname">isOxygen</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Atom.isOxygen" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the atom represents an oxygen atom or <code class="docutils literal"><span class="pre">False</span></code> if
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represents an oxygen atom or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Atom.isSilicon">
 <code class="descname">isSilicon</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Atom.isSilicon" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the atom represents a silicon atom or <code class="docutils literal"><span class="pre">False</span></code> if
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represents a silicon atom or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Atom.isSpecificCaseOf">
 <code class="descname">isSpecificCaseOf</code><span class="sig-paren">(</span><em>self</em>, <em>Vertex other</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Atom.isSpecificCaseOf" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if <cite>self</cite> is a specific case of <cite>other</cite>, or <code class="docutils literal"><span class="pre">False</span></code>
-otherwise. If <cite>other</cite> is an <code class="xref py py-class docutils literal"><span class="pre">Atom</span></code> object, then this is the same
-as the <code class="xref py py-meth docutils literal"><span class="pre">equivalent()</span></code> method. If <cite>other</cite> is an
-<code class="xref py py-class docutils literal"><span class="pre">GroupAtom</span></code> object, then the atom must match or be more
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>self</cite> is a specific case of <cite>other</cite>, or <code class="docutils literal notranslate"><span class="pre">False</span></code>
+otherwise. If <cite>other</cite> is an <a class="reference internal" href="#rmgpy.molecule.Atom" title="rmgpy.molecule.Atom"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atom</span></code></a> object, then this is the same
+as the <a class="reference internal" href="#rmgpy.molecule.Atom.equivalent" title="rmgpy.molecule.Atom.equivalent"><code class="xref py py-meth docutils literal notranslate"><span class="pre">equivalent()</span></code></a> method. If <cite>other</cite> is an
+<a class="reference internal" href="groupatom.html#rmgpy.molecule.GroupAtom" title="rmgpy.molecule.GroupAtom"><code class="xref py py-class docutils literal notranslate"><span class="pre">GroupAtom</span></code></a> object, then the atom must match or be more
 specific than any of the combinations in the atom pattern.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Atom.isSulfur">
 <code class="descname">isSulfur</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Atom.isSulfur" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal"><span class="pre">True</span></code> if the atom represents a sulfur atom or <code class="docutils literal"><span class="pre">False</span></code> if
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represents a sulfur atom or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
 
@@ -364,6 +364,12 @@ not.</p>
 <dt id="rmgpy.molecule.Atom.mapping">
 <code class="descname">mapping</code><a class="headerlink" href="#rmgpy.molecule.Atom.mapping" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>mapping</em> – rmgpy.molecule.graph.Vertex</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.Atom.props">
+<code class="descname">props</code><a class="headerlink" href="#rmgpy.molecule.Atom.props" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>props</em> – dict</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -456,12 +462,14 @@ number and types of bonds, radicals, and lone pairs.</p>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -487,15 +495,15 @@ number and types of bonds, radicals, and lone pairs.</p>
           <a href="recipe.html" title="Reaction recipes"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Molecular representations (<code class="docutils literal"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Molecular representations (<code class="docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

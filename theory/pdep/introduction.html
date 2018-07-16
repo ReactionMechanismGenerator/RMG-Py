@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>1. Introduction &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,7 +43,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="index.html" title="Pressure-Dependence Theory Guide"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >Theory Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Pressure-Dependence Theory Guide</a> &#187;</li> 
@@ -70,39 +61,39 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h2>1.1. Unimolecular Reactions<a class="headerlink" href="#unimolecular-reactions" title="Permalink to this headline">¶</a></h2>
 <p>Unimolecular reactions are those that involve a single reactant or product
 molecule, the union of isomerization and dissociation/association reactions:</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[\begin{split}\ce{A &lt;=&gt; B} &amp; \hspace{40pt} \text{isomerization} \\
 \ce{A &lt;=&gt; B + C} &amp; \hspace{40pt} \text{dissociation/association}\end{split}\]</div>
 <p>Gas-phase chemical reactions occur as the result of bimolecular collisions
 between two reactant molecules. This presents a problem when there is only one
 participating reactant molecule! The conclusion is that the above reactions
 cannot be elementary as written; another step must be involved.</p>
-<p>For a unimolecular reaction to proceed, the reactant molecule <span class="math">\(\ce{A}\)</span>
+<p>For a unimolecular reaction to proceed, the reactant molecule <span class="math notranslate nohighlight">\(\ce{A}\)</span>
 must first be excited to an energy that exceeds the barrier for reaction. A
 molecule that is sufficiently excited to react is called an <em>activated
-species</em> and often labeled with an asterisk <span class="math">\(\ce{A}^\ast\)</span>. If we
+species</em> and often labeled with an asterisk <span class="math notranslate nohighlight">\(\ce{A}^\ast\)</span>. If we
 replace the stable species with the activated species in the reactions above,
 the reactions become elementary again:</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[\begin{split}\ce{A}^\ast &amp; \ce{&lt;=&gt; B}^\ast \\
 \ce{A}^\ast &amp; \ce{&lt;=&gt; B + C}\end{split}\]</div>
-<p>There are a number of ways that an activated species <span class="math">\(\ce{A}^\ast\)</span> can
+<p>There are a number of ways that an activated species <span class="math notranslate nohighlight">\(\ce{A}^\ast\)</span> can
 be produced:</p>
 <ul>
-<li><p class="first"><strong>Chemical activation</strong>. <span class="math">\(\ce{A}^\ast\)</span> is produced as the adduct of
+<li><p class="first"><strong>Chemical activation</strong>. <span class="math notranslate nohighlight">\(\ce{A}^\ast\)</span> is produced as the adduct of
 an association reaction:</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[\ce{B + C &lt;=&gt; A}^\ast\]</div>
 </li>
-<li><p class="first"><strong>Thermal activation</strong>. <span class="math">\(\ce{A}^\ast\)</span> is produced via transfer of
-energy from an otherwise inert species <span class="math">\(\ce{M}\)</span> via bimolecular
+<li><p class="first"><strong>Thermal activation</strong>. <span class="math notranslate nohighlight">\(\ce{A}^\ast\)</span> is produced via transfer of
+energy from an otherwise inert species <span class="math notranslate nohighlight">\(\ce{M}\)</span> via bimolecular
 collision:</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[\ce{A + M &lt;=&gt; A}^\ast \ce{\mbox{} + M}\]</div>
 </li>
-<li><p class="first"><strong>Photoactivation</strong>. <span class="math">\(\ce{A}^\ast\)</span> is produced as a result of
+<li><p class="first"><strong>Photoactivation</strong>. <span class="math notranslate nohighlight">\(\ce{A}^\ast\)</span> is produced as a result of
 absorption of a photon:</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[\ce{A} + h \nu \ce{-&gt; A}^\ast\]</div>
 </li>
 </ul>
@@ -120,7 +111,7 @@ before collisional stabilization can occur.</p>
 <p>The onset of the pressure-dependent regime varies with both temperature and
 molecular size. The figure below shows the approximate pressure at which
 pressure-dependence becomes important as a function of temperature and
-molecular size. The parameter <span class="math">\(m \equiv N_\mathrm{vib} + \frac{1}{2} N_\mathrm{rot}\)</span>
+molecular size. The parameter <span class="math notranslate nohighlight">\(m \equiv N_\mathrm{vib} + \frac{1}{2} N_\mathrm{rot}\)</span>
 represents a count of the internal degrees of freedom (vibrations and hindered
 rotors, respectively). The ranges of the x-axis and y-axis suggest that
 pressure dependence is in fact important over a wide regime of conditions of
@@ -130,7 +121,7 @@ pyrolysis and combustion <a class="reference internal" href="#wong2003" id="id1"
 <a class="reference internal image-reference" href="../../_images/switchover_pressure.png"><img alt="../../_images/switchover_pressure.png" src="../../_images/switchover_pressure.png" style="width: 67%;" /></a>
 <p class="caption"><span class="caption-text">Plot of the switchover pressure – indicating the onset of pressure
 dependence – as a function of temperature and molecular size. The
-value <span class="math">\(m \equiv N_\mathrm{vib} + \frac{1}{2} N_\mathrm{rot}\)</span>
+value <span class="math notranslate nohighlight">\(m \equiv N_\mathrm{vib} + \frac{1}{2} N_\mathrm{rot}\)</span>
 represents a count of the internal degrees of freedom. Over a wide
 variety of conditions of practical interest, even very large
 molecules exhibit significant pressure dependence. Figure adapted from
@@ -376,12 +367,14 @@ p. 2438-2444 (1973).
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -407,7 +400,7 @@ p. 2438-2444 (1973).
           <a href="index.html" title="Pressure-Dependence Theory Guide"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >Theory Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" >Pressure-Dependence Theory Guide</a> &#187;</li> 
@@ -415,7 +408,7 @@ p. 2438-2444 (1973).
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

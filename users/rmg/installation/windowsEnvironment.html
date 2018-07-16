@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>3.1.3. Setting up Windows Environment Variables for RMG &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,7 +43,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="anacondaUserWindows.html" title="3.1.2. Binary Installation Using Anaconda for Windows"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User’s Guide</a> &#187;</li>
@@ -69,7 +60,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <span id="windowsenvironment"></span><h1>3.1.3. Setting up Windows Environment Variables for RMG<a class="headerlink" href="#setting-up-windows-environment-variables-for-rmg" title="Permalink to this headline">¶</a></h1>
 <p>Setting environment variables in Windows allows for easier shortcutting and usage of RMG scripts and packages.</p>
 <div class="section" id="setting-the-rmgpy-variable">
-<h2>3.1.3.1. Setting the <code class="docutils literal"><span class="pre">RMGPy</span></code> variable<a class="headerlink" href="#setting-the-rmgpy-variable" title="Permalink to this headline">¶</a></h2>
+<h2>3.1.3.1. Setting the <code class="docutils literal notranslate"><span class="pre">RMGPy</span></code> variable<a class="headerlink" href="#setting-the-rmgpy-variable" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li>If you have a search bar available in your start menu, search for “environment variables” and select “Edit environment variables for your account”.  Alternatively, navigate to this settings window by first going to “Control Panel &gt; System”, then clicking “Advanced system settings”.</li>
 </ul>
@@ -83,18 +74,18 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </ul>
 <img alt="../../../_images/EnvironmentVariables.png" class="align-center" src="../../../_images/EnvironmentVariables.png" />
 <ul>
-<li><p class="first">Set a new variable with the name <code class="docutils literal"><span class="pre">RMGPy</span></code> with the appropriate value directed at your RMG path.</p>
+<li><p class="first">Set a new variable with the name <code class="docutils literal notranslate"><span class="pre">RMGPy</span></code> with the appropriate value directed at your RMG path.</p>
 <p>If you installed the binary version of RMG, the environment value should be set to:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">C</span><span class="p">:</span>\<span class="n">Anaconda</span>\<span class="n">envs</span>\<span class="n">rmg_env</span>\<span class="n">Scripts</span>\
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">C</span><span class="p">:</span>\<span class="n">Anaconda</span>\<span class="n">envs</span>\<span class="n">rmg_env</span>\<span class="n">Scripts</span>\
 </pre></div>
 </div>
-<p>where <code class="docutils literal"><span class="pre">C:\Anaconda</span></code> can be replaced by wherever your Anaconda was installed.</p>
+<p>where <code class="docutils literal notranslate"><span class="pre">C:\Anaconda</span></code> can be replaced by wherever your Anaconda was installed.</p>
 <p>Your screen might look like this:</p>
 <blockquote>
 <div><img alt="../../../_images/NewVariable.png" class="align-center" src="../../../_images/NewVariable.png" />
 </div></blockquote>
-<p>If you are installing RMG by source, you can similarly set your <code class="docutils literal"><span class="pre">RMGPy</span></code> variable to the source directory, such as</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">C</span><span class="p">:</span>\<span class="n">Code</span>\<span class="n">RMG</span><span class="o">-</span><span class="n">Py</span>
+<p>If you are installing RMG by source, you can similarly set your <code class="docutils literal notranslate"><span class="pre">RMGPy</span></code> variable to the source directory, such as</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">C</span><span class="p">:</span>\<span class="n">Code</span>\<span class="n">RMG</span><span class="o">-</span><span class="n">Py</span>
 </pre></div>
 </div>
 </li>
@@ -108,22 +99,22 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </div>
 <div class="section" id="optional-setting-a-permanent-anaconda-environment-for-rmg">
 <h2>3.1.3.2. Optional: Setting a Permanent Anaconda Environment for RMG<a class="headerlink" href="#optional-setting-a-permanent-anaconda-environment-for-rmg" title="Permalink to this headline">¶</a></h2>
-<p>If you use Anaconda solely for RMG, it may be more convenient to set your <code class="docutils literal"><span class="pre">PATH</span></code> variable
+<p>If you use Anaconda solely for RMG, it may be more convenient to set your <code class="docutils literal notranslate"><span class="pre">PATH</span></code> variable
 to be permanently directed to the RMG environment.  This will allow you to run RMG easily
-without having to type <code class="docutils literal"><span class="pre">activate</span> <span class="pre">rmg_env</span></code> in the command prompt every time.</p>
+without having to type <code class="docutils literal notranslate"><span class="pre">activate</span> <span class="pre">rmg_env</span></code> in the command prompt every time.</p>
 <p>Similarly to setting the environment variable
-for <code class="docutils literal"><span class="pre">RMGPy</span></code>, go to “Edit environment variables for your account” and click edit on the <code class="docutils literal"><span class="pre">PATH</span></code>
+for <code class="docutils literal notranslate"><span class="pre">RMGPy</span></code>, go to “Edit environment variables for your account” and click edit on the <code class="docutils literal notranslate"><span class="pre">PATH</span></code>
 variable.  Replace the paths containing the Anaconda main directory with the RMG environment
 in Anaconda.</p>
 <p>For example a path such as</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">C</span><span class="p">:</span>\<span class="n">Anaconda</span>\<span class="n">Scripts</span>\
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">C</span><span class="p">:</span>\<span class="n">Anaconda</span>\<span class="n">Scripts</span>\
 </pre></div>
 </div>
 <p>should be changed to:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">C</span><span class="p">:</span>\<span class="n">Anaconda</span>\<span class="n">envs</span>\<span class="n">rmg_env</span>\<span class="n">Scripts</span>\
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">C</span><span class="p">:</span>\<span class="n">Anaconda</span>\<span class="n">envs</span>\<span class="n">rmg_env</span>\<span class="n">Scripts</span>\
 </pre></div>
 </div>
-<p>Note that <code class="docutils literal"><span class="pre">C:\Anaconda</span></code> should be wherever your Anaconda was installed.</p>
+<p>Note that <code class="docutils literal notranslate"><span class="pre">C:\Anaconda</span></code> should be wherever your Anaconda was installed.</p>
 </div>
 </div>
 
@@ -157,7 +148,7 @@ in Anaconda.</p>
   <h3><a href="../../../contents.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">3.1.3. Setting up Windows Environment Variables for RMG</a><ul>
-<li><a class="reference internal" href="#setting-the-rmgpy-variable">3.1.3.1. Setting the <code class="docutils literal"><span class="pre">RMGPy</span></code> variable</a></li>
+<li><a class="reference internal" href="#setting-the-rmgpy-variable">3.1.3.1. Setting the <code class="docutils literal notranslate"><span class="pre">RMGPy</span></code> variable</a></li>
 <li><a class="reference internal" href="#optional-setting-a-permanent-anaconda-environment-for-rmg">3.1.3.2. Optional: Setting a Permanent Anaconda Environment for RMG</a></li>
 </ul>
 </li>
@@ -185,12 +176,14 @@ in Anaconda.</p>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -216,7 +209,7 @@ in Anaconda.</p>
           <a href="anacondaUserWindows.html" title="3.1.2. Binary Installation Using Anaconda for Windows"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User’s Guide</a> &#187;</li>
@@ -225,7 +218,7 @@ in Anaconda.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>

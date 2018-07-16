@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>rmgpy.solver.ReactionSystem &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '../../',
-        VERSION:     '2.1.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
@@ -34,8 +26,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 });
 </script>
 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -52,10 +43,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="index.html" title="Reaction system simulation (rmgpy.solver)"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Reaction system simulation (<code class="docutils literal"><span class="pre">rmgpy.solver</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Reaction system simulation (<code class="docutils literal notranslate"><span class="pre">rmgpy.solver</span></code>)</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -88,8 +79,8 @@ done after the while loop before the simulate call ends</p>
 <code class="descname">advance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.advance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Simulate from the current value of the independent variable to a
 specified value <cite>tout</cite>, taking as many steps as necessary. The resulting
-values of <span class="math">\(t\)</span>, <span class="math">\(\mathbf{y}\)</span>, and
-<span class="math">\(\frac{d \mathbf{y}}{dt}\)</span> can then be accessed via the <cite>t</cite>, <cite>y</cite>,
+values of <span class="math notranslate nohighlight">\(t\)</span>, <span class="math notranslate nohighlight">\(\mathbf{y}\)</span>, and
+<span class="math notranslate nohighlight">\(\frac{d \mathbf{y}}{dt}\)</span> can then be accessed via the <cite>t</cite>, <cite>y</cite>,
 and <cite>dydt</cite> attributes.</p>
 </dd></dl>
 
@@ -229,7 +220,7 @@ individual values for each dependent variable.</p>
 
 <dl class="method">
 <dt id="rmgpy.solver.ReactionSystem.initializeModel">
-<code class="descname">initializeModel</code><span class="sig-paren">(</span><em>self</em>, <em>list coreSpecies</em>, <em>list coreReactions</em>, <em>list edgeSpecies</em>, <em>list edgeReactions</em>, <em>list surfaceSpecies=None</em>, <em>list surfaceReactions=None</em>, <em>list pdepNetworks=None</em>, <em>atol=1e-16</em>, <em>rtol=1e-8</em>, <em>sensitivity=False</em>, <em>sens_atol=1e-6</em>, <em>sens_rtol=1e-4</em>, <em>filterReactions=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.initializeModel" title="Permalink to this definition">¶</a></dt>
+<code class="descname">initializeModel</code><span class="sig-paren">(</span><em>self</em>, <em>list coreSpecies</em>, <em>list coreReactions</em>, <em>list edgeSpecies</em>, <em>list edgeReactions</em>, <em>list surfaceSpecies=None</em>, <em>list surfaceReactions=None</em>, <em>list pdepNetworks=None</em>, <em>atol=1e-16</em>, <em>rtol=1e-8</em>, <em>sensitivity=False</em>, <em>sens_atol=1e-6</em>, <em>sens_rtol=1e-4</em>, <em>filterReactions=False</em>, <em>dict conditions=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.initializeModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize a simulation of the reaction system using the provided
 kinetic model. You will probably want to create your own version of this
 method in the derived class; don’t forget to also call the base class
@@ -399,6 +390,14 @@ version, too.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.solver.ReactionSystem.reset_max_edge_species_rate_ratios">
+<code class="descname">reset_max_edge_species_rate_ratios</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.reset_max_edge_species_rate_ratios" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function sets maxEdgeSpeciesRateRatios back to zero
+for pruning of ranged reactors it is important to avoid doing this
+every initialization</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.solver.ReactionSystem.residual">
 <code class="descname">residual</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.residual" title="Permalink to this definition">¶</a></dt>
 <dd><p>Evaluate the residual function for this model, given the current value
@@ -462,7 +461,7 @@ equal to the residual.</p>
 
 <dl class="method">
 <dt id="rmgpy.solver.ReactionSystem.simulate">
-<code class="descname">simulate</code><span class="sig-paren">(</span><em>self</em>, <em>list coreSpecies</em>, <em>list coreReactions</em>, <em>list edgeSpecies</em>, <em>list edgeReactions</em>, <em>list surfaceSpecies</em>, <em>list surfaceReactions</em>, <em>list pdepNetworks=None</em>, <em>bool prune=False</em>, <em>bool sensitivity=False</em>, <em>list sensWorksheet=None</em>, <em>modelSettings=None</em>, <em>simulatorSettings=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.simulate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">simulate</code><span class="sig-paren">(</span><em>self</em>, <em>list coreSpecies</em>, <em>list coreReactions</em>, <em>list edgeSpecies</em>, <em>list edgeReactions</em>, <em>list surfaceSpecies</em>, <em>list surfaceReactions</em>, <em>list pdepNetworks=None</em>, <em>bool prune=False</em>, <em>bool sensitivity=False</em>, <em>list sensWorksheet=None</em>, <em>modelSettings=None</em>, <em>simulatorSettings=None</em>, <em>dict conditions=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.simulate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Simulate the reaction system with the provided reaction model,
 consisting of lists of core species, core reactions, edge species, and
 edge reactions. As the simulation proceeds the system is monitored for
@@ -470,7 +469,7 @@ validity. If the model becomes invalid (e.g. due to an excessively
 large edge flux), the simulation is interrupted and the object causing
 the model to be invalid is returned. If the simulation completes to
 the desired termination criteria and the model remains valid throughout,
-<code class="docutils literal"><span class="pre">None</span></code> is returned.</p>
+<code class="docutils literal notranslate"><span class="pre">None</span></code> is returned.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -490,8 +489,8 @@ the desired termination criteria and the model remains valid throughout,
 <code class="descname">step</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.ReactionSystem.step" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform one simulation step from the current value of the independent
 variable toward (but not past) a specified value <cite>tout</cite>. The resulting
-values of <span class="math">\(t\)</span>, <span class="math">\(\mathbf{y}\)</span>, and
-<span class="math">\(\frac{d \mathbf{y}}{dt}\)</span> can then be accessed via the <cite>t</cite>, <cite>y</cite>,
+values of <span class="math notranslate nohighlight">\(t\)</span>, <span class="math notranslate nohighlight">\(\mathbf{y}\)</span>, and
+<span class="math notranslate nohighlight">\(\frac{d \mathbf{y}}{dt}\)</span> can then be accessed via the <cite>t</cite>, <cite>y</cite>,
 and <cite>dydt</cite> attributes.</p>
 </dd></dl>
 
@@ -517,6 +516,18 @@ and <cite>dydt</cite> attributes.</p>
 <dt id="rmgpy.solver.ReactionSystem.termination">
 <code class="descname">termination</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.termination" title="Permalink to this definition">¶</a></dt>
 <dd><p><em>termination</em> – list</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.ReactionSystem.trimolecular">
+<code class="descname">trimolecular</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.trimolecular" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>trimolecular</em> – ‘bool’</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.solver.ReactionSystem.trimolecularThreshold">
+<code class="descname">trimolecularThreshold</code><a class="headerlink" href="#rmgpy.solver.ReactionSystem.trimolecularThreshold" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>trimolecularThreshold</em> – numpy.ndarray</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -572,7 +583,7 @@ and <cite>dydt</cite> attributes.</p>
         <div class="menuitem">
   <h4>Previous topic</h4>
   <p class="topless"><a href="index.html"
-                        title="previous chapter">Reaction system simulation (<code class="docutils literal"><span class="pre">rmgpy.solver</span></code>)</a></p>
+                        title="previous chapter">Reaction system simulation (<code class="docutils literal notranslate"><span class="pre">rmgpy.solver</span></code>)</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="simplereactor.html"
                         title="next chapter">rmgpy.solver.SimpleReactor</a></p>
@@ -590,12 +601,14 @@ and <cite>dydt</cite> attributes.</p>
         <div class="menuitem">
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -621,15 +634,15 @@ and <cite>dydt</cite> attributes.</p>
           <a href="index.html" title="Reaction system simulation (rmgpy.solver)"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.1.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
-          <li class="nav-item nav-item-2"><a href="index.html" >Reaction system simulation (<code class="docutils literal"><span class="pre">rmgpy.solver</span></code>)</a> &#187;</li> 
+          <li class="nav-item nav-item-2"><a href="index.html" >Reaction system simulation (<code class="docutils literal notranslate"><span class="pre">rmgpy.solver</span></code>)</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
     </div>
   </body>
 </html>
