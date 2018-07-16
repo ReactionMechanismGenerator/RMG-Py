@@ -791,7 +791,9 @@ class RMG(util.Subject):
                                     except:
                                         self.updateReactionThresholdAndReactFlags(
                                             rxnSysUnimolecularThreshold = reactionSystem.unimolecularThreshold,
-                                            rxnSysBimolecularThreshold = reactionSystem.bimolecularThreshold, skipUpdate=True)
+                                            rxnSysBimolecularThreshold = reactionSystem.bimolecularThreshold,
+                                            rxnSysTrimolecularThreshold = reactionSystem.trimolecularThreshold,
+                                            skipUpdate=True)
                                         logging.warn('Reaction thresholds/flags for Reaction System {0} was not updated due to simulation failure'.format(index+1))
                                     else:
                                         self.updateReactionThresholdAndReactFlags(
