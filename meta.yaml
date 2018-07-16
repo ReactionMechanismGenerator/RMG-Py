@@ -70,12 +70,12 @@ requirements:
 
 test:
   source_files:
-    - 'examples/rmg/minimal'
+    - 'examples/rmg/superminimal'
   imports:
     - rmgpy
   commands:
-    - rmg.py examples/rmg/minimal/input.py # [unix]
-    - python %SCRIPTS%\rmg.py examples\rmg\minimal\input.py # [win]
+    - rmg.py examples/rmg/superminimal/input.py # [unix]
+    - python %SCRIPTS%\rmg.py examples\rmg\superminimal\input.py # [win]
 
 about:
   home: http://github.com/ReactionMechanismGenerator/RMG-Py
