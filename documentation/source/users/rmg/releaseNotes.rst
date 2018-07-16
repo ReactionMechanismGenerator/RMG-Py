@@ -4,6 +4,76 @@
 Release Notes
 *************
 
+RMG-Py Version 2.2.0
+====================
+Date: July 5, 2018
+
+- New features:
+    - New ring membership attribute added to atoms. Can be specified in group adjacency lists in order to enforce
+      ring membership of atoms during subgraph matching.
+    - Reactors now support specification of T, P, X ranges. Different conditions are sampled on each iteration to
+      optimally capture the full parameter space.
+    - New termination type! Termination rate ratio stops the simulation when the characteristic rate falls to the
+      specified fraction of the maximum characteristic rate. Currently not recommended for systems with two-stage ignition.
+    - New resonance transitions implemented for species with lone pairs (particularly N and S containing species).
+      A filtration algorithm was also added to select only the most representative structures.
+    - Formal support for trimolecular reaction families.
+    - New isotopes module allows post-processing of RMG mechanisms to generate a mechanism with isotopic labeling.
+
+- Changes:
+    - Library reactions can now be integrated into RMG pdep networks if the new elementary_high_p attribute is True
+    - Library reactions may be duplicated by pdep reactions if the new allow_pdep_route attribute is True
+    - Jupyter notebook for adding new training reactions has been revamped and is now located at ipython/kinetics_library_to_training.ipynb
+    - Syntax for recommended families has changed to set notation instead of dictionaries, old style still compatible
+    - Ranking system for database entries expanded to new 0-11 system from the old 0-5 system
+    - Collision limit checking has been added for database entries
+
+- Cantherm:
+    - Improved support for MolPro output files
+    - Added iodine support
+    - Automatically read spin multiplicity from quantum output
+    - Automatically assign frequency scale factor for supported model chemistries
+    - Plot calculated rates and thermo by default
+    - New sensitivity analysis feature analyzes sensitivity of reaction rates to isomer/TS energies in pdep networks
+
+- Fixes:
+    - Properly update charges when creating product templates in reaction families
+    - Excessive duplicate reactions from different resonance structures has been fixed (bug introduced in 2.1.3)
+    - Fixed rate calculation for MultiPdepArrhenius objects when member rates have different plists
+
+- A more formal deprecation process is now being trialed. Deprecation warnings have been added to functions to be removed in version 2.3.0:
+    - All methods related to saving or reading RMG-Java databases and old-style adjacency lists
+    - The group additivity method for kinetics estimation (unrelated to thermo group additivity)
+    - The saveRestartPeriod option and the old method of saving restart files
+
+RMG-database Version 2.2.0
+==========================
+Date: July 5, 2018
+
+- Additions:
+    - New Intra_R_Add_Exo_Scission reaction family
+    - New 1,2_ShiftC reaction family
+    - New reaction families for peroxide chemistry in liquid systems
+        - Korcek_step1_cat
+        - Bimolec_Hydroperoxide_Decomposition
+        - Peroxyl_Termination
+        - Peroxyl_Disproportionation
+        - Baeyer-Villiger_step1_cat
+        - Baeyer-Villiger_step2
+        - Baeyer-Villiger_step2_cat
+    - Numerous new training reactions added to many families
+
+- Changes:
+    - New tree structure for Intra_R_Add_Endocyclic with consideration for cyclic species
+    - Multiple bond on ring is no longer allowed in Intra_R_Add_Exocyclic and should react in Intra_R_Add_Endocyclic instead
+    - Entry ranks rescaled to new 0-11 ranking system
+    - Global forbidden structures has been cleaned up, leading to significant performance improvement
+
+- Fixes:
+    - Corrected shape indices in NOx2018 transport library
+    - Removed or corrected some kinetics entries based on collision limit check
+
+
 RMG-Py Version 2.1.9
 ====================
 Date: May 1, 2018

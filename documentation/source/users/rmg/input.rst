@@ -112,7 +112,7 @@ Seed Mechanisms
 The next section of the :file:`input.py` file specifies which, if any,
 Seed Mechanisms should be used.  If a seed mechanism is passed to RMG, every
 species and reaction present in the seed mechanism will be placed into the core, in
-addition to the species that are listed in the :ref:`species` section.
+addition to the species that are listed in the :ref:`species_list` section.
 
 For details of the kinetics libraries included with RMG that can be used as a seed mechanism,
 see :ref:`reactionlibraries`.
@@ -199,7 +199,7 @@ The following is an example of a database block, based on above chosen libraries
 		kineticsEstimator = 'rate rules',
 	)
 
-.. _species:
+.. _species_list:
 
 List of species
 ===============
