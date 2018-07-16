@@ -40,15 +40,15 @@ cdef class VF2:
     cdef bint isMatch
     cdef list mappingList
     
-    cpdef bint isIsomorphic(self, Graph graph1, Graph graph2, dict initialMapping) except -2
+    cpdef bint isIsomorphic(self, Graph graph1, Graph graph2, dict initialMapping, bint saveOrder=?) except -2
         
-    cpdef list findIsomorphism(self, Graph graph1, Graph graph2, dict initialMapping)
+    cpdef list findIsomorphism(self, Graph graph1, Graph graph2, dict initialMapping, bint saveOrder=?)
 
-    cpdef bint isSubgraphIsomorphic(self, Graph graph1, Graph graph2, dict initialMapping) except -2
+    cpdef bint isSubgraphIsomorphic(self, Graph graph1, Graph graph2, dict initialMapping, bint saveOrder=?) except -2
 
-    cpdef list findSubgraphIsomorphisms(self, Graph graph1, Graph graph2, dict initialMapping)
+    cpdef list findSubgraphIsomorphisms(self, Graph graph1, Graph graph2, dict initialMapping, bint saveOrder=?)
     
-    cdef isomorphism(self, Graph graph1, Graph graph2, dict initialMapping, bint subgraph, bint findAll)
+    cdef isomorphism(self, Graph graph1, Graph graph2, dict initialMapping, bint subgraph, bint findAll, bint saveOrder=?)
 
     cdef bint match(self, int callDepth) except -2
         

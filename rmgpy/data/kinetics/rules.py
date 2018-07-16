@@ -33,7 +33,7 @@ This module contains functionality for working with kinetics "rate rules",
 which provide rate coefficient parameters for various combinations of 
 functional groups.
 """
-
+import warnings
 import os.path
 import re
 import codecs
@@ -109,7 +109,8 @@ class KineticsRules(Database):
         Process a list of parameters `data` as read from an old-style RMG
         thermo database, returning the corresponding kinetics object.
         """
-        
+        warnings.warn("The old kinetics databases are no longer supported and may be"
+                      " removed in version 2.3.", DeprecationWarning)
         # The names of all of the RMG reaction families that are bimolecular
         BIMOLECULAR_KINETICS_FAMILIES = [
             'H_Abstraction',
@@ -214,6 +215,8 @@ class KineticsRules(Database):
         """
         Load a set of old rate rules for kinetics groups into this depository.
         """
+        warnings.warn("The old kinetics databases are no longer supported and may be"
+                      " removed in version 2.3.", DeprecationWarning)
         # Parse the old library
         entries = self.parseOldLibrary(os.path.join(path, 'rateLibrary.txt'), numParameters=10, numLabels=numLabels)
         
@@ -249,6 +252,8 @@ class KineticsRules(Database):
         kinetics groups. This function assumes that the groups have already
         been loaded.
         """
+        warnings.warn("The old kinetics databases are no longer supported and may be"
+                      " removed in version 2.3.", DeprecationWarning)
         index = 'General' #mops up comments before the first rate ID
         
         re_underline = re.compile('^\-+')
@@ -303,7 +308,8 @@ class KineticsRules(Database):
         """
         Save a set of old rate rules for kinetics groups from this depository.
         """
-        
+        warnings.warn("The old kinetics databases are no longer supported and may be"
+                      " removed in version 2.3.", DeprecationWarning)
         # This is hardcoding of reaction families!
         label = os.path.split(self.label)[-2]
         reactionOrder = groups.groups.numReactants
@@ -539,7 +545,7 @@ class KineticsRules(Database):
                 label = rootLabel,
                 item = rootTemplate,
                 data = kinetics,
-                rank = 10, # Indicates this is an averaged estimate
+                rank = 11, # Indicates this is an averaged estimate
             )
             self.entries[entry.label] = [entry]
             alreadyDone[rootLabel] = entry.data

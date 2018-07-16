@@ -33,6 +33,7 @@ This module contains functionality for reading from and writing to the
 adjacency list format used by Reaction Mechanism Generator (RMG).
 """
 import logging
+import warnings
 import re
 from .molecule import Atom, Bond, getAtomType
 from .group import GroupAtom, GroupBond
@@ -621,10 +622,17 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
                 isotope = int(iState[1:])
                 index += 1
 
+        # Next ring membership info (if provided)
+        props = {}
+        if len(data) > index:
+            rState = data[index]
+            if rState[0] == 'r':
+                props['inRing'] = bool(int(rState[1]))
+                index += 1
 
         # Create a new atom based on the above information
         if group:
-            atom = GroupAtom(atomType, unpairedElectrons, partialCharges, label, lonePairs)
+            atom = GroupAtom(atomType, unpairedElectrons, partialCharges, label, lonePairs, props)
         else:
             atom = Atom(atomType[0], unpairedElectrons[0], partialCharges[0], label, lonePairs[0])
             if isotope != -1:
@@ -754,6 +762,7 @@ def toAdjacencyList(atoms, multiplicity, label=None, group=False, removeH=False,
     atomLonePairs = {}
     atomCharge = {}
     atomIsotope = {}
+    atomProps = {}
     if group:
         for atom in atomNumbers:
             # Atom type(s)
@@ -786,7 +795,13 @@ def toAdjacencyList(atoms, multiplicity, label=None, group=False, removeH=False,
                 atomCharge[atom] = '[{0}]'.format(','.join(['+'+str(charge) if charge > 0 else ''+str(charge) for charge in atom.charge]))
 
             # Isotopes
-            atomIsotope[atom] = -1    
+            atomIsotope[atom] = -1
+
+            # Other props
+            props = []
+            if 'inRing' in atom.props:
+                props.append(' r{0}'.format(int(atom.props['inRing'])))
+            atomProps[atom] = props
     else:
         for atom in atomNumbers:
             # Atom type
@@ -831,6 +846,9 @@ def toAdjacencyList(atoms, multiplicity, label=None, group=False, removeH=False,
         # Isotopes
         if atomIsotope[atom] != -1:
             adjlist += ' i{0}'.format(atomIsotope[atom])
+        if group and len(atomProps[atom]) > 0:
+            for prop in atomProps[atom]:
+                adjlist += prop
 
         # Bonds list
         atoms2 = atom.bonds.keys()
@@ -912,6 +930,8 @@ def toOldAdjacencyList(atoms, multiplicity=None, label=None, group=False, remove
     Convert a chemical graph defined by a list of `atoms` into a string old-style 
     adjacency list that can be used in RMG-Java.  Currently not working for groups.
     """
+    warnings.warn("The old adjacency lists are no longer supported and may be"
+                  " removed in version 2.3.", DeprecationWarning)
     adjlist = ''
     
     if group:

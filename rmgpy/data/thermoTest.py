@@ -31,7 +31,6 @@
 import os
 import unittest
 from external.wip import work_in_progress
-from nose.plugins.attrib import attr
 
 from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase, database
@@ -326,6 +325,36 @@ multiplicity 2
         thermo = self.database.getAllThermoData(spec)
         self.assertEqual(len(thermo), 1)
 
+    def test_lowest_h298_for_resonance_structures(self):
+        """Test that the thermo entry with the lowest H298 is selected for a species with resonance structurers"""
+
+        smiles = '[C]#C[O]'  # has H298 ~= 640 kJ/mol; has resonance structure `[C]=C=O` with H298 ~= 380 kJ/mol
+        spec = Species().fromSMILES(smiles)
+        thermo_gav1 = self.database.getThermoDataFromGroups(spec)
+        spec.generate_resonance_structures()
+        thermo_gav2 = self.database.getThermoDataFromGroups(spec)
+        self.assertTrue(thermo_gav2.getEnthalpy(298) < thermo_gav1.getEnthalpy(298),
+                        msg="Did not select the molecule with the lowest H298 as a the thermo entry for [C]#C[O] / [C]=C=O")
+
+        smiles = 'C=C[CH][O]'  # has H298 ~= 209 kJ/mol; has (a reactive) resonance structure `C=CC=O` with H298 ~= -67 kJ/mol
+        spec = Species().fromSMILES(smiles)
+        thermo_gav1 = self.database.getThermoDataFromGroups(spec)
+        spec.generate_resonance_structures()
+        thermo_gav2 = self.database.getThermoDataFromGroups(spec)
+        self.assertTrue(thermo_gav2.getEnthalpy(298) < thermo_gav1.getEnthalpy(298),
+                        msg="Did not select the molecule with the lowest H298 as a the thermo entry for C=C[CH][O] / C=CC=O")
+
+    def testThermoForMixedReactiveAndNonreactiveMolecules(self):
+        """Test that the thermo entry of nonreactive molecules isn't selected for a species, even if it's more stable"""
+
+        smiles = '[C]=C=O'  # has H298 ~= 640 kJ/mol; has resonance structure `[C]=C=O` with H298 ~= 380 kJ/mol
+        spec = Species().fromSMILES(smiles)
+        thermo_gav1 = self.database.getThermoDataFromGroups(spec)  # thermo of the stable molecule
+        spec.generate_resonance_structures()
+        spec.molecule[0].reactive = False  # set the more stable molecule to nonreactive for this check
+        thermo_gav2 = self.database.getThermoDataFromGroups(spec)  # thermo of the speciesless stable molecule
+        self.assertTrue(thermo_gav2.getEnthalpy(298) > thermo_gav1.getEnthalpy(298),
+                        msg="Did not select the reactive molecule for thermo")
 
 class TestThermoAccuracy(unittest.TestCase):
     """
@@ -1326,7 +1355,37 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
                             expected_saturated_ring_submol.multiplicity)
         self.assertTrue(saturated_ring_submol.isIsomorphic(expected_saturated_ring_submol))
 
-@attr('auth')
+
+def getTestingTCDAuthenticationInfo():
+
+    try:
+        host = os.environ['TCD_HOST']
+        port = int(os.environ['TCD_PORT'])
+        username = os.environ['TCD_USER']
+        password = os.environ['TCD_PW']
+    except KeyError:
+        print('Thermo Central Database Authentication Environment Variables Not Completely Set!')
+        return None, 0, None, None
+
+    return host, port, username, password
+
+
+def isTCDAvailable():
+    """Check if TCD is available."""
+    import platform
+    import subprocess
+
+    host = getTestingTCDAuthenticationInfo()[0]
+    if host is not None:
+        arg = '-n' if platform.system() == 'Windows' else '-c'
+        result = subprocess.call(['ping', arg, '1', host]) == 0
+    else:
+        result = False
+
+    return result
+
+
+@unittest.skipIf(not isTCDAvailable(), 'TCD unavailable, skipping unit tests.')
 class TestThermoCentralDatabaseInterface(unittest.TestCase):
     """
     Contains unit tests for methods of ThermoCentralDatabaseInterface
@@ -1558,19 +1617,6 @@ class TestThermoCentralDatabaseInterface(unittest.TestCase):
 
         # clean up the table
         results_table.delete_many({"aug_inchi": expected_aug_inchi})
-
-def getTestingTCDAuthenticationInfo():
-
-    try:
-        host = os.environ['TCD_HOST']
-        port = int(os.environ['TCD_PORT'])
-        username = os.environ['TCD_USER']
-        password = os.environ['TCD_PW']
-    except KeyError:
-        print('Thermo Central Database Authentication Environment Variables Not Completely Set!')
-        return 'None', 0, 'None', 'None'
-
-    return host, port, username, password
 
 ################################################################################
 

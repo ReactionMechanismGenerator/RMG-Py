@@ -274,6 +274,12 @@ class CoreError(Exception):
     """
     pass
 
+class ResonanceError(Exception):
+    """
+    An exception class for when RMG is unable to generate resonance structures.
+    """
+    pass
+
 ################## move classes that extend off previous exceptions here
 
 class InvalidMicrocanonicalRateError(NetworkError):

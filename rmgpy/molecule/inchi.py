@@ -30,6 +30,7 @@
 
 import itertools
 import re
+import warnings
 
 import cython
 from rdkit import Chem
@@ -376,6 +377,9 @@ def _generate_minimum_resonance_isomer(mol):
     Next, we return the candidate with the lowest unpaired electrons metric.
 
     The metric is a sorted list with indices of the atoms that bear an unpaired electron
+
+    This function is currently deprecated since InChI effectively eliminates resonance,
+    see InChI, the IUPAC International Chemical Identifier, J. Cheminform 2015, 7, 23, doi: 10.1186/s13321-015-0068-4
     """
 
     cython.declare(
@@ -386,7 +390,10 @@ def _generate_minimum_resonance_isomer(mol):
         metric_cand=list,
     )
 
-    candidates = resonance.generate_isomorphic_resonance_structures(mol)
+    warnings.warn("The _generate_minimum_resonance_isomer method is no longer used"
+                    " and may be removed in RMG version 2.3.", DeprecationWarning)
+
+    candidates = resonance.generate_isomorphic_resonance_structures(mol, saturate_h=True)
 
     sel = candidates[0]
     metric_sel = _get_unpaired_electrons(sel)
@@ -546,19 +553,16 @@ def _create_U_layer(mol, auxinfo):
     elif mol.getFormula() == 'H':
         return U_LAYER_PREFIX + '1'
 
-    # find the resonance isomer with the lowest u index:
-    minmol = _generate_minimum_resonance_isomer(mol)
-
     # create preliminary u-layer:
     u_layer = []
-    for i, at in enumerate(minmol.atoms):
+    for i, at in enumerate(mol.atoms):
         u_layer.extend([i + 1] * at.radicalElectrons)
 
     # extract equivalent atom pairs from E-layer of auxiliary info:
     equivalent_atoms = _parse_E_layer(auxinfo)
     if equivalent_atoms:
         # select lowest u-layer:
-        u_layer = _find_lowest_u_layer(minmol, u_layer, equivalent_atoms)
+        u_layer = _find_lowest_u_layer(mol, u_layer, equivalent_atoms)
 
     return (U_LAYER_PREFIX + ','.join(map(str, u_layer)))
 
@@ -588,8 +592,6 @@ def _create_P_layer(mol, auxinfo):
     When the molecule does not bear any atoms with an unexpected number of lone pairs,
     None is returned.
     """
-    # TODO: find the resonance isomer with the lowest p index:
-    minmol = mol
 
     # create preliminary p-layer:
     p_layer = []
@@ -609,7 +611,7 @@ def _create_P_layer(mol, auxinfo):
     equivalent_atoms = _parse_E_layer(auxinfo)
     if equivalent_atoms:
         # select lowest u-layer:
-        p_layer = _find_lowest_p_layer(minmol, p_layer, equivalent_atoms)
+        p_layer = _find_lowest_p_layer(mol, p_layer, equivalent_atoms)
 
     if p_layer:
         return (P_LAYER_PREFIX + P_LAYER_SEPARATOR.join(map(str, p_layer)))

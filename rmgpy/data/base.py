@@ -270,7 +270,7 @@ class Database:
 
         return entries
     
-    def getSpecies(self, path):
+    def getSpecies(self, path, resonance=True):
         """
         Load the dictionary containing all of the species in a kinetics library or depository.
         """
@@ -282,7 +282,8 @@ class Database:
                 if line.strip() == '' and adjlist.strip() != '':
                     # Finish this adjacency list
                     species = Species().fromAdjacencyList(adjlist)
-                    species.generate_resonance_structures()
+                    if resonance:
+                        species.generate_resonance_structures()
                     label = species.label
                     if label in speciesDict:
                         raise DatabaseError('Species label "{0}" used for multiple species in {1}.'.format(label, str(self)))
@@ -294,7 +295,8 @@ class Database:
                 if adjlist.strip() != '':
                     # Finish this adjacency list
                     species = Species().fromAdjacencyList(adjlist)
-                    species.generate_resonance_structures()
+                    if resonance:
+                        species.generate_resonance_structures()
                     label = species.label
                     if label in speciesDict:
                         raise DatabaseError('Species label "{0}" used for multiple species in {1}.'.format(label, str(self)))
@@ -891,8 +893,15 @@ class Database:
         #except that the parent is listed in the attributes. However, we do need to check that everything down this
         #family line is consistent, which is done in the databaseTest unitTest
         elif isinstance(parentNode.item, Group) and isinstance(childNode.item, LogicOr):
-            return childNode.parent is parentNode
-        
+            ancestorNode = childNode.parent
+            while ancestorNode:
+                if ancestorNode is parentNode:
+                    return True
+                else:
+                    ancestorNode = ancestorNode.parent
+            else:
+                return False
+
         elif isinstance(parentNode.item,LogicOr):
             return childNode.label in parentNode.item.components
 

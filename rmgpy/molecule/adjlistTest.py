@@ -152,6 +152,23 @@ class TestGroupAdjLists(unittest.TestCase):
 
         self.assertEqual(adjlist.strip(), adjlist2.strip())
 
+    def testAtomProps(self):
+        """Test that the atom props attribute can be properly read and written."""
+        adjlist = """
+1 *1 R!H u1 r0 {2,S}
+2 *4 R!H u0 r0 {1,S} {3,S}
+3 *2 Cb  u0 r1 {2,S} {4,B}
+4 *3 Cb  u0 r1 {3,B}
+        """
+        group = Group().fromAdjacencyList(adjlist)
+        for atom in group.atoms:
+            if atom.atomType[0].label == 'R!H':
+                self.assertFalse(atom.props['inRing'])
+            elif atom.atomType[0].label == 'Cb':
+                self.assertTrue(atom.props['inRing'])
+        adjlist2 = group.toAdjacencyList()
+
+        self.assertEqual(adjlist.strip(), adjlist2.strip())
 
 class TestMoleculeAdjLists(unittest.TestCase):
     """

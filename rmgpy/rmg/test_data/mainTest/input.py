@@ -13,16 +13,50 @@ species(
     structure=SMILES("CC"),
 )
 
+species(
+        label='N2',
+        reactive=False,
+        structure=SMILES("N#N"))
+
 simpleReactor(
     temperature=(1350,'K'),
-    pressure=(1.0,'bar'),
+    pressure=[(1.0,'bar'),(10.0,'bar')],
     initialMoleFractions={
-        "ethane": 1.0,
+        "ethane": [0.5,1.0],
+        "N2":1.0,
     },
     terminationConversion={
         'ethane': 0.000000000001,
     },
     terminationTime=(1e6,'s'),
+    terminationRateRatio=0.01,
+    balanceSpecies='N2',
+)
+
+liquidReactor(
+    temperature=(1350,'K'),
+    initialConcentrations={
+        "ethane": [(0.5,'mol/m^3'),(1.0,'mol/m^3')],
+        "N2":(1.0,'mol/m^3'),
+    },
+    terminationConversion={
+        'ethane': 0.000000000001,
+    },
+    terminationTime=(1e6,'s'),
+    terminationRateRatio=0.01,
+)
+
+liquidReactor(    
+    temperature=[(1000,'K'),(1200,'K')],
+    initialConcentrations={
+        "ethane": (1.0,'mol/m^3'),
+        "N2":(1.0,'mol/m^3'),
+    },
+    terminationConversion={
+    	'ethane': 0.000000000001,
+    },
+    terminationTime=(1e6,'s'),
+    terminationRateRatio=0.01,
 )
 
 simulator(

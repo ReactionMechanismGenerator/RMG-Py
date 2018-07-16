@@ -1,54 +1,25 @@
-# This file contains a dictionary of kinetics families.  The families
-# set to `True` are recommended by RMG and turned on by default by setting
-# kineticsFamilies = 'default' in the RMG input file. Families set to `False` 
-# are not turned on by default because the family is severely lacking in data.
-# These families should only be turned on with caution.
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
-recommendedFamilies = {
-'1+2_Cycloaddition':True,
-'1,2-Birad_to_alkene':True,
-'1,2_Insertion_CO':True,
-'1,2_Insertion_carbene':True,
-'1,2_shiftS':True,
-'1,3_Insertion_CO2':True,
-'1,3_Insertion_ROR':True,
-'1,3_Insertion_RSR':True,
-'1,4_Cyclic_birad_scission':True,
-'1,4_Linear_birad_scission':True,
-'2+2_cycloaddition_CCO':True,
-'2+2_cycloaddition_CO':True,
-'2+2_cycloaddition_Cd':True,
-'Birad_recombination':True,
-'Cyclic_Ether_Formation':True,
-'Diels_alder_addition':True,
-'Disproportionation':True,
-'HO2_Elimination_from_PeroxyRadical':True,
-'H_Abstraction':True,
-'H_shift_cyclopentadiene':True,
-'Intra_Diels_alder':True,
-'Intra_Disproportionation':True,
-'Intra_RH_Add_Endocyclic':False,
-'Intra_RH_Add_Exocyclic':False,
-'Intra_R_Add_Endocyclic':True,
-'Intra_R_Add_ExoTetCyclic':False,
-'Intra_R_Add_Exocyclic':True,
-'Korcek_step1':False,
-'Korcek_step2':False,
-'Oa_R_Recombination':True,
-'R_Addition_COm':True,
-'R_Addition_CSm':False,
-'R_Addition_MultipleBond':True,
-'R_Recombination':True,
-'SubstitutionS':False,
-'Substitution_O':False,
-'Singlet_Val6_to_triplet':True,
-'intra_H_migration':True,
-'intra_NO2_ONO_conversion':True,
-'intra_OH_migration':True,
-'intra_substitutionCS_cyclization':True,
-'intra_substitutionCS_isomerization':True,
-'intra_substitutionS_cyclization':True,
-'intra_substitutionS_isomerization':True,
-'ketoenol':True,
-'lone_electron_pair_bond':True,
+"""
+This file contains multiple sets of suggested kinetics families for various
+systems of interest. They can be used by including the name of a set in the
+kineticsFamilies part of the input file. Multiple sets can be specified at the
+same time, and union of them will be loaded. These sets can also be specified
+along with individual families. Custom sets can be easily defined in this file
+and immediately used in input files without any additional changes.
+"""
+
+default = {
+    'Disproportionation',
+    'H_Abstraction',
+    'R_Addition_MultipleBond',
+    'R_Recombination',
+}
+
+pah = {
+    '1,2_shiftC',
+    '6_membered_central_C-C_shift',
+    'Intra_R_Add_Exo_scission',
+    'Intra_ene_reaction',
 }

@@ -62,6 +62,7 @@ def react(*spcTuples):
 
     return reactions
 
+
 def reactSpecies(speciesTuple):
     """
     Given a tuple of Species objects, generates all possible reactions
@@ -112,10 +113,10 @@ def deflate(rxns, species, reactantIndices):
             pass
 
 
-
-def reactAll(coreSpcList, numOldCoreSpecies, unimolecularReact, bimolecularReact):
+def reactAll(coreSpcList, numOldCoreSpecies, unimolecularReact, bimolecularReact, trimolecularReact=None):
     """
-    Reacts the core species list via uni- and bimolecular reactions.
+    Reacts the core species list via uni-, bi-, and trimolecular
+    reactions.
     """
 
     # Select reactive species that can undergo unimolecular reactions:
@@ -130,12 +131,22 @@ def reactAll(coreSpcList, numOldCoreSpecies, unimolecularReact, bimolecularReact
                 if coreSpcList[i].reactive and coreSpcList[j].reactive:
                     spcTuples.append((coreSpcList[i], coreSpcList[j]))
 
+    if trimolecularReact is not None:
+        for i in xrange(numOldCoreSpecies):
+            for j in xrange(i, numOldCoreSpecies):
+                for k in xrange(j, numOldCoreSpecies):
+                    # Find reactions involving the species that are trimolecular
+                    if trimolecularReact[i,j,k]:
+                        if coreSpcList[i].reactive and coreSpcList[j].reactive and coreSpcList[k].reactive:
+                            spcTuples.append((coreSpcList[i], coreSpcList[j], coreSpcList[k]))
+
     rxns = list(react(*spcTuples))
     return rxns
 
+
 def deflateReaction(rxn, molDict):
     """
-    This function deflates a single reaction holding speices objects, and uses the provided 
+    This function deflates a single reaction holding species objects, and uses the provided
     dictionary to populate reactants/products/pairs with integer indices,
     if possible.
 
@@ -153,4 +164,7 @@ def deflateReaction(rxn, molDict):
 
     rxn.reactants = [molDict[spec.molecule[0]] for spec in rxn.reactants]
     rxn.products = [molDict[spec.molecule[0]] for spec in rxn.products]
-    rxn.pairs = [(molDict[reactant.molecule[0]], molDict[product.molecule[0]]) for reactant, product in rxn.pairs]
+    try:
+        rxn.pairs = [(molDict[reactant.molecule[0]], molDict[product.molecule[0]]) for reactant, product in rxn.pairs]
+    except ValueError:
+        rxn.pairs = None

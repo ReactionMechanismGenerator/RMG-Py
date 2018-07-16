@@ -28,7 +28,7 @@
 from .graph cimport Vertex, Edge, Graph
 from .atomtype cimport AtomType
 cimport rmgpy.molecule.molecule as mol
-
+from cpython cimport bool
 ################################################################################
 
 cdef class GroupAtom(Vertex):
@@ -38,6 +38,11 @@ cdef class GroupAtom(Vertex):
     cdef public list charge
     cdef public str label
     cdef public list lonePairs
+
+    cdef public dict props
+
+    cdef public list reg_dim_atm
+    cdef public list reg_dim_u
 
     cpdef Vertex copy(self)
 
@@ -76,6 +81,7 @@ cdef class GroupAtom(Vertex):
 cdef class GroupBond(Edge):
 
     cdef public list order
+    cdef public list reg_dim
 
     cpdef Edge copy(self)
 
@@ -155,15 +161,17 @@ cdef class Group(Graph):
     
     cpdef updateFingerprint(self)
 
-    cpdef bint isIsomorphic(self, Graph other, dict initialMap=?) except -2
+    cpdef update_charge(self)
 
-    cpdef list findIsomorphism(self, Graph other, dict initialMap=?)
+    cpdef bint isIsomorphic(self, Graph other, dict initialMap=?, bint saveOrder=?) except -2
 
-    cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?) except -2
+    cpdef list findIsomorphism(self, Graph other, dict initialMap=?, bint saveOrder=?)
 
-    cpdef list findSubgraphIsomorphisms(self, Graph other, dict initialMap=?)
+    cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?, bint generateInitialMap=?, bint saveOrder=?) except -2
+
+    cpdef list findSubgraphIsomorphisms(self, Graph other, dict initialMap=?, bint saveOrder=?)
     
-    cpdef bint isIdentical(self, Graph other)
+    cpdef bint isIdentical(self, Graph other, bint saveOrder=?)
 
     cpdef bint isAromaticRing(self)
 
@@ -189,3 +197,4 @@ cdef class Group(Graph):
 
     cpdef Group mergeGroups(self, Group other)
 
+    cpdef resetRingMembership(self)

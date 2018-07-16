@@ -72,7 +72,7 @@ def saveEntry(f, entry):
 
 
     #Entries for kinetic rules, libraries, training reactions
-    #and depositories will have an Reaction object for its item
+    #and depositories will have a Reaction object for its item
     if isinstance(entry.item, Reaction):
         #Write out additional data if depository or library
         #kinetic rules would have a Group object for its reactants instead of Species
@@ -83,6 +83,12 @@ def saveEntry(f, entry):
                 f.write('    duplicate = {0!r},\n'.format(entry.item.duplicate))
             if not entry.item.reversible:
                 f.write('    reversible = {0!r},\n'.format(entry.item.reversible))
+            if entry.item.allow_pdep_route:
+                f.write('    allow_pdep_route = {0!r},\n'.format(entry.item.allow_pdep_route))
+            if entry.item.elementary_high_p:
+                f.write('    elementary_high_p = {0!r},\n'.format(entry.item.elementary_high_p))
+            if entry.item.allow_max_rate_violation:
+                f.write('    allow_max_rate_violation = {0!r},\n'.format(entry.item.allow_max_rate_violation))
     #Entries for groups with have a group or logicNode for its item
     elif isinstance(entry.item, Group):
         f.write('    group = \n')
@@ -144,58 +150,7 @@ def saveEntry(f, entry):
     f.write(')\n\n')
 
 
-def filter_reactions(reactants, products, reactionList):
-    """
-    Remove any reactions from the given `reactionList` whose reactants do
-    not involve all the given `reactants` or whose products do not involve 
-    all the given `products`. This method checks both forward and reverse
-    directions, and only filters out reactions that don't match either.
-    
-    reactants and products can be either molecule or species objects
-    """
-    warnings.warn("The filter_reactions method is no longer used and may be removed in a future version.", DeprecationWarning)
-    
-    # Convert from molecules to species and generate resonance isomers.
-    ensure_species(reactants, resonance=True)
-    ensure_species(products, resonance=True)
-
-    reactions = reactionList[:]
-    
-    for reaction in reactionList:
-        # Forward direction
-        reactants0 = [r for r in reaction.reactants]
-        for reactant in reactants:
-            for reactant0 in reactants0:
-                if reactant.isIsomorphic(reactant0):
-                    reactants0.remove(reactant0)
-                    break
-        products0 = [p for p in reaction.products]
-        for product in products:
-            for product0 in products0:
-                if product.isIsomorphic(product0):
-                    products0.remove(product0)
-                    break
-        forward = not (len(reactants0) != 0 or len(products0) != 0)
-        # Reverse direction
-        reactants0 = [r for r in reaction.products]
-        for reactant in reactants:
-            for reactant0 in reactants0:
-                if reactant.isIsomorphic(reactant0):
-                    reactants0.remove(reactant0)
-                    break
-        products0 = [p for p in reaction.reactants]
-        for product in products:
-            for product0 in products0:
-                if product.isIsomorphic(product0):
-                    products0.remove(product0)
-                    break
-        reverse = not (len(reactants0) != 0 or len(products0) != 0)
-        if not forward and not reverse:
-            reactions.remove(reaction)
-    return reactions
-
-
-def ensure_species(input_list, resonance=False, keepIsomorphic=False):
+def ensure_species(input_list, resonance=False, keep_isomorphic=False):
     """
     The input list of :class:`Species` or :class:`Molecule` objects is modified
     in place to only have :class:`Species` objects. Returns None.
@@ -208,7 +163,11 @@ def ensure_species(input_list, resonance=False, keepIsomorphic=False):
         else:
             raise TypeError('Only Molecule or Species objects can be handled.')
         if resonance:
-            new_item.generate_resonance_structures(keepIsomorphic=keepIsomorphic)
+            if not any([mol.reactive for mol in new_item.molecule]):
+                # if generating a reaction containing a Molecule with a reactive=False flag (e.g., for degeneracy
+                # calculations), that was now converted into a Species, first mark as reactive=True
+                new_item.molecule[0].reactive = True
+            new_item.generate_resonance_structures(keep_isomorphic=keep_isomorphic)
         input_list[index] = new_item
 
 
@@ -220,8 +179,10 @@ def generate_molecule_combos(input_species):
         combos = [(mol,) for mol in input_species[0].molecule]
     elif len(input_species) == 2:
         combos = itertools.product(input_species[0].molecule, input_species[1].molecule)
+    elif len(input_species) == 3:
+        combos = itertools.product(input_species[0].molecule, input_species[1].molecule, input_species[2].molecule)
     else:
-        raise ValueError('Reaction generation can be done for 1 or 2 species, not {0}.'.format(len(input_species)))
+        raise ValueError('Reaction generation can be done for 1, 2, or 3 species, not {0}.'.format(len(input_species)))
 
     return combos
 
@@ -251,89 +212,126 @@ def ensure_independent_atom_ids(input_species, resonance=True):
     if not independent_ids():
         logging.debug('identical atom ids found between species. regenerating')
         for species in input_species:
+            unreactive_mol_list = [mol for mol in species.molecule if not mol.reactive]
             mol = species.molecule[0]
             mol.assignAtomIDs()
             species.molecule = [mol]
             # Remake resonance structures with new labels
             if resonance:
-                species.generate_resonance_structures(keepIsomorphic=True)
+                species.generate_resonance_structures(keep_isomorphic=True)
+            if len(unreactive_mol_list):
+                species.molecule.extend(unreactive_mol_list)
     elif resonance:
         # IDs are already independent, generate resonance structures if needed
         for species in input_species:
-            species.generate_resonance_structures(keepIsomorphic=True)
+            species.generate_resonance_structures(keep_isomorphic=True)
 
 
-def find_degenerate_reactions(rxnList, same_reactants=None, kinetics_database=None, kinetics_family=None):
+def find_degenerate_reactions(rxn_list, same_reactants=None, template=None, kinetics_database=None, kinetics_family=None):
     """
-    given a list of Reaction object with Molecule objects, this method
-    removes degenerate reactions and increments the degeneracy of the
-    reaction object. For multiple transition states, this method adds
-    them as separate duplicate reactions. This method modifies
-    rxnList in place and does not return anything.
+    Given a list of Reaction objects, this method combines degenerate
+    reactions and increments the reaction degeneracy value. For multiple
+    transition states, this method keeps them as duplicate reactions.
+
+    If a template is specified, then the reaction list will be filtered
+    to leave only reactions which match the specified template, then the
+    degeneracy will be calculated as usual.
+
+    A KineticsDatabase or KineticsFamily instance can also be provided to
+    calculate the degeneracy for reactions generated in the reverse direction.
+    If not provided, then it will be retrieved from the global database.
 
     This algorithm used to exist in family.__generateReactions, but was moved
-    here because it didn't have any family dependence.
+    here so it could operate across reaction families.
+
+    This method modifies the rxnList in place and also returns it.
+
+    Args:
+        rxn_list (list):                                reactions to be analyzed
+        same_reactants (bool, optional):                indicate whether the reactants are identical
+        template (list, optional):                      specify a specific template to filter by
+        kinetics_database (KineticsDatabase, optional): provide a KineticsDatabase instance for calculating degeneracy
+        kinetics_family (KineticsFamily, optional):     provide a KineticsFamily instance for calculating degeneracy
+
+    Returns:
+        Reaction list with degenerate reactions combined with proper degeneracy values
     """
+    # If a specific reaction template is requested, filter by that template
+    if template is not None:
+        selected_rxns = []
+        template = frozenset(template)
+        for rxn in rxn_list:
+            if template == frozenset(rxn.template):
+                selected_rxns.append(rxn)
+        if not selected_rxns:
+            # Only log a warning here. If a non-empty output is expected, then the caller should raise an exception
+            logging.warning('No reactions matched the specified template, {0}'.format(template))
+            return []
+    else:
+        selected_rxns = rxn_list
 
     # We want to sort all the reactions into sublists composed of isomorphic reactions
     # with degenerate transition states
-    rxnSorted = []
-    for rxn0 in rxnList:
+    sorted_rxns = []
+    for rxn0 in selected_rxns:
         # find resonance structures for rxn0
         rxn0.ensure_species()
-        if len(rxnSorted) == 0:
+        if len(sorted_rxns) == 0:
             # This is the first reaction, so create a new sublist
-            rxnSorted.append([rxn0])
+            sorted_rxns.append([rxn0])
         else:
             # Loop through each sublist, which represents a unique reaction
-            for rxnList1 in rxnSorted:
+            for sub_list in sorted_rxns:
                 # Try to determine if the current rxn0 is identical or isomorphic to any reactions in the sublist
                 isomorphic = False
                 identical = False
-                sameTemplate = False
-                for rxn in rxnList1:
+                sameTemplate = True
+                for rxn in sub_list:
                     isomorphic = rxn0.isIsomorphic(rxn, checkIdentical=False, checkTemplateRxnProducts=True)
-                    if not isomorphic:
-                        identical = False
-                    else:
+                    if isomorphic:
                         identical = rxn0.isIsomorphic(rxn, checkIdentical=True, checkTemplateRxnProducts=True)
-                    sameTemplate = frozenset(rxn.template) == frozenset(rxn0.template)
-                    if not isomorphic:
-                        # a different product was found, go to next list
+                        if identical:
+                            # An exact copy of rxn0 is already in our list, so we can move on
+                            break
+                        sameTemplate = frozenset(rxn.template) == frozenset(rxn0.template)
+                    else:
+                        # This sublist contains a different product
                         break
-                    elif not sameTemplate:
-                        # a different transition state was found, mark as duplicate and
-                        # go to the next sublist
-                        rxn.duplicate = True
+
+                # Process the reaction depending on the results of the comparisons
+                if identical:
+                    # This reaction does not contribute to degeneracy
+                    break
+                elif isomorphic:
+                    if sameTemplate:
+                        # We found the right sublist, and there is no identical reaction
+                        # We should add rxn0 to the sublist as a degenerate rxn, and move on to the next rxn
+                        sub_list.append(rxn0)
+                        break
+                    else:
+                        # We found an isomorphic sublist, but the reaction templates are different
+                        # We need to mark this as a duplicate and continue searching the remaining sublists
                         rxn0.duplicate = True
-                        break
-                    elif identical:
-                        # An exact copy of rxn0 is already in our list, so we can move on to the next rxn
-                        break
-                    else: # sameTemplate and isomorphic but not identical
-                        # This is the right sublist for rxn0, but continue to see if there is an identical rxn
+                        sub_list[0].duplicate = True
                         continue
                 else:
-                    # We did not break, so this is the right sublist, but there is no identical reaction
-                    # This means that we should add rxn0 to the sublist as a degenerate rxn
-                    rxnList1.append(rxn0)
-                if isomorphic and sameTemplate:
-                    # We already found the right sublist, so we can move on to the next rxn
-                    break
+                    # This is not an isomorphic sublist, so we need to continue searching the remaining sublists
+                    # Note: This else statement is not technically necessary but is included for clarity
+                    continue
             else:
                 # We did not break, which means that there was no isomorphic sublist, so create a new one
-                rxnSorted.append([rxn0])
+                sorted_rxns.append([rxn0])
 
-    rxnList = []
-    for rxnList1 in rxnSorted:
+    rxn_list = []
+    for sub_list in sorted_rxns:
         # Collapse our sorted reaction list by taking one reaction from each sublist
-        rxn = rxnList1[0]
+        rxn = sub_list[0]
         # The degeneracy of each reaction is the number of reactions that were in the sublist
-        rxn.degeneracy = sum([reaction0.degeneracy for reaction0 in rxnList1])
-        rxnList.append(rxn)
+        rxn.degeneracy = sum([reaction0.degeneracy for reaction0 in sub_list])
+        rxn_list.append(rxn)
 
-    for rxn in rxnList:
-        if rxn.isForward:
+    for rxn in rxn_list:
+        if rxn.is_forward:
             reduce_same_reactant_degeneracy(rxn, same_reactants)
         else:
             # fix the degeneracy of (not ownReverse) reactions found in the backwards direction
@@ -345,7 +343,7 @@ def find_degenerate_reactions(rxnList, same_reactants=None, kinetics_database=No
             if not family.ownReverse:
                 rxn.degeneracy = family.calculateDegeneracy(rxn)
 
-    return rxnList
+    return rxn_list
 
 def reduce_same_reactant_degeneracy(reaction, same_reactants=None):
     """
@@ -353,12 +351,53 @@ def reduce_same_reactant_degeneracy(reaction, same_reactants=None):
     since translational component of the transition states are already taken
     into account (so swapping the same reactant is not valid)
 
+    same_reactants can be None or an integer. If it is None, then isomorphism
+    checks will be done to determine if the reactions are the same. If it is an
+    integer, that integer denotes the number of reactants that are isomorphic.
+
     This comes from work by Bishop and Laidler in 1965
     """
-    if len(reaction.reactants) == 2 and (
-                (reaction.isForward and same_reactants) or
-                reaction.reactants[0].isIsomorphic(reaction.reactants[1])
-            ):
-        reaction.degeneracy *= 0.5
-        logging.debug('Degeneracy of reaction {} was decreased by 50% to {} since the reactants are identical'.format(reaction, reaction.degeneracy))
-
+    if not (same_reactants == 0 or same_reactants == 1):
+        if len(reaction.reactants) == 2:
+            if ((reaction.is_forward and same_reactants == 2) or
+                    reaction.reactants[0].isIsomorphic(reaction.reactants[1])):
+                reaction.degeneracy *= 0.5
+                logging.debug(
+                    'Degeneracy of reaction {} was decreased by 50% to {} since the reactants are identical'.format(
+                        reaction, reaction.degeneracy)
+                )
+        elif len(reaction.reactants) == 3:
+            if reaction.is_forward:
+                if same_reactants == 3:
+                    reaction.degeneracy /= 6.0
+                    logging.debug(
+                        'Degeneracy of reaction {} was divided by 6 to give {} since all of the reactants '
+                        'are identical'.format(reaction, reaction.degeneracy)
+                    )
+                elif same_reactants == 2:
+                    reaction.degeneracy *= 0.5
+                    logging.debug(
+                        'Degeneracy of reaction {} was decreased by 50% to {} since two of the reactants '
+                        'are identical'.format(reaction, reaction.degeneracy)
+                    )
+            else:
+                same_01 = reaction.reactants[0].isIsomorphic(reaction.reactants[1])
+                same_02 = reaction.reactants[0].isIsomorphic(reaction.reactants[2])
+                if same_01 and same_02:
+                    reaction.degeneracy /= 6.0
+                    logging.debug(
+                        'Degeneracy of reaction {} was divided by 6 to give {} since all of the reactants '
+                        'are identical'.format(reaction, reaction.degeneracy)
+                    )
+                elif same_01 or same_02:
+                    reaction.degeneracy *= 0.5
+                    logging.debug(
+                        'Degeneracy of reaction {} was decreased by 50% to {} since two of the reactants '
+                        'are identical'.format(reaction, reaction.degeneracy)
+                    )
+                elif reaction.reactants[1].isIsomorphic(reaction.reactants[2]):
+                    reaction.degeneracy *= 0.5
+                    logging.debug(
+                        'Degeneracy of reaction {} was decreased by 50% to {} since two of the reactants '
+                        'are identical'.format(reaction, reaction.degeneracy)
+                    )

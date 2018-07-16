@@ -138,7 +138,7 @@ def processOldLibraryEntry(data):
     raise NotImplementedError()
 
 
-class SolventData():
+class SolventData(object):
     """
     Stores Abraham/Mintz parameters for characterizing a solvent.
     """
@@ -183,7 +183,7 @@ class SolventData():
         """
         return math.exp(self.A + (self.B / T) + (self.C*math.log(T)) + (self.D * (T**self.E)))
                     
-class SolvationCorrection():
+class SolvationCorrection(object):
     """
     Stores corrections for enthalpy, entropy, and Gibbs free energy when a species is solvated.
     Enthalpy and Gibbs free energy is in J/mol; entropy is in J/mol/K
@@ -193,7 +193,7 @@ class SolvationCorrection():
         self.entropy = entropy
         self.gibbs = gibbs
             
-class SoluteData():
+class SoluteData(object):
     """
     Stores Abraham parameters to characterize a solute
     """

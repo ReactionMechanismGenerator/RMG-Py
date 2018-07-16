@@ -59,7 +59,7 @@ throughout the simulation.
 
 .. figure:: fluxAlgorithmWithReactionFiltering.png
 
-Here, ``unimolecularThreshold`` and ``bimolecularThreshold`` are binary arrays storing flag for whether a species or a pair of species are above a reaction threshold.  
+Here, ``unimolecularThreshold``, ``bimolecularThreshold``, and ``trimolecularThreshold`` are binary arrays storing flags for whether a species or a pair of species are above a reaction threshold.
 For a unimolecular rate, this threshold is set to ``True`` if the unimolecular rate of :math:`\textrm{reaction $k$}` for a species A 
 
 :math:`R_{unimolecular} = k_{threshold}C_A > \epsilon R_{char}` 
@@ -70,8 +70,36 @@ For a bimolecular reaction occuring between species A and B, this threshold is s
 
 :math:`R_{bimolecular} = k_{threshold}C_A C_B > \epsilon R_{char}` 
 
+where :math:`k_{threshold} = filterThreshold`. ``filterThreshold`` is set by the user in the input file and its
+default value is :math:`10^{8} \frac{m^3}{mol\cdot s}`. This is on the same order of magnitude as the collision limit for two hydrogen atoms
+at 1000 K. In general, it is recommended to set ``filterThreshold`` such that :math:`k_{threshold}` is slightly greater
+than the maximum rate constants one expects to be present in the system of interest. This will ensure that very fast
+reactions are not accidentally filtered out.
 
-at any given time :math:`t` in the reaction system, where :math:`k_{threshold} = 1 \times 10^{13} \frac{cm^3}{mol* s}` which is considered the diffusion limiting rate.
+Similarly, for a trimolecular reaction, the following expression is used:
 
-Two additional binary arrays ``unimolecularReact`` and ``bimolecularReact`` store flags for when the ``unimolecularThreshold`` or ``bimolecularThreshold`` flag
+:math:`R_{trimolecular} = k_{threshold}C_A C_B C_C > \epsilon R_{char}`
+
+where :math:`k_{threshold} = 10^{-3} \cdot filterThreshold \frac{m^6}{mol^2\cdot s}`.
+Based on extending Smoluchowski theory to multiple molecules, the diffusion limit rate constant for trimolecular
+reactions (in :math:`\frac{m^6}{mol^2\cdot s}`) is approximately three orders of magnitude smaller than the rate
+constant for bimolecular reactions (in :math:`\frac{m^3}{mol\cdot s}`). It is assumed here that Smoluchowski theory
+gives a sufficient approximation to collision theory in the gas phase.
+
+When the liquid-phase reactor is used, the diffusion limits are calculated using the Stokes-Einstein equation instead.
+For bimolecular reactions, this results in
+
+:math:`k_{threshold}[m^3/mol/s] = 22.2\frac{T[K]}{\mu[Pa\cdot s]}`
+
+and for trimolecular
+
+:math:`k_{threshold}[m^6/mol^2/s] = 0.11\frac{T[K]}{\mu[Pa\cdot s]}`
+
+where :math:`\mu` is the solvent viscosity. The coefficients in the above equations were obtained by using a
+representative value of the molecular radius of 2 Angstrom. More details on the calculation of diffusion limits in the
+liquid phase can be found in :ref:`the description of liquid-phase systems <liquids>` under
+:ref:`diffusion-limited kinetics <diffusionLimited>`.
+
+Three additional binary arrays ``unimolecularReact``, ``bimolecularReact``, and ``trimolecularReact`` store flags for
+when the ``unimolecularThreshold``, ``bimolecularThreshold``, or ``trimolecularThreshold`` flag
 shifts from ``False`` to ``True``.  RMG reacts species when the flag is set to ``True``.

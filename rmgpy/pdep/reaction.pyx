@@ -119,11 +119,11 @@ def calculateMicrocanonicalRateCoefficient(reaction,
         # so let's use the less accurate inverse Laplace transform method
         logging.debug('Calculating microcanonical rate coefficient using ILT method for {0}...'.format(reaction))
         if reactantStatesKnown:
-            kinetics = reaction.kinetics
+            kinetics = reaction.kinetics if reaction.network_kinetics is None else reaction.network_kinetics
             kf = applyInverseLaplaceTransformMethod(reaction.transitionState, kinetics, Elist, Jlist, reacDensStates, T)
             forward = True
         elif productStatesKnown:
-            kinetics = reaction.generateReverseRateCoefficient()
+            kinetics = reaction.generateReverseRateCoefficient(network_kinetics=True)
             kr = applyInverseLaplaceTransformMethod(reaction.transitionState, kinetics, Elist, Jlist, prodDensStates, T)
             forward = False
         else:
@@ -209,11 +209,14 @@ def applyRRKMTheory(transitionState,
     # state sum of states that includes tunneling
     conf.sumStates = convolve(conf.densStates, kappa)
     conf.Elist += Elist[0] - E0_TS
-    
-    for r in range(Ngrains):
+
+    E0 = None
+    for r in xrange(Ngrains):
         if conf.sumStates[r] > 0:
             E0 = conf.Elist[r]
             break
+    if E0 is None:
+        raise ValueError, "Could not find a positive sum of states for {0}".format(conf)
     conf.Elist -= E0
     
     sumStates = conf.mapSumOfStates(Elist - E0, Jlist)

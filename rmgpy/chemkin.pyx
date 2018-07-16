@@ -35,6 +35,7 @@ import shutil
 import math
 import re
 import logging
+import warnings
 import textwrap
 import os.path
 import numpy
@@ -609,7 +610,7 @@ def readReactionComments(reaction, comments, read = True):
             )
             
         elif 'Library reaction:' in line or 'Seed mechanism:' in line:
-            label = str(tokens[-1])
+            label = str(tokens[2])
             reaction = LibraryReaction(
                 index = reaction.index,
                 reactants = reaction.reactants, 
@@ -619,7 +620,7 @@ def readReactionComments(reaction, comments, read = True):
                 reversible = reaction.reversible,
                 duplicate = reaction.duplicate,
                 library = label,
-            )   
+            )
             
         elif 'PDep reaction:' in line:
             networkIndex = int(tokens[-1][1:])
@@ -1198,6 +1199,9 @@ def readReactionsBlock(f, speciesDict, readComments = True):
 
         elif len(tokens) > 0 and tokens[0].lower() == 'unit:':
             # RMG-Java kinetics library file
+            warnings.warn("The RMG-Java kinetic library files are"
+                          " no longer supported and may be"
+                          " removed in version 2.3.", DeprecationWarning)
             found = True
             while 'reactions:' not in line.lower():
                 line = f.readline()
@@ -1296,6 +1300,8 @@ def readReactionsBlock(f, speciesDict, readComments = True):
         commentsList.pop(-1)
     elif kineticsList[0] == '' and commentsList[0] == '':
         # True for Chemkin files generated from RMG-Java
+        warnings.warn("RMG-Java loading is no longer supported and may be"
+                      " removed in version 2.3.", DeprecationWarning)
         kineticsList.pop(0)
         commentsList.pop(0)
     else:
@@ -1333,6 +1339,8 @@ def saveHTMLFile(path, readComments = True):
     """
     Save an output HTML file from the contents of a RMG-Java output folder
     """
+    warnings.warn("RMG-Java loading is no longer supported and may be"
+                  " removed in version 2.3.", DeprecationWarning)
     from rmgpy.rmg.model import CoreEdgeReactionModel
     from rmgpy.rmg.output import saveOutputHTML
     chemkinPath= os.path.join(path, 'chemkin', 'chem.inp')
@@ -1504,6 +1512,8 @@ def writeReactionString(reaction, javaLibrary = False):
                                     " reaction {0}".format(reaction.label)
 
     if javaLibrary:
+        warnings.warn("Writing RMG-Java format is no longer supported and may be"
+                      " removed in version 2.3.", DeprecationWarning)
         thirdBody = ''
         if kinetics.isPressureDependent():
             if (isinstance(kinetics, _kinetics.ThirdBody) and
@@ -1670,6 +1680,8 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
         string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(1, 0, 0)
         
     if javaLibrary:
+        warnings.warn("RMG-Java libraries are no longer supported and may be"
+                      " removed in version 2.3.", DeprecationWarning)
         # Assume uncertainties are zero (when parsing from chemkin), may need to adapt later
         string += '{0:<9.1f} {1:<9.1f} {2:<9.1f}'.format(0, 0, 0)
 
@@ -1760,18 +1772,28 @@ def markDuplicateReaction(test_reaction, reaction_list):
             # duplicates of one another.
             # RHW question: why can't TemplateReaction be duplicate of LibraryReaction, in Chemkin terms? I guess it shouldn't happen in RMG.
             continue
-        if ((reaction1.reactants == reaction2.reactants and reaction1.products == reaction2.products) \
-            or (reaction1.products == reaction2.reactants and reaction1.reactants == reaction2.products)) \
-            and  (reaction1.specificCollider == reaction2.specificCollider):
+        same_dir_match = (reaction1.reactants == reaction2.reactants and reaction1.products == reaction2.products)
+        opposite_dir_match = (reaction1.products == reaction2.reactants and reaction1.reactants == reaction2.products)
+        if (same_dir_match or opposite_dir_match) and (reaction1.specificCollider == reaction2.specificCollider):
             if reaction1.duplicate and reaction2.duplicate:                
                 if reaction1.kinetics.isPressureDependent() != reaction2.kinetics.isPressureDependent():
+                    # Reactions with mixed pressure dependence do not need to be marked duplicate in Chemkin
                     logging.warning('Marked reaction {0} as not duplicate because of mixed pressure dependence for saving to Chemkin file.'.format(reaction1))
                     reaction1.duplicate = False
                     reaction2.duplicate = False
+                elif opposite_dir_match and not reaction1.reversible and not reaction2.reversible:
+                    # Irreversible reactions in opposite directions do not need to be marked duplicate in Chemkin
+                    logging.warning('Marked reaction {0} as not duplicate because they are irreversible '
+                                    'in opposite directions for saving to Chemkin file.'.format(reaction1))
+                    reaction1.duplicate = False
+                    reaction2.duplicate = False
             else:
-                if reaction1.kinetics.isPressureDependent() == reaction2.kinetics.isPressureDependent():
+                if (reaction1.kinetics.isPressureDependent() == reaction2.kinetics.isPressureDependent()
+                        and ((reaction1.reversible and reaction2.reversible)
+                        or (same_dir_match and not reaction1.reversible and not reaction2.reversible))):
                     # Only mark as duplicate if both reactions are pressure dependent or both are
-                    # not pressure dependent.  Do not mark as duplicates otherwise.
+                    # not pressure dependent. Also, they need to both be reversible or both be
+                    # irreversible in the same direction.  Do not mark as duplicates otherwise.
                     logging.warning('Marked reaction {0} as duplicate of {1} for saving to Chemkin file.'.format(reaction1, reaction2))
                     reaction1.duplicate = True
                     reaction2.duplicate = True
@@ -1808,7 +1830,12 @@ def saveSpeciesDictionary(path, species, oldStyle=False):
                     f.write("\n// " + "\n// ".join(newAdjList.splitlines()) + '\n')
             else:
                 try:
-                    f.write(spec.molecule[0].toAdjacencyList(label=getSpeciesIdentifier(spec), removeH=False))
+                    for mol in spec.molecule:
+                        if mol.reactive:
+                            f.write(mol.toAdjacencyList(label=getSpeciesIdentifier(spec), removeH=False))
+                            break
+                    else:
+                        raise AssertionError('No reactive structures were found for species {0}.'.format(getSpeciesIdentifier(spec)))
                 except:
                     raise ChemkinError('Ran into error saving dictionary for species {0}. Please check your files.'.format(getSpeciesIdentifier(spec)))
             f.write('\n')
@@ -1924,6 +1951,8 @@ def saveJavaKineticsLibrary(path, species, reactions):
     and reactions.txt given a list of reactions, with species.txt containing the
     RMG-Java formatted dictionary.
     """
+    warnings.warn("Java kinetics libararies are no longer supported and may be"\
+            "removed in version 2.3.", DeprecationWarning)
     # Check for duplicate
     markDuplicateReactions(reactions)
     

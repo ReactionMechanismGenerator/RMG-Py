@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 modelChemistry = "CBS-QB3"
-frequencyScaleFactor = 0.99
 useHinderedRotors = True
 useBondCorrections = True
 

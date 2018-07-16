@@ -11,14 +11,15 @@ build:
 
 requirements:
   build:
+    - {{ compiler('c') }} # [unix]
+    - mingwpy # [win]
+  host:
     - boost ==1.56.0
     - cython >=0.25.2
-    - gcc_linux-64 # [linux]
-    - clang_osx-64 # [osx]
     - jinja2
     - lpsolve55
     - numpy
-    - openbabel
+    - openbabel >=2.4.1
     - pydas >=1.0.2
     - pydqed >=1.0.1
     - pyrdl
@@ -29,11 +30,10 @@ requirements:
     - scipy
     - scoop
     - setuptools
-
   run:
     - argparse # [py26]
-    - cairo # [unix]
-    - cairocffi # [unix]
+    - cairo
+    - cairocffi
     - cantera >=2.3.0a3
     - coolprop
     - coverage
@@ -49,8 +49,8 @@ requirements:
     - mock
     - mopac
     - nose
-    - numpy
-    - openbabel
+    - {{ pin_compatible('numpy') }}
+    - openbabel >=2.4.1
     - psutil
     - pydas >=1.0.2
     - pydot ==1.2.2
@@ -62,7 +62,7 @@ requirements:
     - pyzmq
     - quantities
     - rdkit >=2015.09.2
-    - rmgdatabase >=2.1.9
+    - rmgdatabase >=2.2.0
     - scipy
     - scoop
     - symmetry
@@ -70,16 +70,12 @@ requirements:
 
 test:
   source_files:
-    - '*'
-  requires:
-    - nose
+    - 'examples/rmg/minimal'
   imports:
     - rmgpy
   commands:
-    - cp $PREFIX/lib/python2.7/site-packages/rmgpy/rmgrc $SRC_DIR [unix]
-    - make -C $SRC_DIR test [unix]
-    - cp %PREFIX%\Lib\site-packages\rmgpy\rmgrc %SRC_DIR% [win]
-    - mingw32-make -C %SRC_DIR% test [win]
+    - rmg.py examples/rmg/minimal/input.py # [unix]
+    - python %SCRIPTS%\rmg.py examples\rmg\minimal\input.py # [win]
 
 about:
   home: http://github.com/ReactionMechanismGenerator/RMG-Py

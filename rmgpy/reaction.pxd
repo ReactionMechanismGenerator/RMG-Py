@@ -46,12 +46,16 @@ cdef class Reaction:
     cdef public bint reversible
     cdef public TransitionState transitionState
     cdef public KineticsModel kinetics
+    cdef public Arrhenius network_kinetics
     cdef public bint duplicate
     cdef public float _degeneracy
     cdef public list pairs
-    cdef public bint has_pdep_route
+    cdef public bint allow_pdep_route
+    cdef public bint elementary_high_p
     cdef public str comment
     cdef public dict k_effective_cache
+    cdef public bint is_forward
+    cdef public bint allow_max_rate_violation
     
     cpdef bint isIsomerization(self)
 
@@ -91,7 +95,7 @@ cdef class Reaction:
 
     cpdef reverseThisArrheniusRate(self, Arrhenius kForward, str reverseUnits)
 
-    cpdef generateReverseRateCoefficient(self)
+    cpdef generateReverseRateCoefficient(self, bint network_kinetics=?)
 
     cpdef numpy.ndarray calculateTSTRateCoefficients(self, numpy.ndarray Tlist)
 
@@ -109,4 +113,4 @@ cdef class Reaction:
 
     cpdef ensure_species(self, bint reactant_resonance=?, bint product_resonance=?)
 
-cpdef bint _isomorphicSpeciesList(list list1, list list2, bint checkIdentical=?, bint checkOnlyLabel=?)
+cpdef bint isomorphic_species_lists(list list1, list list2, bint check_identical=?, bint only_check_label=?)

@@ -37,7 +37,7 @@ import numpy
 from rmgpy import settings
 from rmgpy.chemkin import loadChemkinFile
 from rmgpy.data.base import Entry, DatabaseError, ForbiddenStructures
-from rmgpy.data.kinetics.common import saveEntry, filter_reactions, find_degenerate_reactions, ensure_independent_atom_ids
+from rmgpy.data.kinetics.common import saveEntry, find_degenerate_reactions, ensure_independent_atom_ids
 from rmgpy.data.kinetics.database import KineticsDatabase
 from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.rmg import RMGDatabase
@@ -59,7 +59,8 @@ def setUpModule():
             'R_Recombination',
             'Disproportionation',
             'R_Addition_MultipleBond',
-            'H_Abstraction'
+            'H_Abstraction',
+            'intra_H_migration',
         ],
         testing=True,
         depository=False,
@@ -87,12 +88,11 @@ def tearDownModule():
 
 class TestKineticsDatabase(unittest.TestCase):
 
-    def testLoadFamilies(self):
-        """
-        Test that the loadFamilies function raises the correct exceptions
-        """
-        path = os.path.join(settings['test_data.directory'],'testing_database','kinetics','families')
+    def test_load_families_incorrect(self):
+        """Test invalid methods for loading kinetics families"""
+        path = os.path.join(settings['test_data.directory'], 'testing_database', 'kinetics', 'families')
         database = KineticsDatabase()
+        database.loadRecommendedFamiliesList(os.path.join(path, 'recommended.py'))
 
         with self.assertRaises(DatabaseError):
             database.loadFamilies(path, families='random')
@@ -100,8 +100,53 @@ class TestKineticsDatabase(unittest.TestCase):
             database.loadFamilies(path, families=['!H_Abstraction','Disproportionation'])
         with self.assertRaises(DatabaseError):
             database.loadFamilies(path, families=['fake_family'])
-        with self.assertRaises(DatabaseError):
+
+    def test_load_families_correct(self):
+        """Test valid methods for loading kinetics families."""
+        path = os.path.join(settings['test_data.directory'], 'testing_database', 'kinetics', 'families')
+        database = KineticsDatabase()
+        database.loadRecommendedFamiliesList(os.path.join(path, 'recommended.py'))
+
+        try:
             database.loadFamilies(path, families=[])
+        except DatabaseError:
+            self.fail("Unable to load families using list []")
+
+        try:
+            database.loadFamilies(path, families='none')
+        except DatabaseError:
+            self.fail("Unable to load families using keyword 'none'")
+
+        try:
+            database.loadFamilies(path, families='default')
+        except DatabaseError:
+            self.fail("Unable to load families using keyword 'default'")
+
+        try:
+            database.loadFamilies(path, families=['default', 'pah'])
+        except DatabaseError:
+            self.fail("Unable to load families using list ['default', 'pah']")
+
+        try:
+            database.loadFamilies(path, families=['R_Addition_MultipleBond'])
+        except DatabaseError:
+            self.fail("Unable to load families using list ['R_Addition_MultipleBond']")
+
+        try:
+            database.loadFamilies(path, families=['!H_Abstraction', '!Disproportionation'])
+        except DatabaseError:
+            self.fail("Unable to load families using list ['!H_Abstraction', '!Disproportionation']")
+
+        try:
+            database.loadFamilies(path, families='!pah')
+        except DatabaseError:
+            self.fail("Unable to load families using keyword '!pah'")
+
+        try:
+            database.loadFamilies(path, families=['H_Abstraction', 'pah'])
+        except DatabaseError:
+            self.fail("Unable to load families using list ['H_Abstraction', 'pah']")
+
 
 class TestReactionDegeneracy(unittest.TestCase):
 
@@ -519,6 +564,33 @@ class TestReactionDegeneracy(unittest.TestCase):
 
         self.assertEqual(set(reaction_list[0].template), {'C_rad/H2/Cd', 'Cmethyl_Csrad/H/Cd'})
 
+    def test_degeneracy_multiple_ts_different_template(self):
+        """Test that reactions from different transition states are marked as duplicates."""
+        family_label = 'intra_H_migration'
+        reactants = ['CCCC[CH]CCCCC']
+        products = ['[CH2]CCCCCCCCC']
+
+        correct_rxn_num = 2
+        correct_degeneracy = {3}
+
+        reaction_list = self.assert_correct_reaction_degeneracy(reactants, correct_rxn_num, correct_degeneracy, family_label, products)
+
+        self.assertTrue(reaction_list[0].duplicate)
+        self.assertTrue(reaction_list[1].duplicate)
+
+    def test_degeneracy_multiple_resonance_different_template(self):
+        """Test that reactions from different resonance structures are not kept."""
+        family_label = 'H_Abstraction'
+        reactants = ['c1ccccc1', '[CH3]']
+
+        correct_rxn_num = 1
+        correct_degeneracy = {6}
+
+        reaction_list = self.assert_correct_reaction_degeneracy(reactants, correct_rxn_num, correct_degeneracy, family_label)
+
+        self.assertFalse(reaction_list[0].duplicate)
+
+
 class TestKineticsCommentsParsing(unittest.TestCase):
 
     @classmethod
@@ -622,45 +694,6 @@ class TestKinetics(unittest.TestCase):
             os.path.join(settings['test_data.directory'], 'parsing_data', 'chem_annotated.inp'),
             os.path.join(settings['test_data.directory'], 'parsing_data', 'species_dictionary.txt')
         )
-        
-    def test_filter_reactions(self):
-        """
-        tests that filter reactions removes reactions that are missing
-        any reactants or products
-        """
-        
-        reactions=self.reactions
-        
-        reactants = []
-        products = []
-        for x in reactions:
-            reactants += x.reactants
-            products += x.products
-        
-        lrset = set(reactants[6:])
-        mlrset = {reactants[i].molecule[0] for i in range(6,len(reactants))}
-        
-        reactants = set(reactants)
-        products = set(products)
-        mreactants = {i.molecule[0] for i in reactants}
-        mproducts = {i.molecule[0] for i in products}
-
-        newmreactants = list(mreactants-mlrset)
-        newmproducts = list(mproducts-mlrset)
-
-        out = filter_reactions(newmreactants, newmproducts, reactions)
-            
-        rset = list(set(reactions) - set(out))
-
-        msets = [set(i.reactants+i.products) for i in rset]
-        
-        for i, iset in enumerate(msets): #test that all the reactions we removed are missing a reactant or a product
-            self.assertTrue(iset & lrset != set(),msg='reaction {0} removed improperly'.format(rset[i]))
-        
-        outsets = [set(i.reactants+i.products) for i in out]
-            
-        for i, iset in enumerate(outsets): #test that all the reactions left in aren't missing any reactants or products
-            self.assertTrue(iset & lrset == set(),msg='reaction {0} left in improperly, should have removed in based on presence of {1}'.format(out[i],iset & lrset))
 
     def test_react_molecules(self):
         """
@@ -790,13 +823,10 @@ class TestKinetics(unittest.TestCase):
         r2 = Species(molecule=[Molecule().fromAdjacencyList(adjlist[1])])
         p1 = Species(molecule=[Molecule().fromAdjacencyList(adjlist[2])])
         p2 = Species(molecule=[Molecule().fromAdjacencyList(adjlist[3])])
-        r1.generate_resonance_structures(keepIsomorphic=True)
-        p1.generate_resonance_structures(keepIsomorphic=True)
-        
-        
-        rxn = TemplateReaction(reactants = [r1, r2], 
-                               products = [p1, p2]
-)
+        r1.generate_resonance_structures(keep_isomorphic=True)
+        p1.generate_resonance_structures(keep_isomorphic=True)
+
+        rxn = TemplateReaction(reactants=[r1, r2], products=[p1, p2])
         
         rxn.degeneracy = family.calculateDegeneracy(rxn)
         self.assertEqual(rxn.degeneracy, 6)
@@ -804,6 +834,37 @@ class TestKinetics(unittest.TestCase):
         family.addReverseAttribute(rxn)
         
         self.assertEqual(rxn.reverse.degeneracy, 6)
+
+    def test_calculate_degeneracy_for_non_reactive_molecule(self):
+        """
+        tests that the calculateDegeneracy method gets the degeneracy correct for unreactive molecules
+        and that __generateReactions work correctly with the react_non_reactive flag set to `True`.
+        """
+        from rmgpy.data.rmg import getDB
+        from rmgpy.data.kinetics.family import TemplateReaction
+
+        adjlist = ['''
+        multiplicity 2
+        1 H u1 p0 c0''',
+                   '''
+        multiplicity 2
+        1 O u1 p1 c+1 {2,D}
+        2 N u0 p2 c-1 {1,D}''',
+                   '''
+        1 O u0 p1 c+1 {2,D} {3,S}
+        2 N u0 p2 c-1 {1,D}
+        3 H u0 p0 c0 {1,S}''']
+
+        family = getDB('kinetics').families['R_Recombination']
+        r1 = Species(molecule=[Molecule().fromAdjacencyList(adjlist[0])])
+        r2 = Species(molecule=[Molecule().fromAdjacencyList(adjlist[1])])  # r2 is not the representative structure of
+        # NO, but it is the correct structure participating in this reaction
+        p1 = Species(molecule=[Molecule().fromAdjacencyList(adjlist[2])])
+        r2.generate_resonance_structures(keep_isomorphic=True)
+
+        rxn = TemplateReaction(reactants=[r1, r2], products=[p1])
+        rxn.degeneracy = family.calculateDegeneracy(rxn)
+        self.assertEqual(rxn.degeneracy, 1)
 
     def test_generate_reactions_from_families_with_resonance(self):
         """Test that we can generate reactions from families with resonance structures"""

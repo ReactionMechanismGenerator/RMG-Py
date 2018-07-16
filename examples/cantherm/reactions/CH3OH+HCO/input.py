@@ -7,12 +7,9 @@ description = \
 """
 This example is for a rigid rotor harmonic oscillator TST calculation calclated at the 
 M08SO/MG3S level of DFT with a tight grid.  Tunneling is not included in this calculation.
-Last, energy corrections for M08SO have not been added to cantherm yet, so you will see a 
-warning: Unknown model chemistry "M08SO"; not applying energy corrections. Because this is
-TST calculation and not a thermochemistry calculation, this can be disregarded
 """
 
-modelChemistry = "M08SO"
+modelChemistry = "m08so/mg3s*"
 frequencyScaleFactor = 0.983
 useHinderedRotors = False
 useBondCorrections = False

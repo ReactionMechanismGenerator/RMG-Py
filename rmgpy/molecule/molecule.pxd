@@ -45,7 +45,7 @@ cdef class Atom(Vertex):
     cdef public numpy.ndarray coords
     cdef public short lonePairs
     cdef public int id
-
+    cdef public dict props
     
     cpdef bint equivalent(self, Vertex other) except -2
 
@@ -70,6 +70,8 @@ cdef class Atom(Vertex):
     cpdef bint isChlorine(self)
 
     cpdef bint isIodine(self)
+
+    cpdef bint isNOS(self)
     
     cpdef incrementRadical(self)
 
@@ -126,6 +128,7 @@ cdef class Molecule(Graph):
     cdef public bint implicitHydrogens
     cdef public float symmetryNumber
     cdef public int multiplicity
+    cdef public bint reactive
     cdef public object rdMol
     cdef public int rdMolConfId
     cdef str _fingerprint
@@ -174,13 +177,13 @@ cdef class Molecule(Graph):
 
     cpdef dict get_element_count(self)
 
-    cpdef bint isIsomorphic(self, Graph other, dict initialMap=?) except -2
+    cpdef bint isIsomorphic(self, Graph other, dict initialMap=?, bint saveOrder=?) except -2
 
-    cpdef list findIsomorphism(self, Graph other, dict initialMap=?)
+    cpdef list findIsomorphism(self, Graph other, dict initialMap=?, bint saveOrder=?)
 
-    cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?) except -2
+    cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?, bint generateInitialMap=?, bint saveOrder=?) except -2
 
-    cpdef list findSubgraphIsomorphisms(self, Graph other, dict initialMap=?)
+    cpdef list findSubgraphIsomorphisms(self, Graph other, dict initialMap=?, bint saveOrder=?)
 
     cpdef bint isAtomInCycle(self, Atom atom) except -2
 
@@ -224,7 +227,9 @@ cdef class Molecule(Graph):
 
     cpdef float calculateSymmetryNumber(self) except -1
 
-    cpdef list generate_resonance_structures(self, bint keepIsomorphic=?)
+    cpdef list generate_resonance_structures(self, bint keep_isomorphic=?, bint filter_structures=?)
+
+    cpdef identifyRingMembership(self)
 
     cpdef tuple getAromaticRings(self, list rings=?)
 

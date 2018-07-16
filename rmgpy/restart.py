@@ -33,7 +33,7 @@ import os.path
 import logging
 import cPickle
 import time
-
+import warnings
 def save(rmg):
     # Save the restart file if desired
     if rmg.saveRestartPeriod or rmg.done:
@@ -51,7 +51,8 @@ def saveRestartFile(path, rmg, delay=0):
     the restart file is not at least that old, the save is aborted. (Use the
     default value of 0 to force the restart file to be saved.)
     """
-    
+    warnings.warn("The saveRestartFile is no longer supported and may be"
+                  " removed in version 2.3.", DeprecationWarning)
     # Saving of a restart file is very slow (likely due to all the Quantity objects)
     # Therefore, to save it less frequently, don't bother if the restart file is less than an hour old
     if os.path.exists(path) and time.time() - os.path.getmtime(path) < delay:
@@ -67,9 +68,11 @@ def saveRestartFile(path, rmg, delay=0):
     rmg_restart.reactionModel = rmg.reactionModel
     rmg_restart.unimolecularReact = rmg.unimolecularReact
     rmg_restart.bimolecularReact = rmg.bimolecularReact
+    rmg_restart.trimolecularReact = rmg.trimolecularReact
     if rmg.filterReactions:
         rmg_restart.unimolecularThreshold = rmg.unimolecularThreshold
         rmg_restart.bimolecularThreshold = rmg.bimolecularThreshold
+        rmg_restart.trimolecularThreshold = rmg.trimolecularThreshold
     
     f = open(path, 'wb')
     cPickle.dump(rmg_restart, f, cPickle.HIGHEST_PROTOCOL)

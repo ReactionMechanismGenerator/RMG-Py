@@ -90,7 +90,6 @@ SMILES_LOOKUPS = {
 MOLECULE_LOOKUPS = {
     'N2': 'N#N',
     'CH4': 'C',
-    'CH2O': 'C=O',
     'H2O': 'O',
     'C2H6': 'CC',
     'H2': '[H][H]',
@@ -99,12 +98,10 @@ MOLECULE_LOOKUPS = {
     'Ar': '[Ar]',
     'He': '[He]',
     'CH4O': 'CO',
-    'CO2': 'O=C=O',
     'CO': '[C-]#[O+]',
     'O2': 'O=O',
     'C': '[C]',  # for this to be in the "molecule" list it must be singlet with 2 lone pairs
     'H2S': 'S',
-    'N2O': 'N#[N+][O-]',
     'NH3': 'N',
     'O3': '[O-][O+]=O',
     'Cl2': '[Cl][Cl]',
@@ -132,7 +129,6 @@ RADICAL_LOOKUPS = {
     'H2N': '[NH2]',
     'HN': '[NH]',
     'NO': '[N]=O',
-    'NO2': 'N(=O)[O]',
     'Cl': '[Cl]',
     'I': '[I]',
 }
@@ -223,7 +219,7 @@ def toSMILES(mol, backend='default'):
     """
     Convert a molecular structure to an SMILES string.
 
-    If there is a Nitrogen atom present it uses
+    If there is a Nitrogen/Sulfur atom present it uses
     `OpenBabel <http://openbabel.org/>`_ to perform the conversion,
     and the SMILES may or may not be canonical.
 
@@ -244,7 +240,7 @@ def toSMILES(mol, backend='default'):
     except KeyError:
         if backend == 'default':
             for atom in mol.atoms:
-                if atom.isNitrogen():
+                if atom.isNitrogen() or atom.isSulfur():
                     return _write(mol, 'smi', backend='openbabel')
             return _write(mol, 'smi', backend='rdkit')
         else:

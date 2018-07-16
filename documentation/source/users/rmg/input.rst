@@ -112,7 +112,7 @@ Seed Mechanisms
 The next section of the :file:`input.py` file specifies which, if any,
 Seed Mechanisms should be used.  If a seed mechanism is passed to RMG, every
 species and reaction present in the seed mechanism will be placed into the core, in
-addition to the species that are listed in the :ref:`species` section.
+addition to the species that are listed in the :ref:`species_list` section.
 
 For details of the kinetics libraries included with RMG that can be used as a seed mechanism,
 see :ref:`reactionlibraries`.
@@ -137,7 +137,14 @@ the one that gets used.
 
 Kinetics Depositories
 ---------------------
-::
+Kinetics depositories store reactions which can be used for rate estimation.
+Depositories are divided by the sources of the data. Currently, RMG database
+has two depositories. The main depository is `training` which contains
+reactions from various sources. This depository is loaded by default and
+can be disabled by adding `'!training'` to the list of depositories.
+The `NIST` depository contains reactions taken from NIST's gas kinetics database.
+The `kineticsDepositories` argument in the input file accepts a list of
+strings describing which depositories to include.::
 
 	kineticsDepositories = ['training']
 
@@ -146,11 +153,32 @@ Kinetics Depositories
 
 Kinetics Families
 -----------------
-In this section users can specify the particular reaction families that they wish to use to generate their model. for example you can use only :file:`Intra_RH_Add_Endocyclic` family to build the model by::
+In this section users can specify the particular reaction families that they wish to use to generate their model.
+This can be specified with any combination of specific families and predefined sets from :file:`RMG-database/input/families/recommended.py`.
 
-	kineticsFamilies = ['Intra_RH_Add_Endocyclic']
+For example, you can use only the :file:`H_Abstraction` family to build the model::
 
-Otherwise, by typing 'default' (and excluding the brackets that are shown in the example above), RMG will use recommended reaction families to generate the mechanism. The recommended reaction families can be found in :file:`RMG-database/input/families/recommended.py`.
+	kineticsFamilies = 'H_Abstraction'
+
+You can also specify multiple families in a list::
+
+	kineticsFamilies = ['H_Abstraction', 'Disproportionation', 'R_Recombination']
+
+To use a predefined set, simply specify its name::
+
+	kineticsFamilies = 'default'
+
+You can use a mix of predefined sets and kinetics families::
+
+	kineticsFamilies = ['default', 'SubstitutionS']
+
+It is also possible to request the inverse of a particular list::
+
+	kineticsFamilies = ['!default', '!SubstitutionS']
+
+This will load all kinetics families except the ones in ``'default'`` and ``'SubstitutionS'``.
+
+Finally, you can also specify ``'all'`` or ``'none'``, which may be useful in certain cases.
 
 
 Kinetics Estimator
@@ -171,7 +199,7 @@ The following is an example of a database block, based on above chosen libraries
 		kineticsEstimator = 'rate rules',
 	)
 
-.. _species:
+.. _species_list:
 
 List of species
 ===============
@@ -214,9 +242,13 @@ Currently, RMG can only model constant temperature and pressure systems. Future 
 will allow for variable temperature and pressure. To define a reaction system we need to
 define the temperature, pressure and initial mole fractions of the reactant species. The
 initial mole fractions are defined using the label for the species in
-the species block. Every reaction system can have its termination criterion based on
-species conversion or termination time or both. When both termination criterion are specified
-the model generation will stop when either of the termination criterion is satisfied.
+the species block. Reaction system simulations terminate when one of the specified termination
+criteria are satisfied.  Termination can be specied to occur at a specific time, at a specific
+conversion of a given initial species or to occur at a given terminationRateRatio, which is the
+characteristic flux in the system at that time divided by the maximum characteristic flux observed so far
+in the system (measure of how much chemistry is happening at a moment relative to the main chemical process).  
+
+
 
 The following is an example of a simple reactor system::
 
@@ -232,6 +264,7 @@ The following is an example of a simple reactor system::
 			'CH4': 0.9,
 		},
 		terminationTime=(1e0,'s'),
+		terminationRateRatio=0.01,
 		sensitivity=['CH4','H2'],
 		sensitivityThreshold=0.001,
 
@@ -256,6 +289,69 @@ sensitivities for dln(C_i)/dln(k_j) > sensitivityThreshold  or dlnC_i/d(G_j) > s
 
 Note that in the RMG job, after the model has been generated to completion, sensitivity analysis will be conducted
 in one final simulation (sensitivity is not performed in intermediate iterations of the job).
+
+Advanced Setting: Range Based Reactors
+-------------------------------------------------
+
+Under this setting rather than using reactors at fixed points, reaction conditions are sampled from a range of conditions.  
+Conditions are chosen using a weighted stochastic grid sampling algorithm.  An implemented objective function measures how
+desirable it is to sample from a point condition (T, P, concentrations) based on prior run conditions (weighted by how 
+recent they were and how many objects they returned). Each iteration this objective function is evaluated at a grid of
+points spaning the reactor range (the grid has 20^N points where N is the number of dimensions).  The grid values are then normalized to one and a grid point is chosen with probability 
+equal to its normalized objective function value.  Then a random step of maximum length sqrt(2)/2 times the distance between grid 
+points is taken from that grid point to give the chosen condition point.  The random numbers are seeded so that this does 
+not make the algorithm non-deterministic.  
+
+.. figure:: images/RangedReactorDiagram.png
+    :width: 300px
+    :align: center
+    :height: 300px
+
+These variable condition reactors run a defined number of times (``nSims``) each reactor cycle. Use of these reactors tends to 
+improve treatment of reaction conditions that otherwise would be between reactors and reduce the number of simulations needed by 
+focusing on reaction conditions at which the model terminates earlier.  An example with sensitivity analysis at a specified reaction condition 
+is available below::
+
+	simpleReactor(
+		temperature=[(1000,'K'),(1500,'K')],
+		pressure=[(1.0,'bar'),(10.0,'bar')],
+		nSims=12,
+		initialMoleFractions={
+		"ethane": [0.05,0.15],
+		"O2": 0.1,
+		"N2": 0.9,
+		},
+		terminationConversion={
+		'ethane': 0.1,
+		},
+		terminationTime=(1e1,'s'),
+		sensitivityTemperature = (1000,'K'),
+		sensitivityPressure = (10.0,'bar'),
+		sensitivityMoleFractions = {"ethane":0.1,"O2":0.9},
+		sensitivity=["ethane","O2"],
+		sensitivityThreshold=0.001,
+		balanceSpecies = "N2",
+		)
+
+Note that increasing ``nSims`` improves convergence over the entire range, but convergence is only guaranteed at the 
+last set of ``nSims`` reaction conditions. Theoretically if ``nSims`` is set high enough the RMG model converges over the 
+entire interval.  Except at very small values for ``nSims`` the convergence achieved is usually as good or superior to 
+that achieved using the same number of evenly spaced fixed reactors.   
+
+If there is a particular reaction condition you expect to converge more slowly than the rest of the range 
+there is virtually no cost to using a single condition reactor (or a ranged reactor at a smaller range) at that condition 
+and a ranged reactor with a smaller value for nSims.  This is because the fixed reactor simulations will almost always
+be useful and keep the overall RMG job from terminating while the ranged reactor samples the faster converging conditions.   
+
+What you should actually set ``nSims`` to is very system dependent.  The value you choose should be at least 2 + N 
+where N is the number of dimensions the reactor spans (T=>N=1, T and P=>N=2, etc...).  There may be benefits to setting it as high
+as 2 + 5N.  The first should give you convergence over most of the interval that is almost always better than the same 
+number of fixed reactors.  The second should get you reasonably close to convergence over the entire range for N <= 2.  
+
+For gas phase reactors if normalization of the ranged mole fractions is undesirable (eg. perhaps a specific species mole 
+fractions needs to be kept constant) one can use a ``balanceSpecies``.  When a ``balanceSpecies`` is used instead of 
+normalizing the mole fractions the concentration of the defined ``balanceSpecies`` is adjusted to maintain an overall mole 
+fraction of one.  This ensures that all species except the ``balanceSpecies`` have mole fractions within the range specified.  
 
 .. _simulatortolerances:
 
@@ -306,11 +402,13 @@ the model does not converge with normal parameter settings.  See :ref:`Filtering
         toleranceMoveToCore=0.1,
         toleranceInterruptSimulation=0.1,
         filterReactions=True,
+        filterThreshold=5e8,
     )
 
 **Additional parameters:**
 
-- ``filterReactions``: set to ``True`` if reaction filtering is turned on.  By default it is set to False.
+- ``filterReactions``: set to ``True`` if reaction filtering is turned on. By default it is set to False.
+- ``filterThreshold``: click :ref:`here <filterReactionsTheory>` for more description about its effect. Default: ``5e8``
 
 .. _pruning:
 
@@ -647,6 +745,8 @@ Miscellaneous options::
         saveSimulationProfiles=True,
         verboseComments=False,
         saveEdgeSpecies=True,
+        keepIrreversible=True,
+        trimolecularProductReversible=False,
     )
 
 The ``name`` field is the name of any generated seed mechanisms
@@ -671,6 +771,8 @@ Setting ``verboseComments`` to ``True`` will make RMG generate chemkin files wit
 Setting ``saveEdgeSpecies`` to ``True`` will make RMG generate chemkin files of the edge reactions in addition to the core model in files such as ``chem_edge.inp`` and ``chem_edge_annotated.inp`` files located inside the ``chemkin`` folder.  These files will be helpful in viewing RMG's estimate for edge reactions and seeing if certain reactions one expects are actually in the edge or not.
 
 Setting ``keepIrreversible`` to ``True`` will make RMG import library reactions as is, whether they are reversible or irreversible in the library. Otherwise, if ``False`` (default value), RMG will force all library reactions to be reversible, and will assign the forward rate from the relevant library.
+
+Setting ``trimolecularProductReversible`` to ``False`` will not allow families with three products to react in the reverse direction. Default is ``True``.
 
 
 Species Constraints

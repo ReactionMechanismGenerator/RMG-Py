@@ -74,13 +74,18 @@ class Reaction:
     `products`          :class:`list`               The product species (as :class:`Species` objects)
     'specificCollider'  :class:`Species`            The collider species (as a :class:`Species` object)
     `kinetics`          :class:`KineticsModel`      The kinetics model to use for the reaction
+    `network_kinetics`  :class:`Arrhenius`          The kinetics model to use for PDep network exploration if the `kinetics` attribute is :class:PDepKineticsModel:
     `reversible`        ``bool``                    ``True`` if the reaction is reversible, ``False`` if not
     `transitionState`   :class:`TransitionState`    The transition state
     `duplicate`         ``bool``                    ``True`` if the reaction is known to be a duplicate, ``False`` if not
     `degeneracy`        :class:`double`             The reaction path degeneracy for the reaction
     `pairs`             ``list``                    Reactant-product pairings to use in converting reaction flux to species flux
-    `has_pdep_route`    ``bool``                    ``True`` if the reaction has an additional PDep pathway, ``False`` if not (by default), used for LibraryReactions
+    `allow_pdep_route`  ``bool``                    ``True`` if the reaction has an additional PDep pathway, ``False`` if not (by default), used for LibraryReactions
+    `elementary_high_p` ``bool``                    If ``True``, pressure dependent kinetics will be generated (relevant only for unimolecular library reactions)
+                                                    If ``False`` (by default), this library reaction will not be explored.
+                                                    Only unimolecular library reactions with high pressure limit kinetics should be flagged (not if the kinetics were measured at some relatively low pressure)
     `comment`           ``str``                     A description of the reaction source (optional)
+    `is_forward`        ``bool``                    Indicates if the reaction was generated in the forward (true) or reverse (false)
     =================== =========================== ============================
     
     """
@@ -92,13 +97,17 @@ class Reaction:
                  products=None,
                  specificCollider=None,
                  kinetics=None,
+                 network_kinetics=None,
                  reversible=True,
                  transitionState=None,
                  duplicate=False,
                  degeneracy=1,
                  pairs=None,
-                 has_pdep_route=False,
-                 comment=''
+                 allow_pdep_route=False,
+                 elementary_high_p=False,
+                 allow_max_rate_violation=False,
+                 comment='',
+                 is_forward=None,
                  ):
         self.index = index
         self.label = label
@@ -107,13 +116,17 @@ class Reaction:
         self.specificCollider = specificCollider
         self._degeneracy = degeneracy
         self.kinetics = kinetics
+        self.network_kinetics = network_kinetics
         self.reversible = reversible
         self.transitionState = transitionState
         self.duplicate = duplicate
         self.pairs = pairs
-        self.has_pdep_route = has_pdep_route
+        self.allow_pdep_route = allow_pdep_route
+        self.elementary_high_p = elementary_high_p
         self.comment = comment
         self.k_effective_cache = {}
+        self.is_forward = is_forward
+        self.allow_max_rate_violation = allow_max_rate_violation
 
     def __repr__(self):
         """
@@ -127,12 +140,14 @@ class Reaction:
         if self.products is not None: string += 'products={0!r}, '.format(self.products)
         if self.specificCollider is not None: string += 'specificCollider={0!r}, '.format(self.specificCollider)
         if self.kinetics is not None: string += 'kinetics={0!r}, '.format(self.kinetics)
+        if self.network_kinetics is not None: string += 'network_kinetics={0!r}, '.format(self.network_kinetics)
         if not self.reversible: string += 'reversible={0}, '.format(self.reversible)
         if self.transitionState is not None: string += 'transitionState={0!r}, '.format(self.transitionState)
         if self.duplicate: string += 'duplicate={0}, '.format(self.duplicate)
         if self.degeneracy != 1: string += 'degeneracy={0:.1f}, '.format(self.degeneracy)
         if self.pairs is not None: string += 'pairs={0}, '.format(self.pairs)
-        if self.has_pdep_route: string += 'has_pdep_route={0}'.format(self.has_pdep_route)
+        if self.allow_pdep_route: string += 'allow_pdep_route={0}, '.format(self.allow_pdep_route)
+        if self.elementary_high_p: string += 'elementary_high_p={0}, '.format(self.elementary_high_p)
         if self.comment != '': string += 'comment={0!r}, '.format(self.comment)
         string = string[:-2] + ')'
         return string
@@ -167,12 +182,14 @@ class Reaction:
                            self.products,
                            self.specificCollider,
                            self.kinetics,
+                           self.network_kinetics,
                            self.reversible,
                            self.transitionState,
                            self.duplicate,
                            self.degeneracy,
                            self.pairs,
-                           self.has_pdep_route,
+                           self.allow_pdep_route,
+                           self.elementary_high_p,
                            self.comment
                            ))
 
@@ -376,13 +393,13 @@ class Reaction:
             products (list, optional): Species required on the other side
         """
         # Check forward direction
-        if _isomorphicSpeciesList(self.reactants, reactants):
-            if products is None or _isomorphicSpeciesList(self.products, products):
+        if isomorphic_species_lists(self.reactants, reactants):
+            if products is None or isomorphic_species_lists(self.products, products):
                 return True
             else:
                 return False
-        elif _isomorphicSpeciesList(self.products, reactants):
-            if products is None or _isomorphicSpeciesList(self.reactants, products):
+        elif isomorphic_species_lists(self.products, reactants):
+            if products is None or isomorphic_species_lists(self.reactants, products):
                 return True
             else:
                 return False
@@ -410,24 +427,24 @@ class Reaction:
         """
         if checkTemplateRxnProducts:
             try:
-                species1 = self.products if self.isForward else self.reactants
-                species2 = other.products if other.isForward else other.reactants
+                species1 = self.products if self.is_forward else self.reactants
+                species2 = other.products if other.is_forward else other.reactants
             except AttributeError:
                 raise TypeError('Only use checkTemplateRxnProducts flag for TemplateReactions.')
 
-            return _isomorphicSpeciesList(species1, species2,
-                                          checkIdentical=checkIdentical,
-                                          checkOnlyLabel=checkOnlyLabel)
+            return isomorphic_species_lists(species1, species2,
+                                            check_identical=checkIdentical,
+                                            only_check_label=checkOnlyLabel)
 
         # Compare reactants to reactants
-        forwardReactantsMatch = _isomorphicSpeciesList(self.reactants, 
-                                    other.reactants,checkIdentical = checkIdentical,
-                                    checkOnlyLabel = checkOnlyLabel)
+        forwardReactantsMatch = isomorphic_species_lists(self.reactants, other.reactants,
+                                                         check_identical=checkIdentical,
+                                                         only_check_label=checkOnlyLabel)
         
         # Compare products to products
-        forwardProductsMatch = _isomorphicSpeciesList(self.products, 
-                                    other.products,checkIdentical = checkIdentical,
-                                    checkOnlyLabel = checkOnlyLabel)
+        forwardProductsMatch = isomorphic_species_lists(self.products, other.products,
+                                                        check_identical=checkIdentical,
+                                                        only_check_label=checkOnlyLabel)
 
         # Compare specificCollider to specificCollider
         ColliderMatch = (self.specificCollider == other.specificCollider)
@@ -439,14 +456,14 @@ class Reaction:
             return False
         
         # Compare reactants to products
-        reverseReactantsMatch = _isomorphicSpeciesList(self.reactants, 
-                                    other.products,checkIdentical = checkIdentical,
-                                    checkOnlyLabel = checkOnlyLabel)
+        reverseReactantsMatch = isomorphic_species_lists(self.reactants, other.products,
+                                                         check_identical=checkIdentical,
+                                                         only_check_label=checkOnlyLabel)
 
         # Compare products to reactants
-        reverseProductsMatch = _isomorphicSpeciesList(self.products, 
-                                    other.reactants,checkIdentical = checkIdentical,
-                                    checkOnlyLabel = checkOnlyLabel)
+        reverseProductsMatch = isomorphic_species_lists(self.products, other.reactants,
+                                                        check_identical=checkIdentical,
+                                                        only_check_label=checkOnlyLabel)
 
         # should have already returned if it matches forwards, or we're not allowed to match backwards
         return  (reverseReactantsMatch and reverseProductsMatch and ColliderMatch)
@@ -648,7 +665,19 @@ class Reaction:
             self.kinetics.comment += "\nEa raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si/1000.)
             logging.info("For reaction {1!s} Ea raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si/1000., self))
             self.kinetics.Ea.value_si = 0
-
+        if self.kinetics.isPressureDependent() and self.network_kinetics is not None:
+            Ea = self.network_kinetics.Ea.value_si
+            if H0 >= 0 and Ea < H0:
+                self.network_kinetics.Ea.value_si = H0
+                self.network_kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of" \
+                                                 " reaction.".format(Ea / 1000., H0 / 1000.)
+                logging.info("For reaction {2!s}, Ea of the high pressure limit kinetics raised from {0:.1f} to {1:.1f}"
+                             " kJ/mol to match endothermicity of reaction.".format(Ea / 1000., H0 / 1000., self))
+            if forcePositive and isinstance(self.kinetics, Arrhenius) and self.kinetics.Ea.value_si < 0:
+                self.network_kinetics.comment += "\nEa raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si / 1000.)
+                logging.info("For reaction {1!s} Ea of the high pressure limit kinetics raised from {0:.1f} to 0"
+                             " kJ/mol.".format(self.kinetics.Ea.value_si / 1000.,self))
+                self.kinetics.Ea.value_si = 0
 
     def reverseThisArrheniusRate(self, kForward, reverseUnits):
         """
@@ -669,7 +698,7 @@ class Reaction:
         kr.fitToData(Tlist, klist, reverseUnits, kf.T0.value_si)
         return kr
         
-    def generateReverseRateCoefficient(self):
+    def generateReverseRateCoefficient(self, network_kinetics=False):
         """
         Generate and return a rate coefficient model for the reverse reaction. 
         Currently this only works if the `kinetics` attribute is one of several
@@ -706,6 +735,10 @@ class Reaction:
             return kr
             
         elif isinstance(kf, Arrhenius):
+            return self.reverseThisArrheniusRate(kf, kunits)
+
+        elif network_kinetics and self.network_kinetics is not None:
+            kf = self.network_kinetics
             return self.reverseThisArrheniusRate(kf, kunits)
                     
         elif isinstance (kf, Chebyshev):
@@ -1058,11 +1091,13 @@ class Reaction:
         other.degeneracy = self.degeneracy
         other.specificCollider = self.specificCollider
         other.kinetics = deepcopy(self.kinetics)
+        other.network_kinetics = deepcopy(self.network_kinetics)
         other.reversible = self.reversible
         other.transitionState = deepcopy(self.transitionState)
         other.duplicate = self.duplicate
         other.pairs = deepcopy(self.pairs)
-        other.has_pdep_route = self.has_pdep_route
+        other.allow_pdep_route = self.allow_pdep_route
+        other.elementary_high_p = self.elementary_high_p
         other.comment = deepcopy(self.comment)
         
         return other
@@ -1083,12 +1118,12 @@ class Reaction:
         if isinstance(self.reactants[0], Species):
             return None
         # obtain species with all resonance isomers
-        if self.isForward:
-            ensure_species(self.reactants, resonance=reactant_resonance, keepIsomorphic=True)
-            ensure_species(self.products, resonance=product_resonance, keepIsomorphic=True)
+        if self.is_forward:
+            ensure_species(self.reactants, resonance=reactant_resonance, keep_isomorphic=True)
+            ensure_species(self.products, resonance=product_resonance, keep_isomorphic=True)
         else:
-            ensure_species(self.reactants, resonance=product_resonance, keepIsomorphic=True)
-            ensure_species(self.products, resonance=reactant_resonance, keepIsomorphic=True)
+            ensure_species(self.reactants, resonance=product_resonance, keep_isomorphic=True)
+            ensure_species(self.products, resonance=reactant_resonance, keep_isomorphic=True)
 
         # convert reaction.pairs object to species
         if self.pairs:
@@ -1111,7 +1146,7 @@ class Reaction:
         except AttributeError:
             pass
 
-def _isomorphicSpeciesList(list1, list2, checkIdentical=False, checkOnlyLabel = False):
+def isomorphic_species_lists(list1, list2, check_identical=False, only_check_label=False):
     """
     This method compares whether lists of species or molecules are isomorphic
     or identical. It is used for the 'isIsomorphic' method of Reaction class.
@@ -1119,56 +1154,51 @@ def _isomorphicSpeciesList(list1, list2, checkIdentical=False, checkOnlyLabel = 
         
         list1 - list of species/molecule objects of reaction1
         list2 - list of species/molecule objects of reaction2
-        checkIdentical - if true, uses the 'isIdentical' comparison
-                         if false, uses the 'isIsomorphic' comparison
-        checkOnlyLabel - only look at species' labels, no isomorphism checks
+        check_identical - if true, uses the 'isIdentical' comparison
+                          if false, uses the 'isIsomorphic' comparison
+        only_check_label - only look at species' labels, no isomorphism checks
                          
     Returns True if the lists are isomorphic/identical & false otherwise
     """
 
-    def comparison_method(other1, other2, checkIdentical=checkIdentical, checkOnlyLabel=checkOnlyLabel):
-        if checkOnlyLabel:
-            return str(other1) == str(other2)
-        elif checkIdentical:
-            return other1.isIdentical(other2)
+    def same(object1, object2, _check_identical=check_identical, _only_check_label=only_check_label):
+        if _only_check_label:
+            return str(object1) == str(object2)
+        elif _check_identical:
+            return object1.isIdentical(object2)
         else:
-            return other1.isIsomorphic(other2)
+            return object1.isIsomorphic(object2)
 
     if len(list1) == len(list2) == 1:
-        if comparison_method(list1[0], list2[0]):
+        if same(list1[0], list2[0]):
             return True
     elif len(list1) == len(list2) == 2:
-        if comparison_method(list1[0], list2[0]) \
-                    and comparison_method(list1[1], list2[1]):
+        if same(list1[0], list2[0]) and same(list1[1], list2[1]):
             return True
-        elif comparison_method(list1[0], list2[1]) \
-                    and comparison_method(list1[1], list2[0]):
+        elif same(list1[0], list2[1]) and same(list1[1], list2[0]):
             return True
     elif len(list1) == len(list2) == 3:
-        if (    comparison_method(list1[0], list2[0]) and
-                comparison_method(list1[1], list2[1]) and
-                comparison_method(list1[2], list2[2]) ):
-            return True
-        elif (  comparison_method(list1[0], list2[0]) and
-                comparison_method(list1[1], list2[2]) and
-                comparison_method(list1[2], list2[1]) ):
-            return True
-        elif (  comparison_method(list1[0], list2[1]) and
-                comparison_method(list1[1], list2[0]) and
-                comparison_method(list1[2], list2[2]) ):
-            return True
-        elif (  comparison_method(list1[0], list2[2]) and
-                comparison_method(list1[1], list2[0]) and
-                comparison_method(list1[2], list2[1]) ):
-            return True
-        elif (  comparison_method(list1[0], list2[1]) and
-                comparison_method(list1[1], list2[2]) and
-                comparison_method(list1[2], list2[0]) ):
-            return True
-        elif (  comparison_method(list1[0], list2[2]) and
-                comparison_method(list1[1], list2[1]) and
-                comparison_method(list1[2], list2[0]) ):
-            return True
+        if same(list1[0], list2[0]):
+            if same(list1[1], list2[1]):
+                if same(list1[2], list2[2]):
+                    return True
+            elif same(list1[1], list2[2]):
+                if same(list1[2], list2[1]):
+                    return True
+        elif same(list1[0], list2[1]):
+            if same(list1[1], list2[0]):
+                if same(list1[2], list2[2]):
+                    return True
+            elif same(list1[1], list2[2]):
+                if same(list1[2], list2[0]):
+                    return True
+        elif same(list1[0], list2[2]):
+            if same(list1[1], list2[0]):
+                if same(list1[2], list2[1]):
+                    return True
+            elif same(list1[1], list2[1]):
+                if same(list1[2], list2[0]):
+                    return True
     elif len(list1) == len(list2):
         raise NotImplementedError("Can't check isomorphism of lists with {0} species/molecules".format(len(list1)))
     # nothing found
