@@ -766,55 +766,51 @@ class RMG(util.Subject):
                         for objectToEnlarge in objectsToEnlarge:
                             self.reactionModel.enlarge(objectToEnlarge)
                             
-                        if len(self.reactionModel.core.species) > numCoreSpecies or self.reactionModel.iterationNum == 1:
+                        if modelSettings.filterReactions:
+                            # Run a raw simulation to get updated reaction system threshold values
+                            # Run with the same conditions as with pruning off
                             tempModelSettings = deepcopy(modelSettings)
                             tempModelSettings.fluxToleranceKeepInEdge = 0
-                            # If there were core species added, then react the edge
-                            # If there were no new core species, it means the pdep network needs be updated through another enlarge core step
-                            if modelSettings.filterReactions:
-                                # Run a raw simulation to get updated reaction system threshold values
-                                # Run with the same conditions as with pruning off
-                                if not resurrected:
-                                    try:
-                                        reactionSystem.simulate(
-                                            coreSpecies = self.reactionModel.core.species,
-                                            coreReactions = self.reactionModel.core.reactions,
-                                            edgeSpecies = [],
-                                            edgeReactions = [],
-                                            surfaceSpecies = self.reactionModel.surface.species,
-                                            surfaceReactions = self.reactionModel.surface.reactions,
-                                            pdepNetworks = self.reactionModel.networkList,
-                                            modelSettings = tempModelSettings,
-                                            simulatorSettings = simulatorSettings,
-                                            conditions = self.rmg_memories[index].get_cond()
-                                        )
-                                    except:
-                                        self.updateReactionThresholdAndReactFlags(
-                                            rxnSysUnimolecularThreshold = reactionSystem.unimolecularThreshold,
-                                            rxnSysBimolecularThreshold = reactionSystem.bimolecularThreshold,
-                                            rxnSysTrimolecularThreshold = reactionSystem.trimolecularThreshold,
-                                            skipUpdate=True)
-                                        logging.warn('Reaction thresholds/flags for Reaction System {0} was not updated due to simulation failure'.format(index+1))
-                                    else:
-                                        self.updateReactionThresholdAndReactFlags(
-                                            rxnSysUnimolecularThreshold = reactionSystem.unimolecularThreshold,
-                                            rxnSysBimolecularThreshold = reactionSystem.bimolecularThreshold,
-                                            rxnSysTrimolecularThreshold = reactionSystem.trimolecularThreshold
-                                        )
-                                else:
+                            if not resurrected:
+                                try:
+                                    reactionSystem.simulate(
+                                        coreSpecies = self.reactionModel.core.species,
+                                        coreReactions = self.reactionModel.core.reactions,
+                                        edgeSpecies = [],
+                                        edgeReactions = [],
+                                        surfaceSpecies = self.reactionModel.surface.species,
+                                        surfaceReactions = self.reactionModel.surface.reactions,
+                                        pdepNetworks = self.reactionModel.networkList,
+                                        modelSettings = tempModelSettings,
+                                        simulatorSettings = simulatorSettings,
+                                        conditions = self.rmg_memories[index].get_cond()
+                                    )
+                                except:
                                     self.updateReactionThresholdAndReactFlags(
                                         rxnSysUnimolecularThreshold = reactionSystem.unimolecularThreshold,
                                         rxnSysBimolecularThreshold = reactionSystem.bimolecularThreshold,
                                         rxnSysTrimolecularThreshold = reactionSystem.trimolecularThreshold,
-                                        skipUpdate = True
+                                        skipUpdate=True)
+                                    logging.warn('Reaction thresholds/flags for Reaction System {0} was not updated due to simulation failure'.format(index+1))
+                                else:
+                                    self.updateReactionThresholdAndReactFlags(
+                                        rxnSysUnimolecularThreshold = reactionSystem.unimolecularThreshold,
+                                        rxnSysBimolecularThreshold = reactionSystem.bimolecularThreshold,
+                                        rxnSysTrimolecularThreshold = reactionSystem.trimolecularThreshold
                                     )
-                                    logging.warn('Reaction thresholds/flags for Reaction System {0} was not updated due to resurrection'.format(index+1))
-
-        
-                                logging.info('')    
                             else:
-                                self.updateReactionThresholdAndReactFlags()
-                            
+                                self.updateReactionThresholdAndReactFlags(
+                                    rxnSysUnimolecularThreshold = reactionSystem.unimolecularThreshold,
+                                    rxnSysBimolecularThreshold = reactionSystem.bimolecularThreshold,
+                                    rxnSysTrimolecularThreshold = reactionSystem.trimolecularThreshold,
+                                    skipUpdate = True
+                                )
+                                logging.warn('Reaction thresholds/flags for Reaction System {0} was not updated due to resurrection'.format(index+1))
+
+                            logging.info('')
+                        else:
+                            self.updateReactionThresholdAndReactFlags()
+
                         if not np.isinf(modelSettings.toleranceThermoKeepSpeciesInEdge):
                             self.reactionModel.setThermodynamicFilteringParameters(self.Tmax, toleranceThermoKeepSpeciesInEdge=modelSettings.toleranceThermoKeepSpeciesInEdge,
                                                               minCoreSizeForPrune=modelSettings.minCoreSizeForPrune, 
@@ -1247,15 +1243,16 @@ class RMG(util.Subject):
         """
         numCoreSpecies = len(self.reactionModel.core.species)
         prevNumCoreSpecies = len(self.unimolecularReact)
-        stale = True if numCoreSpecies > prevNumCoreSpecies else False
-        
-        
-        if self.filterReactions:
-            if stale:
-                # Reset and expand the react arrays if there were new core species added
-                self.unimolecularReact = np.zeros((numCoreSpecies), bool)
-                self.bimolecularReact = np.zeros((numCoreSpecies, numCoreSpecies), bool)
+        new_core_species = numCoreSpecies > prevNumCoreSpecies
 
+        # Always reset the react arrays from prior iterations
+        self.unimolecularReact = np.zeros((numCoreSpecies), bool)
+        self.bimolecularReact = np.zeros((numCoreSpecies, numCoreSpecies), bool)
+        if self.trimolecular:
+            self.trimolecularReact = np.zeros((numCoreSpecies, numCoreSpecies, numCoreSpecies), bool)
+
+        if self.filterReactions:
+            if new_core_species:
                 # Expand the threshold arrays if there were new core species added
                 unimolecularThreshold = np.zeros((numCoreSpecies), bool)
                 bimolecularThreshold = np.zeros((numCoreSpecies, numCoreSpecies), bool)
@@ -1267,7 +1264,6 @@ class RMG(util.Subject):
                 self.bimolecularThreshold = bimolecularThreshold
 
                 if self.trimolecular:
-                    self.trimolecularReact = np.zeros((numCoreSpecies, numCoreSpecies, numCoreSpecies), bool)
                     trimolecularThreshold = np.zeros((numCoreSpecies, numCoreSpecies, numCoreSpecies), bool)
                     trimolecularThreshold[:prevNumCoreSpecies,
                                           :prevNumCoreSpecies,
@@ -1301,13 +1297,7 @@ class RMG(util.Subject):
                                 self.trimolecularThreshold[i,j,k] = True
         else:
             # We are not filtering reactions
-            if stale:
-                # Reset and expand the react arrays if there were new core species added
-                self.unimolecularReact = np.zeros((numCoreSpecies), bool)
-                self.bimolecularReact = np.zeros((numCoreSpecies, numCoreSpecies), bool)
-                if self.trimolecular:
-                    self.trimolecularReact = np.zeros((numCoreSpecies, numCoreSpecies, numCoreSpecies), bool)
-                
+            if new_core_species:
                 # React all the new core species unimolecularly
                 for i in xrange(prevNumCoreSpecies, numCoreSpecies):
                     self.unimolecularReact[i] = True
