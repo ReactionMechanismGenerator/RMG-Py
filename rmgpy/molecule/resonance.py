@@ -176,8 +176,6 @@ def generate_resonance_structures(mol, clar_structures=True, keep_isomorphic=Fal
     """
     cython.declare(mol_list=list, new_mol_list=list, features=dict, method_list=list)
 
-    logging.debug('Generating resonance structures for {0}...'.format(mol.toSMILES()))
-
     # Check that mol is a valid structure in terms of atomTypes and net charge. Since SMILES with hypervalance
     # heteroatoms are not always read correctly, print a suggestion to input the structure using an adjList.
     try:
@@ -299,7 +297,6 @@ def _generate_resonance_structures(mol_list, method_list, keep_isomorphic=False,
         octet_deviation = filtration.get_octet_deviation(molecule)
         charge_span = molecule.getChargeSpan()
         if octet_deviation <= min_octet_deviation and charge_span <= min_charge_span + 1:
-            # logging.debug('Extending resonance structures for {0}...'.format(molecule.toSMILES()))
             for method in method_list:
                 new_mol_list.extend(method(molecule))
             if octet_deviation < min_octet_deviation:
