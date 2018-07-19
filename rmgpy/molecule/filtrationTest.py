@@ -55,9 +55,9 @@ class FiltrationTest(unittest.TestCase):
         """
         adj3 = """
         multiplicity 2
-        1 N u1 p0 c0 {2,T} {3,S}
-        2 O u0 p1 c+1 {1,T}
-        3 O u0 p3 c-1 {1,S}
+        1 O u1 p2 c0 {3,S}
+        2 O u0 p3 c-1 {3,S}
+        3 N u0 p1 c+1 {1,S} {2,S}
         """
 
         mol1 = Molecule().fromAdjacencyList(adj1)
@@ -71,19 +71,6 @@ class FiltrationTest(unittest.TestCase):
         self.assertEqual(octet_deviation_list,[1, 4, 3])
         self.assertEqual(len(filtered_list), 1)
         self.assertTrue(all([atom.charge == 0 for atom in filtered_list[0].vertices]))
-
-    def penalty_for_N_val_9_test(self):
-        """Test that N atoms with valance 9 get penalized in the octet deviation score"""
-        adj = """
-        multiplicity 2
-        1 N u1 p0 c0 {2,S} {3,T}
-        2 O u0 p2 c0 {1,S} {4,S}
-        3 N u0 p1 c0 {1,T}
-        4 H u0 p0 c0 {2,S}
-        """
-        mol = Molecule().fromAdjacencyList(adj)
-        octet_deviation = get_octet_deviation(mol)
-        self.assertEqual(octet_deviation, 2)
 
     def penalty_for_O4tc_test(self):
         """Test that an O4tc atomType with octet 8 gets penalized in the octet deviation score"""
