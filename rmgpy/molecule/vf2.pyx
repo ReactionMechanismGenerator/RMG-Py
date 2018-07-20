@@ -166,6 +166,14 @@ cdef class VF2:
             graph1.restore_vertex_order()
             graph2.restore_vertex_order()
 
+        # We're done, so clear the mappings to prevent downstream effects
+        for vertex1 in graph1.vertices:
+            vertex1.mapping = None
+            vertex1.terminal = False
+        for vertex2 in graph2.vertices:
+            vertex2.mapping = None
+            vertex2.terminal = False
+
     cdef bint match(self, int callDepth) except -2:
         """
         Recursively search for pairs of vertices to match, until all vertices
