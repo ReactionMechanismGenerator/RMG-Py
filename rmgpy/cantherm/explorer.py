@@ -152,7 +152,9 @@ class ExplorerJob(object):
                 network = nwk
                 break
         else:
-            raise ValueError('did not generate a network with the requested source')
+            raise ValueError('did not generate a network with the requested source.  This usually means no unimolecular reactions were \
+                             generated for the source.  Note that library reactions that are not properly flagged as elementary_high_p can\
+                             replace RMG generated reactions that would otherwise be part of networks.')
         
         network.bathGas = self.bathGas
         
