@@ -424,7 +424,6 @@ class TestThermoAccuracy(unittest.TestCase):
                 self.assertAlmostEqual(Cp, thermoData.getHeatCapacity(T) / 4.184, places=1,
                                        msg="Cp{3} error for {0}. Expected {1} but calculated {2}.".format(smiles, Cp, thermoData.getHeatCapacity(T) / 4.184, T))
 
-    @work_in_progress
     def testSymmetryNumberGeneration(self):
         """
         Test we generate symmetry numbers correctly.
