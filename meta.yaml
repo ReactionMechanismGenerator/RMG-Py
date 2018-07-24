@@ -48,6 +48,7 @@ requirements:
     - matplotlib >=1.5
     - mock
     - mopac
+    - mpmath
     - nose
     - {{ pin_compatible('numpy') }}
     - openbabel >=2.4.1
