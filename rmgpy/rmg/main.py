@@ -616,12 +616,15 @@ class RMG(util.Subject):
         self.rmg_memories = []
         
         # Initiate first reaction discovery step after adding all core species
-        if self.filterReactions:
-            # Run the reaction system to update threshold and react flags
-            for index, reactionSystem in enumerate(self.reactionSystems):
-                self.rmg_memories.append(RMG_Memory(reactionSystem,self.balanceSpecies))
-                self.rmg_memories[index].generate_cond()
-                log_conditions(self.rmg_memories,index)
+        for index, reactionSystem in enumerate(self.reactionSystems):
+            # Initialize memory object to track conditions for ranged reactors
+            self.rmg_memories.append(RMG_Memory(reactionSystem, self.balanceSpecies))
+            self.rmg_memories[index].generate_cond()
+            log_conditions(self.rmg_memories, index)
+
+            # Update react flags
+            if self.filterReactions:
+                # Run the reaction system to update threshold and react flags
                 reactionSystem.initializeModel(
                     coreSpecies=self.reactionModel.core.species,
                     coreReactions=self.reactionModel.core.reactions,
@@ -639,23 +642,27 @@ class RMG(util.Subject):
                     rxnSysBimolecularThreshold=reactionSystem.bimolecularThreshold,
                     rxnSysTrimolecularThreshold=reactionSystem.trimolecularThreshold,
                 )
-        else:
-            for index, reactionSystem in enumerate(self.reactionSystems):
-                self.rmg_memories.append(RMG_Memory(reactionSystem,self.balanceSpecies))
-                self.rmg_memories[index].generate_cond()
-                log_conditions(self.rmg_memories,index)
+            else:
+                # If we're not filtering reactions, then we only need to react
+                # the first reaction system since they share the same core
+                if index > 0:
+                    continue
+
+            # React core species to enlarge edge
+            self.reactionModel.enlarge(reactEdge=True,
+                unimolecularReact=self.unimolecularReact,
+                bimolecularReact=self.bimolecularReact,
+                trimolecularReact=self.trimolecularReact)
 
         if not np.isinf(self.modelSettingsList[0].toleranceThermoKeepSpeciesInEdge):
-            self.reactionModel.setThermodynamicFilteringParameters(self.Tmax,toleranceThermoKeepSpeciesInEdge=self.modelSettingsList[0].toleranceThermoKeepSpeciesInEdge,
-                                                              minCoreSizeForPrune=self.modelSettingsList[0].minCoreSizeForPrune, 
-                                                              maximumEdgeSpecies =self.modelSettingsList[0].maximumEdgeSpecies,
-                                                              reactionSystems=self.reactionSystems)
-        
-        self.reactionModel.enlarge(reactEdge=True, 
-            unimolecularReact=self.unimolecularReact, 
-            bimolecularReact=self.bimolecularReact,
-            trimolecularReact=self.trimolecularReact)
-        
+            self.reactionModel.setThermodynamicFilteringParameters(
+                self.Tmax,
+                toleranceThermoKeepSpeciesInEdge=self.modelSettingsList[0].toleranceThermoKeepSpeciesInEdge,
+                minCoreSizeForPrune=self.modelSettingsList[0].minCoreSizeForPrune,
+                maximumEdgeSpecies=self.modelSettingsList[0].maximumEdgeSpecies,
+                reactionSystems=self.reactionSystems
+            )
+
         if not np.isinf(self.modelSettingsList[0].toleranceThermoKeepSpeciesInEdge):
             self.reactionModel.thermoFilterDown(maximumEdgeSpecies=self.modelSettingsList[0].maximumEdgeSpecies)
         
