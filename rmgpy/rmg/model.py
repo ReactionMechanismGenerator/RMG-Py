@@ -688,7 +688,8 @@ class CoreEdgeReactionModel:
         # Begin processing the new species and reactions
         
         # Generate kinetics of new reactions
-        logging.info('Generating kinetics for new reactions...')
+        if self.newReactionList:
+            logging.info('Generating kinetics for new reactions...')
         for reaction in self.newReactionList:
             # If the reaction already has kinetics (e.g. from a library),
             # assume the kinetics are satisfactory
