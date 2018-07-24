@@ -2,11 +2,7 @@ title = 'methoxy decomposition to H + CH2O'
 
 description = \
 """
-This example illustrates how to manually set up a CanTherm input file for a small P-dep reaction system [using only the
-RRHO assumption, and without tunneling, although this can be easily implemented]. Such a calculation is desireable if the user 
-wishes to supply experimentally determined freqeuncies, for example. Althgou some coommented notes below may be useful, 
-see http://greengroup.github.io/RMG-Py/users/cantherm/index.html for more documented information about CanTherm and 
-creating input files. (information pertaining this file is adopted by Dames and Golden, 2013, JPCA 117 (33) 7686-96.)
+This example illustrates how to manually set up a CanTherm input file for a exploration of a P-dep reaction system 
 """
 database(
     thermoLibraries = ['primaryThermoLibrary'],
@@ -142,8 +138,6 @@ species(
     molecularWeight = (31.01843,"g/mol"),	
     modes = [
         HarmonicOscillator(frequencies=([418,595, 1055, 1198, 1368, 1488, 3138, 3279, 3840],'cm^-1')),
-        # below is an example of how to include hindered rotors
-		#HinderedRotor(inertia=(5.75522e-47,'kg*m^2'), symmetry=1, barrier=(22427.8,'J/mol'), semiclassical=False),
         NonlinearRotor(rotationalConstant=([0.868,0.993,6.419],"cm^-1"),symmetry=1, quantum=False),
         IdealGasTranslation(mass=(31.01843,"g/mol")),
     ],
@@ -155,7 +149,6 @@ species(
 
 species(
     label = 'He',
-#    freqScaleFactor = 1, # TypeError: species() got an unexpected keyword argument 'freqScaleFactor'.
     structure = SMILES('[He]'),
     reactive=False,
     molecularWeight = (4.003,'amu'),
@@ -168,6 +161,15 @@ reaction(
     reactants = ['CH2O','H'],
     products = ['methoxy'],
     transitionState = 'TS3',
+    kinetics = Arrhenius(
+        A = (1.5339e+09, 'cm^3/(mol*s)'),
+        n = 1.3717,
+        Ea = (18.6161, 'kJ/mol'),
+        T0 = (1, 'K'),
+        Tmin = (303.03, 'K'),
+        Tmax = (2500, 'K'),
+        comment = 'Fitted to 59 data points; dA = *|/ 1.06037, dn = +|- 0.00769361, dEa = +|- 0.0423225 kJ/mol',
+    ),
 )
 
 reaction(
@@ -175,6 +177,15 @@ reaction(
     reactants = ['CH2OH'],
    products = ['CH2Ob', 'Hb'],
     transitionState = 'TS1',
+    kinetics = Arrhenius(
+        A = (5.51244e+10, 's^-1'),
+        n = 0.868564,
+        Ea = (168.41, 'kJ/mol'),
+        T0 = (1, 'K'),
+        Tmin = (303.03, 'K'),
+        Tmax = (2500, 'K'),
+        comment = 'Fitted to 59 data points; dA = *|/ 1.05152, dn = +|- 0.00659302, dEa = +|- 0.0362682 kJ/mol',
+    ),
 )
 
 reaction(
@@ -182,35 +193,51 @@ reaction(
     products = ['methoxy'],
     reactants = ['CH2OH'],
     transitionState = 'TS2',
+    kinetics = Arrhenius(
+        A = (5.63501e+11, 's^-1'),
+        n = 0.320211,
+        Ea = (163.376, 'kJ/mol'),
+        T0 = (1, 'K'),
+        Tmin = (303.03, 'K'),
+        Tmax = (2500, 'K'),
+        comment = 'Fitted to 59 data points; dA = *|/ 1.02731, dn = +|- 0.00353557, dEa = +|- 0.0194492 kJ/mol',
+    ),
 )
 
-kinetics('CH2O+H=Methoxy')
+network(
+    label = 'methoxy',
+    isomers = [
+        'methoxy',
+		'CH2OH',
+    ],
 
-kinetics('CH2OH = Methoxy')
-kinetics('CH2OH = CH2Ob+Hb' )
+    reactants = [
+	('CH2O','H'),
+	],
+
+    bathGas = {
+        'He': 1,
+    },
+)
 
 pressureDependence(
     label = 'methoxy',
-    Tmin = (450,'K'), Tmax = (1200,'K'), Tcount = 4, 
-    Tlist = ([450,500,678,700],'K'),
-    Pmin = (0.01,'atm'), Pmax = (1000,'atm'), Pcount = 7,
-    Plist = ([0.01,0.1,1,3,10,100,1000],'atm'), 
+    Tmin = (450,'K'), Tmax = (1200,'K'), Tcount = 3, 
+    Tlist = ([450,800,1000,1200],'K'),
+    Pmin = (0.01,'atm'), Pmax = (1000.0,'atm'), Pcount = 3,
+    Plist = ([.01,1.0,1000.0],'atm'), 
     maximumGrainSize = (0.5,'kcal/mol'), 
     minimumGrainCount = 500, 
     method = 'modified strong collision',
-    #Other methods include: 'reservoir state', 'chemically-significant eigenvalues', 
     interpolationModel = ('pdeparrhenius'), 
     activeKRotor = True,
-#    activeJRotor = False, #causes cantherm to crash
     rmgmode = False, 
 )
 
 explorer(
 	source=['methoxy'],
-	explore_tol=(1e-2,'s^-1'),
-	energy_tol=8e1,
-	flux_tol=1e-6,
-     bathGas={'He':1.0},
-     maximumRadicalElectrons=2,
+	explore_tol=(1e-2,'s'),
+	energy_tol=4.5e1,
+	flux_tol=1e-10,
 )
 
