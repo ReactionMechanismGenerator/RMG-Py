@@ -614,14 +614,19 @@ class RMG(util.Subject):
             pass
         
         self.rmg_memories = []
-        
+
+        logging.info('Initialization complete. Starting model generation.\n')
+
         # Initiate first reaction discovery step after adding all core species
-        if self.filterReactions:
-            # Run the reaction system to update threshold and react flags
-            for index, reactionSystem in enumerate(self.reactionSystems):
-                self.rmg_memories.append(RMG_Memory(reactionSystem,self.balanceSpecies))
-                self.rmg_memories[index].generate_cond()
-                log_conditions(self.rmg_memories,index)
+        for index, reactionSystem in enumerate(self.reactionSystems):
+            # Initialize memory object to track conditions for ranged reactors
+            self.rmg_memories.append(RMG_Memory(reactionSystem, self.balanceSpecies))
+            self.rmg_memories[index].generate_cond()
+            log_conditions(self.rmg_memories, index)
+
+            # Update react flags
+            if self.filterReactions:
+                # Run the reaction system to update threshold and react flags
                 reactionSystem.initializeModel(
                     coreSpecies=self.reactionModel.core.species,
                     coreReactions=self.reactionModel.core.reactions,
@@ -639,27 +644,34 @@ class RMG(util.Subject):
                     rxnSysBimolecularThreshold=reactionSystem.bimolecularThreshold,
                     rxnSysTrimolecularThreshold=reactionSystem.trimolecularThreshold,
                 )
-        else:
-            for index, reactionSystem in enumerate(self.reactionSystems):
-                self.rmg_memories.append(RMG_Memory(reactionSystem,self.balanceSpecies))
-                self.rmg_memories[index].generate_cond()
-                log_conditions(self.rmg_memories,index)
+
+                logging.info('Generating initial reactions for reaction system {0}...'.format(index + 1))
+            else:
+                # If we're not filtering reactions, then we only need to react
+                # the first reaction system since they share the same core
+                if index > 0:
+                    continue
+                logging.info('Generating initial reactions...')
+
+            # React core species to enlarge edge
+            self.reactionModel.enlarge(reactEdge=True,
+                unimolecularReact=self.unimolecularReact,
+                bimolecularReact=self.bimolecularReact,
+                trimolecularReact=self.trimolecularReact)
 
         if not np.isinf(self.modelSettingsList[0].toleranceThermoKeepSpeciesInEdge):
-            self.reactionModel.setThermodynamicFilteringParameters(self.Tmax,toleranceThermoKeepSpeciesInEdge=self.modelSettingsList[0].toleranceThermoKeepSpeciesInEdge,
-                                                              minCoreSizeForPrune=self.modelSettingsList[0].minCoreSizeForPrune, 
-                                                              maximumEdgeSpecies =self.modelSettingsList[0].maximumEdgeSpecies,
-                                                              reactionSystems=self.reactionSystems)
-        
-        self.reactionModel.enlarge(reactEdge=True, 
-            unimolecularReact=self.unimolecularReact, 
-            bimolecularReact=self.bimolecularReact,
-            trimolecularReact=self.trimolecularReact)
-        
+            self.reactionModel.setThermodynamicFilteringParameters(
+                self.Tmax,
+                toleranceThermoKeepSpeciesInEdge=self.modelSettingsList[0].toleranceThermoKeepSpeciesInEdge,
+                minCoreSizeForPrune=self.modelSettingsList[0].minCoreSizeForPrune,
+                maximumEdgeSpecies=self.modelSettingsList[0].maximumEdgeSpecies,
+                reactionSystems=self.reactionSystems
+            )
+
         if not np.isinf(self.modelSettingsList[0].toleranceThermoKeepSpeciesInEdge):
             self.reactionModel.thermoFilterDown(maximumEdgeSpecies=self.modelSettingsList[0].maximumEdgeSpecies)
         
-        logging.info('Completed initial enlarge edge step...')
+        logging.info('Completed initial enlarge edge step.\n')
         
         self.saveEverything()
         
@@ -676,7 +688,7 @@ class RMG(util.Subject):
 
             self.filterReactions = modelSettings.filterReactions
 
-            logging.info('Beginning model generation stage {0}\n\n'.format(q+1))
+            logging.info('Beginning model generation stage {0}...\n'.format(q+1))
             
             self.done = False
 

@@ -304,7 +304,7 @@ cdef class ReactionSystem(DASx):
         cdef bool notInSurface
         cdef object obj
         
-        logging.info('initializing surface ...')
+        logging.debug('Initializing surface...')
         
         productIndices = self.productIndices
         reactantIndices = self.reactantIndices
@@ -354,7 +354,7 @@ cdef class ReactionSystem(DASx):
         surfaceSpecies = [coreSpecies[i] for i in surfaceSpeciesIndices]
         surfaceReactions = [coreReactions[i] for i in surfaceReactionIndices]
         
-        logging.info('surface initialization complete')
+        logging.debug('Surface initialization complete')
 
         return surfaceSpecies,surfaceReactions
         

@@ -194,7 +194,7 @@ class GenericPlot(object):
         if self.title:
             plt.title(self.title)
             
-        ax.grid('on')
+        ax.grid(True)
         handles, labels = ax.get_legend_handles_labels()
         if labels:
             # Create a legend outside the plot and adjust width based off of longest legend label
@@ -291,7 +291,7 @@ class GenericPlot(object):
         if title:
             plt.title(title)
             
-        ax.grid('on')
+        ax.grid(True)
         handles, labels = ax.get_legend_handles_labels()
         if labels:
             # Create a legend outside the plot and adjust width based off of longest legend label
