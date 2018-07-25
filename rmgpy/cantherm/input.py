@@ -37,12 +37,11 @@ import logging
 import numpy as np
 
 from rmgpy import settings
-from rmgpy.exceptions import InputError
+from rmgpy.exceptions import InputError, DatabaseError
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.data.rmg import getDB
 
 from rmgpy.rmg.model import CoreEdgeReactionModel
-from rmgpy.rmg.react import react
 
 from rmgpy.species import Species, TransitionState
 from rmgpy.quantity import Quantity
@@ -145,7 +144,8 @@ def database(
 
     for family in database.kinetics.families.values():
         family.fillKineticsRulesByAveragingUp(verbose=True)
-        
+
+
 def species(label, *args, **kwargs):
     global speciesDict, jobList
     if label in speciesDict:
@@ -154,7 +154,8 @@ def species(label, *args, **kwargs):
     
     spec = Species(label=label)
     speciesDict[label] = spec
-    
+
+    path = None
     if len(args) == 1:
         # The argument is a path to a conformer input file
         path = args[0]
@@ -197,7 +198,8 @@ def species(label, *args, **kwargs):
             else:
                 raise TypeError('species() got an unexpected keyword argument {0!r}.'.format(key))
             
-        if structure: spec.molecule = [structure]
+        if structure:
+            spec.molecule = [structure]
         spec.conformer = Conformer(E0=E0, modes=modes, spinMultiplicity=spinMultiplicity, opticalIsomers=opticalIsomers)
         spec.molecularWeight = molecularWeight
         spec.transportData = collisionModel
@@ -205,20 +207,26 @@ def species(label, *args, **kwargs):
         spec.thermo = thermo
         spec.reactive = reactive
         
-        if spec.thermo is None and spec.conformer.E0 is None:
-            if spec.molecule == []:
-                raise InputError('Thermo, E0 and structure not specified cannot estimate properties of species {0}'.format(spec.label))
-            logging.info('No E0 or thermo found, estimating thermo and E0 of species {0} using RMG-Database'.format(spec.label))
-            db = getDB('thermo')
-            spec.thermo = db.getThermoData(spec)
-            if spec.thermo.E0 is None:
-                th = spec.thermo.toWilhoit()
-                spec.conformer.E0 = th.E0
-                spec.thermo.E0 = th.E0
+        if spec.thermo is None and spec.conformer.E0 is None and path is None:
+            if not spec.molecule:
+                raise InputError('Neither thermo, E0, species file path, nor structure specified, cannot estimate'
+                                 ' thermo properties of species {0}'.format(spec.label))
+            try:
+                db = getDB('thermo')
+            except DatabaseError:
+                logging.warn("The database isn't loaded, cannot estimate thermo for {0}.".format(spec.label))
             else:
-                spec.conformer.E0 = spec.thermo.E0
-        
+                logging.info('No E0 or thermo found, estimating thermo and E0 of species {0} using'
+                             ' RMG-Database...'.format(spec.label))
+                spec.thermo = db.getThermoData(spec)
+                if spec.thermo.E0 is None:
+                    th = spec.thermo.toWilhoit()
+                    spec.conformer.E0 = th.E0
+                    spec.thermo.E0 = th.E0
+                else:
+                    spec.conformer.E0 = spec.thermo.E0
     return spec
+
 
 def transitionState(label, *args, **kwargs):
     global transitionStateDict
