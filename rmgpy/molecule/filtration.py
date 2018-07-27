@@ -102,12 +102,13 @@ def get_octet_deviation(mol, allow_expanded_octet=True):
     if `allow_expanded_octet` is ``True`` (by default), then the function also considers dectet for
     third row elements (currently sulfur is the only hypervalance third row element in RMG)
     """
-    if not isinstance(mol, Molecule):
+    from afm.fragment import Fragment, CuttingLabel
+    if not isinstance(mol, (Molecule, Fragment)):
         raise TypeError("Octet deviation could only be determined for Molecule objects.")
 
     octet_deviation = 0  # This is the overall "score" for the molecule, summed across all non-H atoms
     for atom in mol.vertices:
-        if atom.isHydrogen():
+        if atom.isHydrogen() or isinstance(atom, CuttingLabel):
             continue
         val_electrons = 2 * (int(atom.getBondOrdersForAtom()) + atom.lonePairs) + atom.radicalElectrons
         if atom.isCarbon() or atom.isNitrogen() or atom.isOxygen():
