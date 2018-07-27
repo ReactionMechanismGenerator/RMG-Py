@@ -55,6 +55,11 @@ def filter_structures(mol_list, mark_unreactive=True):
     lone pairs. This method filters them out by minimizing the number of C/N/O/S atoms without a full octet.
     """
 
+    from afm.fragment import Fragment
+    if isinstance(mol_list[0], Fragment):
+        for mol in mol_list:
+            mol.update()
+
     if not all([(mol.multiplicity == mol_list[0].multiplicity) for mol in mol_list]):
         raise ValueError("Cannot filter structures with different multiplicities!")
 
