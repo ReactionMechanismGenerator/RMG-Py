@@ -51,6 +51,7 @@ import numpy as np
 
 import rmgpy.quantity as quantity
 from rmgpy.exceptions import SpeciesError, StatmechError
+from rmgpy.molecule.graph import Vertex, Edge, Graph
 from rmgpy.molecule.molecule import Atom, Bond, Molecule
 from rmgpy.pdep import SingleExponentialDown
 from rmgpy.statmech.conformer import Conformer
@@ -654,7 +655,7 @@ class Species(object):
         """
         `True` if the species has at least one reactive molecule, `False` otherwise
         """
-        cython.declare(molecule=Molecule)
+        cython.declare(molecule=Graph)
         return any([molecule.reactive for molecule in self.molecule])
 
     def copy(self, deep=False):
