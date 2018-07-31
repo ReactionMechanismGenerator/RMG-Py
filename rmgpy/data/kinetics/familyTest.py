@@ -762,6 +762,18 @@ class TestTreeGeneration(unittest.TestCase):
                         if boo and us != [] and not (set(u) <= set(us)):
                             logging.error('unpaired electron regularization dimension missed')
                             vioObj.add((tuple(indc),tuple(us),tuple(u),typ))
+                    elif typ == 'ringExt':
+                        rs = atms[indc[0]].reg_dim_r
+                        if 'inRing' in atms[indc[0]].props.keys():
+                            r = atms[indc[0]].props['inRing']
+                        else:
+                            r = [True,False]
+                        if boo and rs != [] and not (set(r) <= set(rs)):
+                            logging.error('in ring regularization dimension missed')
+                            vioObj.add((tuple(indc),tuple(rs),tuple(r),typ))
+                    else:
+                        raise ValueError('extension type {0} not identified within test'.format(typ))
+                        
             self.assertTrue(len(vioObj) <= 1,'there were {0} regularization violations at, {1}'.format(len(vioObj),vioObj))
     
     def test_FRegularizationStructure(self):
