@@ -3071,6 +3071,63 @@ class KineticsFamily(Database):
         
         return rxns
     
+    def getReactionMatches(self,rxns=None,thermoDatabase=None):
+        """
+        returns a dictionary mapping for each entry in the tree:  
+        (entry.label,entry.item) : list of all training reactions (or the list given) that match that entry
+        """
+        if rxns is None:
+            rxns = self.getTrainingSet(thermoDatabase=thermoDatabase)
+        
+        entries = self.groups.entries
+        
+        assert len(set(entries.keys())) == len(entries.keys()), 'there are duplicate indices in family.group.entries'
+        
+        rxnLists = {(entry.label,entry.item):[] for entry in entries.values()}
+        
+        for rxn in rxns:
+            mol = None
+            for r in rxn.reactants:
+                if mol is None:
+                    mol = deepcopy(r.molecule[0])
+                else:
+                    mol = mol.merge(r.molecule[0])
+                    
+            root = self.getRootTemplate()[0]
+            
+            if not self.isEntryMatch(mol,root):
+                logging.error(mol.toAdjacencyList())
+                for r in rxn.reactants:
+                    logging.error(r.molecule[0].toAdjacencyList())
+                raise ValueError('reaction: {0} does not match root template in family {1}'.format(rxn,self.label))
+            
+            rxnLists[(root.label,root.item)].append(rxn)
+            
+            entry = root
+            
+            while entry.children != []:
+                for child in entry.children:
+                    if self.isEntryMatch(mol,child):
+                        entry = child
+                        rxnLists[child.label].append(rxn)
+                        break
+                else:
+                    break
+    
+        return rxnLists
+    
+        
+    def isEntryMatch(self,mol,entry):
+        """
+        determines if the labeled molecule object of reactants matches the entry entry
+        """
+        if isinstance(entry.item,Group):
+            structs = mol.generate_resonance_structures()
+            return any([mol.isSubgraphIsomorphic(entry.item,generateInitialMap=True) for mol in structs])
+        elif isinstance(entry.item,LogicOr):
+            return any([self.isEntryMatch(mol,self.groups.entries[c]) for c in entry.item.components])
+        
+
     def retrieveOriginalEntry(self, templateLabel):
         """
         Retrieves the original entry, be it a rule or training reaction, given
