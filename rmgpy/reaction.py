@@ -86,6 +86,7 @@ class Reaction:
                                                     Only unimolecular library reactions with high pressure limit kinetics should be flagged (not if the kinetics were measured at some relatively low pressure)
     `comment`           ``str``                     A description of the reaction source (optional)
     `is_forward`        ``bool``                    Indicates if the reaction was generated in the forward (true) or reverse (false)
+    `rank`              ``int``                     Integer indicating the accuracy of the kinetics for this reaction
     =================== =========================== ============================
     
     """
@@ -106,6 +107,7 @@ class Reaction:
                  allow_pdep_route=False,
                  elementary_high_p=False,
                  allow_max_rate_violation=False,
+                 rank=None,
                  comment='',
                  is_forward=None,
                  ):
@@ -127,6 +129,7 @@ class Reaction:
         self.k_effective_cache = {}
         self.is_forward = is_forward
         self.allow_max_rate_violation = allow_max_rate_violation
+        self.rank = rank
 
     def __repr__(self):
         """
@@ -149,6 +152,7 @@ class Reaction:
         if self.allow_pdep_route: string += 'allow_pdep_route={0}, '.format(self.allow_pdep_route)
         if self.elementary_high_p: string += 'elementary_high_p={0}, '.format(self.elementary_high_p)
         if self.comment != '': string += 'comment={0!r}, '.format(self.comment)
+        if self.rank is not None: string += 'rank={0!r},'.format(self.rank)
         string = string[:-2] + ')'
         return string
 
@@ -190,6 +194,7 @@ class Reaction:
                            self.pairs,
                            self.allow_pdep_route,
                            self.elementary_high_p,
+                           self.rank,
                            self.comment
                            ))
 
