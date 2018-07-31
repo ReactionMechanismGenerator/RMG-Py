@@ -1224,6 +1224,9 @@ class Group(Graph):
                             extents.extend(self.specifyUnpairedExtensions(i,basename,atm.reg_dim_u))
                         else:
                             extents.extend(self.specifyUnpairedExtensions(i,basename,list(set(atm.radicalElectrons) & set(atm.reg_dim_u))))
+                if atm.reg_dim_r == [] and not 'inRing' in atm.props.keys():
+                    extents.extend(self.specifyRingExtensions(i,basename))
+               
                 extents.extend(self.specifyExternalNewBondExtensions(i,basename,Rbonds))
                 for j,atm2 in enumerate(atoms):
                     if j<i and not self.hasBond(atm,atm2):
@@ -1284,6 +1287,9 @@ class Group(Graph):
                         extents.extend(self.specifyUnpairedExtensions(i,basename,atm.reg_dim_atm))
                     else:
                         extents.extend(self.specifyUnpairedExtensions(i,basename,list(set(atm.radicalElectrons) & set(atm.reg_dim_u))))
+            if atm.reg_dim_r == [] and not 'inRing' in atm.props.keys():
+                extents.extend(self.specifyRingExtensions(i,basename))
+                
             extents.extend(self.specifyExternalNewBondExtensions(i,basename,Rbonds))
             for j,atm2 in enumerate(atoms):
                 if j<i and not self.hasBond(atm,atm2):
@@ -1326,6 +1332,32 @@ class Group(Graph):
                 old_atom_type_str = old_atom_type[0].label
 
             grps.append((grp,grpc,basename+'_'+old_atom_type_str+'->'+item.label,'atomExt',(i,)))
+            
+        return grps
+    
+    def specifyRingExtensions(self,i,basename):
+        """
+        generates extensions for specifying if an atom is in a ring
+        """
+        cython.declare(grps=list,grp=Group,grpc=Group,atom_type=list,atom_type_str=str,k=AtomType)
+        
+        grps = []
+        
+        grp = deepcopy(self)
+        grpc = deepcopy(self)
+        grp.atoms[i].props['inRing'] = True
+        grpc.atoms[i].props['inRing'] = False
+        
+        atom_type = grp.atoms[i].atomType
+        
+        if len(atom_type ) > 1:
+            atom_type_str = ''
+            for k in atom_type:
+                atom_type_str += k.label
+        else:
+            atom_type_str = atom_type[0].label
+        
+        grps.append((grp,grpc,basename+'_'+atom_type_str+'-inRing','ringExt',(i,)))
             
         return grps
     
