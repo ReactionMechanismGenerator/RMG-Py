@@ -43,6 +43,7 @@ cdef class GroupAtom(Vertex):
 
     cdef public list reg_dim_atm
     cdef public list reg_dim_u
+    cdef public list reg_dim_r
 
     cpdef Vertex copy(self)
 

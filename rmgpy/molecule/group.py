@@ -64,6 +64,7 @@ class GroupAtom(Vertex):
     `props`             ``dict``            Dictionary for storing additional atom properties
     `reg_dim_atm`       ``list``            List of atom types that are free dimensions in tree optimization
     `reg_dim_u`         ``list``            List of unpaired electron numbers that are free dimensions in tree optimization
+    `reg_dim_r`         ``list``            List of inRing values that are free dimensions in tree optimization
     =================== =================== ====================================
 
     Each list represents a logical OR construct, i.e. an atom will match the
@@ -88,6 +89,7 @@ class GroupAtom(Vertex):
         
         self.reg_dim_atm = []
         self.reg_dim_u = []
+        self.reg_dim_r = []
 
 
     def __reduce__(self):
