@@ -2645,7 +2645,8 @@ class KineticsFamily(Database):
                         regDict[(typ,indc)][0].extend(grp2.atoms[indc[0]].radicalElectrons)
                     elif typ == 'bondExt':
                         regDict[(typ,indc)][0].extend(grp2.getBond(grp2.atoms[indc[0]],grp2.atoms[indc[1]]).order)
-
+                    elif typ == 'ringExt':
+                        regDict[(typ,indc)][0].append(True)
                 else:                    
                     #this extension matches no reactions
                     if typ == 'atomExt':
@@ -2654,7 +2655,8 @@ class KineticsFamily(Database):
                         regDict[(typ,indc)][1].extend(grp2.atoms[indc[0]].radicalElectrons)
                     elif typ == 'bondExt':
                         regDict[(typ,indc)][1].extend(grp2.getBond(grp2.atoms[indc[0]],grp2.atoms[indc[1]]).order)
-            
+                    elif typ == 'ringExt':
+                        regDict[(typ,indc)][1].append(True)
                     
             for typr,indcr in regDict.keys(): #have to label the regularization dimensions in all relevant groups
                 regVal = regDict[(typr,indcr)][0]
@@ -2664,6 +2666,8 @@ class KineticsFamily(Database):
                         grp.atoms[indcr[0]].reg_dim_atm = regVal
                     elif typr == 'elExt':
                         grp.atoms[indcr[0]].reg_dim_u = regVal
+                    elif typr == 'ringExt':
+                        grp.atoms[indcr[0]].reg_dim_r = regVal
                     elif typr == 'bondExt':
                         atms = grp.atoms
                         bd = grp.getBond(atms[indcr[0]],atms[indcr[1]])
@@ -2680,6 +2684,10 @@ class KineticsFamily(Database):
                             grp2.atoms[indcr[0]].reg_dim_u = regVal
                             if grpc:
                                 grpc.atoms[indcr[0]].reg_dim_u = regVal
+                        elif typr == 'ringExt':
+                            grp2.atoms[indcr[0]].reg_dim_r = regVal
+                            if grpc:
+                                grpc.atoms[indcr[0]].reg_dim_r = regVal
                         elif typr == 'bondExt':
                             atms = grp2.atoms
                             bd = grp2.getBond(atms[indcr[0]],atms[indcr[1]])
@@ -2703,6 +2711,10 @@ class KineticsFamily(Database):
                             grp2.atoms[indcr[0]].reg_dim_u = regVal
                             if grpc:
                                 grpc.atoms[indcr[0]].reg_dim_u = regVal
+                        elif typr == 'ringExt':
+                            grp2.atoms[indcr[0]].reg_dim_r = regVal
+                            if grpc:
+                                grpc.atoms[indcr[0]].reg_dim_r = regVal
                         elif typr == 'bondExt':
                             atms = grp2.atoms
                             bd = grp2.getBond(atms[indcr[0]],atms[indcr[1]])
