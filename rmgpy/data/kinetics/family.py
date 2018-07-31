@@ -2993,6 +2993,84 @@ class KineticsFamily(Database):
         
         self.save(path)
     
+    def getTrainingSet(self, thermoDatabase=None):
+        """
+        retrieves all reactions in the training set, assigns thermo to the species objects
+        reverses reactions as necessary so that all reactions are in the forward direction
+        and returns the resulting list of reactions in the forward direction with thermo 
+        assigned
+        """
+        if thermoDatabase is None:
+            from rmgpy.data.rmg import getDB
+            tdb = getDB('thermo')
+        else:
+            tdb = thermoDatabase
+        
+        try:
+            dep = self.getTrainingDepository()
+        except:
+            logging.info('Could not find training depository in family {0}.'.format(self.label))
+            logging.info('Must be because you turned off the training depository.')
+            return
+        
+        rxns = deepcopy([i.item for i in dep.entries.values()])
+    
+        for i,r in enumerate(dep.entries.values()):
+            for j,react in enumerate(r.item.reactants):
+                if rxns[i].reactants[j].thermo is None:
+                    rxns[i].reactants[j].thermo = tdb.getThermoData(react)
+    
+            for j,react in enumerate(r.item.products):
+                if rxns[i].products[j].thermo is None:
+                    rxns[i].products[j].thermo = tdb.getThermoData(react)
+    
+            rxns[i].kinetics = r.data
+            rxns[i].rank = r.rank
+            
+            mol = None
+            for react in rxns[i].reactants:
+                if mol:
+                    mol = mol.merge(react.molecule[0])
+                else:
+                    mol = deepcopy(react.molecule[0])
+                    
+            root = self.getRootTemplate()[0].item
+            structs = mol.generate_resonance_structures()
+            
+            if any([mol.isSubgraphIsomorphic(root,generateInitialMap=True) for mol in structs]):
+                continue
+            else:
+                try:
+                    products = self.applyRecipe([s.molecule[0] for s in rxns[i].reactants],forward=False)
+                except (ActionError,InvalidActionError) as e:
+                    for r in rxns[i].reactants:
+                        r.generate_resonance_structures()
+                    
+                    combos = [[s for s in r.molecule if not s.isAromatic()] for r in rxns[i].reactants]
+                    cprods = itertools.product(*combos)
+                    
+                    for cprod in cprods:
+                        try:
+                            products = self.applyRecipe(list(cprod),forward=False)
+                        except (ActionError,InvalidActionError) as e:
+                            pass
+                        else:
+                            break
+                    else:
+                        logging.error(rxns[i])
+                        for r in rxns[i].reactants:
+                            for mol in r.molecule:
+                                logging.error(mol.toAdjacencyList())
+                        raise e
+        
+                rrev = Reaction(reactants=[Species(molecule=[p]) for p in products],products=rxns[i].reactants,kinetics=rxns[i].generateReverseRateCoefficient())
+                for r in rrev.reactants:
+                    r.thermo = tdb.getThermoData(deepcopy(r))
+                    
+                rxns[i] = rrev
+        
+        return rxns
+    
     def retrieveOriginalEntry(self, templateLabel):
         """
         Retrieves the original entry, be it a rule or training reaction, given
