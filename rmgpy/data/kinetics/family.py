@@ -2917,11 +2917,15 @@ class KineticsFamily(Database):
             else:
                 raise ValueError('regularization type of {0} is unimplemented'.format(typ))
     
-    def regularize(self, regularization=simpleRegularization):
+    def regularize(self, regularization=simpleRegularization,keepRoot=True):
         """
         Regularizes the tree according to the regularization function regularization
         """
-        regularization(self,self.getRootTemplate()[0])
+        if keepRoot:
+            for child in self.getRootTemplate()[0].children: #don't regularize the root
+                regularization(self,child)
+        else:
+            regularization(self,self.getRootTemplate()[0])
         
     def prepareTreeForGeneration(self,thermoDatabase=None):
         """
