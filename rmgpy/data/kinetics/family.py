@@ -2957,8 +2957,7 @@ class KineticsFamily(Database):
             if grp is None:
                 grp = ent.item
             else:
-                grp.mergeGroups(ent.item)
-        
+                grp = grp.mergeGroups(ent.item)
         
         #clear everything
         self.groups.entries = {x.label:x for x in self.groups.entries.itervalues() if x.index == -1}
