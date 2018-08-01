@@ -2750,6 +2750,13 @@ class KineticsFamily(Database):
         
         exts = self.getExtensionEdge(parent,obj=obj,T=T)
         
+        if exts == []: #should only occur when all reactions at this node are identical
+            rs = self.getEntriesReactions(parent.label)
+            for q,rxn in enumerate(rs):
+                for j in xrange(q):
+                    assert rxn.isIsomorphic(rs[j],checkIdentical=True) #If family.getExtensionEdge and Group.getExtensions operate properly this should always pass
+            return False
+        
         vals = []
         for grp,grpc,name,typ,einds in exts:
             val,boo = self.evalExt(parent,grp,name,obj,T)
@@ -2801,7 +2808,7 @@ class KineticsFamily(Database):
         else:
             self.rules.entries[parent.label] = compEntries
             
-        return
+        return True
     
     def generateTree(self,obj=None,thermoDatabase=None,T=1000.0):
         """
@@ -2816,14 +2823,18 @@ class KineticsFamily(Database):
         have two children one of which has no kinetics data and no children
         (its parent becomes the parent of its only relevant child node)
         """
+        multCompletedNodes = [] #nodes containing multiple identical training reactions
         boo = True #if the for loop doesn't break becomes false and the while loop terminates
         while boo:
             for entry in self.groups.entries.itervalues():
                 if not isinstance(entry.item, Group): #skip logic nodes
                     continue
-                if entry.index != -1 and len(self.rules.entries[entry.label])>1:
-                    self.extendNode(entry,thermoDatabase,obj,T)
-                    break
+                if entry.index != -1 and len(self.rules.entries[entry.label])>1 and entry not in multCompletedNodes:
+                    boo2 = self.extendNode(entry,thermoDatabase,obj,T)
+                    if boo2: #extended node so restart while loop
+                        break 
+                    else: #no extensions could be generated since all reactions were identical
+                        multCompletedNodes.append(entry)
                 elif entry.parent is None or entry.parent.parent is None or not isinstance(entry.parent.item,Group) or not isinstance(entry.parent.parent.item,Group):
                     pass
                 elif len(self.rules.entries[entry.parent.label])>0 or len(self.rules.entries[entry.label])>0:
