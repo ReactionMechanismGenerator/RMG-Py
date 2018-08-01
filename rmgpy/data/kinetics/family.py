@@ -1795,15 +1795,25 @@ class KineticsFamily(Database):
             return []
         else:
             template = self.reverseTemplate
-
+        
+        if len(reactants) > len(template.reactants):
+            grps = template.reactants[0].item.split()
+            template_reactants = []
+            for grp in grps:
+                entry = deepcopy(template.reactants[0])
+                entry.item = grp
+                template_reactants.append(entry)
+        else:
+            template_reactants = template.reactants
+            
         # Unimolecular reactants: A --> products
-        if len(reactants) == 1 and len(template.reactants) == 1:
+        if len(reactants) == 1 and len(template_reactants) == 1:
 
             # Iterate over all resonance isomers of the reactant
             for molecule in reactants[0]:
                 if molecule.reactive or react_non_reactive:  # don't react non representative resonance isomers unless
                     # explicitly desired (e.g., when called from calculateDegeneracy)
-                    mappings = self.__matchReactantToTemplate(molecule, template.reactants[0])
+                    mappings = self.__matchReactantToTemplate(molecule, template_reactants[0])
                     for map in mappings:
                         reactantStructures = [molecule]
                         try:
@@ -1816,7 +1826,7 @@ class KineticsFamily(Database):
                                 if rxn: rxnList.append(rxn)
 
         # Bimolecular reactants: A + B --> products
-        elif len(reactants) == 2 and len(template.reactants) == 2:
+        elif len(reactants) == 2 and len(template_reactants) == 2:
 
             moleculesA = reactants[0]
             moleculesB = reactants[1]
@@ -1827,8 +1837,8 @@ class KineticsFamily(Database):
                     if (moleculeA.reactive and moleculeB.reactive) or react_non_reactive:
 
                         # Reactants stored as A + B
-                        mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[0])
-                        mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[1])
+                        mappingsA = self.__matchReactantToTemplate(moleculeA, template_reactants[0])
+                        mappingsB = self.__matchReactantToTemplate(moleculeB, template_reactants[1])
 
                         # Iterate over each pair of matches (A, B)
                         for mapA in mappingsA:
@@ -1849,8 +1859,8 @@ class KineticsFamily(Database):
                         if reactants[0] is not reactants[1]:
 
                             # Reactants stored as B + A
-                            mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[1])
-                            mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[0])
+                            mappingsA = self.__matchReactantToTemplate(moleculeA, template_reactants[1])
+                            mappingsB = self.__matchReactantToTemplate(moleculeB, template_reactants[0])
 
                             # Iterate over each pair of matches (A, B)
                             for mapA in mappingsA:
@@ -1866,7 +1876,7 @@ class KineticsFamily(Database):
                                             if rxn: rxnList.append(rxn)
         
         # Trimolecular reactants: A + B + C --> products
-        elif len(reactants) == 3 and len(template.reactants) == 3:
+        elif len(reactants) == 3 and len(template_reactants) == 3:
 
             moleculesA = reactants[0]
             moleculesB = reactants[1]
@@ -1881,9 +1891,9 @@ class KineticsFamily(Database):
                             """
                             order = (0, 1, 2) corresponds to reactants stored as A + B + C, etc.
                             """
-                            _mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[order[0]])
-                            _mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[order[1]])
-                            _mappingsC = self.__matchReactantToTemplate(moleculeC, template.reactants[order[2]])
+                            _mappingsA = self.__matchReactantToTemplate(moleculeA, template_reactants[order[0]])
+                            _mappingsB = self.__matchReactantToTemplate(moleculeB, template_reactants[order[1]])
+                            _mappingsC = self.__matchReactantToTemplate(moleculeC, template_reactants[order[2]])
 
                             # Iterate over each pair of matches (A, B, C)
                             for _mapA in _mappingsA:
