@@ -2531,18 +2531,6 @@ class KineticsFamily(Database):
         if entry.parent:
             entry.parent.children.append(entry)
     
-    def getEntriesReactions(self,template):
-        """
-        retrieves all training reactions whose kinetics
-        are associated with the entry template
-        """
-        entries = self.rules.entries[template]
-        tentries = self.getTrainingDepository().entries
-        rxnEntries = []
-        for entry in entries:
-            rxnEntries.append(tentries[entry.index].item)
-        return rxnEntries
-    
     def getTemplateKinetics(self,template):
         """
         retrives a list of all the kinetics objects
@@ -2579,12 +2567,12 @@ class KineticsFamily(Database):
         
         return new,comp,newInds    
     
-    def evalExt(self,parent,ext,extname,obj=None,T=1000.0):
+    def evalExt(self,parent,ext,extname,templateRxnMap,obj=None,T=1000.0):
         """
         evaluates the objective function obj
         for the extension ext with name extname to the parent entry parent
         """
-        rxns = self.getEntriesReactions(parent.label)
+        rxns = templateRxnMap[parent.label]
         new,old,newInds = self.splitReactions(rxns,parent.label,ext)
         if len(new) == 0:
             return np.inf,False
@@ -2752,7 +2740,7 @@ class KineticsFamily(Database):
         return out
             
                     
-    def extendNode(self,parent,thermoDatabase=None,obj=None,T=1000.0):
+    def extendNode(self,parent,templateRxnMap,thermoDatabase=None,obj=None,T=1000.0,):
         """
         Constructs an extension to the group parent based on evaluation 
         of the objective function obj
@@ -2769,7 +2757,7 @@ class KineticsFamily(Database):
         
         vals = []
         for grp,grpc,name,typ,einds in exts:
-            val,boo = self.evalExt(parent,grp,name,obj,T)
+            val,boo = self.evalExt(parent,grp,name,templateRxnMap,obj,T)
             vals.append(val) 
             
         min_val = min(vals)
@@ -2795,7 +2783,7 @@ class KineticsFamily(Database):
     
             self.addEntry(parent,ext[1],cextname)
         
-        rxns = self.getEntriesReactions(parent.label)
+        rxns = templateRxnMap[parent.label]
         new,left,newInds = self.splitReactions(rxns,parent.label,ext[0])
         
         compEntries = []
@@ -2810,13 +2798,13 @@ class KineticsFamily(Database):
                     entry.label = cextname
                 compEntries.append(entry)
         
-        self.rules.entries[extname] = newEntries
+        templateRxnMap[extname] = newEntries
         
         if complement:
-            self.rules.entries[parent.label] = []
-            self.rules.entries[cextname] = compEntries
+            templateRxnMap[parent.label] = []
+            templateRxnMap[cextname] = compEntries
         else:
-            self.rules.entries[parent.label] = compEntries
+            templateRxnMap[parent.label] = compEntries
             
         return True
     
@@ -2834,6 +2822,8 @@ class KineticsFamily(Database):
         (its parent becomes the parent of its only relevant child node)
         """
         self.rules.entries = OrderedDict() #clear rules
+        templateRxnMap = self.getReactionMatches(thermoDatabase=thermoDatabase)
+        
         multCompletedNodes = [] #nodes containing multiple identical training reactions
         boo = True #if the for loop doesn't break becomes false and the while loop terminates
         while boo:
@@ -2841,7 +2831,7 @@ class KineticsFamily(Database):
                 if not isinstance(entry.item, Group): #skip logic nodes
                     continue
                 if entry.index != -1 and len(self.rules.entries[entry.label])>1 and entry not in multCompletedNodes:
-                    boo2 = self.extendNode(entry,thermoDatabase,obj,T)
+                    boo2 = self.extendNode(entry,templateRxnMap,thermoDatabase,obj,T)
                     if boo2: #extended node so restart while loop
                         break 
                     else: #no extensions could be generated since all reactions were identical
