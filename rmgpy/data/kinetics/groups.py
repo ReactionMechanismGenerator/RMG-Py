@@ -119,40 +119,65 @@ class KineticsGroups(Database):
 
         # Descend reactant trees as far as possible
         template = []
-        for entry in forwardTemplate:
-            # entry is a top-level node that should be matched
+        if len(forwardTemplate) == 1 and len(reaction.reactants) > len(forwardTemplate):
+            entry = forwardTemplate[0]
             group = entry.item
-
-            # Identify the atom labels in a group if it is not a logical node
-            atomList = []
-            if not isinstance(entry.item, LogicNode):
-                atomList = group.getLabeledAtoms()
-
-            for reactant in reaction.reactants:
-                if isinstance(reactant, Species):
-                    reactant = reactant.molecule[0]
-                # Match labeled atoms
-                # Check that this reactant has each of the atom labels in this group.  If it is a LogicNode, the atomList is empty and 
-                # it will proceed directly to the descendTree step.
-                if not all([reactant.containsLabeledAtom(label) for label in atomList]):
-                    continue # don't try to match this structure - the atoms aren't there!
-                # Match structures
-                atoms = reactant.getLabeledAtoms()
-                # Descend the tree, making sure to match atomlabels exactly using strict = True
-                matched_node = self.descendTree(reactant, atoms, root=entry, strict=True)
-                if matched_node is not None:
-                    template.append(matched_node)
-                #else:
-                #    logging.warning("Couldn't find match for {0} in {1}".format(entry,atomList))
-                #    logging.warning(reactant.toAdjacencyList())
-
-        # Get fresh templates (with duplicate nodes back in)
-        forwardTemplate = self.top[:]
-        if (self.label.lower().startswith('r_recombination')
-            or self.label.lower().startswith('peroxyl_disproportionation')
-            or self.label.lower().startswith('bimolec_hydroperoxide_decomposition')):
-            forwardTemplate.append(forwardTemplate[0])
-
+    
+            r = None
+            for react in reaction.reactants:
+                if isinstance(react,Species):
+                    react = react.molecule[0]
+                if r:
+                    r = r.merge(react)
+                else:
+                    r = deepcopy(react)
+        
+            atoms = r.getLabeledAtoms()
+            
+            matched_node = self.descendTree(r,atoms,root=entry,strict=True)
+            
+            if matched_node is not None:
+                template.append(matched_node)
+                
+        elif len(forwardTemplate) <= len(reaction.reactants):
+            for entry in forwardTemplate:
+                # entry is a top-level node that should be matched
+                group = entry.item
+    
+                # Identify the atom labels in a group if it is not a logical node
+                atomList = []
+                if not isinstance(entry.item, LogicNode):
+                    atomList = group.getLabeledAtoms()
+    
+                for reactant in reaction.reactants:
+                    if isinstance(reactant, Species):
+                        reactant = reactant.molecule[0]
+                    # Match labeled atoms
+                    # Check that this reactant has each of the atom labels in this group.  If it is a LogicNode, the atomList is empty and 
+                    # it will proceed directly to the descendTree step.
+                    if not all([reactant.containsLabeledAtom(label) for label in atomList]):
+                        continue # don't try to match this structure - the atoms aren't there!
+                    # Match structures
+                    atoms = reactant.getLabeledAtoms()
+                    # Descend the tree, making sure to match atomlabels exactly using strict = True
+                    matched_node = self.descendTree(reactant, atoms, root=entry, strict=True)
+                    if matched_node is not None:
+                        template.append(matched_node)
+                    #else:
+                    #    logging.warning("Couldn't find match for {0} in {1}".format(entry,atomList))
+                    #    logging.warning(reactant.toAdjacencyList())
+    
+            # Get fresh templates (with duplicate nodes back in)
+            forwardTemplate = self.top[:]
+            if (self.label.lower().startswith('r_recombination')
+                or self.label.lower().startswith('peroxyl_disproportionation')
+                or self.label.lower().startswith('bimolec_hydroperoxide_decomposition')):
+                forwardTemplate.append(forwardTemplate[0])
+                
+        else:
+            raise ValueError
+            
+                
         # Check that we were able to match the template.
         # template is a list of the actual matched nodes
         # forwardTemplate is a list of the top level nodes that should be matched
