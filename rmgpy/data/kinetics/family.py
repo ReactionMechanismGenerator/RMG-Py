@@ -3083,7 +3083,7 @@ class KineticsFamily(Database):
         
         assert len(set(entries.keys())) == len(entries.keys()), 'there are duplicate indices in family.group.entries'
         
-        rxnLists = {(entry.label,entry.item):[] for entry in entries.values()}
+        rxnLists = {entry.label:[] for entry in entries.values()}
         
         for rxn in rxns:
             mol = None
@@ -3101,7 +3101,7 @@ class KineticsFamily(Database):
                     logging.error(r.molecule[0].toAdjacencyList())
                 raise ValueError('reaction: {0} does not match root template in family {1}'.format(rxn,self.label))
             
-            rxnLists[(root.label,root.item)].append(rxn)
+            rxnLists[root.label].append(rxn)
             
             entry = root
             
