@@ -2833,6 +2833,7 @@ class KineticsFamily(Database):
         have two children one of which has no kinetics data and no children
         (its parent becomes the parent of its only relevant child node)
         """
+        self.rules.entries = OrderedDict() #clear rules
         multCompletedNodes = [] #nodes containing multiple identical training reactions
         boo = True #if the for loop doesn't break becomes false and the while loop terminates
         while boo:
@@ -2971,16 +2972,12 @@ class KineticsFamily(Database):
         
         #clear everything
         self.groups.entries = {x.label:x for x in self.groups.entries.itervalues() if x.index == -1}
-        self.rules.entries = OrderedDict()
         
         #add the starting node
         self.addEntry(None,grp,'Root')
         self.groups.top = [self.groups.entries['Root']]
         self.forwardTemplate.reactants = [self.groups.entries['Root']]
 
-        #fill with training reactions
-        self.addKineticsRulesFromTrainingSet(thermoDatabase)
-        
         return
     
     def saveGeneratedTree(self,path=None):
