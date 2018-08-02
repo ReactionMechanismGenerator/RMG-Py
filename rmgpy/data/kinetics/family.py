@@ -2984,18 +2984,19 @@ class KineticsFamily(Database):
         
         self.save(path)
     
-    def getTrainingSet(self, thermoDatabase=None, removeDegeneracy=False):
+    def getTrainingSet(self, thermoDatabase=None, removeDegeneracy=False, estimateThermo=True):
         """
         retrieves all reactions in the training set, assigns thermo to the species objects
         reverses reactions as necessary so that all reactions are in the forward direction
         and returns the resulting list of reactions in the forward direction with thermo 
         assigned
         """
-        if thermoDatabase is None:
-            from rmgpy.data.rmg import getDB
-            tdb = getDB('thermo')
-        else:
-            tdb = thermoDatabase
+        if estimateThermo:
+            if thermoDatabase is None:
+                from rmgpy.data.rmg import getDB
+                tdb = getDB('thermo')
+            else:
+                tdb = thermoDatabase
         
         try:
             dep = self.getTrainingDepository()
@@ -3005,15 +3006,17 @@ class KineticsFamily(Database):
             return
         
         rxns = deepcopy([i.item for i in dep.entries.values()])
-    
-        for i,r in enumerate(dep.entries.values()):
-            for j,react in enumerate(r.item.reactants):
-                if rxns[i].reactants[j].thermo is None:
-                    rxns[i].reactants[j].thermo = tdb.getThermoData(react)
-    
-            for j,react in enumerate(r.item.products):
-                if rxns[i].products[j].thermo is None:
-                    rxns[i].products[j].thermo = tdb.getThermoData(react)
+        entries = deepcopy([i for i in dep.entries.values()])
+        
+        for i,r in enumerate(entries):
+            if estimateThermo:
+                for j,react in enumerate(r.item.reactants):
+                    if rxns[i].reactants[j].thermo is None:
+                        rxns[i].reactants[j].thermo = tdb.getThermoData(react)
+        
+                for j,react in enumerate(r.item.products):
+                    if rxns[i].products[j].thermo is None:
+                        rxns[i].products[j].thermo = tdb.getThermoData(react)
     
             rxns[i].kinetics = r.data
             rxns[i].rank = r.rank
@@ -3056,28 +3059,33 @@ class KineticsFamily(Database):
                             for mol in r.molecule:
                                 logging.error(mol.toAdjacencyList())
                         raise e
-        
+                
+                
                 rrev = Reaction(reactants=[Species(molecule=[p]) for p in products],products=rxns[i].reactants,kinetics=rxns[i].generateReverseRateCoefficient())
-                for r in rrev.reactants:
-                    r.thermo = tdb.getThermoData(deepcopy(r))
-                    
+                
+                if estimateThermo:
+                    for r in rrev.reactants:
+                        r.thermo = tdb.getThermoData(deepcopy(r))
+                
                 rxns[i] = rrev
         
         return rxns
     
-    def getReactionMatches(self,rxns=None,thermoDatabase=None,removeDegeneracy=False):
+    def getReactionMatches(self,rxns=None,thermoDatabase=None,removeDegeneracy=False,estimateThermo=True):
         """
         returns a dictionary mapping for each entry in the tree:  
         (entry.label,entry.item) : list of all training reactions (or the list given) that match that entry
         """
         if rxns is None:
-            rxns = self.getTrainingSet(thermoDatabase=thermoDatabase,removeDegeneracy=removeDegeneracy)
+            rxns = self.getTrainingSet(thermoDatabase=thermoDatabase,removeDegeneracy=removeDegeneracy,estimateThermo=estimateThermo)
         
         entries = self.groups.entries
         
         assert len(set(entries.keys())) == len(entries.keys()), 'there are duplicate indices in family.group.entries'
         
         rxnLists = {entry.label:[] for entry in entries.values()}
+        
+        root = self.getRootTemplate()[0]
         
         for rxn in rxns:
             mol = None
@@ -3087,11 +3095,12 @@ class KineticsFamily(Database):
                 else:
                     mol = mol.merge(r.molecule[0])
                     
-            root = self.getRootTemplate()[0]
-            
             if not self.isEntryMatch(mol,root):
+                logging.error(root.item.toAdjacencyList())
                 logging.error(mol.toAdjacencyList())
                 for r in rxn.reactants:
+                    logging.error(r.molecule[0].toAdjacencyList())
+                for r in rxn.products:
                     logging.error(r.molecule[0].toAdjacencyList())
                 raise ValueError('reaction: {0} does not match root template in family {1}'.format(rxn,self.label))
             
