@@ -1798,12 +1798,15 @@ class KineticsFamily(Database):
             template = self.reverseTemplate
         
         if len(reactants) > len(template.reactants):
-            grps = template.reactants[0].item.split()
-            template_reactants = []
-            for grp in grps:
-                entry = deepcopy(template.reactants[0])
-                entry.item = grp
-                template_reactants.append(entry)
+            try:
+                grps = template.reactants[0].item.split()
+                template_reactants = []
+                for grp in grps:
+                    entry = deepcopy(template.reactants[0])
+                    entry.item = grp
+                    template_reactants.append(entry)
+            except AttributeError:
+                template_reactants = template.reactants
         else:
             template_reactants = template.reactants
             
