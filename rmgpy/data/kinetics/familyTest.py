@@ -729,6 +729,7 @@ class TestTreeGeneration(unittest.TestCase):
         """
         test that appropriate regularization dimensions have been identified
         """
+        templateRxnMap = self.family.getReactionMatches(thermoDatabase=self.database.thermo,estimateThermo=False)
         
         for entry in self.family.groups.entries.itervalues():
             if entry.children == []:
@@ -740,7 +741,7 @@ class TestTreeGeneration(unittest.TestCase):
                 if typ == 'intNewBondExt' or typ =='extNewBondExt':
                     continue
                 else:
-                    val,boo = self.family.evalExt(entry,grp,name)
+                    val,boo = self.family.evalExt(entry,grp,name,templateRxnMap)
                     if val != np.inf:
                         continue
                     atms = grp.atoms
