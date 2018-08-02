@@ -119,7 +119,7 @@ class KineticsGroups(Database):
 
         # Descend reactant trees as far as possible
         template = []
-        if len(forwardTemplate) == 1 and len(reaction.reactants) > len(forwardTemplate):
+        if len(forwardTemplate) == 1 and len(reaction.reactants) > len(forwardTemplate) and not self.label.lower().startswith('r_recombination'):
             entry = forwardTemplate[0]
             group = entry.item
     
@@ -139,7 +139,7 @@ class KineticsGroups(Database):
             if matched_node is not None:
                 template.append(matched_node)
                 
-        elif len(forwardTemplate) <= len(reaction.reactants):
+        else:
             for entry in forwardTemplate:
                 # entry is a top-level node that should be matched
                 group = entry.item
@@ -174,8 +174,6 @@ class KineticsGroups(Database):
                 or self.label.lower().startswith('bimolec_hydroperoxide_decomposition')):
                 forwardTemplate.append(forwardTemplate[0])
                 
-        else:
-            raise ValueError
             
                 
         # Check that we were able to match the template.
