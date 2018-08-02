@@ -52,6 +52,7 @@ from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.molecule.resonance import generate_optimal_aromatic_resonance_structures
 from rmgpy.species import Species
 from rmgpy.molecule.molecule import Bond
+from rmgpy.molecule.atomtype import atomTypes
 
 from .common import saveEntry, ensure_species, find_degenerate_reactions, generate_molecule_combos,\
                     ensure_independent_atom_ids, getAllDescendants
@@ -2911,9 +2912,21 @@ class KineticsFamily(Database):
         """
         grp = node.item
         
+
+        R = ['H','C','N','O','Si','S'] #set of possible R elements/atoms
+        R = [atomTypes[x] for x in R]
+        
+        RnH = R[:]
+        RnH.remove(atomTypes['H'])
+        
+        atmDict = {'R':R,'R!H':RnH}
+        
         if isinstance(grp,Group):
             if typ == 'atomtype':
-                grp.atoms[inds[0]].atomType = list(set(grp.atoms[inds[0]].atomType) & set(regs))
+                atyp = grp.atoms[inds[0]].atomType
+                if len(atyp) == 1 and atyp[0].label in atmDict.keys():
+                    atyp = atmDict[atyp[0].label]
+                grp.atoms[inds[0]].atomType = list(set(atyp) & set(regs))
                 for child in node.children:
                     self.extendRegularization(child,inds,regs,typ)
             elif typ == 'unpaired':
