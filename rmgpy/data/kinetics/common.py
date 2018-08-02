@@ -402,3 +402,21 @@ def reduce_same_reactant_degeneracy(reaction, same_reactants=None):
                         'Degeneracy of reaction {} was decreased by 50% to {} since two of the reactants '
                         'are identical'.format(reaction, reaction.degeneracy)
                     )
+
+def getAllDescendants(entry):
+    """
+    retrieve all the descendants of entry
+    """
+    newNodes = [entry]
+    totNodes = []
+    tempNodes = []
+    while newNodes != []:
+        for entry2 in newNodes:
+            for child in entry2.children:
+                tempNodes.append(child)
+        totNodes.extend(newNodes)
+        newNodes = tempNodes
+        tempNodes = []
+    
+    totNodes.remove(entry)
+    return totNodes
