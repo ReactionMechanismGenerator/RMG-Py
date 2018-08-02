@@ -47,13 +47,14 @@ from rmgpy.reaction import Reaction, isomorphic_species_lists
 from rmgpy import settings
 from rmgpy.reaction import Reaction
 from rmgpy.kinetics import Arrhenius
+from rmgpy.kinetics.arrhenius import ArrheniusBM
 from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.molecule.resonance import generate_optimal_aromatic_resonance_structures
 from rmgpy.species import Species
 from rmgpy.molecule.molecule import Bond
 
 from .common import saveEntry, ensure_species, find_degenerate_reactions, generate_molecule_combos,\
-                    ensure_independent_atom_ids
+                    ensure_independent_atom_ids, getAllDescendants
 from .depository import KineticsDepository
 from .groups import KineticsGroups
 from .rules import KineticsRules
@@ -2812,6 +2813,7 @@ class KineticsFamily(Database):
         (its parent becomes the parent of its only relevant child node)
         """
         self.rules.entries = OrderedDict() #clear rules
+        self.rules.entries['Root'] = []
         templateRxnMap = self.getReactionMatches(thermoDatabase=thermoDatabase,removeDegeneracy=True)
         
         multCompletedNodes = [] #nodes containing multiple identical training reactions
@@ -2836,7 +2838,40 @@ class KineticsFamily(Database):
                     entry.index = iters
                     iters += 1
         
+        self.makeBMRulesFromTemplateRxnMap(templateRxnMap)
+        
         return
+    
+    def makeBMRulesFromTemplateRxnMap(self,templateRxnMap):
+
+        index = max([e.index for e in self.rules.getEntries()] or [0]) + 1
+        
+        for entry in self.groups.entries.values():
+            if entry.index == -1:
+                continue
+            rxns = templateRxnMap[entry.label]
+            descendants = getAllDescendants(entry)
+            for entry2 in descendants:
+                rxns.extend(templateRxnMap[entry2.label])
+            
+            assert rxns != [], entry.label
+            kinetics = ArrheniusBM().fitToReactions(rxns,family=self)
+            
+            new_entry = Entry(
+                index = index,
+                label = entry.label,
+                item = self.forwardTemplate,
+                data = kinetics,
+                rank = 11,
+                reference=None,
+                shortDesc="BM rule fitted to {0} training reactions at node {1}".format(len(rxns),entry.label),
+                longDesc="BM rule fitted to {0} training reactions at node {1}".format(len(rxns),entry.label),
+            )
+            new_entry.data.comment = "BM rule fitted to {0} training reactions at node {1}".format(len(rxns),entry.label)
+
+            self.rules.entries[entry.label].append(new_entry)
+            
+            index += 1
     
     def simpleRegularization(self, node):
         """
