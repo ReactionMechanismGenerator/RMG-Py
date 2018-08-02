@@ -2531,14 +2531,7 @@ class KineticsFamily(Database):
         if entry.parent:
             entry.parent.children.append(entry)
     
-    def getTemplateKinetics(self,template):
-        """
-        retrives a list of all the kinetics objects
-        associated with a given template
-        """
-        return [entry.data for entry in self.rules.entries[template]]
-    
-    def splitReactions(self,rxns,oldlabel,newgrp):
+    def splitReactions(self,rxns,oldlabel,newgrp,templateRxnMap):
         """
         divides the reactions in rxns between the new
         group structure newgrp and the old structure with 
@@ -2551,19 +2544,17 @@ class KineticsFamily(Database):
         new = []
         comp = []
         newInds = []
-        kinetics = self.getTemplateKinetics(oldlabel)
         
         for i,rxn in enumerate(rxns):
-            reactants = rxn.reactants if rxn.is_forward else rxn.products
-            rmol = reactants[0].molecule[0]
-            for r in reactants[1:]:
+            rmol = rxn.reactants[0].molecule[0]
+            for r in rxn.reactants[1:]:
                 rmol.merge(r.molecule[0])
-            
+                
             if rmol.isSubgraphIsomorphic(newgrp,generateInitialMap=True, saveOrder=True):
-                new.append(kinetics[i])
+                new.append(rxn)
                 newInds.append(i)
             else:
-                comp.append(kinetics[i])
+                comp.append(rxn)
         
         return new,comp,newInds    
     
@@ -2573,7 +2564,7 @@ class KineticsFamily(Database):
         for the extension ext with name extname to the parent entry parent
         """
         rxns = templateRxnMap[parent.label]
-        new,old,newInds = self.splitReactions(rxns,parent.label,ext)
+        new,old,newInds = self.splitReactions(rxns,parent.label,ext,templateRxnMap)
         if len(new) == 0:
             return np.inf,False
         elif len(old) == 0:
@@ -2585,7 +2576,7 @@ class KineticsFamily(Database):
                 ob,boo = getObjectiveFunction(new,old,T=T)
             return ob,True
     
-    def getExtensionEdge(self,parent,obj,T):
+    def getExtensionEdge(self,parent,templateRxnMap,obj,T):
         """
         finds the set of all extension groups to parent such that
         1) the extension group divides the set of reactions under parent
@@ -2623,7 +2614,7 @@ class KineticsFamily(Database):
 
                 if typ != 'intNewBondExt' and typ != 'extNewBondExt' and (typ,indc) not in regDict.keys():
                     regDict[(typ,indc)] = ([],[])
-                val,boo = self.evalExt(parent,grp2,name,obj,T)
+                val,boo = self.evalExt(parent,grp2,name,templateRxnMap,obj,T)
                     
                 if val != np.inf:
                     outExts[-1].append(exts[i]) #this extension splits reactions (optimization dim)
@@ -2746,13 +2737,13 @@ class KineticsFamily(Database):
         of the objective function obj
         """
         
-        exts = self.getExtensionEdge(parent,obj=obj,T=T)
+        exts = self.getExtensionEdge(parent,templateRxnMap,obj=obj,T=T)
         
         if exts == []: #should only occur when all reactions at this node are identical
-            rs = self.getEntriesReactions(parent.label)
+            rs = templateRxnMap[parent.label]
             for q,rxn in enumerate(rs):
                 for j in xrange(q):
-                    assert rxn.isIsomorphic(rs[j],checkIdentical=True) #If family.getExtensionEdge and Group.getExtensions operate properly this should always pass
+                    assert rxn.isIsomorphic(rs[j],checkIdentical=True), 'this implies that extensions could not be generated that split at least two different reactions, which should not be possible' #If family.getExtensionEdge and Group.getExtensions operate properly this should always pass
             return False
         
         vals = []
@@ -2784,20 +2775,19 @@ class KineticsFamily(Database):
             self.addEntry(parent,ext[1],cextname)
         
         rxns = templateRxnMap[parent.label]
-        new,left,newInds = self.splitReactions(rxns,parent.label,ext[0])
+        
+        new,left,newInds = self.splitReactions(rxns,parent.label,ext[0],templateRxnMap)
         
         compEntries = []
         newEntries = []
 
-        for i,entry in enumerate(self.rules.entries[parent.label]):
+        for i,entry in enumerate(templateRxnMap[parent.label]):
             if i in newInds:
-                entry.label = extname
                 newEntries.append(entry)
             else:
-                if complement:
-                    entry.label = cextname
                 compEntries.append(entry)
         
+            
         templateRxnMap[extname] = newEntries
         
         if complement:
@@ -2830,7 +2820,7 @@ class KineticsFamily(Database):
             for entry in self.groups.entries.itervalues():
                 if not isinstance(entry.item, Group): #skip logic nodes
                     continue
-                if entry.index != -1 and len(self.rules.entries[entry.label])>1 and entry not in multCompletedNodes:
+                if entry.index != -1 and len(templateRxnMap[entry.label])>1 and entry not in multCompletedNodes:
                     boo2 = self.extendNode(entry,templateRxnMap,thermoDatabase,obj,T)
                     if boo2: #extended node so restart while loop
                         break 
