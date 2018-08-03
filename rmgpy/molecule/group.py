@@ -1169,7 +1169,7 @@ class Group(Graph):
         return molecules
                 
                                
-    def getExtensions(self,R=None,basename='',atmInd=None, atmInd2=None):
+    def getExtensions(self,R=None,basename='',atmInd=None, atmInd2=None, Nsplits=None):
         """
         generate all allowed group extensions and their complements
         note all atomtypes except for elements and R/R!H's must be removed
@@ -1179,7 +1179,9 @@ class Group(Graph):
         
         extents = []
         
-        Nsplits = len(self.split())
+        if Nsplits is None:
+            Nsplits = len(self.split())
+            
         #generate appropriate R and R!H
         if R is None:
             R = ['H','C','N','O','Si','S'] #set of possible R elements/atoms
@@ -1414,7 +1416,7 @@ class Group(Graph):
         else:
             atom_type_j_str = atom_type_j[0].label
                 
-        if len(newgrp.split()) != Nsplits: #if this formed a bond between two seperate groups in the 
+        if len(newgrp.split()) >= Nsplits: #if this formed a bond between two seperate groups in the 
             return []
         else:
             return [(newgrp,None,basename+'_Int-'+atom_type_i_str+'-'+atom_type_j_str,'intNewBondExt',(i,j))]
