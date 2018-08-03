@@ -2983,6 +2983,7 @@ class KineticsFamily(Database):
         
         #add the starting node
         self.addEntry(None,grp,'Root')
+        self.groups.entries['Root'].index = 1
         self.groups.top = [self.groups.entries['Root']]
         self.forwardTemplate.reactants = [self.groups.entries['Root']]
 
