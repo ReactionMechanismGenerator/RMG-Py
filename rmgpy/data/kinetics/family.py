@@ -2554,7 +2554,9 @@ class KineticsFamily(Database):
             rmol = rxn.reactants[0].molecule[0]
             for r in rxn.reactants[1:]:
                 rmol.merge(r.molecule[0])
-                
+
+            rmol.identifyRingMembership()
+            
             if rmol.isSubgraphIsomorphic(newgrp,generateInitialMap=True, saveOrder=True):
                 new.append(rxn)
                 newInds.append(i)
