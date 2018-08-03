@@ -37,6 +37,7 @@ import sys
 import cython
 # Assume that rdkit is installed
 from rdkit import Chem
+from rdkit.Chem import rdchem
 # Test if openbabel is installed
 try:
     import openbabel
@@ -66,6 +67,7 @@ def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
     mol.sortAtoms()
     atoms = mol.vertices
     rdAtomIndices = {} # dictionary of RDKit atom indices
+    label_dict = {} # store label of atom for Framgent
     rdkitmol = Chem.rdchem.EditableMol(Chem.rdchem.Mol())
     for index, atom in enumerate(mol.vertices):
         if atom.element.symbol == 'X':
@@ -82,6 +84,10 @@ def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
             pass
         else:
             rdAtomIndices[atom] = index
+        if atom.label:
+            saved_index = index
+            label = atom.label
+            label_dict[label] = saved_index
 
     rdBonds = Chem.rdchem.BondType
     orders = {'S': rdBonds.SINGLE, 'D': rdBonds.DOUBLE, 'T': rdBonds.TRIPLE, 'B': rdBonds.AROMATIC, 'Q': rdBonds.QUADRUPLE}
@@ -99,6 +105,9 @@ def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
 
     # Make editable mol into a mol and rectify the molecule
     rdkitmol = rdkitmol.GetMol()
+    if label_dict:
+        for label, ind in label_dict.iteritems():
+            Chem.SetSupplementalSmilesLabel(rdkitmol.GetAtomWithIdx(ind), label)
     if sanitize:
         Chem.SanitizeMol(rdkitmol)
     if removeHs:
