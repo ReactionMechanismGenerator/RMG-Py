@@ -786,7 +786,7 @@ class TestTreeGeneration(unittest.TestCase):
             if isinstance(entry.item,Group):
                 for child in entry.children:
                     if isinstance(child.item,Group):
-                        self.assertTrue(child.item.isSubgraphIsomorphic(entry.item,generateInitialMap=True,saveOrder=True))
+                        self.assertTrue(child.item.isSubgraphIsomorphic(entry.item,generateInitialMap=True,saveOrder=True),(child.label,entry.label))
     
 class TestGenerateReactions(unittest.TestCase):
 
