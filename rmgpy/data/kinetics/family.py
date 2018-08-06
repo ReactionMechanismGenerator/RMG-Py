@@ -2899,7 +2899,7 @@ class KineticsFamily(Database):
                     self.extendRegularization(node,[i],atm1.reg_dim_u,'unpaired')
                 if atm1.reg_dim_r != [] and (not 'inRing' in atm1.props.keys() or atm1.reg_dim_r[0] != atm1.props['inRing']):
                     self.extendRegularization(node,[i],atm1.reg_dim_r,'ring')
-                for j,atm2 in enumerate(grp.atoms[i:]):
+                for j,atm2 in enumerate(grp.atoms[:i]):
                     if grp.hasBond(atm1,atm2):
                         bd = grp.getBond(atm1,atm2)
                         if bd.reg_dim != [] and set(bd.reg_dim) != set(bd.order):
