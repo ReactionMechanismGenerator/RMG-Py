@@ -2750,7 +2750,13 @@ class KineticsFamily(Database):
             rs = templateRxnMap[parent.label]
             for q,rxn in enumerate(rs):
                 for j in xrange(q):
-                    assert rxn.isIsomorphic(rs[j],checkIdentical=True), 'this implies that extensions could not be generated that split at least two different reactions, which should not be possible' #If family.getExtensionEdge and Group.getExtensions operate properly this should always pass
+                    if rxn.isIsomorphic(rs[j],checkIdentical=True):
+                        logging.error('parent')
+                        logging.error(parent.item.toAdjacencyList())
+                        logging.error('rxns')
+                        for r in rs:
+                            logging.error(r)
+                        raise ValueError('this implies that extensions could not be generated that split at least two different reactions, which should not be possible') #If family.getExtensionEdge and Group.getExtensions operate properly this should always pass
             return False
         
         vals = []
