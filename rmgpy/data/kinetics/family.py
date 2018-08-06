@@ -2553,7 +2553,7 @@ class KineticsFamily(Database):
         for i,rxn in enumerate(rxns):
             rmol = rxn.reactants[0].molecule[0]
             for r in rxn.reactants[1:]:
-                rmol.merge(r.molecule[0])
+                rmol = rmol.merge(r.molecule[0])
 
             rmol.identifyRingMembership()
             
