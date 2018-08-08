@@ -747,24 +747,24 @@ class TestTreeGeneration(unittest.TestCase):
                     atms = grp.atoms
                     if typ == 'bondExt':
                         bd = grp.getBond(atms[indc[0]],atms[indc[1]])
-                        bds = bd.reg_dim
+                        bds = bd.reg_dim[1]
                         if boo and bds != [] and not (set(bd.order) <= set(bds)):
                             logging.error('bond regularization dimension missed')
                             vioObj.add((tuple(indc),tuple(bds),tuple(bd.order),typ))
                     elif typ == 'atomExt':
-                        atypes = atms[indc[0]].reg_dim_atm
+                        atypes = atms[indc[0]].reg_dim_atm[1]
                         atype = atms[indc[0]].atomType
                         if boo and atypes != [] and not (set(atype) <= set(atypes)):
                             logging.error('atomtype regularization dimension missed')
                             vioObj.add((tuple(indc),tuple(atypes),tuple(atype),typ))
                     elif typ == 'elExt':
-                        us = atms[indc[0]].reg_dim_u
+                        us = atms[indc[0]].reg_dim_u[1]
                         u = atms[indc[0]].radicalElectrons
                         if boo and us != [] and not (set(u) <= set(us)):
                             logging.error('unpaired electron regularization dimension missed')
                             vioObj.add((tuple(indc),tuple(us),tuple(u),typ))
                     elif typ == 'ringExt':
-                        rs = atms[indc[0]].reg_dim_r
+                        rs = atms[indc[0]].reg_dim_r[1]
                         if 'inRing' in atms[indc[0]].props.keys():
                             r = atms[indc[0]].props['inRing']
                         else:
