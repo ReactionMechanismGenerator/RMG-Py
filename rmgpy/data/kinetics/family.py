@@ -2621,7 +2621,7 @@ class KineticsFamily(Database):
             for i,(grp2,grpc,name,typ,indc) in enumerate(exts):
 
                 if typ != 'intNewBondExt' and typ != 'extNewBondExt' and (typ,indc) not in regDict.keys():
-                    regDict[(typ,indc)] = ([],[])
+                    regDict[(typ,indc)] = ([],[]) #first list is all extensions that match at least one reaction, second is extensions that match all reactions
                 val,boo = self.evalExt(parent,grp2,name,templateRxnMap,obj,T)
                     
                 if val != np.inf:
@@ -2638,89 +2638,88 @@ class KineticsFamily(Database):
                         extInds.append(i)  #these are bond formation extensions, we want to expand these until we get splits 
                     elif typ == 'atomExt':
                         regDict[(typ,indc)][0].extend(grp2.atoms[indc[0]].atomType)
-                    elif typ == 'elExt':
-                        regDict[(typ,indc)][0].extend(grp2.atoms[indc[0]].radicalElectrons)
-                    elif typ == 'bondExt':
-                        regDict[(typ,indc)][0].extend(grp2.getBond(grp2.atoms[indc[0]],grp2.atoms[indc[1]]).order)
-                    elif typ == 'ringExt':
-                        regDict[(typ,indc)][0].append(True)
-                else:                    
-                    #this extension matches no reactions
-                    if typ == 'atomExt':
                         regDict[(typ,indc)][1].extend(grp2.atoms[indc[0]].atomType)
                     elif typ == 'elExt':
+                        regDict[(typ,indc)][0].extend(grp2.atoms[indc[0]].radicalElectrons)
                         regDict[(typ,indc)][1].extend(grp2.atoms[indc[0]].radicalElectrons)
                     elif typ == 'bondExt':
+                        regDict[(typ,indc)][0].extend(grp2.getBond(grp2.atoms[indc[0]],grp2.atoms[indc[1]]).order)
                         regDict[(typ,indc)][1].extend(grp2.getBond(grp2.atoms[indc[0]],grp2.atoms[indc[1]]).order)
                     elif typ == 'ringExt':
                         regDict[(typ,indc)][1].append(True)
+                else:                    
+                    #this extension matches no reactions
+                    if typ == 'ringExt':
+                        regDict[(typ,indc)][0].append(False)
+                        regDict[(typ,indc)][1].append(False)
                     
             for typr,indcr in regDict.keys(): #have to label the regularization dimensions in all relevant groups
-                regVal = regDict[(typr,indcr)][0]
-                #parent
-                if typr != 'intNewBondExt' and typr != 'extNewBondExt': #these dimensions should be regularized
-                    if typr == 'atomExt':
-                        grp.atoms[indcr[0]].reg_dim_atm = regVal
-                    elif typr == 'elExt':
-                        grp.atoms[indcr[0]].reg_dim_u = regVal
-                    elif typr == 'ringExt':
-                        grp.atoms[indcr[0]].reg_dim_r = regVal
-                    elif typr == 'bondExt':
-                        atms = grp.atoms
-                        bd = grp.getBond(atms[indcr[0]],atms[indcr[1]])
-                        bd.reg_dim = regVal
+                regVal = regDict[(typr,indcr)]
+                
                 if firstTime and parent.children == []:
+                    #parent
+                    if typr != 'intNewBondExt' and typr != 'extNewBondExt': #these dimensions should be regularized
+                        if typr == 'atomExt':
+                            grp.atoms[indcr[0]].reg_dim_atm = list(regVal)
+                        elif typr == 'elExt':
+                            grp.atoms[indcr[0]].reg_dim_u = list(regVal)
+                        elif typr == 'ringExt':
+                            grp.atoms[indcr[0]].reg_dim_r = list(regVal)
+                        elif typr == 'bondExt':
+                            atms = grp.atoms
+                            bd = grp.getBond(atms[indcr[0]],atms[indcr[1]])
+                            bd.reg_dim = list(regVal)
                             
                 #extensions being sent out
                 if typr != 'intNewBondExt' and typr != 'extNewBondExt': #these dimensions should be regularized
                     for grp2,grpc,name,typ,indc in outExts[-1]: #returned groups
                         if typr == 'atomExt':
-                            grp2.atoms[indcr[0]].reg_dim_atm = regVal
+                            grp2.atoms[indcr[0]].reg_dim_atm = list(regVal)
                             if grpc:
-                                grpc.atoms[indcr[0]].reg_dim_atm = regVal
+                                grpc.atoms[indcr[0]].reg_dim_atm = list(regVal)
                         elif typr == 'elExt':
-                            grp2.atoms[indcr[0]].reg_dim_u = regVal
+                            grp2.atoms[indcr[0]].reg_dim_u = list(regVal)
                             if grpc:
-                                grpc.atoms[indcr[0]].reg_dim_u = regVal
+                                grpc.atoms[indcr[0]].reg_dim_u = list(regVal)
                         elif typr == 'ringExt':
-                            grp2.atoms[indcr[0]].reg_dim_r = regVal
+                            grp2.atoms[indcr[0]].reg_dim_r = list(regVal)
                             if grpc:
-                                grpc.atoms[indcr[0]].reg_dim_r = regVal
+                                grpc.atoms[indcr[0]].reg_dim_r = list(regVal)
                         elif typr == 'bondExt':
                             atms = grp2.atoms
                             bd = grp2.getBond(atms[indcr[0]],atms[indcr[1]])
-                            bd.reg_dim = regVal
+                            bd.reg_dim = list(regVal)
                             if grpc:
                                 atms = grpc.atoms
                                 bd = grp2.getBond(atms[indcr[0]],atms[indcr[1]])
-                                bd.reg_dim = regVal
+                                bd.reg_dim = list(regVal)
             
             #extensions being expanded
             for typr,indcr in regDict.keys(): #have to label the regularization dimensions in all relevant groups
-                regVal = regDict[(typr,indcr)][0]
+                regVal = regDict[(typr,indcr)]
                 if typr != 'intNewBondExt' and typr != 'extNewBondExt': #these dimensions should be regularized
                     for ind2 in extInds: #groups for expansion
                         grp2,grpc,name,typ,indc = exts[ind2]
                         if typr == 'atomExt':
-                            grp2.atoms[indcr[0]].reg_dim_atm = regVal
+                            grp2.atoms[indcr[0]].reg_dim_atm = list(regVal)
                             if grpc:
-                                grpc.atoms[indcr[0]].reg_dim_atm = regVal
+                                grpc.atoms[indcr[0]].reg_dim_atm = list(regVal)
                         elif typr == 'elExt':
-                            grp2.atoms[indcr[0]].reg_dim_u = regVal
+                            grp2.atoms[indcr[0]].reg_dim_u = list(regVal)
                             if grpc:
-                                grpc.atoms[indcr[0]].reg_dim_u = regVal
+                                grpc.atoms[indcr[0]].reg_dim_u = list(regVal)
                         elif typr == 'ringExt':
-                            grp2.atoms[indcr[0]].reg_dim_r = regVal
+                            grp2.atoms[indcr[0]].reg_dim_r = list(regVal)
                             if grpc:
-                                grpc.atoms[indcr[0]].reg_dim_r = regVal
+                                grpc.atoms[indcr[0]].reg_dim_r = list(regVal)
                         elif typr == 'bondExt':
                             atms = grp2.atoms
                             bd = grp2.getBond(atms[indcr[0]],atms[indcr[1]])
-                            bd.reg_dim = regVal
+                            bd.reg_dim = list(regVal)
                             if grpc:
                                 atms = grpc.atoms
                                 bd = grp2.getBond(atms[indcr[0]],atms[indcr[1]])
-                                bd.reg_dim = regVal
+                                bd.reg_dim = list(regVal)
             
             outExts.append([])
             grps.pop()
@@ -2905,17 +2904,17 @@ class KineticsFamily(Database):
         
         if isinstance(node.item,Group):
             for i,atm1 in enumerate(grp.atoms):
-                if atm1.reg_dim_atm != [] and set(atm1.reg_dim_atm) != set(atm1.atomType):
-                    self.extendRegularization(node,[i],atm1.reg_dim_atm,'atomtype')
-                if atm1.reg_dim_u != [] and set(atm1.reg_dim_u) != set(atm1.radicalElectrons):
-                    self.extendRegularization(node,[i],atm1.reg_dim_u,'unpaired')
-                if atm1.reg_dim_r != [] and (not 'inRing' in atm1.props.keys() or atm1.reg_dim_r[0] != atm1.props['inRing']):
-                    self.extendRegularization(node,[i],atm1.reg_dim_r,'ring')
+                if atm1.reg_dim_atm[1] != [] and set(atm1.reg_dim_atm[1]) != set(atm1.atomType):
+                    self.extendRegularization(node,[i],atm1.reg_dim_atm[1],'atomtype')
+                if atm1.reg_dim_u[1] != [] and set(atm1.reg_dim_u[1]) != set(atm1.radicalElectrons):
+                    self.extendRegularization(node,[i],atm1.reg_dim_u[1],'unpaired')
+                if atm1.reg_dim_r[1] != [] and (not 'inRing' in atm1.props.keys() or atm1.reg_dim_r[1][0] != atm1.props['inRing']):
+                    self.extendRegularization(node,[i],atm1.reg_dim_r[1],'ring')
                 for j,atm2 in enumerate(grp.atoms[:i]):
                     if grp.hasBond(atm1,atm2):
                         bd = grp.getBond(atm1,atm2)
-                        if bd.reg_dim != [] and set(bd.reg_dim) != set(bd.order):
-                            self.extendRegularization(node,[i,j],bd.reg_dim,'bond')    
+                        if bd.reg_dim[1] != [] and set(bd.reg_dim[1]) != set(bd.order):
+                            self.extendRegularization(node,[i,j],bd.reg_dim[1],'bond')    
         
         for child in node.children:
             self.simpleRegularization(child)
