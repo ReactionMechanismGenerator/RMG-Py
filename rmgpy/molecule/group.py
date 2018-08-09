@@ -1238,10 +1238,7 @@ class Group(Graph):
                         if len(bd.order) > 1 and bd.reg_dim[0] == []:
                             extents.extend(self.specifyBondExtensions(i,j,basename,bd.order))
                         elif len(bd.order) > 1:
-                            y = set(bd.order)
-                            z = set(bd.reg_dim[0])
-                            x = list(y-z)
-                            extents.extend(self.specifyBondExtensions(i,j,basename,x))
+                            extents.extend(self.specifyBondExtensions(i,j,basename,bd.reg_dim[0]))
         
         elif atmInd is not None and atmInd2 is not None: #if both atmInd and atmInd2 are defined only look at the bonds between them
             i = atmInd
@@ -1255,7 +1252,7 @@ class Group(Graph):
                 if len(bd.order) > 1 and bd.reg_dim[0] == []:
                     extents.extend(self.specifyBondExtensions(i,j,basename,bd.order))
                 elif len(bd.order) > 1:
-                    extents.extend(self.specifyBondExtensions(i,j,basename,list(set(bd.order)-set(bd.reg_dim[0]))))
+                    extents.extend(self.specifyBondExtensions(i,j,basename,bd.reg_dim[0]))
                     
         elif atmInd is not None: #look at the atom at atmInd
             i = atmInd
@@ -1301,7 +1298,7 @@ class Group(Graph):
                     if len(bd.order) > 1 and bd.reg_dim == []:
                         extents.extend(self.specifyBondExtensions(i,j,basename,bd.order))
                     elif len(bd.order) > 1:
-                        extents.extend(self.specifyBondExtensions(i,j,basename,list(set(bd.order)-set(bd.reg_dim[0]))))
+                        extents.extend(self.specifyBondExtensions(i,j,basename,bd.reg_dim[0]))
         
         else:
             raise ValueError('atmInd must be defined if atmInd2 is defined')
