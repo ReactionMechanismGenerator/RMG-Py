@@ -3054,6 +3054,15 @@ class KineticsFamily(Database):
         rxns = deepcopy([i.item for i in dep.entries.values()])
         entries = deepcopy([i for i in dep.entries.values()])
         
+        roots = [x.item for x in self.getRootTemplate()]
+        root = None
+        for r in roots:
+            if root:
+                root = root.mergeGroups(r)
+            else:
+                root = deepcopy(r)
+        
+        
         for i,r in enumerate(entries):
             if estimateThermo:
                 for j,react in enumerate(r.item.reactants):
@@ -3076,9 +3085,9 @@ class KineticsFamily(Database):
                     mol = mol.merge(react.molecule[0])
                 else:
                     mol = deepcopy(react.molecule[0])
-                    
-            root = self.getRootTemplate()[0].item
+            
             structs = mol.generate_resonance_structures()
+            
             
             if any([x.isSubgraphIsomorphic(root,generateInitialMap=True) for x in structs]):
                 rxns[i].is_forward = True
