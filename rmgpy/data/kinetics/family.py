@@ -39,6 +39,7 @@ import warnings
 import codecs
 from copy import deepcopy
 from collections import OrderedDict
+from sklearn.model_selection import KFold
 
 from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStructures,\
@@ -2915,6 +2916,63 @@ class KineticsFamily(Database):
         templateRxnMap = self.getReactionMatches(thermoDatabase=thermoDatabase,removeDegeneracy=True)
         self.makeBMRulesFromTemplateRxnMap(templateRxnMap)
         return
+    
+    def crossValidate(self,folds=5,templateRxnMap=None,T=1000.0,iters=0,random_state=1):
+        """
+        Perform K-fold cross validation on an automatically generated tree at temperature T
+        after finding an appropriate node for kinetics estimation it will move up the tree
+        iters times.  
+        Returns a dictionary mapping {rxn:Ln(k_Est/k_Train)}
+        """
+        
+        if templateRxnMap is None:
+            templateRxnMap = self.getReactionMatches(removeDegeneracy=True)
+        
+        rxns = np.array(templateRxnMap['Root'])
+        
+        kf = KFold(folds,shuffle=True,random_state=random_state)
+        errors = {}
+        
+        for train_index, test_index in kf.split(rxns):
+
+            rxns_test = rxns[test_index]
+            
+            for rxn in rxns_test:
+                    
+                krxn = rxn.kinetics.getRateCoefficient(T)
+                
+                entry = self.getRootTemplate()[0]
+                
+                boo = True
+                while boo: #find the entry it matches
+                    for child in entry.children:
+                        rs = templateRxnMap[child.label]
+                        if rxn in rs:
+                            entry = child
+                            break
+                    else:
+                        boo = False
+                
+                
+                while entry.parent and len(set(templateRxnMap[entry.label])-set(rxns_test)) <= 1:
+                    if entry.parent:
+                        entry = entry.parent
+                
+                for q in xrange(iters):
+                    if entry.parent:
+                        entry = entry.parent 
+                  
+                L = list(set(templateRxnMap[entry.label])-set(rxns_test))
+                
+                if L != []: 
+                    kinetics = ArrheniusBM().fitToReactions(L,family=self)
+                    kinetics = kinetics.toArrhenius(rxn.getEnthalpyOfReaction(T))
+                    k = kinetics.getRateCoefficient(T)
+                    errors[rxn] = np.log(k/krxn)
+                else:
+                    raise ValueError('only one piece of kinetics information in the tree?')  
+        
+        return errors
     
     def simpleRegularization(self, node):
         """
