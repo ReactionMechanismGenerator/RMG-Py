@@ -2874,8 +2874,6 @@ class KineticsFamily(Database):
                     entry.index = iters
                     iters += 1
         
-        self.makeBMRulesFromTemplateRxnMap(templateRxnMap)
-        
         return
     
     def makeBMRulesFromTemplateRxnMap(self,templateRxnMap):
@@ -2908,6 +2906,15 @@ class KineticsFamily(Database):
             self.rules.entries[entry.label].append(new_entry)
             
             index += 1
+    
+    def makeTree(self,obj=None,thermoDatabase=None,T=1000.0):
+        """
+        generates tree structure and then generates rules for the tree
+        """
+        self.generateTree(obj=obj,thermoDatabase=thermoDatabase,T=T)
+        templateRxnMap = self.getReactionMatches(thermoDatabase=thermoDatabase,removeDegeneracy=True)
+        self.makeBMRulesFromTemplateRxnMap(templateRxnMap)
+        return
     
     def simpleRegularization(self, node):
         """
