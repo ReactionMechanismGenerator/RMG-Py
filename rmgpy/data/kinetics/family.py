@@ -1057,7 +1057,7 @@ class KineticsFamily(Database):
             raise ValueError('No entry for template {0}.'.format(template))
         return entry
 
-    def addKineticsRulesFromTrainingSet(self, thermoDatabase=None):
+    def addKineticsRulesFromTrainingSet(self, thermoDatabase=None,trainIndices=None):
         """
         For each reaction involving real reactants and products in the training
         set, add a rate rule for that reaction.
@@ -1075,6 +1075,11 @@ class KineticsFamily(Database):
         
         entries = depository.entries.values()
         entries.sort(key=lambda x: x.index)
+        
+        if trainIndices is not None:
+            entries = np.array(entries)
+            entries = entries[trainIndices]
+        
         reverse_entries = []
         for entry in entries:
             try:        
