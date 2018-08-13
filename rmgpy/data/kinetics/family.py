@@ -2974,6 +2974,51 @@ class KineticsFamily(Database):
         
         return errors
     
+    def crossValidateOld(self,folds=5,T=1000.0,random_state=1,estimator='rate rules',thermoDatabase=None):
+        """
+        Perform K-fold cross validation on an automatically generated tree at temperature T
+        Returns a dictionary mapping {rxn:Ln(k_Est/k_Train)}
+        """
+        
+        kf = KFold(folds,shuffle=True,random_state=random_state)
+        errors = {}
+        rxns = np.array(self.getTrainingSet(removeDegeneracy=True))
+        
+        if thermoDatabase is None:
+            from rmgpy.data.rmg import getDB
+            tdb = getDB('thermo')
+        else:
+            tdb = thermoDatabase
+        
+        for train_index, test_index in kf.split(rxns):
+            
+            self.rules.entries = {} #clear rules each iteration
+            
+            self.addKineticsRulesFromTrainingSet(trainIndices=train_index,thermoDatabase=tdb)
+            self.fillKineticsRulesByAveragingUp()
+            rxns_test = rxns[test_index]
+            
+            for rxn in rxns_test:
+                
+                krxn = rxn.kinetics.getRateCoefficient(T)
+                
+                templateLabels = self.getReactionTemplateLabels(rxn)
+                template = self.retrieveTemplate(templateLabels)
+                if estimator == 'rate rules':
+                    kinetics,entry = self.estimateKineticsUsingRateRules(template, degeneracy=1)
+                elif estimator == 'group additivity':
+                    kinetics = self.estimateKineticsUsingGroupAdditivity(template, degeneracy=1)
+                else:
+                    raise ValueError('{0} is not a valid value for input `estimator`'.format(estimator))
+                    
+                k = kinetics.getRateCoefficient(T)
+                
+                errors[rxn] = np.log(k/krxn)
+        
+        return errors
+            
+            
+    
     def simpleRegularization(self, node):
         """
         Simplest regularization algorithm
