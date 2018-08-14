@@ -87,7 +87,10 @@ def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
         if atom.label:
             saved_index = index
             label = atom.label
-            label_dict[label] = saved_index
+            if label in label_dict:
+                label_dict[label].append(saved_index)
+            else:
+                label_dict[label] = [saved_index]
 
     rdBonds = Chem.rdchem.BondType
     orders = {'S': rdBonds.SINGLE, 'D': rdBonds.DOUBLE, 'T': rdBonds.TRIPLE, 'B': rdBonds.AROMATIC, 'Q': rdBonds.QUADRUPLE}
@@ -106,8 +109,9 @@ def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
     # Make editable mol into a mol and rectify the molecule
     rdkitmol = rdkitmol.GetMol()
     if label_dict:
-        for label, ind in label_dict.iteritems():
-            Chem.SetSupplementalSmilesLabel(rdkitmol.GetAtomWithIdx(ind), label)
+        for label, ind_list in label_dict.iteritems():
+            for ind in ind_list:
+                Chem.SetSupplementalSmilesLabel(rdkitmol.GetAtomWithIdx(ind), label)
     if sanitize:
         Chem.SanitizeMol(rdkitmol)
     if removeHs:
