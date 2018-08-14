@@ -110,8 +110,9 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True):
     # Make editable mol into a mol and rectify the molecule
     rdkitmol = rdkitmol.GetMol()
     if label_dict:
-        for label, ind in label_dict.iteritems():
-            Chem.SetSupplementalSmilesLabel(rdkitmol.GetAtomWithIdx(ind), label)
+        for label, ind_list in label_dict.iteritems():
+            for ind in ind_list:
+                Chem.SetSupplementalSmilesLabel(rdkitmol.GetAtomWithIdx(ind), label)
     if sanitize:
         Chem.SanitizeMol(rdkitmol)
     if remove_h:
