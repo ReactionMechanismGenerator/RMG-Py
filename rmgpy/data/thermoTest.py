@@ -34,10 +34,12 @@ from external.wip import work_in_progress
 
 from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase, database
+from rmgpy.ml.estimator import MLEstimator
 from rmgpy.rmg.main import RMG
-from rmgpy.rmg.model import Species
+from rmgpy.species import Species
 from rmgpy.data.thermo import *
 from rmgpy.molecule.molecule import Molecule
+from rmgpy.quantity import Quantity
 import rmgpy
 
 ################################################################################
@@ -293,6 +295,46 @@ multiplicity 2
         self.assertEqual(set(initial), set(spec.molecule))
         self.assertTrue(arom.isIsomorphic(spec.molecule[0]))  # The aromatic structure should now be the first one
         self.assertTrue('library' in thermo.comment, 'Thermo not found from library, test purpose not fulfilled.')
+
+    def test_species_thermo_generation_ml(self):
+        """Test thermo generation for species objects based on ML estimation."""
+
+        # Set up ML estimator
+        models_path = os.path.join(settings['database.directory'], 'thermo', 'ml', 'main')
+        Hf298_path = os.path.join(models_path, 'H298')
+        S298_path = os.path.join(models_path, 'S298')
+        Cp_path = os.path.join(models_path, 'Cp')
+        ml_estimator = MLEstimator(Hf298_path, S298_path, Cp_path)
+
+        # Make these large so they don't influence estimation
+        ml_uncertainty_cutoffs = dict(
+            H298=Quantity(1e8, 'kcal/mol'),
+            S298=Quantity(1e8, 'cal/(mol*K)'),
+            Cp=Quantity(1e8, 'cal/(mol*K)')
+        )
+
+        spec1 = Species().fromSMILES('C[CH]c1ccccc1')
+        spec1.generate_resonance_structures()
+        spec2 = Species().fromSMILES('NC=O')
+
+        thermo1 = self.database.get_thermo_data_from_ml(spec1, ml_estimator, ml_uncertainty_cutoffs)
+        thermo2 = self.database.get_thermo_data_from_ml(spec2, ml_estimator, ml_uncertainty_cutoffs)
+        self.assertIsInstance(thermo1, ThermoData)
+        self.assertIsInstance(thermo2, ThermoData)
+        self.assertTrue('ML Estimation' in thermo1.comment, 'Thermo not from ML estimation, test purpose not fulfilled')
+        self.assertTrue('ML Estimation' in thermo2.comment, 'Thermo not from ML estimation, test purpose not fulfilled')
+
+        # Now make these negative to make sure we don't use ML
+        ml_uncertainty_cutoffs = dict(
+            H298=Quantity(-1.0, 'kcal/mol'),
+            S298=Quantity(-1.0, 'cal/(mol*K)'),
+            Cp=Quantity(-1.0, 'cal/(mol*K)')
+        )
+
+        thermo1 = self.database.get_thermo_data_from_ml(spec1, ml_estimator, ml_uncertainty_cutoffs)
+        thermo2 = self.database.get_thermo_data_from_ml(spec2, ml_estimator, ml_uncertainty_cutoffs)
+        self.assertIsNone(thermo1)
+        self.assertIsNone(thermo2)
 
     def testThermoEstimationNotAffectDatabase(self):
 
