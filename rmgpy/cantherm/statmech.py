@@ -579,7 +579,7 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds,
     atom calculations using corresponding model chemistries. 
     
     The assumption for the multiplicity of each atom is: 
-    H singlet, C triplet, O triplet, N quartet, S triplet, P quartet.
+    H doublet, C triplet, O triplet, N quartet, S triplet, P quartet, I doublet.
 
     `bonds` is a dictionary associating bond types with the number
     of that bond in the molecule.
@@ -591,7 +591,7 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds,
         # Values in millihartree are also available (with fewer significant figures) from table VII of http://dx.doi.org/10.1063/1.473182
         # Iodine SOC calculated as a weighted average of the electronic spin splittings of the lowest energy state. The splittings are
         # obtained from Huber, K.P.; Herzberg, G., Molecular Spectra and Molecular Structure. IV. Constants of Diatomic Molecules, Van Nostrand Reinhold Co., 1979
-        SOC = {'H':0.0, 'N':0.0, 'O': -0.000355, 'C': -0.000135, 'S':  -0.000893, 'P': 0.0, 'I':-0.011547226,}
+        SOC = {'H': 0.0, 'N': 0.0, 'O': -0.000355, 'C': -0.000135, 'S': -0.000893, 'P': 0.0, 'I':-0.011547226,}
 
         # Step 1: Reference all energies to a model chemistry-independent basis
         # by subtracting out that model chemistry's atomic energies
@@ -645,12 +645,12 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds,
             elif modelChemistry == 'ccsd(t)/aug-cc-pvtz(-pp)':
                 atomEnergies = {'H':-0.499821176024 + SOC['H'], 'O':-74.96738492 + SOC['O'], 'C':-37.77385697 + SOC['C'], 'S':-397.6461604 + SOC['S'], 'I':-294.7958443 + SOC['I']}
 
-            elif modelChemistry == 'ccsd(t)-f12/aug-cc-pvdz':
-                atomEnergies = {'H':-0.499459066131 + SOC['H'], 'N':-54.524279516472 + SOC['N'], 'O':-74.992097308083+ SOC['O'], 'C':-37.786694171716+ SOC['C']}
+            elif modelChemistry == 'ccsd(t)-f12/aug-cc-pvdz':  # note that all atom corrections but S are fitted, the correction for S is calculated
+                atomEnergies = {'H':-0.499459066131 + SOC['H'], 'N':-54.524279516472 + SOC['N'], 'O':-74.992097308083+ SOC['O'], 'C':-37.786694171716+ SOC['C'], 'S':-397.648733842400 + SOC['S']}
             elif modelChemistry == 'ccsd(t)-f12/aug-cc-pvtz':
-                atomEnergies = {'H':-0.499844820798 + SOC['H'], 'N':-54.527419359906 + SOC['N'], 'O':-75.000001429806+ SOC['O'], 'C':-37.788504810868+ SOC['C']}
+                atomEnergies = {'H':-0.499844820798 + SOC['H'], 'N':-54.527419359906 + SOC['N'], 'O':-75.000001429806 + SOC['O'], 'C':-37.788504810868 + SOC['C'], 'S':-397.666903000231 + SOC['S']}
             elif modelChemistry == 'ccsd(t)-f12/aug-cc-pvqz':
-                atomEnergies = {'H':-0.499949526073 + SOC['H'], 'N':-54.529569719016 + SOC['N'], 'O':-75.004026586610+ SOC['O'], 'C':-37.789387892348+ SOC['C']}
+                atomEnergies = {'H':-0.499949526073 + SOC['H'], 'N':-54.529569719016 + SOC['N'], 'O':-75.004026586610+ SOC['O'], 'C':-37.789387892348+ SOC['C'], 'S':-397.671214204994 + SOC['S']}
 
 
             elif modelChemistry == 'b-ccsd(t)-f12/cc-pvdz-f12':
