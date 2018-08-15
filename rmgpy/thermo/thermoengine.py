@@ -132,13 +132,8 @@ def generateThermoData(spc, thermoClass=NASA, solventName=''):
     except Exception:
         logging.debug('Could not obtain the thermo database. Not generating thermo...')
         return None
-    
-    if isinstance(spc.molecule[0], Molecule):
-        thermo0 = thermodb.getThermoData(spc)
-    else:
-        # assume it's a species for Fragment
-        spc.molecule[0].assign_representative_species()
-        thermo0 = thermodb.getThermoData(spc.molecule[0].species_repr)
+
+    thermo0 = thermodb.getThermoData(spc)
 
     # 1. maybe only submit cyclic core
     # 2. to help radical prediction, HBI should also
@@ -173,8 +168,15 @@ def evaluator(spc, solventName = ''):
     """
     logging.debug("Evaluating spc %s ", spc)
 
-    spc.generate_resonance_structures()
-    thermo = generateThermoData(spc,solventName=solventName)
+    if isinstance(spc.molecule[0], Molecule):
+        spc.generate_resonance_structures()
+        thermo = generateThermoData(spc, solventName=solventName)
+    else:
+        # assume it's a species for Fragment
+        spc.molecule[0].assign_representative_species()
+        spc_repr = spc.molecule[0].species_repr
+        spc_repr.generate_resonance_structures()
+        thermo = generateThermoData(spc_repr, solventName=solventName)
 
     return thermo
 
