@@ -703,6 +703,9 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds,
             elif modelChemistry == 'b3lyp/6-311+g(3df,2p)':  # Calculated atomic energies
                 atomEnergies = {'H':-0.502155915123 + SOC['H'], 'C':-37.8574709934 + SOC['C'], 'N':-54.6007233609 + SOC['N'], 'O':-75.0909131284 + SOC['O'], 'P':-341.281730319 + SOC['P'], 'S':-398.134489850 + SOC['S']}
 
+            elif modelChemistry == 'MRCI+Davidson/aug-cc-pV(T+d)Z':  # Calculated atomic energies (unfitted)
+                atomEnergies = {'H':-0.49982118 + SOC['H'], 'C':-37.78321274 + SOC['C'], 'N':-54.51729444 + SOC['N'], 'O':-74.97847534 + SOC['O'], 'S':-397.6571654 + SOC['S']}
+
             else:
                 raise Exception('Unknown model chemistry "{}".'.format(modelChemistry))
 
