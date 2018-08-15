@@ -976,17 +976,19 @@ class RMG(util.Subject):
                 violators.extend(violator_list)
                 num_rxn_violators += 1
         # Whether or not violators were found, rename 'collision_rate_violators.log' if it exists
-        if os.path.isfile('collision_rate_violators.log'):
+        new_file = os.path.join(self.outputDirectory, 'collision_rate_violators.log')
+        old_file = os.path.join(self.outputDirectory, 'collision_rate_violators_OLD.log')
+        if os.path.isfile(new_file):
             # If there are no violators, yet the violators log exists (probably from a previous run
             # in the same folder), rename it.
-            if os.path.isfile('collision_rate_violators_OLD.log'):
-                os.remove('collision_rate_violators_OLD.log')
-            os.rename('collision_rate_violators.log', 'collision_rate_violators_OLD.log')
+            if os.path.isfile(old_file):
+                os.remove(old_file)
+            os.rename(new_file, old_file)
         if violators:
             logging.info("\n")
             logging.warning("{0} CORE reactions violate the collision rate limit!"
                             "\nSee the 'collision_rate_violators.log' for details.\n\n".format(num_rxn_violators))
-            with open('collision_rate_violators.log', 'w') as violators_f:
+            with open(new_file, 'w') as violators_f:
                 violators_f.write('*** Collision rate limit violators report ***\n'
                                   '"Violation factor" is the ratio of the rate coefficient to the collision limit'
                                   ' rate at the relevant conditions\n\n')
