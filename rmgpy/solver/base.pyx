@@ -390,7 +390,12 @@ cdef class ReactionSystem(DASx):
         Retrieves the index that is associated with the parameter species
         from the species index dictionary.
         """
-        return self.speciesIndex[spc]
+        try:
+            return self.speciesIndex[spc]
+        except KeyError:
+            L = [x for x in self.speciesIndex.keys() if x.label==spc.label]
+            self.speciesIndex[spc] = self.speciesIndex[L[0]]
+            return self.speciesIndex[L[0]]
 
     def generate_reactant_product_indices(self, coreReactions, edgeReactions):
         """
@@ -718,7 +723,13 @@ cdef class ReactionSystem(DASx):
                     conversion = 0.0
                     for term in self.termination:
                         if isinstance(term, TerminationConversion):
-                            index = speciesIndex[term.species]
+                            try:
+                                index = self.speciesIndex[term.species]
+                            except KeyError:
+                                L = [x for x in self.speciesIndex.keys() if x.label==term.species.label]
+                                index = self.speciesIndex[L[0]]
+                                self.speciesIndex[term.species] = index
+                            
                             conversion = 1-(y_coreSpecies[index] / y0[index])
 
                     if invalidObjects == []:
@@ -1102,7 +1113,12 @@ cdef class ReactionSystem(DASx):
                         self.logConversions(speciesIndex, y0)
                         break
                 elif isinstance(term, TerminationConversion):
-                    index = speciesIndex[term.species]
+                    try:
+                        index = self.speciesIndex[term.species]
+                    except KeyError:
+                        L = [x for x in self.speciesIndex.keys() if x.label==term.species.label]
+                        index = self.speciesIndex[L[0]]
+                        self.speciesIndex[term.species] = index
                     conversion = 1-(y_coreSpecies[index] / y0[index])
                     if 1 - (y_coreSpecies[index] / y0[index]) > term.conversion:
                         terminated = True
@@ -1178,7 +1194,12 @@ cdef class ReactionSystem(DASx):
         """
         for term in self.termination:
             if isinstance(term, TerminationConversion):
-                index = speciesIndex[term.species]
+                try:
+                    index = self.speciesIndex[term.species]
+                except KeyError:
+                    L = [x for x in self.speciesIndex.keys() if x.label==term.species.label]
+                    index = self.speciesIndex[L[0]]
+                    self.speciesIndex[term.species] = index
                 X = 1 - (self.y[index] / y0[index])
                 logging.info('    {0} conversion: {1:<10.4g}'.format(term.species, X))
 
