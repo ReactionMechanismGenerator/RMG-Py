@@ -856,6 +856,96 @@ def generate_aromatic_resonance_structures(mol, features=None):
 
     return new_mol_list
 
+
+def generate_aryne_resonance_structures(mol):
+    """
+    Generate aryne resonance structures, including the cumulene and alkyne forms.
+
+    For all 6-membered rings, check for the following bond patterns:
+
+      - DDDSDS
+      - STSDSD
+
+    This does NOT cover all possible aryne resonance forms, only the simplest ones.
+    Especially for polycyclic arynes, enumeration of all resonance forms is
+    related to enumeration of all Kekule structures, which is very difficult.
+    """
+    cython.declare(rings=list, ring=list, new_mol_list=list, bond_list=list,
+                   i=cython.int, j=cython.int, bond_orders=str, new_orders=str,
+                   ind=cython.int, bond=Bond, new_mol=Molecule)
+
+    rings = mol.getRelevantCycles()
+    rings = [ring for ring in rings if len(ring) == 6]
+
+    new_mol_list = []
+    for ring in rings:
+        # Here we assume that consecutive atoms in ring are actually connected to each other
+        # This should always be true because getRelevantCycles sorts the atoms in this way
+        bond_list = []
+        for i, j in zip(range(6), range(-1, 5)):
+            try:
+                bond_list.append(mol.getBond(ring[i], ring[j]))
+            except ValueError:
+                raise ValueError('Bond does not exist between atoms in ring. '
+                                 'Check that the atoms are properly ordered '
+                                 'such that consecutive atoms are connected.')
+        # Get bond orders
+        bond_orders = ''.join([bond.getOrderStr() for bond in bond_list])
+        new_orders = None
+        # Check for expected bond patterns
+        if bond_orders.count('T') == 1:
+            # Reorder the list so the triple bond is first
+            ind = bond_orders.index('T')
+            bond_orders = bond_orders[ind:] + bond_orders[:ind]
+            bond_list = bond_list[ind:] + bond_list[:ind]
+            # Check for patterns
+            if bond_orders == 'TSDSDS':
+                new_orders = 'DDSDSD'
+        elif bond_orders.count('D') == 4:
+            # Search for DDD and reorder the list so that it comes first
+            if 'DDD' in bond_orders:
+                ind = bond_orders.index('DDD')
+                bond_orders = bond_orders[ind:] + bond_orders[:ind]
+                bond_list = bond_list[ind:] + bond_list[:ind]
+            elif bond_orders.startswith('DD') and bond_orders.endswith('D'):
+                bond_orders = bond_orders[-1:] + bond_orders[:-1]
+                bond_list = bond_list[-1:] + bond_list[:-1]
+            elif bond_orders.startswith('D') and bond_orders.endswith('DD'):
+                bond_orders = bond_orders[-2:] + bond_orders[:-2]
+                bond_list = bond_list[-2:] + bond_list[:-2]
+            # Check for patterns
+            if bond_orders == 'DDDSDS':
+                new_orders = 'STSDSD'
+
+        if new_orders is not None:
+            # We matched one of our patterns, so we can now change the bonds
+            for i, bond in enumerate(bond_list):
+                bond.setOrderStr(new_orders[i])
+            # Make a copy of the molecule
+            new_mol = mol.copy(deep=True)
+            # Also copy the connectivity values, since they are the same
+            # for all resonance structures
+            for i in xrange(len(mol.vertices)):
+                v1 = mol.vertices[i]
+                v2 = new_mol.vertices[i]
+                v2.connectivity1 = v1.connectivity1
+                v2.connectivity2 = v1.connectivity2
+                v2.connectivity3 = v1.connectivity3
+                v2.sortingLabel = v1.sortingLabel
+            # Undo the changes to the current molecule
+            for i, bond in enumerate(bond_list):
+                bond.setOrderStr(bond_orders[i])
+            # Try to update atom types
+            try:
+                new_mol.updateAtomTypes(logSpecies=False)
+            except AtomTypeError:
+                pass  # Don't append resonance structure if it creates an undefined atomType
+            else:
+                new_mol_list.append(new_mol)
+
+    return new_mol_list
+
+
 def generate_kekule_structure(mol):
     """
     Generate a kekulized (single-double bond) form of the molecule.

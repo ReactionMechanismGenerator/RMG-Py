@@ -56,6 +56,8 @@ cpdef list generate_isomorphic_resonance_structures(Molecule mol, bint saturate_
 
 cpdef list generate_aromatic_resonance_structures(Molecule mol, dict features=?)
 
+cpdef list generate_aryne_resonance_structures(Molecule mol)
+
 cpdef list generate_kekule_structure(Molecule mol)
 
 cpdef list generate_opposite_kekule_structure(Molecule mol)
