@@ -605,7 +605,7 @@ cdef class ReactionSystem(DASx):
         cdef double reactionRate, production, consumption
         cdef numpy.ndarray[numpy.int_t,ndim=1] surfaceSpeciesIndices, surfaceReactionIndices
         # cython declations for sensitivity analysis
-        cdef numpy.ndarray[numpy.int_t, ndim=1] sensSpeciesIndices
+        cdef numpy.ndarray[numpy.int_t, ndim=1] sensSpeciesIndices, reactantSide, productSide
         cdef numpy.ndarray[numpy.float64_t, ndim=1] moleSens, dVdk, normSens
         cdef list time_array, normSens_array, newSurfaceReactions, newSurfaceReactionInds, newObjects, newObjectInds
         
@@ -825,6 +825,47 @@ cdef class ReactionSystem(DASx):
                 invalidObjects.append(maxSpecies)
                 break
             
+            if branchFactor != 0.0 and not firstTime:
+                ######################################################
+                # Calculation of branching numbers for edge reactions#
+                ######################################################
+                branchingNums = numpy.zeros(numEdgeReactions)
+                for index in xrange(numEdgeReactions):
+                    reactionRate = edgeReactionRates[index]
+                    
+                    if reactionRate > 0:
+                        reactantSide = self.reactantIndices[index+numCoreReactions,:]
+                        productSide = self.productIndices[index+numCoreReactions,:]
+                    else:
+                        reactantSide = self.productIndices[index+numCoreReactions,:]
+                        productSide = self.reactantIndices[index+numCoreReactions,:]
+                        
+                    mults = []
+                    for i in productSide:
+                        if i == -1:
+                            continue
+                        elif i<numCoreSpecies:
+                            mults.append(coreSpecies[i].molecule[0].multiplicity)
+                        else:
+                            mults.append(edgeSpecies[i-numCoreSpecies].molecule[0].multiplicity)
+                        
+                    if max(mults) > 2:
+                        continue
+                        
+                    for spcIndex in reactantSide:
+                        if spcIndex != -1 and spcIndex<numCoreSpecies:
+                            if coreSpecies[spcIndex].molecule[0].multiplicity != 2:
+                                continue
+                            consumption = coreSpeciesConsumptionRates[spcIndex]
+                            if consumption != 0: #if consumption = 0 ignore species
+                                BR = reactionRate/consumption
+                                RR = coreSpeciesRateRatios[spcIndex]
+                                if BR>BRmax:
+                                    BR = BRmax
+                                BNum =  branchFactor*BR*RR**branchingIndex
+                                if BNum>branchingNums[index]:
+                                    branchingNums[index] = BNum
+                                
             if useDynamics and not firstTime and self.t >= dynamicsTimeScale:
                 #######################################################
                 # Calculation of dynamics criterion for edge reactions#
