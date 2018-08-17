@@ -60,7 +60,7 @@ from rmgpy.exceptions import InvalidActionError, ReactionPairsError, KineticsErr
                              UndeterminableKineticsError, ForbiddenStructureException,\
                              KekulizationError, ActionError, DatabaseError
 
-from afm.fragment import Fragment
+from afm.fragment import Fragment, CuttingLabel
 import itertools
 ################################################################################
 
@@ -1197,12 +1197,12 @@ class KineticsFamily(Database):
         # Also copy structures so we don't modify the originals
         # Since the tagging has already occurred, both the reactants and the
         # products will have tags
-        if isinstance(reactantStructures[0], Group):
+        if any(isinstance(reactant, Fragment) for reactant in reactantStructures):
+            reactantStructure = Fragment()
+        elif isinstance(reactantStructures[0], Group):
             reactantStructure = Group()
         elif isinstance(reactantStructures[0], Molecule):
             reactantStructure = Molecule()
-        elif isinstance(reactantStructures[0], Fragment):
-            reactantStructure = Fragment()
 
         for s in reactantStructures:
             reactantStructure = reactantStructure.merge(s.copy(deep=True))
@@ -1462,7 +1462,15 @@ class KineticsFamily(Database):
                 labels = [int(label) for label in labels if label]
                 lowest_labels.append(min(labels))
             productStructures = [s for _, s in sorted(zip(lowest_labels, productStructures))]
-            
+
+        # check if a Fragment is a Molecule, then change it to Molecule
+        if isinstance(productStructures[0], Fragment):
+            for index, product in enumerate(productStructures):
+                if not any(isinstance(vertex, CuttingLabel) for vertex in product.vertices):
+                    Adj = product.toAdjacencyList()
+                    mol = Molecule().fromAdjacencyList(Adj)
+                    productStructures[index] = mol
+
         # Return the product structures
         return productStructures
 
