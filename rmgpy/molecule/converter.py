@@ -69,6 +69,8 @@ def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
     rdkitmol = Chem.rdchem.EditableMol(Chem.rdchem.Mol())
     for index, atom in enumerate(mol.vertices):
         rdAtom = Chem.rdchem.Atom(atom.element.symbol)
+        if atom.element.isotope != -1:
+            rdAtom.SetIsotope(atom.element.isotope)
         rdAtom.SetNumRadicalElectrons(atom.radicalElectrons)
         rdAtom.SetFormalCharge(atom.charge)
         if atom.element.symbol == 'C' and atom.lonePairs == 1 and mol.multiplicity == 1: rdAtom.SetNumRadicalElectrons(2)
@@ -131,7 +133,8 @@ def fromRDKitMol(mol, rdkitmol):
 
         # Use atomic number as key for element
         number = rdkitatom.GetAtomicNum()
-        element = elements.getElement(number)
+        isotope = rdkitatom.GetIsotope()
+        element = elements.getElement(number, isotope or -1)
 
         # Process charge
         charge = rdkitatom.GetFormalCharge()
@@ -214,6 +217,8 @@ def toOBMol(mol, returnMapping=False):
     for atom in atoms:
         a = obmol.NewAtom()
         a.SetAtomicNum(atom.number)
+        if atom.element.isotope != -1:
+            a.SetIsotope(atom.element.isotope)
         a.SetFormalCharge(atom.charge)
         obAtomIds[atom] = a.GetId()
     orders = {1: 1, 2: 2, 3: 3, 1.5: 5}
@@ -255,7 +260,8 @@ def fromOBMol(mol, obmol):
     for obatom in openbabel.OBMolAtomIter(obmol):
         # Use atomic number as key for element
         number = obatom.GetAtomicNum()
-        element = elements.getElement(number)
+        isotope = obatom.GetIsotope()
+        element = elements.getElement(number, isotope or -1)
         # Process charge
         charge = obatom.GetFormalCharge()
         obatom_multiplicity = obatom.GetSpinMultiplicity()
