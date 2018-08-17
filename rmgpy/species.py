@@ -256,9 +256,14 @@ class Species(object):
 
         If ``strict=False``, performs the check ignoring electrons and resonance structures.
         """
+        from afm.fragment import Fragment
         if isinstance(other, Molecule):
             for molecule in self.molecule:
                 if molecule.isIdentical(other, strict=strict):
+                    return True
+        elif isinstance(other, Fragment):
+            for molecule in self.molecule:
+                if molecule.isIdentical(other):
                     return True
         elif isinstance(other, Species):
             for molecule1 in self.molecule:
