@@ -213,7 +213,12 @@ class Species(object):
         Return ``True`` if at least one molecule of the species is identical to `other`,
         which can be either a :class:`Molecule` object or a :class:`Species` object.
         """
+        from afm.fragment import Fragment
         if isinstance(other, Molecule):
+            for molecule in self.molecule:
+                if molecule.isIdentical(other):
+                    return True
+        elif isinstance(other, Fragment):
             for molecule in self.molecule:
                 if molecule.isIdentical(other):
                     return True

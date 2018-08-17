@@ -2131,8 +2131,9 @@ class Molecule(Graph):
         Returns :data:`True` if two graphs are identical and :data:`False` otherwise.
         """
         cython.declare(atomIndicies=set, otherIndices=set, atomList=list, otherList=list, mapping = dict)
+        from afm.fragment import Fragment
 
-        if not isinstance(other, Molecule):
+        if not isinstance(other, (Molecule, Fragment)):
             raise TypeError('Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
 
         # Get a set of atom indices for each molecule
