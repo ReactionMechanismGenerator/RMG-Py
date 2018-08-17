@@ -773,15 +773,21 @@ def generate_aromatic_resonance_structures(mol, features=None):
     # Then determine which ones are aromatic
     aromaticBonds = molecule.getAromaticRings(rings)[1]
 
-    # If the species is a radical, then there is a chance that the radical can be shifted
-    #   to a location that increases the number of perceived aromatic rings.
+    # Attempt to rearrange electrons to obtain a structure with the most aromatic rings
+    # Possible rearrangements include aryne resonance and allyl resonance
+    res_list = [generate_aryne_resonance_structures]
     if features['isRadical'] and not features['isArylRadical']:
-        if molecule.isAromatic():
-            kekuleList = generate_kekule_structure(molecule)
-        else:
-            kekuleList = [molecule]
-        _generate_resonance_structures(kekuleList, [generate_allyl_delocalization_resonance_structures])
+        res_list.append(generate_allyl_delocalization_resonance_structures)
 
+    if molecule.isAromatic():
+        kekuleList = generate_kekule_structure(molecule)
+    else:
+        kekuleList = [molecule]
+
+    _generate_resonance_structures(kekuleList, res_list)
+
+    if len(kekuleList) > 1:
+        # We found additional structures, so we need to evaluate all of them
         maxNum = 0
         mol_list = []
 
