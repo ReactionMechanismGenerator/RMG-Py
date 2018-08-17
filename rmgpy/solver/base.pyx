@@ -577,7 +577,7 @@ cdef class ReactionSystem(DASx):
         cdef double toleranceKeepInEdge,toleranceMoveToCore,toleranceMoveEdgeReactionToCore,toleranceInterruptSimulation
         cdef double toleranceMoveEdgeReactionToCoreInterrupt,toleranceMoveEdgeReactionToSurface
         cdef double toleranceMoveSurfaceSpeciesToCore,toleranceMoveSurfaceReactionToCore
-        cdef double toleranceMoveEdgeReactionToSurfaceInterrupt
+        cdef double toleranceMoveEdgeReactionToSurfaceInterrupt, BNum
         cdef bool ignoreOverallFluxCriterion, filterReactions
         cdef double absoluteTolerance, relativeTolerance, sensitivityAbsoluteTolerance, sensitivityRelativeTolerance
         cdef dict speciesIndex
@@ -595,10 +595,10 @@ cdef class ReactionSystem(DASx):
         cdef numpy.float64_t maxSurfaceDifLnAccumNum, maxSurfaceSpeciesRate, conversion
         cdef int maxSurfaceAccumReactionIndex, maxSurfaceSpeciesIndex
         cdef object maxSurfaceAccumReaction, maxSurfaceSpecies
-        cdef numpy.ndarray[numpy.float64_t,ndim=1] surfaceSpeciesProduction, surfaceSpeciesConsumption
+        cdef numpy.ndarray[numpy.float64_t,ndim=1] surfaceSpeciesProduction, surfaceSpeciesConsumption, branchingNums
         cdef numpy.ndarray[numpy.float64_t,ndim=1] surfaceTotalDivAccumNums, surfaceSpeciesRateRatios
         cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, coreSpeciesConcentrations
-        cdef double prevTime, totalMoles, c, volume, RTP, maxCharRate
+        cdef double prevTime, totalMoles, c, volume, RTP, maxCharRate, BR, RR
         cdef double unimolecularThresholdVal, bimolecularThresholdVal, trimolecularThresholdVal
         cdef bool useDynamicsTemp, firstTime, useDynamics, terminateAtMaxObjects, schanged
         cdef numpy.ndarray[numpy.float64_t, ndim=1] edgeReactionRates
@@ -639,6 +639,14 @@ cdef class ReactionSystem(DASx):
         sensitivityRelativeTolerance = simulatorSettings.sens_rtol
         filterReactions = modelSettings.filterReactions
         maxNumObjsPerIter = modelSettings.maxNumObjsPerIter
+        
+        if modelSettings.toleranceBranchReactionToCore != 0.0:
+            branchFactor = 1.0/modelSettings.toleranceBranchReactionToCore
+            BRmax = modelSettings.branchingRatioMax
+            branchingIndex = modelSettings.branchingIndex
+        else:
+            branchFactor = 0.0
+        
 
         #if not pruning always terminate at max objects, otherwise only do so if terminateAtMaxObjects=True
         terminateAtMaxObjects = True if not prune else modelSettings.terminateAtMaxObjects 
@@ -663,7 +671,8 @@ cdef class ReactionSystem(DASx):
         surfaceReactionIndices = self.surfaceReactionIndices
         
         totalDivAccumNums = None #the product of the ratios between accumulation numbers with and without a given reaction for products and reactants
-
+        branchingNums = None
+        
         invalidObjects = []
         newSurfaceReactions = []
         newSurfaceReactionInds = []
