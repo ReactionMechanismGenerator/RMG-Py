@@ -62,7 +62,7 @@ from rmgpy.molecule.atomtype import ATOMTYPES
 from rmgpy.reaction import Reaction, same_species_lists
 from rmgpy.species import Species
 from rmgpy.tools.uncertainty import KineticParameterUncertainty
-from afm.fragment import Fragment
+from afm.fragment import Fragment, CuttingLabel
 
 ################################################################################
 
@@ -1372,12 +1372,12 @@ class KineticsFamily(Database):
         # Also copy structures so we don't modify the originals
         # Since the tagging has already occurred, both the reactants and the
         # products will have tags
-        if isinstance(reactant_structures[0], Group):
+        if any(isinstance(reactant, Fragment) for reactant in reactant_structures):
+            reactant_structure = Fragment()
+        elif isinstance(reactant_structures[0], Group):
             reactant_structure = Group()
         elif isinstance(reactant_structures[0], Molecule):
             reactant_structure = Molecule()
-        elif isinstance(reactant_structures[0], Fragment):
-            reactant_structure = Fragment()
 
         for s in reactant_structures:
             reactant_structure = reactant_structure.merge(s.copy(deep=True))
