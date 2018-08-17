@@ -64,6 +64,6 @@ cpdef list generate_opposite_kekule_structure(Molecule mol)
 
 cpdef list generate_clar_structures(Molecule mol)
 
-cpdef list _clar_optimization(Molecule mol, list constraints=?, maxNum=?)
+cpdef list _clar_optimization(Molecule mol, list constraints=?, max_num=?)
 
-cpdef list _clar_transformation(Molecule mol, list ring)
+cpdef list _clar_transformation(Molecule mol, list aromatic_ring)
