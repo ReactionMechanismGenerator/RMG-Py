@@ -46,6 +46,7 @@ Currently supported resonance types:
     - ``generate_N5ddc_N5tc_resonance_structures``: shift between nitrogen with two double bonds and single + triple bond
     - ``generate_N5dc_radical_resonance_structures``: shift between radical and lone pair mediated by an N5dc atom
     - ``generate_N5dc_resonance_structures``: shift between double bond and lone pair mediated by an N5dc atom
+    - ``generate_aryne_resonance_structures``: shift between cumulene and alkyne forms of arynes, which are not considered aromatic in RMG
 - Aromatic species only:
     - ``generate_aromatic_resonance_structures``: fully delocalized structure, where all aromatic rings have benzene bonds
     - ``generate_kekule_structure``: generate a single Kekule structure for an aromatic compound (single/double bond form)
@@ -87,6 +88,7 @@ def populate_resonance_algorithms(features=None):
             generate_N5dc_radical_resonance_structures,
             generate_N5dc_resonance_structures,
             generate_aromatic_resonance_structures,
+            generate_aryne_resonance_structures,
             generate_kekule_structure,
             generate_opposite_kekule_structure,
             generate_clar_structures,
@@ -97,6 +99,8 @@ def populate_resonance_algorithms(features=None):
         # cases where the radical is in an orbital that is orthogonal to the pi orbitals.
         if features['isRadical'] and not features['isAromatic'] and not features['isArylRadical']:
             method_list.append(generate_allyl_delocalization_resonance_structures)
+        if features['isCyclic']:
+            method_list.append(generate_aryne_resonance_structures)
         if features['hasNitrogen']:
             method_list.append(generate_N5ddc_N5tc_resonance_structures)
             method_list.append(generate_N5dc_radical_resonance_structures)
