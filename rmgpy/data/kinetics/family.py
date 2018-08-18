@@ -2853,7 +2853,7 @@ class KineticsFamily(Database):
         """
         self.rules.entries = OrderedDict() #clear rules
         self.rules.entries['Root'] = []
-        templateRxnMap = self.getReactionMatches(thermoDatabase=thermoDatabase,removeDegeneracy=True,fixLabels=True)
+        templateRxnMap = self.getReactionMatches(thermoDatabase=thermoDatabase,removeDegeneracy=True,fixLabels=True,exactMatchesOnly=True)
         
         multCompletedNodes = [] #nodes containing multiple identical training reactions
         boo = True #if the for loop doesn't break becomes false and the while loop terminates
@@ -3248,7 +3248,7 @@ class KineticsFamily(Database):
         
         return rxns
     
-    def getReactionMatches(self,rxns=None,thermoDatabase=None,removeDegeneracy=False,estimateThermo=True,fixLabels=False):
+    def getReactionMatches(self,rxns=None,thermoDatabase=None,removeDegeneracy=False,estimateThermo=True,fixLabels=False,exactMatchesOnly=False):
         """
         returns a dictionary mapping for each entry in the tree:  
         (entry.label,entry.item) : list of all training reactions (or the list given) that match that entry
@@ -3293,7 +3293,16 @@ class KineticsFamily(Database):
                         break
                 else:
                     break
-    
+        
+        if exactMatchesOnly:
+            newLists = dict()
+            for key,rs in rxnLists.iteritems():
+                newrs = set(rs)
+                for child in self.groups.entries[key].children:
+                    newrs -= set(rxnLists[child.label])
+                newLists[key] = list(newrs)
+            rxnLists = newLists
+                    
         return rxnLists
     
         
