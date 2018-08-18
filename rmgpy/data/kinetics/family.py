@@ -2611,16 +2611,18 @@ class KineticsFamily(Database):
         atmInds = [None]
         firstTime = True
         
+        Nsplits = len(templateRxnMap[parent.label][0].reactants)
+        
         while grps != []:
             grp = grps[-1]
             
             if atmInds[-1]:
                 if len(atmInds[-1]) == 1:
-                    exts = grp.getExtensions(basename=names[-1],atmInd=atmInds[-1][0])
+                    exts = grp.getExtensions(basename=names[-1],atmInd=atmInds[-1][0],Nsplits=Nsplits)
                 elif len(atmInds[-1]) == 2:
-                    exts = grp.getExtensions(basename=names[-1],atmInd=atmInds[-1][0],atmInd2=atmInds[-1][1])
+                    exts = grp.getExtensions(basename=names[-1],atmInd=atmInds[-1][0],atmInd2=atmInds[-1][1],Nsplits=Nsplits)
             else:
-                exts = grp.getExtensions(basename=names[-1])
+                exts = grp.getExtensions(basename=names[-1],Nsplits=Nsplits)
             
             regDict = dict()
             extInds = []
