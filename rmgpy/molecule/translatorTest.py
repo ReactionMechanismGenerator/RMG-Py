@@ -414,6 +414,22 @@ multiplicity 2
 
         self.assertEqual(mol.toInChI(), inchi)
 
+    def test_isotopic_molecule_1(self):
+        """Test that we can generate an InChI for an isotopic molecule."""
+        mol = Molecule().fromSMILES('[13CH4]')
+
+        inchi = 'InChI=1S/CH4/h1H4/i1+1'
+
+        self.assertEqual(mol.toInChI(), inchi)
+
+    def test_isotopic_molecule_2(self):
+        """Test that we can generate an InChI for an isotopic molecule."""
+        mol = Molecule().fromSMILES('[13CH3]C')
+
+        inchi = 'InChI=1S/C2H6/c1-2/h1-2H3/i1+1'
+
+        self.assertEqual(mol.toInChI(), inchi)
+
 
 class SMILESGenerationTest(unittest.TestCase):
     def compare(self, adjlist, smiles):
@@ -1372,3 +1388,17 @@ class InChIParsingTest(unittest.TestCase):
         inchi = 'InChI=1S/NO/c1-2'
         u_indices = [1]
         self.compare(inchi, u_indices)
+
+    def test_isotopic_molecule_1(self):
+        """Test that we can parse an InChI for an isotopic molecule."""
+        mol = Molecule().fromInChI('InChI=1S/CH4/h1H4/i1+1')
+
+        self.assertTrue(len(mol.atoms), 4)
+        self.assertEqual([atom.element.isotope for atom in mol.atoms].count(13), 1)
+
+    def test_isotopic_molecule_2(self):
+        """Test that we can parse an InChI for an isotopic molecule."""
+        mol = Molecule().fromInChI('InChI=1S/C2H6/c1-2/h1-2H3/i1+1')
+
+        self.assertTrue(len(mol.atoms), 6)
+        self.assertEqual([atom.element.isotope for atom in mol.atoms].count(13), 1)
