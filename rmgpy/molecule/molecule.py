@@ -900,9 +900,12 @@ class Molecule(Graph):
         self.sortAtoms()
         self.identifyRingMembership()
 
-    def getFormula(self):
+    def getFormula(self, separate_isotopes=False):
         """
         Return the molecular formula for the molecule.
+
+        The `separate_isotopes` option allows for isotopes to be identified
+        separately and added alphabetically to the molecular formula.
         """
         cython.declare(atom=Atom, symbol=str, elements=dict, keys=list, formula=str)
         cython.declare(hasCarbon=cython.bint, hasHydrogen=cython.bint)
@@ -911,8 +914,10 @@ class Molecule(Graph):
         elements = {}
         for atom in self.vertices:
             symbol = atom.element.symbol
+            if separate_isotopes and atom.element.isotope != -1:
+                symbol = symbol + str(atom.element.isotope)
             elements[symbol] = elements.get(symbol, 0) + 1
-        
+
         # Use the Hill system to generate the formula
         formula = ''
         

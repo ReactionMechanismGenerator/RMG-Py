@@ -660,7 +660,8 @@ class TestMolecule(unittest.TestCase):
         
         
         self.mHBonds = Molecule().fromSMILES('C(NC=O)OO')
-        
+        self.isotopic_molecule = Molecule().fromSMILES('[13CH4]')
+
     def testClearLabeledAtoms(self):
         """
         Test the Molecule.clearLabeledAtoms() method.
@@ -736,6 +737,13 @@ class TestMolecule(unittest.TestCase):
         self.assertEqual(self.molecule[0].getFormula(), 'CH2NO2')
         self.assertEqual(self.molecule[1].getFormula(), 'CH2NO2')
 
+    def test_getFormula_with_isotopes(self):
+        """
+        Tests that Molecule.getFormula's separate_isotopes parameter.
+        """
+        self.assertEqual(self.isotopic_molecule.getFormula(), 'CH4')
+        self.assertEqual(self.isotopic_molecule.getFormula(separate_isotopes=False), 'CH4')
+        self.assertEqual(self.isotopic_molecule.getFormula(separate_isotopes=True), 'C13H4')
 
     def testRadicalCount(self):
         """

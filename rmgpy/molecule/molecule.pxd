@@ -153,7 +153,7 @@ cdef class Molecule(Graph):
 
     cpdef sortAtoms(self)
     
-    cpdef str getFormula(self)
+    cpdef str getFormula(self, bint separate_isotopes=?)
 
     cpdef short getRadicalCount(self)
 

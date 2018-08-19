@@ -234,9 +234,9 @@ def toSMILES(mol, backend='default'):
     # The dictionary is defined at the top of this file.
     try:
         if mol.isRadical():
-            output = RADICAL_LOOKUPS[mol.getFormula()]
+            output = RADICAL_LOOKUPS[mol.getFormula(separate_isotopes=True)]
         else:
-            output = MOLECULE_LOOKUPS[mol.getFormula()]
+            output = MOLECULE_LOOKUPS[mol.getFormula(separate_isotopes=True)]
     except KeyError:
         if backend == 'default':
             for atom in mol.atoms:
