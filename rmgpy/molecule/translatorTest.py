@@ -434,7 +434,7 @@ multiplicity 2
 class SMILESGenerationTest(unittest.TestCase):
     def compare(self, adjlist, smiles):
         mol = Molecule().fromAdjacencyList(adjlist)
-        self.assertEquals(smiles, mol.toSMILES())
+        self.assertEquals(smiles, mol.toSMILES(), 'Returned SMILES {1} does not match intended SMILES {0}'.format(smiles, mol.toSMILES()))
 
     def test_CH4(self):
         "Test the SMILES generation for methane"
@@ -449,6 +449,46 @@ class SMILESGenerationTest(unittest.TestCase):
         smiles = "C"
         self.compare(adjlist, smiles)
 
+    def test_13CH4(self):
+        """
+        Test the SMILES generation for isotopic molecule whose structure is
+        similar to those hardcoded in MOLECULE_LOOKUP
+        """
+
+        adjlist = """
+1 C u0 p0 c0 i13 {2,S} {3,S} {4,S} {5,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+5 H u0 p0 c0 {1,S}
+        """
+        smiles = "[13CH4]"
+        self.compare(adjlist, smiles)
+
+    def test_large_isotope_molecule(self):
+        """
+        Test the SMILES generation for isotopic molecule whose structure is
+        different than those hardcoded in MOLECULE_LOOKUP
+        """
+
+        adjlist = """
+1  C u0 p0 c0 i13 {2,S} {5,S} {6,S} {7,S}
+2  C u0 p0 c0 {1,S} {3,S} {8,S} {9,S}
+3  C u0 p0 c0 {2,S} {4,S} {10,S} {11,S}
+4  C u0 p0 c0 {3,S} {12,S} {13,S} {14,S}
+5  H u0 p0 c0 {1,S}
+6  H u0 p0 c0 {1,S}
+7  H u0 p0 c0 {1,S}
+8  H u0 p0 c0 {2,S}
+9  H u0 p0 c0 {2,S}
+10 H u0 p0 c0 {3,S}
+11 H u0 p0 c0 {3,S}
+12 H u0 p0 c0 {4,S}
+13 H u0 p0 c0 {4,S}
+14 H u0 p0 c0 {4,S}
+        """
+        smiles = "CCC[13CH3]"
+        self.compare(adjlist, smiles)
     def test_C(self):
         "Test the SMILES generation for atomic carbon mult=(1,3,5)"
         adjlist = "1 C u0 p2 c0"

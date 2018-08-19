@@ -359,9 +359,9 @@ def _rdkit_translator(input_object, identifier_type, mol=None):
             output = Chem.MolToSmarts(rdkitmol)
         elif identifier_type == 'smi':
             if input_object.isAromatic():
-                output = Chem.MolToSmiles(rdkitmol)
+                output = Chem.MolToSmiles(rdkitmol, isomericSmiles=True)
             else:
-                output = Chem.MolToSmiles(rdkitmol, kekuleSmiles=True)
+                output = Chem.MolToSmiles(rdkitmol, kekuleSmiles=True, isomericSmiles=True)
         else:
             raise ValueError('Identifier type {0} is not supported for writing using RDKit.'.format(identifier_type))
     else:
