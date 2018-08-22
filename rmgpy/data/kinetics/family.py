@@ -2855,8 +2855,6 @@ class KineticsFamily(Database):
         have two children one of which has no kinetics data and no children
         (its parent becomes the parent of its only relevant child node)
         """
-        self.rules.entries = OrderedDict() #clear rules
-        self.rules.entries['Root'] = []
         templateRxnMap = self.getReactionMatches(thermoDatabase=thermoDatabase,removeDegeneracy=True,fixLabels=True,exactMatchesOnly=True)
         
         multCompletedNodes = [] #nodes containing multiple identical training reactions
@@ -2883,12 +2881,13 @@ class KineticsFamily(Database):
         
         return
     
+        
     def makeBMRulesFromTemplateRxnMap(self,templateRxnMap):
 
         index = max([e.index for e in self.rules.getEntries()] or [0]) + 1
         
         for entry in self.groups.entries.values():
-            if entry.index == -1:
+            if entry.index == -1 or self.rules.entries[entry.label] != []:
                 continue
             rxns = templateRxnMap[entry.label]
             descendants = getAllDescendants(entry)
@@ -3102,8 +3101,12 @@ class KineticsFamily(Database):
                 regularization(self,child)
         else:
             regularization(self,self.getRootTemplate()[0])
+    
+    def cleanTreeRules(self):
+        self.rules.entries = OrderedDict()
+        self.rules.entries['Root'] = []
         
-    def prepareTreeForGeneration(self,thermoDatabase=None):
+    def cleanTreeGroups(self,thermoDatabase=None):
         """
         clears groups and rules in the tree, generates an appropriate
         root group to start from and then reads training reactions
@@ -3134,6 +3137,10 @@ class KineticsFamily(Database):
         self.forwardTemplate.reactants = [self.groups.entries['Root']]
 
         return
+    
+    def cleanTree(self,thermoDatabase=None):
+        self.cleanTreeRules()
+        self.cleanTreeGroups(thermoDatabase=thermoDatabase)
     
     def saveGeneratedTree(self,path=None):
         """
