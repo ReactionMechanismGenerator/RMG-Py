@@ -680,7 +680,7 @@ class TestTreeGeneration(unittest.TestCase):
         """
         Test that the tree was properly cleared before generation
         """
-        self.family.prepareTreeForGeneration(self.thermoDatabase)
+        self.family.cleanTree(self.thermoDatabase)
         ents = [ent for ent in self.family.groups.entries.itervalues() if ent.index != -1]
         self.assertEquals(len(ents),1,'more than one relevant group left in groups after preparing tree for generation')
         self.assertEquals(len(self.family.rules.entries),1,'more than one group in rules.entries after preparing tree for generation' )
@@ -697,7 +697,7 @@ class TestTreeGeneration(unittest.TestCase):
         
         self.family.generateTree(thermoDatabase=self.thermoDatabase,obj=objective) #test input objective function
         
-        self.family.prepareTreeForGeneration(self.thermoDatabase) #reclear
+        self.family.cleanTree(self.thermoDatabase) #reclear
         
         self.family.generateTree(thermoDatabase=self.thermoDatabase) #test that default objective works
         
