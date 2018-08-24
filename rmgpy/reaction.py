@@ -886,8 +886,9 @@ class Reaction:
         each side of the reaction equation, or ``False`` if not.
         """
         from rmgpy.molecule.element import elementList
+        from afm.fragment import CuttingLabel, Fragment
         
-        cython.declare(reactantElements=dict, productElements=dict, molecule=Molecule, atom=Atom, element=Element)
+        cython.declare(reactantElements=dict, productElements=dict, molecule=Graph, atom=Vertex, element=Element)
         
         reactantElements = {}; productElements = {}
         for element in elementList:
@@ -897,18 +898,34 @@ class Reaction:
         for reactant in self.reactants:
             if isinstance(reactant, Species):
                 molecule = reactant.molecule[0]
+                for atom in molecule.atoms:
+                    if not isinstance(atom, CuttingLabel):
+                        reactantElements[atom.element] += 1
             elif isinstance(reactant, Molecule):
                 molecule = reactant
-            for atom in molecule.atoms:
-                reactantElements[atom.element] += 1
+                for atom in molecule.atoms:
+                    if not isinstance(atom, CuttingLabel):
+                        reactantElements[atom.element] += 1
+            elif isinstance(reactant, Fragment):
+                for atom in reactant.atoms:
+                    if not isinstance(atom, CuttingLabel):
+                        reactantElements[atom.element] += 1
         
         for product in self.products:
             if isinstance(product, Species):
                 molecule = product.molecule[0]
+                for atom in molecule.atoms:
+                    if not isinstance(atom, CuttingLabel):
+                        productElements[atom.element] += 1
             elif isinstance(product, Molecule):
                 molecule = product
-            for atom in molecule.atoms:
-                productElements[atom.element] += 1
+                for atom in molecule.atoms:
+                    if not isinstance(atom, CuttingLabel):
+                        productElements[atom.element] += 1
+            elif isinstance(product, Fragment):
+                for atom in product.atoms:
+                    if not isinstance(atom, CuttingLabel):
+                        productElements[atom.element] += 1
          
         for element in elementList:
             if reactantElements[element] != productElements[element]:
