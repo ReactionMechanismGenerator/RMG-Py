@@ -28,6 +28,7 @@
 cimport rmgpy.constants as constants
 from rmgpy.species cimport Species, TransitionState
 from rmgpy.molecule.molecule cimport Atom, Molecule
+from rmgpy.molecule.graph cimport Vertex, Graph
 from rmgpy.molecule.element cimport Element
 from rmgpy.kinetics.model cimport KineticsModel
 from rmgpy.kinetics.arrhenius cimport Arrhenius
