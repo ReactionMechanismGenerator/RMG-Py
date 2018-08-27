@@ -2803,6 +2803,11 @@ class KineticsFamily(Database):
         
         extname = ext[2]
         
+        if ext[3] == 'atomExt':
+            ext[0].atoms[ext[4][0]].reg_dim_atm = [ext[0].atoms[ext[4][0]].atomType,ext[0].atoms[ext[4][0]].atomType]
+        elif ext[3] == 'elExt':
+            ext[0].atoms[ext[4][0]].reg_dim_u = [ext[0].atoms[ext[4][0]].radicalElectrons,ext[0].atoms[ext[4][0]].radicalElectrons]
+        
         self.addEntry(parent,ext[0],extname)
         
         complement = not ext[1] is None
