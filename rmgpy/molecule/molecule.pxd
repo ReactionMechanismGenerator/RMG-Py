@@ -47,7 +47,7 @@ cdef class Atom(Vertex):
     cdef public int id
     cdef public dict props
     
-    cpdef bint equivalent(self, Vertex other) except -2
+    cpdef bint equivalent(self, Vertex other, bint strict=?) except -2
 
     cpdef bint isSpecificCaseOf(self, Vertex other) except -2
 
@@ -192,9 +192,9 @@ cdef class Molecule(Graph):
 
     cpdef dict get_element_count(self)
 
-    cpdef bint isIsomorphic(self, Graph other, dict initialMap=?, bint generateInitialMap=?, bint saveOrder=?) except -2
+    cpdef bint isIsomorphic(self, Graph other, dict initialMap=?, bint generateInitialMap=?, bint saveOrder=?, bint strict=?) except -2
 
-    cpdef list findIsomorphism(self, Graph other, dict initialMap=?, bint saveOrder=?)
+    cpdef list findIsomorphism(self, Graph other, dict initialMap=?, bint saveOrder=?, bint strict=?)
 
     cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?, bint generateInitialMap=?, bint saveOrder=?) except -2
 
