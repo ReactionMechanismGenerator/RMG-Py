@@ -3226,49 +3226,78 @@ class KineticsFamily(Database):
                 for atm in mol.atoms:
                     if atm.label not in rootLabels:
                         atm.label = ''
-                        
-            structs = mol.generate_resonance_structures()
             
             
-            if any([x.isSubgraphIsomorphic(root,generateInitialMap=True) for x in structs]):
+            if mol.isSubgraphIsomorphic(root,generateInitialMap=True):
                 rxns[i].is_forward = True
+                if self.ownReverse:
+                    mol = None
+                    for react in rxns[i].products:
+                        if mol:
+                            mol = mol.merge(react.molecule[0])
+                        else:
+                            mol = deepcopy(react.molecule[0])
+                    
+                            
+                    if mol.isSubgraphIsomorphic(root,generateInitialMap=True): #try product structures
+                        products = rxns[i].products
+                    else:
+                        products = self.applyRecipe([s.molecule[0] for s in rxns[i].reactants],forward=True)
+                        products = [Species(molecule=[p]) for p in products]
+                    
+                    prods = []
+                    for p in products: 
+                        for atm in p.molecule[0].atoms:
+                            if atm.label in rkeys:
+                                atm.label = reverseMap[atm.label]
+                    
+                        prods.append(Species(molecule=[p.molecule[0]]))
+                        
+                    rrev = Reaction(reactants=prods,products=rxns[i].reactants,kinetics=rxns[i].generateReverseRateCoefficient())
+                    
+                    rrev.is_forward = False
+                    
+                    
+                    if estimateThermo:
+                        for r in rrev.reactants:
+                            if r.thermo is None:
+                                r.thermo = tdb.getThermoData(deepcopy(r))
+                    
+                        
+                    revRxns.append(rrev)
+                    
                 continue
             else:
-                try:
-                    products = self.applyRecipe([s.molecule[0] for s in rxns[i].reactants],forward=False)
-                except (ActionError,InvalidActionError) as e:
-                    for r in rxns[i].reactants:
-                        r.generate_resonance_structures()
-                    
-                    combos = [[s for s in r.molecule if not s.isAromatic()] for r in rxns[i].reactants]
-                    cprods = itertools.product(*combos)
-                    
-                    for cprod in cprods:
-                        try:
-                            products = self.applyRecipe(list(cprod),forward=False)
-                        except (ActionError,InvalidActionError) as e:
-                            pass
-                        else:
-                            break
+                assert not self.ownReverse
+                
+                mol = None
+                for react in rxns[i].products:
+                    if mol:
+                        mol = mol.merge(react.molecule[0])
                     else:
-                        logging.error(rxns[i])
-                        for r in rxns[i].reactants:
-                            for mol in r.molecule:
-                                logging.error(mol.toAdjacencyList())
-                        raise e
+                        mol = deepcopy(react.molecule[0])
                 
+                if mol.isSubgraphIsomorphic(root,generateInitialMap=True): #try product structures
+                    products = rxns[i].products
+                else:
+                    products = self.applyRecipe([s.molecule[0] for s in rxns[i].reactants],forward=True)
+                    products = [Species(molecule=[p]) for p in products]
                 
-                rrev = Reaction(reactants=[Species(molecule=[p]) for p in products],products=rxns[i].reactants,kinetics=rxns[i].generateReverseRateCoefficient())
+                rrev = Reaction(reactants=products,products=rxns[i].reactants,kinetics=rxns[i].generateReverseRateCoefficient())
                 
                 rrev.is_forward = False
                 
                 if estimateThermo:
                     for r in rrev.reactants:
-                        r.thermo = tdb.getThermoData(deepcopy(r))
-                
+                        if r.thermo is None:
+                            r.thermo = tdb.getThermoData(r)
+                    assert set([atm.label for atm in r.molecule[0].atoms for r in rrev.reactants if atm.label != '']) == set(rootLabels)
                 rxns[i] = rrev
         
-        return rxns
+        if self.ownReverse:
+            return rxns+revRxns
+        else:
+            return rxns
     
     def getReactionMatches(self,rxns=None,thermoDatabase=None,removeDegeneracy=False,estimateThermo=True,fixLabels=False,exactMatchesOnly=False):
         """
