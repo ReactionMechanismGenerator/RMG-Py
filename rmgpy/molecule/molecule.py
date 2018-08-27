@@ -1247,7 +1247,7 @@ class Molecule(Graph):
 
         return element_count
 
-    def isIsomorphic(self, other, initialMap=None,saveOrder=False):
+    def isIsomorphic(self, other, initialMap=None, generateInitialMap=False, saveOrder=False):
         """
         Returns :data:`True` if two graphs are isomorphic and :data:`False`
         otherwise. The `initialMap` attribute can be used to specify a required
@@ -1268,6 +1268,16 @@ class Molecule(Graph):
         # check multiplicity
         if self.multiplicity != other.multiplicity:
             return False
+        
+        if generateInitialMap:
+            initialMap = dict()
+            for atom in self.atoms:
+                if atom.label and atom.label != '':
+                    L = [a for a in other.atoms if a.label == atom.label]
+                    initialMap[atom] = L[0]
+            if not self.isMappingValid(other,initialMap,equivalent=False):
+                return False
+            
         # Do the full isomorphism comparison
         result = Graph.isIsomorphic(self, other, initialMap, saveOrder=saveOrder)
         return result

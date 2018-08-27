@@ -178,7 +178,7 @@ class Species(object):
             self.molecule = self.molecule[0].generate_resonance_structures(keep_isomorphic=keep_isomorphic,
                                                                            filter_structures=filter_structures)
     
-    def isIsomorphic(self, other, generate_res=False):
+    def isIsomorphic(self, other, generate_res=False, generateInitialMap=False):
         """
         Return ``True`` if the species is isomorphic to `other`, which can be
         either a :class:`Molecule` object or a :class:`Species` object.
@@ -189,19 +189,19 @@ class Species(object):
         """
         if isinstance(other, Molecule):
             for molecule in self.molecule:
-                if molecule.isIsomorphic(other):
+                if molecule.isIsomorphic(other,generateInitialMap=generateInitialMap):
                     return True
         elif isinstance(other, Species):
             for molecule1 in self.molecule:
                 for molecule2 in other.molecule:
-                    if molecule1.isIsomorphic(molecule2):
+                    if molecule1.isIsomorphic(molecule2,generateInitialMap=generateInitialMap):
                         return True
             if generate_res:
                 other_copy = other.copy(deep=True)
                 other_copy.generate_resonance_structures(keep_isomorphic=False)
                 for molecule1 in self.molecule:
                     for molecule2 in other_copy.molecule:
-                        if molecule1.isIsomorphic(molecule2):
+                        if molecule1.isIsomorphic(molecule2,generateInitialMap=generateInitialMap):
                             # If they are isomorphic and this was found only by generating resonance structures, append
                             # the structure in other to self.molecule as unreactive, since it is a non-representative
                             # resonance structure of it, and return `True`.
