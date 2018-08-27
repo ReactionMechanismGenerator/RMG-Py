@@ -300,11 +300,14 @@ class KineticsJob(object):
         plt.title(reaction_str)
         plt.xlabel('1000 / Temperature (1000/K)')
         plt.ylabel('Rate coefficient ({0})'.format(self.kunits))
-        if not os.path.exists('plots'):
-            os.mkdir('plots')
+
+        plot_path = os.path.join(outputDirectory, 'plots')
+
+        if not os.path.exists(plot_path):
+            os.mkdir(plot_path)
         valid_chars = "-_.()<=> %s%s" % (string.ascii_letters, string.digits)
-        filename = os.path.join('plots', ''.join(c for c in reaction_str if c in valid_chars) + '.pdf')
-        plt.savefig(os.path.join(outputDirectory, filename))
+        filename = ''.join(c for c in reaction_str if c in valid_chars) + '.pdf'
+        plt.savefig(os.path.join(plot_path, filename))
         plt.close()
 
     def draw(self, outputDirectory, format='pdf'):
@@ -317,14 +320,16 @@ class KineticsJob(object):
         one of the following: `pdf`, `svg`, `png`.
         """
 
-        if not os.path.exists('paths'):
-            os.mkdir('paths')
+        drawing_path = os.path.join(outputDirectory, 'paths')
+
+        if not os.path.exists(drawing_path):
+            os.mkdir(drawing_path)
         valid_chars = "-_.()<=> %s%s" % (string.ascii_letters, string.digits)
         reaction_str = '{0} {1} {2}'.format(
             ' + '.join([reactant.label for reactant in self.reaction.reactants]),
             '<=>', ' + '.join([product.label for product in self.reaction.products]))
-        filename = os.path.join('paths', ''.join(c for c in reaction_str if c in valid_chars) + '.pdf')
-        path = os.path.join(outputDirectory, filename)
+        filename = ''.join(c for c in reaction_str if c in valid_chars) + '.pdf'
+        path = os.path.join(drawing_path, filename)
 
         KineticsDrawer().draw(self.reaction, format=format, path=path)
 
