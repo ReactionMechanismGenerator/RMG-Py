@@ -641,19 +641,20 @@ class KineticsFamily(Database):
         local_context['reversible'] = None
         local_context['boundaryAtoms'] = None
         local_context['treeDistances'] = None
+        local_context['reverseMap'] = None
         self.groups = KineticsGroups(label='{0}/groups'.format(self.label))
         logging.debug("Loading kinetics family groups from {0}".format(os.path.join(path, 'groups.py')))
         Database.load(self.groups, os.path.join(path, 'groups.py'), local_context, global_context)
         self.name = self.label
         self.boundaryAtoms = local_context.get('boundaryAtoms', None)
         self.treeDistances = local_context.get('treeDistances',None)
-        
+        self.reverseMap = local_context.get('reverseMap',None)
         # Generate the reverse template if necessary
         self.forwardTemplate.reactants = [self.groups.entries[label] for label in self.forwardTemplate.reactants]
         if self.ownReverse:
             self.forwardTemplate.products = self.forwardTemplate.reactants[:]
             self.reverseTemplate = None
-            self.reverseRecipe = None
+            self.reverseRecipe = self.forwardRecipe.getReverse()
         else:
             self.reverse = local_context.get('reverse', None)
             self.reversible = True if local_context.get('reversible', None) is None else local_context.get('reversible', None)
@@ -3160,6 +3161,11 @@ class KineticsFamily(Database):
         and returns the resulting list of reactions in the forward direction with thermo 
         assigned
         """
+        if self.ownReverse:
+            revRxns = []
+            rkeys = self.reverseMap.keys()
+            reverseMap = self.reverseMap
+            
         if estimateThermo:
             if thermoDatabase is None:
                 from rmgpy.data.rmg import getDB
