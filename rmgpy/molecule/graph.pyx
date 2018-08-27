@@ -95,7 +95,7 @@ cdef class Vertex(object):
         new = Vertex()
         return new
 
-    cpdef bint equivalent(self, Vertex other) except -2:
+    cpdef bint equivalent(self, Vertex other, bint strict=True) except -2:
         """
         Return :data:`True` if two vertices `self` and `other` are semantically
         equivalent, or :data:`False` if not. You should reimplement this
@@ -495,20 +495,30 @@ cdef class Graph(object):
         else:
             self.vertices = self.ordered_vertices
             
-    cpdef bint isIsomorphic(self, Graph other, dict initialMap=None, bint saveOrder=False) except -2:
+    cpdef bint isIsomorphic(self, Graph other, dict initialMap=None, bint saveOrder=False, bint strict=True) except -2:
         """
         Returns :data:`True` if two graphs are isomorphic and :data:`False`
         otherwise. Uses the VF2 algorithm of Vento and Foggia.
-        """
-        return vf2.isIsomorphic(self, other, initialMap, saveOrder=saveOrder)
 
-    cpdef list findIsomorphism(self, Graph other, dict initialMap=None, bint saveOrder=False):
+        Args:
+            initialMap (dict, optional): initial atom mapping to use
+            saveOrder (bool, optional):  if ``True``, reset atom order after performing atom isomorphism
+            strict (bool, optional):     if ``False``, perform isomorphism ignoring electrons
+        """
+        return vf2.isIsomorphic(self, other, initialMap, saveOrder=saveOrder, strict=strict)
+
+    cpdef list findIsomorphism(self, Graph other, dict initialMap=None, bint saveOrder=False, bint strict=True):
         """
         Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
         otherwise, and the matching mapping.
         Uses the VF2 algorithm of Vento and Foggia.
+
+        Args:
+            initialMap (dict, optional): initial atom mapping to use
+            saveOrder (bool, optional):  if ``True``, reset atom order after performing atom isomorphism
+            strict (bool, optional):     if ``False``, perform isomorphism ignoring electrons
         """
-        return vf2.findIsomorphism(self, other, initialMap, saveOrder=saveOrder)
+        return vf2.findIsomorphism(self, other, initialMap, saveOrder=saveOrder, strict=strict)
 
     cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=None, bint saveOrder=False) except -2:
         """

@@ -1003,6 +1003,30 @@ class TestMolecule(unittest.TestCase):
         mapping = molecule.findSubgraphIsomorphisms(groupRing)
         self.assertEqual(len(mapping), 5)
 
+    def test_lax_isomorphism(self):
+        """Test that we can do isomorphism comparison with strict=False"""
+        mol1 = Molecule().fromAdjacencyList("""
+multiplicity 2
+1 O u0 p2 c0 {3,D}
+2 C u1 p0 c0 {3,S} {4,S} {5,S}
+3 C u0 p0 c0 {1,D} {2,S} {6,S}
+4 H u0 p0 c0 {2,S}
+5 H u0 p0 c0 {2,S}
+6 H u0 p0 c0 {3,S}
+        """)
+
+        mol2 = Molecule().fromAdjacencyList("""
+multiplicity 2
+1 O u1 p2 c0 {3,S}
+2 C u0 p0 c0 {3,D} {4,S} {5,S}
+3 C u0 p0 c0 {1,S} {2,D} {6,S}
+4 H u0 p0 c0 {2,S}
+5 H u0 p0 c0 {2,S}
+6 H u0 p0 c0 {3,S}
+        """)
+
+        self.assertTrue(mol1.isIsomorphic(mol2, strict=False))
+
     def testAdjacencyList(self):
         """
         Check the adjacency list read/write functions for a full molecule.
