@@ -2609,21 +2609,14 @@ class KineticsFamily(Database):
         outExts = [[]]
         grps = [parent.item]
         names = [parent.label]
-        atmInds = [None]
         firstTime = True
         
         Nsplits = len(templateRxnMap[parent.label][0].reactants)
         
         while grps != []:
             grp = grps[-1]
-            
-            if atmInds[-1]:
-                if len(atmInds[-1]) == 1:
-                    exts = grp.getExtensions(basename=names[-1],atmInd=atmInds[-1][0],Nsplits=Nsplits)
-                elif len(atmInds[-1]) == 2:
-                    exts = grp.getExtensions(basename=names[-1],atmInd=atmInds[-1][0],atmInd2=atmInds[-1][1],Nsplits=Nsplits)
-            else:
-                exts = grp.getExtensions(basename=names[-1],Nsplits=Nsplits)
+
+            exts = grp.getExtensions(basename=names[-1],Nsplits=Nsplits)
             
             regDict = dict()
             extInds = []
@@ -2733,13 +2726,11 @@ class KineticsFamily(Database):
             outExts.append([])
             grps.pop()
             names.pop()
-            atmInds.pop()
             
             for ind in extInds: #collect the groups to be expanded
                 grpr,grpcr,namer,typr,indcr = exts[ind]
                 grps.append(grpr)
                 names.append(namer)
-                atmInds.append(indcr)
             
             if firstTime:
                 firstTime=False
