@@ -3253,7 +3253,7 @@ class KineticsFamily(Database):
                     
                         prods.append(Species(molecule=[p.molecule[0]]))
                         
-                    rrev = Reaction(reactants=prods,products=rxns[i].reactants,kinetics=rxns[i].generateReverseRateCoefficient())
+                    rrev = Reaction(reactants=prods,products=rxns[i].reactants,kinetics=rxns[i].generateReverseRateCoefficient(),rank=rxns[i].rank)
                     
                     rrev.is_forward = False
                     
@@ -3283,7 +3283,7 @@ class KineticsFamily(Database):
                     products = self.applyRecipe([s.molecule[0] for s in rxns[i].reactants],forward=True)
                     products = [Species(molecule=[p]) for p in products]
                 
-                rrev = Reaction(reactants=products,products=rxns[i].reactants,kinetics=rxns[i].generateReverseRateCoefficient())
+                rrev = Reaction(reactants=products,products=rxns[i].reactants,kinetics=rxns[i].generateReverseRateCoefficient(),rank=rxns[i].rank)
                 
                 rrev.is_forward = False
                 
