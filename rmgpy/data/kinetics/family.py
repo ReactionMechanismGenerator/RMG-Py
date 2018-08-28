@@ -2861,7 +2861,7 @@ class KineticsFamily(Database):
         have two children one of which has no kinetics data and no children
         (its parent becomes the parent of its only relevant child node)
         """
-        templateRxnMap = self.getReactionMatches(thermoDatabase=thermoDatabase,removeDegeneracy=True,fixLabels=True,exactMatchesOnly=True)
+        templateRxnMap = self.getReactionMatches(thermoDatabase=thermoDatabase,removeDegeneracy=True,fixLabels=True,exactMatchesOnly=True,getReverse=True)
         
         multCompletedNodes = [] #nodes containing multiple identical training reactions
         boo = True #if the for loop doesn't break becomes false and the while loop terminates
@@ -2924,7 +2924,7 @@ class KineticsFamily(Database):
         generates tree structure and then generates rules for the tree
         """
         self.generateTree(obj=obj,thermoDatabase=thermoDatabase,T=T)
-        templateRxnMap = self.getReactionMatches(thermoDatabase=thermoDatabase,removeDegeneracy=True)
+        templateRxnMap = self.getReactionMatches(thermoDatabase=thermoDatabase,removeDegeneracy=True,getReverse=True)
         self.makeBMRulesFromTemplateRxnMap(templateRxnMap)
         return
     
@@ -2937,7 +2937,7 @@ class KineticsFamily(Database):
         """
         
         if templateRxnMap is None:
-            templateRxnMap = self.getReactionMatches(removeDegeneracy=True)
+            templateRxnMap = self.getReactionMatches(removeDegeneracy=True,getReverse=True)
         
         rxns = np.array(templateRxnMap['Root'])
         
@@ -3159,14 +3159,14 @@ class KineticsFamily(Database):
         
         self.save(path)
     
-    def getTrainingSet(self, thermoDatabase=None, removeDegeneracy=False, estimateThermo=True, fixLabels=False):
+    def getTrainingSet(self, thermoDatabase=None, removeDegeneracy=False, estimateThermo=True, fixLabels=False, getReverse=False):
         """
         retrieves all reactions in the training set, assigns thermo to the species objects
         reverses reactions as necessary so that all reactions are in the forward direction
         and returns the resulting list of reactions in the forward direction with thermo 
         assigned
         """
-        if self.ownReverse:
+        if self.ownReverse and getReverse:
             revRxns = []
             rkeys = self.reverseMap.keys()
             reverseMap = self.reverseMap
@@ -3230,7 +3230,7 @@ class KineticsFamily(Database):
             
             if mol.isSubgraphIsomorphic(root,generateInitialMap=True):
                 rxns[i].is_forward = True
-                if self.ownReverse:
+                if self.ownReverse and getReverse:
                     mol = None
                     for react in rxns[i].products:
                         if mol:
@@ -3291,21 +3291,21 @@ class KineticsFamily(Database):
                     for r in rrev.reactants:
                         if r.thermo is None:
                             r.thermo = tdb.getThermoData(r)
-                    assert set([atm.label for atm in r.molecule[0].atoms for r in rrev.reactants if atm.label != '']) == set(rootLabels)
+
                 rxns[i] = rrev
         
-        if self.ownReverse:
+        if self.ownReverse and getReverse:
             return rxns+revRxns
         else:
             return rxns
     
-    def getReactionMatches(self,rxns=None,thermoDatabase=None,removeDegeneracy=False,estimateThermo=True,fixLabels=False,exactMatchesOnly=False):
+    def getReactionMatches(self,rxns=None,thermoDatabase=None,removeDegeneracy=False,estimateThermo=True,fixLabels=False,exactMatchesOnly=False,getReverse=False):
         """
         returns a dictionary mapping for each entry in the tree:  
         (entry.label,entry.item) : list of all training reactions (or the list given) that match that entry
         """
         if rxns is None:
-            rxns = self.getTrainingSet(thermoDatabase=thermoDatabase,removeDegeneracy=removeDegeneracy,estimateThermo=estimateThermo,fixLabels=fixLabels)
+            rxns = self.getTrainingSet(thermoDatabase=thermoDatabase,removeDegeneracy=removeDegeneracy,estimateThermo=estimateThermo,fixLabels=fixLabels,getReverse=getReverse)
         
         entries = self.groups.entries
         
