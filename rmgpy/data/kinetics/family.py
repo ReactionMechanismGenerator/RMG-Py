@@ -2751,33 +2751,39 @@ class KineticsFamily(Database):
         exts = self.getExtensionEdge(parent,templateRxnMap,obj=obj,T=T)
         
         if exts == []: #should only occur when all reactions at this node are identical
-            
             rs = templateRxnMap[parent.label]
             for q,rxn in enumerate(rs):
                 for j in xrange(q):
-                    if not rxn.isIsomorphic(rs[j],checkIdentical=True):
+                    if not isomorphic_species_lists(rxn.reactants,rs[j].reactants,generateInitialMap=True):
                         for p,atm in enumerate(parent.item.atoms):
                             if atm.reg_dim_atm[0] != atm.reg_dim_atm[1]:
                                 logging.error('atom violation')
                                 logging.error(atm.reg_dim_atm)
                                 logging.error(parent.label)
-                                raise ValueError('Regularization dimension suggest this node can be expanded, but extension generation has failed')
+                                logging.error('Regularization dimension suggest this node can be expanded, but extension generation has failed')
                             if atm.reg_dim_u[0] != atm.reg_dim_u[1]:
                                 logging.error('radical violation')
                                 logging.error(atm.reg_dim_u)
                                 logging.error(parent.label)
-                                raise ValueError('Regularization dimension suggest this node can be expanded, but extension generation has failed')
+                                logging.error('Regularization dimension suggest this node can be expanded, but extension generation has failed')
                         for p,bd in enumerate(parent.item.getAllEdges()):
                             if bd.reg_dim[0] != bd.reg_dim[1]:
                                 logging.error('bond violation')
                                 logging.error(bd.order)
                                 logging.error(bd.reg_dim)
                                 logging.error(parent.label)
-                                raise ValueError('Regularization dimension suggest this node can be expanded, but extension generation has failed')
+                                logging.error('Regularization dimension suggest this node can be expanded, but extension generation has failed')
                         
                         logging.error('split violation')
                         logging.error('parent')
                         logging.error(parent.item.toAdjacencyList())
+                        for c,atm in enumerate(parent.item.atoms):
+                            logging.error(c)
+                            logging.error(atm.reg_dim_atm)
+                            logging.error(atm.reg_dim_u)
+                        for rxn in rs:
+                            for react in rxn.reactants:
+                                logging.error(react.toAdjacencyList())
                         raise ValueError('this implies that extensions could not be generated that split at least two different reactions, which should not be possible') #If family.getExtensionEdge and Group.getExtensions operate properly this should always pass
             return False
         
