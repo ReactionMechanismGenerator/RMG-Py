@@ -1428,7 +1428,7 @@ class Group(Graph):
         else:
             atom_type_j_str = atom_type_j[0].label
                 
-        if len(newgrp.split()) >= Nsplits: #if this formed a bond between two seperate groups in the 
+        if len(newgrp.split()) < Nsplits: #if this formed a bond between two seperate groups in the 
             return []
         else:
             return [(newgrp,None,basename+'_Int-'+str(i+1)+atom_type_i_str+'-'+str(j+1)+atom_type_j_str,'intNewBondExt',(i,j))]
