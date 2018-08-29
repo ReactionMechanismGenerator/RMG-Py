@@ -1274,7 +1274,10 @@ class Molecule(Graph):
             for atom in self.atoms:
                 if atom.label and atom.label != '':
                     L = [a for a in other.atoms if a.label == atom.label]
-                    initialMap[atom] = L[0]
+                    if L == []:
+                        return False
+                    else:
+                        initialMap[atom] = L[0]
             if not self.isMappingValid(other,initialMap,equivalent=False):
                 return False
             
@@ -1347,7 +1350,10 @@ class Molecule(Graph):
             for atom in self.atoms:
                 if atom.label and atom.label != '':
                     L = [a for a in other.atoms if a.label == atom.label]
-                    initialMap[atom] = L[0]
+                    if L == []:
+                        return False
+                    else:
+                        initialMap[atom] = L[0]
             if not self.isMappingValid(other,initialMap,equivalent=False):
                 return False
             
