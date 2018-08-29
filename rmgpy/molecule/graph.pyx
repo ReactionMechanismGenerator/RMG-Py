@@ -1098,6 +1098,9 @@ cdef class Graph(object):
                     edge2 = other.getEdge(vertices2[i], vertices2[j])
                     if not getattr(edge1,method)(edge2):
                         return False
+                elif not equivalent and selfHasEdge and not otherHasEdge: 
+                    #in the subgraph case self can have edges other doesn't have
+                    continue
                 elif selfHasEdge or otherHasEdge:
                     # Only one of the graphs has the edge, so the mapping must be invalid
                     return False
