@@ -798,6 +798,8 @@ class Molecule(Graph):
         if multiplicity != -187:  # it was set explicitly, so re-set it (fromSMILES etc may have changed it)
             self.multiplicity = multiplicity
     
+    def __deepcopy__(self, memo):
+        return self.copy(deep=True)
     
     def __hash__(self):
         return hash((self.fingerprint))

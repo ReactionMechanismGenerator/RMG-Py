@@ -957,7 +957,10 @@ class Group(Graph):
         self.elementCount = {}
         self.radicalCount = -1
         self.update()
-
+    
+    def __deepcopy__(self, memo):
+        return self.copy(deep=True)
+    
     def __reduce__(self):
         """
         A helper function used when pickling an object.
