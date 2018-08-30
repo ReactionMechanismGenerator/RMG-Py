@@ -3055,12 +3055,13 @@ class KineticsFamily(Database):
         """
         grp = node.item
         
-
         R = ['H','C','N','O','Si','S'] #set of possible R elements/atoms
         R = [atomTypes[x] for x in R]
         
         RnH = R[:]
         RnH.remove(atomTypes['H'])
+        
+        Run = [0,1,2,3]
         
         atmDict = {'R':R,'R!H':RnH}
         
@@ -3069,16 +3070,25 @@ class KineticsFamily(Database):
                 atyp = grp.atoms[inds[0]].atomType
                 if len(atyp) == 1 and atyp[0].label in atmDict.keys():
                     atyp = atmDict[atyp[0].label]
-                grp.atoms[inds[0]].atomType = list(set(atyp) & set(regs))
+                vals = list(set(atyp) & set(regs))
+                assert vals != [], 'cannot regularize to empty'
+                grp.atoms[inds[0]].atomType = vals
                 for child in node.children:
                     self.extendRegularization(child,inds,regs,typ)
             elif typ == 'unpaired':
-                grp.atoms[inds[0]].radicalElectrons = list(set(grp.atoms[inds[0]].radicalElectrons) & set(regs))
+                relist = grp.atoms[inds[0]].radicalElectrons
+                if relist == []: 
+                    relist = Run
+                vals = list(set(relist) & set(regs))
+                assert vals != [], 'cannot regularize to empty'
+                grp.atoms[inds[0]].radicalElectrons = vals
                 for child in node.children:
                     self.extendRegularization(child,inds,regs,typ)
             elif typ == 'bond':
                 bd = grp.getBond(grp.atoms[inds[0]],grp.atoms[inds[1]])
-                bd.order = list(set(bd.order) & set(regs))
+                vals = list(set(bd.order) & set(regs))
+                assert vals != [], 'cannot regularize to empty'
+                bd.order = vals
                 for child in node.children:
                     self.extendRegularization(child,inds,regs,typ)
             elif typ == 'ring':
