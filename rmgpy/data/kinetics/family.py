@@ -2916,14 +2916,7 @@ class KineticsFamily(Database):
             
             index += 1
     
-    def makeTree(self,obj=None,thermoDatabase=None,T=1000.0):
-        """
-        generates tree structure and then generates rules for the tree
-        """
-        self.generateTree(obj=obj,thermoDatabase=thermoDatabase,T=T)
-        templateRxnMap = self.getReactionMatches(thermoDatabase=thermoDatabase,removeDegeneracy=True,getReverse=True)
-        self.makeBMRulesFromTemplateRxnMap(templateRxnMap)
-        return
+    
     
     def crossValidate(self,folds=5,templateRxnMap=None,T=1000.0,iters=0,random_state=1):
         """
@@ -3104,6 +3097,16 @@ class KineticsFamily(Database):
                 regularization(self,child)
         else:
             regularization(self,self.getRootTemplate()[0])
+    
+    def makeTree(self,obj=None,regularization=simpleRegularization,thermoDatabase=None,T=1000.0):
+        """
+        generates tree structure and then generates rules for the tree
+        """
+        self.generateTree(obj=obj,thermoDatabase=thermoDatabase,T=T)
+        self.regularize(regularization=regularization)
+        templateRxnMap = self.getReactionMatches(thermoDatabase=thermoDatabase,removeDegeneracy=True,getReverse=True)
+        self.makeBMRulesFromTemplateRxnMap(templateRxnMap)
+        return
     
     def cleanTreeRules(self):
         self.rules.entries = OrderedDict()
