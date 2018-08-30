@@ -792,7 +792,8 @@ class TestGroup(unittest.TestCase):
  '1 *2 C   u0     r0 {2,D}\n2 *1 C   u[0,1] {1,D} {3,S}\n3    R!H u0     r1 {2,S}\n',
  '1 *2 C u0     r0 {2,[S,D]}\n2 *1 C u[0,1] {1,[S,D]} {3,S}\n3    C u0     r1 {2,S}\n',
  '1 *2 C u0     r0 {2,[S,D]}\n2 *1 C u[0,1] {1,[S,D]} {3,S}\n3    O u0     r1 {2,S}\n',
- '1 *2 C   u0     r0 {2,[S,D]}\n2 *1 C   u[0,1] {1,[S,D]} {3,S}\n3    R!H u0     r1 {2,S} {4,[S,D,T,B]}\n4    R!H ux     {3,[S,D,T,B]}\n']
+ '1 *2 C   u0     r0 {2,[S,D]}\n2 *1 C   u[0,1] {1,[S,D]} {3,S}\n3    R!H u0     r1 {2,S} {4,[S,D,T,B]}\n4    R!H ux     {3,[S,D,T,B]}\n',
+ '1 *2 C   u0     r0 {2,[S,D]} {3,[S,D,T,B]}\n2 *1 C   u[0,1] {1,[S,D]} {3,S}\n3    R!H u0     r1 {1,[S,D,T,B]} {2,S}\n']
         ans = [Group().fromAdjacencyList(k) for k in ans]
         
         

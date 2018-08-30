@@ -713,19 +713,22 @@ class TestTreeGeneration(unittest.TestCase):
         
         self.assertTrue(self.family.groups.entries['Root'].parent is None)
                 
-    def test_DRules(self):
+    def test_FRules(self):
         """
-        test that there are four rules and each is under a different group
+        test that there are six rules and each is under a different group
         """
+        templateRxnMap = self.family.getReactionMatches(thermoDatabase=self.thermoDatabase,removeDegeneracy=True)
+        self.family.makeBMRulesFromTemplateRxnMap(templateRxnMap)
+        
         c = 0
         for rs in self.family.rules.entries.itervalues():
             self.assertLess(len(rs),2,'more than one training reaction at a node')
             if len(rs) == 1:
                 c += 1
         
-        self.assertEquals(c,4,'incorrect number of kinetics information, expected 4 found {0}'.format(c))
+        self.assertEquals(c,6,'incorrect number of kinetics information, expected 6 found {0}'.format(c))
     
-    def test_ERegularizationDims(self):
+    def test_DRegularizationDims(self):
         """
         test that appropriate regularization dimensions have been identified
         """
@@ -777,10 +780,12 @@ class TestTreeGeneration(unittest.TestCase):
                         
             self.assertTrue(len(vioObj) <= 1,'there were {0} regularization violations at, {1}'.format(len(vioObj),vioObj))
     
-    def test_FRegularizationStructure(self):
+    def test_ERegularizationStructure(self):
         """
         test that the tree is structured properly after regularization
         """
+        self.family.cleanTree(self.thermoDatabase)
+        self.family.generateTree(thermoDatabase=self.thermoDatabase)
         self.family.regularize()
         for entry in self.family.groups.entries.itervalues():
             if isinstance(entry.item,Group):
