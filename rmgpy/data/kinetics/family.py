@@ -3114,6 +3114,20 @@ class KineticsFamily(Database):
         else:
             regularization(self,self.getRootTemplate()[0])
     
+    def checkTree(self, entry=None):
+        if entry is None:
+            entry = self.getRootTemplate()[0]
+        for child in entry.children:
+            if not child.item.isSubgraphIsomorphic(entry.item,generateInitialMap=True,saveOrder=True):
+                logging.error('child: ')
+                logging.error(child.label)
+                logging.error(child.item.toAdjacencyList())
+                logging.error('parent: ')
+                logging.error(entry.label)
+                logging.error(entry.item.toAdjacencyList())
+                raise ValueError('Child not subgraph isomorphic to parent')
+            self.checkTree(child)
+            
     def makeTree(self,obj=None,regularization=simpleRegularization,thermoDatabase=None,T=1000.0):
         """
         generates tree structure and then generates rules for the tree
@@ -3122,6 +3136,7 @@ class KineticsFamily(Database):
         self.regularize(regularization=regularization)
         templateRxnMap = self.getReactionMatches(thermoDatabase=thermoDatabase,removeDegeneracy=True,getReverse=True)
         self.makeBMRulesFromTemplateRxnMap(templateRxnMap)
+        self.checkTree()
         return
     
     def cleanTreeRules(self):

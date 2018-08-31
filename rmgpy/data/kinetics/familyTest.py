@@ -787,12 +787,8 @@ class TestTreeGeneration(unittest.TestCase):
         self.family.cleanTree(self.thermoDatabase)
         self.family.generateTree(thermoDatabase=self.thermoDatabase)
         self.family.regularize()
-        for entry in self.family.groups.entries.itervalues():
-            if isinstance(entry.item,Group):
-                for child in entry.children:
-                    if isinstance(child.item,Group):
-                        self.assertTrue(child.item.isSubgraphIsomorphic(entry.item,generateInitialMap=True,saveOrder=True),(child.label,entry.label))
-    
+        self.family.checkTree()
+        
 class TestGenerateReactions(unittest.TestCase):
 
     @classmethod
