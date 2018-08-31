@@ -3290,8 +3290,7 @@ class KineticsFamily(Database):
                 if estimateThermo:
                     for r in rrev.reactants:
                         if r.thermo is None:
-                            r.thermo = tdb.getThermoData(r)
-
+                            r.thermo = tdb.getThermoData(deepcopy(r))
                 rxns[i] = rrev
         
         if self.ownReverse and getReverse:
