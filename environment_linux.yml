@@ -45,3 +45,4 @@ dependencies:
   - dde
   - pyyaml
   - textgenrnn
+  - scikit-learn
