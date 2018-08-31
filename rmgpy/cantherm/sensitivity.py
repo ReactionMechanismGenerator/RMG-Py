@@ -67,6 +67,7 @@ class KineticsSensitivity(object):
     def __init__(self, job, output_directory):
         self.job = job
         self.output_directory = output_directory
+        self.sensitivity_path = os.path.join(output_directory, 'sensitivity')
         self.conditions = self.job.sensitivity_conditions
         self.f_rates = [self.job.reaction.kinetics.getRateCoefficient(condition.value_si)
                         for condition in self.conditions]
@@ -110,14 +111,14 @@ class KineticsSensitivity(object):
         species.conformer.E0.value_si -= self.perturbation.value_si  # restore E0 to its original value
 
     def save(self):
-        if not os.path.exists('sensitivity'):
-            os.mkdir('sensitivity')
+        if not os.path.exists(self.sensitivity_path):
+            os.mkdir(self.sensitivity_path)
         valid_chars = "-_.()<=> %s%s" % (string.ascii_letters, string.digits)
         reaction_str = '{0} {1} {2}'.format(
             ' + '.join([reactant.label for reactant in self.job.reaction.reactants]),
             '<=>', ' + '.join([product.label for product in self.job.reaction.products]))
-        filename = os.path.join('sensitivity', ''.join(c for c in reaction_str if c in valid_chars) + '.txt')
-        path = os.path.join(self.output_directory, filename)
+        filename = ''.join(c for c in reaction_str if c in valid_chars) + '.txt'
+        path = os.path.join(self.sensitivity_path, filename)
         with open(path, 'w') as sa_f:
             sa_f.write("Sensitivity analysis for reaction {0}\n\n"
                        "The semi-normalized sensitivity coefficients are calculated as dln(r)/dE0\n"
@@ -199,14 +200,14 @@ class KineticsSensitivity(object):
             ax[i][1].set_xlim([min_sa, max_sa])
             plt.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
 
-        if not os.path.exists('sensitivity'):
-            os.mkdir('sensitivity')
+        if not os.path.exists(self.sensitivity_path):
+            os.mkdir(self.sensitivity_path)
         valid_chars = "-_.()<=> %s%s" % (string.ascii_letters, string.digits)
         reaction_str = '{0} {1} {2}'.format(
             ' + '.join([reactant.label for reactant in self.job.reaction.reactants]),
             '<=>', ' + '.join([product.label for product in self.job.reaction.products]))
-        filename = os.path.join('sensitivity', ''.join(c for c in reaction_str if c in valid_chars) + '.pdf')
-        path = os.path.join(self.output_directory, filename)
+        filename = ''.join(c for c in reaction_str if c in valid_chars) + '.pdf'
+        path = os.path.join(self.sensitivity_path, filename)
         plt.savefig(path)
         plt.close()
 
@@ -235,6 +236,7 @@ class PDepSensitivity(object):
     def __init__(self, job, output_directory, perturbation):
         self.job = job
         self.output_directory = output_directory
+        self.sensitivity_path = os.path.join(output_directory, 'sensitivity')
         self.conditions = self.job.sensitivity_conditions
         self.rates = {}
         for rxn in self.job.network.netReactions:
@@ -371,11 +373,11 @@ class PDepSensitivity(object):
                 axis.set_xlim([min_sa, max_sa])
                 axis.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
 
-            if not os.path.exists('sensitivity'):
-                os.mkdir('sensitivity')
+            if not os.path.exists(self.sensitivity_path):
+                os.mkdir(self.sensitivity_path)
             valid_chars = "-_.()<=>+ %s%s" % (string.ascii_letters, string.digits)
             reaction_str = str(rxn)
-            filename = os.path.join('sensitivity', ''.join(c for c in reaction_str if c in valid_chars) + '.pdf')
-            path = os.path.join(self.output_directory, filename)
+            filename = ''.join(c for c in reaction_str if c in valid_chars) + '.pdf'
+            path = os.path.join(self.sensitivity_path, filename)
             plt.savefig(path)
             plt.close()
