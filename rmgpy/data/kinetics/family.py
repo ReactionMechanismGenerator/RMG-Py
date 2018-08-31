@@ -3030,29 +3030,10 @@ class KineticsFamily(Database):
         unless it is the top node even if the tree did not split on the identity 
         of that atom
         """
-        grp = node.item
-        
-        if isinstance(node.item,Group):
-            for i,atm1 in enumerate(grp.atoms):
-                if atm1.reg_dim_atm[1] != [] and set(atm1.reg_dim_atm[1]) != set(atm1.atomType):
-                    self.extendRegularization(node,[i],atm1.reg_dim_atm[1],'atomtype')
-                if atm1.reg_dim_u[1] != [] and set(atm1.reg_dim_u[1]) != set(atm1.radicalElectrons):
-                    self.extendRegularization(node,[i],atm1.reg_dim_u[1],'unpaired')
-                if atm1.reg_dim_r[1] != [] and (not 'inRing' in atm1.props.keys() or atm1.reg_dim_r[1][0] != atm1.props['inRing']):
-                    self.extendRegularization(node,[i],atm1.reg_dim_r[1],'ring')
-                for j,atm2 in enumerate(grp.atoms[:i]):
-                    if grp.hasBond(atm1,atm2):
-                        bd = grp.getBond(atm1,atm2)
-                        if bd.reg_dim[1] != [] and set(bd.reg_dim[1]) != set(bd.order):
-                            self.extendRegularization(node,[i,j],bd.reg_dim[1],'bond')    
         
         for child in node.children:
             self.simpleRegularization(child)
             
-    def extendRegularization(self, node, inds, regs, typ):
-        """
-        Applies a regularization down the tree from a given parent node
-        """
         grp = node.item
         
         R = ['H','C','N','O','Si','S'] #set of possible R elements/atoms
@@ -3065,38 +3046,63 @@ class KineticsFamily(Database):
         
         atmDict = {'R':R,'R!H':RnH}
         
-        if isinstance(grp,Group):
-            if typ == 'atomtype':
-                atyp = grp.atoms[inds[0]].atomType
-                if len(atyp) == 1 and atyp[0].label in atmDict.keys():
-                    atyp = atmDict[atyp[0].label]
-                vals = list(set(atyp) & set(regs))
-                assert vals != [], 'cannot regularize to empty'
-                grp.atoms[inds[0]].atomType = vals
-                for child in node.children:
-                    self.extendRegularization(child,inds,regs,typ)
-            elif typ == 'unpaired':
-                relist = grp.atoms[inds[0]].radicalElectrons
-                if relist == []: 
-                    relist = Run
-                vals = list(set(relist) & set(regs))
-                assert vals != [], 'cannot regularize to empty'
-                grp.atoms[inds[0]].radicalElectrons = vals
-                for child in node.children:
-                    self.extendRegularization(child,inds,regs,typ)
-            elif typ == 'bond':
-                bd = grp.getBond(grp.atoms[inds[0]],grp.atoms[inds[1]])
-                vals = list(set(bd.order) & set(regs))
-                assert vals != [], 'cannot regularize to empty'
-                bd.order = vals
-                for child in node.children:
-                    self.extendRegularization(child,inds,regs,typ)
-            elif typ == 'ring':
-                grp.atoms[inds[0]].props['inRing'] = regs[0]
-                for child in node.children:
-                    self.extendRegularization(child,inds,regs,typ)
-            else:
-                raise ValueError('regularization type of {0} is unimplemented'.format(typ))
+        if isinstance(node.item,Group):
+            indistinguishable = []
+            for i,atm1 in enumerate(grp.atoms):
+                
+                skip = False
+                if node.children == []: #if the atoms or bonds are graphically indistinguishable don't regularize
+                    bdpairs = {(atm,tuple(bd.order)) for atm,bd in atm1.bonds.iteritems()}
+                    for atm2 in grp.atoms:
+                        if atm1 is not atm2 and atm1.atomType == atm2.atomType and len(atm1.bonds) == len(atm2.bonds):
+                            bdpairs2 = {(atm,tuple(bd.order)) for atm,bd in atm2.bonds.iteritems()}
+                            if bdpairs == bdpairs2:
+                                skip = True
+                                indistinguishable.append(i)
+                                
+                if not skip and atm1.reg_dim_atm[1] != [] and set(atm1.reg_dim_atm[1]) != set(atm1.atomType):
+                    atyp = atm1.atomType
+                    if len(atyp) == 1 and atyp[0] in R:
+                        pass
+                    else:
+                        if len(atyp) == 1 and atyp[0].label in atmDict.keys():
+                            atyp = atmDict[atyp[0].label]
+                        
+                        vals = list(set(atyp) & set(atm1.reg_dim_atm[1]))
+                        assert vals != [], 'cannot regularize to empty'
+                        if all([set(child.item.atoms[i].atomType) <= set(vals) for child in node.children]):
+                            atm1.atomType = vals
+                        
+                if not skip and atm1.reg_dim_u[1] != [] and set(atm1.reg_dim_u[1]) != set(atm1.radicalElectrons):
+                    if len(atm1.radicalElectrons) == 1:
+                        pass
+                    else:
+                        relist = atm1.radicalElectrons
+                        if relist == []: 
+                            relist = Run
+                        vals = list(set(relist) & set(atm1.reg_dim_u[1]))
+                        assert vals != [], 'cannot regularize to empty'
+                        
+                        if all([set(child.item.atoms[i].radicalElectrons) <= set(vals) if child.item.atoms[i].radicalElectrons != [] else False for child in node.children]):
+                            atm1.radicalElectrons = vals
+                        
+                if not skip and atm1.reg_dim_r[1] != [] and (not 'inRing' in atm1.props.keys() or atm1.reg_dim_r[1][0] != atm1.props['inRing']):
+                    if not 'inRing' in atm1.props.keys():
+                        if all(['inRing' in child.item.atoms[i].props.keys() for child in node.children]) and all([child.item.atoms[i].props['inRing'] == atm1.reg_dim_r[1] for child in node.children]):
+                            atm1.props['inRing'] = atm1.reg_dim_r[1][0]
+                    
+                if not skip:  
+                    for j,atm2 in enumerate(grp.atoms[:i]):
+                        if j in indistinguishable: #skip graphically indistinguishable atoms
+                            continue
+                        if grp.hasBond(atm1,atm2):
+                            bd = grp.getBond(atm1,atm2)
+                            if len(bd.order) == 1:
+                                pass
+                            else:
+                                vals = list(set(bd.order) & set(bd.reg_dim[1]))
+                                if vals != [] and all([set(child.item.getBond(child.item.atoms[i],child.item.atoms[j]).order) <= set(vals) for child in node.children]):
+                                    bd.order = vals
     
     def regularize(self, regularization=simpleRegularization,keepRoot=True):
         """
