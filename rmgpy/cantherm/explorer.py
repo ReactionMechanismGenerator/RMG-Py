@@ -174,6 +174,7 @@ class ExplorerJob(object):
             
         #generate the network
         
+        forbiddenStructures = getDB('forbidden')
         incomplete = True
         
         while incomplete:
@@ -181,17 +182,32 @@ class ExplorerJob(object):
             for T in Tlist:
                 for P in Plist:
                     if network.getLeakCoefficient(T=T,P=P) > self.explore_tol:
-                        spc = network.getMaximumLeakSpecies(T=T,P=P)
-                        logging.info('adding new isomer {0} to network'.format(spc))
-                        flags = np.array([s.molecule[0].getFormula()==form for s in reaction_model.core.species])
-                        reaction_model.enlarge((network,spc),reactEdge=False,unimolecularReact=flags,
-                                          bimolecularReact=np.zeros((len(reaction_model.core.species),len(reaction_model.core.species))))
-                    
-                        flags = np.array([s.molecule[0].getFormula()==form for s in reaction_model.core.species])
-                        reaction_model.enlarge(reactEdge=True,unimolecularReact=flags,
-                                          bimolecularReact=np.zeros((len(reaction_model.core.species),len(reaction_model.core.species))))
                         incomplete = True
+                        spc = network.getMaximumLeakSpecies(T=T,P=P)
+                        if forbiddenStructures.isMoleculeForbidden(spc.molecule[0]):
+                            reaction_model.removeSpeciesFromEdge(reaction_model.reactionSystems,spc)
+                            reaction_model.removeEmptyPdepNetworks()
+                            logging.error(spc.label)
+                        else:
+                            logging.info('adding new isomer {0} to network'.format(spc))
+                            flags = np.array([s.molecule[0].getFormula()==form for s in reaction_model.core.species])
+                            reaction_model.enlarge((network,spc),reactEdge=False,unimolecularReact=flags,
+                                              bimolecularReact=np.zeros((len(reaction_model.core.species),len(reaction_model.core.species))))
+                        
+                            flags = np.array([s.molecule[0].getFormula()==form for s in reaction_model.core.species])
+                            reaction_model.enlarge(reactEdge=True,unimolecularReact=flags,
+                                              bimolecularReact=np.zeros((len(reaction_model.core.species),len(reaction_model.core.species))))
         
+        rmRxns = []               
+        for rxn in network.pathReactions: #remove reactions with forbidden species
+            for r in rxn.reactants+rxn.products:
+                if forbiddenStructures.isMoleculeForbidden(r.molecule[0]):
+                    rmRxns.append(rxn)
+        
+        for rxn in rmRxns:
+            logging.info('Removing forbidden reaction: {0}'.format(rxn))
+            network.pathReactions.remove(rxn)
+            
         #clean up output files
         if outputFile is not None:
             path = os.path.join(reaction_model.pressureDependence.outputFile,'pdep')
