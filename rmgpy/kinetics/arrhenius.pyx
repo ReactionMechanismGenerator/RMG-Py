@@ -36,6 +36,7 @@ cimport rmgpy.constants as constants
 import rmgpy.quantity as quantity
 from rmgpy.exceptions import KineticsError
 from rmgpy.kinetics.uncertainies import rank_accuracy_map
+from rmgpy.molecule.molecule import Bond
 ################################################################################
 
 cdef class Arrhenius(KineticsModel):
@@ -565,7 +566,7 @@ cdef class ArrheniusBM(KineticsModel):
             Ts = [300.0,500.0,600.0,700.0,800.0,900.0,1000.0,1100.0,1200.0,1500.0]
         if w0 is None:
             #estimate w0
-            w0s = family.getw0s(rxns)
+            w0s = getw0s(recipe,rxns)
             w0 = sum(w0s)/len(w0s)
 
         #define optimization function
@@ -1028,3 +1029,59 @@ cdef class MultiPDepArrhenius(PDepKineticsModel):
 
         for i, arr in enumerate(self.arrhenius):
             arr.setCanteraKinetics(ctReaction[i], speciesList)
+
+def getw0(actions,rxn):
+    """
+    calculates the w0 for Blower Masel kinetics by calculating wf (total bond energy of bonds formed)
+    and wb (total bond energy of bonds broken) with w0 = (wf+wb)/2
+    """
+    mol = None
+    aDict = {}
+    for r in rxn.reactants:
+        m = r.molecule[0]
+        aDict.update(m.getLabeledAtoms())
+        if mol:
+            mol = mol.merge(m)
+        else:
+            mol = m.copy(deep=True)
+
+    recipe = actions
+
+    wb = 0.0
+    wf = 0.0
+    for act in recipe:
+
+        if act[0] == 'BREAK_BOND':
+            bd = mol.getBond(aDict[act[1]],aDict[act[3]])
+            wb += bd.getBDE()
+        elif act[0] == 'FORM_BOND':
+            bd = Bond(aDict[act[1]],aDict[act[3]],act[2])
+            wf += bd.getBDE()
+        elif act[0] == 'CHANGE_BOND':
+            bd1 = mol.getBond(aDict[act[1]],aDict[act[3]])
+
+            if act[2]+bd1.order == 0.5:
+                mol2 = None
+                for r in rxn.products:
+                    m = r.molecule[0]
+                    if mol2:
+                        mol2 = mol2.merge(m)
+                    else:
+                        mol2 = m.copy(deep=True)
+                bd2 = mol2.getBond(aDict[act[1]],aDict[act[3]])
+            else:
+                bd2 = Bond(aDict[act[1]],aDict[act[3]],bd1.order+act[2])
+
+            if bd2.order == 0:
+                bd2bde = 0.0
+            else:
+                bd2bde = bd2.getBDE()
+            bdediff = bd2bde-bd1.getBDE()
+            if bdediff > 0:
+                wf += abs(bdediff)
+            else:
+                wb += abs(bdediff)
+    return (wf+wb)/2.0
+
+def getw0s(actions, rxns):
+    return [getw0(actions,rxn) for rxn in rxns]
