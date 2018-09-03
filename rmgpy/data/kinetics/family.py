@@ -40,6 +40,7 @@ import codecs
 from copy import deepcopy
 from collections import OrderedDict
 from sklearn.model_selection import KFold
+import multiprocessing as mp
 
 from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStructures,\
@@ -2884,40 +2885,38 @@ class KineticsFamily(Database):
         return
 
 
-    def makeBMRulesFromTemplateRxnMap(self, templateRxnMap):
+    def makeBMRulesFromTemplateRxnMap(self,templateRxnMap,nprocs=1):
 
         index = max([e.index for e in self.rules.getEntries()] or [0]) + 1
 
-        for entry in self.groups.entries.values():
-            if entry.index == -1 or self.rules.entries[entry.label] != []:
-                continue
-            rxns = templateRxnMap[entry.label]
-            descendants = getAllDescendants(entry)
-            for entry2 in descendants:
-                rxns.extend(templateRxnMap[entry2.label])
+        entries = self.groups.entries.values()
+        rxnlists = [templateRxnMap[entry.label] if entry.label in templateRxnMap.keys() else [] for entry in entries]
+        inputs = [(self.forwardRecipe.actions,rxns) for rxns in rxnlists]
 
-            assert rxns != [], entry.label
-            kinetics = ArrheniusBM().fitToReactions(rxns,family=self)
+        pool = mp.Pool(nprocs)
 
-            new_entry = Entry(
-                index = index,
-                label = entry.label,
-                item = self.forwardTemplate,
-                data = kinetics,
-                rank = 11,
-                reference=None,
-                shortDesc="BM rule fitted to {0} training reactions at node {1}".format(len(rxns),entry.label),
-                longDesc="BM rule fitted to {0} training reactions at node {1}".format(len(rxns),entry.label),
-            )
-            new_entry.data.comment = "BM rule fitted to {0} training reactions at node {1}".format(len(rxns),entry.label)
+        kineticsList = pool.map(makeRule,inputs)
 
-            self.rules.entries[entry.label].append(new_entry)
+        for i,kinetics in enumerate(kineticsList):
+            if kinetics is not None:
+                entry = entries[i]
+                new_entry = Entry(
+                    index = index,
+                    label = entry.label,
+                    item = self.forwardTemplate,
+                    data = kinetics,
+                    rank = 11,
+                    reference=None,
+                    shortDesc="BM rule fitted to {0} training reactions at node {1}".format(len(rxnlists[i]),entry.label),
+                    longDesc="BM rule fitted to {0} training reactions at node {1}".format(len(rxnlists[i]),entry.label),
+                )
+                new_entry.data.comment = "BM rule fitted to {0} training reactions at node {1}".format(len(rxnlists[i]),entry.label)
 
-            index += 1
+                self.rules.entries[entry.label].append(new_entry)
 
+                index += 1
 
-
-    def crossValidate(self, folds=5, templateRxnMap=None, T=1000.0, iters=0, random_state=1):
+    def crossValidate(self,folds=5,templateRxnMap=None,T=1000.0,iters=0,random_state=1):
         """
         Perform K-fold cross validation on an automatically generated tree at temperature T
         after finding an appropriate node for kinetics estimation it will move up the tree
@@ -2965,7 +2964,7 @@ class KineticsFamily(Database):
                 L = list(set(templateRxnMap[entry.label])-set(rxns_test))
 
                 if L != []:
-                    kinetics = ArrheniusBM().fitToReactions(L,family=self)
+                    kinetics = ArrheniusBM().fitToReactions(L,recipe=self.forwardRecipe.actions)
                     kinetics = kinetics.toArrhenius(rxn.getEnthalpyOfReaction(T))
                     k = kinetics.getRateCoefficient(T)
                     errors[rxn] = np.log(k/krxn)
@@ -3655,3 +3654,13 @@ def getObjectiveFunction(kinetics1,kinetics2,obj=informationGain,T=1000.0):
     N1 = len(ks1)
 
     return obj(ks1,ks2), N1 == 0
+
+def makeRule(rr):
+    """
+    function for parallelization of rule calculation
+    """
+    recipe,rxns = rr
+    if rxns != []:
+        return ArrheniusBM().fitToReactions(rxns,recipe=recipe)
+    else:
+        return None
