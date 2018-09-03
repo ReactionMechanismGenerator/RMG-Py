@@ -46,6 +46,7 @@ rank_accuracy_map ={1:(0.0,'kcal/mol'),
                   10:(14.0,'kcal/mol'),
                   None:(14.0,'kcal/mol'),
                   0:(14.0,'kcal/mol'),
+                  '':(14.0,'kcal/mol'),
                   11:(14.0,'kcal/mol'),
                   }
 rank_accuracy_map = {key:Quantity(value) for key,value in rank_accuracy_map.iteritems()}
