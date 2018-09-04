@@ -108,11 +108,15 @@ def get_octet_deviation(mol, allow_expanded_octet=True):
         val_electrons = 2 * (int(atom.getBondOrdersForAtom()) + atom.lonePairs) + atom.radicalElectrons
         if atom.isCarbon() or atom.isNitrogen() or atom.isOxygen():
             octet_deviation += abs(8 - val_electrons)  # expecting C/N/O to be near octet
-            if atom.isOxygen() and atom.atomType.label in ['O4sc', 'O4dc', 'O4tc']:
-                octet_deviation += 1  # penalty for O p1 c+1
-                # as in [N-2][N+]#[O+], [O-]S#[O+], OS(S)([O-])#[O+], [OH+]=S(O)(=O)[O-], [OH.+][S-]=O.
-                # [C-]#[O+] and [O-][O+]=O, which are correct structures, also get penalized here, but that's OK
-                # since they are still eventually selected as representative structures according to the rules here.
+            if atom.isOxygen() and atom.charge > 0:
+                for atom2 in atom.edges.keys():
+                    if atom2.isFluorine() and atom2.charge < 0:
+                        break
+                else:
+                    octet_deviation += 1  # penalty for positively charged O not adjacent to F-,
+                    # as in [N-2][N+]#[O+], [O-]S#[O+], OS(S)([O-])#[O+], [OH+]=S(O)(=O)[O-], [OH.+][S-]=O.
+                    # [C-]#[O+] and [O-][O+]=O, which are correct structures, also get penalized here, but that's OK
+                    # since they are still eventually selected as representative structures according to the rules here.
         elif atom.isSulfur():
             if not allow_expanded_octet:
                 # If allow_expanded_octet is False, then adhere to the octet rule for sulfur as well.
