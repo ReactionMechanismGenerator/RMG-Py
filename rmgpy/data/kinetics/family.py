@@ -2742,7 +2742,7 @@ class KineticsFamily(Database):
         return out
 
 
-    def extendNode(self, parent, templateRxnMap, thermoDatabase=None, obj=None, T=1000.0,):
+    def extendNode(self,parent,templateRxnMap,obj=None,T=1000.0,):
         """
         Constructs an extension to the group parent based on evaluation
         of the objective function obj
@@ -2845,7 +2845,7 @@ class KineticsFamily(Database):
 
         return True
 
-    def generateTree(self, obj=None, thermoDatabase=None, T=1000.0):
+    def generateTree(self,obj=None,thermoDatabase=None,T=1000.0,nprocs=1):
         """
         Generate a tree by greedy optimization based on the objective function obj
         the optimization is done by iterating through every group and if the group has
@@ -2860,20 +2860,78 @@ class KineticsFamily(Database):
         """
         templateRxnMap = self.getReactionMatches(thermoDatabase=thermoDatabase,removeDegeneracy=True,fixLabels=True,exactMatchesOnly=True,getReverse=True)
 
+        self.makeTreeNodes(templateRxnMap=templateRxnMap,obj=obj,T=T,nprocs=nprocs-1,depth=0)
+
+
+    def makeTreeNodes(self,templateRxnMap=None,obj=None,T=1000.0,nprocs=0,depth=0):
+
+        if depth > 0:
+            root = self.groups.entries[templateRxnMap.keys()[0]]
+        else:
+            root = self.groups.entries.values()[0]
+            while root.parent is not None:
+                root = root.parent
+
         multCompletedNodes = [] #nodes containing multiple identical training reactions
         boo = True #if the for loop doesn't break becomes false and the while loop terminates
+        activeProcs = []
+        activeConns = []
+        activeProcNum = []
+        procNames = []
+        freeProcs = nprocs
+        extraEntries = []
+
         while boo:
-            for entry in self.groups.entries.itervalues():
+            removeInds = []
+            for k,p in enumerate(activeProcs): #check if any processes have finished
+                if activeConns[k].poll():
+                    newEntries = self.absorbProcess(p,activeConns[k],procNames[k])
+                    extraEntries += newEntries
+                    removeInds.append(k)
+
+            removeInds.reverse()
+            for ind in removeInds: #remove finished process objects
+                freeProcs += activeProcNum[ind]
+                del activeProcNum[ind]
+                del activeProcs[ind]
+                del activeConns[ind]
+                del procNames[ind]
+
+            splitableEntryNum = 0
+            for label,items in templateRxnMap.iteritems(): #figure out how many splitable objects there are
+                entry = self.groups.entries[label]
+                if len(items) > 1 and entry not in multCompletedNodes:
+                    splitableEntryNum += 1
+
+            for label in templateRxnMap.keys():
+                entry = self.groups.entries[label]
                 if not isinstance(entry.item, Group): #skip logic nodes
                     continue
                 if entry.index != -1 and len(templateRxnMap[entry.label])>1 and entry not in multCompletedNodes:
-                    boo2 = self.extendNode(entry,templateRxnMap,thermoDatabase,obj,T)
+                    if freeProcs > 0 and splitableEntryNum > 2 and len(templateRxnMap[entry.label])>40:
+                        procsOut = int(freeProcs/2)+1
+                        freeProcs -= procsOut
+                        assert freeProcs >= 0
+                        conn,p,name = spawnTreeProcess(family=self,templateRxnMap={entry.label:templateRxnMap[entry.label]},obj=obj,T=T,nprocs=procsOut-1,depth=depth)
+                        activeProcs.append(p)
+                        activeConns.append(conn)
+                        procNames.append(name)
+                        activeProcNum.append(procsOut)
+                        L = entry.label
+                        self.groups.entries[L].parent.children.remove(entry)
+                        del templateRxnMap[L] #prevents this process from recreating work done by another process
+                        del self.groups.entries[L]
+
+                        splitableEntryNum -= 1
+                        continue
+                    boo2 = self.extendNode(entry,templateRxnMap,obj,T)
                     if boo2: #extended node so restart while loop
                         break
                     else: #no extensions could be generated since all reactions were identical
                         multCompletedNodes.append(entry)
             else:
-                boo = False
+                if len(activeProcs)==0:
+                    boo = False
 
             #fix indicies
             iters = 0
@@ -2882,10 +2940,41 @@ class KineticsFamily(Database):
                     entry.index = iters
                     iters += 1
 
+        #add the entries generated on other processors
+        index = max([ent.index for ent in self.groups.entries.values()])+1
+        for item in extraEntries:
+            if item.label in self.groups.entries.keys():
+                continue
+            item.index = index
+            index += 1
+            self.groups.entries[item.label] = item
+
+        for label,entry in self.groups.entries.iteritems():
+            if entry.parent is None and entry.label != root.label:
+                pname = "_".join(label.split('_')[:-1])
+                while pname not in self.groups.entries.keys():
+                    assert len(pname) >= len(root.label), (pname,root.label,entry.label)
+                    pname = "_".join(label.split('_')[:-1])
+                entry.parent = self.groups.entries[pname]
+                entry.parent.children.append(entry)
+
         return
 
+    def absorbProcess(self,p,conn,name):
+        try:
+            grps = conn.recv()
+            p.terminate()
+        except Exception as e:
+            logging.error('failed to absorb process {}'.format(name))
+            raise e
+        return grps
 
     def makeBMRulesFromTemplateRxnMap(self,templateRxnMap,nprocs=1):
+
+        ruleKeys = self.rules.entries.keys()
+        for entry in self.groups.entries.values():
+            if entry.label not in ruleKeys:
+                self.rules.entries[entry.label] = []
 
         index = max([e.index for e in self.rules.getEntries()] or [0]) + 1
 
@@ -3125,8 +3214,13 @@ class KineticsFamily(Database):
                 logging.error(entry.item.toAdjacencyList())
                 raise ValueError('Child not subgraph isomorphic to parent')
             self.checkTree(child)
+        for entry in self.groups.entries.values():
+            parent = entry
+            while parent.parent is not None:
+                parent = parent.parent
+            assert parent.label == 'Root', parent.label
 
-    def makeTree(self, obj=None, regularization=simpleRegularization, thermoDatabase=None, T=1000.0):
+    def makeTree(self,obj=None,regularization=simpleRegularization,thermoDatabase=None,T=1000.0):
         """
         generates tree structure and then generates rules for the tree
         """
@@ -3664,3 +3758,25 @@ def makeRule(rr):
         return ArrheniusBM().fitToReactions(rxns,recipe=recipe)
     else:
         return None
+
+def spawnTreeProcess(family,templateRxnMap,obj,T,nprocs,depth):
+    parentConn, childConn = mp.Pipe()
+    name = templateRxnMap.keys()[0]
+    p = mp.Process(target=childMakeTreeNodes,args=(family,childConn,templateRxnMap,obj,T,nprocs,depth,name))
+    p.start()
+    return parentConn,p,name
+
+def childMakeTreeNodes(family,childConn,templateRxnMap,obj,T,nprocs,depth,name):
+    delLabels = []
+    rootlabel = templateRxnMap.keys()[0]
+    for label in family.groups.entries.keys():
+        if label != rootlabel:
+            delLabels.append(label)
+    for label in delLabels:
+        del family.groups.entries[label]
+
+    family.groups.entries[rootlabel].parent = None
+
+    family.makeTreeNodes(templateRxnMap=templateRxnMap,obj=obj,T=T,nprocs=nprocs,depth=depth+1)
+
+    childConn.send(family.groups.entries.values())
