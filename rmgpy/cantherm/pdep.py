@@ -257,7 +257,7 @@ class PressureDependenceJob(object):
                 for i in xrange(3):
                     try:
                         sa(self, os.path.dirname(outputFile), perturbation=perturbation)
-                    except (InvalidMicrocanonicalRateError, ModifiedStrongCollisionError):
+                    except (InvalidMicrocanonicalRateError, ModifiedStrongCollisionError) as exept:
                         logging.warn("Could not complete the sensitivity analysis with a perturbation of {0}"
                                      " kcal/mol, trying {1} kcal/mol instead.".format(
                                         perturbation, perturbation / 2.0))
@@ -267,7 +267,7 @@ class PressureDependenceJob(object):
                 else:
                     logging.error("Could not complete the sensitivity analysis even with a perturbation of {0}"
                                   " kcal/mol".format(perturbation))
-                    raise
+                    raise exept
                 logging.info("Completed the sensitivity analysis using a perturbation of {0} kcal/mol".format(
                     perturbation))
         logging.debug('Finished pdep job for reaction {0}.'.format(self.network.label))
