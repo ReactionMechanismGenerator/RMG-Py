@@ -398,12 +398,16 @@ class Species(object):
         instead. Be sure that species' labels are unique when setting it False.
         """
         import cantera as ct
-
+        from afm.fragment import CuttingLabel
+        
         # Determine the number of each type of element in the molecule
         element_dict = {}  # element_counts = [0,0,0,0]
-        for atom in self.molecule[0].atoms:
+        for vertex in self.molecule[0].vertices:
             # The atom itself
-            symbol = atom.element.symbol
+            if not isinstance(vertex, CuttingLabel):
+                symbol = vertex.element.symbol
+            else: # that means this vertex is CuttingLabel
+                continue
             if symbol not in element_dict:
                 element_dict[symbol] = 1
             else:
