@@ -2871,7 +2871,9 @@ class KineticsFamily(Database):
             root = self.groups.entries.values()[0]
             while root.parent is not None:
                 root = root.parent
-
+                
+        psize = float(len(templateRxnMap[root.label]))
+        
         multCompletedNodes = [] #nodes containing multiple identical training reactions
         boo = True #if the for loop doesn't break becomes false and the while loop terminates
         activeProcs = []
@@ -2908,8 +2910,8 @@ class KineticsFamily(Database):
                 if not isinstance(entry.item, Group): #skip logic nodes
                     continue
                 if entry.index != -1 and len(templateRxnMap[entry.label])>1 and entry not in multCompletedNodes:
-                    if freeProcs > 0 and splitableEntryNum > 2 and len(templateRxnMap[entry.label])>40:
-                        procsOut = int(freeProcs/2)+1
+                    if freeProcs > 0 and splitableEntryNum > 2 and len(templateRxnMap[entry.label])>20:
+                        procsOut = int(len(templateRxnMap[entry.label])/psize*freeProcs)
                         freeProcs -= procsOut
                         assert freeProcs >= 0
                         conn,p,name = spawnTreeProcess(family=self,templateRxnMap={entry.label:templateRxnMap[entry.label]},obj=obj,T=T,nprocs=procsOut-1,depth=depth)
@@ -2950,10 +2952,9 @@ class KineticsFamily(Database):
             self.groups.entries[item.label] = item
 
         for label,entry in self.groups.entries.iteritems():
-            if entry.parent is None and entry.label != root.label:
+            if entry.index != -1 and entry.parent is None and entry.label != root.label:
                 pname = "_".join(label.split('_')[:-1])
                 while pname not in self.groups.entries.keys():
-                    assert len(pname) >= len(root.label), (pname,root.label,entry.label)
                     pname = "_".join(label.split('_')[:-1])
                 entry.parent = self.groups.entries[pname]
                 entry.parent.children.append(entry)
