@@ -41,6 +41,8 @@ cdef class KineticsModel:
     
     cdef public ScalarQuantity _Tmin, _Tmax
     cdef public ScalarQuantity _Pmin, _Pmax
+    cdef public ScalarQuantity _uncertainty
+    
     cdef public str comment
     
     cpdef bint isPressureDependent(self) except -2
@@ -56,6 +58,8 @@ cdef class KineticsModel:
     cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
     
     cpdef double discrepancy(self, KineticsModel otherKinetics) except -2
+    
+    cpdef double getUncertaintyFactor(self, double T) except -2
 
 cdef class PDepKineticsModel(KineticsModel):
     
