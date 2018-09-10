@@ -3221,6 +3221,8 @@ class KineticsFamily(Database):
                 raise ValueError('Child not subgraph isomorphic to parent')
             self.checkTree(child)
         for entry in self.groups.entries.values():
+            if entry.index == -1:
+                continue
             parent = entry
             while parent.parent is not None:
                 parent = parent.parent
