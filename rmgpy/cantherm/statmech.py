@@ -273,14 +273,15 @@ class StatMechJob(object):
                 raise InputError('Model chemistry {0!r} not found in from dictionary of energy values in species file '
                                  '{1!r}.'.format(self.modelChemistry, path))
         E0_withZPE, E0 = None, None
+        energyLog = None
         if isinstance(energy, Log):
             energy.determine_qm_software(os.path.join(directory, energy.path))
-            energy = energy.software_log
+            energyLog = energy.software_log
         elif isinstance(energy, (GaussianLog,QchemLog,MolproLog)):
             energyLog = energy
             energyLog.path = os.path.join(directory, energyLog.path)
         elif isinstance(energy, float):
-            energyLog = None; E0 = energy
+            E0 = energy
         elif isinstance(energy, tuple) and len(energy) == 2:
             # this is likely meant to be a quantity object with ZPE already accounted for
             energy_temp = Quantity(energy)
@@ -289,11 +290,9 @@ class StatMechJob(object):
             if energy[2] == 'E0':
                 energy_temp = Quantity(energy[:2])
                 E0 = energy_temp.value_si / constants.E_h / constants.Na# convert J/mol to Hartree
-                energyLog = None
             elif energy[2] == 'E0-ZPE':
                 energy_temp = Quantity(energy[:2])
                 E0_withZPE = energy_temp.value_si # in J/mol
-                energyLog = None; E0 = None
             else:
                 raise InputError('The third argument for E0 energy value should '\
                                  'be E0 (for energy w/o ZPE) or E0-ZPE. Value '\
