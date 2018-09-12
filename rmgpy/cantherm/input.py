@@ -221,6 +221,8 @@ def species(label, *args, **kwargs):
                                  ' thermo properties of species {0}'.format(spec.label))
             try:
                 db = getDB('thermo')
+                if db is None:
+                    raise DatabaseError('Thermo database is None.')
             except DatabaseError:
                 logging.warn("The database isn't loaded, cannot estimate thermo for {0}.".format(spec.label))
             else:
