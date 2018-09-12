@@ -63,7 +63,7 @@ cdef class LiquidReactor(ReactionSystem):
     cdef public dict sensConditions
     
 
-    def __init__(self, T, initialConcentrations, nSims=None, termination=None, sensitiveSpecies=None, sensitivityThreshold=1e-3, sensConditions=None, constSPCNames=None):
+    def __init__(self, T, initialConcentrations, nSims=1, termination=None, sensitiveSpecies=None, sensitivityThreshold=1e-3, sensConditions=None, constSPCNames=None):
         
         ReactionSystem.__init__(self, termination, sensitiveSpecies, sensitivityThreshold)
         
