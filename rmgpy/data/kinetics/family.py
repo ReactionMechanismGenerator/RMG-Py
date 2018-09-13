@@ -2129,24 +2129,13 @@ class KineticsFamily(Database):
         # If products is given, remove reactions from the reaction list that
         # don't generate the given products
         if products is not None:
-            ensure_species(products, resonance=prod_resonance)
-
             rxnList0 = rxnList[:]
             rxnList = []
             for reaction in rxnList0:
-            
-                products0 = reaction.products[:] if forward else reaction.reactants[:]
-
-                # For aromatics, generate aromatic resonance structures to accurately identify isomorphic species
-                if prod_resonance:
-                    for i, product in enumerate(products0):
-                        if product.isCyclic:
-                            aromaticStructs = generate_optimal_aromatic_resonance_structures(product)
-                            if aromaticStructs:
-                                products0[i] = aromaticStructs[0]
-
-                # Skip reactions that don't match the given products
-                if same_species_lists(products, products0):
+                products0 = reaction.products if forward else reaction.reactants
+                # Only keep reactions which give the requested products
+                # If prod_resonance=True, then use strict=False to consider all resonance structures
+                if same_species_lists(products, products0, strict=not prod_resonance):
                     rxnList.append(reaction)
 
         # Determine the reactant-product pairs to use for flux analysis
