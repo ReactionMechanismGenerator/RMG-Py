@@ -915,8 +915,6 @@ class TestKinetics(unittest.TestCase):
         self.assertEqual(len(reaction_list), 1)
         self.assertEqual(reaction_list[0].degeneracy, 2)
 
-
-
     def test_generate_reactions_from_families_product_resonance2(self):
         """Test that we can specify the no product resonance structure when generating reactions"""
         reactants = [
@@ -930,9 +928,6 @@ class TestKinetics(unittest.TestCase):
 
         reaction_list = self.database.kinetics.generate_reactions_from_families(reactants, products, only_families=['H_Abstraction'], resonance=False)
         self.assertEqual(len(reaction_list), 0)
-
-        self.assertTrue(isinstance(products[0],Species))
-        self.assertEqual(len(products[0].molecule),1)
 
     def test_generate_reactions_from_libraries(self):
         """Test that we can generate reactions from libraries"""
