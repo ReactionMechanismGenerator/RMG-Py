@@ -3080,7 +3080,10 @@ class KineticsFamily(Database):
         if depth > 0:
             root = self.groups.entries[templateRxnMap.keys()[0]]
         else:
-            root = self.groups.entries.values()[0]
+            for entry in self.groups.entries.values(): #find the root entry for this branch
+                if entry.index != -1:
+                    root = entry
+                    break
             while root.parent is not None:
                 root = root.parent
                 
