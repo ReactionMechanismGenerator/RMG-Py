@@ -31,8 +31,8 @@
 This module contains base classes that represent various rate coefficient
 models.
 """
-
 import numpy
+import numpy as np
 
 import rmgpy.quantity as quantity
 from rmgpy.molecule import Molecule
@@ -266,11 +266,10 @@ cdef class KineticsModel:
                 
         return discrepancy
     
-    def double getUncertaintyFactor(self, T) except -2:
+    cpdef double getUncertaintyFactor(self, double T) except -2:
         """
         Calculate the multiplicative uncertainty factor at a given T from the energy uncertainty
         """
-        assert self.uncertainty is not None
         return np.exp(self.uncertainty.value_si/(T*8.314))
     
     def setCanteraKinetics(self, ctReaction, speciesList):
@@ -300,8 +299,8 @@ cdef class PDepKineticsModel(KineticsModel):
 
     """
     
-    def __init__(self, Tmin=None, Tmax=None, Pmin=None, Pmax=None, efficiencies=None, highPlimit=None, comment=''):
-        KineticsModel.__init__(self, Tmin, Tmax, Pmin, Pmax, comment)
+    def __init__(self, Tmin=None, Tmax=None, Pmin=None, Pmax=None, efficiencies=None, highPlimit=None, uncertainty=None, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, uncertainty=uncertainty, comment=comment)
         self.efficiencies = {}
         if efficiencies: 
             for mol, eff in efficiencies.iteritems():
