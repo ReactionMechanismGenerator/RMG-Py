@@ -1595,9 +1595,11 @@ class KineticsFamily(Database):
         matches the provided template reactant, or an empty list if not.
         """
 
-        if isinstance(templateReactant, list): templateReactant = templateReactant[0]
-        struct = templateReactant.item
-        
+        if isinstance(templateReactant, list):
+            templateReactant = templateReactant[0]
+        else:
+            struct = templateReactant
+
         reactantContainsSurfaceSite = reactant.containsSurfaceSite()
 
         if isinstance(struct, LogicNode):
@@ -1842,14 +1844,12 @@ class KineticsFamily(Database):
                 grps = template.reactants[0].item.split()
                 template_reactants = []
                 for grp in grps:
-                    entry = template.reactants[0]
-                    entry.item = grp
-                    template_reactants.append(entry)
+                    template_reactants.append(grp)
             except AttributeError:
-                template_reactants = template.reactants
+                template_reactants = [x.item for x in template.reactants]
         else:
-            template_reactants = template.reactants
-            
+            template_reactants = [x.item for x in template.reactants]
+
         # Unimolecular reactants: A --> products
         if len(reactants) == 1 and len(template_reactants) == 1:
 
@@ -1934,7 +1934,7 @@ class KineticsFamily(Database):
             in which case, if one of the two reactants is an X
             then we have a match and can just use it twice.
             """
-            templateSites = [r for r in template_reactants if r.item.isSurfaceSite()]
+            templateSites = [r for r in template_reactants if r.isSurfaceSite()]
             if len(templateSites) == 2:
                 # Two surface sites in template. If there's a site in the reactants, use it twice.
                 if reactants[0][0].isSurfaceSite() and not reactants[1][0].isSurfaceSite():
@@ -1956,7 +1956,7 @@ class KineticsFamily(Database):
                     return []
 
                 for r in template_reactants:
-                    if not r.item.isSurfaceSite():
+                    if not r.isSurfaceSite():
                         templateAdsorbate = r
                         break
                 else:
@@ -1989,7 +1989,7 @@ class KineticsFamily(Database):
                 A + B + C <=> stuff
             We check the two scenarios in that order.
             """
-            templateSites = [r for r in template_reactants if r.item.isSurfaceSite()]
+            templateSites = [r for r in template_reactants if r.isSurfaceSite()]
             if len(templateSites) == 2:
                 """
                 Three reactants and a termolecular template.
@@ -2019,7 +2019,7 @@ class KineticsFamily(Database):
                     return []
 
                 for r in template_reactants:
-                    if not r.item.isSurfaceSite():
+                    if not r.isSurfaceSite():
                         templateAdsorbate = r
                         break
                 else:
@@ -2544,7 +2544,7 @@ class KineticsFamily(Database):
 
         if len(reactants0) == 1:
             molecule = reactants0[0]
-            mappings = self.__matchReactantToTemplate(molecule, template.reactants[0])
+            mappings = self.__matchReactantToTemplate(molecule, template.reactants[0].item)
             mappings = [[map0] for map0 in mappings]
             num_mappings = len(mappings)
             reactant_structures = [molecule]
@@ -2552,12 +2552,12 @@ class KineticsFamily(Database):
             moleculeA = reactants0[0]
             moleculeB = reactants0[1]
             # get mappings in forward direction
-            mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[0])
-            mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[1])
+            mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[0].item)
+            mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[1].item)
             mappings = list(itertools.product(mappingsA, mappingsB))
             # get mappings in the reverse direction
-            mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[1])
-            mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[0])
+            mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[1].item)
+            mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[0].item)
             mappings.extend(list(itertools.product(mappingsA, mappingsB)))
 
             reactant_structures = [moleculeA, moleculeB]
@@ -2569,9 +2569,9 @@ class KineticsFamily(Database):
             # Get mappings for all permutations of reactants
             mappings = []
             for order in itertools.permutations(range(3), 3):
-                mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[order[0]])
-                mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[order[1]])
-                mappingsC = self.__matchReactantToTemplate(moleculeC, template.reactants[order[2]])
+                mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[order[0]].item)
+                mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[order[1]].item)
+                mappingsC = self.__matchReactantToTemplate(moleculeC, template.reactants[order[2]].item)
                 mappings.extend(list(itertools.product(mappingsA, mappingsB, mappingsC)))
 
             reactant_structures = [moleculeA, moleculeB, moleculeC]
