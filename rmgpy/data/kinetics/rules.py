@@ -45,7 +45,7 @@ from rmgpy.data.base import Database, Entry, getAllCombinations
 
 from rmgpy.quantity import Quantity, ScalarQuantity
 from rmgpy.reaction import Reaction
-from rmgpy.kinetics import ArrheniusEP, Arrhenius
+from rmgpy.kinetics import ArrheniusEP, Arrhenius, ArrheniusBM
 from .common import saveEntry
 from rmgpy.exceptions import KineticsError, DatabaseError
 

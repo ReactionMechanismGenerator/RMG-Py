@@ -44,7 +44,7 @@ except ImportError:
     logging.warning("Upgrade to Python 2.7 or later to ensure your database entries are read and written in the same order each time!")
     OrderedDict = dict
 from rmgpy.molecule import Molecule, Group
-
+from rmgpy.kinetics.arrhenius import ArrheniusBM
 from reference import Reference, Article, Book, Thesis
 from rmgpy.exceptions import DatabaseError, ForbiddenStructureException, InvalidAdjacencyListError
 
