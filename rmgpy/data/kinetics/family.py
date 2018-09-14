@@ -1572,7 +1572,7 @@ class KineticsFamily(Database):
         """
 
         if isinstance(templateReactant, list): templateReactant = templateReactant[0]
-        struct = templateReactant.item
+        struct = templateReactant
 
         if isinstance(struct, LogicNode):
             mappings = []
@@ -1810,13 +1810,11 @@ class KineticsFamily(Database):
                 grps = template.reactants[0].item.split()
                 template_reactants = []
                 for grp in grps:
-                    entry = template.reactants[0]
-                    entry.item = grp
-                    template_reactants.append(entry)
+                    template_reactants.append(grp)
             except AttributeError:
-                template_reactants = template.reactants
+                template_reactants = [x.item for x in template.reactants]
         else:
-            template_reactants = template.reactants
+            template_reactants = [x.item for x in template.reactants]
 
         # Unimolecular reactants: A --> products
         if len(reactants) == 1 and len(template_reactants) == 1:
