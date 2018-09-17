@@ -312,7 +312,7 @@ class KineticsRules(Database):
                       " removed in version 2.3.", DeprecationWarning)
         # This is hardcoding of reaction families!
         label = os.path.split(self.label)[-2]
-        reactionOrder = groups.groups.numReactants
+        reactionOrder = groups.groups.reactantNum
         if reactionOrder == 2:
             factor = 1.0e6
         elif reactionOrder == 1:

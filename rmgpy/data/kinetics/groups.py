@@ -70,7 +70,7 @@ class KineticsGroups(Database):
                  forbidden=None
                  ):
         Database.__init__(self, entries, top, label, name, shortDesc, longDesc)
-        self.numReactants = 0
+        self.reactantNum = 0
         
     def __repr__(self):
         return '<KineticsGroups "{0}">'.format(self.label)
