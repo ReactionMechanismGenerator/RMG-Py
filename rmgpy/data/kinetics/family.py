@@ -642,6 +642,8 @@ class KineticsFamily(Database):
         local_context['boundaryAtoms'] = None
         local_context['treeDistances'] = None
         local_context['reverseMap'] = None
+        local_context['reactantNum'] = None
+        local_context['productNum'] = None
         self.groups = KineticsGroups(label='{0}/groups'.format(self.label))
         logging.debug("Loading kinetics family groups from {0}".format(os.path.join(path, 'groups.py')))
         Database.load(self.groups, os.path.join(path, 'groups.py'), local_context, global_context)
@@ -649,6 +651,15 @@ class KineticsFamily(Database):
         self.boundaryAtoms = local_context.get('boundaryAtoms', None)
         self.treeDistances = local_context.get('treeDistances',None)
         self.reverseMap = local_context.get('reverseMap',None)
+
+        self.reactantNum = local_context.get('reactantNum',None)
+        self.productNum = local_context.get('productNum',None)
+
+        if self.reactantNum:
+            self.groups.numReactants = self.reactantNum
+        else:
+            self.groups.numReactants = len(self.forwardTemplate.reactants)
+
         # Generate the reverse template if necessary
         self.forwardTemplate.reactants = [self.groups.entries[label] for label in self.forwardTemplate.reactants]
         if self.ownReverse:
@@ -664,8 +675,6 @@ class KineticsFamily(Database):
                 self.reverseRecipe = self.forwardRecipe.getReverse()
                 if self.reverse is None:
                     self.reverse = '{0}_reverse'.format(self.label)
-
-        self.groups.numReactants = len(self.forwardTemplate.reactants)
 
         self.rules = KineticsRules(label='{0}/rules'.format(self.label))
         logging.debug("Loading kinetics family rules from {0}".format(os.path.join(path, 'rules.py')))
@@ -914,6 +923,14 @@ class KineticsFamily(Database):
                 f.write('reverse = None\n')
 
         f.write('reversible = {0}\n\n'.format(self.reversible))
+
+        if self.reverseMap is not None:
+            f.write('reverseMap = {0}\n\n'.format(self.reverseMap))
+
+        if self.reactantNum is not None:
+            f.write('reactantNum = {0}\n\n'.format(self.reactantNum))
+        if self.productNum is not None:
+            f.write('productNum = {0}\n\n'.format(self.productNum))
 
         # Write the recipe
         f.write('recipe(actions=[\n')
@@ -1395,14 +1412,22 @@ class KineticsFamily(Database):
 
         if not forward:
             template = self.reverseTemplate
+            if self.reactantNum is None:
+                prodL = len(template.products)
+            else:
+                prodL = self.reactantNum
         else:
             template = self.forwardTemplate
+            if self.productNum is None:
+                prodL = len(template.products)
+            else:
+                prodL = self.productNum
 
         # Split product structure into multiple species if necessary
         productStructures = productStructure.split()
 
         # Make sure we've made the expected number of products
-        if len(template.products) != len(productStructures):
+        if prodL != len(productStructures):
             # We have a different number of products than expected by the template.
             # By definition this means that the template is not a match, so
             # we return None to indicate that we could not generate the product
