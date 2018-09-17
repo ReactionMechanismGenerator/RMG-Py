@@ -219,27 +219,34 @@ def generate_resonance_structures(mol, clar_structures=True, keep_isomorphic=Fal
         if features['isRadical'] and not features['isArylRadical']:
             if features['isPolycyclicAromatic']:
                 if clar_structures:
-                    _generate_resonance_structures(new_mol_list, [generate_kekule_structure], keep_isomorphic)
-                    _generate_resonance_structures(new_mol_list, [generate_allyl_delocalization_resonance_structures], keep_isomorphic)
-                    _generate_resonance_structures(new_mol_list, [generate_clar_structures], keep_isomorphic)
+                    _generate_resonance_structures(new_mol_list, [generate_kekule_structure],
+                                                   keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
+                    _generate_resonance_structures(new_mol_list, [generate_allyl_delocalization_resonance_structures],
+                                                   keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
+                    _generate_resonance_structures(new_mol_list, [generate_clar_structures],
+                                                   keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
                     # Remove non-aromatic structures under the assumption that they aren't important resonance contributors
                     new_mol_list = [m for m in new_mol_list if m.isAromatic()]
                 else:
                     pass
             else:
                 _generate_resonance_structures(new_mol_list, [generate_kekule_structure,
-                                                            generate_opposite_kekule_structure], keep_isomorphic)
-                _generate_resonance_structures(new_mol_list, [generate_allyl_delocalization_resonance_structures], keep_isomorphic)
+                                                              generate_opposite_kekule_structure],
+                                               keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
+                _generate_resonance_structures(new_mol_list, [generate_allyl_delocalization_resonance_structures],
+                                               keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
         elif features['isPolycyclicAromatic']:
             if clar_structures:
-                _generate_resonance_structures(new_mol_list, [generate_clar_structures], keep_isomorphic)
+                _generate_resonance_structures(new_mol_list, [generate_clar_structures],
+                                               keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
             else:
                 pass
         else:
             # The molecule is an aryl radical or stable mono-ring aromatic
             # In this case, generate the kekulized form
             _generate_resonance_structures(new_mol_list, [generate_kekule_structure,
-                                                        generate_opposite_kekule_structure], keep_isomorphic)
+                                                          generate_opposite_kekule_structure],
+                                           keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
 
         # Check for isomorphism against the original molecule
         for i, new_mol in enumerate(new_mol_list):
@@ -257,14 +264,16 @@ def generate_resonance_structures(mol, clar_structures=True, keep_isomorphic=Fal
 
     # Generate remaining resonance structures
     method_list = populate_resonance_algorithms(features)
-    _generate_resonance_structures(mol_list, method_list, keep_isomorphic)
+    _generate_resonance_structures(mol_list, method_list, keep_isomorphic=keep_isomorphic,
+                                   filter_structures=filter_structures)
 
     if filter_structures:
         return filtration.filter_structures(mol_list)
 
     return mol_list
 
-def _generate_resonance_structures(mol_list, method_list, keep_isomorphic=False, copy=False):
+
+def _generate_resonance_structures(mol_list, method_list, keep_isomorphic=False, copy=False, filter_structures=True):
     """
     Iteratively generate all resonance structures for a list of starting molecules using the specified methods.
 
@@ -284,19 +293,21 @@ def _generate_resonance_structures(mol_list, method_list, keep_isomorphic=False,
 
     min_octet_deviation = min(filtration.get_octet_deviation_list(mol_list))
     min_charge_span = min(filtration.get_charge_span_list(mol_list))
+
     # Iterate over resonance structures
     index = 0
     while index < len(mol_list):
         molecule = mol_list[index]
         new_mol_list = []
 
-        # On-the-fly filtration: Extend methods for molecule only if it is relatively close to the octet rule
-        # (don't explore structures that will certainly be filtered out)
-        # Sometimes rearranging the structure requires an additional higher charge span structure, so allow structures
-        # with a +1 higher charge span compared to the minimum, e.g., [O-]S#S[N+]#N
+        # On-the-fly filtration: Extend methods only for molecule that don't deviate too much from the octet rule
+        # (a +2 distance from the minimal deviation is used, octet deviations per species are in increments of 2)
+        # Sometimes rearranging the structure requires an additional higher charge span structure, so allow
+        # structures with a +1 higher charge span compared to the minimum, e.g., [O-]S#S[N+]#N
+        # This is run by default even if filter_structures=False.
         octet_deviation = filtration.get_octet_deviation(molecule)
         charge_span = molecule.getChargeSpan()
-        if octet_deviation <= min_octet_deviation and charge_span <= min_charge_span + 1:
+        if octet_deviation <= min_octet_deviation + 2 and charge_span <= min_charge_span + 1:
             for method in method_list:
                 new_mol_list.extend(method(molecule))
             if octet_deviation < min_octet_deviation:

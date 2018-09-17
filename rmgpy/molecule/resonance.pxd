@@ -34,7 +34,7 @@ cpdef dict analyze_molecule(Molecule mol)
 
 cpdef list generate_resonance_structures(Molecule mol, bint clar_structures=?, bint keep_isomorphic=?, bint filter_structures=?)
 
-cpdef list _generate_resonance_structures(list mol_list, list method_list, bint keep_isomorphic=?, bint copy=?)
+cpdef list _generate_resonance_structures(list mol_list, list method_list, bint keep_isomorphic=?, bint copy=?, bint filter_structures=?)
 
 cpdef list generate_allyl_delocalization_resonance_structures(Molecule mol)
 
