@@ -1,6 +1,6 @@
 # Data sources
 database(
-    thermoLibraries=['surfaceThermoNi', 'primaryThermoLibrary', 'thermo_DFT_CCSDTF12_BAC','DFT_QCI_thermo'],
+    thermoLibraries=['surfaceThermoPt', 'primaryThermoLibrary', 'thermo_DFT_CCSDTF12_BAC','DFT_QCI_thermo'],
     reactionLibraries = [('Deutschmann_Ni', False)],
     seedMechanisms = [],
     kineticsDepositories = ['training'],

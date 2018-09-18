@@ -863,7 +863,7 @@ class ThermoDatabase(object):
             'other',
             'longDistanceInteraction_cyclic',
             'longDistanceInteraction_noncyclic',
-            'adsorptionNi',
+            'adsorptionPt',
         ]
         self.groups = {
             category: ThermoGroups(label=category).load(os.path.join(path, category + '.py'), self.local_context, self.global_context)
@@ -1391,7 +1391,7 @@ class ThermoDatabase(object):
             S298 = (0.0,"J/(mol*K)"),
         )
         try:
-            self.__addGroupThermoData(adsorptionThermo, self.groups['adsorptionNi'], molecule, {})
+            self.__addGroupThermoData(adsorptionThermo, self.groups['adsorptionPt'], molecule, {})
         except KeyError:
             logging.error("Couldn't find in adsorption thermo database:")
             logging.error(molecule)
