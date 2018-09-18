@@ -1596,8 +1596,12 @@ class KineticsFamily(Database):
         matches the provided template reactant, or an empty list if not.
         """
 
-        if isinstance(templateReactant, list): templateReactant = templateReactant[0]
-        struct = templateReactant
+        if isinstance(templateReactant, list):
+            templateReactant = templateReactant[0]
+        if isinstance(templateReactant,Entry):
+            struct = templateReactant.item
+        else:
+            struct = templateReactant
 
         if isinstance(struct, LogicNode):
             mappings = []
