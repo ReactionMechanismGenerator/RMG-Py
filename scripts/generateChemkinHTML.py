@@ -76,7 +76,7 @@ if __name__ == '__main__':
 
     chemkin = os.path.abspath(args.chemkin[0])
     dictionary = os.path.abspath(args.dictionary[0])
-    output = os.path.abspath(args.output[0]) if args.output is not None else os.getcwd()
+    output = os.path.abspath(args.output) if args.output is not None else os.getcwd()
     foreign = args.foreign
 
     main(chemkin, dictionary, output, foreign)
