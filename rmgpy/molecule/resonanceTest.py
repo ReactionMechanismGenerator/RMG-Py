@@ -60,7 +60,7 @@ class ResonanceTest(unittest.TestCase):
     def testRingAllylShift(self):
         """Test allyl shift for a cyclic species with heteroatoms"""
         molList = generate_resonance_structures(Molecule(SMILES="[CH]1C=NC=N1"))
-        self.assertEqual(len(molList), 3)
+        self.assertEqual(len(molList), 5)
 
     def testCarbeneAllylShift(self):
         """Test allyl shift for a carbene species"""

@@ -192,13 +192,14 @@ def get_charge_span_list(mol_list):
 def charge_filtration(filtered_list, charge_span_list):
     """
     Returns a new filtered_list, filtered based on charge_span_list, electronegativity and proximity considerations.
-    If the species is a radical we first check whether keeping an extra charge span layer might be important for
-    reactivity (i.e., relocates the radical or multiple bond site). If so, we keep these structures.
+    If structures with an additional charge layer introduce reactive sites (i.e., radicals or multiple bonds) they will
+    also be considered.
     For example:
     - Both of NO2's resonance structures will be kept: [O]N=O <=> O=[N+.][O-]
     - NCO will only have two resonance structures [N.]=C=O <=> N#C[O.], and will loose the third structure which has
       the same octet deviation, has a charge separation, but the radical site has already been considered: [N+.]#C[O-]
     - CH2NO keeps all three structures, since a new radical site is introduced: [CH2.]N=O <=> C=N[O.] <=> C=[N+.][O-]
+    - NH2CHO has two structures, one of which is charged since it introduces a multiple bond: NC=O <=> [NH2+]=C[O-]
     However, if the species is not a radical, or multiple bonds do not alter, we only keep the structures with the
     minimal charge span. For example:
     - NSH will only keep the N#S form and not [N-]=[SH+]
@@ -210,46 +211,59 @@ def charge_filtration(filtered_list, charge_span_list):
     min_charge_span = min(charge_span_list)
     if len(set(charge_span_list)) > 1:
         # Proceed if there are structures with different charge spans
-        if filtered_list[0].isRadical():
-            # If the species is a radical, we might want to consider higher charge spans if the contribute to reactivity
-            charged_list = [filtered_mol for index, filtered_mol in enumerate(filtered_list) if
-                            charge_span_list[index] == min_charge_span + 1]  # save the 2nd charge span layer
-            filtered_list = [filtered_mol for index, filtered_mol in enumerate(filtered_list) if
-                             charge_span_list[index] == min_charge_span]  # the minimal charge span layer
-            # Find the radical sites in all filtered_list (with min charge span) structures:
-            rad_sorting_list = []  # sortingLabels for radical sites
-            for mol in filtered_list:
-                for atom in mol.vertices:
-                    if atom.radicalElectrons and int(atom.sortingLabel) not in rad_sorting_list:
-                        rad_sorting_list.append(int(atom.sortingLabel))
-            # Find unique radical sites in charged_list and append to unique_charged_list:
-            unique_charged_list = []
-            for mol in charged_list:
-                for atom in mol.vertices:
-                    if atom.radicalElectrons and int(atom.sortingLabel) not in rad_sorting_list:
-                        unique_charged_list.append(mol)
+        charged_list = [filtered_mol for index, filtered_mol in enumerate(filtered_list) if
+                        charge_span_list[index] == min_charge_span + 1]  # save the 2nd charge span layer
+        filtered_list = [filtered_mol for index, filtered_mol in enumerate(filtered_list) if
+                         charge_span_list[index] == min_charge_span]  # the minimal charge span layer
+        # Find the radical and multiple bond sites in all filtered_list structures:
+        rad_sorting_list = []  # sortingLabels for radical sites
+        mul_bond_sorting_list = []  # sortingLabels for multiple bind sites in the form of (atom1,atom2) tuples
+        for mol in filtered_list:
+            for atom in mol.vertices:
+                if atom.radicalElectrons and int(atom.sortingLabel) not in rad_sorting_list:
+                    rad_sorting_list.append(int(atom.sortingLabel))
+                for atom2, bond in atom.bonds.iteritems():
+                    # check if bond is multiple, store only from one side (atom1 < atom2) for consistency
+                    if atom2.sortingLabel > atom.sortingLabel and bond.isDouble() or bond.isTriple():
+                        mul_bond_sorting_list.append((int(atom.sortingLabel), int(atom2.sortingLabel)))
+        # Find unique radical and multiple bond sites in charged_list and append to unique_charged_list:
+        unique_charged_list = []
+        for mol in charged_list:
+            unique_charged_list.extend(find_unique_sites_in_charged_list(mol, rad_sorting_list, mul_bond_sorting_list))
 
-            # Charge stabilization considerations for the case where there are several charge span layers and the
-            # species is a radical are checked here for filtered_list and unique_charged_list separately.
-            filtered_list = stabilize_charges_by_electronegativity(filtered_list)
-            filtered_list = stabilize_charges_by_proximity(filtered_list)
-            if unique_charged_list:
-                unique_charged_list = stabilize_charges_by_electronegativity(unique_charged_list, allow_empty_list=True)
-                unique_charged_list = stabilize_charges_by_proximity(unique_charged_list)
-                filtered_list.extend(unique_charged_list)
-        else:
-            # There are structures with different charge spans, but the species is not a radical.
-            # Additional charge span levels are removed.
-            filtered_list = [filtered for index, filtered in enumerate(filtered_list) if
-                             charge_span_list[index] == min_charge_span]
+        # Charge stabilization considerations for the case where there are several charge span layers
+        # are checked here for filtered_list and unique_charged_list separately.
+        filtered_list = stabilize_charges_by_electronegativity(filtered_list)
+        filtered_list = stabilize_charges_by_proximity(filtered_list)
+        if unique_charged_list:
+            unique_charged_list = stabilize_charges_by_electronegativity(unique_charged_list, allow_empty_list=True)
+            unique_charged_list = stabilize_charges_by_proximity(unique_charged_list)
+            filtered_list.extend(unique_charged_list)
+
     if min_charge_span:
-        # If the species has a formal charge separation, apply charge stability considerations.
+        # If the species has charge separation, apply charge stability considerations.
         # These considerations should be checked regardless of the existence of radical sites.
         # They should also be checked if len(set(charge_span_list)) == 1.
         filtered_list = stabilize_charges_by_electronegativity(filtered_list)
         filtered_list = stabilize_charges_by_proximity(filtered_list)
 
     return filtered_list
+
+
+def find_unique_sites_in_charged_list(mol, rad_sorting_list, mul_bond_sorting_list):
+    """
+    A helper function for reactive site discovery in charged species
+    """
+    for atom in mol.vertices:
+        if atom.radicalElectrons and int(atom.sortingLabel) not in rad_sorting_list:
+            return [mol]
+        for atom2, bond in atom.bonds.iteritems():
+            if atom2.sortingLabel > atom.sortingLabel and (bond.isDouble() or bond.isTriple())\
+                    and (int(atom.sortingLabel), int(atom2.sortingLabel)) not in mul_bond_sorting_list\
+                    and not (atom.isSulfur() and atom2.isSulfur()):
+                # We check that both atoms aren't S, otherwise we get [S.-]=[S.+] as a structure of S2 triplet
+                return [mol]
+    return []
 
 
 def stabilize_charges_by_electronegativity(mol_list, allow_empty_list=False):
