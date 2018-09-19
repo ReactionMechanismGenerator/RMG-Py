@@ -102,10 +102,17 @@ def populate_resonance_algorithms(features=None):
             method_list.append(generate_N5dc_radical_resonance_structures)
             method_list.append(generate_N5dc_resonance_structures)
         if features['hasLonePairs']:
-            method_list.append(generate_lone_pair_multiple_bond_resonance_structures)
             method_list.append(generate_adj_lone_pair_radical_resonance_structures)
             method_list.append(generate_adj_lone_pair_multiple_bond_resonance_structures)
             method_list.append(generate_adj_lone_pair_radical_multiple_bond_resonance_structures)
+            if not features['isAromatic']:
+                # The generate_lone_pair_multiple_bond_resonance_structures method may purturb the electronic
+                # configuration of a conjugated aromatic system, causing a major slow-down (two orders of magnitude
+                # slower in one observed case), and it doesn't necessarily result in new representative localized
+                # structures. Here we forbid it for all structures bearing at least one aromatic ring as a "good enough"
+                # solution. A more holistic approach would be to identify these cases in generate_resonance_structures,
+                # and pass a list of forbidden atom ID's to find_lone_pair_multiple_bond_paths.
+                method_list.append(generate_lone_pair_multiple_bond_resonance_structures)
 
     return method_list
 
