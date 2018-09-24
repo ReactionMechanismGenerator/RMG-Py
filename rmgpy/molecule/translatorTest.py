@@ -295,31 +295,25 @@ multiplicity 2
         aug_inchi = 'InChI=1S/C11H16/c1-5-9-11(7-3,8-4)10-6-2/h5-8H,1-4,9-10H2/u1,3,5,7'
         self.compare(adjlist, aug_inchi)
 
-    def test_singlet_vs_closed_shell(self):
+    def test_singlet_vs_triplet(self):
         adjlist_singlet = """
-1 C u0 p0 c0 {2,D} {3,S} {4,S}
-2 C u0 p0 c0 {1,D} {3,S} {5,S}
-3 C u0 p1 c0 {1,S} {2,S}
-4 H u0 p0 c0 {1,S}
-5 H u0 p0 c0 {2,S}
+        1 C u0 p1 c0 {2,S} {3,S}
+        2 H u0 p0 c0 {1,S}
+        3 H u0 p0 c0 {1,S}
         """
 
-        adjlist_closed_shell = """
-1 C u0 p0 c0 {2,D} {3,S} {4,S}
-2 C u0 p0 c0 {1,D} {3,D}
-3 C u0 p0 c0 {1,S} {2,D} {5,S}
-4 H u0 p0 c0 {1,S}
-5 H u0 p0 c0 {3,S}
+        adjlist_triplet = """
+        multiplicity 3
+        1 C u2 p0 c0 {2,S} {3,S}
+        2 H u0 p0 c0 {1,S}
+        3 H u0 p0 c0 {1,S}
         """
 
         singlet = Species(molecule=[Molecule().fromAdjacencyList(adjlist_singlet)])
-        singlet.generate_resonance_structures()
-        closed_shell = Species(molecule=[Molecule().fromAdjacencyList(adjlist_closed_shell)])
-        closed_shell.generate_resonance_structures()
-
+        triplet = Species(molecule=[Molecule().fromAdjacencyList(adjlist_triplet)])
         singlet_aug_inchi = singlet.getAugmentedInChI()
-        closed_shell_aug_inchi = closed_shell.getAugmentedInChI()
-        self.assertTrue(singlet_aug_inchi != closed_shell_aug_inchi)
+        triplet_aug_inchi = triplet.getAugmentedInChI()
+        self.assertTrue(singlet_aug_inchi != triplet_aug_inchi)
 
     #     def test_C6H5(self):
     #         """Test that the u-layer of phenyl shows atom 1."""
@@ -341,29 +335,28 @@ multiplicity 2
     #         aug_inchi = 'InChI=1S/C6H5/c1-2-4-6-5-3-1/h1-5H/u1'
     #         self.compare(adjlist, aug_inchi)
 
-    def test_C5H6_triplet_singlet(self):
+    def test_C5H6_singlet(self):
         """
-        n-C5 chain with 2 unpaired electrons at the terminal carbon atoms,
-        and 2 carbon atoms with each a lone pair, next to a terminal
-        carbon atom.
+        n-C5 chain with 1 lone pair at the central carbon atom
         """
-
         adjlist = """
-multiplicity 3
-1 C u1 p0 c0 {2,S} {6,S} {7,S}
-2 C u0 p1 c0 {1,S} {3,S}
-3 C u0 p1 c0 {2,S} {5,S}
-4 C u1 p0 c0 {5,S} {8,S} {9,S}
-5 C u0 p0 c0 {3,S} {4,S} {10,S} {11,S}
-6 H u0 p0 c0 {1,S}
-7 H u0 p0 c0 {1,S}
-8 H u0 p0 c0 {4,S}
-9 H u0 p0 c0 {4,S}
-10 H u0 p0 c0 {5,S}
-11 H u0 p0 c0 {5,S}
+        1  C u0 p0 c0 {2,S} {6,S} {7,S} {8,S}
+        2  C u0 p0 c0 {1,S} {3,S} {9,S} {10,S}
+        3  C u0 p1 c0 {2,S} {4,S}
+        4  C u0 p0 c0 {3,S} {5,S} {11,S} {12,S}
+        5  C u0 p0 c0 {4,S} {13,S} {14,S} {15,S}
+        6  H u0 p0 c0 {1,S}
+        7  H u0 p0 c0 {1,S}
+        8  H u0 p0 c0 {1,S}
+        9  H u0 p0 c0 {2,S}
+        10 H u0 p0 c0 {2,S}
+        11 H u0 p0 c0 {4,S}
+        12 H u0 p0 c0 {4,S}
+        13 H u0 p0 c0 {5,S}
+        14 H u0 p0 c0 {5,S}
+        15 H u0 p0 c0 {5,S}
         """
-
-        aug_inchi = 'InChI=1S/C5H6/c1-3-5-4-2/h1-3H2/u1,2/lp4,5'
+        aug_inchi = 'C5H10/c1-3-5-4-2/h3-4H2,1-2H3/lp5'
         self.compare(adjlist, aug_inchi)
 
     def test_aromatic_resonance_structures(self):
