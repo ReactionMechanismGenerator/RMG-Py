@@ -90,7 +90,7 @@ class Species(object):
     def __init__(self, index=-1, label='', thermo=None, conformer=None, 
                  molecule=None, transportData=None, molecularWeight=None, 
                  energyTransferModel=None, reactive=True, props=None, aug_inchi=None,
-                 symmetryNumber = -1, creationIteration = 0):
+                 symmetryNumber = -1, creationIteration = 0, explicitlyAllowed=False):
         self.index = index
         self.label = label
         self.thermo = thermo
@@ -105,6 +105,7 @@ class Species(object):
         self.symmetryNumber = symmetryNumber
         self.isSolvent = False
         self.creationIteration = creationIteration
+        self.explicitlyAllowed = explicitlyAllowed
         # Check multiplicity of each molecule is the same
         if molecule is not None and len(molecule)>1:
             mult = molecule[0].multiplicity

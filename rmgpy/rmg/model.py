@@ -1058,7 +1058,7 @@ class CoreEdgeReactionModel:
         forbidden_structures = getDB('forbidden')
         
         # check RMG globally forbidden structures
-        if forbidden_structures.isMoleculeForbidden(spec.molecule[0]):
+        if not spec.explicitlyAllowed and forbidden_structures.isMoleculeForbidden(spec.molecule[0]):
             
             rxnList = []
             if spec in self.edge.species:
@@ -1505,6 +1505,7 @@ class CoreEdgeReactionModel:
         for spec in self.newSpeciesList:
             if database.forbiddenStructures.isMoleculeForbidden(spec.molecule[0]):
                 if 'allowed' in rmg.speciesConstraints and 'seed mechanisms' in rmg.speciesConstraints['allowed']:
+                    spec.explicitlyAllowed = True
                     logging.warning("Species {0} from seed mechanism {1} is globally forbidden.  It will behave as an inert unless found in a seed mechanism or reaction library.".format(spec.label, seedMechanism.label))
                 else:
                     raise ForbiddenStructureException("Species {0} from seed mechanism {1} is globally forbidden. You may explicitly allow it, but it will remain inert unless found in a seed mechanism or reaction library.".format(spec.label, seedMechanism.label))
@@ -1593,6 +1594,7 @@ class CoreEdgeReactionModel:
         for spec in self.newSpeciesList:
             if database.forbiddenStructures.isMoleculeForbidden(spec.molecule[0]):
                 if 'allowed' in rmg.speciesConstraints and 'reaction libraries' in rmg.speciesConstraints['allowed']:
+                    spec.explicitlyAllowed = True
                     logging.warning("Species {0} from reaction library {1} is globally forbidden.  It will behave as an inert unless found in a seed mechanism or reaction library.".format(spec.label, reactionLibrary.label))
                 else:
                     raise ForbiddenStructureException("Species {0} from reaction library {1} is globally forbidden. You may explicitly allow it, but it will remain inert unless found in a seed mechanism or reaction library.".format(spec.label, reactionLibrary.label))
