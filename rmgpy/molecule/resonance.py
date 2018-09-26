@@ -43,9 +43,7 @@ Currently supported resonance types:
     - ``generate_adj_lone_pair_radical_resonance_structures``: single radical shift with lone pair between adjacent atoms
     - ``generate_adj_lone_pair_multiple_bond_resonance_structures``: multiple bond shift with lone pair between adjacent atoms
     - ``generate_adj_lone_pair_radical_multiple_bond_resonance_structures``: multiple bond and radical shift with lone pair and radical  between adjacent atoms
-    - ``generate_N5ddc_N5tc_resonance_structures``: shift between nitrogen with two double bonds and single + triple bond
     - ``generate_N5dc_radical_resonance_structures``: shift between radical and lone pair mediated by an N5dc atom
-    - ``generate_N5dc_resonance_structures``: shift between double bond and lone pair mediated by an N5dc atom
     - ``generate_aryne_resonance_structures``: shift between cumulene and alkyne forms of arynes, which are not considered aromatic in RMG
 - Aromatic species only:
     - ``generate_aromatic_resonance_structures``: fully delocalized structure, where all aromatic rings have benzene bonds
@@ -84,9 +82,7 @@ def populate_resonance_algorithms(features=None):
             generate_adj_lone_pair_radical_resonance_structures,
             generate_adj_lone_pair_multiple_bond_resonance_structures,
             generate_adj_lone_pair_radical_multiple_bond_resonance_structures,
-            generate_N5ddc_N5tc_resonance_structures,
             generate_N5dc_radical_resonance_structures,
-            generate_N5dc_resonance_structures,
             generate_aromatic_resonance_structures,
             generate_aryne_resonance_structures,
             generate_kekule_structure,
@@ -101,10 +97,8 @@ def populate_resonance_algorithms(features=None):
             method_list.append(generate_allyl_delocalization_resonance_structures)
         if features['isCyclic']:
             method_list.append(generate_aryne_resonance_structures)
-        if features['hasNitrogen']:
-            method_list.append(generate_N5ddc_N5tc_resonance_structures)
+        if features['hasNitrogenVal5']:
             method_list.append(generate_N5dc_radical_resonance_structures)
-            method_list.append(generate_N5dc_resonance_structures)
         if features['hasLonePairs']:
             method_list.append(generate_adj_lone_pair_radical_resonance_structures)
             method_list.append(generate_adj_lone_pair_multiple_bond_resonance_structures)
@@ -134,7 +128,7 @@ def analyze_molecule(mol):
                 'isAromatic': False,
                 'isPolycyclicAromatic': False,
                 'isArylRadical': False,
-                'hasNitrogen': False,
+                'hasNitrogenVal5': False,
                 'hasLonePairs': False,
                 }
 
@@ -147,8 +141,8 @@ def analyze_molecule(mol):
         if features['isRadical'] and features['isAromatic']:
             features['isArylRadical'] = mol.isArylRadical(aromatic_rings)
     for atom in mol.vertices:
-        if atom.isNitrogen():
-            features['hasNitrogen'] = True
+        if atom.isNitrogen() and atom.lonePairs == 0:
+            features['hasNitrogenVal5'] = True
         if atom.lonePairs > 0:
             features['hasLonePairs'] = True
 
@@ -606,54 +600,6 @@ def generate_adj_lone_pair_radical_multiple_bond_resonance_structures(mol):
     return structures
 
 
-def generate_N5ddc_N5tc_resonance_structures(mol):
-    """
-    Generate all of the resonance structures formed by shifts between N5ddc and N5tc.
-    """
-    cython.declare(structures=list, paths=list, index=cython.int, structure=Molecule)
-    cython.declare(atom=Atom, atom1=Atom, atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
-    cython.declare(v1=Vertex, v2=Vertex)
-
-    structures = []
-    for atom in mol.vertices:
-        if atom.atomType.label in ['N5ddc','N5tc'] and atom.radicalElectrons == 0:
-            paths = pathfinder.find_N5ddc_N5tc_delocalization_paths(atom)
-            for atom1, atom2, atom3, bond12, bond23 in paths:
-                atom2.decrementLonePairs()
-                atom3.incrementLonePairs()
-                bond12.incrementOrder()
-                bond23.decrementOrder()
-                atom1.updateCharge()
-                atom2.updateCharge()
-                atom3.updateCharge()
-                # Make a copy of structure
-                structure = mol.copy(deep=True)
-                # Also copy the connectivity values, since they are the same
-                # for all resonance structures
-                for index in xrange(len(mol.vertices)):
-                    v1 = mol.vertices[index]
-                    v2 = structure.vertices[index]
-                    v2.connectivity1 = v1.connectivity1
-                    v2.connectivity2 = v1.connectivity2
-                    v2.connectivity3 = v1.connectivity3
-                    v2.sortingLabel = v1.sortingLabel
-                # Restore current structure
-                atom2.incrementLonePairs()
-                atom3.decrementLonePairs()
-                bond12.decrementOrder()
-                bond23.incrementOrder()
-                atom1.updateCharge()
-                atom2.updateCharge()
-                atom3.updateCharge()
-                try:
-                    structure.updateAtomTypes(logSpecies=False)
-                except AtomTypeError:
-                    pass  # Don't append resonance structure if it creates an undefined atomType
-                else:
-                    structures.append(structure)
-    return structures
-
-
 def generate_N5dc_radical_resonance_structures(mol):
     """
     Generate all of the resonance structures formed by radical and lone pair shifts mediated by an N5dc atom.
@@ -689,52 +635,6 @@ def generate_N5dc_radical_resonance_structures(mol):
                 atom2.decrementLonePairs()
                 atom3.incrementLonePairs()
                 atom3.decrementRadical()
-                atom2.updateCharge()
-                atom3.updateCharge()
-                try:
-                    structure.updateAtomTypes(logSpecies=False)
-                except AtomTypeError:
-                    pass  # Don't append resonance structure if it creates an undefined atomType
-                else:
-                    structures.append(structure)
-    return structures
-
-
-def generate_N5dc_resonance_structures(mol):
-    """
-    Generate all of the resonance structures formed by double bond and lone pair shifts mediated by an N5dc atom.
-    """
-    cython.declare(structures=list, paths=list, index=cython.int, structure=Molecule)
-    cython.declare(atom=Atom, atom2=Atom, atom3=Atom)
-    cython.declare(v1=Vertex, v2=Vertex)
-
-    structures = []
-    for atom in mol.vertices:
-        if atom.atomType.label == 'N5dc' and atom.radicalElectrons == 0 and len(atom.edges) == 3:
-            paths = pathfinder.find_N5dc_delocalization_paths(atom)
-            for atom2, atom3, bond12, bond13 in paths:
-                bond12.decrementOrder()
-                atom2.incrementLonePairs()
-                atom3.decrementLonePairs()
-                bond13.incrementOrder()
-                atom2.updateCharge()
-                atom3.updateCharge()
-                # Make a copy of structure
-                structure = mol.copy(deep=True)
-                # Also copy the connectivity values, since they are the same
-                # for all resonance structures
-                for index in xrange(len(mol.vertices)):
-                    v1 = mol.vertices[index]
-                    v2 = structure.vertices[index]
-                    v2.connectivity1 = v1.connectivity1
-                    v2.connectivity2 = v1.connectivity2
-                    v2.connectivity3 = v1.connectivity3
-                    v2.sortingLabel = v1.sortingLabel
-                # Restore current structure
-                bond13.decrementOrder()
-                atom3.incrementLonePairs()
-                atom2.decrementLonePairs()
-                bond12.incrementOrder()
                 atom2.updateCharge()
                 atom3.updateCharge()
                 try:

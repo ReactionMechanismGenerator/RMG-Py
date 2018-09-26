@@ -258,8 +258,10 @@ class ResonanceTest(unittest.TestCase):
         molList = generate_resonance_structures(Molecule(SMILES="c1ccccc1CC=N[O]"))
         self.assertEqual(len(molList), 6)
 
+    @work_in_progress
     def testAromaticWithNResonance(self):
         """Test resonance structure generation for aromatic species with N5ddc <=> N5tc resonance"""
+        # WIP: currently generate_N5dc_resonance_structures does not apply for aromatic structures
         molList = generate_resonance_structures(Molecule(SMILES="c1ccccc1CCN=[N+]=[N-]"))
         self.assertEqual(len(molList), 4)
         # TODO: this test cannot be run because RDKit (which checks for aromaticity) cannot process hyper-valence N

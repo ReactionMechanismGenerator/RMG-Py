@@ -266,6 +266,13 @@ def find_lone_pair_multiple_bond_paths(atom1):
     """
     Find all the delocalization paths between lone electron pair and multiple bond in a 3-atom system
     `atom1` indicates the delocalized lone pair site.
+
+    Examples:
+    - N2O (N#[N+][O-] <-> [N-]=[N+]=O)
+    - Azide (N#[N+][NH-] <-> [N-]=[N+]=N <-> [N-2][N+]#[NH+])
+    - N#N group on sulfur (O[S-](O)[N+]#N <-> OS(O)=[N+]=[N-] <-> O[S+](O)#[N+][N-2])
+    - N[N+]([O-])=O <=> N[N+](=O)[O-], these structures are isomorphic but not identical, this transition is
+      important for correct degeneracy calculations
     """
     cython.declare(paths=list, atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
 
@@ -343,9 +350,7 @@ def find_adj_lone_pair_multiple_bond_delocalization_paths(atom1):
 
     - [::NH-]-[CH2+] <=> [:NH]=[CH2]
     - [:N]#[CH] <=> [::N-]=[CH+]
-    - N#[N+][O-] <=> <=> [N-]=[N+]=O
-    - C[N+](=O)[NH-] <=> <=> C[N+]([O-])=[NH]
-    - other examples: S#N, N#[S], O=S([O])=O, [NH]=[N+]=[N-]
+    - other examples: S#N, N#[S], O=S([O])=O
 
     Direction "1" is the direction <increasing> the bond order as in [::NH-]-[CH2+] <=> [:NH]=[CH2]
     Direction "2" is the direction <decreasing> the bond order as in [:NH]=[CH2] <=> [::NH-]-[CH2+]
@@ -404,51 +409,6 @@ def find_adj_lone_pair_radical_multiple_bond_delocalization_paths(atom1):
     return paths
 
 
-def find_N5ddc_N5tc_delocalization_paths(atom1):
-    """
-    Find all the resonance structures of nitrogen atoms with two double bonds (atomType N5ddc)
-    and nitrogen atoms with one triple and one single bond (atomType N5tc).
-
-    Examples:
-
-    - N2O (N#[N+][O-] <-> [N-]=[N+]=O)
-    - Azide (N#[N+][NH-] <-> [N-]=[N+]=N <-> [N-2][N+]#[NH+])
-    - N#N group on sulfur (O[S-](O)[N+]#N <-> OS(O)=[N+]=[N-] <-> O[S+](O)#[N+][N-2])
-
-    In this transition atom1 is the middle N+ (N5ddc or N5tc)
-    A "if atom.atomType.label in ['N5ddc','N5tc']" check should be done before calling this function
-    """
-    cython.declare(paths=list, atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
-
-    paths = []
-
-    for atom2, bond12 in atom1.edges.items():
-        if atom2.isNOS():
-            for atom3, bond23 in atom1.edges.items():
-                if atom2 is not atom3:
-                    # Find this transitions from the N5tc side.
-                    # atom2 is single-bonded to atom1 and looses a lone pair
-                    # atom3 is triple-bonded to atom1 and gains a lone pair (atom3 cannot be oxygen)
-                    # bond12 is incremented, bond23 is decremented
-                    if (((atom2.isNitrogen() and atom2.lonePairs in [2, 3])
-                            or (atom2.isOxygen() and atom2.lonePairs == 3)
-                            or (atom2.isSulfur() and atom2.lonePairs in [1, 2, 3]))
-                            and ((atom3.isNitrogen() or atom3.isSulfur()) and atom3.lonePairs in [0, 1])
-                            and bond12.isSingle() and bond23.isTriple()):
-                        paths.append([atom1, atom2, atom3, bond12, bond23])
-                    # Find this transitions from the N5ddc side.
-                    # atom2 looses a lone pair and ends up with a triple bond to atom1 (atom2 cannot be oxygen)
-                    # atom3 gains a lone pair and ends up with a single bond to atom1
-                    # bond12 is incremented, bond23 is decremented (same actions as above under these definitions)
-                    elif (((atom2.isNitrogen() or atom2.isSulfur()) and atom2.lonePairs in [1, 2])
-                            and ((atom3.isNitrogen() and atom3.lonePairs in [1, 2])
-                            or (atom3.isOxygen() and atom3.lonePairs == 2)
-                            or (atom3.isSulfur() and atom3.lonePairs in [0, 1, 2]))
-                            and bond12.isDouble() and bond23.isDouble()):
-                        paths.append([atom1, atom2, atom3, bond12, bond23])
-    return paths
-
-
 def find_N5dc_radical_delocalization_paths(atom1):
     """
     Find all the resonance structures of an N5dc nitrogen atom with a single bond to a radical N/O/S site, another
@@ -469,30 +429,6 @@ def find_N5dc_radical_delocalization_paths(atom1):
                 if (atom2 is not atom3 and bond13.isSingle() and atom3.charge < 0
                         and is_atom_able_to_lose_lone_pair(atom3)):
                     path.append([atom2, atom3])
-                    return path  # there could only be one such path per atom1, return if found
-    return path
-
-
-def find_N5dc_delocalization_paths(atom1):
-    """
-    Find all the resonance structures of an N5dc nitrogen atom with a double bond to a N/O/S site, another
-    single bond to a negatively charged N/O/S site, and one single bond (not participating in this transformation)
-    Example:
-    - N[N+]([O-])=O <=> N[N+](=O)[O-], these structures are isomorphic but not identical, the transition is
-    important for correct degeneracy calculations
-    In this transition atom1 is the middle N+ (N5dc), atom2 double bonded to atom1, and atom3 is negatively charged
-    A "if atom1.atomType.label == 'N5dc'" check should be done before calling this function
-    """
-    cython.declare(paths=list, atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
-
-    path = []
-
-    for atom2, bond12 in atom1.edges.items():
-        if atom2.isNOS() and bond12.isDouble() and not atom2.charge and is_atom_able_to_gain_lone_pair(atom2):
-            for atom3, bond13 in atom1.edges.items():
-                if (atom2 is not atom3 and bond13.isSingle() and atom3.charge < 0
-                        and is_atom_able_to_lose_lone_pair(atom3)):
-                    path.append([atom2, atom3, bond12, bond13])
                     return path  # there could only be one such path per atom1, return if found
     return path
 
