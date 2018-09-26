@@ -39,6 +39,7 @@ from Queue import Queue
 
 from rmgpy.molecule.molecule import Atom, Bond
 
+
 def find_butadiene(start, end):
     """
     Search for a path between start and end atom that consists of 
@@ -70,6 +71,7 @@ def find_butadiene(start, end):
     # Could not find a resonance path from start atom to end atom
     return None  
 
+
 def find_butadiene_end_with_charge(start):
     """
     Search for a (4-atom, 3-bond) path between start and end atom that consists of 
@@ -100,6 +102,7 @@ def find_butadiene_end_with_charge(start):
 
     # Could not find a resonance path from start atom to end atom
     return None
+
 
 def find_allyl_end_with_charge(start):
     """
@@ -140,6 +143,7 @@ def find_allyl_end_with_charge(start):
     # Could not find a resonance path from start atom to end atom
     return paths
 
+
 def find_shortest_path(start, end, path=None):
     path = path if path else []
     path = path + [start]
@@ -154,6 +158,7 @@ def find_shortest_path(start, end, path=None):
                 if not shortest or len(newpath) < len(shortest):
                     shortest = newpath
     return shortest
+
 
 def add_unsaturated_bonds(path):
     """
@@ -172,6 +177,7 @@ def add_unsaturated_bonds(path):
             new_path.extend((bond12, atom2))
             paths.append(new_path)
     return paths 
+
 
 def add_allyls(path):
     """
@@ -194,6 +200,7 @@ def add_allyls(path):
                     paths.append(new_path)
     return paths
 
+
 def add_inverse_allyls(path):
     """
     Find all the (3-atom, 2-bond) patterns "start~atom2=atom3" starting from the 
@@ -213,6 +220,7 @@ def add_inverse_allyls(path):
                     new_path.extend((bond12, atom2, bond23, atom3))
                     paths.append(new_path)
     return paths
+
 
 def compute_atom_distance(atom_indices, mol):
     """
@@ -300,7 +308,6 @@ def find_adj_lone_pair_radical_delocalization_paths(atom1):
     could have been generated as a resonance structure of R[::O][::O.].
 
     The radical site (atom1) could be either:
-
     - `N u1 p0`, eg O=[N.+][:::O-]
     - `N u1 p1`, eg R[:NH][:NH.]
     - `O u1 p1`, eg [:O.+]=[::N-]; not allowed when adjacent to another O atom
@@ -311,7 +318,6 @@ def find_adj_lone_pair_radical_delocalization_paths(atom1):
     - any of the above with more than 1 radical where possible
 
     The non-radical site (atom2) could respectively be:
-
     - `N u0 p1`
     - `N u0 p2`
     - `O u0 p2`
@@ -347,7 +353,6 @@ def find_adj_lone_pair_multiple_bond_delocalization_paths(atom1):
     - Can obtain a lonePair and is bonded by a double/triple bond (e.g., [:NH]=[CH2], [:N]#[CH]) -- direction 2
 
     Giving the following resonance transitions, for example:
-
     - [::NH-]-[CH2+] <=> [:NH]=[CH2]
     - [:N]#[CH] <=> [::N-]=[CH+]
     - other examples: S#N, N#[S], O=S([O])=O
@@ -382,7 +387,6 @@ def find_adj_lone_pair_radical_multiple_bond_delocalization_paths(atom1):
     - Can obtain a lonePair, has a radical, and is bonded by a double/triple bond (e.g., [:N.]=[CH2])
 
     Giving the following resonance transitions, for example:
-
     - [::N]-[.CH2] <=> [:N.]=[CH2]
     - O[:S](=O)[::O.] <=> O[S.](=O)=[::O]
 
