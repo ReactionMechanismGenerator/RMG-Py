@@ -1158,6 +1158,13 @@ class Group(Graph):
         g = Graph.merge(self, other)
         molecule = Group(atoms=g.vertices)
         return molecule
+    
+    def _merge(self, other):
+        """
+        merge group other into self
+        """
+        Graph._merge(self,other)
+        return
 
     def split(self):
         """
@@ -1170,7 +1177,19 @@ class Group(Graph):
             molecule = Group(atoms=g.vertices)
             molecules.append(molecule)
         return molecules
-                
+    
+    def _split(self):
+        """
+        Convert a single :class:`Group` object containing two or more
+        unconnected groups into separate class:`Group` objects.
+        This changes the original group object, but avoids copying it.  
+        """
+        graphs = Graph._split(self)
+        molecules = []
+        for g in graphs:
+            molecule = Group(atoms=g.vertices)
+            molecules.append(molecule)
+        return molecules
                                
     def getExtensions(self,R=None,basename='',atmInd=None, atmInd2=None, Nsplits=None):
         """

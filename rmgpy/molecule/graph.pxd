@@ -101,9 +101,13 @@ cdef class Graph(object):
     cpdef dict copyAndMap(self)
 
     cpdef Graph merge(self, Graph other)
+    
+    cpdef _merge(self, Graph other)
 
     cpdef list split(self)
 
+    cpdef list _split(self)
+    
     cpdef resetConnectivityValues(self)
 
     cpdef sortVertices(self, bint saveOrder=?)

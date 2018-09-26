@@ -1376,8 +1376,8 @@ class Molecule(Graph):
         :class:`TypeError` is raised.
         """
         cython.declare(group=gr.Group, atom=Atom)
-        cython.declare(carbonCount=cython.short, nitrogenCount=cython.short, oxygenCount=cython.short, sulfurCount=cython.short, radicalCount=cython.short)
-
+        cython.declare(carbonCount=cython.short, rDict=dict, m=dict, r=Atom, q=gr.GroupAtom, item=dict, s=gr.Group, L=int, i=int, maps=tuple, results=list, subgroups=list, nitrogenCount=cython.short, oxygenCount=cython.short, sulfurCount=cython.short, radicalCount=cython.short)
+        
         # It only makes sense to compare a Molecule to a Group for subgraph
         # isomorphism, so raise an exception if this is not what was requested
         if not isinstance(other, gr.Group):
@@ -1399,9 +1399,26 @@ class Molecule(Graph):
                 return []
             elif element_count[element] < count:
                 return []
+        
+        subgroups = group._split()
 
-        # Do the isomorphism comparison
-        result = Graph.findSubgraphIsomorphisms(self, other, initialMap, saveOrder=saveOrder)
+        results = []
+        for s in subgroups: #findSubgraphIsomorphisms
+            results.append(Graph.findSubgraphIsomorphisms(self,s,initialMap,saveOrder=saveOrder))
+        
+        if len(results) > 1: #if other was split we need to figure out which subgraph isomorphisms don't overlap
+            result = []
+            for maps in itertools.product(*results):
+                rDict = {r:q for m in maps for r,q in m.iteritems()}
+                L = sum([len(m) for m in maps])
+                if L == len(rDict): #L is the number of molecule atoms in the mapping, len(rDict) is the number of unique molecule atoms in the mapping, if these are different the map is invalid
+                    result.append(rDict)
+        else:
+            result = results[0]
+        
+        for i,s in enumerate(subgroups[:-1]): #fix other if we split it
+            group._merge(s)
+                
         return result
     
     def isAtomInCycle(self, atom):

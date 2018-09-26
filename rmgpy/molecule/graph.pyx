@@ -392,6 +392,19 @@ cdef class Graph(object):
             vertex.edges = edges
 
         return new
+    
+    cpdef _merge(self, Graph other):
+        """
+        Merge a Graph into self
+        """
+        cdef Vertex vertex
+        
+        for vertex in other.vertices:
+            edges = vertex.edges
+            self.addVertex(vertex)
+            vertex.edges = edges
+            
+        return
 
     cpdef list split(self):
         """
@@ -433,7 +446,48 @@ cdef class Graph(object):
         new = [new2]
         new.extend(new1.split())
         return new
+    
+    cpdef list _split(self):
+        """
+        Convert a single Graph object containing two or more unconnected graphs
+        into separate graphs.  Changes the original Graph object, but does not copy the object.   
+        """
+        cdef Graph new1, new2
+        cdef Vertex vertex, vertex1, vertex2
+        cdef list verticesToMove
+        cdef int index
+        
+        # Create potential output graphs
+        new1 = self
+        new2 = Graph()
 
+        if len(self.vertices) == 0:
+            return [new1]
+
+        # Arbitrarily choose last atom as starting point
+        verticesToMove = [ self.vertices[-1] ]
+
+        # Iterate until there are no more atoms to move
+        index = 0
+        while index < len(verticesToMove):
+            for v2 in verticesToMove[index].edges:
+                if v2 not in verticesToMove:
+                    verticesToMove.append(v2)
+            index += 1
+        
+        # If all atoms are to be moved, simply return new1
+        if len(new1.vertices) == len(verticesToMove):
+            return [new1]
+
+        # Copy to new graph and remove from old graph
+        for vertex in verticesToMove:
+            new2.vertices.append(vertex)
+            new1.vertices.remove(vertex)
+        
+        new = [new2]
+        new.extend(new1._split())
+        return new
+    
     cpdef resetConnectivityValues(self):
         """
         Reset any cached connectivity information. Call this method when you
