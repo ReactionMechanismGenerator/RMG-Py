@@ -1946,6 +1946,8 @@ class Molecule(Graph):
                         break
                     for atom2 in ring0[i + 1:]:
                         if self.hasBond(atom1, atom2):
+                            # Check for aromaticity using the bond type rather than GetIsAromatic because
+                            # aryne triple bonds return True for GetIsAromatic but are not aromatic bonds
                             if rdkitmol.GetBondBetweenAtoms(rdAtomIndices[atom1],
                                                             rdAtomIndices[atom2]).GetBondType() is AROMATIC:
                                 aromaticBondsInRing.append(self.getBond(atom1, atom2))
