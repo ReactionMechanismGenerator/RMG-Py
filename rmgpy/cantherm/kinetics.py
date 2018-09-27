@@ -221,11 +221,17 @@ class KineticsJob(object):
         f.write('#   ======= ============ =========== ============ ============= =========\n')
         f.write('#   Temp.    Kc (eq)        Units     krev (TST)   krev (TST+T)   Units\n')
         f.write('#   ======= ============ =========== ============ ============= =========\n')
-        
+
+        # Initialize Object for Converting Units
+        if self.Kequnits != '       ':
+            keq_unit_converter = quantity.Units(self.Kequnits).getConversionFactorFromSI()
+        else:
+            keq_unit_converter = 1
+
         for n,T in enumerate(Tlist):
             k = ks[n]
             k0 = k0s[n]
-            Keq = reaction.getEquilibriumConstant(T)
+            Keq = keq_unit_converter * reaction.getEquilibriumConstant(T)  # getEquilibriumConstant returns SI units
             k0rev = k0/Keq
             krev =  k/Keq
             k0revs.append(k0rev)
