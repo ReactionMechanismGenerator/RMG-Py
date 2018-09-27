@@ -68,12 +68,12 @@ class FiltrationTest(unittest.TestCase):
         octet_deviation_list = get_octet_deviation_list(mol_list)
         filtered_list = filter_structures(mol_list)
 
-        self.assertEqual(octet_deviation_list,[1, 4, 3])
+        self.assertEqual(octet_deviation_list,[1, 3, 3])
         self.assertEqual(len(filtered_list), 1)
         self.assertTrue(all([atom.charge == 0 for atom in filtered_list[0].vertices]))
 
     def penalty_for_O4tc_test(self):
-        """Test that an O4tc atomType with octet 8 gets penalized in the octet deviation score"""
+        """Test that an O4tc atomType with octet 8 gets penalized in the electronegativity heuristic"""
         adj = """
         1 S u0 p1 c0 {2,S} {3,T}
         2 O u0 p3 c-1 {1,S}
@@ -81,8 +81,14 @@ class FiltrationTest(unittest.TestCase):
         """
         mol = Molecule().fromAdjacencyList(adj)
         octet_deviation = get_octet_deviation(mol)
-        self.assertEqual(octet_deviation, 1)
+        self.assertEqual(octet_deviation, 0)
         self.assertEqual(mol.vertices[2].atomType.label, 'O4tc')
+        mol_list = generate_resonance_structures(mol)
+        self.assertEqual(len(mol_list), 2)
+        for mol in mol_list:
+            if mol.reactive:
+                for atom in mol.vertices:
+                    self.assertTrue(atom.charge == 0)
 
     def penalty_birads_replacing_lone_pairs_test(self):
         """Test that birads on `S u2 p0` are penalized"""
