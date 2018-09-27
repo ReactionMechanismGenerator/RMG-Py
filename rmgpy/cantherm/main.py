@@ -355,13 +355,13 @@ class CanTherm:
                     item = reaction,
                     data = reaction.kinetics,
                 )
-            
-            if 'rate rule' in reaction.kinetics.comment:
-                entry.longDesc = reaction.kinetics.comment
-            elif hasattr(reaction,'library') and reaction.library:
-                entry.longDesc = 'Originally from reaction library: ' + reaction.library + "\n" + reaction.kinetics.comment
-            else:
-                entry.longDesc = reaction.kinetics.comment
+
+            if reaction.kinetics is not None:
+                if hasattr(reaction,'library') and reaction.library:
+                    entry.longDesc = 'Originally from reaction library: ' +\
+                                     reaction.library + "\n" + reaction.kinetics.comment
+                else:
+                    entry.longDesc = reaction.kinetics.comment
             
             kineticsLibrary.entries[i+1] = entry
         
