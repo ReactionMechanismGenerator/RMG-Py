@@ -792,6 +792,6 @@ and immediately used in input files without any additional changes.
             else:
                 
                 H298 = rxnCopy.getEnthalpyOfReaction(298)
-                if isinstance(kinetics, ArrheniusEP):
+                if isinstance(kinetics, ArrheniusEP) or isinstance(kinetics, ArrheniusBM):
                     kinetics = kinetics.toArrhenius(H298)
                 return kinetics
