@@ -101,6 +101,8 @@ cdef class Reaction:
     cpdef numpy.ndarray calculateTSTRateCoefficients(self, numpy.ndarray Tlist)
 
     cpdef double calculateTSTRateCoefficient(self, double T) except -2
+    
+    cpdef double calculateSubmergedIntegrand(self,double E,double T) except -2
 
     cpdef bint canTST(self) except -2
 

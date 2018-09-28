@@ -835,21 +835,44 @@ class Reaction:
         correction.
         """       
         # Determine TST rate constant at each temperature
-        Qreac = 1.0
-        E0 = 0.0
-        for spec in self.reactants:
-            logging.debug('    Calculating Partition function for ' + spec.label)
-            Qreac *= spec.getPartitionFunction(T) / (constants.R * T / 101325.)
-            E0 -= spec.conformer.E0.value_si
-        logging.debug('    Calculating Partition function for ' + self.transitionState.label)
-        Qts = self.transitionState.getPartitionFunction(T) / (constants.R * T / 101325.)
-        E0 += self.transitionState.conformer.E0.value_si
-        k = (constants.kB * T / constants.h * Qts / Qreac) * math.exp(-E0 / constants.R / T)
-        
+        if self.transitionStateOuter is None: #traditional TST
+            Qreac = 1.0
+            E0 = 0.0
+            for spec in self.reactants:
+                logging.debug('    Calculating Partition function for ' + spec.label)
+                Qreac *= spec.getPartitionFunction(T) / (constants.R * T / 101325.)
+                E0 -= spec.conformer.E0.value_si
+            logging.debug('    Calculating Partition function for ' + self.transitionState.label)
+            Qts = self.transitionState.getPartitionFunction(T) / (constants.R * T / 101325.)
+            E0 += self.transitionState.conformer.E0.value_si
+            k = (constants.kB * T / constants.h * Qts / Qreac) * math.exp(-E0 / constants.R / T)
+        else: #Submerged Barrier using Microcanonical VTST, equations from Georgievskii and Klippenstein 2007
+            
+            #get the Laplace Transform the the effective sum of states Neff
+            LNeff = inte.quad(self.calculateSubmergedIntegrand,0.0,np.inf,args=(T))
+            
+            Qreac = 1.0 #get the reactant partition functions
+            for spec in self.reactants:
+                logging.debug('    Calculating Partition function for ' + spec.label)
+                Qreac *= spec.getPartitionFunction(T) / (constants.R * T / 101325.)
+            
+            k = LNeff/(constants.h*Qreac) #calculate the rate from microcanonical TST
+            
         # Apply tunneling correction
         k *= self.transitionState.calculateTunnelingFactor(T)
         
         return k
+    
+    def calculateSubmergedIntegrand(self,E,T):
+        """
+        for a reaction with a submerged barrier (outer and inner TSs)
+        calculates Neff(E)*exp(-E/(kB*T))
+        Neff = Ninner(E)*Nouter(E)/(Ninner(E)+Nouter(E))
+        """
+        beta = 1.0/(constants.kB*T)
+        Ninner = self.transitionState.getSumOfStates(np.array([E]))[0]
+        Nouter = self.transitionStateOuter.getSumOfStates(np.array([E]))[0]
+        return Ninner*Nouter/(Ninner+Nouter)*np.exp(-E*beta)
         
     def canTST(self):
         """
