@@ -1450,7 +1450,7 @@ class KineticsFamily(Database):
         product_structure = reactant_structure
 
         if not product_structure.props['validAromatic']:
-            if isinstance(product_structure, Molecule):
+            if isinstance(product_structure, Molecule) or isinstance(product_structure, Fragment):
                 # For molecules, kekulize the product to redistribute bonds appropriately
                 product_structure.kekulize()
             else:
