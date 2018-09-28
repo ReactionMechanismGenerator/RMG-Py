@@ -43,11 +43,13 @@ representing a set of chemical reactions and the species involved.
 import cython
 import math
 import numpy
+import numpy as np
 import logging
 import re
 import os.path
 from copy import copy, deepcopy
 import urllib
+import scipy.integrate as inte
 
 import rmgpy.constants as constants
 from rmgpy.molecule.molecule import Molecule, Atom
@@ -100,6 +102,7 @@ class Reaction:
                  network_kinetics=None,
                  reversible=True,
                  transitionState=None,
+                 transitionStateOuter=None,
                  duplicate=False,
                  degeneracy=1,
                  pairs=None,
@@ -119,6 +122,7 @@ class Reaction:
         self.network_kinetics = network_kinetics
         self.reversible = reversible
         self.transitionState = transitionState
+        self.transitionStateOuter = transitionStateOuter
         self.duplicate = duplicate
         self.pairs = pairs
         self.allow_pdep_route = allow_pdep_route
@@ -143,6 +147,7 @@ class Reaction:
         if self.network_kinetics is not None: string += 'network_kinetics={0!r}, '.format(self.network_kinetics)
         if not self.reversible: string += 'reversible={0}, '.format(self.reversible)
         if self.transitionState is not None: string += 'transitionState={0!r}, '.format(self.transitionState)
+        if self.transitionStateOuter is not None: string += 'transitionStateOuter={0!r}, '.format(self.transitionStateOuter)
         if self.duplicate: string += 'duplicate={0}, '.format(self.duplicate)
         if self.degeneracy != 1: string += 'degeneracy={0:.1f}, '.format(self.degeneracy)
         if self.pairs is not None: string += 'pairs={0}, '.format(self.pairs)
@@ -185,6 +190,7 @@ class Reaction:
                            self.network_kinetics,
                            self.reversible,
                            self.transitionState,
+                           self.transitionStateOuter,
                            self.duplicate,
                            self.degeneracy,
                            self.pairs,

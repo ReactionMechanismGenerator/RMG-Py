@@ -45,6 +45,7 @@ cdef class Reaction:
     cdef public Species specificCollider
     cdef public bint reversible
     cdef public TransitionState transitionState
+    cdef public TransitionState transitionStateOuter
     cdef public KineticsModel kinetics
     cdef public Arrhenius network_kinetics
     cdef public bint duplicate

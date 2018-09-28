@@ -268,7 +268,7 @@ def transitionState(label, *args, **kwargs):
         
     return ts
 
-def reaction(label, reactants, products, transitionState=None, kinetics=None, tunneling=''):
+def reaction(label, reactants, products, transitionState=None, transitionStateOuter=None, kinetics=None, tunneling=''):
     global reactionDict, speciesDict, transitionStateDict
     #label = 'reaction'+transitionState
     if label in reactionDict:
@@ -280,6 +280,8 @@ def reaction(label, reactants, products, transitionState=None, kinetics=None, tu
     products = sorted([speciesDict[spec] for spec in products])
     if transitionState:
         transitionState = transitionStateDict[transitionState]
+    if transitionStateOuter:
+        transitionStateOuter = transitionStateDict[transitionStateOuter]
     if tunneling.lower() == 'wigner':
         transitionState.tunneling = Wigner(frequency=None)
     elif tunneling.lower() == 'eckart':
@@ -288,7 +290,7 @@ def reaction(label, reactants, products, transitionState=None, kinetics=None, tu
         transitionState.tunneling = None
     elif transitionState and not isinstance(tunneling, TunnelingModel):
         raise ValueError('Unknown tunneling model {0!r}.'.format(tunneling))
-    rxn = Reaction(label=label, reactants=reactants, products=products, transitionState=transitionState, kinetics=kinetics)
+    rxn = Reaction(label=label, reactants=reactants, products=products, transitionState=transitionState, transitionStateOuter=transitionStateOuter, kinetics=kinetics)
     
     if rxn.transitionState is None and rxn.kinetics is None:
         logging.info('estimating rate of reaction {0} using RMG-database')
