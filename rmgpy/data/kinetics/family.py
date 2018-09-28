@@ -1360,7 +1360,7 @@ class KineticsFamily(Database):
         productStructure = reactantStructure
 
         if not productStructure.props['validAromatic']:
-            if isinstance(productStructure, Molecule):
+            if isinstance(productStructure, Molecule) or isinstance(productStructure, Fragment):
                 # For molecules, kekulize the product to redistribute bonds appropriately
                 productStructure.kekulize()
             else:
@@ -1536,8 +1536,7 @@ class KineticsFamily(Database):
         if isinstance(productStructures[0], Fragment):
             for index, product in enumerate(productStructures):
                 if not any(isinstance(vertex, CuttingLabel) for vertex in product.vertices):
-                    Adj = product.toAdjacencyList()
-                    mol = Molecule().fromAdjacencyList(Adj)
+                    mol = Molecule(atoms=product.vertices)
                     productStructures[index] = mol
 
         # Return the product structures
