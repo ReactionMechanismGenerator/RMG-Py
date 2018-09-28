@@ -1463,6 +1463,12 @@ class KineticsFamily(Database):
 
         # Split product structure into multiple species if necessary
         productStructures = productStructure.split()
+        # check if a Fragment is a Molecule, then change it to Molecule
+        if isinstance(productStructures[0], Fragment):
+            for index, product in enumerate(productStructures):
+                if not any(isinstance(vertex, CuttingLabel) for vertex in product.vertices):
+                    mol = Molecule(atoms=product.vertices)
+                    productStructures[index] = mol
 
         # Make sure we've made the expected number of products
         if productNum != len(productStructures):
@@ -1531,13 +1537,6 @@ class KineticsFamily(Database):
                 labels = [int(label) for label in labels if label]
                 lowest_labels.append(min(labels))
             productStructures = [s for _, s in sorted(zip(lowest_labels, productStructures))]
-
-        # check if a Fragment is a Molecule, then change it to Molecule
-        if isinstance(productStructures[0], Fragment):
-            for index, product in enumerate(productStructures):
-                if not any(isinstance(vertex, CuttingLabel) for vertex in product.vertices):
-                    mol = Molecule(atoms=product.vertices)
-                    productStructures[index] = mol
 
         # Return the product structures
         return productStructures
