@@ -1486,6 +1486,12 @@ class KineticsFamily(Database):
 
         # Split product structure into multiple species if necessary
         product_structures = product_structure.split()
+        # check if a Fragment is a Molecule, then change it to Molecule
+        # if isinstance(product_structures[0], Fragment):
+        #     for index, product in enumerate(product_structures):
+        #         if not any(isinstance(vertex, CuttingLabel) for vertex in product.vertices):
+        #             mol = Molecule(atoms=product.vertices)
+        #             product_structures[index] = mol
 
         # Make sure we've made the expected number of products
         if product_num != len(product_structures):
