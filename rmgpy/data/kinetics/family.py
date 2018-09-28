@@ -1285,7 +1285,7 @@ class KineticsFamily(Database):
             self.reverseRecipe.applyForward(reactantStructure, unique)
 
         if not reactantStructure.props['validAromatic']:
-            if isinstance(reactantStructure, Molecule):
+            if isinstance(reactantStructure, Molecule) or isinstance(reactantStructure, Fragment):
                 # For molecules, kekulize the product to redistribute bonds appropriately
                 reactantStructure.kekulize()
             else:
@@ -1467,8 +1467,7 @@ class KineticsFamily(Database):
         if isinstance(productStructures[0], Fragment):
             for index, product in enumerate(productStructures):
                 if not any(isinstance(vertex, CuttingLabel) for vertex in product.vertices):
-                    Adj = product.toAdjacencyList()
-                    mol = Molecule().fromAdjacencyList(Adj)
+                    mol = Molecule(atoms=product.vertices)
                     productStructures[index] = mol
 
         # Return the product structures
