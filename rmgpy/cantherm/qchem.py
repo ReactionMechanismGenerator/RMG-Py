@@ -36,7 +36,10 @@ import rmgpy.constants as constants
 from rmgpy.exceptions import InputError
 from rmgpy.cantherm.common import checkConformerEnergy
 from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
+
 ################################################################################
+
+
 class QchemLog:
     """
     Represent an output file from Qchem. The attribute `path` refers to the
@@ -187,15 +190,13 @@ class QchemLog:
     
     def loadConformer(self, symmetry=None, spinMultiplicity=0, opticalIsomers=1, symfromlog=None, label=''):
         """
-        Load the molecular degree of freedom data from a output file created as
-        the result of a Qchem "Freq"  calculation. As
-        Qchem's guess of the external symmetry number is not always correct,
-        you can use the `symmetry` parameter to substitute your own value; if
-        not provided, the value in the Qchem output file will be adopted.
+        Load the molecular degree of freedom data from an output file created as the result of a
+        Qchem "Freq" calculation. As Qchem's guess of the external symmetry number is not always correct,
+        you can use the `symmetry` parameter to substitute your own value;
+        if not provided, the value in the Qchem output file will be adopted.
         """
-        modes = []; freq = []; mmass = []; rot = []
+        modes = []; freq = []; mmass = []; rot = []; inertia = []
         E0 = 0.0
-#        symmetry = 1
         f = open(self.path, 'r')
         line = f.readline()
         while line != '':
@@ -208,7 +209,6 @@ class QchemLog:
             # The rest of the data we want is in the Thermochemistry section of the output
             elif 'VIBRATIONAL ANALYSIS' in line:
                 modes = []
-
                 line = f.readline()
                 while line != '':
 
@@ -246,34 +246,38 @@ class QchemLog:
                     # Read moments of inertia for external rotational modes, given in atomic units
                     elif 'Eigenvalues --' in line:
                         inertia = [float(d) for d in line.split()[-3:]]
-                        # If the first eigenvalue is 0, the rotor is linear
-                        symmetry = 1
-                        if inertia[0] == 0.0:
-                            inertia.remove(0.0)
-                            logging.debug('inertia is {}'.format(str(inertia)))
-                            for i in range(2):
-                                inertia[i] *= (constants.a0/1e-10)**2
-                            inertia = numpy.sqrt(inertia[0]*inertia[1])
-                            rotation = LinearRotor(inertia=(inertia,"amu*angstrom^2"), symmetry=symmetry)    
-                            rot.append(rotation)                             
-                        else:
-                            for i in range(3):
-                                inertia[i] *= (constants.a0/1e-10)**2
-                                rotation = NonlinearRotor(inertia=(inertia,"amu*angstrom^2"), symmetry=symmetry)
-                                #modes.append(rotation)
-                            rot.append(rotation) 
 
                     # Read Qchem's estimate of the external rotational symmetry number, which may very well be incorrect
-                    elif 'Rotational Symmetry Number is' in line: # and symmetry is None:
-                        if symfromlog is True:
-                            symmetry = int(float(line.split()[4]))
-                            logging.debug('rot sym is {}'.format(str(symmetry)))
+                    elif 'Rotational Symmetry Number is' in line and symfromlog:
+                        symmetry = int(float(line.split()[-1]))
+                        logging.debug('Rotational Symmetry read from QChem is {}'.format(str(symmetry)))
 
                     # Read the next line in the file
                     line = f.readline()
 
             # Read the next line in the file
             line = f.readline()
+
+            if len(inertia):
+                if symmetry is None:
+                    symmetry = 1
+                if inertia[0] == 0.0:
+                    # If the first eigenvalue is 0, the rotor is linear
+                    inertia.remove(0.0)
+                    logging.debug('inertia is {}'.format(str(inertia)))
+                    for i in range(2):
+                        inertia[i] *= (constants.a0 / 1e-10) ** 2
+                    inertia = numpy.sqrt(inertia[0] * inertia[1])
+                    rotation = LinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
+                    rot.append(rotation)
+                else:
+                    for i in range(3):
+                        inertia[i] *= (constants.a0 / 1e-10) ** 2
+                        rotation = NonlinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
+                        # modes.append(rotation)
+                    rot.append(rotation)
+
+                inertia = []
 
         # Close file when finished
         f.close()
