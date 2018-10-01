@@ -267,4 +267,3 @@ class ExplorerJob(object):
             logging.info('\nOUTPUT WARNINGS:\n')
             for w in warns:
                 logging.warning(w)
-                
