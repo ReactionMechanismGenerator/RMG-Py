@@ -2,54 +2,38 @@
 
 set -e # exit with nonzero exit code if anything fails
 
-openssl aes-256-cbc -K $encrypted_244ac3091cff_key -iv $encrypted_244ac3091cff_iv -in deploy_key.enc -out deploy_key -d
-
 echo 'Travis Build Dir: '$TRAVIS_BUILD_DIR
 
 if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-    DEPLOY_BRANCH=$TRAVIS_PULL_REQUEST
+  DEPLOY_BRANCH=$TRAVIS_PULL_REQUEST
 else
   DEPLOY_BRANCH=$TRAVIS_BRANCH
 fi
 
 # Deploy built site to this branch
-echo Deploy branch: $DEPLOY_BRANCH
+echo "DEPLOY_BRANCH: $DEPLOY_BRANCH"
 
-# SSH URL of the RMG/RMG-tests repo that is pushed to:
-REPO=git@github.com:ReactionMechanismGenerator/RMG-tests.git
+# URL for the official RMG-tests repository
+REPO=https://${GH_TOKEN}@github.com/ReactionMechanismGenerator/RMG-tests.git
 
 if [ -n "$TRAVIS_BUILD_ID" ]; then
 
-  #
-  # Set the following environment variables in the travis configuration (.travis.yml)
-  #
-  #   DEPLOY_BRANCH    - The only branch that Travis should deploy from
-  #   GIT_NAME         - The Git user name
-  #   GIT_EMAIL        - The Git user email
-  #
-  GIT_NAME="Travis Deploy"
-  GIT_EMAIL="travisci@rmg.edu"
-  echo DEPLOY_BRANCH: $DEPLOY_BRANCH
-  echo GIT_NAME: $GIT_NAME
-  echo GIT_EMAIL: $GIT_EMAIL
   if [ "$TRAVIS_BRANCH" != "$DEPLOY_BRANCH" ]; then
     echo "Travis should only deploy from the DEPLOY_BRANCH ($DEPLOY_BRANCH) branch"
     exit 0
-  else
-    if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-      echo "Travis should not deploy from pull requests"
-      exit 0
-    else
-
-      # use the decrypted deploy SSH key as
-      # the credentials to push to the RMG-tests repo:
-      chmod 600 deploy_key
-      eval `ssh-agent -s`
-      ssh-add deploy_key
-      git config --global user.name "$GIT_NAME"
-      git config --global user.email "$GIT_EMAIL"
-    fi
+  elif [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
+    echo "Travis should not deploy from pull requests"
+    exit 0
   fi
+
+  GIT_NAME="Travis Deploy"
+  GIT_EMAIL="travisci@rmg.edu"
+  echo "GIT_NAME: $GIT_NAME"
+  echo "GIT_EMAIL: $GIT_EMAIL"
+
+  git config --global user.name "$GIT_NAME"
+  git config --global user.email "$GIT_EMAIL"
+
 fi
 
 # create a temporary folder:
@@ -76,6 +60,3 @@ git commit --allow-empty -m rmgpy-$REV
 
 # push to the branch to the RMG/RMG-tests repo:
 git push -f $REPO $RMGTESTSBRANCH > /dev/null
-
-# kill ssh-agent if neccessary
-ssh-agent -k
