@@ -108,15 +108,6 @@ def get_octet_deviation(mol, allow_expanded_octet=True):
         val_electrons = 2 * (int(atom.getBondOrdersForAtom()) + atom.lonePairs) + atom.radicalElectrons
         if atom.isCarbon() or atom.isNitrogen() or atom.isOxygen():
             octet_deviation += abs(8 - val_electrons)  # expecting C/N/O to be near octet
-            if atom.isOxygen() and atom.charge > 0:
-                for atom2 in atom.edges.keys():
-                    if atom2.isFluorine() and atom2.charge < 0:
-                        break
-                else:
-                    octet_deviation += 1  # penalty for positively charged O not adjacent to F-,
-                    # as in [N-2][N+]#[O+], [O-]S#[O+], OS(S)([O-])#[O+], [OH+]=S(O)(=O)[O-], [OH.+][S-]=O.
-                    # [C-]#[O+] and [O-][O+]=O, which are correct structures, also get penalized here, but that's OK
-                    # since they are still eventually selected as representative structures according to the rules here.
         elif atom.isSulfur():
             if not allow_expanded_octet:
                 # If allow_expanded_octet is False, then adhere to the octet rule for sulfur as well.
@@ -126,7 +117,7 @@ def get_octet_deviation(mol, allow_expanded_octet=True):
                 octet_deviation += abs(8 - val_electrons)
             else:
                 # If allow_expanded_octet is True, then do not adhere to the octet rule for sulfur
-                # and allow dectet and duedectet structures.
+                # and allow dectet structures (but don't prefer duedectet).
                 # This is in accordance with:
                 # -  J. Chem. Educ., 1972, 49 (12), p 819, DOI: 10.1021/ed049p819
                 # -  J. Chem. Educ., 1986, 63 (1), p 28, DOI: 10.1021/ed063p28
@@ -281,6 +272,15 @@ def stabilize_charges_by_electronegativity(mol_list, allow_empty_list=False):
         for atom in mol.vertices:
             if atom.charge > 0:
                 electroneg_positively_charged_atoms += PeriodicSystem.electronegativity[atom.symbol] * abs(atom.charge)
+                if atom.isOxygen():
+                    for atom2 in atom.edges.keys():
+                        if atom2.isFluorine() and atom2.charge < 0:
+                            break
+                    else:
+                        electroneg_positively_charged_atoms += 1  # penalty for positively charged O not adjacent to F-,
+                    # as in [N-2][N+]#[O+], [O-]S#[O+], OS(S)([O-])#[O+], [OH+]=S(O)(=O)[O-], [OH.+][S-]=O.
+                    # [C-]#[O+] and [O-][O+]=O, which are correct structures, also get penalized here, but that's OK
+                    # since they are still eventually selected as representative structures according to the rules here.
             elif atom.charge < 0:
                 electroneg_negatively_charged_atoms += PeriodicSystem.electronegativity[atom.symbol] * abs(atom.charge)
         if electroneg_positively_charged_atoms > electroneg_negatively_charged_atoms:

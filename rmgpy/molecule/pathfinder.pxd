@@ -54,11 +54,7 @@ cpdef list find_adj_lone_pair_multiple_bond_delocalization_paths(Atom atom1)
 
 cpdef list find_adj_lone_pair_radical_multiple_bond_delocalization_paths(Atom atom1)
 
-cpdef list find_N5ddc_N5tc_delocalization_paths(Atom atom1)
-
 cpdef list find_N5dc_radical_delocalization_paths(Atom atom1)
-
-cpdef list find_N5dc_delocalization_paths(Atom atom1)
 
 cpdef bint is_atom_able_to_gain_lone_pair(Atom atom)
 

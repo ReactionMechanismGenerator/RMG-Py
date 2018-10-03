@@ -421,6 +421,36 @@ class FindLonePairMultipleBondPathsTest(unittest.TestCase):
         paths = find_lone_pair_multiple_bond_paths(mol.atoms[0])
         self.assertTrue(paths)
 
+    def test_N2Oa(self):
+        smiles = "[N-]=[N+]=O"
+        mol = Molecule().fromSMILES(smiles)
+        paths = find_lone_pair_multiple_bond_paths(mol.atoms[0])
+        self.assertTrue(paths)
+
+    def test_N2Ob(self):
+        smiles = "N#[N+][O-]"
+        mol = Molecule().fromSMILES(smiles)
+        paths = find_lone_pair_multiple_bond_paths(mol.atoms[2])
+        self.assertTrue(paths)
+
+    def test_HN3(self):
+        smiles = "[NH-][N+]#N"
+        mol = Molecule().fromSMILES(smiles)
+        paths = find_lone_pair_multiple_bond_paths(mol.atoms[0])
+        self.assertTrue(paths)
+
+    def test_SN2(self):
+        smiles = "OS(O)=[N+]=[N-]"
+        mol = Molecule().fromSMILES(smiles)
+        paths = find_lone_pair_multiple_bond_paths(mol.atoms[2])
+        self.assertTrue(paths)
+
+    def test_H2NNOO(self):
+        smiles = "N[N+]([O-])=O"
+        mol = Molecule().fromSMILES(smiles)
+        paths = find_lone_pair_multiple_bond_paths(mol.atoms[0])
+        self.assertTrue(paths)
+
 
 class FindAdjLonePairRadicalDelocalizationPaths(unittest.TestCase):
     """
@@ -481,35 +511,6 @@ class FindAdjLonePairRadicalMultipleBondDelocalizationPaths(unittest.TestCase):
         self.assertTrue(paths)
 
 
-class FindN5ddcN5tcDelocalizationPaths(unittest.TestCase):
-    """
-    test the find_N5ddc_N5tc_delocalization_paths method
-    """
-    def test_N2Oa(self):
-        smiles = "[N-]=[N+]=O"
-        mol = Molecule().fromSMILES(smiles)
-        paths = find_N5ddc_N5tc_delocalization_paths(mol.atoms[1])
-        self.assertTrue(paths)
-
-    def test_N2Ob(self):
-        smiles = "N#[N+][O-]"
-        mol = Molecule().fromSMILES(smiles)
-        paths = find_N5ddc_N5tc_delocalization_paths(mol.atoms[1])
-        self.assertTrue(paths)
-
-    def test_HN3(self):
-        smiles = "[NH-][N+]#N"
-        mol = Molecule().fromSMILES(smiles)
-        paths = find_N5ddc_N5tc_delocalization_paths(mol.atoms[2])
-        self.assertTrue(paths)
-
-    def test_SN2(self):
-        smiles = "OS(O)=[N+]=[N-]"
-        mol = Molecule().fromSMILES(smiles)
-        paths = find_N5ddc_N5tc_delocalization_paths(mol.atoms[3])
-        self.assertTrue(paths)
-
-
 class FindN5dcRadicalDelocalizationPaths(unittest.TestCase):
     """
     test the find_N5dc_radical_delocalization_paths method
@@ -518,15 +519,4 @@ class FindN5dcRadicalDelocalizationPaths(unittest.TestCase):
         smiles = "N=[N+]([O])([O-])"
         mol = Molecule().fromSMILES(smiles)
         paths = find_N5dc_radical_delocalization_paths(mol.atoms[1])
-        self.assertTrue(paths)
-
-
-class FindN5dcDelocalizationPaths(unittest.TestCase):
-    """
-    test the find_N5dc_delocalization_paths method
-    """
-    def test_H2NNOO(self):
-        smiles = "N[N+]([O-])=O"
-        mol = Molecule().fromSMILES(smiles)
-        paths = find_N5dc_delocalization_paths(mol.atoms[1])
         self.assertTrue(paths)
