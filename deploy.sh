@@ -26,14 +26,6 @@ if [ -n "$TRAVIS_BUILD_ID" ]; then
     exit 0
   fi
 
-  GIT_NAME="Travis Deploy"
-  GIT_EMAIL="travisci@rmg.edu"
-  echo "GIT_NAME: $GIT_NAME"
-  echo "GIT_EMAIL: $GIT_EMAIL"
-
-  git config --global user.name "$GIT_NAME"
-  git config --global user.email "$GIT_EMAIL"
-
 fi
 
 # create a temporary folder:

@@ -26,6 +26,9 @@ before_install:
   # Update conda
   - conda update --yes conda
   - conda info -a
+  # Set git info
+  - git config --global user.name "Travis Deploy"
+  - git config --global user.email "rmg_dev@mit.edu"
 
 jobs:
   include:
