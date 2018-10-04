@@ -9,11 +9,13 @@
     <title>CanTherm User’s Guide &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="1. Introduction" href="introduction.html" />
@@ -43,7 +45,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../rmg/credits.html" title="18. Credits"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">User’s Guide</a> &#187;</li> 
       </ul>
@@ -94,22 +96,28 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <li class="toctree-l2"><a class="reference internal" href="input_pdep.html#examples">4.11. Examples</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="running.html">5. Running CanTherm</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="running.html#drawing-potential-energy-surface">5.1. Drawing Potential Energy Surface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="running.html#log-verbosity">5.2. Log Verbosity</a></li>
-<li class="toctree-l2"><a class="reference internal" href="running.html#help">5.3. Help</a></li>
+<li class="toctree-l1"><a class="reference internal" href="input_explorer.html">5. Creating Input Files for Automated Pressure Dependent Network Exploration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="input_explorer.html#syntax">5.1. Syntax</a></li>
+<li class="toctree-l2"><a class="reference internal" href="input_explorer.html#network-exploration">5.2. Network Exploration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="input_explorer.html#network-reduction">5.3. Network Reduction</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="output.html">6. Parsing Output Files</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="output.html#thermodynamic-and-high-pressure-limit-kinetics-calculations">6.1. Thermodynamic and High-pressure Limit Kinetics Calculations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="output.html#pressure-dependent-calculations">6.2. Pressure-Dependent Calculations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="output.html#chemkin-output-file">6.3. Chemkin Output File</a></li>
-<li class="toctree-l2"><a class="reference internal" href="output.html#log-file">6.4. Log File</a></li>
-<li class="toctree-l2"><a class="reference internal" href="output.html#species-dictionary">6.5. Species Dictionary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="running.html">6. Running CanTherm</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="running.html#drawing-potential-energy-surface">6.1. Drawing Potential Energy Surface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="running.html#log-verbosity">6.2. Log Verbosity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="running.html#help">6.3. Help</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="faq.html">7. Frequently Asked Questions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="credits.html">8. Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="output.html">7. Parsing Output Files</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="output.html#thermodynamic-and-high-pressure-limit-kinetics-calculations">7.1. Thermodynamic and High-pressure Limit Kinetics Calculations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="output.html#pressure-dependent-calculations">7.2. Pressure-Dependent Calculations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="output.html#chemkin-output-file">7.3. Chemkin Output File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="output.html#log-file">7.4. Log File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="output.html#species-dictionary">7.5. Species Dictionary</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">8. Frequently Asked Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="credits.html">9. Credits</a></li>
 </ul>
 </div>
 <ul class="simple">
@@ -201,14 +209,14 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../rmg/credits.html" title="18. Credits"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >User’s Guide</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
     </div>
   </body>
 </html>

@@ -9,11 +9,13 @@
     <title>rmgpy.molecule.resonance &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="rmgpy.molecule.kekulize" href="kekulize.html" />
@@ -43,7 +45,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="group.html" title="rmgpy.molecule.Group"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
@@ -67,12 +69,12 @@ functions for generating each type of resonance structure.</p>
 <dt>All species:</dt>
 <dd><ul class="first last">
 <li><code class="docutils literal notranslate"><span class="pre">generate_allyl_delocalization_resonance_structures</span></code>: single radical shift with double or triple bond</li>
-<li><code class="docutils literal notranslate"><span class="pre">generate_lone_pair_radical_resonance_structures</span></code>: single radical shift with lone pair</li>
-<li><code class="docutils literal notranslate"><span class="pre">generate_lone_pair_multiple_bond_resonance_structures</span></code>: multiple bond shift with lone pair</li>
-<li><code class="docutils literal notranslate"><span class="pre">generate_lone_pair_radical_multiple_bond_resonance_structures</span></code>: multiple bond and radical shift with lone pair and radical</li>
-<li><code class="docutils literal notranslate"><span class="pre">generate_N5ddc_N5tc_resonance_structures</span></code>: shift between nitrogen with two double bonds and single + triple bond</li>
+<li><code class="docutils literal notranslate"><span class="pre">generate_lone_pair_multiple_bond_resonance_structures</span></code>: lone pair shift with double or triple bond in a 3-atom system (between nonadjacent atoms)</li>
+<li><code class="docutils literal notranslate"><span class="pre">generate_adj_lone_pair_radical_resonance_structures</span></code>: single radical shift with lone pair between adjacent atoms</li>
+<li><code class="docutils literal notranslate"><span class="pre">generate_adj_lone_pair_multiple_bond_resonance_structures</span></code>: multiple bond shift with lone pair between adjacent atoms</li>
+<li><code class="docutils literal notranslate"><span class="pre">generate_adj_lone_pair_radical_multiple_bond_resonance_structures</span></code>: multiple bond and radical shift with lone pair and radical  between adjacent atoms</li>
 <li><code class="docutils literal notranslate"><span class="pre">generate_N5dc_radical_resonance_structures</span></code>: shift between radical and lone pair mediated by an N5dc atom</li>
-<li><code class="docutils literal notranslate"><span class="pre">generate_N5dc_resonance_structures</span></code>: shift between double bond and lone pair mediated by an N5dc atom</li>
+<li><code class="docutils literal notranslate"><span class="pre">generate_aryne_resonance_structures</span></code>: shift between cumulene and alkyne forms of arynes, which are not considered aromatic in RMG</li>
 </ul>
 </dd>
 </dl>
@@ -103,15 +105,35 @@ functions for generating each type of resonance structure.</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="rmgpy.molecule.resonance.generate_N5dc_resonance_structures">
-<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">generate_N5dc_resonance_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_N5dc_resonance_structures" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate all of the resonance structures formed by double bond and lone pair shifts mediated by an N5dc atom.</p>
+<dt id="rmgpy.molecule.resonance.generate_adj_lone_pair_multiple_bond_resonance_structures">
+<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">generate_adj_lone_pair_multiple_bond_resonance_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_adj_lone_pair_multiple_bond_resonance_structures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate all of the resonance structures formed by lone electron pair - multiple bond shifts between adjacent atoms.
+Example: [:NH]=[CH2] &lt;=&gt; [::NH-]-[CH2+]
+(where ‘:’ denotes a lone pair, ‘.’ denotes a radical, ‘-‘ not in [] denotes a single bond, ‘-‘/’+’ denote charge)
+Here atom1 refers to the N/S/O atom, atom 2 refers to the any R!H (atom2’s lonePairs aren’t affected)
+(In direction 1 atom1 &lt;losses&gt; a lone pair, in direction 2 atom1 &lt;gains&gt; a lone pair)</p>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="rmgpy.molecule.resonance.generate_N5ddc_N5tc_resonance_structures">
-<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">generate_N5ddc_N5tc_resonance_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_N5ddc_N5tc_resonance_structures" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate all of the resonance structures formed by shifts between N5ddc and N5tc.</p>
+<dt id="rmgpy.molecule.resonance.generate_adj_lone_pair_radical_multiple_bond_resonance_structures">
+<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">generate_adj_lone_pair_radical_multiple_bond_resonance_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_adj_lone_pair_radical_multiple_bond_resonance_structures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate all of the resonance structures formed by lone electron pair - radical - multiple bond shifts between adjacent atoms.
+Example: [:N.]=[CH2] &lt;=&gt; [::N]-[.CH2]
+(where ‘:’ denotes a lone pair, ‘.’ denotes a radical, ‘-‘ not in [] denotes a single bond, ‘-‘/’+’ denote charge)
+Here atom1 refers to the N/S/O atom, atom 2 refers to the any R!H (atom2’s lonePairs aren’t affected)
+This function is similar to generate_adj_lone_pair_multiple_bond_resonance_structures() except for dealing with the
+radical transformations.
+(In direction 1 atom1 &lt;losses&gt; a lone pair, gains a radical, and atom2 looses a radical.
+In direction 2 atom1 &lt;gains&gt; a lone pair, looses a radical, and atom2 gains a radical)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.resonance.generate_adj_lone_pair_radical_resonance_structures">
+<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">generate_adj_lone_pair_radical_resonance_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_adj_lone_pair_radical_resonance_structures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate all of the resonance structures formed by lone electron pair - radical shifts between adjacent atoms.
+These resonance transformations do not involve changing bond orders.
+NO2 example: O=[:N]-[::O.] &lt;=&gt; O=[N.+]-[:::O-]
+(where ‘:’ denotes a lone pair, ‘.’ denotes a radical, ‘-‘ not in [] denotes a single bond, ‘-‘/’+’ denote charge)</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -129,6 +151,22 @@ functions for generating each type of resonance structure.</p>
 In most cases, only one structure will be returned.
 In certain cases where multiple forms have the same number of aromatic rings, multiple structures will be returned.
 If there’s an error (eg. in RDKit) it just returns an empty list.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.resonance.generate_aryne_resonance_structures">
+<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">generate_aryne_resonance_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_aryne_resonance_structures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate aryne resonance structures, including the cumulene and alkyne forms.</p>
+<p>For all 6-membered rings, check for the following bond patterns:</p>
+<blockquote>
+<div><ul class="simple">
+<li>DDDSDS</li>
+<li>STSDSD</li>
+</ul>
+</div></blockquote>
+<p>This does NOT cover all possible aryne resonance forms, only the simplest ones.
+Especially for polycyclic arynes, enumeration of all resonance forms is
+related to enumeration of all Kekule structures, which is very difficult.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -164,32 +202,8 @@ If there’s an error (eg. in RDKit) then it just returns an empty list.</p>
 <dl class="attribute">
 <dt id="rmgpy.molecule.resonance.generate_lone_pair_multiple_bond_resonance_structures">
 <code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">generate_lone_pair_multiple_bond_resonance_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_lone_pair_multiple_bond_resonance_structures" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate all of the resonance structures formed by lone electron pair - multiple bond shifts.
-Example: [:NH]=[CH2] &lt;=&gt; [::NH-]-[CH2+]
-(where ‘:’ denotes a lone pair, ‘.’ denotes a radical, ‘-‘ not in [] denotes a single bond, ‘-‘/’+’ denote charge)
-Here atom1 refers to the N/S/O atom, atom 2 refers to the any R!H (atom2’s lonePairs aren’t affected)
-(In direction 1 atom1 &lt;losses&gt; a lone pair, in direction 2 atom1 &lt;gains&gt; a lone pair)</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="rmgpy.molecule.resonance.generate_lone_pair_radical_multiple_bond_resonance_structures">
-<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">generate_lone_pair_radical_multiple_bond_resonance_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_lone_pair_radical_multiple_bond_resonance_structures" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate all of the resonance structures formed by lone electron pair - radical - multiple bond shifts.
-Example: [:N.]=[CH2] &lt;=&gt; [::N]-[.CH2]
-(where ‘:’ denotes a lone pair, ‘.’ denotes a radical, ‘-‘ not in [] denotes a single bond, ‘-‘/’+’ denote charge)
-Here atom1 refers to the N/S/O atom, atom 2 refers to the any R!H (atom2’s lonePairs aren’t affected)
-This function is similar to generate_lone_pair_multiple_bond_resonance_structures() except for dealing with the
-radical transformations.
-(In direction 1 atom1 &lt;losses&gt; a lone pair, gains a radical, and atom2 looses a radical.
-In direction 2 atom1 &lt;gains&gt; a lone pair, looses a radical, and atom2 gains a radical)</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="rmgpy.molecule.resonance.generate_lone_pair_radical_resonance_structures">
-<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">generate_lone_pair_radical_resonance_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_lone_pair_radical_resonance_structures" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate all of the resonance structures formed by lone electron pair - radical shifts.
-These resonance transformations do not involve changing bond orders.
-NO2 example: O=[:N]-[::O.] &lt;=&gt; O=[N.+]-[:::O-]
+<dd><p>Generate all of the resonance structures formed by lone electron pair - multiple bond shifts in 3-atom systems.
+Examples: aniline (Nc1ccccc1), azide, [:NH2]C=[::O] &lt;=&gt; [NH2+]=C[:::O-]
 (where ‘:’ denotes a lone pair, ‘.’ denotes a radical, ‘-‘ not in [] denotes a single bond, ‘-‘/’+’ denote charge)</p>
 </dd></dl>
 
@@ -318,7 +332,7 @@ Returns a list of resonance algorithms.</p>
           <a href="group.html" title="rmgpy.molecule.Group"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" >Molecular representations (<code class="docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
@@ -326,7 +340,7 @@ Returns a list of resonance algorithms.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
     </div>
   </body>
 </html>

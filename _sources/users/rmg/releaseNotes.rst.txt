@@ -4,6 +4,22 @@
 Release Notes
 *************
 
+RMG-Py Version 2.2.1
+====================
+Date July 23, 2018
+
+This release is minor patch which fixes a number of issues discovered after 2.2.0.
+
+- Collision limit checking:
+    - RMG will now output a list of collision limit violations for the generated model
+
+- Fixes:
+    - Ambiguous chemical formulas in SMILES lookup leading to incorrect SMILES generation
+    - Fixed issue with reading geometries from QChem output files
+    - React flags for reaction filter were not properly updated on each iteration
+    - Fixed issue with inconsistent symmetry number calculation
+
+
 RMG-Py Version 2.2.0
 ====================
 Date: July 5, 2018

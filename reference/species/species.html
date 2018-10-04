@@ -9,11 +9,13 @@
     <title>rmgpy.species.Species &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="rmgpy.species.TransitionState" href="transitionstate.html" />
@@ -43,7 +45,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="index.html" title="Species (rmgpy.species)"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Species (<code class="docutils literal notranslate"><span class="pre">rmgpy.species</span></code>)</a> &#187;</li> 
@@ -59,7 +61,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <span id="id1"></span><h1>rmgpy.species.Species<a class="headerlink" href="#rmgpy-species-species" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.species.Species">
-<em class="property">class </em><code class="descclassname">rmgpy.species.</code><code class="descname">Species</code><span class="sig-paren">(</span><em>index=-1</em>, <em>label=''</em>, <em>thermo=None</em>, <em>conformer=None</em>, <em>molecule=None</em>, <em>transportData=None</em>, <em>molecularWeight=None</em>, <em>energyTransferModel=None</em>, <em>reactive=True</em>, <em>props=None</em>, <em>aug_inchi=None</em>, <em>symmetryNumber=-1</em>, <em>creationIteration=0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.species.</code><code class="descname">Species</code><span class="sig-paren">(</span><em>index=-1</em>, <em>label=''</em>, <em>thermo=None</em>, <em>conformer=None</em>, <em>molecule=None</em>, <em>transportData=None</em>, <em>molecularWeight=None</em>, <em>energyTransferModel=None</em>, <em>reactive=True</em>, <em>props=None</em>, <em>aug_inchi=None</em>, <em>symmetryNumber=-1</em>, <em>creationIteration=0</em>, <em>explicitlyAllowed=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species" title="Permalink to this definition">¶</a></dt>
 <dd><p>A chemical species, representing a local minimum on a potential energy
 surface. The attributes are:</p>
 <table border="1" class="docutils">
@@ -122,7 +124,15 @@ always considered regardless of this variable</dd>
 <dl class="attribute">
 <dt id="rmgpy.species.Species.aug_inchi">
 <code class="descname">aug_inchi</code><a class="headerlink" href="#rmgpy.species.Species.aug_inchi" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>aug_inchi</em> – str</p>
+<dd><p>str</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">aug_inchi</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -140,7 +150,15 @@ always considered regardless of this variable</dd>
 <dl class="attribute">
 <dt id="rmgpy.species.Species.conformer">
 <code class="descname">conformer</code><a class="headerlink" href="#rmgpy.species.Species.conformer" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>conformer</em> – rmgpy.statmech.conformer.Conformer</p>
+<dd><p>rmgpy.statmech.conformer.Conformer</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">conformer</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -155,13 +173,43 @@ Molecule objects in self.molecule.</p>
 <dl class="attribute">
 <dt id="rmgpy.species.Species.creationIteration">
 <code class="descname">creationIteration</code><a class="headerlink" href="#rmgpy.species.Species.creationIteration" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>creationIteration</em> – ‘int’</p>
+<dd><p>‘int’</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">creationIteration</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.species.Species.energyTransferModel">
 <code class="descname">energyTransferModel</code><a class="headerlink" href="#rmgpy.species.Species.energyTransferModel" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>energyTransferModel</em> – object</p>
+<dd><p>object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">energyTransferModel</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.species.Species.explicitlyAllowed">
+<code class="descname">explicitlyAllowed</code><a class="headerlink" href="#rmgpy.species.Species.explicitlyAllowed" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘bool’</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">explicitlyAllowed</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -334,7 +382,15 @@ or <code class="docutils literal notranslate"><span class="pre">False</span></co
 <dl class="attribute">
 <dt id="rmgpy.species.Species.index">
 <code class="descname">index</code><a class="headerlink" href="#rmgpy.species.Species.index" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>index</em> – ‘int’</p>
+<dd><p>‘int’</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">index</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -358,7 +414,15 @@ and be assigned a reactive=False flag.</p>
 <dl class="attribute">
 <dt id="rmgpy.species.Species.isSolvent">
 <code class="descname">isSolvent</code><a class="headerlink" href="#rmgpy.species.Species.isSolvent" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>isSolvent</em> – ‘bool’</p>
+<dd><p>‘bool’</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">isSolvent</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -371,7 +435,15 @@ one Species in species list.</p>
 <dl class="attribute">
 <dt id="rmgpy.species.Species.label">
 <code class="descname">label</code><a class="headerlink" href="#rmgpy.species.Species.label" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>label</em> – str</p>
+<dd><p>str</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">label</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
@@ -383,19 +455,43 @@ one Species in species list.</p>
 <dl class="attribute">
 <dt id="rmgpy.species.Species.molecule">
 <code class="descname">molecule</code><a class="headerlink" href="#rmgpy.species.Species.molecule" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>molecule</em> – list</p>
+<dd><p>list</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">molecule</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.species.Species.props">
 <code class="descname">props</code><a class="headerlink" href="#rmgpy.species.Species.props" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>props</em> – dict</p>
+<dd><p>dict</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">props</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.species.Species.reactive">
 <code class="descname">reactive</code><a class="headerlink" href="#rmgpy.species.Species.reactive" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>reactive</em> – ‘bool’</p>
+<dd><p>‘bool’</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">reactive</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -406,13 +502,29 @@ one Species in species list.</p>
 <dl class="attribute">
 <dt id="rmgpy.species.Species.symmetryNumber">
 <code class="descname">symmetryNumber</code><a class="headerlink" href="#rmgpy.species.Species.symmetryNumber" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>symmetryNumber</em> – ‘float’</p>
+<dd><p>‘float’</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">symmetryNumber</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.species.Species.thermo">
 <code class="descname">thermo</code><a class="headerlink" href="#rmgpy.species.Species.thermo" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>thermo</em> – object</p>
+<dd><p>object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">thermo</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -439,7 +551,15 @@ instead. Be sure that species’ labels are unique when setting it False.</p>
 <dl class="attribute">
 <dt id="rmgpy.species.Species.transportData">
 <code class="descname">transportData</code><a class="headerlink" href="#rmgpy.species.Species.transportData" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>transportData</em> – object</p>
+<dd><p>object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">transportData</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
@@ -528,7 +648,7 @@ instead. Be sure that species’ labels are unique when setting it False.</p>
           <a href="index.html" title="Species (rmgpy.species)"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" >Species (<code class="docutils literal notranslate"><span class="pre">rmgpy.species</span></code>)</a> &#187;</li> 
@@ -536,7 +656,7 @@ instead. Be sure that species’ labels are unique when setting it False.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
     </div>
   </body>
 </html>

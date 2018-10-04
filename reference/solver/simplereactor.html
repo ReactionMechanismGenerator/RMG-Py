@@ -9,11 +9,13 @@
     <title>rmgpy.solver.SimpleReactor &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="rmgpy.solver.LiquidReactor" href="liquidreactor.html" />
@@ -43,7 +45,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="reactionsystem.html" title="rmgpy.solver.ReactionSystem"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Reaction system simulation (<code class="docutils literal notranslate"><span class="pre">rmgpy.solver</span></code>)</a> &#187;</li> 
@@ -66,37 +68,85 @@ this solver to complete very rapidly, even for large kinetic models.</p>
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.Keq">
 <code class="descname">Keq</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.Keq" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>Keq</em> – numpy.ndarray</p>
+<dd><p>numpy.ndarray</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Keq</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.P">
 <code class="descname">P</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.P" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>P</em> – rmgpy.quantity.ScalarQuantity</p>
+<dd><p>rmgpy.quantity.ScalarQuantity</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">P</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.Prange">
 <code class="descname">Prange</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.Prange" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>Prange</em> – list</p>
+<dd><p>list</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Prange</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.T">
 <code class="descname">T</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.T" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>T</em> – rmgpy.quantity.ScalarQuantity</p>
+<dd><p>rmgpy.quantity.ScalarQuantity</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">T</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.Trange">
 <code class="descname">Trange</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.Trange" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>Trange</em> – list</p>
+<dd><p>list</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">Trange</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.V">
 <code class="descname">V</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.V" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>V</em> – ‘double’</p>
+<dd><p>‘double’</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">V</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -119,13 +169,29 @@ and <cite>dydt</cite> attributes.</p>
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.atol_array">
 <code class="descname">atol_array</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.atol_array" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>atol_array</em> – numpy.ndarray</p>
+<dd><p>numpy.ndarray</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">atol_array</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.bimolecularThreshold">
 <code class="descname">bimolecularThreshold</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.bimolecularThreshold" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>bimolecularThreshold</em> – numpy.ndarray</p>
+<dd><p>numpy.ndarray</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">bimolecularThreshold</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -151,7 +217,15 @@ and <cite>dydt</cite> attributes.</p>
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.colliderEfficiencies">
 <code class="descname">colliderEfficiencies</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.colliderEfficiencies" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>colliderEfficiencies</em> – numpy.ndarray</p>
+<dd><p>numpy.ndarray</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">colliderEfficiencies</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -184,7 +258,15 @@ product side of a reaction.</dd>
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.constantVolume">
 <code class="descname">constantVolume</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.constantVolume" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>constantVolume</em> – ‘bool’</p>
+<dd><p>‘bool’</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">constantVolume</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -197,49 +279,113 @@ using the given dictionary of species.</p>
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.coreReactionRates">
 <code class="descname">coreReactionRates</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.coreReactionRates" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>coreReactionRates</em> – numpy.ndarray</p>
+<dd><p>numpy.ndarray</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">coreReactionRates</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.coreSpeciesConcentrations">
 <code class="descname">coreSpeciesConcentrations</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.coreSpeciesConcentrations" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>coreSpeciesConcentrations</em> – numpy.ndarray</p>
+<dd><p>numpy.ndarray</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">coreSpeciesConcentrations</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.coreSpeciesConsumptionRates">
 <code class="descname">coreSpeciesConsumptionRates</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.coreSpeciesConsumptionRates" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>coreSpeciesConsumptionRates</em> – numpy.ndarray</p>
+<dd><p>numpy.ndarray</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">coreSpeciesConsumptionRates</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.coreSpeciesProductionRates">
 <code class="descname">coreSpeciesProductionRates</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.coreSpeciesProductionRates" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>coreSpeciesProductionRates</em> – numpy.ndarray</p>
+<dd><p>numpy.ndarray</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">coreSpeciesProductionRates</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.coreSpeciesRates">
 <code class="descname">coreSpeciesRates</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.coreSpeciesRates" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>coreSpeciesRates</em> – numpy.ndarray</p>
+<dd><p>numpy.ndarray</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">coreSpeciesRates</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.dydt0">
 <code class="descname">dydt0</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.dydt0" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>dydt0</em> – numpy.ndarray</p>
+<dd><p>numpy.ndarray</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">dydt0</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.edgeReactionRates">
 <code class="descname">edgeReactionRates</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.edgeReactionRates" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>edgeReactionRates</em> – numpy.ndarray</p>
+<dd><p>numpy.ndarray</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">edgeReactionRates</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.edgeSpeciesRates">
 <code class="descname">edgeSpeciesRates</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.edgeSpeciesRates" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>edgeSpeciesRates</em> – numpy.ndarray</p>
+<dd><p>numpy.ndarray</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">edgeSpeciesRates</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -293,7 +439,15 @@ from the species index dictionary.</p>
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.initialMoleFractions">
 <code class="descname">initialMoleFractions</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.initialMoleFractions" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>initialMoleFractions</em> – dict</p>
+<dd><p>dict</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">initialMoleFractions</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -349,19 +503,43 @@ model.</p>
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.jacobianMatrix">
 <code class="descname">jacobianMatrix</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.jacobianMatrix" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>jacobianMatrix</em> – numpy.ndarray</p>
+<dd><p>numpy.ndarray</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">jacobianMatrix</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.kb">
 <code class="descname">kb</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.kb" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>kb</em> – numpy.ndarray</p>
+<dd><p>numpy.ndarray</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">kb</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.kf">
 <code class="descname">kf</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.kf" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>kf</em> – numpy.ndarray</p>
+<dd><p>numpy.ndarray</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">kf</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -379,139 +557,323 @@ model.</p>
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.maxEdgeSpeciesRateRatios">
 <code class="descname">maxEdgeSpeciesRateRatios</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.maxEdgeSpeciesRateRatios" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>maxEdgeSpeciesRateRatios</em> – numpy.ndarray</p>
+<dd><p>numpy.ndarray</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">maxEdgeSpeciesRateRatios</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.maxNetworkLeakRateRatios">
 <code class="descname">maxNetworkLeakRateRatios</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.maxNetworkLeakRateRatios" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>maxNetworkLeakRateRatios</em> – numpy.ndarray</p>
+<dd><p>numpy.ndarray</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">maxNetworkLeakRateRatios</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.nSims">
 <code class="descname">nSims</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.nSims" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>nSims</em> – ‘int’</p>
+<dd><p>‘int’</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">nSims</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.neq">
 <code class="descname">neq</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.neq" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>neq</em> – ‘int’</p>
+<dd><p>‘int’</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">neq</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.networkIndices">
 <code class="descname">networkIndices</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.networkIndices" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>networkIndices</em> – numpy.ndarray</p>
+<dd><p>numpy.ndarray</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">networkIndices</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.networkLeakCoefficients">
 <code class="descname">networkLeakCoefficients</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.networkLeakCoefficients" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>networkLeakCoefficients</em> – numpy.ndarray</p>
+<dd><p>numpy.ndarray</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">networkLeakCoefficients</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.networkLeakRates">
 <code class="descname">networkLeakRates</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.networkLeakRates" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>networkLeakRates</em> – numpy.ndarray</p>
+<dd><p>numpy.ndarray</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">networkLeakRates</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.numCoreReactions">
 <code class="descname">numCoreReactions</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.numCoreReactions" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>numCoreReactions</em> – ‘int’</p>
+<dd><p>‘int’</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">numCoreReactions</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.numCoreSpecies">
 <code class="descname">numCoreSpecies</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.numCoreSpecies" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>numCoreSpecies</em> – ‘int’</p>
+<dd><p>‘int’</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">numCoreSpecies</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.numEdgeReactions">
 <code class="descname">numEdgeReactions</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.numEdgeReactions" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>numEdgeReactions</em> – ‘int’</p>
+<dd><p>‘int’</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">numEdgeReactions</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.numEdgeSpecies">
 <code class="descname">numEdgeSpecies</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.numEdgeSpecies" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>numEdgeSpecies</em> – ‘int’</p>
+<dd><p>‘int’</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">numEdgeSpecies</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.numPdepNetworks">
 <code class="descname">numPdepNetworks</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.numPdepNetworks" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>numPdepNetworks</em> – ‘int’</p>
+<dd><p>‘int’</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">numPdepNetworks</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.pdepColliderKinetics">
 <code class="descname">pdepColliderKinetics</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.pdepColliderKinetics" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>pdepColliderKinetics</em> – list</p>
+<dd><p>list</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">pdepColliderKinetics</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.pdepColliderReactionIndices">
 <code class="descname">pdepColliderReactionIndices</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.pdepColliderReactionIndices" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>pdepColliderReactionIndices</em> – numpy.ndarray</p>
+<dd><p>numpy.ndarray</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">pdepColliderReactionIndices</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.pdepSpecificColliderKinetics">
 <code class="descname">pdepSpecificColliderKinetics</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.pdepSpecificColliderKinetics" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>pdepSpecificColliderKinetics</em> – list</p>
+<dd><p>list</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">pdepSpecificColliderKinetics</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.pdepSpecificColliderReactionIndices">
 <code class="descname">pdepSpecificColliderReactionIndices</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.pdepSpecificColliderReactionIndices" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>pdepSpecificColliderReactionIndices</em> – numpy.ndarray</p>
+<dd><p>numpy.ndarray</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">pdepSpecificColliderReactionIndices</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.productIndices">
 <code class="descname">productIndices</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.productIndices" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>productIndices</em> – numpy.ndarray</p>
+<dd><p>numpy.ndarray</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">productIndices</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.prunableNetworkIndices">
 <code class="descname">prunableNetworkIndices</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.prunableNetworkIndices" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>prunableNetworkIndices</em> – numpy.ndarray</p>
+<dd><p>numpy.ndarray</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">prunableNetworkIndices</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.prunableNetworks">
 <code class="descname">prunableNetworks</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.prunableNetworks" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>prunableNetworks</em> – list</p>
+<dd><p>list</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">prunableNetworks</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.prunableSpecies">
 <code class="descname">prunableSpecies</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.prunableSpecies" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>prunableSpecies</em> – list</p>
+<dd><p>list</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">prunableSpecies</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.prunableSpeciesIndices">
 <code class="descname">prunableSpeciesIndices</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.prunableSpeciesIndices" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>prunableSpeciesIndices</em> – numpy.ndarray</p>
+<dd><p>numpy.ndarray</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">prunableSpeciesIndices</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.reactantIndices">
 <code class="descname">reactantIndices</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.reactantIndices" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>reactantIndices</em> – numpy.ndarray</p>
+<dd><p>numpy.ndarray</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">reactantIndices</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.reactionIndex">
 <code class="descname">reactionIndex</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.reactionIndex" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>reactionIndex</em> – dict</p>
+<dd><p>dict</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">reactionIndex</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -532,31 +894,71 @@ simple reaction system.</p>
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.rtol_array">
 <code class="descname">rtol_array</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.rtol_array" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>rtol_array</em> – numpy.ndarray</p>
+<dd><p>numpy.ndarray</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">rtol_array</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.sensConditions">
 <code class="descname">sensConditions</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.sensConditions" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>sensConditions</em> – dict</p>
+<dd><p>dict</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">sensConditions</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.sensitiveSpecies">
 <code class="descname">sensitiveSpecies</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.sensitiveSpecies" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>sensitiveSpecies</em> – list</p>
+<dd><p>list</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">sensitiveSpecies</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.sensitivityCoefficients">
 <code class="descname">sensitivityCoefficients</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.sensitivityCoefficients" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>sensitivityCoefficients</em> – numpy.ndarray</p>
+<dd><p>numpy.ndarray</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">sensitivityCoefficients</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.sensitivityThreshold">
 <code class="descname">sensitivityThreshold</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.sensitivityThreshold" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>sensitivityThreshold</em> – ‘double’</p>
+<dd><p>‘double’</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">sensitivityThreshold</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -612,19 +1014,43 @@ the desired termination criteria and the model remains valid throughout,
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.snapshots">
 <code class="descname">snapshots</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.snapshots" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>snapshots</em> – list</p>
+<dd><p>list</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">snapshots</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.speciesIndex">
 <code class="descname">speciesIndex</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.speciesIndex" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>speciesIndex</em> – dict</p>
+<dd><p>dict</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">speciesIndex</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.specificColliderSpecies">
 <code class="descname">specificColliderSpecies</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.specificColliderSpecies" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>specificColliderSpecies</em> – list</p>
+<dd><p>list</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">specificColliderSpecies</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -640,55 +1066,127 @@ and <cite>dydt</cite> attributes.</p>
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.surfaceReactionIndices">
 <code class="descname">surfaceReactionIndices</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.surfaceReactionIndices" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>surfaceReactionIndices</em> – numpy.ndarray</p>
+<dd><p>numpy.ndarray</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">surfaceReactionIndices</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.surfaceSpeciesIndices">
 <code class="descname">surfaceSpeciesIndices</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.surfaceSpeciesIndices" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>surfaceSpeciesIndices</em> – numpy.ndarray</p>
+<dd><p>numpy.ndarray</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">surfaceSpeciesIndices</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.t0">
 <code class="descname">t0</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.t0" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>t0</em> – ‘float’</p>
+<dd><p>‘float’</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">t0</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.termination">
 <code class="descname">termination</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.termination" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>termination</em> – list</p>
+<dd><p>list</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">termination</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.trimolecular">
 <code class="descname">trimolecular</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.trimolecular" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>trimolecular</em> – ‘bool’</p>
+<dd><p>‘bool’</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">trimolecular</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.trimolecularThreshold">
 <code class="descname">trimolecularThreshold</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.trimolecularThreshold" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>trimolecularThreshold</em> – numpy.ndarray</p>
+<dd><p>numpy.ndarray</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">trimolecularThreshold</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.unimolecularThreshold">
 <code class="descname">unimolecularThreshold</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.unimolecularThreshold" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>unimolecularThreshold</em> – numpy.ndarray</p>
+<dd><p>numpy.ndarray</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">unimolecularThreshold</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.validLayeringIndices">
 <code class="descname">validLayeringIndices</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.validLayeringIndices" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>validLayeringIndices</em> – numpy.ndarray</p>
+<dd><p>numpy.ndarray</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">validLayeringIndices</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.solver.SimpleReactor.y0">
 <code class="descname">y0</code><a class="headerlink" href="#rmgpy.solver.SimpleReactor.y0" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>y0</em> – numpy.ndarray</p>
+<dd><p>numpy.ndarray</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">y0</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
@@ -777,7 +1275,7 @@ and <cite>dydt</cite> attributes.</p>
           <a href="reactionsystem.html" title="rmgpy.solver.ReactionSystem"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" >Reaction system simulation (<code class="docutils literal notranslate"><span class="pre">rmgpy.solver</span></code>)</a> &#187;</li> 
@@ -785,7 +1283,7 @@ and <cite>dydt</cite> attributes.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
     </div>
   </body>
 </html>

@@ -329,6 +329,20 @@ There are currently 58 reaction families in RMG:
     :scale: 25%
 .. |f58| image:: images/kinetics_families/SubstitutionS.png
     :scale: 25%
+.. |f59| image:: images/kinetics_families/Baeyer-Villiger_step1_cat.png
+    :scale: 25%
+.. |f60| image:: images/kinetics_families/Baeyer-Villiger_step2.png
+    :scale: 25%
+.. |f61| image:: images/kinetics_families/Baeyer-Villiger_step2_cat.png
+    :scale: 25%
+.. |f62| image:: images/kinetics_families/Bimolec_Hydroperoxide_Decomposition.png
+    :scale: 25%
+.. |f63| image:: images/kinetics_families/Korcek_step1_cat.png
+    :scale: 25%
+.. |f64| image:: images/kinetics_families/Peroxyl_Disproportionation.png
+    :scale: 25%
+.. |f65| image:: images/kinetics_families/Peroxyl_Termination.png
+    :scale: 25%
 
 .. table::
     :widths: 50 50
@@ -350,6 +364,10 @@ There are currently 58 reaction families in RMG:
     **2+2_cycloaddition_CO**                              |f14|
     **2+2_cycloaddition_CS**                              |f15|
     **6_membered_central_C-C_shift**                      |f16|
+    **Baeyer-Villiger_step1_cat**                         |f59|
+    **Baeyer-Villiger_step2**                             |f60|
+    **Baeyer-Villiger_step2_cat**                         |f61|
+    **Bimolec_Hydroperoxide_Decomposition**               |f62|
     **Birad_recombination**                               |f17|
     **Birad_R_Recombination**                             |f18|
     **CO_Disproportionation**                             |f19|
@@ -382,8 +400,11 @@ There are currently 58 reaction families in RMG:
     **intra_substitutionS_isomerization**                 |f46|
     **ketoenol**                                          |f47|
     **Korcek_step1**                                      |f48|
+    **Korcek_step1_cat**                                  |f63|
     **Korcek_step2**                                      |f49|
     **lone_electron_pair_bond**                           |f50|
+    **Peroxyl_Disproportionation**                        |f64|
+    **Peroxyl_Termination**                               |f65|
     **R_Addition_COm**                                    |f51|
     **R_Addition_CSm**                                    |f52|
     **R_Addition_MultipleBond**                           |f53|

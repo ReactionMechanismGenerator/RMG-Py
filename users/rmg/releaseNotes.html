@@ -9,11 +9,13 @@
     <title>17. Release Notes &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="18. Credits" href="credits.html" />
@@ -43,7 +45,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="faq.html" title="16. Frequently Asked Questions"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG User’s Guide</a> &#187;</li> 
@@ -57,8 +59,34 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="release-notes">
 <span id="releasenotes"></span><h1>17. Release Notes<a class="headerlink" href="#release-notes" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="rmg-py-version-2-2-1">
+<h2>17.1. RMG-Py Version 2.2.1<a class="headerlink" href="#rmg-py-version-2-2-1" title="Permalink to this headline">¶</a></h2>
+<p>Date July 23, 2018</p>
+<p>This release is minor patch which fixes a number of issues discovered after 2.2.0.</p>
+<ul class="simple">
+<li><dl class="first docutils">
+<dt>Collision limit checking:</dt>
+<dd><ul class="first last">
+<li>RMG will now output a list of collision limit violations for the generated model</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Fixes:</dt>
+<dd><ul class="first last">
+<li>Ambiguous chemical formulas in SMILES lookup leading to incorrect SMILES generation</li>
+<li>Fixed issue with reading geometries from QChem output files</li>
+<li>React flags for reaction filter were not properly updated on each iteration</li>
+<li>Fixed issue with inconsistent symmetry number calculation</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
 <div class="section" id="rmg-py-version-2-2-0">
-<h2>17.1. RMG-Py Version 2.2.0<a class="headerlink" href="#rmg-py-version-2-2-0" title="Permalink to this headline">¶</a></h2>
+<h2>17.2. RMG-Py Version 2.2.0<a class="headerlink" href="#rmg-py-version-2-2-0" title="Permalink to this headline">¶</a></h2>
 <p>Date: July 5, 2018</p>
 <ul class="simple">
 <li><dl class="first docutils">
@@ -127,7 +155,7 @@ A filtration algorithm was also added to select only the most representative str
 </ul>
 </div>
 <div class="section" id="rmg-database-version-2-2-0">
-<h2>17.2. RMG-database Version 2.2.0<a class="headerlink" href="#rmg-database-version-2-2-0" title="Permalink to this headline">¶</a></h2>
+<h2>17.3. RMG-database Version 2.2.0<a class="headerlink" href="#rmg-database-version-2-2-0" title="Permalink to this headline">¶</a></h2>
 <p>Date: July 5, 2018</p>
 <ul class="simple">
 <li><dl class="first docutils">
@@ -177,7 +205,7 @@ A filtration algorithm was also added to select only the most representative str
 </ul>
 </div>
 <div class="section" id="rmg-py-version-2-1-9">
-<h2>17.3. RMG-Py Version 2.1.9<a class="headerlink" href="#rmg-py-version-2-1-9" title="Permalink to this headline">¶</a></h2>
+<h2>17.4. RMG-Py Version 2.1.9<a class="headerlink" href="#rmg-py-version-2-1-9" title="Permalink to this headline">¶</a></h2>
 <p>Date: May 1, 2018</p>
 <ul class="simple">
 <li><dl class="first docutils">
@@ -213,7 +241,7 @@ A filtration algorithm was also added to select only the most representative str
 </ul>
 </div>
 <div class="section" id="rmg-database-version-2-1-9">
-<h2>17.4. RMG-database Version 2.1.9<a class="headerlink" href="#rmg-database-version-2-1-9" title="Permalink to this headline">¶</a></h2>
+<h2>17.5. RMG-database Version 2.1.9<a class="headerlink" href="#rmg-database-version-2-1-9" title="Permalink to this headline">¶</a></h2>
 <p>Date: May 1, 2018</p>
 <ul class="simple">
 <li><dl class="first docutils">
@@ -257,7 +285,7 @@ A filtration algorithm was also added to select only the most representative str
 </ul>
 </div>
 <div class="section" id="rmg-py-version-2-1-8">
-<h2>17.5. RMG-Py Version 2.1.8<a class="headerlink" href="#rmg-py-version-2-1-8" title="Permalink to this headline">¶</a></h2>
+<h2>17.6. RMG-Py Version 2.1.8<a class="headerlink" href="#rmg-py-version-2-1-8" title="Permalink to this headline">¶</a></h2>
 <p>Date: March 22, 2018</p>
 <ul class="simple">
 <li><dl class="first docutils">
@@ -298,7 +326,7 @@ A filtration algorithm was also added to select only the most representative str
 </ul>
 </div>
 <div class="section" id="rmg-database-version-2-1-8">
-<h2>17.6. RMG-database Version 2.1.8<a class="headerlink" href="#rmg-database-version-2-1-8" title="Permalink to this headline">¶</a></h2>
+<h2>17.7. RMG-database Version 2.1.8<a class="headerlink" href="#rmg-database-version-2-1-8" title="Permalink to this headline">¶</a></h2>
 <p>Date: March 22, 2018</p>
 <ul class="simple">
 <li><dl class="first docutils">
@@ -314,7 +342,7 @@ A filtration algorithm was also added to select only the most representative str
 </ul>
 </div>
 <div class="section" id="rmg-py-version-2-1-7">
-<h2>17.7. RMG-Py Version 2.1.7<a class="headerlink" href="#rmg-py-version-2-1-7" title="Permalink to this headline">¶</a></h2>
+<h2>17.8. RMG-Py Version 2.1.7<a class="headerlink" href="#rmg-py-version-2-1-7" title="Permalink to this headline">¶</a></h2>
 <p>Date: February 12, 2018</p>
 <ul class="simple">
 <li><dl class="first docutils">
@@ -363,7 +391,7 @@ A filtration algorithm was also added to select only the most representative str
 </ul>
 </div>
 <div class="section" id="rmg-database-version-2-1-7">
-<h2>17.8. RMG-database Version 2.1.7<a class="headerlink" href="#rmg-database-version-2-1-7" title="Permalink to this headline">¶</a></h2>
+<h2>17.9. RMG-database Version 2.1.7<a class="headerlink" href="#rmg-database-version-2-1-7" title="Permalink to this headline">¶</a></h2>
 <p>Date: February 12, 2018</p>
 <ul class="simple">
 <li><dl class="first docutils">
@@ -419,7 +447,7 @@ A filtration algorithm was also added to select only the most representative str
 </ul>
 </div>
 <div class="section" id="rmg-py-version-2-1-6">
-<h2>17.9. RMG-Py Version 2.1.6<a class="headerlink" href="#rmg-py-version-2-1-6" title="Permalink to this headline">¶</a></h2>
+<h2>17.10. RMG-Py Version 2.1.6<a class="headerlink" href="#rmg-py-version-2-1-6" title="Permalink to this headline">¶</a></h2>
 <p>Date: December 21, 2017</p>
 <ul class="simple">
 <li><dl class="first docutils">
@@ -465,7 +493,7 @@ A filtration algorithm was also added to select only the most representative str
 </ul>
 </div>
 <div class="section" id="rmg-database-version-2-1-6">
-<h2>17.10. RMG-database Version 2.1.6<a class="headerlink" href="#rmg-database-version-2-1-6" title="Permalink to this headline">¶</a></h2>
+<h2>17.11. RMG-database Version 2.1.6<a class="headerlink" href="#rmg-database-version-2-1-6" title="Permalink to this headline">¶</a></h2>
 <p>Date: December 21, 2017</p>
 <ul class="simple">
 <li><dl class="first docutils">
@@ -498,7 +526,7 @@ A filtration algorithm was also added to select only the most representative str
 </ul>
 </div>
 <div class="section" id="rmg-py-version-2-1-5">
-<h2>17.11. RMG-Py Version 2.1.5<a class="headerlink" href="#rmg-py-version-2-1-5" title="Permalink to this headline">¶</a></h2>
+<h2>17.12. RMG-Py Version 2.1.5<a class="headerlink" href="#rmg-py-version-2-1-5" title="Permalink to this headline">¶</a></h2>
 <p>Date: October 18, 2017</p>
 <ul class="simple">
 <li><dl class="first docutils">
@@ -535,7 +563,7 @@ A filtration algorithm was also added to select only the most representative str
 </ul>
 </div>
 <div class="section" id="rmg-database-version-2-1-5">
-<h2>17.12. RMG-database Version 2.1.5<a class="headerlink" href="#rmg-database-version-2-1-5" title="Permalink to this headline">¶</a></h2>
+<h2>17.13. RMG-database Version 2.1.5<a class="headerlink" href="#rmg-database-version-2-1-5" title="Permalink to this headline">¶</a></h2>
 <p>Date: October 18, 2017</p>
 <ul class="simple">
 <li><dl class="first docutils">
@@ -559,7 +587,7 @@ A filtration algorithm was also added to select only the most representative str
 </ul>
 </div>
 <div class="section" id="rmg-py-version-2-1-4">
-<h2>17.13. RMG-Py Version 2.1.4<a class="headerlink" href="#rmg-py-version-2-1-4" title="Permalink to this headline">¶</a></h2>
+<h2>17.14. RMG-Py Version 2.1.4<a class="headerlink" href="#rmg-py-version-2-1-4" title="Permalink to this headline">¶</a></h2>
 <p>Date: September 08, 2017</p>
 <ul class="simple">
 <li><dl class="first docutils">
@@ -619,7 +647,7 @@ A filtration algorithm was also added to select only the most representative str
 </ul>
 </div>
 <div class="section" id="rmg-database-version-2-1-4">
-<h2>17.14. RMG-database Version 2.1.4<a class="headerlink" href="#rmg-database-version-2-1-4" title="Permalink to this headline">¶</a></h2>
+<h2>17.15. RMG-database Version 2.1.4<a class="headerlink" href="#rmg-database-version-2-1-4" title="Permalink to this headline">¶</a></h2>
 <p>Date: September 08, 2017</p>
 <ul class="simple">
 <li><dl class="first docutils">
@@ -657,7 +685,7 @@ A filtration algorithm was also added to select only the most representative str
 </ul>
 </div>
 <div class="section" id="rmg-py-version-2-1-3">
-<h2>17.15. RMG-Py Version 2.1.3<a class="headerlink" href="#rmg-py-version-2-1-3" title="Permalink to this headline">¶</a></h2>
+<h2>17.16. RMG-Py Version 2.1.3<a class="headerlink" href="#rmg-py-version-2-1-3" title="Permalink to this headline">¶</a></h2>
 <p>Date: July 27, 2017</p>
 <ul class="simple">
 <li><dl class="first docutils">
@@ -734,7 +762,7 @@ A filtration algorithm was also added to select only the most representative str
 </ul>
 </div>
 <div class="section" id="rmg-database-version-2-1-3">
-<h2>17.16. RMG-database Version 2.1.3<a class="headerlink" href="#rmg-database-version-2-1-3" title="Permalink to this headline">¶</a></h2>
+<h2>17.17. RMG-database Version 2.1.3<a class="headerlink" href="#rmg-database-version-2-1-3" title="Permalink to this headline">¶</a></h2>
 <p>Date: July 27, 2017</p>
 <ul class="simple">
 <li><dl class="first docutils">
@@ -759,7 +787,7 @@ A filtration algorithm was also added to select only the most representative str
 </ul>
 </div>
 <div class="section" id="rmg-py-version-2-1-2">
-<h2>17.17. RMG-Py Version 2.1.2<a class="headerlink" href="#rmg-py-version-2-1-2" title="Permalink to this headline">¶</a></h2>
+<h2>17.18. RMG-Py Version 2.1.2<a class="headerlink" href="#rmg-py-version-2-1-2" title="Permalink to this headline">¶</a></h2>
 <p>Date: May 18, 2017</p>
 <ul class="simple">
 <li><dl class="first docutils">
@@ -787,7 +815,7 @@ A filtration algorithm was also added to select only the most representative str
 </ul>
 </div>
 <div class="section" id="rmg-database-version-2-1-2">
-<h2>17.18. RMG-database Version 2.1.2<a class="headerlink" href="#rmg-database-version-2-1-2" title="Permalink to this headline">¶</a></h2>
+<h2>17.19. RMG-database Version 2.1.2<a class="headerlink" href="#rmg-database-version-2-1-2" title="Permalink to this headline">¶</a></h2>
 <p>Date: May 18, 2017</p>
 <ul class="simple">
 <li><dl class="first docutils">
@@ -821,7 +849,7 @@ A filtration algorithm was also added to select only the most representative str
 </ul>
 </div>
 <div class="section" id="rmg-py-version-2-1-1">
-<h2>17.19. RMG-Py Version 2.1.1<a class="headerlink" href="#rmg-py-version-2-1-1" title="Permalink to this headline">¶</a></h2>
+<h2>17.20. RMG-Py Version 2.1.1<a class="headerlink" href="#rmg-py-version-2-1-1" title="Permalink to this headline">¶</a></h2>
 <p>Date: April 07, 2017</p>
 <ul class="simple">
 <li><dl class="first docutils">
@@ -847,7 +875,7 @@ A filtration algorithm was also added to select only the most representative str
 </ul>
 </div>
 <div class="section" id="rmg-database-version-2-1-1">
-<h2>17.20. RMG-database Version 2.1.1<a class="headerlink" href="#rmg-database-version-2-1-1" title="Permalink to this headline">¶</a></h2>
+<h2>17.21. RMG-database Version 2.1.1<a class="headerlink" href="#rmg-database-version-2-1-1" title="Permalink to this headline">¶</a></h2>
 <p>Date: April 07, 2017</p>
 <ul class="simple">
 <li><dl class="first docutils">
@@ -879,7 +907,7 @@ A filtration algorithm was also added to select only the most representative str
 </ul>
 </div>
 <div class="section" id="rmg-py-version-2-1-0">
-<h2>17.21. RMG-Py Version 2.1.0<a class="headerlink" href="#rmg-py-version-2-1-0" title="Permalink to this headline">¶</a></h2>
+<h2>17.22. RMG-Py Version 2.1.0<a class="headerlink" href="#rmg-py-version-2-1-0" title="Permalink to this headline">¶</a></h2>
 <p>Date: March 07, 2017</p>
 <ul class="simple">
 <li><dl class="first docutils">
@@ -923,7 +951,7 @@ A filtration algorithm was also added to select only the most representative str
 </ul>
 </div>
 <div class="section" id="rmg-database-version-2-1-0">
-<h2>17.22. RMG-database Version 2.1.0<a class="headerlink" href="#rmg-database-version-2-1-0" title="Permalink to this headline">¶</a></h2>
+<h2>17.23. RMG-database Version 2.1.0<a class="headerlink" href="#rmg-database-version-2-1-0" title="Permalink to this headline">¶</a></h2>
 <p>Date: March 07, 2017</p>
 <ul class="simple">
 <li><dl class="first docutils">
@@ -975,7 +1003,7 @@ A filtration algorithm was also added to select only the most representative str
 </ul>
 </div>
 <div class="section" id="rmg-py-version-2-0-0">
-<h2>17.23. RMG-Py Version 2.0.0<a class="headerlink" href="#rmg-py-version-2-0-0" title="Permalink to this headline">¶</a></h2>
+<h2>17.24. RMG-Py Version 2.0.0<a class="headerlink" href="#rmg-py-version-2-0-0" title="Permalink to this headline">¶</a></h2>
 <p>Date: September 16, 2016</p>
 <p>This release includes several milestones of RMG project:</p>
 <ul class="simple">
@@ -1031,7 +1059,7 @@ A filtration algorithm was also added to select only the most representative str
 </ul>
 </div>
 <div class="section" id="rmg-database-version-2-0-0">
-<h2>17.24. RMG-database Version 2.0.0<a class="headerlink" href="#rmg-database-version-2-0-0" title="Permalink to this headline">¶</a></h2>
+<h2>17.25. RMG-database Version 2.0.0<a class="headerlink" href="#rmg-database-version-2-0-0" title="Permalink to this headline">¶</a></h2>
 <p>Date: September 16, 2016</p>
 <p>In conjunction with the release of RMG-Py v2.0.0, an updated package for the RMG-database has also been released.
 This release brings some new additions and fixes:</p>
@@ -1055,7 +1083,7 @@ This release brings some new additions and fixes:</p>
 </ul>
 </div>
 <div class="section" id="rmg-py-version-1-0-4">
-<h2>17.25. RMG-Py Version 1.0.4<a class="headerlink" href="#rmg-py-version-1-0-4" title="Permalink to this headline">¶</a></h2>
+<h2>17.26. RMG-Py Version 1.0.4<a class="headerlink" href="#rmg-py-version-1-0-4" title="Permalink to this headline">¶</a></h2>
 <p>Date: March 28, 2016</p>
 <ul class="simple">
 <li><dl class="first docutils">
@@ -1109,7 +1137,7 @@ This release brings some new additions and fixes:</p>
 </ul>
 </div>
 <div class="section" id="rmg-py-version-1-0-3">
-<h2>17.26. RMG-Py Version 1.0.3<a class="headerlink" href="#rmg-py-version-1-0-3" title="Permalink to this headline">¶</a></h2>
+<h2>17.27. RMG-Py Version 1.0.3<a class="headerlink" href="#rmg-py-version-1-0-3" title="Permalink to this headline">¶</a></h2>
 <p>Date: February 4, 2016</p>
 <p>This mini release contains the following updates:</p>
 <ul class="simple">
@@ -1118,7 +1146,7 @@ This release brings some new additions and fixes:</p>
 </ul>
 </div>
 <div class="section" id="rmg-py-version-1-0-2">
-<h2>17.27. RMG-Py Version 1.0.2<a class="headerlink" href="#rmg-py-version-1-0-2" title="Permalink to this headline">¶</a></h2>
+<h2>17.28. RMG-Py Version 1.0.2<a class="headerlink" href="#rmg-py-version-1-0-2" title="Permalink to this headline">¶</a></h2>
 <p>Date: January 29, 2016</p>
 <p>This new release adds several new features and bug fixes.</p>
 <ul class="simple">
@@ -1139,7 +1167,7 @@ the <a class="reference external" href="http://rmg.mit.edu/simulate/chemkin">vis
 </ul>
 </div>
 <div class="section" id="rmg-database-version-1-0-2">
-<h2>17.28. RMG-database Version 1.0.2<a class="headerlink" href="#rmg-database-version-1-0-2" title="Permalink to this headline">¶</a></h2>
+<h2>17.29. RMG-database Version 1.0.2<a class="headerlink" href="#rmg-database-version-1-0-2" title="Permalink to this headline">¶</a></h2>
 <p>Date: January 29, 2016</p>
 <p>In conjunction with the release of RMG-Py v1.0.2, an updated package for the RMG-database has also been released.
 This release brings some new additions and fixes:</p>
@@ -1195,37 +1223,38 @@ presence of ethene: realistic pathways from C5H5 to naphthalene” (2016)</li>
           </a>
         </div>
         <div class="menuitem">
-  <h3><a href="../../contents.html">Table Of Contents</a></h3>
+  <h3><a href="../../contents.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">17. Release Notes</a><ul>
-<li><a class="reference internal" href="#rmg-py-version-2-2-0">17.1. RMG-Py Version 2.2.0</a></li>
-<li><a class="reference internal" href="#rmg-database-version-2-2-0">17.2. RMG-database Version 2.2.0</a></li>
-<li><a class="reference internal" href="#rmg-py-version-2-1-9">17.3. RMG-Py Version 2.1.9</a></li>
-<li><a class="reference internal" href="#rmg-database-version-2-1-9">17.4. RMG-database Version 2.1.9</a></li>
-<li><a class="reference internal" href="#rmg-py-version-2-1-8">17.5. RMG-Py Version 2.1.8</a></li>
-<li><a class="reference internal" href="#rmg-database-version-2-1-8">17.6. RMG-database Version 2.1.8</a></li>
-<li><a class="reference internal" href="#rmg-py-version-2-1-7">17.7. RMG-Py Version 2.1.7</a></li>
-<li><a class="reference internal" href="#rmg-database-version-2-1-7">17.8. RMG-database Version 2.1.7</a></li>
-<li><a class="reference internal" href="#rmg-py-version-2-1-6">17.9. RMG-Py Version 2.1.6</a></li>
-<li><a class="reference internal" href="#rmg-database-version-2-1-6">17.10. RMG-database Version 2.1.6</a></li>
-<li><a class="reference internal" href="#rmg-py-version-2-1-5">17.11. RMG-Py Version 2.1.5</a></li>
-<li><a class="reference internal" href="#rmg-database-version-2-1-5">17.12. RMG-database Version 2.1.5</a></li>
-<li><a class="reference internal" href="#rmg-py-version-2-1-4">17.13. RMG-Py Version 2.1.4</a></li>
-<li><a class="reference internal" href="#rmg-database-version-2-1-4">17.14. RMG-database Version 2.1.4</a></li>
-<li><a class="reference internal" href="#rmg-py-version-2-1-3">17.15. RMG-Py Version 2.1.3</a></li>
-<li><a class="reference internal" href="#rmg-database-version-2-1-3">17.16. RMG-database Version 2.1.3</a></li>
-<li><a class="reference internal" href="#rmg-py-version-2-1-2">17.17. RMG-Py Version 2.1.2</a></li>
-<li><a class="reference internal" href="#rmg-database-version-2-1-2">17.18. RMG-database Version 2.1.2</a></li>
-<li><a class="reference internal" href="#rmg-py-version-2-1-1">17.19. RMG-Py Version 2.1.1</a></li>
-<li><a class="reference internal" href="#rmg-database-version-2-1-1">17.20. RMG-database Version 2.1.1</a></li>
-<li><a class="reference internal" href="#rmg-py-version-2-1-0">17.21. RMG-Py Version 2.1.0</a></li>
-<li><a class="reference internal" href="#rmg-database-version-2-1-0">17.22. RMG-database Version 2.1.0</a></li>
-<li><a class="reference internal" href="#rmg-py-version-2-0-0">17.23. RMG-Py Version 2.0.0</a></li>
-<li><a class="reference internal" href="#rmg-database-version-2-0-0">17.24. RMG-database Version 2.0.0</a></li>
-<li><a class="reference internal" href="#rmg-py-version-1-0-4">17.25. RMG-Py Version 1.0.4</a></li>
-<li><a class="reference internal" href="#rmg-py-version-1-0-3">17.26. RMG-Py Version 1.0.3</a></li>
-<li><a class="reference internal" href="#rmg-py-version-1-0-2">17.27. RMG-Py Version 1.0.2</a></li>
-<li><a class="reference internal" href="#rmg-database-version-1-0-2">17.28. RMG-database Version 1.0.2</a></li>
+<li><a class="reference internal" href="#rmg-py-version-2-2-1">17.1. RMG-Py Version 2.2.1</a></li>
+<li><a class="reference internal" href="#rmg-py-version-2-2-0">17.2. RMG-Py Version 2.2.0</a></li>
+<li><a class="reference internal" href="#rmg-database-version-2-2-0">17.3. RMG-database Version 2.2.0</a></li>
+<li><a class="reference internal" href="#rmg-py-version-2-1-9">17.4. RMG-Py Version 2.1.9</a></li>
+<li><a class="reference internal" href="#rmg-database-version-2-1-9">17.5. RMG-database Version 2.1.9</a></li>
+<li><a class="reference internal" href="#rmg-py-version-2-1-8">17.6. RMG-Py Version 2.1.8</a></li>
+<li><a class="reference internal" href="#rmg-database-version-2-1-8">17.7. RMG-database Version 2.1.8</a></li>
+<li><a class="reference internal" href="#rmg-py-version-2-1-7">17.8. RMG-Py Version 2.1.7</a></li>
+<li><a class="reference internal" href="#rmg-database-version-2-1-7">17.9. RMG-database Version 2.1.7</a></li>
+<li><a class="reference internal" href="#rmg-py-version-2-1-6">17.10. RMG-Py Version 2.1.6</a></li>
+<li><a class="reference internal" href="#rmg-database-version-2-1-6">17.11. RMG-database Version 2.1.6</a></li>
+<li><a class="reference internal" href="#rmg-py-version-2-1-5">17.12. RMG-Py Version 2.1.5</a></li>
+<li><a class="reference internal" href="#rmg-database-version-2-1-5">17.13. RMG-database Version 2.1.5</a></li>
+<li><a class="reference internal" href="#rmg-py-version-2-1-4">17.14. RMG-Py Version 2.1.4</a></li>
+<li><a class="reference internal" href="#rmg-database-version-2-1-4">17.15. RMG-database Version 2.1.4</a></li>
+<li><a class="reference internal" href="#rmg-py-version-2-1-3">17.16. RMG-Py Version 2.1.3</a></li>
+<li><a class="reference internal" href="#rmg-database-version-2-1-3">17.17. RMG-database Version 2.1.3</a></li>
+<li><a class="reference internal" href="#rmg-py-version-2-1-2">17.18. RMG-Py Version 2.1.2</a></li>
+<li><a class="reference internal" href="#rmg-database-version-2-1-2">17.19. RMG-database Version 2.1.2</a></li>
+<li><a class="reference internal" href="#rmg-py-version-2-1-1">17.20. RMG-Py Version 2.1.1</a></li>
+<li><a class="reference internal" href="#rmg-database-version-2-1-1">17.21. RMG-database Version 2.1.1</a></li>
+<li><a class="reference internal" href="#rmg-py-version-2-1-0">17.22. RMG-Py Version 2.1.0</a></li>
+<li><a class="reference internal" href="#rmg-database-version-2-1-0">17.23. RMG-database Version 2.1.0</a></li>
+<li><a class="reference internal" href="#rmg-py-version-2-0-0">17.24. RMG-Py Version 2.0.0</a></li>
+<li><a class="reference internal" href="#rmg-database-version-2-0-0">17.25. RMG-database Version 2.0.0</a></li>
+<li><a class="reference internal" href="#rmg-py-version-1-0-4">17.26. RMG-Py Version 1.0.4</a></li>
+<li><a class="reference internal" href="#rmg-py-version-1-0-3">17.27. RMG-Py Version 1.0.3</a></li>
+<li><a class="reference internal" href="#rmg-py-version-1-0-2">17.28. RMG-Py Version 1.0.2</a></li>
+<li><a class="reference internal" href="#rmg-database-version-1-0-2">17.29. RMG-database Version 1.0.2</a></li>
 </ul>
 </li>
 </ul>
@@ -1285,7 +1314,7 @@ presence of ethene: realistic pathways from C5H5 to naphthalene” (2016)</li>
           <a href="faq.html" title="16. Frequently Asked Questions"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" >RMG User’s Guide</a> &#187;</li> 
@@ -1293,7 +1322,7 @@ presence of ethene: realistic pathways from C5H5 to naphthalene” (2016)</li>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
     </div>
   </body>
 </html>

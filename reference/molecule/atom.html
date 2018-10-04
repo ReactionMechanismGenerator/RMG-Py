@@ -9,11 +9,13 @@
     <title>rmgpy.molecule.Atom &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="rmgpy.molecule.Bond" href="bond.html" />
@@ -43,7 +45,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="recipe.html" title="Reaction recipes"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Molecular representations (<code class="docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
@@ -143,37 +145,85 @@ required parameters. The available actions can be found
 <dl class="attribute">
 <dt id="rmgpy.molecule.Atom.atomType">
 <code class="descname">atomType</code><a class="headerlink" href="#rmgpy.molecule.Atom.atomType" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>atomType</em> – rmgpy.molecule.atomtype.AtomType</p>
+<dd><p>rmgpy.molecule.atomtype.AtomType</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">atomType</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.Atom.charge">
 <code class="descname">charge</code><a class="headerlink" href="#rmgpy.molecule.Atom.charge" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>charge</em> – ‘short’</p>
+<dd><p>‘short’</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">charge</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.Atom.connectivity1">
 <code class="descname">connectivity1</code><a class="headerlink" href="#rmgpy.molecule.Atom.connectivity1" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>connectivity1</em> – ‘short’</p>
+<dd><p>‘short’</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">connectivity1</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.Atom.connectivity2">
 <code class="descname">connectivity2</code><a class="headerlink" href="#rmgpy.molecule.Atom.connectivity2" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>connectivity2</em> – ‘short’</p>
+<dd><p>‘short’</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">connectivity2</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.Atom.connectivity3">
 <code class="descname">connectivity3</code><a class="headerlink" href="#rmgpy.molecule.Atom.connectivity3" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>connectivity3</em> – ‘short’</p>
+<dd><p>‘short’</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">connectivity3</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.Atom.coords">
 <code class="descname">coords</code><a class="headerlink" href="#rmgpy.molecule.Atom.coords" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>coords</em> – numpy.ndarray</p>
+<dd><p>numpy.ndarray</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">coords</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -199,13 +249,29 @@ where <cite>radical</cite> specifies the number of radical electrons to remove.<
 <dl class="attribute">
 <dt id="rmgpy.molecule.Atom.edges">
 <code class="descname">edges</code><a class="headerlink" href="#rmgpy.molecule.Atom.edges" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>edges</em> – dict</p>
+<dd><p>dict</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">edges</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.Atom.element">
 <code class="descname">element</code><a class="headerlink" href="#rmgpy.molecule.Atom.element" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>element</em> – rmgpy.molecule.element.Element</p>
+<dd><p>rmgpy.molecule.element.Element</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">element</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -239,13 +305,29 @@ radical electrons, lone pairs, and charge</p>
 <dl class="attribute">
 <dt id="rmgpy.molecule.Atom.id">
 <code class="descname">id</code><a class="headerlink" href="#rmgpy.molecule.Atom.id" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>id</em> – ‘int’</p>
+<dd><p>‘int’</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">id</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.Atom.ignore">
 <code class="descname">ignore</code><a class="headerlink" href="#rmgpy.molecule.Atom.ignore" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>ignore</em> – ‘bool’</p>
+<dd><p>‘bool’</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">ignore</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -351,31 +433,71 @@ not.</p>
 <dl class="attribute">
 <dt id="rmgpy.molecule.Atom.label">
 <code class="descname">label</code><a class="headerlink" href="#rmgpy.molecule.Atom.label" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>label</em> – str</p>
+<dd><p>str</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">label</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.Atom.lonePairs">
 <code class="descname">lonePairs</code><a class="headerlink" href="#rmgpy.molecule.Atom.lonePairs" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>lonePairs</em> – ‘short’</p>
+<dd><p>‘short’</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">lonePairs</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.Atom.mapping">
 <code class="descname">mapping</code><a class="headerlink" href="#rmgpy.molecule.Atom.mapping" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>mapping</em> – rmgpy.molecule.graph.Vertex</p>
+<dd><p>rmgpy.molecule.graph.Vertex</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">mapping</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.Atom.props">
 <code class="descname">props</code><a class="headerlink" href="#rmgpy.molecule.Atom.props" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>props</em> – dict</p>
+<dd><p>dict</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">props</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.Atom.radicalElectrons">
 <code class="descname">radicalElectrons</code><a class="headerlink" href="#rmgpy.molecule.Atom.radicalElectrons" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>radicalElectrons</em> – ‘short’</p>
+<dd><p>‘short’</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">radicalElectrons</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -393,13 +515,29 @@ not.</p>
 <dl class="attribute">
 <dt id="rmgpy.molecule.Atom.sortingLabel">
 <code class="descname">sortingLabel</code><a class="headerlink" href="#rmgpy.molecule.Atom.sortingLabel" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>sortingLabel</em> – ‘short’</p>
+<dd><p>‘short’</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">sortingLabel</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="rmgpy.molecule.Atom.terminal">
 <code class="descname">terminal</code><a class="headerlink" href="#rmgpy.molecule.Atom.terminal" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>terminal</em> – ‘bool’</p>
+<dd><p>‘bool’</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">terminal</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -495,7 +633,7 @@ number and types of bonds, radicals, and lone pairs.</p>
           <a href="recipe.html" title="Reaction recipes"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" >Molecular representations (<code class="docutils literal notranslate"><span class="pre">rmgpy.molecule</span></code>)</a> &#187;</li> 
@@ -503,7 +641,7 @@ number and types of bonds, radicals, and lone pairs.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
     </div>
   </body>
 </html>

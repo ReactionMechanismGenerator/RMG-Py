@@ -9,11 +9,13 @@
     <title>rmgpy.rmg.pdep.PDepNetwork &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="rmgpy.rmg.pdep.PDepReaction" href="pdepreaction.html" />
@@ -43,7 +45,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="output.html" title="Saving RMG output"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Reaction mechanism generation (<code class="docutils literal notranslate"><span class="pre">rmgpy.rmg</span></code>)</a> &#187;</li> 
@@ -200,6 +202,21 @@ pressure, so you must provide these in order to get a meaningful result.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.rmg.pdep.PDepNetwork.get_energy_filtered_reactions">
+<code class="descname">get_energy_filtered_reactions</code><span class="sig-paren">(</span><em>T</em>, <em>tol</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.get_energy_filtered_reactions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of products and isomers that are greater in Free Energy
+than a*R*T + Gfsource(T)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.rmg.pdep.PDepNetwork.get_rate_filtered_reactions">
+<code class="descname">get_rate_filtered_reactions</code><span class="sig-paren">(</span><em>T</em>, <em>P</em>, <em>tol</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.get_rate_filtered_reactions" title="Permalink to this definition">¶</a></dt>
+<dd><p>determines the set of pathReactions that have fluxes less than
+tol at steady state where all A =&gt; B + C reactions are irreversible
+and there is a constant flux from/to the source configuration of 1.0</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.rmg.pdep.PDepNetwork.initialize">
 <code class="descname">initialize</code><span class="sig-paren">(</span><em>Tmin</em>, <em>Tmax</em>, <em>Pmin</em>, <em>Pmax</em>, <em>maximumGrainSize=0.0</em>, <em>minimumGrainCount=0</em>, <em>activeJRotor=True</em>, <em>activeKRotor=True</em>, <em>rmgmode=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.initialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize a pressure dependence calculation by computing several
@@ -252,6 +269,19 @@ default.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.rmg.pdep.PDepNetwork.remove_disconnected_reactions">
+<code class="descname">remove_disconnected_reactions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.remove_disconnected_reactions" title="Permalink to this definition">¶</a></dt>
+<dd><p>gets rid of reactions/isomers/products not connected to the source by a reaction sequence</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.rmg.pdep.PDepNetwork.remove_reactions">
+<code class="descname">remove_reactions</code><span class="sig-paren">(</span><em>reactionModel</em>, <em>rxns</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.remove_reactions" title="Permalink to this definition">¶</a></dt>
+<dd><p>removes a list of reactions from the network and all reactions/products
+left disconnected by removing those reactions</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.rmg.pdep.PDepNetwork.selectEnergyGrains">
 <code class="descname">selectEnergyGrains</code><span class="sig-paren">(</span><em>T</em>, <em>grainSize=0.0</em>, <em>grainCount=0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.selectEnergyGrains" title="Permalink to this definition">¶</a></dt>
 <dd><p>Select a suitable list of energies to use for subsequent calculations.
@@ -300,6 +330,14 @@ populations <cite>x0</cite>. Be sure to run one of the methods for generating
 <span class="math notranslate nohighlight">\(k(T,P)\)</span> values before calling this method.
 Returns the times in s, population distributions for each isomer, and total
 population profiles for each configuration.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.rmg.pdep.PDepNetwork.solve_SS_network">
+<code class="descname">solve_SS_network</code><span class="sig-paren">(</span><em>T</em>, <em>P</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.solve_SS_network" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculates the steady state concentrations if all A =&gt; B + C
+reactions are irreversible and the flux from/to the source
+configuration is 1.0</p>
 </dd></dl>
 
 <dl class="method">
@@ -404,7 +442,7 @@ based on which species are in the model core.</p>
           <a href="output.html" title="Saving RMG output"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">2.2.0 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.1 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" >Reaction mechanism generation (<code class="docutils literal notranslate"><span class="pre">rmgpy.rmg</span></code>)</a> &#187;</li> 
@@ -412,7 +450,7 @@ based on which species are in the model core.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
     </div>
   </body>
 </html>

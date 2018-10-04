@@ -1,0 +1,215 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>5. Creating Input Files for Automated Pressure Dependent Network Exploration &#8212; RMG-Py 2.1.0 Documentation</title>
+    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="6. Running CanTherm" href="running.html" />
+    <link rel="prev" title="4. Creating Input Files for Pressure Dependent Calculations" href="input_pdep.html" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+  MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+    ce: ["Extension","mhchem"],
+  });
+});
+</script>
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="running.html" title="6. Running CanTherm"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="input_pdep.html" title="4. Creating Input Files for Pressure Dependent Calculations"
+             accesskey="P">previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.1 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >User’s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">CanTherm User’s Guide</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="creating-input-files-for-automated-pressure-dependent-network-exploration">
+<h1>5. Creating Input Files for Automated Pressure Dependent Network Exploration<a class="headerlink" href="#creating-input-files-for-automated-pressure-dependent-network-exploration" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="syntax">
+<h2>5.1. Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<p>Network exploration starts from a pressure dependent calculation job so naturally it requires an input file
+containing everything required for a pressure-dependent calculation input file.  In addition all species
+blocks must have a structure input and there must be a database block in the job.  At the end of the
+pressure-dependent calculation input file you append an explorer block.  For example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">explorer</span><span class="p">(</span>
+    <span class="n">source</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;methoxy&#39;</span><span class="p">],</span>
+    <span class="n">explore_tol</span><span class="o">=</span><span class="p">(</span><span class="mf">1e-2</span><span class="p">,</span><span class="s1">&#39;s^-1&#39;</span><span class="p">),</span>
+    <span class="n">energy_tol</span><span class="o">=</span><span class="mf">1e4</span><span class="p">,</span>
+    <span class="n">flux_tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">source</span></code> is a list containing either the label for a single isomer or the labels corresponding to a bimolecular
+source channel.  The network is expanded starting from this starting isomer/channel.</p>
+</div>
+<div class="section" id="network-exploration">
+<h2>5.2. Network Exploration<a class="headerlink" href="#network-exploration" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">explore_tol</span></code> is largest acceptable total rate at which isomers inside the network isomerize to become
+isomers that are not part of the network.  Network expansion is done starting from just the network source using
+values from the rest of the Cantherm job when available, otherwise from RMG.  It cycles through all of the
+temperature and pressure points specified for fitting in the pressure dependence job and checks the total network
+leak rate at each one.  Whenever this rate is greater than <code class="docutils literal notranslate"><span class="pre">explore_tol</span></code> the outside isomer with the most leak is
+added to the network and reacted and the loop is flagged to cycle through all of the temperatures and pressures
+again.  Once this loop is finished a network_full.py file is generated in the pdep directory that has the full
+explored network.</p>
+</div>
+<div class="section" id="network-reduction">
+<h2>5.3. Network Reduction<a class="headerlink" href="#network-reduction" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">energy_tol</span></code> and <code class="docutils literal notranslate"><span class="pre">flux_tol</span></code> control reduction of the full network.  This is highly recommended as the full model
+will often contain many unimportant reactions.  How strict you decide to set these parameters should be related
+to how much you trust the thermo and rate information being used in the job.</p>
+<p><code class="docutils literal notranslate"><span class="pre">energy_tol</span></code> is related to the maximum difference in E0 allowed between a reaction TS and the source channel/isomer.
+A given reaction is deemed filterable at a given condition if <code class="docutils literal notranslate"><span class="pre">energy_tol</span></code> * RT &lt; E0_TS - E0_source.  For example,
+if T = 1000 K and <code class="docutils literal notranslate"><span class="pre">energy_tol</span></code> is set to 100 and the source energy is <code class="docutils literal notranslate"><span class="pre">100</span> <span class="pre">(kJ</span> <span class="pre">mol^-1)</span></code>, all reactions with a transition
+state energy more than <code class="docutils literal notranslate"><span class="pre">100</span> <span class="pre">*</span> <span class="pre">8.314</span> <span class="pre">(J</span> <span class="pre">K^-1</span> <span class="pre">mol^-1)</span> <span class="pre">*</span> <span class="pre">1000</span> <span class="pre">K</span> <span class="pre">+</span> <span class="pre">100</span> <span class="pre">(kJ</span> <span class="pre">mol^-1)</span> <span class="pre">=</span> <span class="pre">931.4</span> <span class="pre">(kJ</span> <span class="pre">mol^-1)</span></code> will
+not be considered in the final network.</p>
+<p><code class="docutils literal notranslate"><span class="pre">flux_tol</span></code> is related to the solution of a steady state problem.  In this problem a constant flux of 1.0 (choice of
+units irrelevant) is applied to the source channel/isomer while all A =&gt; B + C reactions are assumed to be irreversible.
+Under these conditions steady state concentrations of each isomer and the rates of every unimolecular reaction can be
+calculated.  Since the input flux to the system is 1.0 to some degree these rates represent the fraction of the input
+flux passing through that reaction.  When the flux through a reaction is less than <code class="docutils literal notranslate"><span class="pre">flux_tol</span></code> it is deemed filterable
+at that condition.</p>
+<p>Overall a reaction is removed from the network if it is deemed filterable by both methods (if both specified) at every
+temperature and pressure combination.  After reduction a network_reduced.py file is generated in the pdep directory
+containing the reduced network.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+  <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    <div class="sphinxsidebarwrapper">
+        <div class="sidebarlogo"><a href="../../index.html">
+            <img src="../../_static/rmg-logo-small.png" alt="RMG" />
+        </a></div>
+      <div id="sidebar">
+        <div id="rmgsidebar">
+          <a href="http://rmg.mit.edu">
+            <div class="menuitem">
+              <img src="../../_static/rmg-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG Website</div>
+              <div class="menutext menudesc">Interactive website for RMG-Py</div>
+            </div>
+          </a>
+          <a href="https://github.com/ReactionMechanismGenerator/RMG-Py">
+            <div class="menuitem">
+              <img src="../../_static/github-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG GitHub</div>
+              <div class="menutext menudesc">View source and post issues</div>
+            </div>
+          </a>
+        </div>
+        <div class="menuitem">
+  <h3><a href="../../contents.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">5. Creating Input Files for Automated Pressure Dependent Network Exploration</a><ul>
+<li><a class="reference internal" href="#syntax">5.1. Syntax</a></li>
+<li><a class="reference internal" href="#network-exploration">5.2. Network Exploration</a></li>
+<li><a class="reference internal" href="#network-reduction">5.3. Network Reduction</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+        <div class="menuitem">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="input_pdep.html"
+                        title="previous chapter">4. Creating Input Files for Pressure Dependent Calculations</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="running.html"
+                        title="next chapter">6. Running CanTherm</a></p>
+        </div>
+        <div class="menuitem">
+<div role="note" aria-label="source link">
+    <h3>This Page</h3>
+        <ul class="this-page-menu">
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/cantherm/input_explorer.rst"
+                   rel="nofollow">View Source</a></li>
+        </ul>
+</div>
+        </div>
+        <div class="menuitem">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+    </div>
+  </div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="running.html" title="6. Running CanTherm"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="input_pdep.html" title="4. Creating Input Files for Pressure Dependent Calculations"
+             >previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.1 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >User’s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >CanTherm User’s Guide</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
+    </div>
+  </body>
+</html>
