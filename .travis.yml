@@ -12,9 +12,9 @@ env:
 stages:
   - test
   - name: documentation
-    if: branch = master
+    if: branch = master AND type = push
   - name: deploy
-    if: branch = stable
+    if: branch = stable AND type = push
 
 before_install:
   - cd ..
