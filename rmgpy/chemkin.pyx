@@ -667,8 +667,8 @@ def readReactionComments(reaction, comments, read = True):
             # undo the kinetic manipulation caused by setting degneracy
             if reaction.kinetics:
                 reaction.kinetics.changeRate(1./degen)
-            # still add kinetic comment
-            reaction.kinetics.comment += line.strip() + "\n"
+            # do not add comment because setting degeneracy does so already
+            reaction.kinetics.comment += "\n"
 
         elif line.strip() != '':
             # Any lines which are commented out but don't have any specific flag are simply kinetics comments
