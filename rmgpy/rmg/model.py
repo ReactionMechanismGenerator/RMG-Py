@@ -294,7 +294,7 @@ class CoreEdgeReactionModel:
         spec.creationIteration = self.iterationNum
         spec.generate_resonance_structures()
         spec.molecularWeight = Quantity(spec.molecule[0].getMolecularWeight()*1000.,"amu")
-        
+
         if generateThermo:
             self.generateThermo(spec)
 
