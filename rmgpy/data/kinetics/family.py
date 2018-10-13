@@ -1968,9 +1968,9 @@ class KineticsFamily(Database):
             reaction.pairs = self.getReactionPairs(reaction)
             reaction.template = self.getReactionTemplateLabels(reaction)
 
-            # Unlabel the atoms
-            for label, atom in reaction.labeledAtoms:
-                atom.label = ''
+            # Unlabel the atoms for both reactants and products
+            for reactant in itertools.chain(reaction.reactants, reaction.products):
+                reactant.clearLabeledAtoms()
             
             # We're done with the labeled atoms, so delete the attribute
             del reaction.labeledAtoms
