@@ -222,14 +222,17 @@ class ThermoJob(object):
         conformer = self.species.conformer
         thermo = self.species.getThermoData()
         for i in range(Tlist.shape[0]):
-            Cplist[i] = conformer.getHeatCapacity(Tlist[i])
-            Slist[i] = conformer.getEntropy(Tlist[i])
-            Hlist[i] = (conformer.getEnthalpy(Tlist[i]) + conformer.E0.value_si) * 0.001
-            Glist[i] = Hlist[i] - Tlist[i] * Slist[i] * 0.001
-            Cplist1[i] = thermo.getHeatCapacity(Tlist[i])
-            Slist1[i] = thermo.getEntropy(Tlist[i])
-            Hlist1[i] = thermo.getEnthalpy(Tlist[i]) * 0.001
-            Glist1[i] = thermo.getFreeEnergy(Tlist[i]) * 0.001
+            try:
+                Cplist[i] = conformer.getHeatCapacity(Tlist[i])
+                Slist[i] = conformer.getEntropy(Tlist[i])
+                Hlist[i] = (conformer.getEnthalpy(Tlist[i]) + conformer.E0.value_si) * 0.001
+                Glist[i] = Hlist[i] - Tlist[i] * Slist[i] * 0.001
+                Cplist1[i] = thermo.getHeatCapacity(Tlist[i])
+                Slist1[i] = thermo.getEntropy(Tlist[i])
+                Hlist1[i] = thermo.getEnthalpy(Tlist[i]) * 0.001
+                Glist1[i] = thermo.getFreeEnergy(Tlist[i]) * 0.001
+            except (ValueError,AttributeError):
+                continue
 
         fig = plt.figure(figsize=(10,8))
         fig.suptitle('{0}'.format(self.species.label))
