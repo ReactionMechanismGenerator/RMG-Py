@@ -32,7 +32,7 @@ import unittest
 from external.wip import work_in_progress
 
 from rmgpy.molecule.molecule import Molecule
-from rmgpy.molecule.symmetry import calculateAtomSymmetryNumber, calculateAxisSymmetryNumber, calculateBondSymmetryNumber, calculateCyclicSymmetryNumber
+from rmgpy.molecule.symmetry import calculateAtomSymmetryNumber, calculateAxisSymmetryNumber, calculateBondSymmetryNumber, calculateCyclicSymmetryNumber, _indistinguishable
 from rmgpy.species import Species
 from rmgpy.molecule.resonance import generate_aromatic_resonance_structures
 ################################################################################
@@ -503,7 +503,6 @@ multiplicity 3
         symmetryNumber = species.getSymmetryNumber()
         self.assertEqual(symmetryNumber, 12)
 
-    @work_in_progress
     def testTotalSymmetryNumberChlorobenzene(self):
         """
         Test the Species.getSymmetryNumber() (total symmetry) on c1ccccc1Cl
@@ -523,7 +522,6 @@ multiplicity 3
         symmetryNumber = species.getSymmetryNumber()
         self.assertEqual(symmetryNumber, 2)
 
-    @work_in_progress
     def testTotalSymmetryNumberPhenoxyBenzene(self):
         """
         Test symmetry on c1ccccc1[O] using phenoxy benzene structure
@@ -710,6 +708,33 @@ multiplicity 3
         Test the Molecule.calculateSymmetryNumber() on CC1CC(C)C1
         """
         self.assertEqual(Species().fromSMILES('CC1CC(C)C1').getSymmetryNumber(),36)
+
+    def test_indistinguishable(self):
+        """
+        Test that the _indistinguishable function works properly
+        """
+        mol = Molecule().fromSMILES('c1ccccc1')
+        self.assertTrue(_indistinguishable(mol.atoms[0], mol.atoms[1]))
+        self.assertTrue(_indistinguishable(mol.atoms[0], mol.atoms[2]))
+        self.assertTrue(_indistinguishable(mol.atoms[0], mol.atoms[3]))
+
+    def test_indistinguishable_2(self):
+        """
+        Test that the _indistinguishable function works properly
+        """
+        mol = Molecule().fromSMILES('c1ccccc1[O]')
+        # Carbon with O different from other carbons (with H)
+        self.assertFalse(_indistinguishable(mol.atoms[5], mol.atoms[4]))
+        self.assertFalse(_indistinguishable(mol.atoms[5], mol.atoms[3]))
+        self.assertFalse(_indistinguishable(mol.atoms[5], mol.atoms[2]))
+        # Ortho carbons are the same
+        self.assertTrue(_indistinguishable(mol.atoms[0], mol.atoms[4]))
+        # Meta carbons are the same
+        self.assertTrue(_indistinguishable(mol.atoms[1], mol.atoms[3]))
+        # O is different from H
+        self.assertFalse(_indistinguishable(mol.atoms[6], mol.atoms[7]))
+
+
 ################################################################################
 
 if __name__ == '__main__':
