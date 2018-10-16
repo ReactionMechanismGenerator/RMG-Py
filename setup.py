@@ -40,6 +40,7 @@ except ImportError:
 try:
     from Cython.Distutils import build_ext
     import Cython.Compiler.Options
+    from Cython.Build import cythonize
 except ImportError:
     print 'Cython (http://www.cython.org/) is required to build or install RMG Py.'
     
@@ -50,6 +51,8 @@ except ImportError:
 
 # Create annotated HTML files for each of the Cython modules
 Cython.Compiler.Options.annotate = True
+
+Cython.Compiler.Options.gdb_debug = True
 
 # Turn on profiling capacity for all Cython modules
 #Cython.Compiler.Options.directive_defaults['profile'] = True
@@ -239,6 +242,6 @@ setup(name='RMG-Py',
     py_modules = modules,
     scripts=scripts,
     cmdclass = {'build_ext': build_ext},
-    ext_modules = ext_modules,
+    ext_modules = cythonize(ext_modules, gdb_debug=True, nthreads=4),
     include_dirs=['.', numpy.get_include()],
 )
