@@ -241,10 +241,6 @@ def calculateAxisSymmetryNumber(molecule):
            
     # For each set of adjacent double bonds, check for axis symmetry
     for bonds in cumulatedBonds:
-        
-        # Do nothing if less than two cumulated bonds
-        if len(bonds) < 1: continue
-
         # Do nothing if axis is in cycle
         found = False
         for atom1, atom2 in bonds:
