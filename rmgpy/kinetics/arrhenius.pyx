@@ -762,25 +762,9 @@ cdef class MultiPDepArrhenius(PDepKineticsModel):
         if P == 0:
             raise ValueError('No pressure specified to pressure-dependent MultiPDepArrhenius.getRateCoefficient().')
         
-        Plist1 = self.arrhenius[0].pressures.value_si
-        for arrh in self.arrhenius[1:]:
-            Plist2 = arrh.pressures.value_si
-            assert Plist1.shape[0] == Plist2.shape[0]
-            for i in range(Plist1.shape[0]):
-                assert 0.99 < (Plist2[i] / Plist1[i]) < 1.01            
-        
-        klow = 0.0; khigh = 0.0
+        k = 0
         for arrh in self.arrhenius:
-            Plow, Phigh, arrh_low, arrh_high = arrh.getAdjacentExpressions(P)
-            klow += arrh_low.getRateCoefficient(T)
-            khigh += arrh_high.getRateCoefficient(T)
-            
-        if klow == khigh == 0.0: 
-            return 0.0
-        elif Plow == Phigh:
-            k = klow
-        else:
-            k = klow * 10**(log10(P/Plow)/log10(Phigh/Plow)*log10(khigh/klow))
+            k += arrh.getRateCoefficient(T,P)
         
         return k
 

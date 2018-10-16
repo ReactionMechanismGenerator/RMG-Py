@@ -95,7 +95,6 @@ SMILES_LOOKUPS = {
 MOLECULE_LOOKUPS = {
     'N2': 'N#N',
     'CH4': 'C',
-    'CH2O': 'C=O',
     'H2O': 'O',
     'C2H6': 'CC',
     'H2': '[H][H]',
@@ -104,12 +103,10 @@ MOLECULE_LOOKUPS = {
     'Ar': '[Ar]',
     'He': '[He]',
     'CH4O': 'CO',
-    'CO2': 'O=C=O',
     'CO': '[C-]#[O+]',
     'O2': 'O=O',
     'C': '[C]',  # for this to be in the "molecule" list it must be singlet with 2 lone pairs
     'H2S': 'S',
-    'N2O': 'N#[N+][O-]',
     'NH3': 'N',
     'O3': '[O-][O+]=O',
     'Cl2': '[Cl][Cl]',
@@ -137,7 +134,6 @@ RADICAL_LOOKUPS = {
     'H2N': '[NH2]',
     'HN': '[NH]',
     'NO': '[N]=O',
-    'NO2': 'N(=O)[O]',
     'Cl': '[Cl]',
     'I': '[I]',
 }

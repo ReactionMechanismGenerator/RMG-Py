@@ -448,3 +448,32 @@ def test_isomorphism_sulfurGroup_sulfurMolecule():
     assert_true(mol.isSubgraphIsomorphic(gp1))
     
     assert_true(mol.isSubgraphIsomorphic(gp2))
+
+def test_isotope_subgraph_isomorphism_molecule_and_group():
+    """
+    Checks that subgraph isomorphism works with enriched molecules and groups
+    """
+    methanei = Molecule().fromAdjacencyList("""
+    1 C u0 p0 c0 i13 {2,S} {3,S} {4,S} {5,S}
+    2 H u0 p0 c0 {1,S}
+    3 H u0 p0 c0 {1,S}
+    4 H u0 p0 c0 {1,S}
+    5 H u0 p0 c0 {1,S}
+    """)
+    methane = Molecule().fromAdjacencyList("""
+    1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+    2 H u0 p0 c0 {1,S}
+    3 H u0 p0 c0 {1,S}
+    4 H u0 p0 c0 {1,S}
+    5 H u0 p0 c0 {1,S}
+    """)
+    group_methane = Group().fromAdjacencyList("""
+    1 C  u0 {2,S} {3,S} {4,S} {5,S}
+    2 H  u0 {1,S}
+    3 H  u0 {1,S}
+    4 H  u0 {1,S}
+    5 H  u0 {1,S}
+    """)
+    assert_true(methanei.isSubgraphIsomorphic(group_methane))
+    assert_true(methane.isSubgraphIsomorphic(group_methane))
+    assert_false(methanei.isIsomorphic(methane))

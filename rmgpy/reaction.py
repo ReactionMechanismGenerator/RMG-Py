@@ -87,6 +87,7 @@ class Reaction:
                                                     If ``False`` (by default), this library reaction will not be explored.
                                                     Only unimolecular library reactions with high pressure limit kinetics should be flagged (not if the kinetics were measured at some relatively low pressure)
     `comment`           ``str``                     A description of the reaction source (optional)
+    `is_forward`        ``bool``                    Indicates if the reaction was generated in the forward (true) or reverse (false)
     =================== =========================== ============================
     
     """
@@ -106,7 +107,9 @@ class Reaction:
                  pairs=None,
                  allow_pdep_route=False,
                  elementary_high_p=False,
+                 allow_max_rate_violation=False,
                  comment='',
+                 is_forward=None,
                  ):
         self.index = index
         self.label = label
@@ -124,6 +127,8 @@ class Reaction:
         self.elementary_high_p = elementary_high_p
         self.comment = comment
         self.k_effective_cache = {}
+        self.is_forward = is_forward
+        self.allow_max_rate_violation = allow_max_rate_violation
 
     def __repr__(self):
         """
@@ -402,13 +407,13 @@ class Reaction:
             products (list, optional): Species required on the other side
         """
         # Check forward direction
-        if _isomorphicSpeciesList(self.reactants, reactants):
-            if products is None or _isomorphicSpeciesList(self.products, products):
+        if isomorphic_species_lists(self.reactants, reactants):
+            if products is None or isomorphic_species_lists(self.products, products):
                 return True
             else:
                 return False
-        elif _isomorphicSpeciesList(self.products, reactants):
-            if products is None or _isomorphicSpeciesList(self.reactants, products):
+        elif isomorphic_species_lists(self.products, reactants):
+            if products is None or isomorphic_species_lists(self.reactants, products):
                 return True
             else:
                 return False
@@ -436,24 +441,24 @@ class Reaction:
         """
         if checkTemplateRxnProducts:
             try:
-                species1 = self.products if self.isForward else self.reactants
-                species2 = other.products if other.isForward else other.reactants
+                species1 = self.products if self.is_forward else self.reactants
+                species2 = other.products if other.is_forward else other.reactants
             except AttributeError:
                 raise TypeError('Only use checkTemplateRxnProducts flag for TemplateReactions.')
 
-            return _isomorphicSpeciesList(species1, species2,
-                                          checkIdentical=checkIdentical,
-                                          checkOnlyLabel=checkOnlyLabel)
+            return isomorphic_species_lists(species1, species2,
+                                            check_identical=checkIdentical,
+                                            only_check_label=checkOnlyLabel)
 
         # Compare reactants to reactants
-        forwardReactantsMatch = _isomorphicSpeciesList(self.reactants, 
-                                    other.reactants,checkIdentical = checkIdentical,
-                                    checkOnlyLabel = checkOnlyLabel)
+        forwardReactantsMatch = isomorphic_species_lists(self.reactants, other.reactants,
+                                                         check_identical=checkIdentical,
+                                                         only_check_label=checkOnlyLabel)
         
         # Compare products to products
-        forwardProductsMatch = _isomorphicSpeciesList(self.products, 
-                                    other.products,checkIdentical = checkIdentical,
-                                    checkOnlyLabel = checkOnlyLabel)
+        forwardProductsMatch = isomorphic_species_lists(self.products, other.products,
+                                                        check_identical=checkIdentical,
+                                                        only_check_label=checkOnlyLabel)
 
         # Compare specificCollider to specificCollider
         ColliderMatch = (self.specificCollider == other.specificCollider)
@@ -465,14 +470,14 @@ class Reaction:
             return False
         
         # Compare reactants to products
-        reverseReactantsMatch = _isomorphicSpeciesList(self.reactants, 
-                                    other.products,checkIdentical = checkIdentical,
-                                    checkOnlyLabel = checkOnlyLabel)
+        reverseReactantsMatch = isomorphic_species_lists(self.reactants, other.products,
+                                                         check_identical=checkIdentical,
+                                                         only_check_label=checkOnlyLabel)
 
         # Compare products to reactants
-        reverseProductsMatch = _isomorphicSpeciesList(self.products, 
-                                    other.reactants,checkIdentical = checkIdentical,
-                                    checkOnlyLabel = checkOnlyLabel)
+        reverseProductsMatch = isomorphic_species_lists(self.products, other.reactants,
+                                                        check_identical=checkIdentical,
+                                                        only_check_label=checkOnlyLabel)
 
         # should have already returned if it matches forwards, or we're not allowed to match backwards
         return  (reverseReactantsMatch and reverseProductsMatch and ColliderMatch)
@@ -1213,7 +1218,7 @@ class Reaction:
         if isinstance(self.reactants[0], Species):
             return None
         # obtain species with all resonance isomers
-        if self.isForward:
+        if self.is_forward:
             ensure_species(self.reactants, resonance=reactant_resonance, keep_isomorphic=True)
             ensure_species(self.products, resonance=product_resonance, keep_isomorphic=True)
         else:
@@ -1241,7 +1246,107 @@ class Reaction:
         except AttributeError:
             pass
 
-def _isomorphicSpeciesList(list1, list2, checkIdentical=False, checkOnlyLabel = False):
+    def check_collision_limit_violation(self, t_min, t_max, p_min, p_max):
+        """
+        Warn if a core reaction violates the collision limit rate in either the forward or reverse direction
+        at the relevant extreme T/P conditions. Assuming a monotonic behaviour of the kinetics.
+        Returns a list with the reaction object and the direction in which the violation was detected.
+        """
+        conditions = [[t_min, p_min]]
+        if t_min != t_max:
+            conditions.append([t_max, p_min])
+        if self.kinetics.isPressureDependent() and p_max != p_min:
+            conditions.append([t_min, p_max])
+            if t_min != t_max:
+                conditions.append([t_max, p_max])
+        logging.debug("Checking whether reaction {0} violates the collision rate limit...".format(self))
+        violator_list = []
+        kf_list = []
+        kr_list = []
+        collision_limit_f = []
+        collision_limit_r = []
+        for condition in conditions:
+            if len(self.reactants) >= 2:
+                try:
+                    collision_limit_f.append(self.calculate_coll_limit(temp=condition[0], reverse=False))
+                except ValueError:
+                    continue
+                else:
+                    kf_list.append(self.getRateCoefficient(condition[0], condition[1]))
+            if len(self.products) >= 2:
+                try:
+                    collision_limit_r.append(self.calculate_coll_limit(temp=condition[0], reverse=True))
+                except ValueError:
+                    continue
+                else:
+                    kr_list.append(self.generateReverseRateCoefficient().getRateCoefficient(condition[0], condition[1]))
+        if len(self.reactants) >= 2:
+            for i, k in enumerate(kf_list):
+                if k > collision_limit_f[i]:
+                    ratio = k / collision_limit_f[i]
+                    condition = '{0} K, {1:.1f} bar'.format(conditions[i][0], conditions[i][1]/1e5)
+                    violator_list.append([self, 'forward', ratio, condition])
+        if len(self.products) >= 2:
+            for i, k in enumerate(kr_list):
+                if k > collision_limit_r[i]:
+                    ratio = k / collision_limit_r[i]
+                    condition = '{0} K, {1:.1f} bar'.format(conditions[i][0], conditions[i][1]/1e5)
+                    violator_list.append([self, 'reverse', ratio, condition])
+        return violator_list
+
+    def calculate_coll_limit(self, temp, reverse=False):
+        """
+        Calculate the collision limit rate for the given temperature
+        implemented as recommended in Wang et al. doi 10.1016/j.combustflame.2017.08.005 (Eq. 1)
+        """
+        reduced_mass = self.get_reduced_mass(reverse)
+        sigma, epsilon = self.get_mean_sigma_and_epsilon(reverse)
+        Tr = temp * constants.kB * constants.Na / epsilon
+        reduced_coll_integral = 1.16145 * Tr ** (-0.14874) + 0.52487 * math.exp(-0.7732 * Tr) + 2.16178 * math.exp(
+            -2.437887 * Tr)
+        k_coll = (math.sqrt(8 * math.pi * constants.kB * temp * constants.Na / reduced_mass) * sigma ** 2
+                  * reduced_coll_integral * constants.Na)
+        return k_coll
+
+    def get_reduced_mass(self, reverse=False):
+        """
+        Returns the reduced mass of the reactants if reverse is ``False``
+        Returns the reduced mass of the products if reverse is ``True``
+        """
+        if reverse:
+            mass_list = [spc.molecule[0].getMolecularWeight() for spc in self.products]
+        else:
+            mass_list = [spc.molecule[0].getMolecularWeight() for spc in self.reactants]
+        reduced_mass = reduce((lambda x, y: x * y), mass_list) / sum(mass_list)
+        return reduced_mass
+
+    def get_mean_sigma_and_epsilon(self, reverse=False):
+        """
+        Calculates the collision diameter (sigma) using an arithmetic mean
+        Calculates the well depth (epsilon) using a geometric mean
+        If reverse is ``False`` the above is calculated for the reactants, otherwise for the products
+        """
+        sigmas = []
+        epsilons = []
+        if reverse:
+            for spc in self.products:
+                trans = spc.getTransportData()
+                sigmas.append(trans.sigma.value_si)
+                epsilons.append(trans.epsilon.value_si)
+            num_of_spcs = len(self.products)
+        else:
+            for spc in self.reactants:
+                trans = spc.getTransportData()
+                sigmas.append(trans.sigma.value_si)
+                epsilons.append(trans.epsilon.value_si)
+            num_of_spcs = len(self.reactants)
+        if any([x == 0 for x in sigmas + epsilons]):
+            raise ValueError
+        mean_sigmas = sum(sigmas) / num_of_spcs
+        mean_epsilons = reduce((lambda x, y: x * y), epsilons) ** (1 / len(epsilons))
+        return mean_sigmas, mean_epsilons
+
+def isomorphic_species_lists(list1, list2, check_identical=False, only_check_label=False):
     """
     This method compares whether lists of species or molecules are isomorphic
     or identical. It is used for the 'isIsomorphic' method of Reaction class.
@@ -1249,58 +1354,53 @@ def _isomorphicSpeciesList(list1, list2, checkIdentical=False, checkOnlyLabel = 
         
         list1 - list of species/molecule objects of reaction1
         list2 - list of species/molecule objects of reaction2
-        checkIdentical - if true, uses the 'isIdentical' comparison
-                         if false, uses the 'isIsomorphic' comparison
-        checkOnlyLabel - only look at species' labels, no isomorphism checks
+        check_identical - if true, uses the 'isIdentical' comparison
+                          if false, uses the 'isIsomorphic' comparison
+        only_check_label - only look at species' labels, no isomorphism checks
                          
     Returns True if the lists are isomorphic/identical & false otherwise
     """
                 
 ################################################################################
 
-    def comparison_method(other1, other2, checkIdentical=checkIdentical, checkOnlyLabel=checkOnlyLabel):
-        if checkOnlyLabel:
-            return str(other1) == str(other2)
-        elif checkIdentical:
-            return other1.isIdentical(other2)
+    def same(object1, object2, _check_identical=check_identical, _only_check_label=only_check_label):
+        if _only_check_label:
+            return str(object1) == str(object2)
+        elif _check_identical:
+            return object1.isIdentical(object2)
         else:
-            return other1.isIsomorphic(other2)
+            return object1.isIsomorphic(object2)
 
     if len(list1) == len(list2) == 1:
-        if comparison_method(list1[0], list2[0]):
+        if same(list1[0], list2[0]):
             return True
     elif len(list1) == len(list2) == 2:
-        if comparison_method(list1[0], list2[0]) \
-                    and comparison_method(list1[1], list2[1]):
+        if same(list1[0], list2[0]) and same(list1[1], list2[1]):
             return True
-        elif comparison_method(list1[0], list2[1]) \
-                    and comparison_method(list1[1], list2[0]):
+        elif same(list1[0], list2[1]) and same(list1[1], list2[0]):
             return True
     elif len(list1) == len(list2) == 3:
-        if (    comparison_method(list1[0], list2[0]) and
-                comparison_method(list1[1], list2[1]) and
-                comparison_method(list1[2], list2[2]) ):
-            return True
-        elif (  comparison_method(list1[0], list2[0]) and
-                comparison_method(list1[1], list2[2]) and
-                comparison_method(list1[2], list2[1]) ):
-            return True
-        elif (  comparison_method(list1[0], list2[1]) and
-                comparison_method(list1[1], list2[0]) and
-                comparison_method(list1[2], list2[2]) ):
-            return True
-        elif (  comparison_method(list1[0], list2[2]) and
-                comparison_method(list1[1], list2[0]) and
-                comparison_method(list1[2], list2[1]) ):
-            return True
-        elif (  comparison_method(list1[0], list2[1]) and
-                comparison_method(list1[1], list2[2]) and
-                comparison_method(list1[2], list2[0]) ):
-            return True
-        elif (  comparison_method(list1[0], list2[2]) and
-                comparison_method(list1[1], list2[1]) and
-                comparison_method(list1[2], list2[0]) ):
-            return True
+        if same(list1[0], list2[0]):
+            if same(list1[1], list2[1]):
+                if same(list1[2], list2[2]):
+                    return True
+            elif same(list1[1], list2[2]):
+                if same(list1[2], list2[1]):
+                    return True
+        elif same(list1[0], list2[1]):
+            if same(list1[1], list2[0]):
+                if same(list1[2], list2[2]):
+                    return True
+            elif same(list1[1], list2[2]):
+                if same(list1[2], list2[0]):
+                    return True
+        elif same(list1[0], list2[2]):
+            if same(list1[1], list2[0]):
+                if same(list1[2], list2[1]):
+                    return True
+            elif same(list1[1], list2[1]):
+                if same(list1[2], list2[0]):
+                    return True
     elif len(list1) == len(list2):
         raise NotImplementedError("Can't check isomorphism of lists with {0} species/molecules".format(len(list1)))
     # nothing found

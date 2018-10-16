@@ -390,8 +390,8 @@ def _generate_minimum_resonance_isomer(mol):
         metric_cand=list,
     )
 
-    warnings.warn("The _generate_minimum_resonance_isomer method is no longer used and may be removed in a future"
-                  " version.", DeprecationWarning)
+    warnings.warn("The _generate_minimum_resonance_isomer method is no longer used"
+                    " and may be removed in RMG version 2.3.", DeprecationWarning)
 
     candidates = resonance.generate_isomorphic_resonance_structures(mol, saturate_h=True)
 

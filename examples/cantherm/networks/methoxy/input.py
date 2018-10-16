@@ -1,4 +1,3 @@
-
 title = 'methoxy decomposition to H + CH2O'
 
 description = \
@@ -9,6 +8,14 @@ wishes to supply experimentally determined freqeuncies, for example. Althgou som
 see http://greengroup.github.io/RMG-Py/users/cantherm/index.html for more documented information about CanTherm and 
 creating input files. (information pertaining this file is adopted by Dames and Golden, 2013, JPCA 117 (33) 7686-96.)
 """
+database(
+    thermoLibraries = ['primaryThermoLibrary'],
+    reactionLibraries = [],
+    kineticsDepositories = ['training'],
+    kineticsFamilies = 'default',
+    kineticsEstimator = 'rate rules',
+)
+
 transitionState(
     label = 'TS3',
     E0 = (34.1,'kcal/mol'),  # this INCLUDES the ZPE. Note that other energy units are also possible (e.g., kJ/mol)
@@ -69,6 +76,7 @@ species(
 
 species(
     label = 'CH2O',
+    structure = SMILES('C=O'),
     E0 = (28.69,'kcal/mol'),
     molecularWeight = (30.0106,"g/mol"),
     collisionModel = TransportData(sigma=(3.69e-10,'m'), epsilon=(4.0,'kJ/mol')),
@@ -84,6 +92,7 @@ species(
 
 species(
     label = 'H',
+    structure = SMILES('[H]'),
     E0 = (0.000,'kcal/mol'),
 	molecularWeight = (1.00783,"g/mol"),
     collisionModel = TransportData(sigma=(3.69e-10,'m'), epsilon=(4.0,'kJ/mol')),
@@ -98,6 +107,7 @@ species(
 
 species(
     label = 'CH2Ob',  #this is a special system with two chemically equivalent product channels. Thus, different labels are used.
+    structure = SMILES('C=O'),
     E0 = (28.69,'kcal/mol'),
     molecularWeight = (30.0106,"g/mol"),
     collisionModel = TransportData(sigma=(3.69e-10,'m'), epsilon=(4.0,'kJ/mol')),
@@ -113,6 +123,7 @@ species(
 
 species(
     label = 'Hb',
+    structure = SMILES('[H]'),
     E0 = (0.0001,'kcal/mol'),
     molecularWeight = (1.00783,"g/mol"),
     collisionModel = TransportData(sigma=(3.69e-10,'m'), epsilon=(4.0,'kJ/mol')),
@@ -126,6 +137,7 @@ species(
 )
 species(
     label = 'CH2OH',
+    structure = SMILES('[CH2]O'),
     E0 = (0.00,'kcal/mol'),
     molecularWeight = (31.01843,"g/mol"),	
     modes = [
@@ -145,6 +157,7 @@ species(
     label = 'He',
 #    freqScaleFactor = 1, # TypeError: species() got an unexpected keyword argument 'freqScaleFactor'.
     structure = SMILES('[He]'),
+    reactive=False,
     molecularWeight = (4.003,'amu'),
     collisionModel = TransportData(sigma=(2.55e-10,'m'), epsilon=(0.0831,'kJ/mol')),
     energyTransferModel = SingleExponentialDown(alpha0=(0.956,'kJ/mol'), T0=(300,'K'), n=0.95),
@@ -152,59 +165,29 @@ species(
 
 reaction(
     label = 'CH2O+H=Methoxy',
-#    label = 'Methoxy = CH2O+H',
     reactants = ['CH2O','H'],
     products = ['methoxy'],
-#    reactants = ['methoxy'],
-#    products = ['CH2O', 'H'],
     transitionState = 'TS3',
-    #tunneling='Eckart',
 )
 
 reaction(
- #   label = 'CH2Ob+Hb=CH2OH',
    label = 'CH2OH = CH2Ob+Hb',
-#    products = ['CH2OH'],
     reactants = ['CH2OH'],
-#   reactants = ['CH2Ob','Hb'],
    products = ['CH2Ob', 'Hb'],
     transitionState = 'TS1',
-    #tunneling='Eckart',
 )
 
 reaction(
     label = 'CH2OH = Methoxy',
-#    reactants = ['methoxy'],
-#    products = ['CH2OH'],
-#    label = 'Methoxy = CH2OH',
     products = ['methoxy'],
     reactants = ['CH2OH'],
     transitionState = 'TS2',
-    #tunneling='Eckart',
 )
 
 kinetics('CH2O+H=Methoxy')
-#kinetics('Methoxy = CH2O+H' )
-#kinetics('Methoxy = CH2OH' )
+
 kinetics('CH2OH = Methoxy')
 kinetics('CH2OH = CH2Ob+Hb' )
-#kinetics('CH2Ob+Hb=CH2OH')
-network(
-    label = 'methoxy',
-    isomers = [
-        'methoxy',
-		'CH2OH',
-    ],
-
-    reactants = [
-	('CH2O','H'),
-#        ('CH2Ob','Hb'),
-	],
-
-    bathGas = {
-        'He': 1,
-    },
-)
 
 pressureDependence(
     label = 'methoxy',
@@ -221,3 +204,13 @@ pressureDependence(
 #    activeJRotor = False, #causes cantherm to crash
     rmgmode = False, 
 )
+
+explorer(
+	source=['methoxy'],
+	explore_tol=(1e-2,'s^-1'),
+	energy_tol=8e1,
+	flux_tol=1e-6,
+     bathGas={'He':1.0},
+     maximumRadicalElectrons=2,
+)
+

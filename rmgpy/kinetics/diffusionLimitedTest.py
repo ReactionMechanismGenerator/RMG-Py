@@ -43,7 +43,7 @@ from rmgpy.thermo.nasa import NASA, NASAPolynomial
 from rmgpy.kinetics import Arrhenius
 from rmgpy.data.solvation import SolvationDatabase
 from rmgpy.data.thermo import ThermoData
-from rmgpy.kinetics.diffusionLimited import DiffusionLimited, diffusionLimiter
+from rmgpy.kinetics.diffusionLimited import diffusionLimiter
 ################################################################################
 
 class TestDiffusionLimited(unittest.TestCase):
@@ -77,6 +77,30 @@ class TestDiffusionLimited(unittest.TestCase):
             ],
             Tmin=(298,'K'), Tmax=(5000,'K'), Cp0=(33.2579,'J/(mol*K)'), CpInf=(719.202,'J/(mol*K)'),
             comment="""Thermo library: JetSurF0.2"""), molecule=[Molecule(SMILES="[CH2]CCCCCCCCC")])
+        acetone = Species(label="", thermo=NASA(polynomials=[
+            NASAPolynomial(coeffs = [3.75568, 0.0264934, -6.55661e-05, 1.94971e-07, -1.82059e-10, -27905.3, 9.0162], Tmin = (10, 'K'), Tmax = (422.477, 'K')),
+            NASAPolynomial(coeffs = [0.701289, 0.0344988, -1.9736e-05, 5.48052e-09, -5.92612e-13, -27460.6, 23.329],Tmin = (422.477, 'K'),Tmax = (3000, 'K'))
+            ],
+            Tmin = (10, 'K'), Tmax = (3000, 'K'), E0 = (-232.025, 'kJ/mol'), Cp0 = (33.2579, 'J/(mol*K)'), CpInf = (232.805, 'J/(mol*K)')),
+            molecule=[Molecule(SMILES="CC(=O)C")])
+        peracetic_acid = Species(label="", thermo=NASA(polynomials=[
+            NASAPolynomial(coeffs = [3.81786, 0.016419, 3.32204e-05, -8.98403e-08, 6.63474e-11, -42057.8, 9.65245], Tmin = (10, 'K'), Tmax = (354.579, 'K')),
+            NASAPolynomial(coeffs = [2.75993, 0.0283534, -1.72659e-05, 5.08158e-09, -5.77773e-13, -41982.8, 13.6595], Tmin = (354.579, 'K'), Tmax = (3000, 'K'))
+            ],
+            Tmin = (10, 'K'), Tmax = (3000, 'K'), E0 = (-349.698, 'kJ/mol'),Cp0 = (33.2579, 'J/(mol*K)'), CpInf = (199.547, 'J/(mol*K)')),
+            molecule=[Molecule(SMILES="CC(=O)OO")])
+        acetic_acid = Species(label="", thermo=NASA(polynomials=[
+            NASAPolynomial(coeffs = [3.97665, 0.00159915, 8.5542e-05, -1.76486e-07, 1.20201e-10, -53911.5, 8.99309], Tmin = (10, 'K'), Tmax = (375.616, 'K')),
+            NASAPolynomial(coeffs = [1.57088, 0.0272146, -1.67357e-05, 5.01453e-09, -5.82273e-13, -53730.7, 18.2442], Tmin = (375.616, 'K'), Tmax = (3000, 'K'))
+            ],
+            Tmin = (10, 'K'), Tmax = (3000, 'K'), E0 = (-448.245, 'kJ/mol'), Cp0 = (33.2579, 'J/(mol*K)'), CpInf = (182.918, 'J/(mol*K)')),
+            molecule=[Molecule(SMILES="CC(=O)O")])
+        criegee = Species(label="", thermo=NASA(polynomials=[
+            NASAPolynomial(coeffs = [3.23876, 0.0679583, -3.35611e-05, 7.91519e-10, 3.13038e-12, -77986, 13.6438], Tmin = (10, 'K'), Tmax = (1053.46, 'K')),
+            NASAPolynomial(coeffs = [9.84525, 0.0536795, -2.86165e-05, 7.39945e-09, -7.48482e-13, -79977.6, -21.4187], Tmin = (1053.46, 'K'), Tmax = (3000, 'K'))
+            ],
+            Tmin = (10, 'K'), Tmax = (3000, 'K'), E0 = (-648.47, 'kJ/mol'),Cp0 = (33.2579, 'J/(mol*K)'), CpInf = (457.296, 'J/(mol*K)')),
+            molecule=[Molecule(SMILES="CC(=O)OOC(C)(O)C")])
         self.database = SolvationDatabase()
         self.database.load(os.path.join(settings['database.directory'], 'solvation'))
         self.solvent = 'octane'
@@ -86,9 +110,13 @@ class TestDiffusionLimited(unittest.TestCase):
         self.uni_reaction.kinetics = Arrhenius(A=(2.0, '1/s'), n=0, Ea=(0,'kJ/mol'))
         self.bi_uni_reaction = Reaction(reactants=[octyl_pri, ethane], products=[decyl])
         self.bi_uni_reaction.kinetics = Arrhenius(A=(1.0E-22, 'cm^3/molecule/s'), n=0, Ea=(0,'kJ/mol'))
+        self.tri_bi_reaction = Reaction(reactants=[acetone, peracetic_acid, acetic_acid],
+                                        products=[criegee, acetic_acid])
+        self.tri_bi_reaction.kinetics = Arrhenius(A=(1.07543e-11, 'cm^6/(mol^2*s)'), n=5.47295, Ea=(-38.5379, 'kJ/mol'))
         self.intrinsic_rates = {
             self.uni_reaction: self.uni_reaction.kinetics.getRateCoefficient(self.T, P=100e5),
             self.bi_uni_reaction: self.bi_uni_reaction.kinetics.getRateCoefficient(self.T, P=100e5),
+            self.tri_bi_reaction: self.tri_bi_reaction.kinetics.getRateCoefficient(self.T, P=100e5),
             }
 
     def tearDown(self):
@@ -110,6 +138,14 @@ class TestDiffusionLimited(unittest.TestCase):
         effective_rate = diffusionLimiter.getEffectiveRate(self.bi_uni_reaction, self.T)
         self.assertTrue(effective_rate < self.intrinsic_rates[self.bi_uni_reaction])
         self.assertTrue(effective_rate >= 0.2 * self.intrinsic_rates[self.bi_uni_reaction])
+
+    def testGetEffectiveRate3to2(self):
+        """
+        Tests that the effective rate is limited for a 3 -> 2 reaction
+        """
+        effective_rate = diffusionLimiter.getEffectiveRate(self.tri_bi_reaction, self.T)
+        self.assertTrue(effective_rate < self.intrinsic_rates[self.tri_bi_reaction])
+        self.assertTrue(effective_rate >= 0.2 * self.intrinsic_rates[self.tri_bi_reaction])
 
 ################################################################################
 

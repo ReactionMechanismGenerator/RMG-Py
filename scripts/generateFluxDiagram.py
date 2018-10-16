@@ -63,6 +63,18 @@ def parse_arguments():
     parser.add_argument('-r', '--ratetol', metavar='TOL', type=float, help='Lowest fractional species rate to show')
     parser.add_argument('-t', '--tstep', metavar='S', type=float,
                         help='Multiplicative factor to use between consecutive time points')
+    parser.add_argument('--centralSpecies', metavar='s1,s2,...', type=lambda s: [int(idx) for idx in s.split(',')],
+                        help='List of indices of central species')
+    parser.add_argument('--rad', metavar='R', type=int, help='Graph radius around a central species (only useful if'
+                                                             ' not using super)')
+    parser.add_argument('--centralReactionCount', metavar='N', type=int, default=1,
+                        help='Maximum number of reactions to show from each central species (default = 1).'
+                             ' If rad > 1, then this is the number of reactions from every species')
+    parser.add_argument('--super', action='store_true', help='Superimpose central species onto normal flux diagram to'
+                                                             ' ensure that they appear in diagram (might result in more'
+                                                             ' nodes and edges than given by maxnode and maxedge)')
+    parser.add_argument('--saveStates', action='store_true', help='Save simulation states to disk')
+    parser.add_argument('--readStates', action='store_true', help='Read simulation states from disk')
 
     args = parser.parse_args()
 
@@ -74,18 +86,54 @@ def parse_arguments():
     useJava = args.java
     dflag = args.dlim
     checkDuplicates = args.checkDuplicates
+    centralSpeciesList = args.centralSpecies
+    superimpose = args.super
+    saveStates = args.saveStates
+    readStates = args.readStates
 
-    keys = ('maximumNodeCount', 'maximumEdgeCount', 'concentrationTolerance', 'speciesRateTolerance', 'timeStep')
-    vals = (args.maxnode, args.maxedge, args.conctol, args.ratetol, args.tstep)
+    keys = ('maximumNodeCount',
+            'maximumEdgeCount',
+            'concentrationTolerance',
+            'speciesRateTolerance',
+            'radius',
+            'centralReactionCount',
+            'timeStep')
+    vals = (args.maxnode, args.maxedge, args.conctol, args.ratetol, args.rad, args.centralReactionCount, args.tstep)
     settings = {k: v for k, v in zip(keys, vals) if v is not None}
     
-    return inputFile, chemkinFile, dictFile, speciesPath, chemkinOutput, useJava, dflag, checkDuplicates, settings
+    return (inputFile,
+            chemkinFile,
+            dictFile,
+            speciesPath,
+            chemkinOutput,
+            useJava,
+            dflag,
+            checkDuplicates,
+            settings,
+            centralSpeciesList,
+            superimpose,
+            saveStates,
+            readStates)
 
 def main():
-    inputFile, chemkinFile, dictFile, speciesPath, chemkinOutput, useJava, dflag, checkDuplicates, settings = parse_arguments()
+    (inputFile,
+     chemkinFile,
+     dictFile,
+     speciesPath,
+     chemkinOutput,
+     useJava,
+     dflag,
+     checkDuplicates,
+     settings,
+     centralSpeciesList,
+     superimpose,
+     saveStates,
+     readStates) = parse_arguments()
 
     createFluxDiagram(inputFile, chemkinFile, dictFile, speciesPath=speciesPath, java=useJava, settings=settings,
-                      chemkinOutput=chemkinOutput, diffusionLimited=dflag, checkDuplicates=checkDuplicates)
+                      chemkinOutput=chemkinOutput, diffusionLimited=dflag, centralSpeciesList=centralSpeciesList,
+                      superimpose=superimpose, saveStates=saveStates, readStates=readStates,
+                      checkDuplicates=checkDuplicates)
 
 if __name__ == '__main__':
     main()

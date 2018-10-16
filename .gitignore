@@ -40,7 +40,8 @@ nbproject/*
 .settings/*
 
 # PyCharm project files
-.idea
+.idea/*
+
 
 # Unit test files
 .coverage

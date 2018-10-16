@@ -122,7 +122,7 @@ Below is a list of pre-packaged kinetics library reactions in RMG:
 +-------------------------------------------------------------+------------------------------------------------------------------------------------------+
 |GRI-HCO                                                      |The `HCO <=> H + CO` reaction                                                             |
 +-------------------------------------------------------------+------------------------------------------------------------------------------------------+
-|GRI-Mech3.0                                                  |Gas Research Institute natural gas mechanism optimized for 1 atm (discountinued Feb. 2000)|
+|GRI-Mech3.0                                                  |Gas Research Institute natural gas mechanism optimized for 1 atm (discontinued Feb. 2000) |
 +-------------------------------------------------------------+------------------------------------------------------------------------------------------+
 |GRI-Mech3.0-N                                                |GRI-Mech3.0 including nitrogen chemistry (NOx from N2)                                    |
 +-------------------------------------------------------------+------------------------------------------------------------------------------------------+
@@ -197,7 +197,7 @@ Below is a list of pre-packaged kinetics library reactions in RMG:
 
 
 
-.. _kineticsFamilies:
+.. _kinetics_families_db:
 
 Families
 ========
@@ -218,6 +218,8 @@ There are currently 58 reaction families in RMG:
 .. |f02| image:: images/kinetics_families/1,2_Insertion_carbene.png
     :scale: 25%
 .. |f03| image:: images/kinetics_families/1,2_Insertion_CO.png
+    :scale: 25%
+.. |f04| image:: images/kinetics_families/1,2_shiftC.png
     :scale: 25%
 .. |f05| image:: images/kinetics_families/1,2_shiftS.png
     :scale: 25%
@@ -285,6 +287,8 @@ There are currently 58 reaction families in RMG:
     :scale: 25%
 .. |f37| image:: images/kinetics_families/Intra_R_Add_Exocyclic.png
     :scale: 25%
+.. |f38| image:: images/kinetics_families/Intra_R_Add_Exo_scission.png
+    :scale: 25%
 .. |f39| image:: images/kinetics_families/Intra_R_Add_ExoTetCyclic.png
     :scale: 25%
 .. |f40| image:: images/kinetics_families/Intra_Retro_Diels_alder_bicyclic.png
@@ -325,6 +329,20 @@ There are currently 58 reaction families in RMG:
     :scale: 25%
 .. |f58| image:: images/kinetics_families/SubstitutionS.png
     :scale: 25%
+.. |f59| image:: images/kinetics_families/Baeyer-Villiger_step1_cat.png
+    :scale: 25%
+.. |f60| image:: images/kinetics_families/Baeyer-Villiger_step2.png
+    :scale: 25%
+.. |f61| image:: images/kinetics_families/Baeyer-Villiger_step2_cat.png
+    :scale: 25%
+.. |f62| image:: images/kinetics_families/Bimolec_Hydroperoxide_Decomposition.png
+    :scale: 25%
+.. |f63| image:: images/kinetics_families/Korcek_step1_cat.png
+    :scale: 25%
+.. |f64| image:: images/kinetics_families/Peroxyl_Disproportionation.png
+    :scale: 25%
+.. |f65| image:: images/kinetics_families/Peroxyl_Termination.png
+    :scale: 25%
 
 .. table::
     :widths: 50 50
@@ -333,6 +351,7 @@ There are currently 58 reaction families in RMG:
     **1,2-Birad_to_alkene**                               |f01|
     **1,2_Insertion_carbene**                             |f02|
     **1,2_Insertion_CO**                                  |f03|
+    **1,2_shiftC**                                        |f04|
     **1,2_shiftS**                                        |f05|
     **1,3_Insertion_CO2**                                 |f06|
     **1,3_Insertion_ROR**                                 |f07|
@@ -345,6 +364,10 @@ There are currently 58 reaction families in RMG:
     **2+2_cycloaddition_CO**                              |f14|
     **2+2_cycloaddition_CS**                              |f15|
     **6_membered_central_C-C_shift**                      |f16|
+    **Baeyer-Villiger_step1_cat**                         |f59|
+    **Baeyer-Villiger_step2**                             |f60|
+    **Baeyer-Villiger_step2_cat**                         |f61|
+    **Bimolec_Hydroperoxide_Decomposition**               |f62|
     **Birad_recombination**                               |f17|
     **Birad_R_Recombination**                             |f18|
     **CO_Disproportionation**                             |f19|
@@ -366,6 +389,7 @@ There are currently 58 reaction families in RMG:
     **intra_OH_migration**                                |f35|
     **Intra_R_Add_Endocyclic**                            |f36|
     **Intra_R_Add_Exocyclic**                             |f37|
+    **Intra_R_Add_Exo_scission**                          |f38|
     **Intra_R_Add_ExoTetCyclic**                          |f39|
     **Intra_Retro_Diels_alder_bicyclic**                  |f40|
     **Intra_RH_Add_Endocyclic**                           |f41|
@@ -376,8 +400,11 @@ There are currently 58 reaction families in RMG:
     **intra_substitutionS_isomerization**                 |f46|
     **ketoenol**                                          |f47|
     **Korcek_step1**                                      |f48|
+    **Korcek_step1_cat**                                  |f63|
     **Korcek_step2**                                      |f49|
     **lone_electron_pair_bond**                           |f50|
+    **Peroxyl_Disproportionation**                        |f64|
+    **Peroxyl_Termination**                               |f65|
     **R_Addition_COm**                                    |f51|
     **R_Addition_CSm**                                    |f52|
     **R_Addition_MultipleBond**                           |f53|

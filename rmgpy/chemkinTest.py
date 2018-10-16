@@ -381,6 +381,51 @@ multiplicity 2
         self.assertTrue(isinstance(rtest.kinetics, MultiArrhenius))
         self.assertTrue(all(isinstance(k, Arrhenius) for k in rtest.kinetics.arrhenius))
 
+    def test_mark_duplicate_reactions(self):
+        """Test that we can properly mark duplicate reactions for Chemkin."""
+        s1 = Species().fromSMILES('CC')
+        s2 = Species().fromSMILES('[CH3]')
+        s3 = Species().fromSMILES('[OH]')
+        s4 = Species().fromSMILES('C[CH2]')
+        s5 = Species().fromSMILES('O')
+        s6 = Species().fromSMILES('[H]')
+
+        # Try initializing with duplicate=False
+        reaction_list = [
+            Reaction(reactants=[s1], products=[s2, s2], duplicate=False, kinetics=Arrhenius()),
+            Reaction(reactants=[s1], products=[s2, s2], duplicate=False, kinetics=Arrhenius()),
+            Reaction(reactants=[s1, s3], products=[s4, s5], duplicate=False, kinetics=Arrhenius()),
+            Reaction(reactants=[s1, s3], products=[s4, s5], duplicate=False, kinetics=Chebyshev()),
+            Reaction(reactants=[s1], products=[s4, s6], duplicate=False, kinetics=Arrhenius(), reversible=False),
+            Reaction(reactants=[s1], products=[s4, s6], duplicate=False, kinetics=Arrhenius(), reversible=False),
+            Reaction(reactants=[s5], products=[s3, s6], duplicate=False, kinetics=Arrhenius(), reversible=False),
+            Reaction(reactants=[s3, s6], products=[s5], duplicate=False, kinetics=Arrhenius(), reversible=False),
+        ]
+
+        expected_flags = [True, True, False, False, True, True, False, False]
+
+        markDuplicateReactions(reaction_list)
+        duplicate_flags = [rxn.duplicate for rxn in reaction_list]
+
+        self.assertEqual(duplicate_flags, expected_flags)
+
+        # Try initializing with duplicate=True
+        reaction_list = [
+            Reaction(reactants=[s1], products=[s2, s2], duplicate=True, kinetics=Arrhenius()),
+            Reaction(reactants=[s1], products=[s2, s2], duplicate=True, kinetics=Arrhenius()),
+            Reaction(reactants=[s1, s3], products=[s4, s5], duplicate=True, kinetics=Arrhenius()),
+            Reaction(reactants=[s1, s3], products=[s4, s5], duplicate=True, kinetics=Chebyshev()),
+            Reaction(reactants=[s1], products=[s4, s6], duplicate=True, kinetics=Arrhenius(), reversible=False),
+            Reaction(reactants=[s1], products=[s4, s6], duplicate=True, kinetics=Arrhenius(), reversible=False),
+            Reaction(reactants=[s5], products=[s3, s6], duplicate=True, kinetics=Arrhenius(), reversible=False),
+            Reaction(reactants=[s3, s6], products=[s5], duplicate=True, kinetics=Arrhenius(), reversible=False),
+        ]
+
+        markDuplicateReactions(reaction_list)
+        duplicate_flags = [rxn.duplicate for rxn in reaction_list]
+
+        self.assertEqual(duplicate_flags, expected_flags)
+
 
 class TestReadReactionComments(unittest.TestCase):
     @classmethod

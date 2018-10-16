@@ -53,6 +53,9 @@ from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 
 from rmgpy.kinetics import KineticsData, Arrhenius
+
+from rmgpy.data.rmg import getDB
+        
 import rmgpy.data.rmg
 from .react import reactAll
 
@@ -573,7 +576,8 @@ class CoreEdgeReactionModel:
 
         return forward
 
-    def enlarge(self, newObject=None, reactEdge=False, unimolecularReact=None, bimolecularReact=None):
+    def enlarge(self, newObject=None, reactEdge=False,
+                unimolecularReact=None, bimolecularReact=None, trimolecularReact=None):
         """
         Enlarge a reaction model by processing the objects in the list `newObject`. 
         If `newObject` is a
@@ -671,7 +675,8 @@ class CoreEdgeReactionModel:
         else:
             # We are reacting the edge
 
-            rxns = reactAll(self.core.species, numOldCoreSpecies, unimolecularReact, bimolecularReact)
+            rxns = reactAll(self.core.species, numOldCoreSpecies,
+                            unimolecularReact, bimolecularReact, trimolecularReact=trimolecularReact)
             spcs = [self.retrieveNewSpecies(rxn) for rxn in rxns]
             
             for rxn, spc in zip(rxns, spcs):
@@ -686,7 +691,8 @@ class CoreEdgeReactionModel:
         # Begin processing the new species and reactions
         
         # Generate kinetics of new reactions
-        logging.info('Generating kinetics for new reactions...')
+        if self.newReactionList:
+            logging.info('Generating kinetics for new reactions...')
         for reaction in self.newReactionList:
             # If the reaction already has kinetics (e.g. from a library),
             # assume the kinetics are satisfactory
@@ -1049,6 +1055,28 @@ class CoreEdgeReactionModel:
 
         assert spec not in self.core.species, "Tried to add species {0} to core, but it's already there".format(spec.label)
 
+        forbidden_structures = getDB('forbidden')
+        
+        # check RMG globally forbidden structures
+        if not spec.explicitlyAllowed and forbidden_structures.isMoleculeForbidden(spec.molecule[0]):
+            
+            rxnList = []
+            if spec in self.edge.species:
+
+                #remove forbidden species from edge
+                logging.info("Species {0} was Forbidden and not added to Core...Removing from Edge.".format(spec))
+                self.edge.species.remove(spec)
+                # Search edge for reactions that contain forbidden species
+                for rxn in self.edge.reactions:
+                    if spec in rxn.reactants or spec in rxn.products:                        
+                        rxnList.append(rxn)
+                
+                #Remove any reactions that are globally forbidden from Edge
+                for rxn in rxnList:
+                    self.edge.reactions.remove(rxn)
+                    logging.info("Removing Forbidden Reaction from Edge: {0}".format(rxn))
+                return []
+        
         # Add the species to the core
         self.core.species.append(spec)
         
@@ -1188,7 +1216,7 @@ class CoreEdgeReactionModel:
                     del(self.networkDict[source])
                 self.networkList.remove(network)
                     
-    def prune(self, reactionSystems, toleranceKeepInEdge, maximumEdgeSpecies, minSpeciesExistIterationsForPrune):
+    def prune(self, reactionSystems, toleranceKeepInEdge, toleranceMoveToCore, maximumEdgeSpecies, minSpeciesExistIterationsForPrune):
         """
         Remove species from the model edge based on the simulation results from
         the list of `reactionSystems`.
@@ -1245,8 +1273,12 @@ class CoreEdgeReactionModel:
                 pruneDueToRateCounter += 1
             # Keep removing species with the lowest rates until we are below the maximum edge species size
             elif numPrunableSpecies - len(speciesToPrune) > maximumEdgeSpecies:
-                logging.info('Pruning species {0} to make numEdgeSpecies smaller than maximumEdgeSpecies'.format(spec)) # repeated ~15 lines below
-                speciesToPrune.append((index, spec))
+                if maxEdgeSpeciesRateRatios[index] < toleranceMoveToCore:
+                    logging.info('Pruning species {0} to make numEdgeSpecies smaller than maximumEdgeSpecies'.format(spec))
+                    speciesToPrune.append((index, spec))
+                else:
+                    logging.warning('Attempted to prune a species that exceeded toleranceMoveToCore, pruning settings for this run are likely bad, either maximumEdgeSpecies needs to be set higher (~100000) or minSpeciesExistIterationsForPrune should be reduced (~2)')
+                    break
             else:
                 break
 
@@ -1446,7 +1478,7 @@ class CoreEdgeReactionModel:
         rxns = seedMechanism.getLibraryReactions()
         
         for rxn in rxns:
-            if isinstance(rxn,LibraryReaction) and not (rxn.library in libraryNames): #if one of the reactions in the library is from another library load that library
+            if isinstance(rxn,LibraryReaction) and not (rxn.library in libraryNames) and not (rxn.library == 'kineticsjobs'): #if one of the reactions in the library is from another library load that library
                 database.kinetics.libraryOrder.append((rxn.library,'Internal'))
                 database.kinetics.loadLibraries(path=path,libraries=[rxn.library])
                 libraryNames = database.kinetics.libraries.keys()
@@ -1473,6 +1505,7 @@ class CoreEdgeReactionModel:
         for spec in self.newSpeciesList:
             if database.forbiddenStructures.isMoleculeForbidden(spec.molecule[0]):
                 if 'allowed' in rmg.speciesConstraints and 'seed mechanisms' in rmg.speciesConstraints['allowed']:
+                    spec.explicitlyAllowed = True
                     logging.warning("Species {0} from seed mechanism {1} is globally forbidden.  It will behave as an inert unless found in a seed mechanism or reaction library.".format(spec.label, seedMechanism.label))
                 else:
                     raise ForbiddenStructureException("Species {0} from seed mechanism {1} is globally forbidden. You may explicitly allow it, but it will remain inert unless found in a seed mechanism or reaction library.".format(spec.label, seedMechanism.label))
@@ -1561,6 +1594,7 @@ class CoreEdgeReactionModel:
         for spec in self.newSpeciesList:
             if database.forbiddenStructures.isMoleculeForbidden(spec.molecule[0]):
                 if 'allowed' in rmg.speciesConstraints and 'reaction libraries' in rmg.speciesConstraints['allowed']:
+                    spec.explicitlyAllowed = True
                     logging.warning("Species {0} from reaction library {1} is globally forbidden.  It will behave as an inert unless found in a seed mechanism or reaction library.".format(spec.label, reactionLibrary.label))
                 else:
                     raise ForbiddenStructureException("Species {0} from reaction library {1} is globally forbidden. You may explicitly allow it, but it will remain inert unless found in a seed mechanism or reaction library.".format(spec.label, reactionLibrary.label))
@@ -1584,6 +1618,14 @@ class CoreEdgeReactionModel:
                     and isinstance(rxn, LibraryReaction) and isinstance(rxn.kinetics, Arrhenius)):
                 # Don't add to the edge library reactions that were already processed
                 self.addReactionToEdge(rxn)
+
+        if self.saveEdgeSpecies:
+            from rmgpy.chemkin import markDuplicateReaction
+            newEdgeReactions = self.edge.reactions[numOldEdgeReactions:]
+            checkedReactions = self.core.reactions + self.edge.reactions[:numOldEdgeReactions]
+            for rxn in newEdgeReactions:
+                markDuplicateReaction(rxn, checkedReactions)
+                checkedReactions.append(rxn)
 
         self.printEnlargeSummary(
             newCoreSpecies=[],

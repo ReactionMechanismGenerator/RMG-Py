@@ -78,7 +78,7 @@ Model Chemistry                                  AEC   BC   SOC  Freq Scale Supp
 ``'CCSD(T)-F12/cc-pVnZ-F12'``, *n = D,T,Q*        v    v    v    v          H, C, N, O, S
 ``'CCSD(T)-F12/cc-pVDZ-F12_noscale'``             v         v               H, C, N, O
 ``'CCSD(T)-F12/cc-pCVnZ-F12'``, *n = D,T,Q*       v         v    v          H, C, N, O
-``'CCSD(T)-F12/aug-cc-pVnZ'``, *n = D,T,Q*        v         v    v          H, C, N, O
+``'CCSD(T)-F12/aug-cc-pVnZ'``, *n = D,T,Q*        v         v    v          H, C, N, O, S
 ``'CCSD(T)-F12/cc-pVTZ-f12(-pp)``,                v         v               H, C, N, O, S, I
 ``'CCSD(T)/aug-cc-pVTZ(-pp)``,                    v         v               H, C, O, S, I
 ``'B-CCSD(T)-F12/cc-pVnZ-F12'``, *n = D,T,Q*      v         v               H, C, N, O, S
@@ -91,6 +91,7 @@ Model Chemistry                                  AEC   BC   SOC  Freq Scale Supp
 ``'BMK/6-311G(2d,d,p)'``                          v    v    v               H, C, N, O, P, S
 ``'B3LYP/6-311+G(3df,2p)'``                       v    v    v    v (0.967)  H, C, N, O, P, S
 ``'B3LYP/6-31G**'``                               v    v         v (0.961)  H, C, O, S
+``'MRCI+Davidson/aug-cc-pV(T+d)Z'``               v         v               H, C, N, O, S
 ================================================ ===== ==== ==== ========== ====================
 
 Notes:
@@ -621,7 +622,7 @@ in the following format, e.g.::
     )
 
 The output of a sensitivity analysis is saved into a ``sensitivity`` folder in the output directory. A text file, named
-with the reaction label, delineates the semi-normalized sensitivity coefficients ``dln(r)/dE0`` in units of ``mol/J``
+with the reaction label, delineates the semi-normalized sensitivity coefficients ``dln(k)/dE0`` in units of ``mol/J``
 at all requested conditions. A horizontal bar figure is automatically generated per reaction with subplots for both the
 forward and reverse direction at all conditions.
 

@@ -189,13 +189,13 @@ cdef class Molecule(Graph):
 
     cpdef dict get_element_count(self)
 
-    cpdef bint isIsomorphic(self, Graph other, dict initialMap=?) except -2
+    cpdef bint isIsomorphic(self, Graph other, dict initialMap=?, bint saveOrder=?) except -2
 
-    cpdef list findIsomorphism(self, Graph other, dict initialMap=?)
+    cpdef list findIsomorphism(self, Graph other, dict initialMap=?, bint saveOrder=?)
 
-    cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?) except -2
+    cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?, bint generateInitialMap=?, bint saveOrder=?) except -2
 
-    cpdef list findSubgraphIsomorphisms(self, Graph other, dict initialMap=?)
+    cpdef list findSubgraphIsomorphisms(self, Graph other, dict initialMap=?, bint saveOrder=?)
 
     cpdef bint isAtomInCycle(self, Atom atom) except -2
 
@@ -234,6 +234,8 @@ cdef class Molecule(Graph):
     cpdef updateAtomTypes(self, bint logSpecies=?, bint raiseException=?)
     
     cpdef bint isRadical(self) except -2
+
+    cpdef bint has_lone_pairs(self) except -2
 
     cpdef bint isArylRadical(self, list aromaticRings=?) except -2
 

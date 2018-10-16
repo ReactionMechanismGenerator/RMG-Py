@@ -1,5 +1,11 @@
 @import url("classic.css");
 
+/* ----- overall styles ----- */
+
+div.body {
+    max-width: none;
+}
+
 /* ----- sidebar styles ----- */
 
 div.sidebarlogo {

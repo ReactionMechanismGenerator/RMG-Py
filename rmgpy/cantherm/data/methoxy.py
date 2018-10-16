@@ -149,6 +149,7 @@ species(
     molecularWeight = (4.003,'amu'),
     collisionModel = TransportData(sigma=(2.55e-10,'m'), epsilon=(0.0831,'kJ/mol')),
     energyTransferModel = SingleExponentialDown(alpha0=(0.956,'kJ/mol'), T0=(300,'K'), n=0.95),
+    thermo=NASA(polynomials=[NASAPolynomial(coeffs=[2.5,0,0,0,0,-745.375,0.928724], Tmin=(200,'K'), Tmax=(1000,'K')), NASAPolynomial(coeffs=[2.5,0,0,0,0,-745.375,0.928724], Tmin=(1000,'K'), Tmax=(6000,'K'))], Tmin=(200,'K'), Tmax=(6000,'K'), Cp0=(20.7862,'J/(mol*K)'), CpInf=(20.7862,'J/(mol*K)'), label="""He""", comment="""Thermo library: primaryThermoLibrary"""),
 )
 
 reaction(

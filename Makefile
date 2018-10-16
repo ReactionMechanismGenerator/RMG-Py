@@ -7,7 +7,7 @@
 DASPK=$(shell python -c 'import pydas.daspk; print pydas.daspk.__file__')
 DASSL=$(shell python -c 'import pydas.dassl; print pydas.dassl.__file__')
 
-.PHONY : all minimal main solver check cantherm clean decython documentation mopac_travis
+.PHONY : all minimal main solver check cantherm clean install decython documentation mopac_travis
 
 all: main solver check
 
@@ -63,6 +63,21 @@ endif
 	@ python utilities.py clean-solver
 	@ echo "Cleanup completed."
 
+install:
+	@ echo "Checking you have PyDQED..."
+	@ python -c 'import pydqed; print pydqed.__file__'
+ifneq ($(DASPK),)
+	@ echo "DASPK solver found. Compiling with DASPK and sensitivity analysis capability..."
+	@ (echo DEF DASPK = 1) > rmgpy/solver/settings.pxi
+else ifneq ($(DASSL),)
+	@ echo "DASSL solver found. Compiling with DASSL.  Sensitivity analysis capabilities are off..."
+	@ (echo DEF DASPK = 0) > rmgpy/solver/settings.pxi
+else
+	@ echo 'No PyDAS solvers found.  Please check if you have the latest version of PyDAS.'
+	@ python -c 'import pydas.dassl'
+endif
+	python setup.py install
+
 decython:
 	# de-cythonize all but the 'minimal'. Helpful for debugging in "pure python" mode.
 	find . -name *.so ! \( -name _statmech.so -o -name quantity.so -o -regex '.*rmgpy/solver/.*' \) -exec rm -f '{}' \;
@@ -75,19 +90,12 @@ ifneq ($(OS),Windows_NT)
 endif
 	nosetests --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy
 
-test-unittests:
+test test-unittests:
 ifneq ($(OS),Windows_NT)
 	mkdir -p testing/coverage
 	rm -rf testing/coverage/*
 endif
 	nosetests --nocapture --nologcapture --all-modules -A 'not functional' --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy
-
-test test-unittests-non-auth:
-ifneq ($(OS),Windows_NT)
-	mkdir -p testing/coverage
-	rm -rf testing/coverage/*
-endif
-	nosetests --nocapture --nologcapture --all-modules -A 'not functional and not auth' --verbose --with-coverage --cover-inclusive --cover-package=rmgpy --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy
 
 test-functional:
 ifneq ($(OS),Windows_NT)

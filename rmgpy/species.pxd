@@ -52,6 +52,7 @@ cdef class Species:
     cdef public float symmetryNumber
     cdef public bint isSolvent
     cdef public int creationIteration
+    cdef public bint explicitlyAllowed
 
     cpdef generate_resonance_structures(self, bint keep_isomorphic=?, bint filter_structures=?)
     

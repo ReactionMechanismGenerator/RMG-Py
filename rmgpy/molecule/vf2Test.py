@@ -81,6 +81,15 @@ class TestVF2(unittest.TestCase):
                     self.assertTrue(self.vf2.feasible(atom1, atom2))
                 else: # different connectivity values should return false
                     self.assertFalse(self.vf2.feasible(atom1, atom2))
+
+    def test_clear_mapping(self):
+        """Test that vertex mapping is cleared after isomorphism."""
+        self.vf2.isIsomorphic(self.mol, self.mol2, None)
+
+        for atom in self.mol.atoms:
+            self.assertIsNone(atom.mapping)
+            self.assertFalse(atom.terminal)
+
 ################################################################################
 
 if __name__ == '__main__':

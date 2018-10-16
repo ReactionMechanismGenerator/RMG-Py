@@ -34,7 +34,7 @@ This module contains functions for load existing RMG simulations
 by reading in files.
 """
 import os.path
-
+import warnings
 from rmgpy.chemkin import loadChemkinFile
 from rmgpy.solver.liquid import LiquidReactor
 from rmgpy.solver.surface import SurfaceReactor
@@ -45,6 +45,8 @@ def loadRMGJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=Tru
 
     if useJava:
         # The argument is an RMG-Java input file
+        warnings.warn("The RMG-Java input is no longer supported and may be"\
+            "removed in version 2.3.", DeprecationWarning)
         rmg = loadRMGJavaJob(inputFile, chemkinFile, speciesDict, generateImages,
                              useChemkinNames=useChemkinNames, checkDuplicates=checkDuplicates)
         
@@ -139,6 +141,8 @@ def loadRMGJavaJob(inputFile, chemkinFile=None, speciesDict=None, generateImages
     """
     Load the results of an RMG-Java job generated from the given `inputFile`.
     """
+    warnings.warn("The RMG-Java input is no longer supported and may be"\
+            "removed in version 2.3.", DeprecationWarning)
     from rmgpy.rmg.main import RMG
     from rmgpy.molecule import Molecule
     

@@ -87,6 +87,8 @@ def saveEntry(f, entry):
                 f.write('    allow_pdep_route = {0!r},\n'.format(entry.item.allow_pdep_route))
             if entry.item.elementary_high_p:
                 f.write('    elementary_high_p = {0!r},\n'.format(entry.item.elementary_high_p))
+            if entry.item.allow_max_rate_violation:
+                f.write('    allow_max_rate_violation = {0!r},\n'.format(entry.item.allow_max_rate_violation))
     #Entries for groups with have a group or logicNode for its item
     elif isinstance(entry.item, Group):
         f.write('    group = \n')
@@ -148,57 +150,6 @@ def saveEntry(f, entry):
     f.write(')\n\n')
 
 
-def filter_reactions(reactants, products, reactionList):
-    """
-    Remove any reactions from the given `reactionList` whose reactants do
-    not involve all the given `reactants` or whose products do not involve 
-    all the given `products`. This method checks both forward and reverse
-    directions, and only filters out reactions that don't match either.
-    
-    reactants and products can be either molecule or species objects
-    """
-    warnings.warn("The filter_reactions method is no longer used and may be removed in a future version.", DeprecationWarning)
-    
-    # Convert from molecules to species and generate resonance isomers.
-    ensure_species(reactants, resonance=True)
-    ensure_species(products, resonance=True)
-
-    reactions = reactionList[:]
-    
-    for reaction in reactionList:
-        # Forward direction
-        reactants0 = [r for r in reaction.reactants]
-        for reactant in reactants:
-            for reactant0 in reactants0:
-                if reactant.isIsomorphic(reactant0):
-                    reactants0.remove(reactant0)
-                    break
-        products0 = [p for p in reaction.products]
-        for product in products:
-            for product0 in products0:
-                if product.isIsomorphic(product0):
-                    products0.remove(product0)
-                    break
-        forward = not (len(reactants0) != 0 or len(products0) != 0)
-        # Reverse direction
-        reactants0 = [r for r in reaction.products]
-        for reactant in reactants:
-            for reactant0 in reactants0:
-                if reactant.isIsomorphic(reactant0):
-                    reactants0.remove(reactant0)
-                    break
-        products0 = [p for p in reaction.reactants]
-        for product in products:
-            for product0 in products0:
-                if product.isIsomorphic(product0):
-                    products0.remove(product0)
-                    break
-        reverse = not (len(reactants0) != 0 or len(products0) != 0)
-        if not forward and not reverse:
-            reactions.remove(reaction)
-    return reactions
-
-
 def ensure_species(input_list, resonance=False, keep_isomorphic=False):
     """
     The input list of :class:`Species` or :class:`Molecule` objects is modified
@@ -229,11 +180,9 @@ def generate_molecule_combos(input_species):
     elif len(input_species) == 2:
         combos = itertools.product(input_species[0].molecule, input_species[1].molecule)
     elif len(input_species) == 3:
-        combos = itertools.product(input_species[0].molecule,
-                                   input_species[1].molecule,
-                                   input_species[2].molecule)
+        combos = itertools.product(input_species[0].molecule, input_species[1].molecule, input_species[2].molecule)
     else:
-        raise ValueError('Reaction generation can be done for up to 3 species, not {0}.'.format(len(input_species)))
+        raise ValueError('Reaction generation can be done for 1, 2, or 3 species, not {0}.'.format(len(input_species)))
 
     return combos
 
@@ -382,7 +331,7 @@ def find_degenerate_reactions(rxn_list, same_reactants=None, template=None, kine
         rxn_list.append(rxn)
 
     for rxn in rxn_list:
-        if rxn.isForward:
+        if rxn.is_forward:
             reduce_same_reactant_degeneracy(rxn, same_reactants)
         else:
             # fix the degeneracy of (not ownReverse) reactions found in the backwards direction
@@ -402,11 +351,53 @@ def reduce_same_reactant_degeneracy(reaction, same_reactants=None):
     since translational component of the transition states are already taken
     into account (so swapping the same reactant is not valid)
 
+    same_reactants can be None or an integer. If it is None, then isomorphism
+    checks will be done to determine if the reactions are the same. If it is an
+    integer, that integer denotes the number of reactants that are isomorphic.
+
     This comes from work by Bishop and Laidler in 1965
     """
-    if len(reaction.reactants) == 2 and (
-                (reaction.isForward and same_reactants) or
-                reaction.reactants[0].isIsomorphic(reaction.reactants[1])
-            ):
-        reaction.degeneracy *= 0.5
-        logging.debug('Degeneracy of reaction {} was decreased by 50% to {} since the reactants are identical'.format(reaction, reaction.degeneracy))
+    if not (same_reactants == 0 or same_reactants == 1):
+        if len(reaction.reactants) == 2:
+            if ((reaction.is_forward and same_reactants == 2) or
+                    reaction.reactants[0].isIsomorphic(reaction.reactants[1])):
+                reaction.degeneracy *= 0.5
+                logging.debug(
+                    'Degeneracy of reaction {} was decreased by 50% to {} since the reactants are identical'.format(
+                        reaction, reaction.degeneracy)
+                )
+        elif len(reaction.reactants) == 3:
+            if reaction.is_forward:
+                if same_reactants == 3:
+                    reaction.degeneracy /= 6.0
+                    logging.debug(
+                        'Degeneracy of reaction {} was divided by 6 to give {} since all of the reactants '
+                        'are identical'.format(reaction, reaction.degeneracy)
+                    )
+                elif same_reactants == 2:
+                    reaction.degeneracy *= 0.5
+                    logging.debug(
+                        'Degeneracy of reaction {} was decreased by 50% to {} since two of the reactants '
+                        'are identical'.format(reaction, reaction.degeneracy)
+                    )
+            else:
+                same_01 = reaction.reactants[0].isIsomorphic(reaction.reactants[1])
+                same_02 = reaction.reactants[0].isIsomorphic(reaction.reactants[2])
+                if same_01 and same_02:
+                    reaction.degeneracy /= 6.0
+                    logging.debug(
+                        'Degeneracy of reaction {} was divided by 6 to give {} since all of the reactants '
+                        'are identical'.format(reaction, reaction.degeneracy)
+                    )
+                elif same_01 or same_02:
+                    reaction.degeneracy *= 0.5
+                    logging.debug(
+                        'Degeneracy of reaction {} was decreased by 50% to {} since two of the reactants '
+                        'are identical'.format(reaction, reaction.degeneracy)
+                    )
+                elif reaction.reactants[1].isIsomorphic(reaction.reactants[2]):
+                    reaction.degeneracy *= 0.5
+                    logging.debug(
+                        'Degeneracy of reaction {} was decreased by 50% to {} since two of the reactants '
+                        'are identical'.format(reaction, reaction.degeneracy)
+                    )

@@ -33,6 +33,7 @@ import numpy
 import logging
 import os.path
 import rmgpy.constants as constants
+from rmgpy.exceptions import InputError
 from rmgpy.cantherm.common import checkConformerEnergy
 from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
 ################################################################################
@@ -115,35 +116,41 @@ class QchemLog:
         """
         atom = []; coord = []; number = []; 
 
-        f = open(self.path, 'r')
-        line = f.readline()
-        while line != '':
-            if 'Final energy is' in line:
-                print 'found a sucessfully completed Qchem Geometry Optimization Job'
-                line = f.readline()
-                atom = []; coord = []
+
+        with open(self.path) as f:
+            log = f.read().splitlines()
+
+        #First check that the Qchem job file (not necessarily a geometry optimization)
+        #has successfully completed, if not an error is thrown
+        completed_job = False
+        for line in reversed(log):
+            if 'Total job time:' in line:
+                logging.debug('Found a sucessfully completed Qchem Job')
+                completed_job = True
                 break
-            line = f.readline()
-        found = 0           
-        while line != '':        
+
+        if not completed_job:
+            raise InputError('Could not find a successfully completed Qchem job in Qchem output file {0}'.format(self.path))
+
+        #Now look for the geometry.
+        #Will return the final geometry in the file under Standard Nuclear Orientation.
+        geometry_flag = False
+        for i in reversed(xrange(len(log))):
+            line = log[i]
             if 'Standard Nuclear Orientation' in line:
-                found += 1
-                for i in range(3): line = f.readline() # skip  lines
-                while '----------------------------------------------------' not in line:
-                    data = line.split()
-                    atom.append((data[1]))
-                    coord.append([float(data[2]), float(data[3]), float(data[4])])
-                    line = f.readline()
-                # Read the next line in the file    
-                line = f.readline()
-            # Read the next line in the file
-            line = f.readline()
-            if found ==1: break
-        line = f.readline()
-        #print coord
-        f.close()
+                atom, coord, number = [], [], []
+                for line in log[(i+3):]:
+                    if '------------' not in line:
+                        data = line.split()
+                        atom.append(data[1])
+                        coord.append([float(c) for c in data [2:]])
+                        geometry_flag = True
+                    else:
+                        break
+                if geometry_flag:
+                    break
+
         coord = numpy.array(coord, numpy.float64)
-        mass = numpy.array(coord, numpy.float64)
         # Assign appropriate mass to each atom in molecule
         # These values were taken from "Atomic Weights and Isotopic Compositions" v3.0 (July 2010) from NIST
 
@@ -173,7 +180,9 @@ class QchemLog:
                 number.append('17')
             else:
                 raise NotImplementedError('Atomic atom {0:d} not yet supported in loadGeometry().'.format(atom[i]))
-        number = numpy.array(number, numpy.int)       
+        number = numpy.array(number, numpy.int)
+        if len(number) == 0 or len(coord) == 0 or len(mass) == 0:
+            raise InputError('Unable to read the numbers and types of atoms from Qchem output file {0}'.format(self.path))
         return coord, number, mass
     
     def loadConformer(self, symmetry=None, spinMultiplicity=0, opticalIsomers=1, symfromlog=None, label=''):
@@ -301,7 +310,7 @@ class QchemLog:
         if E0 is not None:
             return E0
         else:
-            raise Exception('Unable to find energy in Qchem output file.')
+            raise InputError('Unable to find energy in Qchem output file.')
         
     def loadZeroPointEnergy(self,frequencyScaleFactor=1.):
         """
@@ -331,7 +340,7 @@ class QchemLog:
         if ZPE is not None:
             return ZPE
         else:
-            raise Exception('Unable to find zero-point energy in Qchem output file.')
+            raise InputError('Unable to find zero-point energy in Qchem output file.')
               
     def loadScanEnergies(self):
         """
@@ -394,4 +403,4 @@ class QchemLog:
         if frequency < 0:
             return frequency
         else:
-            raise Exception('Unable to find imaginary frequency in QChem output file {0}'.format(self.path))
+            raise InputError('Unable to find imaginary frequency in QChem output file {0}'.format(self.path))

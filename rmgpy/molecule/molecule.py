@@ -212,11 +212,13 @@ class Atom(Vertex):
                     return False
             return True
     
-    def getDescriptor(self):
-        return self.number, self.getAtomConnectivityValue(), self.radicalElectrons, self.lonePairs, self.charge
-
-    def getAtomConnectivityValue(self):
-        return getVertexConnectivityValue(self)
+    def get_descriptor(self):
+        """
+        Return a tuple used for sorting atoms.
+        Currently uses atomic number, connectivity value,
+        radical electrons, lone pairs, and charge
+        """
+        return self.number, -getVertexConnectivityValue(self), self.radicalElectrons, self.lonePairs, self.charge
 
     def isSpecificCaseOf(self, other):
         """
@@ -935,7 +937,7 @@ class Molecule(Graph):
             if vertex.sortingLabel < 0:
                 self.updateConnectivityValues()
                 break
-        self.atoms.sort(key=lambda a: a.getDescriptor(), reverse=True)
+        self.atoms.sort(key=lambda a: a.get_descriptor(), reverse=True)
         for index, vertex in enumerate(self.vertices):
             vertex.sortingLabel = index
 
@@ -1270,7 +1272,7 @@ class Molecule(Graph):
         for atom in self.atoms:
             symbol = atom.element.symbol
             isotope = atom.element.isotope
-            key = symbol if isotope == -1 else (symbol, isotope)
+            key = symbol
             if key in element_count:
                 element_count[key] += 1
             else:
@@ -1278,7 +1280,7 @@ class Molecule(Graph):
 
         return element_count
 
-    def isIsomorphic(self, other, initialMap=None):
+    def isIsomorphic(self, other, initialMap=None,saveOrder=False):
         """
         Returns :data:`True` if two graphs are isomorphic and :data:`False`
         otherwise. The `initialMap` attribute can be used to specify a required
@@ -1300,10 +1302,10 @@ class Molecule(Graph):
         if self.multiplicity != other.multiplicity:
             return False
         # Do the full isomorphism comparison
-        result = Graph.isIsomorphic(self, other, initialMap)
+        result = Graph.isIsomorphic(self, other, initialMap, saveOrder=saveOrder)
         return result
 
-    def findIsomorphism(self, other, initialMap=None):
+    def findIsomorphism(self, other, initialMap=None, saveOrder=False):
         """
         Returns :data:`True` if `other` is isomorphic and :data:`False`
         otherwise, and the matching mapping. The `initialMap` attribute can be
@@ -1327,10 +1329,10 @@ class Molecule(Graph):
             return []
             
         # Do the isomorphism comparison
-        result = Graph.findIsomorphism(self, other, initialMap)
+        result = Graph.findIsomorphism(self, other, initialMap, saveOrder=saveOrder)
         return result
 
-    def isSubgraphIsomorphic(self, other, initialMap=None):
+    def isSubgraphIsomorphic(self, other, initialMap=None, generateInitialMap=False,saveOrder=False):
         """
         Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
         otherwise. The `initialMap` attribute can be used to specify a required
@@ -1340,13 +1342,13 @@ class Molecule(Graph):
         """
         cython.declare(group=gr.Group, atom=Atom)
         cython.declare(carbonCount=cython.short, nitrogenCount=cython.short, oxygenCount=cython.short, sulfurCount=cython.short, radicalCount=cython.short)
-        
+        cython.declare(L=list)
         # It only makes sense to compare a Molecule to a Group for subgraph
         # isomorphism, so raise an exception if this is not what was requested
         if not isinstance(other, gr.Group):
-            raise TypeError('Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
+            raise TypeError('Got a {0} object for parameter "other", when a Group object is required.'.format(other.__class__))
         group = other
-
+        
         # Check multiplicity
         if group.multiplicity:
             if self.multiplicity not in group.multiplicity: return False
@@ -1354,7 +1356,7 @@ class Molecule(Graph):
         # Compare radical counts
         if self.getRadicalCount() < group.radicalCount:
             return False
-
+        
         # Compare element counts
         element_count = self.get_element_count()
         for element, count in group.elementCount.iteritems():
@@ -1362,12 +1364,21 @@ class Molecule(Graph):
                 return False
             elif element_count[element] < count:
                 return False
-
+        
+        if generateInitialMap:
+            initialMap = dict()
+            for atom in self.atoms:
+                if atom.label and atom.label != '':
+                    L = [a for a in other.atoms if a.label == atom.label]
+                    initialMap[atom] = L[0]
+            if not self.isMappingValid(other,initialMap,equivalent=False):
+                return False
+            
         # Do the isomorphism comparison
-        result = Graph.isSubgraphIsomorphic(self, other, initialMap)
+        result = Graph.isSubgraphIsomorphic(self, other, initialMap, saveOrder=saveOrder)
         return result
 
-    def findSubgraphIsomorphisms(self, other, initialMap=None):
+    def findSubgraphIsomorphisms(self, other, initialMap=None, saveOrder=False):
         """
         Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
         otherwise. Also returns the lists all of valid mappings. The
@@ -1404,9 +1415,9 @@ class Molecule(Graph):
                 return []
 
         # Do the isomorphism comparison
-        result = Graph.findSubgraphIsomorphisms(self, other, initialMap)
+        result = Graph.findSubgraphIsomorphisms(self, other, initialMap, saveOrder=saveOrder)
         return result
-
+    
     def isAtomInCycle(self, atom):
         """
         Return :data:`True` if `atom` is in one or more cycles in the structure,
@@ -1840,6 +1851,17 @@ class Molecule(Graph):
                 return True
         return False
 
+    def has_lone_pairs(self):
+        """
+        Return ``True`` if the molecule contains at least one lone electron pair,
+        or ``False`` otherwise.
+        """
+        cython.declare(atom=Atom)
+        for atom in self.vertices:
+            if atom.lonePairs > 0:
+                return True
+        return False
+
     def isArylRadical(self, aromaticRings=None):
         """
         Return ``True`` if the molecule only contains aryl radicals,
@@ -2029,6 +2051,8 @@ class Molecule(Graph):
                         break
                     for atom2 in ring0[i + 1:]:
                         if self.hasBond(atom1, atom2):
+                            # Check for aromaticity using the bond type rather than GetIsAromatic because
+                            # aryne triple bonds return True for GetIsAromatic but are not aromatic bonds
                             if rdkitmol.GetBondBetweenAtoms(rdAtomIndices[atom1],
                                                             rdAtomIndices[atom2]).GetBondType() is AROMATIC:
                                 aromaticBondsInRing.append(self.getBond(atom1, atom2))

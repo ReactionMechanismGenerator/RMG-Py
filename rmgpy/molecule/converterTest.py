@@ -35,7 +35,7 @@ This module contains unit test for the converter module.
 import unittest
 
 from rmgpy.exceptions import AtomTypeError
-from rmgpy.molecule.converter import debugRDKitMol, toRDKitMol, fromRDKitMol
+from rmgpy.molecule.converter import debugRDKitMol, toRDKitMol, fromRDKitMol, toOBMol, fromOBMol
 from rmgpy.molecule.molecule import Molecule
 
 
@@ -123,3 +123,38 @@ class RDKitTest(unittest.TestCase):
                         rdkitmol.GetBondBetweenAtoms(rdAtomIndices[at1], rdAtomIndices[at2])
                     except RuntimeError:
                         self.fail("RDKit failed in finding the bond in the original atom!")
+
+class ConverterTest(unittest.TestCase):
+
+    def setUp(self):
+        """Function run before each test in this class."""
+        self.test_mols = [
+            Molecule().fromSMILES('C'),
+            Molecule().fromSMILES('O'),
+            Molecule().fromSMILES('N'),
+            Molecule().fromSMILES('S'),
+            Molecule().fromSMILES('[CH2]C'),
+            Molecule().fromSMILES('[CH]C'),
+            Molecule().fromSMILES('C=CC=C'),
+            Molecule().fromSMILES('C#C[CH2]'),
+            Molecule().fromSMILES('c1ccccc1'),
+            Molecule().fromSMILES('[13CH3]C')
+        ]
+
+    def test_rdkit_round_trip(self):
+        """Test conversion to and from RDKitMol"""
+        for mol in self.test_mols:
+            rdkit_mol = toRDKitMol(mol)
+            new_mol = fromRDKitMol(Molecule(), rdkit_mol)
+
+            self.assertTrue(mol.isIsomorphic(new_mol))
+            self.assertEqual(mol.get_element_count(), new_mol.get_element_count())
+
+    def test_ob_round_trip(self):
+        """Test conversion to and from OBMol"""
+        for mol in self.test_mols:
+            ob_mol = toOBMol(mol)
+            new_mol = fromOBMol(Molecule(), ob_mol)
+
+            self.assertTrue(mol.isIsomorphic(new_mol))
+            self.assertEqual(mol.get_element_count(), new_mol.get_element_count())

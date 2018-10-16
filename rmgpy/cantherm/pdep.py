@@ -150,6 +150,11 @@ class PressureDependenceJob(object):
         else:
             self.sensitivity_conditions = None
         
+        if self.Tlist is None and self.Tmin is not None and self.Tmax is not None and self.Tcount is not None:
+            self.generateTemperatureList()
+        if self.Plist is None and self.Pmin is not None and self.Pmax is not None and self.Pcount is not None:
+            self.generatePressureList()
+        
     @property
     def Tmin(self):
         """The minimum temperature at which the computed k(T,P) values are valid, or ``None`` if not defined."""
@@ -252,7 +257,7 @@ class PressureDependenceJob(object):
                 for i in xrange(3):
                     try:
                         sa(self, os.path.dirname(outputFile), perturbation=perturbation)
-                    except (InvalidMicrocanonicalRateError, ModifiedStrongCollisionError):
+                    except (InvalidMicrocanonicalRateError, ModifiedStrongCollisionError) as exept:
                         logging.warn("Could not complete the sensitivity analysis with a perturbation of {0}"
                                      " kcal/mol, trying {1} kcal/mol instead.".format(
                                         perturbation, perturbation / 2.0))
@@ -262,7 +267,7 @@ class PressureDependenceJob(object):
                 else:
                     logging.error("Could not complete the sensitivity analysis even with a perturbation of {0}"
                                   " kcal/mol".format(perturbation))
-                    raise
+                    raise exept
                 logging.info("Completed the sensitivity analysis using a perturbation of {0} kcal/mol".format(
                     perturbation))
         logging.debug('Finished pdep job for reaction {0}.'.format(self.network.label))

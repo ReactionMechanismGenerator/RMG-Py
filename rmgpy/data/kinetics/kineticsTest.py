@@ -37,7 +37,7 @@ import numpy
 from rmgpy import settings
 from rmgpy.chemkin import loadChemkinFile
 from rmgpy.data.base import Entry, DatabaseError, ForbiddenStructures
-from rmgpy.data.kinetics.common import saveEntry, filter_reactions, find_degenerate_reactions, ensure_independent_atom_ids
+from rmgpy.data.kinetics.common import saveEntry, find_degenerate_reactions, ensure_independent_atom_ids
 from rmgpy.data.kinetics.database import KineticsDatabase
 from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.rmg import RMGDatabase
@@ -88,12 +88,11 @@ def tearDownModule():
 
 class TestKineticsDatabase(unittest.TestCase):
 
-    def testLoadFamilies(self):
-        """
-        Test that the loadFamilies function raises the correct exceptions
-        """
-        path = os.path.join(settings['test_data.directory'],'testing_database','kinetics','families')
+    def test_load_families_incorrect(self):
+        """Test invalid methods for loading kinetics families"""
+        path = os.path.join(settings['test_data.directory'], 'testing_database', 'kinetics', 'families')
         database = KineticsDatabase()
+        database.loadRecommendedFamiliesList(os.path.join(path, 'recommended.py'))
 
         with self.assertRaises(DatabaseError):
             database.loadFamilies(path, families='random')
@@ -101,8 +100,53 @@ class TestKineticsDatabase(unittest.TestCase):
             database.loadFamilies(path, families=['!H_Abstraction','Disproportionation'])
         with self.assertRaises(DatabaseError):
             database.loadFamilies(path, families=['fake_family'])
-        with self.assertRaises(DatabaseError):
+
+    def test_load_families_correct(self):
+        """Test valid methods for loading kinetics families."""
+        path = os.path.join(settings['test_data.directory'], 'testing_database', 'kinetics', 'families')
+        database = KineticsDatabase()
+        database.loadRecommendedFamiliesList(os.path.join(path, 'recommended.py'))
+
+        try:
             database.loadFamilies(path, families=[])
+        except DatabaseError:
+            self.fail("Unable to load families using list []")
+
+        try:
+            database.loadFamilies(path, families='none')
+        except DatabaseError:
+            self.fail("Unable to load families using keyword 'none'")
+
+        try:
+            database.loadFamilies(path, families='default')
+        except DatabaseError:
+            self.fail("Unable to load families using keyword 'default'")
+
+        try:
+            database.loadFamilies(path, families=['default', 'pah'])
+        except DatabaseError:
+            self.fail("Unable to load families using list ['default', 'pah']")
+
+        try:
+            database.loadFamilies(path, families=['R_Addition_MultipleBond'])
+        except DatabaseError:
+            self.fail("Unable to load families using list ['R_Addition_MultipleBond']")
+
+        try:
+            database.loadFamilies(path, families=['!H_Abstraction', '!Disproportionation'])
+        except DatabaseError:
+            self.fail("Unable to load families using list ['!H_Abstraction', '!Disproportionation']")
+
+        try:
+            database.loadFamilies(path, families='!pah')
+        except DatabaseError:
+            self.fail("Unable to load families using keyword '!pah'")
+
+        try:
+            database.loadFamilies(path, families=['H_Abstraction', 'pah'])
+        except DatabaseError:
+            self.fail("Unable to load families using list ['H_Abstraction', 'pah']")
+
 
 class TestReactionDegeneracy(unittest.TestCase):
 
@@ -650,45 +694,6 @@ class TestKinetics(unittest.TestCase):
             os.path.join(settings['test_data.directory'], 'parsing_data', 'chem_annotated.inp'),
             os.path.join(settings['test_data.directory'], 'parsing_data', 'species_dictionary.txt')
         )
-        
-    def test_filter_reactions(self):
-        """
-        tests that filter reactions removes reactions that are missing
-        any reactants or products
-        """
-        
-        reactions=self.reactions
-        
-        reactants = []
-        products = []
-        for x in reactions:
-            reactants += x.reactants
-            products += x.products
-        
-        lrset = set(reactants[6:])
-        mlrset = {reactants[i].molecule[0] for i in range(6,len(reactants))}
-        
-        reactants = set(reactants)
-        products = set(products)
-        mreactants = {i.molecule[0] for i in reactants}
-        mproducts = {i.molecule[0] for i in products}
-
-        newmreactants = list(mreactants-mlrset)
-        newmproducts = list(mproducts-mlrset)
-
-        out = filter_reactions(newmreactants, newmproducts, reactions)
-            
-        rset = list(set(reactions) - set(out))
-
-        msets = [set(i.reactants+i.products) for i in rset]
-        
-        for i, iset in enumerate(msets): #test that all the reactions we removed are missing a reactant or a product
-            self.assertTrue(iset & lrset != set(),msg='reaction {0} removed improperly'.format(rset[i]))
-        
-        outsets = [set(i.reactants+i.products) for i in out]
-            
-        for i, iset in enumerate(outsets): #test that all the reactions left in aren't missing any reactants or products
-            self.assertTrue(iset & lrset == set(),msg='reaction {0} left in improperly, should have removed in based on presence of {1}'.format(out[i],iset & lrset))
 
     def test_react_molecules(self):
         """

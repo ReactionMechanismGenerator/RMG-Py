@@ -40,3 +40,5 @@ dependencies:
   - mock
   # - muq
   - pymongo
+  - mpmath
+  

@@ -174,7 +174,8 @@ class KineticsJob(object):
         self.Kequnits = {2:'mol^2/cm^6', 1:'mol/cm^3', 0:'       ', -1:'cm^3/mol', -2:'cm^6/mol^2'}[len(self.reaction.products)-len(self.reaction.reactants)]
         self.krunits = {1: 's^-1', 2: 'cm^3/(mol*s)', 3: 'cm^6/(mol^2*s)'}[len(self.reaction.products)]
         self.reaction.kinetics = Arrhenius().fitToData(Tlist, klist, kunits=self.kunits)
-
+        self.reaction.elementary_high_p = True
+        
     def save(self, outputFile):
         """
         Save the results of the kinetics job to the file located
@@ -220,11 +221,17 @@ class KineticsJob(object):
         f.write('#   ======= ============ =========== ============ ============= =========\n')
         f.write('#   Temp.    Kc (eq)        Units     krev (TST)   krev (TST+T)   Units\n')
         f.write('#   ======= ============ =========== ============ ============= =========\n')
-        
+
+        # Initialize Object for Converting Units
+        if self.Kequnits != '       ':
+            keq_unit_converter = quantity.Units(self.Kequnits).getConversionFactorFromSI()
+        else:
+            keq_unit_converter = 1
+
         for n,T in enumerate(Tlist):
             k = ks[n]
             k0 = k0s[n]
-            Keq = reaction.getEquilibriumConstant(T)
+            Keq = keq_unit_converter * reaction.getEquilibriumConstant(T)  # getEquilibriumConstant returns SI units
             k0rev = k0/Keq
             krev =  k/Keq
             k0revs.append(k0rev)
@@ -299,11 +306,14 @@ class KineticsJob(object):
         plt.title(reaction_str)
         plt.xlabel('1000 / Temperature (1000/K)')
         plt.ylabel('Rate coefficient ({0})'.format(self.kunits))
-        if not os.path.exists('plots'):
-            os.mkdir('plots')
+
+        plot_path = os.path.join(outputDirectory, 'plots')
+
+        if not os.path.exists(plot_path):
+            os.mkdir(plot_path)
         valid_chars = "-_.()<=> %s%s" % (string.ascii_letters, string.digits)
-        filename = os.path.join('plots', ''.join(c for c in reaction_str if c in valid_chars) + '.pdf')
-        plt.savefig(os.path.join(outputDirectory, filename))
+        filename = ''.join(c for c in reaction_str if c in valid_chars) + '.pdf'
+        plt.savefig(os.path.join(plot_path, filename))
         plt.close()
 
     def draw(self, outputDirectory, format='pdf'):
@@ -316,14 +326,16 @@ class KineticsJob(object):
         one of the following: `pdf`, `svg`, `png`.
         """
 
-        if not os.path.exists('paths'):
-            os.mkdir('paths')
+        drawing_path = os.path.join(outputDirectory, 'paths')
+
+        if not os.path.exists(drawing_path):
+            os.mkdir(drawing_path)
         valid_chars = "-_.()<=> %s%s" % (string.ascii_letters, string.digits)
         reaction_str = '{0} {1} {2}'.format(
             ' + '.join([reactant.label for reactant in self.reaction.reactants]),
             '<=>', ' + '.join([product.label for product in self.reaction.products]))
-        filename = os.path.join('paths', ''.join(c for c in reaction_str if c in valid_chars) + '.pdf')
-        path = os.path.join(outputDirectory, filename)
+        filename = ''.join(c for c in reaction_str if c in valid_chars) + '.pdf'
+        path = os.path.join(drawing_path, filename)
 
         KineticsDrawer().draw(self.reaction, format=format, path=path)
 
