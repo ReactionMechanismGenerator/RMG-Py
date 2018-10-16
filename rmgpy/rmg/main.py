@@ -896,6 +896,9 @@ class RMG(util.Subject):
             
             if reactionSystem.sensitiveSpecies and reactionSystem.sensConditions:
                 logging.info('Conducting sensitivity analysis of reaction system %s...' % (index+1))
+
+                if reactionSystem.sensitiveSpecies == ['all']:
+                    reactionSystem.sensitiveSpecies = self.reactionModel.core.species
                     
                 sensWorksheet = []
                 for spec in reactionSystem.sensitiveSpecies:

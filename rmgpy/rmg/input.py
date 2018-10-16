@@ -193,9 +193,13 @@ def simpleReactor(temperature,
     
     sensitiveSpecies = []
     if sensitivity:
-        if isinstance(sensitivity, str): sensitivity = [sensitivity]
-        for spec in sensitivity:
-            sensitiveSpecies.append(speciesDict[spec])
+        if sensitivity != 'all':
+            if isinstance(sensitivity, str): sensitivity = [sensitivity]
+            for spec in sensitivity:
+                sensitiveSpecies.append(speciesDict[spec])
+
+        else:
+            sensitiveSpecies.append('all')
     
     if not isinstance(T,list):
         sensitivityTemperature = T

@@ -90,6 +90,8 @@ def simulate(rmg, diffusionLimited=True):
             
         if reactionSystem.sensitiveSpecies:
             logging.info('Conducting simulation and sensitivity analysis of reaction system %s...' % (index+1))
+            if reactionSystem.sensitiveSpecies == ['all']:
+                reactionSystem.sensitiveSpecies = rmg.reactionModel.core.species
         
         else:
             logging.info('Conducting simulation of reaction system %s...' % (index+1))
