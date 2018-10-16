@@ -316,13 +316,14 @@ def _readKineticsReaction(line, speciesDict, Aunits, Eunits):
     
     # Split the reaction equation into reactants and products
     reversible = True
-    reactants, products = reaction.split('=')
-    if '<=>' in reaction:
-        reactants = reactants[:-1]
-        products = products[1:]
-    elif '=>' in reaction:
-        products = products[1:]
-        reversible = False
+    # to allow species to contain =, we should also check for <=>
+    try:
+        reactants, products = reaction.split('<=>')
+    except ValueError:
+        reactants, products = reaction.split('=')
+        if '=>' in reaction:
+            products = products[1:]
+            reversible = False
     specificCollider = None
     # search for a third body collider, e.g., '(+M)', '(+m)', or a specific species like '(+N2)', matching `(+anythingOtherThanEndingParenthesis)`:
     collider = re.search('\(\+[^\)]+\)',reactants)
@@ -1372,7 +1373,7 @@ def getSpeciesIdentifier(species):
     if species.index == -1:
         # No index present -- probably not in RMG job
         # In this case just return the label (if the right size)
-        if len(label) > 0 and not re.search(r'[^A-Za-z0-9\-_,\(\)\*#]+', label):
+        if len(label) > 0 and not re.search(r'[^A-Za-z0-9\-_,\(\)\*#=\[\]]+', label):
             if len(label) <= 10:
                 return label
             elif len(label) <= 15:
@@ -1393,7 +1394,7 @@ def getSpeciesIdentifier(species):
 
         # First try to use the label and index
         # The label can only contain alphanumeric characters, and -()*#_,
-        if len(label) > 0 and species.index >= 0 and not re.search(r'[^A-Za-z0-9\-_,\(\)\*#]+', label):
+        if len(label) > 0 and species.index >= 0 and not re.search(r'[^A-Za-z0-9\-_,\(\)\*#=\[\]]+', label):
             name = '{0}({1:d})'.format(label, species.index)
             if len(name) <= 10:
                 return name
@@ -1558,7 +1559,9 @@ def writeReactionString(reaction, javaLibrary = False):
 def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = False, commented=False):
     """
     Return a string representation of the reaction as used in a Chemkin
-    file. Use verbose = True to turn on comments.  Use javaLibrary = True in order to 
+    file. Use `verbose = True` to turn on kinetics comments.
+    Use `commented = True` to comments out the entire reaction.
+    Use javaLibrary = True in order to
     generate a kinetics entry suitable for an RMG-Java kinetics library.  
     """
     string = ""
