@@ -234,7 +234,7 @@ class RMGDatabase:
         self.kinetics.saveOld(path)
         self.statmech.saveOld(path)
 
-def getDB(name):
+def getDB(name=''):
     """
     Returns the RMG database object that corresponds
     to the parameter name.
@@ -245,7 +245,9 @@ def getDB(name):
     global database
 
     if database:
-        if name == 'kinetics':
+        if name == '':
+            return database
+        elif name == 'kinetics':
             return database.kinetics
         elif name == 'thermo':
             return database.thermo
