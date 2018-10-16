@@ -108,7 +108,8 @@ def loadRMGPyJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=T
         for t in reactionSystem.termination:
             if isinstance(t, TerminationConversion):
                 t.species = speciesDict[t.species]
-        reactionSystem.sensitiveSpecies = [speciesDict[spec] for spec in reactionSystem.sensitiveSpecies]
+        if reactionSystem.sensitiveSpecies != ['all']:
+            reactionSystem.sensitiveSpecies = [speciesDict[spec] for spec in reactionSystem.sensitiveSpecies]
     
     # Set reaction model to match model loaded from Chemkin file
     rmg.reactionModel.core.species = speciesList
