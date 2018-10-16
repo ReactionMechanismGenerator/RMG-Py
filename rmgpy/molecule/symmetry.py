@@ -109,6 +109,9 @@ def calculateAtomSymmetryNumber(molecule, atom):
             if count == [3]: symmetryNumber *= 6
             elif count == [2, 1]: symmetryNumber *= 2
             elif count == [1, 1, 1]: symmetryNumber *= 1
+        elif single == 1:
+            if count == [2, 1]: symmetryNumber *= 2
+            elif count == [1, 1, 1]: symmetryNumber *= 1
     elif atom.radicalElectrons == 2:
         if single == 2:
             # Two single bonds
