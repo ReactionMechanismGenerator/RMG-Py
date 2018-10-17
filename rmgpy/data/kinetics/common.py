@@ -244,7 +244,7 @@ def find_degenerate_reactions(rxn_list, same_reactants=None, template=None, kine
     This algorithm used to exist in family.__generateReactions, but was moved
     here so it could operate across reaction families.
 
-    This method modifies the rxnList in place and also returns it.
+    This method returns an updated list with degenerate reactions removed.
 
     Args:
         rxn_list (list):                                reactions to be analyzed
