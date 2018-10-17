@@ -502,7 +502,10 @@ def generate_adj_lone_pair_multiple_bond_resonance_structures(mol):
             except AtomTypeError:
                 pass  # Don't append resonance structure if it creates an undefined atomType
             else:
-                structures.append(structure)
+                if structure.getNetCharge() and structure.containsSurfaceSite():
+                    pass
+                else:
+                    structures.append(structure)
     return structures
 
 
