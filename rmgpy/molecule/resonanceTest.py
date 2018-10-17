@@ -1332,3 +1332,12 @@ class ClarTest(unittest.TestCase):
         newmol = generate_clar_structures(mol)
 
         self.assertEquals(len(newmol), 0)
+
+    def testSurfaceO(self):
+        """Test resonance structure generation for surface adsorbed O=X
+
+        Should not crash."""
+        # See https://github.com/cfgoldsmith/RMG-Py/issues/43
+        mol_list = generate_resonance_structures(Molecule().fromAdjacencyList("""OX
+1 X u0 p0 c0 {2,D}
+2 O u0 p2 c0 {1,D}"""))
