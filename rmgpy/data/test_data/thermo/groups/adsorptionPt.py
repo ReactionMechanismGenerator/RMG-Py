@@ -29,7 +29,7 @@ This node should be empty, ensuring that one of the nodes below is used.
 
 entry(
     index = 1,
-    label = "R",
+    label = "R-*",
     group =
 """
 1 X  u0 p0 c0 {2,S}
@@ -1798,8 +1798,8 @@ entry(
     label = "C*",
     group =
 """
-1 X  u0 
-2 C  u0 
+1 X  u0 {2,[S,D,T,Q]}
+2 C  u0 {1,[S,D,T,Q]}
 """,
     thermo=u'C-*R3',
 )
@@ -1809,8 +1809,8 @@ entry(
     label = "N*",
     group =
 """
-1 X  u0 
-2 N  u0 
+1 X  u0 {2,[S,D,T,Q]}
+2 N  u0 {1,[S,D,T,Q]}
 """,
     thermo=u'N-*R2',
 )
@@ -1820,8 +1820,8 @@ entry(
     label = "O*",
     group =
 """
-1 X  u0 
-2 O  u0 
+1 X  u0 {2,[S,D,T,Q]}
+2 O  u0 {1,[S,D,T,Q]}
 """,
     thermo=u'O-*R',
 )
@@ -1831,8 +1831,8 @@ entry(
     label = "R*single_chemisorbed",
     group =
 """
-1 X  u0 
-2 R  u0
+1 X  u0  {2,[S,D,T,Q]}
+2 R  u0  {1,[S,D,T,Q]}
 """,
     thermo=ThermoData(
         Tdata=([300, 400, 500, 600, 800, 1000, 1500], 'K'),
