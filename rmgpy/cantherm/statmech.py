@@ -181,6 +181,7 @@ class StatMechJob(object):
         self.applyAtomEnergyCorrections = True
         self.applyBondEnergyCorrections = True
         self.atomEnergies = None
+        self.supporting_info = [self.species.label]
     
     def execute(self, outputFile=None, plot=False):
         """
@@ -334,6 +335,15 @@ class StatMechJob(object):
         conformer = statmechLog.loadConformer(symmetry=externalSymmetry, spinMultiplicity=spinMultiplicity,
                                               opticalIsomers=opticalIsomers, symfromlog=symfromlog,
                                               label=self.species.label)
+        for mode in conformer.modes:
+            if isinstance(mode, (LinearRotor, NonlinearRotor)):
+                self.supporting_info.append(mode)
+                break
+        for mode in conformer.modes:
+            # repeat loop so the frequencies are added last
+            if isinstance(mode, HarmonicOscillator):
+                self.supporting_info.append(mode)
+                break
 
         if conformer.spinMultiplicity == 0:
             raise ValueError("Could not read spin multiplicity from log file {0},\n"
@@ -389,7 +399,9 @@ class StatMechJob(object):
         
         # If loading a transition state, also read the imaginary frequency
         if TS:
-            self.species.frequency = (statmechLog.loadNegativeFrequency() * self.frequencyScaleFactor, "cm^-1")
+            neg_freq = statmechLog.loadNegativeFrequency()
+            self.species.frequency = (neg_freq * self.frequencyScaleFactor, "cm^-1")
+            self.supporting_info.append(neg_freq)
 
         # Read and fit the 1D hindered rotors if applicable
         # If rotors are found, the vibrational frequencies are also

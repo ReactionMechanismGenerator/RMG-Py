@@ -39,6 +39,7 @@ import sys
 import logging
 import argparse
 import time
+import csv
 try:
     import matplotlib
     matplotlib.rc('mathtext', default='regular')
@@ -258,17 +259,34 @@ class CanTherm:
             f.write('THERM ALL\n')
             f.write('    300.000  1000.000  5000.000\n\n')
 
-        # run thermo jobs (printing out thermo stuff)
+        # run thermo and statmech jobs (also writes thermo blocks to Chemkin file)
+        supporting_info = []
         for job in self.jobList:
-            if isinstance(job,ThermoJob) or isinstance(job, StatMechJob):
+            if isinstance(job, ThermoJob):
                 job.execute(outputFile=outputFile, plot=self.plot)
+            if isinstance(job, StatMechJob):
+                job.execute(outputFile=outputFile, plot=self.plot)
+                supporting_info.append(job.supporting_info)
 
         with open(chemkinFile, 'a') as f:
             f.write('\n')
             f.write('END\n\n\n\n')
             f.write('REACTIONS    KCAL/MOLE   MOLES\n\n')
 
-        # run kinetics and pdep jobs (and outputing chemkin stuff)
+        supporting_info_file = os.path.join(self.outputDirectory, 'supporting_information.csv')
+        with open(supporting_info_file, 'wb') as csvfile:
+            writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            writer.writerow(['Label','Rotational constant (cm-1)','Unscaled frequencies (cm-1)'])
+            for row in supporting_info:
+                label = row[0]
+                rot = ', '.join(['{0:.2f}'.format(s) for s in row[1].rotationalConstant.value])
+                freq = ''
+                if len(row) == 4:
+                    freq = '{0:.1f}'.format(abs(row[3])) + 'i, '
+                freq += ', '.join(['{0:.1f}'.format(s) for s in row[2].frequencies.value_si])
+                writer.writerow([label, rot, freq])
+
+        # run kinetics and pdep jobs (also writes reaction blocks to Chemkin file)
         for job in self.jobList:
             if isinstance(job,KineticsJob):
                 job.execute(outputFile=outputFile, plot=self.plot)
@@ -279,8 +297,7 @@ class CanTherm:
             elif isinstance(job, ExplorerJob):
                 thermoLibrary,kineticsLibrary,speciesList = self.getLibraries()
                 job.execute(outputFile=outputFile, plot=self.plot, speciesList=speciesList, thermoLibrary=thermoLibrary, kineticsLibrary=kineticsLibrary)
-                    
-                    
+
         with open(chemkinFile, 'a') as f:
             f.write('END\n\n')
 
