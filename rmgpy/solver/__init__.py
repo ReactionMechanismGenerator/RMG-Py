@@ -28,6 +28,7 @@
 #                                                                             #
 ###############################################################################
 
-from .base import ReactionSystem, TerminationTime, TerminationConversion
+from .base import ReactionSystem, TerminationTime, TerminationConversion, TerminationRateRatio
 from .simple import SimpleReactor
 from .liquid import LiquidReactor
+from .surface import SurfaceReactor
