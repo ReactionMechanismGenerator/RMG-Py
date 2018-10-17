@@ -337,7 +337,7 @@ def surfaceReactor(temperature,
                   initialSurfaceCoverages,
                   surfaceVolumeRatio,
                   surfaceSiteDensity,
-                   nSimsTerm=4,
+                  nSims=4,
                   terminationConversion=None,
                   terminationTime=None,
                   sensitivity=None,
@@ -379,7 +379,7 @@ def surfaceReactor(temperature,
         initialP = [Quantity(p) for p in initialPressure]
 
     if not isinstance(temperature, list) and not isinstance(initialPressure, list):
-        nSimsTerm = 1
+        nSims = 1
     if any([isinstance(x, list) for x in initialGasMoleFractions.values()]) or \
        any([isinstance(x, list) for x in initialSurfaceCoverages.values()]):
         raise NotImplementedError("Can't do ranges on species concentrations for surface reactors yet.")
@@ -416,7 +416,7 @@ def surfaceReactor(temperature,
                             initialSurfaceCoverages=initialSurfaceCoverages,
                             surfaceVolumeRatio=surfaceVolumeRatio,
                             surfaceSiteDensity=surfaceSiteDensity,
-                            nSimsTerm=nSimsTerm,
+                            nSims=nSims,
                             termination=termination,
                             sensitiveSpecies=sensitiveSpecies,
                             sensitivityThreshold=sensitivityThreshold,

@@ -57,7 +57,7 @@ cdef class SurfaceReactor(ReactionSystem):
 
     cdef public list Trange
     cdef public list Prange
-    cdef public int nSimsTerm
+    cdef public int nSims
     cdef public dict sensConditions
 
     cdef public dict initialGasMoleFractions
@@ -74,7 +74,7 @@ cdef class SurfaceReactor(ReactionSystem):
                  initialSurfaceCoverages,
                  surfaceVolumeRatio,
                  surfaceSiteDensity,
-                 nSimsTerm=None,
+                 nSims=None,
                  termination=None,
                  sensitiveSpecies=None,
                  sensitivityThreshold=1e-3,
@@ -100,7 +100,7 @@ cdef class SurfaceReactor(ReactionSystem):
         self.V = 0 # will be set from ideal gas law in initializeModel
         self.constantVolume = True
         self.sensConditions = sensConditions
-        self.nSimsTerm = nSimsTerm
+        self.nSims = nSims
         
     def convertInitialKeysToSpeciesObjects(self, speciesDict):
         """
