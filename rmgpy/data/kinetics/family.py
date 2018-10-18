@@ -1957,8 +1957,14 @@ class KineticsFamily(Database):
                 raise NotImplementedError("Termolecluar template not containing two surface sites")
 
         elif len(reactants) == 3 and len(template.reactants) == 3:
-
-
+            """
+            This could be a surface reaction
+                A + X + X <=> BX + CX  (dissociative adsorption)
+                A + X + X <=> AXX      (bidentate adsorption)
+            or a termolecular gas phase reaction
+                A + B + C <=> stuff
+            We check the two scenarios in that order.
+            """
             templateSites = [r for r in template.reactants if r.item.isSurfaceSite()]
             if len(templateSites) == 2:
                 """
@@ -1968,7 +1974,6 @@ class KineticsFamily(Database):
                 that was first found in the reverse direction
                 and so is being passed in with all three reactants identified.
                 """
-
                 # Should be 2 surface sites in reactants too.
                 # Find them, and find mappings of the other
                 m1, m2, m3 = (r[0] for r in reactants)
@@ -1982,7 +1987,8 @@ class KineticsFamily(Database):
                     site1, site2 = m2, m3
                     adsorbateMolecules = reactants[0]
                 else:
-                    raise NotImplementedError("Three reactants not containing two surface sites")
+                    "Three reactants not containing two surface sites"
+                    return []
 
                 if adsorbateMolecules[0].containsSurfaceSite():
                     "An adsorbed molecule can't adsorb again"
@@ -2013,10 +2019,9 @@ class KineticsFamily(Database):
 
             else:
                 """
-                Not a bidentate surface reaction, just a gas-phase"
+                Not a bidentate surface reaction, just a gas-phase
                 Trimolecular reactants: A + B + C --> products
                 """
-
                 moleculesA = reactants[0]
                 moleculesB = reactants[1]
                 moleculesC = reactants[2]
