@@ -1672,7 +1672,14 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
         string += '\n    STICK'
     elif isinstance(kinetics, _kinetics.Arrhenius):
         if not isinstance(kinetics, _kinetics.SurfaceArrhenius):
-            assert 0.999 < kinetics.A.getConversionFactorFromSItoCM() / 1.0e6 ** (numReactants - 1) < 1.001  # debugging; for gas phase only
+            assert 0.999 < kinetics.A.getConversionFactorFromSItoCM() / 1.0e6 ** (numReactants - 1) < 1.001, """
+              Gas phase reaction \n{}
+              with kinetics \n{}
+              with {} reactants was expected to have
+              kinetics.A.getConversionFactorFromSItoCM() = {}
+              but instead it is {}
+              """.format(string, repr(kinetics), numReactants, 1.0e6**(numReactants-1), kinetics.A.getConversionFactorFromSItoCM())
+            # debugging; for gas phase only
         string += '{0:<9.6e} {1:<9.3f} {2:<9.3f}'.format(
             kinetics.A.value_si / (kinetics.T0.value_si ** kinetics.n.value_si) * kinetics.A.getConversionFactorFromSItoCM(),
             kinetics.n.value_si,
