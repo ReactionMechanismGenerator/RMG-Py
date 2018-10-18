@@ -494,13 +494,17 @@ class Species(object):
             oldAtoms = atomsFromStructures[structureNum]
 
             for index1, atom1 in enumerate(oldAtoms):
+                # make bond orders average of resonance structures
                 for atom2 in atom1.bonds:
                     index2 = oldAtoms.index(atom2)
 
                     newBond = newMol.getBond(newAtoms[index1], newAtoms[index2])
                     oldBondOrder = oldMol.getBond(oldAtoms[index1], oldAtoms[index2]).getOrderNum()
                     newBond.applyAction(('CHANGE_BOND',None,oldBondOrder / numResonanceStructures / 2))
-
+                # set radicals in resonance hybrid to maximum of all structures
+                if atom1.radicalElectrons > 0:
+                    newAtoms[index1].radicalElectrons = max(atom1.radicalElectrons,
+                                                            newAtoms[index1].radicalElectrons)
         newMol.updateAtomTypes(logSpecies = False, raiseException=False)
         return newMol
 

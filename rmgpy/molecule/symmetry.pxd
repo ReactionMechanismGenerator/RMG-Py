@@ -37,4 +37,6 @@ cpdef float calculateAxisSymmetryNumber(Molecule molecule) except -1
 
 cpdef float calculateCyclicSymmetryNumber(Molecule molecule) except -1
 
+cpdef bint _indistinguishable(Atom atom1, Atom atom2) except -2
+
 cpdef float calculateSymmetryNumber(Molecule molecule) except -1
