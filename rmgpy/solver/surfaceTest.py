@@ -68,7 +68,7 @@ class SurfaceReactorCheck(unittest.TestCase):
         initialP = 1.0e5
         rxnSystem = SurfaceReactor(
             T, initialP,
-            nSimsTerm=1,
+            nSims=1,
             initialGasMoleFractions={H2: 1.0},
             initialSurfaceCoverages={X: 1.0},
             surfaceVolumeRatio=(1e1, 'm^-1'),
@@ -191,7 +191,7 @@ class SurfaceReactorCheck(unittest.TestCase):
         initialP = 1.0e5
         rxnSystem = SurfaceReactor(
             T, initialP,
-            nSimsTerm=1,
+            nSims=1,
             initialGasMoleFractions={CH3: 1.0},
             initialSurfaceCoverages={X: 1.0},
             surfaceVolumeRatio=(1., 'm^-1'),
