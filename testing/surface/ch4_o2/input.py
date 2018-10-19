@@ -7,9 +7,9 @@ database(
     kineticsFamilies = ['surface','default'],
     kineticsEstimator = 'rate rules',
     bindingEnergies = {
-                       'C':(-5., 'eV/molecule'),
-                       'H':(-2., 'eV/molecule'),
-                       'O':(-4., 'eV/molecule'),
+                       'C':(-6.364, 'eV/molecule'),
+                       'H':(-2.778, 'eV/molecule'), # UNKNOWN! (Using Ni value from Blaylock)
+                       'O':(-3.481, 'eV/molecule'),
                        },
 )
 
@@ -45,7 +45,7 @@ species(
 #----------
 # Reaction systems
 surfaceReactor(
-    temperature=(1300,'K'),
+    temperature=(800,'K'),
     initialPressure=(1.0, 'bar'),
     initialGasMoleFractions={
         "CH4": 0.1,
