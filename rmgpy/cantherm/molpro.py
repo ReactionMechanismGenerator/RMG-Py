@@ -32,7 +32,8 @@ import math
 import numpy
 import logging
 import rmgpy.constants as constants
-
+from rmgpy.cantherm.common import get_element_mass
+from rmgpy.exceptions import InputError
 from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
 
 class MolproLog:
@@ -110,14 +111,14 @@ class MolproLog:
         last is returned.
         """
 
-        symbol = []; coord = []
+        symbol, coord, mass, number = [], [], [], []
 
         f = open(self.path, 'r')
         line = f.readline()
         while line != '':
             # Automatically determine the number of atoms
             if 'Current geometry' in line:
-                symbol = []; coord = []
+                symbol, coord = [], []
                 while 'ENERGY' not in line:
                     line = f.readline()
                 line = f.readline()
@@ -147,39 +148,17 @@ class MolproLog:
                         line = f.readline()
                 line = f.readline()
 
+        # Assign appropriate mass to each atom in the molecule
+        for atom1 in symbol:
+            mass1, num1 = get_element_mass(atom1)
+            mass.append(mass1)
+            number.append(num1)
+        number = numpy.array(number, numpy.int)
+        mass = numpy.array(mass, numpy.float64)
         coord = numpy.array(coord, numpy.float64)
-        number = numpy.zeros(len(symbol), numpy.int)
-        mass = numpy.zeros(len(symbol), numpy.float64)
-        # Use the atomic mass of the most common isotope rather than the
-        # average atomic mass
-        # These values were taken from "Atomic Weights and Isotopic Compositions" v3.0 (July 2010) from NIST
-        for i in range(len(symbol)):
-            if symbol[i] == 'H':
-                number[i] = 1
-                mass[i] = 1.00782503207
-            elif symbol[i] == 'C':
-                number[i] = 6
-                mass[i] = 12.0
-            elif symbol[i] == 'N':
-                number[i] = 7
-                mass[i] = 14.0030740048
-            elif symbol[i] == 'O':
-                number[i] = 8
-                mass[i] = 15.99491461956
-            elif symbol[i] == 'P':
-                number[i] = 15
-                mass[i] = 30.97376163
-            elif symbol[i] == 'S':
-                number[i] = 16
-                mass[i] = 31.97207100
-            elif symbol[i] == 'Cl':
-                number[i] = 17
-                mass[i] = 35.4527
-            elif symbol[i] == 'I':
-                number[i] = 53
-                mass[i] = 126.90447
-            else:
-                print 'Atomic number {0:d} not yet supported in loadGeometry().'.format(number[i])
+        if len(number) == 0 or len(coord) == 0 or len(mass) == 0:
+            raise InputError('Unable to read atoms from Molpro geometry output file {0}'.format(self.path))
+
         return coord, number, mass
 
     def loadConformer(self, symmetry=None, spinMultiplicity=0, opticalIsomers=1, symfromlog=None, label=''):
