@@ -87,6 +87,8 @@ networkDict = {}
 jobList = []
 
 ################################################################################
+
+
 def database(
              thermoLibraries = None,
              transportLibraries = None,
@@ -96,13 +98,14 @@ def database(
              kineticsDepositories = 'default',
              kineticsEstimator = 'rate rules',
              ):
-    # This function just stores the information about the database to be loaded
-    # We don't actually load the database until after we're finished reading
-    # the input file
-    if isinstance(thermoLibraries, str): thermoLibraries = [thermoLibraries]
-    if isinstance(transportLibraries, str): transportLibraries = [transportLibraries]
-    if isinstance(reactionLibraries, str): reactionLibraries = [reactionLibraries]
-    if isinstance(frequenciesLibraries, str): frequenciesLibraries = [frequenciesLibraries]
+    if isinstance(thermoLibraries, str):
+        thermoLibraries = [thermoLibraries]
+    if isinstance(transportLibraries, str):
+        transportLibraries = [transportLibraries]
+    if isinstance(reactionLibraries, str):
+        reactionLibraries = [reactionLibraries]
+    if isinstance(frequenciesLibraries, str):
+        frequenciesLibraries = [frequenciesLibraries]
     
     databaseDirectory = settings['database.directory']
     thermoLibraries = thermoLibraries or []

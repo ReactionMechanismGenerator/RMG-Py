@@ -34,9 +34,12 @@ import logging
 import os.path
 import rmgpy.constants as constants
 from rmgpy.exceptions import InputError
-from rmgpy.cantherm.common import checkConformerEnergy
+from rmgpy.cantherm.common import checkConformerEnergy, get_element_mass
 from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
+
 ################################################################################
+
+
 class QchemLog:
     """
     Represent an output file from Qchem. The attribute `path` refers to the
@@ -114,8 +117,7 @@ class QchemLog:
         Qchem log file. If multiple such geometries are identified, only the
         last is returned.
         """
-        atom = []; coord = []; number = []; 
-
+        atom, coord, number, mass = [], [], [], []
 
         with open(self.path) as f:
             log = f.read().splitlines()
@@ -138,7 +140,6 @@ class QchemLog:
         for i in reversed(xrange(len(log))):
             line = log[i]
             if 'Standard Nuclear Orientation' in line:
-                atom, coord, number = [], [], []
                 for line in log[(i+3):]:
                     if '------------' not in line:
                         data = line.split()
@@ -150,52 +151,28 @@ class QchemLog:
                 if geometry_flag:
                     break
 
+        # Assign appropriate mass to each atom in the molecule
+        for atom1 in atom:
+            mass1, num1 = get_element_mass(atom1)
+            mass.append(mass1)
+            number.append(num1)
         coord = numpy.array(coord, numpy.float64)
-        # Assign appropriate mass to each atom in molecule
-        # These values were taken from "Atomic Weights and Isotopic Compositions" v3.0 (July 2010) from NIST
-
-        mass = [0]*len(atom)  
-        
-        for i in range(len(atom)):  
-            if atom[i] == 'H':
-                mass[i] = 1.00782503207
-                number.append('1')
-            elif atom[i] == 'C':
-                mass[i] = 12.0
-                number.append('6')
-            elif atom[i] == 'N':
-                mass[i] = 14.0030740048
-                number.append('7')
-            elif atom[i] == 'O':
-                mass[i] = 15.99491461956
-                number.append('8')
-            elif atom[i] == 'P':
-                mass[i] = 30.97376163
-                number.append('15')
-            elif atom[i] == 'S':
-                mass[i] = 31.97207100
-                number.append('16')
-            elif atom[i] == 'Cl':
-                mass[i] = 35.4527
-                number.append('17')
-            else:
-                raise NotImplementedError('Atomic atom {0:d} not yet supported in loadGeometry().'.format(atom[i]))
         number = numpy.array(number, numpy.int)
+        mass = numpy.array(mass, numpy.float64)
         if len(number) == 0 or len(coord) == 0 or len(mass) == 0:
-            raise InputError('Unable to read the numbers and types of atoms from Qchem output file {0}'.format(self.path))
+            raise InputError('Unable to read atoms from Qchem geometry output file {0}'.format(self.path))
+
         return coord, number, mass
     
     def loadConformer(self, symmetry=None, spinMultiplicity=0, opticalIsomers=1, symfromlog=None, label=''):
         """
-        Load the molecular degree of freedom data from a output file created as
-        the result of a Qchem "Freq"  calculation. As
-        Qchem's guess of the external symmetry number is not always correct,
-        you can use the `symmetry` parameter to substitute your own value; if
-        not provided, the value in the Qchem output file will be adopted.
+        Load the molecular degree of freedom data from an output file created as the result of a
+        Qchem "Freq" calculation. As Qchem's guess of the external symmetry number is not always correct,
+        you can use the `symmetry` parameter to substitute your own value;
+        if not provided, the value in the Qchem output file will be adopted.
         """
-        modes = []; freq = []; mmass = []; rot = []
+        modes = []; freq = []; mmass = []; rot = []; inertia = []
         E0 = 0.0
-#        symmetry = 1
         f = open(self.path, 'r')
         line = f.readline()
         while line != '':
@@ -208,7 +185,6 @@ class QchemLog:
             # The rest of the data we want is in the Thermochemistry section of the output
             elif 'VIBRATIONAL ANALYSIS' in line:
                 modes = []
-
                 line = f.readline()
                 while line != '':
 
@@ -246,34 +222,38 @@ class QchemLog:
                     # Read moments of inertia for external rotational modes, given in atomic units
                     elif 'Eigenvalues --' in line:
                         inertia = [float(d) for d in line.split()[-3:]]
-                        # If the first eigenvalue is 0, the rotor is linear
-                        symmetry = 1
-                        if inertia[0] == 0.0:
-                            inertia.remove(0.0)
-                            logging.debug('inertia is {}'.format(str(inertia)))
-                            for i in range(2):
-                                inertia[i] *= (constants.a0/1e-10)**2
-                            inertia = numpy.sqrt(inertia[0]*inertia[1])
-                            rotation = LinearRotor(inertia=(inertia,"amu*angstrom^2"), symmetry=symmetry)    
-                            rot.append(rotation)                             
-                        else:
-                            for i in range(3):
-                                inertia[i] *= (constants.a0/1e-10)**2
-                                rotation = NonlinearRotor(inertia=(inertia,"amu*angstrom^2"), symmetry=symmetry)
-                                #modes.append(rotation)
-                            rot.append(rotation) 
 
                     # Read Qchem's estimate of the external rotational symmetry number, which may very well be incorrect
-                    elif 'Rotational Symmetry Number is' in line: # and symmetry is None:
-                        if symfromlog is True:
-                            symmetry = int(float(line.split()[4]))
-                            logging.debug('rot sym is {}'.format(str(symmetry)))
+                    elif 'Rotational Symmetry Number is' in line and symfromlog:
+                        symmetry = int(float(line.split()[-1]))
+                        logging.debug('Rotational Symmetry read from QChem is {}'.format(str(symmetry)))
 
                     # Read the next line in the file
                     line = f.readline()
 
             # Read the next line in the file
             line = f.readline()
+
+            if len(inertia):
+                if symmetry is None:
+                    symmetry = 1
+                if inertia[0] == 0.0:
+                    # If the first eigenvalue is 0, the rotor is linear
+                    inertia.remove(0.0)
+                    logging.debug('inertia is {}'.format(str(inertia)))
+                    for i in range(2):
+                        inertia[i] *= (constants.a0 / 1e-10) ** 2
+                    inertia = numpy.sqrt(inertia[0] * inertia[1])
+                    rotation = LinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
+                    rot.append(rotation)
+                else:
+                    for i in range(3):
+                        inertia[i] *= (constants.a0 / 1e-10) ** 2
+                        rotation = NonlinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
+                        # modes.append(rotation)
+                    rot.append(rotation)
+
+                inertia = []
 
         # Close file when finished
         f.close()

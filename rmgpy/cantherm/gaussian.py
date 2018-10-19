@@ -32,9 +32,10 @@ import math
 import numpy
 import logging
 import os.path
-from rmgpy.cantherm.common import checkConformerEnergy
+from rmgpy.cantherm.common import checkConformerEnergy, get_element_mass
 import rmgpy.constants as constants
 from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
+from rmgpy.exceptions import InputError
 
 ################################################################################
 
@@ -118,14 +119,14 @@ class GaussianLog:
         last is returned.
         """
 
-        number = []; coord = []
+        number, coord, mass = [], [], []
 
         f = open(self.path, 'r')
         line = f.readline()
         while line != '':
             # Automatically determine the number of atoms
             if 'Input orientation:' in line:
-                number = []; coord = []
+                number, coord = [], []
                 for i in range(5): line = f.readline()
                 while '---------------------------------------------------------------------' not in line:
                     data = line.split()
@@ -136,31 +137,16 @@ class GaussianLog:
         # Close file when finished
         f.close()
 
+        # Assign appropriate mass to each atom in the molecule
+        mass = []
+        for num in number:
+            mass1, _ = get_element_mass(num)
+            mass.append(mass1)
         coord = numpy.array(coord, numpy.float64)
         number = numpy.array(number, numpy.int)
-        mass = numpy.zeros(len(number), numpy.float64)
-        # Use the atomic mass of the most common isotope rather than the
-        # average atomic mass
-        # These values were taken from "Atomic Weights and Isotopic Compositions" v3.0 (July 2010) from NIST
-        for i in range(len(number)):
-            if number[i] == 1:
-                mass[i] = 1.00782503207
-            elif number[i] == 6:
-                mass[i] = 12.0
-            elif number[i] == 7:
-                mass[i] = 14.0030740048
-            elif number[i] == 8:
-                mass[i] = 15.99491461956
-            elif number[i] == 15:
-                mass[i] = 30.97376163
-            elif number[i] == 16:
-                mass[i] = 31.97207100
-            elif number[i] == 17:
-                mass[i] = 35.4527
-            elif number[i] == 53:
-                mass[i] = 126.90447
-            else:
-                raise NotImplementedError('Atomic number {0:d} not yet supported in loadGeometry().'.format(number[i]))
+        mass = numpy.array(mass, numpy.float64)
+        if len(number) == 0 or len(coord) == 0 or len(mass) == 0:
+            raise InputError('Unable to read atoms from Gaussian geometry output file {0}'.format(self.path))
         
         return coord, number, mass
 

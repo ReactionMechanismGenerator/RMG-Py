@@ -39,6 +39,7 @@ from rmgpy.cantherm import CanTherm, input
 from input import jobList
 import rmgpy.constants as constants
 from rmgpy.cantherm.statmech import InputError
+from rmgpy.cantherm.common import get_element_mass
 ################################################################################
 
 class CommonTest(unittest.TestCase):
@@ -266,7 +267,7 @@ class testCanthermInput(unittest.TestCase):
         job.includeHinderedRotors = self.useHinderedRotors
         job.applyBondEnergyCorrections = self.useBondCorrections
         job.load()
-        
+
 class testStatmech(unittest.TestCase):
     """
     Contains unit tests of statmech.py
@@ -274,12 +275,24 @@ class testStatmech(unittest.TestCase):
     def setUp(self):
         cantherm = CanTherm()
         jobList = cantherm.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),'data','Benzyl','input.py'))
-        
+
     def testGaussianLogFileError(self):
         """Test that the proper error is raised if gaussian geometry and frequency file paths are the same"""
         job = jobList[-1]
         self.assertTrue(isinstance(job, rmgpy.cantherm.statmech.StatMechJob))
         self.assertRaises(InputError,job.load())
+
+class testGetMass(unittest.TestCase):
+    """
+    Contains unit tests of common.py
+    """
+
+    def test_get_mass(self):
+        """Test that the correct mass/number/isotop is returned from get_element_mass"""
+        self.assertEquals(get_element_mass(1), (1.00782503224, 1))  # test input by integer
+        self.assertEquals(get_element_mass('Si'), (27.97692653465, 14))  # test string input and most common isotope
+        self.assertEquals(get_element_mass('C', 13), (13.00335483507, 6))  # test specific isotope
+        self.assertEquals(get_element_mass('Bk'), (247.0703073, 97))  # test a two-element array (no isotope data)
         
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
