@@ -7,8 +7,7 @@ Creating Input Files
 
 The syntax and parameters within an RMG input file are explained below.  We recommend
 trying to build your first input file while referencing one of the
-:ref:`Example Input Files<examples>`.  Alternatively, you can use our web form found
-at http://rmg.mit.edu/input to assist in creating an input file.
+:ref:`Example Input Files<examples>`. 
 
 Syntax
 ======
