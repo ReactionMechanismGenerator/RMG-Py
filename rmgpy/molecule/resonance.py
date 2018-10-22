@@ -209,58 +209,41 @@ def generate_resonance_structures(mol, clar_structures=True, keep_isomorphic=Fal
             features['isAromatic'] = True
             if len(new_mol_list[0].getAromaticRings()[0]) > 1:
                 features['isPolycyclicAromatic'] = True
-    else:
-        new_mol_list = []
+            for new_mol in new_mol_list:
+                # Append to structure list if unique
+                if not keep_isomorphic and mol.isIsomorphic(new_mol):
+                    continue
+                elif keep_isomorphic and mol.isIdentical(new_mol):
+                    continue
+                else:
+                    mol_list.append(new_mol)
 
     # Special handling for aromatic species
-    if len(new_mol_list) > 0:
+    if features['isAromatic']:
         if features['isRadical'] and not features['isArylRadical']:
             if features['isPolycyclicAromatic']:
-                _generate_resonance_structures(new_mol_list, [generate_kekule_structure],
+                _generate_resonance_structures(mol_list, [generate_kekule_structure],
                                                keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
-                _generate_resonance_structures(new_mol_list, [generate_allyl_delocalization_resonance_structures],
+                _generate_resonance_structures(mol_list, [generate_allyl_delocalization_resonance_structures],
                                                keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
                 if clar_structures:
-                    _generate_resonance_structures(new_mol_list, [generate_clar_structures],
+                    _generate_resonance_structures(mol_list, [generate_clar_structures],
                                                    keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
                 else:
-                    _generate_resonance_structures(new_mol_list, [generate_aromatic_resonance_structure],
+                    _generate_resonance_structures(mol_list, [generate_aromatic_resonance_structure],
                                                    keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
-                # Remove non-aromatic structures under the assumption that they aren't important resonance contributors
-                new_mol_list = [m for m in new_mol_list if m.isAromatic()]
             else:
-                _generate_resonance_structures(new_mol_list, [generate_kekule_structure,
-                                                              generate_opposite_kekule_structure],
+                _generate_resonance_structures(mol_list, [generate_kekule_structure],
                                                keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
-                _generate_resonance_structures(new_mol_list, [generate_allyl_delocalization_resonance_structures],
+                _generate_resonance_structures(mol_list, [generate_allyl_delocalization_resonance_structures],
                                                keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
         elif features['isPolycyclicAromatic']:
             if clar_structures:
-                _generate_resonance_structures(new_mol_list, [generate_clar_structures],
+                _generate_resonance_structures(mol_list, [generate_clar_structures],
                                                keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
             else:
-                _generate_resonance_structures(new_mol_list, [generate_aromatic_resonance_structure],
+                _generate_resonance_structures(mol_list, [generate_aromatic_resonance_structure],
                                                keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
-        else:
-            # The molecule is an aryl radical or stable mono-ring aromatic
-            # In this case, generate the kekulized form
-            _generate_resonance_structures(new_mol_list, [generate_kekule_structure,
-                                                          generate_opposite_kekule_structure],
-                                           keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
-
-        # Check for isomorphism against the original molecule
-        for i, new_mol in enumerate(new_mol_list):
-            if not keep_isomorphic and mol.isIsomorphic(new_mol):
-                # There will be at most one isomorphic molecule, since the new molecules have
-                # already been checked against each other, so we can break after removing it
-                del new_mol_list[i]
-                break
-            elif keep_isomorphic and mol.isIdentical(new_mol):
-                del new_mol_list[i]
-                break
-        # Add the newly generated structures to the original list
-        # This is not optimal, but is a temporary measure to ensure compatibility until other issues are fixed
-        mol_list.extend(new_mol_list)
 
     # Generate remaining resonance structures
     method_list = populate_resonance_algorithms(features)
