@@ -279,11 +279,18 @@ class CanTherm:
             writer.writerow(['Label','Rotational constant (cm-1)','Unscaled frequencies (cm-1)'])
             for row in supporting_info:
                 label = row[0]
-                rot = ', '.join(['{0:.2f}'.format(s) for s in row[1].rotationalConstant.value])
-                freq = ''
-                if len(row) == 4:
-                    freq = '{0:.1f}'.format(abs(row[3])) + 'i, '
-                freq += ', '.join(['{0:.1f}'.format(s) for s in row[2].frequencies.value_si])
+                rot = '-'
+                freq = '-'
+                if len(row) > 1:  # monoatomic species have no frequencies nor rotational constants
+                    if isinstance(row[1].rotationalConstant.value, float):
+                        # diatomic species have a single rotational constant
+                        rot = '{0:.2f}'.format(row[1].rotationalConstant.value)
+                    else:
+                        rot = ', '.join(['{0:.2f}'.format(s) for s in row[1].rotationalConstant.value])
+                    freq = ''
+                    if len(row) == 4:
+                        freq = '{0:.1f}'.format(abs(row[3])) + 'i, '
+                    freq += ', '.join(['{0:.1f}'.format(s) for s in row[2].frequencies.value_si])
                 writer.writerow([label, rot, freq])
 
         # run kinetics and pdep jobs (also writes reaction blocks to Chemkin file)
