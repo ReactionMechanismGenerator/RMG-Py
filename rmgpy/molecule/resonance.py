@@ -251,7 +251,7 @@ def generate_resonance_structures(mol, clar_structures=True, keep_isomorphic=Fal
                                    filter_structures=filter_structures)
 
     if filter_structures:
-        return filtration.filter_structures(mol_list)
+        return filtration.filter_structures(mol_list, features=features)
 
     return mol_list
 

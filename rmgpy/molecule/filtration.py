@@ -50,7 +50,7 @@ from rmgpy.molecule.pathfinder import find_shortest_path
 from rmgpy.exceptions import ResonanceError
 
 
-def filter_structures(mol_list, mark_unreactive=True, allow_expanded_octet=True):
+def filter_structures(mol_list, mark_unreactive=True, allow_expanded_octet=True, features=None):
     """
     We often get too many resonance structures from the combination of all rules, particularly for species containing
     lone pairs. This function filters them out by minimizing the number of C/N/O/S atoms without a full octet.
@@ -66,6 +66,10 @@ def filter_structures(mol_list, mark_unreactive=True, allow_expanded_octet=True)
 
     # Filter by charge
     filtered_list = charge_filtration(filtered_list, charge_span_list)
+
+    # Filter aromatic structures
+    if features is not None and features['isAromatic']:
+        filtered_list = aromaticity_filtration(filtered_list, features)
 
     if not filtered_list:
         raise ResonanceError('Could not determine representative localized structures for species {0}'.format(
@@ -337,6 +341,50 @@ def stabilize_charges_by_proximity(mol_list):
         if i in indices_to_pop:
             mol_list.pop(i)
     return mol_list
+
+
+def aromaticity_filtration(mol_list, features):
+    """
+    Returns a filtered list of molecules based on heuristics for determining
+    representative aromatic resonance structures.
+
+    For monocyclic aromatics, Kekule structures are removed, with the
+    assumption that an equivalent aromatic structure exists. Non-aromatic
+    structures are maintained if they present new radical sites. Instead of
+    explicitly checking the radical sites, we only check for the SDSDSD bond
+    motif since radical delocalization will disrupt that pattern.
+
+    For polycyclic aromatics, structures without any benzene bonds are removed.
+    The idea is that radical delocalization into the aromatic pi system is
+    unfavorable because it disrupts aromaticity. Therefore, structures where
+    the radical is delocalized so far into the molecule such that none of the
+    rings are aromatic anymore are not representative. While this isn't strictly
+    true, it helps reduce the number of representative structures by focusing
+    on the most important ones.
+    """
+    # Start by selecting all aromatic resonance structures
+    filtered_list = []
+    other_list = []
+    for mol in mol_list:
+        if mol.isAromatic():
+            filtered_list.append(mol)
+        else:
+            other_list.append(mol)
+
+    if not features['isPolycyclicAromatic']:
+        # Look for structures that don't have standard SDSDSD bond orders
+        for mol in other_list:
+            # Check all 6 membered rings
+            rings = [ring for ring in mol.getRelevantCycles() if len(ring) == 6]
+            for ring in rings:
+                bond_list = mol.get_edges_in_cycle(ring)
+                bond_orders = ''.join([bond.getOrderStr() for bond in bond_list])
+                if bond_orders == 'SDSDSD' or bond_orders == 'DSDSDS':
+                    break
+            else:
+                filtered_list.append(mol)
+
+    return filtered_list
 
 
 def mark_unreactive_structures(filtered_list, mol_list):
