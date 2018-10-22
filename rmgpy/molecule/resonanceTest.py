@@ -353,8 +353,8 @@ class ResonanceTest(unittest.TestCase):
         molList = generate_optimal_aromatic_resonance_structures(mol)
         self.assertEqual(len(molList), 1)
 
-    def test_benzyne(self):
-        """Test benzyne resonance"""
+    def test_aryne_1_ring(self):
+        """Test aryne resonance for benzyne"""
         mol1 = Molecule(SMILES="C1=CC=C=C=C1")
         mol2 = Molecule(SMILES="C1C#CC=CC=1")
 
@@ -367,23 +367,29 @@ class ResonanceTest(unittest.TestCase):
         self.assertTrue(mol_list1[1].isIsomorphic(mol2))
         self.assertTrue(mol_list2[1].isIsomorphic(mol1))
 
-    def test_benzyne_polycyclic(self):
-        """Test benzyne resonance when in polycyclic molecule"""
+    def test_aryne_2_rings(self):
+        """Test aryne resonance in naphthyne"""
         mol1 = Molecule(SMILES="C12=CC=C=C=C1C=CC=C2")
         mol2 = Molecule(SMILES="C12C#CC=CC=1C=CC=C2")
 
         mol_list1 = generate_resonance_structures(mol1)
-        self.assertEqual(len(mol_list1), 4)
+        self.assertEqual(len(mol_list1), 2)
+        self.assertEqual(sum(1 for mol in mol_list1 if mol.reactive), 2)
 
         mol_list2 = generate_resonance_structures(mol2)
-        self.assertEqual(len(mol_list2), 4)
+        self.assertEqual(len(mol_list2), 3)
+        self.assertEqual(sum(1 for mol in mol_list2 if mol.reactive), 2)
 
         # Check that they both have an aromatic resonance form
-        self.assertTrue(mol_list1[1].isIsomorphic(mol_list2[1]))
+        self.assertTrue(mol_list1[1].isIsomorphic(mol_list2[0]))
 
-        # Check that the other structure is generated for each
-        self.assertTrue(any([mol1.isIsomorphic(mol) for mol in mol_list2]))
-        self.assertTrue(any([mol2.isIsomorphic(mol) for mol in mol_list1]))
+    def test_aryne_3_rings(self):
+        """Test aryne resonance in phenanthryne"""
+        mol = Molecule(SMILES="C12C#CC=CC=1C=CC3=C2C=CC=C3")
+
+        mol_list = generate_resonance_structures(mol)
+        self.assertEqual(len(mol_list), 5)
+        self.assertEqual(sum(1 for mol in mol_list if mol.reactive), 4)
 
     def testFusedAromatic1(self):
         """Test we can make aromatic perylene from both adjlist and SMILES"""
