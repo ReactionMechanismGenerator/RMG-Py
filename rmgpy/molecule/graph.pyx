@@ -1106,3 +1106,28 @@ cdef class Graph:
         # mapping is valid
         return True
         
+    cpdef list get_edges_in_cycle(self, list vertices, bint sort=False):
+        """
+        For a given list of atoms comprising a ring, return the set of bonds
+        connecting them, in order around the ring.
+
+        If `sort=True`, then sort the vertices to match their connectivity.
+        Otherwise, assumes that they are already sorted, which is true for
+        cycles returned by getRelevantCycles or getSmallestSetOfSmallestRings.
+        """
+        cdef list edges
+        cdef int i, j
+
+        if sort:
+            self._sortCyclicVertices(vertices)
+
+        edges = []
+        for i, j in zip(range(len(vertices)), range(-1, len(vertices)-1)):
+            try:
+                edges.append(self.getEdge(vertices[i], vertices[j]))
+            except ValueError:
+                raise ValueError('Edge does not exist between vertices in ring. '
+                                 'Check that the vertices are properly ordered '
+                                 'such that consecutive vertices are connected.')
+
+        return edges

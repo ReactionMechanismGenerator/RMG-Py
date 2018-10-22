@@ -802,17 +802,8 @@ def generate_aryne_resonance_structures(mol):
 
     new_mol_list = []
     for ring in rings:
-        # Here we assume that consecutive atoms in ring are actually connected to each other
-        # This should always be true because getRelevantCycles sorts the atoms in this way
-        bond_list = []
-        for i, j in zip(range(6), range(-1, 5)):
-            try:
-                bond_list.append(mol.getBond(ring[i], ring[j]))
-            except ValueError:
-                raise ValueError('Bond does not exist between atoms in ring. '
-                                 'Check that the atoms are properly ordered '
-                                 'such that consecutive atoms are connected.')
         # Get bond orders
+        bond_list = mol.get_edges_in_cycle(ring)
         bond_orders = ''.join([bond.getOrderStr() for bond in bond_list])
         new_orders = None
         # Check for expected bond patterns
