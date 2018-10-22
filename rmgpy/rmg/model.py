@@ -257,8 +257,8 @@ class CoreEdgeReactionModel:
         # within the list of isomers for a species object describing a unique aromatic compound
         if molecule.isCyclic():
             obj = Species(molecule=[molecule])
-            from rmgpy.molecule.resonance import generate_aromatic_resonance_structures
-            aromaticIsomers = generate_aromatic_resonance_structures(molecule)
+            from rmgpy.molecule.resonance import generate_optimal_aromatic_resonance_structures
+            aromaticIsomers = generate_optimal_aromatic_resonance_structures(molecule)
             obj.molecule.extend(aromaticIsomers)
 
         # First check cache and return if species is found

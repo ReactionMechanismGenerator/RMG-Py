@@ -46,7 +46,7 @@ Currently supported resonance types:
     - ``generate_N5dc_radical_resonance_structures``: shift between radical and lone pair mediated by an N5dc atom
     - ``generate_aryne_resonance_structures``: shift between cumulene and alkyne forms of arynes, which are not considered aromatic in RMG
 - Aromatic species only:
-    - ``generate_aromatic_resonance_structures``: fully delocalized structure, where all aromatic rings have benzene bonds
+    - ``generate_optimal_aromatic_resonance_structures``: fully delocalized structure, where all aromatic rings have benzene bonds
     - ``generate_kekule_structure``: generate a single Kekule structure for an aromatic compound (single/double bond form)
     - ``generate_opposite_kekule_structure``: for monocyclic aromatic species, rotate the double bond assignment
     - ``generate_clar_structures``: generate all structures with the maximum number of pi-sextet assignments
@@ -83,7 +83,7 @@ def populate_resonance_algorithms(features=None):
             generate_adj_lone_pair_multiple_bond_resonance_structures,
             generate_adj_lone_pair_radical_multiple_bond_resonance_structures,
             generate_N5dc_radical_resonance_structures,
-            generate_aromatic_resonance_structures,
+            generate_optimal_aromatic_resonance_structures,
             generate_aryne_resonance_structures,
             generate_kekule_structure,
             generate_opposite_kekule_structure,
@@ -198,9 +198,9 @@ def generate_resonance_structures(mol, clar_structures=True, keep_isomorphic=Fal
     # Analyze molecule
     features = analyze_molecule(mol)
 
-    # Use generate_aromatic_resonance_structures to check for false positives and negatives
+    # Use generate_optimal_aromatic_resonance_structures to check for false positives and negatives
     if features['isAromatic'] or (features['isCyclic'] and features['isRadical'] and not features['isArylRadical']):
-        new_mol_list = generate_aromatic_resonance_structures(mol, features)
+        new_mol_list = generate_optimal_aromatic_resonance_structures(mol, features)
         if len(new_mol_list) == 0:
             # Encountered false positive, ie. the molecule is not actually aromatic
             features['isAromatic'] = False
@@ -646,7 +646,7 @@ def generate_N5dc_radical_resonance_structures(mol):
     return structures
 
 
-def generate_aromatic_resonance_structures(mol, features=None):
+def generate_optimal_aromatic_resonance_structures(mol, features=None):
     """
     Generate the aromatic form of the molecule. For radicals, generates the form with the most aromatic rings.
 
@@ -709,7 +709,7 @@ def generate_aromatic_resonance_structures(mol, features=None):
     # Generate the aromatic resonance structure(s)
     for mol0, aromatic_bonds in mol_list:
         # Aromatize the molecule in place
-        success = aromatize(mol0, aromatic_bonds)
+        success = generate_aromatic_resonance_structure(mol0, aromatic_bonds, copy=False)
         if not success:
             continue
 
@@ -722,21 +722,27 @@ def generate_aromatic_resonance_structures(mol, features=None):
     return new_mol_list
 
 
-def aromatize(mol, aromatic_bonds=None):
+def generate_aromatic_resonance_structure(mol, aromatic_bonds=None, copy=True):
     """
     Generate the aromatic form of the molecule in place without considering other resonance.
 
     Args:
         mol: :class:`Molecule` object to modify
         aromatic_bonds (optional): list of previously identified aromatic bonds
+        copy (optional): copy the molecule if ``True``, otherwise modify in place
 
     Returns:
-        ``True`` if successful, ``False`` otherwise
+        List of one molecule if successful, empty list otherwise
     """
+    if copy:
+        molecule = mol.copy(deep=True)
+    else:
+        molecule = mol
+
     if aromatic_bonds is None:
-        aromatic_bonds = mol.getAromaticRings()[1]
+        aromatic_bonds = molecule.getAromaticRings()[1]
     if len(aromatic_bonds) == 0:
-        return False
+        return []
 
     # Save original bond orders in case this doesn't work out
     original_bonds = []
@@ -751,7 +757,7 @@ def aromatize(mol, aromatic_bonds=None):
             bond.order = 1.5
 
     try:
-        mol.updateAtomTypes(logSpecies=False)
+        molecule.updateAtomTypes(logSpecies=False)
     except AtomTypeError:
         # If this didn't work the first time, then there might be a ring that is not actually aromatic
         # Reset our changes
@@ -768,7 +774,7 @@ def aromatize(mol, aromatic_bonds=None):
                 original_order.append(bond.order)
                 bond.order = 1.5
             try:
-                mol.updateAtomTypes(logSpecies=False)
+                molecule.updateAtomTypes(logSpecies=False)
             except AtomTypeError:
                 # This ring could not be made aromatic, possibly because it depends on other rings
                 # Undo changes
@@ -776,7 +782,7 @@ def aromatize(mol, aromatic_bonds=None):
                     bond.order = order
                 # Move it to the end of the list, and go on to the next ring
                 aromatic_bonds.append(aromatic_bonds.pop(i))
-                mol.updateAtomTypes(logSpecies=False)
+                molecule.updateAtomTypes(logSpecies=False)
                 continue
             else:
                 # We're done with this ring, so go on to the next ring
@@ -784,9 +790,9 @@ def aromatize(mol, aromatic_bonds=None):
         # If we didn't end up making any of the rings aromatic, then this molecule is not actually aromatic
         if i == 0:
             # Move onto next molecule in the list
-            return False
+            return []
 
-    return True
+    return [molecule]
 
 
 def generate_aryne_resonance_structures(mol):

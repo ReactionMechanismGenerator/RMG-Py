@@ -350,7 +350,7 @@ class ResonanceTest(unittest.TestCase):
     def test_C9H10_aro_2(self):
         """Test cyclopropyl benzene, generate aromatic resonance isomers"""
         mol = Molecule(SMILES="C1CC1c1ccccc1")
-        molList = generate_aromatic_resonance_structures(mol)
+        molList = generate_optimal_aromatic_resonance_structures(mol)
         self.assertEqual(len(molList), 1)
 
     def test_benzyne(self):
@@ -422,7 +422,7 @@ class ResonanceTest(unittest.TestCase):
 32 H u0 p0 c0 {16,S}
 """)
         perylene2 = Molecule().fromSMILES('c1cc2cccc3c4cccc5cccc(c(c1)c23)c54')
-        for isomer in generate_aromatic_resonance_structures(perylene2):
+        for isomer in generate_optimal_aromatic_resonance_structures(perylene2):
             if perylene.isIsomorphic(isomer):
                 break
         else:  # didn't break
@@ -454,7 +454,7 @@ class ResonanceTest(unittest.TestCase):
 18 H u0 p0 c0 {6,S}
 """)
         naphthalene2 = Molecule().fromSMILES('C1=CC=C2C=CC=CC2=C1')
-        for isomer in generate_aromatic_resonance_structures(naphthalene2):
+        for isomer in generate_optimal_aromatic_resonance_structures(naphthalene2):
             if naphthalene.isIsomorphic(isomer):
                 break
         else:  # didn't break
@@ -464,7 +464,7 @@ class ResonanceTest(unittest.TestCase):
             ))
 
     def testAromaticResonanceStructures(self):
-        """Test that generate_aromatic_resonance_structures gives consistent output
+        """Test that generate_optimal_aromatic_resonance_structures gives consistent output
 
         Check that we get the same resonance structure regardless of which structure we start with"""
         # Kekulized form, radical on methyl
@@ -557,9 +557,9 @@ multiplicity 2
 25 H u0 p0 c0 {15,S}
 26 H u0 p0 c0 {15,S}
 """)
-        result1 = generate_aromatic_resonance_structures(struct1)
-        result2 = generate_aromatic_resonance_structures(struct2)
-        result3 = generate_aromatic_resonance_structures(struct3)
+        result1 = generate_optimal_aromatic_resonance_structures(struct1)
+        result2 = generate_optimal_aromatic_resonance_structures(struct2)
+        result3 = generate_optimal_aromatic_resonance_structures(struct3)
 
         self.assertEqual(len(result1), 1)
         self.assertEqual(len(result2), 1)
