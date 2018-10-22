@@ -216,17 +216,18 @@ def generate_resonance_structures(mol, clar_structures=True, keep_isomorphic=Fal
     if len(new_mol_list) > 0:
         if features['isRadical'] and not features['isArylRadical']:
             if features['isPolycyclicAromatic']:
+                _generate_resonance_structures(new_mol_list, [generate_kekule_structure],
+                                               keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
+                _generate_resonance_structures(new_mol_list, [generate_allyl_delocalization_resonance_structures],
+                                               keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
                 if clar_structures:
-                    _generate_resonance_structures(new_mol_list, [generate_kekule_structure],
-                                                   keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
-                    _generate_resonance_structures(new_mol_list, [generate_allyl_delocalization_resonance_structures],
-                                                   keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
                     _generate_resonance_structures(new_mol_list, [generate_clar_structures],
                                                    keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
-                    # Remove non-aromatic structures under the assumption that they aren't important resonance contributors
-                    new_mol_list = [m for m in new_mol_list if m.isAromatic()]
                 else:
-                    pass
+                    _generate_resonance_structures(new_mol_list, [generate_aromatic_resonance_structure],
+                                                   keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
+                # Remove non-aromatic structures under the assumption that they aren't important resonance contributors
+                new_mol_list = [m for m in new_mol_list if m.isAromatic()]
             else:
                 _generate_resonance_structures(new_mol_list, [generate_kekule_structure,
                                                               generate_opposite_kekule_structure],
@@ -238,7 +239,8 @@ def generate_resonance_structures(mol, clar_structures=True, keep_isomorphic=Fal
                 _generate_resonance_structures(new_mol_list, [generate_clar_structures],
                                                keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
             else:
-                pass
+                _generate_resonance_structures(new_mol_list, [generate_aromatic_resonance_structure],
+                                               keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
         else:
             # The molecule is an aryl radical or stable mono-ring aromatic
             # In this case, generate the kekulized form
