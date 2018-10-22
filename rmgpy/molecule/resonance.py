@@ -708,55 +708,10 @@ def generate_aromatic_resonance_structures(mol, features=None):
 
     # Generate the aromatic resonance structure(s)
     for mol0, aromatic_bonds in mol_list:
-        if not aromatic_bonds:
+        # Aromatize the molecule in place
+        success = aromatize(mol0, aromatic_bonds)
+        if not success:
             continue
-        # Save original bond orders in case this doesn't work out
-        original_bonds = []
-        for ring in aromatic_bonds:
-            original_order = []
-            for bond in ring:
-                original_order.append(bond.order)
-            original_bonds.append(original_order)
-        # Change bond types to benzene bonds for all aromatic rings
-        for ring in aromatic_bonds:
-            for bond in ring:
-                bond.order = 1.5
-
-        try:
-            mol0.updateAtomTypes(logSpecies=False)
-        except AtomTypeError:
-            # If this didn't work the first time, then there might be a ring that is not actually aromatic
-            # Reset our changes
-            for ring, original_order in itertools.izip(aromatic_bonds, original_bonds):
-                for bond, order in itertools.izip(ring, original_order):
-                    bond.order = order
-            # Try to make each ring aromatic, one by one
-            i = 0
-            counter = 0
-            while i < len(aromatic_bonds) and counter < 2*len(aromatic_bonds):
-                counter += 1
-                original_order = []
-                for bond in aromatic_bonds[i]:
-                    original_order.append(bond.order)
-                    bond.order = 1.5
-                try:
-                    mol0.updateAtomTypes(logSpecies=False)
-                except AtomTypeError:
-                    # This ring could not be made aromatic, possibly because it depends on other rings
-                    # Undo changes
-                    for bond, order in itertools.izip(aromatic_bonds[i], original_order):
-                        bond.order = order
-                    # Move it to the end of the list, and go on to the next ring
-                    aromatic_bonds.append(aromatic_bonds.pop(i))
-                    mol0.updateAtomTypes(logSpecies=False)
-                    continue
-                else:
-                    # We're done with this ring, so go on to the next ring
-                    i += 1
-            # If we didn't end up making any of the rings aromatic, then this molecule is not actually aromatic
-            if i == 0:
-                # Move onto next molecule in the list
-                continue
 
         for mol1 in new_mol_list:
             if mol1.isIsomorphic(mol0):
@@ -765,6 +720,73 @@ def generate_aromatic_resonance_structures(mol, features=None):
             new_mol_list.append(mol0)
 
     return new_mol_list
+
+
+def aromatize(mol, aromatic_bonds=None):
+    """
+    Generate the aromatic form of the molecule in place without considering other resonance.
+
+    Args:
+        mol: :class:`Molecule` object to modify
+        aromatic_bonds (optional): list of previously identified aromatic bonds
+
+    Returns:
+        ``True`` if successful, ``False`` otherwise
+    """
+    if aromatic_bonds is None:
+        aromatic_bonds = mol.getAromaticRings()[1]
+    if len(aromatic_bonds) == 0:
+        return False
+
+    # Save original bond orders in case this doesn't work out
+    original_bonds = []
+    for ring in aromatic_bonds:
+        original_order = []
+        for bond in ring:
+            original_order.append(bond.order)
+        original_bonds.append(original_order)
+    # Change bond types to benzene bonds for all aromatic rings
+    for ring in aromatic_bonds:
+        for bond in ring:
+            bond.order = 1.5
+
+    try:
+        mol.updateAtomTypes(logSpecies=False)
+    except AtomTypeError:
+        # If this didn't work the first time, then there might be a ring that is not actually aromatic
+        # Reset our changes
+        for ring, original_order in itertools.izip(aromatic_bonds, original_bonds):
+            for bond, order in itertools.izip(ring, original_order):
+                bond.order = order
+        # Try to make each ring aromatic, one by one
+        i = 0  # Track how many rings are aromatic
+        counter = 0  # Track total number of attempts to avoid infinite loops
+        while i < len(aromatic_bonds) and counter < 2*len(aromatic_bonds):
+            counter += 1
+            original_order = []
+            for bond in aromatic_bonds[i]:
+                original_order.append(bond.order)
+                bond.order = 1.5
+            try:
+                mol.updateAtomTypes(logSpecies=False)
+            except AtomTypeError:
+                # This ring could not be made aromatic, possibly because it depends on other rings
+                # Undo changes
+                for bond, order in itertools.izip(aromatic_bonds[i], original_order):
+                    bond.order = order
+                # Move it to the end of the list, and go on to the next ring
+                aromatic_bonds.append(aromatic_bonds.pop(i))
+                mol.updateAtomTypes(logSpecies=False)
+                continue
+            else:
+                # We're done with this ring, so go on to the next ring
+                i += 1
+        # If we didn't end up making any of the rings aromatic, then this molecule is not actually aromatic
+        if i == 0:
+            # Move onto next molecule in the list
+            return False
+
+    return True
 
 
 def generate_aryne_resonance_structures(mol):
