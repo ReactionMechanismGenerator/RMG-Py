@@ -59,7 +59,7 @@ from rmgpy.exceptions import KekulizationError, AtomTypeError
 cpdef kekulize(Molecule mol):
     """
     Kekulize an aromatic molecule in place. If the molecule cannot be kekulized,
-    an AtomTypeError will be raised. However, the molecule will be left in
+    a KekulizationError will be raised. However, the molecule will be left in
     a semi-kekulized state. Therefore, if the original molecule needs to be kept,
     it is advisable to create a copy before kekulizing.
 
@@ -119,6 +119,9 @@ cpdef kekulize(Molecule mol):
             # Put it back in the list, which will get resorted by DOF in the next iteration
             aromaticRings.append(aromaticRing)
         itercount += 1
+
+    if aromaticRings:
+        raise KekulizationError('Unable to kekulize molecule, reached maximum attempts:/n{0}'.format(mol.toAdjacencyList()))
 
     try:
         mol.updateAtomTypes(logSpecies=False)
