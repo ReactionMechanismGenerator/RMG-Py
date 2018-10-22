@@ -58,8 +58,6 @@ cpdef list generate_aryne_resonance_structures(Molecule mol)
 
 cpdef list generate_kekule_structure(Molecule mol)
 
-cpdef list generate_opposite_kekule_structure(Molecule mol)
-
 cpdef list generate_clar_structures(Molecule mol)
 
 cpdef list _clar_optimization(Molecule mol, list constraints=?, max_num=?)

@@ -86,7 +86,6 @@ def populate_resonance_algorithms(features=None):
             generate_optimal_aromatic_resonance_structures,
             generate_aryne_resonance_structures,
             generate_kekule_structure,
-            generate_opposite_kekule_structure,
             generate_clar_structures,
         ]
     else:
@@ -884,50 +883,6 @@ def generate_kekule_structure(mol):
         return []
 
     return [molecule]
-
-
-def generate_opposite_kekule_structure(mol):
-    """
-    Generate the Kekule structure with opposite single/double bond arrangement
-    for single ring aromatics.
-
-    Returns a single Kekule structure as an element of a list of length 1.
-    """
-
-    # This won't work with the aromatic form of the molecule
-    if mol.isAromatic():
-        return []
-
-    molecule = mol.copy(deep=True)
-
-    aromatic_bonds = molecule.getAromaticRings()[1]
-
-    # We can only do this for single ring aromatics for now
-    if len(aromatic_bonds) != 1:
-        return []
-
-    num_s = 0
-    num_d = 0
-    for bond in aromatic_bonds[0]:
-        if bond.isSingle():
-            num_s += 1
-            bond.order = 2
-        elif bond.isDouble():
-            num_d += 1
-            bond.order = 1
-        else:
-            # Something is wrong: there is a bond that is not single or double
-            return []
-
-    if num_s != 3 or num_d != 3:
-        return []
-
-    try:
-        molecule.updateAtomTypes()
-    except AtomTypeError:
-        return []
-    else:
-        return [molecule]
 
 
 def generate_isomorphic_resonance_structures(mol, saturate_h=False):
