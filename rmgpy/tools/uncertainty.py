@@ -593,7 +593,12 @@ class Uncertainty:
         P = Quantity(P)
         termination=[TerminationTime(Quantity(terminationTime))]
                                      
-        reactionSystem = SimpleReactor(T, P, initialMoleFractions, termination, sensitiveSpecies, sensitivityThreshold)
+        reactionSystem = SimpleReactor(T=T,
+                                       P=P,
+                                       initialMoleFractions=initialMoleFractions,
+                                       termination=termination,
+                                       sensitiveSpecies=sensitiveSpecies,
+                                       sensitivityThreshold=sensitivityThreshold)
         
         # Create the csv worksheets for logging sensitivity
         util.makeOutputSubdirectory(self.outputDirectory, 'solver')
