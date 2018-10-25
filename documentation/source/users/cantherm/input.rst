@@ -377,6 +377,7 @@ Parameter               Required?                   Description
 ``modes``               yes                         The molecular degrees of freedom (see below)
 ``spinMultiplicity``    yes                         The ground-state spin multiplicity (degeneracy), sets to 1 by default if not used
 ``opticalIsomers``      yes                         The number of optical isomers of the species, sets to 1 by default if not used
+``reactive``            only bath gases             Boolean indicating whether the molecule reacts, set to ``False`` for bath gases. default is ``True``
 ======================= =========================== ====================================
 
 The ``label`` parameter should be set to a string with the desired name for the species, which can be reference later in the input file. ::

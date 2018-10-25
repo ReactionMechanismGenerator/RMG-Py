@@ -105,6 +105,7 @@ Parameter               Required?                           Description
 ``molecularWeight``     all species                         The molecular weight, if not given it is calculated based on the structure
 ``collisionModel``      unimolecular isomers and bath gases Transport data for the species
 ``energyTransferModel`` unimolecular isomers                Assigned with ``SingleExponentialDown`` model
+``reactive``            bath gases                          Booleanindicating  whether the molecule reacts, set to ``False`` for bath gases. default is ``True``
 ======================= =================================== ====================================
 
 The ``structure`` parameter is defined by either SMILES or InChI.  For instance, either representation is

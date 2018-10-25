@@ -215,7 +215,7 @@ def species(label, *args, **kwargs):
         spec.thermo = thermo
         spec.reactive = reactive
         
-        if len(args) == 0 and spec.thermo is None and spec.conformer.E0 is None and path is None:
+        if spec.reactive and path is None and spec.thermo is None and spec.conformer.E0 is None:
             if not spec.molecule:
                 raise InputError('Neither thermo, E0, species file path, nor structure specified, cannot estimate'
                                  ' thermo properties of species {0}'.format(spec.label))
@@ -224,7 +224,8 @@ def species(label, *args, **kwargs):
                 if db is None:
                     raise DatabaseError('Thermo database is None.')
             except DatabaseError:
-                logging.warn("The database isn't loaded, cannot estimate thermo for {0}.".format(spec.label))
+                logging.warn("The database isn't loaded, cannot estimate thermo for {0}. "
+                             "If it is a bath gas, set reactive = False to avoid generating thermo.".format(spec.label))
             else:
                 logging.info('No E0 or thermo found, estimating thermo and E0 of species {0} using'
                              ' RMG-Database...'.format(spec.label))
@@ -236,7 +237,7 @@ def species(label, *args, **kwargs):
                 else:
                     spec.conformer.E0 = spec.thermo.E0
 
-        if len(args) == 0 and not spec.hasStatMech() and structure is not None:
+        if spec.reactive and spec.thermo and not spec.hasStatMech() and structure is not None:
             # generate stat mech info if it wasn't provided before
             spec.generateStatMech()
 

@@ -145,6 +145,7 @@ species(
     structure = SMILES('N#N'),
     molecularWeight = (28.04,"g/mol"),
     collisionModel = TransportData(sigma=(3.70,'angstrom'), epsilon=(94.9,'K')),
+    reactive = False
 )
 
 ################################################################################
