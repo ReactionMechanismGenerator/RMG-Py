@@ -149,7 +149,7 @@ cdef class AromaticRing(object):
 
     DO NOT use outside of this module. This class does not do any aromaticity perception.
     """
-    cdef list atoms
+    cdef public list atoms, resolved, unresolved
     cdef set endoBonds, exoBonds
     cdef public int endoDOF, exoDOF
 
@@ -159,6 +159,8 @@ cdef class AromaticRing(object):
         self.exoBonds = exoBonds
         self.endoDOF = endoDOF
         self.exoDOF = exoDOF
+        self.resolved = []
+        self.unresolved = []
 
     cpdef update(self):
         """
@@ -183,34 +185,36 @@ cdef class AromaticRing(object):
         self.endoDOF = endoDOF
         self.exoDOF = exoDOF
 
+        self.processBonds()
+
     cpdef tuple processBonds(self):
         """Create AromaticBond objects for each endocyclic bond."""
-        cdef list resolved, unresolved
         cdef Bond bond0
-        cdef AromaticBond aromaticBond
+        cdef int i
 
-        resolved = []
-        unresolved = []
-        for bond0 in self.endoBonds:
-            aromaticBond = AromaticBond(bond=bond0, ringBonds=self.endoBonds)
+        if not self.unresolved and not self.resolved:
+            # We just started on this ring
+            for bond0 in self.endoBonds:
+                self.unresolved.append(AromaticBond(bond=bond0, ringBonds=self.endoBonds))
 
-            if abs(round(bond0.order) - bond0.order) < 1e-9:
+        i = 0
+        while i < len(self.unresolved):
+            bond0 = self.unresolved[i].bond
+            if bond0.isOrder(round(bond0.order)):
                 # Bond has already been assigned, so mark as resolved
-                resolved.append(aromaticBond)
+                self.resolved.append(self.unresolved.pop(i))
             elif bond0.isOrder(2.5):
                 # Bond was incremented, so it must be a double bond
                 bond0.order = 2
-                resolved.append(aromaticBond)
+                self.resolved.append(self.unresolved.pop(i))
             elif bond0.isOrder(0.5):
                 # Bond was decremented, so it must be a single bond
                 bond0.order = 1
-                resolved.append(aromaticBond)
+                self.resolved.append(self.unresolved.pop(i))
             else:
-                unresolved.append(aromaticBond)
+                i += 1
 
-        assert len(resolved) + len(unresolved) == len(self.endoBonds)
-
-        return resolved, unresolved
+        assert len(self.resolved) + len(self.unresolved) == len(self.endoBonds)
 
     cpdef bint kekulize(self) except -2:
         """
@@ -222,24 +226,22 @@ cdef class AromaticRing(object):
         cdef int itercount, maxiter
         cdef AromaticBond bond
 
-        resolved, unresolved = self.processBonds()
-
         # Check status
-        if len(unresolved) == 0:
+        if len(self.unresolved) == 0:
             return True
 
         itercount = 0
-        maxiter = 2 * len(unresolved)
-        while unresolved and itercount < maxiter:
+        maxiter = 2 * len(self.unresolved)
+        while self.unresolved and itercount < maxiter:
             # Update and sort the unresolved bonds
-            prioritizeBonds(unresolved)
+            prioritizeBonds(self.unresolved)
             # Take the next bond off the stack
-            bond = unresolved.pop()
+            bond = self.unresolved.pop()
 
             if bond.doublePossible and bond.doubleRequired:
                 # This bond must be a double bond to satisfy atom valence
                 bond.bond.order = 2
-                resolved.append(bond)
+                self.resolved.append(bond)
                 self.endoDOF -= 1
             elif bond.doublePossible and not bond.doubleRequired:
                 # This could be a double bond, but we don't know for sure
@@ -254,20 +256,20 @@ cdef class AromaticRing(object):
                         or self.endoDOF == 1):
                     # Go ahead an assume this bond is double
                     bond.bond.order = 2
-                    resolved.append(bond)
+                    self.resolved.append(bond)
                     self.endoDOF -= 1
                 else:
                     # Come back to this bond later
-                    unresolved.append(bond)
+                    self.unresolved.append(bond)
             else:
                 # Double bond is not possible, so it must be a single bond
                 bond.bond.order = 1
-                resolved.append(bond)
+                self.resolved.append(bond)
                 self.endoDOF -= 1
 
             itercount += 1
 
-        if unresolved:
+        if self.unresolved:
             # We've hit the iteration limit, but could not solve the ring
             return False
 
@@ -279,8 +281,8 @@ cdef class AromaticBond(object):
 
     DO NOT use outside of this module. This class does not do any aromaticity perception.
     """
-    cdef Bond bond
-    cdef set ringBonds
+    cdef public Bond bond
+    cdef public set ringBonds
     cdef public int endoDOF, exoDOF
     cdef public bint doublePossible, doubleRequired
 
