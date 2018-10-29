@@ -61,6 +61,7 @@ class KekulizeTest(unittest.TestCase):
         self.aromaticRing = AromaticRing(ringAtoms[0], set(ringBonds[0]), bonds - set(ringBonds[0]))
 
     def testAromaticRing(self):
+        """Test that the AromaticRing class works properly for kekulization."""
         self.aromaticRing.update()
 
         self.assertEqual(self.aromaticRing.endoDOF, 6)
@@ -71,7 +72,9 @@ class KekulizeTest(unittest.TestCase):
         self.assertTrue(result)
 
     def testAromaticBond(self):
-        resolved, unresolved = self.aromaticRing.processBonds()
+        """Test that the AromaticBond class works properly for kekulization."""
+        self.aromaticRing.processBonds()
+        resolved, unresolved = self.aromaticRing.resolved, self.aromaticRing.unresolved
 
         self.assertEqual(len(resolved), 0)
         self.assertEqual(len(unresolved), 6)
