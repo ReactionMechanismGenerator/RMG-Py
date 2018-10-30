@@ -679,9 +679,9 @@ but the actual output files of the underlying quantum chemistry calculations are
 <p>For this option, there are a number of required parameters associated with the <code class="docutils literal notranslate"><span class="pre">species()</span></code> function</p>
 <table border="1" class="docutils">
 <colgroup>
+<col width="15%" />
 <col width="18%" />
-<col width="21%" />
-<col width="62%" />
+<col width="67%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Parameter</th>
@@ -710,6 +710,10 @@ but the actual output files of the underlying quantum chemistry calculations are
 <td>yes</td>
 <td>The number of optical isomers of the species, sets to 1 by default if not used</td>
 </tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">reactive</span></code></td>
+<td>only bath gases</td>
+<td>Boolean indicating whether the molecule reacts, set to <code class="docutils literal notranslate"><span class="pre">False</span></code> for bath gases. default is <code class="docutils literal notranslate"><span class="pre">True</span></code></td>
+</tr>
 </tbody>
 </table>
 <p>The <code class="docutils literal notranslate"><span class="pre">label</span></code> parameter should be set to a string with the desired name for the species, which can be reference later in the input file.</p>
@@ -726,6 +730,15 @@ arbitrary absolute energy scale, as long as the correct relative energies betwee
 it is common in literature for the energy of some reactant(s) to be arbitrarily defined as zero, and the energies of all transition states, intermediates and products
 are reported relative to that.</p>
 <p>Also note that the value of <code class="docutils literal notranslate"><span class="pre">E0</span></code> provided here will be used directly, i.e., no atom or bond corrections will be applied.</p>
+<p>If you want Cantherm to correct for zero point energy, you can either just place
+the raw units in Hartree (as if it were read directly from quantum):</p>
+<blockquote>
+<div>E0 = 547.6789753223456</div></blockquote>
+<p>Or you can add a third argument to the Quantity specified whether zero-point
+energy is included or not:</p>
+<blockquote>
+<div>E0 = (95.1, ‘kJ/mol’, ‘E0’) # when ZPE is not included
+E0 = (95.1, ‘kJ/mol’, ‘E0-ZPE’) # when ZPE is already included</div></blockquote>
 <p>When specifying the <code class="docutils literal notranslate"><span class="pre">modes</span></code> parameter, define a list
 with the following types of degrees of freedom.  To understand how to define these
 degrees of freedom, please click on the links below:</p>

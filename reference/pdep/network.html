@@ -65,8 +65,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <dd><p>A representation of a unimolecular reaction network. The attributes are:</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="21%" />
-<col width="79%" />
+<col width="18%" />
+<col width="82%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Attribute</th>
@@ -78,10 +78,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <td>A list of the unimolecular isomers in the network</td>
 </tr>
 <tr class="row-odd"><td><cite>reactants</cite></td>
-<td>A list of the bimolecular reactant channels in the network</td>
+<td>A list of the bimolecular reactant channels (Configuration objects) in the network</td>
 </tr>
 <tr class="row-even"><td><cite>products</cite></td>
-<td>A list of the bimolecular product channels in the network</td>
+<td>A list of the bimolecular product channels (Configuration objects) in the network</td>
 </tr>
 <tr class="row-odd"><td><cite>pathReactions</cite></td>
 <td>A list of “path” reaction objects that connect adjacent isomers (the high-pressure-limit)</td>
@@ -136,6 +136,18 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </tr>
 <tr class="row-even"><td><cite>rmgmode</cite></td>
 <td><code class="docutils literal notranslate"><span class="pre">True</span></code> if in RMG mode, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise</td>
+</tr>
+<tr class="row-odd"><td><cite>eqRatios</cite></td>
+<td>An array containing concentration of each isomer and reactant channel present at equilibrium</td>
+</tr>
+<tr class="row-even"><td><cite>collFreq</cite></td>
+<td>An array of the frequency of collision between</td>
+</tr>
+<tr class="row-odd"><td><cite>Mcoll</cite></td>
+<td>Matrix of first-order rate coefficients for collisional population transfer between grains for each isomer</td>
+</tr>
+<tr class="row-even"><td><cite>densStates</cite></td>
+<td>3D np array of stable configurations, number of grains, and number of J</td>
 </tr>
 </tbody>
 </table>

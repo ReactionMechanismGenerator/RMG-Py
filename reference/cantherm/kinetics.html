@@ -64,6 +64,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <em class="property">class </em><code class="descclassname">rmgpy.cantherm.</code><code class="descname">KineticsJob</code><span class="sig-paren">(</span><em>reaction</em>, <em>Tmin=None</em>, <em>Tmax=None</em>, <em>Tlist=None</em>, <em>Tcount=0</em>, <em>sensitivity_conditions=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.cantherm.KineticsJob" title="Permalink to this definition">¶</a></dt>
 <dd><p>A representation of a CanTherm kinetics job. This job is used to compute
 and save the high-pressure-limit kinetics information for a single reaction.</p>
+<dl class="docutils">
+<dt><cite>usedTST</cite> - a boolean representing if TST was used to calculate the kinetics</dt>
+<dd>if kinetics is already given in the input, then it is False.</dd>
+</dl>
 <dl class="attribute">
 <dt id="rmgpy.cantherm.KineticsJob.Tlist">
 <code class="descname">Tlist</code><a class="headerlink" href="#rmgpy.cantherm.KineticsJob.Tlist" title="Permalink to this definition">¶</a></dt>
