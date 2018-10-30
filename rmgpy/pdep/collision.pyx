@@ -101,8 +101,6 @@ cdef class SingleExponentialDown:
             except quantity.QuantityError:
                 self._alpha0 = quantity.Energy(value)
 
-            self._alpha0 = quantity.Energy(value)
-
     property T0:
         """The reference temperature."""
         def __get__(self):

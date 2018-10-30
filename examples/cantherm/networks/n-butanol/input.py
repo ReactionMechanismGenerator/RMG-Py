@@ -67,6 +67,7 @@ species(
     molecularWeight = (28.04,"g/mol"),
     collisionModel = TransportData(sigma=(3.41,"angstrom"), epsilon=(124,"K")),
     energyTransferModel = None,
+    reactive = False,
 )
 
 thermo('H2O','NASA')

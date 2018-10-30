@@ -235,6 +235,19 @@ class PressureDependenceJob(object):
         )
 
     def execute(self, outputFile, plot, format='pdf', print_summary=True):
+        
+        for config in self.network.isomers + self.network.reactants + self.network.products:
+            for spec in config.species:
+                if spec.conformer.E0 is None:
+                    raise AttributeError('species {0} is missing energy for its conformer'.format(spec.label))
+
+        # set transition state Energy if not set previously using same method as RMG pdep
+        for reaction in self.network.pathReactions:
+            transitionState = reaction.transitionState
+            if transitionState.conformer and transitionState.conformer.E0 is None:
+                transitionState.conformer.E0 = (sum([spec.conformer.E0.value_si for spec in reaction.reactants]) + reaction.kinetics.Ea.value_si,"J/mol")
+                logging.info('Approximated transitions state E0 for reaction {3} from kinetics '
+                             'A={0}, n={1}, Ea={2} J/mol'.format(reaction.kinetics.A.value_si,reaction.kinetics.n.value_si,reaction.kinetics.Ea.value_si,reaction.label))
         if print_summary:
             self.network.printSummary()
         
@@ -305,6 +318,12 @@ class PressureDependenceJob(object):
     def initialize(self):
         for reaction in self.network.pathReactions:
             tunneling = reaction.transitionState.tunneling
+            # throw descriptive error if tunneling not allowed
+            if tunneling and reaction.transitionState.frequency is None and reaction.kinetics is not None:
+                raise ValueError("""Cannot apply tunneling for reaction {0} when inverse laplace is used.
+                                 Either remove tunnelling parameter or input transitionState
+                                 frequencies/quantum file""".format(reaction.label))
+            # add tunneling parameters
             if isinstance(tunneling, Wigner) and tunneling.frequency is None:
                 tunneling.frequency = (reaction.transitionState.frequency.value_si,"cm^-1")
             elif isinstance(tunneling, Eckart) and tunneling.frequency is None:

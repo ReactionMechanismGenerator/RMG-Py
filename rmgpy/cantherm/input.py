@@ -128,8 +128,8 @@ def database(
         if not isinstance(kineticsFamilies,list):
             raise InputError("kineticsFamilies should be either 'default', 'all', 'none', or a list of names eg. ['H_Abstraction','R_Recombination'] or ['!Intra_Disproportionation'].")
         kineticsFamilies = kineticsFamilies
-    
-    database = RMGDatabase()
+
+    database = getDB() or RMGDatabase()
 
     database.load(
             path = databaseDirectory,
@@ -163,7 +163,12 @@ def species(label, *args, **kwargs):
         # The argument is a path to a conformer input file
         path = args[0]
         job = StatMechJob(species=spec, path=path)
+        logging.debug('Added species {0} to a stat mech job.'.format(label))
         jobList.append(job)
+    elif len(args) > 1:
+        raise InputError('species {0} can only have two non-keyword argument '
+                         'which should be the species label and the '
+                         'path to a quantum file.'.format(spec.label))
     
     if len(kwargs) > 0:
         # The species parameters are given explicitly
@@ -210,14 +215,17 @@ def species(label, *args, **kwargs):
         spec.thermo = thermo
         spec.reactive = reactive
         
-        if spec.thermo is None and spec.conformer.E0 is None and path is None:
+        if spec.reactive and path is None and spec.thermo is None and spec.conformer.E0 is None:
             if not spec.molecule:
                 raise InputError('Neither thermo, E0, species file path, nor structure specified, cannot estimate'
                                  ' thermo properties of species {0}'.format(spec.label))
             try:
                 db = getDB('thermo')
+                if db is None:
+                    raise DatabaseError('Thermo database is None.')
             except DatabaseError:
-                logging.warn("The database isn't loaded, cannot estimate thermo for {0}.".format(spec.label))
+                logging.warn("The database isn't loaded, cannot estimate thermo for {0}. "
+                             "If it is a bath gas, set reactive = False to avoid generating thermo.".format(spec.label))
             else:
                 logging.info('No E0 or thermo found, estimating thermo and E0 of species {0} using'
                              ' RMG-Database...'.format(spec.label))
@@ -228,8 +236,16 @@ def species(label, *args, **kwargs):
                     spec.thermo.E0 = th.E0
                 else:
                     spec.conformer.E0 = spec.thermo.E0
-    return spec
 
+        if spec.reactive and spec.thermo and not spec.hasStatMech() and structure is not None:
+            # generate stat mech info if it wasn't provided before
+            spec.generateStatMech()
+
+        if not energyTransferModel:
+            # default to RMG's method of generating energyTransferModel
+            spec.generateEnergyTransferModel()
+
+    return spec
 
 def transitionState(label, *args, **kwargs):
     global transitionStateDict
@@ -245,7 +261,7 @@ def transitionState(label, *args, **kwargs):
         job = StatMechJob(species=ts, path=path)
         jobList.append(job)
     
-    elif len(args) == 0 and len(kwargs) > 0:
+    elif len(args) == 0:
         # The species parameters are given explicitly
         E0 = None
         modes = []
@@ -268,7 +284,11 @@ def transitionState(label, *args, **kwargs):
         
         ts.conformer = Conformer(E0=E0, modes=modes, spinMultiplicity=spinMultiplicity, opticalIsomers=opticalIsomers)  
         ts.frequency = frequency
-        
+    else:
+        if len(args) == 0 and len(kwargs) == 0:
+            raise InputError('The transitionState needs to reference a quantum job file or contain kinetic information.')
+        raise InputError('The transitionState can only link a quantum job or directly input information, not both.')
+
     return ts
 
 def reaction(label, reactants, products, transitionState=None, kinetics=None, tunneling=''):
@@ -344,8 +364,19 @@ def network(label, isomers=None, reactants=None, products=None, pathReactions=No
         reactants.append(sorted([speciesDict[spec] for spec in reactant]))
     
     if pathReactions is None:
-        # If not explicitly given, use all reactions in input file
-        pathReactions = reactionDict.values()
+        # Only add reactions that match reactants and/or isomers
+        pathReactions = []
+        for rxn in reactionDict.values():
+            if not rxn.isUnimolecular():
+                # this reaction is not pressure dependent
+                continue
+            reactant_is_isomer = len(rxn.reactants) == 1 and rxn.reactants[0] in isomers
+            product_is_isomer  = len(rxn.products)  == 1 and rxn.products[0]  in isomers
+            reactant_is_reactant = any([frozenset(rxn.reactants) == frozenset(reactant_pair) for reactant_pair in reactants])
+            product_is_reactant  = any([frozenset(rxn.products ) == frozenset(reactant_pair) for reactant_pair in reactants])
+            if reactant_is_isomer or reactant_is_reactant or product_is_isomer or product_is_reactant:
+                pathReactions.append(rxn)
+        logging.debug('Path reactions {} were found for network {}'.format([rxn.label for rxn in pathReactions], label))
     else:
         pathReactions0 = pathReactions; pathReactions = []
         for rxn in pathReactions0:
@@ -483,6 +514,26 @@ def adjacencyList(adj):
 def InChI(inchi):
     return Molecule().fromInChI(inchi)
 
+def loadNecessaryDatabases():
+    """
+    loads transport and statmech databases
+    """
+    from rmgpy.data.statmech import StatmechDatabase
+    from rmgpy.data.transport import TransportDatabase
+
+    #only load if they are not there already.
+    try:
+        getDB('transport')
+        getDB('statmech')
+    except DatabaseError:
+        logging.info("Databases not found. Making databases")
+        db = RMGDatabase()
+        db.statmech = StatmechDatabase()
+        db.statmech.load(os.path.join(settings['database.directory'],'statmech'))
+
+        db.transport = TransportDatabase()
+        db.transport.load(os.path.join(settings['database.directory'],'transport'))
+
 ################################################################################
 
 def loadInputFile(path):
@@ -541,6 +592,8 @@ def loadInputFile(path):
         'adjacencyList': adjacencyList,
         'InChI': InChI,
     }
+
+    loadNecessaryDatabases()
 
     with open(path, 'r') as f:
         try:

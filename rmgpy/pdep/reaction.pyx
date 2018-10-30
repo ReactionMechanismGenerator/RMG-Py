@@ -43,7 +43,7 @@ from libc.math cimport abs, exp, sqrt, cosh, log
 cimport rmgpy.constants as constants
 from rmgpy.kinetics.arrhenius cimport Arrhenius
 from rmgpy.statmech.schrodinger import convolve
-
+from rmgpy.exceptions import PressureDependenceError
 ################################################################################
 
 @cython.boundscheck(False)
@@ -112,7 +112,7 @@ def calculateMicrocanonicalRateCoefficient(reaction,
             kr *= C0inv**(len(reaction.products) - 1)        
             forward = False
         else:
-            raise Exception('Unable to compute k(E) values via RRKM theory for path reaction "{0}".'.format(reaction))           
+            raise PressureDependenceError('Unable to compute k(E) values via RRKM theory for path reaction "{0}".'.format(reaction))
         
     elif reaction.kinetics is not None:
         # We've been provided with high-pressure-limit rate coefficient data,
@@ -127,10 +127,10 @@ def calculateMicrocanonicalRateCoefficient(reaction,
             kr = applyInverseLaplaceTransformMethod(reaction.transitionState, kinetics, Elist, Jlist, prodDensStates, T)
             forward = False
         else:
-            raise Exception('Unable to compute k(E) values via ILT method for path reaction "{0}".'.format(reaction))
+            raise PressureDependenceError('Unable to compute k(E) values via ILT method for path reaction "{0}".'.format(reaction))
     
     else:
-        raise Exception('Unable to compute k(E) values for path reaction "{0}".'.format(reaction))
+        raise PressureDependenceError('Unable to compute k(E) values for path reaction "{0}".'.format(reaction))
 
     # If the reaction is endothermic and barrierless, it is possible that the
     # forward k(E) will have a nonzero value at an energy where the product
@@ -324,7 +324,7 @@ def applyInverseLaplaceTransformMethod(transitionState,
                         k[r,s] = A * phi[r] / densStates[r,s]
                             
     else:
-        raise Exception('Unable to use inverse Laplace transform method for non-Arrhenius kinetics or for n < 0.')
+        raise PressureDependenceError('Unable to use inverse Laplace transform method for non-Arrhenius kinetics or for n < 0.')
     logging.debug('Finished applying inverse lapace transform for path transition state {}'.format(transitionState))
     logging.debug('The rate constant is found to be {}'.format(k))
     

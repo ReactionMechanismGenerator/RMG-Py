@@ -91,6 +91,10 @@ class ThermoJob(object):
     
         logging.info('Generating {0} thermo model for {1}...'.format(self.thermoClass, species))
         
+        if species.thermo is not None:
+            logging.info("Thermo already generated for species {}. Skipping thermo generation.".format(species))
+            return None
+        
         Tlist = numpy.arange(10.0, 3001.0, 10.0, numpy.float64)
         Cplist = numpy.zeros_like(Tlist)
         H298 = 0.0
@@ -153,11 +157,14 @@ class ThermoJob(object):
         f.write('#    (K)         (cal/mol*K) (kcal/mol)  (cal/mol*K) (kcal/mol)\n')
         f.write('#    =========== =========== =========== =========== ===========\n')
         for T in [300,400,500,600,800,1000,1500,2000,2400]:
-            Cp = species.getThermoData().getHeatCapacity(T) / 4.184
-            H = species.getThermoData().getEnthalpy(T) / 4184.
-            S = species.getThermoData().getEntropy(T) / 4.184
-            G = species.getThermoData().getFreeEnergy(T) / 4184.
-            f.write('#    {0:11g} {1:11.3f} {2:11.3f} {3:11.3f} {4:11.3f}\n'.format(T, Cp, H, S, G))
+            try:
+                Cp = species.getThermoData().getHeatCapacity(T) / 4.184
+                H = species.getThermoData().getEnthalpy(T) / 4184.
+                S = species.getThermoData().getEntropy(T) / 4.184
+                G = species.getThermoData().getFreeEnergy(T) / 4184.
+                f.write('#    {0:11g} {1:11.3f} {2:11.3f} {3:11.3f} {4:11.3f}\n'.format(T, Cp, H, S, G))
+            except ValueError:
+                logging.debug("Valid thermo for {0} is outside range for temperature {1}".format(species,T))
         f.write('#    =========== =========== =========== =========== ===========\n')
         
         string = 'thermo(label={0!r}, thermo={1!r})'.format(species.label, species.getThermoData())
@@ -176,7 +183,7 @@ class ThermoJob(object):
                     elementCounts = {'C': 0, 'H': 0}
         else:
             elementCounts = {'C': 0, 'H': 0}
-        string = writeThermoEntry(species, elementCounts=elementCounts, verbose=False)
+        string = writeThermoEntry(species, elementCounts=elementCounts, verbose=True)
         f.write('{0}\n'.format(string))
         f.close()
 
@@ -215,14 +222,17 @@ class ThermoJob(object):
         conformer = self.species.conformer
         thermo = self.species.getThermoData()
         for i in range(Tlist.shape[0]):
-            Cplist[i] = conformer.getHeatCapacity(Tlist[i])
-            Slist[i] = conformer.getEntropy(Tlist[i])
-            Hlist[i] = (conformer.getEnthalpy(Tlist[i]) + conformer.E0.value_si) * 0.001
-            Glist[i] = Hlist[i] - Tlist[i] * Slist[i] * 0.001
-            Cplist1[i] = thermo.getHeatCapacity(Tlist[i])
-            Slist1[i] = thermo.getEntropy(Tlist[i])
-            Hlist1[i] = thermo.getEnthalpy(Tlist[i]) * 0.001
-            Glist1[i] = thermo.getFreeEnergy(Tlist[i]) * 0.001
+            try:
+                Cplist[i] = conformer.getHeatCapacity(Tlist[i])
+                Slist[i] = conformer.getEntropy(Tlist[i])
+                Hlist[i] = (conformer.getEnthalpy(Tlist[i]) + conformer.E0.value_si) * 0.001
+                Glist[i] = Hlist[i] - Tlist[i] * Slist[i] * 0.001
+                Cplist1[i] = thermo.getHeatCapacity(Tlist[i])
+                Slist1[i] = thermo.getEntropy(Tlist[i])
+                Hlist1[i] = thermo.getEnthalpy(Tlist[i]) * 0.001
+                Glist1[i] = thermo.getFreeEnergy(Tlist[i]) * 0.001
+            except (ValueError,AttributeError):
+                continue
 
         fig = plt.figure(figsize=(10,8))
         fig.suptitle('{0}'.format(self.species.label))
