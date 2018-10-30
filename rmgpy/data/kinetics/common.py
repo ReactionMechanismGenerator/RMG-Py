@@ -214,7 +214,7 @@ def ensure_independent_atom_ids(input_species, resonance=True):
         logging.debug('identical atom ids found between species. regenerating')
         for species in input_species:
             unreactive_mol_list = [mol for mol in species.molecule if not mol.reactive]
-            mol = species.molecule[0]
+            mol = [mol for mol in species.molecule if mol.reactive][0]  # Choose first reactive molecule
             mol.assignAtomIDs()
             species.molecule = [mol]
             # Remake resonance structures with new labels
