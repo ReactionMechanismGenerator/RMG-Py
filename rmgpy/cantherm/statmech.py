@@ -627,7 +627,7 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds,
         # All model chemistries here should be lower-case because the user input is changed to lower-case
         if atomEnergies is None:
             # Note: If your model chemistry does not include spin orbit coupling, you should add the corrections to the energies here
-            if modelChemistry == 'cbs-qb3':
+            if modelChemistry.startswith('cbs-qb3'):  # only check start of string to allow different bond corrections (see below)
                 atomEnergies = {'H':-0.499818 + SOC['H'], 'N':-54.520543 + SOC['N'], 'O':-74.987624+ SOC['O'], 'C':-37.785385+ SOC['C'], 'P':-340.817186+ SOC['P'], 'S': -397.657360+ SOC['S']}
             elif modelChemistry == 'm06-2x/cc-pvtz':
                 atomEnergies = {'H':-0.498135 + SOC['H'], 'N':-54.586780 + SOC['N'], 'O':-75.064242+ SOC['O'], 'C':-37.842468+ SOC['C'], 'P':-341.246985+ SOC['P'], 'S': -398.101240+ SOC['S']}
@@ -800,6 +800,13 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds,
                 'C=N': -0.30, 'C#N': -1.33, 'N-O': 1.01, 'N_O': -0.03, 'N=O': -0.26,
                 'N-H':  0.06, 'N-N': -0.23, 'N=N': -0.37, 'N#N': -0.64,}
         elif modelChemistry == 'cbs-qb3':
+            bondEnergies = {
+                'C-H': -0.11, 'C-C': -0.30, 'C=C': -0.08, 'C#C': -0.64, 'O-H' : 0.02, 'C-O': 0.33, 'C=O': 0.55,  # Table IX: Petersson GA (1998) J. of Chemical Physics, DOI: 10.1063/1.477794
+                'N-H': -0.42, 'C-N': -0.13, 'C#N': -0.89, 'C-F':  0.55, 'C-Cl': 1.29, 'S-H': 0.0,  'C-S': 0.43, 'O=S': -0.78,
+                'N=O':  1.11, 'N-N': -1.87, 'N=N': -1.58, 'N-O':  0.35,  #Table 2: Ashcraft R (2007) J. Phys. Chem. B; DOI: 10.1021/jp073539t
+                'N#N':  -2.0, 'O=O': -0.2,  'H-H': 1.1,  # Unknown source
+            }
+        elif modelChemistry == 'cbs-qb3-paraskevas':  # NOTE: The Paraskevas corrections are inaccurate for non-oxygenated hydrocarbons, and may do poorly in combination with the Petersson corrections
             bondEnergies = {
                 'C-C': -0.495,'C-H': -0.045,'C=C': -0.825,'C-O': 0.378,'C=O': 0.743,'O-H': -0.423,  #Table2: Paraskevas, PD (2013). Chemistry-A European J., DOI: 10.1002/chem.201301381
                 'C#C': -0.64, 'C#N': -0.89, 'C-S': 0.43,  'O=S': -0.78,'S-H': 0.0,  'C-N': -0.13, 'C-Cl': 1.29, 'C-F': 0.55,  # Table IX: Petersson GA (1998) J. of Chemical Physics, DOI: 10.1063/1.477794
@@ -1085,6 +1092,7 @@ def assign_frequency_scale_factor(model_chemistry):
     Refer to https://comp.chem.umn.edu/freqscale/index.html for future updates of these factors
     """
     freq_dict = {'cbs-qb3': 0.99,  # J. Chem. Phys. 1999, 110, 2822–2827
+                 'cbs-qb3-paraskevas': 0.99,
                  # 'g3': ,
                  'm08so/mg3s*': 0.983,  # DOI: 10.1021/ct100326h, taken as 'M08-SO/MG3S'
                  'm06-2x/cc-pvtz': 0.955,  # http://cccbdb.nist.gov/vibscalejust.asp
