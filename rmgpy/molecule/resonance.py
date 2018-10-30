@@ -392,8 +392,8 @@ def generate_adj_lone_pair_radical_resonance_structures(mol):
     NO2 example: O=[:N]-[::O.] <=> O=[N.+]-[:::O-]
     (where ':' denotes a lone pair, '.' denotes a radical, '-' not in [] denotes a single bond, '-'/'+' denote charge)
     """
-    cython.declare(structures=list, paths=list, index=cython.int, structure=Molecule)
-    cython.declare(atom=Atom, atom1=Atom, atom2=Atom)
+    cython.declare(structures=list, paths=list, index=cython.int, structure=Graph)
+    cython.declare(atom=Vertex, atom1=Vertex, atom2=Vertex)
     cython.declare(v1=Vertex, v2=Vertex)
 
     structures = []
@@ -434,8 +434,8 @@ def generate_adj_lone_pair_multiple_bond_resonance_structures(mol):
     Here atom1 refers to the N/S/O atom, atom 2 refers to the any R!H (atom2's lonePairs aren't affected)
     (In direction 1 atom1 <losses> a lone pair, in direction 2 atom1 <gains> a lone pair)
     """
-    cython.declare(structures=list, paths=list, index=cython.int, structure=Molecule, direction=cython.int)
-    cython.declare(atom=Atom, atom1=Atom, atom2=Atom, bond12=Bond)
+    cython.declare(structures=list, paths=list, index=cython.int, structure=Graph, direction=cython.int)
+    cython.declare(atom=Vertex, atom1=Vertex, atom2=Vertex, bond12=Edge)
     cython.declare(v1=Vertex, v2=Vertex)
 
     structures = []
@@ -482,8 +482,8 @@ def generate_adj_lone_pair_radical_multiple_bond_resonance_structures(mol):
     (In direction 1 atom1 <losses> a lone pair, gains a radical, and atom2 looses a radical.
     In direction 2 atom1 <gains> a lone pair, looses a radical, and atom2 gains a radical)
     """
-    cython.declare(structures=list, paths=list, index=cython.int, structure=Molecule, direction=cython.int)
-    cython.declare(atom=Atom, atom1=Atom, atom2=Atom, bond12=Bond)
+    cython.declare(structures=list, paths=list, index=cython.int, structure=Graph, direction=cython.int)
+    cython.declare(atom=Vertex, atom1=Vertex, atom2=Vertex, bond12=Edge)
     cython.declare(v1=Vertex, v2=Vertex)
 
     structures = []
