@@ -40,3 +40,4 @@ dependencies:
   # - muq
   - pymongo
   - mpmath
+  - dde

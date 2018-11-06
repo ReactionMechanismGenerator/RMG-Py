@@ -257,3 +257,18 @@ generatedSpeciesConstraints(
 #     # If the amount of radicals is more than this, RMG will use hydrogen bond incrementation method
 #     maxRadicalNumber=0,
 # )
+
+# optional block allows thermo to be estimated through ML estimator
+# mlEstimator(
+#     thermo=True,
+#     # Name of folder containing ML architecture and parameters in database
+#     name='main',
+#     # Limits on heavy atom numbers
+#     minHeavyAtoms=1,
+#     maxHeavyAtoms=None,
+#     # If the estimated uncertainty of the thermo prediction is greater than
+#     # any of these values, then don't use the ML estimate
+#     H298UncertaintyCutoff=(3.0, 'kcal/mol'),
+#     S298UncertaintyCutoff=(2.0, 'cal/(mol*K)'),
+#     CpUncertaintyCutoff=(2.0, 'cal/(mol*K)')
+# )

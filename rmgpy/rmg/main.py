@@ -130,6 +130,8 @@ class RMG(util.Subject):
     `trimolecularProductReversible`     ``True`` (default) to allow families with trimolecular products to react in the reverse direction, ``False`` otherwise
     `pressureDependence`                Whether to process unimolecular (pressure-dependent) reaction networks
     `quantumMechanics`                  Whether to apply quantum mechanical calculations instead of group additivity to certain molecular types.
+    `ml_estimator`                      To use thermo estimation with machine learning
+    `ml_settings`                       Settings for ML estimation
     `wallTime`                          The maximum amount of CPU time in the form DD:HH:MM:SS to expend on this job; used to stop gracefully so we can still get profiling information
     `kineticsdatastore`                 ``True`` if storing details of each kinetic database entry in text file, ``False`` otherwise
     ----------------------------------- ------------------------------------------------
@@ -200,6 +202,8 @@ class RMG(util.Subject):
         self.trimolecularProductReversible = None
         self.pressureDependence = None
         self.quantumMechanics = None
+        self.ml_estimator = None
+        self.ml_settings = None
         self.speciesConstraints = {}
         self.wallTime = '00:00:00:00'
         self.initializationTime = 0

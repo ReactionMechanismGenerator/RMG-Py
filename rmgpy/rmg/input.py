@@ -378,6 +378,36 @@ def quantumMechanics(
                                         onlyCyclics = onlyCyclics,
                                         maxRadicalNumber = maxRadicalNumber,
                                         )
+
+def mlEstimator(thermo=True,
+                name='main',
+                minHeavyAtoms=1,
+                maxHeavyAtoms=None,
+                H298UncertaintyCutoff=(3.0, 'kcal/mol'),
+                S298UncertaintyCutoff=(2.0, 'cal/(mol*K)'),
+                CpUncertaintyCutoff=(2.0, 'cal/(mol*K)')):
+    from rmgpy.ml.estimator import MLEstimator
+
+    # Currently only support thermo
+    if thermo:
+        models_path = os.path.join(settings['database.directory'], 'thermo', 'ml', name)
+        if not os.path.exists(models_path):
+            raise InputError('Cannot find ML models folder {}'.format(models_path))
+        H298_path = os.path.join(models_path, 'H298')
+        S298_path = os.path.join(models_path, 'S298')
+        Cp_path = os.path.join(models_path, 'Cp')
+        rmg.ml_estimator = MLEstimator(H298_path, S298_path, Cp_path)
+
+        uncertainty_cutoffs = dict(
+            H298=Quantity(*H298UncertaintyCutoff),
+            S298=Quantity(*S298UncertaintyCutoff),
+            Cp=Quantity(*CpUncertaintyCutoff)
+        )
+        rmg.ml_settings = dict(
+            min_heavy_atoms=minHeavyAtoms,
+            max_heavy_atoms=maxHeavyAtoms,
+            uncertainty_cutoffs=uncertainty_cutoffs,
+        )
                     
 
 def pressureDependence(
@@ -539,6 +569,7 @@ def readInputFile(path, rmg0):
         'solvation': solvation,
         'model': model,
         'quantumMechanics': quantumMechanics,
+        'mlEstimator': mlEstimator,
         'pressureDependence': pressureDependence,
         'options': options,
         'generatedSpeciesConstraints': generatedSpeciesConstraints,
@@ -805,6 +836,8 @@ def getInput(name):
             return rmg.speciesConstraints
         elif name == 'quantumMechanics':
             return rmg.quantumMechanics
+        elif name == 'MLEstimator':
+            return rmg.ml_estimator, rmg.ml_settings
         elif name == 'thermoCentralDatabase':
             return rmg.thermoCentralDatabase
         else:

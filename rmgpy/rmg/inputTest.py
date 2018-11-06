@@ -90,6 +90,25 @@ class TestInputDatabase(unittest.TestCase):
         self.assertIsInstance(rmg.reactionLibraries[0], tuple)
         self.assertTrue(rmg.reactionLibraries[0][1])
 
+class TestInputMLEstimator(unittest.TestCase):
+    """
+    Contains unit tests rmgpy.rmg.input.mlEstimator
+    """
+    def tearDown(self):
+        # remove the reactionLibraries value
+        global rmg
+        rmg.ml_estimator = None
+
+    def testMLEstimator(self):
+        """
+        Test that we can input.
+        """
+        from rmgpy.ml.estimator import MLEstimator
+        global rmg
+        # add database properties to RMG
+        inp.mlEstimator(thermo=True)
+        self.assertIsInstance(rmg.ml_estimator, MLEstimator)
+        self.assertIsInstance(rmg.ml_settings, dict)
 
 class TestInputThemoCentralDatabase(unittest.TestCase):
     """
