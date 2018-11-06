@@ -141,10 +141,10 @@ from them, returning them as lists.</p>
 <dd><p>Return the thermodynamic parameters for a given <code class="xref py py-class docutils literal notranslate"><span class="pre">Species</span></code>
 object <cite>species</cite>. This function first searches the loaded libraries
 in order, returning the first match found, before falling back to
-estimation via group additivity.</p>
-<p>The method corrects for symmetry when the molecule uses HBI or
-group additivity. Libraries and direct QM calculations are already
-corrected.</p>
+estimation via machine learning and then group additivity.</p>
+<p>The method corrects for symmetry when the molecule uses machine
+learning or group additivity. Libraries and direct QM calculations
+are already corrected.</p>
 <p>Returns: ThermoData</p>
 </dd></dl>
 
@@ -192,6 +192,20 @@ for a library with that name. If no match is found in that library,
 <code class="docutils literal notranslate"><span class="pre">None</span></code> is returned. If no corresponding library is found, a
 <code class="xref py py-class docutils literal notranslate"><span class="pre">DatabaseError</span></code> is raised.</p>
 <p>Returns a tuple: (ThermoData, library, entry)  or None.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.thermo.ThermoDatabase.get_thermo_data_from_ml">
+<code class="descname">get_thermo_data_from_ml</code><span class="sig-paren">(</span><em>species</em>, <em>ml_estimator</em>, <em>ml_uncertainty_cutoffs</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.get_thermo_data_from_ml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the set of thermodynamic parameters corresponding to a
+given <code class="xref py py-class docutils literal notranslate"><span class="pre">Species</span></code> object <cite>species</cite> by estimation using the
+ML estimator. Also compare the estimated uncertainties to the
+user-defined cutoffs. If any of the uncertainties are larger
+than their corresponding cutoffs, return None.</p>
+<p>For HBI, the resonance isomer with the lowest H298 is used and
+the resonance isomers in species are sorted in ascending order.</p>
+<p>The entropy is not corrected for the symmetry of the molecule.
+This should be done later by the calling function.</p>
 </dd></dl>
 
 <dl class="method">

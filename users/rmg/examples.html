@@ -481,6 +481,21 @@ for new users to better understand the options of rmg input files</p>
 <span class="c1">#     # If the amount of radicals is more than this, RMG will use hydrogen bond incrementation method</span>
 <span class="c1">#     maxRadicalNumber=0,</span>
 <span class="c1"># )</span>
+
+<span class="c1"># optional block allows thermo to be estimated through ML estimator</span>
+<span class="c1"># mlEstimator(</span>
+<span class="c1">#     thermo=True,</span>
+<span class="c1">#     # Name of folder containing ML architecture and parameters in database</span>
+<span class="c1">#     name=&#39;main&#39;,</span>
+<span class="c1">#     # Limits on heavy atom numbers</span>
+<span class="c1">#     minHeavyAtoms=1,</span>
+<span class="c1">#     maxHeavyAtoms=None,</span>
+<span class="c1">#     # If the estimated uncertainty of the thermo prediction is greater than</span>
+<span class="c1">#     # any of these values, then don&#39;t use the ML estimate</span>
+<span class="c1">#     H298UncertaintyCutoff=(3.0, &#39;kcal/mol&#39;),</span>
+<span class="c1">#     S298UncertaintyCutoff=(2.0, &#39;cal/(mol*K)&#39;),</span>
+<span class="c1">#     CpUncertaintyCutoff=(2.0, &#39;cal/(mol*K)&#39;)</span>
+<span class="c1"># )</span>
 </pre></div>
 </div>
 </div>
