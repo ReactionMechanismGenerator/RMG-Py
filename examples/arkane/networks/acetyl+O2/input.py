@@ -1,6 +1,6 @@
 ################################################################################
 #
-#   CanTherm input file for acetyl + O2 pressure-dependent reaction network
+#   Arkane input file for acetyl + O2 pressure-dependent reaction network
 #
 ################################################################################
 
