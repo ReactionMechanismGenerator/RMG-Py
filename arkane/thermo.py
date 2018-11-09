@@ -39,14 +39,11 @@ import logging
 import string
 
 import rmgpy.constants as constants
-from rmgpy.cantherm.output import prettify
-
 from rmgpy.statmech.translation import Translation, IdealGasTranslation
 from rmgpy.statmech.rotation import Rotation, LinearRotor, NonlinearRotor, KRotor, SphericalTopRotor
 from rmgpy.statmech.vibration import Vibration, HarmonicOscillator
 from rmgpy.statmech.torsion import Torsion, HinderedRotor
 from rmgpy.statmech.conformer import Conformer
-
 from rmgpy.thermo.thermodata import ThermoData
 from rmgpy.thermo.nasa import NASAPolynomial, NASA
 from rmgpy.thermo.wilhoit import Wilhoit
@@ -55,11 +52,14 @@ from rmgpy.species import Species
 from rmgpy.molecule import Molecule
 from rmgpy.molecule.util import retrieveElementCount
 
+from arkane.output import prettify
+
 ################################################################################
+
 
 class ThermoJob(object):
     """
-    A representation of a CanTherm thermodynamics job. This job is used to
+    A representation of an Arkane thermodynamics job. This job is used to
     compute and save the thermodynamics information for a single species.
     """
     

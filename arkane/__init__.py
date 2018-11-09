@@ -28,41 +28,8 @@
 #                                                                             #
 ###############################################################################
 
-"""
-This is the main executable script for CanTherm, a tool for computing chemical
-reaction rates and other properties used in detailed kinetics models using
-various methodologies and theories. To run CanTherm, use the command ::
-
-    $ python cantherm.py FILE
-
-where ``FILE`` is the path to a CanTherm input file describing the job to
-execute. CanTherm will run the specified job, writing the output to
-``output.py`` and a log to both the console and to ``cantherm.log``, with both
-files appearing in the same directory as the input file. Some additional
-command-line arguments are available; run the command ::
-
-    $ python cantherm.py -h
-
-for more information.
-"""
-
-import os
-import logging
-
-from rmgpy.cantherm.main import *
-
-cantherm = CanTherm()
-
-# Parse and validate the command-line arguments
-cantherm.parseCommandLineArguments()
-
-# Execute the job
-cantherm.execute()
-
-try:
-    import psutil
-    process = psutil.Process(os.getpid())
-    memory_info = process.memory_info()
-    logging.info('Memory used: %.2f MB' % (memory_info.rss / 1024.0 / 1024.0))
-except ImportError:
-    logging.info('Optional package dependency "psutil" not found; memory profiling information will not be saved.')
+from arkane.main import Arkane
+from arkane.statmech import StatMechJob
+from arkane.thermo import ThermoJob
+from arkane.kinetics import KineticsJob
+from arkane.pdep import PressureDependenceJob

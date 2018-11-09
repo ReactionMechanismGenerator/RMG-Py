@@ -28,8 +28,41 @@
 #                                                                             #
 ###############################################################################
 
-from .main import CanTherm
-from .statmech import StatMechJob
-from .thermo import ThermoJob
-from .kinetics import KineticsJob
-from .pdep import PressureDependenceJob
+"""
+This is the main executable script for Arkane, a tool for computing chemical
+reaction rates and other properties used in detailed kinetics models using
+various methodologies and theories. To run Arkane, use the command ::
+
+    $ python arkane.py FILE
+
+where ``FILE`` is the path to an Arkane input file describing the job to
+execute. Arkane will run the specified job, writing the output to
+``output.py`` and a log to both the console and to ``Arkane.log``, with both
+files appearing in the same directory as the input file. Some additional
+command-line arguments are available; run the command ::
+
+    $ python arkane.py -h
+
+for more information.
+"""
+
+import os
+import logging
+
+from arkane.main import *
+
+arkane = Arkane()
+
+# Parse and validate the command-line arguments
+arkane.parseCommandLineArguments()
+
+# Execute the job
+arkane.execute()
+
+try:
+    import psutil
+    process = psutil.Process(os.getpid())
+    memory_info = process.memory_info()
+    logging.info('Memory used: %.2f MB' % (memory_info.rss / 1024.0 / 1024.0))
+except ImportError:
+    logging.info('Optional package dependency "psutil" not found; memory profiling information will not be saved.')

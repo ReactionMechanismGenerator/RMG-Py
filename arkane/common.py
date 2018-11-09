@@ -31,8 +31,11 @@
 import numpy
 import os.path
 import logging
+
 import rmgpy.constants as constants
+
 ################################################################################
+
 
 def checkConformerEnergy(Vlist,path):
     """

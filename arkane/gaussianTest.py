@@ -32,11 +32,14 @@ import numpy
 import unittest
 import os
 
-from rmgpy.cantherm.gaussian import GaussianLog
 from rmgpy.statmech import IdealGasTranslation, LinearRotor, NonlinearRotor, HarmonicOscillator, HinderedRotor
 import rmgpy.constants as constants
 from external.wip import work_in_progress
+
+from arkane.gaussian import GaussianLog
+
 ################################################################################
+
 
 class GaussianTest(unittest.TestCase):
     """

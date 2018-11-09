@@ -29,13 +29,15 @@
 ###############################################################################
 
 import math
-import numpy
 import logging
 import os.path
+import numpy
+
 import rmgpy.constants as constants
 from rmgpy.exceptions import InputError
-from rmgpy.cantherm.common import checkConformerEnergy, get_element_mass
 from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
+
+from arkane.common import checkConformerEnergy, get_element_mass
 
 ################################################################################
 
@@ -44,9 +46,9 @@ class QchemLog:
     """
     Represent an output file from Qchem. The attribute `path` refers to the
     location on disk of the Qchem output file of interest. Methods are provided
-    to extract a variety of information into CanTherm classes and/or NumPy
+    to extract a variety of information into Arkane classes and/or NumPy
     arrays.
-    """    
+    """
 
     def __init__(self, path):
         self.path = path
@@ -76,7 +78,7 @@ class QchemLog:
 
     def loadForceConstantMatrix(self):
         """
-        Return the force constant matrix (in Cartesian coordinates) from the 
+        Return the force constant matrix (in Cartesian coordinates) from the
         QChem log file. If multiple such matrices are identified,
         only the last is returned. The units of the returned force constants
         are J/m^2. If no force constant matrix can be found in the log file,
@@ -108,10 +110,10 @@ class QchemLog:
         # Close file when finished
         f.close()
 
-        return F        
-    
+        return F
+
     def loadGeometry(self):
-        
+
         """
         Return the optimum geometry of the molecular configuration from the
         Qchem log file. If multiple such geometries are identified, only the
@@ -163,7 +165,7 @@ class QchemLog:
             raise InputError('Unable to read atoms from Qchem geometry output file {0}'.format(self.path))
 
         return coord, number, mass
-    
+
     def loadConformer(self, symmetry=None, spinMultiplicity=0, opticalIsomers=1, symfromlog=None, label=''):
         """
         Load the molecular degree of freedom data from an output file created as the result of a
@@ -202,13 +204,13 @@ class QchemLog:
                                 elif len(line.split()) == 3:
                                     frequencies.extend([float(d) for d in line.split()[-2:]])
                                 elif len(line.split()) == 2:
-                                    frequencies.extend([float(d) for d in line.split()[-1:]])    
+                                    frequencies.extend([float(d) for d in line.split()[-1:]])
                             line = f.readline()
                         line = f.readline()
                         # If there is an imaginary frequency, remove it
                         if frequencies[0] < 0.0:
                             frequencies = frequencies[1:]
-                            
+
                         vibration = HarmonicOscillator(frequencies=(frequencies,"cm^-1"))
                         #modes.append(vibration)
                         freq.append(vibration)
@@ -259,11 +261,11 @@ class QchemLog:
         f.close()
         modes = mmass + rot + freq
         return Conformer(E0=(E0*0.001,"kJ/mol"), modes=modes, spinMultiplicity=spinMultiplicity, opticalIsomers=opticalIsomers)
-              
+
     def loadEnergy(self,frequencyScaleFactor=1.):
         """
-        Load the energy in J/mol from a Qchem log file.  Only the last energy 
-        in the file is returned. The zero-point energy is *not* included in 
+        Load the energy in J/mol from a Qchem log file.  Only the last energy
+        in the file is returned. The zero-point energy is *not* included in
         the returned value.
         """
         E0 = None
@@ -324,7 +326,7 @@ class QchemLog:
               
     def loadScanEnergies(self):
         """
-        Extract the optimized energies in J/mol from a Qchem log file, e.g. the 
+        Extract the optimized energies in J/mol from a Qchem log file, e.g. the
         result of a Qchem "PES Scan" quantum chemistry calculation.
         """
         Vlist = []
@@ -347,10 +349,9 @@ class QchemLog:
             if 'SCF failed to converge' in line:
                 print 'Qchem Job did not sucessfully complete: SCF failed to converge'
                 break
-        # Close file when finished   
+        # Close file when finished
         print '   Assuming', os.path.basename(self.path), 'is the output from a Qchem PES scan...'
-        f.close()  
-                    
+        f.close()
 
         Vlist = numpy.array(Vlist, numpy.float64)
         # check to see if the scanlog indicates that one of your reacting species may not be the lowest energy conformer
@@ -359,7 +360,7 @@ class QchemLog:
         # Adjust energies to be relative to minimum energy conformer
         # Also convert units from Hartree/particle to J/mol
         Vlist -= numpy.min(Vlist)
-        Vlist *= constants.E_h * constants.Na      
+        Vlist *= constants.E_h * constants.Na
         angle = numpy.arange(0.0, 2*math.pi+0.00001, 2*math.pi/(len(Vlist)-1), numpy.float64)
         return Vlist, angle
         

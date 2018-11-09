@@ -38,17 +38,20 @@ import os.path
 import math
 import numpy
 import logging
+
 import rmgpy.quantity as quantity
 from rmgpy.kinetics import Chebyshev, PDepArrhenius
 from rmgpy.reaction import Reaction
 from rmgpy.kinetics.tunneling import Wigner, Eckart
 from rmgpy.data.kinetics.library import LibraryReaction
-from rmgpy.cantherm.output import prettify
 from rmgpy.chemkin import writeKineticsEntry
-from sensitivity import PDepSensitivity as sa
 from rmgpy.exceptions import InvalidMicrocanonicalRateError, ModifiedStrongCollisionError
 
+from arkane.output import prettify
+from arkane.sensitivity import PDepSensitivity as sa
+
 ################################################################################
+
 
 class PressureDependenceJob(object):
     """
@@ -615,8 +618,7 @@ class PressureDependenceJob(object):
 
     def saveInputFile(self, path):
         """
-        Save a CanTherm input file for the pressure dependence job to `path`
-        on disk.
+        Save an Arkane input file for the pressure dependence job to `path` on disk.
         """
         speciesList = self.network.getAllSpecies()
         

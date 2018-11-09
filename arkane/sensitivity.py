@@ -37,6 +37,7 @@ import os
 import logging
 import string
 import numpy as np
+
 import rmgpy.quantity as quantity
 from rmgpy.species import TransitionState
 from rmgpy.pdep import Configuration

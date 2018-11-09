@@ -31,20 +31,25 @@
 """
 This script contains unit tests of the :mod:`rmgpy.quantity` module.
 """
+
 import unittest
 import numpy
 import os
+
 import rmgpy
-from rmgpy.cantherm import CanTherm, input
-from input import jobList
 import rmgpy.constants as constants
-from rmgpy.cantherm.statmech import InputError
-from rmgpy.cantherm.common import get_element_mass
+
+from arkane.common import get_element_mass
+from arkane import Arkane, input
+from arkane.statmech import InputError
+from arkane.input import jobList
+
 ################################################################################
+
 
 class CommonTest(unittest.TestCase):
     """
-    Contains unit tests of the Cantherm common functions.
+    Contains unit tests of Arkane's common functions.
     """
 
     def test_checkConformerEnergy(self):
@@ -57,15 +62,15 @@ class CommonTest(unittest.TestCase):
         self.assertAlmostEqual(Vdiff / 2.7805169838282797, 1, 5)
 
 
-class testCanthermJob(unittest.TestCase):
+class testArkaneJob(unittest.TestCase):
     """
-    Contains unit tests of the Cantherm module and its interactions with other RMG modules.
+    Contains unit tests of the Arkane module and its interactions with other RMG modules.
     """
     def setUp(self):
 
-        cantherm = CanTherm()
+        arkane = Arkane()
         
-        jobList = cantherm.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),'data','methoxy.py'))
+        jobList = arkane.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),'data','methoxy.py'))
         pdepjob = jobList[-1]
         self.kineticsjob = jobList[0]
         pdepjob.activeJRotor = True
@@ -88,7 +93,7 @@ class testCanthermJob(unittest.TestCase):
         self.method = pdepjob.method
         self.rmgmode = pdepjob.rmgmode
 
-# test Cantherm's interactions with the network module
+# test Arkane's interactions with the network module
     def testNisom(self):
         """
         Test the number of isomers identified.
@@ -119,7 +124,7 @@ class testCanthermJob(unittest.TestCase):
         """
         self.assertEqual(str(self.PathReaction2), 'CH2OH <=> methoxy', msg=None)
 
-# test Cantherm's interactions with the pdep module
+# test Arkane's interactions with the pdep module
     def testTemperaturesUnits(self):
         """
         Test the Temperature Units.
@@ -186,7 +191,7 @@ class testCanthermJob(unittest.TestCase):
         """
         self.assertEqual(self.rmgmode, False, msg=None)
 
-# Test cantherms interactions with the kinetics module
+# Test Arkane's interactions with the kinetics module
     def testCalculateTSTRateCoefficient(self):
         """
         Test the calculation of the high-pressure limit rate coef for one of the kinetics jobs at Tmin and Tmax.
@@ -201,13 +206,13 @@ class testCanthermJob(unittest.TestCase):
         self.assertEqual(self.kineticsjob.reaction.transitionState.tunneling, None, msg=None)
 
 
-class testCanthermInput(unittest.TestCase):
+class testArkaneInput(unittest.TestCase):
     """
-    Contains unit tests for loading and processing Cantherm input files.
+    Contains unit tests for loading and processing Arkane input files.
     """
     def setUp(self):
         """Preparation for all unit tests in this class."""
-        self.directory = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)), 'examples', 'cantherm')
+        self.directory = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)), 'examples', 'arkane')
         self.modelChemistry = "cbs-qb3"
         self.frequencyScaleFactor = 0.99
         self.useHinderedRotors = False
@@ -224,7 +229,7 @@ class testCanthermInput(unittest.TestCase):
         """Test loading of statmech job from species input file."""
         job = jobList[-1]
 
-        self.assertTrue(isinstance(job, rmgpy.cantherm.statmech.StatMechJob))
+        self.assertTrue(isinstance(job, arkane.statmech.StatMechJob))
 
         job.modelChemistry = self.modelChemistry
         job.frequencyScaleFactor = self.frequencyScaleFactor
@@ -260,7 +265,7 @@ class testCanthermInput(unittest.TestCase):
         """Test loading of statmech job from transition state input file."""
         job = jobList[-1]
 
-        self.assertTrue(isinstance(job, rmgpy.cantherm.statmech.StatMechJob))
+        self.assertTrue(isinstance(job, arkane.statmech.StatMechJob))
 
         job.modelChemistry = self.modelChemistry
         job.frequencyScaleFactor = self.frequencyScaleFactor
@@ -273,13 +278,13 @@ class testStatmech(unittest.TestCase):
     Contains unit tests of statmech.py
     """
     def setUp(self):
-        cantherm = CanTherm()
-        jobList = cantherm.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),'data','Benzyl','input.py'))
+        arkane = Arkane()
+        jobList = arkane.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),'data','Benzyl','input.py'))
 
     def testGaussianLogFileError(self):
         """Test that the proper error is raised if gaussian geometry and frequency file paths are the same"""
         job = jobList[-1]
-        self.assertTrue(isinstance(job, rmgpy.cantherm.statmech.StatMechJob))
+        self.assertTrue(isinstance(job, arkane.statmech.StatMechJob))
         self.assertRaises(InputError,job.load())
 
 class testGetMass(unittest.TestCase):

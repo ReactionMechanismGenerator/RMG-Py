@@ -2,7 +2,7 @@ title = 'methoxy decomposition to H + CH2O'
 
 description = \
 """
-This example illustrates how to manually set up a CanTherm input file for a exploration of a P-dep reaction system 
+This example illustrates how to manually set up an Arkane input file for a exploration of a P-dep reaction system 
 """
 database(
     thermoLibraries = ['primaryThermoLibrary'],

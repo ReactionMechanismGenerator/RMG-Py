@@ -29,12 +29,13 @@
 ###############################################################################
 
 """
-This module contains helper functionality for writing CanTherm output files.
+This module contains helper functionality for writing Arkane output files.
 """
 
 import ast
     
 ################################################################################
+
 
 class PrettifyVisitor(ast.NodeVisitor):
     """

@@ -32,9 +32,11 @@ import unittest
 import os
 from nose.plugins.attrib import attr
 
-from rmgpy.cantherm import CanTherm
-from rmgpy.cantherm.explorer import ExplorerJob
+from arkane import Arkane
+from arkane.explorer import ExplorerJob
+
 ################################################################################
+
 
 @attr('functional')
 class testExplorerJob(unittest.TestCase):
@@ -44,14 +46,14 @@ class testExplorerJob(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        cantherm = CanTherm()
+        arkane = Arkane()
         
-        cls.jobList = cantherm.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),'data','methoxy_explore.py'))
+        cls.jobList = arkane.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),'data','methoxy_explore.py'))
         for job in cls.jobList:
             if not isinstance(job,ExplorerJob):
                 job.execute(outputFile=None, plot=None)
             else:
-                thermoLibrary,kineticsLibrary,speciesList = cantherm.getLibraries()
+                thermoLibrary,kineticsLibrary,speciesList = arkane.getLibraries()
                 job.execute(outputFile=None, plot=None, speciesList=speciesList, thermoLibrary=thermoLibrary, kineticsLibrary=kineticsLibrary)
 
         cls.thermoLibrary = thermoLibrary
@@ -87,7 +89,5 @@ class testExplorerJob(unittest.TestCase):
             self.assertIn(rxn,self.explorerjob.network.pathReactions)
 
 
-    
-        
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

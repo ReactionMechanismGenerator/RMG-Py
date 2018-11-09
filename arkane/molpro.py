@@ -31,16 +31,21 @@
 import math
 import numpy
 import logging
+
 import rmgpy.constants as constants
-from rmgpy.cantherm.common import get_element_mass
 from rmgpy.exceptions import InputError
 from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
+
+from arkane.common import get_element_mass
+
+################################################################################
+
 
 class MolproLog:
     """
     Represents a Molpro log file. The attribute `path` refers to the
     location on disk of the Molpro log file of interest. Methods are provided
-    to extract a variety of information into CanTherm classes and/or NumPy
+    to extract a variety of information into Arkane classes and/or NumPy
     arrays. 
     """
     
