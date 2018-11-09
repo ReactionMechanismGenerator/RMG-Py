@@ -746,7 +746,7 @@ class RMG(util.Subject):
                             if len(self.reactionModel.core.reactions) > 5:
                                 logging.error("Too many to print in detail")
                             else:
-                                from rmgpy.cantherm.output import prettify
+                                from arkane.output import prettify
                                 logging.error(prettify(repr(self.reactionModel.core.reactions)))
                             if self.generateSeedEachIteration:
                                 self.makeSeedMech()
