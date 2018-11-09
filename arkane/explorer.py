@@ -115,8 +115,7 @@ class ExplorerJob(object):
                 shutil.rmtree(os.path.join(reaction_model.pressureDependence.outputFile,'pdep'))
                 os.mkdir(os.path.join(reaction_model.pressureDependence.outputFile,'pdep'))
             
-        #get the molecular formula for the network
-        
+        # get the molecular formula for the network
         mmol = None
         for spc in self.source:
             if mmol:
@@ -143,12 +142,12 @@ class ExplorerJob(object):
                 if spc.isIsomorphic(item):
                     self.source[i] = spc
         
-        #react initial species
+        # react initial species
         flags = np.array([s.molecule[0].getFormula()==form for s in reaction_model.core.species])
         reaction_model.enlarge(reactEdge=True,unimolecularReact=flags,
                       bimolecularReact=np.zeros((len(reaction_model.core.species),len(reaction_model.core.species))))
         
-        #find the network we're interested in
+        # find the network we're interested in
         for nwk in reaction_model.networkList:
             if set(nwk.source) == set(self.source):
                 self.source = nwk.source
@@ -164,7 +163,7 @@ class ExplorerJob(object):
         
         self.network = network
         
-        #determine T and P combinations
+        # determine T and P combinations
         
         if self.pdepjob.Tlist:
             Tlist = self.pdepjob.Tlist.value_si
@@ -176,7 +175,7 @@ class ExplorerJob(object):
         else:
             Plist = np.linspace(self.pdepjob.Pmin.value_si,self.pdepjob.Pmax.value_si,self.pdepjob.Pcount)
             
-        #generate the network
+        # generate the network
         
         forbiddenStructures = getDB('forbidden')
         incomplete = True
@@ -203,7 +202,7 @@ class ExplorerJob(object):
                                               bimolecularReact=np.zeros((len(reaction_model.core.species),len(reaction_model.core.species))))
         
         rmRxns = []               
-        for rxn in network.pathReactions: #remove reactions with forbidden species
+        for rxn in network.pathReactions:  # remove reactions with forbidden species
             for r in rxn.reactants+rxn.products:
                 if forbiddenStructures.isMoleculeForbidden(r.molecule[0]):
                     rmRxns.append(rxn)
@@ -212,7 +211,7 @@ class ExplorerJob(object):
             logging.info('Removing forbidden reaction: {0}'.format(rxn))
             network.pathReactions.remove(rxn)
             
-        #clean up output files
+        # clean up output files
         if outputFile is not None:
             path = os.path.join(reaction_model.pressureDependence.outputFile,'pdep')
             for name in os.listdir(path):
@@ -228,7 +227,7 @@ class ExplorerJob(object):
             if rxn not in network.pathReactions:
                 warns.append('Reaction {0} in the input file was not explored during network expansion and was not included in the full network.  This is likely because your explore_tol value is too high.'.format(rxn))
         
-        #reduction process
+        # reduction process
         
         if self.energy_tol != np.inf or self.flux_tol != 0.0:
             

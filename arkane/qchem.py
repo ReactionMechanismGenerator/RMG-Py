@@ -37,7 +37,7 @@ import rmgpy.constants as constants
 from rmgpy.exceptions import InputError
 from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
 
-from arkane.common import checkConformerEnergy, get_element_mass
+from arkane.common import check_conformer_energy, get_element_mass
 
 ################################################################################
 
@@ -124,8 +124,8 @@ class QchemLog:
         with open(self.path) as f:
             log = f.read().splitlines()
 
-        #First check that the Qchem job file (not necessarily a geometry optimization)
-        #has successfully completed, if not an error is thrown
+        # First check that the Qchem job file (not necessarily a geometry optimization)
+        # has successfully completed, if not an error is thrown
         completed_job = False
         for line in reversed(log):
             if 'Total job time:' in line:
@@ -136,8 +136,8 @@ class QchemLog:
         if not completed_job:
             raise InputError('Could not find a successfully completed Qchem job in Qchem output file {0}'.format(self.path))
 
-        #Now look for the geometry.
-        #Will return the final geometry in the file under Standard Nuclear Orientation.
+        # Now look for the geometry.
+        # Will return the final geometry in the file under Standard Nuclear Orientation.
         geometry_flag = False
         for i in reversed(xrange(len(log))):
             line = log[i]
@@ -212,13 +212,13 @@ class QchemLog:
                             frequencies = frequencies[1:]
 
                         vibration = HarmonicOscillator(frequencies=(frequencies,"cm^-1"))
-                        #modes.append(vibration)
+                        # modes.append(vibration)
                         freq.append(vibration)
                     # Read molecular mass for external translational modes
                     elif 'Molecular Mass:' in line:
                         mass = float(line.split()[2])
                         translation = IdealGasTranslation(mass=(mass,"amu"))
-                        #modes.append(translation)
+                        # modes.append(translation)
                         mmass.append(translation)
 
                     # Read moments of inertia for external rotational modes, given in atomic units
@@ -262,9 +262,9 @@ class QchemLog:
         modes = mmass + rot + freq
         return Conformer(E0=(E0*0.001,"kJ/mol"), modes=modes, spinMultiplicity=spinMultiplicity, opticalIsomers=opticalIsomers)
 
-    def loadEnergy(self,frequencyScaleFactor=1.):
+    def loadEnergy(self, frequencyScaleFactor=1.):
         """
-        Load the energy in J/mol from a Qchem log file.  Only the last energy
+        Load the energy in J/mol from a Qchem log file. Only the last energy
         in the file is returned. The zero-point energy is *not* included in
         the returned value.
         """
@@ -305,13 +305,13 @@ class QchemLog:
         line = f.readline()
         while line != '':
     
-#            if 'Final energy is' in line:
-#                E0 = float(line.split()[3]) * constants.E_h * constants.Na
-#                print 'energy is' + str(E0)
+            # if 'Final energy is' in line:
+            #     E0 = float(line.split()[3]) * constants.E_h * constants.Na
+            #     print 'energy is' + str(E0)
             if 'Zero point vibrational energy' in line:
-                #Qchem's ZPE is in kcal/mol
+                # Qchem's ZPE is in kcal/mol
                 ZPE = float(line.split()[4]) * 4184
-                #scaledZPE = ZPE * frequencyScaleFactor
+                # scaledZPE = ZPE * frequencyScaleFactor
                 logging.debug('ZPE is {}'.format(str(ZPE)))
             # Read the next line in the file
             line = f.readline()
@@ -338,8 +338,8 @@ class QchemLog:
                 line = f.readline()
                 print 'found a sucessfully completed Qchem Job'
                 while '-----------------' not in line:
-        #            print len(line.split())
-        #            Vlist.append(float(line.split()[1]))
+                    # print len(line.split())
+                    # Vlist.append(float(line.split()[1]))
                     values = [float(item) for item in line.split()]
                     angle.append(values[0])
                     Vlist.append(values[1])
@@ -355,7 +355,7 @@ class QchemLog:
 
         Vlist = numpy.array(Vlist, numpy.float64)
         # check to see if the scanlog indicates that one of your reacting species may not be the lowest energy conformer
-        checkConformerEnergy(Vlist, self.path)
+        check_conformer_energy(Vlist, self.path)
         
         # Adjust energies to be relative to minimum energy conformer
         # Also convert units from Hartree/particle to J/mol
@@ -380,7 +380,7 @@ class QchemLog:
             line = f.readline()
         # Close file when finished
         f.close()
-        #Make sure the frequency is imaginary:
+        # Make sure the frequency is imaginary:
         if frequency < 0:
             return frequency
         else:

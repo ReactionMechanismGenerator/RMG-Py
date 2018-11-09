@@ -275,7 +275,7 @@ class MolproLog:
         f = open(self.path, 'r')
         line=f.readline()
         
-        #search for basisSet
+        # search for basisSet
         while line!='':
             if 'basis' in line.lower():
                 if 'vtz' in line.lower() or 'vdz' in line.lower():
@@ -284,13 +284,13 @@ class MolproLog:
                 break
             line=f.readline()
         else: raise Exception('Could not find basis set in Molpro File')
-        #search for energy
+        # search for energy
         E0=None
         if f12a:
             while line!='':
                 if ('RHF-UCCSD(T)-F12a energy' in line
-                    or 'RHF-RCCSD(T)-F12a energy' in line
-                    or 'CCSD(T)-F12a total energy  ' in line):
+                        or 'RHF-RCCSD(T)-F12a energy' in line
+                        or 'CCSD(T)-F12a total energy  ' in line):
                     E0=float(line.split()[-1])
                     break
                 if 'Electronic Energy at 0' in line:
@@ -300,8 +300,8 @@ class MolproLog:
         else:
             while line!='':
                 if ('RHF-UCCSD(T)-F12b energy' in line
-                    or 'RHF-RCCSD(T)-F12b energy' in line
-                    or 'CCSD(T)-F12b total energy  ' in line):
+                        or 'RHF-RCCSD(T)-F12b energy' in line
+                        or 'CCSD(T)-F12b total energy  ' in line):
                     E0=float(line.split()[-1])
                     break
                 if 'Electronic Energy at 0' in line:
@@ -311,7 +311,7 @@ class MolproLog:
 
         f.close()
         logging.debug('Molpro energy found is {0} hartree'.format(E0))
-        #multiply E0 by correct constants
+        # multiply E0 by correct constants
         if E0 is not None:
             E0 = E0 * constants.E_h * constants.Na
             logging.debug('Molpro energy found is {0} J/mol'.format(E0))

@@ -37,7 +37,7 @@ import rmgpy.constants as constants
 from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
 from rmgpy.exceptions import InputError
 
-from arkane.common import checkConformerEnergy, get_element_mass
+from arkane.common import check_conformer_energy, get_element_mass
 
 ################################################################################
 
@@ -376,7 +376,7 @@ class GaussianLog:
         
         Vlist = numpy.array(Vlist, numpy.float64)
         # check to see if the scanlog indicates that a one of your reacting species may not be the lowest energy conformer
-        checkConformerEnergy(Vlist, self.path)
+        check_conformer_energy(Vlist, self.path)
         
         # Adjust energies to be relative to minimum energy conformer
         # Also convert units from Hartree/particle to kJ/mol

@@ -37,7 +37,7 @@ import rmgpy.constants as constants
 ################################################################################
 
 
-def checkConformerEnergy(Vlist,path):
+def check_conformer_energy(Vlist,path):
     """
     Check to see that the starting energy of the species in the potential energy scan calculation
     is not 0.5 kcal/mol (or more) higher than any other energies in the scan. If so, print and 

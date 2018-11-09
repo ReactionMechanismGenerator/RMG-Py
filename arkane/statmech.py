@@ -173,7 +173,6 @@ class StatMechJob(object):
     to compute and save the statistical mechanics information for a single
     species or transition state.
     """
-    
     def __init__(self, species, path):
         self.species = species
         self.path = path
@@ -521,7 +520,6 @@ class StatMechJob(object):
         
         self.species.conformer = conformer
 
-        
     def save(self, outputFile):
         """
         Save the results of the statistical mechanics job to the file located
@@ -598,6 +596,7 @@ class StatMechJob(object):
         pylab.close()
 
 ################################################################################
+
 
 def applyEnergyCorrections(E0, modelChemistry, atoms, bonds,
                            atomEnergies=None, applyAtomEnergyCorrections=True, applyBondEnergyCorrections=False):
@@ -832,13 +831,13 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds,
 
     return E0
 
+
 class Log(object):
     """
     Represent a general log file.
     The attribute `path` refers to the location on disk of the log file of interest.
     A method is provided to determine whether it is a Gaussian, Molpro, or QChem type.
     """
-
     def __init__(self, path):
         self.path = path
 
@@ -1087,6 +1086,7 @@ def projectRotors(conformer, F, rotors, linear, TS):
             logging.debug(numpy.sqrt(eig[i])/(2 * math.pi * constants.c * 100))
         
     return numpy.sqrt(eig[-Nvib:]) / (2 * math.pi * constants.c * 100)
+
 
 def assign_frequency_scale_factor(model_chemistry):
     """

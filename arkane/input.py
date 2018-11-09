@@ -246,6 +246,7 @@ def species(label, *args, **kwargs):
 
     return spec
 
+
 def transitionState(label, *args, **kwargs):
     global transitionStateDict
     if label in transitionStateDict:
@@ -289,6 +290,7 @@ def transitionState(label, *args, **kwargs):
         raise InputError('The transitionState can only link a quantum job or directly input information, not both.')
 
     return ts
+
 
 def reaction(label, reactants, products, transitionState=None, kinetics=None, tunneling=''):
     global reactionDict, speciesDict, transitionStateDict
@@ -346,6 +348,7 @@ def reaction(label, reactants, products, transitionState=None, kinetics=None, tu
             reactionDict[label+str(i)] = rxn[i]
     
     return rxn
+
 
 def network(label, isomers=None, reactants=None, products=None, pathReactions=None, bathGas=None):
     global networkDict, speciesDict, reactionDict
@@ -427,6 +430,7 @@ def network(label, isomers=None, reactants=None, products=None, pathReactions=No
     )
     networkDict[label] = network
 
+
 def kinetics(label, Tmin=None, Tmax=None, Tlist=None, Tcount=0, sensitivity_conditions=None):
     global jobList, reactionDict
     try:
@@ -436,6 +440,7 @@ def kinetics(label, Tmin=None, Tmax=None, Tlist=None, Tcount=0, sensitivity_cond
     job = KineticsJob(reaction=rxn, Tmin=Tmin, Tmax=Tmax, Tcount=Tcount, Tlist=Tlist,
                       sensitivity_conditions=sensitivity_conditions)
     jobList.append(job)
+
 
 def statmech(label):
     global jobList, speciesDict, transitionStateDict
@@ -448,6 +453,7 @@ def statmech(label):
     else:
         raise ValueError('Unknown species or transition state label {0!r} for statmech() job.'.format(label))
 
+
 def thermo(label, thermoClass):
     global jobList, speciesDict
     try:
@@ -456,6 +462,7 @@ def thermo(label, thermoClass):
         raise ValueError('Unknown species label {0!r} for thermo() job.'.format(label))
     job = ThermoJob(species=spec, thermoClass=thermoClass)
     jobList.append(job)
+
 
 def pressureDependence(label, 
                        Tmin=None, Tmax=None, Tcount=0, Tlist=None,
@@ -482,6 +489,7 @@ def pressureDependence(label,
         rmgmode=rmgmode, sensitivity_conditions=sensitivity_conditions)
     jobList.append(job)
 
+
 def explorer(source, explore_tol=(0.01,'s^-1'), energy_tol=np.inf, flux_tol=0.0, bathGas=None, maximumRadicalElectrons=np.inf):
     global jobList,speciesDict
     for job in jobList:
@@ -503,15 +511,19 @@ def explorer(source, explore_tol=(0.01,'s^-1'), energy_tol=np.inf, flux_tol=0.0,
     job = ExplorerJob(source=source,pdepjob=pdepjob,explore_tol=explore_tol.value_si,
                 energy_tol=energy_tol,flux_tol=flux_tol,bathGas=bathGas, maximumRadicalElectrons=maximumRadicalElectrons)
     jobList.append(job)
-    
+
+
 def SMILES(smiles):
     return Molecule().fromSMILES(smiles)
+
 
 def adjacencyList(adj):
     return Molecule().fromAdjacencyList(adj)
 
+
 def InChI(inchi):
     return Molecule().fromInChI(inchi)
+
 
 def loadNecessaryDatabases():
     """
@@ -534,6 +546,7 @@ def loadNecessaryDatabases():
         db.transport.load(os.path.join(settings['database.directory'],'transport'))
 
 ################################################################################
+
 
 def loadInputFile(path):
     """

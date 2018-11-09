@@ -52,9 +52,9 @@ class CommonTest(unittest.TestCase):
     Contains unit tests of Arkane's common functions.
     """
 
-    def test_checkConformerEnergy(self):
+    def test_check_conformer_energy(self):
         """
-        test the checkConformerEnergy function with an list of energies.
+        test the check_conformer_energy function with an list of energies.
         """
         Vlist = [-272.2779012225, -272.2774933703, -272.2768397635, -272.2778432059, -272.278645477, -272.2789602654, -272.2788749196, -272.278496709, -272.2779350675, -272.2777008843, -272.2777167286, -272.2780937643, -272.2784838846, -272.2788050464, -272.2787865352, -272.2785091607, -272.2779977452, -272.2777957743, -272.2779134906, -272.2781827547, -272.278443339, -272.2788244214, -272.2787748749]
         Vlist = numpy.array(Vlist, numpy.float64)

@@ -316,9 +316,8 @@ class Arkane:
                 
         speciesList = self.speciesDict.values()
         reactionList = self.reactionDict.values()
-        
-        
-        #remove duplicate species
+
+        # remove duplicate species
         for rxn in reactionList:
             for i,rspc in enumerate(rxn.reactants):
                 for spc in speciesList:
@@ -374,4 +373,3 @@ class Arkane:
         kineticsLibrary.label = name
         
         return thermoLibrary,kineticsLibrary,speciesList
-    
