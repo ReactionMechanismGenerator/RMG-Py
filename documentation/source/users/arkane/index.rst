@@ -1,13 +1,13 @@
-.. _canthermusersguide:
+.. _arkaneusersguide:
 
-*********************
-CanTherm User's Guide
-*********************
+*******************
+Arkane User's Guide
+*******************
 
 .. toctree::
     :maxdepth: 2
     :numbered:
-    
+
     introduction
     installation
     input
@@ -17,8 +17,7 @@ CanTherm User's Guide
     output
     faq
     credits
-    
+
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

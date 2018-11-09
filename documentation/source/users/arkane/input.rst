@@ -5,15 +5,16 @@ Creating Input Files for Thermodynamics and High-Pressure Limit Kinetics Computa
 Syntax
 ======
 
-The format of CanTherm input files is based on Python syntax. In fact, CanTherm
-input files are valid Python source code, and this is used to facilitate 
-reading of the file. 
+The format of Arkane input files is based on Python syntax. In fact, Arkane
+input files are valid Python source code, and this is used to facilitate
+reading of the file.
 
-Each section is made up of one or more function calls, where parameters are 
+Each section is made up of one or more function calls, where parameters are
 specified as text strings, numbers, or objects. Text strings must be wrapped in
 either single or double quotes.
 
-The following is a list of all the components of a CanTherm input file for thermodynamics and high-pressure limit kinetics computations:
+The following is a list of all the components of a Arkane input file for thermodynamics and high-pressure limit kinetics
+computations:
 
 =========================== ====================================================================
 Component                   Description
@@ -38,10 +39,10 @@ Model Chemistry
 The first item in the input file should be a ``modelChemistry`` assignment
 with a string describing the model chemistry.
 
-CanTherm uses this information to adjust the computed energies to the usual gas-phase reference
+Arkane uses this information to adjust the computed energies to the usual gas-phase reference
 states by applying atom, bond and spin-orbit coupling energy corrections. This is particularly
 important for ``thermo()`` calculations (see below). Note that the user must specify under the
-``species()`` function the type and number of bonds for CanTherm to apply these corrections.
+``species()`` function the type and number of bonds for Arkane to apply these corrections.
 The example below specifies CBS-QB3 as the model chemistry::
 
     modelChemistry = "CBS-QB3"
@@ -99,6 +100,7 @@ Notes:
 
 - The ``'CBS-QB3-Paraskevas'`` model chemistry is identical to ``'CBS-QB3'`` except for BCs for C/H/O bonds, which are from Paraskevas et al. (DOI: 10.1002/chem.201301381) instead of Petersson et al. (DOI: 10.1063/1.477794). Beware, combining BCs from different sources may lead to unforeseen results.
 - In ``'M08SO/MG3S*'`` the grid size used in the [QChem] electronic structure calculation utilizes 75 radial points and 434 angular points.
+
 - Refer to paper by Goldsmith et al. (*Goldsmith, C. F.; Magoon, G. R.; Green, W. H., Database of Small Molecule Thermochemistry for Combustion. J. Phys. Chem. A 2012, 116, 9033-9057*) for definition of ``'Klip_2'`` (*QCI(tz,qz)*) and ``'Klip_3'`` (*QCI(dz,qz)*).
 
 If a model chemistry other than the ones in the above table is used, then the user should supply
@@ -106,7 +108,7 @@ the corresponding atomic energies (using ``atomEnergies``) to get meaningful res
 corrections would not be applied in this case.
 
 If a model chemistry or atomic energies are not available, then a kinetics job can still be run by
-setting ``useAtomCorrections`` to ``False``, in which case Cantherm will not raise an error for
+setting ``useAtomCorrections`` to ``False``, in which case Arkane will not raise an error for
 unknown elements. The user should be aware that the resulting energies and thermodynamic quantities
 in the output file will not be meaningful, but kinetics and equilibrium constants will still be
 correct.
@@ -127,7 +129,8 @@ Species
 Each species of interest must be specified using a ``species()`` function, which can be input in two different ways,
 discussed in the separate subsections below:
 
-1. By pointing to the output files of quantum chemistry calculations, which CanTherm will parse for the necessary molecular properties
+1. By pointing to the output files of quantum chemistry calculations, which Arkane will parse for the necessary
+molecular properties
 2. By directly entering the molecular properties
 
 Within a single input file, both Option #1 and #2 may be used for different species.
@@ -168,18 +171,21 @@ atom corrections can be turned off by setting ``useAtomCorrections`` to ``False`
 
 The ``bond`` parameter is used to apply bond corrections (BC) for a given ``modelChemistry``.
 
-Allowed bond types for the ``bonds`` parameter are, e.g., ``'C-H'``, ``'C-C'``, ``'C=C'``, ``'N-O'``, ``'C=S'``, ``'O=O'``, ``'C#N'``...
+Allowed bond types for the ``bonds`` parameter are, e.g., ``'C-H'``, ``'C-C'``, ``'C=C'``, ``'N-O'``, ``'C=S'``,
+``'O=O'``, ``'C#N'``...
 
 ``'O=S=O'`` is also allowed.
 
-The order of elements in the bond correction label is not important. Use ``-``/``=``/``#`` to denote a single/double/triple bond, respectively. For example, for formaldehyde we would write::
+The order of elements in the bond correction label is not important. Use ``-``/``=``/``#`` to denote a
+single/double/triple bond, respectively. For example, for formaldehyde we would write::
 
     bonds = {'C=O': 1, 'C-H': 2}
 
 The parameter ``linear`` only needs to be specified as either ``True`` or ``False``. The parameters ``externalSymmetry``,
 ``spinMultiplicity`` and ``opticalIsomers`` only accept integer values.
-Note that ``externalSymmetry`` corresponds to the number of unique ways in which the species may be rotated about an axis (or multiple axes)
-and still be indistinguishable from its starting orientation (reflection across a mirror plane does not count as rotation about an axis).
+Note that ``externalSymmetry`` corresponds to the number of unique ways in which the species may be rotated about an
+axis (or multiple axes) and still be indistinguishable from its starting orientation (reflection across a mirror plane
+does not count as rotation about an axis).
 For ethane, we would write::
 
     linear = False
@@ -199,11 +205,12 @@ they can specify the path to a quantum chemistry calculation output file that co
     'Klip_2': -79.64199436,
     }
 
-In this example, the ``CBS-QB3`` energy is obtained from a Gaussian log file, while the ``Klip_2`` energy is specified directly.
-The energy used will depend on what ``modelChemistry`` was specified in the input file. CanTherm can parse the energy from
-a Gaussian, Molpro, or QChem log file, all using the same ``Log`` class, as shown below.
+In this example, the ``CBS-QB3`` energy is obtained from a Gaussian log file, while the ``Klip_2`` energy is specified
+directly. The energy used will depend on what ``modelChemistry`` was specified in the input file. Arkane can parse the
+energy from a Gaussian, Molpro, or QChem log file, all using the same ``Log`` class, as shown below.
 
-The input to the remaining parameters, ``geometry``, ``frequencies`` and ``rotors``, will depend on if hindered/free rotors are included.
+The input to the remaining parameters, ``geometry``, ``frequencies`` and ``rotors``, will depend on if hindered/free
+rotors are included.
 Both cases are described below.
 
 Without Hindered/Free Rotors
@@ -217,8 +224,9 @@ For example::
 
     frequencies = Log('ethane_freq.log')
 
-In summary, in order to specify the molecular properties of a species by parsing the output of quantum chemistry calculations, without any hindered/free rotors,
-the ``species()`` function in the input file should look like the following example::
+In summary, in order to specify the molecular properties of a species by parsing the output of quantum chemistry
+calculations, without any hindered/free rotors, the ``species()`` function in the input file should look like the
+following example::
 
     species('C2H6', 'C2H6.py')
 
@@ -248,19 +256,21 @@ and the species input file (``C2H6.py`` in the example above) should look like t
 
 With Hindered/Free Rotors
 ~~~~~~~~~~~~~~~~~~~~~~~~~
-In this case, ``geometry``, ``frequencies`` and ``rotors`` need to be specified. The ``geometry`` and ``frequencies`` parameters
-must point to the **same** quantum chemistry calculation output file in this case.
+In this case, ``geometry``, ``frequencies`` and ``rotors`` need to be specified. The ``geometry`` and ``frequencies``
+parameters must point to the **same** quantum chemistry calculation output file in this case.
 For example::
 
     geometry = Log('ethane_freq.log')
 
     frequencies = Log('ethane_freq.log')
 
-The ``geometry/frequencies`` log file must contain both the optimized geometry and the Hessian (matrix of partial second derivatives of potential energy surface,
-also referred to as the force constant matrix), which is used to calculate the harmonic oscillator frequencies. If Gaussian is used
-to generate the ``geometry/frequencies`` log file, the Gaussian input file must contain the keyword ``iop(7/33=1)``, which forces Gaussian to
-output the complete Hessian. Because the ``iop(7/33=1)`` option is only applied to the first part of the Gaussian job, the job
-must be a ``freq`` job only (as opposed to an ``opt freq`` job or a composite method job like ``cbs-qb3``, which only do the ``freq`` calculation after the optimization).
+The ``geometry/frequencies`` log file must contain both the optimized geometry and the Hessian (matrix of partial
+second derivatives of potential energy surface, also referred to as the force constant matrix), which is used to
+calculate the harmonic oscillator frequencies. If Gaussian is used to generate the ``geometry/frequencies`` log file,
+the Gaussian input file must contain the keyword ``iop(7/33=1)``, which forces Gaussian to output the complete Hessian.
+Because the ``iop(7/33=1)`` option is only applied to the first part of the Gaussian job, the job must be a ``freq``
+job only (as opposed to an ``opt freq`` job or a composite method job like ``cbs-qb3``, which only do the ``freq``
+calculation after the optimization).
 Therefore, the proper workflow for generating the ``geometry/frequencies`` log file using Gaussian is:
 
 1. Perform a geometry optimization.
@@ -268,7 +278,8 @@ Therefore, the proper workflow for generating the ``geometry/frequencies`` log f
 
 The output of step 2 is the correct log file to use for ``geometry/frequencies``.
 
-``rotors`` is a list of :class:`HinderedRotor()` and/or :class:`FreeRotor()` objects. Each :class:`HinderedRotor()` object requires the following parameters:
+``rotors`` is a list of :class:`HinderedRotor()` and/or :class:`FreeRotor()` objects. Each :class:`HinderedRotor()`
+object requires the following parameters:
 
 ====================== ==========================================================================================
 Parameter              Description
@@ -294,23 +305,29 @@ scan in the following format::
 
 The ``Energy`` can be in units of ``kJ/mol``, ``J/mol``, ``cal/mol``, ``kcal/mol``, ``cm^-1`` or ``hartree``.
 
-The ``symmetry`` parameter will usually equal either 1, 2 or 3. Below are examples of internal rotor scans with these commonly encountered symmetry numbers. First, ``symmetry = 3``:
+The ``symmetry`` parameter will usually equal either 1, 2 or 3. Below are examples of internal rotor scans with these
+commonly encountered symmetry numbers. First, ``symmetry = 3``:
 
 .. image:: symmetry_3_example.png
 
-Internal rotation of a methyl group is a common example of a hindered rotor with ``symmetry = 3``, such as the one above. As shown, all three minima (and maxima) have identical energies, hence ``symmetry = 3``.
+Internal rotation of a methyl group is a common example of a hindered rotor with ``symmetry = 3``, such as the one
+above. As shown, all three minima (and maxima) have identical energies, hence ``symmetry = 3``.
 
-Similarly, if there are only two minima along the internal rotor scan, and both have identical energy, then ``symmetry = 2``, as in the example below: 
+Similarly, if there are only two minima along the internal rotor scan, and both have identical energy, then
+``symmetry = 2``, as in the example below:
 
 .. image:: symmetry_2_example.png
 
-If any of the energy minima in an internal rotor scan are not identical, then the rotor has no symmetry (``symmetry = 1``), as in the example below:
+If any of the energy minima in an internal rotor scan are not identical, then the rotor has no symmetry
+(``symmetry = 1``), as in the example below:
 
 .. image:: symmetry_1_example.png
 
-For the example above there are 3 local energy minima, 2 of which are identical to each other. However, the 3rd minima is different from the other 2, therefore this internal rotor has no symmetry. 
+For the example above there are 3 local energy minima, 2 of which are identical to each other. However, the 3rd minima
+is different from the other 2, therefore this internal rotor has no symmetry.
 
-For practical purposes, when determining the symmetry number for a given hindered rotor simply check if the internal rotor scan looks like the ``symmetry = 2`` or ``3`` examples above. If it doesn’t, then most likely ``symmetry = 1``.
+For practical purposes, when determining the symmetry number for a given hindered rotor simply check if the internal
+rotor scan looks like the ``symmetry = 2`` or ``3`` examples above. If it doesn’t, then most likely ``symmetry = 1``.
 
 Each :class:`FreeRotor()` object requires the following parameters:
 
@@ -322,13 +339,15 @@ Parameter              Description
 ``symmetry``           The symmetry number for the torsional rotation (number of indistinguishable energy minima)
 ====================== =========================================================
 
-Note that a ``scanLog`` is not needed for :class:`FreeRotor()` because it is assumed that there is no barrier to internal rotation.
-Modeling an internal rotation as a :class:`FreeRotor()` puts an upper bound on the impact of that rotor on the species's overall partition function.
-Modeling the same internal rotation as a Harmonic Oscillator (default if it is not specifed as either a :class:`FreeRotor()` or  :class:`HinderedRotor()`)
-puts a lower bound on the impact of that rotor on the species's overall partition function. Modeling the internal rotation as a :class:`HinderedRotor()` should fall
-in between these two extremes.
+Note that a ``scanLog`` is not needed for :class:`FreeRotor()` because it is assumed that there is no barrier to
+internal rotation. Modeling an internal rotation as a :class:`FreeRotor()` puts an upper bound on the impact of that
+rotor on the species's overall partition function. Modeling the same internal rotation as a Harmonic Oscillator
+(default if it is not specifed as either a :class:`FreeRotor()` or  :class:`HinderedRotor()`) puts a lower bound on the
+impact of that rotor on the species's overall partition function. Modeling the internal rotation as a
+:class:`HinderedRotor()` should fall in between these two extremes.
 
-To summarize, the species input file with hindered/free rotors should look like the following example (different options for specifying the same ``rotors`` entry are commented out)::
+To summarize, the species input file with hindered/free rotors should look like the following example (different options
+for specifying the same ``rotors`` entry are commented out)::
 
     bonds = {
         'C-C': 1,
@@ -363,11 +382,12 @@ Note that the atom labels identified within the rotor section should correspond 
 
 Option #2: Directly Enter Molecular Properties
 ----------------------------------------------
-While it is usually more convenient to have CanTherm parse molecular properties from the output of quantum chemistry calculations
-(see `Option #1: Automatically Parse Quantum Chemistry Calculation Output`_) there are instances where an output file is not available
-and it is more convenient for the user to directly enter the molecular properties. This is the case,  for example, if the user would like to use
-calculations from literature, where the final calculated molecular properties are often reported in a table (e.g., vibrational frequencies, rotational constants),
-but the actual output files of the underlying quantum chemistry calculations are rarely provided.
+While it is usually more convenient to have Arkane parse molecular properties from the output of quantum chemistry
+calculations (see `Option #1: Automatically Parse Quantum Chemistry Calculation Output`_) there are instances where an
+output file is not available and it is more convenient for the user to directly enter the molecular properties. This is
+the case,  for example, if the user would like to use calculations from literature, where the final calculated molecular
+properties are often reported in a table (e.g., vibrational frequencies, rotational constants), but the actual output
+files of the underlying quantum chemistry calculations are rarely provided.
 
 For this option, there are a number of required parameters associated with the ``species()`` function
 
@@ -382,19 +402,22 @@ Parameter               Required?                   Description
 ``reactive``            only bath gases             Boolean indicating whether the molecule reacts, set to ``False`` for bath gases. default is ``True``
 ======================= =========================== ====================================
 
-The ``label`` parameter should be set to a string with the desired name for the species, which can be reference later in the input file. ::
+The ``label`` parameter should be set to a string with the desired name for the species, which can be reference later in
+the input file. ::
 
     label = 'C2H6'
 
-The ``E0`` ground state 0 K enthalpy of formation (including zero-point energy) should be given in the quantity format ``(value, 'units')``, using units of either ``kJ/mol``, ``kcal/mol``, ``J/mol``, or ``cal/mol``: ::
+The ``E0`` ground state 0 K enthalpy of formation (including zero-point energy) should be given in the quantity format
+``(value, 'units')``, using units of either ``kJ/mol``, ``kcal/mol``, ``J/mol``, or ``cal/mol``: ::
 
     E0 = (100.725, 'kJ/mol')
 
-Note that if CanTherm is being used to calculate the thermochemistry of the species, it is critical that the value of ``E0`` is consistent with the
-definition above (0 K enthalpy of formation with zero-point energy). However, if the user is only interested in kinetics, ``E0`` can be defined on any
-arbitrary absolute energy scale, as long as the correct relative energies between various ``species()`` and ``transitionState()`` are maintained. For example,
-it is common in literature for the energy of some reactant(s) to be arbitrarily defined as zero, and the energies of all transition states, intermediates and products
-are reported relative to that.
+Note that if Arkane is being used to calculate the thermochemistry of the species, it is critical that the value of
+``E0`` is consistent with the definition above (0 K enthalpy of formation with zero-point energy). However, if the user
+is only interested in kinetics, ``E0`` can be defined on any arbitrary absolute energy scale, as long as the correct
+relative energies between various ``species()`` and ``transitionState()`` are maintained. For example, it is common in
+literature for the energy of some reactant(s) to be arbitrarily defined as zero, and the energies of all transition
+states, intermediates and products are reported relative to that.
 
 Also note that the value of ``E0`` provided here will be used directly, i.e., no atom or bond corrections will be applied.
 
@@ -472,7 +495,8 @@ if not used in the ``species()`` function. ::
 
     opticalIsomers = 1
 
-The following is an example of a typical ``species()`` function, based on ethane (different options for specifying the same internal rotation are commented out)::
+The following is an example of a typical ``species()`` function, based on ethane (different options for specifying the
+same internal rotation are commented out)::
 
     species(
         label = 'C2H6',
@@ -511,11 +535,11 @@ The following is an example of a typical ``species()`` function, based on ethane
         opticalIsomers = 1,
     )
 
-Note that the format of the ``species()`` function above is identical to the ``conformer()`` function output by CanTherm in ``output.py``.
-Therefore, the user could directly copy the ``conformer()`` output of a CanTherm job to another CanTherm input file, change the name of the function to
-``species()`` (or ``transitionState()``, if appropriate, see next section) and run a new CanTherm job in this manner.
-This can be useful if the user wants to easily switch a ``species()`` function from  Option #1 (parsing  quantum chemistry calculation output)
-to Option #2 (directly enter molecular properties).
+Note that the format of the ``species()`` function above is identical to the ``conformer()`` function output by Arkane
+in ``output.py``. Therefore, the user could directly copy the ``conformer()`` output of an Arkane job to another Arkane
+input file, change the name of the function to ``species()`` (or ``transitionState()``, if appropriate, see next
+section) and run a new Arkane job in this manner. This can be useful if the user wants to easily switch a ``species()``
+function from  Option #1 (parsing  quantum chemistry calculation output) to Option #2 (directly enter molecular properties).
 
 Transition State
 ================
@@ -530,10 +554,10 @@ The following is an example of a typical ``transitionState()`` function using Op
 
     transitionState('TS', 'TS.py')
 
-Just as for a ``species()`` function, the first parameter is the label for that transition state, and the second parameter
-points to the location of another python file containing details of the transition state. This file
-will be referred to as the transition state input file, and it accepts the same parameters as the species input file described in
-`Option #1: Automatically Parse Quantum Chemistry Calculation Output`_.
+Just as for a ``species()`` function, the first parameter is the label for that transition state, and the second
+parameter points to the location of another python file containing details of the transition state. This file will be
+referred to as the transition state input file, and it accepts the same parameters as the species input file described
+in `Option #1: Automatically Parse Quantum Chemistry Calculation Output`_.
 
 The following is an example of a typical  ``transitionState()`` function using Option #2::
 
@@ -555,16 +579,16 @@ The following is an example of a typical  ``transitionState()`` function using O
         frequency = (-750.232, 'cm^-1'),
     )
 
-The only additional parameter required for a ``transitionState()`` function as compared to a ``species()`` function is ``frequency``,
-which is the imaginary frequency of the transition state needed to account for tunneling. Refer to `Option #2: Directly Enter Molecular Properties`_
-for a more detailed description of the other parameters.
+The only additional parameter required for a ``transitionState()`` function as compared to a ``species()`` function is
+``frequency``, which is the imaginary frequency of the transition state needed to account for tunneling. Refer to
+`Option #2: Directly Enter Molecular Properties`_ for a more detailed description of the other parameters.
 
 Reaction
 ========
 
 This is only required if you wish to perform a kinetics computation.
 Each reaction of interest must be specified using a ``reaction()`` function,
-which accepts the following parameters: 
+which accepts the following parameters:
 
 ====================== =========================================================
 Parameter              Description
@@ -583,7 +607,7 @@ The following is an example of a typical reaction function::
         reactants = ['H', 'C2H4'],
         products = ['C2H5'],
         transitionState = 'TS',
-        tunneling='Eckart'        
+        tunneling='Eckart'
     )
 
 Note: the quantum tunneling factor method that may be assigned is either ``'Eckart'`` or ``'Wigner'``.
@@ -591,7 +615,7 @@ Note: the quantum tunneling factor method that may be assigned is either ``'Ecka
 Thermodynamics Computations
 ===========================
 
-Use a ``thermo()`` function to make CanTherm execute the thermodynamic
+Use a ``thermo()`` function to make Arkane execute the thermodynamic
 parameters computatiom for a species. Pass the string label of the species
 you wish to compute the  thermodynamic parameters for and the type of
 thermodynamics polynomial to generate (either ``'Wilhoit'`` or ``'NASA'``).
@@ -605,16 +629,16 @@ Below is a typical ``thermo()`` execution function::
 Kinetics Computations
 =====================
 
-Use a ``kinetics()`` function to make CanTherm execute the high-pressure limit kinetic
+Use a ``kinetics()`` function to make Arkane execute the high-pressure limit kinetic
 parameters computation for a reaction. The ``'label'`` string must correspond to that of
 a defined ``reaction()`` function. If desired, define a temperature range and number
-of temperatures at which the high-pressure rate coefficient will be tabulated and saved to 
-the outupt file. The 3-parameter modified Arrhenius coefficients will automatically be fit 
+of temperatures at which the high-pressure rate coefficient will be tabulated and saved to
+the outupt file. The 3-parameter modified Arrhenius coefficients will automatically be fit
 to the computed rate coefficients. The quantum tunneling factor will also be displayed.
 
 Below is a typical ``kinetics()`` function::
 
-    kinetics(    
+    kinetics(
     label = 'H + C2H4 <=> C2H5',
     Tmin = (400,'K'), Tmax = (1200,'K'), Tcount = 6,
     )
@@ -650,17 +674,20 @@ in the ``examples`` directory.
 Troubleshooting and FAQs
 ========================
 
-1) The network that CanTherm generated and the resulting pdf file show abnormally large
+1) The network that Arkane generated and the resulting pdf file show abnormally large
 absolute values. What's going on?
 
     This can happen if the number of atoms and atom types is not properly defined or consistent in your input file(s).
 
-CanTherm User Checklist
-========================
+Arkane User Checklist
+=====================
 
-Using cantherm, or any rate theory package for that matter, requires careful consideration and management of a large amount of data, files, and input parameters. As a result, it is easy to make a mistake somewhere. This checklist was made to minimize such mistakes for users:
+Using Arkane, or any rate theory package for that matter, requires careful consideration and management of a large
+amount of data, files, and input parameters. As a result, it is easy to make a mistake somewhere. This checklist was
+made to minimize such mistakes for users:
 
-- Do correct paths exist for pointing to the files containing the electronic energies, molecular geometries and vibrational frequencies?
+- Do correct paths exist for pointing to the files containing the electronic energies, molecular geometries and
+  vibrational frequencies?
 
 For calculations involving pressure dependence:
 
@@ -668,7 +695,11 @@ For calculations involving pressure dependence:
 
 For calculations using internal hindered rotors:
 
-- Did you check to make sure the rotor has a reasonable potential (e.g., visually inspect the automatically generated rotor pdf files)?
+- Did you check to make sure the rotor has a reasonable potential (e.g., visually inspect the automatically generated
+  rotor pdf files)?
 - Within your input files, do all specified rotors point to the correct files?
 - Do all of the atom label indices correspond to those in the file that is read by ``Log``?
-- Why do the fourier fits look so much different than the results of the ab initio potential energy scan calculations? This is likely because the initial scan energy is not at a minimum. One solution is to simply shift the potential with respect to angle so that it starts at zero and, instead of having CanTherm read a Qchem or Gaussian output file, have CanTherm point to a 'ScanLog' file. Another problem can arise when the potential at 2*pi is also not [close] to zero.
+- Why do the fourier fits look so much different than the results of the ab initio potential energy scan calculations?
+  This is likely because the initial scan energy is not at a minimum. One solution is to simply shift the potential with
+  respect to angle so that it starts at zero and, instead of having Arkane read a Qchem or Gaussian output file, have
+  Arkane point to a 'ScanLog' file. Another problem can arise when the potential at 2*pi is also not [close] to zero.

@@ -1,11 +1,11 @@
-********************************
-CanTherm (:mod:`rmgpy.cantherm`)
-********************************
+****************************
+Arkane (:mod:`arkane`)
+****************************
 
-.. module:: rmgpy.cantherm
+.. module:: arkane
 
-The :mod:`rmgpy.cantherm` subpackage contains the main functionality for
-CanTherm, a tool for computing thermodynamic and kinetic properties of chemical
+The :mod:`arkane` subpackage contains the main functionality for
+Arkane, a tool for computing thermodynamic and kinetic properties of chemical
 species and reactions.
 
 
@@ -13,7 +13,7 @@ species and reactions.
 Reading Gaussian log files
 ==========================
 
-.. currentmodule:: rmgpy.cantherm.gaussian
+.. currentmodule:: arkane.gaussian
 
 =============================== ================================================
 Class                           Description
@@ -26,7 +26,7 @@ Class                           Description
 Reading Q-Chem log files
 ========================
 
-.. currentmodule:: rmgpy.cantherm.qchem
+.. currentmodule:: arkane.qchem
 
 =============================== ================================================
 Class                           Description
@@ -39,7 +39,7 @@ Class                           Description
 Reading Molpro log files
 ========================
 
-.. currentmodule:: rmgpy.cantherm.molpro
+.. currentmodule:: arkane.molpro
 
 =============================== ================================================
 Class                           Description
@@ -52,12 +52,12 @@ Class                           Description
 Input
 =====
 
-.. currentmodule:: rmgpy.cantherm.input
+.. currentmodule:: arkane.input
 
 =============================== ================================================
 Function                        Description
 =============================== ================================================
-:func:`loadInputFile`           Load a CanTherm job input file
+:func:`loadInputFile`           Load an Arkane job input file
 =============================== ================================================
 
 
@@ -65,12 +65,12 @@ Function                        Description
 Job classes
 ===========
 
-.. currentmodule:: rmgpy.cantherm
+.. currentmodule:: arkane
 
 =============================== ================================================
 Class                           Description
 =============================== ================================================
-:class:`CanTherm`               Main class for CanTherm jobs
+:class:`Arkane`                 Main class for Arkane jobs
 :class:`StatMechJob`            Compute the molecular degrees of freedom for a molecular conformation
 :class:`ThermoJob`              Compute the thermodynamic properties of a species
 :class:`KineticsJob`            Compute the high pressure-limit rate coefficient for a reaction using transition state theory

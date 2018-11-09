@@ -11,7 +11,7 @@ a component to learn more and view its API.
 ======================= ========================================================
 Module                  Description
 ======================= ========================================================
-:mod:`rmgpy.cantherm`   Computing chemical properties from quantum chemistry calculations
+:mod:`arkane`           Computing chemical properties from quantum chemistry calculations
 :mod:`rmgpy.chemkin`    Reading and writing models in Chemkin format
 :mod:`rmgpy.constants`  Physical constants
 :mod:`rmgpy.data`       Working with the RMG database
@@ -32,7 +32,7 @@ Module                  Description
 .. toctree::
     :hidden:
     
-    cantherm/index
+    arkane/index
     chemkin/index
     constants
     data/index

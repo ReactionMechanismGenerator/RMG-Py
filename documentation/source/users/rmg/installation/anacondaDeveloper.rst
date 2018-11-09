@@ -55,7 +55,7 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
     
     mopac password_string_here    
 
-You may now use RMG-Py, CanTherm, as well as any of the :ref:`Standalone Modules <modules>` included in the RMG-Py package.
+You may now use RMG-Py, Arkane, as well as any of the :ref:`Standalone Modules <modules>` included in the RMG-Py package.
 
 
 
