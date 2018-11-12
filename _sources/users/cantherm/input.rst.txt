@@ -65,6 +65,7 @@ for a given model chemistry.
 Model Chemistry                                  AEC   BC   SOC  Freq Scale Supported Elements
 ================================================ ===== ==== ==== ========== ====================
 ``'CBS-QB3'``                                     v    v    v    v (0.990)  H, C, N, O, P, S
+``'CBS-QB3-Paraskevas'``                          v    v    v    v (0.990)  H, C, N, O, P, S
 ``'G3'``                                          v         v               H, C, N, O, P, S
 ``'M08SO/MG3S*'``                                 v         v               H, C, N, O, P, S
 ``'M06-2X/cc-pVTZ'``                              v         v    v (0.955)  H, C, N, O, P, S
@@ -96,6 +97,7 @@ Model Chemistry                                  AEC   BC   SOC  Freq Scale Supp
 
 Notes:
 
+- The ``'CBS-QB3-Paraskevas'`` model chemistry is identical to ``'CBS-QB3'`` except for BCs for C/H/O bonds, which are from Paraskevas et al. (DOI: 10.1002/chem.201301381) instead of Petersson et al. (DOI: 10.1063/1.477794). Beware, combining BCs from different sources may lead to unforeseen results.
 - In ``'M08SO/MG3S*'`` the grid size used in the [QChem] electronic structure calculation utilizes 75 radial points and 434 angular points.
 - Refer to paper by Goldsmith et al. (*Goldsmith, C. F.; Magoon, G. R.; Green, W. H., Database of Small Molecule Thermochemistry for Combustion. J. Phys. Chem. A 2012, 116, 9033-9057*) for definition of ``'Klip_2'`` (*QCI(tz,qz)*) and ``'Klip_3'`` (*QCI(dz,qz)*).
 
