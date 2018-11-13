@@ -34,6 +34,7 @@ from external.wip import work_in_progress
 from rmgpy.molecule import Molecule
 from rmgpy.molecule.kekulize import *
 
+
 class KekulizeTest(unittest.TestCase):
 
     def setUp(self):
@@ -56,29 +57,32 @@ class KekulizeTest(unittest.TestCase):
         for atom in molecule.atoms:
             bonds.update(atom.bonds.values())
 
-        ringAtoms, ringBonds = molecule.getAromaticRings()
+        ring_atoms, ring_bonds = molecule.getAromaticRings()
 
-        self.aromaticRing = AromaticRing(ringAtoms[0], set(ringBonds[0]), bonds - set(ringBonds[0]))
+        self.aromatic_ring = AromaticRing(ring_atoms[0], set(ring_bonds[0]), bonds - set(ring_bonds[0]))
 
-    def testAromaticRing(self):
-        self.aromaticRing.update()
+    def test_aromatic_ring(self):
+        """Test that the AromaticRing class works properly for kekulization."""
+        self.aromatic_ring.update()
 
-        self.assertEqual(self.aromaticRing.endoDOF, 6)
-        self.assertEqual(self.aromaticRing.exoDOF, 0)
+        self.assertEqual(self.aromatic_ring.endo_dof, 6)
+        self.assertEqual(self.aromatic_ring.exo_dof, 0)
 
-        result = self.aromaticRing.kekulize()
+        result = self.aromatic_ring.kekulize()
 
         self.assertTrue(result)
 
-    def testAromaticBond(self):
-        resolved, unresolved = self.aromaticRing.processBonds()
+    def test_aromatic_bond(self):
+        """Test that the AromaticBond class works properly for kekulization."""
+        self.aromatic_ring.process_bonds()
+        resolved, unresolved = self.aromatic_ring.resolved, self.aromatic_ring.unresolved
 
         self.assertEqual(len(resolved), 0)
         self.assertEqual(len(unresolved), 6)
 
         for bond in unresolved:
             bond.update()
-            self.assertEqual(bond.endoDOF, 2)
-            self.assertEqual(bond.exoDOF, 0)
-            self.assertTrue(bond.doublePossible)
-            self.assertFalse(bond.doubleRequired)
+            self.assertEqual(bond.endo_dof, 2)
+            self.assertEqual(bond.exo_dof, 0)
+            self.assertTrue(bond.double_possible)
+            self.assertFalse(bond.double_required)
