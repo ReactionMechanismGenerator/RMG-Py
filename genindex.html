@@ -366,6 +366,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       <ul>
         <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.atoms">(rmgpy.molecule.Molecule attribute)</a>
 </li>
+        <li><a href="reference/molecule/kekulize.html#rmgpy.molecule.kekulize.AromaticRing.atoms">(rmgpy.molecule.kekulize.AromaticRing attribute)</a>
+</li>
       </ul></li>
       <li><a href="reference/molecule/atomtype.html#rmgpy.molecule.AtomType">AtomType (class in rmgpy.molecule)</a>
 </li>
@@ -397,8 +399,6 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/molecule/atomtype.html#rmgpy.molecule.AtomType.benzene">benzene (rmgpy.molecule.AtomType attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/solver/liquidreactor.html#rmgpy.solver.LiquidReactor.bimolecularThreshold">bimolecularThreshold (rmgpy.solver.LiquidReactor attribute)</a>
 
       <ul>
@@ -407,7 +407,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.bimolecularThreshold">(rmgpy.solver.SimpleReactor attribute)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/molecule/bond.html#rmgpy.molecule.Bond">Bond (class in rmgpy.molecule)</a>
+</li>
+      <li><a href="reference/molecule/kekulize.html#rmgpy.molecule.kekulize.AromaticBond.bond">bond (rmgpy.molecule.kekulize.AromaticBond attribute)</a>
 </li>
       <li><a href="reference/molecule/atomtype.html#rmgpy.molecule.AtomType.breakBond">breakBond (rmgpy.molecule.AtomType attribute)</a>
 </li>
@@ -1201,9 +1205,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       </ul></li>
       <li><a href="reference/data/kineticsfamily.html#rmgpy.data.kinetics.KineticsFamily.distributeTreeDistances">distributeTreeDistances() (rmgpy.data.kinetics.KineticsFamily method)</a>
 </li>
-      <li><a href="reference/molecule/kekulize.html#rmgpy.molecule.kekulize.AromaticBond.doublePossible">doublePossible (rmgpy.molecule.kekulize.AromaticBond attribute)</a>
+      <li><a href="reference/molecule/kekulize.html#rmgpy.molecule.kekulize.AromaticBond.double_possible">double_possible (rmgpy.molecule.kekulize.AromaticBond attribute)</a>
 </li>
-      <li><a href="reference/molecule/kekulize.html#rmgpy.molecule.kekulize.AromaticBond.doubleRequired">doubleRequired (rmgpy.molecule.kekulize.AromaticBond attribute)</a>
+      <li><a href="reference/molecule/kekulize.html#rmgpy.molecule.kekulize.AromaticBond.double_required">double_required (rmgpy.molecule.kekulize.AromaticBond attribute)</a>
 </li>
       <li><a href="reference/cantherm/kinetics.html#rmgpy.cantherm.KineticsJob.draw">draw() (rmgpy.cantherm.KineticsJob method)</a>
 
@@ -1343,10 +1347,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/pdep/configuration.html#rmgpy.pdep.Configuration.Elist">Elist (rmgpy.pdep.Configuration attribute)</a>
 </li>
-      <li><a href="reference/molecule/kekulize.html#rmgpy.molecule.kekulize.AromaticBond.endoDOF">endoDOF (rmgpy.molecule.kekulize.AromaticBond attribute)</a>
+      <li><a href="reference/molecule/kekulize.html#rmgpy.molecule.kekulize.AromaticBond.endo_dof">endo_dof (rmgpy.molecule.kekulize.AromaticBond attribute)</a>
 
       <ul>
-        <li><a href="reference/molecule/kekulize.html#rmgpy.molecule.kekulize.AromaticRing.endoDOF">(rmgpy.molecule.kekulize.AromaticRing attribute)</a>
+        <li><a href="reference/molecule/kekulize.html#rmgpy.molecule.kekulize.AromaticRing.endo_dof">(rmgpy.molecule.kekulize.AromaticRing attribute)</a>
 </li>
       </ul></li>
       <li><a href="reference/statmech/hinderedrotor.html#rmgpy.statmech.HinderedRotor.energies">energies (rmgpy.statmech.HinderedRotor attribute)</a>
@@ -1433,10 +1437,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/rmg/main.html#rmgpy.rmg.main.RMG.execute">(rmgpy.rmg.main.RMG method)</a>
 </li>
       </ul></li>
-      <li><a href="reference/molecule/kekulize.html#rmgpy.molecule.kekulize.AromaticBond.exoDOF">exoDOF (rmgpy.molecule.kekulize.AromaticBond attribute)</a>
+      <li><a href="reference/molecule/kekulize.html#rmgpy.molecule.kekulize.AromaticBond.exo_dof">exo_dof (rmgpy.molecule.kekulize.AromaticBond attribute)</a>
 
       <ul>
-        <li><a href="reference/molecule/kekulize.html#rmgpy.molecule.kekulize.AromaticRing.exoDOF">(rmgpy.molecule.kekulize.AromaticRing attribute)</a>
+        <li><a href="reference/molecule/kekulize.html#rmgpy.molecule.kekulize.AromaticRing.exo_dof">(rmgpy.molecule.kekulize.AromaticRing attribute)</a>
 </li>
       </ul></li>
       <li><a href="reference/rmg/species.html#rmgpy.rmg.model.Species.explicitlyAllowed">explicitlyAllowed (rmgpy.rmg.model.Species attribute)</a>
@@ -4771,7 +4775,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       </ul></li>
       <li><a href="reference/data/thermodatabase.html#rmgpy.data.thermo.ThermoDatabase.prioritizeThermo">prioritizeThermo() (rmgpy.data.thermo.ThermoDatabase method)</a>
 </li>
-      <li><a href="reference/molecule/kekulize.html#rmgpy.molecule.kekulize.AromaticRing.processBonds">processBonds() (rmgpy.molecule.kekulize.AromaticRing method)</a>
+      <li><a href="reference/molecule/kekulize.html#rmgpy.molecule.kekulize.AromaticRing.process_bonds">process_bonds() (rmgpy.molecule.kekulize.AromaticRing method)</a>
 </li>
       <li><a href="reference/rmg/coreedgereactionmodel.html#rmgpy.rmg.model.CoreEdgeReactionModel.processNewReactions">processNewReactions() (rmgpy.rmg.model.CoreEdgeReactionModel method)</a>
 </li>
@@ -5071,10 +5075,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/data/thermolibrary.html#rmgpy.data.thermo.ThermoLibrary.removeGroup">(rmgpy.data.thermo.ThermoLibrary method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/rmg/coreedgereactionmodel.html#rmgpy.rmg.model.CoreEdgeReactionModel.removeSpeciesFromEdge">removeSpeciesFromEdge() (rmgpy.rmg.model.CoreEdgeReactionModel method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/molecule/graph.html#rmgpy.molecule.graph.Graph.removeVertex">removeVertex() (rmgpy.molecule.graph.Graph method)</a>
 
       <ul>
@@ -5119,6 +5123,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/solver/simplereactor.html#rmgpy.solver.SimpleReactor.residual">(rmgpy.solver.SimpleReactor method)</a>
 </li>
       </ul></li>
+      <li><a href="reference/molecule/kekulize.html#rmgpy.molecule.kekulize.AromaticRing.resolved">resolved (rmgpy.molecule.kekulize.AromaticRing attribute)</a>
+</li>
       <li><a href="reference/exceptions.html#rmgpy.exceptions.ResonanceError">ResonanceError</a>
 </li>
       <li><a href="reference/molecule/graph.html#rmgpy.molecule.graph.Graph.restore_vertex_order">restore_vertex_order() (rmgpy.molecule.graph.Graph method)</a>
@@ -5161,6 +5167,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.reversible">(rmgpy.rmg.pdep.PDepReaction attribute)</a>
 </li>
       </ul></li>
+      <li><a href="reference/molecule/kekulize.html#rmgpy.molecule.kekulize.AromaticBond.ring_bonds">ring_bonds (rmgpy.molecule.kekulize.AromaticBond attribute)</a>
+</li>
       <li><a href="reference/rmg/main.html#rmgpy.rmg.main.RMG">RMG (class in rmgpy.rmg.main)</a>
 </li>
       <li><a href="reference/cantherm/index.html#module-rmgpy.cantherm">rmgpy.cantherm (module)</a>
@@ -6297,6 +6305,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/quantity/scalarquantity.html#rmgpy.quantity.ScalarQuantity.units">(rmgpy.quantity.ScalarQuantity attribute)</a>
 </li>
       </ul></li>
+      <li><a href="reference/molecule/kekulize.html#rmgpy.molecule.kekulize.AromaticRing.unresolved">unresolved (rmgpy.molecule.kekulize.AromaticRing attribute)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/molecule/group.html#rmgpy.molecule.Group.update">update() (rmgpy.molecule.Group method)</a>

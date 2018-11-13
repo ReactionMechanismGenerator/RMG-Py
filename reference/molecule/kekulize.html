@@ -80,60 +80,88 @@ Each ring or bond that is fixed reduces the DOF of adjacent rings and bonds,
 and the process continues until the entire molecule can be solved.</p>
 <dl class="class">
 <dt id="rmgpy.molecule.kekulize.AromaticBond">
-<em class="property">class </em><code class="descclassname">rmgpy.molecule.kekulize.</code><code class="descname">AromaticBond</code><span class="sig-paren">(</span><em>bond=None</em>, <em>ringBonds=None</em>, <em>endoDOF=-1</em>, <em>exoDOF=-1</em>, <em>doublePossible=True</em>, <em>doubleRequired=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.kekulize.AromaticBond" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.molecule.kekulize.</code><code class="descname">AromaticBond</code><span class="sig-paren">(</span><em>bond=None</em>, <em>ring_bonds=None</em>, <em>endo_dof=-1</em>, <em>exo_dof=-1</em>, <em>double_possible=True</em>, <em>double_required=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.kekulize.AromaticBond" title="Permalink to this definition">¶</a></dt>
 <dd><p>Helper class containing information about a single aromatic bond in a molecule.</p>
 <p>DO NOT use outside of this module. This class does not do any aromaticity perception.</p>
 <dl class="attribute">
-<dt id="rmgpy.molecule.kekulize.AromaticBond.doublePossible">
-<code class="descname">doublePossible</code><a class="headerlink" href="#rmgpy.molecule.kekulize.AromaticBond.doublePossible" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.molecule.kekulize.AromaticBond.bond">
+<code class="descname">bond</code><a class="headerlink" href="#rmgpy.molecule.kekulize.AromaticBond.bond" title="Permalink to this definition">¶</a></dt>
+<dd><p>rmgpy.molecule.molecule.Bond</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">bond</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.kekulize.AromaticBond.double_possible">
+<code class="descname">double_possible</code><a class="headerlink" href="#rmgpy.molecule.kekulize.AromaticBond.double_possible" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘bool’</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">doublePossible</td>
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">double_possible</td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="rmgpy.molecule.kekulize.AromaticBond.doubleRequired">
-<code class="descname">doubleRequired</code><a class="headerlink" href="#rmgpy.molecule.kekulize.AromaticBond.doubleRequired" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.molecule.kekulize.AromaticBond.double_required">
+<code class="descname">double_required</code><a class="headerlink" href="#rmgpy.molecule.kekulize.AromaticBond.double_required" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘bool’</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">doubleRequired</td>
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">double_required</td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="rmgpy.molecule.kekulize.AromaticBond.endoDOF">
-<code class="descname">endoDOF</code><a class="headerlink" href="#rmgpy.molecule.kekulize.AromaticBond.endoDOF" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.molecule.kekulize.AromaticBond.endo_dof">
+<code class="descname">endo_dof</code><a class="headerlink" href="#rmgpy.molecule.kekulize.AromaticBond.endo_dof" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘int’</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">endoDOF</td>
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">endo_dof</td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="rmgpy.molecule.kekulize.AromaticBond.exoDOF">
-<code class="descname">exoDOF</code><a class="headerlink" href="#rmgpy.molecule.kekulize.AromaticBond.exoDOF" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.molecule.kekulize.AromaticBond.exo_dof">
+<code class="descname">exo_dof</code><a class="headerlink" href="#rmgpy.molecule.kekulize.AromaticBond.exo_dof" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘int’</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">exoDOF</td>
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">exo_dof</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.kekulize.AromaticBond.ring_bonds">
+<code class="descname">ring_bonds</code><a class="headerlink" href="#rmgpy.molecule.kekulize.AromaticBond.ring_bonds" title="Permalink to this definition">¶</a></dt>
+<dd><p>set</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">ring_bonds</td>
 </tr>
 </tbody>
 </table>
@@ -144,40 +172,54 @@ and the process continues until the entire molecule can be solved.</p>
 <code class="descname">update</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.kekulize.AromaticBond.update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update the local degree of freedom information for this aromatic bond.
 The DOF counts do not include the bond itself, only its adjacent bonds.</p>
-<p><cite>endoDOF</cite> refers to the number of adjacent bonds in the ring without fixed bond orders.
-<cite>exoDOF</cite>  refers to the number of adjacent bonds outside the ring without fixed bond orders.</p>
+<p><cite>endo_dof</cite> refers to the number of adjacent bonds in the ring without fixed bond orders.
+<cite>exo_dof</cite>  refers to the number of adjacent bonds outside the ring without fixed bond orders.</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="class">
 <dt id="rmgpy.molecule.kekulize.AromaticRing">
-<em class="property">class </em><code class="descclassname">rmgpy.molecule.kekulize.</code><code class="descname">AromaticRing</code><span class="sig-paren">(</span><em>atoms=None</em>, <em>endoBonds=None</em>, <em>exoBonds=None</em>, <em>endoDOF=-1</em>, <em>exoDOF=-1</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.kekulize.AromaticRing" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.molecule.kekulize.</code><code class="descname">AromaticRing</code><span class="sig-paren">(</span><em>atoms=None</em>, <em>endo_bonds=None</em>, <em>exo_bonds=None</em>, <em>endo_dof=-1</em>, <em>exo_dof=-1</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.kekulize.AromaticRing" title="Permalink to this definition">¶</a></dt>
 <dd><p>Helper class containing information about a single aromatic ring in a molecule.</p>
 <p>DO NOT use outside of this module. This class does not do any aromaticity perception.</p>
 <dl class="attribute">
-<dt id="rmgpy.molecule.kekulize.AromaticRing.endoDOF">
-<code class="descname">endoDOF</code><a class="headerlink" href="#rmgpy.molecule.kekulize.AromaticRing.endoDOF" title="Permalink to this definition">¶</a></dt>
-<dd><p>‘int’</p>
+<dt id="rmgpy.molecule.kekulize.AromaticRing.atoms">
+<code class="descname">atoms</code><a class="headerlink" href="#rmgpy.molecule.kekulize.AromaticRing.atoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">endoDOF</td>
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">atoms</td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
 
 <dl class="attribute">
-<dt id="rmgpy.molecule.kekulize.AromaticRing.exoDOF">
-<code class="descname">exoDOF</code><a class="headerlink" href="#rmgpy.molecule.kekulize.AromaticRing.exoDOF" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.molecule.kekulize.AromaticRing.endo_dof">
+<code class="descname">endo_dof</code><a class="headerlink" href="#rmgpy.molecule.kekulize.AromaticRing.endo_dof" title="Permalink to this definition">¶</a></dt>
 <dd><p>‘int’</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">exoDOF</td>
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">endo_dof</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.kekulize.AromaticRing.exo_dof">
+<code class="descname">exo_dof</code><a class="headerlink" href="#rmgpy.molecule.kekulize.AromaticRing.exo_dof" title="Permalink to this definition">¶</a></dt>
+<dd><p>‘int’</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">exo_dof</td>
 </tr>
 </tbody>
 </table>
@@ -191,17 +233,45 @@ The DOF counts do not include the bond itself, only its adjacent bonds.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.molecule.kekulize.AromaticRing.processBonds">
-<code class="descname">processBonds</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; tuple<a class="headerlink" href="#rmgpy.molecule.kekulize.AromaticRing.processBonds" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.molecule.kekulize.AromaticRing.process_bonds">
+<code class="descname">process_bonds</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; tuple<a class="headerlink" href="#rmgpy.molecule.kekulize.AromaticRing.process_bonds" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create AromaticBond objects for each endocyclic bond.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.kekulize.AromaticRing.resolved">
+<code class="descname">resolved</code><a class="headerlink" href="#rmgpy.molecule.kekulize.AromaticRing.resolved" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">resolved</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.kekulize.AromaticRing.unresolved">
+<code class="descname">unresolved</code><a class="headerlink" href="#rmgpy.molecule.kekulize.AromaticRing.unresolved" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">unresolved</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.kekulize.AromaticRing.update">
 <code class="descname">update</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.kekulize.AromaticRing.update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update the degree of freedom information for this aromatic ring.</p>
-<p><cite>endoDOF</cite> refers to the number of bonds in the ring without fixed bond orders.
-<cite>exoDOF</cite>  refers to the number of bonds outside the ring without fixed bond orders.</p>
+<p><cite>endo_dof</cite> refers to the number of bonds in the ring without fixed bond orders.
+<cite>exo_dof</cite>  refers to the number of bonds outside the ring without fixed bond orders.</p>
 </dd></dl>
 
 </dd></dl>
@@ -210,7 +280,7 @@ The DOF counts do not include the bond itself, only its adjacent bonds.</p>
 <dt id="rmgpy.molecule.kekulize.kekulize">
 <code class="descclassname">rmgpy.molecule.kekulize.</code><code class="descname">kekulize</code><span class="sig-paren">(</span><em>Molecule mol</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.kekulize.kekulize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Kekulize an aromatic molecule in place. If the molecule cannot be kekulized,
-an AtomTypeError will be raised. However, the molecule will be left in
+a KekulizationError will be raised. However, the molecule will be left in
 a semi-kekulized state. Therefore, if the original molecule needs to be kept,
 it is advisable to create a copy before kekulizing.</p>
 <p>Args: <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> object to be kekulized</p>
