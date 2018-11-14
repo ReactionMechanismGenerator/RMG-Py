@@ -1,0 +1,337 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>arkane.PressureDependenceJob &#8212; RMG-Py 2.1.0 Documentation</title>
+    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="arkane.StatMechJob" href="statmech.html" />
+    <link rel="prev" title="Saving Arkane output" href="output.html" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+  MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+    ce: ["Extension","mhchem"],
+  });
+});
+</script>
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="statmech.html" title="arkane.StatMechJob"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="output.html" title="Saving Arkane output"
+             accesskey="P">previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.1 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Arkane (<code class="docutils literal notranslate"><span class="pre">arkane</span></code>)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="arkane-pressuredependencejob">
+<h1>arkane.PressureDependenceJob<a class="headerlink" href="#arkane-pressuredependencejob" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="arkane.PressureDependenceJob">
+<em class="property">class </em><code class="descclassname">arkane.</code><code class="descname">PressureDependenceJob</code><span class="sig-paren">(</span><em>network</em>, <em>Tmin=None</em>, <em>Tmax=None</em>, <em>Tcount=0</em>, <em>Tlist=None</em>, <em>Pmin=None</em>, <em>Pmax=None</em>, <em>Pcount=0</em>, <em>Plist=None</em>, <em>maximumGrainSize=None</em>, <em>minimumGrainCount=0</em>, <em>method=None</em>, <em>interpolationModel=None</em>, <em>maximumAtoms=None</em>, <em>activeKRotor=True</em>, <em>activeJRotor=True</em>, <em>rmgmode=False</em>, <em>sensitivity_conditions=None</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.PressureDependenceJob" title="Permalink to this definition">¶</a></dt>
+<dd><p>A representation of a pressure dependence job. The attributes are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="23%" />
+<col width="77%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>Tmin</cite></td>
+<td>The minimum temperature at which to compute <span class="math notranslate nohighlight">\(k(T,P)\)</span> values</td>
+</tr>
+<tr class="row-odd"><td><cite>Tmax</cite></td>
+<td>The maximum temperature at which to compute <span class="math notranslate nohighlight">\(k(T,P)\)</span> values</td>
+</tr>
+<tr class="row-even"><td><cite>Tcount</cite></td>
+<td>The number of temperatures at which to compute <span class="math notranslate nohighlight">\(k(T,P)\)</span> values</td>
+</tr>
+<tr class="row-odd"><td><cite>Pmin</cite></td>
+<td>The minimum pressure at which to compute <span class="math notranslate nohighlight">\(k(T,P)\)</span> values</td>
+</tr>
+<tr class="row-even"><td><cite>Pmax</cite></td>
+<td>The maximum pressure at which to compute <span class="math notranslate nohighlight">\(k(T,P)\)</span> values</td>
+</tr>
+<tr class="row-odd"><td><cite>Pcount</cite></td>
+<td>The number of pressures at which to compute <span class="math notranslate nohighlight">\(k(T,P)\)</span> values</td>
+</tr>
+<tr class="row-even"><td><cite>Emin</cite></td>
+<td>The minimum energy to use to compute <span class="math notranslate nohighlight">\(k(T,P)\)</span> values</td>
+</tr>
+<tr class="row-odd"><td><cite>Emax</cite></td>
+<td>The maximum energy to use to compute <span class="math notranslate nohighlight">\(k(T,P)\)</span> values</td>
+</tr>
+<tr class="row-even"><td><cite>maximumGrainSize</cite></td>
+<td>The maximum energy grain size to use to compute <span class="math notranslate nohighlight">\(k(T,P)\)</span> values</td>
+</tr>
+<tr class="row-odd"><td><cite>minimumGrainCount</cite></td>
+<td>The minimum number of energy grains to use to compute <span class="math notranslate nohighlight">\(k(T,P)\)</span> values</td>
+</tr>
+<tr class="row-even"><td><cite>method</cite></td>
+<td>The method to use to reduce the master equation to <span class="math notranslate nohighlight">\(k(T,P)\)</span> values</td>
+</tr>
+<tr class="row-odd"><td><cite>interpolationModel</cite></td>
+<td>The interpolation model to fit to the computed <span class="math notranslate nohighlight">\(k(T,P)\)</span> values</td>
+</tr>
+<tr class="row-even"><td><cite>maximumAtoms</cite></td>
+<td>The maximum number of atoms to apply pressure dependence to (in RMG jobs)</td>
+</tr>
+<tr class="row-odd"><td><cite>activeKRotor</cite></td>
+<td>A flag indicating whether to treat the K-rotor as active or adiabatic</td>
+</tr>
+<tr class="row-even"><td><cite>activeJRotor</cite></td>
+<td>A flag indicating whether to treat the J-rotor as active or adiabatic</td>
+</tr>
+<tr class="row-odd"><td><cite>rmgmode</cite></td>
+<td>A flag that toggles “RMG mode”, described below</td>
+</tr>
+<tr class="row-even"><td><cite>network</cite></td>
+<td>The unimolecular reaction network</td>
+</tr>
+<tr class="row-odd"><td><cite>Tlist</cite></td>
+<td>An array of temperatures at which to compute <span class="math notranslate nohighlight">\(k(T,P)\)</span> values</td>
+</tr>
+<tr class="row-even"><td><cite>Plist</cite></td>
+<td>An array of pressures at which to compute <span class="math notranslate nohighlight">\(k(T,P)\)</span> values</td>
+</tr>
+<tr class="row-odd"><td><cite>Elist</cite></td>
+<td>An array of energies to use to compute <span class="math notranslate nohighlight">\(k(T,P)\)</span> values</td>
+</tr>
+</tbody>
+</table>
+<p>In RMG mode, several alterations to the k(T,P) algorithm are made both for
+speed and due to the nature of the approximations used:</p>
+<ul class="simple">
+<li>Densities of states are not computed for product channels</li>
+<li>Arbitrary rigid rotor moments of inertia are included in the active modes;
+these cancel in the ILT and equilibrium expressions</li>
+<li>k(E) for each path reaction is computed in the direction A -&gt; products,
+where A is always an explored isomer; the high-P kinetics are reversed
+if necessary for this purpose</li>
+<li>Thermodynamic parameters are always used to compute the reverse k(E)
+from the forward k(E) for each path reaction</li>
+</ul>
+<p>RMG mode should be turned off by default except in RMG jobs.</p>
+<dl class="attribute">
+<dt id="arkane.PressureDependenceJob.Plist">
+<code class="descname">Plist</code><a class="headerlink" href="#arkane.PressureDependenceJob.Plist" title="Permalink to this definition">¶</a></dt>
+<dd><p>The pressures at which the k(T,P) values are computed.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arkane.PressureDependenceJob.Pmax">
+<code class="descname">Pmax</code><a class="headerlink" href="#arkane.PressureDependenceJob.Pmax" title="Permalink to this definition">¶</a></dt>
+<dd><p>The maximum pressure at which the computed k(T,P) values are valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arkane.PressureDependenceJob.Pmin">
+<code class="descname">Pmin</code><a class="headerlink" href="#arkane.PressureDependenceJob.Pmin" title="Permalink to this definition">¶</a></dt>
+<dd><p>The minimum pressure at which the computed k(T,P) values are valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arkane.PressureDependenceJob.Tlist">
+<code class="descname">Tlist</code><a class="headerlink" href="#arkane.PressureDependenceJob.Tlist" title="Permalink to this definition">¶</a></dt>
+<dd><p>The temperatures at which the k(T,P) values are computed.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arkane.PressureDependenceJob.Tmax">
+<code class="descname">Tmax</code><a class="headerlink" href="#arkane.PressureDependenceJob.Tmax" title="Permalink to this definition">¶</a></dt>
+<dd><p>The maximum temperature at which the computed k(T,P) values are valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arkane.PressureDependenceJob.Tmin">
+<code class="descname">Tmin</code><a class="headerlink" href="#arkane.PressureDependenceJob.Tmin" title="Permalink to this definition">¶</a></dt>
+<dd><p>The minimum temperature at which the computed k(T,P) values are valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.PressureDependenceJob.copy">
+<code class="descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.PressureDependenceJob.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a copy of the pressure dependence job.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.PressureDependenceJob.draw">
+<code class="descname">draw</code><span class="sig-paren">(</span><em>outputDirectory</em>, <em>format='pdf'</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.PressureDependenceJob.draw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a PDF drawing of the pressure-dependent reaction network.
+This requires that Cairo and its Python wrapper be available; if not,
+the drawing is not generated.</p>
+<p>You may also generate different formats of drawings, by changing format to
+one of the following: <cite>pdf</cite>, <cite>svg</cite>, <cite>png</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.PressureDependenceJob.generatePressureList">
+<code class="descname">generatePressureList</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.PressureDependenceJob.generatePressureList" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an array of pressures based on the interpolation <cite>model</cite>,
+minimum and maximum pressures <cite>Pmin</cite> and <cite>Pmax</cite> in Pa, and the number of
+pressures <cite>Pcount</cite>. For Chebyshev polynomials a Gauss-Chebyshev
+distribution is used; for all others a linear distribution on an logarithmic
+pressure domain is used. Note that the Gauss-Chebyshev grid does <em>not</em>
+place <cite>Pmin</cite> and <cite>Pmax</cite> at the endpoints, yet the interpolation is still
+valid up to these values.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.PressureDependenceJob.generateTemperatureList">
+<code class="descname">generateTemperatureList</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.PressureDependenceJob.generateTemperatureList" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an array of temperatures based on the interpolation <cite>model</cite>,
+minimum and maximum temperatures <cite>Tmin</cite> and <cite>Tmax</cite> in K, and the number of
+temperatures <cite>Tcount</cite>. For Chebyshev polynomials a Gauss-Chebyshev
+distribution is used; for all others a linear distribution on an inverse
+temperature domain is used. Note that the Gauss-Chebyshev grid does <em>not</em>
+place <cite>Tmin</cite> and <cite>Tmax</cite> at the endpoints, yet the interpolation is still
+valid up to these values.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="arkane.PressureDependenceJob.maximumGrainSize">
+<code class="descname">maximumGrainSize</code><a class="headerlink" href="#arkane.PressureDependenceJob.maximumGrainSize" title="Permalink to this definition">¶</a></dt>
+<dd><p>The maximum allowed energy grain size, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.PressureDependenceJob.saveInputFile">
+<code class="descname">saveInputFile</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.PressureDependenceJob.saveInputFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save an Arkane input file for the pressure dependence job to <cite>path</cite> on disk.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+  <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    <div class="sphinxsidebarwrapper">
+        <div class="sidebarlogo"><a href="../../index.html">
+            <img src="../../_static/rmg-logo-small.png" alt="RMG" />
+        </a></div>
+      <div id="sidebar">
+        <div id="rmgsidebar">
+          <a href="http://rmg.mit.edu">
+            <div class="menuitem">
+              <img src="../../_static/rmg-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG Website</div>
+              <div class="menutext menudesc">Interactive website for RMG-Py</div>
+            </div>
+          </a>
+          <a href="https://github.com/ReactionMechanismGenerator/RMG-Py">
+            <div class="menuitem">
+              <img src="../../_static/github-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG GitHub</div>
+              <div class="menutext menudesc">View source and post issues</div>
+            </div>
+          </a>
+        </div>
+        <div class="menuitem">
+        </div>
+        <div class="menuitem">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="output.html"
+                        title="previous chapter">Saving Arkane output</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="statmech.html"
+                        title="next chapter">arkane.StatMechJob</a></p>
+        </div>
+        <div class="menuitem">
+<div role="note" aria-label="source link">
+    <h3>This Page</h3>
+        <ul class="this-page-menu">
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/arkane/pdep.rst"
+                   rel="nofollow">View Source</a></li>
+        </ul>
+</div>
+        </div>
+        <div class="menuitem">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+    </div>
+  </div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="statmech.html" title="arkane.StatMechJob"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="output.html" title="Saving Arkane output"
+             >previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.1 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >Arkane (<code class="docutils literal notranslate"><span class="pre">arkane</span></code>)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,1202 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>3. Creating Input Files for Thermodynamics and High-Pressure Limit Kinetics Computations &#8212; RMG-Py 2.1.0 Documentation</title>
+    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="4. Creating Input Files for Pressure Dependent Calculations" href="input_pdep.html" />
+    <link rel="prev" title="2. Installation" href="installation.html" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+  MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+    ce: ["Extension","mhchem"],
+  });
+});
+</script>
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="input_pdep.html" title="4. Creating Input Files for Pressure Dependent Calculations"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="2. Installation"
+             accesskey="P">previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.1 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >User’s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Arkane User’s Guide</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="creating-input-files-for-thermodynamics-and-high-pressure-limit-kinetics-computations">
+<h1>3. Creating Input Files for Thermodynamics and High-Pressure Limit Kinetics Computations<a class="headerlink" href="#creating-input-files-for-thermodynamics-and-high-pressure-limit-kinetics-computations" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="syntax">
+<h2>3.1. Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<p>The format of Arkane input files is based on Python syntax. In fact, Arkane
+input files are valid Python source code, and this is used to facilitate
+reading of the file.</p>
+<p>Each section is made up of one or more function calls, where parameters are
+specified as text strings, numbers, or objects. Text strings must be wrapped in
+either single or double quotes.</p>
+<p>The following is a list of all the components of a Arkane input file for thermodynamics and high-pressure limit kinetics
+computations:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="28%" />
+<col width="72%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Component</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">modelChemistry</span></code></td>
+<td>Level of theory from quantum chemical calculations</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">atomEnergies</span></code></td>
+<td>Dictionary of atomic energies at <code class="docutils literal notranslate"><span class="pre">modelChemistry</span></code> level</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">frequencyScaleFactor</span></code></td>
+<td>A factor by which to scale all frequencies</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">useHinderedRotors</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">True</span></code> (by default) if hindered rotors are used, <code class="docutils literal notranslate"><span class="pre">False</span></code> if not</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">useAtomCorrections</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">True</span></code> (by default) if atom corrections are used, <code class="docutils literal notranslate"><span class="pre">False</span></code> if not</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">useBondCorrections</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">True</span></code> if bond corrections are used, <code class="docutils literal notranslate"><span class="pre">False</span></code> (by default) if not</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">species</span></code></td>
+<td>Contains parameters for non-transition states</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">transitionState</span></code></td>
+<td>Contains parameters for transition state(s)</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">reaction</span></code></td>
+<td>Required for performing kinetic computations</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">statmech</span></code></td>
+<td>Loads statistical mechanics parameters</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">thermo</span></code></td>
+<td>Performs a thermodynamics computation</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">kinetics</span></code></td>
+<td>Performs a high-pressure limit kinetic computation</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="model-chemistry">
+<h2>3.2. Model Chemistry<a class="headerlink" href="#model-chemistry" title="Permalink to this headline">¶</a></h2>
+<p>The first item in the input file should be a <code class="docutils literal notranslate"><span class="pre">modelChemistry</span></code> assignment
+with a string describing the model chemistry.</p>
+<p>Arkane uses this information to adjust the computed energies to the usual gas-phase reference
+states by applying atom, bond and spin-orbit coupling energy corrections. This is particularly
+important for <code class="docutils literal notranslate"><span class="pre">thermo()</span></code> calculations (see below). Note that the user must specify under the
+<code class="docutils literal notranslate"><span class="pre">species()</span></code> function the type and number of bonds for Arkane to apply these corrections.
+The example below specifies CBS-QB3 as the model chemistry:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">modelChemistry</span> <span class="o">=</span> <span class="s2">&quot;CBS-QB3&quot;</span>
+</pre></div>
+</div>
+<p>Alternatively, the atomic energies at the <code class="docutils literal notranslate"><span class="pre">modelChemistry</span></code> level of theory can be directly
+specified in the input file by providing a dictionary of these energies in the following format:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">atomEnergies</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;H&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.499818</span><span class="p">,</span>
+    <span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">37.78552</span><span class="p">,</span>
+    <span class="s1">&#39;N&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">54.520543</span><span class="p">,</span>
+    <span class="s1">&#39;O&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">74.987979</span><span class="p">,</span>
+    <span class="s1">&#39;S&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">397.658253</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The table below shows which model chemistries have atomization energy corrections (AEC), bond
+corrections (BC), and spin orbit corrections (SOC). It also lists which elements are available
+for a given model chemistry.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="53%" />
+<col width="5%" />
+<col width="4%" />
+<col width="4%" />
+<col width="11%" />
+<col width="22%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Model Chemistry</th>
+<th class="head">AEC</th>
+<th class="head">BC</th>
+<th class="head">SOC</th>
+<th class="head">Freq Scale</th>
+<th class="head">Supported Elements</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">'CBS-QB3'</span></code></td>
+<td>v</td>
+<td>v</td>
+<td>v</td>
+<td>v (0.990)</td>
+<td>H, C, N, O, P, S</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">'CBS-QB3-Paraskevas'</span></code></td>
+<td>v</td>
+<td>v</td>
+<td>v</td>
+<td>v (0.990)</td>
+<td>H, C, N, O, P, S</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">'G3'</span></code></td>
+<td>v</td>
+<td>&#160;</td>
+<td>v</td>
+<td>&#160;</td>
+<td>H, C, N, O, P, S</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">'M08SO/MG3S*'</span></code></td>
+<td>v</td>
+<td>&#160;</td>
+<td>v</td>
+<td>&#160;</td>
+<td>H, C, N, O, P, S</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">'M06-2X/cc-pVTZ'</span></code></td>
+<td>v</td>
+<td>&#160;</td>
+<td>v</td>
+<td>v (0.955)</td>
+<td>H, C, N, O, P, S</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">'Klip_1'</span></code></td>
+<td>v</td>
+<td>&#160;</td>
+<td>v</td>
+<td>&#160;</td>
+<td>H, C, N, O</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">'Klip_2'</span></code> <em>uses QCI(tz,qz) values</em></td>
+<td>v</td>
+<td>&#160;</td>
+<td>v</td>
+<td>&#160;</td>
+<td>H, C, N, O</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">'Klip_3'</span></code> <em>uses QCI(dz,qz) values</em></td>
+<td>v</td>
+<td>&#160;</td>
+<td>v</td>
+<td>&#160;</td>
+<td>H, C, N, O</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">'Klip_2_cc'</span></code> <em>uses CCSD(T)(tz,qz) values</em></td>
+<td>v</td>
+<td>&#160;</td>
+<td>v</td>
+<td>&#160;</td>
+<td>H, C, O</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">'CCSD-F12/cc-pVDZ-F12'</span></code></td>
+<td>v</td>
+<td>&#160;</td>
+<td>v</td>
+<td>v (0.947)</td>
+<td>H, C, N, O</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">'CCSD(T)-F12/cc-pVDZ-F12_H-TZ'</span></code></td>
+<td>v</td>
+<td>&#160;</td>
+<td>v</td>
+<td>&#160;</td>
+<td>H, C, N, O</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">'CCSD(T)-F12/cc-pVDZ-F12_H-QZ'</span></code></td>
+<td>v</td>
+<td>&#160;</td>
+<td>v</td>
+<td>&#160;</td>
+<td>H, C, N, O</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">'CCSD(T)-F12/cc-pVnZ-F12'</span></code>, <em>n = D,T,Q</em></td>
+<td>v</td>
+<td>v</td>
+<td>v</td>
+<td>v</td>
+<td>H, C, N, O, S</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">'CCSD(T)-F12/cc-pVDZ-F12_noscale'</span></code></td>
+<td>v</td>
+<td>&#160;</td>
+<td>v</td>
+<td>&#160;</td>
+<td>H, C, N, O</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">'CCSD(T)-F12/cc-pCVnZ-F12'</span></code>, <em>n = D,T,Q</em></td>
+<td>v</td>
+<td>&#160;</td>
+<td>v</td>
+<td>v</td>
+<td>H, C, N, O</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">'CCSD(T)-F12/aug-cc-pVnZ'</span></code>, <em>n = D,T,Q</em></td>
+<td>v</td>
+<td>&#160;</td>
+<td>v</td>
+<td>v</td>
+<td>H, C, N, O, S</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">'CCSD(T)-F12/cc-pVTZ-f12(-pp)</span></code>,</td>
+<td>v</td>
+<td>&#160;</td>
+<td>v</td>
+<td>&#160;</td>
+<td>H, C, N, O, S, I</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">'CCSD(T)/aug-cc-pVTZ(-pp)</span></code>,</td>
+<td>v</td>
+<td>&#160;</td>
+<td>v</td>
+<td>&#160;</td>
+<td>H, C, O, S, I</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">'B-CCSD(T)-F12/cc-pVnZ-F12'</span></code>, <em>n = D,T,Q</em></td>
+<td>v</td>
+<td>&#160;</td>
+<td>v</td>
+<td>&#160;</td>
+<td>H, C, N, O, S</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">'B-CCSD(T)-F12/cc-pCVnZ-F12'</span></code>, <em>n = D,T,Q</em></td>
+<td>v</td>
+<td>&#160;</td>
+<td>v</td>
+<td>&#160;</td>
+<td>H, C, N, O</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">'B-CCSD(T)-F12/aug-cc-pVnZ'</span></code>, <em>n = D,T,Q</em></td>
+<td>v</td>
+<td>&#160;</td>
+<td>v</td>
+<td>&#160;</td>
+<td>H, C, N, O</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">'G03_PBEPBE_6-311++g_d_p'</span></code></td>
+<td>v</td>
+<td>&#160;</td>
+<td>v</td>
+<td>&#160;</td>
+<td>H, C, N, O</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">'MP2_rmp2_pVnZ'</span></code>, <em>n = D,T,Q</em></td>
+<td>v</td>
+<td>&#160;</td>
+<td>v</td>
+<td>v</td>
+<td>H, C, N, O</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">'FCI/cc-pVnZ'</span></code>, <em>n = D,T,Q</em></td>
+<td>v</td>
+<td>&#160;</td>
+<td>v</td>
+<td>&#160;</td>
+<td>C</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">'BMK/cbsb7'</span></code></td>
+<td>v</td>
+<td>v</td>
+<td>v</td>
+<td>&#160;</td>
+<td>H, C, N, O, P, S</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">'BMK/6-311G(2d,d,p)'</span></code></td>
+<td>v</td>
+<td>v</td>
+<td>v</td>
+<td>&#160;</td>
+<td>H, C, N, O, P, S</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">'B3LYP/6-311+G(3df,2p)'</span></code></td>
+<td>v</td>
+<td>v</td>
+<td>v</td>
+<td>v (0.967)</td>
+<td>H, C, N, O, P, S</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">'B3LYP/6-31G**'</span></code></td>
+<td>v</td>
+<td>v</td>
+<td>&#160;</td>
+<td>v (0.961)</td>
+<td>H, C, O, S</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">'MRCI+Davidson/aug-cc-pV(T+d)Z'</span></code></td>
+<td>v</td>
+<td>&#160;</td>
+<td>v</td>
+<td>&#160;</td>
+<td>H, C, N, O, S</td>
+</tr>
+</tbody>
+</table>
+<p>Notes:</p>
+<ul class="simple">
+<li>The <code class="docutils literal notranslate"><span class="pre">'CBS-QB3-Paraskevas'</span></code> model chemistry is identical to <code class="docutils literal notranslate"><span class="pre">'CBS-QB3'</span></code> except for BCs for C/H/O bonds, which are from Paraskevas et al. (DOI: 10.1002/chem.201301381) instead of Petersson et al. (DOI: 10.1063/1.477794). Beware, combining BCs from different sources may lead to unforeseen results.</li>
+<li>In <code class="docutils literal notranslate"><span class="pre">'M08SO/MG3S*'</span></code> the grid size used in the [QChem] electronic structure calculation utilizes 75 radial points and 434 angular points.</li>
+<li>Refer to paper by Goldsmith et al. (<em>Goldsmith, C. F.; Magoon, G. R.; Green, W. H., Database of Small Molecule Thermochemistry for Combustion. J. Phys. Chem. A 2012, 116, 9033-9057</em>) for definition of <code class="docutils literal notranslate"><span class="pre">'Klip_2'</span></code> (<em>QCI(tz,qz)</em>) and <code class="docutils literal notranslate"><span class="pre">'Klip_3'</span></code> (<em>QCI(dz,qz)</em>).</li>
+</ul>
+<p>If a model chemistry other than the ones in the above table is used, then the user should supply
+the corresponding atomic energies (using <code class="docutils literal notranslate"><span class="pre">atomEnergies</span></code>) to get meaningful results. Bond
+corrections would not be applied in this case.</p>
+<p>If a model chemistry or atomic energies are not available, then a kinetics job can still be run by
+setting <code class="docutils literal notranslate"><span class="pre">useAtomCorrections</span></code> to <code class="docutils literal notranslate"><span class="pre">False</span></code>, in which case Arkane will not raise an error for
+unknown elements. The user should be aware that the resulting energies and thermodynamic quantities
+in the output file will not be meaningful, but kinetics and equilibrium constants will still be
+correct.</p>
+</div>
+<div class="section" id="frequency-scale-factor">
+<h2>3.3. Frequency Scale Factor<a class="headerlink" href="#frequency-scale-factor" title="Permalink to this headline">¶</a></h2>
+<p>Frequency scale factors are empirically fit to experiment for different <code class="docutils literal notranslate"><span class="pre">modelChemistry</span></code>.
+Refer to NIST website for values (<a class="reference external" href="http://cccbdb.nist.gov/vibscalejust.asp">http://cccbdb.nist.gov/vibscalejust.asp</a>).
+For CBS-QB3, which is not included in the link above, <code class="docutils literal notranslate"><span class="pre">frequencyScaleFactor</span> <span class="pre">=</span> <span class="pre">0.99</span></code> according to Montgomery et al.
+(<em>J. Chem. Phys. 1999, 110, 2822–2827</em>).
+The frequency scale factor is automatically assigned according to the supplied <code class="docutils literal notranslate"><span class="pre">modelChemistry</span></code>, if available
+(see above table). If not available automatically and not specified by the user, it will be assumed a unity value.</p>
+</div>
+<div class="section" id="species">
+<h2>3.4. Species<a class="headerlink" href="#species" title="Permalink to this headline">¶</a></h2>
+<p>Each species of interest must be specified using a <code class="docutils literal notranslate"><span class="pre">species()</span></code> function, which can be input in two different ways,
+discussed in the separate subsections below:</p>
+<p>1. By pointing to the output files of quantum chemistry calculations, which Arkane will parse for the necessary
+molecular properties
+2. By directly entering the molecular properties</p>
+<p>Within a single input file, both Option #1 and #2 may be used for different species.</p>
+<div class="section" id="option-1-automatically-parse-quantum-chemistry-calculation-output">
+<h3>3.4.1. Option #1: Automatically Parse Quantum Chemistry Calculation Output<a class="headerlink" href="#option-1-automatically-parse-quantum-chemistry-calculation-output" title="Permalink to this headline">¶</a></h3>
+<p>For this option, the <code class="docutils literal notranslate"><span class="pre">species()</span></code> function only requires two parameters, as in the example below:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">species</span><span class="p">(</span><span class="s1">&#39;C2H6&#39;</span><span class="p">,</span> <span class="s1">&#39;C2H6.py&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The first parameter (<code class="docutils literal notranslate"><span class="pre">'C2H6'</span></code> above) is the species label, which can be referenced later in the input file. The second
+parameter (<code class="docutils literal notranslate"><span class="pre">'C2H6.py'</span></code> above) points to the location of another python file containing details of the species. This file
+will be referred to as the species input file.</p>
+<p>The species input file accepts the following parameters:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="15%" />
+<col width="17%" />
+<col width="68%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Required?</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">bonds</span></code></td>
+<td>optional</td>
+<td>Type and number of bonds in the species</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">linear</span></code></td>
+<td>yes</td>
+<td><code class="docutils literal notranslate"><span class="pre">True</span></code> if the molecule is linear, <code class="docutils literal notranslate"><span class="pre">False</span></code> if not</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">externalSymmetry</span></code></td>
+<td>yes</td>
+<td>The external symmetry number for rotation</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">spinMultiplicity</span></code></td>
+<td>yes</td>
+<td>The ground-state spin multiplicity (degeneracy)</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">opticalIsomers</span></code></td>
+<td>yes</td>
+<td>The number of optical isomers of the species</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">energy</span></code></td>
+<td>yes</td>
+<td>The ground-state 0 K atomization energy in Hartree
+(without zero-point energy) <strong>or</strong>
+The path to the quantum chemistry output file containing the energy</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">geometry</span></code></td>
+<td>yes</td>
+<td>The path to the quantum chemistry output file containing the optimized geometry</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">frequencies</span></code></td>
+<td>yes</td>
+<td>The path to the quantum chemistry output file containing the computed frequencies</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">rotors</span></code></td>
+<td>optional</td>
+<td>A list of <code class="xref py py-class docutils literal notranslate"><span class="pre">HinderedRotor()</span></code> and/or <code class="xref py py-class docutils literal notranslate"><span class="pre">FreeRotor()</span></code> objects describing the hindered/free rotors</td>
+</tr>
+</tbody>
+</table>
+<p>The types and number of atoms in the species are automatically inferred from the quantum chemistry output and are used
+to apply atomization energy corrections (AEC) and spin orbit corrections (SOC) for a given <code class="docutils literal notranslate"><span class="pre">modelChemistry</span></code>
+(see <a class="reference internal" href="#model-chemistry">Model Chemistry</a>). If not interested in accurate thermodynamics (e.g., if only using <code class="docutils literal notranslate"><span class="pre">kinetics()</span></code>), then
+atom corrections can be turned off by setting <code class="docutils literal notranslate"><span class="pre">useAtomCorrections</span></code> to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">bond</span></code> parameter is used to apply bond corrections (BC) for a given <code class="docutils literal notranslate"><span class="pre">modelChemistry</span></code>.</p>
+<p>Allowed bond types for the <code class="docutils literal notranslate"><span class="pre">bonds</span></code> parameter are, e.g., <code class="docutils literal notranslate"><span class="pre">'C-H'</span></code>, <code class="docutils literal notranslate"><span class="pre">'C-C'</span></code>, <code class="docutils literal notranslate"><span class="pre">'C=C'</span></code>, <code class="docutils literal notranslate"><span class="pre">'N-O'</span></code>, <code class="docutils literal notranslate"><span class="pre">'C=S'</span></code>,
+<code class="docutils literal notranslate"><span class="pre">'O=O'</span></code>, <code class="docutils literal notranslate"><span class="pre">'C#N'</span></code>…</p>
+<p><code class="docutils literal notranslate"><span class="pre">'O=S=O'</span></code> is also allowed.</p>
+<p>The order of elements in the bond correction label is not important. Use <code class="docutils literal notranslate"><span class="pre">-</span></code>/<code class="docutils literal notranslate"><span class="pre">=</span></code>/<code class="docutils literal notranslate"><span class="pre">#</span></code> to denote a
+single/double/triple bond, respectively. For example, for formaldehyde we would write:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bonds</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;C=O&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;C-H&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>The parameter <code class="docutils literal notranslate"><span class="pre">linear</span></code> only needs to be specified as either <code class="docutils literal notranslate"><span class="pre">True</span></code> or <code class="docutils literal notranslate"><span class="pre">False</span></code>. The parameters <code class="docutils literal notranslate"><span class="pre">externalSymmetry</span></code>,
+<code class="docutils literal notranslate"><span class="pre">spinMultiplicity</span></code> and <code class="docutils literal notranslate"><span class="pre">opticalIsomers</span></code> only accept integer values.
+Note that <code class="docutils literal notranslate"><span class="pre">externalSymmetry</span></code> corresponds to the number of unique ways in which the species may be rotated about an
+axis (or multiple axes) and still be indistinguishable from its starting orientation (reflection across a mirror plane
+does not count as rotation about an axis).
+For ethane, we would write:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">linear</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="n">externalSymmetry</span> <span class="o">=</span> <span class="mi">6</span>
+
+<span class="n">spinMultiplicity</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="n">opticalIsomers</span> <span class="o">=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">energy</span></code> parameter is a dictionary with entries for different <code class="docutils literal notranslate"><span class="pre">modelChemistry</span></code>. The entries can consist of either
+floating point numbers corresponding to the 0 K atomization energy in Hartree (without zero-point energy correction), or
+they can specify the path to a quantum chemistry calculation output file that contains the species’s energy. For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">energy</span> <span class="o">=</span> <span class="p">{</span>
+<span class="s1">&#39;CBS-QB3&#39;</span><span class="p">:</span> <span class="n">Log</span><span class="p">(</span><span class="s1">&#39;ethane_cbsqb3.log&#39;</span><span class="p">),</span>
+<span class="s1">&#39;Klip_2&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">79.64199436</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>In this example, the <code class="docutils literal notranslate"><span class="pre">CBS-QB3</span></code> energy is obtained from a Gaussian log file, while the <code class="docutils literal notranslate"><span class="pre">Klip_2</span></code> energy is specified
+directly. The energy used will depend on what <code class="docutils literal notranslate"><span class="pre">modelChemistry</span></code> was specified in the input file. Arkane can parse the
+energy from a Gaussian, Molpro, or QChem log file, all using the same <code class="docutils literal notranslate"><span class="pre">Log</span></code> class, as shown below.</p>
+<p>The input to the remaining parameters, <code class="docutils literal notranslate"><span class="pre">geometry</span></code>, <code class="docutils literal notranslate"><span class="pre">frequencies</span></code> and <code class="docutils literal notranslate"><span class="pre">rotors</span></code>, will depend on if hindered/free
+rotors are included.
+Both cases are described below.</p>
+<div class="section" id="without-hindered-free-rotors">
+<h4>3.4.1.1. Without Hindered/Free Rotors<a class="headerlink" href="#without-hindered-free-rotors" title="Permalink to this headline">¶</a></h4>
+<p>In this case, only <code class="docutils literal notranslate"><span class="pre">geometry</span></code> and <code class="docutils literal notranslate"><span class="pre">frequencies</span></code> need to be specified, and they can point to the same or different
+quantum chemistry calculation output files. The <code class="docutils literal notranslate"><span class="pre">geometry</span></code> file contains the optimized geometry, while the
+<code class="docutils literal notranslate"><span class="pre">frequencies</span></code> file contains the harmonic oscillator frequencies of the species in its optimized geometry.
+For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">geometry</span> <span class="o">=</span> <span class="n">Log</span><span class="p">(</span><span class="s1">&#39;ethane_cbsqb3.log&#39;</span><span class="p">)</span>
+
+<span class="n">frequencies</span> <span class="o">=</span> <span class="n">Log</span><span class="p">(</span><span class="s1">&#39;ethane_freq.log&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In summary, in order to specify the molecular properties of a species by parsing the output of quantum chemistry
+calculations, without any hindered/free rotors, the <code class="docutils literal notranslate"><span class="pre">species()</span></code> function in the input file should look like the
+following example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">species</span><span class="p">(</span><span class="s1">&#39;C2H6&#39;</span><span class="p">,</span> <span class="s1">&#39;C2H6.py&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>and the species input file (<code class="docutils literal notranslate"><span class="pre">C2H6.py</span></code> in the example above) should look like the following:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bonds</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;C-C&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s1">&#39;C-H&#39;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">linear</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="n">externalSymmetry</span> <span class="o">=</span> <span class="mi">6</span>
+
+<span class="n">spinMultiplicity</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="n">opticalIsomers</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="n">energy</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;CBS-QB3&#39;</span><span class="p">:</span> <span class="n">Log</span><span class="p">(</span><span class="s1">&#39;ethane_cbsqb3.log&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;Klip_2&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">79.64199436</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">geometry</span> <span class="o">=</span> <span class="n">Log</span><span class="p">(</span><span class="s1">&#39;ethane_cbsqb3.log&#39;</span><span class="p">)</span>
+
+<span class="n">frequencies</span> <span class="o">=</span> <span class="n">Log</span><span class="p">(</span><span class="s1">&#39;ethane_freq.log&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="with-hindered-free-rotors">
+<h4>3.4.1.2. With Hindered/Free Rotors<a class="headerlink" href="#with-hindered-free-rotors" title="Permalink to this headline">¶</a></h4>
+<p>In this case, <code class="docutils literal notranslate"><span class="pre">geometry</span></code>, <code class="docutils literal notranslate"><span class="pre">frequencies</span></code> and <code class="docutils literal notranslate"><span class="pre">rotors</span></code> need to be specified. The <code class="docutils literal notranslate"><span class="pre">geometry</span></code> and <code class="docutils literal notranslate"><span class="pre">frequencies</span></code>
+parameters must point to the <strong>same</strong> quantum chemistry calculation output file in this case.
+For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">geometry</span> <span class="o">=</span> <span class="n">Log</span><span class="p">(</span><span class="s1">&#39;ethane_freq.log&#39;</span><span class="p">)</span>
+
+<span class="n">frequencies</span> <span class="o">=</span> <span class="n">Log</span><span class="p">(</span><span class="s1">&#39;ethane_freq.log&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">geometry/frequencies</span></code> log file must contain both the optimized geometry and the Hessian (matrix of partial
+second derivatives of potential energy surface, also referred to as the force constant matrix), which is used to
+calculate the harmonic oscillator frequencies. If Gaussian is used to generate the <code class="docutils literal notranslate"><span class="pre">geometry/frequencies</span></code> log file,
+the Gaussian input file must contain the keyword <code class="docutils literal notranslate"><span class="pre">iop(7/33=1)</span></code>, which forces Gaussian to output the complete Hessian.
+Because the <code class="docutils literal notranslate"><span class="pre">iop(7/33=1)</span></code> option is only applied to the first part of the Gaussian job, the job must be a <code class="docutils literal notranslate"><span class="pre">freq</span></code>
+job only (as opposed to an <code class="docutils literal notranslate"><span class="pre">opt</span> <span class="pre">freq</span></code> job or a composite method job like <code class="docutils literal notranslate"><span class="pre">cbs-qb3</span></code>, which only do the <code class="docutils literal notranslate"><span class="pre">freq</span></code>
+calculation after the optimization).
+Therefore, the proper workflow for generating the <code class="docutils literal notranslate"><span class="pre">geometry/frequencies</span></code> log file using Gaussian is:</p>
+<ol class="arabic simple">
+<li>Perform a geometry optimization.</li>
+<li>Take the optimized geometry from step 1, and use it as the input to a <code class="docutils literal notranslate"><span class="pre">freq</span></code> job with the following input keywords: <code class="docutils literal notranslate"><span class="pre">#method</span> <span class="pre">basis-set</span> <span class="pre">freq</span> <span class="pre">iop(7/33=1)</span></code></li>
+</ol>
+<p>The output of step 2 is the correct log file to use for <code class="docutils literal notranslate"><span class="pre">geometry/frequencies</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">rotors</span></code> is a list of <code class="xref py py-class docutils literal notranslate"><span class="pre">HinderedRotor()</span></code> and/or <code class="xref py py-class docutils literal notranslate"><span class="pre">FreeRotor()</span></code> objects. Each <code class="xref py py-class docutils literal notranslate"><span class="pre">HinderedRotor()</span></code>
+object requires the following parameters:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="80%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">scanLog</span></code></td>
+<td>The path to the Gaussian/Qchem log file, or a text file containing the scan energies</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">pivots</span></code></td>
+<td>The indices of the atoms in the hindered rotor torsional bond</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">top</span></code></td>
+<td>The indices of all atoms on one side of the torsional bond (including the pivot atom)</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">symmetry</span></code></td>
+<td>The symmetry number for the torsional rotation (number of indistinguishable energy minima)</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">fit</span></code></td>
+<td>Fit to the scan data. Can be either <code class="docutils literal notranslate"><span class="pre">fourier</span></code>, <code class="docutils literal notranslate"><span class="pre">cosine</span></code> or <code class="docutils literal notranslate"><span class="pre">best</span></code> (default).</td>
+</tr>
+</tbody>
+</table>
+<p><code class="docutils literal notranslate"><span class="pre">scanLog</span></code> can either point to a <code class="docutils literal notranslate"><span class="pre">Log</span></code> file, or simply a <code class="docutils literal notranslate"><span class="pre">ScanLog</span></code>, with the path to a text file summarizing the
+scan in the following format:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Angle</span> <span class="p">(</span><span class="n">radians</span><span class="p">)</span>          <span class="n">Energy</span> <span class="p">(</span><span class="n">kJ</span><span class="o">/</span><span class="n">mol</span><span class="p">)</span>
+ <span class="mf">0.0000000000</span>            <span class="mf">0.0147251160</span>
+ <span class="mf">0.1745329252</span>            <span class="mf">0.7223109804</span>
+ <span class="mf">0.3490658504</span>            <span class="mf">2.6856059517</span>
+       <span class="o">.</span>                       <span class="o">.</span>
+       <span class="o">.</span>                       <span class="o">.</span>
+       <span class="o">.</span>                       <span class="o">.</span>
+ <span class="mf">6.2831853072</span>            <span class="mf">0.0000000000</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">Energy</span></code> can be in units of <code class="docutils literal notranslate"><span class="pre">kJ/mol</span></code>, <code class="docutils literal notranslate"><span class="pre">J/mol</span></code>, <code class="docutils literal notranslate"><span class="pre">cal/mol</span></code>, <code class="docutils literal notranslate"><span class="pre">kcal/mol</span></code>, <code class="docutils literal notranslate"><span class="pre">cm^-1</span></code> or <code class="docutils literal notranslate"><span class="pre">hartree</span></code>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">symmetry</span></code> parameter will usually equal either 1, 2 or 3. Below are examples of internal rotor scans with these
+commonly encountered symmetry numbers. First, <code class="docutils literal notranslate"><span class="pre">symmetry</span> <span class="pre">=</span> <span class="pre">3</span></code>:</p>
+<img alt="../../_images/symmetry_3_example.png" src="../../_images/symmetry_3_example.png" />
+<p>Internal rotation of a methyl group is a common example of a hindered rotor with <code class="docutils literal notranslate"><span class="pre">symmetry</span> <span class="pre">=</span> <span class="pre">3</span></code>, such as the one
+above. As shown, all three minima (and maxima) have identical energies, hence <code class="docutils literal notranslate"><span class="pre">symmetry</span> <span class="pre">=</span> <span class="pre">3</span></code>.</p>
+<p>Similarly, if there are only two minima along the internal rotor scan, and both have identical energy, then
+<code class="docutils literal notranslate"><span class="pre">symmetry</span> <span class="pre">=</span> <span class="pre">2</span></code>, as in the example below:</p>
+<img alt="../../_images/symmetry_2_example.png" src="../../_images/symmetry_2_example.png" />
+<p>If any of the energy minima in an internal rotor scan are not identical, then the rotor has no symmetry
+(<code class="docutils literal notranslate"><span class="pre">symmetry</span> <span class="pre">=</span> <span class="pre">1</span></code>), as in the example below:</p>
+<img alt="../../_images/symmetry_1_example.png" src="../../_images/symmetry_1_example.png" />
+<p>For the example above there are 3 local energy minima, 2 of which are identical to each other. However, the 3rd minima
+is different from the other 2, therefore this internal rotor has no symmetry.</p>
+<p>For practical purposes, when determining the symmetry number for a given hindered rotor simply check if the internal
+rotor scan looks like the <code class="docutils literal notranslate"><span class="pre">symmetry</span> <span class="pre">=</span> <span class="pre">2</span></code> or <code class="docutils literal notranslate"><span class="pre">3</span></code> examples above. If it doesn’t, then most likely <code class="docutils literal notranslate"><span class="pre">symmetry</span> <span class="pre">=</span> <span class="pre">1</span></code>.</p>
+<p>Each <code class="xref py py-class docutils literal notranslate"><span class="pre">FreeRotor()</span></code> object requires the following parameters:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="80%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">pivots</span></code></td>
+<td>The indices of the atoms in the free rotor torsional bond</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">top</span></code></td>
+<td>The indices of all atoms on one side of the torsional bond (including the pivot atom)</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">symmetry</span></code></td>
+<td>The symmetry number for the torsional rotation (number of indistinguishable energy minima)</td>
+</tr>
+</tbody>
+</table>
+<p>Note that a <code class="docutils literal notranslate"><span class="pre">scanLog</span></code> is not needed for <code class="xref py py-class docutils literal notranslate"><span class="pre">FreeRotor()</span></code> because it is assumed that there is no barrier to
+internal rotation. Modeling an internal rotation as a <code class="xref py py-class docutils literal notranslate"><span class="pre">FreeRotor()</span></code> puts an upper bound on the impact of that
+rotor on the species’s overall partition function. Modeling the same internal rotation as a Harmonic Oscillator
+(default if it is not specifed as either a <code class="xref py py-class docutils literal notranslate"><span class="pre">FreeRotor()</span></code> or  <code class="xref py py-class docutils literal notranslate"><span class="pre">HinderedRotor()</span></code>) puts a lower bound on the
+impact of that rotor on the species’s overall partition function. Modeling the internal rotation as a
+<code class="xref py py-class docutils literal notranslate"><span class="pre">HinderedRotor()</span></code> should fall in between these two extremes.</p>
+<p>To summarize, the species input file with hindered/free rotors should look like the following example (different options
+for specifying the same <code class="docutils literal notranslate"><span class="pre">rotors</span></code> entry are commented out):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bonds</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;C-C&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s1">&#39;C-H&#39;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">linear</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="n">externalSymmetry</span> <span class="o">=</span> <span class="mi">6</span>
+
+<span class="n">spinMultiplicity</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="n">opticalIsomers</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="n">energy</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;CBS-QB3&#39;</span><span class="p">:</span> <span class="n">Log</span><span class="p">(</span><span class="s1">&#39;ethane_cbsqb3.log&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;Klip_2&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">79.64199436</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">geometry</span> <span class="o">=</span> <span class="n">Log</span><span class="p">(</span><span class="s1">&#39;ethane_freq.log&#39;</span><span class="p">)</span>
+
+<span class="n">frequencies</span> <span class="o">=</span> <span class="n">Log</span><span class="p">(</span><span class="s1">&#39;ethane_freq.log&#39;</span><span class="p">)</span>
+
+<span class="n">rotors</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">HinderedRotor</span><span class="p">(</span><span class="n">scanLog</span><span class="o">=</span><span class="n">Log</span><span class="p">(</span><span class="s1">&#39;ethane_scan_1.log&#39;</span><span class="p">),</span> <span class="n">pivots</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">],</span> <span class="n">top</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span> <span class="n">symmetry</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">fit</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">),</span>
+    <span class="c1">#HinderedRotor(scanLog=ScanLog(&#39;C2H6_rotor_1.txt&#39;), pivots=[1,5], top=[1,2,3,4], symmetry=3, fit=&#39;best&#39;),</span>
+    <span class="c1">#FreeRotor(pivots=[1,5], top=[1,2,3,4], symmetry=3),</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>Note that the atom labels identified within the rotor section should correspond to the indicated geometry.</p>
+</div>
+</div>
+<div class="section" id="option-2-directly-enter-molecular-properties">
+<h3>3.4.2. Option #2: Directly Enter Molecular Properties<a class="headerlink" href="#option-2-directly-enter-molecular-properties" title="Permalink to this headline">¶</a></h3>
+<p>While it is usually more convenient to have Arkane parse molecular properties from the output of quantum chemistry
+calculations (see <a class="reference internal" href="#option-1-automatically-parse-quantum-chemistry-calculation-output">Option #1: Automatically Parse Quantum Chemistry Calculation Output</a>) there are instances where an
+output file is not available and it is more convenient for the user to directly enter the molecular properties. This is
+the case,  for example, if the user would like to use calculations from literature, where the final calculated molecular
+properties are often reported in a table (e.g., vibrational frequencies, rotational constants), but the actual output
+files of the underlying quantum chemistry calculations are rarely provided.</p>
+<p>For this option, there are a number of required parameters associated with the <code class="docutils literal notranslate"><span class="pre">species()</span></code> function</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="15%" />
+<col width="18%" />
+<col width="67%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Required?</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">label</span></code></td>
+<td>yes</td>
+<td>A unique string label used as an identifier</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">E0</span></code></td>
+<td>yes</td>
+<td>The ground-state 0 K enthalpy of formation (including zero-point energy)</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">modes</span></code></td>
+<td>yes</td>
+<td>The molecular degrees of freedom (see below)</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">spinMultiplicity</span></code></td>
+<td>yes</td>
+<td>The ground-state spin multiplicity (degeneracy), sets to 1 by default if not used</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">opticalIsomers</span></code></td>
+<td>yes</td>
+<td>The number of optical isomers of the species, sets to 1 by default if not used</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">reactive</span></code></td>
+<td>only bath gases</td>
+<td>Boolean indicating whether the molecule reacts, set to <code class="docutils literal notranslate"><span class="pre">False</span></code> for bath gases. default is <code class="docutils literal notranslate"><span class="pre">True</span></code></td>
+</tr>
+</tbody>
+</table>
+<p>The <code class="docutils literal notranslate"><span class="pre">label</span></code> parameter should be set to a string with the desired name for the species, which can be reference later in
+the input file.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;C2H6&#39;</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">E0</span></code> ground state 0 K enthalpy of formation (including zero-point energy) should be given in the quantity format
+<code class="docutils literal notranslate"><span class="pre">(value,</span> <span class="pre">'units')</span></code>, using units of either <code class="docutils literal notranslate"><span class="pre">kJ/mol</span></code>, <code class="docutils literal notranslate"><span class="pre">kcal/mol</span></code>, <code class="docutils literal notranslate"><span class="pre">J/mol</span></code>, or <code class="docutils literal notranslate"><span class="pre">cal/mol</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">E0</span> <span class="o">=</span> <span class="p">(</span><span class="mf">100.725</span><span class="p">,</span> <span class="s1">&#39;kJ/mol&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that if Arkane is being used to calculate the thermochemistry of the species, it is critical that the value of
+<code class="docutils literal notranslate"><span class="pre">E0</span></code> is consistent with the definition above (0 K enthalpy of formation with zero-point energy). However, if the user
+is only interested in kinetics, <code class="docutils literal notranslate"><span class="pre">E0</span></code> can be defined on any arbitrary absolute energy scale, as long as the correct
+relative energies between various <code class="docutils literal notranslate"><span class="pre">species()</span></code> and <code class="docutils literal notranslate"><span class="pre">transitionState()</span></code> are maintained. For example, it is common in
+literature for the energy of some reactant(s) to be arbitrarily defined as zero, and the energies of all transition
+states, intermediates and products are reported relative to that.</p>
+<p>Also note that the value of <code class="docutils literal notranslate"><span class="pre">E0</span></code> provided here will be used directly, i.e., no atom or bond corrections will be applied.</p>
+<p>If you want Cantherm to correct for zero point energy, you can either just place
+the raw units in Hartree (as if it were read directly from quantum):</p>
+<blockquote>
+<div>E0 = 547.6789753223456</div></blockquote>
+<p>Or you can add a third argument to the Quantity specified whether zero-point
+energy is included or not:</p>
+<blockquote>
+<div>E0 = (95.1, ‘kJ/mol’, ‘E0’) # when ZPE is not included
+E0 = (95.1, ‘kJ/mol’, ‘E0-ZPE’) # when ZPE is already included</div></blockquote>
+<p>When specifying the <code class="docutils literal notranslate"><span class="pre">modes</span></code> parameter, define a list
+with the following types of degrees of freedom.  To understand how to define these
+degrees of freedom, please click on the links below:</p>
+<p><strong>Translational degrees of freedom</strong></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="36%" />
+<col width="64%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="../../reference/statmech/idealgastranslation.html#rmgpy.statmech.IdealGasTranslation" title="rmgpy.statmech.IdealGasTranslation"><code class="xref py py-class docutils literal notranslate"><span class="pre">IdealGasTranslation</span></code></a></td>
+<td>A model of three-dimensional translation of an ideal gas</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Rotational degrees of freedom</strong></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="28%" />
+<col width="72%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="../../reference/statmech/linearrotor.html#rmgpy.statmech.LinearRotor" title="rmgpy.statmech.LinearRotor"><code class="xref py py-class docutils literal notranslate"><span class="pre">LinearRotor</span></code></a></td>
+<td>A model of two-dimensional rigid rotation of a linear molecule</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="../../reference/statmech/nonlinearrotor.html#rmgpy.statmech.NonlinearRotor" title="rmgpy.statmech.NonlinearRotor"><code class="xref py py-class docutils literal notranslate"><span class="pre">NonlinearRotor</span></code></a></td>
+<td>A model of three-dimensional rigid rotation of a nonlinear molecule</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="../../reference/statmech/krotor.html#rmgpy.statmech.KRotor" title="rmgpy.statmech.KRotor"><code class="xref py py-class docutils literal notranslate"><span class="pre">KRotor</span></code></a></td>
+<td>A model of one-dimensional rigid rotation of a K-rotor</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="../../reference/statmech/sphericaltoprotor.html#rmgpy.statmech.SphericalTopRotor" title="rmgpy.statmech.SphericalTopRotor"><code class="xref py py-class docutils literal notranslate"><span class="pre">SphericalTopRotor</span></code></a></td>
+<td>A model of three-dimensional rigid rotation of a spherical top molecule</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Vibrational degrees of freedom</strong></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="33%" />
+<col width="67%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="../../reference/statmech/harmonicoscillator.html#rmgpy.statmech.HarmonicOscillator" title="rmgpy.statmech.HarmonicOscillator"><code class="xref py py-class docutils literal notranslate"><span class="pre">HarmonicOscillator</span></code></a></td>
+<td>A model of a set of one-dimensional harmonic oscillators</td>
+</tr>
+</tbody>
+</table>
+<p>Note that the <code class="docutils literal notranslate"><span class="pre">frequencies</span></code> provided here will be used directly, i.e., the <code class="docutils literal notranslate"><span class="pre">frequencyScaleFactor</span></code> will not be applied.</p>
+<p><strong>Torsional degrees of freedom</strong></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="34%" />
+<col width="66%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Class</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="../../reference/statmech/hinderedrotor.html#rmgpy.statmech.HinderedRotor" title="rmgpy.statmech.HinderedRotor"><code class="xref py py-class docutils literal notranslate"><span class="pre">HinderedRotor</span></code></a></td>
+<td>A model of a one-dimensional hindered rotation</td>
+</tr>
+<tr class="row-odd"><td><code class="xref py py-class docutils literal notranslate"><span class="pre">FreeRotor</span></code></td>
+<td>A model of a one-dimensional free rotation</td>
+</tr>
+</tbody>
+</table>
+<p>The <code class="docutils literal notranslate"><span class="pre">spinMultiplicity</span></code> is defined using an integer, and is set to 1 if not indicated
+in the <code class="docutils literal notranslate"><span class="pre">species()</span></code> function.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">spinMultiplicity</span> <span class="o">=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>Similarly, the <code class="docutils literal notranslate"><span class="pre">opticalIsomers</span></code> is also defined using an integer, and is set to 1
+if not used in the <code class="docutils literal notranslate"><span class="pre">species()</span></code> function.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">opticalIsomers</span> <span class="o">=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>The following is an example of a typical <code class="docutils literal notranslate"><span class="pre">species()</span></code> function, based on ethane (different options for specifying the
+same internal rotation are commented out):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">species</span><span class="p">(</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;C2H6&#39;</span><span class="p">,</span>
+    <span class="n">E0</span> <span class="o">=</span> <span class="p">(</span><span class="mf">100.725</span><span class="p">,</span> <span class="s1">&#39;kJ/mol&#39;</span><span class="p">),</span>
+    <span class="n">modes</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">IdealGasTranslation</span><span class="p">(</span><span class="n">mass</span><span class="o">=</span><span class="p">(</span><span class="mf">30.0469</span><span class="p">,</span> <span class="s1">&#39;amu&#39;</span><span class="p">)),</span>
+        <span class="n">NonlinearRotor</span><span class="p">(</span>
+            <span class="n">inertia</span> <span class="o">=</span> <span class="p">([</span><span class="mf">6.27071</span><span class="p">,</span> <span class="mf">25.3832</span><span class="p">,</span> <span class="mf">25.3833</span><span class="p">],</span> <span class="s1">&#39;amu*angstrom^2&#39;</span><span class="p">),</span>
+            <span class="n">symmetry</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="n">HarmonicOscillator</span><span class="p">(</span>
+            <span class="n">frequencies</span> <span class="o">=</span> <span class="p">([</span><span class="mf">818.917</span><span class="p">,</span> <span class="mf">819.48</span><span class="p">,</span> <span class="mf">987.099</span><span class="p">,</span> <span class="mf">1206.81</span><span class="p">,</span> <span class="mf">1207.06</span><span class="p">,</span> <span class="mi">1396</span><span class="p">,</span> <span class="mf">1411.35</span><span class="p">,</span> <span class="mf">1489.78</span><span class="p">,</span> <span class="mf">1489.97</span><span class="p">,</span> <span class="mf">1492.49</span><span class="p">,</span> <span class="mf">1492.66</span><span class="p">,</span> <span class="mf">2995.36</span><span class="p">,</span> <span class="mf">2996.06</span><span class="p">,</span> <span class="mf">3040.83</span><span class="p">,</span> <span class="mi">3041</span><span class="p">,</span> <span class="mf">3065.86</span><span class="p">,</span> <span class="mf">3066.02</span><span class="p">],</span> <span class="s1">&#39;cm^-1&#39;</span><span class="p">),</span>
+        <span class="p">),</span>
+        <span class="n">HinderedRotor</span><span class="p">(</span>
+            <span class="n">inertia</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.56768</span><span class="p">,</span> <span class="s1">&#39;amu*angstrom^2&#39;</span><span class="p">),</span>
+            <span class="n">symmetry</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+            <span class="n">barrier</span> <span class="o">=</span> <span class="p">(</span><span class="mf">11.2717</span><span class="p">,</span> <span class="s1">&#39;kJ/mol&#39;</span><span class="p">),</span>
+        <span class="p">),</span>
+        <span class="c1">#HinderedRotor(</span>
+        <span class="c1">#inertia = (1.56768, &#39;amu*angstrom^2&#39;),</span>
+        <span class="c1">#symmetry = 3,</span>
+        <span class="c1">#fourier = (</span>
+        <span class="c1">#    [</span>
+        <span class="c1">#        [0.00458375, 0.000841648, -5.70271, 0.00602657, 0.0047446],</span>
+        <span class="c1">#        [0.000726951, -0.000677255, 0.000207033, 0.000553307, -0.000503303],</span>
+        <span class="c1">#    ],</span>
+        <span class="c1">#    &#39;kJ/mol&#39;,</span>
+        <span class="c1">#),</span>
+        <span class="c1">#),</span>
+        <span class="c1">#FreeRotor(</span>
+        <span class="c1">#    inertia = (1.56768, &#39;amu*angstrom^2&#39;),</span>
+        <span class="c1">#    symmetry = 3,</span>
+        <span class="c1">#),</span>
+    <span class="p">],</span>
+    <span class="n">spinMultiplicity</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">opticalIsomers</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that the format of the <code class="docutils literal notranslate"><span class="pre">species()</span></code> function above is identical to the <code class="docutils literal notranslate"><span class="pre">conformer()</span></code> function output by Arkane
+in <code class="docutils literal notranslate"><span class="pre">output.py</span></code>. Therefore, the user could directly copy the <code class="docutils literal notranslate"><span class="pre">conformer()</span></code> output of an Arkane job to another Arkane
+input file, change the name of the function to <code class="docutils literal notranslate"><span class="pre">species()</span></code> (or <code class="docutils literal notranslate"><span class="pre">transitionState()</span></code>, if appropriate, see next
+section) and run a new Arkane job in this manner. This can be useful if the user wants to easily switch a <code class="docutils literal notranslate"><span class="pre">species()</span></code>
+function from  Option #1 (parsing  quantum chemistry calculation output) to Option #2 (directly enter molecular properties).</p>
+</div>
+</div>
+<div class="section" id="transition-state">
+<h2>3.5. Transition State<a class="headerlink" href="#transition-state" title="Permalink to this headline">¶</a></h2>
+<p>Transition state(s) are only required when performimg kinetics computations.
+Each transition state of interest must be specified using a <code class="docutils literal notranslate"><span class="pre">transitionState()</span></code>
+function, which is analogous to the <code class="docutils literal notranslate"><span class="pre">species()</span></code> function described above. Therefore, the <code class="docutils literal notranslate"><span class="pre">transitionState()</span></code> function
+may also be specified in two ways: <a class="reference internal" href="#option-1-automatically-parse-quantum-chemistry-calculation-output">Option #1: Automatically Parse Quantum Chemistry Calculation Output</a> and
+<a class="reference internal" href="#option-2-directly-enter-molecular-properties">Option #2: Directly Enter Molecular Properties</a></p>
+<p>The following is an example of a typical <code class="docutils literal notranslate"><span class="pre">transitionState()</span></code> function using Option #1:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">transitionState</span><span class="p">(</span><span class="s1">&#39;TS&#39;</span><span class="p">,</span> <span class="s1">&#39;TS.py&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Just as for a <code class="docutils literal notranslate"><span class="pre">species()</span></code> function, the first parameter is the label for that transition state, and the second
+parameter points to the location of another python file containing details of the transition state. This file will be
+referred to as the transition state input file, and it accepts the same parameters as the species input file described
+in <a class="reference internal" href="#option-1-automatically-parse-quantum-chemistry-calculation-output">Option #1: Automatically Parse Quantum Chemistry Calculation Output</a>.</p>
+<p>The following is an example of a typical  <code class="docutils literal notranslate"><span class="pre">transitionState()</span></code> function using Option #2:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">transitionState</span><span class="p">(</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;TS&#39;</span><span class="p">,</span>
+    <span class="n">E0</span> <span class="o">=</span> <span class="p">(</span><span class="mf">267.403</span><span class="p">,</span> <span class="s1">&#39;kJ/mol&#39;</span><span class="p">),</span>
+    <span class="n">modes</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">IdealGasTranslation</span><span class="p">(</span><span class="n">mass</span><span class="o">=</span><span class="p">(</span><span class="mf">29.0391</span><span class="p">,</span> <span class="s1">&#39;amu&#39;</span><span class="p">)),</span>
+        <span class="n">NonlinearRotor</span><span class="p">(</span>
+            <span class="n">inertia</span> <span class="o">=</span> <span class="p">([</span><span class="mf">6.78512</span><span class="p">,</span> <span class="mf">22.1437</span><span class="p">,</span> <span class="mf">22.2114</span><span class="p">],</span> <span class="s1">&#39;amu*angstrom^2&#39;</span><span class="p">),</span>
+            <span class="n">symmetry</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="n">HarmonicOscillator</span><span class="p">(</span>
+            <span class="n">frequencies</span> <span class="o">=</span> <span class="p">([</span><span class="mf">412.75</span><span class="p">,</span> <span class="mf">415.206</span><span class="p">,</span> <span class="mf">821.495</span><span class="p">,</span> <span class="mf">924.44</span><span class="p">,</span> <span class="mf">982.714</span><span class="p">,</span> <span class="mf">1024.16</span><span class="p">,</span> <span class="mf">1224.21</span><span class="p">,</span> <span class="mf">1326.36</span><span class="p">,</span> <span class="mf">1455.06</span><span class="p">,</span> <span class="mf">1600.35</span><span class="p">,</span> <span class="mf">3101.46</span><span class="p">,</span> <span class="mf">3110.55</span><span class="p">,</span> <span class="mf">3175.34</span><span class="p">,</span> <span class="mf">3201.88</span><span class="p">],</span> <span class="s1">&#39;cm^-1&#39;</span><span class="p">),</span>
+        <span class="p">),</span>
+    <span class="p">],</span>
+    <span class="n">spinMultiplicity</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="n">opticalIsomers</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">frequency</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">750.232</span><span class="p">,</span> <span class="s1">&#39;cm^-1&#39;</span><span class="p">),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>The only additional parameter required for a <code class="docutils literal notranslate"><span class="pre">transitionState()</span></code> function as compared to a <code class="docutils literal notranslate"><span class="pre">species()</span></code> function is
+<code class="docutils literal notranslate"><span class="pre">frequency</span></code>, which is the imaginary frequency of the transition state needed to account for tunneling. Refer to
+<a class="reference internal" href="#option-2-directly-enter-molecular-properties">Option #2: Directly Enter Molecular Properties</a> for a more detailed description of the other parameters.</p>
+</div>
+<div class="section" id="reaction">
+<h2>3.6. Reaction<a class="headerlink" href="#reaction" title="Permalink to this headline">¶</a></h2>
+<p>This is only required if you wish to perform a kinetics computation.
+Each reaction of interest must be specified using a <code class="docutils literal notranslate"><span class="pre">reaction()</span></code> function,
+which accepts the following parameters:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="26%" />
+<col width="74%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">label</span></code></td>
+<td>A unique string label used as an identifier</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">reactants</span></code></td>
+<td>A list of strings indicating the labels of the reactant species</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">products</span></code></td>
+<td>A list of strings indicating the labels of the product species</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">transitionState</span></code></td>
+<td>The string label of the transition state</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">tunneling</span></code></td>
+<td>Method of estimating the quantum tunneling factor (optional)</td>
+</tr>
+</tbody>
+</table>
+<p>The following is an example of a typical reaction function:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">reaction</span><span class="p">(</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;H + C2H4 &lt;=&gt; C2H5&#39;</span><span class="p">,</span>
+    <span class="n">reactants</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">,</span> <span class="s1">&#39;C2H4&#39;</span><span class="p">],</span>
+    <span class="n">products</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;C2H5&#39;</span><span class="p">],</span>
+    <span class="n">transitionState</span> <span class="o">=</span> <span class="s1">&#39;TS&#39;</span><span class="p">,</span>
+    <span class="n">tunneling</span><span class="o">=</span><span class="s1">&#39;Eckart&#39;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Note: the quantum tunneling factor method that may be assigned is either <code class="docutils literal notranslate"><span class="pre">'Eckart'</span></code> or <code class="docutils literal notranslate"><span class="pre">'Wigner'</span></code>.</p>
+</div>
+<div class="section" id="thermodynamics-computations">
+<h2>3.7. Thermodynamics Computations<a class="headerlink" href="#thermodynamics-computations" title="Permalink to this headline">¶</a></h2>
+<p>Use a <code class="docutils literal notranslate"><span class="pre">thermo()</span></code> function to make Arkane execute the thermodynamic
+parameters computatiom for a species. Pass the string label of the species
+you wish to compute the  thermodynamic parameters for and the type of
+thermodynamics polynomial to generate (either <code class="docutils literal notranslate"><span class="pre">'Wilhoit'</span></code> or <code class="docutils literal notranslate"><span class="pre">'NASA'</span></code>).
+A table of relevant thermodynamic parameters will also be displayed in the
+output file.</p>
+<p>Below is a typical <code class="docutils literal notranslate"><span class="pre">thermo()</span></code> execution function:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">thermo</span><span class="p">(</span><span class="s1">&#39;ethane&#39;</span><span class="p">,</span> <span class="s1">&#39;NASA&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="kinetics-computations">
+<h2>3.8. Kinetics Computations<a class="headerlink" href="#kinetics-computations" title="Permalink to this headline">¶</a></h2>
+<p>Use a <code class="docutils literal notranslate"><span class="pre">kinetics()</span></code> function to make Arkane execute the high-pressure limit kinetic
+parameters computation for a reaction. The <code class="docutils literal notranslate"><span class="pre">'label'</span></code> string must correspond to that of
+a defined <code class="docutils literal notranslate"><span class="pre">reaction()</span></code> function. If desired, define a temperature range and number
+of temperatures at which the high-pressure rate coefficient will be tabulated and saved to
+the outupt file. The 3-parameter modified Arrhenius coefficients will automatically be fit
+to the computed rate coefficients. The quantum tunneling factor will also be displayed.</p>
+<p>Below is a typical <code class="docutils literal notranslate"><span class="pre">kinetics()</span></code> function:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kinetics</span><span class="p">(</span>
+<span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;H + C2H4 &lt;=&gt; C2H5&#39;</span><span class="p">,</span>
+<span class="n">Tmin</span> <span class="o">=</span> <span class="p">(</span><span class="mi">400</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span> <span class="n">Tmax</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1200</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span> <span class="n">Tcount</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>If specific temperatures are desired, you may specify a list
+(<code class="docutils literal notranslate"><span class="pre">Tlist</span> <span class="pre">=</span> <span class="pre">([400,500,700,900,1100,1200],'K')</span></code>) instead of Tmin, Tmax, and Tcount.</p>
+<p>This is also acceptable:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kinetics</span><span class="p">(</span><span class="s1">&#39;H + C2H4 &lt;=&gt; C2H5&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If a sensitivity analysis is desired, simply add the conditions at which to calculate sensitivity coefficients
+in the following format, e.g.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kinetics</span><span class="p">(</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;HSOO &lt;=&gt; HOOS&#39;</span><span class="p">,</span>
+    <span class="n">Tmin</span> <span class="o">=</span> <span class="p">(</span><span class="mi">500</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span> <span class="n">Tmax</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3000</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span> <span class="n">Tcount</span> <span class="o">=</span> <span class="mi">15</span><span class="p">,</span>
+    <span class="n">sensitivity_conditions</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">1000</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">),</span> <span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">)]</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>The output of a sensitivity analysis is saved into a <code class="docutils literal notranslate"><span class="pre">sensitivity</span></code> folder in the output directory. A text file, named
+with the reaction label, delineates the semi-normalized sensitivity coefficients <code class="docutils literal notranslate"><span class="pre">dln(k)/dE0</span></code> in units of <code class="docutils literal notranslate"><span class="pre">mol/J</span></code>
+at all requested conditions. A horizontal bar figure is automatically generated per reaction with subplots for both the
+forward and reverse direction at all conditions.</p>
+</div>
+<div class="section" id="examples">
+<h2>3.9. Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<p>Perhaps the best way to learn the input file syntax is by example. To that end,
+a number of example input files and their corresponding output have been given
+in the <code class="docutils literal notranslate"><span class="pre">examples</span></code> directory.</p>
+</div>
+<div class="section" id="troubleshooting-and-faqs">
+<h2>3.10. Troubleshooting and FAQs<a class="headerlink" href="#troubleshooting-and-faqs" title="Permalink to this headline">¶</a></h2>
+<p>1) The network that Arkane generated and the resulting pdf file show abnormally large
+absolute values. What’s going on?</p>
+<blockquote>
+<div>This can happen if the number of atoms and atom types is not properly defined or consistent in your input file(s).</div></blockquote>
+</div>
+<div class="section" id="arkane-user-checklist">
+<h2>3.11. Arkane User Checklist<a class="headerlink" href="#arkane-user-checklist" title="Permalink to this headline">¶</a></h2>
+<p>Using Arkane, or any rate theory package for that matter, requires careful consideration and management of a large
+amount of data, files, and input parameters. As a result, it is easy to make a mistake somewhere. This checklist was
+made to minimize such mistakes for users:</p>
+<ul class="simple">
+<li>Do correct paths exist for pointing to the files containing the electronic energies, molecular geometries and
+vibrational frequencies?</li>
+</ul>
+<p>For calculations involving pressure dependence:</p>
+<ul class="simple">
+<li>Does the network pdf look reasonable? That is, are the relative energies what you expect based on the input?</li>
+</ul>
+<p>For calculations using internal hindered rotors:</p>
+<ul class="simple">
+<li>Did you check to make sure the rotor has a reasonable potential (e.g., visually inspect the automatically generated
+rotor pdf files)?</li>
+<li>Within your input files, do all specified rotors point to the correct files?</li>
+<li>Do all of the atom label indices correspond to those in the file that is read by <code class="docutils literal notranslate"><span class="pre">Log</span></code>?</li>
+<li>Why do the fourier fits look so much different than the results of the ab initio potential energy scan calculations?
+This is likely because the initial scan energy is not at a minimum. One solution is to simply shift the potential with
+respect to angle so that it starts at zero and, instead of having Arkane read a Qchem or Gaussian output file, have
+Arkane point to a ‘ScanLog’ file. Another problem can arise when the potential at 2*pi is also not [close] to zero.</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+  <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    <div class="sphinxsidebarwrapper">
+        <div class="sidebarlogo"><a href="../../index.html">
+            <img src="../../_static/rmg-logo-small.png" alt="RMG" />
+        </a></div>
+      <div id="sidebar">
+        <div id="rmgsidebar">
+          <a href="http://rmg.mit.edu">
+            <div class="menuitem">
+              <img src="../../_static/rmg-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG Website</div>
+              <div class="menutext menudesc">Interactive website for RMG-Py</div>
+            </div>
+          </a>
+          <a href="https://github.com/ReactionMechanismGenerator/RMG-Py">
+            <div class="menuitem">
+              <img src="../../_static/github-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG GitHub</div>
+              <div class="menutext menudesc">View source and post issues</div>
+            </div>
+          </a>
+        </div>
+        <div class="menuitem">
+  <h3><a href="../../contents.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">3. Creating Input Files for Thermodynamics and High-Pressure Limit Kinetics Computations</a><ul>
+<li><a class="reference internal" href="#syntax">3.1. Syntax</a></li>
+<li><a class="reference internal" href="#model-chemistry">3.2. Model Chemistry</a></li>
+<li><a class="reference internal" href="#frequency-scale-factor">3.3. Frequency Scale Factor</a></li>
+<li><a class="reference internal" href="#species">3.4. Species</a><ul>
+<li><a class="reference internal" href="#option-1-automatically-parse-quantum-chemistry-calculation-output">3.4.1. Option #1: Automatically Parse Quantum Chemistry Calculation Output</a><ul>
+<li><a class="reference internal" href="#without-hindered-free-rotors">3.4.1.1. Without Hindered/Free Rotors</a></li>
+<li><a class="reference internal" href="#with-hindered-free-rotors">3.4.1.2. With Hindered/Free Rotors</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#option-2-directly-enter-molecular-properties">3.4.2. Option #2: Directly Enter Molecular Properties</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#transition-state">3.5. Transition State</a></li>
+<li><a class="reference internal" href="#reaction">3.6. Reaction</a></li>
+<li><a class="reference internal" href="#thermodynamics-computations">3.7. Thermodynamics Computations</a></li>
+<li><a class="reference internal" href="#kinetics-computations">3.8. Kinetics Computations</a></li>
+<li><a class="reference internal" href="#examples">3.9. Examples</a></li>
+<li><a class="reference internal" href="#troubleshooting-and-faqs">3.10. Troubleshooting and FAQs</a></li>
+<li><a class="reference internal" href="#arkane-user-checklist">3.11. Arkane User Checklist</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+        <div class="menuitem">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="installation.html"
+                        title="previous chapter">2. Installation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="input_pdep.html"
+                        title="next chapter">4. Creating Input Files for Pressure Dependent Calculations</a></p>
+        </div>
+        <div class="menuitem">
+<div role="note" aria-label="source link">
+    <h3>This Page</h3>
+        <ul class="this-page-menu">
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/arkane/input.rst"
+                   rel="nofollow">View Source</a></li>
+        </ul>
+</div>
+        </div>
+        <div class="menuitem">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+    </div>
+  </div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="input_pdep.html" title="4. Creating Input Files for Pressure Dependent Calculations"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="2. Installation"
+             >previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.1 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >User’s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >Arkane User’s Guide</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
+    </div>
+  </body>
+</html>

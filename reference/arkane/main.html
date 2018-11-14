@@ -1,0 +1,238 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>arkane.Arkane &#8212; RMG-Py 2.1.0 Documentation</title>
+    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Saving Arkane output" href="output.html" />
+    <link rel="prev" title="arkane.KineticsJob" href="kinetics.html" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+  MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+    ce: ["Extension","mhchem"],
+  });
+});
+</script>
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="output.html" title="Saving Arkane output"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="kinetics.html" title="arkane.KineticsJob"
+             accesskey="P">previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.1 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Arkane (<code class="docutils literal notranslate"><span class="pre">arkane</span></code>)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="arkane-arkane">
+<h1>arkane.Arkane<a class="headerlink" href="#arkane-arkane" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="arkane.Arkane">
+<em class="property">class </em><code class="descclassname">arkane.</code><code class="descname">Arkane</code><span class="sig-paren">(</span><em>inputFile=None</em>, <em>outputDirectory=None</em>, <em>verbose=20</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.Arkane" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference internal" href="#arkane.Arkane" title="arkane.Arkane"><code class="xref py py-class docutils literal notranslate"><span class="pre">Arkane</span></code></a> class represents an instance of Arkane, a tool for
+computing properties of chemical species and reactions. The attributes are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="75%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Attribute</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><cite>jobList</cite></td>
+<td>A list of the jobs to execute</td>
+</tr>
+<tr class="row-odd"><td><cite>inputFile</cite></td>
+<td>The path of the input file defining the jobs to execute</td>
+</tr>
+<tr class="row-even"><td><cite>outputDirectory</cite></td>
+<td>The directory in which to write the output files</td>
+</tr>
+<tr class="row-odd"><td><cite>verbose</cite></td>
+<td>The level of detail in the generated logging messages</td>
+</tr>
+</tbody>
+</table>
+<p>The output directory defaults to the same directory as the input file if
+not explicitly specified.</p>
+<p>To use this class programmatically, create an instance and set its
+attributes using either the <code class="xref py py-meth docutils literal notranslate"><span class="pre">__init__()</span></code> method or by directly
+accessing the attributes, and then invoke the <a class="reference internal" href="#arkane.Arkane.execute" title="arkane.Arkane.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">execute()</span></code></a> method.
+You can also populate the attributes from the command line using the
+<a class="reference internal" href="#arkane.Arkane.parseCommandLineArguments" title="arkane.Arkane.parseCommandLineArguments"><code class="xref py py-meth docutils literal notranslate"><span class="pre">parseCommandLineArguments()</span></code></a> method before running <a class="reference internal" href="#arkane.Arkane.execute" title="arkane.Arkane.execute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">execute()</span></code></a>.</p>
+<dl class="method">
+<dt id="arkane.Arkane.execute">
+<code class="descname">execute</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.Arkane.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute, in order, the jobs found in input file specified by the
+<cite>inputFile</cite> attribute.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.Arkane.initializeLog">
+<code class="descname">initializeLog</code><span class="sig-paren">(</span><em>verbose=20</em>, <em>logFile=None</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.Arkane.initializeLog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set up a logger for Arkane to use to print output to stdout. The
+<cite>verbose</cite> parameter is an integer specifying the amount of log text seen
+at the console; the levels correspond to those of the <code class="xref py py-data docutils literal notranslate"><span class="pre">logging</span></code> module.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.Arkane.loadInputFile">
+<code class="descname">loadInputFile</code><span class="sig-paren">(</span><em>inputFile</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.Arkane.loadInputFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a set of jobs from the given <cite>inputFile</cite> on disk. Returns the
+loaded set of jobs as a list.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.Arkane.logFooter">
+<code class="descname">logFooter</code><span class="sig-paren">(</span><em>level=20</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.Arkane.logFooter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Output a footer to the log.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.Arkane.logHeader">
+<code class="descname">logHeader</code><span class="sig-paren">(</span><em>level=20</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.Arkane.logHeader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Output a header containing identifying information about Arkane to the log.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.Arkane.parseCommandLineArguments">
+<code class="descname">parseCommandLineArguments</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.Arkane.parseCommandLineArguments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse the command-line arguments being passed to Arkane. This uses the
+<code class="xref py py-mod docutils literal notranslate"><span class="pre">argparse</span></code> module, which ensures that the command-line arguments are
+sensible, parses them, and returns them.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+  <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    <div class="sphinxsidebarwrapper">
+        <div class="sidebarlogo"><a href="../../index.html">
+            <img src="../../_static/rmg-logo-small.png" alt="RMG" />
+        </a></div>
+      <div id="sidebar">
+        <div id="rmgsidebar">
+          <a href="http://rmg.mit.edu">
+            <div class="menuitem">
+              <img src="../../_static/rmg-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG Website</div>
+              <div class="menutext menudesc">Interactive website for RMG-Py</div>
+            </div>
+          </a>
+          <a href="https://github.com/ReactionMechanismGenerator/RMG-Py">
+            <div class="menuitem">
+              <img src="../../_static/github-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG GitHub</div>
+              <div class="menutext menudesc">View source and post issues</div>
+            </div>
+          </a>
+        </div>
+        <div class="menuitem">
+        </div>
+        <div class="menuitem">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="kinetics.html"
+                        title="previous chapter">arkane.KineticsJob</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="output.html"
+                        title="next chapter">Saving Arkane output</a></p>
+        </div>
+        <div class="menuitem">
+<div role="note" aria-label="source link">
+    <h3>This Page</h3>
+        <ul class="this-page-menu">
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/arkane/main.rst"
+                   rel="nofollow">View Source</a></li>
+        </ul>
+</div>
+        </div>
+        <div class="menuitem">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+    </div>
+  </div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="output.html" title="Saving Arkane output"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="kinetics.html" title="arkane.KineticsJob"
+             >previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.1 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >Arkane (<code class="docutils literal notranslate"><span class="pre">arkane</span></code>)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
+    </div>
+  </body>
+</html>

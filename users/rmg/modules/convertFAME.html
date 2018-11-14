@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>9.8. Convert FAME to CanTherm Input File &#8212; RMG-Py 2.1.0 Documentation</title>
+    <title>9.8. Convert FAME to Arkane Input File &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     
@@ -58,15 +58,18 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="convert-fame-to-cantherm-input-file">
-<span id="convertfame"></span><h1>9.8. Convert FAME to CanTherm Input File<a class="headerlink" href="#convert-fame-to-cantherm-input-file" title="Permalink to this headline">¶</a></h1>
-<p>This module is utilized to convert FAME file types (used in RMG-Java) to CanTherm objects (used in RMG-Py) for pressure
-dependent calculations.</p>
-<p>FAME is an early version of the pdep code in CanTherm written in Fortran and used by RMG-Java. This script enables importing FAME input files into CanTherm. Note that it is mostly designed to load the FAME input files generated automatically by RMG-Java, and may not load hand-crafted FAME input files. If you specify a <cite>moleculeDict</cite>, then this script will use it to associate the species with their structures.</p>
+  <div class="section" id="convert-fame-to-arkane-input-file">
+<span id="convertfame"></span><h1>9.8. Convert FAME to Arkane Input File<a class="headerlink" href="#convert-fame-to-arkane-input-file" title="Permalink to this headline">¶</a></h1>
+<p>This module is utilized to convert FAME file types (used in RMG-Java) to Arkane (formerly called CanTherm) objects
+(used in RMG-Py) for pressure dependent calculations.</p>
+<p>FAME is an early version of the pdep code in Arkane, and it is written in Fortran and used by RMG-Java.
+This script enables importing FAME input files into Arkane. Note that it is mostly designed to load the FAME input files
+generated automatically by RMG-Java, and may not load hand-crafted FAME input files. If you specify a <cite>moleculeDict</cite>,
+then this script will use it to associate the species with their structures.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">convertFAME</span><span class="o">.</span><span class="n">py</span> <span class="n">fame_object</span>
 </pre></div>
 </div>
-<p>where <code class="docutils literal notranslate"><span class="pre">fame_object</span></code> is the FAME file used to be converted into the CanTherm object.</p>
+<p>where <code class="docutils literal notranslate"><span class="pre">fame_object</span></code> is the FAME file used to be converted into the Arkane object.</p>
 <p>Some additional options involve adding an RMG dictionary to process with the file.  The syntax for this is</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">convertFAME</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">d</span> <span class="n">RMG_dictionary</span><span class="o">.</span><span class="n">txt</span> <span class="n">fame_object</span>
 </pre></div>

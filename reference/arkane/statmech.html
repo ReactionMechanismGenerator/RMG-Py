@@ -1,0 +1,196 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>arkane.StatMechJob &#8212; RMG-Py 2.1.0 Documentation</title>
+    <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="arkane.ThermoJob" href="thermo.html" />
+    <link rel="prev" title="arkane.PressureDependenceJob" href="pdep.html" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+  MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+    ce: ["Extension","mhchem"],
+  });
+});
+</script>
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="thermo.html" title="arkane.ThermoJob"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pdep.html" title="arkane.PressureDependenceJob"
+             accesskey="P">previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.1 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">Arkane (<code class="docutils literal notranslate"><span class="pre">arkane</span></code>)</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="arkane-statmechjob">
+<h1>arkane.StatMechJob<a class="headerlink" href="#arkane-statmechjob" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="arkane.StatMechJob">
+<em class="property">class </em><code class="descclassname">arkane.</code><code class="descname">StatMechJob</code><span class="sig-paren">(</span><em>species</em>, <em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob" title="Permalink to this definition">¶</a></dt>
+<dd><p>A representation of a Arkane statistical mechanics job. This job is used
+to compute and save the statistical mechanics information for a single
+species or transition state.</p>
+<dl class="method">
+<dt id="arkane.StatMechJob.execute">
+<code class="descname">execute</code><span class="sig-paren">(</span><em>outputFile=None</em>, <em>plot=False</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute the statistical mechanics job, saving the results to the
+given <cite>outputFile</cite> on disk.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.StatMechJob.load">
+<code class="descname">load</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the statistical mechanics parameters for each conformer from
+the associated files on disk. Creates <code class="xref py py-class docutils literal notranslate"><span class="pre">Conformer</span></code> objects for
+each conformer and appends them to the list of conformers on the
+species object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.StatMechJob.plotHinderedRotor">
+<code class="descname">plotHinderedRotor</code><span class="sig-paren">(</span><em>angle</em>, <em>Vlist</em>, <em>cosineRotor</em>, <em>fourierRotor</em>, <em>rotor</em>, <em>rotorIndex</em>, <em>directory</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob.plotHinderedRotor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the potential for the rotor, along with its cosine and Fourier
+series potential fits. The plot is saved to a set of files of the form
+<code class="docutils literal notranslate"><span class="pre">hindered_rotor_1.pdf</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.StatMechJob.save">
+<code class="descname">save</code><span class="sig-paren">(</span><em>outputFile</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the results of the statistical mechanics job to the file located
+at <cite>path</cite> on disk.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+  <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    <div class="sphinxsidebarwrapper">
+        <div class="sidebarlogo"><a href="../../index.html">
+            <img src="../../_static/rmg-logo-small.png" alt="RMG" />
+        </a></div>
+      <div id="sidebar">
+        <div id="rmgsidebar">
+          <a href="http://rmg.mit.edu">
+            <div class="menuitem">
+              <img src="../../_static/rmg-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG Website</div>
+              <div class="menutext menudesc">Interactive website for RMG-Py</div>
+            </div>
+          </a>
+          <a href="https://github.com/ReactionMechanismGenerator/RMG-Py">
+            <div class="menuitem">
+              <img src="../../_static/github-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG GitHub</div>
+              <div class="menutext menudesc">View source and post issues</div>
+            </div>
+          </a>
+        </div>
+        <div class="menuitem">
+        </div>
+        <div class="menuitem">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pdep.html"
+                        title="previous chapter">arkane.PressureDependenceJob</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="thermo.html"
+                        title="next chapter">arkane.ThermoJob</a></p>
+        </div>
+        <div class="menuitem">
+<div role="note" aria-label="source link">
+    <h3>This Page</h3>
+        <ul class="this-page-menu">
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/reference/arkane/statmech.rst"
+                   rel="nofollow">View Source</a></li>
+        </ul>
+</div>
+        </div>
+        <div class="menuitem">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+    </div>
+  </div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="thermo.html" title="arkane.ThermoJob"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pdep.html" title="arkane.PressureDependenceJob"
+             >previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../index.html">2.2.1 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../index.html" >RMG API Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="index.html" >Arkane (<code class="docutils literal notranslate"><span class="pre">arkane</span></code>)</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2002-2018, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.1.
+    </div>
+  </body>
+</html>
