@@ -420,7 +420,7 @@ def pressureDependence(
                        maximumAtoms=None,
                        ):
 
-    from rmgpy.cantherm.pdep import PressureDependenceJob
+    from arkane.pdep import PressureDependenceJob
     
     # Setting the pressureDependence attribute to non-None enables pressure dependence
     rmg.pressureDependence = PressureDependenceJob(network=None)

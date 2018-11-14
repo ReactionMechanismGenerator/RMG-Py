@@ -2,7 +2,7 @@
 Theory Guide
 ************
 
-The theoretical foundations to some of the parts of RMG and Cantherm
+The theoretical foundations to some of the parts of RMG and Arkane
 are described in greater detail in these sections.
 
 .. toctree::

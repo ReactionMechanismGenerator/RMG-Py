@@ -24,7 +24,7 @@ Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX
 
     rmg.py input.py
 
-You may now use RMG-Py, CanTherm, as well as any of the 
+You may now use RMG-Py, Arkane, as well as any of the
 :ref:`Standalone Modules <modules>` included in the RMG-Py package.
 
 

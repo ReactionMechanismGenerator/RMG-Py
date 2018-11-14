@@ -147,7 +147,7 @@ class Network:
         return string
 
     def __str__(self):
-        """return Network like it would be seen in cantherm input file"""
+        """return Network like it would be seen in an Arkane input file"""
         return "Network(label = '{0}', isomers = {1}, reactants = {2}, products = {3}, "\
                         "pathReactions = {4}, bathGas = {5}, "\
                         "netReactions = {6})".format(self.label, [i.species[0].label for i in self.isomers],

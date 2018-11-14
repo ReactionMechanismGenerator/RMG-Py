@@ -44,12 +44,13 @@ from rmgpy.exceptions import DatabaseError, KineticsError
 
 ################################################################################
 
+
 def saveEntry(f, entry):
     """
     Save an `entry` in the kinetics database by writing a string to
     the given file object `f`.
     """
-    from rmgpy.cantherm.output import prettify
+    from arkane.output import prettify
 
     def sortEfficiencies(efficiencies0):
         efficiencies = {}

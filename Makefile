@@ -33,8 +33,8 @@ else
 endif
 	python setup.py build_ext solver --build-lib . --build-temp build --pyrex-c-in-temp
 
-cantherm:
-	python setup.py build_ext cantherm --build-lib . --build-temp build --pyrex-c-in-temp
+arkane:
+	python setup.py build_ext arkane --build-lib . --build-temp build --pyrex-c-in-temp
 
 check:
 	@ python utilities.py check-dependencies

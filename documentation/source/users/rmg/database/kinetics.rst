@@ -470,7 +470,7 @@ of decreasing reliability are:
 Both training sets and reaction libraries use the observed rate, but rules must
 first be divided by the degeneracy of the reaction. For example, the reaction
 CH4 + OH --> H2O + CH3 has a reaction degeneracy of 4. If one performed an
-experiment or obtained this reaction rate using Cantherm (applying the correct 
+experiment or obtained this reaction rate using Arkane (applying the correct
 symmetry), the resultant rate parameters would be entered into libraries and
 training sets unmodified. However a kinetic rule created for this reaction must
 have its A-factor divided by 4 before being entered into the database. 

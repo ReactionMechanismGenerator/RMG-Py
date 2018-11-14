@@ -1,17 +1,20 @@
 .. _convertFAME:
 
 ***********************************
-Convert FAME to CanTherm Input File
+Convert FAME to Arkane Input File
 ***********************************
 
-This module is utilized to convert FAME file types (used in RMG-Java) to CanTherm objects (used in RMG-Py) for pressure
-dependent calculations.  
+This module is utilized to convert FAME file types (used in RMG-Java) to Arkane (formerly called CanTherm) objects
+(used in RMG-Py) for pressure dependent calculations.
 
-FAME is an early version of the pdep code in CanTherm written in Fortran and used by RMG-Java. This script enables importing FAME input files into CanTherm. Note that it is mostly designed to load the FAME input files generated automatically by RMG-Java, and may not load hand-crafted FAME input files. If you specify a `moleculeDict`, then this script will use it to associate the species with their structures. ::
+FAME is an early version of the pdep code in Arkane, and it is written in Fortran and used by RMG-Java.
+This script enables importing FAME input files into Arkane. Note that it is mostly designed to load the FAME input files
+generated automatically by RMG-Java, and may not load hand-crafted FAME input files. If you specify a `moleculeDict`,
+then this script will use it to associate the species with their structures. ::
 
     python convertFAME.py fame_object
     
-where ``fame_object`` is the FAME file used to be converted into the CanTherm object.
+where ``fame_object`` is the FAME file used to be converted into the Arkane object.
 
 Some additional options involve adding an RMG dictionary to process with the file.  The syntax for this is ::
 
