@@ -165,6 +165,7 @@ class GaussianLog:
         """
 
         modes = []
+        unscaled_frequencies = []
         E0 = 0.0
 
         f = open(self.path, 'r')
@@ -224,6 +225,7 @@ class GaussianLog:
                         # Convert from K to cm^-1
                         if len(frequencies) > 0:
                             frequencies = [freq * 0.695039 for freq in frequencies]  # kB = 0.695039 cm^-1/K
+                            unscaled_frequencies = frequencies
                             vibration = HarmonicOscillator(frequencies=(frequencies,"cm^-1"))
                             modes.append(vibration)
 
@@ -247,7 +249,8 @@ class GaussianLog:
         # Close file when finished
         f.close()
 
-        return Conformer(E0=(E0*0.001,"kJ/mol"), modes=modes, spinMultiplicity=spinMultiplicity, opticalIsomers=opticalIsomers)
+        return Conformer(E0=(E0*0.001,"kJ/mol"), modes=modes, spinMultiplicity=spinMultiplicity,
+                         opticalIsomers=opticalIsomers), unscaled_frequencies
 
     def loadEnergy(self,frequencyScaleFactor=1.):
         """

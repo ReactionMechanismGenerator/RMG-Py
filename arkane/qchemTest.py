@@ -72,11 +72,11 @@ class QChemTest(unittest.TestCase):
         molecular energies can be properly read.
         """        
         log = QchemLog(os.path.join(os.path.dirname(__file__),'data','npropyl.out'))    
-        conformer = log.loadConformer(symfromlog=True)
+        conformer, unscaled_frequencies = log.loadConformer(symfromlog=True)
         self.assertEqual(len(conformer.modes[2]._frequencies.getValue()), 24)    
         self.assertEqual(conformer.modes[2]._frequencies.getValue()[5], 881.79)       
         log = QchemLog(os.path.join(os.path.dirname(__file__),'data','co.out'))        
-        conformer = log.loadConformer(symfromlog=True)
+        conformer, unscaled_frequencies = log.loadConformer(symfromlog=True)
         self.assertEqual(len(conformer.modes[2]._frequencies.getValue()), 1)         
         self.assertEqual(conformer.modes[2]._frequencies.getValue(), 2253.16)    
                            
@@ -86,7 +86,7 @@ class QChemTest(unittest.TestCase):
         molecular modes can be properly read.
         """
         log = QchemLog(os.path.join(os.path.dirname(__file__),'data','npropyl.out'))
-        conformer = log.loadConformer(symfromlog=True)
+        conformer, unscaled_frequencies = log.loadConformer(symfromlog=True)
 
         self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode,IdealGasTranslation)]) == 1)
         self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode,NonlinearRotor)]) == 1)
@@ -99,10 +99,10 @@ class QChemTest(unittest.TestCase):
         molecular degrees of freedom can be properly read.
         """
         log = QchemLog(os.path.join(os.path.dirname(__file__),'data','npropyl.out'))
-        conformer = log.loadConformer(symfromlog=True)
+        conformer, unscaled_frequencies = log.loadConformer(symfromlog=True)
         self.assertEqual(conformer.spinMultiplicity, 2)
         log = QchemLog(os.path.join(os.path.dirname(__file__),'data','co.out'))
-        conformer = log.loadConformer(symfromlog=True)
+        conformer, unscaled_frequencies = log.loadConformer(symfromlog=True)
         self.assertEqual(conformer.spinMultiplicity, 1)
     
     def testLoadCOModesFromQchemLog(self):
@@ -111,7 +111,7 @@ class QChemTest(unittest.TestCase):
         molecular degrees of freedom can be properly read.
         """
         log = QchemLog(os.path.join(os.path.dirname(__file__),'data','co.out'))
-        conformer = log.loadConformer(symfromlog=True)
+        conformer, unscaled_frequencies = log.loadConformer(symfromlog=True)
         E0 = log.loadEnergy()
         
         self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode,IdealGasTranslation)]) == 1)
