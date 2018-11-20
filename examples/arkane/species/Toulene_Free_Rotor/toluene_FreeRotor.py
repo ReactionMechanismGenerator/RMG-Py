@@ -23,6 +23,4 @@ geometry = Log('TolueneFreq.log')
 
 frequencies = Log('TolueneFreq.log')
 
-rotors = [
-FreeRotor(pivots=[3,12],top=[12,13,14,15],symmetry=6)
-]
+rotors = [FreeRotor(pivots=[3,12], top=[12,13,14,15], symmetry=6)]
