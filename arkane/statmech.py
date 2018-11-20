@@ -342,18 +342,17 @@ class StatMechJob(object):
                                     'Please verify that the geometry and Hessian of {0!r} are defined in the same coordinate system'.format(self.species.label))
 
         logging.debug('    Reading molecular degrees of freedom...')
-        conformer = statmechLog.loadConformer(symmetry=externalSymmetry, spinMultiplicity=spinMultiplicity,
-                                              opticalIsomers=opticalIsomers, symfromlog=symfromlog,
-                                              label=self.species.label)
+        conformer, unscaled_frequencies = statmechLog.loadConformer(symmetry=externalSymmetry,
+                                                                    spinMultiplicity=spinMultiplicity,
+                                                                    opticalIsomers=opticalIsomers,
+                                                                    symfromlog=symfromlog,
+                                                                    label=self.species.label)
         for mode in conformer.modes:
             if isinstance(mode, (LinearRotor, NonlinearRotor)):
                 self.supporting_info.append(mode)
                 break
-        for mode in conformer.modes:
-            # repeat loop so the frequencies are added last
-            if isinstance(mode, HarmonicOscillator):
-                self.supporting_info.append(mode)
-                break
+        if unscaled_frequencies:
+            self.supporting_info.append(unscaled_frequencies)
 
         if conformer.spinMultiplicity == 0:
             raise ValueError("Could not read spin multiplicity from log file {0},\n"
