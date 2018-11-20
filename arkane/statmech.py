@@ -55,16 +55,7 @@ from arkane.output import prettify
 from arkane.gaussian import GaussianLog
 from arkane.molpro import MolproLog
 from arkane.qchem import QchemLog
-
-################################################################################
-
-# These are the atoms we currently have enthalpies of formation for
-atom_num_dict = {1: 'H',
-                 3: 'Li', 4: 'Be', 5: 'B', 6: 'C', 7: 'N', 8: 'O', 9: 'F',
-                 11: 'Na', 12: 'Mg', 13: 'Al', 14: 'Si', 15: 'P', 16: 'S', 17: 'Cl', 53: 'I'}
-
-# Use the RDKit periodic table so we can write symbols for not implemented elements
-_rdkit_periodic_table = GetPeriodicTable()
+from arkane.common import symbol_by_number
 
 ################################################################################
 
@@ -373,11 +364,9 @@ class StatMechJob(object):
         atoms = {}
         for atom_num in number:
             try:
-                symbol = atom_num_dict[atom_num]
+                symbol = symbol_by_number[atom_num]
             except KeyError:
-                raise Exception(
-                    'Element {} is not yet supported.'.format(_rdkit_periodic_table.GetElementSymbol(atom_num))
-                )
+                raise Exception('Could not recognize element number {0}.'.format(atom_num))
             atoms[symbol] = atoms.get(symbol, 0) + 1
 
         # Save atoms for use in writing thermo output
@@ -539,7 +528,7 @@ class StatMechJob(object):
             x = coordinates[i,0]
             y = coordinates[i,1]
             z = coordinates[i,2]
-            f.write('#   {0} {1:9.4f} {2:9.4f} {3:9.4f}\n'.format(atom_num_dict[number[i]], x, y, z))
+            f.write('#   {0} {1:9.4f} {2:9.4f} {3:9.4f}\n'.format(symbol_by_number[number[i]], x, y, z))
         
         string = 'conformer(label={0!r}, E0={1!r}, modes={2!r}, spinMultiplicity={3:d}, opticalIsomers={4:d}'.format(
             self.species.label, 
@@ -754,39 +743,40 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds,
         # Note: These values are relatively old and some improvement may be possible by using newer values
         # (particularly for carbon).
         # However, care should be taken to ensure that they are compatible with the BAC values (if BACs are used)
-        # The enthalpies listed here should correspond to the allowed elements in atom_num_dict
         # He, Ne, K, Ca, Ti, Cu, Zn, Ge, Br, Kr, Rb, Ag, Cd, Sn, I, Xe, Cs, Hg, and Pb are taken from CODATA
         # Codata: Cox, J. D., Wagman, D. D., and Medvedev, V. A., CODATA Key Values for Thermodynamics, Hemisphere
         # Publishing Corp., New York, 1989. (http://www.science.uwaterloo.ca/~cchieh/cact/tools/thermodata.html)
-        atomHf = {'H': 51.63, 'He': -1.481,
+        atom_hf = {'H': 51.63, 'He': -1.481,
                   'Li': 37.69, 'Be': 76.48, 'B': 136.2, 'C': 169.98, 'N': 112.53, 'O': 58.99, 'F': 18.47, 'Ne': -1.481,
                   'Na': 25.69, 'Mg': 34.87, 'Al': 78.23, 'Si': 106.6, 'P': 75.42, 'S': 65.66, 'Cl': 28.59,
                   'K': 36.841, 'Ca': 41.014, 'Ti': 111.2, 'Cu': 79.16, 'Zn': 29.685, 'Ge': 87.1, 'Br': 25.26, 'Kr': -1.481,
                   'Rb': 17.86, 'Ag': 66.61, 'Cd': 25.240, 'Sn': 70.50, 'I': 24.04, 'Xe': -1.481,
                   'Cs': 16.80, 'Hg': 13.19, 'Pb': 15.17}
         # Thermal contribution to enthalpy Hss(298 K) - Hss(0 K) reported by Gaussian thermo whitepaper
-        # This will be subtracted from the corresponding value in atomHf to produce an enthalpy used in calculating
+        # This will be subtracted from the corresponding value in atom_hf to produce an enthalpy used in calculating
         # the enthalpy of formation at 298 K
-        atomThermal = {'H': 1.01, 'He': 1.481,
+        atom_thermal = {'H': 1.01, 'He': 1.481,
                        'Li': 1.1, 'Be': 0.46, 'B': 0.29, 'C': 0.25, 'N': 1.04, 'O': 1.04, 'F': 1.05, 'Ne': 1.481,
                        'Na': 1.54, 'Mg': 1.19, 'Al': 1.08, 'Si': 0.76, 'P': 1.28, 'S': 1.05, 'Cl': 1.1,
                        'K': 1.481, 'Ca': 1.481, 'Ti': 1.802, 'Cu': 1.481, 'Zn': 1.481, 'Ge': 1.768, 'Br': 1.481, 'Kr': 1.481,
                        'Rb': 1.481, 'Ag': 1.481, 'Cd': 1.481, 'Sn': 1.485, 'I': 1.481, 'Xe': 1.481,
                        'Cs': 1.481, 'Hg': 1.481, 'Pb': 1.481}
         # Total energy correction used to reach gas-phase reference state
-        # Note: Spin orbit coupling no longer included in these energies, since some model chemistries include it automatically
-        atomEnthalpyCorrections = {element: atomHf[element] - atomThermal[element] for element in atomHf}
+        # Note: Spin orbit coupling is no longer included in these energies, since some model chemistries include it
+        # automatically
+        atom_enthalpy_corrections = {element: atom_hf[element] - atom_thermal[element] for element in atom_hf}
         for symbol, count in atoms.items():
-            if symbol in atomEnthalpyCorrections:
-                E0 += count * atomEnthalpyCorrections[symbol] * 4184.
+            if symbol in atom_enthalpy_corrections:
+                E0 += count * atom_enthalpy_corrections[symbol] * 4184.
             else:
-                raise Exception('Element "{}" is not supported.'.format(symbol))
+                raise Exception('Element "{0}" is not yet supported in Arkane.'
+                                ' To include it, add its experimental heat of formation'.format(symbol))
 
     if applyBondEnergyCorrections:
         # Step 3: Bond energy corrections
-        #The order of elements in the bond correction label is important and should follow the order specified below:
-        #'C', 'N', 'O', 'S', 'P', and 'H'
-        #Use ``-``/``=``/``#`` to denote a single/double/triple bond, respectively.
+        # The order of elements in the bond correction label is important and should follow the order specified below:
+        # 'C', 'N', 'O', 'S', 'P', and 'H'
+        # Use ``-``/``=``/``#`` to denote a single/double/triple bond, respectively.
         # For example, ``'C=N'`` is correct while ``'N=C'`` is incorrect
         bondEnergies = {}
         # 'S-H', 'C-S', 'C=S', 'S-S', 'O-S', 'O=S', 'O=S=O' taken from http://hdl.handle.net/1721.1/98155 (both for
