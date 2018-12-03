@@ -273,7 +273,7 @@ def find_allyl_delocalization_paths(atom1):
 def find_lone_pair_multiple_bond_paths(atom1):
     """
     Find all the delocalization paths between lone electron pair and multiple bond in a 3-atom system
-    `atom1` indicates the delocalized lone pair site.
+    `atom1` indicates the localized lone pair site. Currently carbenes are excluded from this path.
 
     Examples:
     - N2O (N#[N+][O-] <-> [N-]=[N+]=O)
@@ -284,8 +284,8 @@ def find_lone_pair_multiple_bond_paths(atom1):
     """
     cython.declare(paths=list, atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
 
-    # No paths if atom1 has no lone pairs or cannot lose it
-    if atom1.lonePairs <= 0 or not is_atom_able_to_lose_lone_pair(atom1):
+    # No paths if atom1 has no lone pairs, or cannot lose them, or is a carbon atom
+    if atom1.lonePairs <= 0 or not is_atom_able_to_lose_lone_pair(atom1) or atom1.isCarbon():
         return []
 
     paths = []
@@ -365,6 +365,12 @@ def find_adj_lone_pair_multiple_bond_delocalization_paths(atom1):
     cython.declare(paths=list, atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
 
     paths = []
+
+    # Carbenes are currently excluded from this path.
+    # Only atom1 is checked since it is either the donor or acceptor of the lone pair
+    if atom1.isCarbon():
+        return paths
+
     for atom2, bond12 in atom1.edges.items():
         if atom2.isNonHydrogen():  # don't bother with hydrogen atoms.
             # Find paths in the direction <increasing> the bond order,
@@ -399,6 +405,12 @@ def find_adj_lone_pair_radical_multiple_bond_delocalization_paths(atom1):
     cython.declare(paths=list, atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
 
     paths = []
+
+    # Carbenes are currently excluded from this path.
+    # Only atom1 is checked since it is either the donor or acceptor of the lone pair
+    if atom1.isCarbon():
+        return paths
+
     for atom2, bond12 in atom1.edges.items():
         # Find paths in the direction <increasing> the bond order
         # atom1 must posses at least one lone pair to loose it, atom2 must be a radical
