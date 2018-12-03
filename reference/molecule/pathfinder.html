@@ -225,7 +225,7 @@ None if nothing was found.</p>
 <dt id="rmgpy.molecule.pathfinder.find_lone_pair_multiple_bond_paths">
 <code class="descclassname">rmgpy.molecule.pathfinder.</code><code class="descname">find_lone_pair_multiple_bond_paths</code><a class="headerlink" href="#rmgpy.molecule.pathfinder.find_lone_pair_multiple_bond_paths" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find all the delocalization paths between lone electron pair and multiple bond in a 3-atom system
-<cite>atom1</cite> indicates the delocalized lone pair site.</p>
+<cite>atom1</cite> indicates the localized lone pair site. Currently carbenes are excluded from this path.</p>
 <p>Examples:
 - N2O (N#[N+][O-] &lt;-&gt; [N-]=[N+]=O)
 - Azide (N#[N+][NH-] &lt;-&gt; [N-]=[N+]=N &lt;-&gt; [N-2][N+]#[NH+])
