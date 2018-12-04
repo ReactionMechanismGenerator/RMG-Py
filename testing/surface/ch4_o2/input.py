@@ -1,15 +1,15 @@
 # Data sources
 database(
     thermoLibraries=['surfaceThermoPt', 'primaryThermoLibrary', 'thermo_DFT_CCSDTF12_BAC','DFT_QCI_thermo'],
-    reactionLibraries = [('Deutschmann_Ni', False)],
+    reactionLibraries = [('CPOX_Pt/Deutschmann2006', False)],
     seedMechanisms = [],
     kineticsDepositories = ['training'],
     kineticsFamilies = ['surface','default'],
     kineticsEstimator = 'rate rules',
     bindingEnergies = {
-                       'C':(-6.364, 'eV/molecule'),
+                       'C':(-6.364, 'eV/molecule'), # Pt(111)
                        'H':(-2.778, 'eV/molecule'), # UNKNOWN! (Using Ni value from Blaylock)
-                       'O':(-3.481, 'eV/molecule'),
+                       'O':(-3.481, 'eV/molecule'), # Pt(111)
                        },
 )
 
