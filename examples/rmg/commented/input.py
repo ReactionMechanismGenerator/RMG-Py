@@ -22,7 +22,7 @@ database(
     # outside kinetics databases
     kineticsDepositories='default',
     # lists specific families used to generate the model. 'default' uses a list of
-    # families from RMG-Database/input/families/recommended.py
+    # families from RMG-Database/input/kinetics/families/recommended.py
     # a visual list of families is available in PDF form at RMG-database/families
     kineticsFamilies='default',
     # specifies how RMG calculates rates.  currently, the only option is 'rate rules'
