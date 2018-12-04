@@ -4,7 +4,7 @@ database(
     reactionLibraries = [('CPOX_Pt/Deutschmann2006', False)],
     seedMechanisms = [],
     kineticsDepositories = ['training'],
-    kineticsFamilies = ['surface',],
+    kineticsFamilies = ['surface','default'],
     kineticsEstimator = 'rate rules',
     bindingEnergies = {
                        'C':(-6.364, 'eV/molecule'), # Pt(111)
