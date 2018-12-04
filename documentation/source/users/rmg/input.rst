@@ -153,7 +153,7 @@ strings describing which depositories to include.::
 Kinetics Families
 -----------------
 In this section users can specify the particular reaction families that they wish to use to generate their model.
-This can be specified with any combination of specific families and predefined sets from :file:`RMG-database/input/families/recommended.py`.
+This can be specified with any combination of specific families and predefined sets from :file:`RMG-database/input/kinetics/families/recommended.py`.
 
 For example, you can use only the :file:`H_Abstraction` family to build the model::
 
