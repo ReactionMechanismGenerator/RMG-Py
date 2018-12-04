@@ -4,7 +4,7 @@ database(
     reactionLibraries = [('Deutschmann_Ni', False)],
     seedMechanisms = [],
     kineticsDepositories = ['training'],
-    kineticsFamilies = ['surface','default'],
+    kineticsFamilies = ['surface',],
     kineticsEstimator = 'rate rules',
 )
 
