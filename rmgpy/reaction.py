@@ -640,7 +640,7 @@ class Reaction:
             rateCoefficient= self.kinetics.getStickingCoefficient(T)
             adsorbate = None
             for r in self.reactants:
-                if r.isSurfaceSite():
+                if r.containsSurfaceSite():
                     rateCoefficient /= surfaceSiteDensity
                 else:
                     adsorbate = r
