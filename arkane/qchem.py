@@ -272,56 +272,31 @@ class QchemLog:
         the returned value.
         """
         E0 = None
-    
-        f = open(self.path, 'r')
-        line = f.readline()
-        while line != '':
-    
-            if 'Final energy is' in line:
-                E0 = float(line.split()[3]) * constants.E_h * constants.Na
-                logging.debug('energy is {}'.format(str(E0)))
-            
-#            elif 'Zero point vibrational energy' in line:
-                #Qchem's ZPE is in kcal/mol
-#                ZPE = float(line.split()[4]) * 4184
-#                scaledZPE = ZPE * frequencyScaleFactor
-#                print 'ZPE is ' + str(ZPE)
-            # Read the next line in the file
-            line = f.readline()
-    
-        # Close file when finished
-        f.close()
-
-        if E0 is not None:
-            return E0
-        else:
+        with open(self.path, 'r') as f:
+            for line in f:
+                if 'Final energy is' in line:
+                    E0 = float(line.split()[3]) * constants.E_h * constants.Na
+                    logging.debug('energy is {}'.format(str(E0)))
+            if E0 is None:
+                for line in f:
+                    if 'Total energy in the final basis set' in line:
+                        E0 = float(line.split()[8]) * constants.E_h * constants.Na
+                        logging.debug('energy is {}'.format(str(E0)))
+        if E0 is None:
             raise InputError('Unable to find energy in Qchem output file.')
+        return E0
         
     def loadZeroPointEnergy(self,frequencyScaleFactor=1.):
         """
         Load the unscaled zero-point energy in J/mol from a Qchem output file.
         """
-
         ZPE = None
-    
-        f = open(self.path, 'r')
-        line = f.readline()
-        while line != '':
-    
-            # if 'Final energy is' in line:
-            #     E0 = float(line.split()[3]) * constants.E_h * constants.Na
-            #     print 'energy is' + str(E0)
-            if 'Zero point vibrational energy' in line:
-                # Qchem's ZPE is in kcal/mol
-                ZPE = float(line.split()[4]) * 4184
-                # scaledZPE = ZPE * frequencyScaleFactor
-                logging.debug('ZPE is {}'.format(str(ZPE)))
-            # Read the next line in the file
-            line = f.readline()
-    
-        # Close file when finished
-        f.close()
-        
+        with open(self.path, 'r') as f:
+            for line in f:
+                if 'Zero point vibrational energy' in line:
+                    ZPE = float(line.split()[4]) * 4184  # QChem's ZPE is in kcal/mol
+                    # scaledZPE = ZPE * frequencyScaleFactor
+                    logging.debug('ZPE is {}'.format(str(ZPE)))
         if ZPE is not None:
             return ZPE
         else:
@@ -334,27 +309,21 @@ class QchemLog:
         """
         Vlist = []
         angle = []
-        f = open(self.path, 'r')
-        line = f.readline()
-        while line != '':
-            if 'Summary of potential scan:' in line:
-                line = f.readline()
-                print 'found a sucessfully completed Qchem Job'
-                while '-----------------' not in line:
-                    # print len(line.split())
-                    # Vlist.append(float(line.split()[1]))
+        read = False
+        with open(self.path, 'r') as f:
+            for line in f:
+                if '-----------------' in line:
+                    read = False
+                if read:
                     values = [float(item) for item in line.split()]
                     angle.append(values[0])
                     Vlist.append(values[1])
-            # Read the next line in the file
-                    line = f.readline()
-            line = f.readline()
-            if 'SCF failed to converge' in line:
-                print 'Qchem Job did not sucessfully complete: SCF failed to converge'
-                break
-        # Close file when finished
-        print '   Assuming', os.path.basename(self.path), 'is the output from a Qchem PES scan...'
-        f.close()
+                if 'Summary of potential scan:' in line:
+                    logging.info('found a sucessfully completed QChem Job')
+                    read = True
+                elif 'SCF failed to converge' in line:
+                    raise InputError('QChem Job did not sucessfully complete: SCF failed to converge')
+        logging.info('   Assuming {0} is the output from a QChem PES scan...'.format(os.path.basename(self.path)))
 
         Vlist = numpy.array(Vlist, numpy.float64)
         # check to see if the scanlog indicates that one of your reacting species may not be the lowest energy conformer
@@ -372,17 +341,13 @@ class QchemLog:
         Return the imaginary frequency from a transition state frequency
         calculation in cm^-1.
         """
-        
-        f = open(self.path, 'r')
-        line = f.readline()
-        while line != '':
-            # Read imaginary frequency
-            if ' Frequency:' in line:
-                frequency = float((line.split()[1]))
-                break
-            line = f.readline()
-        # Close file when finished
-        f.close()
+        frequency = 0
+        with open(self.path, 'r') as f:
+            for line in f:
+                # Read imaginary frequency
+                if ' Frequency:' in line:
+                    frequency = float((line.split()[1]))
+                    break
         # Make sure the frequency is imaginary:
         if frequency < 0:
             return frequency
