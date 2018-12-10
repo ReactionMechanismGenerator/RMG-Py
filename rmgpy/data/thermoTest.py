@@ -1426,7 +1426,7 @@ def isTCDAvailable():
     return result
 
 
-@unittest.skipIf(not isTCDAvailable(), 'TCD unavailable, skipping unit tests.')
+@unittest.skip('Skipping TCD unit tests because database is offline.')
 class TestThermoCentralDatabaseInterface(unittest.TestCase):
     """
     Contains unit tests for methods of ThermoCentralDatabaseInterface
