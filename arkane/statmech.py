@@ -54,7 +54,7 @@ from rmgpy.quantity import Quantity
 from arkane.output import prettify
 from arkane.gaussian import GaussianLog
 from arkane.molpro import MolproLog
-from arkane.qchem import QchemLog
+from arkane.qchem import QChemLog
 from arkane.common import symbol_by_number
 
 ################################################################################
@@ -210,7 +210,7 @@ class StatMechJob(object):
             'FreeRotor': freeRotor,
             # File formats
             'GaussianLog': GaussianLog,
-            'QchemLog': QchemLog,
+            'QChemLog': QChemLog,
             'MolproLog': MolproLog,
             'ScanLog': ScanLog,
             'Log': Log
@@ -271,7 +271,7 @@ class StatMechJob(object):
         if isinstance(energy, Log):
             energy.determine_qm_software(os.path.join(directory, energy.path))
             energyLog = energy.software_log
-        elif isinstance(energy, (GaussianLog,QchemLog,MolproLog)):
+        elif isinstance(energy, (GaussianLog,QChemLog,MolproLog)):
             energyLog = energy
             energyLog.path = os.path.join(directory, energyLog.path)
         elif isinstance(energy, float):
@@ -337,8 +337,8 @@ class StatMechJob(object):
                                      ' In order to ensure the geometry and Hessian of {0!r} are defined in consistent coordinate systems'
                                      ' for hindered/free rotor projection, either use the frequency log for both geometry and frequency,'
                                      ' or remove rotors.'.format(self.species.label,geomLog.path,statmechLog.path))
-            elif isinstance(statmechLog, QchemLog):
-                    logging.warning('Qchem log will be used for Hessian of {0!r}. '
+            elif isinstance(statmechLog, QChemLog):
+                    logging.warning('QChem log will be used for Hessian of {0!r}. '
                                     'Please verify that the geometry and Hessian of {0!r} are defined in the same coordinate system'.format(self.species.label))
 
         logging.debug('    Reading molecular degrees of freedom...')
@@ -439,7 +439,7 @@ class StatMechJob(object):
                         Vlist, angle = scanLog.loadScanEnergies()
                         scanLogOutput = ScanLog(os.path.join(directory, '{0}_rotor_{1}.txt'.format(self.species.label, rotorCount+1)))
                         scanLogOutput.save(angle, Vlist)
-                    elif isinstance(scanLog, QchemLog):
+                    elif isinstance(scanLog, QChemLog):
                         scanLog.path = os.path.join(directory, scanLog.path)
                         Vlist, angle = scanLog.loadScanEnergies()
                         scanLogOutput = ScanLog(os.path.join(directory, '{0}_rotor_{1}.txt'.format(self.species.label, rotorCount+1)))
@@ -858,7 +858,7 @@ class Log(object):
                 break
             elif 'qchem' in line.lower():
                 f.close()
-                software_log = QchemLog(fullpath)
+                software_log = QChemLog(fullpath)
                 break
             elif 'molpro' in line.lower():
                 f.close()
