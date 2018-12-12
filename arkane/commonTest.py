@@ -29,7 +29,7 @@
 ###############################################################################
 
 """
-This script contains unit tests of the :mod:`rmgpy.quantity` module.
+This script contains unit tests of the :mod:`arkane.common` module.
 """
 
 import unittest
@@ -38,10 +38,11 @@ import os
 
 import rmgpy
 import rmgpy.constants as constants
+from rmgpy.species import Species, TransitionState
 
 from arkane.common import get_element_mass
 from arkane import Arkane, input
-from arkane.statmech import InputError
+from arkane.statmech import InputError, StatMechJob
 from arkane.input import jobList
 
 ################################################################################
@@ -51,26 +52,28 @@ class CommonTest(unittest.TestCase):
     """
     Contains unit tests of Arkane's common functions.
     """
-
     def test_check_conformer_energy(self):
         """
         test the check_conformer_energy function with an list of energies.
         """
-        Vlist = [-272.2779012225, -272.2774933703, -272.2768397635, -272.2778432059, -272.278645477, -272.2789602654, -272.2788749196, -272.278496709, -272.2779350675, -272.2777008843, -272.2777167286, -272.2780937643, -272.2784838846, -272.2788050464, -272.2787865352, -272.2785091607, -272.2779977452, -272.2777957743, -272.2779134906, -272.2781827547, -272.278443339, -272.2788244214, -272.2787748749]
+        Vlist = [-272.2779012225, -272.2774933703, -272.2768397635, -272.2778432059, -272.278645477, -272.2789602654,
+                 -272.2788749196, -272.278496709, -272.2779350675, -272.2777008843, -272.2777167286, -272.2780937643,
+                 -272.2784838846, -272.2788050464, -272.2787865352, -272.2785091607, -272.2779977452, -272.2777957743,
+                 -272.2779134906, -272.2781827547, -272.278443339, -272.2788244214, -272.2787748749]
         Vlist = numpy.array(Vlist, numpy.float64)
         Vdiff = (Vlist[0] - numpy.min(Vlist)) * constants.E_h * constants.Na / 1000
         self.assertAlmostEqual(Vdiff / 2.7805169838282797, 1, 5)
 
 
-class testArkaneJob(unittest.TestCase):
+class TestArkaneJob(unittest.TestCase):
     """
     Contains unit tests of the Arkane module and its interactions with other RMG modules.
     """
+    @classmethod
     def setUp(self):
-
         arkane = Arkane()
-        
-        jobList = arkane.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),'data','methoxy.py'))
+        jobList = arkane.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                                          'data', 'methoxy.py'))
         pdepjob = jobList[-1]
         self.kineticsjob = jobList[0]
         pdepjob.activeJRotor = True
@@ -93,7 +96,7 @@ class testArkaneJob(unittest.TestCase):
         self.method = pdepjob.method
         self.rmgmode = pdepjob.rmgmode
 
-# test Arkane's interactions with the network module
+    # test Arkane's interactions with the network module
     def testNisom(self):
         """
         Test the number of isomers identified.
@@ -124,7 +127,7 @@ class testArkaneJob(unittest.TestCase):
         """
         self.assertEqual(str(self.PathReaction2), 'CH2OH <=> methoxy', msg=None)
 
-# test Arkane's interactions with the pdep module
+    # test Arkane's interactions with the pdep module
     def testTemperaturesUnits(self):
         """
         Test the Temperature Units.
@@ -191,13 +194,15 @@ class testArkaneJob(unittest.TestCase):
         """
         self.assertEqual(self.rmgmode, False, msg=None)
 
-# Test Arkane's interactions with the kinetics module
+    # Test Arkane's interactions with the kinetics module
     def testCalculateTSTRateCoefficient(self):
         """
         Test the calculation of the high-pressure limit rate coef for one of the kinetics jobs at Tmin and Tmax.
         """
-        self.assertEqual("%0.7f" % self.kineticsjob.reaction.calculateTSTRateCoefficient(self.TminValue), str(46608.5904933), msg=None)
-        self.assertEqual("%0.5f" % self.kineticsjob.reaction.calculateTSTRateCoefficient(self.Tmaxvalue), str(498796.64535), msg=None)
+        self.assertEqual("%0.7f" % self.kineticsjob.reaction.calculateTSTRateCoefficient(self.TminValue),
+                         str(46608.5904933), msg=None)
+        self.assertEqual("%0.5f" % self.kineticsjob.reaction.calculateTSTRateCoefficient(self.Tmaxvalue),
+                         str(498796.64535), msg=None)
 
     def testTunneling(self):
         """
@@ -206,10 +211,11 @@ class testArkaneJob(unittest.TestCase):
         self.assertEqual(self.kineticsjob.reaction.transitionState.tunneling, None, msg=None)
 
 
-class testArkaneInput(unittest.TestCase):
+class TestArkaneInput(unittest.TestCase):
     """
     Contains unit tests for loading and processing Arkane input files.
     """
+    @classmethod
     def setUp(self):
         """Preparation for all unit tests in this class."""
         self.directory = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)), 'examples', 'arkane')
@@ -221,22 +227,18 @@ class testArkaneInput(unittest.TestCase):
     def testSpecies(self):
         """Test loading of species input file."""
         spec = input.species('C2H4', os.path.join(self.directory, 'species', 'C2H4', 'ethene.py'))
-
-        self.assertTrue(isinstance(spec, rmgpy.species.Species))
+        self.assertTrue(isinstance(spec, Species))
         self.assertEqual(len(spec.molecule), 0)
 
     def testSpeciesStatmech(self):
         """Test loading of statmech job from species input file."""
         job = jobList[-1]
-
-        self.assertTrue(isinstance(job, arkane.statmech.StatMechJob))
-
+        self.assertTrue(isinstance(job, StatMechJob))
         job.modelChemistry = self.modelChemistry
         job.frequencyScaleFactor = self.frequencyScaleFactor
         job.includeHinderedRotors = self.useHinderedRotors
         job.applyBondEnergyCorrections = self.useBondCorrections
         job.load()
-
         self.assertTrue(isinstance(job.species.props['elementCounts'], dict))
         self.assertEqual(job.species.props['elementCounts']['C'], 2)
         self.assertEqual(job.species.props['elementCounts']['H'], 4)
@@ -245,59 +247,58 @@ class testArkaneInput(unittest.TestCase):
         """Test thermo job execution for species from separate input file."""
         input.thermo('C2H4', 'NASA')
         job = jobList[-1]
-
         filepath = os.path.join(self.directory, 'reactions', 'H+C2H4=C2H5', 'output.py')
         job.execute(outputFile=filepath)
-
         self.assertTrue(os.path.isfile(os.path.join(os.path.dirname(filepath), 'output.py')))
         self.assertTrue(os.path.isfile(os.path.join(os.path.dirname(filepath), 'chem.inp')))
-
         os.remove(os.path.join(os.path.dirname(filepath), 'output.py'))
         os.remove(os.path.join(os.path.dirname(filepath), 'chem.inp'))
 
     def testTransitionState(self):
         """Test loading of transition state input file."""
         ts = input.transitionState('TS', os.path.join(self.directory, 'reactions', 'H+C2H4=C2H5', 'TS.py'))
-
-        self.assertTrue(isinstance(ts, rmgpy.species.TransitionState))
+        self.assertTrue(isinstance(ts, TransitionState))
     
     def testTransitionStateStatmech(self):
         """Test loading of statmech job from transition state input file."""
         job = jobList[-1]
-
-        self.assertTrue(isinstance(job, arkane.statmech.StatMechJob))
-
+        self.assertTrue(isinstance(job, StatMechJob))
         job.modelChemistry = self.modelChemistry
         job.frequencyScaleFactor = self.frequencyScaleFactor
         job.includeHinderedRotors = self.useHinderedRotors
         job.applyBondEnergyCorrections = self.useBondCorrections
         job.load()
 
-class testStatmech(unittest.TestCase):
+
+class TestStatmech(unittest.TestCase):
     """
     Contains unit tests of statmech.py
     """
+    @classmethod
     def setUp(self):
         arkane = Arkane()
-        jobList = arkane.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),'data','Benzyl','input.py'))
+        self.job_list = arkane.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                                         'data', 'Benzyl', 'input.py'))
 
-    def testGaussianLogFileError(self):
+    def test_gaussian_log_file_error(self):
         """Test that the proper error is raised if gaussian geometry and frequency file paths are the same"""
-        job = jobList[-1]
-        self.assertTrue(isinstance(job, arkane.statmech.StatMechJob))
-        self.assertRaises(InputError,job.load())
+        job = self.job_list[-2]
+        self.assertTrue(isinstance(job, StatMechJob))
+        with self.assertRaises(InputError):
+            job.load()
 
-class testGetMass(unittest.TestCase):
+
+class TestGetMass(unittest.TestCase):
     """
     Contains unit tests of common.py
     """
-
     def test_get_mass(self):
         """Test that the correct mass/number/isotop is returned from get_element_mass"""
         self.assertEquals(get_element_mass(1), (1.00782503224, 1))  # test input by integer
         self.assertEquals(get_element_mass('Si'), (27.97692653465, 14))  # test string input and most common isotope
         self.assertEquals(get_element_mass('C', 13), (13.00335483507, 6))  # test specific isotope
         self.assertEquals(get_element_mass('Bk'), (247.0703073, 97))  # test a two-element array (no isotope data)
-        
+
+
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
