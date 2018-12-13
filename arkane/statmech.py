@@ -174,6 +174,7 @@ class StatMechJob(object):
         self.applyBondEnergyCorrections = True
         self.atomEnergies = None
         self.supporting_info = [self.species.label]
+        self.bonds = None
     
     def execute(self, outputFile=None, plot=False):
         """
@@ -223,11 +224,12 @@ class StatMechJob(object):
             except (NameError, TypeError, SyntaxError), e:
                 logging.error('The species file {0} was invalid:'.format(path))
                 raise
-        
-        try:
-            bonds = local_context['bonds']
-        except KeyError:
-            bonds = {}
+
+        if self.bonds is None:
+            try:
+                self.bonds = local_context['bonds']
+            except KeyError:
+                self.bonds = {}
             
         try:
             linear = local_context['linear']
@@ -389,7 +391,7 @@ class StatMechJob(object):
             E0 = applyEnergyCorrections(E0,
                                         self.modelChemistry,
                                         atoms,
-                                        bonds,
+                                        self.bonds,
                                         atomEnergies=self.atomEnergies,
                                         applyAtomEnergyCorrections=self.applyAtomEnergyCorrections,
                                         applyBondEnergyCorrections=self.applyBondEnergyCorrections)
