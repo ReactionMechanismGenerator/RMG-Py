@@ -576,12 +576,21 @@ Euclidian distance = 0
         Also checks that reaction rate was not modified in the process.
         """
         for index, comment in enumerate(self.comments_list):
+            # Clear any leftover kinetics comments
+            self.reaction.kinetics.comment = ''
             previous_rate = self.reaction.kinetics.A.value_si
             new_rxn = readReactionComments(self.reaction, comment)
             new_rate = new_rxn.kinetics.A.value_si
 
             self.assertEqual(new_rxn.degeneracy, self.degeneracy_list[index], 'wrong degeneracy was stored')
             self.assertEqual(previous_rate, new_rate)
+
+            # Check that the comment only appears once in the kinetics comment
+            if new_rxn.degeneracy != 1:
+                self.assertEqual(new_rxn.kinetics.comment.count('Multiplied by reaction path degeneracy {}'.format(new_rxn.degeneracy)), 1,
+                                 'Reaction degeneracy comment duplicated while reading Chemkin comments')
+            else:
+                self.assertTrue('Multiplied by reaction path degeneracy' not in new_rxn.kinetics.comment)
 
     def testRemoveLineBreaks(self):
         """
