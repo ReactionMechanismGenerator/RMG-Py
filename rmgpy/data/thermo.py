@@ -1227,19 +1227,15 @@ class ThermoDatabase(object):
             if thermo0 is None:
                 # If we still don't have thermo, use ML to estimate it, but
                 # only if the molecule is made up of H, C, N, and O atoms and
-                # is not a singlet carbene. Also check ML settings.
+                # is not a singlet carbene. ML settings are checked in
+                # `self.get_thermo_data_from_ml`.
                 if (ml_estimator is not None
                         and all(a.element.number in {1, 6, 7, 8} for a in species.molecule[0].atoms)
                         and species.molecule[0].getSingletCarbeneCount() == 0):
 
-                    nheavy = sum(1 for atom in species.molecule[0].atoms if atom.isNonHydrogen())
-                    min_heavy = ml_settings['min_heavy_atoms'] or 0
-                    max_heavy = ml_settings['max_heavy_atoms'] or numpy.inf
-                    
-                    if min_heavy <= nheavy <= max_heavy:
-                        thermo0 = self.get_thermo_data_from_ml(species,
-                                                               ml_estimator,
-                                                               ml_settings['uncertainty_cutoffs'])
+                    thermo0 = self.get_thermo_data_from_ml(species,
+                                                           ml_estimator,
+                                                           ml_settings)
 
             if thermo0 is None:
                 # And lastly, resort back to group additivity to determine thermo for molecule
@@ -1421,13 +1417,14 @@ class ThermoDatabase(object):
         findCp0andCpInf(species, thermoData)
         return thermoData
 
-    def get_thermo_data_from_ml(self, species, ml_estimator, ml_uncertainty_cutoffs):
+    def get_thermo_data_from_ml(self, species, ml_estimator, ml_settings):
         """
         Return the set of thermodynamic parameters corresponding to a
         given :class:`Species` object `species` by estimation using the
         ML estimator. Also compare the estimated uncertainties to the
         user-defined cutoffs. If any of the uncertainties are larger
-        than their corresponding cutoffs, return None.
+        than their corresponding cutoffs, return None. Also check all
+        other options in `ml_settings`.
 
         For HBI, the resonance isomer with the lowest H298 is used and
         the resonance isomers in species are sorted in ascending order.
@@ -1435,7 +1432,36 @@ class ThermoDatabase(object):
         The entropy is not corrected for the symmetry of the molecule.
         This should be done later by the calling function.
         """
-        if species.molecule[0].isRadical():
+        molecule = species.molecule[0]
+
+        min_heavy = ml_settings['min_heavy_atoms'] or 1
+        max_heavy = ml_settings['max_heavy_atoms'] or numpy.inf
+        min_carbon = ml_settings['min_carbon_atoms'] or 0
+        max_carbon = ml_settings['max_carbon_atoms'] or numpy.inf
+        min_oxygen = ml_settings['min_oxygen_atoms'] or 0
+        max_oxygen = ml_settings['max_oxygen_atoms'] or numpy.inf
+        min_nitrogen = ml_settings['min_nitrogen_atoms'] or 0
+        max_nitrogen = ml_settings['max_nitrogen_atoms'] or numpy.inf
+
+        element_count = molecule.get_element_count()
+        n_heavy = sum(count for element, count in element_count.iteritems() if element != 'H')
+
+        if not(min_heavy <= n_heavy <= max_heavy):
+            return None
+        if not(min_carbon <= element_count.get('C', 0) <= max_carbon):
+            return None
+        if not(min_oxygen <= element_count.get('O', 0) <= max_oxygen):
+            return None
+        if not(min_nitrogen <= element_count.get('N', 0) <= max_nitrogen):
+            return None
+
+        if ml_settings['only_cyclics'] and not molecule.isCyclic():
+            return None
+        min_cycle_overlap = ml_settings['min_cycle_overlap']
+        if min_cycle_overlap > 0 and molecule.getMaxCycleOverlap() < min_cycle_overlap:
+            return None
+
+        if molecule.isRadical():
             thermo = [self.estimateRadicalThermoViaHBI(mol, ml_estimator.get_thermo_data) for mol in species.molecule]
             H298 = numpy.array([tdata.H298 for tdata in thermo])
             indices = H298.argsort()
@@ -1453,6 +1479,7 @@ class ThermoDatabase(object):
             Cp=numpy.average(thermo0.Cpdata.uncertainty_si, weights=thermo0.Tdata.value_si)
         )
 
+        ml_uncertainty_cutoffs = ml_settings['uncertainty_cutoffs']
         if any(uncertainties[p] > ml_uncertainty_cutoffs[p].value_si for p in ml_uncertainty_cutoffs):
             return None
         else:
