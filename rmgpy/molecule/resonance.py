@@ -220,29 +220,16 @@ def generate_resonance_structures(mol, clar_structures=True, keep_isomorphic=Fal
     # Special handling for aromatic species
     if features['isAromatic']:
         if features['isRadical'] and not features['isArylRadical']:
-            if features['isPolycyclicAromatic']:
-                _generate_resonance_structures(mol_list, [generate_kekule_structure],
-                                               keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
-                _generate_resonance_structures(mol_list, [generate_allyl_delocalization_resonance_structures],
-                                               keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
-                if clar_structures:
-                    _generate_resonance_structures(mol_list, [generate_clar_structures],
-                                                   keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
-                else:
-                    _generate_resonance_structures(mol_list, [generate_aromatic_resonance_structure],
-                                                   keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
-            else:
-                _generate_resonance_structures(mol_list, [generate_kekule_structure],
-                                               keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
-                _generate_resonance_structures(mol_list, [generate_allyl_delocalization_resonance_structures],
-                                               keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
-        elif features['isPolycyclicAromatic']:
-            if clar_structures:
-                _generate_resonance_structures(mol_list, [generate_clar_structures],
-                                               keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
-            else:
-                _generate_resonance_structures(mol_list, [generate_aromatic_resonance_structure],
-                                               keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
+            _generate_resonance_structures(mol_list, [generate_kekule_structure],
+                                           keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
+            _generate_resonance_structures(mol_list, [generate_allyl_delocalization_resonance_structures],
+                                           keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
+        if features['isPolycyclicAromatic'] and clar_structures:
+            _generate_resonance_structures(mol_list, [generate_clar_structures],
+                                           keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
+        else:
+            _generate_resonance_structures(mol_list, [generate_aromatic_resonance_structure],
+                                           keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
 
     # Generate remaining resonance structures
     method_list = populate_resonance_algorithms(features)
