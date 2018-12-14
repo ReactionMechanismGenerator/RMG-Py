@@ -33,7 +33,7 @@ the vertices and edges (:class:`Vertex` and :class:`Edge`, respectively) that
 are the components of a graph.
 """
 
-import logging
+import itertools
 import py_rdl
 from .vf2 cimport VF2
 
@@ -1030,6 +1030,25 @@ cdef class Graph:
             raise RuntimeError('Input vertices do not comprise a single cycle.')
 
         return ordered
+
+    cpdef int getMaxCycleOverlap(self):
+        """
+        Return the maximum number of vertices that are shared between
+        any two cycles in the graph. For example, if there are only
+        disparate monocycles or no cycles, the maximum overlap is zero;
+        if there are "spiro" cycles, it is one; if there are "fused"
+        cycles, it is two; and if there are "bridged" cycles, it is
+        three.
+        """
+        cdef list cycles
+        cdef int max_overlap, overlap, i, j
+
+        cycles = self.getSmallestSetOfSmallestRings()
+        max_overlap = 0
+        for i, j in itertools.combinations(range(len(cycles)), 2):
+            overlap = len(set(cycles[i]) & set(cycles[j]))
+            max_overlap = max(overlap, max_overlap)
+        return max_overlap
 
     cpdef list getLargestRing(self, Vertex vertex):
         """
