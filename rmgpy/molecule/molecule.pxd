@@ -121,6 +121,8 @@ cdef class Bond(Edge):
 
     cpdef decrementOrder(self)
 
+    cpdef str get_bond_string(self)
+
 ################################################################################
 
 cdef class Molecule(Graph):
@@ -244,5 +246,7 @@ cdef class Molecule(Graph):
     cpdef bint atomIDValid(self)
 
     cpdef bint isIdentical(self, Molecule other) except -2
+
+    cpdef dict enumerate_bonds(self)
 
 cdef atom_id_counter
