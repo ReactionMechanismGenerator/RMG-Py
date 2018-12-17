@@ -654,6 +654,7 @@ def readThermoInputFile(path, rmg0):
         'solvation': solvation,
         'adjacencyList': adjacencyList,
         'quantumMechanics': quantumMechanics,
+        'mlEstimator': mlEstimator,
     }
 
     try:
