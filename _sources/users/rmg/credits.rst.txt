@@ -15,7 +15,7 @@ Current Developers: (rmg_dev@mit.edu)
 
 - Dr. Alon G. Dana
 - Mark Goldman
-- Kehang Han
+- Colin Grambow
 - Matt Johnson
 - Mengjie Liu
 - Mark Payne
@@ -28,6 +28,7 @@ Previous Developers:
 - Dr. Beat A. Buesser
 - Dr. Caleb A. Class
 - Dr. Connie Gao
+- Dr. Kehang Han
 - Dr. Fariba S. Khanshan
 - Victor Lambert
 - Dr. Shamel S. Merchant

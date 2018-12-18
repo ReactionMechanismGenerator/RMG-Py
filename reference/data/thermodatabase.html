@@ -196,12 +196,13 @@ for a library with that name. If no match is found in that library,
 
 <dl class="method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.get_thermo_data_from_ml">
-<code class="descname">get_thermo_data_from_ml</code><span class="sig-paren">(</span><em>species</em>, <em>ml_estimator</em>, <em>ml_uncertainty_cutoffs</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.get_thermo_data_from_ml" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_thermo_data_from_ml</code><span class="sig-paren">(</span><em>species</em>, <em>ml_estimator</em>, <em>ml_settings</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.get_thermo_data_from_ml" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the set of thermodynamic parameters corresponding to a
 given <code class="xref py py-class docutils literal notranslate"><span class="pre">Species</span></code> object <cite>species</cite> by estimation using the
 ML estimator. Also compare the estimated uncertainties to the
 user-defined cutoffs. If any of the uncertainties are larger
-than their corresponding cutoffs, return None.</p>
+than their corresponding cutoffs, return None. Also check all
+other options in <cite>ml_settings</cite>.</p>
 <p>For HBI, the resonance isomer with the lowest H298 is used and
 the resonance isomers in species are sorted in ascending order.</p>
 <p>The entropy is not corrected for the symmetry of the molecule.

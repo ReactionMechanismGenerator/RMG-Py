@@ -487,9 +487,18 @@ for new users to better understand the options of rmg input files</p>
 <span class="c1">#     thermo=True,</span>
 <span class="c1">#     # Name of folder containing ML architecture and parameters in database</span>
 <span class="c1">#     name=&#39;main&#39;,</span>
-<span class="c1">#     # Limits on heavy atom numbers</span>
+<span class="c1">#     # Limits on atom numbers</span>
 <span class="c1">#     minHeavyAtoms=1,</span>
 <span class="c1">#     maxHeavyAtoms=None,</span>
+<span class="c1">#     minCarbonAtoms=0,</span>
+<span class="c1">#     maxCarbonAtoms=None,</span>
+<span class="c1">#     minOxygenAtoms=0,</span>
+<span class="c1">#     maxOxygenAtoms=None,</span>
+<span class="c1">#     minNitrogenAtoms=0,</span>
+<span class="c1">#     maxNitrogenAtoms=None,</span>
+<span class="c1">#     # Limits on cycles</span>
+<span class="c1">#     onlyCyclics=False,</span>
+<span class="c1">#     minCycleOverlap=0,  # specifies the minimum number of atoms that must be shared between any two cycles</span>
 <span class="c1">#     # If the estimated uncertainty of the thermo prediction is greater than</span>
 <span class="c1">#     # any of these values, then don&#39;t use the ML estimate</span>
 <span class="c1">#     H298UncertaintyCutoff=(3.0, &#39;kcal/mol&#39;),</span>

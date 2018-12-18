@@ -597,8 +597,47 @@ thermodynamic parameters.</p>
 </tbody>
 </table>
 </div>
+<div class="section" id="machine-learning-based-thermo-estimation">
+<span id="mlestimation"></span><h2>4.8. Machine Learning-based Thermo Estimation<a class="headerlink" href="#machine-learning-based-thermo-estimation" title="Permalink to this headline">¶</a></h2>
+<p>This block is used to turn on the machine learning module to estimate thermodynamic parameters.
+These calculations are only run if the molecule is not included in a specified thermo library.
+There are a number of different settings that can be specified to tune the estimator so that it only tries to estimate
+some species. This is useful because the machine learning model may perform poorly for some molecules and group
+additivity may be more suitable. Using the machine learning estimator for fused cyclic species of moderate size or any
+species with significant proportions of oxygen and/or nitrogen atoms will most likely yield better estimates than
+group additivity.</p>
+<p>The available options with their default values are</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mlEstimator</span><span class="p">(</span>
+    <span class="n">thermo</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;main&#39;</span><span class="p">,</span>
+    <span class="n">minHeavyAtoms</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">maxHeavyAtoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">minCarbonAtoms</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">maxCarbonAtoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">minOxygenAtoms</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">maxOxygenAtoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">minNitrogenAtoms</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">maxNitrogenAtoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">onlyCyclics</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">minCycleOverlap</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">H298UncertaintyCutoff</span><span class="o">=</span><span class="p">(</span><span class="mf">3.0</span><span class="p">,</span> <span class="s1">&#39;kcal/mol&#39;</span><span class="p">),</span>
+    <span class="n">S298UncertaintyCutoff</span><span class="o">=</span><span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="s1">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
+    <span class="n">CpUncertaintyCutoff</span><span class="o">=</span><span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="s1">&#39;cal/(mol*K)&#39;</span><span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">name</span></code> is the name of the folder containing the machine learning model architecture and parameters in the RMG
+database. The next several options allow setting limits on the numbers of atoms. <code class="docutils literal notranslate"><span class="pre">onlyCyclics</span></code> means that only cyclic
+species will be estimated. <code class="docutils literal notranslate"><span class="pre">minCycleOverlap</span></code> specified the minimum number of atoms that must be shared between any
+two cycles. For example, if there are only disparate monocycles or no cycles in a species, the overlap is zero;
+“spiro” cycles have an overlap of one; “fused” cycles have an overlap of two; and “bridged” cycles have an overlap of
+at least three. Note that specifying any value greater than zero will automatically restrict the machine learning
+estimator to only consider cyclic species regardless of the <code class="docutils literal notranslate"><span class="pre">onlyCyclics</span></code> setting.</p>
+<p>If the estimated uncertainty of the thermo prediction is greater than any of the <code class="docutils literal notranslate"><span class="pre">UncertaintyCutoff</span></code> values, then
+machine learning estimation is not used for that species.</p>
+</div>
 <div class="section" id="pressure-dependence">
-<span id="pressuredependence"></span><h2>4.8. Pressure Dependence<a class="headerlink" href="#pressure-dependence" title="Permalink to this headline">¶</a></h2>
+<span id="pressuredependence"></span><h2>4.9. Pressure Dependence<a class="headerlink" href="#pressure-dependence" title="Permalink to this headline">¶</a></h2>
 <p>This block is used when the model should account for pressure
 dependent rate coefficients. RMG can estimate pressure dependence kinetics based on <code class="docutils literal notranslate"><span class="pre">Modified</span> <span class="pre">Strong</span> <span class="pre">Collision</span></code> and <code class="docutils literal notranslate"><span class="pre">Reservoir</span> <span class="pre">State</span></code> methods.
 The former utilizes the modified strong collision approach of Chang, Bozzelli, and Dean <a class="reference internal" href="#chang2000" id="id3">[Chang2000]</a>,
@@ -619,7 +658,7 @@ and is more theoretically sound but more expensive.</p>
 </div>
 <p>The various options are as follows:</p>
 <div class="section" id="method-used-for-estimating-pressure-dependent-kinetics">
-<h3>4.8.1. Method used for estimating pressure dependent kinetics<a class="headerlink" href="#method-used-for-estimating-pressure-dependent-kinetics" title="Permalink to this headline">¶</a></h3>
+<h3>4.9.1. Method used for estimating pressure dependent kinetics<a class="headerlink" href="#method-used-for-estimating-pressure-dependent-kinetics" title="Permalink to this headline">¶</a></h3>
 <p>To specify the modified strong collision approach, this item should read</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;Modified Strong Collision&#39;</span>
 </pre></div>
@@ -643,7 +682,7 @@ and is more theoretically sound but more expensive.</p>
 </table>
 </div>
 <div class="section" id="grain-size-and-minimum-number-of-grains">
-<h3>4.8.2. Grain size and minimum number of grains<a class="headerlink" href="#grain-size-and-minimum-number-of-grains" title="Permalink to this headline">¶</a></h3>
+<h3>4.9.2. Grain size and minimum number of grains<a class="headerlink" href="#grain-size-and-minimum-number-of-grains" title="Permalink to this headline">¶</a></h3>
 <p>Since the <span class="math notranslate nohighlight">\(k(E)\)</span> requires discretization in the energy space, we need to specify the number of energy grains to use
 when solving the Master Equation. The default value for the minimum number of grains is 250; this was selected to balance the speed
 and accuracy of the Master Equation solver method.  However, for some pressure-dependent networks,
@@ -655,7 +694,7 @@ the high-P limit</p>
 </div>
 </div>
 <div class="section" id="temperature-and-pressure-for-the-interpolation-scheme">
-<h3>4.8.3. Temperature and pressure for the interpolation scheme<a class="headerlink" href="#temperature-and-pressure-for-the-interpolation-scheme" title="Permalink to this headline">¶</a></h3>
+<h3>4.9.3. Temperature and pressure for the interpolation scheme<a class="headerlink" href="#temperature-and-pressure-for-the-interpolation-scheme" title="Permalink to this headline">¶</a></h3>
 <p>To generate the <span class="math notranslate nohighlight">\(k(T,P)\)</span> interpolation model, a set of temperatures and pressures must be used. RMG can do this automatically, but it must be told a few parameters.
 We need to specify the limits of the temperature and pressure for the fitting of the interpolation scheme and the number of points to be considered in between this limit.
 For typical combustion model temperatures of the experiments range from 300 - 2000 K and pressure 1E-2 to 100 bar</p>
@@ -665,7 +704,7 @@ For typical combustion model temperatures of the experiments range from 300 - 20
 </div>
 </div>
 <div class="section" id="interpolation-scheme">
-<h3>4.8.4. Interpolation scheme<a class="headerlink" href="#interpolation-scheme" title="Permalink to this headline">¶</a></h3>
+<h3>4.9.4. Interpolation scheme<a class="headerlink" href="#interpolation-scheme" title="Permalink to this headline">¶</a></h3>
 <p>To use logarithmic interpolation of pressure and Arrhenius interpolation for temperature, use the
 line</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">interpolation</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;PDepArrhenius&#39;</span><span class="p">,)</span>
@@ -691,7 +730,7 @@ The number of pressures and temperature coefficents should always be smaller
 than the respective number of user-specified temperatures and pressures.</p>
 </div>
 <div class="section" id="maximum-size-of-adduct-for-which-pressure-dependence-kinetics-be-generated">
-<h3>4.8.5. Maximum size of adduct for which pressure dependence kinetics be generated<a class="headerlink" href="#maximum-size-of-adduct-for-which-pressure-dependence-kinetics-be-generated" title="Permalink to this headline">¶</a></h3>
+<h3>4.9.5. Maximum size of adduct for which pressure dependence kinetics be generated<a class="headerlink" href="#maximum-size-of-adduct-for-which-pressure-dependence-kinetics-be-generated" title="Permalink to this headline">¶</a></h3>
 <p>By default pressure dependence is run for every system that might show pressure
 dependence, i.e. every isomerization, dissociation, and association reaction.
 In reality, larger molecules are less likely to exhibit pressure-dependent
@@ -708,7 +747,7 @@ of atoms (16 in the above example).</p>
 </div>
 </div>
 <div class="section" id="miscellaneous-options">
-<span id="miscellaneousoptions"></span><h2>4.9. Miscellaneous Options<a class="headerlink" href="#miscellaneous-options" title="Permalink to this headline">¶</a></h2>
+<span id="miscellaneousoptions"></span><h2>4.10. Miscellaneous Options<a class="headerlink" href="#miscellaneous-options" title="Permalink to this headline">¶</a></h2>
 <p>Miscellaneous options:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">options</span><span class="p">(</span>
     <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Seed&#39;</span><span class="p">,</span>
@@ -741,7 +780,7 @@ HTML file for your model containing all the species and reactions.  Turning this
 <p>Setting <code class="docutils literal notranslate"><span class="pre">trimolecularProductReversible</span></code> to <code class="docutils literal notranslate"><span class="pre">False</span></code> will not allow families with three products to react in the reverse direction. Default is <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
 </div>
 <div class="section" id="species-constraints">
-<h2>4.10. Species Constraints<a class="headerlink" href="#species-constraints" title="Permalink to this headline">¶</a></h2>
+<h2>4.11. Species Constraints<a class="headerlink" href="#species-constraints" title="Permalink to this headline">¶</a></h2>
 <p>RMG can generate mechanisms with a number of optional species constraints,
 such as total number of carbon atoms or electrons per species. These are applied to
 all of RMG’s reaction families.</p>
@@ -771,7 +810,7 @@ forbidden groups.</p>
 <p>By default, the <code class="docutils literal notranslate"><span class="pre">allowSingletO2</span></code> flag is set to <code class="docutils literal notranslate"><span class="pre">False</span></code>.  See <a class="reference internal" href="species.html#representing-oxygen"><span class="std std-ref">Representing Oxygen</span></a> for more information.</p>
 </div>
 <div class="section" id="staging">
-<h2>4.11. Staging<a class="headerlink" href="#staging" title="Permalink to this headline">¶</a></h2>
+<h2>4.12. Staging<a class="headerlink" href="#staging" title="Permalink to this headline">¶</a></h2>
 <p>It is now possible to concatenate different model and simulator blocks into the same run in stages.  Any given stage will terminate when the RMG run terminates and then the current group of model and simulator parameters will be switched out with the next group and the run will continue until that stage terminates.  Once the last stage terminates the run ends normally.  This is currently enabled only for the model and simulator blocks.</p>
 <p>There must be the same number of each of these blocks (although only having one simulator block and many model blocks is enabled as well) and RMG will enter each stage these define in the order they were put in the input file.</p>
 <p>To enable easier manipulation of staging a new parameter in the model block was developed maxNumSpecies that is the number of core species at which that stage (or if it is the last stage the entire model generation process) will terminate.</p>
@@ -844,17 +883,18 @@ forbidden groups.</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#on-the-fly-quantum-calculations">4.7. On the fly Quantum Calculations</a></li>
-<li><a class="reference internal" href="#pressure-dependence">4.8. Pressure Dependence</a><ul>
-<li><a class="reference internal" href="#method-used-for-estimating-pressure-dependent-kinetics">4.8.1. Method used for estimating pressure dependent kinetics</a></li>
-<li><a class="reference internal" href="#grain-size-and-minimum-number-of-grains">4.8.2. Grain size and minimum number of grains</a></li>
-<li><a class="reference internal" href="#temperature-and-pressure-for-the-interpolation-scheme">4.8.3. Temperature and pressure for the interpolation scheme</a></li>
-<li><a class="reference internal" href="#interpolation-scheme">4.8.4. Interpolation scheme</a></li>
-<li><a class="reference internal" href="#maximum-size-of-adduct-for-which-pressure-dependence-kinetics-be-generated">4.8.5. Maximum size of adduct for which pressure dependence kinetics be generated</a></li>
+<li><a class="reference internal" href="#machine-learning-based-thermo-estimation">4.8. Machine Learning-based Thermo Estimation</a></li>
+<li><a class="reference internal" href="#pressure-dependence">4.9. Pressure Dependence</a><ul>
+<li><a class="reference internal" href="#method-used-for-estimating-pressure-dependent-kinetics">4.9.1. Method used for estimating pressure dependent kinetics</a></li>
+<li><a class="reference internal" href="#grain-size-and-minimum-number-of-grains">4.9.2. Grain size and minimum number of grains</a></li>
+<li><a class="reference internal" href="#temperature-and-pressure-for-the-interpolation-scheme">4.9.3. Temperature and pressure for the interpolation scheme</a></li>
+<li><a class="reference internal" href="#interpolation-scheme">4.9.4. Interpolation scheme</a></li>
+<li><a class="reference internal" href="#maximum-size-of-adduct-for-which-pressure-dependence-kinetics-be-generated">4.9.5. Maximum size of adduct for which pressure dependence kinetics be generated</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#miscellaneous-options">4.9. Miscellaneous Options</a></li>
-<li><a class="reference internal" href="#species-constraints">4.10. Species Constraints</a></li>
-<li><a class="reference internal" href="#staging">4.11. Staging</a></li>
+<li><a class="reference internal" href="#miscellaneous-options">4.10. Miscellaneous Options</a></li>
+<li><a class="reference internal" href="#species-constraints">4.11. Species Constraints</a></li>
+<li><a class="reference internal" href="#staging">4.12. Staging</a></li>
 </ul>
 </li>
 </ul>

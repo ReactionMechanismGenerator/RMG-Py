@@ -190,6 +190,17 @@ in order in the ring structure.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.graph.Graph.getMaxCycleOverlap">
+<code class="descname">getMaxCycleOverlap</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#rmgpy.molecule.graph.Graph.getMaxCycleOverlap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the maximum number of vertices that are shared between
+any two cycles in the graph. For example, if there are only
+disparate monocycles or no cycles, the maximum overlap is zero;
+if there are “spiro” cycles, it is one; if there are “fused”
+cycles, it is two; and if there are “bridged” cycles, it is
+three.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.graph.Graph.getMonocyclicRings">
 <code class="descname">getMonocyclicRings</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#rmgpy.molecule.graph.Graph.getMonocyclicRings" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of cycles that are monocyclic.</p>
