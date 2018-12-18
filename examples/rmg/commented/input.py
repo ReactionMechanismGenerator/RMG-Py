@@ -263,9 +263,18 @@ generatedSpeciesConstraints(
 #     thermo=True,
 #     # Name of folder containing ML architecture and parameters in database
 #     name='main',
-#     # Limits on heavy atom numbers
+#     # Limits on atom numbers
 #     minHeavyAtoms=1,
 #     maxHeavyAtoms=None,
+#     minCarbonAtoms=0,
+#     maxCarbonAtoms=None,
+#     minOxygenAtoms=0,
+#     maxOxygenAtoms=None,
+#     minNitrogenAtoms=0,
+#     maxNitrogenAtoms=None,
+#     # Limits on cycles
+#     onlyCyclics=False,
+#     minCycleOverlap=0,  # specifies the minimum number of atoms that must be shared between any two cycles
 #     # If the estimated uncertainty of the thermo prediction is greater than
 #     # any of these values, then don't use the ML estimate
 #     H298UncertaintyCutoff=(3.0, 'kcal/mol'),

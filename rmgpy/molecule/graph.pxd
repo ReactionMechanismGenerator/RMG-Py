@@ -151,6 +151,8 @@ cdef class Graph:
     cpdef list getRelevantCycles(self)
 
     cpdef list _sortCyclicVertices(self, list vertices)
+
+    cpdef int getMaxCycleOverlap(self)
     
     cpdef list getLargestRing(self, Vertex vertex)
     

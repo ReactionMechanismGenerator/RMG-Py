@@ -79,6 +79,13 @@ class TestThermoDatabase(unittest.TestCase):
         self.databaseWithoutLibraries = ThermoDatabase()
         self.databaseWithoutLibraries.load(os.path.join(settings['database.directory'], 'thermo'),libraries = [])
 
+        # Set up ML estimator
+        models_path = os.path.join(settings['database.directory'], 'thermo', 'ml', 'main')
+        Hf298_path = os.path.join(models_path, 'H298')
+        S298_path = os.path.join(models_path, 'S298')
+        Cp_path = os.path.join(models_path, 'Cp')
+        self.ml_estimator = MLEstimator(Hf298_path, S298_path, Cp_path)
+
     def testPickle(self):
         """
         Test that a ThermoDatabase object can be successfully pickled and
@@ -299,12 +306,19 @@ multiplicity 2
     def test_species_thermo_generation_ml(self):
         """Test thermo generation for species objects based on ML estimation."""
 
-        # Set up ML estimator
-        models_path = os.path.join(settings['database.directory'], 'thermo', 'ml', 'main')
-        Hf298_path = os.path.join(models_path, 'H298')
-        S298_path = os.path.join(models_path, 'S298')
-        Cp_path = os.path.join(models_path, 'Cp')
-        ml_estimator = MLEstimator(Hf298_path, S298_path, Cp_path)
+        # ML settings
+        ml_settings = dict(
+            min_heavy_atoms=1,
+            max_heavy_atoms=None,
+            min_carbon_atoms=0,
+            max_carbon_atoms=None,
+            min_oxygen_atoms=0,
+            max_oxygen_atoms=None,
+            min_nitrogen_atoms=0,
+            max_nitrogen_atoms=None,
+            only_cyclics=False,
+            min_cycle_overlap=0,
+        )
 
         # Make these large so they don't influence estimation
         ml_uncertainty_cutoffs = dict(
@@ -312,13 +326,14 @@ multiplicity 2
             S298=Quantity(1e8, 'cal/(mol*K)'),
             Cp=Quantity(1e8, 'cal/(mol*K)')
         )
+        ml_settings['uncertainty_cutoffs'] = ml_uncertainty_cutoffs
 
         spec1 = Species().fromSMILES('C[CH]c1ccccc1')
         spec1.generate_resonance_structures()
         spec2 = Species().fromSMILES('NC=O')
 
-        thermo1 = self.database.get_thermo_data_from_ml(spec1, ml_estimator, ml_uncertainty_cutoffs)
-        thermo2 = self.database.get_thermo_data_from_ml(spec2, ml_estimator, ml_uncertainty_cutoffs)
+        thermo1 = self.database.get_thermo_data_from_ml(spec1, self.ml_estimator, ml_settings)
+        thermo2 = self.database.get_thermo_data_from_ml(spec2, self.ml_estimator, ml_settings)
         self.assertIsInstance(thermo1, ThermoData)
         self.assertIsInstance(thermo2, ThermoData)
         self.assertTrue('ML Estimation' in thermo1.comment, 'Thermo not from ML estimation, test purpose not fulfilled')
@@ -330,11 +345,65 @@ multiplicity 2
             S298=Quantity(-1.0, 'cal/(mol*K)'),
             Cp=Quantity(-1.0, 'cal/(mol*K)')
         )
+        ml_settings['uncertainty_cutoffs'] = ml_uncertainty_cutoffs
 
-        thermo1 = self.database.get_thermo_data_from_ml(spec1, ml_estimator, ml_uncertainty_cutoffs)
-        thermo2 = self.database.get_thermo_data_from_ml(spec2, ml_estimator, ml_uncertainty_cutoffs)
+        thermo1 = self.database.get_thermo_data_from_ml(spec1, self.ml_estimator, ml_settings)
+        thermo2 = self.database.get_thermo_data_from_ml(spec2, self.ml_estimator, ml_settings)
         self.assertIsNone(thermo1)
         self.assertIsNone(thermo2)
+
+    def test_thermo_generation_ml_settings(self):
+        """Test that thermo generation with ML correctly respects settings"""
+
+        # ML settings
+        ml_settings = dict(
+            min_heavy_atoms=5,
+            max_heavy_atoms=6,
+            min_carbon_atoms=5,
+            max_carbon_atoms=5,
+            min_oxygen_atoms=0,
+            max_oxygen_atoms=None,
+            min_nitrogen_atoms=0,
+            max_nitrogen_atoms=None,
+            only_cyclics=False,
+            min_cycle_overlap=0,
+            uncertainty_cutoffs=dict(
+                H298=Quantity(1e8, 'kcal/mol'),
+                S298=Quantity(1e8, 'cal/(mol*K)'),
+                Cp=Quantity(1e8, 'cal/(mol*K)')
+            )
+        )
+
+        spec1 = Species().fromSMILES('CCCC')
+        spec2 = Species().fromSMILES('CCCCC')
+        spec3 = Species().fromSMILES('C1CC12CC2')
+        spec4 = Species().fromSMILES('C1CC2CC1O2')
+
+        # Test atom limits
+        thermo = self.database.get_thermo_data_from_ml(spec1, self.ml_estimator, ml_settings)
+        self.assertIsNone(thermo)
+        thermo = self.database.get_thermo_data_from_ml(spec2, self.ml_estimator, ml_settings)
+        self.assertIsInstance(thermo, ThermoData)
+        self.assertTrue('ML Estimation' in thermo.comment, 'Thermo not from ML estimation, test purpose not fulfilled')
+
+        # Test cyclic species
+        ml_settings['only_cyclics'] = True
+        thermo = self.database.get_thermo_data_from_ml(spec2, self.ml_estimator, ml_settings)
+        self.assertIsNone(thermo)
+
+        # Test spiro species
+        ml_settings['min_cycle_overlap'] = 1
+        thermo = self.database.get_thermo_data_from_ml(spec3, self.ml_estimator, ml_settings)
+        self.assertIsInstance(thermo, ThermoData)
+        self.assertTrue('ML Estimation' in thermo.comment, 'Thermo not from ML estimation, test purpose not fulfilled')
+
+        # Test bridged species
+        ml_settings['min_cycle_overlap'] = 3
+        thermo = self.database.get_thermo_data_from_ml(spec3, self.ml_estimator, ml_settings)
+        self.assertIsNone(thermo)
+        thermo = self.database.get_thermo_data_from_ml(spec4, self.ml_estimator, ml_settings)
+        self.assertIsInstance(thermo, ThermoData)
+        self.assertTrue('ML Estimation' in thermo.comment, 'Thermo not from ML estimation, test purpose not fulfilled')
 
     def testThermoEstimationNotAffectDatabase(self):
 
