@@ -56,13 +56,13 @@ class CommonTest(unittest.TestCase):
         """
         test the check_conformer_energy function with an list of energies.
         """
-        Vlist = [-272.2779012225, -272.2774933703, -272.2768397635, -272.2778432059, -272.278645477, -272.2789602654,
+        v_list = [-272.2779012225, -272.2774933703, -272.2768397635, -272.2778432059, -272.278645477, -272.2789602654,
                  -272.2788749196, -272.278496709, -272.2779350675, -272.2777008843, -272.2777167286, -272.2780937643,
                  -272.2784838846, -272.2788050464, -272.2787865352, -272.2785091607, -272.2779977452, -272.2777957743,
                  -272.2779134906, -272.2781827547, -272.278443339, -272.2788244214, -272.2787748749]
-        Vlist = numpy.array(Vlist, numpy.float64)
-        Vdiff = (Vlist[0] - numpy.min(Vlist)) * constants.E_h * constants.Na / 1000
-        self.assertAlmostEqual(Vdiff / 2.7805169838282797, 1, 5)
+        v_list = numpy.array(v_list, numpy.float64)
+        v_diff = (v_list[0] - numpy.min(v_list)) * constants.E_h * constants.Na / 1000
+        self.assertAlmostEqual(v_diff / 2.7805169838282797, 1, 5)
 
 
 class TestArkaneJob(unittest.TestCase):

@@ -175,7 +175,7 @@ class StatMechJob(object):
         self.atomEnergies = None
         self.supporting_info = [self.species.label]
         self.bonds = None
-    
+
     def execute(self, outputFile=None, plot=False):
         """
         Execute the statistical mechanics job, saving the results to the
@@ -186,7 +186,7 @@ class StatMechJob(object):
             self.save(outputFile)
         logging.debug('Finished statmech job for species {0}.'.format(self.species))
         logging.debug(repr(self.species))
-    
+
     def load(self):
         """
         Load the statistical mechanics parameters for each conformer from
@@ -195,10 +195,10 @@ class StatMechJob(object):
         species object.
         """
         logging.info('Loading statistical mechanics parameters for {0}...'.format(self.species.label))
-        
+
         path = self.path
         TS = isinstance(self.species, TransitionState)
-    
+
         global_context = {
             '__builtins__': None,
         }
@@ -215,9 +215,9 @@ class StatMechJob(object):
             'ScanLog': ScanLog,
             'Log': Log
         }
-    
+
         directory = os.path.abspath(os.path.dirname(path))
-    
+
         with open(path, 'r') as f:
             try:
                 exec f in global_context, local_context
@@ -230,7 +230,7 @@ class StatMechJob(object):
                 self.bonds = local_context['bonds']
             except KeyError:
                 self.bonds = {}
-            
+
         try:
             linear = local_context['linear']
             symfromlog = False
@@ -244,17 +244,17 @@ class StatMechJob(object):
         except KeyError:
             externalSymmetry = None
             symfromlog = True
-            
+
         try:
             spinMultiplicity = local_context['spinMultiplicity']
         except KeyError:
             spinMultiplicity = 0
-       
+
         try:
             opticalIsomers = local_context['opticalIsomers']
         except KeyError:
             raise InputError('Required attribute "opticalIsomers" not found in species file {0!r}.'.format(path))
-        
+
         try:
             energy = local_context['energy']
         except KeyError:
@@ -300,7 +300,7 @@ class StatMechJob(object):
             geomLog = geomLog.software_log
         else:
             geomLog.path = os.path.join(directory, geomLog.path)
-    
+
         try:
             statmechLog = local_context['frequencies']
         except KeyError:
@@ -310,7 +310,7 @@ class StatMechJob(object):
             statmechLog = statmechLog.software_log
         else:
             statmechLog.path = os.path.join(directory, statmechLog.path)
-        
+
         if 'frequencyScaleFactor' in local_context:
             logging.warning('Ignoring frequency scale factor in species file {0!r}.'.format(path))
         
@@ -323,23 +323,26 @@ class StatMechJob(object):
         if not self.includeHinderedRotors:
             rotors = []
 
-        #If hindered/free rotors are included in Statmech job, ensure that the same (freq) log file is used for
+        # If hindered/free rotors are included in Statmech job, ensure that the same (freq) log file is used for
         # both the species's optimized geometry and Hessian. This approach guarantees that the geometry and Hessian
-        #will be defined in the same Cartesian coordinate system ("Input Orientation", as opposed to "Standard Orientation",
-        #or something else). Otherwise, if the geometry and Hessian are read from different log files, it is very easy
-        #for them to be defined in different coordinate systems, unless the user is very careful. The current implementation
-        #only performs this check for Gaussian logs. If QChem logs are used, only a warning is output reminding the user
-        #to ensure the geometry and Hessian are defined in consistent coordinates.
+        # will be defined in the same Cartesian coordinate system ("Input Orientation", as opposed to
+        # "Standard Orientation", or something else). Otherwise, if the geometry and Hessian are read from different
+        # log files, it is very easy for them to be defined in different coordinate systems, unless the user is very
+        # careful. The current implementation only performs this check for Gaussian logs. If QChem logs are used, only
+        # a warning is output reminding the user to ensure the geometry and Hessian are defined in consistent
+        # coordinates.
         if len(rotors) > 0:
             if isinstance(statmechLog, GaussianLog):
                 if statmechLog.path != geomLog.path:
                     raise InputError('For {0!r}, the geometry log, {1!r}, and frequency log, {2!r}, are not the same.'
-                                     ' In order to ensure the geometry and Hessian of {0!r} are defined in consistent coordinate systems'
-                                     ' for hindered/free rotor projection, either use the frequency log for both geometry and frequency,'
-                                     ' or remove rotors.'.format(self.species.label,geomLog.path,statmechLog.path))
+                                     ' In order to ensure the geometry and Hessian of {0!r} are defined in consistent'
+                                     ' coordinate systems for hindered/free rotor projection, either use the frequency'
+                                     ' log for both geometry and frequency, or remove rotors.'.format(
+                                      self.species.label, geomLog.path, statmechLog.path))
             elif isinstance(statmechLog, QChemLog):
-                    logging.warning('QChem log will be used for Hessian of {0!r}. '
-                                    'Please verify that the geometry and Hessian of {0!r} are defined in the same coordinate system'.format(self.species.label))
+                    logging.warning('QChem log will be used for Hessian of {0!r}. Please verify that the geometry'
+                                    ' and Hessian of {0!r} are defined in the same coordinate system'.format(
+                                     self.species.label))
 
         logging.debug('    Reading molecular degrees of freedom...')
         conformer, unscaled_frequencies = statmechLog.loadConformer(symmetry=externalSymmetry,
@@ -406,9 +409,9 @@ class StatMechJob(object):
             logging.debug('         Scaling factor used = {0:g}'.format(self.frequencyScaleFactor))
             logging.debug('         ZPE (0 K) = {0:g} kcal/mol'.format(ZPE / 4184.))
             logging.debug('         E0 (0 K) = {0:g} kcal/mol'.format(E0_withZPE / 4184.))
-       
+
         conformer.E0 = (E0_withZPE*0.001,"kJ/mol")
-        
+
         # If loading a transition state, also read the imaginary frequency
         if TS:
             neg_freq = statmechLog.loadNegativeFrequency()
@@ -422,14 +425,14 @@ class StatMechJob(object):
         F = statmechLog.loadForceConstantMatrix()
 
         if F is not None and len(mass) > 1 and len(rotors) > 0:
-            
+
             logging.debug('    Fitting {0} hindered rotors...'.format(len(rotors)))
             rotorCount = 0
             for q in rotors:
                 if len(q) == 3:
                     pivots, top, symmetry = q
                     inertia = conformer.getInternalReducedMomentOfInertia(pivots, top) * constants.Na * 1e23
-                    rotor = FreeRotor(inertia=(inertia,"amu*angstrom^2"),symmetry=symmetry)
+                    rotor = FreeRotor(inertia=(inertia,"amu*angstrom^2"), symmetry=symmetry)
                     conformer.modes.append(rotor)
                     rotorCount += 1
                 elif len(q) == 5:
@@ -440,78 +443,86 @@ class StatMechJob(object):
                         scanLog = scanLog.software_log
                     if isinstance(scanLog, GaussianLog):
                         scanLog.path = os.path.join(directory, scanLog.path)
-                        Vlist, angle = scanLog.loadScanEnergies()
-                        scanLogOutput = ScanLog(os.path.join(directory, '{0}_rotor_{1}.txt'.format(self.species.label, rotorCount+1)))
-                        scanLogOutput.save(angle, Vlist)
+                        v_list, angle = scanLog.loadScanEnergies()
+                        scanLogOutput = ScanLog(os.path.join(directory, '{0}_rotor_{1}.txt'.format(
+                            self.species.label, rotorCount+1)))
+                        scanLogOutput.save(angle, v_list)
                     elif isinstance(scanLog, QChemLog):
                         scanLog.path = os.path.join(directory, scanLog.path)
-                        Vlist, angle = scanLog.loadScanEnergies()
-                        scanLogOutput = ScanLog(os.path.join(directory, '{0}_rotor_{1}.txt'.format(self.species.label, rotorCount+1)))
-                        scanLogOutput.save(angle, Vlist)
+                        v_list, angle = scanLog.loadScanEnergies()
+                        scanLogOutput = ScanLog(os.path.join(directory, '{0}_rotor_{1}.txt'.format(
+                            self.species.label, rotorCount+1)))
+                        scanLogOutput.save(angle, v_list)
                     elif isinstance(scanLog, ScanLog):
                         scanLog.path = os.path.join(directory, scanLog.path)
-                        angle, Vlist = scanLog.load()
+                        angle, v_list = scanLog.load()
                     else:
                         raise Exception('Invalid log file type {0} for scan log.'.format(scanLog.__class__))
-                        
                     inertia = conformer.getInternalReducedMomentOfInertia(pivots, top) * constants.Na * 1e23
-                    
+
                     cosineRotor = HinderedRotor(inertia=(inertia,"amu*angstrom^2"), symmetry=symmetry)
-                    cosineRotor.fitCosinePotentialToData(angle, Vlist)
+                    cosineRotor.fitCosinePotentialToData(angle, v_list)
                     fourierRotor = HinderedRotor(inertia=(inertia,"amu*angstrom^2"), symmetry=symmetry)
-                    fourierRotor.fitFourierPotentialToData(angle, Vlist)
-                    
+                    fourierRotor.fitFourierPotentialToData(angle, v_list)
+
                     Vlist_cosine = numpy.zeros_like(angle)
                     Vlist_fourier = numpy.zeros_like(angle)
                     for i in range(angle.shape[0]):
                         Vlist_cosine[i] = cosineRotor.getPotential(angle[i])
                         Vlist_fourier[i] = fourierRotor.getPotential(angle[i])
-                    
-                    if fit=='cosine':
-                        rotor=cosineRotor
+
+                    if fit == 'cosine':
+                        rotor = cosineRotor
                         rotorCount += 1
                         conformer.modes.append(rotor)
-                    elif fit =='fourier':
-                        rotor=fourierRotor
+                    elif fit == 'fourier':
+                        rotor = fourierRotor
                         rotorCount += 1
                         conformer.modes.append(rotor)
-                    elif fit =='best':
-                    
-                        rms_cosine = numpy.sqrt(numpy.sum((Vlist_cosine - Vlist) * (Vlist_cosine - Vlist)) / (len(Vlist) - 1)) / 4184.
-                        rms_fourier = numpy.sqrt(numpy.sum((Vlist_fourier - Vlist) * (Vlist_fourier - Vlist))/ (len(Vlist) - 1)) / 4184.
-                    
+                    elif fit == 'best':
+                        rms_cosine = numpy.sqrt(numpy.sum((Vlist_cosine - v_list) * (Vlist_cosine - v_list)) /
+                                                (len(v_list) - 1)) / 4184.
+                        rms_fourier = numpy.sqrt(numpy.sum((Vlist_fourier - v_list) * (Vlist_fourier - v_list))/
+                                                 (len(v_list) - 1)) / 4184.
                         # Keep the rotor with the most accurate potential
                         rotor = cosineRotor if rms_cosine < rms_fourier else fourierRotor
                         # However, keep the cosine rotor if it is accurate enough, the
                         # fourier rotor is not significantly more accurate, and the cosine
-                        # rotor has the correct symmetry 
-                        if rms_cosine < 0.05 and rms_cosine / rms_fourier < 2.0 and rms_cosine / rms_fourier < 4.0 and symmetry == cosineRotor.symmetry:
+                        # rotor has the correct symmetry
+                        if rms_cosine < 0.05 and rms_cosine / rms_fourier < 2.0 and rms_cosine / rms_fourier < 4.0\
+                                and symmetry == cosineRotor.symmetry:
                             rotor = cosineRotor
-                        
+
                         conformer.modes.append(rotor)
-                        
-                        self.plotHinderedRotor(angle, Vlist, cosineRotor, fourierRotor, rotor, rotorCount, directory)
-                        
+
+                        self.plotHinderedRotor(angle, v_list, cosineRotor, fourierRotor, rotor, rotorCount, directory)
+
                         rotorCount += 1
-                       
+
             logging.debug('    Determining frequencies from reduced force constant matrix...')
             frequencies = numpy.array(projectRotors(conformer, F, rotors, linear, TS))
 
         elif len(conformer.modes) > 2:
             if len(rotors) > 0:
-                logging.warn('Force Constant Matrix Missing Ignoring rotors, if running Gaussian if not already present you need to add the keyword iop(7/33=1) in your Gaussian frequency job for Gaussian to generate the force constant matrix, if running Molpro include keyword print, hessian')
+                logging.warn('Force Constant Matrix Missing Ignoring rotors, if running Gaussian if not already'
+                             ' present you need to add the keyword iop(7/33=1) in your Gaussian frequency job for'
+                             ' Gaussian to generate the force constant matrix, if running Molpro include keyword print,'
+                             ' hessian')
             frequencies = conformer.modes[2].frequencies.value_si
             rotors = numpy.array([])
         else:
             if len(rotors) > 0:
-                logging.warn('Force Constant Matrix Missing Ignoring rotors, if running Gaussian if not already present you need to add the keyword iop(7/33=1) in your Gaussian frequency job for Gaussian to generate the force constant matrix, if running Molpro include keyword print, hessian')
+                logging.warn('Force Constant Matrix Missing Ignoring rotors, if running Gaussian if not already'
+                             ' present you need to add the keyword iop(7/33=1) in your Gaussian frequency job for'
+                             ' Gaussian to generate the force constant matrix, if running Molpro include keyword print,'
+                             ' hessian')
             frequencies = numpy.array([])
             rotors = numpy.array([])
 
         for mode in conformer.modes:
             if isinstance(mode, HarmonicOscillator):
                 mode.frequencies = (frequencies * self.frequencyScaleFactor,"cm^-1")
-        
+
         self.species.conformer = conformer
 
     def save(self, outputFile):
@@ -519,24 +530,24 @@ class StatMechJob(object):
         Save the results of the statistical mechanics job to the file located
         at `path` on disk.
         """
-        
+
         logging.info('Saving statistical mechanics parameters for {0}...'.format(self.species.label))
         f = open(outputFile, 'a')
 
         conformer = self.species.conformer
-            
+
         coordinates = conformer.coordinates.value_si * 1e10
         number = conformer.number.value_si
-        
+
         f.write('# Coordinates for {0} in Input Orientation (angstroms):\n'.format(self.species.label))
         for i in range(coordinates.shape[0]):
             x = coordinates[i,0]
             y = coordinates[i,1]
             z = coordinates[i,2]
             f.write('#   {0} {1:9.4f} {2:9.4f} {3:9.4f}\n'.format(symbol_by_number[number[i]], x, y, z))
-        
+
         string = 'conformer(label={0!r}, E0={1!r}, modes={2!r}, spinMultiplicity={3:d}, opticalIsomers={4:d}'.format(
-            self.species.label, 
+            self.species.label,
             conformer.E0,
             conformer.modes,
             conformer.spinMultiplicity,
@@ -546,12 +557,12 @@ class StatMechJob(object):
             string += ', frequency={0!r}'.format(self.species.frequency)
         except AttributeError: pass
         string += ')'
-        
+
         f.write('{0}\n\n'.format(prettify(string)))
-        
+
         f.close()
 
-    def plotHinderedRotor(self, angle, Vlist, cosineRotor, fourierRotor, rotor, rotorIndex, directory):
+    def plotHinderedRotor(self, angle, v_list, cosineRotor, fourierRotor, rotor, rotorIndex, directory):
         """
         Plot the potential for the rotor, along with its cosine and Fourier
         series potential fits. The plot is saved to a set of files of the form
@@ -561,16 +572,16 @@ class StatMechJob(object):
             import pylab
         except ImportError:
             return
-        
+
         phi = numpy.arange(0, 6.3, 0.02, numpy.float64)
         Vlist_cosine = numpy.zeros_like(phi)
         Vlist_fourier = numpy.zeros_like(phi)
         for i in range(phi.shape[0]):
             Vlist_cosine[i] = cosineRotor.getPotential(phi[i])
             Vlist_fourier[i] = fourierRotor.getPotential(phi[i])
-        
+
         fig = pylab.figure(figsize=(6,5))
-        pylab.plot(angle, Vlist / 4184., 'ok')
+        pylab.plot(angle, v_list / 4184., 'ok')
         linespec = '-r' if rotor is cosineRotor else '--r'
         pylab.plot(phi, Vlist_cosine / 4184., linespec)
         linespec = '-b' if rotor is fourierRotor else '--b'
@@ -580,12 +591,12 @@ class StatMechJob(object):
         pylab.xlabel('Angle')
         pylab.ylabel('Potential (kcal/mol)')
         pylab.title('{0} hindered rotor #{1:d}'.format(self.species.label, rotorIndex+1))
-        
+
         axes = fig.get_axes()[0]
         axes.set_xticks([float(j*constants.pi/4) for j in range(0,9)])
         axes.set_xticks([float(j*constants.pi/8) for j in range(0,17)], minor=True)
         axes.set_xticklabels(['$0$', '$\pi/4$', '$\pi/2$', '$3\pi/4$', '$\pi$', '$5\pi/4$', '$3\pi/2$', '$7\pi/4$', '$2\pi$'])
-        
+
         pylab.savefig(os.path.join(directory, '{0}_rotor_{1:d}.pdf'.format(self.species.label, rotorIndex+1)))
         pylab.close()
 
@@ -600,9 +611,9 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds,
     is consistent with the normal gas-phase reference states. `atoms` is a
     dictionary associating element symbols with the number of that element in
     the molecule. The atom energies are in Hartrees, which are from single
-    atom calculations using corresponding model chemistries. 
-    
-    The assumption for the multiplicity of each atom is: 
+    atom calculations using corresponding model chemistries.
+
+    The assumption for the multiplicity of each atom is:
     H doublet, C triplet, O triplet, N quartet, S triplet, P quartet, I doublet.
 
     `bonds` is a dictionary associating bond types with the number
@@ -881,10 +892,10 @@ def projectRotors(conformer, F, rotors, linear, TS):
     constant matrix and use this to determine the vibrational frequencies. The
     list of vibrational frequencies is returned in cm^-1.
 
-    Refer to Gaussian whitepaper (http://gaussian.com/vib/) for procedure to calculate 
+    Refer to Gaussian whitepaper (http://gaussian.com/vib/) for procedure to calculate
     harmonic oscillator vibrational frequencies using the force constant matrix.
     """
-    
+
     Nrotors = len(rotors)
     Natoms = len(conformer.mass.value)
     Nvib = 3 * Natoms - (5 if linear else 6) - Nrotors - (1 if (TS) else 0)
@@ -909,7 +920,7 @@ def projectRotors(conformer, F, rotors, linear, TS):
 
     for i in range(Natoms):
         coordinates[i,0]-=xm
-        coordinates[i,1]-=ym 
+        coordinates[i,1]-=ym
         coordinates[i,2]-=zm
     # Make vector with the root of the mass in amu for each atom
     amass=numpy.sqrt(mass/constants.amu)
@@ -917,7 +928,7 @@ def projectRotors(conformer, F, rotors, linear, TS):
     # Rotation matrix
     I=conformer.getMomentOfInertiaTensor()
     PMoI, Ixyz = numpy.linalg.eigh(I)
- 
+
     external=6
     if linear:
         external=5
@@ -1005,7 +1016,7 @@ def projectRotors(conformer, F, rotors, linear, TS):
     # Get eigenvalues of internal force constant matrix, V = 3N-6 * 3N-6
     eig, V = numpy.linalg.eigh(Fint)
 
-    logging.debug('Frequencies from internal Hessian')  
+    logging.debug('Frequencies from internal Hessian')
     for i in range(3*Natoms-external):
         with numpy.warnings.catch_warnings():
             numpy.warnings.filterwarnings('ignore', r'invalid value encountered in sqrt')
