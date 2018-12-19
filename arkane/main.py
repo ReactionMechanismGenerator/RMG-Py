@@ -289,7 +289,7 @@ class Arkane:
                     freq = ''
                     if len(row) == 4:
                         freq = '{0:.1f}'.format(abs(row[3])) + 'i, '
-                    freq += ', '.join(['{0:.1f}'.format(s) for s in row[2].frequencies.value_si])
+                    freq += ', '.join(['{0:.1f}'.format(s) for s in row[2]])
                 writer.writerow([label, rot, freq])
 
         # run kinetics and pdep jobs (also writes reaction blocks to Chemkin file)

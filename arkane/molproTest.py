@@ -86,7 +86,7 @@ class MolproTest(unittest.TestCase):
         """
 
         log = MolproLog(os.path.join(os.path.dirname(__file__),'data','HOSI_ccsd_t1.out'))
-        conformer = log.loadConformer(symfromlog=True, spinMultiplicity=1)
+        conformer, unscaled_frequencies = log.loadConformer(symfromlog=True, spinMultiplicity=1)
         E0 = log.loadEnergy()
 
         self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode,IdealGasTranslation)]) == 1)
