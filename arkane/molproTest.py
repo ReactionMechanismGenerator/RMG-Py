@@ -107,5 +107,16 @@ class MolproTest(unittest.TestCase):
         self.assertEqual(conformer.spinMultiplicity, 1)
         self.assertEqual(conformer.opticalIsomers, 1)
 
+    def test_load_mrci_e0(self):
+        """
+        Load the MRCI and MRCI+Davidson energies from a molpro output file
+        """
+        mrci_log = MolproLog(os.path.join(os.path.dirname(__file__),'data','molpro_mrci.out'))
+        mrciq_log = MolproLog(os.path.join(os.path.dirname(__file__),'data','molpro_mrci+q.out'))
+        mrci_E0=mrci_log.loadEnergy()
+        mrciq_E0=mrciq_log.loadEnergy()
+        self.assertAlmostEqual(mrci_E0, -293217091.0381712, places=7)
+        self.assertAlmostEqual(mrciq_E0, -293284017.3925107, places=7)
+
 if __name__ == '__main__':
     unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )
