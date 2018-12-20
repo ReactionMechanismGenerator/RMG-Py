@@ -36,7 +36,7 @@ from rmgpy.statmech import Conformer, IdealGasTranslation, LinearRotor, Nonlinea
 import rmgpy.constants as constants
 from external.wip import work_in_progress
 
-from arkane.qchem import QchemLog
+from arkane.qchem import QChemLog
 
 ################################################################################
 
@@ -44,48 +44,48 @@ from arkane.qchem import QchemLog
 class QChemTest(unittest.TestCase):
     """
     Contains unit tests for the chempy.io.qchem module, used for reading
-    and writing Qchem files.
+    and writing QChem files.
     """
-    def testNumberOfAtomsFromQchemLog(self):
+    def testNumberOfAtomsFromQChemLog(self):
         """
-        Uses a Qchem log files to test that 
+        Uses a QChem log files to test that
         number of atoms can be properly read.
         """
-        log = QchemLog(os.path.join(os.path.dirname(__file__),'data','npropyl.out'))        
+        log = QChemLog(os.path.join(os.path.dirname(__file__),'data','npropyl.out'))
         self.assertEqual(log.getNumberOfAtoms(), 10)
-        log = QchemLog(os.path.join(os.path.dirname(__file__),'data','co.out'))        
+        log = QChemLog(os.path.join(os.path.dirname(__file__),'data','co.out'))
         self.assertEqual(log.getNumberOfAtoms(), 2) 
 
-    def testEnergyFromQchemLog(self):
+    def testEnergyFromQChemLog(self):
         """
-        Uses a Qchem log files to test that 
+        Uses a QChem log files to test that
         molecular energies can be properly read.
         """        
-        log = QchemLog(os.path.join(os.path.dirname(__file__),'data','npropyl.out'))      
+        log = QChemLog(os.path.join(os.path.dirname(__file__),'data','npropyl.out'))
         self.assertAlmostEqual(log.loadEnergy(), -310896203.5432524, 1e-5)
-        log = QchemLog(os.path.join(os.path.dirname(__file__),'data','co.out'))        
+        log = QChemLog(os.path.join(os.path.dirname(__file__),'data','co.out'))
         self.assertAlmostEqual(log.loadEnergy(), -297402545.0217114, 1e-5)   
         
-    def testLoadVibrationsFromQchemLog(self):
+    def testLoadVibrationsFromQChemLog(self):
         """
-        Uses a Qchem log files to test that 
+        Uses a QChem log files to test that
         molecular energies can be properly read.
-        """        
-        log = QchemLog(os.path.join(os.path.dirname(__file__),'data','npropyl.out'))    
+        """
+        log = QChemLog(os.path.join(os.path.dirname(__file__),'data','npropyl.out'))
         conformer, unscaled_frequencies = log.loadConformer(symfromlog=True)
         self.assertEqual(len(conformer.modes[2]._frequencies.getValue()), 24)    
         self.assertEqual(conformer.modes[2]._frequencies.getValue()[5], 881.79)       
-        log = QchemLog(os.path.join(os.path.dirname(__file__),'data','co.out'))        
+        log = QChemLog(os.path.join(os.path.dirname(__file__),'data','co.out'))
         conformer, unscaled_frequencies = log.loadConformer(symfromlog=True)
         self.assertEqual(len(conformer.modes[2]._frequencies.getValue()), 1)         
         self.assertEqual(conformer.modes[2]._frequencies.getValue(), 2253.16)    
                            
-    def testLoadNpropylModesFromQchemLog(self):
+    def testLoadNpropylModesFromQChemLog(self):
         """
-        Uses a Qchem log file for npropyl to test that its
+        Uses a QChem log file for npropyl to test that its
         molecular modes can be properly read.
         """
-        log = QchemLog(os.path.join(os.path.dirname(__file__),'data','npropyl.out'))
+        log = QChemLog(os.path.join(os.path.dirname(__file__),'data','npropyl.out'))
         conformer, unscaled_frequencies = log.loadConformer(symfromlog=True)
 
         self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode,IdealGasTranslation)]) == 1)
@@ -93,24 +93,24 @@ class QChemTest(unittest.TestCase):
         self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode,HarmonicOscillator)]) == 1)
         self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode,HinderedRotor)]) == 0)
         
-    def testSpinMultiplicityFromQchemLog(self):
+    def testSpinMultiplicityFromQChemLog(self):
         """
-        Uses a Qchem log file for npropyl to test that its
+        Uses a QChem log file for npropyl to test that its
         molecular degrees of freedom can be properly read.
         """
-        log = QchemLog(os.path.join(os.path.dirname(__file__),'data','npropyl.out'))
+        log = QChemLog(os.path.join(os.path.dirname(__file__),'data','npropyl.out'))
         conformer, unscaled_frequencies = log.loadConformer(symfromlog=True)
         self.assertEqual(conformer.spinMultiplicity, 2)
-        log = QchemLog(os.path.join(os.path.dirname(__file__),'data','co.out'))
+        log = QChemLog(os.path.join(os.path.dirname(__file__),'data','co.out'))
         conformer, unscaled_frequencies = log.loadConformer(symfromlog=True)
         self.assertEqual(conformer.spinMultiplicity, 1)
     
-    def testLoadCOModesFromQchemLog(self):
+    def testLoadCOModesFromQChemLog(self):
         """
-        Uses a Qchem log file for CO to test that its
+        Uses a QChem log file for CO to test that its
         molecular degrees of freedom can be properly read.
         """
-        log = QchemLog(os.path.join(os.path.dirname(__file__),'data','co.out'))
+        log = QChemLog(os.path.join(os.path.dirname(__file__),'data','co.out'))
         conformer, unscaled_frequencies = log.loadConformer(symfromlog=True)
         E0 = log.loadEnergy()
         

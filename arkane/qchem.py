@@ -42,10 +42,10 @@ from arkane.common import check_conformer_energy, get_element_mass
 ################################################################################
 
 
-class QchemLog:
+class QChemLog:
     """
-    Represent an output file from Qchem. The attribute `path` refers to the
-    location on disk of the Qchem output file of interest. Methods are provided
+    Represent an output file from QChem. The attribute `path` refers to the
+    location on disk of the QChem output file of interest. Methods are provided
     to extract a variety of information into Arkane classes and/or NumPy
     arrays.
     """
@@ -56,11 +56,11 @@ class QchemLog:
     def getNumberOfAtoms(self):
         """
         Return the number of atoms in the molecular configuration used in
-        the Qchem output file.
+        the QChem output file.
         """
 
         Natoms = 0
-        # Open Qchem log file for parsing
+        # Open QChem log file for parsing
         f = open(self.path, 'r')
         line = f.readline()
         while line != '' and Natoms == 0:
@@ -116,7 +116,7 @@ class QchemLog:
 
         """
         Return the optimum geometry of the molecular configuration from the
-        Qchem log file. If multiple such geometries are identified, only the
+        QChem log file. If multiple such geometries are identified, only the
         last is returned.
         """
         atom, coord, number, mass = [], [], [], []
@@ -124,17 +124,17 @@ class QchemLog:
         with open(self.path) as f:
             log = f.read().splitlines()
 
-        # First check that the Qchem job file (not necessarily a geometry optimization)
+        # First check that the QChem job file (not necessarily a geometry optimization)
         # has successfully completed, if not an error is thrown
         completed_job = False
         for line in reversed(log):
             if 'Total job time:' in line:
-                logging.debug('Found a sucessfully completed Qchem Job')
+                logging.debug('Found a sucessfully completed QChem Job')
                 completed_job = True
                 break
 
         if not completed_job:
-            raise InputError('Could not find a successfully completed Qchem job in Qchem output file {0}'.format(self.path))
+            raise InputError('Could not find a successfully completed QChem job in QChem output file {0}'.format(self.path))
 
         # Now look for the geometry.
         # Will return the final geometry in the file under Standard Nuclear Orientation.
@@ -162,16 +162,16 @@ class QchemLog:
         number = numpy.array(number, numpy.int)
         mass = numpy.array(mass, numpy.float64)
         if len(number) == 0 or len(coord) == 0 or len(mass) == 0:
-            raise InputError('Unable to read atoms from Qchem geometry output file {0}'.format(self.path))
+            raise InputError('Unable to read atoms from QChem geometry output file {0}'.format(self.path))
 
         return coord, number, mass
 
     def loadConformer(self, symmetry=None, spinMultiplicity=0, opticalIsomers=1, symfromlog=None, label=''):
         """
         Load the molecular degree of freedom data from an output file created as the result of a
-        Qchem "Freq" calculation. As Qchem's guess of the external symmetry number is not always correct,
+        QChem "Freq" calculation. As QChem's guess of the external symmetry number is not always correct,
         you can use the `symmetry` parameter to substitute your own value;
-        if not provided, the value in the Qchem output file will be adopted.
+        if not provided, the value in the QChem output file will be adopted.
         """
         modes = []; freq = []; mmass = []; rot = []; inertia = []
         unscaled_frequencies = []
@@ -227,7 +227,7 @@ class QchemLog:
                     elif 'Eigenvalues --' in line:
                         inertia = [float(d) for d in line.split()[-3:]]
 
-                    # Read Qchem's estimate of the external rotational symmetry number, which may very well be incorrect
+                    # Read QChem's estimate of the external rotational symmetry number, which may very well be incorrect
                     elif 'Rotational Symmetry Number is' in line and symfromlog:
                         symmetry = int(float(line.split()[-1]))
                         logging.debug('Rotational Symmetry read from QChem is {}'.format(str(symmetry)))
@@ -267,94 +267,63 @@ class QchemLog:
 
     def loadEnergy(self, frequencyScaleFactor=1.):
         """
-        Load the energy in J/mol from a Qchem log file. Only the last energy
+        Load the energy in J/mol from a QChem log file. Only the last energy
         in the file is returned. The zero-point energy is *not* included in
         the returned value.
         """
         E0 = None
-    
-        f = open(self.path, 'r')
-        line = f.readline()
-        while line != '':
-    
-            if 'Final energy is' in line:
-                E0 = float(line.split()[3]) * constants.E_h * constants.Na
-                logging.debug('energy is {}'.format(str(E0)))
-            
-#            elif 'Zero point vibrational energy' in line:
-                #Qchem's ZPE is in kcal/mol
-#                ZPE = float(line.split()[4]) * 4184
-#                scaledZPE = ZPE * frequencyScaleFactor
-#                print 'ZPE is ' + str(ZPE)
-            # Read the next line in the file
-            line = f.readline()
-    
-        # Close file when finished
-        f.close()
-
-        if E0 is not None:
-            return E0
-        else:
-            raise InputError('Unable to find energy in Qchem output file.')
+        with open(self.path, 'r') as f:
+            for line in f:
+                if 'Final energy is' in line:
+                    E0 = float(line.split()[3]) * constants.E_h * constants.Na
+                    logging.debug('energy is {}'.format(str(E0)))
+            if E0 is None:
+                for line in f:
+                    if 'Total energy in the final basis set' in line:
+                        E0 = float(line.split()[8]) * constants.E_h * constants.Na
+                        logging.debug('energy is {}'.format(str(E0)))
+        if E0 is None:
+            raise InputError('Unable to find energy in QChem output file.')
+        return E0
         
     def loadZeroPointEnergy(self,frequencyScaleFactor=1.):
         """
-        Load the unscaled zero-point energy in J/mol from a Qchem output file.
+        Load the unscaled zero-point energy in J/mol from a QChem output file.
         """
-
         ZPE = None
-    
-        f = open(self.path, 'r')
-        line = f.readline()
-        while line != '':
-    
-            # if 'Final energy is' in line:
-            #     E0 = float(line.split()[3]) * constants.E_h * constants.Na
-            #     print 'energy is' + str(E0)
-            if 'Zero point vibrational energy' in line:
-                # Qchem's ZPE is in kcal/mol
-                ZPE = float(line.split()[4]) * 4184
-                # scaledZPE = ZPE * frequencyScaleFactor
-                logging.debug('ZPE is {}'.format(str(ZPE)))
-            # Read the next line in the file
-            line = f.readline()
-    
-        # Close file when finished
-        f.close()
-        
+        with open(self.path, 'r') as f:
+            for line in f:
+                if 'Zero point vibrational energy' in line:
+                    ZPE = float(line.split()[4]) * 4184  # QChem's ZPE is in kcal/mol
+                    # scaledZPE = ZPE * frequencyScaleFactor
+                    logging.debug('ZPE is {}'.format(str(ZPE)))
         if ZPE is not None:
             return ZPE
         else:
-            raise InputError('Unable to find zero-point energy in Qchem output file.')
+            raise InputError('Unable to find zero-point energy in QChem output file.')
               
     def loadScanEnergies(self):
         """
-        Extract the optimized energies in J/mol from a Qchem log file, e.g. the
-        result of a Qchem "PES Scan" quantum chemistry calculation.
+        Extract the optimized energies in J/mol from a QChem log file, e.g. the
+        result of a QChem "PES Scan" quantum chemistry calculation.
         """
         Vlist = []
         angle = []
-        f = open(self.path, 'r')
-        line = f.readline()
-        while line != '':
-            if 'Summary of potential scan:' in line:
-                line = f.readline()
-                print 'found a sucessfully completed Qchem Job'
-                while '-----------------' not in line:
-                    # print len(line.split())
-                    # Vlist.append(float(line.split()[1]))
+        read = False
+        with open(self.path, 'r') as f:
+            for line in f:
+                if '-----------------' in line:
+                    read = False
+                if read:
                     values = [float(item) for item in line.split()]
                     angle.append(values[0])
                     Vlist.append(values[1])
-            # Read the next line in the file
-                    line = f.readline()
-            line = f.readline()
-            if 'SCF failed to converge' in line:
-                print 'Qchem Job did not sucessfully complete: SCF failed to converge'
-                break
-        # Close file when finished
-        print '   Assuming', os.path.basename(self.path), 'is the output from a Qchem PES scan...'
-        f.close()
+                if 'Summary of potential scan:' in line:
+                    logging.info('found a sucessfully completed QChem Job')
+                    read = True
+                elif 'SCF failed to converge' in line:
+                    raise InputError('QChem Job did not sucessfully complete: SCF failed to converge')
+        logging.info('   Assuming {0} is the output from a QChem PES scan...'.format(os.path.basename(self.path)))
 
         Vlist = numpy.array(Vlist, numpy.float64)
         # check to see if the scanlog indicates that one of your reacting species may not be the lowest energy conformer
@@ -372,17 +341,13 @@ class QchemLog:
         Return the imaginary frequency from a transition state frequency
         calculation in cm^-1.
         """
-        
-        f = open(self.path, 'r')
-        line = f.readline()
-        while line != '':
-            # Read imaginary frequency
-            if ' Frequency:' in line:
-                frequency = float((line.split()[1]))
-                break
-            line = f.readline()
-        # Close file when finished
-        f.close()
+        frequency = 0
+        with open(self.path, 'r') as f:
+            for line in f:
+                # Read imaginary frequency
+                if ' Frequency:' in line:
+                    frequency = float((line.split()[1]))
+                    break
         # Make sure the frequency is imaginary:
         if frequency < 0:
             return frequency
