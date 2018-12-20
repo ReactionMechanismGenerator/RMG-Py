@@ -82,7 +82,7 @@ functions for generating each type of resonance structure.</p>
 <li><dl class="first docutils">
 <dt>Aromatic species only:</dt>
 <dd><ul class="first last">
-<li><code class="docutils literal notranslate"><span class="pre">generate_aromatic_resonance_structures</span></code>: fully delocalized structure, where all aromatic rings have benzene bonds</li>
+<li><code class="docutils literal notranslate"><span class="pre">generate_optimal_aromatic_resonance_structures</span></code>: fully delocalized structure, where all aromatic rings have benzene bonds</li>
 <li><code class="docutils literal notranslate"><span class="pre">generate_kekule_structure</span></code>: generate a single Kekule structure for an aromatic compound (single/double bond form)</li>
 <li><code class="docutils literal notranslate"><span class="pre">generate_opposite_kekule_structure</span></code>: for monocyclic aromatic species, rotate the double bond assignment</li>
 <li><code class="docutils literal notranslate"><span class="pre">generate_clar_structures</span></code>: generate all structures with the maximum number of pi-sextet assignments</li>
@@ -144,13 +144,25 @@ NO2 example: O=[:N]-[::O.] &lt;=&gt; O=[N.+]-[:::O-]
 </dd></dl>
 
 <dl class="attribute">
-<dt id="rmgpy.molecule.resonance.generate_aromatic_resonance_structures">
-<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">generate_aromatic_resonance_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_aromatic_resonance_structures" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate the aromatic form of the molecule. For radicals, generates the form with the most aromatic rings.</p>
-<p>Returns result as a list.
-In most cases, only one structure will be returned.
-In certain cases where multiple forms have the same number of aromatic rings, multiple structures will be returned.
-If there’s an error (eg. in RDKit) it just returns an empty list.</p>
+<dt id="rmgpy.molecule.resonance.generate_aromatic_resonance_structure">
+<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">generate_aromatic_resonance_structure</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_aromatic_resonance_structure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate the aromatic form of the molecule in place without considering other resonance.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>mol</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> object to modify</li>
+<li><strong>aromatic_bonds</strong> (<em>optional</em>) – list of previously identified aromatic bonds</li>
+<li><strong>copy</strong> (<em>optional</em>) – copy the molecule if <code class="docutils literal notranslate"><span class="pre">True</span></code>, otherwise modify in place</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">List of one molecule if successful, empty list otherwise</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
@@ -208,11 +220,13 @@ Examples: aniline (Nc1ccccc1), azide, [:NH2]C=[::O] &lt;=&gt; [NH2+]=C[:::O-]
 </dd></dl>
 
 <dl class="attribute">
-<dt id="rmgpy.molecule.resonance.generate_opposite_kekule_structure">
-<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">generate_opposite_kekule_structure</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_opposite_kekule_structure" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate the Kekule structure with opposite single/double bond arrangement
-for single ring aromatics.</p>
-<p>Returns a single Kekule structure as an element of a list of length 1.</p>
+<dt id="rmgpy.molecule.resonance.generate_optimal_aromatic_resonance_structures">
+<code class="descclassname">rmgpy.molecule.resonance.</code><code class="descname">generate_optimal_aromatic_resonance_structures</code><a class="headerlink" href="#rmgpy.molecule.resonance.generate_optimal_aromatic_resonance_structures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate the aromatic form of the molecule. For radicals, generates the form with the most aromatic rings.</p>
+<p>Returns result as a list.
+In most cases, only one structure will be returned.
+In certain cases where multiple forms have the same number of aromatic rings, multiple structures will be returned.
+If there’s an error (eg. in RDKit) it just returns an empty list.</p>
 </dd></dl>
 
 <dl class="attribute">

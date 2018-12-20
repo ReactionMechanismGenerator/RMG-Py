@@ -639,6 +639,16 @@ If not, it calls the calculateSymmetryNumber method.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.Molecule.get_edges_in_cycle">
+<code class="descname">get_edges_in_cycle</code><span class="sig-paren">(</span><em>self</em>, <em>list vertices</em>, <em>bool sort=False</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#rmgpy.molecule.Molecule.get_edges_in_cycle" title="Permalink to this definition">¶</a></dt>
+<dd><p>For a given list of atoms comprising a ring, return the set of bonds
+connecting them, in order around the ring.</p>
+<p>If <cite>sort=True</cite>, then sort the vertices to match their connectivity.
+Otherwise, assumes that they are already sorted, which is true for
+cycles returned by getRelevantCycles or getSmallestSetOfSmallestRings.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.Molecule.get_element_count">
 <code class="descname">get_element_count</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#rmgpy.molecule.Molecule.get_element_count" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the element count for the molecule as a dictionary.</p>

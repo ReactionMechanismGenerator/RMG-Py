@@ -246,6 +246,16 @@ J. Chem. Inf. Model., 2017, 57 (2), pp 122-126</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.graph.Graph.get_edges_in_cycle">
+<code class="descname">get_edges_in_cycle</code><span class="sig-paren">(</span><em>self</em>, <em>list vertices</em>, <em>bool sort=False</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#rmgpy.molecule.graph.Graph.get_edges_in_cycle" title="Permalink to this definition">¶</a></dt>
+<dd><p>For a given list of atoms comprising a ring, return the set of bonds
+connecting them, in order around the ring.</p>
+<p>If <cite>sort=True</cite>, then sort the vertices to match their connectivity.
+Otherwise, assumes that they are already sorted, which is true for
+cycles returned by getRelevantCycles or getSmallestSetOfSmallestRings.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.graph.Graph.hasEdge">
 <code class="descname">hasEdge</code><span class="sig-paren">(</span><em>self</em>, <em>Vertex vertex1</em>, <em>Vertex vertex2</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.graph.Graph.hasEdge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if vertices <cite>vertex1</cite> and <cite>vertex2</cite> are connected
