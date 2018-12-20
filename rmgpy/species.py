@@ -462,9 +462,12 @@ class Species(object):
         # get labeled resonance isomers
         self.generate_resonance_structures(keep_isomorphic=True)
 
+        # only consider reactive molecules as representative structures
+        molecules = [mol for mol in self.molecule if mol.reactive]
+
         # return if no resonance
-        if len(self.molecule) == 1:
-            return self.molecule[0]
+        if len(molecules) == 1:
+            return molecules[0]
 
         # create a sorted list of atom objects for each resonance structure
         cython.declare(atomsFromStructures = list, oldAtoms = list, newAtoms = list,
@@ -477,11 +480,11 @@ class Species(object):
                       atoms=list,)
 
         atomsFromStructures = []
-        for newMol in self.molecule:
+        for newMol in molecules:
             newMol.atoms.sort(key=lambda atom: atom.id)
             atomsFromStructures.append(newMol.atoms)
 
-        numResonanceStructures = len(self.molecule)
+        numResonanceStructures = len(molecules)
 
         # make original structure with no bonds
         newMol = Molecule()
@@ -500,7 +503,7 @@ class Species(object):
                 newMol.addBond(bond)
 
         # set bonds to the proper value
-        for structureNum, oldMol in enumerate(self.molecule):
+        for structureNum, oldMol in enumerate(molecules):
             oldAtoms = atomsFromStructures[structureNum]
 
             for index1, atom1 in enumerate(oldAtoms):

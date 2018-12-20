@@ -48,7 +48,7 @@ from rmgpy import settings
 from rmgpy.reaction import Reaction
 from rmgpy.kinetics import Arrhenius
 from rmgpy.molecule import Bond, GroupBond, Group, Molecule
-from rmgpy.molecule.resonance import generate_aromatic_resonance_structures
+from rmgpy.molecule.resonance import generate_optimal_aromatic_resonance_structures
 from rmgpy.species import Species
 
 from .common import saveEntry, ensure_species, find_degenerate_reactions, generate_molecule_combos,\
@@ -1934,7 +1934,7 @@ class KineticsFamily(Database):
                 if prod_resonance:
                     for i, product in enumerate(products0):
                         if product.isCyclic:
-                            aromaticStructs = generate_aromatic_resonance_structures(product)
+                            aromaticStructs = generate_optimal_aromatic_resonance_structures(product)
                             if aromaticStructs:
                                 products0[i] = aromaticStructs[0]
 

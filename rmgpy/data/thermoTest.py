@@ -293,7 +293,9 @@ multiplicity 2
 """)
         spec.generate_resonance_structures()
 
-        self.assertTrue(arom.isIsomorphic(spec.molecule[1]))  # The aromatic structure should be the second one
+        self.assertTrue(arom.isIsomorphic(spec.molecule[0]))  # The aromatic structure should be the first one
+        # Move the aromatic structure to the end for testing
+        spec.molecule.append(spec.molecule.pop(0))
 
         initial = list(spec.molecule)  # Make a copy of the list
         thermo = self.database.getThermoData(spec)
@@ -493,7 +495,7 @@ class TestThermoAccuracy(unittest.TestCase):
             ['C=[C]C=CCC',      3,  61.15, 87.08, 29.68, 36.91, 43.03, 48.11, 55.96, 61.78, 71.54],
             ['C=C[C]=CCC',      3,  61.15, 87.08, 29.68, 36.91, 43.03, 48.11, 55.96, 61.78, 71.54],
             ['C=CC=[C]CC',      3,  70.35, 88.18, 29.15, 36.46, 42.6,  47.6,  55.32, 61.04, 69.95],
-            ['C=CC=C[CH]C',     6,  38.24, 84.41, 27.79, 35.46, 41.94, 47.43, 55.74, 61.92, 71.86],
+            ['C=CC=C[CH]C',     3,  38.24, 84.41, 27.79, 35.46, 41.94, 47.43, 55.74, 61.92, 71.86],
             ['C=CC=CC[CH2]',    2,  62.45, 89.78, 28.72, 36.31, 42.63, 47.72, 55.50, 61.21, 70.05],
             ['[CH3]',           6,  34.81, 46.37,  9.14, 10.18, 10.81, 11.34, 12.57, 13.71, 15.2],
             ['C=CC=C[CH2]',     2,  46.11, 75.82, 22.54, 28.95, 34.24, 38.64, 45.14, 49.97, 57.85],
@@ -544,20 +546,9 @@ class TestThermoAccuracy(unittest.TestCase):
         """
         for smiles, symm, H298, S298, Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500 in self.testCases:
             species = Species().fromSMILES(smiles)
-            species.generate_resonance_structures()
-            thermoData = self.database.getThermoDataFromGroups(species)
-            # pick the molecule with lowest H298
-            molecule = species.molecule[0]
-            for mol in species.molecule[1:]:
-                thermoData0 = self.database.getAllThermoData(Species(molecule=[mol]))[0][0]
-                for data in self.database.getAllThermoData(Species(molecule=[mol]))[1:]:
-                    if data[0].getEnthalpy(298) < thermoData0.getEnthalpy(298):
-                        thermoData0 = data[0]
-                if thermoData0.getEnthalpy(298) < thermoData.getEnthalpy(298):
-                    thermoData = thermoData0
-                    molecule = mol
-            self.assertEqual(symm, molecule.calculateSymmetryNumber(),
-                             msg="Symmetry number error for {0}. Expected {1} but calculated {2}.".format(smiles, symm, molecule.calculateSymmetryNumber()))
+            calc_symm = species.getSymmetryNumber()
+            self.assertEqual(symm, calc_symm,
+                             msg="Symmetry number error for {0}. Expected {1} but calculated {2}.".format(smiles, symm, calc_symm))
 
 
 class TestThermoAccuracyAromatics(TestThermoAccuracy):
@@ -1179,7 +1170,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         smiles = "C1=CC=C2C=CC=CC2=C1"
         spe = Species().fromSMILES(smiles)
         spe.generate_resonance_structures()
-        mol = spe.molecule[1]
+        mol = spe.molecule[0]
 
         # get two SSSRs
         SSSR = mol.getSmallestSetOfSmallestRings()
@@ -1426,14 +1417,14 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         smiles = 'C1=CC=C2CCCCC2=C1'
         spe = Species().fromSMILES(smiles)
         spe.generate_resonance_structures()
-        mol = spe.molecule[1]
+        mol = spe.molecule[0]
         ring_submol = convertRingToSubMolecule(mol.getDisparateRings()[1][0])[0]
 
         saturated_ring_submol, alreadySaturated = saturate_ring_bonds(ring_submol)
 
         expected_spe = Species().fromSMILES('C1=CC=C2CCCCC2=C1')
         expected_spe.generate_resonance_structures()
-        expected_saturated_ring_submol = expected_spe.molecule[1]
+        expected_saturated_ring_submol = expected_spe.molecule[0]
 
         expected_saturated_ring_submol.updateConnectivityValues()
 
@@ -1449,14 +1440,14 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         smiles = 'C1=CC=C2CC=CCC2=C1'
         spe = Species().fromSMILES(smiles)
         spe.generate_resonance_structures()
-        mol = spe.molecule[1]
+        mol = spe.molecule[0]
         ring_submol = convertRingToSubMolecule(mol.getDisparateRings()[1][0])[0]
 
         saturated_ring_submol, alreadySaturated = saturate_ring_bonds(ring_submol)
 
         expected_spe = Species().fromSMILES('C1=CC=C2CCCCC2=C1')
         expected_spe.generate_resonance_structures()
-        expected_saturated_ring_submol = expected_spe.molecule[1]
+        expected_saturated_ring_submol = expected_spe.molecule[0]
         
         expected_saturated_ring_submol.updateConnectivityValues()
 

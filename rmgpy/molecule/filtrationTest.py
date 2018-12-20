@@ -31,8 +31,9 @@
 import unittest
 
 from rmgpy.molecule.molecule import Molecule
-from rmgpy.molecule.resonance import generate_resonance_structures
-from rmgpy.molecule.filtration import get_octet_deviation_list, get_octet_deviation, filter_structures,charge_filtration, get_charge_span_list
+from rmgpy.molecule.resonance import generate_resonance_structures, analyze_molecule
+from rmgpy.molecule.filtration import get_octet_deviation_list, get_octet_deviation, filter_structures, \
+                                      charge_filtration, get_charge_span_list, aromaticity_filtration
 
 ################################################################################
 
@@ -251,3 +252,80 @@ class FiltrationTest(unittest.TestCase):
                 for atom in mol.vertices:
                     if abs(atom.charge) == 1:
                         self.assertTrue(atom.isNitrogen())
+
+    def aromaticity_test(self):
+        """Test that aromatics are properly filtered."""
+        adj1 = """multiplicity 2
+1  C u0 p0 c0 {2,D} {3,S} {7,S}
+2  C u0 p0 c0 {1,D} {4,S} {8,S}
+3  C u0 p0 c0 {1,S} {6,D} {12,S}
+4  C u0 p0 c0 {2,S} {5,D} {9,S}
+5  C u0 p0 c0 {4,D} {6,S} {10,S}
+6  C u0 p0 c0 {3,D} {5,S} {11,S}
+7  C u1 p0 c0 {1,S} {13,S} {14,S}
+8  H u0 p0 c0 {2,S}
+9  H u0 p0 c0 {4,S}
+10 H u0 p0 c0 {5,S}
+11 H u0 p0 c0 {6,S}
+12 H u0 p0 c0 {3,S}
+13 H u0 p0 c0 {7,S}
+14 H u0 p0 c0 {7,S}
+"""
+        adj2 = """multiplicity 2
+1  C u0 p0 c0 {2,B} {3,B} {7,S}
+2  C u0 p0 c0 {1,B} {4,B} {8,S}
+3  C u0 p0 c0 {1,B} {6,B} {12,S}
+4  C u0 p0 c0 {2,B} {5,B} {9,S}
+5  C u0 p0 c0 {4,B} {6,B} {10,S}
+6  C u0 p0 c0 {3,B} {5,B} {11,S}
+7  C u1 p0 c0 {1,S} {13,S} {14,S}
+8  H u0 p0 c0 {2,S}
+9  H u0 p0 c0 {4,S}
+10 H u0 p0 c0 {5,S}
+11 H u0 p0 c0 {6,S}
+12 H u0 p0 c0 {3,S}
+13 H u0 p0 c0 {7,S}
+14 H u0 p0 c0 {7,S}
+"""
+        adj3 = """multiplicity 2
+1  C u0 p0 c0 {2,S} {3,S} {7,D}
+2  C u1 p0 c0 {1,S} {4,S} {8,S}
+3  C u0 p0 c0 {1,S} {6,D} {12,S}
+4  C u0 p0 c0 {2,S} {5,D} {9,S}
+5  C u0 p0 c0 {4,D} {6,S} {10,S}
+6  C u0 p0 c0 {3,D} {5,S} {11,S}
+7  C u0 p0 c0 {1,D} {13,S} {14,S}
+8  H u0 p0 c0 {2,S}
+9  H u0 p0 c0 {4,S}
+10 H u0 p0 c0 {5,S}
+11 H u0 p0 c0 {6,S}
+12 H u0 p0 c0 {3,S}
+13 H u0 p0 c0 {7,S}
+14 H u0 p0 c0 {7,S}
+"""
+        adj4 = """multiplicity 2
+1  C u0 p0 c0 {2,S} {3,S} {7,D}
+2  C u0 p0 c0 {1,S} {5,D} {8,S}
+3  C u0 p0 c0 {1,S} {6,D} {12,S}
+4  C u1 p0 c0 {5,S} {6,S} {10,S}
+5  C u0 p0 c0 {2,D} {4,S} {9,S}
+6  C u0 p0 c0 {3,D} {4,S} {11,S}
+7  C u0 p0 c0 {1,D} {13,S} {14,S}
+8  H u0 p0 c0 {2,S}
+9  H u0 p0 c0 {5,S}
+10 H u0 p0 c0 {4,S}
+11 H u0 p0 c0 {6,S}
+12 H u0 p0 c0 {3,S}
+13 H u0 p0 c0 {7,S}
+14 H u0 p0 c0 {7,S}
+"""
+
+        mol_list = [
+            Molecule().fromAdjacencyList(adj1),
+            Molecule().fromAdjacencyList(adj2),
+            Molecule().fromAdjacencyList(adj3),
+            Molecule().fromAdjacencyList(adj4),
+        ]
+
+        filtered_list = aromaticity_filtration(mol_list, analyze_molecule(mol_list[0]))
+        self.assertEqual(len(filtered_list), 3)
