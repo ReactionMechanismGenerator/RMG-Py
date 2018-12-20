@@ -34,32 +34,32 @@ cpdef dict analyze_molecule(Molecule mol)
 
 cpdef list generate_resonance_structures(Molecule mol, bint clar_structures=?, bint keep_isomorphic=?, bint filter_structures=?)
 
-cpdef list _generate_resonance_structures(list mol_list, list method_list, bint keep_isomorphic=?, bint copy=?)
+cpdef list _generate_resonance_structures(list mol_list, list method_list, bint keep_isomorphic=?, bint copy=?, bint filter_structures=?)
 
 cpdef list generate_allyl_delocalization_resonance_structures(Molecule mol)
 
-cpdef list generate_lone_pair_radical_resonance_structures(Molecule mol)
-
 cpdef list generate_lone_pair_multiple_bond_resonance_structures(Molecule mol)
 
-cpdef list generate_lone_pair_radical_multiple_bond_resonance_structures(Molecule mol)
+cpdef list generate_adj_lone_pair_radical_resonance_structures(Molecule mol)
 
-cpdef list generate_N5ddc_N5tc_resonance_structures(Molecule mol)
+cpdef list generate_adj_lone_pair_multiple_bond_resonance_structures(Molecule mol)
+
+cpdef list generate_adj_lone_pair_radical_multiple_bond_resonance_structures(Molecule mol)
 
 cpdef list generate_N5dc_radical_resonance_structures(Molecule mol)
 
-cpdef list generate_N5dc_resonance_structures(Molecule mol)
-
 cpdef list generate_isomorphic_resonance_structures(Molecule mol, bint saturate_h=?)
 
-cpdef list generate_aromatic_resonance_structures(Molecule mol, dict features=?)
+cpdef list generate_optimal_aromatic_resonance_structures(Molecule mol, dict features=?)
+
+cpdef list generate_aromatic_resonance_structure(Molecule mol, list aromatic_bonds=?, bint copy=?)
+
+cpdef list generate_aryne_resonance_structures(Molecule mol)
 
 cpdef list generate_kekule_structure(Molecule mol)
 
-cpdef list generate_opposite_kekule_structure(Molecule mol)
-
 cpdef list generate_clar_structures(Molecule mol)
 
-cpdef list _clar_optimization(Molecule mol, list constraints=?, maxNum=?)
+cpdef list _clar_optimization(Molecule mol, list constraints=?, max_num=?)
 
-cpdef list _clar_transformation(Molecule mol, list ring)
+cpdef list _clar_transformation(Molecule mol, list aromatic_ring)

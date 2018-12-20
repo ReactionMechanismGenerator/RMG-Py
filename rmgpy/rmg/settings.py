@@ -65,7 +65,8 @@ class ModelSettings(object):
           toleranceMoveEdgeReactionToSurface=numpy.inf, toleranceMoveSurfaceSpeciesToCore=numpy.inf, toleranceMoveSurfaceReactionToCore=numpy.inf,
           toleranceMoveEdgeReactionToSurfaceInterrupt=None,toleranceMoveEdgeReactionToCoreInterrupt=None, maximumEdgeSpecies=1000000, minCoreSizeForPrune=50, 
           minSpeciesExistIterationsForPrune=2, filterReactions=False, filterThreshold=1e8, ignoreOverallFluxCriterion=False, maxNumSpecies=None, maxNumObjsPerIter=1,
-          terminateAtMaxObjects=False,toleranceThermoKeepSpeciesInEdge=numpy.inf,dynamicsTimeScale = Quantity((0.0,'sec'))):
+          terminateAtMaxObjects=False,toleranceThermoKeepSpeciesInEdge=numpy.inf,dynamicsTimeScale = Quantity((0.0,'sec')),
+          toleranceBranchReactionToCore=0.0, branchingIndex=0.5, branchingRatioMax=1.0):
 
         
         self.fluxToleranceKeepInEdge = toleranceKeepInEdge
@@ -84,6 +85,9 @@ class ModelSettings(object):
         self.toleranceThermoKeepSpeciesInEdge = toleranceThermoKeepSpeciesInEdge
         self.terminateAtMaxObjects = terminateAtMaxObjects
         self.dynamicsTimeScale = dynamicsTimeScale.value_si
+        self.toleranceBranchReactionToCore = toleranceBranchReactionToCore
+        self.branchingIndex = branchingIndex
+        self.branchingRatioMax = branchingRatioMax
         
         if toleranceInterruptSimulation:
             self.fluxToleranceInterrupt = toleranceInterruptSimulation

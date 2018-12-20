@@ -371,6 +371,7 @@ class StatmechGroups(Database):
 
         # Get characteristic frequency groups and the associated frequencies
         groupCount = self.getFrequencyGroups(molecule)
+        logging.debug('Found frequencies from groups {}'.format(groupCount))
         frequencies = []
         for entry, count in groupCount.iteritems():
             if count != 0 and entry.data is not None: frequencies.extend(entry.data.generateFrequencies(count))
@@ -408,16 +409,18 @@ class StatmechGroups(Database):
         # Subtract out contributions to heat capacity from the group frequencies
         Tlist = numpy.arange(300.0, 1501.0, 100.0, numpy.float64)
         Cv = numpy.array([thermoModel.getHeatCapacity(T) / constants.R for T in Tlist], numpy.float64)
+        logging.debug('Fitting statmech with heat capacities {0}'.format(Cv))
         ho = HarmonicOscillator(frequencies=(frequencies,"cm^-1"))
         for i in range(Tlist.shape[0]):
             Cv[i] -= ho.getHeatCapacity(Tlist[i]) / constants.R
+        logging.debug('After removing found frequencies, the heat capacities are {0}'.format(Cv))
         # Subtract out translational modes
         Cv -= 1.5
         # Subtract out external rotational modes
         Cv -= (1.5 if not linear else 1.0)
         # Subtract out PV term (Cp -> Cv)
         Cv -= 1.0
-        
+        logging.debug('After removing translation, rotation, and Cp->Cv, the heat capacities are {0}'.format(Cv))
         # Fit remaining frequencies and hindered rotors to the heat capacity data
         from statmechfit import fitStatmechToHeatCapacity
         modes = fitStatmechToHeatCapacity(Tlist, Cv, numVibrations - len(frequencies), numRotors, molecule)
@@ -631,6 +634,7 @@ class StatmechDatabase(object):
         in order, returning the first match found, before falling back to
         estimation via group additivity.
         """
+        logging.debug('Retrieving stat mech data for {}.'.format(molecule.toSMILES()))
         statmechModel = None
         # Check the libraries in order first; return the first successful match
         for label in self.libraryOrder:

@@ -12,7 +12,7 @@ PAPEROPT_a4     = -D latex_paper_size=a4
 PAPEROPT_letter = -D latex_paper_size=letter
 ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) source
 
-.PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest setup_github_pages publish
+.PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest setup_github_pages publish travis_setup
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
@@ -49,6 +49,11 @@ ifdef COMMITMESSAGE # Use the provided COMMITMESSAGE variable for noninteractive
 else # Prompt for a commit message
 	cd $(BUILDDIR)/html; git add -A .; git commit; git push official gh-pages
 endif
+
+travis_setup:
+# This target is intended to be used when automatically compiling documentation with Travis
+	@rm -rf $(BUILDDIR)/html
+	@git clone --single-branch --branch gh-pages --origin official https://${GH_TOKEN}@github.com/ReactionMechanismGenerator/RMG-Py.git $(BUILDDIR)/html
 
 clean:
 # set aside the git repository info used to push pages to github

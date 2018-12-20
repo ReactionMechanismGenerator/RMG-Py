@@ -22,7 +22,7 @@ database(
     # outside kinetics databases
     kineticsDepositories='default',
     # lists specific families used to generate the model. 'default' uses a list of
-    # families from RMG-Database/input/families/recommended.py
+    # families from RMG-Database/input/kinetics/families/recommended.py
     # a visual list of families is available in PDF form at RMG-database/families
     kineticsFamilies='default',
     # specifies how RMG calculates rates.  currently, the only option is 'rate rules'
@@ -256,4 +256,28 @@ generatedSpeciesConstraints(
 #     # how many radicals should be utilized in the calculation.
 #     # If the amount of radicals is more than this, RMG will use hydrogen bond incrementation method
 #     maxRadicalNumber=0,
+# )
+
+# optional block allows thermo to be estimated through ML estimator
+# mlEstimator(
+#     thermo=True,
+#     # Name of folder containing ML architecture and parameters in database
+#     name='main',
+#     # Limits on atom numbers
+#     minHeavyAtoms=1,
+#     maxHeavyAtoms=None,
+#     minCarbonAtoms=0,
+#     maxCarbonAtoms=None,
+#     minOxygenAtoms=0,
+#     maxOxygenAtoms=None,
+#     minNitrogenAtoms=0,
+#     maxNitrogenAtoms=None,
+#     # Limits on cycles
+#     onlyCyclics=False,
+#     minCycleOverlap=0,  # specifies the minimum number of atoms that must be shared between any two cycles
+#     # If the estimated uncertainty of the thermo prediction is greater than
+#     # any of these values, then don't use the ML estimate
+#     H298UncertaintyCutoff=(3.0, 'kcal/mol'),
+#     S298UncertaintyCutoff=(2.0, 'cal/(mol*K)'),
+#     CpUncertaintyCutoff=(2.0, 'cal/(mol*K)')
 # )

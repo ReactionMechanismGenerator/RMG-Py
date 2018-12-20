@@ -11,8 +11,10 @@ env:
 
 stages:
   - test
+  - name: documentation
+    if: branch = master AND type = push
   - name: deploy
-    if: branch = stable
+    if: branch = stable AND type = push
 
 before_install:
   - cd ..
@@ -24,6 +26,9 @@ before_install:
   # Update conda
   - conda update --yes conda
   - conda info -a
+  # Set git info
+  - git config --global user.name "Travis Deploy"
+  - git config --global user.email "rmg_dev@mit.edu"
 
 jobs:
   include:
@@ -47,6 +52,21 @@ jobs:
       after_success:
         - codecov
         - bash ./deploy.sh
+    - stage: documentation
+      install:
+        - cd RMG-Py
+        - conda env create -q -f environment_linux.yml
+        - source activate rmg_env
+        # Install sphinx for building documentation
+        - conda install -y sphinx
+        - conda list
+        # Modify setup.py
+        - sed -i '/embedsignature/s/^#//g' setup.py
+        - make
+        - cd documentation
+        - export COMMITMESSAGE="Automatic documentation rebuild"
+      script:
+        - make travis_setup clean html publish
     - stage: deploy
       install:
         # Setup conda build
@@ -55,7 +75,7 @@ jobs:
         - conda config --add channels rmg
         - conda config --set anaconda_upload yes
       script:
-        - conda build --token $CONDA_TOKEN --user rmg RMG-Py
+        - conda build --token $CONDA_TOKEN --user rmg RMG-Py/.conda
     - os: osx
       install:
         # Setup conda build
@@ -64,4 +84,4 @@ jobs:
         - conda config --add channels rmg
         - conda config --set anaconda_upload yes
       script:
-        - conda build --token $CONDA_TOKEN --user rmg RMG-Py
+        - conda build --token $CONDA_TOKEN --user rmg RMG-Py/.conda

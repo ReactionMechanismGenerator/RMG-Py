@@ -8,4 +8,4 @@ User's Guide
     :maxdepth: 2
 
     rmg/index
-    cantherm/index
+    arkane/index

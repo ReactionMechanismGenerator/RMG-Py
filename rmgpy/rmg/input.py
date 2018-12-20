@@ -193,9 +193,13 @@ def simpleReactor(temperature,
     
     sensitiveSpecies = []
     if sensitivity:
-        if isinstance(sensitivity, str): sensitivity = [sensitivity]
-        for spec in sensitivity:
-            sensitiveSpecies.append(speciesDict[spec])
+        if sensitivity != 'all':
+            if isinstance(sensitivity, str): sensitivity = [sensitivity]
+            for spec in sensitivity:
+                sensitiveSpecies.append(speciesDict[spec])
+
+        else:
+            sensitiveSpecies.append('all')
     
     if not isinstance(T,list):
         sensitivityTemperature = T
@@ -315,7 +319,8 @@ def model(toleranceMoveToCore=None, toleranceMoveEdgeReactionToCore=numpy.inf,to
           toleranceMoveEdgeReactionToSurfaceInterrupt=None,
           toleranceMoveEdgeReactionToCoreInterrupt=None, maximumEdgeSpecies=1000000, minCoreSizeForPrune=50, 
           minSpeciesExistIterationsForPrune=2, filterReactions=False, filterThreshold=1e8, ignoreOverallFluxCriterion=False,
-          maxNumSpecies=None,maxNumObjsPerIter=1,terminateAtMaxObjects=False,toleranceThermoKeepSpeciesInEdge=numpy.inf,dynamicsTimeScale=(0.0,'sec')):
+          maxNumSpecies=None,maxNumObjsPerIter=1,terminateAtMaxObjects=False,toleranceThermoKeepSpeciesInEdge=numpy.inf,dynamicsTimeScale=(0.0,'sec'),
+          toleranceBranchReactionToCore=0.0, branchingIndex=0.5, branchingRatioMax=1.0):
     """
     How to generate the model. `toleranceMoveToCore` must be specified. 
     toleranceMoveReactionToCore and toleranceReactionInterruptSimulation refers to an additional criterion for forcing an edge reaction to be included in the core
@@ -350,7 +355,10 @@ def model(toleranceMoveToCore=None, toleranceMoveEdgeReactionToCore=numpy.inf,to
             maxNumObjsPerIter=maxNumObjsPerIter,
             terminateAtMaxObjects=terminateAtMaxObjects,
             toleranceThermoKeepSpeciesInEdge=toleranceThermoKeepSpeciesInEdge,
-            dynamicsTimeScale=Quantity(dynamicsTimeScale)
+            dynamicsTimeScale=Quantity(dynamicsTimeScale),
+            toleranceBranchReactionToCore=toleranceBranchReactionToCore,
+            branchingIndex=branchingIndex,
+            branchingRatioMax=branchingRatioMax,
         )
     )
     
@@ -370,6 +378,52 @@ def quantumMechanics(
                                         onlyCyclics = onlyCyclics,
                                         maxRadicalNumber = maxRadicalNumber,
                                         )
+
+def mlEstimator(thermo=True,
+                name='main',
+                minHeavyAtoms=1,
+                maxHeavyAtoms=None,
+                minCarbonAtoms=0,
+                maxCarbonAtoms=None,
+                minOxygenAtoms=0,
+                maxOxygenAtoms=None,
+                minNitrogenAtoms=0,
+                maxNitrogenAtoms=None,
+                onlyCyclics=False,
+                minCycleOverlap=0,
+                H298UncertaintyCutoff=(3.0, 'kcal/mol'),
+                S298UncertaintyCutoff=(2.0, 'cal/(mol*K)'),
+                CpUncertaintyCutoff=(2.0, 'cal/(mol*K)')):
+    from rmgpy.ml.estimator import MLEstimator
+
+    # Currently only support thermo
+    if thermo:
+        models_path = os.path.join(settings['database.directory'], 'thermo', 'ml', name)
+        if not os.path.exists(models_path):
+            raise InputError('Cannot find ML models folder {}'.format(models_path))
+        H298_path = os.path.join(models_path, 'H298')
+        S298_path = os.path.join(models_path, 'S298')
+        Cp_path = os.path.join(models_path, 'Cp')
+        rmg.ml_estimator = MLEstimator(H298_path, S298_path, Cp_path)
+
+        uncertainty_cutoffs = dict(
+            H298=Quantity(*H298UncertaintyCutoff),
+            S298=Quantity(*S298UncertaintyCutoff),
+            Cp=Quantity(*CpUncertaintyCutoff)
+        )
+        rmg.ml_settings = dict(
+            min_heavy_atoms=minHeavyAtoms,
+            max_heavy_atoms=maxHeavyAtoms,
+            min_carbon_atoms=minCarbonAtoms,
+            max_carbon_atoms=maxCarbonAtoms,
+            min_oxygen_atoms=minOxygenAtoms,
+            max_oxygen_atoms=maxOxygenAtoms,
+            min_nitrogen_atoms=minNitrogenAtoms,
+            max_nitrogen_atoms=maxNitrogenAtoms,
+            only_cyclics=onlyCyclics,
+            min_cycle_overlap=minCycleOverlap,
+            uncertainty_cutoffs=uncertainty_cutoffs,
+        )
                     
 
 def pressureDependence(
@@ -382,7 +436,7 @@ def pressureDependence(
                        maximumAtoms=None,
                        ):
 
-    from rmgpy.cantherm.pdep import PressureDependenceJob
+    from arkane.pdep import PressureDependenceJob
     
     # Setting the pressureDependence attribute to non-None enables pressure dependence
     rmg.pressureDependence = PressureDependenceJob(network=None)
@@ -531,6 +585,7 @@ def readInputFile(path, rmg0):
         'solvation': solvation,
         'model': model,
         'quantumMechanics': quantumMechanics,
+        'mlEstimator': mlEstimator,
         'pressureDependence': pressureDependence,
         'options': options,
         'generatedSpeciesConstraints': generatedSpeciesConstraints,
@@ -599,6 +654,7 @@ def readThermoInputFile(path, rmg0):
         'solvation': solvation,
         'adjacencyList': adjacencyList,
         'quantumMechanics': quantumMechanics,
+        'mlEstimator': mlEstimator,
     }
 
     try:
@@ -797,6 +853,8 @@ def getInput(name):
             return rmg.speciesConstraints
         elif name == 'quantumMechanics':
             return rmg.quantumMechanics
+        elif name == 'MLEstimator':
+            return rmg.ml_estimator, rmg.ml_settings
         elif name == 'thermoCentralDatabase':
             return rmg.thermoCentralDatabase
         else:

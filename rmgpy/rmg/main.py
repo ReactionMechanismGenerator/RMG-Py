@@ -130,6 +130,8 @@ class RMG(util.Subject):
     `trimolecularProductReversible`     ``True`` (default) to allow families with trimolecular products to react in the reverse direction, ``False`` otherwise
     `pressureDependence`                Whether to process unimolecular (pressure-dependent) reaction networks
     `quantumMechanics`                  Whether to apply quantum mechanical calculations instead of group additivity to certain molecular types.
+    `ml_estimator`                      To use thermo estimation with machine learning
+    `ml_settings`                       Settings for ML estimation
     `wallTime`                          The maximum amount of CPU time in the form DD:HH:MM:SS to expend on this job; used to stop gracefully so we can still get profiling information
     `kineticsdatastore`                 ``True`` if storing details of each kinetic database entry in text file, ``False`` otherwise
     ----------------------------------- ------------------------------------------------
@@ -200,6 +202,8 @@ class RMG(util.Subject):
         self.trimolecularProductReversible = None
         self.pressureDependence = None
         self.quantumMechanics = None
+        self.ml_estimator = None
+        self.ml_settings = None
         self.speciesConstraints = {}
         self.wallTime = '00:00:00:00'
         self.initializationTime = 0
@@ -614,7 +618,9 @@ class RMG(util.Subject):
             pass
         
         self.rmg_memories = []
-        
+
+        logging.info('Initialization complete. Starting model generation.\n')
+
         # Initiate first reaction discovery step after adding all core species
         for index, reactionSystem in enumerate(self.reactionSystems):
             # Initialize memory object to track conditions for ranged reactors
@@ -642,11 +648,14 @@ class RMG(util.Subject):
                     rxnSysBimolecularThreshold=reactionSystem.bimolecularThreshold,
                     rxnSysTrimolecularThreshold=reactionSystem.trimolecularThreshold,
                 )
+
+                logging.info('Generating initial reactions for reaction system {0}...'.format(index + 1))
             else:
                 # If we're not filtering reactions, then we only need to react
                 # the first reaction system since they share the same core
                 if index > 0:
                     continue
+                logging.info('Generating initial reactions...')
 
             # React core species to enlarge edge
             self.reactionModel.enlarge(reactEdge=True,
@@ -666,7 +675,7 @@ class RMG(util.Subject):
         if not np.isinf(self.modelSettingsList[0].toleranceThermoKeepSpeciesInEdge):
             self.reactionModel.thermoFilterDown(maximumEdgeSpecies=self.modelSettingsList[0].maximumEdgeSpecies)
         
-        logging.info('Completed initial enlarge edge step...')
+        logging.info('Completed initial enlarge edge step.\n')
         
         self.saveEverything()
         
@@ -683,7 +692,7 @@ class RMG(util.Subject):
 
             self.filterReactions = modelSettings.filterReactions
 
-            logging.info('Beginning model generation stage {0}\n\n'.format(q+1))
+            logging.info('Beginning model generation stage {0}...\n'.format(q+1))
             
             self.done = False
 
@@ -737,7 +746,7 @@ class RMG(util.Subject):
                             if len(self.reactionModel.core.reactions) > 5:
                                 logging.error("Too many to print in detail")
                             else:
-                                from rmgpy.cantherm.output import prettify
+                                from arkane.output import prettify
                                 logging.error(prettify(repr(self.reactionModel.core.reactions)))
                             if self.generateSeedEachIteration:
                                 self.makeSeedMech()
@@ -891,6 +900,9 @@ class RMG(util.Subject):
             
             if reactionSystem.sensitiveSpecies and reactionSystem.sensConditions:
                 logging.info('Conducting sensitivity analysis of reaction system %s...' % (index+1))
+
+                if reactionSystem.sensitiveSpecies == ['all']:
+                    reactionSystem.sensitiveSpecies = self.reactionModel.core.species
                     
                 sensWorksheet = []
                 for spec in reactionSystem.sensitiveSpecies:
@@ -971,17 +983,19 @@ class RMG(util.Subject):
                 violators.extend(violator_list)
                 num_rxn_violators += 1
         # Whether or not violators were found, rename 'collision_rate_violators.log' if it exists
-        if os.path.isfile('collision_rate_violators.log'):
+        new_file = os.path.join(self.outputDirectory, 'collision_rate_violators.log')
+        old_file = os.path.join(self.outputDirectory, 'collision_rate_violators_OLD.log')
+        if os.path.isfile(new_file):
             # If there are no violators, yet the violators log exists (probably from a previous run
             # in the same folder), rename it.
-            if os.path.isfile('collision_rate_violators_OLD.log'):
-                os.remove('collision_rate_violators_OLD.log')
-            os.rename('collision_rate_violators.log', 'collision_rate_violators_OLD.log')
+            if os.path.isfile(old_file):
+                os.remove(old_file)
+            os.rename(new_file, old_file)
         if violators:
             logging.info("\n")
             logging.warning("{0} CORE reactions violate the collision rate limit!"
                             "\nSee the 'collision_rate_violators.log' for details.\n\n".format(num_rxn_violators))
-            with open('collision_rate_violators.log', 'w') as violators_f:
+            with open(new_file, 'w') as violators_f:
                 violators_f.write('*** Collision rate limit violators report ***\n'
                                   '"Violation factor" is the ratio of the rate coefficient to the collision limit'
                                   ' rate at the relevant conditions\n\n')

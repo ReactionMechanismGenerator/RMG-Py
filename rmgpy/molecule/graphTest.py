@@ -744,6 +744,37 @@ class TestGraph(unittest.TestCase):
         for ring in expectedContinuousRings:
             self.assertTrue(ring in continuousRings)
 
+    def test_getMaxCycleOverlap(self):
+        """
+        Test that getMaxCycleOverlap returns the correct overlap numbers
+        for different graphs.
+        """
+        def make_graph(edge_inds):
+            nvert = max(max(inds) for inds in edge_inds) + 1
+            vertices = [Vertex() for _ in range(nvert)]
+            graph = Graph(vertices)
+            for idx1, idx2 in edge_inds:
+                graph.addEdge(Edge(vertices[idx1], vertices[idx2]))
+            return graph
+
+        linear = make_graph([(0, 1), (1, 2)])
+        mono = make_graph([(0, 1), (0, 2), (1, 2), (2, 3), (3, 4), (3, 5), (4, 5)])
+        spiro = make_graph([(0, 1), (0, 2), (1, 2), (2, 3), (2, 4), (3, 4)])
+        fused = make_graph([(0, 1), (0, 2), (1, 2), (1, 3), (2, 3)])
+        bridged = make_graph([(0, 1), (0, 2), (1, 3), (1, 4), (2, 3), (2, 5), (4, 5)])
+        cube = make_graph([(0, 1), (0, 2), (0, 4), (1, 3), (1, 5), (2, 3),
+                           (2, 6), (3, 7), (4, 5), (4, 6), (5, 7), (6, 7)])
+
+        self.assertEqual(linear.getMaxCycleOverlap(), 0)
+        self.assertEqual(mono.getMaxCycleOverlap(), 0)
+        self.assertEqual(spiro.getMaxCycleOverlap(), 1)
+        self.assertEqual(fused.getMaxCycleOverlap(), 2)
+        self.assertEqual(bridged.getMaxCycleOverlap(), 3)
+        # With the current algorithm for maximum overlap determination, a cube
+        # only has an overlap of 2, because the set of relevant cycles
+        # contains the six four-membered faces. This could be changed in the
+        # future.
+        self.assertEqual(cube.getMaxCycleOverlap(), 2)
 
     def test_getLargestRing(self):
         """

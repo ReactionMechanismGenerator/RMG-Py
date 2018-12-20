@@ -60,7 +60,6 @@ Atom type       Description
 ``N5dc``        charged nitrogen atom with no lone pairs (valance 5), one double bond and up to two single bonds
 ``N5ddc``       charged nitrogen atom with with no lone pairs (valance 5) and two double bonds
 ``N5dddc``      charged nitrogen atom with with no lone pairs (valance 5) and three double bonds
-``N5t``         nitrogen atom with with no lone pairs (valance 5), one triple bond and up to two single bonds
 ``N5tc``        charged nitrogen atom with with no lone pairs (valance 5), one triple bond and up to one single bond
 ``N5b``         nitrogen atom with with no lone pairs (valance 5) and two benzene bonds (one of the lone pairs also participates in the aromatic bond) and up to one single bond
 ``N5bd``        nitrogen atom with with no lone pairs (valance 5), two benzene bonds, and one double bond

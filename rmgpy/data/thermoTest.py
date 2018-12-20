@@ -34,10 +34,12 @@ from external.wip import work_in_progress
 
 from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase, database
+from rmgpy.ml.estimator import MLEstimator
 from rmgpy.rmg.main import RMG
-from rmgpy.rmg.model import Species
+from rmgpy.species import Species
 from rmgpy.data.thermo import *
 from rmgpy.molecule.molecule import Molecule
+from rmgpy.quantity import Quantity
 import rmgpy
 
 ################################################################################
@@ -76,6 +78,13 @@ class TestThermoDatabase(unittest.TestCase):
 
         self.databaseWithoutLibraries = ThermoDatabase()
         self.databaseWithoutLibraries.load(os.path.join(settings['database.directory'], 'thermo'),libraries = [])
+
+        # Set up ML estimator
+        models_path = os.path.join(settings['database.directory'], 'thermo', 'ml', 'main')
+        Hf298_path = os.path.join(models_path, 'H298')
+        S298_path = os.path.join(models_path, 'S298')
+        Cp_path = os.path.join(models_path, 'Cp')
+        self.ml_estimator = MLEstimator(Hf298_path, S298_path, Cp_path)
 
     def testPickle(self):
         """
@@ -284,7 +293,9 @@ multiplicity 2
 """)
         spec.generate_resonance_structures()
 
-        self.assertTrue(arom.isIsomorphic(spec.molecule[1]))  # The aromatic structure should be the second one
+        self.assertTrue(arom.isIsomorphic(spec.molecule[0]))  # The aromatic structure should be the first one
+        # Move the aromatic structure to the end for testing
+        spec.molecule.append(spec.molecule.pop(0))
 
         initial = list(spec.molecule)  # Make a copy of the list
         thermo = self.database.getThermoData(spec)
@@ -293,6 +304,108 @@ multiplicity 2
         self.assertEqual(set(initial), set(spec.molecule))
         self.assertTrue(arom.isIsomorphic(spec.molecule[0]))  # The aromatic structure should now be the first one
         self.assertTrue('library' in thermo.comment, 'Thermo not found from library, test purpose not fulfilled.')
+
+    def test_species_thermo_generation_ml(self):
+        """Test thermo generation for species objects based on ML estimation."""
+
+        # ML settings
+        ml_settings = dict(
+            min_heavy_atoms=1,
+            max_heavy_atoms=None,
+            min_carbon_atoms=0,
+            max_carbon_atoms=None,
+            min_oxygen_atoms=0,
+            max_oxygen_atoms=None,
+            min_nitrogen_atoms=0,
+            max_nitrogen_atoms=None,
+            only_cyclics=False,
+            min_cycle_overlap=0,
+        )
+
+        # Make these large so they don't influence estimation
+        ml_uncertainty_cutoffs = dict(
+            H298=Quantity(1e8, 'kcal/mol'),
+            S298=Quantity(1e8, 'cal/(mol*K)'),
+            Cp=Quantity(1e8, 'cal/(mol*K)')
+        )
+        ml_settings['uncertainty_cutoffs'] = ml_uncertainty_cutoffs
+
+        spec1 = Species().fromSMILES('C[CH]c1ccccc1')
+        spec1.generate_resonance_structures()
+        spec2 = Species().fromSMILES('NC=O')
+
+        thermo1 = self.database.get_thermo_data_from_ml(spec1, self.ml_estimator, ml_settings)
+        thermo2 = self.database.get_thermo_data_from_ml(spec2, self.ml_estimator, ml_settings)
+        self.assertIsInstance(thermo1, ThermoData)
+        self.assertIsInstance(thermo2, ThermoData)
+        self.assertTrue('ML Estimation' in thermo1.comment, 'Thermo not from ML estimation, test purpose not fulfilled')
+        self.assertTrue('ML Estimation' in thermo2.comment, 'Thermo not from ML estimation, test purpose not fulfilled')
+
+        # Now make these negative to make sure we don't use ML
+        ml_uncertainty_cutoffs = dict(
+            H298=Quantity(-1.0, 'kcal/mol'),
+            S298=Quantity(-1.0, 'cal/(mol*K)'),
+            Cp=Quantity(-1.0, 'cal/(mol*K)')
+        )
+        ml_settings['uncertainty_cutoffs'] = ml_uncertainty_cutoffs
+
+        thermo1 = self.database.get_thermo_data_from_ml(spec1, self.ml_estimator, ml_settings)
+        thermo2 = self.database.get_thermo_data_from_ml(spec2, self.ml_estimator, ml_settings)
+        self.assertIsNone(thermo1)
+        self.assertIsNone(thermo2)
+
+    def test_thermo_generation_ml_settings(self):
+        """Test that thermo generation with ML correctly respects settings"""
+
+        # ML settings
+        ml_settings = dict(
+            min_heavy_atoms=5,
+            max_heavy_atoms=6,
+            min_carbon_atoms=5,
+            max_carbon_atoms=5,
+            min_oxygen_atoms=0,
+            max_oxygen_atoms=None,
+            min_nitrogen_atoms=0,
+            max_nitrogen_atoms=None,
+            only_cyclics=False,
+            min_cycle_overlap=0,
+            uncertainty_cutoffs=dict(
+                H298=Quantity(1e8, 'kcal/mol'),
+                S298=Quantity(1e8, 'cal/(mol*K)'),
+                Cp=Quantity(1e8, 'cal/(mol*K)')
+            )
+        )
+
+        spec1 = Species().fromSMILES('CCCC')
+        spec2 = Species().fromSMILES('CCCCC')
+        spec3 = Species().fromSMILES('C1CC12CC2')
+        spec4 = Species().fromSMILES('C1CC2CC1O2')
+
+        # Test atom limits
+        thermo = self.database.get_thermo_data_from_ml(spec1, self.ml_estimator, ml_settings)
+        self.assertIsNone(thermo)
+        thermo = self.database.get_thermo_data_from_ml(spec2, self.ml_estimator, ml_settings)
+        self.assertIsInstance(thermo, ThermoData)
+        self.assertTrue('ML Estimation' in thermo.comment, 'Thermo not from ML estimation, test purpose not fulfilled')
+
+        # Test cyclic species
+        ml_settings['only_cyclics'] = True
+        thermo = self.database.get_thermo_data_from_ml(spec2, self.ml_estimator, ml_settings)
+        self.assertIsNone(thermo)
+
+        # Test spiro species
+        ml_settings['min_cycle_overlap'] = 1
+        thermo = self.database.get_thermo_data_from_ml(spec3, self.ml_estimator, ml_settings)
+        self.assertIsInstance(thermo, ThermoData)
+        self.assertTrue('ML Estimation' in thermo.comment, 'Thermo not from ML estimation, test purpose not fulfilled')
+
+        # Test bridged species
+        ml_settings['min_cycle_overlap'] = 3
+        thermo = self.database.get_thermo_data_from_ml(spec3, self.ml_estimator, ml_settings)
+        self.assertIsNone(thermo)
+        thermo = self.database.get_thermo_data_from_ml(spec4, self.ml_estimator, ml_settings)
+        self.assertIsInstance(thermo, ThermoData)
+        self.assertTrue('ML Estimation' in thermo.comment, 'Thermo not from ML estimation, test purpose not fulfilled')
 
     def testThermoEstimationNotAffectDatabase(self):
 
@@ -382,7 +495,7 @@ class TestThermoAccuracy(unittest.TestCase):
             ['C=[C]C=CCC',      3,  61.15, 87.08, 29.68, 36.91, 43.03, 48.11, 55.96, 61.78, 71.54],
             ['C=C[C]=CCC',      3,  61.15, 87.08, 29.68, 36.91, 43.03, 48.11, 55.96, 61.78, 71.54],
             ['C=CC=[C]CC',      3,  70.35, 88.18, 29.15, 36.46, 42.6,  47.6,  55.32, 61.04, 69.95],
-            ['C=CC=C[CH]C',     6,  38.24, 84.41, 27.79, 35.46, 41.94, 47.43, 55.74, 61.92, 71.86],
+            ['C=CC=C[CH]C',     3,  38.24, 84.41, 27.79, 35.46, 41.94, 47.43, 55.74, 61.92, 71.86],
             ['C=CC=CC[CH2]',    2,  62.45, 89.78, 28.72, 36.31, 42.63, 47.72, 55.50, 61.21, 70.05],
             ['[CH3]',           6,  34.81, 46.37,  9.14, 10.18, 10.81, 11.34, 12.57, 13.71, 15.2],
             ['C=CC=C[CH2]',     2,  46.11, 75.82, 22.54, 28.95, 34.24, 38.64, 45.14, 49.97, 57.85],
@@ -433,20 +546,9 @@ class TestThermoAccuracy(unittest.TestCase):
         """
         for smiles, symm, H298, S298, Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500 in self.testCases:
             species = Species().fromSMILES(smiles)
-            species.generate_resonance_structures()
-            thermoData = self.database.getThermoDataFromGroups(species)
-            # pick the molecule with lowest H298
-            molecule = species.molecule[0]
-            for mol in species.molecule[1:]:
-                thermoData0 = self.database.getAllThermoData(Species(molecule=[mol]))[0][0]
-                for data in self.database.getAllThermoData(Species(molecule=[mol]))[1:]:
-                    if data[0].getEnthalpy(298) < thermoData0.getEnthalpy(298):
-                        thermoData0 = data[0]
-                if thermoData0.getEnthalpy(298) < thermoData.getEnthalpy(298):
-                    thermoData = thermoData0
-                    molecule = mol
-            self.assertEqual(symm, molecule.calculateSymmetryNumber(),
-                             msg="Symmetry number error for {0}. Expected {1} but calculated {2}.".format(smiles, symm, molecule.calculateSymmetryNumber()))
+            calc_symm = species.getSymmetryNumber()
+            self.assertEqual(symm, calc_symm,
+                             msg="Symmetry number error for {0}. Expected {1} but calculated {2}.".format(smiles, symm, calc_symm))
 
 
 class TestThermoAccuracyAromatics(TestThermoAccuracy):
@@ -1068,7 +1170,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         smiles = "C1=CC=C2C=CC=CC2=C1"
         spe = Species().fromSMILES(smiles)
         spe.generate_resonance_structures()
-        mol = spe.molecule[1]
+        mol = spe.molecule[0]
 
         # get two SSSRs
         SSSR = mol.getSmallestSetOfSmallestRings()
@@ -1315,14 +1417,14 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         smiles = 'C1=CC=C2CCCCC2=C1'
         spe = Species().fromSMILES(smiles)
         spe.generate_resonance_structures()
-        mol = spe.molecule[1]
+        mol = spe.molecule[0]
         ring_submol = convertRingToSubMolecule(mol.getDisparateRings()[1][0])[0]
 
         saturated_ring_submol, alreadySaturated = saturate_ring_bonds(ring_submol)
 
         expected_spe = Species().fromSMILES('C1=CC=C2CCCCC2=C1')
         expected_spe.generate_resonance_structures()
-        expected_saturated_ring_submol = expected_spe.molecule[1]
+        expected_saturated_ring_submol = expected_spe.molecule[0]
 
         expected_saturated_ring_submol.updateConnectivityValues()
 
@@ -1338,14 +1440,14 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         smiles = 'C1=CC=C2CC=CCC2=C1'
         spe = Species().fromSMILES(smiles)
         spe.generate_resonance_structures()
-        mol = spe.molecule[1]
+        mol = spe.molecule[0]
         ring_submol = convertRingToSubMolecule(mol.getDisparateRings()[1][0])[0]
 
         saturated_ring_submol, alreadySaturated = saturate_ring_bonds(ring_submol)
 
         expected_spe = Species().fromSMILES('C1=CC=C2CCCCC2=C1')
         expected_spe.generate_resonance_structures()
-        expected_saturated_ring_submol = expected_spe.molecule[1]
+        expected_saturated_ring_submol = expected_spe.molecule[0]
         
         expected_saturated_ring_submol.updateConnectivityValues()
 
@@ -1384,7 +1486,7 @@ def isTCDAvailable():
     return result
 
 
-@unittest.skipIf(not isTCDAvailable(), 'TCD unavailable, skipping unit tests.')
+@unittest.skip('Skipping TCD unit tests because database is offline.')
 class TestThermoCentralDatabaseInterface(unittest.TestCase):
     """
     Contains unit tests for methods of ThermoCentralDatabaseInterface

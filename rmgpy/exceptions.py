@@ -126,7 +126,7 @@ class InchiException(Exception):
 class InputError(Exception):
     """
     An exception raised when parsing an input file for any module in RMG:
-    mechanism generation, cantherm, conformer creation, etc.
+    mechanism generation, Arkane, conformer creation, etc.
     Pass a string describing the error.
     """
     pass
@@ -240,7 +240,12 @@ class SpeciesError(Exception):
     """
     pass
 
-class StatmechFitError(Exception):
+class StatmechError(Exception):
+    """
+    An exception used when an error occurs in estimating Statmech.
+    """
+
+class StatmechFitError(StatmechError):
     """
     An exception used when attempting to fit molecular degrees of freedom to
     heat capacity data. Pass a string describing the circumstances of the

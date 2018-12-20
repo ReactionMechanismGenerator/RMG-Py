@@ -204,8 +204,9 @@ cdef class HinderedRotor(Torsion):
                 V0 -= fourier[0,k] * (k+1) * (k+1)
             V0 /= constants.Na
             if V0 < 0:
-                raise NegativeBarrierException(" Hindered rotor barrier height is less than 0 \n     Try running cantherm in verbose mode, -v,  to identify which hindered rotor \n    Try changing the Hindered rotor fit to 'cosine'")
-#                 raise Exception("Hindered rotor barrier height is less than 0 \nTry running cantherm in verbose mode, -v,  to identify which hindered rotor \nTry changing the Hindered rotor fit to 'cosine'")
+                raise NegativeBarrierException("Hindered rotor barrier height is less than 0 \n     Try running Arkane"
+                                               "in verbose mode, -v, to identify which rotor caused the error\n"
+                                               "Also, try changing the Hindered rotor fit to 'cosine'")
             frequency = 1.0 / (2. * constants.pi) * sqrt(V0 / I)
         else:
             V0 = self._barrier.value_si / constants.Na

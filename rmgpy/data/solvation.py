@@ -197,6 +197,14 @@ class SoluteData(object):
     """
     Stores Abraham parameters to characterize a solute
     """
+    # Set class variable with McGowan volumes
+    mcgowan_volumes = {
+        1: 8.71, 2: 6.75,
+        6: 16.35, 7: 14.39, 8: 12.43, 9: 10.47, 10: 8.51,
+        14: 26.83, 15: 24.87, 16: 22.91, 17: 20.95, 18: 18.99,
+        35: 26.21,
+    }
+
     def __init__(self, S=None, B=None, E=None, L=None, A=None, V=None, comment=""):
         self.S = S
         self.B = B
@@ -226,35 +234,26 @@ class SoluteData(object):
         Returned volumes are in cm^3/mol/100 (see note below)
         See Table 2 in Abraham & McGowan, Chromatographia Vol. 23, No. 4, p. 243. April 1987
         doi: 10.1007/BF02311772
+        Also see Table 1 in Zhao et al., J. Chem. Inf. Comput. Sci. Vol. 43, p.1848. 2003
+        doi: 10.1021/ci0341114
         
         "V is scaled to have similar values to the other
         descriptors by division by 100 and has units of (cm3mol−1/100)."
         the contibutions in this function are in cm3/mol, and the division by 100 is done at the very end.
         """
         molecule = species.molecule[0] # any will do, use the first.
-        Vtot = 0
+        Vtot = 0.0
 
         for atom in molecule.atoms:
-            thisV = 0.0
-            if atom.isCarbon():
-                thisV = 16.35
-            elif (atom.element.number == 7): # nitrogen, do this way if we don't have an isElement method
-                thisV = 14.39
-            elif atom.isOxygen():
-                thisV = 12.43
-            elif atom.isHydrogen():
-                thisV = 8.71
-            elif (atom.element.number == 16):
-                thisV = 22.91
-            else:
-                raise Exception()
-            Vtot = Vtot + thisV
+            try:
+                Vtot += self.mcgowan_volumes[atom.element.number]
+            except KeyError:
+                raise Exception('McGowan volume not available for element {}'.format(atom.element.nubmer))
 
-            for bond in molecule.getBonds(atom):
-                # divide contribution in half since all bonds would be counted twice this way
-                Vtot = Vtot - 6.56/2
+            # divide contribution in half since all bonds would be counted twice this way
+            Vtot -= len(molecule.getBonds(atom)) * 6.56/2
 
-        self.V= Vtot / 100; # division by 100 to get units correct.
+        self.V = Vtot / 100 # division by 100 to get units correct.
 
 ################################################################################
 

@@ -450,12 +450,6 @@ class TestGetAtomType(unittest.TestCase):
                                                      3 N u0 p2 c-1 {2,D}
                                                      4 H u0 p0 c0 {1,S}''')
 
-        self.mol65 = Molecule().fromAdjacencyList('''1 N u0 p0 c0 {2,T} {3,S} {4,S}
-                                                     2 C u0 p0 c0 {1,T} {5,S}
-                                                     3 H u0 p0 c0 {1,S}
-                                                     4 H u0 p0 c0 {1,S}
-                                                     5 H u0 p0 c0 {2,S}''')
-
         self.mol69 = Molecule().fromAdjacencyList('''1 N u0 p0 c+1 {2,T} {3,S}
                                                      2 S u0 p2 c-1 {1,T}
                                                      3 H u0 p0 c0 {1,S}''')
@@ -546,7 +540,6 @@ class TestGetAtomType(unittest.TestCase):
         self.assertEqual(self.atomType(self.mol5, 2), 'N5dc')
         self.assertEqual(self.atomType(self.mol64, 1), 'N5ddc')
         self.assertEqual(self.atomType(self.mol53, 0), 'N5dddc')
-        self.assertEqual(self.atomType(self.mol65, 0), 'N5t')
         self.assertEqual(self.atomType(self.mol15, 1), 'N5tc')
         self.assertEqual(self.atomType(self.mol39, 2), 'N5tc')
         self.assertEqual(self.atomType(self.mol18, 0), 'N5b')

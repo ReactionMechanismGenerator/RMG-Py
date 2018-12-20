@@ -375,7 +375,7 @@ def _readKineticsReaction(line, speciesDict, Aunits, Eunits):
             if re.match('[0-9.]+',product):
                 logging.warning("Looks like reaction {0!r} has fractional stoichiometry, which RMG cannot handle. Ignoring".format(line))
                 raise ChemkinError('Skip reaction!')
-            raise ChemkinError('Unexpected product "{0}" in reaction {1}.'.format(product, reaction))
+            raise ChemkinError('Unexpected product "{0}" in reaction {1} from line {2}.'.format(product, reaction,line))
         else:
             productSpecies = speciesDict[product]
             if not productSpecies.reactive:
@@ -667,8 +667,8 @@ def readReactionComments(reaction, comments, read = True):
             # undo the kinetic manipulation caused by setting degneracy
             if reaction.kinetics:
                 reaction.kinetics.changeRate(1./degen)
-            # still add kinetic comment
-            reaction.kinetics.comment += line.strip() + "\n"
+            # do not add comment because setting degeneracy does so already
+            reaction.kinetics.comment += "\n"
 
         elif line.strip() != '':
             # Any lines which are commented out but don't have any specific flag are simply kinetics comments
@@ -1558,8 +1558,10 @@ def writeReactionString(reaction, javaLibrary = False):
 def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = False, commented=False):
     """
     Return a string representation of the reaction as used in a Chemkin
-    file. Use verbose = True to turn on comments.  Use javaLibrary = True in order to 
-    generate a kinetics entry suitable for an RMG-Java kinetics library.  
+    file. Use `verbose = True` to turn on kinetics comments.
+    Use `commented = True` to comment out the entire reaction.
+    Use javaLibrary = True in order to generate a kinetics entry suitable
+    for an RMG-Java kinetics library.
     """
     string = ""
     

@@ -73,7 +73,7 @@ class Species(object):
     `thermo`                The heat capacity model for the species
     `conformer`             The molecular conformer for the species
     `molecule`              A list of the :class:`Molecule` objects describing the molecular structure
-    `transportData`          A set of transport collision parameters
+    `transportData`         A set of transport collision parameters
     `molecularWeight`       The molecular weight of the species
     `energyTransferModel`   The collisional energy transfer model to use
     `reactive`              ``True`` if the species participates in reaction families, ``False`` if not
@@ -90,7 +90,7 @@ class Species(object):
     def __init__(self, index=-1, label='', thermo=None, conformer=None, 
                  molecule=None, transportData=None, molecularWeight=None, 
                  energyTransferModel=None, reactive=True, props=None, aug_inchi=None,
-                 symmetryNumber = -1, creationIteration = 0):
+                 symmetryNumber = -1, creationIteration = 0, explicitlyAllowed=False):
         self.index = index
         self.label = label
         self.thermo = thermo
@@ -105,6 +105,7 @@ class Species(object):
         self.symmetryNumber = symmetryNumber
         self.isSolvent = False
         self.creationIteration = creationIteration
+        self.explicitlyAllowed = explicitlyAllowed
         # Check multiplicity of each molecule is the same
         if molecule is not None and len(molecule)>1:
             mult = molecule[0].multiplicity
@@ -153,11 +154,16 @@ class Species(object):
         """
         return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.transportData, self.molecularWeight, self.energyTransferModel, self.reactive, self.props))
 
-    def getMolecularWeight(self):
+    @property
+    def molecularWeight(self):
+        """The molecular weight of the species. (Note: value_si is in kg/molecule not kg/mol)"""
+        if self._molecularWeight is None and self.molecule is not None and len(self.molecule) > 0:
+            self._molecularWeight = quantity.Mass(self.molecule[0].getMolecularWeight(), 'kg/mol')
         return self._molecularWeight
-    def setMolecularWeight(self, value):
+
+    @molecularWeight.setter
+    def molecularWeight(self, value):
         self._molecularWeight = quantity.Mass(value)
-    molecularWeight = property(getMolecularWeight, setMolecularWeight, """The molecular weight of the species. (Note: value_si is in kg/molecule not kg/mole)""")
 
     def generate_resonance_structures(self, keep_isomorphic=True, filter_structures=True):
         """
@@ -418,8 +424,13 @@ class Species(object):
         Return the density of states :math:`\\rho(E) \\ dE` at the specified
         energies `Elist` in J/mol above the ground state.
         """
+        from rmgpy.exceptions import StatmechError
         if self.hasStatMech():
-            return self.conformer.getDensityOfStates(Elist)
+            try:
+                return self.conformer.getDensityOfStates(Elist)
+            except StatmechError:
+                logging.error('StatmechError raised for species {0}'.format(self.label))
+                raise
         else:
             raise Exception('Unable to calculate density of states for species {0!r}: no statmech data available.'.format(self.label))
 
@@ -451,9 +462,12 @@ class Species(object):
         # get labeled resonance isomers
         self.generate_resonance_structures(keep_isomorphic=True)
 
+        # only consider reactive molecules as representative structures
+        molecules = [mol for mol in self.molecule if mol.reactive]
+
         # return if no resonance
-        if len(self.molecule) == 1:
-            return self.molecule[0]
+        if len(molecules) == 1:
+            return molecules[0]
 
         # create a sorted list of atom objects for each resonance structure
         cython.declare(atomsFromStructures = list, oldAtoms = list, newAtoms = list,
@@ -466,11 +480,11 @@ class Species(object):
                       atoms=list,)
 
         atomsFromStructures = []
-        for newMol in self.molecule:
+        for newMol in molecules:
             newMol.atoms.sort(key=lambda atom: atom.id)
             atomsFromStructures.append(newMol.atoms)
 
-        numResonanceStructures = len(self.molecule)
+        numResonanceStructures = len(molecules)
 
         # make original structure with no bonds
         newMol = Molecule()
@@ -489,17 +503,21 @@ class Species(object):
                 newMol.addBond(bond)
 
         # set bonds to the proper value
-        for structureNum, oldMol in enumerate(self.molecule):
+        for structureNum, oldMol in enumerate(molecules):
             oldAtoms = atomsFromStructures[structureNum]
 
             for index1, atom1 in enumerate(oldAtoms):
+                # make bond orders average of resonance structures
                 for atom2 in atom1.bonds:
                     index2 = oldAtoms.index(atom2)
 
                     newBond = newMol.getBond(newAtoms[index1], newAtoms[index2])
                     oldBondOrder = oldMol.getBond(oldAtoms[index1], oldAtoms[index2]).getOrderNum()
                     newBond.applyAction(('CHANGE_BOND',None,oldBondOrder / numResonanceStructures / 2))
-
+                # set radicals in resonance hybrid to maximum of all structures
+                if atom1.radicalElectrons > 0:
+                    newAtoms[index1].radicalElectrons = max(atom1.radicalElectrons,
+                                                            newAtoms[index1].radicalElectrons)
         newMol.updateAtomTypes(logSpecies = False, raiseException=False)
         return newMol
 
@@ -637,7 +655,7 @@ class Species(object):
         have already provided a thermodynamics model using e.g.
         :meth:`generateThermoData()`.
         """
-
+        logging.debug("Generating statmech for species {}".format(self.label))
         from rmgpy.data.rmg import getDB
         try:
             statmechDB = getDB('statmech')        
@@ -651,10 +669,30 @@ class Species(object):
 
         if self.conformer is None:
             self.conformer = Conformer()
-        self.conformer.E0 = self.getThermoData().E0
+
+        if self.conformer.E0 is None:
+            self.setE0WithThermo()
+
         self.conformer.modes = conformer.modes
         self.conformer.spinMultiplicity = conformer.spinMultiplicity
-        
+        if self.conformer.E0 is None or not self.hasStatMech():
+            from rmgpy.exceptions import StatmechError
+            logging.error('The conformer in question is {}'.format(self.conformer))
+            raise StatmechError('Species {0} does not have stat mech after generateStatMech called'.format(self.label))
+
+    def setE0WithThermo(self):
+        """
+        Helper method that sets species' E0 using the species' thermo data
+        """
+        if self.getThermoData().E0 is not None:
+            self.conformer.E0 = self.getThermoData().E0
+        else:
+            if not self.thermo.Cp0 or not self.thermo.CpInf:
+                # set Cp0 and CpInf
+                from rmgpy.data.thermo import findCp0andCpInf
+                findCp0andCpInf(self, self.thermo)
+            self.conformer.E0 = self.getThermoData().toWilhoit().E0
+
     def generateEnergyTransferModel(self):
         """
         Generate the collisional energy transfer model parameters for the
@@ -725,7 +763,7 @@ class TransitionState():
         if self.conformer is not None and len(self.conformer.modes) > 0:
             Q = self.conformer.getPartitionFunction(T)
         else:
-            raise Exception('Unable to calculate partition function for transition state {0!r}: no statmech data available.'.format(self.label))
+            raise SpeciesError('Unable to calculate partition function for transition state {0!r}: no statmech data available.'.format(self.label))
         return Q
         
     def getHeatCapacity(self, T):

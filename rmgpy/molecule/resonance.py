@@ -39,14 +39,14 @@ Currently supported resonance types:
 
 - All species:
     - ``generate_allyl_delocalization_resonance_structures``: single radical shift with double or triple bond
-    - ``generate_lone_pair_radical_resonance_structures``: single radical shift with lone pair
-    - ``generate_lone_pair_multiple_bond_resonance_structures``: multiple bond shift with lone pair
-    - ``generate_lone_pair_radical_multiple_bond_resonance_structures``: multiple bond and radical shift with lone pair and radical
-    - ``generate_N5ddc_N5tc_resonance_structures``: shift between nitrogen with two double bonds and single + triple bond
+    - ``generate_lone_pair_multiple_bond_resonance_structures``: lone pair shift with double or triple bond in a 3-atom system (between nonadjacent atoms)
+    - ``generate_adj_lone_pair_radical_resonance_structures``: single radical shift with lone pair between adjacent atoms
+    - ``generate_adj_lone_pair_multiple_bond_resonance_structures``: multiple bond shift with lone pair between adjacent atoms
+    - ``generate_adj_lone_pair_radical_multiple_bond_resonance_structures``: multiple bond and radical shift with lone pair and radical  between adjacent atoms
     - ``generate_N5dc_radical_resonance_structures``: shift between radical and lone pair mediated by an N5dc atom
-    - ``generate_N5dc_resonance_structures``: shift between double bond and lone pair mediated by an N5dc atom
+    - ``generate_aryne_resonance_structures``: shift between cumulene and alkyne forms of arynes, which are not considered aromatic in RMG
 - Aromatic species only:
-    - ``generate_aromatic_resonance_structures``: fully delocalized structure, where all aromatic rings have benzene bonds
+    - ``generate_optimal_aromatic_resonance_structures``: fully delocalized structure, where all aromatic rings have benzene bonds
     - ``generate_kekule_structure``: generate a single Kekule structure for an aromatic compound (single/double bond form)
     - ``generate_opposite_kekule_structure``: for monocyclic aromatic species, rotate the double bond assignment
     - ``generate_clar_structures``: generate all structures with the maximum number of pi-sextet assignments
@@ -78,15 +78,14 @@ def populate_resonance_algorithms(features=None):
     if features is None:
         method_list = [
             generate_allyl_delocalization_resonance_structures,
-            generate_lone_pair_radical_resonance_structures,
             generate_lone_pair_multiple_bond_resonance_structures,
-            generate_lone_pair_radical_multiple_bond_resonance_structures,
-            generate_N5ddc_N5tc_resonance_structures,
+            generate_adj_lone_pair_radical_resonance_structures,
+            generate_adj_lone_pair_multiple_bond_resonance_structures,
+            generate_adj_lone_pair_radical_multiple_bond_resonance_structures,
             generate_N5dc_radical_resonance_structures,
-            generate_N5dc_resonance_structures,
-            generate_aromatic_resonance_structures,
+            generate_optimal_aromatic_resonance_structures,
+            generate_aryne_resonance_structures,
             generate_kekule_structure,
-            generate_opposite_kekule_structure,
             generate_clar_structures,
         ]
     else:
@@ -95,14 +94,22 @@ def populate_resonance_algorithms(features=None):
         # cases where the radical is in an orbital that is orthogonal to the pi orbitals.
         if features['isRadical'] and not features['isAromatic'] and not features['isArylRadical']:
             method_list.append(generate_allyl_delocalization_resonance_structures)
-        if features['hasNitrogen']:
-            method_list.append(generate_N5ddc_N5tc_resonance_structures)
+        if features['isCyclic']:
+            method_list.append(generate_aryne_resonance_structures)
+        if features['hasNitrogenVal5']:
             method_list.append(generate_N5dc_radical_resonance_structures)
-            method_list.append(generate_N5dc_resonance_structures)
         if features['hasLonePairs']:
-            method_list.append(generate_lone_pair_radical_resonance_structures)
-            method_list.append(generate_lone_pair_multiple_bond_resonance_structures)
-            method_list.append(generate_lone_pair_radical_multiple_bond_resonance_structures)
+            method_list.append(generate_adj_lone_pair_radical_resonance_structures)
+            method_list.append(generate_adj_lone_pair_multiple_bond_resonance_structures)
+            method_list.append(generate_adj_lone_pair_radical_multiple_bond_resonance_structures)
+            if not features['isAromatic']:
+                # The generate_lone_pair_multiple_bond_resonance_structures method may purturb the electronic
+                # configuration of a conjugated aromatic system, causing a major slow-down (two orders of magnitude
+                # slower in one observed case), and it doesn't necessarily result in new representative localized
+                # structures. Here we forbid it for all structures bearing at least one aromatic ring as a "good enough"
+                # solution. A more holistic approach would be to identify these cases in generate_resonance_structures,
+                # and pass a list of forbidden atom ID's to find_lone_pair_multiple_bond_paths.
+                method_list.append(generate_lone_pair_multiple_bond_resonance_structures)
 
     return method_list
 
@@ -120,21 +127,21 @@ def analyze_molecule(mol):
                 'isAromatic': False,
                 'isPolycyclicAromatic': False,
                 'isArylRadical': False,
-                'hasNitrogen': False,
+                'hasNitrogenVal5': False,
                 'hasLonePairs': False,
                 }
 
     if features['isCyclic']:
-        aromaticRings = mol.getAromaticRings()[0]
-        if len(aromaticRings) > 0:
+        aromatic_rings = mol.getAromaticRings()[0]
+        if len(aromatic_rings) > 0:
             features['isAromatic'] = True
-        if len(aromaticRings) > 1:
+        if len(aromatic_rings) > 1:
             features['isPolycyclicAromatic'] = True
         if features['isRadical'] and features['isAromatic']:
-            features['isArylRadical'] = mol.isArylRadical(aromaticRings)
+            features['isArylRadical'] = mol.isArylRadical(aromatic_rings)
     for atom in mol.vertices:
-        if atom.isNitrogen():
-            features['hasNitrogen'] = True
+        if atom.isNitrogen() and atom.lonePairs == 0:
+            features['hasNitrogenVal5'] = True
         if atom.lonePairs > 0:
             features['hasLonePairs'] = True
 
@@ -166,8 +173,6 @@ def generate_resonance_structures(mol, clar_structures=True, keep_isomorphic=Fal
     """
     cython.declare(mol_list=list, new_mol_list=list, features=dict, method_list=list)
 
-    logging.debug('Generating resonance structures for {0}...'.format(mol.toSMILES()))
-
     # Check that mol is a valid structure in terms of atomTypes and net charge. Since SMILES with hypervalance
     # heteroatoms are not always read correctly, print a suggestion to input the structure using an adjList.
     try:
@@ -192,9 +197,9 @@ def generate_resonance_structures(mol, clar_structures=True, keep_isomorphic=Fal
     # Analyze molecule
     features = analyze_molecule(mol)
 
-    # Use generate_aromatic_resonance_structures to check for false positives and negatives
+    # Use generate_optimal_aromatic_resonance_structures to check for false positives and negatives
     if features['isAromatic'] or (features['isCyclic'] and features['isRadical'] and not features['isArylRadical']):
-        new_mol_list = generate_aromatic_resonance_structures(mol, features)
+        new_mol_list = generate_optimal_aromatic_resonance_structures(mol, features)
         if len(new_mol_list) == 0:
             # Encountered false positive, ie. the molecule is not actually aromatic
             features['isAromatic'] = False
@@ -203,60 +208,41 @@ def generate_resonance_structures(mol, clar_structures=True, keep_isomorphic=Fal
             features['isAromatic'] = True
             if len(new_mol_list[0].getAromaticRings()[0]) > 1:
                 features['isPolycyclicAromatic'] = True
-    else:
-        new_mol_list = []
+            for new_mol in new_mol_list:
+                # Append to structure list if unique
+                if not keep_isomorphic and mol.isIsomorphic(new_mol):
+                    continue
+                elif keep_isomorphic and mol.isIdentical(new_mol):
+                    continue
+                else:
+                    mol_list.append(new_mol)
 
     # Special handling for aromatic species
-    if len(new_mol_list) > 0:
+    if features['isAromatic']:
         if features['isRadical'] and not features['isArylRadical']:
-            if features['isPolycyclicAromatic']:
-                if clar_structures:
-                    _generate_resonance_structures(new_mol_list, [generate_kekule_structure], keep_isomorphic)
-                    _generate_resonance_structures(new_mol_list, [generate_allyl_delocalization_resonance_structures], keep_isomorphic)
-                    _generate_resonance_structures(new_mol_list, [generate_clar_structures], keep_isomorphic)
-                    # Remove non-aromatic structures under the assumption that they aren't important resonance contributors
-                    new_mol_list = [m for m in new_mol_list if m.isAromatic()]
-                else:
-                    pass
-            else:
-                _generate_resonance_structures(new_mol_list, [generate_kekule_structure,
-                                                            generate_opposite_kekule_structure], keep_isomorphic)
-                _generate_resonance_structures(new_mol_list, [generate_allyl_delocalization_resonance_structures], keep_isomorphic)
-        elif features['isPolycyclicAromatic']:
-            if clar_structures:
-                _generate_resonance_structures(new_mol_list, [generate_clar_structures], keep_isomorphic)
-            else:
-                pass
+            _generate_resonance_structures(mol_list, [generate_kekule_structure],
+                                           keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
+            _generate_resonance_structures(mol_list, [generate_allyl_delocalization_resonance_structures],
+                                           keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
+        if features['isPolycyclicAromatic'] and clar_structures:
+            _generate_resonance_structures(mol_list, [generate_clar_structures],
+                                           keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
         else:
-            # The molecule is an aryl radical or stable mono-ring aromatic
-            # In this case, generate the kekulized form
-            _generate_resonance_structures(new_mol_list, [generate_kekule_structure,
-                                                        generate_opposite_kekule_structure], keep_isomorphic)
-
-        # Check for isomorphism against the original molecule
-        for i, new_mol in enumerate(new_mol_list):
-            if not keep_isomorphic and mol.isIsomorphic(new_mol):
-                # There will be at most one isomorphic molecule, since the new molecules have
-                # already been checked against each other, so we can break after removing it
-                del new_mol_list[i]
-                break
-            elif keep_isomorphic and mol.isIdentical(new_mol):
-                del new_mol_list[i]
-                break
-        # Add the newly generated structures to the original list
-        # This is not optimal, but is a temporary measure to ensure compatibility until other issues are fixed
-        mol_list.extend(new_mol_list)
+            _generate_resonance_structures(mol_list, [generate_aromatic_resonance_structure],
+                                           keep_isomorphic=keep_isomorphic, filter_structures=filter_structures)
 
     # Generate remaining resonance structures
     method_list = populate_resonance_algorithms(features)
-    _generate_resonance_structures(mol_list, method_list, keep_isomorphic)
+    _generate_resonance_structures(mol_list, method_list, keep_isomorphic=keep_isomorphic,
+                                   filter_structures=filter_structures)
 
     if filter_structures:
-        return filtration.filter_structures(mol_list)
+        return filtration.filter_structures(mol_list, features=features)
 
     return mol_list
 
-def _generate_resonance_structures(mol_list, method_list, keep_isomorphic=False, copy=False):
+
+def _generate_resonance_structures(mol_list, method_list, keep_isomorphic=False, copy=False, filter_structures=True):
     """
     Iteratively generate all resonance structures for a list of starting molecules using the specified methods.
 
@@ -276,20 +262,21 @@ def _generate_resonance_structures(mol_list, method_list, keep_isomorphic=False,
 
     min_octet_deviation = min(filtration.get_octet_deviation_list(mol_list))
     min_charge_span = min(filtration.get_charge_span_list(mol_list))
+
     # Iterate over resonance structures
     index = 0
     while index < len(mol_list):
         molecule = mol_list[index]
         new_mol_list = []
 
-        # On-the-fly filtration: Extend methods for molecule only if it is relatively close to the octet rule
-        # (don't explore structures that will certainly be filtered out)
-        # Sometimes rearranging the structure requires an additional higher charge span structure, so allow structures
-        # with a +1 higher charge span compared to the minimum, e.g., [O-]S#S[N+]#N
+        # On-the-fly filtration: Extend methods only for molecule that don't deviate too much from the octet rule
+        # (a +2 distance from the minimal deviation is used, octet deviations per species are in increments of 2)
+        # Sometimes rearranging the structure requires an additional higher charge span structure, so allow
+        # structures with a +1 higher charge span compared to the minimum, e.g., [O-]S#S[N+]#N
+        # This is run by default even if filter_structures=False.
         octet_deviation = filtration.get_octet_deviation(molecule)
         charge_span = molecule.getChargeSpan()
-        if octet_deviation <= min_octet_deviation and charge_span <= min_charge_span + 1:
-            # logging.debug('Extending resonance structures for {0}...'.format(molecule.toSMILES()))
+        if octet_deviation <= min_octet_deviation + 2 and charge_span <= min_charge_span + 1:
             for method in method_list:
                 new_mol_list.extend(method(molecule))
             if octet_deviation < min_octet_deviation:
@@ -311,6 +298,13 @@ def _generate_resonance_structures(mol_list, method_list, keep_isomorphic=False,
 
         # Move to the next resonance structure
         index += 1
+
+    # check net charge
+    for mol in mol_list:
+        if mol.getNetCharge() != 0:
+            raise ResonanceError('Resonance generation gave a net charged molecule:\n{0}'
+                                 'Ions are not yet supported in RMG.'.format(
+                mol.toAdjacencyList()))
 
     return mol_list
 
@@ -335,7 +329,7 @@ def generate_allyl_delocalization_resonance_structures(mol):
                 atom3.incrementRadical()
                 bond12.incrementOrder()
                 bond23.decrementOrder()
-                # Make a copy of isomer
+                # Make a copy of structure
                 structure = mol.copy(deep=True)
                 # Also copy the connectivity values, since they are the same
                 # for all resonance structures
@@ -360,9 +354,58 @@ def generate_allyl_delocalization_resonance_structures(mol):
     return structures
 
 
-def generate_lone_pair_radical_resonance_structures(mol):
+def generate_lone_pair_multiple_bond_resonance_structures(mol):
     """
-    Generate all of the resonance structures formed by lone electron pair - radical shifts.
+    Generate all of the resonance structures formed by lone electron pair - multiple bond shifts in 3-atom systems.
+    Examples: aniline (Nc1ccccc1), azide, [:NH2]C=[::O] <=> [NH2+]=C[:::O-]
+    (where ':' denotes a lone pair, '.' denotes a radical, '-' not in [] denotes a single bond, '-'/'+' denote charge)
+    """
+    cython.declare(structures=list, paths=list, index=cython.int, structure=Molecule)
+    cython.declare(atom=Atom, atom1=Atom, atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
+    cython.declare(v1=Vertex, v2=Vertex)
+
+    structures = []
+    for atom in mol.vertices:
+        if atom.lonePairs >= 1:
+            paths = pathfinder.find_lone_pair_multiple_bond_paths(atom)
+            for atom1, atom2, atom3, bond12, bond23 in paths:
+                # Adjust to (potentially) new resonance structure
+                atom1.decrementLonePairs()
+                atom3.incrementLonePairs()
+                bond12.incrementOrder()
+                bond23.decrementOrder()
+                atom1.updateCharge()
+                atom3.updateCharge()
+                # Make a copy of structure
+                structure = mol.copy(deep=True)
+                # Also copy the connectivity values, since they are the same
+                # for all resonance structures
+                for index in xrange(len(mol.vertices)):
+                    v1 = mol.vertices[index]
+                    v2 = structure.vertices[index]
+                    v2.connectivity1 = v1.connectivity1
+                    v2.connectivity2 = v1.connectivity2
+                    v2.connectivity3 = v1.connectivity3
+                    v2.sortingLabel = v1.sortingLabel
+                # Restore current structure
+                atom1.incrementLonePairs()
+                atom3.decrementLonePairs()
+                bond12.decrementOrder()
+                bond23.incrementOrder()
+                atom1.updateCharge()
+                atom3.updateCharge()
+                try:
+                    structure.updateAtomTypes(logSpecies=False)
+                except AtomTypeError:
+                    pass  # Don't append resonance structure if it creates an undefined atomType
+                else:
+                    structures.append(structure)
+    return structures
+
+
+def generate_adj_lone_pair_radical_resonance_structures(mol):
+    """
+    Generate all of the resonance structures formed by lone electron pair - radical shifts between adjacent atoms.
     These resonance transformations do not involve changing bond orders.
     NO2 example: O=[:N]-[::O.] <=> O=[N.+]-[:::O-]
     (where ':' denotes a lone pair, '.' denotes a radical, '-' not in [] denotes a single bond, '-'/'+' denote charge)
@@ -374,7 +417,7 @@ def generate_lone_pair_radical_resonance_structures(mol):
     structures = []
     if mol.isRadical():  # Iterate over radicals in structure
         for atom in mol.vertices:
-            paths = pathfinder.find_lone_pair_radical_delocalization_paths(atom)
+            paths = pathfinder.find_adj_lone_pair_radical_delocalization_paths(atom)
             for atom1, atom2 in paths:
                 # Adjust to (potentially) new resonance structure
                 atom1.decrementRadical()
@@ -410,9 +453,9 @@ def generate_lone_pair_radical_resonance_structures(mol):
     return structures
 
 
-def generate_lone_pair_multiple_bond_resonance_structures(mol):
+def generate_adj_lone_pair_multiple_bond_resonance_structures(mol):
     """
-    Generate all of the resonance structures formed by lone electron pair - multiple bond shifts.
+    Generate all of the resonance structures formed by lone electron pair - multiple bond shifts between adjacent atoms.
     Example: [:NH]=[CH2] <=> [::NH-]-[CH2+]
     (where ':' denotes a lone pair, '.' denotes a radical, '-' not in [] denotes a single bond, '-'/'+' denote charge)
     Here atom1 refers to the N/S/O atom, atom 2 refers to the any R!H (atom2's lonePairs aren't affected)
@@ -424,7 +467,7 @@ def generate_lone_pair_multiple_bond_resonance_structures(mol):
 
     structures = []
     for atom in mol.vertices:
-        paths = pathfinder.find_lone_pair_multiple_bond_delocalization_paths(atom)
+        paths = pathfinder.find_adj_lone_pair_multiple_bond_delocalization_paths(atom)
         for atom1, atom2, bond12, direction in paths:
             if direction == 1:  # The direction <increasing> the bond order
                 atom1.decrementLonePairs()
@@ -463,13 +506,13 @@ def generate_lone_pair_multiple_bond_resonance_structures(mol):
     return structures
 
 
-def generate_lone_pair_radical_multiple_bond_resonance_structures(mol):
+def generate_adj_lone_pair_radical_multiple_bond_resonance_structures(mol):
     """
-    Generate all of the resonance structures formed by lone electron pair - radical - multiple bond shifts.
+    Generate all of the resonance structures formed by lone electron pair - radical - multiple bond shifts between adjacent atoms.
     Example: [:N.]=[CH2] <=> [::N]-[.CH2]
     (where ':' denotes a lone pair, '.' denotes a radical, '-' not in [] denotes a single bond, '-'/'+' denote charge)
     Here atom1 refers to the N/S/O atom, atom 2 refers to the any R!H (atom2's lonePairs aren't affected)
-    This function is similar to generate_lone_pair_multiple_bond_resonance_structures() except for dealing with the
+    This function is similar to generate_adj_lone_pair_multiple_bond_resonance_structures() except for dealing with the
     radical transformations.
     (In direction 1 atom1 <losses> a lone pair, gains a radical, and atom2 looses a radical.
     In direction 2 atom1 <gains> a lone pair, looses a radical, and atom2 gains a radical)
@@ -481,7 +524,7 @@ def generate_lone_pair_radical_multiple_bond_resonance_structures(mol):
     structures = []
     if mol.isRadical():  # Iterate over radicals in structure
         for atom in mol.vertices:
-            paths = pathfinder.find_lone_pair_radical_multiple_bond_delocalization_paths(atom)
+            paths = pathfinder.find_adj_lone_pair_radical_multiple_bond_delocalization_paths(atom)
             for atom1, atom2, bond12, direction in paths:
                 if direction == 1:  # The direction <increasing> the bond order
                     atom1.decrementLonePairs()
@@ -519,54 +562,6 @@ def generate_lone_pair_radical_multiple_bond_resonance_structures(mol):
                     atom2.decrementRadical()
                 atom1.updateCharge()
                 atom2.updateCharge()
-                try:
-                    structure.updateAtomTypes(logSpecies=False)
-                except AtomTypeError:
-                    pass  # Don't append resonance structure if it creates an undefined atomType
-                else:
-                    structures.append(structure)
-    return structures
-
-
-def generate_N5ddc_N5tc_resonance_structures(mol):
-    """
-    Generate all of the resonance structures formed by shifts between N5ddc and N5tc.
-    """
-    cython.declare(structures=list, paths=list, index=cython.int, structure=Molecule)
-    cython.declare(atom=Atom, atom1=Atom, atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
-    cython.declare(v1=Vertex, v2=Vertex)
-
-    structures = []
-    for atom in mol.vertices:
-        if atom.atomType.label in ['N5ddc','N5tc'] and atom.radicalElectrons == 0:
-            paths = pathfinder.find_N5ddc_N5tc_delocalization_paths(atom)
-            for atom1, atom2, atom3, bond12, bond23 in paths:
-                atom2.decrementLonePairs()
-                atom3.incrementLonePairs()
-                bond12.incrementOrder()
-                bond23.decrementOrder()
-                atom1.updateCharge()
-                atom2.updateCharge()
-                atom3.updateCharge()
-                # Make a copy of structure
-                structure = mol.copy(deep=True)
-                # Also copy the connectivity values, since they are the same
-                # for all resonance structures
-                for index in xrange(len(mol.vertices)):
-                    v1 = mol.vertices[index]
-                    v2 = structure.vertices[index]
-                    v2.connectivity1 = v1.connectivity1
-                    v2.connectivity2 = v1.connectivity2
-                    v2.connectivity3 = v1.connectivity3
-                    v2.sortingLabel = v1.sortingLabel
-                # Restore current structure
-                atom2.incrementLonePairs()
-                atom3.decrementLonePairs()
-                bond12.decrementOrder()
-                bond23.incrementOrder()
-                atom1.updateCharge()
-                atom2.updateCharge()
-                atom3.updateCharge()
                 try:
                     structure.updateAtomTypes(logSpecies=False)
                 except AtomTypeError:
@@ -622,53 +617,7 @@ def generate_N5dc_radical_resonance_structures(mol):
     return structures
 
 
-def generate_N5dc_resonance_structures(mol):
-    """
-    Generate all of the resonance structures formed by double bond and lone pair shifts mediated by an N5dc atom.
-    """
-    cython.declare(structures=list, paths=list, index=cython.int, structure=Molecule)
-    cython.declare(atom=Atom, atom2=Atom, atom3=Atom)
-    cython.declare(v1=Vertex, v2=Vertex)
-
-    structures = []
-    for atom in mol.vertices:
-        if atom.atomType.label == 'N5dc' and atom.radicalElectrons == 0 and len(atom.edges) == 3:
-            paths = pathfinder.find_N5dc_delocalization_paths(atom)
-            for atom2, atom3, bond12, bond13 in paths:
-                bond12.decrementOrder()
-                atom2.incrementLonePairs()
-                atom3.decrementLonePairs()
-                bond13.incrementOrder()
-                atom2.updateCharge()
-                atom3.updateCharge()
-                # Make a copy of structure
-                structure = mol.copy(deep=True)
-                # Also copy the connectivity values, since they are the same
-                # for all resonance structures
-                for index in xrange(len(mol.vertices)):
-                    v1 = mol.vertices[index]
-                    v2 = structure.vertices[index]
-                    v2.connectivity1 = v1.connectivity1
-                    v2.connectivity2 = v1.connectivity2
-                    v2.connectivity3 = v1.connectivity3
-                    v2.sortingLabel = v1.sortingLabel
-                # Restore current structure
-                bond13.decrementOrder()
-                atom3.incrementLonePairs()
-                atom2.decrementLonePairs()
-                bond12.incrementOrder()
-                atom2.updateCharge()
-                atom3.updateCharge()
-                try:
-                    structure.updateAtomTypes(logSpecies=False)
-                except AtomTypeError:
-                    pass  # Don't append resonance structure if it creates an undefined atomType
-                else:
-                    structures.append(structure)
-    return structures
-
-
-def generate_aromatic_resonance_structures(mol, features=None):
+def generate_optimal_aromatic_resonance_structures(mol, features=None):
     """
     Generate the aromatic form of the molecule. For radicals, generates the form with the most aromatic rings.
 
@@ -693,86 +642,47 @@ def generate_aromatic_resonance_structures(mol, features=None):
     rings = molecule.getAllSimpleCyclesOfSize(6)
 
     # Then determine which ones are aromatic
-    aromaticBonds = molecule.getAromaticRings(rings)[1]
+    aromatic_bonds = molecule.getAromaticRings(rings)[1]
 
-    # If the species is a radical, then there is a chance that the radical can be shifted
-    #   to a location that increases the number of perceived aromatic rings.
+    # Attempt to rearrange electrons to obtain a structure with the most aromatic rings
+    # Possible rearrangements include aryne resonance and allyl resonance
+    res_list = [generate_aryne_resonance_structures]
     if features['isRadical'] and not features['isArylRadical']:
-        if molecule.isAromatic():
-            kekuleList = generate_kekule_structure(molecule)
-        else:
-            kekuleList = [molecule]
-        _generate_resonance_structures(kekuleList, [generate_allyl_delocalization_resonance_structures])
+        res_list.append(generate_allyl_delocalization_resonance_structures)
 
-        maxNum = 0
+    if molecule.isAromatic():
+        kekule_list = generate_kekule_structure(molecule)
+    else:
+        kekule_list = [molecule]
+
+    _generate_resonance_structures(kekule_list, res_list)
+
+    if len(kekule_list) > 1:
+        # We found additional structures, so we need to evaluate all of them
+        max_num = 0
         mol_list = []
 
         # Iterate through the adjacent resonance structures and keep the structures with the most aromatic rings
-        for mol0 in kekuleList:
-            aromaticBonds = mol0.getAromaticRings()[1]
-            if len(aromaticBonds) > maxNum:
-                maxNum = len(aromaticBonds)
-                mol_list = [(mol0, aromaticBonds)]
-            elif len(aromaticBonds) == maxNum:
-                mol_list.append((mol0, aromaticBonds))
+        for mol0 in kekule_list:
+            aromatic_bonds = mol0.getAromaticRings()[1]
+            if len(aromatic_bonds) > max_num:
+                max_num = len(aromatic_bonds)
+                mol_list = [(mol0, aromatic_bonds)]
+            elif len(aromatic_bonds) == max_num:
+                mol_list.append((mol0, aromatic_bonds))
     else:
         # Otherwise, it is not possible to increase the number of aromatic rings by moving electrons,
         # so go ahead with the inputted form of the molecule
-        mol_list = [(molecule, aromaticBonds)]
+        mol_list = [(molecule, aromatic_bonds)]
 
     new_mol_list = []
 
     # Generate the aromatic resonance structure(s)
-    for mol0, aromaticBonds in mol_list:
-        if not aromaticBonds:
+    for mol0, aromatic_bonds in mol_list:
+        # Aromatize the molecule in place
+        success = generate_aromatic_resonance_structure(mol0, aromatic_bonds, copy=False)
+        if not success:
             continue
-        # Save original bond orders in case this doesn't work out
-        originalBonds = []
-        for ring in aromaticBonds:
-            originalOrder = []
-            for bond in ring:
-                originalOrder.append(bond.order)
-            originalBonds.append(originalOrder)
-        # Change bond types to benzene bonds for all aromatic rings
-        for ring in aromaticBonds:
-            for bond in ring:
-                bond.order = 1.5
-
-        try:
-            mol0.updateAtomTypes(logSpecies=False)
-        except AtomTypeError:
-            # If this didn't work the first time, then there might be a ring that is not actually aromatic
-            # Reset our changes
-            for ring, originalOrder in itertools.izip(aromaticBonds, originalBonds):
-                for bond, order in itertools.izip(ring, originalOrder):
-                    bond.order = order
-            # Try to make each ring aromatic, one by one
-            i = 0
-            counter = 0
-            while i < len(aromaticBonds) and counter < 2*len(aromaticBonds):
-                counter += 1
-                originalOrder = []
-                for bond in aromaticBonds[i]:
-                    originalOrder.append(bond.order)
-                    bond.order = 1.5
-                try:
-                    mol0.updateAtomTypes(logSpecies=False)
-                except AtomTypeError:
-                    # This ring could not be made aromatic, possibly because it depends on other rings
-                    # Undo changes
-                    for bond, order in itertools.izip(aromaticBonds[i], originalOrder):
-                        bond.order = order
-                    # Move it to the end of the list, and go on to the next ring
-                    aromaticBonds.append(aromaticBonds.pop(i))
-                    mol0.updateAtomTypes(logSpecies=False)
-                    continue
-                else:
-                    # We're done with this ring, so go on to the next ring
-                    i += 1
-            # If we didn't end up making any of the rings aromatic, then this molecule is not actually aromatic
-            if i == 0:
-                # Move onto next molecule in the list
-                continue
 
         for mol1 in new_mol_list:
             if mol1.isIsomorphic(mol0):
@@ -781,6 +691,160 @@ def generate_aromatic_resonance_structures(mol, features=None):
             new_mol_list.append(mol0)
 
     return new_mol_list
+
+
+def generate_aromatic_resonance_structure(mol, aromatic_bonds=None, copy=True):
+    """
+    Generate the aromatic form of the molecule in place without considering other resonance.
+
+    Args:
+        mol: :class:`Molecule` object to modify
+        aromatic_bonds (optional): list of previously identified aromatic bonds
+        copy (optional): copy the molecule if ``True``, otherwise modify in place
+
+    Returns:
+        List of one molecule if successful, empty list otherwise
+    """
+    if copy:
+        molecule = mol.copy(deep=True)
+    else:
+        molecule = mol
+
+    if aromatic_bonds is None:
+        aromatic_bonds = molecule.getAromaticRings()[1]
+    if len(aromatic_bonds) == 0:
+        return []
+
+    # Save original bond orders in case this doesn't work out
+    original_bonds = []
+    for ring in aromatic_bonds:
+        original_order = []
+        for bond in ring:
+            original_order.append(bond.order)
+        original_bonds.append(original_order)
+    # Change bond types to benzene bonds for all aromatic rings
+    for ring in aromatic_bonds:
+        for bond in ring:
+            bond.order = 1.5
+
+    try:
+        molecule.updateAtomTypes(logSpecies=False)
+    except AtomTypeError:
+        # If this didn't work the first time, then there might be a ring that is not actually aromatic
+        # Reset our changes
+        for ring, original_order in itertools.izip(aromatic_bonds, original_bonds):
+            for bond, order in itertools.izip(ring, original_order):
+                bond.order = order
+        # Try to make each ring aromatic, one by one
+        i = 0  # Track how many rings are aromatic
+        counter = 0  # Track total number of attempts to avoid infinite loops
+        while i < len(aromatic_bonds) and counter < 2*len(aromatic_bonds):
+            counter += 1
+            original_order = []
+            for bond in aromatic_bonds[i]:
+                original_order.append(bond.order)
+                bond.order = 1.5
+            try:
+                molecule.updateAtomTypes(logSpecies=False)
+            except AtomTypeError:
+                # This ring could not be made aromatic, possibly because it depends on other rings
+                # Undo changes
+                for bond, order in itertools.izip(aromatic_bonds[i], original_order):
+                    bond.order = order
+                # Move it to the end of the list, and go on to the next ring
+                aromatic_bonds.append(aromatic_bonds.pop(i))
+                molecule.updateAtomTypes(logSpecies=False)
+                continue
+            else:
+                # We're done with this ring, so go on to the next ring
+                i += 1
+        # If we didn't end up making any of the rings aromatic, then this molecule is not actually aromatic
+        if i == 0:
+            # Move onto next molecule in the list
+            return []
+
+    return [molecule]
+
+
+def generate_aryne_resonance_structures(mol):
+    """
+    Generate aryne resonance structures, including the cumulene and alkyne forms.
+
+    For all 6-membered rings, check for the following bond patterns:
+
+      - DDDSDS
+      - STSDSD
+
+    This does NOT cover all possible aryne resonance forms, only the simplest ones.
+    Especially for polycyclic arynes, enumeration of all resonance forms is
+    related to enumeration of all Kekule structures, which is very difficult.
+    """
+    cython.declare(rings=list, ring=list, new_mol_list=list, bond_list=list,
+                   i=cython.int, j=cython.int, bond_orders=str, new_orders=str,
+                   ind=cython.int, bond=Bond, new_mol=Molecule)
+
+    rings = mol.getRelevantCycles()
+    rings = [ring for ring in rings if len(ring) == 6]
+
+    new_mol_list = []
+    for ring in rings:
+        # Get bond orders
+        bond_list = mol.get_edges_in_cycle(ring)
+        bond_orders = ''.join([bond.getOrderStr() for bond in bond_list])
+        new_orders = None
+        # Check for expected bond patterns
+        if bond_orders.count('T') == 1:
+            # Reorder the list so the triple bond is first
+            ind = bond_orders.index('T')
+            bond_orders = bond_orders[ind:] + bond_orders[:ind]
+            bond_list = bond_list[ind:] + bond_list[:ind]
+            # Check for patterns
+            if bond_orders == 'TSDSDS':
+                new_orders = 'DDSDSD'
+        elif bond_orders.count('D') == 4:
+            # Search for DDD and reorder the list so that it comes first
+            if 'DDD' in bond_orders:
+                ind = bond_orders.index('DDD')
+                bond_orders = bond_orders[ind:] + bond_orders[:ind]
+                bond_list = bond_list[ind:] + bond_list[:ind]
+            elif bond_orders.startswith('DD') and bond_orders.endswith('D'):
+                bond_orders = bond_orders[-1:] + bond_orders[:-1]
+                bond_list = bond_list[-1:] + bond_list[:-1]
+            elif bond_orders.startswith('D') and bond_orders.endswith('DD'):
+                bond_orders = bond_orders[-2:] + bond_orders[:-2]
+                bond_list = bond_list[-2:] + bond_list[:-2]
+            # Check for patterns
+            if bond_orders == 'DDDSDS':
+                new_orders = 'STSDSD'
+
+        if new_orders is not None:
+            # We matched one of our patterns, so we can now change the bonds
+            for i, bond in enumerate(bond_list):
+                bond.setOrderStr(new_orders[i])
+            # Make a copy of the molecule
+            new_mol = mol.copy(deep=True)
+            # Also copy the connectivity values, since they are the same
+            # for all resonance structures
+            for i in xrange(len(mol.vertices)):
+                v1 = mol.vertices[i]
+                v2 = new_mol.vertices[i]
+                v2.connectivity1 = v1.connectivity1
+                v2.connectivity2 = v1.connectivity2
+                v2.connectivity3 = v1.connectivity3
+                v2.sortingLabel = v1.sortingLabel
+            # Undo the changes to the current molecule
+            for i, bond in enumerate(bond_list):
+                bond.setOrderStr(bond_orders[i])
+            # Try to update atom types
+            try:
+                new_mol.updateAtomTypes(logSpecies=False)
+            except AtomTypeError:
+                pass  # Don't append resonance structure if it creates an undefined atomType
+            else:
+                new_mol_list.append(new_mol)
+
+    return new_mol_list
+
 
 def generate_kekule_structure(mol):
     """
@@ -807,48 +871,6 @@ def generate_kekule_structure(mol):
 
     return [molecule]
 
-def generate_opposite_kekule_structure(mol):
-    """
-    Generate the Kekule structure with opposite single/double bond arrangement
-    for single ring aromatics.
-
-    Returns a single Kekule structure as an element of a list of length 1.
-    """
-
-    # This won't work with the aromatic form of the molecule
-    if mol.isAromatic():
-        return []
-
-    molecule = mol.copy(deep=True)
-
-    aromaticBonds = molecule.getAromaticRings()[1]
-
-    # We can only do this for single ring aromatics for now
-    if len(aromaticBonds) != 1:
-        return []
-
-    numS = 0
-    numD = 0
-    for bond in aromaticBonds[0]:
-        if bond.isSingle():
-            numS += 1
-            bond.order = 2
-        elif bond.isDouble():
-            numD += 1
-            bond.order = 1
-        else:
-            # Something is wrong: there is a bond that is not single or double
-            return []
-
-    if numS != 3 or numD != 3:
-        return []
-
-    try:
-        molecule.updateAtomTypes()
-    except AtomTypeError:
-        return []
-    else:
-        return [molecule]
 
 def generate_isomorphic_resonance_structures(mol, saturate_h=False):
     """
@@ -881,11 +903,11 @@ def generate_isomorphic_resonance_structures(mol, saturate_h=False):
     while index < len(isomers):
         isomer = isomers[index]
         
-        newIsomers = []
+        new_isomers = []
         for algo in populate_resonance_algorithms():
-            newIsomers.extend(algo(isomer))
+            new_isomers.extend(algo(isomer))
         
-        for newIsomer in newIsomers:
+        for newIsomer in new_isomers:
             # Append to isomer list if unique
             for isom in isomers:
                 if isom.copy(deep=True).isIsomorphic(newIsomer.copy(deep=True)):
@@ -928,13 +950,13 @@ def generate_clar_structures(mol):
 
     mol_list = []
 
-    for new_mol, aromaticRings, bonds, solution in output:
+    for new_mol, aromatic_rings, bonds, solution in output:
 
         # The solution includes a part corresponding to rings, y, and a part corresponding to bonds, x, using
         # nomenclature from the paper. In y, 1 means the ring as a sextet, 0 means it does not.
         # In x, 1 corresponds to a double bond, 0 either means a single bond or the bond is part of a sextet.
-        y = solution[0:len(aromaticRings)]
-        x = solution[len(aromaticRings):]
+        y = solution[0:len(aromatic_rings)]
+        x = solution[len(aromatic_rings):]
 
         # Apply results to molecule - double bond locations first
         for index, bond in enumerate(bonds):
@@ -946,7 +968,7 @@ def generate_clar_structures(mol):
                 raise ValueError('Unaccepted bond value {0} obtained from optimization.'.format(x[index]))
 
         # Then apply locations of aromatic sextets by converting to benzene bonds
-        for index, ring in enumerate(aromaticRings):
+        for index, ring in enumerate(aromatic_rings):
             if y[index] == 1:
                 _clar_transformation(new_mol, ring)
 
@@ -960,7 +982,7 @@ def generate_clar_structures(mol):
     return mol_list
 
 
-def _clar_optimization(mol, constraints=None, maxNum=None):
+def _clar_optimization(mol, constraints=None, max_num=None):
     """
     Implements linear programming algorithm for finding Clar structures. This algorithm maximizes the number
     of Clar sextets within the constraints of molecular geometry and atom valency.
@@ -990,15 +1012,15 @@ def _clar_optimization(mol, constraints=None, maxNum=None):
     # Make a copy of the molecule so we don't destroy the original
     molecule = mol.copy(deep=True)
 
-    aromaticRings = molecule.getAromaticRings()[0]
-    aromaticRings.sort(key=lambda x: sum([atom.id for atom in x]))
+    aromatic_rings = molecule.getAromaticRings()[0]
+    aromatic_rings.sort(key=lambda x: sum([atom.id for atom in x]))
 
-    if not aromaticRings:
+    if not aromatic_rings:
         return []
 
     # Get list of atoms that are in rings
     atoms = set()
-    for ring in aromaticRings:
+    for ring in aromatic_rings:
         atoms.update(ring)
     atoms = sorted(atoms, key=lambda x: x.id)
 
@@ -1020,7 +1042,7 @@ def _clar_optimization(mol, constraints=None, maxNum=None):
             exo.append(None)
 
     # Dimensions
-    l = len(aromaticRings)
+    l = len(aromatic_rings)
     m = len(atoms)
     n = l + len(bonds)
 
@@ -1028,9 +1050,9 @@ def _clar_optimization(mol, constraints=None, maxNum=None):
     # Part of equality constraint Ax=b
     a = []
     for atom in atoms:
-        inRing = [1 if atom in ring else 0 for ring in aromaticRings]
-        inBond = [1 if atom in [bond.atom1, bond.atom2] else 0 for bond in bonds]
-        a.append(inRing + inBond)
+        in_ring = [1 if atom in ring else 0 for ring in aromatic_rings]
+        in_bond = [1 if atom in [bond.atom1, bond.atom2] else 0 for bond in bonds]
+        a.append(in_ring + in_bond)
 
     # Objective vector for optimization: sextets have a weight of 1, double bonds have a weight of 0
     objective = [1] * l + [0] * len(bonds)
@@ -1066,7 +1088,7 @@ def _clar_optimization(mol, constraints=None, maxNum=None):
                     raise e
 
     status = lpsolve('solve', lp)
-    objVal, solution = lpsolve('get_solution', lp)[0:2]
+    obj_val, solution = lpsolve('get_solution', lp)[0:2]
     lpsolve('delete_lp', lp)  # Delete the LP problem to clear up memory
 
     # Reset signal handling since lpsolve changed it
@@ -1081,13 +1103,13 @@ def _clar_optimization(mol, constraints=None, maxNum=None):
         raise ILPSolutionError('Optimization could not find a valid solution.')
 
     # Check that we the result contains at least one aromatic sextet
-    if objVal == 0:
+    if obj_val == 0:
         return []
 
     # Check that the solution contains the maximum number of sextets possible
-    if maxNum is None:
-        maxNum = objVal  # This is the first solution, so the result should be an upper limit
-    elif objVal < maxNum:
+    if max_num is None:
+        max_num = obj_val  # This is the first solution, so the result should be an upper limit
+    elif obj_val < max_num:
         raise ILPSolutionError('Optimization obtained a sub-optimal solution.')
 
     if any([x != 1 and x != 0 for x in solution]):
@@ -1104,14 +1126,14 @@ def _clar_optimization(mol, constraints=None, maxNum=None):
 
     # Run optimization with additional constraints
     try:
-        innerSolutions = _clar_optimization(mol, constraints=constraints, maxNum=maxNum)
+        inner_solutions = _clar_optimization(mol, constraints=constraints, max_num=max_num)
     except ILPSolutionError:
-        innerSolutions = []
+        inner_solutions = []
 
-    return innerSolutions + [(molecule, aromaticRings, bonds, solution)]
+    return inner_solutions + [(molecule, aromatic_rings, bonds, solution)]
 
 
-def _clar_transformation(mol, aromaticRing):
+def _clar_transformation(mol, aromatic_ring):
     """
     Performs Clar transformation for given ring in a molecule, ie. conversion to aromatic sextet.
 
@@ -1123,12 +1145,12 @@ def _clar_transformation(mol, aromaticRing):
     """
     cython.declare(bondList=list, i=cython.int, atom1=Atom, atom2=Atom, bond=Bond)
 
-    bondList = []
+    bond_list = []
 
-    for i, atom1 in enumerate(aromaticRing):
-        for atom2 in aromaticRing[i + 1:]:
+    for i, atom1 in enumerate(aromatic_ring):
+        for atom2 in aromatic_ring[i + 1:]:
             if mol.hasBond(atom1, atom2):
-                bondList.append(mol.getBond(atom1, atom2))
+                bond_list.append(mol.getBond(atom1, atom2))
 
-    for bond in bondList:
+    for bond in bond_list:
         bond.order = 1.5
