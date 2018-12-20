@@ -2,4 +2,4 @@
 arkane.qchem.QchemLog
 *****************************
 
-.. autoclass:: arkane.qchem.QchemLog
+.. autoclass:: arkane.qchem.QChemLog
