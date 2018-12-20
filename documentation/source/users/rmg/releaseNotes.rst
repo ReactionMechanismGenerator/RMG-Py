@@ -4,6 +4,65 @@
 Release Notes
 *************
 
+RMG-Py Version 2.3.0
+====================
+Date: Dec 20, 2018
+
+- Arkane (formerly CanTherm):
+    - CanTherm had been renamed to Arkane (Automated Reaction Kinetics And Network Exploration)
+    - New network exploration functionality using RMG-database
+    - Support for all elements has been added for reading quantum output files
+    - New supporting information output file with rotational constants and frequencies
+    - Known thermo and kinetics can be provided in addition to quantum information
+    - Improve general user experience and error handling
+
+- New machine learning thermo estimator
+    - Estimate species thermochemistry using a graph convolutional neural network
+    - Estimator trained on quantum calculations at B3LYP and CCSD(T)-F12 levels
+    - Currently supports C/H/O/N, with an emphasis on cyclic molecules
+
+- Resonance:
+    - New pathways added for lone-pair multiple-bond resonance, replacing
+      two pathways which were more specific
+    - New pathways added for aryne resonance
+    - Aromatic resonance pathways simplified and refactored to use filtration
+    - Kekule structures are now considered unreactive structures
+
+- Miscellaneous changes:
+    - Isotope support added for reading and writing InChI strings
+    - New branching algorithm for picking up feedback loops implemented (beta)
+    - Global forbidden structure checking is now only done for core species for
+      efficiency, which may lead to forbidden species existing in the edge
+    - Minor improvements to symmetry algorithm to fix a few incorrect cases
+
+- Bug fixes:
+    - Fixed issue where react flags were being reset when filterReactions was
+      used with multiple reactors, resulting in no reactions generated
+    - File paths for collision violators log changed to output directory
+    - Fixed bug in local uncertainty introduced by ranged reactor changes
+    - Fixed bug with diffusion limitation calculations for multi-molecular reactions
+    - Various other minor fixes
+
+RMG-database Version 2.3.0
+==========================
+Date: Dec 20, 2018
+
+- Kinetics rules to training reactions
+    - All kinetics rules have been converted into training reactions by converting
+      each group to the smallest molecule that matches it
+    - Training reactions are preferred over rules because they correspond to a
+      specific reaction and are therefore easier to update
+    - This conversion is in anticipation of upcoming changes to trees in kinetics families
+
+- Additions:
+    - R_Addition_MultipleBond training reactions
+    - intra_NO2_ONO_conversion training reactions
+    - SABIC_aromatics thermo library (CBS-QB3, RRHO)
+    - McGowan volumes for noble gases
+    - More entries added to Lai_Hexylbenzene libraries
+    - Architecture and weights for neural network thermo estimator
+
+
 RMG-Py Version 2.2.1
 ====================
 Date July 23, 2018
