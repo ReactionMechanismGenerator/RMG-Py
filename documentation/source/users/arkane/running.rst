@@ -4,15 +4,15 @@ Running Arkane
 
 To execute an Arkane job, invoke the command ::
 
-    $ python arkane.py INPUTFILE
+    $ python Arkane.py INPUTFILE
 
-The absolute or relative paths to the arkane.py file as well as to the input file must be given.
+The absolute or relative paths to the Arkane.py file as well as to the input file must be given.
 
 The job will run and the results will be saved to ``output.py`` in the same
 directory as the input file. If you wish to save the output elsewhere, use
 the ``-o``/``--output`` option, e.g. ::
 
-    $ python arkane.py INPUTFILE -o OUTPUTFILE
+    $ python Arkane.py INPUTFILE -o OUTPUTFILE
 
 Drawing Potential Energy Surface
 ================================
@@ -36,5 +36,5 @@ Help
 To view help information and all available options, use the ``-h``/``--help`` 
 flag, e.g. ::
 
-    $ python arkane.py -h
+    $ python Arkane.py -h
 
