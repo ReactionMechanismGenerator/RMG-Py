@@ -73,11 +73,15 @@ requirements:
 test:
   source_files:
     - 'examples/rmg/superminimal'
+    - 'examples/arkane/networks/n-butanol'
   imports:
     - rmgpy
+    - arkane
   commands:
     - rmg.py examples/rmg/superminimal/input.py # [unix]
+    - Arkane.py examples/arkane/networks/n-butanol/input.py # [unix]
     - python %SCRIPTS%\rmg.py examples\rmg\superminimal\input.py # [win]
+    - python %SCRIPTS\Arkane.py examples\arkane\networks\n-butanol\input.py # [win]
 
 about:
   home: http://github.com/ReactionMechanismGenerator/RMG-Py
