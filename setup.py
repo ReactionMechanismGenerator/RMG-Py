@@ -189,7 +189,7 @@ if 'minimal' in sys.argv:
             if os.path.splitext(source)[1] == '.pyx':
                 ext_modules.append(module)
 
-scripts=['arkane.py',
+scripts=['Arkane.py',
          'rmg.py',
          'scripts/checkModels.py',
          'scripts/convertFAME.py',

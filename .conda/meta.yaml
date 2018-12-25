@@ -4,7 +4,7 @@ package:
   version: {{ environ.get('GIT_DESCRIBE_TAG', '') }}
 
 source:
-  path: .
+  path: ../
 
 build:
   number: {{ environ.get('GIT_DESCRIBE_NUMBER', 0) }}
@@ -63,7 +63,7 @@ requirements:
     - pyzmq
     - quantities
     - rdkit >=2015.09.2
-    - rmgdatabase >=2.2.0
+    - rmgdatabase >=2.3.0
     - scipy
     - scoop
     - symmetry
@@ -73,11 +73,15 @@ requirements:
 test:
   source_files:
     - 'examples/rmg/superminimal'
+    - 'examples/arkane/networks/n-butanol'
   imports:
     - rmgpy
+    - arkane
   commands:
     - rmg.py examples/rmg/superminimal/input.py # [unix]
+    - Arkane.py examples/arkane/networks/n-butanol/input.py # [unix]
     - python %SCRIPTS%\rmg.py examples\rmg\superminimal\input.py # [win]
+    - python %SCRIPTS\Arkane.py examples\arkane\networks\n-butanol\input.py # [win]
 
 about:
   home: http://github.com/ReactionMechanismGenerator/RMG-Py

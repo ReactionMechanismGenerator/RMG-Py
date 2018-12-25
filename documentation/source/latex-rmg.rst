@@ -13,7 +13,7 @@ steps using a general understanding of how molecules react. This documentation i
 +---------------------------------------------+----------------------------------------------------------------------------------------+
 | create mechanisms automatically             | Download RMG with the RMG User's Guide                                                 |
 +---------------------------------------------+----------------------------------------------------------------------------------------+
-| make transition state theory calculations   | Run Arkane after downloading RMG. See the Arkane User's Guide                            |
+| make transition state theory calculations   | Run Arkane after downloading RMG. See the Arkane User's Guide                          |
 +---------------------------------------------+----------------------------------------------------------------------------------------+
 | post an issue with RMG                      | `GitHub issues page <https://github.com/ReactionMechanismGenerator/RMG-Py/issues>`__   |
 +---------------------------------------------+----------------------------------------------------------------------------------------+
