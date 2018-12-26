@@ -166,9 +166,9 @@ class ThermoJob(object):
             except ValueError:
                 logging.debug("Valid thermo for {0} is outside range for temperature {1}".format(species,T))
         f.write('#    =========== =========== =========== =========== ===========\n')
-        
-        string = 'thermo(label={0!r}, thermo={1!r})'.format(species.label, species.getThermoData())
-        f.write('{0}\n\n'.format(prettify(string)))
+
+        thermo_string = 'thermo(label={0!r}, thermo={1!r})'.format(species.label, species.getThermoData())
+        f.write('{0}\n\n'.format(prettify(thermo_string)))
         
         f.close()
         # write chemkin file
@@ -183,8 +183,8 @@ class ThermoJob(object):
                     elementCounts = {'C': 0, 'H': 0}
         else:
             elementCounts = {'C': 0, 'H': 0}
-        string = writeThermoEntry(species, elementCounts=elementCounts, verbose=True)
-        f.write('{0}\n'.format(string))
+        chemkin_thermo_string = writeThermoEntry(species, elementCounts=elementCounts, verbose=True)
+        f.write('{0}\n'.format(chemkin_thermo_string))
         f.close()
 
         # write species dictionary
