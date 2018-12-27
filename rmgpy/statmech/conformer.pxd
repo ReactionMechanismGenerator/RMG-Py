@@ -27,11 +27,12 @@
 
 cimport numpy
 
+from rmgpy.rmgobject cimport RMGObject
 from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
 
 ################################################################################
 
-cdef class Conformer:
+cdef class Conformer(RMGObject):
 
     cdef public ScalarQuantity _E0
     cdef public list modes
