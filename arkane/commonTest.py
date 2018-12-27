@@ -35,13 +35,17 @@ This script contains unit tests of the :mod:`arkane.common` module.
 import unittest
 import numpy
 import os
+import shutil
+import logging
 
 import rmgpy
 import rmgpy.constants as constants
 from rmgpy.species import Species, TransitionState
+from rmgpy.quantity import ScalarQuantity
+from rmgpy.thermo import NASA
 
-from arkane.common import get_element_mass
 from arkane import Arkane, input
+from arkane.common import ArkaneSpecies, get_element_mass
 from arkane.statmech import InputError, StatMechJob
 from arkane.input import jobList
 
@@ -268,6 +272,104 @@ class TestArkaneInput(unittest.TestCase):
         job.includeHinderedRotors = self.useHinderedRotors
         job.applyBondEnergyCorrections = self.useBondCorrections
         job.load()
+
+
+class TestStatmech(unittest.TestCase):
+    """
+    Contains unit tests of statmech.py
+    """
+    @classmethod
+    def setUp(self):
+        arkane = Arkane()
+        self.job_list = arkane.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                                          'data', 'Benzyl', 'input.py'))
+
+    def test_gaussian_log_file_error(self):
+        """Test that the proper error is raised if gaussian geometry and frequency file paths are the same"""
+        job = self.job_list[-2]
+        self.assertTrue(isinstance(job, StatMechJob))
+        with self.assertRaises(InputError):
+            job.load()
+
+
+class TestArkaneSpecies(unittest.TestCase):
+    """
+    Contains YAML dump and load unit tests for :class:ArkaneSpecies
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        """
+        A method that is run ONCE before all unit tests in this class.
+        """
+        cls.arkane = Arkane()
+        path = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)),
+                            'examples', 'arkane', 'species')
+        cls.dump_path = os.path.join(path, 'C2H6')
+        cls.dump_input_path = os.path.join(cls.dump_path, 'input.py')
+        cls.dump_output_file = os.path.join(cls.dump_path, 'output.py')
+        cls.dump_yaml_file = os.path.join(cls.dump_path, 'ArkaneSpecies', 'C2H6.yml')
+
+        cls.load_path = os.path.join(path, 'C2H6_from_yaml')
+        cls.load_input_path = os.path.join(cls.load_path, 'input.py')
+        cls.load_output_file = os.path.join(cls.load_path, 'output.py')
+
+        if os.path.exists(cls.dump_yaml_file):
+            logging.debug('removing existing yaml file {0} before running tests'.format(cls.dump_yaml_file))
+            os.remove(cls.dump_yaml_file)
+
+    def test_dump_yaml(self):
+        """
+        Test properly dumping the ArkaneSpecies object and respective sub-objects
+        """
+        jobList = self.arkane.loadInputFile(self.dump_input_path)
+        for job in jobList:
+            job.execute(outputFile=self.dump_output_file)
+        self.assertTrue(os.path.isfile(self.dump_yaml_file))
+
+    def test_load_yaml(self):
+        """
+        Test properly loading the ArkaneSpecies object and respective sub-objects
+        """
+        jobList = self.arkane.loadInputFile(self.load_input_path)
+        for job in jobList:
+            job.execute(outputFile=self.load_output_file)
+        arkane_spc = jobList[0].arkane_species
+        self.assertIsInstance(arkane_spc, ArkaneSpecies)  # checks make_object
+        self.assertIsInstance(arkane_spc.molecular_weight, ScalarQuantity)
+        self.assertIsInstance(arkane_spc.thermo, NASA)
+        self.assertNotEqual(arkane_spc.author, '')
+        self.assertEqual(arkane_spc.inchi, 'InChI=1S/C2H6/c1-2/h1-2H3')
+        self.assertEqual(arkane_spc.smiles, 'CC')
+        self.assertTrue('8 H u0 p0 c0 {2,S}' in arkane_spc.adjacency_list)
+        self.assertEqual(arkane_spc.label, 'C2H6')
+        self.assertEqual(arkane_spc.frequency_scale_factor, 0.99)  # checks float conversion
+        self.assertFalse(arkane_spc.use_bond_corrections)
+        self.assertAlmostEqual(arkane_spc.conformer.modes[2].frequencies.value_si[0], 818.91718, 4)  # HarmonicOsc.
+
+    @classmethod
+    def tearDownClass(cls):
+        """
+        A method that is run ONCE after all unit tests in this class.
+        """
+        path = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)),
+                            'examples', 'arkane', 'species')
+        cls.dump_path = os.path.join(path, 'C2H6')
+        cls.load_path = os.path.join(path, 'C2H6_from_yaml')
+        cls.extensions_to_delete = ['pdf', 'txt', 'inp', 'csv']
+        cls.files_to_delete = ['arkane.log', 'output.py']
+        cls.files_to_keep = ['C2H6.yml']
+        for path in [cls.dump_path, cls.load_path]:
+            for name in os.listdir(path):
+                item_path = os.path.join(path, name)
+                if os.path.isfile(item_path):
+                    extension = name.split('.')[-1]
+                    if name in cls.files_to_delete or\
+                            (extension in cls.extensions_to_delete and name not in cls.files_to_keep):
+                        os.remove(item_path)
+                else:
+                    # This is a sub-directory. remove.
+                    shutil.rmtree(item_path)
 
 
 class TestGetMass(unittest.TestCase):
