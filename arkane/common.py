@@ -31,10 +31,227 @@
 import numpy
 import os.path
 import logging
+import time
+import string
 
+import yaml
+try:
+    from yaml import CDumper as Dumper, CLoader as Loader, CSafeLoader as SafeLoader
+except ImportError:
+    from yaml import Dumper, Loader, SafeLoader
+
+from rmgpy.rmgobject import RMGObject
+from rmgpy import __version__
+from rmgpy.quantity import ScalarQuantity, ArrayQuantity
+from rmgpy.molecule.element import elementList
+from rmgpy.molecule.translator import toInChI, toInChIKey
+from rmgpy.statmech.conformer import Conformer
+from rmgpy.statmech.rotation import LinearRotor, NonlinearRotor, KRotor, SphericalTopRotor
+from rmgpy.statmech.torsion import HinderedRotor, FreeRotor
+from rmgpy.statmech.translation import IdealGasTranslation
+from rmgpy.statmech.vibration import HarmonicOscillator
+from rmgpy.pdep.collision import SingleExponentialDown
+from rmgpy.transport import TransportData
+from rmgpy.thermo import NASA, Wilhoit
 import rmgpy.constants as constants
 
+from arkane.pdep import PressureDependenceJob
+
 ################################################################################
+
+
+class ArkaneSpecies(RMGObject):
+    """
+    A class for archiving an Arkane species including its statmech data into .yml files
+    """
+    def __init__(self, species=None, conformer=None, author='', level_of_theory='', model_chemistry='',
+                 frequency_scale_factor=None, use_hindered_rotors=None, use_bond_corrections=None, atom_energies='',
+                 chemkin_thermo_string='', smiles=None, adjacency_list=None, inchi=None, inchi_key=None, xyz=None,
+                 molecular_weight=None, symmetry_number=None, transport_data=None, energy_transfer_model=None,
+                 thermo=None, thermo_data=None, label=None, datetime=None, RMG_version=None):
+        if species is None and conformer is None:
+            # Expecting to get a `species` when generating the object within Arkane,
+            # or a `conformer` when parsing from YAML.
+            raise ValueError('No species or conformer was passed to the ArkaneSpecies object')
+        if conformer is not None:
+            self.conformer = conformer
+        if label is None and species is not None:
+            self.label = species.label
+        else:
+            self.label = label
+        self.author = author
+        self.level_of_theory = level_of_theory
+        self.model_chemistry = model_chemistry
+        self.frequency_scale_factor = frequency_scale_factor
+        self.use_hindered_rotors = use_hindered_rotors
+        self.use_bond_corrections = use_bond_corrections
+        self.atom_energies = atom_energies
+        self.chemkin_thermo_string = chemkin_thermo_string
+        self.smiles = smiles
+        self.adjacency_list = adjacency_list
+        self.inchi = inchi
+        self.inchi_key = inchi_key
+        self.xyz = xyz
+        self.molecular_weight = molecular_weight
+        self.symmetry_number = symmetry_number
+        self.transport_data = transport_data
+        self.energy_transfer_model = energy_transfer_model  # check pdep flag
+        self.thermo = thermo
+        self.thermo_data = thermo_data
+        if species is not None:
+            self.update_species_attributes(species)
+        self.RMG_version = RMG_version if RMG_version is not None else __version__
+        self.datetime = datetime if datetime is not None else time.strftime("%Y-%m-%d %H:%M")
+
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the object
+        """
+        result = '{0!r}'.format(self.__class__.__name__)
+        result += '{'
+        for key, value in self.as_dict().iteritems():
+            if key != 'class':
+                result += '{0!r}: {1!r}'.format(str(key), str(value))
+        result += '}'
+        return result
+
+    def update_species_attributes(self, species=None):
+        """
+        Update the object with a new species (while keeping non-species-dependent attributes unchanged)
+        """
+        if species is None:
+            raise ValueError('No species was passed to ArkaneSpecies')
+        self.label = species.label
+        if species.molecule is not None and len(species.molecule) > 0:
+            self.smiles = species.molecule[0].toSMILES()
+            self.adjacency_list = species.molecule[0].toAdjacencyList()
+            try:
+                inchi = toInChI(species.molecule[0], backend='try-all', aug_level=0)
+            except ValueError:
+                inchi = ''
+            try:
+                inchi_key = toInChIKey(species.molecule[0], backend='try-all', aug_level=0)
+            except ValueError:
+                inchi_key = ''
+            self.inchi = inchi
+            self.inchi_key = inchi_key
+            if species.conformer is not None:
+                self.conformer = species.conformer
+                self.xyz = self.update_xyz_string()
+            self.molecular_weight = species.molecularWeight
+            if species.symmetryNumber != -1:
+                self.symmetry_number = species.symmetryNumber
+            if species.transportData is not None:
+                self.transport_data = species.transportData  # called `collisionModel` in Arkane
+            if species.energyTransferModel is not None:
+                self.energy_transfer_model = species.energyTransferModel
+            if species.thermo is not None:
+                self.thermo = species.thermo.as_dict()
+                thermo_data = species.getThermoData()
+                h298 = thermo_data.getEnthalpy(298) / 4184.
+                s298 = thermo_data.getEntropy(298) / 4.184
+                cp = dict()
+                for t in [300,400,500,600,800,1000,1500,2000,2400]:
+                    temp_str = '{0} K'.format(t)
+                    cp[temp_str] = '{0:.2f}'.format(thermo_data.getHeatCapacity(t) / 4.184)
+                self.thermo_data = {'H298': '{0:.2f} kcal/mol'.format(h298),
+                                    'S298': '{0:.2f} cal/mol*K'.format(s298),
+                                    'Cp (cal/mol*K)': cp}
+
+    def update_xyz_string(self):
+        if self.conformer is not None and self.conformer.number is not None:
+            # generate the xyz-format string from the Conformer coordinates
+            xyz_string = '{0}\n{1}'.format(len(self.conformer.number.value_si), self.label)
+            for i, coorlist in enumerate(self.conformer.coordinates.value_si):
+                for element in elementList:
+                    if element.number == int(self.conformer.number.value_si[i]):
+                        element_symbol = element.symbol
+                        break
+                else:
+                    raise ValueError('Could not find element symbol corresponding to atom number {0}'.format(
+                        self.conformer.number.value_si[i]))
+                xyz_string += '\n{0} {1} {2} {3}'.format(element_symbol,
+                                                         coorlist[0],
+                                                         coorlist[1],
+                                                         coorlist[2])
+        else:
+            xyz_string = ''
+        return xyz_string
+
+    def save_yaml(self, path):
+        """
+        Save the species with all statMech data to a .yml file
+        """
+        if not os.path.exists(os.path.join(os.path.abspath(path),'ArkaneSpecies', '')):
+            os.mkdir(os.path.join(os.path.abspath(path),'ArkaneSpecies', ''))
+        valid_chars = "-_.()<=>+ %s%s" % (string.ascii_letters, string.digits)
+        filename = os.path.join('ArkaneSpecies',
+                                ''.join(c for c in self.label if c in valid_chars) + '.yml')
+        full_path = os.path.join(path, filename)
+        content = yaml.dump(data=self.as_dict(), Dumper=Dumper)
+        # remove empty lines from the file (multi-line strings have excess new line brakes for some reason):
+        content = content.replace('\n\n', '\n')
+        with open(full_path, 'w') as f:
+            f.write(content)
+        logging.debug('Dumping species {0} data as {1}'.format(self.label, filename))
+
+    def load_yaml(self, path, species, pdep=False):
+        """
+        Load the all statMech data from the .yml file in `path` into `species`
+        `pdep` is a boolean specifying whether or not jobList includes a pressureDependentJob.
+        """
+        logging.info('Loading statistical mechanics parameters for {0} from .yml file...'.format(species.label))
+        with open(path, 'r') as f:
+            data = yaml.safe_load(stream=f)
+        try:
+            if species.label != data['label']:
+                logging.warning('Found different labels for species: {0} in input file, and {1} in the .yml file. '
+                                'Using the label "{0}" for this species.'.format(species.label, data['label']))
+        except KeyError:
+            # Lacking label in the YAML file is strange, but accepted
+            logging.debug('Did not find label for species {0} in .yml file.'.format(species.label))
+        try:
+            class_name = data['class']
+        except KeyError:
+            raise KeyError("Can only make objects if the `class` attribute in the dictionary is known")
+        if class_name != 'ArkaneSpecies':
+            raise KeyError("Expected a ArkaneSpecies object, but got {0}".format(class_name))
+        del data['class']
+        class_dict = {'ScalarQuantity': ScalarQuantity,
+                      'ArrayQuantity': ArrayQuantity,
+                      'Conformer': Conformer,
+                      'LinearRotor': LinearRotor,
+                      'NonlinearRotor': NonlinearRotor,
+                      'KRotor': KRotor,
+                      'SphericalTopRotor': SphericalTopRotor,
+                      'HinderedRotor': HinderedRotor,
+                      'FreeRotor': FreeRotor,
+                      'IdealGasTranslation': IdealGasTranslation,
+                      'HarmonicOscillator': HarmonicOscillator,
+                      'TransportData': TransportData,
+                      'SingleExponentialDown': SingleExponentialDown,
+                      'Wilhoit': Wilhoit,
+                      'NASA': NASA,
+                      }
+        self.make_object(data=data, class_dict=class_dict)
+        if pdep and (self.transport_data is None or self.energy_transfer_model is None):
+            raise ValueError('Transport data and an energy transfer model must be given if pressure-dependent '
+                             'calculations are requested. Check file {0}'.format(path))
+        if pdep and self.smiles is None and self.adjacency_list is None\
+                and self.inchi is None and self.molecular_weight is None:
+            raise ValueError('The molecular weight was not specified, and a structure was not given so it could '
+                             'not be calculated. Specify either the molecular weight or structure if '
+                             'pressure-dependent calculations are requested. Check file {0}'.format(path))
+        logging.debug("Parsed all YAML objects")
+
+################################################################################
+
+
+def is_pdep(jobList):
+    for job in jobList:
+        if isinstance(job, PressureDependenceJob):
+            return True
+    return False
 
 
 def check_conformer_energy(Vlist,path):
