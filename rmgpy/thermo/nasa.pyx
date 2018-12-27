@@ -235,6 +235,57 @@ cdef class NASA(HeatCapacityModel):
         """
         return (NASA, (self.polynomials, self.Tmin, self.Tmax, self.E0, self.Cp0, self.CpInf, self.label, self.comment))
 
+    cpdef dict as_dict(self):
+        """
+        A helper function for YAML dumping
+        """
+        output_dict = dict()
+        output_dict['class'] = self.__class__.__name__
+        poly_dict = dict()
+        i = 1
+        for poly in self.polynomials:
+            if poly is not None:
+                key = 'polynomial{0}'.format(i)
+                poly_dict[key] = dict()
+                poly_dict[key]['class'] = poly.__class__.__name__
+                if poly.Tmin is not None:
+                    poly_dict[key]['Tmin'] = poly.Tmin.as_dict()
+                if poly.Tmax is not None:
+                    poly_dict[key]['Tmax'] = poly.Tmax.as_dict()
+                if poly.coeffs is not None:
+                    poly_dict[key]['coeffs'] = poly.coeffs.tolist()
+            i = i + 1
+        output_dict['polynomials'] = poly_dict
+        output_dict['Tmin'] = self.Tmin.as_dict()
+        output_dict['Tmax'] = self.Tmax.as_dict()
+        output_dict['E0'] = self.E0.as_dict()
+        output_dict['Cp0'] = self.Cp0.as_dict()
+        output_dict['CpInf'] = self.CpInf.as_dict()
+        if self.label != '':
+            output_dict['label'] = self.label
+        if self.comment != '':
+            output_dict['comment'] = self.comment
+        return output_dict
+
+    cpdef make_object(self, dict data, dict class_dict):
+        """
+        A helper function for YAML parsing
+        """
+        data['Tmin'] = quantity.ScalarQuantity().make_object(data['Tmin'], class_dict)
+        data['Tmax'] = quantity.ScalarQuantity().make_object(data['Tmax'], class_dict)
+        data['E0'] = quantity.ScalarQuantity().make_object(data['E0'], class_dict)
+        data['Cp0'] = quantity.ScalarQuantity().make_object(data['Cp0'], class_dict)
+        data['CpInf'] = quantity.ScalarQuantity().make_object(data['CpInf'], class_dict)
+        polynomials = []
+        for key, poly in data['polynomials'].iteritems():
+            poly = NASAPolynomial(
+                coeffs=poly['coeffs'],
+                Tmin=quantity.ScalarQuantity().make_object(poly['Tmin'], class_dict),
+                Tmax=quantity.ScalarQuantity().make_object(poly['Tmax'], class_dict))
+            polynomials.append(poly)
+        data['polynomials'] = polynomials
+        self.__init__(**data)
+
     property polynomials:
         """The set of one, two, or three NASA polynomials."""
         def __get__(self):

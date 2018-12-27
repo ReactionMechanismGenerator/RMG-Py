@@ -57,7 +57,6 @@ cdef class Wilhoit(HeatCapacityModel):
     `Tmax`          The maximum temperature in K at which the model is valid, or zero if unknown or undefined
     `comment`       Information about the model (e.g. its source)
     =============== ============================================================
-    
     """
 
     def __init__(self, Cp0=None, CpInf=None, a0=0.0, a1=0.0, a2=0.0, a3=0.0, H0=None, S0=None, B=None, Tmin=None, Tmax=None, label='', comment=''):
@@ -89,6 +88,57 @@ cdef class Wilhoit(HeatCapacityModel):
         A helper function used when pickling a Wilhoit object.
         """
         return (Wilhoit, (self.Cp0, self.CpInf, self.a0, self.a1, self.a2, self.a3, self.H0, self.S0, self.B, self.Tmin, self.Tmax, self.label, self.comment))
+
+    cpdef dict as_dict(self):
+        """
+        A helper function for YAML parsing
+        """
+        output_dict = dict()
+        output_dict['class'] = self.__class__.__name__
+        if self.Tmin is not None:
+            output_dict['Tmin'] = self.Tmin.as_dict()
+        if self.Tmax is not None:
+            output_dict['Tmax'] = self.Tmax.as_dict()
+        if self.E0 is not None:
+            output_dict['E0'] = self.E0.as_dict()
+        if self.Cp0 is not None:
+            output_dict['Cp0'] = self.Cp0.as_dict()
+        if self.CpInf is not None:
+            output_dict['CpInf'] = self.CpInf.as_dict()
+        if self.label != '':
+            output_dict['label'] = self.label
+        if self.comment != '':
+            output_dict['comment'] = self.comment
+        output_dict['B'] = self.B.as_dict()
+        output_dict['E0'] = self.E0.as_dict()
+        output_dict['H0'] = self.H0.as_dict()
+        output_dict['S0'] = self.S0.as_dict()
+        output_dict['a0'] = self.a0
+        output_dict['a1'] = self.a1
+        output_dict['a2'] = self.a2
+        output_dict['a3'] = self.a3
+        return output_dict
+
+    cpdef make_object(self, dict data, dict class_dict):
+        """
+        A helper function for YAML parsing
+        """
+        try:
+            data['Tmin'] = quantity.ScalarQuantity().make_object(data['Tmin'], class_dict)
+            data['Tmax'] = quantity.ScalarQuantity().make_object(data['Tmax'], class_dict)
+        except KeyError:
+            pass
+        data['B'] = quantity.ScalarQuantity().make_object(data['B'], class_dict)
+        data['Cp0'] = quantity.ScalarQuantity().make_object(data['Cp0'], class_dict)
+        data['CpInf'] = quantity.ScalarQuantity().make_object(data['CpInf'], class_dict)
+        data['H0'] = quantity.ScalarQuantity().make_object(data['H0'], class_dict)
+        data['S0'] = quantity.ScalarQuantity().make_object(data['S0'], class_dict)
+        data['a0'] = float(data['a0'])
+        data['a1'] = float(data['a1'])
+        data['a2'] = float(data['a2'])
+        data['a3'] = float(data['a3'])
+        del data['E0']
+        self.__init__(**data)
 
     property B:
         """The Wilhoit scaled temperature coefficient."""
