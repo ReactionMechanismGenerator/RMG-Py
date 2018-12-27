@@ -53,6 +53,7 @@ from rmgpy.molecule import Molecule
 from rmgpy.molecule.util import retrieveElementCount
 
 from arkane.output import prettify
+from arkane.common import ArkaneSpecies
 
 ################################################################################
 
@@ -66,6 +67,7 @@ class ThermoJob(object):
     def __init__(self, species, thermoClass):
         self.species = species
         self.thermoClass = thermoClass
+        self.arkane_species = ArkaneSpecies(species=species)
     
     def execute(self, outputFile=None, plot=False):
         """
@@ -74,7 +76,13 @@ class ThermoJob(object):
         """
         self.generateThermo()
         if outputFile is not None:
-            self.save(outputFile)
+            self.arkane_species.chemkin_thermo_string = self.save(outputFile)
+            if self.species.molecule is None or len(self.species.molecule) == 0:
+                logging.debug("Not generating database YAML file for species {0}, since its structure wasn't"
+                              " specified".format(self.species.label))
+            else:
+                self.arkane_species.update_species_attributes(self.species)
+                self.arkane_species.save_yaml(path=os.path.dirname(outputFile))
             if plot:
                 self.plot(os.path.dirname(outputFile))
     
@@ -89,7 +97,7 @@ class ThermoJob(object):
     
         species = self.species
     
-        logging.info('Generating {0} thermo model for {1}...'.format(self.thermoClass, species))
+        logging.debug('Generating {0} thermo model for {1}...'.format(self.thermoClass, species))
         
         if species.thermo is not None:
             logging.info("Thermo already generated for species {}. Skipping thermo generation.".format(species))
@@ -191,8 +199,9 @@ class ThermoJob(object):
         if isinstance(species, Species):
             if species.molecule and isinstance(species.molecule[0], Molecule):
                 with open(os.path.join(os.path.dirname(outputFile), 'species_dictionary.txt'), 'a') as f:
-                    f.write(species.molecule[0].toAdjacencyList(removeH=False,label=species.label))
+                    f.write(species.molecule[0].toAdjacencyList(removeH=False, label=species.label))
                     f.write('\n')
+        return chemkin_thermo_string
 
     def plot(self, outputDirectory):
         """

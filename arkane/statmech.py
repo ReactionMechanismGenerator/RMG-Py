@@ -56,6 +56,7 @@ from arkane.gaussian import GaussianLog
 from arkane.molpro import MolproLog
 from arkane.qchem import QChemLog
 from arkane.common import symbol_by_number
+from arkane.common import ArkaneSpecies
 
 ################################################################################
 
@@ -176,28 +177,41 @@ class StatMechJob(object):
         self.supporting_info = [self.species.label]
         self.bonds = None
 
-    def execute(self, outputFile=None, plot=False):
+        if isinstance(species, Species):
+            # Currently we do not dump and load transition states in YAML form
+            self.arkane_species = ArkaneSpecies(species=species)
+
+    def execute(self, outputFile=None, plot=False, pdep=False):
         """
         Execute the statistical mechanics job, saving the results to the
         given `outputFile` on disk.
         """
-        self.load()
+        self.load(pdep)
         if outputFile is not None:
             self.save(outputFile)
         logging.debug('Finished statmech job for species {0}.'.format(self.species))
         logging.debug(repr(self.species))
 
-    def load(self):
+    def load(self, pdep=False):
         """
         Load the statistical mechanics parameters for each conformer from
         the associated files on disk. Creates :class:`Conformer` objects for
         each conformer and appends them to the list of conformers on the
         species object.
         """
-        logging.info('Loading statistical mechanics parameters for {0}...'.format(self.species.label))
-
         path = self.path
         TS = isinstance(self.species, TransitionState)
+        _, file_extension = os.path.splitext(path)
+        if file_extension in ['.yml', '.yaml']:
+            if TS:
+                raise NotImplementedError('Loading transition states from a YAML file is still unsupported.')
+            self.arkane_species.load_yaml(path=path, species=self.species, pdep=pdep)
+            self.species.conformer = self.arkane_species.conformer
+            self.species.transportData = self.arkane_species.transport_data
+            self.species.energyTransferModel = self.arkane_species.energy_transfer_model
+            return
+
+        logging.info('Loading statistical mechanics parameters for {0}...'.format(self.species.label))
 
         global_context = {
             '__builtins__': None,

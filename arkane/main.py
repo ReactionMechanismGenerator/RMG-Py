@@ -57,6 +57,7 @@ from arkane.statmech import StatMechJob
 from arkane.thermo import ThermoJob
 from arkane.pdep import PressureDependenceJob
 from arkane.explorer import ExplorerJob
+from arkane.common import is_pdep
 
 ################################################################################
 
@@ -264,7 +265,7 @@ class Arkane:
             if isinstance(job, ThermoJob):
                 job.execute(outputFile=outputFile, plot=self.plot)
             if isinstance(job, StatMechJob):
-                job.execute(outputFile=outputFile, plot=self.plot)
+                job.execute(outputFile=outputFile, plot=self.plot, pdep=is_pdep(self.jobList))
                 supporting_info.append(job.supporting_info)
 
         with open(chemkinFile, 'a') as f:
