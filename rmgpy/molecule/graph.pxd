@@ -70,7 +70,7 @@ cdef Vertex _getEdgeVertex1(Edge edge)
 
 cdef Vertex _getEdgeVertex2(Edge edge)
 
-cdef class Graph:
+cdef class Graph(object):
 
     cdef public list vertices
     
