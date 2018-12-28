@@ -649,21 +649,22 @@ class Reaction:
         H298 = self.getEnthalpyOfReaction(298)
         H0 = sum([spec.getThermoData().E0.value_si for spec in self.products]) \
             - sum([spec.getThermoData().E0.value_si for spec in self.reactants])
-        if isinstance(self.kinetics, ArrheniusEP):
-            Ea = self.kinetics.E0.value_si # temporarily using Ea to store the intrinsic barrier height E0
-            self.kinetics = self.kinetics.toArrhenius(H298)
-            if self.kinetics.Ea.value_si < 0.0 and self.kinetics.Ea.value_si < Ea:
-                # Calculated Ea (from Evans-Polanyi) is negative AND below than the intrinsic E0
-                Ea = min(0.0,Ea) # (the lowest we want it to be)
-                self.kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol.".format(self.kinetics.Ea.value_si/1000., Ea/1000.)
-                logging.info("For reaction {0!s} Ea raised from {1:.1f} to {2:.1f} kJ/mol.".format(self, self.kinetics.Ea.value_si/1000., Ea/1000.))
-                self.kinetics.Ea.value_si = Ea
-        if isinstance(self.kinetics, Arrhenius):
-            Ea = self.kinetics.Ea.value_si
-            if H0 >= 0 and Ea < H0:
-                self.kinetics.Ea.value_si = H0
-                self.kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of reaction.".format(Ea/1000.,H0/1000.)
-                logging.info("For reaction {2!s}, Ea raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of reaction.".format(Ea/1000., H0/1000., self))
+        if not ("family: R_Recombination" in self.kinetics.comment):
+            if isinstance(self.kinetics, ArrheniusEP):
+                Ea = self.kinetics.E0.value_si # temporarily using Ea to store the intrinsic barrier height E0
+                self.kinetics = self.kinetics.toArrhenius(H298)
+                if self.kinetics.Ea.value_si < 0.0 and self.kinetics.Ea.value_si < Ea:
+                    # Calculated Ea (from Evans-Polanyi) is negative AND below than the intrinsic E0
+                    Ea = min(0.0,Ea) # (the lowest we want it to be)
+                    self.kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol.".format(self.kinetics.Ea.value_si/1000., Ea/1000.)
+                    logging.info("For reaction {0!s} Ea raised from {1:.1f} to {2:.1f} kJ/mol.".format(self, self.kinetics.Ea.value_si/1000., Ea/1000.))
+                    self.kinetics.Ea.value_si = Ea
+            if isinstance(self.kinetics, Arrhenius):
+                Ea = self.kinetics.Ea.value_si
+                if H0 >= 0 and Ea < H0:
+                    self.kinetics.Ea.value_si = H0
+                    self.kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of reaction.".format(Ea/1000.,H0/1000.)
+                    logging.info("For reaction {2!s}, Ea raised from {0:.1f} to {1:.1f} kJ/mol to match endothermicity of reaction.".format(Ea/1000., H0/1000., self))
         if forcePositive and isinstance(self.kinetics, Arrhenius) and self.kinetics.Ea.value_si < 0:
             self.kinetics.comment += "\nEa raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si/1000.)
             logging.info("For reaction {1!s} Ea raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si/1000., self))
