@@ -352,7 +352,9 @@ class Network:
                 
                 # Use free energy to determine equilibrium ratios of each isomer and product channel
                 self.calculateEquilibriumRatios()
-                
+
+                continueJob = False
+
                 # Calculate microcanonical rate coefficients for each path reaction
                 try:
                     self.calculateMicrocanonicalRates()
@@ -363,16 +365,20 @@ class Network:
                         if improvement < 0.2 or (Ngrains > 1e4 and improvement < 1.1) or (Ngrains > 1.5e6): # allow it to get worse at first
                             logging.error(error.message)
                             logging.error("Increasing number of grains did not decrease error enough (Current badness: {0:.1f}, previous {1:.1f}). Something must be wrong with network {2}".format(badness,previous_error.badness(),self.label))
-                            raise error
-                    previous_error = error
-                    success = False
-                    grainSize *= 0.5
-                    grainCount *= 2
-                    logging.warning("Increasing number of grains, decreasing grain size and trying again. (Current badness: {0:.1f})".format(badness))
-                    continue
+                            logging.error("Continuing job")
+                            continueJob = True
+                    if continueJob:
+                        success = True
+                    else:
+                        previous_error = error
+                        success = False
+                        grainSize *= 0.5
+                        grainCount *= 2
+                        logging.warning("Increasing number of grains, decreasing grain size and trying again. (Current badness: {0:.1f})".format(badness))
+                        continue
                 else:
                     success = True
-                
+
                 # Rescale densities of states such that, when they are integrated
                 # using the Boltzmann factor as a weighting factor, the result is unity
                 for i in range(Nisom+Nreac):
