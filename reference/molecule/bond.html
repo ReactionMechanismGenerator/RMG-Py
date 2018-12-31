@@ -142,6 +142,14 @@ edge.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.Bond.get_bond_string">
+<code class="descname">get_bond_string</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; str<a class="headerlink" href="#rmgpy.molecule.Bond.get_bond_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represent the bond object as a string (eg. ‘C#N’). The returned string is independent of the atom ordering, with
+the atom labels in alphabetical order (i.e. ‘C-H’ is possible but not ‘H-C’)
+:return: str</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.Bond.incrementOrder">
 <code class="descname">incrementOrder</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Bond.incrementOrder" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update the bond as a result of applying a CHANGE_BOND action to

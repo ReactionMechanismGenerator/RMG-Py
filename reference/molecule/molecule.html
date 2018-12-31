@@ -256,6 +256,13 @@ vector formats.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.Molecule.enumerate_bonds">
+<code class="descname">enumerate_bonds</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#rmgpy.molecule.Molecule.enumerate_bonds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Count the number of each type of bond (e.g. ‘C-H’, ‘C=C’) present in the molecule
+:return: dictionary, with bond strings as keys and counts as values</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.Molecule.findIsomorphism">
 <code class="descname">findIsomorphism</code><span class="sig-paren">(</span><em>self</em>, <em>Graph other</em>, <em>dict initialMap=None</em>, <em>bool saveOrder=False</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#rmgpy.molecule.Molecule.findIsomorphism" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="xref py py-data docutils literal notranslate"><span class="pre">True</span></code> if <cite>other</cite> is isomorphic and <code class="xref py py-data docutils literal notranslate"><span class="pre">False</span></code>
