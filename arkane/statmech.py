@@ -394,7 +394,11 @@ class StatMechJob(object):
                                         atomEnergies=self.atomEnergies,
                                         applyAtomEnergyCorrections=self.applyAtomEnergyCorrections,
                                         applyBondEnergyCorrections=self.applyBondEnergyCorrections)
-            ZPE = statmechLog.loadZeroPointEnergy() * self.frequencyScaleFactor
+            if len(number) > 1:
+                ZPE = statmechLog.loadZeroPointEnergy() * self.frequencyScaleFactor
+            else:
+                # Monoatomic species don't have frequencies
+                ZPE = 0.0
             logging.debug('Corrected minimum energy is {0} J/mol'.format(E0))
             # The E0_withZPE at this stage contains the ZPE
             E0_withZPE = E0 + ZPE

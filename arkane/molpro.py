@@ -66,7 +66,7 @@ class MolproLog:
             # Automatically determine the number of atoms
             if 'ATOMIC COORDINATES' in line and Natoms == 0:
                 for i in range(4): line = f.readline()
-                while 'Bond lengths' not in line:
+                while 'Bond lengths' not in line and 'nuclear charge' not in line.lower():
                     Natoms += 1
                     line = f.readline()
             line = f.readline()
@@ -137,12 +137,13 @@ class MolproLog:
         # Close file when finished
         f.close()
 
-        #If no optimized coordinates were found, uses the input geometry (for example if reading the geometry from a frequency file
+        # If no optimized coordinates were found, uses the input geometry
+        # (for example if reading the geometry from a frequency file)
         if coord == []:
             f = open(self.path, 'r')
             line = f.readline()
             while line != '':
-                if 'Atomic Coordinates' in line:
+                if 'atomic coordinates' in line.lower():
                     symbol = []; coord = []
                     for i in range(4):
                         line = f.readline()
