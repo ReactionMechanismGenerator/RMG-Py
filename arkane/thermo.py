@@ -188,12 +188,11 @@ class ThermoJob(object):
         f.close()
 
         # write species dictionary
-        f = open(os.path.join(os.path.dirname(outputFile), 'species_dictionary.txt'), 'a')
         if isinstance(species, Species):
             if species.molecule and isinstance(species.molecule[0], Molecule):
-                f.write(species.molecule[0].toAdjacencyList(removeH=False,label=species.label))
-                f.write('\n')
-        f.close()
+                with open(os.path.join(os.path.dirname(outputFile), 'species_dictionary.txt'), 'a') as f:
+                    f.write(species.molecule[0].toAdjacencyList(removeH=False,label=species.label))
+                    f.write('\n')
 
     def plot(self, outputDirectory):
         """
