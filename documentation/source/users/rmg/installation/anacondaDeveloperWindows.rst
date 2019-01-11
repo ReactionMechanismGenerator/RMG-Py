@@ -5,7 +5,7 @@ Installation by Source Using Anaconda Environment for Windows
 *************************************************************
 
 
-* Download and install the `Anaconda Python Platform <http://continuum.io/downloads>`_ for Python 2.7 (make sure not to install Python 3.0+, which is incompatible with RMG). We recommend changing the default install path to ``C:\Anaconda\`` in order to avoid spaces in the install path and be easily accessible. It is recommended to append Anaconda to your PATH as well as setting it as your default Python executable.  All other settings can remain as their defaults.
+* Download and install the `Anaconda Python Platform <https://www.anaconda.com/download/>`_ for Python 2.7 (make sure not to install Python 3.0+, which is incompatible with RMG). We recommend changing the default install path to ``C:\Anaconda\`` in order to avoid spaces in the install path and be easily accessible. It is recommended to append Anaconda to your PATH as well as setting it as your default Python executable.  All other settings can remain as their defaults.
 
 .. image:: images/AnacondaInstallWindows.png
     :align: center
