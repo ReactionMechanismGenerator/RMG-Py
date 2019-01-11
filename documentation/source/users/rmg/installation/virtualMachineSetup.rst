@@ -45,6 +45,40 @@ hyperlinks below to jump ahead to the setup instructions for the virtual machine
 
 Setting up a Linux Virtual Machine using Workstation Pro
 ==========================================================
+1. Follow your institution's instructions for downloading VMware Workstation Pro and obtaining the required license key.
+
+2. At the end of the installation process for Workstation Pro, remember to enter in the required license key.
+
+.. image:: images/VMware_license.png
+    :align: center
+
+3. From Workstation Pro click on the ``Create a New Virtual Machine`` icon.
+
+.. image:: images/VMware_new.png
+    :align: center
+
+4. Choose a typical installation.
+
+.. image:: images/VMware_typical.png
+    :align: center
+
+5. On the ``Guest Operating System Installation`` page, choose ``Installer disc image file (iso)`` and browse for the
+Ubuntu .iso file you downloaded previously. If found correctly you should see a message indicating that an Ubuntu
+operating system was detected.
+
+.. image:: images/VMware_iso.png
+    :align: center
+
+6. On the ``Specify Disk Capacity`` page create a disk with **no smaller than 50 GB**.
+
+.. image:: images/VMware_disk.png
+    :align: center
+
+7. At some point after finishing the install, you will want to go into the settings of the VM and increase the number
+of CPUs allocated to the VM as well as increasing the memory.
+
+8. To continue with installing RMG, follow the instructions for Linux and Mac OSX systems.
+
 
 
 .. _VirtualBox:
