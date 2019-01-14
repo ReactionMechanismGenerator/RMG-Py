@@ -682,7 +682,7 @@ class Bond(Edge):
         Return ``True`` if the bond represents a hydrogen bond or ``False`` if
         not.
         """
-        return self.isOrder(0)
+        return self.isOrder(0.1)
     
     def incrementOrder(self):
         """
@@ -740,7 +740,7 @@ class Bond(Edge):
         the atom labels in alphabetical order (i.e. 'C-H' is possible but not 'H-C')
         :return: str
         """
-        bond_symbol_mapping = {0: '~', 1: '-', 1.5: ':', 2: '=', 3: '#'}
+        bond_symbol_mapping = {0.1: '~', 1: '-', 1.5: ':', 2: '=', 3: '#'}
         atom_labels = [self.atom1.symbol, self.atom2.symbol]
         atom_labels.sort()
         try:
@@ -1670,7 +1670,7 @@ class Molecule(Graph):
                     atm_cov = atm_covs[0]
                 if (atm_cov.isOxygen() or atm_cov.isNitrogen()): #this H can be H-bonded
                     for k,atm2 in enumerate(ONatoms):
-                        if all([q.order != 0 for q in atm2.bonds.values()]): #atm2 not already H bonded
+                        if all([q.order != 0.1 for q in atm2.bonds.values()]): #atm2 not already H bonded
                             dist = len(find_shortest_path(atm1,atm2))-1
                             if dist > 3:
                                 j = ONinds[k]
