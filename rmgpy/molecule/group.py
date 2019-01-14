@@ -854,6 +854,9 @@ class GroupBond(Edge):
         if 2.5 in newOrder:
             newOrder.remove(2.5)
             newOrder.add(2)
+        # Allow formation of benzene bonds if a double bond can be formed
+        if 2 in newOrder:
+            newOrder.add(1.5)
         # Set the new bond orders
         self.order = list(newOrder)
 

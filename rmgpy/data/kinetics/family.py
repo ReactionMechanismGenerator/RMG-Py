@@ -49,7 +49,7 @@ from rmgpy.reaction import Reaction
 from rmgpy.kinetics import Arrhenius, SurfaceArrhenius,\
                     SurfaceArrheniusBEP, StickingCoefficient, StickingCoefficientBEP
 from rmgpy.molecule import Bond, GroupBond, Group, Molecule
-from rmgpy.molecule.resonance import generate_aromatic_resonance_structures
+from rmgpy.molecule.resonance import generate_optimal_aromatic_resonance_structures
 from rmgpy.species import Species
 
 from .common import saveEntry, ensure_species, find_degenerate_reactions, generate_molecule_combos,\
@@ -2112,7 +2112,7 @@ class KineticsFamily(Database):
                 if prod_resonance:
                     for i, product in enumerate(products0):
                         if product.isCyclic:
-                            aromaticStructs = generate_aromatic_resonance_structures(product)
+                            aromaticStructs = generate_optimal_aromatic_resonance_structures(product)
                             if aromaticStructs:
                                 products0[i] = aromaticStructs[0]
 
@@ -2134,9 +2134,9 @@ class KineticsFamily(Database):
             reaction.pairs = self.getReactionPairs(reaction)
             reaction.template = self.getReactionTemplateLabels(reaction)
 
-            # Unlabel the atoms
-            for label, atom in reaction.labeledAtoms:
-                atom.label = ''
+            # Unlabel the atoms for both reactants and products
+            for species in itertools.chain(reaction.reactants, reaction.products):
+                species.clearLabeledAtoms()
             
             # We're done with the labeled atoms, so delete the attribute
             del reaction.labeledAtoms

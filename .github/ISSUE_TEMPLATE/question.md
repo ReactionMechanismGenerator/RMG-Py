@@ -11,7 +11,7 @@ General area which your question is related to.
  - [ ] Installation of RMG
  - [ ] Running an RMG job
  - [ ] Using RMG API
- - [ ] CanTherm
+ - [ ] Arkane (formerly CanTherm)
  - [ ] Dependencies
  - [ ] An error message <!-- consider writing a bug report instead -->
 

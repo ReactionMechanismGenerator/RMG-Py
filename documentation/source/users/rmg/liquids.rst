@@ -218,8 +218,8 @@ radii, and diffusivities are estimated with the Stokes-Einstein equation using e
 viscosities (`\eta` (T)). In a unimolecular to bimolecular reaction, for example, the forward rate
 constant (`k`\ :sub:`f`\ ) can be slowed down if the reverse rate (`k`\ :sub:`r, eff`\ ) is diffusion-limited
 since the equilibrium constant (`K`\ :sub:`eq`\ ) is not affected by diffusion limitations. In cases
-where both the forward and the reverse reaction rates are multimolecular, both diffusive limits are
-estimated and RMG uses the direction with the larger magnitude.
+where both the forward and the reverse reaction rates are multimolecular, the forward rate coefficients limited in the
+forward and reverse directions are calculated and the limit with the smaller forward rate coefficient is used.  
 
 The viscosity of the solvent is calculated Pa.s using the solvent specified in the command line 
 and a correlation for the viscosity using parameters `A, B, C, D, E`:

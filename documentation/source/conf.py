@@ -219,7 +219,7 @@ htmlhelp_basename = 'RMGPydoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('latex-rmg', 'RMG-Py_and_CanTherm_Documentation.tex', u'RMG-Py and CanTherm Documentation',
+  ('latex-rmg', 'RMG-Py_and_Arkane_Documentation.tex', u'RMG-Py and Arkane Documentation',
    u'William H. Green, Richard H. West, and the RMG Team', 'manual'),
   ('latex-api', 'RMG-Py_API_Reference.tex', u'RMG-Py API Reference',
    u'William H. Green, Richard H. West, and the RMG Team', 'manual'),

@@ -108,7 +108,7 @@ cdef class SimpleReactor(ReactionSystem):
     cdef public list Prange
     cdef public int nSims
 
-    def __init__(self, T, P, initialMoleFractions, nSims=None, termination=None, sensitiveSpecies=None, sensitivityThreshold=1e-3,sensConditions=None):
+    def __init__(self, T, P, initialMoleFractions, nSims=1, termination=None, sensitiveSpecies=None, sensitivityThreshold=1e-3,sensConditions=None):
         ReactionSystem.__init__(self, termination, sensitiveSpecies, sensitivityThreshold)
 
 

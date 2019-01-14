@@ -109,6 +109,9 @@ def calculateAtomSymmetryNumber(molecule, atom):
             if count == [3]: symmetryNumber *= 6
             elif count == [2, 1]: symmetryNumber *= 2
             elif count == [1, 1, 1]: symmetryNumber *= 1
+        elif single == 1:
+            if count == [2, 1]: symmetryNumber *= 2
+            elif count == [1, 1, 1]: symmetryNumber *= 1
     elif atom.radicalElectrons == 2:
         if single == 2:
             # Two single bonds
@@ -241,10 +244,6 @@ def calculateAxisSymmetryNumber(molecule):
            
     # For each set of adjacent double bonds, check for axis symmetry
     for bonds in cumulatedBonds:
-        
-        # Do nothing if less than two cumulated bonds
-        if len(bonds) < 1: continue
-
         # Do nothing if axis is in cycle
         found = False
         for atom1, atom2 in bonds:
@@ -344,10 +343,6 @@ def calculateCyclicSymmetryNumber(molecule):
     Get the symmetry number correction for cyclic regions of a molecule.
     For complicated fused rings the smallest set of smallest rings is used.
     """
-    from rmgpy.molecule.vf2 import VF2
-    # setup isomorphism checker
-    vf2 = VF2(molecule, molecule)
-    
     symmetryNumber = 1
     
     # for polycyclics, We should be getting the largest ring, not the smallest
@@ -370,7 +365,7 @@ def calculateCyclicSymmetryNumber(molecule):
                 starting_index = 0
                 while all_the_same and starting_index < size / 2: 
                     for atom_index in range(num_rotations,size,num_rotations):
-                        if not vf2.feasible(ring[starting_index],ring[(starting_index + atom_index) % size]):
+                        if not _indistinguishable(ring[starting_index],ring[(starting_index + atom_index) % size]):
                             all_the_same = False
                             break
                     starting_index += 1
@@ -393,7 +388,7 @@ def calculateCyclicSymmetryNumber(molecule):
             while min_index <= max_index:
                 # ensure the two atoms are different. use mod size to loop to the start
                 # of the list when index out of bounds
-                if not vf2.feasible(ring[min_index % size], ring[max_index % size]):
+                if not _indistinguishable(ring[min_index % size], ring[max_index % size]):
                     all_the_same = False
                     break
                 min_index += 1
@@ -409,19 +404,19 @@ def calculateCyclicSymmetryNumber(molecule):
                         pass # all_the_same still true
                     elif len(non_ring_bonded_atoms) == 3:
                         # at least one of these much be a match for flipping to happen
-                        identical = vf2.feasible(non_ring_bonded_atoms[0],non_ring_bonded_atoms[1])
-                        identical2 = vf2.feasible(non_ring_bonded_atoms[0],non_ring_bonded_atoms[2])
-                        identical3 = vf2.feasible(non_ring_bonded_atoms[1],non_ring_bonded_atoms[2])
+                        identical = _indistinguishable(non_ring_bonded_atoms[0],non_ring_bonded_atoms[1])
+                        identical2 = _indistinguishable(non_ring_bonded_atoms[0],non_ring_bonded_atoms[2])
+                        identical3 = _indistinguishable(non_ring_bonded_atoms[1],non_ring_bonded_atoms[2])
                         if not (identical or identical2 or identical3):
                             all_the_same = False
                     elif len(non_ring_bonded_atoms) == 4:
-                        same_sides = vf2.feasible(non_ring_bonded_atoms[0],non_ring_bonded_atoms[1]) and \
-                                     vf2.feasible(non_ring_bonded_atoms[2],non_ring_bonded_atoms[3])
+                        same_sides = _indistinguishable(non_ring_bonded_atoms[0],non_ring_bonded_atoms[1]) and \
+                                     _indistinguishable(non_ring_bonded_atoms[2],non_ring_bonded_atoms[3])
                         if not same_sides:
-                            atom0_matching = vf2.feasible(non_ring_bonded_atoms[0],non_ring_bonded_atoms[2]) or\
-                                             vf2.feasible(non_ring_bonded_atoms[0],non_ring_bonded_atoms[3])
-                            atom1_matching = vf2.feasible(non_ring_bonded_atoms[1],non_ring_bonded_atoms[2]) or\
-                                             vf2.feasible(non_ring_bonded_atoms[1],non_ring_bonded_atoms[3])
+                            atom0_matching = _indistinguishable(non_ring_bonded_atoms[0],non_ring_bonded_atoms[2]) or\
+                                             _indistinguishable(non_ring_bonded_atoms[0],non_ring_bonded_atoms[3])
+                            atom1_matching = _indistinguishable(non_ring_bonded_atoms[1],non_ring_bonded_atoms[2]) or\
+                                             _indistinguishable(non_ring_bonded_atoms[1],non_ring_bonded_atoms[3])
                             if not (atom0_matching and atom1_matching):
                                 all_the_same = False
                 else:
@@ -430,7 +425,7 @@ def calculateCyclicSymmetryNumber(molecule):
                     if len(non_ring_bonded_atoms) < 2:
                         pass # all_the_same still true
                     elif len(non_ring_bonded_atoms) == 2:
-                        identical = vf2.feasible(non_ring_bonded_atoms[0],non_ring_bonded_atoms[1])
+                        identical = _indistinguishable(non_ring_bonded_atoms[0],non_ring_bonded_atoms[1])
                         if not identical:
                             # flipping a tetrahedral will not work
                             all_the_same = False
@@ -445,7 +440,7 @@ def calculateCyclicSymmetryNumber(molecule):
                 while min_index < max_index:
                     # ensure the two atoms are different. use mod size to loop to the start
                     # of the list when index out of bounds
-                    if not vf2.feasible(ring[min_index % size], ring[max_index % size]):
+                    if not _indistinguishable(ring[min_index % size], ring[max_index % size]):
                         all_the_same = False
                         break
                     min_index += 1
@@ -456,6 +451,39 @@ def calculateCyclicSymmetryNumber(molecule):
                 break
     return symmetryNumber
 ################################################################################
+
+
+def _indistinguishable(atom1, atom2):
+    """
+    Determine if two atoms are feasibly indistinguishable based on connections
+    to nearest neighbors.
+    """
+    if (not atom1.equivalent(atom2)
+            or atom1.connectivity1 != atom2.connectivity1
+            or atom1.connectivity2 != atom2.connectivity2
+            or atom1.connectivity3 != atom2.connectivity3):
+        return False
+
+    bond_orders_1 = [bond.order for bond in atom1.bonds.itervalues()].sort()
+    bond_orders_2 = [bond.order for bond in atom2.bonds.itervalues()].sort()
+
+    if bond_orders_1 != bond_orders_2:
+        return False
+
+    bonds_1 = atom1.bonds.items()
+    bonds_2 = atom2.bonds.items()
+
+    for i, (neighbor1, bond1) in enumerate(bonds_1):
+        for j, (neighbor2, bond2) in enumerate(bonds_2):
+            if bond1.equivalent(bond2) and neighbor1.equivalent(neighbor2):
+                del bonds_2[j]
+                break
+        else:
+            return False
+
+    # We were able to match up all neighbors
+    return True
+
 
 def calculateSymmetryNumber(molecule):
     """

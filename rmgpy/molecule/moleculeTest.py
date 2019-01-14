@@ -646,6 +646,11 @@ class TestBond(unittest.TestCase):
         self.assertEqual(mol_CH2_S.atoms[0].lonePairs, 1)
         self.assertEqual(mol_carbonyl.atoms[0].lonePairs, 2)
         self.assertEqual(mol_carbonyl.atoms[1].lonePairs, 0)
+
+    def test_get_bond_string(self):
+        """Test that bond objects can return a bond string"""
+        bond = Bond(atom1=Atom(element=getElement(1)), atom2=Atom(element=getElement(6)), order=1)
+        self.assertEqual(bond.get_bond_string(), 'C-H')
         
 ################################################################################
 
@@ -2281,6 +2286,45 @@ multiplicity 2
                 self.assertTrue(atom.props['inRing'])
             elif atom.element == 'H':
                 self.assertFalse(atom.props['inRing'])
+
+    def test_enumerate_bonds(self):
+        """Test that generating a count of bond labels works properly."""
+        adj_list = '''
+        1  O u0 p2 c0 {4,S} {23,S} {24,H}
+        2  O u0 p2 c0 {8,S} {23,H} {24,S}
+        3  C u0 p0 c0 {4,S} {6,S} {14,S} {15,S}
+        4  C u0 p0 c0 {1,S} {3,S} {16,S} {17,S}
+        5  C u0 p0 c0 {7,S} {12,S} {18,S} {19,S}
+        6  C u0 p0 c0 {3,S} {8,B} {9,B}
+        7  C u0 p0 c0 {5,S} {9,B} {10,B}
+        8  C u0 p0 c0 {2,S} {6,B} {11,B}
+        9  C u0 p0 c0 {6,B} {7,B} {22,S}
+        10 C u0 p0 c0 {7,B} {11,B} {20,S}
+        11 C u0 p0 c0 {8,B} {10,B} {21,S}
+        12 C u0 p0 c0 {5,S} {13,T}
+        13 C u0 p0 c0 {12,T} {25,S}
+        14 H u0 p0 c0 {3,S}
+        15 H u0 p0 c0 {3,S}
+        16 H u0 p0 c0 {4,S}
+        17 H u0 p0 c0 {4,S}
+        18 H u0 p0 c0 {5,S}
+        19 H u0 p0 c0 {5,S}
+        20 H u0 p0 c0 {10,S}
+        21 H u0 p0 c0 {11,S}
+        22 H u0 p0 c0 {9,S}
+        23 H u0 p0 c0 {1,S} {2,H}
+        24 H u0 p0 c0 {1,H} {2,S}
+        25 H u0 p0 c0 {13,S}
+        '''
+        mol = Molecule().fromAdjacencyList(adj_list)
+        bonds = mol.enumerate_bonds()
+        self.assertEqual(bonds['C#C'], 1)
+        self.assertEqual(bonds['C-C'], 4)
+        self.assertEqual(bonds['C-H'], 10)
+        self.assertEqual(bonds['C-O'], 2)
+        self.assertEqual(bonds['C:C'], 6)
+        self.assertEqual(bonds['H-O'], 2)
+        self.assertEqual(bonds['H~O'], 2)
 
 ################################################################################
 

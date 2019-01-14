@@ -33,7 +33,10 @@ If ``generateOutputHTML=True`` is specified as an RMG input `option`, the specie
 ------------------
 The Pdep Folder
 ------------------ 
-The ``/pdep`` folder will contain files associated with the pressure-dependent reactions that RMG has generated, if you requested such a job. These files are formatted as input files for :ref:`CanTherm <canthermusersguide>`, which can be run independently. This can be useful if one wants to visualize the potential energy surface corresponding to any particular network. 
+The ``/pdep`` folder will contain files associated with the pressure-dependent reactions that RMG has generated, if you
+requested such a job. These files are formatted as input files for :ref:`Arkane <arkaneusersguide>`, which can be run
+independently. This can be useful if one wants to visualize the potential energy surface corresponding to any particular
+network.
 
 ------------------
 The Solver Folder

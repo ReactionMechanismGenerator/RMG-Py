@@ -225,6 +225,8 @@ cdef class Configuration:
         cdef list modes
         cdef int i
         
+        logging.debug('calculating density of states for {}'.format(self.__str__()))
+
         self.Elist = Elist
         self.activeJRotor = activeJRotor
         self.activeKRotor = activeKRotor
@@ -234,7 +236,7 @@ cdef class Configuration:
         for i, species in enumerate(self.species):
             modes.extend(species.conformer.getActiveModes(activeKRotor=activeKRotor, activeJRotor=activeJRotor))
         
-        if rmgmode:
+        if rmgmode or len(modes) == 0:
             # Include an arbitrary active rigid rotor if needed
             # The moments of inertia cancel in all subsequent calculations
             for mode in modes:

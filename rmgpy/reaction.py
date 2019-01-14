@@ -58,7 +58,7 @@ from rmgpy.kinetics import KineticsData, ArrheniusEP, ThirdBody, Lindemann, Troe
             PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, getRateCoefficientUnitsFromReactionOrder, \
             StickingCoefficient, SurfaceArrhenius, SurfaceArrheniusBEP, StickingCoefficientBEP  #PyDev: @UnresolvedImport
 from rmgpy.pdep.reaction import calculateMicrocanonicalRateCoefficient
-from rmgpy.exceptions import ReactionError
+from rmgpy.exceptions import ReactionError, KineticsError
 from rmgpy.kinetics.diffusionLimited import diffusionLimiter
 
 ################################################################################
@@ -742,6 +742,8 @@ class Reaction:
         are forced to have a non-negative barrier.
         """
         cython.declare(H0=cython.double, H298=cython.double, Ea=cython.double)
+        if self.kinetics is None:
+            raise KineticsError("Cannot fix barrier height for reactions with no kinetics attribute")
         H298 = self.getEnthalpyOfReaction(298)
         H0 = sum([spec.getThermoData().E0.value_si for spec in self.products]) \
             - sum([spec.getThermoData().E0.value_si for spec in self.reactants])

@@ -34,4 +34,5 @@ This file defines the current version number for RMG-Py.
 This value can be accessed via `rmgpy.__version__`.
 """
 
-__version__ = '2.2.1-Cat'
+__version__ = '2.3.0-Cat'
+

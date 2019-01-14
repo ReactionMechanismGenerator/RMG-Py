@@ -273,9 +273,10 @@ def find_allyl_delocalization_paths(atom1):
 def find_lone_pair_multiple_bond_paths(atom1):
     """
     Find all the delocalization paths between lone electron pair and multiple bond in a 3-atom system
-    `atom1` indicates the delocalized lone pair site.
+    `atom1` indicates the localized lone pair site. Currently carbenes are excluded from this path.
 
     Examples:
+
     - N2O (N#[N+][O-] <-> [N-]=[N+]=O)
     - Azide (N#[N+][NH-] <-> [N-]=[N+]=N <-> [N-2][N+]#[NH+])
     - N#N group on sulfur (O[S-](O)[N+]#N <-> OS(O)=[N+]=[N-] <-> O[S+](O)#[N+][N-2])
@@ -284,8 +285,8 @@ def find_lone_pair_multiple_bond_paths(atom1):
     """
     cython.declare(paths=list, atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
 
-    # No paths if atom1 has no lone pairs or cannot lose it
-    if atom1.lonePairs <= 0 or not is_atom_able_to_lose_lone_pair(atom1):
+    # No paths if atom1 has no lone pairs, or cannot lose them, or is a carbon atom
+    if atom1.lonePairs <= 0 or not is_atom_able_to_lose_lone_pair(atom1) or atom1.isCarbon():
         return []
 
     paths = []
@@ -308,6 +309,7 @@ def find_adj_lone_pair_radical_delocalization_paths(atom1):
     could have been generated as a resonance structure of R[::O][::O.].
 
     The radical site (atom1) could be either:
+
     - `N u1 p0`, eg O=[N.+][:::O-]
     - `N u1 p1`, eg R[:NH][:NH.]
     - `O u1 p1`, eg [:O.+]=[::N-]; not allowed when adjacent to another O atom
@@ -318,6 +320,7 @@ def find_adj_lone_pair_radical_delocalization_paths(atom1):
     - any of the above with more than 1 radical where possible
 
     The non-radical site (atom2) could respectively be:
+
     - `N u0 p1`
     - `N u0 p2`
     - `O u0 p2`
@@ -348,11 +351,13 @@ def find_adj_lone_pair_radical_delocalization_paths(atom1):
 
 def find_adj_lone_pair_multiple_bond_delocalization_paths(atom1):
     """
-    Find all the delocalization paths of atom1 which either:
+    Find all the delocalization paths of atom1 which either
+
     - Has a lonePair and is bonded by a single/double bond (e.g., [::NH-]-[CH2+], [::N-]=[CH+]) -- direction 1
     - Can obtain a lonePair and is bonded by a double/triple bond (e.g., [:NH]=[CH2], [:N]#[CH]) -- direction 2
 
     Giving the following resonance transitions, for example:
+
     - [::NH-]-[CH2+] <=> [:NH]=[CH2]
     - [:N]#[CH] <=> [::N-]=[CH+]
     - other examples: S#N, N#[S], O=S([O])=O
@@ -365,6 +370,12 @@ def find_adj_lone_pair_multiple_bond_delocalization_paths(atom1):
     cython.declare(paths=list, atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
 
     paths = []
+
+    # Carbenes are currently excluded from this path.
+    # Only atom1 is checked since it is either the donor or acceptor of the lone pair
+    if atom1.isCarbon():
+        return paths
+
     for atom2, bond12 in atom1.edges.items():
         if atom2.isNonHydrogen():  # don't bother with hydrogen atoms.
             # Find paths in the direction <increasing> the bond order,
@@ -382,11 +393,13 @@ def find_adj_lone_pair_multiple_bond_delocalization_paths(atom1):
 
 def find_adj_lone_pair_radical_multiple_bond_delocalization_paths(atom1):
     """
-    Find all the delocalization paths of atom1 which either:
+    Find all the delocalization paths of atom1 which either
+
     - Has a lonePair and is bonded by a single/double bond to a radical atom (e.g., [::N]-[.CH2])
     - Can obtain a lonePair, has a radical, and is bonded by a double/triple bond (e.g., [:N.]=[CH2])
 
     Giving the following resonance transitions, for example:
+
     - [::N]-[.CH2] <=> [:N.]=[CH2]
     - O[:S](=O)[::O.] <=> O[S.](=O)=[::O]
 
@@ -399,6 +412,12 @@ def find_adj_lone_pair_radical_multiple_bond_delocalization_paths(atom1):
     cython.declare(paths=list, atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
 
     paths = []
+
+    # Carbenes are currently excluded from this path.
+    # Only atom1 is checked since it is either the donor or acceptor of the lone pair
+    if atom1.isCarbon():
+        return paths
+
     for atom2, bond12 in atom1.edges.items():
         # Find paths in the direction <increasing> the bond order
         # atom1 must posses at least one lone pair to loose it, atom2 must be a radical
@@ -417,9 +436,12 @@ def find_N5dc_radical_delocalization_paths(atom1):
     """
     Find all the resonance structures of an N5dc nitrogen atom with a single bond to a radical N/O/S site, another
     single bond to a negatively charged N/O/S site, and one double bond (not participating in this transformation)
+
     Example:
+
     - N=[N+]([O])([O-]) <=> N=[N+]([O-])([O]), these structures are isomorphic but not identical, the transition is
-    important for correct degeneracy calculations
+      important for correct degeneracy calculations
+
     In this transition atom1 is the middle N+ (N5dc), atom2 is the radical site, and atom3 is negatively charged
     A "if atom1.atomType.label == 'N5dc'" check should be done before calling this function
     """

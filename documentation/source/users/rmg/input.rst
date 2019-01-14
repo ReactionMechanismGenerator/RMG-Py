@@ -7,8 +7,7 @@ Creating Input Files
 
 The syntax and parameters within an RMG input file are explained below.  We recommend
 trying to build your first input file while referencing one of the
-:ref:`Example Input Files<examples>`.  Alternatively, you can use our web form found
-at http://rmg.mit.edu/input to assist in creating an input file.
+:ref:`Example Input Files<examples>`. 
 
 Syntax
 ======
@@ -154,7 +153,7 @@ strings describing which depositories to include.::
 Kinetics Families
 -----------------
 In this section users can specify the particular reaction families that they wish to use to generate their model.
-This can be specified with any combination of specific families and predefined sets from :file:`RMG-database/input/families/recommended.py`.
+This can be specified with any combination of specific families and predefined sets from :file:`RMG-database/input/kinetics/families/recommended.py`.
 
 For example, you can use only the :file:`H_Abstraction` family to build the model::
 
@@ -612,6 +611,51 @@ The following is an example of the quantum mechanics options ::
 		)
 
 .. [RDKit] RDKit: Open-source cheminformatics; http://www.rdkit.org
+
+
+.. _mlEstimation:
+
+Machine Learning-based Thermo Estimation
+========================================
+
+This block is used to turn on the machine learning module to estimate thermodynamic parameters.
+These calculations are only run if the molecule is not included in a specified thermo library.
+There are a number of different settings that can be specified to tune the estimator so that it only tries to estimate
+some species. This is useful because the machine learning model may perform poorly for some molecules and group
+additivity may be more suitable. Using the machine learning estimator for fused cyclic species of moderate size or any
+species with significant proportions of oxygen and/or nitrogen atoms will most likely yield better estimates than
+group additivity.
+
+The available options with their default values are ::
+
+    mlEstimator(
+        thermo=True,
+        name='main',
+        minHeavyAtoms=1,
+        maxHeavyAtoms=None,
+        minCarbonAtoms=0,
+        maxCarbonAtoms=None,
+        minOxygenAtoms=0,
+        maxOxygenAtoms=None,
+        minNitrogenAtoms=0,
+        maxNitrogenAtoms=None,
+        onlyCyclics=False,
+        minCycleOverlap=0,
+        H298UncertaintyCutoff=(3.0, 'kcal/mol'),
+        S298UncertaintyCutoff=(2.0, 'cal/(mol*K)'),
+        CpUncertaintyCutoff=(2.0, 'cal/(mol*K)')
+    )
+
+``name`` is the name of the folder containing the machine learning model architecture and parameters in the RMG
+database. The next several options allow setting limits on the numbers of atoms. ``onlyCyclics`` means that only cyclic
+species will be estimated. ``minCycleOverlap`` specified the minimum number of atoms that must be shared between any
+two cycles. For example, if there are only disparate monocycles or no cycles in a species, the overlap is zero;
+"spiro" cycles have an overlap of one; "fused" cycles have an overlap of two; and "bridged" cycles have an overlap of
+at least three. Note that specifying any value greater than zero will automatically restrict the machine learning
+estimator to only consider cyclic species regardless of the ``onlyCyclics`` setting.
+
+If the estimated uncertainty of the thermo prediction is greater than any of the ``UncertaintyCutoff`` values, then
+machine learning estimation is not used for that species.
 
 
 .. _pressuredependence:

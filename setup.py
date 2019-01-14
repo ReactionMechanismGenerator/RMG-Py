@@ -59,6 +59,7 @@ Cython.Compiler.Options.annotate = True
 
 ################################################################################
 
+
 def getMainExtensionModules():
     return [
         # Kinetics
@@ -113,6 +114,7 @@ def getMainExtensionModules():
         Extension('rmgpy.chemkin', ['rmgpy/chemkin.pyx'], include_dirs=['.']),
     ]
 
+
 def getSolverExtensionModules():
     return [
         Extension('rmgpy.solver.base', ['rmgpy/solver/base.pyx'], include_dirs=['.']),
@@ -121,7 +123,8 @@ def getSolverExtensionModules():
         Extension('rmgpy.solver.surface', ['rmgpy/solver/surface.pyx'], include_dirs=['.']),
     ]
 
-def getCanthermExtensionModules():
+
+def getArkaneExtensionModules():
     return [
         # Kinetics
         Extension('rmgpy.kinetics.arrhenius', ['rmgpy/kinetics/arrhenius.pyx']),
@@ -171,11 +174,11 @@ if 'solver' in sys.argv:
     # This is for `python setup.py build_ext solver`
     sys.argv.remove('solver')
     ext_modules.extend(getSolverExtensionModules())
-if 'cantherm' in sys.argv:
-    # This is for `python setup.py build_ext cantherm`
-    sys.argv.remove('cantherm')
+if 'arkane' in sys.argv:
+    # This is for `python setup.py build_ext arkane`
+    sys.argv.remove('arkane')
     ext_modules.extend(getMainExtensionModules())
-    ext_modules.extend(getCanthermExtensionModules())
+    ext_modules.extend(getArkaneExtensionModules())
 if 'minimal' in sys.argv:
     # This starts with the full install list, but removes anything that has a pure python mode
     # i.e. in only includes things whose source is .pyx
@@ -192,7 +195,7 @@ if 'minimal' in sys.argv:
 from collections import OrderedDict
 ext_modules = list(OrderedDict.fromkeys(ext_modules))
 
-scripts=['cantherm.py',
+scripts=['Arkane.py',
          'rmg.py',
          'scripts/checkModels.py',
          'scripts/convertFAME.py',
@@ -214,9 +217,16 @@ for root, dirs, files in os.walk('rmgpy'):
     for file in files:
         if file.endswith('.py') or file.endswith('.pyx'):
             if 'Test' not in file and '__init__' not in file:
-                if not root.endswith('rmgpy/cantherm/files'):
-                    module = 'rmgpy' + root.partition('rmgpy')[-1].replace('/','.') + '.' + file.partition('.py')[0]
-                    modules.append(module)
+                module = 'rmgpy' + root.partition('rmgpy')[-1].replace('/','.') + '.' + file.partition('.py')[0]
+                modules.append(module)
+for root, dirs, files in os.walk('arkane'):
+    if 'data' in root:
+        continue
+    for file in files:
+        if file.endswith('.py') or file.endswith('.pyx'):
+            if 'Test' not in file and '__init__' not in file:
+                module = 'arkane' + root.partition('arkane')[-1].replace('/','.') + '.' + file.partition('.py')[0]
+                modules.append(module)
 
 # Initiate the build and/or installation
 
@@ -229,7 +239,7 @@ setup(name='RMG-Py',
     author='William H. Green and the RMG Team',
     author_email='rmg_dev@mit.edu',
     url='http://reactionmechanismgenerator.github.io',
-    packages=['rmgpy'],
+    packages=['rmgpy','arkane'],
     py_modules = modules,
     scripts=scripts,
     cmdclass = {'build_ext': build_ext},

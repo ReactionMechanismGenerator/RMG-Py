@@ -21,7 +21,11 @@ recipe(actions=[
 entry(
     index = 0,
     label = "R_R",
-    group = "OR{Cd_R, Ct_R, Od_R, Sd_R, Nd_R, Nt_R}",
+    group =
+"""
+1 *1 R!H u0 {2,[D,T,B]}
+2 *2 R!H u0 {1,[D,T,B]}
+""",
     kinetics = None,
 )
 
@@ -34,6 +38,17 @@ entry(
 
 entry(
     index = 2,
+    label = "Cb_Cb",
+    group =
+"""
+1 *1 [Cb,Cbf] u0 {2,B}
+2 *2 [Cb,Cbf] u0 {1,B}
+""",
+    kinetics = None,
+)
+
+entry(
+    index = 3,
     label = "Cd_R",
     group = 
 """
@@ -44,7 +59,7 @@ entry(
 )
 
 entry(
-    index = 3,
+    index = 4,
     label = "Ck_O",
     group = 
 """
@@ -56,7 +71,7 @@ entry(
 )
 
 entry(
-    index = 127,
+    index = 5,
     label = "Ck_Ca",
     group = 
 """
@@ -69,7 +84,7 @@ entry(
 )
 
 entry(
-    index = 838,
+    index = 6,
     label = "Ct_R",
     group = 
 """
@@ -80,7 +95,7 @@ entry(
 )
 
 entry(
-    index = 4,
+    index = 7,
     label = "Od_R",
     group = 
 """
@@ -91,14 +106,14 @@ entry(
 )
 
 entry(
-    index = 5,
+    index = 8,
     label = "Nd_R",
     group = "OR{N1dc_R, N3d_R}",
     kinetics = None,
 )
 
 entry(
-    index = 6,
+    index = 9,
     label = "N1dc_R",
     group = 
 """
@@ -109,7 +124,7 @@ entry(
 )
 
 entry(
-    index = 7,
+    index = 10,
     label = "N3d_R",
     group = 
 """
@@ -120,14 +135,14 @@ entry(
 )
 
 entry(
-    index = 8,
+    index = 11,
     label = "Nt_R",
     group = "OR{N3t_R, N5t_R}",
     kinetics = None,
 )
 
 entry(
-    index = 9,
+    index = 12,
     label = "N3t_R",
     group = 
 """
@@ -138,7 +153,7 @@ entry(
 )
 
 entry(
-    index = 10,
+    index = 13,
     label = "N5t_R",
     group = 
 """
@@ -149,7 +164,7 @@ entry(
 )
 
 entry(
-    index = 11,
+    index = 14,
     label = "Sd_R",
     group = 
 """
@@ -160,7 +175,7 @@ entry(
 )
 
 entry(
-    index = 12,
+    index = 15,
     label = "HJ",
     group = 
 """
@@ -170,14 +185,14 @@ entry(
 )
 
 entry(
-    index = 13,
+    index = 16,
     label = "Y_1centerquadrad",
     group = "OR{C_quintet, C_triplet}",
     kinetics = None,
 )
 
 entry(
-    index = 14,
+    index = 17,
     label = "C_quintet",
     group = 
 """
@@ -187,7 +202,7 @@ entry(
 )
 
 entry(
-    index = 15,
+    index = 18,
     label = "C_triplet",
     group = 
 """
@@ -197,14 +212,14 @@ entry(
 )
 
 entry(
-    index = 16,
+    index = 19,
     label = "Y_1centertrirad",
     group = "OR{N_atom_quartet, N_atom_doublet, CH_quartet, CH_doublet}",
     kinetics = None,
 )
 
 entry(
-    index = 17,
+    index = 20,
     label = "N_atom_quartet",
     group = 
 """
@@ -214,7 +229,7 @@ entry(
 )
 
 entry(
-    index = 18,
+    index = 21,
     label = "N_atom_doublet",
     group = 
 """
@@ -224,7 +239,7 @@ entry(
 )
 
 entry(
-    index = 19,
+    index = 22,
     label = "CH_quartet",
     group = 
 """
@@ -235,7 +250,7 @@ entry(
 )
 
 entry(
-    index = 20,
+    index = 23,
     label = "CH_doublet",
     group = 
 """
@@ -246,7 +261,7 @@ entry(
 )
 
 entry(
-    index = 21,
+    index = 24,
     label = "Y_1centerbirad",
     group = 
 """
@@ -256,7 +271,7 @@ entry(
 )
 
 entry(
-    index = 22,
+    index = 25,
     label = "CJ",
     group = 
 """
@@ -266,7 +281,7 @@ entry(
 )
 
 entry(
-    index = 23,
+    index = 26,
     label = "CbJ",
     group = 
 """
@@ -276,7 +291,7 @@ entry(
 )
 
 entry(
-    index = 24,
+    index = 27,
     label = "CtJ",
     group = 
 """
@@ -287,7 +302,7 @@ entry(
 )
 
 entry(
-    index = 25,
+    index = 28,
     label = "C2b",
     group = 
 """
@@ -298,7 +313,7 @@ entry(
 )
 
 entry(
-    index = 26,
+    index = 29,
     label = "C=SJ",
     group = 
 """
@@ -309,7 +324,7 @@ entry(
 )
 
 entry(
-    index = 27,
+    index = 30,
     label = "CO_rad",
     group = 
 """
@@ -321,7 +336,7 @@ entry(
 )
 
 entry(
-    index = 28,
+    index = 31,
     label = "CsJ",
     group = 
 """
@@ -334,14 +349,14 @@ entry(
 )
 
 entry(
-    index = 29,
+    index = 32,
     label = "OJ",
     group = "OR{OJ_pri, OJ_sec, O2b}",
     kinetics = None,
 )
 
 entry(
-    index = 30,
+    index = 33,
     label = "OJ_pri",
     group = 
 """
@@ -352,7 +367,7 @@ entry(
 )
 
 entry(
-    index = 31,
+    index = 34,
     label = "OJ_sec",
     group = 
 """
@@ -363,7 +378,7 @@ entry(
 )
 
 entry(
-    index = 32,
+    index = 35,
     label = "O2b",
     group = 
 """
@@ -374,7 +389,7 @@ entry(
 )
 
 entry(
-    index = 33,
+    index = 36,
     label = "SJ",
     group = 
 """
@@ -384,7 +399,7 @@ entry(
 )
 
 entry(
-    index = 34,
+    index = 37,
     label = "SsJ",
     group = 
 """
@@ -395,14 +410,14 @@ entry(
 )
 
 entry(
-    index = 35,
+    index = 38,
     label = "NJ",
     group = "OR{N3J}",
     kinetics = None,
 )
 
 entry(
-    index = 36,
+    index = 39,
     label = "N3J",
     group = 
 """
@@ -412,7 +427,7 @@ entry(
 )
 
 entry(
-    index = 37,
+    index = 40,
     label = "N3sJ",
     group = 
 """
@@ -422,7 +437,7 @@ entry(
 )
 
 entry(
-    index = 38,
+    index = 41,
     label = "N3dJ",
     group = 
 """
@@ -434,6 +449,7 @@ entry(
 tree(
 """
 L1: R_R
+    L2: Cb_Cb
     L2: Cd_R
         L3: Ck_O
         L3: Ck_Ca
