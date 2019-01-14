@@ -224,7 +224,7 @@ class TestSurfaceReaction(unittest.TestCase):
         "Test the CH3 adsorption rate given by StickingCoefficient"
 
         # First, check the molecular weight is in units we expect
-        self.assertAlmostEqual(self.rxn2sSC.reactants[0].getMolecularWeight().value_si / constants.amu / 1000,
+        self.assertAlmostEqual(self.rxn2sSC.reactants[0].molecularWeight.value_si / constants.amu / 1000,
                                15.0345e-3)  # kg/mol
 
         T = 800
