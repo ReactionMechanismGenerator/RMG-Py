@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>3.1.1. Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX &#8212; RMG-Py 2.1.0 Documentation</title>
+    <title>3.2.1. Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     
@@ -18,8 +18,8 @@
     
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="3.1.2. Binary Installation Using Anaconda for Windows" href="anacondaUserWindows.html" />
-    <link rel="prev" title="3. Installation" href="index.html" />
+    <link rel="next" title="3.3.1. Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX" href="anacondaDeveloper.html" />
+    <link rel="prev" title="3.1.1. Setting up a Linux Virtual Machine from Windows" href="virtualMachineSetup.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -39,10 +39,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="anacondaUserWindows.html" title="3.1.2. Binary Installation Using Anaconda for Windows"
+          <a href="anacondaDeveloper.html" title="3.3.1. Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="3. Installation"
+          <a href="virtualMachineSetup.html" title="3.1.1. Setting up a Linux Virtual Machine from Windows"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
   <li><a href="../../../index.html">2.3.0 Documentation</a> &raquo;</li>
@@ -59,9 +59,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <div class="section" id="binary-installation-using-anaconda-for-unix-based-systems-linux-and-mac-osx">
-<span id="anacondauser"></span><h1>3.1.1. Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX<a class="headerlink" href="#binary-installation-using-anaconda-for-unix-based-systems-linux-and-mac-osx" title="Permalink to this headline">¶</a></h1>
+<span id="anacondauser"></span><h1>3.2.1. Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX<a class="headerlink" href="#binary-installation-using-anaconda-for-unix-based-systems-linux-and-mac-osx" title="Permalink to this headline">¶</a></h1>
 <ul>
-<li><p class="first">Download and install the <a class="reference external" href="http://continuum.io/downloads">Anaconda Python Platform</a> for Python 2.7 (make sure not to install Python 3.0+, which is incompatible with RMG). When prompted to append Anaconda to your PATH, select or type Yes.</p>
+<li><p class="first">Download and install the <a class="reference external" href="https://www.anaconda.com/download/">Anaconda Python Platform</a> for Python 2.7 (make sure not to install Python 3.0+, which is incompatible with RMG). When prompted to append Anaconda to your PATH, select or type Yes.</p>
 </li>
 <li><p class="first">Install both RMG and the RMG-database binaries through the Terminal.   Dependencies will be installed automatically. It is safest to make a new Anaconda environment for RMG and its dependencies. Type the following command into the Terminal to create the new environment named ‘rmg_env’ containing the latest stable version of the RMG program and its database.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">c</span> <span class="n">rmg</span> <span class="o">--</span><span class="n">name</span> <span class="n">rmg_env</span> <span class="n">rmg</span> <span class="n">rmgdatabase</span>
@@ -87,7 +87,7 @@ to a local directory.  Use the Terminal to run your RMG job inside that folder u
 <p>You may now use RMG-Py, Arkane, as well as any of the
 <a class="reference internal" href="../modules/index.html#modules"><span class="std std-ref">Standalone Modules</span></a> included in the RMG-Py package.</p>
 <div class="section" id="updating-your-binary-installation-of-rmg-in-linux-or-mac-osx">
-<h2>3.1.1.1. Updating your binary installation of RMG in Linux or Mac OSX<a class="headerlink" href="#updating-your-binary-installation-of-rmg-in-linux-or-mac-osx" title="Permalink to this headline">¶</a></h2>
+<h2>3.2.1.1. Updating your binary installation of RMG in Linux or Mac OSX<a class="headerlink" href="#updating-your-binary-installation-of-rmg-in-linux-or-mac-osx" title="Permalink to this headline">¶</a></h2>
 <p>If you had previously installed a binary version of the RMG package, you may
 check and update your installation to the latest stable version available on Anaconda by typing the following command on the Terminal</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="n">activate</span> <span class="n">rmg_env</span>
@@ -126,8 +126,8 @@ check and update your installation to the latest stable version available on Ana
         <div class="menuitem">
   <h3><a href="../../../contents.html">Table of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">3.1.1. Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX</a><ul>
-<li><a class="reference internal" href="#updating-your-binary-installation-of-rmg-in-linux-or-mac-osx">3.1.1.1. Updating your binary installation of RMG in Linux or Mac OSX</a></li>
+<li><a class="reference internal" href="#">3.2.1. Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX</a><ul>
+<li><a class="reference internal" href="#updating-your-binary-installation-of-rmg-in-linux-or-mac-osx">3.2.1.1. Updating your binary installation of RMG in Linux or Mac OSX</a></li>
 </ul>
 </li>
 </ul>
@@ -135,11 +135,11 @@ check and update your installation to the latest stable version available on Ana
         </div>
         <div class="menuitem">
   <h4>Previous topic</h4>
-  <p class="topless"><a href="index.html"
-                        title="previous chapter">3. Installation</a></p>
+  <p class="topless"><a href="virtualMachineSetup.html"
+                        title="previous chapter">3.1.1. Setting up a Linux Virtual Machine from Windows</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="anacondaUserWindows.html"
-                        title="next chapter">3.1.2. Binary Installation Using Anaconda for Windows</a></p>
+  <p class="topless"><a href="anacondaDeveloper.html"
+                        title="next chapter">3.3.1. Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX</a></p>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -181,10 +181,10 @@ check and update your installation to the latest stable version available on Ana
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="anacondaUserWindows.html" title="3.1.2. Binary Installation Using Anaconda for Windows"
+          <a href="anacondaDeveloper.html" title="3.3.1. Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX"
              >next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="3. Installation"
+          <a href="virtualMachineSetup.html" title="3.1.1. Setting up a Linux Virtual Machine from Windows"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
   <li><a href="../../../index.html">2.3.0 Documentation</a> &raquo;</li>
@@ -194,9 +194,21 @@ check and update your installation to the latest stable version available on Ana
           <li class="nav-item nav-item-3"><a href="index.html" >3. Installation</a> &#187;</li> 
       </ul>
     </div>
+
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.2.
     </div>
+<script type="text/javascript">
+  var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+  document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+  try {
+    var pageTracker = _gat._getTracker("UA-24556433-3");
+    pageTracker._trackPageview();
+  } catch(err) {}
+</script>
+
   </body>
 </html>

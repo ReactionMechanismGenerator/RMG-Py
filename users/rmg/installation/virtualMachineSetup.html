@@ -1,0 +1,306 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>3.1.1. Setting up a Linux Virtual Machine from Windows &#8212; RMG-Py 2.1.0 Documentation</title>
+    <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="3.2.1. Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX" href="anacondaUser.html" />
+    <link rel="prev" title="3. Installation" href="index.html" />
+<script type="text/x-mathjax-config">
+MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+  MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+    ce: ["Extension","mhchem"],
+  });
+});
+</script>
+
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="anacondaUser.html" title="3.2.1. Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="3. Installation"
+             accesskey="P">previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../../index.html">2.3.0 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User’s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">3. Installation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="setting-up-a-linux-virtual-machine-from-windows">
+<span id="virtualmachinesetup"></span><h1>3.1.1. Setting up a Linux Virtual Machine from Windows<a class="headerlink" href="#setting-up-a-linux-virtual-machine-from-windows" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="downloading-a-linux-iso-file">
+<h2>3.1.1.1. Downloading a Linux .iso File<a class="headerlink" href="#downloading-a-linux-iso-file" title="Permalink to this headline">¶</a></h2>
+<p>If this is your first time using a Linux operating system, we recommend using Ubuntu 18.04, as it is one of the most
+popular Linux distributions out there, with plenty of support available online. Otherwise you are welcome to try out
+any other Linux distribution you like (see <a class="reference external" href="https://distrowatch.com/">Linux DistroWatch</a>).</p>
+<p>1. Go to the <a class="reference external" href="https://www.ubuntu.com/#download">Ubuntu</a> website and click on the download link for 18.04 LTS (Desktop, not Server). Note that newer
+versions of Ubuntu might be available, but we recommend downloading only the LTS (long term support) versions. Note that
+Ubuntu is completely free to download and use, so you do not need to make a donation if prompted.</p>
+<img alt="../../../_images/Ubuntu1804.png" class="align-center" src="../../../_images/Ubuntu1804.png" />
+<p>2. The .iso file is typically around 2 GB in size, so the file will take a while to download. While this is happening,
+feel free to proceed with the remaining sections.</p>
+</div>
+<div class="section" id="choosing-a-vm-software">
+<h2>3.1.1.2. Choosing a VM Software<a class="headerlink" href="#choosing-a-vm-software" title="Permalink to this headline">¶</a></h2>
+<p>There a quite a few software options for running a virtual machine from Windows, including <a class="reference external" href="https://my.vmware.com/en/web/vmware/info/slug/desktop_end_user_computing/vmware_workstation_pro/15_0">VMware Workstation Pro</a>
+and <a class="reference external" href="https://www.virtualbox.org/wiki/Downloads">Oracle VirtualBox</a>. VMware Workstation Pro is the recommended choice, though check to see if your institution has
+access to it (since it is not free). If not, VirtualBox (which is free) runs well and will work just as fine. Use the
+hyperlinks below to jump ahead to the setup instructions for the virtual machine software of your choice.</p>
+<p><a class="reference internal" href="#workstationpro"><span class="std std-ref">Setting up a Linux Virtual Machine using Workstation Pro</span></a></p>
+<p><a class="reference internal" href="#virtualbox"><span class="std std-ref">Setting up a Linux Virtual Machine using VirtualBox</span></a></p>
+</div>
+<div class="section" id="setting-up-a-linux-virtual-machine-using-workstation-pro">
+<span id="workstationpro"></span><h2>3.1.1.3. Setting up a Linux Virtual Machine using Workstation Pro<a class="headerlink" href="#setting-up-a-linux-virtual-machine-using-workstation-pro" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li>Follow your institution’s instructions for downloading VMware Workstation Pro and obtaining the required license key.</li>
+<li>At the end of the installation process for Workstation Pro, remember to enter in the required license key.</li>
+</ol>
+<img alt="../../../_images/VMware_license.png" class="align-center" src="../../../_images/VMware_license.png" />
+<ol class="arabic simple" start="3">
+<li>From Workstation Pro click on the <code class="docutils literal notranslate"><span class="pre">Create</span> <span class="pre">a</span> <span class="pre">New</span> <span class="pre">Virtual</span> <span class="pre">Machine</span></code> icon.</li>
+</ol>
+<img alt="../../../_images/VMware_new.png" class="align-center" src="../../../_images/VMware_new.png" />
+<ol class="arabic simple" start="4">
+<li>Choose a typical installation.</li>
+</ol>
+<img alt="../../../_images/VMware_typical.png" class="align-center" src="../../../_images/VMware_typical.png" />
+<p>5. On the <code class="docutils literal notranslate"><span class="pre">Guest</span> <span class="pre">Operating</span> <span class="pre">System</span> <span class="pre">Installation</span></code> page, choose <code class="docutils literal notranslate"><span class="pre">Installer</span> <span class="pre">disc</span> <span class="pre">image</span> <span class="pre">file</span> <span class="pre">(iso)</span></code> and browse for the
+Ubuntu .iso file you downloaded previously. If found correctly you should see a message indicating that an Ubuntu
+operating system was detected.</p>
+<img alt="../../../_images/VMware_iso.png" class="align-center" src="../../../_images/VMware_iso.png" />
+<ol class="arabic simple" start="6">
+<li>On the <code class="docutils literal notranslate"><span class="pre">Specify</span> <span class="pre">Disk</span> <span class="pre">Capacity</span></code> page create a disk with <strong>no smaller than 50 GB</strong>.</li>
+</ol>
+<img alt="../../../_images/VMware_disk.png" class="align-center" src="../../../_images/VMware_disk.png" />
+<p>7. At some point after finishing the install, you will want to go into the settings of the VM and increase the number
+of CPUs allocated to the VM as well as increasing the memory.</p>
+<ol class="arabic simple" start="8">
+<li>To continue with installing RMG, follow the instructions for Linux and Mac OSX systems.</li>
+</ol>
+</div>
+<div class="section" id="setting-up-a-linux-virtual-machine-using-virtualbox">
+<span id="virtualbox"></span><h2>3.1.1.4. Setting up a Linux Virtual Machine using VirtualBox<a class="headerlink" href="#setting-up-a-linux-virtual-machine-using-virtualbox" title="Permalink to this headline">¶</a></h2>
+<p>1. Go to the <a class="reference external" href="https://www.virtualbox.org/wiki/Downloads">Oracle VirtualBox</a> website and click on the download link for “Windows hosts” (highlighted orange in the
+image below)</p>
+<img alt="../../../_images/VirtualBoxDownload.png" class="align-center" src="../../../_images/VirtualBoxDownload.png" />
+<p>2. Once the download is complete, launch the executable. Select the “Next” button a few times to install VirtualBox
+with the default settings. If prompted download any necessary drivers. After installation, launch VirtualBox.</p>
+<img alt="../../../_images/VBoxInstall_1.png" class="align-center" src="../../../_images/VBoxInstall_1.png" />
+<img alt="../../../_images/VBoxInstall_2.png" class="align-center" src="../../../_images/VBoxInstall_2.png" />
+<img alt="../../../_images/VBoxInstall_3.png" class="align-center" src="../../../_images/VBoxInstall_3.png" />
+<img alt="../../../_images/VBoxInstall_4.png" class="align-center" src="../../../_images/VBoxInstall_4.png" />
+<img alt="../../../_images/VBoxInstall_5.png" class="align-center" src="../../../_images/VBoxInstall_5.png" />
+<img alt="../../../_images/VBoxInstall_6.png" class="align-center" src="../../../_images/VBoxInstall_6.png" />
+<p>3. From the VirtualBox Manager window, click on the blue star labeled “New” to begin creating your Linux virtual
+machine.</p>
+<img alt="../../../_images/VBoxNew.png" class="align-center" src="../../../_images/VBoxNew.png" />
+<p>4. Give your new virtual machine a name (it can be anything you want, so long as you can recognize it by its name).
+Make sure that the <code class="docutils literal notranslate"><span class="pre">Type</span></code> is set to <code class="docutils literal notranslate"><span class="pre">Linux</span></code> and that the version is set to <code class="docutils literal notranslate"><span class="pre">Ubuntu</span> <span class="pre">(64-bit)</span></code>. Then click “Next”.</p>
+<img alt="../../../_images/VBox_VM_name.png" class="align-center" src="../../../_images/VBox_VM_name.png" />
+<p>5. Move the slider for the memory size to the far right of the green section, giving your VM as much memory as you can
+without leaving too little for the host (Windows) OS.</p>
+<img alt="../../../_images/VBox_memory.png" class="align-center" src="../../../_images/VBox_memory.png" />
+<ol class="arabic simple" start="6">
+<li>Create a virtual hard disk to store the data for your Linux VM by selecting <code class="docutils literal notranslate"><span class="pre">Create</span> <span class="pre">a</span> <span class="pre">virtual</span> <span class="pre">hard</span> <span class="pre">disk</span> <span class="pre">now</span></code>.</li>
+</ol>
+<img alt="../../../_images/VBox_create_hard_disk.png" class="align-center" src="../../../_images/VBox_create_hard_disk.png" />
+<ol class="arabic simple" start="7">
+<li>Choose <code class="docutils literal notranslate"><span class="pre">VDI</span></code> as the virtual hard disk type.</li>
+</ol>
+<img alt="../../../_images/VBox_VDI.png" class="align-center" src="../../../_images/VBox_VDI.png" />
+<p>8. Choose <code class="docutils literal notranslate"><span class="pre">Dynamically</span> <span class="pre">allocated</span></code> as the storage type, so that your virtual hard disk does not take up more space than
+it needs to.</p>
+<img alt="../../../_images/VBox_dynamic_storage.png" class="align-center" src="../../../_images/VBox_dynamic_storage.png" />
+<p>9. Set the size of the virtual hard disk to be <strong>no smaller than 50 GB</strong>. If you chose <code class="docutils literal notranslate"><span class="pre">dynamically</span> <span class="pre">allocated</span></code> in the
+previous step the full 50 GB won’t be used initially anyways.</p>
+<img alt="../../../_images/VBox_disk_size.png" class="align-center" src="../../../_images/VBox_disk_size.png" />
+<ol class="arabic simple" start="10">
+<li>Click on the yellow gear labeled <code class="docutils literal notranslate"><span class="pre">Settings</span></code>.</li>
+</ol>
+<img alt="../../../_images/VBox_Settings.png" class="align-center" src="../../../_images/VBox_Settings.png" />
+<p>11. From the <code class="docutils literal notranslate"><span class="pre">System</span></code> menu (left column), go to the <code class="docutils literal notranslate"><span class="pre">Processor</span></code> tab and increase the number of CPUs all the way to
+the right side of the green region.</p>
+<img alt="../../../_images/VBox_cpus.png" class="align-center" src="../../../_images/VBox_cpus.png" />
+<ol class="arabic simple" start="12">
+<li>From the <code class="docutils literal notranslate"><span class="pre">Display</span></code> menu, go to the <code class="docutils literal notranslate"><span class="pre">Screen</span></code> tab and max out the video memory.</li>
+</ol>
+<img alt="../../../_images/VBox_video_mem.png" class="align-center" src="../../../_images/VBox_video_mem.png" />
+<p>13. From the <code class="docutils literal notranslate"><span class="pre">Storage</span></code> menu, click on the <code class="docutils literal notranslate"><span class="pre">Adds</span> <span class="pre">optical</span> <span class="pre">drive</span></code> icon (blue circle right next to <code class="docutils literal notranslate"><span class="pre">Controller:</span> <span class="pre">IDE</span></code>
+to add the Ubuntu .iso file to the virtual machine.</p>
+<img alt="../../../_images/VBox_IDE.png" class="align-center" src="../../../_images/VBox_IDE.png" />
+<img alt="../../../_images/VBox_optical_disk.png" class="align-center" src="../../../_images/VBox_optical_disk.png" />
+<img alt="../../../_images/VBox_browse_for_disk.png" class="align-center" src="../../../_images/VBox_browse_for_disk.png" />
+<img alt="../../../_images/VBox_choose_iso_1.png" class="align-center" src="../../../_images/VBox_choose_iso_1.png" />
+<ol class="arabic simple" start="14">
+<li>Click “OK” to save all of the changes.</li>
+</ol>
+<img alt="../../../_images/VBox_IDE_complete.png" class="align-center" src="../../../_images/VBox_IDE_complete.png" />
+<ol class="arabic simple" start="15">
+<li>Click on the green “Start” arrow to begin installing the Linux OS in your virtual machine</li>
+</ol>
+<img alt="../../../_images/VBox_Start.png" class="align-center" src="../../../_images/VBox_Start.png" />
+<img alt="../../../_images/VBox_Install_Ubuntu.png" class="align-center" src="../../../_images/VBox_Install_Ubuntu.png" />
+<img alt="../../../_images/VBox_Normal_Install.png" class="align-center" src="../../../_images/VBox_Normal_Install.png" />
+<p>16. When you get to the page below, choose the option to <code class="docutils literal notranslate"><span class="pre">Erase</span> <span class="pre">disk</span> <span class="pre">and</span> <span class="pre">install</span> <span class="pre">Ubuntu</span></code>. You can safely ignore the
+warning about this deleting all of your programs and data. This warning pertains ONLY to the blank virtual hard disk you
+created earlier. There is nothing you can do here that will delete your data on your host (Windows) system.</p>
+<img alt="../../../_images/VBox_Erase_Disk_Okay.png" class="align-center" src="../../../_images/VBox_Erase_Disk_Okay.png" />
+<img alt="../../../_images/VBox_partitions.png" class="align-center" src="../../../_images/VBox_partitions.png" />
+<p>17. Continue with the installation, choosing a good username (we recommend choosing the same username as the one you use
+on your host OS or for your institution for example) and password (you may optionally select to login automatically on
+startup).</p>
+<p>18. After installation is complete, the virtual machine should be up and running. To continue with installing RMG,
+follow the instructions for Linux and Mac OSX systems.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+  <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+    <div class="sphinxsidebarwrapper">
+        <div class="sidebarlogo"><a href="../../../index.html">
+            <img src="../../../_static/rmg-logo-small.png" alt="RMG" />
+        </a></div>
+      <div id="sidebar">
+        <div id="rmgsidebar">
+          <a href="http://rmg.mit.edu">
+            <div class="menuitem">
+              <img src="../../../_static/rmg-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG Website</div>
+              <div class="menutext menudesc">Interactive website for RMG-Py</div>
+            </div>
+          </a>
+          <a href="https://github.com/ReactionMechanismGenerator/RMG-Py">
+            <div class="menuitem">
+              <img src="../../../_static/github-icon.png" class="icon" width="100%"/>
+              <div class="menutext menutitle">RMG GitHub</div>
+              <div class="menutext menudesc">View source and post issues</div>
+            </div>
+          </a>
+        </div>
+        <div class="menuitem">
+  <h3><a href="../../../contents.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">3.1.1. Setting up a Linux Virtual Machine from Windows</a><ul>
+<li><a class="reference internal" href="#downloading-a-linux-iso-file">3.1.1.1. Downloading a Linux .iso File</a></li>
+<li><a class="reference internal" href="#choosing-a-vm-software">3.1.1.2. Choosing a VM Software</a></li>
+<li><a class="reference internal" href="#setting-up-a-linux-virtual-machine-using-workstation-pro">3.1.1.3. Setting up a Linux Virtual Machine using Workstation Pro</a></li>
+<li><a class="reference internal" href="#setting-up-a-linux-virtual-machine-using-virtualbox">3.1.1.4. Setting up a Linux Virtual Machine using VirtualBox</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+        <div class="menuitem">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">3. Installation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="anacondaUser.html"
+                        title="next chapter">3.2.1. Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX</a></p>
+        </div>
+        <div class="menuitem">
+<div role="note" aria-label="source link">
+    <h3>This Page</h3>
+        <ul class="this-page-menu">
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/users/rmg/installation/virtualMachineSetup.rst"
+                   rel="nofollow">View Source</a></li>
+        </ul>
+</div>
+        </div>
+        <div class="menuitem">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+    </div>
+  </div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="anacondaUser.html" title="3.2.1. Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="3. Installation"
+             >previous</a> |</li>
+  <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
+  <li><a href="../../../index.html">2.3.0 Documentation</a> &raquo;</li>
+
+          <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >RMG User’s Guide</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="index.html" >3. Installation</a> &#187;</li> 
+      </ul>
+    </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.2.
+    </div>
+<script type="text/javascript">
+  var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+  document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+  try {
+    var pageTracker = _gat._getTracker("UA-24556433-3");
+    pageTracker._trackPageview();
+  } catch(err) {}
+</script>
+
+  </body>
+</html>

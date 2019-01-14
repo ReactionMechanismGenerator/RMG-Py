@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>3.2.2. Installation by Source Using Anaconda Environment for Windows &#8212; RMG-Py 2.1.0 Documentation</title>
+    <title>3.4.4. Installation by Source Using Anaconda Environment for Windows &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     
@@ -18,8 +18,8 @@
     
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="3.2.3. Updating the RMG-Py Source Code" href="updatingSourceCode.html" />
-    <link rel="prev" title="3.2.1. Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX" href="anacondaDeveloper.html" />
+    <link rel="next" title="3.4.5. Setting up Windows Environment Variables for RMG" href="windowsEnvironment.html" />
+    <link rel="prev" title="3.4.3. Binary Installation Using Anaconda for Windows" href="anacondaUserWindows.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -39,10 +39,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="updatingSourceCode.html" title="3.2.3. Updating the RMG-Py Source Code"
+          <a href="windowsEnvironment.html" title="3.4.5. Setting up Windows Environment Variables for RMG"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="anacondaDeveloper.html" title="3.2.1. Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX"
+          <a href="anacondaUserWindows.html" title="3.4.3. Binary Installation Using Anaconda for Windows"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
   <li><a href="../../../index.html">2.3.0 Documentation</a> &raquo;</li>
@@ -59,9 +59,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <div class="section" id="installation-by-source-using-anaconda-environment-for-windows">
-<span id="anacondadeveloperwindows"></span><h1>3.2.2. Installation by Source Using Anaconda Environment for Windows<a class="headerlink" href="#installation-by-source-using-anaconda-environment-for-windows" title="Permalink to this headline">¶</a></h1>
+<span id="anacondadeveloperwindows"></span><h1>3.4.4. Installation by Source Using Anaconda Environment for Windows<a class="headerlink" href="#installation-by-source-using-anaconda-environment-for-windows" title="Permalink to this headline">¶</a></h1>
 <ul class="simple">
-<li>Download and install the <a class="reference external" href="http://continuum.io/downloads">Anaconda Python Platform</a> for Python 2.7 (make sure not to install Python 3.0+, which is incompatible with RMG). We recommend changing the default install path to <code class="docutils literal notranslate"><span class="pre">C:\Anaconda\</span></code> in order to avoid spaces in the install path and be easily accessible. It is recommended to append Anaconda to your PATH as well as setting it as your default Python executable.  All other settings can remain as their defaults.</li>
+<li>Download and install the <a class="reference external" href="https://www.anaconda.com/download/">Anaconda Python Platform</a> for Python 2.7 (make sure not to install Python 3.0+, which is incompatible with RMG). We recommend changing the default install path to <code class="docutils literal notranslate"><span class="pre">C:\Anaconda\</span></code> in order to avoid spaces in the install path and be easily accessible. It is recommended to append Anaconda to your PATH as well as setting it as your default Python executable.  All other settings can remain as their defaults.</li>
 </ul>
 <img alt="../../../_images/AnacondaInstallWindows.png" class="align-center" src="../../../_images/AnacondaInstallWindows.png" />
 <ul class="simple">
@@ -108,7 +108,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </ul>
 <p>You may now use RMG-Py, Arkane, as well as any of the <a class="reference internal" href="../modules/index.html#modules"><span class="std std-ref">Standalone Modules</span></a> included in the RMG-Py package.</p>
 <div class="section" id="test-suite">
-<h2>3.2.2.1. Test Suite<a class="headerlink" href="#test-suite" title="Permalink to this headline">¶</a></h2>
+<h2>3.4.4.1. Test Suite<a class="headerlink" href="#test-suite" title="Permalink to this headline">¶</a></h2>
 <p>There are a number of basic tests you can run on the newly installed RMG.  It is recommended to run them regularly to ensure the code and databases are behaving normally.</p>
 <ul>
 <li><p class="first"><strong>Unit test suite</strong>: this will run all the unit tests in the <code class="docutils literal notranslate"><span class="pre">rmgpy</span></code> package</p>
@@ -126,7 +126,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </ul>
 </div>
 <div class="section" id="running-examples">
-<h2>3.2.2.2. Running Examples<a class="headerlink" href="#running-examples" title="Permalink to this headline">¶</a></h2>
+<h2>3.4.4.2. Running Examples<a class="headerlink" href="#running-examples" title="Permalink to this headline">¶</a></h2>
 <p>A number of basic examples can be run immediately.  Additional example input files can be found in the <code class="docutils literal notranslate"><span class="pre">RMG-Py\examples</span></code> folder.  Please read more on <a class="reference internal" href="../examples.html#examples"><span class="std std-ref">Example Input Files</span></a> in the documentation.</p>
 <ul>
 <li><p class="first"><strong>Minimal Example</strong>: this will run an Ethane pyrolysis model.  It should take less than a minute to complete. The results will be in the <code class="docutils literal notranslate"><span class="pre">RMG-Py\testing\minimal</span></code> folder:</p>
@@ -186,9 +186,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="menuitem">
   <h3><a href="../../../contents.html">Table of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">3.2.2. Installation by Source Using Anaconda Environment for Windows</a><ul>
-<li><a class="reference internal" href="#test-suite">3.2.2.1. Test Suite</a></li>
-<li><a class="reference internal" href="#running-examples">3.2.2.2. Running Examples</a></li>
+<li><a class="reference internal" href="#">3.4.4. Installation by Source Using Anaconda Environment for Windows</a><ul>
+<li><a class="reference internal" href="#test-suite">3.4.4.1. Test Suite</a></li>
+<li><a class="reference internal" href="#running-examples">3.4.4.2. Running Examples</a></li>
 </ul>
 </li>
 </ul>
@@ -196,11 +196,11 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         </div>
         <div class="menuitem">
   <h4>Previous topic</h4>
-  <p class="topless"><a href="anacondaDeveloper.html"
-                        title="previous chapter">3.2.1. Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX</a></p>
+  <p class="topless"><a href="anacondaUserWindows.html"
+                        title="previous chapter">3.4.3. Binary Installation Using Anaconda for Windows</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="updatingSourceCode.html"
-                        title="next chapter">3.2.3. Updating the RMG-Py Source Code</a></p>
+  <p class="topless"><a href="windowsEnvironment.html"
+                        title="next chapter">3.4.5. Setting up Windows Environment Variables for RMG</a></p>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -242,10 +242,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="updatingSourceCode.html" title="3.2.3. Updating the RMG-Py Source Code"
+          <a href="windowsEnvironment.html" title="3.4.5. Setting up Windows Environment Variables for RMG"
              >next</a> |</li>
         <li class="right" >
-          <a href="anacondaDeveloper.html" title="3.2.1. Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX"
+          <a href="anacondaUserWindows.html" title="3.4.3. Binary Installation Using Anaconda for Windows"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
   <li><a href="../../../index.html">2.3.0 Documentation</a> &raquo;</li>
@@ -255,9 +255,21 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <li class="nav-item nav-item-3"><a href="index.html" >3. Installation</a> &#187;</li> 
       </ul>
     </div>
+
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.2.
     </div>
+<script type="text/javascript">
+  var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+  document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+  try {
+    var pageTracker = _gat._getTracker("UA-24556433-3");
+    pageTracker._trackPageview();
+  } catch(err) {}
+</script>
+
   </body>
 </html>
