@@ -193,7 +193,7 @@ cdef class SurfaceReactor(ReactionSystem):
         """
         Populates the kf, kb and equilibriumConstants
         arrays with the values computed at the temperature and (effective) pressure of the 
-        reacion system.
+        reaction system.
         """
         
         cdef double P, surfaceVolumeRatioSI
@@ -202,11 +202,13 @@ cdef class SurfaceReactor(ReactionSystem):
         # ToDo: Pressure should come from ideal gas law?
         P = self.initialP.value_si
 
+        warned = False
         for rxn in itertools.chain(coreReactions, edgeReactions):
             j = self.reactionIndex[rxn]
             
             # ToDo: getRateCoefficient should also depend on surface coverages vector
-            assert not rxn.kinetics.isPressureDependent(), "Pressure may be varying."
+
+
             if rxn.isSurfaceReaction():
                 """
                 Be careful! From here on kf and kb will now be in Volume units,
@@ -219,6 +221,9 @@ cdef class SurfaceReactor(ReactionSystem):
                                                             self.surfaceSiteDensity.value_si
                                                             ))
             else:
+                if not warned and rxn.kinetics.isPressureDependent():
+                    logging.warning("Pressure may be varying, but using initial pressure to evalute k(T,P) expressions!")
+                    warned = True
                 self.kf[j] = rxn.getRateCoefficient(self.T.value_si, P)
             if rxn.reversible:
                 # ToDo: getEquilibriumConstant should be coverage dependent
