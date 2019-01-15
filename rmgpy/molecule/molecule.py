@@ -714,7 +714,15 @@ class Bond(Edge):
         try:
             bond_symbol = bond_symbol_mapping[self.getOrderNum()]
         except KeyError:
-            bond_symbol = '<bond order {0}>'.format(self.getOrderNum())
+            # Direct lookup didn't work, but before giving up try
+            # with the isOrder() method which allows a little latitude
+            # for floating point errors.
+            for order,symbol in bond_symbol_mapping.iteritems():
+                if self.isOrder(order):
+                    bond_symbol = symbol
+                    break
+            else: # didn't break
+                bond_symbol = '<bond order {0}>'.format(self.getOrderNum())
         return '{0}{1}{2}'.format(atom_labels[0], bond_symbol, atom_labels[1])
 
 
