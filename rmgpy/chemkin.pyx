@@ -1690,7 +1690,7 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
     elif isinstance(kinetics, (_kinetics.Lindemann, _kinetics.Troe)):
         arrhenius = kinetics.arrheniusHigh
         string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
-            arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * kinetics.A.getConversionFactorFromSItoCM(),
+            arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * arrhenius.A.getConversionFactorFromSItoCM(),
             arrhenius.n.value_si,
             arrhenius.Ea.value_si / 4184.
         )
