@@ -1,39 +1,39 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 
 import os.path
 import logging
 import cPickle
 import time
-
+import warnings
 def save(rmg):
     # Save the restart file if desired
     if rmg.saveRestartPeriod or rmg.done:
@@ -51,7 +51,8 @@ def saveRestartFile(path, rmg, delay=0):
     the restart file is not at least that old, the save is aborted. (Use the
     default value of 0 to force the restart file to be saved.)
     """
-    
+    warnings.warn("The saveRestartFile is no longer supported and may be"
+                  " removed in version 2.3.", DeprecationWarning)
     # Saving of a restart file is very slow (likely due to all the Quantity objects)
     # Therefore, to save it less frequently, don't bother if the restart file is less than an hour old
     if os.path.exists(path) and time.time() - os.path.getmtime(path) < delay:
@@ -67,9 +68,11 @@ def saveRestartFile(path, rmg, delay=0):
     rmg_restart.reactionModel = rmg.reactionModel
     rmg_restart.unimolecularReact = rmg.unimolecularReact
     rmg_restart.bimolecularReact = rmg.bimolecularReact
+    rmg_restart.trimolecularReact = rmg.trimolecularReact
     if rmg.filterReactions:
         rmg_restart.unimolecularThreshold = rmg.unimolecularThreshold
         rmg_restart.bimolecularThreshold = rmg.bimolecularThreshold
+        rmg_restart.trimolecularThreshold = rmg.trimolecularThreshold
     
     f = open(path, 'wb')
     cPickle.dump(rmg_restart, f, cPickle.HIGHEST_PROTOCOL)

@@ -1,31 +1,31 @@
 # cython: embedsignature=True, cdivision=True
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 """
 This module contains functions for computing the microcanonical rate 
@@ -43,7 +43,7 @@ from libc.math cimport abs, exp, sqrt, cosh, log
 cimport rmgpy.constants as constants
 from rmgpy.kinetics.arrhenius cimport Arrhenius
 from rmgpy.statmech.schrodinger import convolve
-
+from rmgpy.exceptions import PressureDependenceError
 ################################################################################
 
 @cython.boundscheck(False)
@@ -112,25 +112,25 @@ def calculateMicrocanonicalRateCoefficient(reaction,
             kr *= C0inv**(len(reaction.products) - 1)        
             forward = False
         else:
-            raise Exception('Unable to compute k(E) values via RRKM theory for path reaction "{0}".'.format(reaction))           
+            raise PressureDependenceError('Unable to compute k(E) values via RRKM theory for path reaction "{0}".'.format(reaction))
         
     elif reaction.kinetics is not None:
         # We've been provided with high-pressure-limit rate coefficient data,
         # so let's use the less accurate inverse Laplace transform method
         logging.debug('Calculating microcanonical rate coefficient using ILT method for {0}...'.format(reaction))
         if reactantStatesKnown:
-            kinetics = reaction.kinetics
+            kinetics = reaction.kinetics if reaction.network_kinetics is None else reaction.network_kinetics
             kf = applyInverseLaplaceTransformMethod(reaction.transitionState, kinetics, Elist, Jlist, reacDensStates, T)
             forward = True
         elif productStatesKnown:
-            kinetics = reaction.generateReverseRateCoefficient()
+            kinetics = reaction.generateReverseRateCoefficient(network_kinetics=True)
             kr = applyInverseLaplaceTransformMethod(reaction.transitionState, kinetics, Elist, Jlist, prodDensStates, T)
             forward = False
         else:
-            raise Exception('Unable to compute k(E) values via ILT method for path reaction "{0}".'.format(reaction))
+            raise PressureDependenceError('Unable to compute k(E) values via ILT method for path reaction "{0}".'.format(reaction))
     
     else:
-        raise Exception('Unable to compute k(E) values for path reaction "{0}".'.format(reaction))
+        raise PressureDependenceError('Unable to compute k(E) values for path reaction "{0}".'.format(reaction))
 
     # If the reaction is endothermic and barrierless, it is possible that the
     # forward k(E) will have a nonzero value at an energy where the product
@@ -165,6 +165,8 @@ def calculateMicrocanonicalRateCoefficient(reaction,
                 if reacDensStates[r,s] != 0:
                     kf[r,s] = kr[r,s] * prodDensStates[r,s] / reacDensStates[r,s]
         kf *= C0inv**(len(reaction.reactants) - len(reaction.products))
+    logging.debug('Finished finding microcanonical rate coefficients for path reaction {}'.format(reaction))
+    logging.debug('The forward and reverse rates are found to be  {0} and {1} respectively.'.format(kf, kr))
      
     return kf, kr
 
@@ -207,11 +209,14 @@ def applyRRKMTheory(transitionState,
     # state sum of states that includes tunneling
     conf.sumStates = convolve(conf.densStates, kappa)
     conf.Elist += Elist[0] - E0_TS
-    
-    for r in range(Ngrains):
+
+    E0 = None
+    for r in xrange(Ngrains):
         if conf.sumStates[r] > 0:
             E0 = conf.Elist[r]
             break
+    if E0 is None:
+        raise ValueError, "Could not find a positive sum of states for {0}".format(conf)
     conf.Elist -= E0
     
     sumStates = conf.mapSumOfStates(Elist - E0, Jlist)
@@ -222,7 +227,9 @@ def applyRRKMTheory(transitionState,
         for r in range(Ngrains):
             if sumStates[r,s] > 0 and densStates[r,s] > 0:
                 k[r,s] = sumStates[r,s] / densStates[r,s] * dE
-            
+    logging.debug('Finished applying RRKM for path transition state {}'.format(transitionState))
+    logging.debug('The rate constant is found to be {}'.format(k))
+
     return k
 
 @cython.boundscheck(False)
@@ -305,7 +312,7 @@ def applyInverseLaplaceTransformMethod(transitionState,
             phi0 = numpy.zeros(Ngrains, numpy.float64)
             for r in range(Ngrains):
                 E = Elist[r] - Elist[0] - Ea
-                if E > 0:
+                if E > 1:
                     phi0[r] = (E/R)**(n-1.0)
             phi0 = phi0 * (dE / R) / scipy.special.gamma(n)
             # Evaluate the convolution
@@ -317,7 +324,9 @@ def applyInverseLaplaceTransformMethod(transitionState,
                         k[r,s] = A * phi[r] / densStates[r,s]
                             
     else:
-        raise Exception('Unable to use inverse Laplace transform method for non-Arrhenius kinetics or for n < 0.')
+        raise PressureDependenceError('Unable to use inverse Laplace transform method for non-Arrhenius kinetics or for n < 0.')
+    logging.debug('Finished applying inverse lapace transform for path transition state {}'.format(transitionState))
+    logging.debug('The rate constant is found to be {}'.format(k))
     
     return k
 
@@ -383,6 +392,7 @@ def fitInterpolationModel(reaction, Tlist, Plist, K, model, Tmin, Tmax, Pmin, Pm
         logRMS = sqrt(logRMS / len(Tlist) / len(Plist))
         if logRMS > 0.5:
             logging.warning('RMS error for k(T,P) fit = {0:g} for reaction {1}.'.format(logRMS, reaction))
-    
+    logging.debug('Finished fitting model for path reaction {}'.format(reaction))
+    logging.debug('The kinetics fit is {0!r}'.format(kinetics))
     return kinetics
 

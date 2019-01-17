@@ -11,7 +11,7 @@ a component to learn more and view its API.
 ======================= ========================================================
 Module                  Description
 ======================= ========================================================
-:mod:`rmgpy.cantherm`   Computing chemical properties from quantum chemistry calculations
+:mod:`arkane`           Computing chemical properties from quantum chemistry calculations
 :mod:`rmgpy.chemkin`    Reading and writing models in Chemkin format
 :mod:`rmgpy.constants`  Physical constants
 :mod:`rmgpy.data`       Working with the RMG database
@@ -26,12 +26,13 @@ Module                  Description
 :mod:`rmgpy.species`    Chemical species
 :mod:`rmgpy.statmech`   Statistical mechanics models of molecular degrees of freedom
 :mod:`rmgpy.thermo`     Thermodynamics models of chemical species
+:mod:`rmgpy.exceptions` Custom RMG exception classes
 ======================= ========================================================
 
 .. toctree::
     :hidden:
     
-    cantherm/index
+    arkane/index
     chemkin/index
     constants
     data/index
@@ -46,3 +47,4 @@ Module                  Description
     species/index
     statmech/index
     thermo/index
+    exceptions

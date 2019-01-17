@@ -1,32 +1,32 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 """
 This module contains classes and functions for working with chemical species.
@@ -50,6 +50,7 @@ from operator import itemgetter
 
 import rmgpy.quantity as quantity
 
+from rmgpy.molecule.molecule import Atom, Bond, Molecule
 from rmgpy.pdep import SingleExponentialDown
 from rmgpy.statmech.conformer import Conformer
 from rmgpy.thermo import Wilhoit, NASA, ThermoData
@@ -72,7 +73,7 @@ class Species(object):
     `thermo`                The heat capacity model for the species
     `conformer`             The molecular conformer for the species
     `molecule`              A list of the :class:`Molecule` objects describing the molecular structure
-    `transportData`          A set of transport collision parameters
+    `transportData`         A set of transport collision parameters
     `molecularWeight`       The molecular weight of the species
     `energyTransferModel`   The collisional energy transfer model to use
     `reactive`              ``True`` if the species participates in reaction families, ``False`` if not
@@ -84,16 +85,12 @@ class Species(object):
     `creationIteration`     Iteration which the species is created within the reaction mechanism generation algorithm
     ======================= ====================================================
 
-    note: :class:`rmg.model.Species` inherits from this class, and adds some extra methods.
     """
-
-    # these are class level attributes?
-
 
     def __init__(self, index=-1, label='', thermo=None, conformer=None, 
                  molecule=None, transportData=None, molecularWeight=None, 
                  energyTransferModel=None, reactive=True, props=None, aug_inchi=None,
-                 symmetryNumber = -1, creationIteration = 0):
+                 symmetryNumber = -1, creationIteration = 0, explicitlyAllowed=False):
         self.index = index
         self.label = label
         self.thermo = thermo
@@ -108,6 +105,7 @@ class Species(object):
         self.symmetryNumber = symmetryNumber
         self.isSolvent = False
         self.creationIteration = creationIteration
+        self.explicitlyAllowed = explicitlyAllowed
         # Check multiplicity of each molecule is the same
         if molecule is not None and len(molecule)>1:
             mult = molecule[0].multiplicity
@@ -156,13 +154,18 @@ class Species(object):
         """
         return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.transportData, self.molecularWeight, self.energyTransferModel, self.reactive, self.props))
 
-    def getMolecularWeight(self):
+    @property
+    def molecularWeight(self):
+        """The molecular weight of the species. (Note: value_si is in kg/molecule not kg/mol)"""
+        if self._molecularWeight is None and self.molecule is not None and len(self.molecule) > 0:
+            self._molecularWeight = quantity.Mass(self.molecule[0].getMolecularWeight(), 'kg/mol')
         return self._molecularWeight
-    def setMolecularWeight(self, value):
-        self._molecularWeight = quantity.Mass(value)
-    molecularWeight = property(getMolecularWeight, setMolecularWeight, """The molecular weight of the species. (Note: value_si is in kg/molecule not kg/mole)""")
 
-    def generate_resonance_structures(self, keepIsomorphic=True):
+    @molecularWeight.setter
+    def molecularWeight(self, value):
+        self._molecularWeight = quantity.Mass(value)
+
+    def generate_resonance_structures(self, keep_isomorphic=True, filter_structures=True):
         """
         Generate all of the resonance structures of this species. The isomers are
         stored as a list in the `molecule` attribute. If the length of
@@ -172,21 +175,38 @@ class Species(object):
         if len(self.molecule) == 1:
             if not self.molecule[0].atomIDValid():
                 self.molecule[0].assignAtomIDs()
-            self.molecule = self.molecule[0].generate_resonance_structures(keepIsomorphic)
+            self.molecule = self.molecule[0].generate_resonance_structures(keep_isomorphic=keep_isomorphic,
+                                                                           filter_structures=filter_structures)
     
-    def isIsomorphic(self, other):
+    def isIsomorphic(self, other, generate_res=False):
         """
         Return ``True`` if the species is isomorphic to `other`, which can be
         either a :class:`Molecule` object or a :class:`Species` object.
+        If generate_res is ``True`` and other is a :class:`Species` object, the resonance structures of other will
+        be generated and isomorphically compared against self. This is useful for situations where a
+        "non-representative" resonance structure of self is generated, and it should be identified as the same Species,
+        and be assigned a reactive=False flag.
         """
         if isinstance(other, Molecule):
             for molecule in self.molecule:
                 if molecule.isIsomorphic(other):
                     return True
         elif isinstance(other, Species):
+            for molecule1 in self.molecule:
+                for molecule2 in other.molecule:
+                    if molecule1.isIsomorphic(molecule2):
+                        return True
+            if generate_res:
+                other_copy = other.copy(deep=True)
+                other_copy.generate_resonance_structures(keep_isomorphic=False)
                 for molecule1 in self.molecule:
-                    for molecule2 in other.molecule:
+                    for molecule2 in other_copy.molecule:
                         if molecule1.isIsomorphic(molecule2):
+                            # If they are isomorphic and this was found only by generating resonance structures, append
+                            # the structure in other to self.molecule as unreactive, since it is a non-representative
+                            # resonance structure of it, and return `True`.
+                            other_copy.molecule[0].reactive = False
+                            self.molecule.append(other_copy.molecule[0])
                             return True
         else:
             raise ValueError('Unexpected value "{0!r}" for other parameter; should be a Molecule or Species object.'.format(other))
@@ -202,14 +222,27 @@ class Species(object):
                 if molecule.isIdentical(other):
                     return True
         elif isinstance(other, Species):
-                for molecule1 in self.molecule:
-                    for molecule2 in other.molecule:
-                        if molecule1.isIdentical(molecule2):
-                            return True
+            for molecule1 in self.molecule:
+                for molecule2 in other.molecule:
+                    if molecule1.isIdentical(molecule2):
+                        return True
         else:
-            raise ValueError('Unexpected value "{0!r}" for other parameter; should be a Molecule or Species object.'.format(other))
+            raise ValueError('Unexpected value "{0!r}" for other parameter;'
+                             ' should be a Molecule or Species object.'.format(other))
         return False
 
+    def is_structure_in_list(self, species_list):
+        """
+        Return ``True`` if at least one Molecule in self is isomorphic with at least one other Molecule in at least
+        one Species in species list.
+        """
+        for species in species_list:
+            if isinstance(species, Species):
+                return self.isIsomorphic(species)
+            else:
+                raise TypeError('Unexpected value "{0!r}" for species_list parameter;'
+                                 ' should be a List of Species objects.'.format(species))
+        return False
     
     def fromAdjacencyList(self, adjlist):
         """
@@ -295,7 +328,12 @@ class Species(object):
         Return ``True`` if the species has statistical mechanical parameters,
         or ``False`` otherwise.
         """
-        return self.conformer is not None and (len(self.conformer.modes) > 0 or (len(self.molecule) > 0 and len(self.molecule[0].atoms) == 1))
+        if (len(self.molecule) > 0 and len(self.molecule[0].atoms) == 1):
+            #atomic molecules have no modes, check only E0
+            return self.conformer is not None and self.conformer.E0 is not None
+        else:
+            #polyatomic molecules should have modes and E0, so check both
+            return self.conformer is not None and len(self.conformer.modes) > 0 and self.conformer.E0 is not None
 
     def hasThermo(self):
         """
@@ -391,8 +429,13 @@ class Species(object):
         Return the density of states :math:`\\rho(E) \\ dE` at the specified
         energies `Elist` in J/mol above the ground state.
         """
+        from rmgpy.exceptions import StatmechError
         if self.hasStatMech():
-            return self.conformer.getDensityOfStates(Elist)
+            try:
+                return self.conformer.getDensityOfStates(Elist)
+            except StatmechError:
+                logging.error('StatmechError raised for species {0}'.format(self.label))
+                raise
         else:
             raise Exception('Unable to calculate density of states for species {0!r}: no statmech data available.'.format(self.label))
 
@@ -422,11 +465,14 @@ class Species(object):
         of all the resonance structures.
         """
         # get labeled resonance isomers
-        self.generate_resonance_structures(keepIsomorphic=True)
+        self.generate_resonance_structures(keep_isomorphic=True)
+
+        # only consider reactive molecules as representative structures
+        molecules = [mol for mol in self.molecule if mol.reactive]
 
         # return if no resonance
-        if len(self.molecule) == 1:
-            return self.molecule[0]
+        if len(molecules) == 1:
+            return molecules[0]
 
         # create a sorted list of atom objects for each resonance structure
         cython.declare(atomsFromStructures = list, oldAtoms = list, newAtoms = list,
@@ -439,11 +485,11 @@ class Species(object):
                       atoms=list,)
 
         atomsFromStructures = []
-        for newMol in self.molecule:
+        for newMol in molecules:
             newMol.atoms.sort(key=lambda atom: atom.id)
             atomsFromStructures.append(newMol.atoms)
 
-        numResonanceStructures = len(self.molecule)
+        numResonanceStructures = len(molecules)
 
         # make original structure with no bonds
         newMol = Molecule()
@@ -462,17 +508,21 @@ class Species(object):
                 newMol.addBond(bond)
 
         # set bonds to the proper value
-        for structureNum, oldMol in enumerate(self.molecule):
+        for structureNum, oldMol in enumerate(molecules):
             oldAtoms = atomsFromStructures[structureNum]
 
             for index1, atom1 in enumerate(oldAtoms):
+                # make bond orders average of resonance structures
                 for atom2 in atom1.bonds:
                     index2 = oldAtoms.index(atom2)
 
                     newBond = newMol.getBond(newAtoms[index1], newAtoms[index2])
                     oldBondOrder = oldMol.getBond(oldAtoms[index1], oldAtoms[index2]).getOrderNum()
                     newBond.applyAction(('CHANGE_BOND',None,oldBondOrder / numResonanceStructures / 2))
-
+                # set radicals in resonance hybrid to maximum of all structures
+                if atom1.radicalElectrons > 0:
+                    newAtoms[index1].radicalElectrons = max(atom1.radicalElectrons,
+                                                            newAtoms[index1].radicalElectrons)
         newMol.updateAtomTypes(logSpecies = False, raiseException=False)
         return newMol
 
@@ -487,6 +537,13 @@ class Species(object):
         Return the value of the heat capacity at infinite temperature in J/mol*K.
         """
         return self.molecule[0].calculateCpInf()
+
+    def has_reactive_molecule(self):
+        """
+        `True` if the species has at least one reactive molecule, `False` otherwise
+        """
+        cython.declare(molecule=Molecule)
+        return any([molecule.reactive for molecule in self.molecule])
 
     def copy(self, deep=False):
         """
@@ -603,7 +660,7 @@ class Species(object):
         have already provided a thermodynamics model using e.g.
         :meth:`generateThermoData()`.
         """
-
+        logging.debug("Generating statmech for species {}".format(self.label))
         from rmgpy.data.rmg import getDB
         try:
             statmechDB = getDB('statmech')        
@@ -617,10 +674,30 @@ class Species(object):
 
         if self.conformer is None:
             self.conformer = Conformer()
-        self.conformer.E0 = self.getThermoData().E0
+
+        if self.conformer.E0 is None:
+            self.setE0WithThermo()
+
         self.conformer.modes = conformer.modes
         self.conformer.spinMultiplicity = conformer.spinMultiplicity
-        
+        if self.conformer.E0 is None or not self.hasStatMech():
+            from rmgpy.exceptions import StatmechError
+            logging.error('The conformer in question is {}'.format(self.conformer))
+            raise StatmechError('Species {0} does not have stat mech after generateStatMech called'.format(self.label))
+
+    def setE0WithThermo(self):
+        """
+        Helper method that sets species' E0 using the species' thermo data
+        """
+        if self.getThermoData().E0 is not None:
+            self.conformer.E0 = self.getThermoData().E0
+        else:
+            if not self.thermo.Cp0 or not self.thermo.CpInf:
+                # set Cp0 and CpInf
+                from rmgpy.data.thermo import findCp0andCpInf
+                findCp0andCpInf(self, self.thermo)
+            self.conformer.E0 = self.getThermoData().toWilhoit().E0
+
     def generateEnergyTransferModel(self):
         """
         Generate the collisional energy transfer model parameters for the
@@ -691,7 +768,7 @@ class TransitionState():
         if self.conformer is not None and len(self.conformer.modes) > 0:
             Q = self.conformer.getPartitionFunction(T)
         else:
-            raise Exception('Unable to calculate partition function for transition state {0!r}: no statmech data available.'.format(self.label))
+            raise SpeciesError('Unable to calculate partition function for transition state {0!r}: no statmech data available.'.format(self.label))
         return Q
         
     def getHeatCapacity(self, T):

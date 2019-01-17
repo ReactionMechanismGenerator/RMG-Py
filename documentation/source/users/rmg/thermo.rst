@@ -37,7 +37,7 @@ The Benson group additivity framework is such an example of a group contribution
 that has proven to provide accurate estimates of the ideal gas thermochemistry 
 for a large range of molecules.
 
-Benson's Group Additivity approach ([Benson]_), divides a molecule into functional 
+Benson's Group Additivity approach ([Benson1976]_), divides a molecule into functional 
 groups, and the contribution of each functional group to the overall thermochemistry is 
 included. For example, the molecule 2-methylnonane consists of three types of groups:
 
@@ -277,7 +277,9 @@ The effect of cis-trans isomers is currently not accounted for in RMG.
 References
 ==========
 
-.. [Benson] Benson, Sidney William. "Thermochemical kinetics." (1976)
+.. [Benson1976] Benson, Sidney William. "Thermochemical kinetics." (1976)
+
+.. [Benson] Benson, S.W. (1965), https://en.wikipedia.org/wiki/Benson_group_increment_theory
 
 .. [Lay] Lay, T.; Bozzelli, J.; Dean, A.; Ritter, E. J. Phys. Chem. 1995, 99,14514-14527
 
@@ -290,5 +292,3 @@ References
 .. [Yu] "Estimation method for the thermochemical properties of polycyclic aromatic molecules" (Ph.D), Joanna Yu, M.I.T (2005)
 
 .. [RDKit] Landrum, G. (2012). RDKit, http://rdkit.org.
-
-.. [Benson] Benson, S.W. (1965), https://en.wikipedia.org/wiki/Benson_group_increment_theory

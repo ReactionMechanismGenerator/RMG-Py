@@ -1,44 +1,45 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 import os
 import unittest
 from external.wip import work_in_progress
-from nose.plugins.attrib import attr
 
 from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase, database
+from rmgpy.ml.estimator import MLEstimator
 from rmgpy.rmg.main import RMG
-from rmgpy.rmg.model import Species
+from rmgpy.species import Species
 from rmgpy.data.thermo import *
 from rmgpy.molecule.molecule import Molecule
+from rmgpy.quantity import Quantity
 import rmgpy
 
 ################################################################################
@@ -77,6 +78,13 @@ class TestThermoDatabase(unittest.TestCase):
 
         self.databaseWithoutLibraries = ThermoDatabase()
         self.databaseWithoutLibraries.load(os.path.join(settings['database.directory'], 'thermo'),libraries = [])
+
+        # Set up ML estimator
+        models_path = os.path.join(settings['database.directory'], 'thermo', 'ml', 'main')
+        Hf298_path = os.path.join(models_path, 'H298')
+        S298_path = os.path.join(models_path, 'S298')
+        Cp_path = os.path.join(models_path, 'Cp')
+        self.ml_estimator = MLEstimator(Hf298_path, S298_path, Cp_path)
 
     def testPickle(self):
         """
@@ -159,8 +167,8 @@ class TestThermoDatabase(unittest.TestCase):
         GAVspecies = Species(index=3, label="c1c(O)c(O)c(CC(C)CC)cc1", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[-1.18833,0.11272,-4.26393e-05,-2.12017e-08,1.441e-11,-51642.9,38.8904], Tmin=(100,'K'), Tmax=(1078.35,'K')),
          NASAPolynomial(coeffs=[26.6057,0.0538434,-2.22538e-05,4.22393e-09,-3.00808e-13,-60208.4,-109.218], Tmin=(1078.35,'K'), Tmax=(5000,'K'))],
          Tmin=(100,'K'), Tmax=(5000,'K'), comment="""Thermo group additivity estimation: group(Cs-CsCsCsH) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) +
-         group(Cs-CbCsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cb-Cs) + group(Cb-Os) + group(Cb-Os) + group(Cb-H) +
-         group(Cb-H) + group(Cb-H) + group(Os-CbH) + group(Os-CbH) + longDistanceInteraction_cyclic(o_OH_OH) +
+         group(Cs-CbCsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cb-Cs) + group(Cb-O2s) + group(Cb-O2s) + group(Cb-H) +
+         group(Cb-H) + group(Cb-H) + group(O2s-CbH) + group(O2s-CbH) + longDistanceInteraction_cyclic(o_OH_OH) +
          longDistanceInteraction_cyclic(o_OH_OH) + ring(Benzene)"""), molecule=[Molecule(SMILES="c1c(O)c(O)c(CC(C)CC)cc1")])
 
         source = self.database.extractSourceFromComments(GAVspecies)
@@ -285,7 +293,9 @@ multiplicity 2
 """)
         spec.generate_resonance_structures()
 
-        self.assertTrue(arom.isIsomorphic(spec.molecule[1]))  # The aromatic structure should be the second one
+        self.assertTrue(arom.isIsomorphic(spec.molecule[0]))  # The aromatic structure should be the first one
+        # Move the aromatic structure to the end for testing
+        spec.molecule.append(spec.molecule.pop(0))
 
         initial = list(spec.molecule)  # Make a copy of the list
         thermo = self.database.getThermoData(spec)
@@ -294,6 +304,108 @@ multiplicity 2
         self.assertEqual(set(initial), set(spec.molecule))
         self.assertTrue(arom.isIsomorphic(spec.molecule[0]))  # The aromatic structure should now be the first one
         self.assertTrue('library' in thermo.comment, 'Thermo not found from library, test purpose not fulfilled.')
+
+    def test_species_thermo_generation_ml(self):
+        """Test thermo generation for species objects based on ML estimation."""
+
+        # ML settings
+        ml_settings = dict(
+            min_heavy_atoms=1,
+            max_heavy_atoms=None,
+            min_carbon_atoms=0,
+            max_carbon_atoms=None,
+            min_oxygen_atoms=0,
+            max_oxygen_atoms=None,
+            min_nitrogen_atoms=0,
+            max_nitrogen_atoms=None,
+            only_cyclics=False,
+            min_cycle_overlap=0,
+        )
+
+        # Make these large so they don't influence estimation
+        ml_uncertainty_cutoffs = dict(
+            H298=Quantity(1e8, 'kcal/mol'),
+            S298=Quantity(1e8, 'cal/(mol*K)'),
+            Cp=Quantity(1e8, 'cal/(mol*K)')
+        )
+        ml_settings['uncertainty_cutoffs'] = ml_uncertainty_cutoffs
+
+        spec1 = Species().fromSMILES('C[CH]c1ccccc1')
+        spec1.generate_resonance_structures()
+        spec2 = Species().fromSMILES('NC=O')
+
+        thermo1 = self.database.get_thermo_data_from_ml(spec1, self.ml_estimator, ml_settings)
+        thermo2 = self.database.get_thermo_data_from_ml(spec2, self.ml_estimator, ml_settings)
+        self.assertIsInstance(thermo1, ThermoData)
+        self.assertIsInstance(thermo2, ThermoData)
+        self.assertTrue('ML Estimation' in thermo1.comment, 'Thermo not from ML estimation, test purpose not fulfilled')
+        self.assertTrue('ML Estimation' in thermo2.comment, 'Thermo not from ML estimation, test purpose not fulfilled')
+
+        # Now make these negative to make sure we don't use ML
+        ml_uncertainty_cutoffs = dict(
+            H298=Quantity(-1.0, 'kcal/mol'),
+            S298=Quantity(-1.0, 'cal/(mol*K)'),
+            Cp=Quantity(-1.0, 'cal/(mol*K)')
+        )
+        ml_settings['uncertainty_cutoffs'] = ml_uncertainty_cutoffs
+
+        thermo1 = self.database.get_thermo_data_from_ml(spec1, self.ml_estimator, ml_settings)
+        thermo2 = self.database.get_thermo_data_from_ml(spec2, self.ml_estimator, ml_settings)
+        self.assertIsNone(thermo1)
+        self.assertIsNone(thermo2)
+
+    def test_thermo_generation_ml_settings(self):
+        """Test that thermo generation with ML correctly respects settings"""
+
+        # ML settings
+        ml_settings = dict(
+            min_heavy_atoms=5,
+            max_heavy_atoms=6,
+            min_carbon_atoms=5,
+            max_carbon_atoms=5,
+            min_oxygen_atoms=0,
+            max_oxygen_atoms=None,
+            min_nitrogen_atoms=0,
+            max_nitrogen_atoms=None,
+            only_cyclics=False,
+            min_cycle_overlap=0,
+            uncertainty_cutoffs=dict(
+                H298=Quantity(1e8, 'kcal/mol'),
+                S298=Quantity(1e8, 'cal/(mol*K)'),
+                Cp=Quantity(1e8, 'cal/(mol*K)')
+            )
+        )
+
+        spec1 = Species().fromSMILES('CCCC')
+        spec2 = Species().fromSMILES('CCCCC')
+        spec3 = Species().fromSMILES('C1CC12CC2')
+        spec4 = Species().fromSMILES('C1CC2CC1O2')
+
+        # Test atom limits
+        thermo = self.database.get_thermo_data_from_ml(spec1, self.ml_estimator, ml_settings)
+        self.assertIsNone(thermo)
+        thermo = self.database.get_thermo_data_from_ml(spec2, self.ml_estimator, ml_settings)
+        self.assertIsInstance(thermo, ThermoData)
+        self.assertTrue('ML Estimation' in thermo.comment, 'Thermo not from ML estimation, test purpose not fulfilled')
+
+        # Test cyclic species
+        ml_settings['only_cyclics'] = True
+        thermo = self.database.get_thermo_data_from_ml(spec2, self.ml_estimator, ml_settings)
+        self.assertIsNone(thermo)
+
+        # Test spiro species
+        ml_settings['min_cycle_overlap'] = 1
+        thermo = self.database.get_thermo_data_from_ml(spec3, self.ml_estimator, ml_settings)
+        self.assertIsInstance(thermo, ThermoData)
+        self.assertTrue('ML Estimation' in thermo.comment, 'Thermo not from ML estimation, test purpose not fulfilled')
+
+        # Test bridged species
+        ml_settings['min_cycle_overlap'] = 3
+        thermo = self.database.get_thermo_data_from_ml(spec3, self.ml_estimator, ml_settings)
+        self.assertIsNone(thermo)
+        thermo = self.database.get_thermo_data_from_ml(spec4, self.ml_estimator, ml_settings)
+        self.assertIsInstance(thermo, ThermoData)
+        self.assertTrue('ML Estimation' in thermo.comment, 'Thermo not from ML estimation, test purpose not fulfilled')
 
     def testThermoEstimationNotAffectDatabase(self):
 
@@ -314,6 +426,48 @@ multiplicity 2
 
         self.assertAlmostEqual(previous_enthalpy, latter_enthalpy, 2)
 
+    def test_getAllThermoData_fails_quietly(self):
+        """Test that getAllThermoData doesn't break when GAV fails."""
+        spec = Species().fromSMILES('[Ne]')
+
+        # Check that GAV fails
+        with self.assertRaises(DatabaseError):
+            self.database.getThermoDataFromGroups(spec)
+
+        # Check that getAllThermoData doesn't break
+        thermo = self.database.getAllThermoData(spec)
+        self.assertEqual(len(thermo), 1)
+
+    def test_lowest_h298_for_resonance_structures(self):
+        """Test that the thermo entry with the lowest H298 is selected for a species with resonance structurers"""
+
+        smiles = '[C]#C[O]'  # has H298 ~= 640 kJ/mol; has resonance structure `[C]=C=O` with H298 ~= 380 kJ/mol
+        spec = Species().fromSMILES(smiles)
+        thermo_gav1 = self.database.getThermoDataFromGroups(spec)
+        spec.generate_resonance_structures()
+        thermo_gav2 = self.database.getThermoDataFromGroups(spec)
+        self.assertTrue(thermo_gav2.getEnthalpy(298) < thermo_gav1.getEnthalpy(298),
+                        msg="Did not select the molecule with the lowest H298 as a the thermo entry for [C]#C[O] / [C]=C=O")
+
+        smiles = 'C=C[CH][O]'  # has H298 ~= 209 kJ/mol; has (a reactive) resonance structure `C=CC=O` with H298 ~= -67 kJ/mol
+        spec = Species().fromSMILES(smiles)
+        thermo_gav1 = self.database.getThermoDataFromGroups(spec)
+        spec.generate_resonance_structures()
+        thermo_gav2 = self.database.getThermoDataFromGroups(spec)
+        self.assertTrue(thermo_gav2.getEnthalpy(298) < thermo_gav1.getEnthalpy(298),
+                        msg="Did not select the molecule with the lowest H298 as a the thermo entry for C=C[CH][O] / C=CC=O")
+
+    def testThermoForMixedReactiveAndNonreactiveMolecules(self):
+        """Test that the thermo entry of nonreactive molecules isn't selected for a species, even if it's more stable"""
+
+        smiles = '[C]=C=O'  # has H298 ~= 640 kJ/mol; has resonance structure `[C]=C=O` with H298 ~= 380 kJ/mol
+        spec = Species().fromSMILES(smiles)
+        thermo_gav1 = self.database.getThermoDataFromGroups(spec)  # thermo of the stable molecule
+        spec.generate_resonance_structures()
+        spec.molecule[0].reactive = False  # set the more stable molecule to nonreactive for this check
+        thermo_gav2 = self.database.getThermoDataFromGroups(spec)  # thermo of the speciesless stable molecule
+        self.assertTrue(thermo_gav2.getEnthalpy(298) > thermo_gav1.getEnthalpy(298),
+                        msg="Did not select the reactive molecule for thermo")
 
 class TestThermoAccuracy(unittest.TestCase):
     """
@@ -341,7 +495,7 @@ class TestThermoAccuracy(unittest.TestCase):
             ['C=[C]C=CCC',      3,  61.15, 87.08, 29.68, 36.91, 43.03, 48.11, 55.96, 61.78, 71.54],
             ['C=C[C]=CCC',      3,  61.15, 87.08, 29.68, 36.91, 43.03, 48.11, 55.96, 61.78, 71.54],
             ['C=CC=[C]CC',      3,  70.35, 88.18, 29.15, 36.46, 42.6,  47.6,  55.32, 61.04, 69.95],
-            ['C=CC=C[CH]C',     6,  38.24, 84.41, 27.79, 35.46, 41.94, 47.43, 55.74, 61.92, 71.86],
+            ['C=CC=C[CH]C',     3,  38.24, 84.41, 27.79, 35.46, 41.94, 47.43, 55.74, 61.92, 71.86],
             ['C=CC=CC[CH2]',    2,  62.45, 89.78, 28.72, 36.31, 42.63, 47.72, 55.50, 61.21, 70.05],
             ['[CH3]',           6,  34.81, 46.37,  9.14, 10.18, 10.81, 11.34, 12.57, 13.71, 15.2],
             ['C=CC=C[CH2]',     2,  46.11, 75.82, 22.54, 28.95, 34.24, 38.64, 45.14, 49.97, 57.85],
@@ -383,7 +537,6 @@ class TestThermoAccuracy(unittest.TestCase):
                 self.assertAlmostEqual(Cp, thermoData.getHeatCapacity(T) / 4.184, places=1,
                                        msg="Cp{3} error for {0}. Expected {1} but calculated {2}.".format(smiles, Cp, thermoData.getHeatCapacity(T) / 4.184, T))
 
-    @work_in_progress
     def testSymmetryNumberGeneration(self):
         """
         Test we generate symmetry numbers correctly.
@@ -393,20 +546,9 @@ class TestThermoAccuracy(unittest.TestCase):
         """
         for smiles, symm, H298, S298, Cp300, Cp400, Cp500, Cp600, Cp800, Cp1000, Cp1500 in self.testCases:
             species = Species().fromSMILES(smiles)
-            species.generate_resonance_structures()
-            thermoData = self.database.getThermoDataFromGroups(species)
-            # pick the molecule with lowest H298
-            molecule = species.molecule[0]
-            for mol in species.molecule[1:]:
-                thermoData0 = self.database.getAllThermoData(Species(molecule=[mol]))[0][0]
-                for data in self.database.getAllThermoData(Species(molecule=[mol]))[1:]:
-                    if data[0].getEnthalpy(298) < thermoData0.getEnthalpy(298):
-                        thermoData0 = data[0]
-                if thermoData0.getEnthalpy(298) < thermoData.getEnthalpy(298):
-                    thermoData = thermoData0
-                    molecule = mol
-            self.assertEqual(symm, molecule.calculateSymmetryNumber(),
-                             msg="Symmetry number error for {0}. Expected {1} but calculated {2}.".format(smiles, symm, molecule.calculateSymmetryNumber()))
+            calc_symm = species.getSymmetryNumber()
+            self.assertEqual(symm, calc_symm,
+                             msg="Symmetry number error for {0}. Expected {1} but calculated {2}.".format(smiles, symm, calc_symm))
 
 
 class TestThermoAccuracyAromatics(TestThermoAccuracy):
@@ -1028,7 +1170,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         smiles = "C1=CC=C2C=CC=CC2=C1"
         spe = Species().fromSMILES(smiles)
         spe.generate_resonance_structures()
-        mol = spe.molecule[1]
+        mol = spe.molecule[0]
 
         # get two SSSRs
         SSSR = mol.getSmallestSetOfSmallestRings()
@@ -1069,6 +1211,8 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         polyring = mol.getDisparateRings()[1][0]
 
         bicyclicList, ringOccurancesDict = bicyclicDecompositionForPolyring(polyring)
+        for bicyclic in bicyclicList:
+            bicyclic.deleteHydrogens()
 
         # 1st test: number of cores
         self.assertEqual(len(bicyclicList), 5)
@@ -1117,6 +1261,8 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         polyring = mol.getDisparateRings()[1][0]
 
         bicyclicList, ringOccurancesDict = bicyclicDecompositionForPolyring(polyring)
+        for bicyclic in bicyclicList:
+            bicyclic.deleteHydrogens()
 
         # 1st test: number of cores
         self.assertEqual(len(bicyclicList), 3)
@@ -1151,6 +1297,8 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         polyring = mol.getDisparateRings()[1][0]
 
         bicyclicList, ringOccurancesDict = bicyclicDecompositionForPolyring(polyring)
+        for bicyclic in bicyclicList:
+            bicyclic.deleteHydrogens()
 
         # 1st test: number of cores
         self.assertEqual(len(bicyclicList), 3)
@@ -1201,15 +1349,13 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         single_ring_submol_a, single_ring_submol_b = sorted(single_ring_submols,
                                 key=lambda submol: len(submol.atoms))
 
-        single_ring_submol_a.updateAtomTypes()
-        single_ring_submol_b.updateAtomTypes()
+        single_ring_submol_a.saturate_unfilled_valence()
+        single_ring_submol_b.saturate_unfilled_valence()
 
         expected_submol_a = Molecule().fromSMILES('C1=CC1')
-        expected_submol_a.deleteHydrogens()
         expected_submol_a.updateConnectivityValues()
 
         expected_submol_b = Molecule().fromSMILES('C1=CCCC1')
-        expected_submol_b.deleteHydrogens()
         expected_submol_b.updateConnectivityValues()
 
 
@@ -1233,17 +1379,13 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         single_ring_submol_a, single_ring_submol_b = sorted(single_ring_submols,
                                 key=lambda submol: len(submol.atoms))
 
-        single_ring_submol_a.updateAtomTypes()
-        single_ring_submol_b.updateAtomTypes()
+        single_ring_submol_a.saturate_unfilled_valence()
+        single_ring_submol_b.saturate_unfilled_valence()
 
         expected_submol_a = Molecule().fromSMILES('C1=CC1')
-        # remove hydrogen
-        expected_submol_a.deleteHydrogens()
         expected_submol_a.updateConnectivityValues()
 
         expected_submol_b = Molecule().fromSMILES('C1=CC=CC1')
-        # remove hydrogen
-        expected_submol_b.deleteHydrogens()
         expected_submol_b.updateConnectivityValues()
 
         self.assertTrue(single_ring_submol_a.isIsomorphic(expected_submol_a))
@@ -1257,11 +1399,9 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         mol = Molecule().fromSMILES(smiles)
         ring_submol = convertRingToSubMolecule(mol.getDisparateRings()[1][0])[0]
 
-        saturated_ring_submol, alreadySaturated = saturateRingBonds(ring_submol)
+        saturated_ring_submol, alreadySaturated = saturate_ring_bonds(ring_submol)
 
         expected_saturated_ring_submol = Molecule().fromSMILES('C1CCC2C1C2')
-        # remove hydrogen
-        expected_saturated_ring_submol.deleteHydrogens()
         
         expected_saturated_ring_submol.updateConnectivityValues()
 
@@ -1277,17 +1417,15 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         smiles = 'C1=CC=C2CCCCC2=C1'
         spe = Species().fromSMILES(smiles)
         spe.generate_resonance_structures()
-        mol = spe.molecule[1]
+        mol = spe.molecule[0]
         ring_submol = convertRingToSubMolecule(mol.getDisparateRings()[1][0])[0]
 
-        saturated_ring_submol, alreadySaturated = saturateRingBonds(ring_submol)
+        saturated_ring_submol, alreadySaturated = saturate_ring_bonds(ring_submol)
 
         expected_spe = Species().fromSMILES('C1=CC=C2CCCCC2=C1')
         expected_spe.generate_resonance_structures()
-        expected_saturated_ring_submol = expected_spe.molecule[1]
-        # remove hydrogen
-        expected_saturated_ring_submol.deleteHydrogens()
-        
+        expected_saturated_ring_submol = expected_spe.molecule[0]
+
         expected_saturated_ring_submol.updateConnectivityValues()
 
         self.assertTrue(alreadySaturated)
@@ -1302,16 +1440,14 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
         smiles = 'C1=CC=C2CC=CCC2=C1'
         spe = Species().fromSMILES(smiles)
         spe.generate_resonance_structures()
-        mol = spe.molecule[1]
+        mol = spe.molecule[0]
         ring_submol = convertRingToSubMolecule(mol.getDisparateRings()[1][0])[0]
 
-        saturated_ring_submol, alreadySaturated = saturateRingBonds(ring_submol)
+        saturated_ring_submol, alreadySaturated = saturate_ring_bonds(ring_submol)
 
         expected_spe = Species().fromSMILES('C1=CC=C2CCCCC2=C1')
         expected_spe.generate_resonance_structures()
-        expected_saturated_ring_submol = expected_spe.molecule[1]
-        # remove hydrogen
-        expected_saturated_ring_submol.deleteHydrogens()
+        expected_saturated_ring_submol = expected_spe.molecule[0]
         
         expected_saturated_ring_submol.updateConnectivityValues()
 
@@ -1320,7 +1456,37 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
                             expected_saturated_ring_submol.multiplicity)
         self.assertTrue(saturated_ring_submol.isIsomorphic(expected_saturated_ring_submol))
 
-@attr('auth')
+
+def getTestingTCDAuthenticationInfo():
+
+    try:
+        host = os.environ['TCD_HOST']
+        port = int(os.environ['TCD_PORT'])
+        username = os.environ['TCD_USER']
+        password = os.environ['TCD_PW']
+    except KeyError:
+        print('Thermo Central Database Authentication Environment Variables Not Completely Set!')
+        return None, 0, None, None
+
+    return host, port, username, password
+
+
+def isTCDAvailable():
+    """Check if TCD is available."""
+    import platform
+    import subprocess
+
+    host = getTestingTCDAuthenticationInfo()[0]
+    if host is not None:
+        arg = '-n' if platform.system() == 'Windows' else '-c'
+        result = subprocess.call(['ping', arg, '1', host]) == 0
+    else:
+        result = False
+
+    return result
+
+
+@unittest.skip('Skipping TCD unit tests because database is offline.')
 class TestThermoCentralDatabaseInterface(unittest.TestCase):
     """
     Contains unit tests for methods of ThermoCentralDatabaseInterface
@@ -1552,19 +1718,6 @@ class TestThermoCentralDatabaseInterface(unittest.TestCase):
 
         # clean up the table
         results_table.delete_many({"aug_inchi": expected_aug_inchi})
-
-def getTestingTCDAuthenticationInfo():
-
-    try:
-        host = os.environ['TCD_HOST']
-        port = int(os.environ['TCD_PORT'])
-        username = os.environ['TCD_USER']
-        password = os.environ['TCD_PW']
-    except KeyError:
-        print('Thermo Central Database Authentication Environment Variables Not Completely Set!')
-        return 'None', 0, 'None', 'None'
-
-    return host, port, username, password
 
 ################################################################################
 

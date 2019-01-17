@@ -1,32 +1,32 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 """
 
@@ -138,7 +138,7 @@ def processOldLibraryEntry(data):
     raise NotImplementedError()
 
 
-class SolventData():
+class SolventData(object):
     """
     Stores Abraham/Mintz parameters for characterizing a solvent.
     """
@@ -183,7 +183,7 @@ class SolventData():
         """
         return math.exp(self.A + (self.B / T) + (self.C*math.log(T)) + (self.D * (T**self.E)))
                     
-class SolvationCorrection():
+class SolvationCorrection(object):
     """
     Stores corrections for enthalpy, entropy, and Gibbs free energy when a species is solvated.
     Enthalpy and Gibbs free energy is in J/mol; entropy is in J/mol/K
@@ -193,10 +193,18 @@ class SolvationCorrection():
         self.entropy = entropy
         self.gibbs = gibbs
             
-class SoluteData():
+class SoluteData(object):
     """
     Stores Abraham parameters to characterize a solute
     """
+    # Set class variable with McGowan volumes
+    mcgowan_volumes = {
+        1: 8.71, 2: 6.75,
+        6: 16.35, 7: 14.39, 8: 12.43, 9: 10.47, 10: 8.51,
+        14: 26.83, 15: 24.87, 16: 22.91, 17: 20.95, 18: 18.99,
+        35: 26.21,
+    }
+
     def __init__(self, S=None, B=None, E=None, L=None, A=None, V=None, comment=""):
         self.S = S
         self.B = B
@@ -226,35 +234,26 @@ class SoluteData():
         Returned volumes are in cm^3/mol/100 (see note below)
         See Table 2 in Abraham & McGowan, Chromatographia Vol. 23, No. 4, p. 243. April 1987
         doi: 10.1007/BF02311772
+        Also see Table 1 in Zhao et al., J. Chem. Inf. Comput. Sci. Vol. 43, p.1848. 2003
+        doi: 10.1021/ci0341114
         
         "V is scaled to have similar values to the other
         descriptors by division by 100 and has units of (cm3mol−1/100)."
         the contibutions in this function are in cm3/mol, and the division by 100 is done at the very end.
         """
         molecule = species.molecule[0] # any will do, use the first.
-        Vtot = 0
+        Vtot = 0.0
 
         for atom in molecule.atoms:
-            thisV = 0.0
-            if atom.isCarbon():
-                thisV = 16.35
-            elif (atom.element.number == 7): # nitrogen, do this way if we don't have an isElement method
-                thisV = 14.39
-            elif atom.isOxygen():
-                thisV = 12.43
-            elif atom.isHydrogen():
-                thisV = 8.71
-            elif (atom.element.number == 16):
-                thisV = 22.91
-            else:
-                raise Exception()
-            Vtot = Vtot + thisV
+            try:
+                Vtot += self.mcgowan_volumes[atom.element.number]
+            except KeyError:
+                raise Exception('McGowan volume not available for element {}'.format(atom.element.nubmer))
 
-            for bond in molecule.getBonds(atom):
-                # divide contribution in half since all bonds would be counted twice this way
-                Vtot = Vtot - 6.56/2
+            # divide contribution in half since all bonds would be counted twice this way
+            Vtot -= len(molecule.getBonds(atom)) * 6.56/2
 
-        self.V= Vtot / 100; # division by 100 to get units correct.
+        self.V = Vtot / 100 # division by 100 to get units correct.
 
 ################################################################################
 
@@ -745,7 +744,7 @@ class SolvationDatabase(object):
 
         saturatedStruct.update()
         saturatedStruct.updateLonePairs()
-        
+
         return saturatedStruct, addedToPairs
 
     def removeHBonding(self, saturatedStruct, addedToRadicals, addedToPairs, soluteData):  
@@ -803,14 +802,15 @@ class SolvationDatabase(object):
         saturatedStruct = molecule.copy(deep=True)
 
         # Convert lone pairs to radicals, then saturate with H.
-       
+
         # Change lone pairs to radicals based on valency
-        if sum([atom.lonePairs for atom in saturatedStruct.atoms]) > 0: # molecule contains lone pairs
+        if (sum([atom.lonePairs for atom in saturatedStruct.atoms]) > 0  # molecule contains lone pairs
+                and not any([atom.atomType.label == 'C2tc' for atom in saturatedStruct.atoms])):  # and is not [C-]#[O+]
             saturatedStruct, addedToPairs = self.transformLonePairs(saturatedStruct)
 
         # Now saturate radicals with H
         if sum([atom.radicalElectrons for atom in saturatedStruct.atoms]) > 0: # radical species
-            addedToRadicals = saturatedStruct.saturate()
+            addedToRadicals = saturatedStruct.saturate_radicals()
 
         # Saturated structure should now have no unpaired electrons, and only "expected" lone pairs
         # based on the valency

@@ -1,32 +1,32 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 import unittest
 
@@ -55,10 +55,17 @@ class TestGraph(unittest.TestCase):
             Edge(vertices[4], vertices[5]),
         ]
         
-        self.graph = Graph()
-        for vertex in vertices: self.graph.addVertex(vertex)
+        self.graph = Graph(vertices)
         for edge in edges: self.graph.addEdge(edge)
-        
+
+    def test_vertices(self):
+        """
+        Test that the vertices attribute can be accessed.
+        """
+        vertices = self.graph.vertices
+        self.assertTrue(isinstance(vertices, list))
+        self.assertEqual(len(vertices), 6)
+
     def test_addVertex(self):
         """
         Test the Graph.addVertex() method.
@@ -117,6 +124,14 @@ class TestGraph(unittest.TestCase):
         self.assertEqual(len(edges), 2)
         self.assertTrue(self.graph.vertices[1] in edges)
         self.assertTrue(self.graph.vertices[3] in edges)
+
+    def test_getAllEdges(self):
+        """
+        Test the Graph.getAllEdges() method.
+        """
+        edges = self.graph.getAllEdges()
+        self.assertTrue(isinstance(edges, list))
+        self.assertEqual(len(edges), 5)
 
     def test_hasVertex(self):
         """
@@ -601,6 +616,68 @@ class TestGraph(unittest.TestCase):
         self.assertEqual(len(cycleList), 1)
         self.assertEqual(len(cycleList[0]), 4)
 
+    def test_getRelevantCycles(self):
+        """
+        Test the Graph.getRelevantCycles() method.
+        """
+        cycleList = self.graph.getRelevantCycles()
+        self.assertEqual(len(cycleList), 0)
+        # Create a cycle of length 4
+        edge = Edge(self.graph.vertices[0], self.graph.vertices[3])
+        self.graph.addEdge(edge)
+        # Create a second cycle of length 4
+        edge = Edge(self.graph.vertices[0], self.graph.vertices[5])
+        self.graph.addEdge(edge)
+        # Create a bridge forming multiple cycles of length 4
+        edge = Edge(self.graph.vertices[1], self.graph.vertices[4])
+        self.graph.addEdge(edge)
+
+        # SSSR should be 3 cycles of length 4
+        cycleList = self.graph.getSmallestSetOfSmallestRings()
+        self.assertEqual(len(cycleList), 3)
+        sizeList = sorted([len(cycle) for cycle in cycleList])
+        self.assertEqual(sizeList, [4, 4, 4])
+
+        # RC should be 5 cycles of length 4
+        cycleList = self.graph.getRelevantCycles()
+        self.assertEqual(len(cycleList), 5)
+        sizeList = sorted([len(cycle) for cycle in cycleList])
+        self.assertEqual(sizeList, [4, 4, 4, 4, 4])
+
+    def test_cycleListOrderSSSR(self):
+        """
+        Test that getSmallestSetOfSmallestRings return vertices in the proper order.
+
+        There are methods such as symmetry and molecule drawing which rely
+        on the fact that subsequent list entries are connected.
+        """
+        # Create a cycle of length 5
+        edge = Edge(self.graph.vertices[0], self.graph.vertices[4])
+        self.graph.addEdge(edge)
+        # Test SSSR
+        sssr = self.graph.getSmallestSetOfSmallestRings()
+        self.assertEqual(len(sssr), 1)
+        self.assertEqual(len(sssr[0]), 5)
+        for i in range(5):
+            self.assertTrue(self.graph.hasEdge(sssr[0][i], sssr[0][i - 1]))
+
+    def test_cycleListOrderRC(self):
+        """
+        Test that getRelevantCycles return vertices in the proper order.
+
+        There are methods such as symmetry and molecule drawing which rely
+        on the fact that subsequent list entries are connected.
+        """
+        # Create a cycle of length 5
+        edge = Edge(self.graph.vertices[0], self.graph.vertices[4])
+        self.graph.addEdge(edge)
+        # Test RC
+        rc = self.graph.getRelevantCycles()
+        self.assertEqual(len(rc), 1)
+        self.assertEqual(len(rc[0]), 5)
+        for i in range(5):
+            self.assertTrue(self.graph.hasEdge(rc[0][i], rc[0][i - 1]))
+
     def test_getPolycyclicRings(self):
         """
         Test that the Graph.getPolycyclicRings() method returns only polycyclic rings.
@@ -667,6 +744,37 @@ class TestGraph(unittest.TestCase):
         for ring in expectedContinuousRings:
             self.assertTrue(ring in continuousRings)
 
+    def test_getMaxCycleOverlap(self):
+        """
+        Test that getMaxCycleOverlap returns the correct overlap numbers
+        for different graphs.
+        """
+        def make_graph(edge_inds):
+            nvert = max(max(inds) for inds in edge_inds) + 1
+            vertices = [Vertex() for _ in range(nvert)]
+            graph = Graph(vertices)
+            for idx1, idx2 in edge_inds:
+                graph.addEdge(Edge(vertices[idx1], vertices[idx2]))
+            return graph
+
+        linear = make_graph([(0, 1), (1, 2)])
+        mono = make_graph([(0, 1), (0, 2), (1, 2), (2, 3), (3, 4), (3, 5), (4, 5)])
+        spiro = make_graph([(0, 1), (0, 2), (1, 2), (2, 3), (2, 4), (3, 4)])
+        fused = make_graph([(0, 1), (0, 2), (1, 2), (1, 3), (2, 3)])
+        bridged = make_graph([(0, 1), (0, 2), (1, 3), (1, 4), (2, 3), (2, 5), (4, 5)])
+        cube = make_graph([(0, 1), (0, 2), (0, 4), (1, 3), (1, 5), (2, 3),
+                           (2, 6), (3, 7), (4, 5), (4, 6), (5, 7), (6, 7)])
+
+        self.assertEqual(linear.getMaxCycleOverlap(), 0)
+        self.assertEqual(mono.getMaxCycleOverlap(), 0)
+        self.assertEqual(spiro.getMaxCycleOverlap(), 1)
+        self.assertEqual(fused.getMaxCycleOverlap(), 2)
+        self.assertEqual(bridged.getMaxCycleOverlap(), 3)
+        # With the current algorithm for maximum overlap determination, a cube
+        # only has an overlap of 2, because the set of relevant cycles
+        # contains the six four-membered faces. This could be changed in the
+        # future.
+        self.assertEqual(cube.getMaxCycleOverlap(), 2)
 
     def test_getLargestRing(self):
         """
@@ -725,6 +833,51 @@ class TestGraph(unittest.TestCase):
             longest_ring = long_ring2
         
         self.assertEqual(len(longest_ring), len(rings[0]) - 1)
+
+    def testSortCyclicVertices(self):
+        """Test that _sortCyclicVertices works properly for a valid input."""
+        edge = Edge(self.graph.vertices[0], self.graph.vertices[5])
+        self.graph.addEdge(edge)  # To create a cycle
+
+
+        # Sort the vertices
+        original = list(self.graph.vertices)
+        ordered = self.graph._sortCyclicVertices(original)
+
+        # Check that we didn't lose any vertices
+        self.assertEqual(len(self.graph.vertices), len(ordered), 'Sorting changed the number of vertices.')
+
+        # Check that the order is different
+        self.assertNotEqual(self.graph.vertices, ordered, 'Sorting did not change the order of vertices.')
+
+        # Check that subsequent vertices are connected
+        for i in range(5):
+            self.assertTrue(self.graph.hasEdge(ordered[i], ordered[i - 1]))
+
+    def testSortCyclicVerticesInvalid(self):
+        """Test that _sortCyclicVertices raises an error for an invalid input."""
+        edge = Edge(self.graph.vertices[0], self.graph.vertices[4])
+        self.graph.addEdge(edge)  # To create a cycle
+
+        original = list(self.graph.vertices)
+
+        with self.assertRaisesRegexp(RuntimeError, 'do not comprise a single cycle'):
+            self.graph._sortCyclicVertices(original)
+
+    def testSortCyclicVerticesNoncyclic(self):
+        """Test that _sortCyclicVertices raises an error for a noncyclic input."""
+        original = list(self.graph.vertices)
+        with self.assertRaisesRegexp(RuntimeError, 'do not comprise a single cycle'):
+            self.graph._sortCyclicVertices(original)
+
+    def testSortCyclicVerticesUnconnected(self):
+        """Test that _sortCyclicVertices raises an error for an unconnected input."""
+        self.graph.addVertex(Vertex())
+        original = list(self.graph.vertices)
+        with self.assertRaisesRegexp(RuntimeError, 'not all vertices are connected'):
+            self.graph._sortCyclicVertices(original)
+
+
 ################################################################################
 
 if __name__ == '__main__':

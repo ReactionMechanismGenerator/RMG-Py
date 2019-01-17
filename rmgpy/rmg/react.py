@@ -1,32 +1,32 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 """
 Contains functions for generating reactions.
@@ -61,6 +61,7 @@ def react(*spcTuples):
     reactions = itertools.chain.from_iterable(results)
 
     return reactions
+
 
 def reactSpecies(speciesTuple):
     """
@@ -112,10 +113,10 @@ def deflate(rxns, species, reactantIndices):
             pass
 
 
-
-def reactAll(coreSpcList, numOldCoreSpecies, unimolecularReact, bimolecularReact):
+def reactAll(coreSpcList, numOldCoreSpecies, unimolecularReact, bimolecularReact, trimolecularReact=None):
     """
-    Reacts the core species list via uni- and bimolecular reactions.
+    Reacts the core species list via uni-, bi-, and trimolecular
+    reactions.
     """
 
     # Select reactive species that can undergo unimolecular reactions:
@@ -130,12 +131,22 @@ def reactAll(coreSpcList, numOldCoreSpecies, unimolecularReact, bimolecularReact
                 if coreSpcList[i].reactive and coreSpcList[j].reactive:
                     spcTuples.append((coreSpcList[i], coreSpcList[j]))
 
+    if trimolecularReact is not None:
+        for i in xrange(numOldCoreSpecies):
+            for j in xrange(i, numOldCoreSpecies):
+                for k in xrange(j, numOldCoreSpecies):
+                    # Find reactions involving the species that are trimolecular
+                    if trimolecularReact[i,j,k]:
+                        if coreSpcList[i].reactive and coreSpcList[j].reactive and coreSpcList[k].reactive:
+                            spcTuples.append((coreSpcList[i], coreSpcList[j], coreSpcList[k]))
+
     rxns = list(react(*spcTuples))
     return rxns
 
+
 def deflateReaction(rxn, molDict):
     """
-    This function deflates a single reaction holding speices objects, and uses the provided 
+    This function deflates a single reaction holding species objects, and uses the provided
     dictionary to populate reactants/products/pairs with integer indices,
     if possible.
 
@@ -153,4 +164,7 @@ def deflateReaction(rxn, molDict):
 
     rxn.reactants = [molDict[spec.molecule[0]] for spec in rxn.reactants]
     rxn.products = [molDict[spec.molecule[0]] for spec in rxn.products]
-    rxn.pairs = [(molDict[reactant.molecule[0]], molDict[product.molecule[0]]) for reactant, product in rxn.pairs]
+    try:
+        rxn.pairs = [(molDict[reactant.molecule[0]], molDict[product.molecule[0]]) for reactant, product in rxn.pairs]
+    except ValueError:
+        rxn.pairs = None

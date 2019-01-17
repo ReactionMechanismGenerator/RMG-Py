@@ -15,10 +15,11 @@ otherwise.
     diffModels
     mergeModels
     generateReactions
-    sensitivity
+    simulate
     generateFluxDiagram
     thermoEstimation
     convertFAME
     databaseScripts
     standardizeModelSpeciesNames
     reduction
+    isotopes

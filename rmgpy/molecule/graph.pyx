@@ -1,29 +1,29 @@
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 """
 This module contains an implementation of a graph data structure (the 
@@ -33,7 +33,8 @@ the vertices and edges (:class:`Vertex` and :class:`Edge`, respectively) that
 are the components of a graph.
 """
 
-import logging
+import itertools
+import py_rdl
 from .vf2 cimport VF2
 
 ################################################################################
@@ -198,6 +199,12 @@ cdef class Edge(object):
 
 cdef VF2 vf2 = VF2()
 
+cdef  Vertex _getEdgeVertex1(Edge edge):
+    return edge.vertex1
+
+cdef Vertex _getEdgeVertex2(Edge edge):
+    return edge.vertex2
+
 cdef class Graph:
     """
     A graph data type. The vertices of the graph are stored in a list
@@ -235,6 +242,21 @@ cdef class Graph:
         edge.vertex1.edges[edge.vertex2] = edge
         edge.vertex2.edges[edge.vertex1] = edge
         return edge
+
+    cpdef list getAllEdges(self):
+        """
+        Returns a list of all edges in the graph.
+        """
+        cdef set edgeSet
+        cdef Vertex vertex
+        cdef Edge edge
+
+        edgeSet = set()
+        for vertex in self.vertices:
+            for edge in vertex.edges.itervalues():
+                edgeSet.add(edge)
+
+        return list(edgeSet)
 
     cpdef dict getEdges(self, Vertex vertex):
         """
@@ -440,13 +462,17 @@ cdef class Graph:
             for vertex2 in vertex1.edges: count += vertex2.connectivity2
             vertex1.connectivity3 = count
 
-    cpdef sortVertices(self):
+    cpdef sortVertices(self, bint saveOrder=False):
         """
         Sort the vertices in the graph. This can make certain operations, e.g.
         the isomorphism functions, much more efficient.
         """
         cdef Vertex vertex
         cdef int index
+        
+        if saveOrder:
+            self.ordered_vertices = self.vertices[:]
+            
         # Only need to conduct sort if there is an invalid sorting label on any vertex
         for vertex in self.vertices:
             if vertex.sortingLabel < 0: break
@@ -458,37 +484,47 @@ cdef class Graph:
         self.vertices.sort(key=getVertexConnectivityValue)
         for index, vertex in enumerate(self.vertices):
             vertex.sortingLabel = index
-
-    cpdef bint isIsomorphic(self, Graph other, dict initialMap=None) except -2:
+    
+    cpdef restore_vertex_order(self):
+        """
+        reorder the vertices to what they were before sorting
+        if you saved the order
+        """
+        if not self.ordered_vertices or len(self.vertices) != len(self.ordered_vertices):
+            raise ValueError('Number of vertices has changed cannot restore original vertex order')
+        else:
+            self.vertices = self.ordered_vertices
+            
+    cpdef bint isIsomorphic(self, Graph other, dict initialMap=None, bint saveOrder=False) except -2:
         """
         Returns :data:`True` if two graphs are isomorphic and :data:`False`
         otherwise. Uses the VF2 algorithm of Vento and Foggia.
         """
-        return vf2.isIsomorphic(self, other, initialMap)
+        return vf2.isIsomorphic(self, other, initialMap, saveOrder=saveOrder)
 
-    cpdef list findIsomorphism(self, Graph other, dict initialMap=None):
+    cpdef list findIsomorphism(self, Graph other, dict initialMap=None, bint saveOrder=False):
         """
         Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
         otherwise, and the matching mapping.
         Uses the VF2 algorithm of Vento and Foggia.
         """
-        return vf2.findIsomorphism(self, other, initialMap)
+        return vf2.findIsomorphism(self, other, initialMap, saveOrder=saveOrder)
 
-    cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=None) except -2:
+    cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=None, bint saveOrder=False) except -2:
         """
         Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
         otherwise. Uses the VF2 algorithm of Vento and Foggia.
         """
-        return vf2.isSubgraphIsomorphic(self, other, initialMap)
+        return vf2.isSubgraphIsomorphic(self, other, initialMap, saveOrder=saveOrder)
 
-    cpdef list findSubgraphIsomorphisms(self, Graph other, dict initialMap=None):
+    cpdef list findSubgraphIsomorphisms(self, Graph other, dict initialMap=None, bint saveOrder=False):
         """
         Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
         otherwise. Also returns the lists all of valid mappings.
 
         Uses the VF2 algorithm of Vento and Foggia.
         """
-        return vf2.findSubgraphIsomorphisms(self, other, initialMap)
+        return vf2.findSubgraphIsomorphisms(self, other, initialMap, saveOrder=saveOrder)
 
     cpdef bint isCyclic(self) except -2:
         """
@@ -651,68 +687,83 @@ cdef class Graph:
     
     cpdef tuple getDisparateRings(self):
         """
-        Return a list of distinct polycyclic and monocyclic rings within the graph.
-        There is some code duplication in this function in order to maximize speed up
-        so as to call `self.getSmallestSetOfSmallestRings()` only once.
+        Get all disjoint monocyclic and polycyclic cycle clusters in the molecule.
+        Takes the RC and recursively merges all cycles which share vertices.
         
-        Returns: monocyclicRingsList, polycyclicRingsList
+        Returns: monocyclic_cycles, polycyclic_cycles
         """
-        
-        cdef set polycyclicCycle
-        cdef Vertex vertex
-        cdef list SSSR, vertices, polycyclicVertices, continuousCycles
-        
-        SSSR = self.getSmallestSetOfSmallestRings()
-        if not SSSR:
+        cdef list rc, cycle_list, cycle_sets, monocyclic_cycles, polycyclic_cycles
+        cdef set cycle_set
+
+        rc = self.getRelevantCycles()
+
+        if not rc:
             return [], []
+
+        # Convert cycles to sets
+        cycle_sets = [set(cycle_list) for cycle_list in rc]
+
+        # Merge connected cycles
+        monocyclic_cycles, polycyclic_cycles = self._merge_cycles(cycle_sets)
+
+        # Convert cycles back to lists
+        monocyclic_cycles = [list(cycle_set) for cycle_set in monocyclic_cycles]
+        polycyclic_cycles = [list(cycle_set) for cycle_set in polycyclic_cycles]
+
+        return monocyclic_cycles, polycyclic_cycles
+
+    cpdef tuple _merge_cycles(self, list cycle_sets):
+        """
+        Recursively merges cycles that share common atoms.
         
-        polycyclicVertices = []
-        if SSSR:            
-            vertices = []
-            for cycle in SSSR:
-                for vertex in cycle:
-                    if vertex not in vertices:
-                        vertices.append(vertex)
-                    else:
-                        if vertex not in polycyclicVertices:
-                            polycyclicVertices.append(vertex)     
-        
-        if not polycyclicVertices:
-            # no polycyclic vertices detected
-            return SSSR, []
-        else: 
-            # polycyclic vertices found, merge cycles together and store them in continuousCycles list.
-            # that have common polycyclic vertices
-            
-            continuousCycles = []
-            polycyclicSSSR = []
-            for vertex in polycyclicVertices:
-                # First check if it is in any existing continuous cycles
-                for cycle in continuousCycles:
-                    if vertex in cycle:
-                        polycyclicCycle = cycle
-                        break
-                else:
-                    # Otherwise create a new cycle
-                    polycyclicCycle = set()
-                    continuousCycles.append(polycyclicCycle)
-                    
-                for cycle in SSSR:
-                    if vertex in cycle:
-                        polycyclicCycle.update(cycle)
-                        if cycle not in polycyclicSSSR:
-                            polycyclicSSSR.append(cycle)
-                            
-            # convert each polycyclic set to a list
-            continuousCycles = [list(cycle) for cycle in continuousCycles]
-            
-            monocyclicCycles = SSSR
-            # remove the polycyclic cycles from the list of SSSR, leaving behind just the monocyclics
-            for cycle in polycyclicSSSR:
-                monocyclicCycles.remove(cycle)
-                    
-            return monocyclicCycles, continuousCycles
-       
+        Returns one list with unmerged cycles and one list with merged cycles.
+        """
+        cdef list unmerged_cycles, merged_cycles, matched, u, m
+        cdef set cycle, m_cycle, u_cycle
+        cdef bint merged, new
+
+        unmerged_cycles = []
+        merged_cycles = []
+
+        # Loop through each cycle
+        for cycle in cycle_sets:
+            merged = False
+            new = False
+
+            # Check if it's attached to an existing merged cycle
+            for m_cycle in merged_cycles:
+                if not m_cycle.isdisjoint(cycle):
+                    m_cycle.update(cycle)
+                    merged = True
+                    # It should only match one merged cycle, so we can break here
+                    break
+            else:
+                # If it doesn't match any existing merged cycles, initiate a new one
+                m_cycle = cycle.copy()
+                new = True
+
+            # Check if the new merged cycle is attached to any of the unmerged cycles
+            matched = []
+            for i, u_cycle in enumerate(unmerged_cycles):
+                if not m_cycle.isdisjoint(u_cycle):
+                    m_cycle.update(u_cycle)
+                    matched.append(i)
+                    merged = True
+            # Remove matched cycles from list of unmerged cycles
+            for i in reversed(matched):
+                del unmerged_cycles[i]
+
+            if merged and new:
+                merged_cycles.append(m_cycle)
+            elif not merged:
+                unmerged_cycles.append(cycle)
+
+        # If any rings were successfully merged, try to merge further
+        if len(merged_cycles) > 1:
+            u, m = self._merge_cycles(merged_cycles)
+            merged_cycles = u + m
+
+        return unmerged_cycles, merged_cycles
        
     cpdef list getAllCycles(self, Vertex startingVertex):
         """
@@ -889,100 +940,115 @@ cdef class Graph:
 
     cpdef list getSmallestSetOfSmallestRings(self):
         """
-        Return a list of the smallest set of smallest rings in the graph. The
-        algorithm implements was adapted from a description by Fan, Panaye,
-        Doucet, and Barbu (doi: 10.1021/ci00015a002)
+        Returns the smallest set of smallest rings as a list of lists.
+        Uses RingDecomposerLib for ring perception.
 
-        B. T. Fan, A. Panaye, J. P. Doucet, and A. Barbu. "Ring Perception: A
-        New Algorithm for Directly Finding the Smallest Set of Smallest Rings
-        from a Connection Table." *J. Chem. Inf. Comput. Sci.* **33**,
-        p. 657-662 (1993).
+        Kolodzik, A.; Urbaczek, S.; Rarey, M.
+        Unique Ring Families: A Chemically Meaningful Description
+        of Molecular Ring Topologies.
+        J. Chem. Inf. Model., 2012, 52 (8), pp 2013-2021
+
+        Flachsenberg, F.; Andresen, N.; Rarey, M.
+        RingDecomposerLib: An Open-Source Implementation of
+        Unique Ring Families and Other Cycle Bases.
+        J. Chem. Inf. Model., 2017, 57 (2), pp 122-126
         """
-        cdef Graph graph
-        cdef bint done, found
-        cdef list cycleList, cycles, cycle, graphs, neighbors, verticesToRemove, vertices
-        cdef Vertex vertex, rootVertex
+        cdef list sssr
+        cdef object graph, data, cycle
 
-        # Make a copy of the graph so we don't modify the original
-        graph = self.copy(deep=True)
-        vertices = graph.vertices[:]
-        
-        # Step 1: Remove all terminal vertices
-        done = False
-        while not done:
-            verticesToRemove = []
-            for vertex in graph.vertices:
-                if len(vertex.edges) == 1: verticesToRemove.append(vertex)
-            done = len(verticesToRemove) == 0
-            # Remove identified vertices from graph
-            for vertex in verticesToRemove:
-                graph.removeVertex(vertex)
+        graph = py_rdl.Graph.from_edges(
+            self.getAllEdges(),
+            _getEdgeVertex1,
+            _getEdgeVertex2,
+        )
 
-        # Step 2: Remove all other vertices that are not part of cycles
-        verticesToRemove = []
-        for vertex in graph.vertices:
-            found = graph.isVertexInCycle(vertex)
-            if not found:
-                verticesToRemove.append(vertex)
-        # Remove identified vertices from graph
-        for vertex in verticesToRemove:
-            graph.removeVertex(vertex)
+        data = py_rdl.wrapper.DataInternal(graph.get_nof_nodes(), graph.get_edges().iterkeys())
+        data.calculate()
 
-        # Step 3: Split graph into remaining subgraphs
-        graphs = graph.split()
+        sssr = []
+        for cycle in data.get_sssr():
+            sssr.append(self._sortCyclicVertices([graph.get_node_for_index(i) for i in cycle.nodes]))
 
-        # Step 4: Find ring sets in each subgraph
-        cycleList = []
-        for graph in graphs:
+        return sssr
 
-            while len(graph.vertices) > 0:
+    cpdef list getRelevantCycles(self):
+        """
+        Returns the set of relevant cycles as a list of lists.
+        Uses RingDecomposerLib for ring perception.
 
-                # Choose root vertex as vertex with smallest number of edges
-                rootVertex = None
-                graph.updateConnectivityValues()
-                for vertex in graph.vertices:
-                    if rootVertex is None:
-                        rootVertex = vertex
-                    elif getVertexConnectivityValue(vertex) > getVertexConnectivityValue(rootVertex):
-                        rootVertex = vertex
+        Kolodzik, A.; Urbaczek, S.; Rarey, M.
+        Unique Ring Families: A Chemically Meaningful Description
+        of Molecular Ring Topologies.
+        J. Chem. Inf. Model., 2012, 52 (8), pp 2013-2021
 
-                # Get all cycles involving the root vertex
-                cycles = graph.getAllCycles(rootVertex)
-                if len(cycles) == 0:
-                    # This vertex is no longer in a ring, so remove it
-                    graph.removeVertex(rootVertex)
-                    continue
+        Flachsenberg, F.; Andresen, N.; Rarey, M.
+        RingDecomposerLib: An Open-Source Implementation of
+        Unique Ring Families and Other Cycle Bases.
+        J. Chem. Inf. Model., 2017, 57 (2), pp 122-126
+        """
+        cdef list rc
+        cdef object graph, data, cycle
 
-                # Keep the smallest of the cycles found above
-                cycle = cycles[0]
-                for c in cycles[1:]:
-                    if len(c) < len(cycle):
-                        cycle = c
-                cycleList.append(cycle)
-                
-                # Remove the root vertex to create single edges, note this will not
-                # function properly if there is no vertex with 2 edges (i.e. cubane)
-                graph.removeVertex(rootVertex)
+        graph = py_rdl.Graph.from_edges(
+            self.getAllEdges(),
+            _getEdgeVertex1,
+            _getEdgeVertex2,
+        )
 
-                # Remove from the graph all vertices in the cycle that have only one edge
-                loneCarbon = True
-                while loneCarbon:
-                    loneCarbon = False
-                    verticesToRemove = []
-                    
-                    for vertex in cycle:
-                        if len(vertex.edges) == 1:
-                            loneCarbon = True
-                            verticesToRemove.append(vertex)
-                    else:
-                        for vertex in verticesToRemove:
-                            graph.removeVertex(vertex)
+        data = py_rdl.wrapper.DataInternal(graph.get_nof_nodes(), graph.get_edges().iterkeys())
+        data.calculate()
 
-        # Map atoms in cycles back to atoms in original graph
-        for i in range(len(cycleList)):
-            cycleList[i] = [self.vertices[vertices.index(v)] for v in cycleList[i]]
+        rc = []
+        for cycle in data.get_rcs():
+            rc.append(self._sortCyclicVertices([graph.get_node_for_index(i) for i in cycle.nodes]))
 
-        return cycleList
+        return rc
+
+    cpdef list _sortCyclicVertices(self, list vertices):
+        """
+        Given a list of vertices comprising a cycle, sort them such that adjacent
+        entries in the list are connected to each other.
+        Warning: Assumes that the cycle is elementary, ie. no bridges.
+        """
+        cdef list ordered
+        cdef Vertex vertex
+
+        ordered = [vertices.pop()]
+        while vertices:
+            for vertex in vertices:
+                if vertex in ordered[-1].edges:
+                    ordered.append(vertex)
+                    vertices.remove(vertex)
+                    break
+            else:
+                # No connected vertex was found
+                raise RuntimeError('Could not sort cyclic vertices because '
+                                   'not all vertices are connected to two '
+                                   'other vertices in the input list.')
+
+        if not self.hasEdge(ordered[0], ordered[-1]):
+            raise RuntimeError('Input vertices do not comprise a single cycle.')
+
+        return ordered
+
+    cpdef int getMaxCycleOverlap(self):
+        """
+        Return the maximum number of vertices that are shared between
+        any two cycles in the graph. For example, if there are only
+        disparate monocycles or no cycles, the maximum overlap is zero;
+        if there are "spiro" cycles, it is one; if there are "fused"
+        cycles, it is two; and if there are "bridged" cycles, it is
+        three.
+        """
+        cdef list cycles
+        cdef int max_overlap, overlap, i, j
+
+        cycles = self.getSmallestSetOfSmallestRings()
+        max_overlap = 0
+        for i, j in itertools.combinations(range(len(cycles)), 2):
+            overlap = len(set(cycles[i]) & set(cycles[j]))
+            max_overlap = max(overlap, max_overlap)
+        return max_overlap
 
     cpdef list getLargestRing(self, Vertex vertex):
         """
@@ -999,22 +1065,26 @@ cdef class Graph:
         return longest_cycle
         
         
-    cpdef bint isMappingValid(self, Graph other, dict mapping) except -2:
+    cpdef bint isMappingValid(self, Graph other, dict mapping, bint equivalent=True) except -2:
         """
         Check that a proposed `mapping` of vertices from `self` to `other`
         is valid by checking that the vertices and edges involved in the
-        mapping are mutually equivalent.
+        mapping are mutually equivalent.  If equivalent is true it checks
+        if atoms and edges are equivalent, if false it checks if they 
+        are specific cases of each other.  
         """
         cdef Vertex vertex1, vertex2
         cdef list vertices1, vertices2
         cdef bint selfHasEdge, otherHasEdge
         cdef int i, j
         
-        # Check that the mapped pairs of vertices are equivalent
-        for vertex1, vertex2 in mapping.items():
-            if not vertex1.equivalent(vertex2):
-                return False
+        method = 'equivalent' if equivalent else 'isSpecificCaseOf'
         
+        # Check that the mapped pairs of vertices compare True
+        for vertex1, vertex2 in mapping.items():
+            if not getattr(vertex1,method)(vertex2):
+                return False
+            
         # Check that any edges connected mapped vertices are equivalent
         vertices1 = mapping.keys()
         vertices2 = mapping.values()
@@ -1026,12 +1096,38 @@ cdef class Graph:
                     # Both graphs have the edge, so we must check it for equivalence
                     edge1 = self.getEdge(vertices1[i], vertices1[j])
                     edge2 = other.getEdge(vertices2[i], vertices2[j])
-                    if not edge1.equivalent(edge2):
+                    if not getattr(edge1,method)(edge2):
                         return False
                 elif selfHasEdge or otherHasEdge:
                     # Only one of the graphs has the edge, so the mapping must be invalid
                     return False
-        
-        # If we're here then the vertices and edges are equivalent, so the
+            
+        # If we're here then the vertices and edges compare True, so the
         # mapping is valid
         return True
+        
+    cpdef list get_edges_in_cycle(self, list vertices, bint sort=False):
+        """
+        For a given list of atoms comprising a ring, return the set of bonds
+        connecting them, in order around the ring.
+
+        If `sort=True`, then sort the vertices to match their connectivity.
+        Otherwise, assumes that they are already sorted, which is true for
+        cycles returned by getRelevantCycles or getSmallestSetOfSmallestRings.
+        """
+        cdef list edges
+        cdef int i, j
+
+        if sort:
+            self._sortCyclicVertices(vertices)
+
+        edges = []
+        for i, j in zip(range(len(vertices)), range(-1, len(vertices)-1)):
+            try:
+                edges.append(self.getEdge(vertices[i], vertices[j]))
+            except ValueError:
+                raise ValueError('Edge does not exist between vertices in ring. '
+                                 'Check that the vertices are properly ordered '
+                                 'such that consecutive vertices are connected.')
+
+        return edges

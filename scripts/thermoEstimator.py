@@ -1,6 +1,33 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
+
 """
 This script runs stand-alone thermo estimation using RMG for a list of species in a
 thermo input file.  It generates an output.txt file containing the chemkin format
@@ -15,10 +42,11 @@ from rmgpy.rmg.main import RMG
 from rmgpy.chemkin import saveChemkinFile, saveSpeciesDictionary
 from rmgpy.rmg.model import Species
 from rmgpy.thermo.thermoengine import submit
+from rmgpy.data.thermo import ThermoLibrary
                      
 ################################################################################
 
-def runThermoEstimator(inputFile):
+def runThermoEstimator(inputFile, library_flag):
     """
     Estimate thermo for a list of species using RMG and the settings chosen inside a thermo input file.
     """
@@ -40,16 +68,17 @@ def runThermoEstimator(inputFile):
     for species in rmg.initialSpecies:
         submit(species)
 
-    # library = ThermoLibrary(name='Thermo Estimation Library')
-    # for spc in rmg.initialSpecies:
-    #     library.loadEntry(
-    #         index = len(library.entries) + 1,
-    #         label = species.label,
-    #         molecule = species.molecule[0].toAdjacencyList(),
-    #         thermo = species.getThermoData().toThermoData(),
-    #         shortDesc = species.getThermoData().comment,
-    #     )
-    # library.save(os.path.join(rmg.outputDirectory,'ThermoLibrary.py'))
+    if library_flag:
+        library = ThermoLibrary(name='Thermo Estimation Library')
+        for species in rmg.initialSpecies:
+            library.loadEntry(
+                index = len(library.entries) + 1,
+                label = species.label,
+                molecule = species.molecule[0].toAdjacencyList(),
+                thermo = species.getThermoData().toThermoData(),
+                shortDesc = species.getThermoData().comment,
+            )
+        library.save(os.path.join(rmg.outputDirectory,'ThermoLibrary.py'))
     
 
     # Save the thermo data to chemkin format output files and dictionary, with no reactions    
@@ -65,8 +94,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('input', metavar='INPUT', type=str, nargs=1,
         help='Thermo input file')
+    parser.add_argument('-l', '--library', action='store_true', help='generate RMG thermo library')
+
     args = parser.parse_args()
     
     inputFile = os.path.abspath(args.input[0])
     
-    runThermoEstimator(inputFile)
+    runThermoEstimator(inputFile, args.library)

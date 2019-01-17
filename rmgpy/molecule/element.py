@@ -1,32 +1,32 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 """
 This module defined the chemical elements available in RMG. Information for
@@ -52,17 +52,17 @@ class Element:
     """
     A chemical element. The attributes are:
 
-    =========== =============== ================================================
-    Attribute   Type            Description
-    =========== =============== ================================================
-    `number`    ``int``         The atomic number of the element
-    `symbol`    ``str``         The symbol used for the element
-    `name`      ``str``         The IUPAC name of the element
-    `mass`      ``float``       The mass of the element in kg/mol
-    `covRadius` ``float``       Covalent bond radius in Angstrom
-    `isotope`   ``int``         The isotope integer of the element
-    `chemkinName` ``str``       The chemkin compatible representation of the element
-    =========== =============== ================================================
+    ============= =============== ================================================
+    Attribute     Type            Description
+    ============= =============== ================================================
+    `number`      ``int``         The atomic number of the element
+    `symbol`      ``str``         The symbol used for the element
+    `name`        ``str``         The IUPAC name of the element
+    `mass`        ``float``       The mass of the element in kg/mol
+    `covRadius`   ``float``       Covalent bond radius in Angstrom
+    `isotope`     ``int``         The isotope integer of the element
+    `chemkinName` ``str``         The chemkin compatible representation of the element
+    ============= =============== ================================================
     
     This class is specifically for properties that all atoms of the same element
     share. Ideally there is only one instance of this class for each element.
@@ -111,11 +111,16 @@ class PeriodicSystem(object):
     but 4 of them form lone pairs, the remaining 2 electrons can form bonds so the normal valence 
     for `S` is 2.
     `lone_pairs`: the number of lone pairs an element has
+    'electronegativity': The atom's electronegativity (how well can an atom attract electrons), taken from
+    https://sciencenotes.org/list-of-electronegativity-values-of-the-elements/
+    isotops of the same element may have slight different electronegativities, which is not reflected below
     """
 
-    valences           = {'H': 1, 'He': 0, 'C': 4, 'N': 3, 'O': 2, 'Ne': 0, 'Si': 4, 'S': 2, 'Cl': 1, 'Ar': 0}
-    valence_electrons  = {'H': 1, 'He': 2, 'C': 4, 'N': 5, 'O': 6, 'Ne': 8, 'Si': 4, 'S': 6, 'Cl': 7, 'Ar': 8}
-    lone_pairs         = {'H': 0, 'He': 1, 'C': 0, 'N': 1, 'O': 2, 'Ne': 4, 'Si': 0, 'S': 2, 'Cl': 3, 'Ar': 4}
+    valences          = {'H': 1, 'He': 0, 'C': 4, 'N': 3, 'O': 2, 'F': 1, 'Ne': 0, 'Si': 4, 'S': 2, 'Cl': 1, 'Ar': 0, 'I': 1}
+    valence_electrons = {'H': 1, 'He': 2, 'C': 4, 'N': 5, 'O': 6, 'F': 7, 'Ne': 8, 'Si': 4, 'S': 6, 'Cl': 7, 'Ar': 8, 'I': 7}
+    lone_pairs        = {'H': 0, 'He': 1, 'C': 0, 'N': 1, 'O': 2, 'F': 3, 'Ne': 4, 'Si': 0, 'S': 2, 'Cl': 3, 'Ar': 4, 'I': 3}
+    electronegativity = {'H': 2.20, 'D': 2.20, 'T': 2.20, 'C': 2.55, 'C13': 2.55, 'N': 3.04, 'O': 3.44, 'O18': 3.44,
+                         'F': 3.98, 'Si': 1.90, 'S': 2.58, 'Cl': 3.16, 'I': 2.66}
     
 ################################################################################
 

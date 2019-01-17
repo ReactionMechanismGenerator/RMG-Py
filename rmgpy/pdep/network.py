@@ -1,32 +1,32 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 """
 This module contains the :class:`Network` class, a representation of a 
@@ -51,8 +51,8 @@ class Network:
     Attribute               Description
     ======================= ====================================================
     `isomers`               A list of the unimolecular isomers in the network
-    `reactants`             A list of the bimolecular reactant channels in the network
-    `products`              A list of the bimolecular product channels in the network
+    `reactants`             A list of the bimolecular reactant channels (Configuration objects) in the network
+    `products`              A list of the bimolecular product channels (Configuration objects) in the network
     `pathReactions`         A list of "path" reaction objects that connect adjacent isomers (the high-pressure-limit)
     `bathGas`               A dictionary of the bath gas species (keys) and their mole fractions (values)
     `netReactions`          A list of "net" reaction objects that connect any pair of isomers
@@ -68,41 +68,94 @@ class Network:
     `Ngrains`               The number of energy grains
     `NJ`                    The number of angular momentum grains
     ----------------------- ----------------------------------------------------
+     `grainSize`            Maximum size of separation between energies
+     `grainCount`           Minimum number of descrete energies separated
+     `E0`                   A list of ground state energies of isomers, reactants, and products
     `activeKRotor`          ``True`` if the K-rotor is treated as active, ``False`` if treated as adiabatic
     `activeJRotor`          ``True`` if the J-rotor is treated as active, ``False`` if treated as adiabatic
     `rmgmode`               ``True`` if in RMG mode, ``False`` otherwise
+    ----------------------- ----------------------------------------------------
+    `eqRatios`              An array containing concentration of each isomer and reactant channel present at equilibrium
+    `collFreq`              An array of the frequency of collision between
+    `Mcoll`                 Matrix of first-order rate coefficients for collisional population transfer between grains for each isomer
+    `densStates`            3D np array of stable configurations, number of grains, and number of J
     ======================= ====================================================
     
     """
     
-    def __init__(self, label='', isomers=None, reactants=None, products=None, pathReactions=None, bathGas=None):
+    def __init__(self, label='', isomers=None, reactants=None, products=None,
+                 pathReactions=None, bathGas=None, netReactions=None, T=0.0, P =0.0,
+                 Elist = None, Jlist = None, Ngrains = 0, NJ = 0, activeKRotor = True,
+                 activeJRotor = True, grainSize=0.0, grainCount = 0, E0 = None):
+        """
+        To initialize a Network object for running a pressure dependent job,
+        only label, isomers, reactants, products pathReactions and bathGas are useful,
+        since the other attributes will be created during the run.
+
+        The other attributes are used to reinstantiate the created network object
+        for debugging and testing.
+        """
         self.label = label
         self.isomers = isomers or []
         self.reactants = reactants or []
         self.products = products or []
         self.pathReactions = pathReactions or []
         self.bathGas = bathGas or {}
-        self.netReactions = []
+        self.netReactions = netReactions or []
         
-        self.T = 0.0
-        self.P = 0.0
-        self.Elist = None
-        self.Jlist = None
+        self.T = T
+        self.P = P
+        self.Elist = Elist
+        self.Jlist = Jlist
         
         self.Nisom = len(self.isomers)
         self.Nreac = len(self.reactants)
         self.Nprod = len(self.products)
-        self.Ngrains = 0
-        self.NJ = 0
+        self.Ngrains = Ngrains
+        self.NJ = NJ
 
-        self.activeKRotor = True
-        self.activeJRotor = True
+        self.activeKRotor = activeKRotor
+        self.activeJRotor = activeJRotor
 
-        self.grainSize = 0.0
-        self.grainCount = 0
-        self.E0 = None
+        self.grainSize = grainSize
+        self.grainCount = grainCount
+        self.E0 = E0
 
         self.valid = False
+
+    def __repr__(self):
+        string = 'Network('
+        if self.label != '': string += 'label="{0}", '.format(self.label)
+        if self.isomers: string += 'isomers="{0!r}", '.format(self.isomers)
+        if self.reactants: string += 'reactants="{0!r}", '.format(self.reactants)
+        if self.products: string += 'products="{0!r}", '.format(self.products)
+        if self.pathReactions: string += 'pathReactions="{0!r}", '.format(self.pathReactions)
+        if self.bathGas: string += 'bathGas="{0!r}", '.format(self.bathGas)
+        if self.netReactions: string += 'netReactions="{0!r}", '.format(self.netReactions)
+        if self.T != 0.0: string += 'T="{0}", '.format(self.T)
+        if self.P != 0.0: string += 'P="{0}", '.format(self.P)
+        if self.Elist is not None: string += 'Elist="{0}", '.format(self.Elist)
+        if self.Jlist is not None: string += 'Jlist="{0}", '.format(self.Jlist)
+        if self.Ngrains != 0: string += 'Ngrains="{0}", '.format(self.Ngrains)
+        if self.NJ != 0: string += 'NJ="{0}", '.format(self.NJ)
+        string += 'activeKRotor="{0}", '.format(self.activeKRotor)
+        string += 'activeJRotor="{0}", '.format(self.activeJRotor)
+        if self.grainSize != 0.0: string += 'grainSize="{0}", '.format(self.grainSize)
+        if self.grainCount != 0: string += 'grainCount="{0}", '.format(self.grainCount)
+        if self.E0 is not None: string += 'E0="{0}", '.format(self.E0)
+        string += ')'
+        return string
+
+    def __str__(self):
+        """return Network like it would be seen in an Arkane input file"""
+        return "Network(label = '{0}', isomers = {1}, reactants = {2}, products = {3}, "\
+                        "pathReactions = {4}, bathGas = {5}, "\
+                        "netReactions = {6})".format(self.label, [i.species[0].label for i in self.isomers],
+                        [[r.label for r in pair.species] for pair in self.reactants],
+                        [[p.label for p in pair.species] for pair in self.products],
+                        [r.label for r in self.pathReactions],
+                        dict([(s.label, value) for s, value in self.bathGas.items()]),
+                        [r.toLabeledStr() for r in self.netReactions])
 
     def invalidate(self):
         """
@@ -139,6 +192,8 @@ class Network:
         maximum energy grain size `grainSize` in J/mol and/or the minimum
         number of grains `grainCount`.
         """
+
+        logging.debug("initializing network")
         if maximumGrainSize == 0.0 and minimumGrainCount == 0:
             raise NetworkError('Must provide either grainSize or Ngrains parameter to Network.determineEnergyGrains().')
 
@@ -170,6 +225,8 @@ class Network:
         self.rmgmode = rmgmode
         
         self.calculateDensitiesOfStates()
+        logging.debug('Finished initialization for network {0}.'.format(self.label))
+        logging.debug('The network now has values of {0}'.format(repr(self)))
 
     def calculateRateCoefficients(self, Tlist, Plist, method, errorCheck=True):
         
@@ -199,7 +256,7 @@ class Network:
                 elif method.lower() == 'chemically-significant eigenvalues':
                     self.applyChemicallySignificantEigenvaluesMethod()
                 else:
-                    raise NetworkError('Unknown method "{0}".'.format(method))
+                    raise NetworkError('Unknown method "{0}". Valid options are "modified strong collision", "reservoir state", or "chemically-significant eigenvalues"'.format(method))
 
                 K[t,p,:,:] = self.K
                 
@@ -239,7 +296,9 @@ class Network:
                                 logging.info(K[t,p,0:Nisom+Nreac+Nprod,0:Nisom+Nreac])
                                 K[t,p,:,:] = 0 * K[t,p,:,:]
                                 self.K = 0 * self.K
-
+        logging.debug('Finished calculating rate coefficients for network {0}.'.format(self.label))
+        logging.debug('The network now has values of {0}'.format(repr(self)))
+        logging.debug('Master equation matrix found for network {0} is {1}'.format(self.label, K))
         return K
 
     def setConditions(self, T, P, ymB=None):
@@ -301,7 +360,7 @@ class Network:
                     badness = error.badness()
                     if previous_error and (previous_error.message == error.message): # only compare badness if same reaction is causing problem
                         improvement = previous_error.badness()/badness
-                        if improvement < 0.2 or (grainCount > 1e4 and improvement < 1.1) or (grainCount > 1.5e6): # allow it to get worse at first
+                        if improvement < 0.2 or (Ngrains > 1e4 and improvement < 1.1) or (Ngrains > 1.5e6): # allow it to get worse at first
                             logging.error(error.message)
                             logging.error("Increasing number of grains did not decrease error enough (Current badness: {0:.1f}, previous {1:.1f}). Something must be wrong with network {2}".format(badness,previous_error.badness(),self.label))
                             raise error
@@ -325,6 +384,8 @@ class Network:
             # Update parameters that depend on temperature and pressure if necessary
             if temperatureChanged or pressureChanged:
                 self.calculateCollisionModel()
+        logging.debug('Finished setting conditions for network {0}.'.format(self.label))
+        logging.debug('The network now has values of {0}'.format(repr(self)))
 
     def __getEnergyGrains(self, Emin, Emax, grainSize=0.0, grainCount=0):
         """
@@ -443,8 +504,8 @@ class Network:
                 logging.debug('Calculating density of states for reactant channel "{0}"'.format(self.reactants[n]))
                 self.reactants[n].calculateDensityOfStates(Elist, activeKRotor=self.activeKRotor, activeJRotor=self.activeJRotor, rmgmode=self.rmgmode)
             else:
-                logging.debug('NOT calculating density of states for reactant channel "{0}"'.format(self.reactants[n]))
-            
+                logging.warning('NOT calculating density of states for reactant channel "{0}". Missing Statmech.'.format(self.reactants[n]))
+                logging.warning('Reactants: {}'.format(repr(self.reactants[n])))
         # Densities of states for product channels
         if not self.rmgmode:
             for n in range(Nprod):
@@ -452,8 +513,8 @@ class Network:
                     logging.debug('Calculating density of states for product channel "{0}"'.format(self.products[n]))
                     self.products[n].calculateDensityOfStates(Elist, activeKRotor=self.activeKRotor, activeJRotor=self.activeJRotor, rmgmode=self.rmgmode)
                 else:
-                    logging.debug('NOT calculating density of states for product channel "{0}"'.format(self.products[n]))
-
+                    logging.warning('NOT calculating density of states for product channel "{0}" Missing Statmech.'.format(self.products[n]))
+                    logging.warning('Products: {}'.format(repr(self.products[n])))
         logging.debug('')
 
 #        import pylab
@@ -548,13 +609,48 @@ class Network:
                 reac = products.index(rxn.reactants) + Nisom + Nreac
                 prod = isomers.index(rxn.products[0])
             else:
-                raise NetworkError('Unexpected type of path reaction "{0}"'.format(rxn))
+                logging.info('\nUnexpected type of path reaction.')
+                logging.info('\nnetwork reactants:')
+                for index, reacts in enumerate(reactants, 1):
+                    logging.info('reactants {0}:'.format(index))
+                    for subindex, react in enumerate(reacts, 1):
+                        logging.info('reactant {0}:'.format(subindex))
+                        for mol in react.molecule:
+                            logging.info(mol.toAdjacencyList())
+                            logging.info('reactive = {0}\n'.format(mol.reactive))
+                logging.info('network products:')
+                for index, prods in enumerate(products, 1):
+                    logging.info('products {0}:'.format(index))
+                    for subindex, pro in enumerate(prods, 1):
+                        for mol in pro.molecule:
+                            logging.info(mol.toAdjacencyList())
+                            logging.info('reactive = {0}\n'.format(mol.reactive))
+                logging.info('network isomers:')
+                for index, iso in enumerate(isomers, 1):
+                    logging.info('isomer {0}:'.format(index))
+                    for mol in iso.molecule:
+                        logging.info(mol.toAdjacencyList())
+                        logging.info('reactive = {0}\n'.format(mol.reactive))
+                logging.info('rxn reactants:')
+                for index, react in enumerate(rxn.reactants, 1):
+                    logging.info('reactant {0}:'.format(index))
+                    for mol in react.molecule:
+                        logging.info(mol.toAdjacencyList())
+                        logging.info('reactive = {0}\n'.format(mol.reactive))
+                logging.info('rxn products:')
+                for index, pro in enumerate(rxn.products, 1):
+                    logging.info('product {0}:'.format(index))
+                    for mol in pro.molecule:
+                        logging.info(mol.toAdjacencyList())
+                        logging.info('reactive = {0}\n'.format(mol.reactive))
+                logging.info('Path reaction {0} not found in reaction network {1}'.format(rxn,self.label))
+                continue
         
             # Compute the microcanonical rate coefficient k(E)
             reacDensStates = densStates[reac,:,:]
             prodDensStates = densStates[prod,:,:]
             kf, kr = rxn.calculateMicrocanonicalRateCoefficient(self.Elist, self.Jlist, reacDensStates, prodDensStates, T)
-                        
+
             # Check for NaN (just to be safe)
             if numpy.isnan(kf).any() or numpy.isnan(kr).any():
                 raise NetworkError('One or more k(E) values is NaN for path reaction "{0}".'.format(rxn))
@@ -562,10 +658,13 @@ class Network:
             # Determine the expected value of the rate coefficient k(T)
             if rxn.canTST():
                 # RRKM theory was used to compute k(E), so use TST to compute k(T)
+                logging.debug('Using RRKM rate for Expected kf')
                 kf_expected = rxn.calculateTSTRateCoefficient(T)
             else:
                 # ILT was used to compute k(E), so use high-P kinetics to compute k(T)
-                kf_expected = rxn.kinetics.getRateCoefficient(T)
+                logging.debug('Using high pressure rate coefficient rate for Expected kf')
+                kf_expected = rxn.kinetics.getRateCoefficient(T) if rxn.network_kinetics is None else\
+                    rxn.network_kinetics.getRateCoefficient(T)
             
             # Determine the expected value of the equilibrium constant (Kc)
             Keq_expected = self.eqRatios[prod] / self.eqRatios[reac] 
@@ -686,6 +785,7 @@ class Network:
         conc = (1e5 / constants.R / T)          # [=] mol/m^3
         for i in range(Nisom):
             G = self.isomers[i].getFreeEnergy(T)
+            logging.debug("Free energy for isomer {} is {}.".format(i,G))
             eqRatios[i] = math.exp(-G / constants.R / T)
         for i in range(Nreac):
             G = self.reactants[i].getFreeEnergy(T)
@@ -707,9 +807,8 @@ class Network:
         Ngrains = len(self.Elist)
         NJ = 1 if self.Jlist is None else len(self.Jlist)
         
-        collFreq = numpy.zeros(Nisom, numpy.float64)
-        
         try:
+            collFreq = numpy.zeros(Nisom, numpy.float64)
             Mcoll = numpy.zeros((Nisom,Ngrains,NJ,Ngrains,NJ), numpy.float64)
         except MemoryError:
             logging.warning('Collision matrix too large to manage')
@@ -733,7 +832,7 @@ class Network:
         current conditions using the modified strong collision method.
         """
         import rmgpy.pdep.msc as msc
-        logging.debug('Applying modified strong collision method at {0:g} K, {1:g} bar...'.format(self.T, self.P))
+        logging.debug('Applying modified strong collision method at {0:g} K, {1:g} Pa...'.format(self.T, self.P))
         self.K, self.p0 = msc.applyModifiedStrongCollisionMethod(self, efficiencyModel)
         return self.K, self.p0
     
@@ -743,7 +842,7 @@ class Network:
         current conditions using the reservoir state method.
         """
         import rmgpy.pdep.rs as rs
-        logging.debug('Applying reservoir state method at {0:g} K, {1:g} bar...'.format(self.T, self.P))
+        logging.debug('Applying reservoir state method at {0:g} K, {1:g} Pa...'.format(self.T, self.P))
         self.K, self.p0 = rs.applyReservoirStateMethod(self)
         return self.K, self.p0
     
@@ -756,7 +855,7 @@ class Network:
         reduced set of :math:`k(T,P)` values. 
         """
         import rmgpy.pdep.cse as cse
-        logging.debug('Applying chemically-significant eigenvalues method at {0:g} K, {1:g} bar...'.format(self.T, self.P))
+        logging.debug('Applying chemically-significant eigenvalues method at {0:g} K, {1:g} Pa...'.format(self.T, self.P))
         self.K, self.p0 = cse.applyChemicallySignificantEigenvaluesMethod(self, lumpingOrder)
         return self.K, self.p0
     
@@ -940,5 +1039,8 @@ class Network:
         logging.log(level, 'Path reactions:')
         for rxn in self.pathReactions:
             logging.log(level, '    {0:<48s} {1:12g} kJ/mol'.format(rxn, float(rxn.transitionState.conformer.E0.value_si*0.001)))
+        logging.log(level, 'Net reactions:')
+        for rxn in self.netReactions:
+            logging.log(level, '    {0:<48s}'.format(rxn))
         logging.log(level, '========================================================================')
         logging.log(level, '')

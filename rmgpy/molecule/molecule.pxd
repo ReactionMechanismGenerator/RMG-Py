@@ -1,28 +1,29 @@
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2009-2011 by the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 from .graph cimport Vertex, Edge, Graph
 from .atomtype cimport AtomType
@@ -44,7 +45,7 @@ cdef class Atom(Vertex):
     cdef public numpy.ndarray coords
     cdef public short lonePairs
     cdef public int id
-
+    cdef public dict props
     
     cpdef bint equivalent(self, Vertex other) except -2
 
@@ -60,7 +61,17 @@ cdef class Atom(Vertex):
 
     cpdef bint isOxygen(self)
 
+    cpdef bint isFluorine(self)
+
+    cpdef bint isSilicon(self)
+
     cpdef bint isSulfur(self)
+
+    cpdef bint isChlorine(self)
+
+    cpdef bint isIodine(self)
+
+    cpdef bint isNOS(self)
     
     cpdef incrementRadical(self)
 
@@ -110,6 +121,8 @@ cdef class Bond(Edge):
 
     cpdef decrementOrder(self)
 
+    cpdef str get_bond_string(self)
+
 ################################################################################
 
 cdef class Molecule(Graph):
@@ -117,6 +130,7 @@ cdef class Molecule(Graph):
     cdef public bint implicitHydrogens
     cdef public float symmetryNumber
     cdef public int multiplicity
+    cdef public bint reactive
     cdef public object rdMol
     cdef public int rdMolConfId
     cdef str _fingerprint
@@ -163,13 +177,15 @@ cdef class Molecule(Graph):
 
     cpdef dict getLabeledAtoms(self)
 
-    cpdef bint isIsomorphic(self, Graph other, dict initialMap=?) except -2
+    cpdef dict get_element_count(self)
 
-    cpdef list findIsomorphism(self, Graph other, dict initialMap=?)
+    cpdef bint isIsomorphic(self, Graph other, dict initialMap=?, bint saveOrder=?) except -2
 
-    cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?) except -2
+    cpdef list findIsomorphism(self, Graph other, dict initialMap=?, bint saveOrder=?)
 
-    cpdef list findSubgraphIsomorphisms(self, Graph other, dict initialMap=?)
+    cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?, bint generateInitialMap=?, bint saveOrder=?) except -2
+
+    cpdef list findSubgraphIsomorphisms(self, Graph other, dict initialMap=?, bint saveOrder=?)
 
     cpdef bint isAtomInCycle(self, Atom atom) except -2
 
@@ -209,11 +225,15 @@ cdef class Molecule(Graph):
     
     cpdef bint isRadical(self) except -2
 
+    cpdef bint has_lone_pairs(self) except -2
+
     cpdef bint isArylRadical(self, list aromaticRings=?) except -2
 
     cpdef float calculateSymmetryNumber(self) except -1
 
-    cpdef list generate_resonance_structures(self, bint keepIsomorphic=?)
+    cpdef list generate_resonance_structures(self, bint keep_isomorphic=?, bint filter_structures=?)
+
+    cpdef identifyRingMembership(self)
 
     cpdef tuple getAromaticRings(self, list rings=?)
 
@@ -226,5 +246,7 @@ cdef class Molecule(Graph):
     cpdef bint atomIDValid(self)
 
     cpdef bint isIdentical(self, Molecule other) except -2
+
+    cpdef dict enumerate_bonds(self)
 
 cdef atom_id_counter

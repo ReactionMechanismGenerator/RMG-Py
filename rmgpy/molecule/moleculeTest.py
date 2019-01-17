@@ -1,32 +1,32 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 import unittest
 
@@ -631,6 +631,11 @@ class TestBond(unittest.TestCase):
         self.assertEqual(mol_CH2_S.atoms[0].lonePairs, 1)
         self.assertEqual(mol_carbonyl.atoms[0].lonePairs, 2)
         self.assertEqual(mol_carbonyl.atoms[1].lonePairs, 0)
+
+    def test_get_bond_string(self):
+        """Test that bond objects can return a bond string"""
+        bond = Bond(atom1=Atom(element=getElement(1)), atom2=Atom(element=getElement(6)), order=1)
+        self.assertEqual(bond.get_bond_string(), 'C-H')
         
 ################################################################################
 
@@ -657,6 +662,9 @@ class TestMolecule(unittest.TestCase):
 4    O u0 p2 {2,D}
             """
         self.molecule.append(Molecule().fromAdjacencyList(self.adjlist_2,saturateH=True))
+        
+        
+        self.mHBonds = Molecule().fromSMILES('C(NC=O)OO')
         
     def testClearLabeledAtoms(self):
         """
@@ -964,6 +972,22 @@ class TestMolecule(unittest.TestCase):
                 self.assertTrue(key in molecule.atoms)
                 self.assertTrue(value in group.atoms)
 
+    def testSubgraphIsomorphismRings(self):
+        molecule = Molecule(SMILES='C1CCCC1CCC')
+        groupNoRing = Group().fromAdjacencyList("""
+1 *1 C u0 p0 c0 r0
+        """)
+        groupRing = Group().fromAdjacencyList("""
+1 *1 C u0 p0 c0 r1
+        """)
+
+        self.assertTrue(molecule.isSubgraphIsomorphic(groupNoRing))
+        mapping = molecule.findSubgraphIsomorphisms(groupNoRing)
+        self.assertEqual(len(mapping), 3)
+        self.assertTrue(molecule.isSubgraphIsomorphic(groupRing))
+        mapping = molecule.findSubgraphIsomorphisms(groupRing)
+        self.assertEqual(len(mapping), 5)
+
     def testAdjacencyList(self):
         """
         Check the adjacency list read/write functions for a full molecule.
@@ -988,7 +1012,34 @@ class TestMolecule(unittest.TestCase):
         molecule2 = Molecule().fromSMILES('C=CC=C[CH]C')
         self.assertTrue(molecule1.isIsomorphic(molecule2))
         self.assertTrue(molecule2.isIsomorphic(molecule1))
-
+    
+    def test_generate_H_bonded_structures(self):
+        """
+        Test that the correct set of Hydrogen Bonded structures are generated
+        """
+        correctSet = ['1  C u0 p0 c0 {2,S} {4,S} {6,S} {7,S}\n2  N u0 p1 c0 {1,S} {3,S} {8,S}\n3  C u0 p0 c0 {2,S} {9,D} {10,S}\n4  O u0 p2 c0 {1,S} {5,S}\n5  O u0 p2 c0 {4,S} {8,H} {11,S}\n6  H u0 p0 c0 {1,S}\n7  H u0 p0 c0 {1,S}\n8  H u0 p0 c0 {2,S} {5,H}\n9  O u0 p2 c0 {3,D}\n10 H u0 p0 c0 {3,S}\n11 H u0 p0 c0 {5,S}\n',
+ '1  C u0 p0 c0 {2,S} {4,S} {6,S} {7,S}\n2  N u0 p1 c0 {1,S} {3,S} {8,S} {11,H}\n3  C u0 p0 c0 {2,S} {9,D} {10,S}\n4  O u0 p2 c0 {1,S} {5,S}\n5  O u0 p2 c0 {4,S} {11,S}\n6  H u0 p0 c0 {1,S}\n7  H u0 p0 c0 {1,S}\n8  H u0 p0 c0 {2,S}\n9  O u0 p2 c0 {3,D}\n10 H u0 p0 c0 {3,S}\n11 H u0 p0 c0 {2,H} {5,S}\n',
+ '1  C u0 p0 c0 {2,S} {4,S} {6,S} {7,S}\n2  N u0 p1 c0 {1,S} {3,S} {8,S} {11,H}\n3  C u0 p0 c0 {2,S} {9,D} {10,S}\n4  O u0 p2 c0 {1,S} {5,S}\n5  O u0 p2 c0 {4,S} {8,H} {11,S}\n6  H u0 p0 c0 {1,S}\n7  H u0 p0 c0 {1,S}\n8  H u0 p0 c0 {2,S} {5,H}\n9  O u0 p2 c0 {3,D}\n10 H u0 p0 c0 {3,S}\n11 H u0 p0 c0 {2,H} {5,S}\n',
+ '1  C u0 p0 c0 {2,S} {4,S} {6,S} {7,S}\n2  N u0 p1 c0 {1,S} {3,S} {8,S}\n3  C u0 p0 c0 {2,S} {9,D} {10,S}\n4  O u0 p2 c0 {1,S} {5,S}\n5  O u0 p2 c0 {4,S} {11,S}\n6  H u0 p0 c0 {1,S}\n7  H u0 p0 c0 {1,S}\n8  H u0 p0 c0 {2,S}\n9  O u0 p2 c0 {3,D} {11,H}\n10 H u0 p0 c0 {3,S}\n11 H u0 p0 c0 {5,S} {9,H}\n',
+ '1  C u0 p0 c0 {2,S} {4,S} {6,S} {7,S}\n2  N u0 p1 c0 {1,S} {3,S} {8,S}\n3  C u0 p0 c0 {2,S} {9,D} {10,S}\n4  O u0 p2 c0 {1,S} {5,S}\n5  O u0 p2 c0 {4,S} {8,H} {11,S}\n6  H u0 p0 c0 {1,S}\n7  H u0 p0 c0 {1,S}\n8  H u0 p0 c0 {2,S} {5,H}\n9  O u0 p2 c0 {3,D} {11,H}\n10 H u0 p0 c0 {3,S}\n11 H u0 p0 c0 {5,S} {9,H}\n']
+        
+        mols = [Molecule().fromAdjacencyList(k) for k in correctSet]
+        
+        self.assertEqual(set(mols),set(self.mHBonds.generate_H_bonded_structures()))
+    
+    def test_remove_H_bonds(self):
+        """
+        test that remove HBonds removes all hydrogen bonds from a given molecule
+        """
+        testMol = self.mHBonds.generate_H_bonded_structures()[0]
+        testMol.remove_H_bonds()
+        
+        for i,atm1 in enumerate(testMol.atoms):
+            for j,atm2 in enumerate(testMol.atoms):
+                if j<i and testMol.hasBond(atm1,atm2):
+                    bd = testMol.getBond(atm1,atm2)
+                    self.assertNotAlmostEqual(bd.order,0)
+                    
     def testSSSR(self):
         """
         Test the Molecule.getSmallestSetOfSmallestRings() method with a complex
@@ -1121,7 +1172,7 @@ class TestMolecule(unittest.TestCase):
         test_strings = ['[C-]#[O+]', '[C]', '[CH]', 'OO', '[H][H]', '[H]',
                        '[He]', '[O]', 'O', '[CH3]', 'C', '[OH]', 'CCC',
                        'CC', 'N#N', '[O]O', 'C[CH2]', '[Ar]', 'CCCC',
-                       'O=C=O', 'N#[C]',
+                       'O=C=O', '[C]#N',
                        ]
         for s in test_strings:
             molecule = Molecule(SMILES=s)
@@ -1210,7 +1261,7 @@ class TestMolecule(unittest.TestCase):
         """
         molecule = Molecule().fromInChI('InChI=1S/C7H12/c1-2-7-4-3-6(1)5-7/h6-7H,1-5H2')
         key = molecule.toInChIKey()
-        self.assertEqual(key, 'UMRZSTCPUPJPOJ-UHFFFAOYSA')
+        self.assertEqual(key, 'UMRZSTCPUPJPOJ-UHFFFAOYSA-N')
         
     def testAugmentedInChI(self):
         """
@@ -1232,7 +1283,7 @@ class TestMolecule(unittest.TestCase):
             2     C     u1 p0 c0 {1,S}
         """, saturateH=True)
         
-        self.assertEqual(mol.toAugmentedInChIKey(), 'VGGSQFUCUMXWEO-UHFFFAOYSA-u1,2')
+        self.assertEqual(mol.toAugmentedInChIKey(), 'VGGSQFUCUMXWEO-UHFFFAOYSA-N-u1,2')
 
     def testLinearMethane(self):
         """
@@ -1468,7 +1519,7 @@ multiplicity 2
 17 H u0 p0 c0 {6,S}
 """)
         saturated_molecule = indenyl.copy(deep=True)
-        saturated_molecule.saturate()
+        saturated_molecule.saturate_radicals()
         self.assertTrue(saturated_molecule.isIsomorphic(indene))
         
     def testFusedAromatic(self):
@@ -1536,34 +1587,6 @@ multiplicity 2
         with self.assertRaises(Exception):
             mol = Molecule().fromAugmentedInChI(malform_aug_inchi)
 
-    def testRDKitMolAtomMapping(self):
-        """
-        Test that the atom mapping returned by toRDKitMol contains the correct
-        atom indices of the atoms of the molecule when hydrogens are removed.
-        """
-        from .generator import toRDKitMol
-
-        adjlist = '''
-1 H u0 p0 c0 {2,S}
-2 C u0 p0 c0 {1,S} {3,S} {4,S} {5,S}
-3 H u0 p0 c0 {2,S}
-4 H u0 p0 c0 {2,S}
-5 O u0 p2 c0 {2,S} {6,S}
-6 H u0 p0 c0 {5,S}
-        '''
-
-        mol = Molecule().fromAdjacencyList(adjlist)
-        rdkitmol, rdAtomIndices = toRDKitMol(mol, removeHs=True, returnMapping=True)
-
-        heavy_atoms = [at for at in mol.atoms if at.number != 1]
-        for at1 in heavy_atoms:
-            for at2 in heavy_atoms:
-                if mol.hasBond(at1, at2):
-                    try:
-                        rdkitmol.GetBondBetweenAtoms(rdAtomIndices[at1],rdAtomIndices[at2])
-                    except RuntimeError:
-                        self.fail("RDKit failed in finding the bond in the original atom!")
-    
     def testUpdateLonePairs(self):
         adjlist = """
 1 Si u0 p1 c0 {2,S} {3,S}
@@ -1748,32 +1771,49 @@ multiplicity 2
         monorings, polyrings = m1.getDisparateRings()
         self.assertEqual(len(monorings), 0)
         self.assertEqual(len(polyrings), 1)
-        self.assertEqual(len(polyrings[0]),7)  # 7 carbons in cycle
-        
+        self.assertEqual(len(polyrings[0]), 7)  # 7 carbons in cycle
+
+        # norbornane + cyclobutane on chain
         m2 = Molecule(SMILES='C(CCC1C2CCC1CC2)CC1CCC1')
         monorings, polyrings = m2.getDisparateRings()
-        self.assertEqual(len(monorings),1)
-        self.assertEqual(len(polyrings),1)
-        self.assertEqual(len(monorings[0]),4)
-        self.assertEqual(len(polyrings[0]),7)
-        
-        
+        self.assertEqual(len(monorings), 1)
+        self.assertEqual(len(polyrings), 1)
+        self.assertEqual(len(monorings[0]), 4)
+        self.assertEqual(len(polyrings[0]), 7)
+
+        # spiro-octane + cyclobutane on chain
         m3 = Molecule(SMILES='C1CCC2(CC1)CC2CCCCC1CCC1')
         monorings, polyrings = m3.getDisparateRings()
         self.assertEqual(len(polyrings), 1)
-        self.assertEqual(len(monorings),1)
-        self.assertEqual(len(monorings[0]),4)
-        self.assertEqual(len(polyrings[0]),8)
-        
+        self.assertEqual(len(monorings), 1)
+        self.assertEqual(len(monorings[0]), 4)
+        self.assertEqual(len(polyrings[0]), 8)
+
+        # butane
         m4 = Molecule(SMILES='CCCC')
         monorings, polyrings = m4.getDisparateRings()
-        self.assertEqual(len(monorings),0)
-        self.assertEqual(len(polyrings),0)
-        
+        self.assertEqual(len(monorings), 0)
+        self.assertEqual(len(polyrings), 0)
+
+        # benzene + cyclopropane on chain + cyclopropane on chain
         m5 = Molecule(SMILES='C1=CC=C(CCCC2CC2)C(=C1)CCCCCC1CC1')
         monorings, polyrings = m5.getDisparateRings()
-        self.assertEqual(len(monorings),3)
-        self.assertEqual(len(polyrings),0)
+        self.assertEqual(len(monorings), 3)
+        self.assertEqual(len(polyrings), 0)
+
+        # octacene
+        m6 = Molecule(SMILES='c1ccc2cc3cc4cc5cc6cc7cc8ccccc8cc7cc6cc5cc4cc3cc2c1')
+        monorings, polyrings = m6.getDisparateRings()
+        self.assertEqual(len(monorings), 0)
+        self.assertEqual(len(polyrings), 1)
+        self.assertEqual(len(polyrings[0]), 34)
+
+        # JP-10
+        m7 = Molecule(SMILES='C1CC2C3CCC(C3)C2C1')
+        monorings, polyrings = m7.getDisparateRings()
+        self.assertEqual(len(monorings), 0)
+        self.assertEqual(len(polyrings), 1)
+        self.assertEqual(len(polyrings[0]), 10)
 
     def testGetSmallestSetOfSmallestRings(self):
         """
@@ -2182,6 +2222,115 @@ multiplicity 2
         # Test setting fingerprint
         self.molecule[0].fingerprint = 'nitronate'
         self.assertEqual(self.molecule[0].fingerprint, 'nitronate')
+
+    def testSaturateUnfilledValence(self):
+        """
+        Test the saturateUnfilledValence for an aromatic and nonaromatic case
+        """
+        #test butane
+        expected = Molecule(SMILES='CCCC')
+        test = expected.copy(deep = True)
+        test.deleteHydrogens()
+
+        hydrogens = 0
+        for atom in test.atoms:
+            if atom.isHydrogen(): hydrogens +=1
+        self.assertEquals(hydrogens, 0)
+
+        test.saturate_unfilled_valence()
+
+        hydrogens = 0
+        for atom in test.atoms:
+            if atom.isHydrogen(): hydrogens +=1
+        self.assertEquals(hydrogens, 10)
+
+        test.update()
+        self.assertTrue(expected.isIsomorphic(test))
+
+        #test benzene
+        expected = Molecule(SMILES='c1ccccc1')
+        test = expected.copy(deep = True)
+        test.deleteHydrogens()
+        hydrogens = 0
+        for atom in test.atoms:
+            if atom.isHydrogen(): hydrogens +=1
+        self.assertEquals(hydrogens, 0)
+
+        test.saturate_unfilled_valence()
+
+        hydrogens = 0
+        for atom in test.atoms:
+            if atom.isHydrogen(): hydrogens +=1
+        self.assertEquals(hydrogens, 6)
+
+        test.update()
+        self.assertTrue(expected.isIsomorphic(test))
+
+    def test_get_element_count(self):
+        """Test that we can count elements properly."""
+        mol1 = Molecule(SMILES='c1ccccc1')
+        expected1 = {'C': 6, 'H': 6}
+        result1 = mol1.get_element_count()
+        self.assertEqual(expected1, result1)
+
+        mol2 = Molecule(SMILES='CS(C)(=O)=O')
+        expected2 = {'C': 2, 'H': 6, 'O': 2, 'S': 1}
+        result2 = mol2.get_element_count()
+        self.assertEqual(expected2, result2)
+
+        mol3 = Molecule(SMILES='CCN')
+        expected3 = {'C': 2, 'H': 7, 'N': 1}
+        result3 = mol3.get_element_count()
+        self.assertEqual(expected3, result3)
+
+    def testRingPerception(self):
+        """Test that identifying ring membership of atoms works properly."""
+        mol = Molecule(SMILES='c12ccccc1cccc2')
+        mol.identifyRingMembership()
+        for atom in mol.atoms:
+            if atom.element == 'C':
+                self.assertTrue(atom.props['inRing'])
+            elif atom.element == 'H':
+                self.assertFalse(atom.props['inRing'])
+
+    def test_enumerate_bonds(self):
+        """Test that generating a count of bond labels works properly."""
+        adj_list = '''
+        1  O u0 p2 c0 {4,S} {23,S} {24,H}
+        2  O u0 p2 c0 {8,S} {23,H} {24,S}
+        3  C u0 p0 c0 {4,S} {6,S} {14,S} {15,S}
+        4  C u0 p0 c0 {1,S} {3,S} {16,S} {17,S}
+        5  C u0 p0 c0 {7,S} {12,S} {18,S} {19,S}
+        6  C u0 p0 c0 {3,S} {8,B} {9,B}
+        7  C u0 p0 c0 {5,S} {9,B} {10,B}
+        8  C u0 p0 c0 {2,S} {6,B} {11,B}
+        9  C u0 p0 c0 {6,B} {7,B} {22,S}
+        10 C u0 p0 c0 {7,B} {11,B} {20,S}
+        11 C u0 p0 c0 {8,B} {10,B} {21,S}
+        12 C u0 p0 c0 {5,S} {13,T}
+        13 C u0 p0 c0 {12,T} {25,S}
+        14 H u0 p0 c0 {3,S}
+        15 H u0 p0 c0 {3,S}
+        16 H u0 p0 c0 {4,S}
+        17 H u0 p0 c0 {4,S}
+        18 H u0 p0 c0 {5,S}
+        19 H u0 p0 c0 {5,S}
+        20 H u0 p0 c0 {10,S}
+        21 H u0 p0 c0 {11,S}
+        22 H u0 p0 c0 {9,S}
+        23 H u0 p0 c0 {1,S} {2,H}
+        24 H u0 p0 c0 {1,H} {2,S}
+        25 H u0 p0 c0 {13,S}
+        '''
+        mol = Molecule().fromAdjacencyList(adj_list)
+        bonds = mol.enumerate_bonds()
+        self.assertEqual(bonds['C#C'], 1)
+        self.assertEqual(bonds['C-C'], 4)
+        self.assertEqual(bonds['C-H'], 10)
+        self.assertEqual(bonds['C-O'], 2)
+        self.assertEqual(bonds['C:C'], 6)
+        self.assertEqual(bonds['H-O'], 2)
+        self.assertEqual(bonds['H~O'], 2)
 
 ################################################################################
 

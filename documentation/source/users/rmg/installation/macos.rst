@@ -14,6 +14,8 @@ but this is optional (without it you may need to add `sudo` before some commands
 You will also need gfortran, Python, Numpy and Scipy. We typically install them using 
 `homebrew-python <https://github.com/Homebrew/homebrew-python>`_  but other methods may work as well.
 
+Warning: This installation method is no longer actively maintained, and is not guaranteed to work as written.
+
 * For example::
 
 	brew tap homebrew/python
@@ -40,6 +42,11 @@ You will also need gfortran, Python, Numpy and Scipy. We typically install them 
 	
 	export RDBASE=/usr/local/share/RDKit
 
+* The following dependencies are also required for core RMG functions and must be installed from source before building RMG:
+
+  **pyrdl:** RingDecomposerLib, used for ring perception. Download from https://github.com/rareylab/RingDecomposerLib. Requires CMAKE to compile.
+
+  **lpsolve:** Mixed integer linear programming solver. Download from https://sourceforge.net/projects/lpsolve/. Python extension also required.
 
 * Make a directory to put everything in::
 

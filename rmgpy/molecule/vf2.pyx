@@ -1,29 +1,29 @@
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 """
 This module contains graph ismorphism functions that implement the VF2
@@ -63,44 +63,44 @@ cdef class VF2:
         self.graph2 = value
         self.graph2.sortVertices()
 
-    cpdef bint isIsomorphic(self, Graph graph1, Graph graph2, dict initialMapping) except -2:
+    cpdef bint isIsomorphic(self, Graph graph1, Graph graph2, dict initialMapping, bint saveOrder=False) except -2:
         """
         Return ``True`` if graph `graph1` is isomorphic to graph `graph2` with
         the optional initial mapping `initialMapping`, or ``False`` otherwise.
         """
-        self.isomorphism(graph1, graph2, initialMapping, False, False)
+        self.isomorphism(graph1, graph2, initialMapping, False, False, saveOrder)
         return self.isMatch
         
-    cpdef list findIsomorphism(self, Graph graph1, Graph graph2, dict initialMapping):
+    cpdef list findIsomorphism(self, Graph graph1, Graph graph2, dict initialMapping, bint saveOrder=False):
         """
         Return a list of dicts of all valid isomorphism mappings from graph
         `graph1` to graph `graph2` with the optional initial mapping 
         `initialMapping`. If no valid isomorphisms are found, an empty list is
         returned.
         """
-        self.isomorphism(graph1, graph2, initialMapping, False, True)
+        self.isomorphism(graph1, graph2, initialMapping, False, True, saveOrder)
         return self.mappingList
 
-    cpdef bint isSubgraphIsomorphic(self, Graph graph1, Graph graph2, dict initialMapping) except -2:
+    cpdef bint isSubgraphIsomorphic(self, Graph graph1, Graph graph2, dict initialMapping, bint saveOrder=False) except -2:
         """
         Return ``True`` if graph `graph1` is subgraph isomorphic to subgraph
         `graph2` with the optional initial mapping `initialMapping`, or
         ``False`` otherwise.
         """
-        self.isomorphism(graph1, graph2, initialMapping, True, False)
+        self.isomorphism(graph1, graph2, initialMapping, True, False, saveOrder)
         return self.isMatch
 
-    cpdef list findSubgraphIsomorphisms(self, Graph graph1, Graph graph2, dict initialMapping):
+    cpdef list findSubgraphIsomorphisms(self, Graph graph1, Graph graph2, dict initialMapping, bint saveOrder=False):
         """
         Return a list of dicts of all valid subgraph isomorphism mappings from
         graph `graph1` to subgraph `graph2` with the optional initial mapping 
         `initialMapping`. If no valid subgraph isomorphisms are found, an empty
         list is returned.
         """
-        self.isomorphism(graph1, graph2, initialMapping, True, True)
+        self.isomorphism(graph1, graph2, initialMapping, True, True, saveOrder)
         return self.mappingList
         
-    cdef isomorphism(self, Graph graph1, Graph graph2, dict initialMapping, bint subgraph, bint findAll):
+    cdef isomorphism(self, Graph graph1, Graph graph2, dict initialMapping, bint subgraph, bint findAll, bint saveOrder=False):
         """
         Evaluate the isomorphism relationship between graphs `graph1` and
         `graph2` with optional initial mapping `initialMapping`. If `subgraph`
@@ -112,11 +112,11 @@ cdef class VF2:
         
         if self.graph1 is not graph1:
             self.graph1 = graph1
-            graph1.sortVertices()
+            graph1.sortVertices(saveOrder)
             
         if self.graph2 is not graph2:
             self.graph2 = graph2
-            graph2.sortVertices()
+            graph2.sortVertices(saveOrder)
         
         self.initialMapping = initialMapping
         self.subgraph = subgraph
@@ -161,6 +161,18 @@ cdef class VF2:
             callDepth -= len(self.initialMapping)
             
         self.match(callDepth)
+        
+        if saveOrder:
+            graph1.restore_vertex_order()
+            graph2.restore_vertex_order()
+
+        # We're done, so clear the mappings to prevent downstream effects
+        for vertex1 in graph1.vertices:
+            vertex1.mapping = None
+            vertex1.terminal = False
+        for vertex2 in graph2.vertices:
+            vertex2.mapping = None
+            vertex2.terminal = False
 
     cdef bint match(self, int callDepth) except -2:
         """

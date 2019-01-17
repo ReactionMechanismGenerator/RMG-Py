@@ -1,32 +1,32 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 import unittest
 from external.wip import work_in_progress
@@ -349,11 +349,11 @@ class TestGroupAtom(unittest.TestCase):
         Tests the countBonds function
         """
         adjlist = """
-1 *2 C     u0     {2,[D,T]} {3,S}
-2 *3 C     u0     {1,[D,T]} {4,B}
-3    C     ux     {1,S} {5,D}
-4    C     u[0,1] {2,B}
-5    O     u0     {3,D}
+1 *2 C u0     {2,[D,T]} {3,S}
+2 *3 C u0     {1,[D,T]} {4,B}
+3    C ux     {1,S} {5,D}
+4    C u[0,1] {2,B}
+5    O u0     {3,D}
 """
         test = Group().fromAdjacencyList(adjlist)
         #returns a list of [single, allDouble, rDouble, oDouble, sDouble, triple, benzene]
@@ -616,9 +616,9 @@ class TestGroup(unittest.TestCase):
 
     def setUp(self):
         self.adjlist = """
-1 *2 [Cs,Cd] u0 {2,[S,D]} {3,S}
-2 *1 [Os,Od] u0 {1,[S,D]}
-3    R!H     u0 {1,S}
+1 *2 [Cs,Cd]   u0 {2,[S,D]} {3,S}
+2 *1 [O2s,O2d] u0 {1,[S,D]}
+3    R!H       u0 {1,S}
             """
         self.group = Group().fromAdjacencyList(self.adjlist)
         
@@ -685,8 +685,8 @@ class TestGroup(unittest.TestCase):
         self.assertTrue(atom1.radicalElectrons == [0])
         
         self.assertTrue(atom2.label == '*1')
-        self.assertTrue(atom2.atomType[0].label in ['Os','Od'])
-        self.assertTrue(atom2.atomType[1].label in ['Os','Od'])
+        self.assertTrue(atom2.atomType[0].label in ['O2s','O2d'])
+        self.assertTrue(atom2.atomType[1].label in ['O2s','O2d'])
         self.assertTrue(atom2.radicalElectrons == [0])
         
         self.assertTrue(atom3.label == '')
@@ -708,9 +708,9 @@ class TestGroup(unittest.TestCase):
         Test the Group.isIsomorphic() method.
         """
         adjlist = """
-1  *1 [Os,Od] u0 {3,[S,D]}
-2     R!H     u0 {3,S}
-3  *2 [Cs,Cd] u0 {1,[S,D]} {2,S}
+1  *1 [O2s,O2d] u0 {3,[S,D]}
+2     R!H       u0 {3,S}
+3  *2 [Cs,Cd]   u0 {1,[S,D]} {2,S}
             """
         group = Group().fromAdjacencyList(adjlist)
         self.assertTrue(self.group.isIsomorphic(group))
@@ -721,9 +721,9 @@ class TestGroup(unittest.TestCase):
         Test the Group.findIsomorphism() method.
         """
         adjlist = """
-1  *1 [Os,Od] u0 {3,[S,D]}
-2     R!H     u0 {3,S}
-3  *2 [Cs,Cd] u0 {1,[S,D]} {2,S}
+1  *1 [O2s,O2d] u0 {3,[S,D]}
+2     R!H       u0 {3,S}
+3  *2 [Cs,Cd]   u0 {1,[S,D]} {2,S}
             """
         group = Group().fromAdjacencyList(adjlist)
         result = self.group.findIsomorphism(group)
@@ -765,6 +765,50 @@ class TestGroup(unittest.TestCase):
             self.assertTrue(atom1 in self.group.atoms)
             self.assertTrue(atom2 in group.atoms)
             self.assertTrue(atom1.equivalent(atom2))
+    
+    def testGenerateExtensions(self):
+        """
+        test that appropriate group extensions are being generated
+        """
+        
+        testGrp = Group().fromAdjacencyList("""
+1 *2 C u0 {2,[S,D]} 
+2 *1 C u[0,1] {1,[S,D]} {3,S}
+3    R!H     u0 {2,S}
+            """)
+        
+        extensions = testGrp.getExtensions(R=[atomTypes[i] for i in ['C','O','H']])
+        extensions = [a[0] for a in extensions]
+        
+        ans = ['1 *2 C   u0     {2,[S,D]} {4,[S,D,T,B]}\n2 *1 C   u[0,1] {1,[S,D]} {3,S}\n3    R!H u0     {2,S}\n4    R!H ux     {1,[S,D,T,B]}\n',
+ '1 *2 C   u0     {2,S}\n2 *1 C   u[0,1] {1,S} {3,S}\n3    R!H u0     {2,S}\n',
+ '1 *2 C   u0     {2,D}\n2 *1 C   u[0,1] {1,D} {3,S}\n3    R!H u0     {2,S}\n',
+ '1 *2 C   u0 {2,[S,D]}\n2 *1 C   u0 {1,[S,D]} {3,S}\n3    R!H u0 {2,S}\n',
+ '1 *2 C   u0 {2,[S,D]}\n2 *1 C   u1 {1,[S,D]} {3,S}\n3    R!H u0 {2,S}\n',
+ '1 *2 C   u0     {2,[S,D]}\n2 *1 C   u[0,1] {1,[S,D]} {3,S} {4,[S,D,T,B]}\n3    R!H u0     {2,S}\n4    R!H ux     {2,[S,D,T,B]}\n',
+ '1 *2 C   u0     {2,S}\n2 *1 C   u[0,1] {1,S} {3,S}\n3    R!H u0     {2,S}\n',
+ '1 *2 C   u0     {2,D}\n2 *1 C   u[0,1] {1,D} {3,S}\n3    R!H u0     {2,S}\n',
+ '1 *2 C u0     {2,[S,D]}\n2 *1 C u[0,1] {1,[S,D]} {3,S}\n3    C u0     {2,S}\n',
+ '1 *2 C u0     {2,[S,D]}\n2 *1 C u[0,1] {1,[S,D]} {3,S}\n3    O u0     {2,S}\n',
+ '1 *2 C   u0     {2,[S,D]}\n2 *1 C   u[0,1] {1,[S,D]} {3,S}\n3    R!H u0     {2,S} {4,[S,D,T,B]}\n4    R!H ux     {3,[S,D,T,B]}\n',
+ '1 *2 C   u0     {2,[S,D]} {3,[S,D,T,B]}\n2 *1 C   u[0,1] {1,[S,D]} {3,S}\n3    R!H u0     {1,[S,D,T,B]} {2,S}\n']
+        ans = [Group().fromAdjacencyList(k) for k in ans]
+
+        for v in ans:
+            boos = [ext.isIdentical(v) and ext.isSubgraphIsomorphic(v,generateInitialMap=True) for ext in extensions]
+            self.assertTrue(any(boos),'generated extensions did not match expected extensions')
+    
+    def testGeneratedExtensionsSubgraphs(self):
+        testGrp = Group().fromAdjacencyList("""
+1 *2 C u0 {2,[S,D]} 
+2 *1 C u[0,1] {1,[S,D]} {3,S}
+3    R!H     u0 {2,S}
+            """)
+        extensions = testGrp.getExtensions(R=[atomTypes[i] for i in ['C','O','H']])
+        extensions = [a[0] for a in extensions]
+        
+        for ext in extensions:
+            self.assertTrue(ext.isSubgraphIsomorphic(testGrp,generateInitialMap=True))
         
     def testPickle(self):
         """
@@ -803,8 +847,8 @@ class TestGroup(unittest.TestCase):
         self.assertTrue(group1.isIsomorphic(answer1))
 
         answer2 = """
-1  *1 C  u0 {2,S} {3,[S,D]}
-2  *2 C  u0 {1,S}
+1  *1 C       u0 {2,S} {3,[S,D]}
+2  *2 C       u0 {1,S}
 3     [Cs,Cd] u0 {1,[S,D]}
 """
 
@@ -858,7 +902,7 @@ class TestGroup(unittest.TestCase):
 
         adjlist6 = """
 1  *1 Ct u0 {2,T}
-2     C   u0 {1,T}
+2     C  u0 {1,T}
             """
         group5 = Group().fromAdjacencyList(adjlist5)
         group6 = Group().fromAdjacencyList(adjlist6)
@@ -867,12 +911,12 @@ class TestGroup(unittest.TestCase):
         self.assertTrue(group6.isIsomorphic(newGroup))
         #test addition of lone pairs
         adjlist7 = """
-1  *1 N1d u0
+1  *1 N1dc u0
             """
 
         adjlist8 = """
-1  *1 N1d u0 p2 {2,D}
-2     C   u0 {1,D}
+1  *1 N1dc u0 p2 {2,D}
+2     C    u0 {1,D}
             """
         group7 = Group().fromAdjacencyList(adjlist7)
         group8 = Group().fromAdjacencyList(adjlist8)
@@ -887,7 +931,7 @@ class TestGroup(unittest.TestCase):
             """
 
         adjlist10 = """
-1  *1 C u0 {2,S} {3,D}
+1  *1 C  u0 {2,S} {3,D}
 2     Ct u0 {1,S} {4,T}
 3     C  u0 {1,D}
 4     C  u0 {2,T}
@@ -1040,7 +1084,7 @@ class TestGroup(unittest.TestCase):
 1  *1 Cbf u0 p2 c0 {2,B}
 2  *2 Cb u0 p0 c0 {1,B} {3,B}
 3  *3 Cb u0 p0 c0 {2,B} {4,S}
-4  *4 O u0 p0 c0 {3,S}
+4  *4 O  u0 p0 c0 {3,S}
     """
 
         adjlist7="""
@@ -1071,7 +1115,7 @@ class TestGroup(unittest.TestCase):
 9  C u0 {8,B} {10,B}
 10 C u0 {9,B} {11,B}
 11 C u0 {10,B} {12,B}
-12  C u0 {11,B} {7,B}
+12 C u0 {11,B} {7,B}
         """
 
         naphthalene ="""
@@ -1182,7 +1226,7 @@ class TestGroup(unittest.TestCase):
         adjlist2 = """
     1 *1 R!H       u1 {2,[S,D]} {4,[S,D]}
     2 *2 [CO,Cdd]  u0 {1,[S,D]} {3,[S,D]}
-    3 *3 [Od,Cd]   u0 {2,[S,D]}
+    3 *3 [O2d,Cd]  u0 {2,[S,D]}
     4 *4 [Cdd,Cd]  u0 {1,[S,D]}
 """
         group2 = Group().fromAdjacencyList(adjlist2)
@@ -1226,24 +1270,23 @@ class TestGroup(unittest.TestCase):
 
         #test the creation of a positively charged species
         adjlist = """
-1  *1 N5s u0
+1  *1 N5sc u0
         """
         answer_smiles = '[NH4+]'
         self.assertTrue(performSampMoleComparison(adjlist, answer_smiles))
 
         #test the creation of a negatively charged species
-        #commented out until new nitrogen atom types added in
-#         adjlist = """
-# 1  *1 N2s u0
-#         """
-#         answer_smiles = '[NH2-]'
-#         self.assertTrue(performSampMoleComparison(adjlist, answer_smiles))
+        adjlist = """
+1  *1 N1sc u0
+        """
+        answer_smiles = '[NH2-]'
+        self.assertTrue(performSampMoleComparison(adjlist, answer_smiles))
 
         #test creation of charged species when some single bonds present
         adjlist = """
-1 *2 [N5s,N5d] u0 {2,S} {3,S}
-2 *3 R!H       u1 {1,S}
-3 *4 H         u0 {1,S}
+1 *2 [N5sc,N5dc] u0 {2,S} {3,S}
+2 *3 R!H         u1 {1,S}
+3 *4 H           u0 {1,S}
 """
         answer_smiles = '[NH3+][CH2]'
         self.assertTrue(performSampMoleComparison(adjlist, answer_smiles))
@@ -1364,17 +1407,29 @@ graph G {
 """)
 
         end2 = Group().fromAdjacencyList("""
-1 *2 Os u0 {2,S}
-2 *3 Cs u0 {1,S}
+1 *2 O2s u0 {2,S}
+2 *3 Cs  u0 {1,S}
 """)
         desiredMerge2 = Group().fromAdjacencyList("""
 1 *1 R!H u1 {2,S} {4,S}
 2 *4 R!H u0 {1,S} {3,S}
-3 *2 Os u0 {2,S} {4,S}
-4 *3 Cs u0 {3,S} {1,S}
+3 *2 O2s u0 {2,S} {4,S}
+4 *3 Cs  u0 {3,S} {1,S}
 """)
         mergedGroup = backbone2.mergeGroups(end2)
         self.assertTrue(mergedGroup.isIdentical(desiredMerge2))
+
+    def test_get_element_count(self):
+        """Test that we can count elements properly."""
+        group = Group().fromAdjacencyList("""
+1 R!H u0 {2,S}
+2 [Cs,Cd,Ct,Cb] u0 {1,S} {3,S}
+3 [Cs,Cd,Ct,Cb,O2s,S2s] u0 {2,S} {4,S}
+4 N1s u0 {3,S}
+""")
+        expected = {'C': 1, 'N': 1}
+        result = group.get_element_count()
+        self.assertEqual(expected, result)
 
 ################################################################################
 

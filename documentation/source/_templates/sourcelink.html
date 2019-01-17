@@ -8,7 +8,12 @@
     :license: BSD, see LICENSE for details.
 #}
 {%- if show_source and sourcename %}
-
-<h4><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/{{ sourcename|replace('.rst.txt','.rst')|e }}"
-           rel="nofollow">Edit this page</a></h4>
+<div role="note" aria-label="source link">
+    <h3>{{ _('This Page') }}</h3>
+        <ul class="this-page-menu">
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">Report A Bug</a></li>
+            <li><a href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/master/documentation/source/{{ sourcename|replace('.rst.txt','.rst')|e }}"
+                   rel="nofollow">View Source</a></li>
+        </ul>
+</div>
 {%- endif %}

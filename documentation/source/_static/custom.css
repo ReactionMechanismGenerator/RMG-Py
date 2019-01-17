@@ -1,0 +1,87 @@
+@import url("classic.css");
+
+/* ----- overall styles ----- */
+
+div.body {
+    max-width: none;
+}
+
+/* ----- sidebar styles ----- */
+
+div.sidebarlogo {
+    text-align: center;
+    padding: 20px;
+}
+
+div.sphinxsidebarwrapper {
+    padding: 0;
+}
+
+#sidebar .icon {
+    float: left;
+    width: 40px;
+    padding: 5px;
+}
+
+#sidebar div.menuitem {
+    padding: 5px;
+}
+
+#sidebar div.menutext {
+    text-align: left;
+    margin-left: 50px;
+    padding: 1px 5px;
+}
+
+#sidebar div.menutitle {
+    color: #F04040;
+    font-size: 125%;
+    vertical-align: bottom;
+}
+
+#sidebar div.menudesc {
+    color: #FFFFFF;
+    font-size: 90%;
+    vertical-align: top;
+}
+
+#rmgsidebar a {
+    text-decoration: none;
+}
+
+#rmgsidebar div.menuitem {
+    min-height: 50px;
+}
+
+#rmgsidebar div.menuitem:hover {
+    background-color: #606060;
+}
+
+/* ----- table styles ----- */
+
+th {
+    background-color: transparent;
+}
+
+table.rmg {
+    border-top: 2px solid #000000;
+    border-bottom: 2px solid #000000;
+    border-collapse: collapse;
+    margin: 10px 10px 20px 30px;
+}
+
+table.rmg thead {
+    border-bottom: 1px solid #000000;
+}
+
+table.rmg th,
+table.rmg td {
+    padding: 5px;
+}
+
+/* ----- code block styles ----- */
+
+pre {
+    border-top: 1px solid #F04040;
+    border-bottom: 1px solid #F04040;
+}

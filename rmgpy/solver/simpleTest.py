@@ -1,32 +1,32 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 import unittest
 import numpy
@@ -81,7 +81,7 @@ class SimpleReactorCheck(unittest.TestCase):
         edgeReactions = []
 
         T = 1000; P = 1.0e5
-        rxnSystem = SimpleReactor(T, P, initialMoleFractions={C2H5: 0.1, CH3: 0.1, CH4: 0.4, C2H6: 0.4}, termination=[])
+        rxnSystem = SimpleReactor(T, P, initialMoleFractions={C2H5: 0.1, CH3: 0.1, CH4: 0.4, C2H6: 0.4}, nSims=1, termination=[])
 
         rxnSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
 
@@ -146,7 +146,7 @@ class SimpleReactorCheck(unittest.TestCase):
             edgeSpecies = []
             coreReactions = [rxn]
             
-            rxnSystem0 = SimpleReactor(T,P,initialMoleFractions={CH4:0.2,CH3:0.1,C2H6:0.35,C2H5:0.15, H2:0.2},termination=[])
+            rxnSystem0 = SimpleReactor(T,P,initialMoleFractions={CH4:0.2,CH3:0.1,C2H6:0.35,C2H5:0.15, H2:0.2},nSims=1,termination=[])
             rxnSystem0.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
             dydt0 = rxnSystem0.residual(0.0, rxnSystem0.y, numpy.zeros(rxnSystem0.y.shape))[0]
             numCoreSpecies = len(coreSpecies)
@@ -185,7 +185,7 @@ class SimpleReactorCheck(unittest.TestCase):
         edgeSpecies = []
         coreReactions = rxnList
         
-        rxnSystem0 = SimpleReactor(T,P,initialMoleFractions={CH4:0.2,CH3:0.1,C2H6:0.35,C2H5:0.15, H2:0.2},termination=[])
+        rxnSystem0 = SimpleReactor(T,P,initialMoleFractions={CH4:0.2,CH3:0.1,C2H6:0.35,C2H5:0.15, H2:0.2},nSims=1,termination=[])
         rxnSystem0.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
         dfdt0 = rxnSystem0.residual(0.0, rxnSystem0.y, numpy.zeros(rxnSystem0.y.shape))[0]
         solver_dfdk = rxnSystem0.computeRateDerivative()
@@ -207,7 +207,7 @@ class SimpleReactorCheck(unittest.TestCase):
             rxnList[i].kinetics.A.value_si = rxnList[i].kinetics.A.value_si*(1+1e-3)               
             dk = rxnList[i].getRateCoefficient(T,P) - k0
 
-            rxnSystem = SimpleReactor(T,P,initialMoleFractions={CH4:0.2,CH3:0.1,C2H6:0.35,C2H5:0.15, H2:0.2},termination=[])
+            rxnSystem = SimpleReactor(T,P,initialMoleFractions={CH4:0.2,CH3:0.1,C2H6:0.35,C2H5:0.15, H2:0.2},nSims=1,termination=[])
             rxnSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
 
             dfdt = rxnSystem.residual(0.0, rxnSystem.y, numpy.zeros(rxnSystem.y.shape))[0]  
@@ -274,7 +274,7 @@ class SimpleReactorCheck(unittest.TestCase):
                         speciesDict['Ar']:4.0}
         
         # Initialize the model
-        rxnSystem = SimpleReactor(T,P,initialMoleFractions=initialMoleFractions,termination=None)
+        rxnSystem = SimpleReactor(T,P,initialMoleFractions=initialMoleFractions,nSims=1,termination=None)
         rxnSystem.initializeModel(speciesList, reactionList, [], [])
         
         # Advance to time = 0.1 s
@@ -303,7 +303,7 @@ class SimpleReactorCheck(unittest.TestCase):
                         speciesDict['CH3']:1}
         
         # Initialize the model
-        rxnSystem = SimpleReactor(T,P,initialMoleFractions=initialMoleFractions,termination=None)
+        rxnSystem = SimpleReactor(T,P,initialMoleFractions=initialMoleFractions,nSims=1,termination=None)
         rxnSystem.initializeModel(speciesList, reactionList, [], [])
         
         # Advance to time = 5 s
@@ -343,7 +343,7 @@ class SimpleReactorCheck(unittest.TestCase):
                         speciesDict['CH4']:0.001}
 
         # Initialize the model
-        rxnSystem = SimpleReactor(T,P,initialMoleFractions=initialMoleFractions,termination=None)
+        rxnSystem = SimpleReactor(T,P,initialMoleFractions=initialMoleFractions,nSims=1,termination=None)
         rxnSystem.initializeModel(speciesList, reactionList, [], [])
 
         # Advance to time = 0.1 s
@@ -372,7 +372,7 @@ class SimpleReactorCheck(unittest.TestCase):
                         speciesDict['CH4']:0.5}
 
         # Initialize the model
-        rxnSystem = SimpleReactor(T,P,initialMoleFractions=initialMoleFractions,termination=None)
+        rxnSystem = SimpleReactor(T,P,initialMoleFractions=initialMoleFractions,nSims=1,termination=None)
         rxnSystem.initializeModel(speciesList, reactionList, [], [])
 
         # Advance to time = 5 s

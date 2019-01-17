@@ -1,32 +1,32 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2015 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 import sys
 import os
@@ -59,6 +59,7 @@ Cython.Compiler.Options.annotate = True
 
 ################################################################################
 
+
 def getMainExtensionModules():
     return [
         # Kinetics
@@ -76,8 +77,8 @@ def getMainExtensionModules():
         Extension('rmgpy.molecule.molecule', ['rmgpy/molecule/molecule.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.symmetry', ['rmgpy/molecule/symmetry.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.vf2', ['rmgpy/molecule/vf2.pyx'], include_dirs=['.']),
-        Extension('rmgpy.molecule.parser', ['rmgpy/molecule/parser.py'], include_dirs=['.']),
-        Extension('rmgpy.molecule.generator', ['rmgpy/molecule/generator.py'], include_dirs=['.']),
+        Extension('rmgpy.molecule.converter', ['rmgpy/molecule/converter.py'], include_dirs=['.']),
+        Extension('rmgpy.molecule.translator', ['rmgpy/molecule/translator.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.util', ['rmgpy/molecule/util.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.inchi', ['rmgpy/molecule/inchi.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.resonance', ['rmgpy/molecule/resonance.py'], include_dirs=['.']),
@@ -109,8 +110,10 @@ def getMainExtensionModules():
         Extension('rmgpy.quantity', ['rmgpy/quantity.py'], include_dirs=['.']),
         Extension('rmgpy.reaction', ['rmgpy/reaction.py'], include_dirs=['.']),
         Extension('rmgpy.species', ['rmgpy/species.py'], include_dirs=['.']),
+        Extension('rmgpy.chemkin', ['rmgpy/chemkin.pyx'], include_dirs=['.']),
     ]
-    
+
+
 def getSolverExtensionModules():
     return [
         Extension('rmgpy.solver.base', ['rmgpy/solver/base.pyx'], include_dirs=['.']),
@@ -118,7 +121,8 @@ def getSolverExtensionModules():
         Extension('rmgpy.solver.liquid', ['rmgpy/solver/liquid.pyx'], include_dirs=['.']),
     ]
 
-def getCanthermExtensionModules():
+
+def getArkaneExtensionModules():
     return [
         # Kinetics
         Extension('rmgpy.kinetics.arrhenius', ['rmgpy/kinetics/arrhenius.pyx']),
@@ -168,11 +172,11 @@ if 'solver' in sys.argv:
     # This is for `python setup.py build_ext solver`
     sys.argv.remove('solver')
     ext_modules.extend(getSolverExtensionModules())
-if 'cantherm' in sys.argv:
-    # This is for `python setup.py build_ext cantherm`
-    sys.argv.remove('cantherm')
+if 'arkane' in sys.argv:
+    # This is for `python setup.py build_ext arkane`
+    sys.argv.remove('arkane')
     ext_modules.extend(getMainExtensionModules())
-    ext_modules.extend(getCanthermExtensionModules())
+    ext_modules.extend(getArkaneExtensionModules())
 if 'minimal' in sys.argv:
     # This starts with the full install list, but removes anything that has a pure python mode
     # i.e. in only includes things whose source is .pyx
@@ -185,8 +189,19 @@ if 'minimal' in sys.argv:
             if os.path.splitext(source)[1] == '.pyx':
                 ext_modules.append(module)
 
-scripts=['cantherm.py', 'rmg.py', 'scripts/diffModels.py', 'scripts/generateFluxDiagram.py',
-         'scripts/generateReactions.py', 'scripts/mergeModels.py','scripts/sensitivity.py', 'scripts/thermoEstimator.py',
+scripts=['Arkane.py',
+         'rmg.py',
+         'scripts/checkModels.py',
+         'scripts/convertFAME.py',
+         'scripts/diffModels.py',
+         'scripts/generateChemkinHTML.py',
+         'scripts/generateFluxDiagram.py',
+         'scripts/generateReactions.py',
+         'scripts/machineWriteDatabase.py',
+         'scripts/mergeModels.py',
+         'scripts/simulate.py',
+         'scripts/standardizeModelSpeciesNames.py',
+         'scripts/thermoEstimator.py',
          'testing/databaseTest.py']
 
 modules = []
@@ -196,9 +211,16 @@ for root, dirs, files in os.walk('rmgpy'):
     for file in files:
         if file.endswith('.py') or file.endswith('.pyx'):
             if 'Test' not in file and '__init__' not in file:
-                if not root.endswith('rmgpy/cantherm/files'):
-                    module = 'rmgpy' + root.partition('rmgpy')[-1].replace('/','.') + '.' + file.partition('.py')[0]
-                    modules.append(module)       
+                module = 'rmgpy' + root.partition('rmgpy')[-1].replace('/','.') + '.' + file.partition('.py')[0]
+                modules.append(module)
+for root, dirs, files in os.walk('arkane'):
+    if 'data' in root:
+        continue
+    for file in files:
+        if file.endswith('.py') or file.endswith('.pyx'):
+            if 'Test' not in file and '__init__' not in file:
+                module = 'arkane' + root.partition('arkane')[-1].replace('/','.') + '.' + file.partition('.py')[0]
+                modules.append(module)
 
 # Initiate the build and/or installation
 
@@ -211,7 +233,7 @@ setup(name='RMG-Py',
     author='William H. Green and the RMG Team',
     author_email='rmg_dev@mit.edu',
     url='http://reactionmechanismgenerator.github.io',
-    packages=['rmgpy'],
+    packages=['rmgpy','arkane'],
     py_modules = modules,
     scripts=scripts,
     cmdclass = {'build_ext': build_ext},

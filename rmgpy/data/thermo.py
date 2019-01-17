@@ -1,32 +1,32 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 """
 
@@ -48,6 +48,7 @@ from rmgpy.thermo import NASAPolynomial, NASA, ThermoData, Wilhoit
 from rmgpy.molecule import Molecule, Bond, Group
 import rmgpy.molecule
 from rmgpy.species import Species
+from rmgpy.ml.estimator import MLEstimator
 
 #: This dictionary is used to add multiplicity to species label
 _multiplicity_labels = {1:'S',2:'D',3:'T',4:'Q',5:'V',}
@@ -108,6 +109,9 @@ def saveEntry(f, entry):
         f.write('        ],\n')
         if entry.data.Tmin is not None: f.write('        Tmin = {0!r},\n'.format(entry.data.Tmin))
         if entry.data.Tmax is not None: f.write('        Tmax = {0!r},\n'.format(entry.data.Tmax))
+        if entry.data.E0 is not None: f.write('        E0 = {0!r},\n'.format(entry.data.E0))
+        if entry.data.Cp0 is not None: f.write('        Cp0 = {0!r},\n'.format(entry.data.Cp0))
+        if entry.data.CpInf is not None: f.write('        CpInf = {0!r},\n'.format(entry.data.CpInf))
         f.write('    ),\n')
     else:
         f.write('    thermo = {0!r},\n'.format(entry.data))
@@ -343,6 +347,9 @@ def convertRingToSubMolecule(ring):
     """
     This function takes a ring structure (can either be monoring or polyring) to create a new 
     submolecule with newly deep copied atoms
+
+    Outputted submolecules may have incomplete valence and may cause errors with some Molecule.methods(), such
+    as updateAtomTypes() or update(). In the future we may consider using groups for the sub-molecules.
     """
     
     atomsMapping = {}
@@ -356,7 +363,7 @@ def convertRingToSubMolecule(ring):
             if bondedAtom in ring:
                 if not mol0.hasBond(atomsMapping[atom],atomsMapping[bondedAtom]):
                     mol0.addBond(Bond(atomsMapping[atom],atomsMapping[bondedAtom],order=bond.order))
-    
+
     mol0.updateMultiplicity()
     mol0.updateConnectivityValues()
     return mol0, atomsMapping
@@ -496,7 +503,7 @@ def bicyclicDecompositionForPolyring(polyring):
                     pass
                 else:
                     aromaticBond_inA.setOrderNum(1)
-        mergedRing.update()#
+        mergedRing.saturate_unfilled_valence(update = True)
         bicyclicsMergedFromRingPair.append(mergedRing)
 
     return bicyclicsMergedFromRingPair, ringOccurancesDict
@@ -508,10 +515,10 @@ def splitBicyclicIntoSingleRings(bicyclic_submol):
     """
     SSSR = bicyclic_submol.getDeterministicSmallestSetOfSmallestRings()
 
-    return [convertRingToSubMolecule(SSSR[0])[0], 
+    return [convertRingToSubMolecule(SSSR[0])[0],
                 convertRingToSubMolecule(SSSR[1])[0]]
 
-def saturateRingBonds(ring_submol):
+def saturate_ring_bonds(ring_submol):
     """
     Given a ring submolelcule (`Molecule`), makes a deep copy and converts non-single bonds 
     into single bonds, returns a new saturated submolecule (`Molecule`)
@@ -533,7 +540,8 @@ def saturateRingBonds(ring_submol):
                     if bond.isBenzene():
                         bond_order = 1.5
                     mol0.addBond(Bond(atomsMapping[atom],atomsMapping[bondedAtom],order=bond_order))
-    
+
+    mol0.saturate_unfilled_valence()
     mol0.updateAtomTypes()
     mol0.updateMultiplicity()
     mol0.updateConnectivityValues()
@@ -798,9 +806,6 @@ class ThermoDatabase(object):
         self.loadLibraries(os.path.join(path, 'libraries'), libraries)
         self.loadGroups(os.path.join(path, 'groups'))
 
-        self.recordRingGenericNodes()
-        self.recordPolycylicGenericNodes()
-        
     def loadDepository(self, path):
         """
         Load the thermo database from the given `path` on disk, where `path`
@@ -852,14 +857,22 @@ class ThermoDatabase(object):
         points to the top-level folder of the thermo database.
         """
         logging.info('Loading thermodynamics group database from {0}...'.format(path))
-        self.groups = {}
-        self.groups['group']   =   ThermoGroups(label='group').load(os.path.join(path, 'group.py'  ), self.local_context, self.global_context)
-        self.groups['ring']    =    ThermoGroups(label='ring').load(os.path.join(path, 'ring.py'   ), self.local_context, self.global_context)
-        self.groups['radical'] = ThermoGroups(label='radical').load(os.path.join(path, 'radical.py'), self.local_context, self.global_context)
-        self.groups['polycyclic'] = ThermoGroups(label='polycyclic').load(os.path.join(path, 'polycyclic.py'), self.local_context, self.global_context)
-        self.groups['other']   =   ThermoGroups(label='other').load(os.path.join(path, 'other.py'  ), self.local_context, self.global_context)
-        self.groups['longDistanceInteraction_cyclic']   =   ThermoGroups(label='longDistanceInteraction_cyclic').load(os.path.join(path, 'longDistanceInteraction_cyclic.py'  ), self.local_context, self.global_context)
-        self.groups['longDistanceInteraction_noncyclic']   =   ThermoGroups(label='longDistanceInteraction_noncyclic').load(os.path.join(path, 'longDistanceInteraction_noncyclic.py'  ), self.local_context, self.global_context)
+        categories = [
+            'group',
+            'ring',
+            'radical',
+            'polycyclic',
+            'other',
+            'longDistanceInteraction_cyclic',
+            'longDistanceInteraction_noncyclic',
+        ]
+        self.groups = {
+            category: ThermoGroups(label=category).load(os.path.join(path, category + '.py'), self.local_context, self.global_context)
+            for category in categories
+        }
+
+        self.recordRingGenericNodes()
+        self.recordPolycylicGenericNodes()
 
     def save(self, path):
         """
@@ -1058,38 +1071,49 @@ class ThermoDatabase(object):
         )
 
     def recordPolycylicGenericNodes(self):
+        """
+        Identify generic nodes in tree for polycyclic groups.
+        Saves them as a list in the `genericNodes` attribute
+        in the polycyclic :class:`ThermoGroups` object, which
+        must be pre-loaded.
 
+        Necessary for polycyclic heuristic.
+        """
         self.groups['polycyclic'].genericNodes = ['PolycyclicRing']
         for label, entry in self.groups['polycyclic'].entries.iteritems():
-
             if isinstance(entry.data, ThermoData): 
                 continue
             self.groups['polycyclic'].genericNodes.append(label)
 
     def recordRingGenericNodes(self):
+        """
+        Identify generic nodes in tree for ring groups.
+        Saves them as a list in the `genericNodes` attribute
+        in the ring :class:`ThermoGroups` object, which
+        must be pre-loaded.
 
+        Necessary for polycyclic heuristic.
+        """
         self.groups['ring'].genericNodes = ['Ring']
         for label, entry in self.groups['ring'].entries.iteritems():
-
             if isinstance(entry.data, ThermoData): 
                 continue
             self.groups['ring'].genericNodes.append(label)
+
     def getThermoData(self, species, trainingSet=None):
         """
         Return the thermodynamic parameters for a given :class:`Species`
         object `species`. This function first searches the loaded libraries
         in order, returning the first match found, before falling back to
-        estimation via group additivity.
+        estimation via machine learning and then group additivity.
         
-        The method corrects for symmetry when the molecule uses HBI or 
-        group additivity. Libraries and direct QM calculations are already
-        corrected.
+        The method corrects for symmetry when the molecule uses machine
+        learning or group additivity. Libraries and direct QM calculations
+        are already corrected.
         
         Returns: ThermoData
         """
         from rmgpy.rmg.input import getInput
-        
-        thermo0 = None
         
         thermo0 = self.getThermoDataFromLibraries(species)
         
@@ -1104,6 +1128,12 @@ class ThermoDatabase(object):
         except Exception:
             logging.debug('Quantum Mechanics DB could not be found.')
             quantumMechanics = None
+
+        try:
+            ml_estimator, ml_settings = getInput('MLEstimator')
+        except Exception:
+            logging.debug('ML estimator could not be found.')
+            ml_estimator, ml_settings = None, None
             
         if quantumMechanics:
             original_molecule = species.molecule[0]
@@ -1139,8 +1169,9 @@ class ThermoDatabase(object):
                     if len(thermo) > 1:
                         # Sort thermo first by the priority, then by the most stable H298 value
                         thermo = sorted(thermo, key=lambda x: (x[0], x[1])) 
-                        for i in range(len(thermo)): 
-                            logging.debug("Resonance isomer {0} {1} gives H298={2:.0f} J/mol".format(i+1, thermo[i][2].toSMILES(), thermo[i][1]))
+                        for i, therm in enumerate(thermo):
+                            logging.debug("Resonance isomer {0} {1} gives H298={2:.0f} J/mol".format(i+1,
+                                            therm[2].toSMILES(), therm[1]))
                         # Save resonance isomers reordered by their thermo
                         species.molecule = [item[2] for item in thermo]
                         original_molecule = species.molecule[0]
@@ -1153,24 +1184,41 @@ class ThermoDatabase(object):
                     thermo0 = quantumMechanics.getThermoData(original_molecule) # returns None if it fails
                 
         if thermo0 is None:
-            # Use group additivity methods to determine thermo for molecule (or if QM fails completely)
-            original_molecule = species.molecule[0]
+            # First try finding stable species in libraries and using HBI
+            for mol in species.molecule:
+                if mol.reactive:
+                    original_molecule = mol
+                    break
+            else:
+                for mol in species.molecule:
+                    logging.info(mol.toAdjacencyList())
+                    logging.info('reactive = {0}'.format(mol.reactive))
+                    logging.info('\n')
+                raise ValueError('Could not process a species with no reactive structures')
             if original_molecule.getRadicalCount() > 0:
                 # If the molecule is a radical, check if any of the saturated forms are in the libraries
                 # first and perform an HBI correction on them
                 thermo = []
                 for molecule in species.molecule:
-                    molecule.clearLabeledAtoms()
-                    # First see if the saturated molecule is in the libaries
-                    tdata = self.estimateRadicalThermoViaHBI(molecule, self.getThermoDataFromLibraries)
-                    if tdata:
-                        thermo.append((tdata.getEnthalpy(298.), molecule, tdata))
+                    if molecule.reactive:
+                        molecule.clearLabeledAtoms()
+                        # First see if the saturated molecule is in the libaries
+                        tdata = self.estimateRadicalThermoViaHBI(molecule, self.getThermoDataFromLibraries)
+                        if tdata:
+                            thermo.append((tdata.getEnthalpy(298.), molecule, tdata))
                 
                 if thermo:
                     # Sort thermo by the most stable H298 value when choosing between thermoLibrary values
                     thermo = sorted(thermo, key=lambda x: x[0])
-                    for i in range(len(thermo)): 
-                        logging.debug("Resonance isomer {0} {1} gives H298={2:.0f} J/mol".format(i+1, thermo[i][1].toSMILES(), thermo[i][0]))
+                    # Sort thermo by the structure reactive attribute, with `reactive=True` structures first
+                    thermo.sort(key=lambda x: x[1].reactive, reverse=True)
+                    for i, therm in enumerate(thermo):
+                        if therm[1].reactive:
+                            logging.debug("Resonance isomer {0} {1} gives H298={2:.0f} J/mol".format(i+1,
+                                            therm[1].toSMILES(), therm[0]))
+                        else:
+                            logging.debug("Non-reactive resonance isomer {0} {1} gives H298={2:.0f} J/mol".format(i+1,
+                                            therm[1].toSMILES(), therm[0]))
                     # Save resonance isomers reordered by their thermo
                     newMolList = [item[1] for item in thermo]
                     if len(newMolList) < len(species.molecule):
@@ -1178,17 +1226,25 @@ class ThermoDatabase(object):
                     species.molecule = newMolList
                     thermo0 = thermo[0][2]
 
-                else:
-                    # Did not find any saturated values in the thermo libraries, so try group additivity instead
-                    thermo0 = self.getThermoDataFromGroups(species)
+            if thermo0 is None:
+                # If we still don't have thermo, use ML to estimate it, but
+                # only if the molecule is made up of H, C, N, and O atoms and
+                # is not a singlet carbene. ML settings are checked in
+                # `self.get_thermo_data_from_ml`.
+                if (ml_estimator is not None
+                        and all(a.element.number in {1, 6, 7, 8} for a in species.molecule[0].atoms)
+                        and species.molecule[0].getSingletCarbeneCount() == 0):
 
-            else:
-                # Saturated molecule, estimate it via groups since we've already checked libraries much earlier
+                    thermo0 = self.get_thermo_data_from_ml(species,
+                                                           ml_estimator,
+                                                           ml_settings)
+
+            if thermo0 is None:
+                # And lastly, resort back to group additivity to determine thermo for molecule
                 thermo0 = self.getThermoDataFromGroups(species)
-                
-            # update entropy by symmetry correction
-            thermo0.S298.value_si -= constants.R * math.log(species.getSymmetryNumber())
 
+            # Update entropy by symmetry correction (not included in trained ML model)
+            thermo0.S298.value_si -= constants.R * math.log(species.getSymmetryNumber())
 
         # Make sure to calculate Cp0 and CpInf if it wasn't done already
         findCp0andCpInf(species, thermo0)
@@ -1272,10 +1328,15 @@ class ThermoDatabase(object):
                 thermoDataList.append(data)
         # Last entry is always the estimate from group additivity
         # Make it a tuple
-        data = (self.getThermoDataFromGroups(species), None, None)
-        # update group activity for symmetry
-        data[0].S298.value_si -= constants.R * math.log(species.getSymmetryNumber())
-        thermoDataList.append(data)
+        try:
+            data = (self.getThermoDataFromGroups(species), None, None)
+        except DatabaseError:
+            # We don't have a GAV estimate, e.g. unsupported element
+            pass
+        else:
+            # update group activity for symmetry
+            data[0].S298.value_si -= constants.R * math.log(species.getSymmetryNumber())
+            thermoDataList.append(data)
 
         # Return all of the resulting thermo parameters
         return thermoDataList
@@ -1358,6 +1419,75 @@ class ThermoDatabase(object):
         findCp0andCpInf(species, thermoData)
         return thermoData
 
+    def get_thermo_data_from_ml(self, species, ml_estimator, ml_settings):
+        """
+        Return the set of thermodynamic parameters corresponding to a
+        given :class:`Species` object `species` by estimation using the
+        ML estimator. Also compare the estimated uncertainties to the
+        user-defined cutoffs. If any of the uncertainties are larger
+        than their corresponding cutoffs, return None. Also check all
+        other options in `ml_settings`.
+
+        For HBI, the resonance isomer with the lowest H298 is used and
+        the resonance isomers in species are sorted in ascending order.
+
+        The entropy is not corrected for the symmetry of the molecule.
+        This should be done later by the calling function.
+        """
+        molecule = species.molecule[0]
+
+        min_heavy = ml_settings['min_heavy_atoms'] or 1
+        max_heavy = ml_settings['max_heavy_atoms'] or numpy.inf
+        min_carbon = ml_settings['min_carbon_atoms'] or 0
+        max_carbon = ml_settings['max_carbon_atoms'] or numpy.inf
+        min_oxygen = ml_settings['min_oxygen_atoms'] or 0
+        max_oxygen = ml_settings['max_oxygen_atoms'] or numpy.inf
+        min_nitrogen = ml_settings['min_nitrogen_atoms'] or 0
+        max_nitrogen = ml_settings['max_nitrogen_atoms'] or numpy.inf
+
+        element_count = molecule.get_element_count()
+        n_heavy = sum(count for element, count in element_count.iteritems() if element != 'H')
+
+        if not(min_heavy <= n_heavy <= max_heavy):
+            return None
+        if not(min_carbon <= element_count.get('C', 0) <= max_carbon):
+            return None
+        if not(min_oxygen <= element_count.get('O', 0) <= max_oxygen):
+            return None
+        if not(min_nitrogen <= element_count.get('N', 0) <= max_nitrogen):
+            return None
+
+        if ml_settings['only_cyclics'] and not molecule.isCyclic():
+            return None
+        min_cycle_overlap = ml_settings['min_cycle_overlap']
+        if min_cycle_overlap > 0 and molecule.getMaxCycleOverlap() < min_cycle_overlap:
+            return None
+
+        if molecule.isRadical():
+            thermo = [self.estimateRadicalThermoViaHBI(mol, ml_estimator.get_thermo_data) for mol in species.molecule]
+            H298 = numpy.array([tdata.H298 for tdata in thermo])
+            indices = H298.argsort()
+            species.molecule = [species.molecule[ind] for ind in indices]
+            thermo0 = thermo[indices[0]]
+        else:
+            thermo0 = ml_estimator.get_thermo_data_for_species(species)
+
+        # The keys for this dictionary should match the keys in
+        # `RMG.ml_uncertainty_cutoffs`. Use a temperature-weighted
+        # average to estimate uncertainty for Cp.
+        uncertainties = dict(
+            H298=thermo0.H298.uncertainty_si,
+            S298=thermo0.S298.uncertainty_si,
+            Cp=numpy.average(thermo0.Cpdata.uncertainty_si, weights=thermo0.Tdata.value_si)
+        )
+
+        ml_uncertainty_cutoffs = ml_settings['uncertainty_cutoffs']
+        if any(uncertainties[p] > ml_uncertainty_cutoffs[p].value_si for p in ml_uncertainty_cutoffs):
+            return None
+        else:
+            return thermo0
+
+
     def prioritizeThermo(self, species, thermoDataList):
         """
         Use some metrics to reorder a list of thermo data from best to worst.
@@ -1379,17 +1509,17 @@ class ThermoDatabase(object):
                 # Sort first by rank, then by enthalpy at 298 K
                 entries = sorted(entries, key=lambda entry: (entry[1], entry[0].getEnthalpy(298.)))
                 indices = [thermoDataList.index(entry[0]) for entry in entries]
-                
             else:
                 # For noncyclics, default to original algorithm of ordering thermo based on the most stable enthalpy
                 H298 = numpy.array([t.getEnthalpy(298.) for t in thermoDataList])
                 indices = H298.argsort()
+            indices = numpy.array([i for i in indices if species.molecule[i].reactive] +\
+                        [i for i in indices if not species.molecule[i].reactive])
         else:
             indices = [0]
-
         return indices
 
-    def estimateRadicalThermoViaHBI(self, molecule, stableThermoEstimator ):
+    def estimateRadicalThermoViaHBI(self, molecule, stableThermoEstimator):
         """
         Estimate the thermodynamics of a radical by saturating it,
         applying the provided stableThermoEstimator method on the saturated species,
@@ -1402,7 +1532,7 @@ class ThermoDatabase(object):
         
         assert molecule.isRadical(), "Method only valid for radicals."
         saturatedStruct = molecule.copy(deep=True)
-        added = saturatedStruct.saturate()
+        added = saturatedStruct.saturate_radicals()
         saturatedStruct.props['saturated'] = True
         
         # Get thermo estimate for saturated form of structure
@@ -1424,8 +1554,8 @@ class ThermoDatabase(object):
         if not isinstance(thermoData_sat, ThermoData):
             thermoData_sat = thermoData_sat.toThermoData()
         
-        
-        if not stableThermoEstimator == self.computeGroupAdditivityThermo:
+        if not (stableThermoEstimator == self.computeGroupAdditivityThermo
+                or isinstance(stableThermoEstimator.__self__, MLEstimator)):
             #remove the symmetry contribution to the entropy of the saturated molecule
             ##assumes that the thermo data comes from QMTP or from a thermolibrary
             thermoData_sat.S298.value_si += constants.R * math.log(saturatedStruct.getSymmetryNumber())
@@ -1677,8 +1807,8 @@ class ThermoDatabase(object):
                     aromaticBonds = findAromaticBondsFromSubMolecule(submol)
                     for aromaticBond in aromaticBonds:
                         aromaticBond.setOrderNum(1)
-                    
-                    submol.update()
+
+                    submol.saturate_unfilled_valence()
                     singleRingThermodata = self.__addRingCorrectionThermoDataFromTree(None, \
                                                 self.groups['ring'], submol, submol.atoms)[0]
                     
@@ -1697,7 +1827,7 @@ class ThermoDatabase(object):
         # saturate if the bicyclic has unsaturated bonds
         # otherwise return None
         bicyclic_submol = convertRingToSubMolecule(bicyclic)[0]
-        saturated_bicyclic_submol, alreadySaturated = saturateRingBonds(bicyclic_submol)
+        saturated_bicyclic_submol, alreadySaturated = saturate_ring_bonds(bicyclic_submol)
 
         if alreadySaturated:
             return None
@@ -1733,8 +1863,8 @@ class ThermoDatabase(object):
                 aromaticBonds = findAromaticBondsFromSubMolecule(submol)
                 for aromaticBond in aromaticBonds:
                     aromaticBond.setOrderNum(1)
-                
-                submol.update()
+
+                submol.saturate_unfilled_valence()
                 single_ring_thermoData = self.__addRingCorrectionThermoDataFromTree(None,
                                             self.groups['ring'], submol, submol.atoms)[0]
                 
@@ -1751,8 +1881,8 @@ class ThermoDatabase(object):
                 aromaticBonds = findAromaticBondsFromSubMolecule(submol)
                 for aromaticBond in aromaticBonds:
                     aromaticBond.setOrderNum(1)
-                
-                submol.update()
+
+                submol.saturate_unfilled_valence()
                 single_ring_thermoData = self.__addRingCorrectionThermoDataFromTree(None,
                                             self.groups['ring'], submol, submol.atoms)[0]
                 
@@ -1929,15 +2059,25 @@ class ThermoDatabase(object):
         while node.data is None and node is not None:
             node = node.parent
         if node is None:
-            raise DatabaseError('Unable to determine thermo parameters for {0}: no data for node {1} or any of its ancestors.'.format(molecule, node0) )
+            raise DatabaseError('Unable to determine thermo parameters for {0}: no data for node {1} or any of'
+                                ' its ancestors.'.format(molecule, node0))
 
         data = node.data; comment = node.label
-        while isinstance(data, basestring) and data is not None:
-            for entry in database.entries.values():
+        loop_count = 0
+        while isinstance(data, basestring):
+            loop_count += 1
+            if loop_count > 100:
+                raise DatabaseError(
+                    "Maximum iterations reached while following thermo group data pointers. A circular"
+                    " reference may exist. Last node was {0} pointing to group called {1} in"
+                    " database {2}".format(node.label, data, database.label))
+            for entry in database.entries.itervalues():
                 if entry.label == data:
                     data = entry.data
                     comment = entry.label
                     break
+            else: raise DatabaseError("Node {0} points to a non-existant group called {1} in database: {2}".format(
+                node.label, data, database.label))
         data.comment = '{0}({1})'.format(database.label, comment)
 
         # This code prints the hierarchy of the found node; useful for debugging

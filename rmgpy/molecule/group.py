@@ -1,32 +1,32 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 """
 This module provides classes and methods for working with molecular substructure
@@ -37,11 +37,13 @@ reaction sites).
 import cython
 
 from .graph import Vertex, Edge, Graph
-from .atomtype import atomTypes, allElements, nonSpecifics, getFeatures
+from .atomtype import atomTypes, allElements, nonSpecifics, getFeatures, AtomType
 from .element import PeriodicSystem
 import rmgpy.molecule.molecule as mol
+import rmgpy.molecule.element as elements
 from copy import deepcopy, copy
 from rmgpy.exceptions import ActionError, ImplicitBenzeneError, UnexpectedChargeError
+
 ################################################################################
 
 class GroupAtom(Vertex):
@@ -58,6 +60,10 @@ class GroupAtom(Vertex):
     `charge`            ``list``            The allowed formal charges (as short integers)
     `label`             ``str``             A string label that can be used to tag individual atoms
     `lonePairs`         ``list``            The number of lone electron pairs
+    'charge'            ''list''            The partial charge of the atom
+    `props`             ``dict``            Dictionary for storing additional atom properties
+    `reg_dim_atm`       ``list``            List of atom types that are free dimensions in tree optimization
+    `reg_dim_u`         ``list``            List of unpaired electron numbers that are free dimensions in tree optimization
     =================== =================== ====================================
 
     Each list represents a logical OR construct, i.e. an atom will match the
@@ -67,7 +73,7 @@ class GroupAtom(Vertex):
     order to match.
     """
 
-    def __init__(self, atomType=None, radicalElectrons=None, charge=None, label='', lonePairs=None):
+    def __init__(self, atomType=None, radicalElectrons=None, charge=None, label='', lonePairs=None, props=None):
         Vertex.__init__(self)
         self.atomType = atomType or []
         for index in range(len(self.atomType)):
@@ -77,6 +83,12 @@ class GroupAtom(Vertex):
         self.charge = charge or []
         self.label = label
         self.lonePairs = lonePairs or []
+
+        self.props = props or {}
+        
+        self.reg_dim_atm = []
+        self.reg_dim_u = []
+
 
     def __reduce__(self):
         """
@@ -124,7 +136,14 @@ class GroupAtom(Vertex):
         Return a deep copy of the :class:`GroupAtom` object. Modifying the
         attributes of the copy will not affect the original.
         """
-        return GroupAtom(self.atomType[:], self.radicalElectrons[:], self.charge[:], self.label, self.lonePairs[:])
+        return GroupAtom(
+            self.atomType[:],
+            self.radicalElectrons[:],
+            self.charge[:],
+            self.label,
+            self.lonePairs[:],
+            deepcopy(self.props),
+        )
 
     def __changeBond(self, order):
         """
@@ -363,13 +382,18 @@ class GroupAtom(Vertex):
                     if charge1 == charge2: break
                 else:
                     return False
+        # Other properties must have an equivalent in other (and vice versa)
+        # Absence of the 'inRing' prop indicates a wildcard
+        if 'inRing' in self.props and 'inRing' in group.props:
+            if self.props['inRing'] != group.props['inRing']:
+                return False
         # Otherwise the two atom groups are equivalent
         return True
 
     def isSpecificCaseOf(self, other):
         """
-        Returns ``True`` if `other` is the same as `self` or is a more
-        specific case of `self`. Returns ``False`` if some of `self` is not
+        Returns ``True`` if `self` is the same as `other` or is a more
+        specific case of `other`. Returns ``False`` if some of `self` is not
         included in `other` or they are mutually exclusive. 
         """
         cython.declare(group=GroupAtom)
@@ -418,6 +442,13 @@ class GroupAtom(Vertex):
                         return False
         else:
             if group.charge: return False
+        # Other properties must have an equivalent in other
+        # Absence of the 'inRing' prop indicates a wildcard
+        if 'inRing' in self.props and 'inRing' in group.props:
+            if self.props['inRing'] != group.props['inRing']:
+                return False
+        elif 'inRing' not in self.props and 'inRing' in group.props:
+            return False
         # Otherwise self is in fact a specific case of other
         return True
 
@@ -532,23 +563,30 @@ class GroupAtom(Vertex):
         #dummy defaultAtom to get default values
         defaultAtom = mol.Atom()
 
+        #Three possible values for charge and lonePairs
+        if self.charge:
+            newCharge = self.charge[0]
+        elif atomtype.charge:
+            newCharge = atomtype.charge[0]
+        else:
+            newCharge = defaultAtom.charge
+
+        if self.lonePairs:
+            newLonePairs = self.lonePairs[0]
+        elif atomtype.lonePairs:
+            newLonePairs = atomtype.lonePairs[0]
+        else:
+            newLonePairs = defaultAtom.lonePairs
+
         newAtom = mol.Atom(element = element,
                            radicalElectrons = self.radicalElectrons[0] if self.radicalElectrons else defaultAtom.radicalElectrons,
-                           charge = self.charge[0] if self.charge else defaultAtom.charge,
-                           lonePairs = self.lonePairs[0] if self.lonePairs else defaultAtom.lonePairs,
+                           charge = newCharge,
+                           lonePairs = newLonePairs,
                            label = self.label if self.label else defaultAtom.label)
 
         #For some reason the default when no lone pairs is set to -100,
         #Based on git history, it is probably because RDKit requires a number instead of None
-        #Instead we will set it to 0 here
-
-        #Hard code charge for a few atomtypes
-        if atomtype in [atomTypes[x] for x in ['N5d', 'N5dd', 'N5t', 'N5b', 'N5s']]:
-            newAtom.lonePairs = 0
-            newAtom.charge = 1
-        elif atomtype in [atomTypes[x] for x in ['N1d']]:
-            newAtom.charge = -1
-        elif newAtom.lonePairs == -100:
+        if newAtom.lonePairs == -100:
             newAtom.lonePairs = defaultLonePairs[newAtom.symbol]
 
         return newAtom
@@ -565,6 +603,7 @@ class GroupBond(Edge):
     Attribute           Type                Description
     =================== =================== ====================================
     `order`             ``list``            The allowed bond orders (as character strings)
+    `reg_dim`           ``Boolean``         Indicates if this is a regularization dimension during tree generation
     =================== =================== ====================================
 
     Each list represents a logical OR construct, i.e. a bond will match the
@@ -579,6 +618,8 @@ class GroupBond(Edge):
             raise ActionError('order list given {} does not consist of only strings or only numbers'.format(order))
         else:
             self.order = order or []
+        
+        self.reg_dim = []
 
     def __str__(self):
         """
@@ -619,6 +660,8 @@ class GroupBond(Edge):
                 values.append('T')
             elif value == 1.5:
                 values.append('B')
+            elif value == 0:
+                values.append('H')
             else:
                 raise TypeError('Bond order number {} is not hardcoded as a string'.format(value))
         return values
@@ -638,6 +681,8 @@ class GroupBond(Edge):
                 values.append(3)
             elif value == 'B':
                 values.append(1.5)
+            elif value == 'H':
+                values.append(0)
             else:
                 # try to see if an float disguised as a string was input by mistake
                 try:
@@ -722,6 +767,21 @@ class GroupBond(Edge):
         else:
             return abs(self.order[0]-1.5) <= 1e-9 and len(self.order) == 1
 
+    def isHydrogenBond(self, wildcards = False):
+        """
+        Return ``True`` if the bond represents a hydrogen bond or ``False`` if
+        not. If `wildcards` is ``False`` we return False anytime there is more
+        than one bond order, otherwise we return ``True`` if any of the options
+        are hydrogen bonds.
+        """
+        if wildcards:
+            for order in self.order:
+                if abs(order) <= 1e-9:
+                    return True
+            else: return False
+        else:
+            return abs(self.order[0]) <= 1e-9 and len(self.order) == 1
+        
     def __changeBond(self, order):
         """
         Update the bond group as a result of applying a CHANGE_BOND action,
@@ -739,6 +799,9 @@ class GroupBond(Edge):
         if 2.5 in newOrder:
             newOrder.remove(2.5)
             newOrder.add(2)
+        # Allow formation of benzene bonds if a double bond can be formed
+        if 2 in newOrder:
+            newOrder.add(1.5)
         # Set the new bond orders
         self.order = list(newOrder)
 
@@ -842,6 +905,8 @@ class Group(Graph):
         Graph.__init__(self, atoms)
         self.props = props or {}
         self.multiplicity = multiplicity or []
+        self.elementCount = {}
+        self.radicalCount = -1
         self.update()
 
     def __reduce__(self):
@@ -992,6 +1057,35 @@ class Group(Graph):
         self.updateConnectivityValues()
         self.updateFingerprint()
 
+    def update_charge(self):
+        """
+        Update the partial charge according to the valence electron, total bond order, lone pairs
+        and radical electrons. This method is used for products of specific families with recipes that modify charges.
+        """
+        for atom in self.atoms:
+            if (len(atom.charge) == 1) and (len(atom.lonePairs) == 1) and (len(atom.radicalElectrons) == 1):
+                # if the charge of the group is not labeled, then no charge update will be
+                # performed. If there multiple charges are assigned, no update either.
+                # Besides, this groupatom should have enough information to be updated
+                atom_type = atom.atomType[0]
+                for element in allElements:
+                    if atom_type is atomTypes[element] or atom_type in atomTypes[element].specific:
+                        bond_order = 0
+                        valence_electron = elements.PeriodicSystem.valence_electrons[element]
+                        for _ , bond in atom.bonds.iteritems():
+                            bond_order += bond.order[0]
+                        lone_pairs = atom.lonePairs[0]
+                        radical_electrons = atom.radicalElectrons[0]
+                        atom.charge[0] = valence_electron - bond_order - 2 * lone_pairs - radical_electrons
+                    else:
+                        # if the group is not specified to specific element, charge will not be updated
+                        pass
+
+    def getNetCharge(self):
+        """
+        Iterate through the atoms in the group and calculate the net charge
+        """
+        return sum([atom.charge[0] for atom in self.vertices if atom.charge != []])
 
     def merge(self, other):
         """
@@ -1014,6 +1108,283 @@ class Group(Graph):
             molecule = Group(atoms=g.vertices)
             molecules.append(molecule)
         return molecules
+                
+                               
+    def getExtensions(self,R=None,basename='',atmInd=None, atmInd2=None):
+        """
+        generate all allowed group extensions and their complements
+        note all atomtypes except for elements and R/R!H's must be removed
+        """
+        cython.declare(atoms=list,atm=GroupAtom,atm2=GroupAtom,bd=GroupBond,i=int,j=int,
+                       extents=list,RnH=list,typ=list)
+        
+        extents = []
+        
+        Nsplits = len(self.split())
+        #generate appropriate R and R!H
+        if R is None:
+            R = ['H','C','N','O','Si','S'] #set of possible R elements/atoms
+            R = [atomTypes[x] for x in R]
+        
+        Rbonds = [1,2,3,1.5]
+        Run = [0,1,2,3]
+        
+        RnH = R[:]
+        RnH.remove(atomTypes['H'])
+        
+        
+        atoms = self.atoms
+        if atmInd is None:
+            for i,atm in enumerate(atoms):
+                typ = atm.atomType
+                if atm.reg_dim_atm == []:
+                    if len(typ) == 1:
+                        if typ[0].label == 'R':
+                            extents.extend(self.specifyAtomExtensions(i,basename,R)) #specify types of atoms
+                        elif typ[0].label == 'R!H':
+                            extents.extend(self.specifyAtomExtensions(i,basename,RnH))
+                    else:
+                        extents.extend(self.specifyAtomExtensions(i,basename,typ))
+                else:
+                    if len(typ) == 1:
+                        if typ[0].label == 'R':
+                            extents.extend(self.specifyAtomExtensions(i,basename,atm.reg_dim_atm)) #specify types of atoms
+                        elif typ[0].label == 'R!H':
+                            extents.extend(self.specifyAtomExtensions(i,basename,list(set(atm.reg_dim_atm) & set(R)))) 
+                    else:
+                        extents.extend(self.specifyAtomExtensions(i,basename,list(set(typ) & set(atm.reg_dim-atm))))
+                if atm.reg_dim_u == []:
+                    if len(atm.radicalElectrons) != 1:
+                        if len(atm.radicalElectrons) == 0:
+                            extents.extend(self.specifyUnpairedExtensions(i,basename,Run))
+                        else:
+                            extents.extend(self.specifyUnpairedExtensions(i,basename,atm.radicalElectrons))
+                else:
+                    if len(atm.radicalElectrons) != 1:
+                        if len(atm.radicalElectrons) == 0:
+                            extents.extend(self.specifyUnpairedExtensions(i,basename,atm.reg_dim_u))
+                        else:
+                            extents.extend(self.specifyUnpairedExtensions(i,basename,list(set(atm.radicalElectrons) & set(atm.reg_dim_u))))
+                extents.extend(self.specifyExternalNewBondExtensions(i,basename,Rbonds))
+                for j,atm2 in enumerate(atoms):
+                    if j<i and not self.hasBond(atm,atm2):
+                        extents.extend(self.specifyInternalNewBondExtensions(i,j,Nsplits,basename,Rbonds))
+                    elif j<i:
+                        bd = self.getBond(atm,atm2)
+                        if len(bd.order) > 1 and bd.reg_dim == []:
+                            extents.extend(self.specifyBondExtensions(i,j,basename,bd.order))
+                        elif len(bd.order) > 1:
+                            y = set(bd.order)
+                            z = set(bd.reg_dim)
+                            x = list(y-z)
+                            extents.extend(self.specifyBondExtensions(i,j,basename,x))
+        
+        elif atmInd is not None and atmInd2 is not None: #if both atmInd and atmInd2 are defined only look at the bonds between them
+            i = atmInd
+            j = atmInd2
+            atm = atoms[i]
+            atm2 = atoms[j]
+            if j<i and not self.hasBond(atm,atm2):
+                extents.extend(self.specifyInternalNewBondExtensions(i,j,Nsplits,basename,Rbonds))
+            if self.hasBond(atm,atm2):
+                bd = self.getBond(atm,atm2)
+                if len(bd.order) > 1 and bd.reg_dim == []:
+                    extents.extend(self.specifyBondExtensions(i,j,basename,bd.order))
+                elif len(bd.order) > 1:
+                    extents.extend(self.specifyBondExtensions(i,j,basename,list(set(bd.order)-set(bd.reg_dim))))
+                    
+        elif atmInd is not None: #look at the atom at atmInd
+            i = atmInd
+            atm = atoms[i]
+            typ = atm.atomType
+            if atm.reg_dim_atm == []:
+                if len(typ) == 1:
+                    if typ[0].label == 'R':
+                        extents.extend(self.specifyAtomExtensions(i,basename,R)) #specify types of atoms
+                    elif typ[0].label == 'R!H':
+                        extents.extend(self.specifyAtomExtensions(i,basename,RnH))
+                else:
+                    extents.extend(self.specifyAtomExtensions(i,basename,typ))
+            else:
+                if len(typ) == 1:
+                    if typ[0].label == 'R':
+                        extents.extend(self.specifyAtomExtensions(i,basename,atm.reg_dim_atm)) #specify types of atoms
+                    elif typ[0].label == 'R!H':
+                        extents.extend(self.specifyAtomExtensions(i,basename,list(set(atm.reg_dim_atm) & set(R)))) 
+                else:
+                    extents.extend(self.specifyAtomExtensions(i,basename,list(set(typ) & set(atm.reg_dim-atm))))
+            if atm.reg_dim_u == []:
+                if len(atm.radicalElectrons) != 1:
+                    if len(atm.radicalElectrons) == 0:
+                        extents.extend(self.specifyUnpairedExtensions(i,basename,Run))
+                    else:
+                        extents.extend(self.specifyUnpairedExtensions(i,basename,atm.radicalElectrons))
+            else:
+                if len(atm.radicalElectrons) != 1:
+                    if len(atm.radicalElectrons) == 0:
+                        extents.extend(self.specifyUnpairedExtensions(i,basename,atm.reg_dim_atm))
+                    else:
+                        extents.extend(self.specifyUnpairedExtensions(i,basename,list(set(atm.radicalElectrons) & set(atm.reg_dim_u))))
+            extents.extend(self.specifyExternalNewBondExtensions(i,basename,Rbonds))
+            for j,atm2 in enumerate(atoms):
+                if j<i and not self.hasBond(atm,atm2):
+                    extents.extend(self.specifyInternalNewBondExtensions(i,j,Nsplits,basename,Rbonds))
+                elif j<i:
+                    bd = self.getBond(atm,atm2)
+                    if len(bd.order) > 1 and bd.reg_dim == []:
+                        extents.extend(self.specifyBondExtensions(i,j,basename,bd.order))
+                    elif len(bd.order) > 1:
+                        extents.extend(self.specifyBondExtensions(i,j,basename,list(set(bd.order)-set(bd.reg_dim))))
+        
+        else:
+            raise ValueError('atmInd must be defined if atmInd2 is defined')
+            
+        return extents
+    
+    def specifyAtomExtensions(self,i,basename,R):
+        """
+        generates extensions for specification of the type of atom defined by a given atomtype
+        or set of atomtypes
+        """
+        cython.declare(grps=list,Rset=set,item=AtomType,grp=Group,grpc=Group)
+        
+        grps = []
+        
+        Rset = set(R)
+        for item in R:
+            grp = deepcopy(self)
+            grpc = deepcopy(self)
+            old_atom_type = grp.atoms[i].atomType
+            grp.atoms[i].atomType = [item]
+            grpc.atoms[i].atomType = list(Rset-{item})
+            
+            
+            if len(old_atom_type ) > 1:
+                old_atom_type_str = ''
+                for k in old_atom_type:
+                    old_atom_type_str += k.label
+            else:
+                old_atom_type_str = old_atom_type[0].label
+
+            grps.append((grp,grpc,basename+'_'+old_atom_type_str+'->'+item.label,'atomExt',(i,)))
+            
+        return grps
+    
+    def specifyUnpairedExtensions(self,i,basename,Run):
+        """
+        generates extensions for specification of the number of electrons on a given atom
+        """
+        
+        grps = []
+        
+        Rset = set(Run)
+        for item in Run:
+            grp = deepcopy(self)
+            grpc = deepcopy(self)
+            grp.atoms[i].radicalElectrons = [item]
+            grpc.atoms[i].radicalElectrons = list(Rset-{item})
+            
+            atom_type = grp.atoms[i].atomType
+            
+            if len(atom_type ) > 1:
+                atom_type_str = ''
+                for k in atom_type:
+                    atom_type_str += k.label
+            else:
+                atom_type_str = atom_type[0].label
+            
+            grps.append((grp,grpc,basename+'_'+atom_type_str+'-u'+str(item),'elExt',(i,)))
+            
+        return grps
+    
+    def specifyInternalNewBondExtensions(self,i,j,Nsplits,basename,Rbonds):
+        """
+        generates extensions for creation of a bond (of undefined order)
+        between two atoms indexed i,j that already exist in the group and are unbonded
+        """
+        cython.declare(newgrp=Group)
+        
+        newgrp = deepcopy(self)
+        newgrp.addBond(GroupBond(newgrp.atoms[i],newgrp.atoms[j],Rbonds))
+        
+        atom_type_i = newgrp.atoms[i].atomType
+        atom_type_j = newgrp.atoms[j].atomType
+        
+        if len(atom_type_i) > 1:
+            atom_type_i_str = ''
+            for k in atom_type_i:
+                atom_type_i_str += k.label
+        else:
+            atom_type_i_str = atom_type_i[0].label
+        if len(atom_type_j) > 1:
+            atom_type_j_str = ''
+            for k in atom_type_j:
+                atom_type_j_str += k.label
+        else:
+            atom_type_j_str = atom_type_j[0].label
+                
+        if len(newgrp.split()) != Nsplits: #if this formed a bond between two seperate groups in the 
+            return []
+        else:
+            return [(newgrp,None,basename+'_Int-'+atom_type_i_str+'-'+atom_type_j_str,'intNewBondExt',(i,j))]
+    
+    def specifyExternalNewBondExtensions(self,i,basename,Rbonds):
+        """
+        generates extensions for the creation of a bond (of undefined order) between
+        an atom and a new atom that is not H
+        """
+        cython.declare(GA=GroupAtom,newgrp=Group,j=int)
+        
+        GA = GroupAtom([atomTypes['R!H']])
+        newgrp = deepcopy(self)
+        newgrp.addAtom(GA)
+        j = newgrp.atoms.index(GA)
+        newgrp.addBond(GroupBond(newgrp.atoms[i],newgrp.atoms[j],Rbonds))
+        atom_type = newgrp.atoms[i].atomType
+        if len(atom_type ) > 1:
+            atom_type_str = ''
+            for k in atom_type:
+                atom_type_str += k.label
+        else:
+            atom_type_str = atom_type[0].label
+        
+        return [(newgrp,None,basename+'_Ext-'+atom_type_str+'-R','extNewBondExt',(len(newgrp.atoms)-1,))]
+    
+    def specifyBondExtensions(self,i,j,basename,Rbonds):
+        """
+        generates extensions for the specification of bond order for a given bond
+        """
+        cython.declare(grps=list,Rbset=set,bd=float,grp=Group,grpc=Group)
+        grps = []
+        Rbset = set(Rbonds)
+        bdict = {1:'-',2:'=',3:'#',1.5:'-='}
+        for bd in Rbonds:
+            grp = deepcopy(self)
+            grpc = deepcopy(self)
+            grp.atoms[i].bonds[grp.atoms[j]].order = [bd]
+            grp.atoms[j].bonds[grp.atoms[i]].order = [bd]
+            grpc.atoms[i].bonds[grpc.atoms[j]].order = list(Rbset-{bd})
+            grpc.atoms[j].bonds[grpc.atoms[i]].order = list(Rbset-{bd})
+            
+            atom_type_i = grp.atoms[i].atomType
+            atom_type_j = grp.atoms[j].atomType
+            
+            if len(atom_type_i) > 1:
+                atom_type_i_str = ''
+                for k in atom_type_i:
+                    atom_type_i_str += k.label
+            else:
+                atom_type_i_str = atom_type_i[0].label
+            if len(atom_type_j) > 1:
+                atom_type_j_str = ''
+                for k in atom_type_j:
+                    atom_type_j_str += k.label
+            else:
+                atom_type_j_str = atom_type_j[0].label
+            
+            grps.append((grp,grpc,basename+'_Sp-'+atom_type_i_str+bdict[bd]+atom_type_j_str,'bondExt',(i,j)))
+        
+        return grps
 
     def clearLabeledAtoms(self):
         """
@@ -1063,6 +1434,38 @@ class Group(Graph):
                     labeled[atom.label] = atom
         return labeled
 
+    def get_element_count(self):
+        """
+        Returns the element count for the molecule as a dictionary.
+        Wildcards are not counted as any particular element.
+        """
+        from rmgpy.molecule.atomtype import allElements
+
+        element_count = {}
+        for atom in self.atoms:
+            same = True
+            match = None
+            for atomtype in atom.atomType:
+                if match is None:
+                    # This is the first type in the list, so check all elements
+                    for element in allElements:
+                        if atomtype.isSpecificCaseOf(atomTypes[element]):
+                            match = element
+                            break
+                else:
+                    # We've already matched one atomtype, now confirm that the rest are the same
+                    if not atomtype.isSpecificCaseOf(atomTypes[match]):
+                        same = False
+                        break
+            # If match is None, then the group is not a specific case of any element
+            if match is not None and same:
+                if match in element_count:
+                    element_count[match] += 1
+                else:
+                    element_count[match] = 1
+
+        return element_count
+
     def fromAdjacencyList(self, adjlist):
         """
         Convert a string adjacency list `adjlist` to a molecular structure.
@@ -1089,40 +1492,15 @@ class Group(Graph):
         Update the molecular fingerprint used to accelerate the subgraph
         isomorphism checks.
         """
-        cython.declare(atom=GroupAtom, atomType=AtomType)
-        cython.declare(carbon=AtomType, nitrogen=AtomType, oxygen=AtomType, sulfur=AtomType)
-        cython.declare(isCarbon=cython.bint, isNitrogen=cython.bint, isOxygen=cython.bint, isSulfur=cython.bint, radical=cython.int)
-        
-        carbon   = atomTypes['C']
-        nitrogen = atomTypes['N']
-        oxygen   = atomTypes['O']
-        sulfur   = atomTypes['S']
-        
-        self.carbonCount   = 0
-        self.nitrogenCount = 0
-        self.oxygenCount   = 0
-        self.sulfurCount   = 0
-        self.radicalCount  = 0
-        for atom in self.vertices:
-            if len(atom.atomType) == 1:
-                atomType   = atom.atomType[0]
-                isCarbon   = atomType.equivalent(carbon)
-                isNitrogen = atomType.equivalent(nitrogen)
-                isOxygen   = atomType.equivalent(oxygen)
-                isSulfur   = atomType.equivalent(sulfur)
-                if isCarbon and not isNitrogen and not isOxygen and not isSulfur:
-                    self.carbonCount += 1
-                elif isNitrogen and not isCarbon and not isOxygen and not isSulfur:
-                    self.nitrogenCount += 1
-                elif isOxygen and not isCarbon and not isNitrogen and not isSulfur:
-                    self.oxygenCount += 1
-                elif isSulfur and not isCarbon and not isNitrogen and not isOxygen:
-                    self.sulfurCount += 1
-            if len(atom.radicalElectrons) == 1:
-                radical = atom.radicalElectrons[0]
-                self.radicalCount += radical
+        cython.declare(atom=GroupAtom)
 
-    def isIsomorphic(self, other, initialMap=None):
+        self.elementCount = self.get_element_count()
+        self.radicalCount = 0
+        for atom in self.vertices:
+            if len(atom.radicalElectrons) >= 1:
+                self.radicalCount += atom.radicalElectrons[0]
+
+    def isIsomorphic(self, other, initialMap=None, saveOrder=False):
         """
         Returns ``True`` if two graphs are isomorphic and ``False``
         otherwise. The `initialMap` attribute can be used to specify a required
@@ -1135,9 +1513,9 @@ class Group(Graph):
         if not isinstance(other, Group):
             raise TypeError('Got a {0} object for parameter "other", when a Group object is required.'.format(other.__class__))
         # Do the isomorphism comparison
-        return Graph.isIsomorphic(self, other, initialMap)
+        return Graph.isIsomorphic(self, other, initialMap, saveOrder=saveOrder)
 
-    def findIsomorphism(self, other, initialMap=None):
+    def findIsomorphism(self, other, initialMap=None, saveOrder=False):
         """
         Returns ``True`` if `other` is isomorphic and ``False``
         otherwise, and the matching mapping. The `initialMap` attribute can be
@@ -1152,9 +1530,9 @@ class Group(Graph):
         if not isinstance(other, Group):
             raise TypeError('Got a {0} object for parameter "other", when a Group object is required.'.format(other.__class__))
         # Do the isomorphism comparison
-        return Graph.findIsomorphism(self, other, initialMap)
+        return Graph.findIsomorphism(self, other, initialMap, saveOrder=saveOrder)
 
-    def isSubgraphIsomorphic(self, other, initialMap=None):
+    def isSubgraphIsomorphic(self, other, initialMap=None, generateInitialMap=False, saveOrder=False):
         """
         Returns ``True`` if `other` is subgraph isomorphic and ``False``
         otherwise. In other words, return ``True`` if self is more specific than other.
@@ -1165,12 +1543,22 @@ class Group(Graph):
         """        
         cython.declare(group=Group)
         cython.declare(mult1=cython.short, mult2=cython.short)
+        cython.declare(a=GroupAtom,L=list)
         # It only makes sense to compare a Group to a Group for subgraph
         # isomorphism, so raise an exception if this is not what was requested
         if not isinstance(other, Group):
             raise TypeError('Got a {0} object for parameter "other", when a Group object is required.'.format(other.__class__))
         group = other
         
+        if generateInitialMap:
+            initialMap = dict()
+            for atom in self.atoms:
+                if atom.label and atom.label != '':
+                    L = [a for a in other.atoms if a.label == atom.label]
+                    initialMap[atom] = L[0]
+            if not self.isMappingValid(other,initialMap,equivalent=False):
+                return False
+                
         if self.multiplicity:
             for mult1 in self.multiplicity:
                 if group.multiplicity:
@@ -1181,9 +1569,9 @@ class Group(Graph):
         else:
             if group.multiplicity: return False
         # Do the isomorphism comparison
-        return Graph.isSubgraphIsomorphic(self, other, initialMap)
+        return Graph.isSubgraphIsomorphic(self, other, initialMap, saveOrder=saveOrder)
 
-    def findSubgraphIsomorphisms(self, other, initialMap=None):
+    def findSubgraphIsomorphisms(self, other, initialMap=None, saveOrder=False):
         """
         Returns ``True`` if `other` is subgraph isomorphic and ``False``
         otherwise. In other words, return ``True`` is self is more specific than other.
@@ -1215,9 +1603,9 @@ class Group(Graph):
             if group.multiplicity: return []
                 
         # Do the isomorphism comparison
-        return Graph.findSubgraphIsomorphisms(self, other, initialMap)
+        return Graph.findSubgraphIsomorphisms(self, other, initialMap, saveOrder=saveOrder)
     
-    def isIdentical(self, other):
+    def isIdentical(self, other, saveOrder=False):
         """
         Returns ``True`` if `other` is identical and ``False`` otherwise.
         The function `isIsomorphic` respects wildcards, while this function
@@ -1232,9 +1620,9 @@ class Group(Graph):
         # is the only case where that is true. Therefore
         # if we do both directions of isSubgraphIsmorphic, we need
         # to get True twice for it to be identical
-        if not self.isSubgraphIsomorphic(other):
+        if not self.isSubgraphIsomorphic(other, None, saveOrder=saveOrder):
             return False
-        elif not other.isSubgraphIsomorphic(self):
+        elif not other.isSubgraphIsomorphic(self, None, saveOrder=saveOrder):
             return False
         else:
             return True
@@ -1351,7 +1739,7 @@ class Group(Graph):
 
     def addExplicitLigands(self):
         """
-        This function Od/Sd ligand to CO or CS atomtypes if they are not already there.
+        This function O2d/S2d ligand to CO or CS atomtypes if they are not already there.
 
         Returns a 'True' if the group was modified otherwise returns 'False'
         """
@@ -1374,9 +1762,9 @@ class Group(Graph):
             modified = True
             atomtypes = None
             if self.atoms[atomIndex].atomType[0] is atomTypes['CO']:
-                atomtypes = ['Od']
+                atomtypes = ['O2d']
             elif self.atoms[atomIndex].atomType[0] is atomTypes['CS']:
-                atomtypes = ['Sd']
+                atomtypes = ['S2d']
             self.createAndConnectAtom(atomtypes, self.atoms[atomIndex], [2])
 
         return modified
@@ -1386,7 +1774,7 @@ class Group(Graph):
         This function modifies groups to make them have a standard AdjList form.
 
         Currently it makes atomtypes as specific as possible and makes CO/CS atomtypes
-        have explicit Od/Sd ligands. Other functions can be added as necessary
+        have explicit O2d/S2d ligands. Other functions can be added as necessary
 
         Returns a 'True' if the group was modified otherwise returns 'False'
         """
@@ -1946,9 +2334,8 @@ class Group(Graph):
 
         #Saturate up to expected valency
         for molAtom in newMolecule.atoms:
-            #Group atom had a explicit charge
-            if molAtom in molToGroup and molToGroup[molAtom].charge:
-                statedCharge = molToGroup[molAtom].charge[0]
+            if molAtom.charge:
+                statedCharge = molAtom.charge
             #otherwise assume no charge (or implicit atoms we assume hvae no charge)
             else:
                 statedCharge = 0
@@ -1967,15 +2354,7 @@ class Group(Graph):
                     newMolecule.addBond(newBond)
                 molAtom.updateCharge()
 
-
-
         newMolecule.update()
-
-        #hard-coded exception for carbonMonoxide with default (but incorrect) charges/lone pairs
-        #Not the best solution, but because solubility expects this we need to allow it for now
-        falseCarbonMonoxide = mol.Molecule().fromSMILES("C#[O-]")
-        if newMolecule.isIsomorphic(falseCarbonMonoxide):
-            return newMolecule
 
         #Check that the charge of atoms is expected
         for atom in newMolecule.atoms:
@@ -1985,9 +2364,17 @@ class Group(Graph):
                 else:
                     raise UnexpectedChargeError(graph = newMolecule)
                 #check hardcoded atomtypes
-                if groupAtom.atomType[0] in [atomTypes[x] for x in ['N5d', 'N5dd', 'N5t', 'N5b', 'N5s', 'Ot']] and atom.charge == 1:
+                positiveCharged = ['Csc','Cdc',
+                                   'N3sc','N5sc','N5dc','N5ddc','N5tc','N5b',
+                                   'O2sc','O4sc','O4dc','O4tc',
+                                   'S2sc','S4sc','S4dc','S4tdc','S6sc','S6dc','S6tdc']
+                negativeCharged = ['C2sc','C2dc','C2tc',
+                                   'N0sc','N1sc','N1dc','N5dddc',
+                                   'O0sc',
+                                   'S0sc','S2sc','S2dc','S2tc','S4dc','S4tdc','S6sc','S6dc','S6tdc']
+                if groupAtom.atomType[0] in [atomTypes[x] for x in positiveCharged] and atom.charge > 0:
                     pass
-                elif groupAtom.atomType[0] in [atomTypes[x] for x in ['N1d', 'N2s']] and atom.charge == -1:
+                elif groupAtom.atomType[0] in [atomTypes[x] for x in negativeCharged] and atom.charge < 0:
                     pass
                 #declared charge in original group is not same as new charge
                 elif atom.charge in groupAtom.charge:
@@ -2085,3 +2472,13 @@ class Group(Graph):
             mergedGroup.removeBond(bond)
 
         return mergedGroup
+
+    def resetRingMembership(self):
+        """
+        Resets ring membership information in the GroupAtom.props attribute.
+        """
+        cython.declare(ratom=GroupAtom)
+
+        for atom in self.atoms:
+            if 'inRing' in atom.props:
+                del atom.props['inRing']

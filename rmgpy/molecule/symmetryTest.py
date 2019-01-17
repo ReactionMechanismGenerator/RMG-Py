@@ -1,40 +1,40 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 import unittest
 from external.wip import work_in_progress
 
 from rmgpy.molecule.molecule import Molecule
-from rmgpy.molecule.symmetry import calculateAtomSymmetryNumber, calculateAxisSymmetryNumber, calculateBondSymmetryNumber, calculateCyclicSymmetryNumber
+from rmgpy.molecule.symmetry import calculateAtomSymmetryNumber, calculateAxisSymmetryNumber, calculateBondSymmetryNumber, calculateCyclicSymmetryNumber, _indistinguishable
 from rmgpy.species import Species
-from rmgpy.molecule.resonance import generate_aromatic_resonance_structures
+from rmgpy.molecule.resonance import generate_optimal_aromatic_resonance_structures
 ################################################################################
 
 class TestMoleculeSymmetry(unittest.TestCase):
@@ -494,7 +494,6 @@ multiplicity 3
         symmetryNumber = species.getSymmetryNumber()
         self.assertEqual(symmetryNumber, 6)
 
-    @work_in_progress
     def testTotalSymmetryNumberSpecialCyclic(self):
         """
         Test the Species.getSymmetryNumber() (total symmetry) from issue # 332
@@ -504,7 +503,6 @@ multiplicity 3
         symmetryNumber = species.getSymmetryNumber()
         self.assertEqual(symmetryNumber, 12)
 
-    @work_in_progress
     def testTotalSymmetryNumberChlorobenzene(self):
         """
         Test the Species.getSymmetryNumber() (total symmetry) on c1ccccc1Cl
@@ -524,14 +522,13 @@ multiplicity 3
         symmetryNumber = species.getSymmetryNumber()
         self.assertEqual(symmetryNumber, 2)
 
-    @work_in_progress
     def testTotalSymmetryNumberPhenoxyBenzene(self):
         """
         Test symmetry on c1ccccc1[O] using phenoxy benzene structure
         """
         molecule = Molecule().fromSMILES('c1ccccc1[O]')
         species = Species(molecule=[molecule])
-        aromatic_molecule = generate_aromatic_resonance_structures(molecule)[0]
+        aromatic_molecule = generate_optimal_aromatic_resonance_structures(molecule)[0]
         symmetryNumber = aromatic_molecule.getSymmetryNumber()
         self.assertEqual(symmetryNumber, 2)
 
@@ -649,7 +646,95 @@ multiplicity 3
         Test the Molecule.calculateSymmetryNumber() on C1=C=C=1
         """
         self.assertEqual(Species().fromSMILES('C1=C=C=1').getSymmetryNumber(), 6)
+
+    def test_symmetry_number_S1_total(self):
+        """
+        Test the Molecule.calculateSymmetryNumber() on [CH]1CCC1CC1CC1
+        """
+        self.assertEqual(Species().fromSMILES('[CH]1CCC1CC1CC1').getSymmetryNumber(),1)
+
+    def testCyclicSymmetryNumberS1(self):
+        """
+        Test the Molecule.calculateCyclicSymmetryNumber() on [CH]1CCC1CC1CC1
+        """
+        molecule = Molecule().fromSMILES('[CH]1CCC1CC1CC1')
+        symmetryNumber = calculateCyclicSymmetryNumber(molecule)
+        self.assertEqual(symmetryNumber, 1)
     
+    def testCyclicSymmetryNumberMethylCycloPropane(self):
+        """
+        Test the Molecule.calculateCyclicSymmetryNumber() on CC1CC1
+        """
+        molecule = Molecule().fromSMILES('CC1CC1')
+        symmetryNumber = calculateCyclicSymmetryNumber(molecule)
+        self.assertEqual(symmetryNumber, 1)
+
+    def testCyclicSymmetryNumberMethylCycloPropene(self):
+        """
+        Test the Molecule.calculateCyclicSymmetryNumber() on C=C1CC1
+        """
+        molecule = Molecule().fromSMILES('C=C1CC1')
+        symmetryNumber = calculateCyclicSymmetryNumber(molecule)
+        self.assertEqual(symmetryNumber, 2)
+
+
+    def testCyclicSymmetryNumberMethylCycloButene(self):
+        """
+        Test the Molecule.calculateCyclicSymmetryNumber() on C=C1CCC1
+        """
+        molecule = Molecule().fromSMILES('C=C1CCC1')
+        symmetryNumber = calculateCyclicSymmetryNumber(molecule)
+        self.assertEqual(symmetryNumber, 2)
+
+    def testCyclicSymmetryNumberMethylCycloButane(self):
+        """
+        Test the Molecule.calculateCyclicSymmetryNumber() on CC1CCC1
+        """
+        molecule = Molecule().fromSMILES('CC1CCC1')
+        symmetryNumber = calculateCyclicSymmetryNumber(molecule)
+        self.assertEqual(symmetryNumber, 1)
+
+    def testCyclicSymmetryNumberDiMethylCycloButane(self):
+        """
+        Test the Molecule.calculateCyclicSymmetryNumber() on CC1CC(C)C1
+        """
+        molecule = Molecule().fromSMILES('CC1CC(C)C1')
+        symmetryNumber = calculateCyclicSymmetryNumber(molecule)
+        self.assertEqual(symmetryNumber, 4)
+
+
+    def test_symmetry_number_dimethylcylcobutane_total(self):
+        """
+        Test the Molecule.calculateSymmetryNumber() on CC1CC(C)C1
+        """
+        self.assertEqual(Species().fromSMILES('CC1CC(C)C1').getSymmetryNumber(),36)
+
+    def test_indistinguishable(self):
+        """
+        Test that the _indistinguishable function works properly
+        """
+        mol = Molecule().fromSMILES('c1ccccc1')
+        self.assertTrue(_indistinguishable(mol.atoms[0], mol.atoms[1]))
+        self.assertTrue(_indistinguishable(mol.atoms[0], mol.atoms[2]))
+        self.assertTrue(_indistinguishable(mol.atoms[0], mol.atoms[3]))
+
+    def test_indistinguishable_2(self):
+        """
+        Test that the _indistinguishable function works properly
+        """
+        mol = Molecule().fromSMILES('c1ccccc1[O]')
+        # Carbon with O different from other carbons (with H)
+        self.assertFalse(_indistinguishable(mol.atoms[5], mol.atoms[4]))
+        self.assertFalse(_indistinguishable(mol.atoms[5], mol.atoms[3]))
+        self.assertFalse(_indistinguishable(mol.atoms[5], mol.atoms[2]))
+        # Ortho carbons are the same
+        self.assertTrue(_indistinguishable(mol.atoms[0], mol.atoms[4]))
+        # Meta carbons are the same
+        self.assertTrue(_indistinguishable(mol.atoms[1], mol.atoms[3]))
+        # O is different from H
+        self.assertFalse(_indistinguishable(mol.atoms[6], mol.atoms[7]))
+
+
 ################################################################################
 
 if __name__ == '__main__':

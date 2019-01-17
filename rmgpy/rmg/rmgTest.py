@@ -1,32 +1,36 @@
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 import os
 import unittest
+from external.wip import work_in_progress
 
 from .main import RMG, CoreEdgeReactionModel
 from .model import Species
@@ -73,6 +77,7 @@ class TestRMGWorkFlow(unittest.TestCase):
         import rmgpy.data.rmg
         rmgpy.data.rmg.database = None
         
+    @work_in_progress
     def testDeterministicReactionTemplateMatching(self):
         """
         Test RMG work flow can match reaction template for kinetics estimation 
@@ -80,15 +85,19 @@ class TestRMGWorkFlow(unittest.TestCase):
 
         In this test, a change of molecules order in a reacting species should 
         not change the reaction template matched.
+
+        However, this is inherently impossible with the existing reaction
+        generation algorithm. Currently, the first reaction will be the one
+        that is kept if the reactions are identical. If different templates
+        are a result of different transition states, all are kept.
         
-        H + C=C=C=O -> O=C[C]=C
+        {O=C-[C]=C, [O]-C=C=C} -> H + C=C=C=O
         """
 
         # react
         spc = Species().fromSMILES("O=C[C]=C")
         spc.generate_resonance_structures()
-        newReactions = []		
-        newReactions.extend(react((spc,)))
+        newReactions = react((spc,))
 
         # try to pick out the target reaction 
         mol_H = Molecule().fromSMILES("[H]")
@@ -109,7 +118,7 @@ class TestRMGWorkFlow(unittest.TestCase):
         self.assertEqual(len(target_rxns_reverse), 2)
 
         # whatever order of molecules in spc, the reaction template matched should be same
-        self.assertEqual(target_rxns[0].template, target_rxns_reverse[-1].template)
+        self.assertEqual(target_rxns[0].template, target_rxns_reverse[0].template)
 
     def testCheckForExistingSpeciesForBiAromatics(self):
         """
@@ -163,7 +172,7 @@ class TestRMGWorkFlow(unittest.TestCase):
 30    H u0 p0 c0 {14,S}
 31    H u0 p0 c0 {15,S}
 """)
-        found, spec = rmg_test.reactionModel.checkForExistingSpecies(mol_test)
+        found, reactive, spec = rmg_test.reactionModel.checkForExistingSpecies(mol_test)
         assert found == True
 
     def testRestartFileGenerationAndParsing(self):

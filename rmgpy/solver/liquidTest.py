@@ -1,32 +1,32 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 import unittest
 import numpy
@@ -121,7 +121,7 @@ class LiquidReactorCheck(unittest.TestCase):
 
         c0 = {self.C2H5: 0.1, self.CH3: 0.1, self.CH4: 0.4, self.C2H6: 0.4}
 
-        rxnSystem = LiquidReactor(self.T, c0, termination=[])
+        rxnSystem = LiquidReactor(self.T, c0, 1, termination=[])
 
         rxnSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
 
@@ -253,7 +253,7 @@ class LiquidReactorCheck(unittest.TestCase):
         for rxn_num, rxn in enumerate(rxnList):
             coreReactions = [rxn]
 
-            rxnSystem0 = LiquidReactor(self.T, c0, termination=[])
+            rxnSystem0 = LiquidReactor(self.T, c0, 1, termination=[])
             rxnSystem0.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
             dydt0 = rxnSystem0.residual(0.0, rxnSystem0.y, numpy.zeros(rxnSystem0.y.shape))[0]
             
@@ -318,7 +318,7 @@ class LiquidReactorCheck(unittest.TestCase):
         
         c0 = {self.CH4: 0.2, self.CH3: 0.1, self.C2H6: 0.35, self.C2H5: 0.15, self.H2: 0.2}
 
-        rxnSystem0 = LiquidReactor(self.T, c0, termination=[])
+        rxnSystem0 = LiquidReactor(self.T, c0, 1, termination=[])
         rxnSystem0.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
         dfdt0 = rxnSystem0.residual(0.0, rxnSystem0.y, numpy.zeros(rxnSystem0.y.shape))[0]
         solver_dfdk = rxnSystem0.computeRateDerivative()
@@ -346,7 +346,7 @@ class LiquidReactorCheck(unittest.TestCase):
             rxnList[i].kinetics.A.value_si = rxnList[i].kinetics.A.value_si*(1+1e-3)               
             dk = rxnList[i].getRateCoefficient(self.T) - k0
 
-            rxnSystem = LiquidReactor(self.T, c0, termination=[])
+            rxnSystem = LiquidReactor(self.T, c0, 1, termination=[])
             rxnSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
 
             dfdt = rxnSystem.residual(0.0, rxnSystem.y, numpy.zeros(rxnSystem.y.shape))[0]  
@@ -379,11 +379,12 @@ class LiquidReactorCheck(unittest.TestCase):
         sensitivity = []
         sensitivityThreshold = 0.001
         constantSpecies = ["CH4", "C2H6"]
-        rxnSystem1 = LiquidReactor(Temp, c0, terminationConversion, sensitivity, sensitivityThreshold, constantSpecies)
+        sensConds = None
+        rxnSystem1 = LiquidReactor(Temp, c0, 4, terminationConversion, sensitivity, sensitivityThreshold, sensConds, constantSpecies)
         
         # set up the liquid phase reactor 2
         constantSpecies = ["O2", "H2O"]
-        rxnSystem2 = LiquidReactor(Temp, c0, terminationConversion, sensitivity, sensitivityThreshold, constantSpecies)
+        rxnSystem2 = LiquidReactor(Temp, c0, 4, terminationConversion, sensitivity, sensitivityThreshold, sensConds, constantSpecies)
         for reactor in [rxnSystem1, rxnSystem2]:
             self.assertIsNotNone(reactor.constSPCNames)
         
@@ -434,8 +435,9 @@ class LiquidReactorCheck(unittest.TestCase):
         terminationConversion = []
         sensitivityThreshold = 0.001
         ConstSpecies = ["CH4"]
+        sensConds = {self.C2H5: 0.1, self.CH3: 0.1, self.CH4: 0.4, self.C2H6: 0.4,'T':self.T}
         
-        rxnSystem = LiquidReactor(self.T, c0, terminationConversion, sensitivity, sensitivityThreshold, ConstSpecies)
+        rxnSystem = LiquidReactor(self.T, c0, 1, terminationConversion, sensitivity, sensitivityThreshold, constSPCNames=ConstSpecies, sensConditions=sensConds)
         # The test regarding the writing of constantSPCindices from input file is check with the previous test.
         rxnSystem.constSPCIndices = [0]
         

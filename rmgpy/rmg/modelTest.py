@@ -1,32 +1,32 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 import os
 import unittest 
@@ -213,6 +213,30 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         self.assertEquals(len(cerm.speciesDict), len(spcs) - 1)    
         self.assertEquals(len(cerm.indexSpeciesDict), len(spcs) - 1)
 
+    def test_append_unreactive_structure(self):
+        """
+        Test that the CoreEdgeReactionModel.makeNewSpecies method correctly appends a non-representative resonance
+        structure to the correct Species containing the representative resonance structures.
+        The non-representative structure should be marked as `.reactive=False`.
+        """
+
+        cerm = CoreEdgeReactionModel()
+
+        spcs = [Species().fromSMILES('CCO'),  # a control species
+                Species().fromSMILES('[N]=O'),
+                Species().fromAdjacencyList("""1 O u1 p2 c0 {2,S}
+                                               2 N u0 p2 c0 {1,S}"""),  # a non-representative structure of '[N]=O'
+                ]
+
+        for spc in spcs:
+            cerm.makeNewSpecies(spc)
+
+        self.assertEquals(len(cerm.speciesDict), 2)
+        self.assertEquals(len(cerm.indexSpeciesDict), 2)
+        self.assertTrue(cerm.indexSpeciesDict[1].molecule[0].reactive)
+        self.assertNotEquals(cerm.indexSpeciesDict[2].molecule[0].reactive,
+                             cerm.indexSpeciesDict[2].molecule[1].reactive)  # only one should be reactive
+
     def testMakeNewReaction(self):
         """
         Test that CoreEdgeReactionModel.makeNewReaction method correctly works.
@@ -394,9 +418,9 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         for rxn in rxns:
             self.assertTrue(rxn.isBalanced())
 
-    def test_checkForExistingReaction_elminates_duplicate(self):
+    def test_checkForExistingReaction_eliminates_identical_reactions(self):
         """
-        Test that checkForExistingReaction catches duplicate reactions
+        Test that checkForExistingReaction catches identical reactions.
         """
         cerm = CoreEdgeReactionModel()
 
@@ -416,17 +440,17 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         cerm.addSpeciesToCore(spcC)
         cerm.addSpeciesToCore(spcD)
 
-        reaction_in_model = TemplateReaction(reactants=[spcA,spcB],
-                                             products = [spcC, spcD],
-                                                family = 'H_Abstraction',
-                                                template = ['Csd','H'])
+        reaction_in_model = TemplateReaction(reactants=[spcA, spcB],
+                                             products=[spcC, spcD],
+                                             family='H_Abstraction',
+                                             template=['Csd', 'H'])
         reaction_in_model.reactants.sort()
         reaction_in_model.products.sort()
 
-        reaction_to_add = TemplateReaction(reactants=[spcA,spcB],
-                                             products = [spcC, spcD],
-                                                family = 'H_Abstraction',
-                                                template = ['Csd','H'])
+        reaction_to_add = TemplateReaction(reactants=[spcA, spcB],
+                                           products=[spcC, spcD],
+                                           family='H_Abstraction',
+                                           template=['Csd', 'H'])
         cerm.addReactionToCore(reaction_in_model)
         cerm.registerReaction(reaction_in_model)
 
@@ -434,11 +458,10 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
 
         self.assertTrue(found, 'checkForExistingReaction failed to identify existing reaction')
 
-    def test_checkForExistingReaction_keeps_different_template_reactions(self):
+    def test_checkForExistingReaction_keeps_identical_reactions_with_duplicate_flag(self):
         """
-        Test that checkForExistingReaction keeps reactions with different templates
+        Test that checkForExistingReaction keeps reactions with different templates and duplicate=True.
         """
-        from rmgpy.data.kinetics.family import TemplateReaction
         cerm = CoreEdgeReactionModel()
 
         # make species' objects
@@ -457,30 +480,30 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         cerm.addSpeciesToCore(spcC)
         cerm.addSpeciesToCore(spcD)
         
-        reaction_in_model = TemplateReaction(reactants=[spcA,spcB],
-                                             products = [spcC, spcD],
-                                                family = 'H_Abstraction',
-                                                template = ['Csd','H'])
+        reaction_in_model = TemplateReaction(reactants=[spcA, spcB],
+                                             products=[spcC, spcD],
+                                             family='H_Abstraction',
+                                             template=['Csd', 'H'],
+                                             duplicate=True)
         reaction_in_model.reactants.sort()
         reaction_in_model.products.sort()
 
-        reaction_to_add = TemplateReaction(reactants=[spcA,spcB],
-                                             products = [spcC, spcD],
-                                                family = 'H_Abstraction',
-                                                template = ['Cs12345','H'])
+        reaction_to_add = TemplateReaction(reactants=[spcA, spcB],
+                                           products=[spcC, spcD],
+                                           family='H_Abstraction',
+                                           template=['Cs12345', 'H'],
+                                           duplicate=True)
         cerm.addReactionToCore(reaction_in_model)
         cerm.registerReaction(reaction_in_model)
 
         found, rxn = cerm.checkForExistingReaction(reaction_to_add)
 
-        self.assertFalse(found, 'checkForExistingReaction failed to identify reactions with different templates')
+        self.assertFalse(found, 'checkForExistingReaction failed to identify duplicate template reactions')
 
-    def test_checkForExistingReaction_removes_duplicates_in_opposite_directions(self):
+    def test_checkForExistingReaction_eliminates_identical_reactions_without_duplicate_flag(self):
         """
-        Test that checkForExistingReaction will remove duplicates if reaction.reverse
-        would be a duplicate
+        Test that checkForExistingReaction eliminates reactions with different templates and duplicate=false
         """
-        from rmgpy.data.kinetics.family import TemplateReaction
         cerm = CoreEdgeReactionModel()
 
         # make species' objects
@@ -499,71 +522,30 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         cerm.addSpeciesToCore(spcC)
         cerm.addSpeciesToCore(spcD)
 
-        reaction_in_model = TemplateReaction(reactants=[spcA,spcB],
-                                             products = [spcC, spcD],
-                                                family = 'H_Abstraction',
-                                                template = ['Csd','H'])
+        reaction_in_model = TemplateReaction(reactants=[spcA, spcB],
+                                             products=[spcC, spcD],
+                                             family='H_Abstraction',
+                                             template=['Csd', 'H'],
+                                             duplicate=False)
         reaction_in_model.reactants.sort()
         reaction_in_model.products.sort()
 
-        reaction_to_add = TemplateReaction(reactants=[spcA,spcB],
-                                             products = [spcC, spcD],
-                                                family = 'H_Abstraction',
-                                                template = ['Csd','H'])
+        reaction_to_add = TemplateReaction(reactants=[spcA, spcB],
+                                           products=[spcC, spcD],
+                                           family='H_Abstraction',
+                                           template=['Cs12345', 'H'],
+                                           duplicate=False)
         cerm.addReactionToCore(reaction_in_model)
         cerm.registerReaction(reaction_in_model)
 
         found, rxn = cerm.checkForExistingReaction(reaction_to_add)
 
-        self.assertTrue(found, 'checkForExistingReaction failed to identify existing reaction')
-
-    def test_checkForExistingReaction_keeps_different_template_reactions(self):
-        """
-        Test that checkForExistingReaction keeps reactions with different templates
-        """
-        from rmgpy.data.kinetics.family import TemplateReaction
-        cerm = CoreEdgeReactionModel()
-
-        # make species' objects
-        spcA = Species().fromSMILES('[H]')
-        spcB = Species().fromSMILES('C=C[CH2]C')
-        spcC = Species().fromSMILES('C=C=CC')
-        spcD = Species().fromSMILES('[H][H]')
-        spcA.label = '[H]'
-        spcB.label = 'C=C[CH2]C'
-        spcC.label = 'C=C=CC'
-        spcD.label = '[H][H]'
-        spcB.generate_resonance_structures()
-
-        cerm.addSpeciesToCore(spcA)
-        cerm.addSpeciesToCore(spcB)
-        cerm.addSpeciesToCore(spcC)
-        cerm.addSpeciesToCore(spcD)
-        
-        reaction_in_model = TemplateReaction(reactants=[spcA,spcB],
-                                             products = [spcC, spcD],
-                                                family = 'H_Abstraction',
-                                                template = ['Csd','H'])
-        reaction_in_model.reactants.sort()
-        reaction_in_model.products.sort()
-
-        reaction_to_add = TemplateReaction(reactants=[spcA,spcB],
-                                             products = [spcC, spcD],
-                                                family = 'H_Abstraction',
-                                                template = ['Cs12345','H'])
-        cerm.addReactionToCore(reaction_in_model)
-        cerm.registerReaction(reaction_in_model)
-
-        found, rxn = cerm.checkForExistingReaction(reaction_to_add)
-
-        self.assertFalse(found, 'checkForExistingReaction failed to identify reactions with different templates')
+        self.assertTrue(found, 'checkForExistingReaction failed to eliminate reactions without duplicate tag')
 
     def test_checkForExistingReaction_removes_duplicates_in_opposite_directions(self):
         """
-        Test that checkForExistingReaction will remove duplicates if reaction.reverse
-        would be a duplicate
+        Test that checkForExistingReaction removes duplicate reverse reactions
         """
-        from rmgpy.data.kinetics.family import TemplateReaction
         cerm = CoreEdgeReactionModel()
 
         # make species' objects
@@ -576,31 +558,29 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         s3.label = 'HH'
         s4.label = 'C[CH2]'
 
-        rxn_f = TemplateReaction(reactants = [s1, s2],
-                                    products = [s3, s4],
-                                    template = ['C/H3/Cs\H3','H_rad'],
-                                    degeneracy = 6,
-                                    family = 'H_Abstraction',
-                                    reverse = TemplateReaction(reactants = [s3, s4],
-                                                            products = [s1, s2],
-                                                            template = ['H2', 'C_rad/H2/Cs\\H3'],
-                                                            degeneracy = 2,
-                                                            family = 'H_Abstraction',
-                                                            )
-                                    )
+        rxn_f = TemplateReaction(reactants=[s1, s2],
+                                 products=[s3, s4],
+                                 template=['C/H3/Cs/H3', 'H_rad'],
+                                 degeneracy=6,
+                                 family='H_Abstraction',
+                                 reverse=TemplateReaction(reactants=[s3, s4],
+                                                          products=[s1, s2],
+                                                          template=['H2', 'C_rad/H2/Cs/H3'],
+                                                          degeneracy=2,
+                                                          family='H_Abstraction')
+                                 )
 
-        rxn_r = TemplateReaction(reactants = [s3, s4],
-                                    products = [s1, s2],
-                                    template = ['H2', 'C_rad/H2/Cs\\H3'],
-                                    degeneracy = 2,
-                                    family = 'H_Abstraction',
-                                    reverse = TemplateReaction(reactants = [s1, s2],
-                                                            products = [s3, s4],
-                                                            template = ['C/H3/Cs\H3','H_rad'],
-                                                            degeneracy = 6,
-                                                            family = 'H_Abstraction',
-                                                            )
-                                    )
+        rxn_r = TemplateReaction(reactants=[s3, s4],
+                                 products=[s1, s2],
+                                 template=['H2', 'C_rad/H2/Cs/H3'],
+                                 degeneracy=2,
+                                 family='H_Abstraction',
+                                 reverse=TemplateReaction(reactants=[s1, s2],
+                                                          products=[s3, s4],
+                                                          template=['C/H3/Cs/H3', 'H_rad'],
+                                                          degeneracy=6,
+                                                          family='H_Abstraction')
+                                 )
 
         rxn_f.reactants.sort()
         rxn_f.products.sort()
@@ -609,11 +589,11 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         cerm.registerReaction(rxn_f)
 
         reactions = cerm.searchRetrieveReactions(rxn_r)
-        self.assertEqual(1, len(reactions),'cerm.searchRetrieveReactions could not identify reverse reaction')
+        self.assertEqual(1, len(reactions), 'cerm.searchRetrieveReactions could not identify reverse reaction')
 
         found, rxn = cerm.checkForExistingReaction(rxn_r)
 
-        self.assertTrue(found, 'checkForExistingReaction failed to identify existing reaction when it is in the reverse direction')
+        self.assertTrue(found, 'checkForExistingReaction failed to identify existing reaction in the reverse direction')
         self.assertEqual(rxn, rxn_f)
 
     @classmethod

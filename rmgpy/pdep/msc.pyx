@@ -1,29 +1,29 @@
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 """
 Contains functionality for computing pressure-dependent phenomenological
@@ -37,7 +37,7 @@ from libc.math cimport exp, log, sqrt
 
 import rmgpy.constants as constants
 from rmgpy.exceptions import ModifiedStrongCollisionError
-
+import logging
 ################################################################################
 
 cpdef applyModifiedStrongCollisionMethod(network, str efficiencyModel='default'):
@@ -67,6 +67,10 @@ cpdef applyModifiedStrongCollisionMethod(network, str efficiencyModel='default')
     Ngrains = network.Ngrains
     NJ = network.NJ
     
+    if numpy.isnan(densStates.sum()):
+        raise AttributeError('Network {0} has NaN in the density of states. '
+                             'This will prevent adequate solution to the network'.format(network.label))
+
     K = numpy.zeros((Nisom+Nreac+Nprod, Nisom+Nreac+Nprod), numpy.float64)
     pa = numpy.zeros((Nisom,Nisom+Nreac,Ngrains,NJ), numpy.float64)
 
@@ -125,11 +129,15 @@ cpdef applyModifiedStrongCollisionMethod(network, str efficiencyModel='default')
             for i in range(Nisom):
                 # Thermal activation via collisions
                 b[i,i] = collFreq[i] * collEff[i] * densStates[i,r,s] * (2*Jlist[s]+1) * exp(-Elist[r] * beta)
+                if numpy.isnan(b[i,i]):
+                    logging.warning('Non-number generated for grain {0} for isomer {1}'.format(r,network.isomers[i]))
             for n in range(Nisom, Nisom+Nreac):
                 # Chemical activation via association reaction
                 for j in range(Nisom):
                     b[j,n] = Fim[j,n-Nisom,r,s] * densStates[n,r,s] * (2*Jlist[s]+1) * exp(-Elist[r] * beta)
-                    
+                    if numpy.isnan(b[j,n]):
+                        logging.warning('Non-number generated for grain {0} for isomer {1} and isomer/reactant {2}'.format(r,network.isomers[j],(network.reactants)[n-Nisom]))
+                        logging.debug(str([Fim[j,n-Nisom,r,s], densStates[n,r,s], (2*Jlist[s]+1), exp(-Elist[r] * beta), Elist[r], beta]))
             # Solve for steady-state population
             x = -numpy.linalg.solve(A, b)
             for n in range(Nisom+Nreac):
@@ -138,6 +146,11 @@ cpdef applyModifiedStrongCollisionMethod(network, str efficiencyModel='default')
                         
     # Check that our populations are all positive
     if not (pa >= 0).all():
+        for reactant_index in range(len(pa[:,0,0,0])):
+            for isomer_index in range(len(pa[0,:,0,0])):
+                populations =pa[reactant_index,isomer_index,:,:]
+                if not (populations >=0).all():
+                    logging.debug('A negative concentration was encountered for reactant/isomer {0} and isomer {1} with matrix\n{2}'.format(network.isomers+network.reactants, network.reactants,populations))
         raise ModifiedStrongCollisionError('A negative steady-state concentration was encountered.')
 
     # Compute rate coefficients from PSSA concentrations

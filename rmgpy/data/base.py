@@ -1,32 +1,32 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 """
 Contains classes and functions for working with the various RMG databases. In
@@ -270,19 +270,20 @@ class Database:
 
         return entries
     
-    def getSpecies(self, path):
+    def getSpecies(self, path, resonance=True):
         """
         Load the dictionary containing all of the species in a kinetics library or depository.
         """
         from rmgpy.species import Species
-        speciesDict = {}
+        speciesDict = OrderedDict()
         with open(path, 'r') as f:
             adjlist = ''
             for line in f:
                 if line.strip() == '' and adjlist.strip() != '':
                     # Finish this adjacency list
                     species = Species().fromAdjacencyList(adjlist)
-                    species.generate_resonance_structures()
+                    if resonance:
+                        species.generate_resonance_structures()
                     label = species.label
                     if label in speciesDict:
                         raise DatabaseError('Species label "{0}" used for multiple species in {1}.'.format(label, str(self)))
@@ -294,7 +295,8 @@ class Database:
                 if adjlist.strip() != '':
                     # Finish this adjacency list
                     species = Species().fromAdjacencyList(adjlist)
-                    species.generate_resonance_structures()
+                    if resonance:
+                        species.generate_resonance_structures()
                     label = species.label
                     if label in speciesDict:
                         raise DatabaseError('Species label "{0}" used for multiple species in {1}.'.format(label, str(self)))
@@ -894,8 +896,15 @@ class Database:
         #except that the parent is listed in the attributes. However, we do need to check that everything down this
         #family line is consistent, which is done in the databaseTest unitTest
         elif isinstance(parentNode.item, Group) and isinstance(childNode.item, LogicOr):
-            return childNode.parent is parentNode
-        
+            ancestorNode = childNode.parent
+            while ancestorNode:
+                if ancestorNode is parentNode:
+                    return True
+                else:
+                    ancestorNode = ancestorNode.parent
+            else:
+                return False
+
         elif isinstance(parentNode.item,LogicOr):
             return childNode.label in parentNode.item.components
 
@@ -1270,23 +1279,30 @@ class ForbiddenStructures(Database):
         contains forbidden functionality, or ``False`` if not. Labeled atoms
         on the forbidden structures and the molecule are honored.
         """
+        from rmgpy.species import Species
+
         for entry in self.entries.values():
-            entryLabeledAtoms = entry.item.getLabeledAtoms()
-            moleculeLabeledAtoms = molecule.getLabeledAtoms()
-            initialMap = {}
-            for label in entryLabeledAtoms:
-                # all group labels must be present in the molecule
-                if label not in moleculeLabeledAtoms: break  
-                initialMap[moleculeLabeledAtoms[label]] = entryLabeledAtoms[label]
-            else:
-                if molecule.isMappingValid(entry.item, initialMap) and molecule.isSubgraphIsomorphic(entry.item, initialMap):
+            if isinstance(entry.item, Molecule) or isinstance(entry.item, Species):
+                # Perform an isomorphism check
+                if entry.item.isIsomorphic(molecule):
                     return True
+            elif isinstance(entry.item, Group):
+                # We need to do subgraph isomorphism
+                entryLabeledAtoms = entry.item.getLabeledAtoms()
+                moleculeLabeledAtoms = molecule.getLabeledAtoms()
+                initialMap = {}
+                for label in entryLabeledAtoms:
+                    # all group labels must be present in the molecule
+                    if label not in moleculeLabeledAtoms: break
+                    initialMap[moleculeLabeledAtoms[label]] = entryLabeledAtoms[label]
+                else:
+                    if molecule.isMappingValid(entry.item, initialMap) and molecule.isSubgraphIsomorphic(entry.item, initialMap):
+                        return True
+            else:
+                raise NotImplementedError('Checking is only implemented for forbidden Groups, Molecule, and Species.')
             
         # Until we have more thermodynamic data of molecular ions we will forbid them
-        molecule_charge = 0
-        for atom in molecule.atoms:
-            molecule_charge += atom.charge
-        if molecule_charge != 0:
+        if molecule.getNetCharge() != 0:
             return True
         
         return False
@@ -1304,22 +1320,27 @@ class ForbiddenStructures(Database):
         """
         self.saveOldDictionary(path)
 
-    def loadEntry(self, label, molecule=None, group=None, shortDesc='', longDesc=''):
+    def loadEntry(self, label, group=None, molecule=None, species=None, shortDesc='', longDesc=''):
         """
         Load an entry from the forbidden structures database. This method is
         automatically called during loading of the forbidden structures 
         database.
         """
-        assert molecule is not None or group is not None
-        assert not (molecule is not None and group is not None)
+        from rmgpy.species import Species
+
+        if sum([bool(molecule), bool(group), bool(species)]) != 1:
+            raise DatabaseError('A forbidden group should be defined with exactly one item from '
+                                'the following options: group, molecule, or species.')
         if molecule is not None:
-            item = Molecule.fromAdjacencyList(molecule)
+            item = Molecule().fromAdjacencyList(molecule)
+        elif species is not None:
+            item = Species().fromAdjacencyList(species)
+            item.generate_resonance_structures()
         elif group is not None:
-            if ( group[0:3].upper() == 'OR{' or
-                 group[0:4].upper() == 'AND{' or
-                 group[0:7].upper() == 'NOT OR{' or
-                 group[0:8].upper() == 'NOT AND{'
-                ):
+            if (group[0:3].upper() == 'OR{' or
+                    group[0:4].upper() == 'AND{' or
+                    group[0:7].upper() == 'NOT OR{' or
+                    group[0:8].upper() == 'NOT AND{'):
                 item = makeLogicNode(group)
             else:
                 item = Group().fromAdjacencyList(group)

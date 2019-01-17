@@ -1,39 +1,44 @@
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 import unittest
 import mock
 import os
 from chemkin import *
-from chemkin import _removeLineBreaks
+from chemkin import _removeLineBreaks, _process_duplicate_reactions
 import rmgpy
 from rmgpy.species import Species
 from rmgpy.reaction import Reaction
-from rmgpy.kinetics.arrhenius import Arrhenius
+from rmgpy.data.kinetics import LibraryReaction
+from rmgpy.kinetics.arrhenius import Arrhenius, MultiArrhenius
+from rmgpy.kinetics.chebyshev import Chebyshev
 
 
 ###################################################
@@ -307,6 +312,121 @@ multiplicity 2
 
         self.assertEqual(reaction.specificCollider.label, 'N2(5)')
 
+    def test_process_duplicate_reactions(self):
+        """
+        Test that duplicate reactions are handled correctly when
+        loading a Chemkin file.
+        """
+        s1 = Species().fromSMILES('CC')
+        s2 = Species().fromSMILES('[CH3]')
+        s3 = Species().fromSMILES('[OH]')
+        s4 = Species().fromSMILES('C[CH2]')
+        s5 = Species().fromSMILES('O')
+        r1 = Reaction(reactants=[s1], products=[s2, s2], duplicate=False, kinetics=Arrhenius())
+        r2 = Reaction(reactants=[s1, s3], products=[s4, s5], duplicate=True, kinetics=Arrhenius())
+        r3 = Reaction(reactants=[s1, s3], products=[s4, s5], duplicate=True, kinetics=Arrhenius())
+        r4 = Reaction(reactants=[s1, s3], products=[s4, s5], duplicate=False, kinetics=Arrhenius())
+        r5 = LibraryReaction(reactants=[s1, s3], products=[s4, s5], duplicate=True,
+                             kinetics=Arrhenius(), library='lib1')
+        r6 = LibraryReaction(reactants=[s1, s3], products=[s4, s5], duplicate=True,
+                             kinetics=Arrhenius(), library='lib2')
+        r7 = LibraryReaction(reactants=[s1, s3], products=[s4, s5], duplicate=True,
+                             kinetics=Chebyshev(), library='lib1')
+        r8 = LibraryReaction(reactants=[s1, s3], products=[s4, s5], duplicate=True,
+                             kinetics=Arrhenius(), library='lib1')
+        r9 = LibraryReaction(reactants=[s1, s3], products=[s4, s5], duplicate=False,
+                             kinetics=MultiArrhenius(arrhenius=[Arrhenius(), Arrhenius()]), library='lib1')
+        reaction_list_with_duplicate = [r1, r2, r3]
+        reaction_list_with_duplicate2 = [r1, r2, r3]
+        reaction_list_unmarked_duplicate = [r1, r2, r4]
+        reaction_list_unequal_libraries = [r1, r5, r6]
+        reaction_list_mixed_kinetics = [r1, r5, r7]
+        reaction_list_mergeable = [r1, r5, r8]
+        reaction_list_merged = [r1, r9]
+
+        # Test that duplicates are not removed for non-library reactions
+        _process_duplicate_reactions(reaction_list_with_duplicate)
+        self.assertEqual(reaction_list_with_duplicate, reaction_list_with_duplicate2)
+
+        # Test that unmarked duplicate reactions are detected if both
+        # reactions are p-dep or p-indep
+        self.assertRaisesRegexp(ChemkinError,
+                                'Encountered unmarked duplicate reaction',
+                                _process_duplicate_reactions,
+                                reaction_list_unmarked_duplicate)
+
+        # Test that unequal libraries are recognized
+        self.assertRaisesRegexp(ChemkinError,
+                                'from different libraries',
+                                _process_duplicate_reactions,
+                                reaction_list_unequal_libraries)
+
+        # Test that an error is raised for reactions with kinetics
+        # that cannot be merged
+        self.assertRaisesRegexp(ChemkinError,
+                                'Mixed kinetics for duplicate reaction',
+                                _process_duplicate_reactions,
+                                reaction_list_mixed_kinetics)
+
+        # Test that duplicate library reactions are merged successfully
+        _process_duplicate_reactions(reaction_list_mergeable)
+        self.assertEqual(len(reaction_list_mergeable), len(reaction_list_merged))
+        self.assertEqual(reaction_list_mergeable[0], reaction_list_merged[0])
+        rtest = reaction_list_mergeable[1]
+        rtrue = reaction_list_merged[1]
+        self.assertEqual(rtest.reactants, rtrue.reactants)
+        self.assertEqual(rtest.products, rtrue.products)
+        self.assertEqual(rtest.duplicate, rtrue.duplicate)
+        self.assertEqual(rtest.library, rtrue.library)
+        self.assertTrue(isinstance(rtest.kinetics, MultiArrhenius))
+        self.assertTrue(all(isinstance(k, Arrhenius) for k in rtest.kinetics.arrhenius))
+
+    def test_mark_duplicate_reactions(self):
+        """Test that we can properly mark duplicate reactions for Chemkin."""
+        s1 = Species().fromSMILES('CC')
+        s2 = Species().fromSMILES('[CH3]')
+        s3 = Species().fromSMILES('[OH]')
+        s4 = Species().fromSMILES('C[CH2]')
+        s5 = Species().fromSMILES('O')
+        s6 = Species().fromSMILES('[H]')
+
+        # Try initializing with duplicate=False
+        reaction_list = [
+            Reaction(reactants=[s1], products=[s2, s2], duplicate=False, kinetics=Arrhenius()),
+            Reaction(reactants=[s1], products=[s2, s2], duplicate=False, kinetics=Arrhenius()),
+            Reaction(reactants=[s1, s3], products=[s4, s5], duplicate=False, kinetics=Arrhenius()),
+            Reaction(reactants=[s1, s3], products=[s4, s5], duplicate=False, kinetics=Chebyshev()),
+            Reaction(reactants=[s1], products=[s4, s6], duplicate=False, kinetics=Arrhenius(), reversible=False),
+            Reaction(reactants=[s1], products=[s4, s6], duplicate=False, kinetics=Arrhenius(), reversible=False),
+            Reaction(reactants=[s5], products=[s3, s6], duplicate=False, kinetics=Arrhenius(), reversible=False),
+            Reaction(reactants=[s3, s6], products=[s5], duplicate=False, kinetics=Arrhenius(), reversible=False),
+        ]
+
+        expected_flags = [True, True, False, False, True, True, False, False]
+
+        markDuplicateReactions(reaction_list)
+        duplicate_flags = [rxn.duplicate for rxn in reaction_list]
+
+        self.assertEqual(duplicate_flags, expected_flags)
+
+        # Try initializing with duplicate=True
+        reaction_list = [
+            Reaction(reactants=[s1], products=[s2, s2], duplicate=True, kinetics=Arrhenius()),
+            Reaction(reactants=[s1], products=[s2, s2], duplicate=True, kinetics=Arrhenius()),
+            Reaction(reactants=[s1, s3], products=[s4, s5], duplicate=True, kinetics=Arrhenius()),
+            Reaction(reactants=[s1, s3], products=[s4, s5], duplicate=True, kinetics=Chebyshev()),
+            Reaction(reactants=[s1], products=[s4, s6], duplicate=True, kinetics=Arrhenius(), reversible=False),
+            Reaction(reactants=[s1], products=[s4, s6], duplicate=True, kinetics=Arrhenius(), reversible=False),
+            Reaction(reactants=[s5], products=[s3, s6], duplicate=True, kinetics=Arrhenius(), reversible=False),
+            Reaction(reactants=[s3, s6], products=[s5], duplicate=True, kinetics=Arrhenius(), reversible=False),
+        ]
+
+        markDuplicateReactions(reaction_list)
+        duplicate_flags = [rxn.duplicate for rxn in reaction_list]
+
+        self.assertEqual(duplicate_flags, expected_flags)
+
+
 class TestReadReactionComments(unittest.TestCase):
     @classmethod
     def setUpClass(self):
@@ -390,7 +510,7 @@ This reaction matched rate rule [C_methyl;C_methyl]
 Reaction index: Chemkin #2; RMG #4
 Template reaction: R_Recombination
 Flux pairs: [CH3], CC; [CH3], CC; 
-From training reaction 21 for rate rule [C_rad/H2/Cs;C_methyl]
+From training reaction 21 used for C_rad/H2/Cs;C_methyl
 Exact match found for rate rule [C_rad/H2/Cs;C_methyl]
 Euclidian distance = 0
 """]
@@ -456,12 +576,21 @@ Euclidian distance = 0
         Also checks that reaction rate was not modified in the process.
         """
         for index, comment in enumerate(self.comments_list):
+            # Clear any leftover kinetics comments
+            self.reaction.kinetics.comment = ''
             previous_rate = self.reaction.kinetics.A.value_si
             new_rxn = readReactionComments(self.reaction, comment)
             new_rate = new_rxn.kinetics.A.value_si
 
             self.assertEqual(new_rxn.degeneracy, self.degeneracy_list[index], 'wrong degeneracy was stored')
             self.assertEqual(previous_rate, new_rate)
+
+            # Check that the comment only appears once in the kinetics comment
+            if new_rxn.degeneracy != 1:
+                self.assertEqual(new_rxn.kinetics.comment.count('Multiplied by reaction path degeneracy {}'.format(new_rxn.degeneracy)), 1,
+                                 'Reaction degeneracy comment duplicated while reading Chemkin comments')
+            else:
+                self.assertTrue('Multiplied by reaction path degeneracy' not in new_rxn.kinetics.comment)
 
     def testRemoveLineBreaks(self):
         """

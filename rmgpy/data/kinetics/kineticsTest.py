@@ -1,29 +1,32 @@
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 import os
 import unittest
@@ -34,7 +37,7 @@ import numpy
 from rmgpy import settings
 from rmgpy.chemkin import loadChemkinFile
 from rmgpy.data.base import Entry, DatabaseError, ForbiddenStructures
-from rmgpy.data.kinetics.common import saveEntry, filter_reactions, find_degenerate_reactions, ensure_independent_atom_ids
+from rmgpy.data.kinetics.common import saveEntry, find_degenerate_reactions, ensure_independent_atom_ids
 from rmgpy.data.kinetics.database import KineticsDatabase
 from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.rmg import RMGDatabase
@@ -56,7 +59,8 @@ def setUpModule():
             'R_Recombination',
             'Disproportionation',
             'R_Addition_MultipleBond',
-            'H_Abstraction'
+            'H_Abstraction',
+            'intra_H_migration',
         ],
         testing=True,
         depository=False,
@@ -84,12 +88,11 @@ def tearDownModule():
 
 class TestKineticsDatabase(unittest.TestCase):
 
-    def testLoadFamilies(self):
-        """
-        Test that the loadFamilies function raises the correct exceptions
-        """
-        path = os.path.join(settings['test_data.directory'],'testing_database','kinetics','families')
+    def test_load_families_incorrect(self):
+        """Test invalid methods for loading kinetics families"""
+        path = os.path.join(settings['test_data.directory'], 'testing_database', 'kinetics', 'families')
         database = KineticsDatabase()
+        database.loadRecommendedFamiliesList(os.path.join(path, 'recommended.py'))
 
         with self.assertRaises(DatabaseError):
             database.loadFamilies(path, families='random')
@@ -97,8 +100,53 @@ class TestKineticsDatabase(unittest.TestCase):
             database.loadFamilies(path, families=['!H_Abstraction','Disproportionation'])
         with self.assertRaises(DatabaseError):
             database.loadFamilies(path, families=['fake_family'])
-        with self.assertRaises(DatabaseError):
+
+    def test_load_families_correct(self):
+        """Test valid methods for loading kinetics families."""
+        path = os.path.join(settings['test_data.directory'], 'testing_database', 'kinetics', 'families')
+        database = KineticsDatabase()
+        database.loadRecommendedFamiliesList(os.path.join(path, 'recommended.py'))
+
+        try:
             database.loadFamilies(path, families=[])
+        except DatabaseError:
+            self.fail("Unable to load families using list []")
+
+        try:
+            database.loadFamilies(path, families='none')
+        except DatabaseError:
+            self.fail("Unable to load families using keyword 'none'")
+
+        try:
+            database.loadFamilies(path, families='default')
+        except DatabaseError:
+            self.fail("Unable to load families using keyword 'default'")
+
+        try:
+            database.loadFamilies(path, families=['default', 'pah'])
+        except DatabaseError:
+            self.fail("Unable to load families using list ['default', 'pah']")
+
+        try:
+            database.loadFamilies(path, families=['R_Addition_MultipleBond'])
+        except DatabaseError:
+            self.fail("Unable to load families using list ['R_Addition_MultipleBond']")
+
+        try:
+            database.loadFamilies(path, families=['!H_Abstraction', '!Disproportionation'])
+        except DatabaseError:
+            self.fail("Unable to load families using list ['!H_Abstraction', '!Disproportionation']")
+
+        try:
+            database.loadFamilies(path, families='!pah')
+        except DatabaseError:
+            self.fail("Unable to load families using keyword '!pah'")
+
+        try:
+            database.loadFamilies(path, families=['H_Abstraction', 'pah'])
+        except DatabaseError:
+            self.fail("Unable to load families using list ['H_Abstraction', 'pah']")
+
 
 class TestReactionDegeneracy(unittest.TestCase):
 
@@ -516,6 +564,33 @@ class TestReactionDegeneracy(unittest.TestCase):
 
         self.assertEqual(set(reaction_list[0].template), {'C_rad/H2/Cd', 'Cmethyl_Csrad/H/Cd'})
 
+    def test_degeneracy_multiple_ts_different_template(self):
+        """Test that reactions from different transition states are marked as duplicates."""
+        family_label = 'intra_H_migration'
+        reactants = ['CCCC[CH]CCCCC']
+        products = ['[CH2]CCCCCCCCC']
+
+        correct_rxn_num = 2
+        correct_degeneracy = {3}
+
+        reaction_list = self.assert_correct_reaction_degeneracy(reactants, correct_rxn_num, correct_degeneracy, family_label, products)
+
+        self.assertTrue(reaction_list[0].duplicate)
+        self.assertTrue(reaction_list[1].duplicate)
+
+    def test_degeneracy_multiple_resonance_different_template(self):
+        """Test that reactions from different resonance structures are not kept."""
+        family_label = 'H_Abstraction'
+        reactants = ['c1ccccc1', '[CH3]']
+
+        correct_rxn_num = 1
+        correct_degeneracy = {6}
+
+        reaction_list = self.assert_correct_reaction_degeneracy(reactants, correct_rxn_num, correct_degeneracy, family_label)
+
+        self.assertFalse(reaction_list[0].duplicate)
+
+
 class TestKineticsCommentsParsing(unittest.TestCase):
 
     @classmethod
@@ -619,45 +694,6 @@ class TestKinetics(unittest.TestCase):
             os.path.join(settings['test_data.directory'], 'parsing_data', 'chem_annotated.inp'),
             os.path.join(settings['test_data.directory'], 'parsing_data', 'species_dictionary.txt')
         )
-        
-    def test_filter_reactions(self):
-        """
-        tests that filter reactions removes reactions that are missing
-        any reactants or products
-        """
-        
-        reactions=self.reactions
-        
-        reactants = []
-        products = []
-        for x in reactions:
-            reactants += x.reactants
-            products += x.products
-        
-        lrset = set(reactants[6:])
-        mlrset = {reactants[i].molecule[0] for i in range(6,len(reactants))}
-        
-        reactants = set(reactants)
-        products = set(products)
-        mreactants = {i.molecule[0] for i in reactants}
-        mproducts = {i.molecule[0] for i in products}
-
-        newmreactants = list(mreactants-mlrset)
-        newmproducts = list(mproducts-mlrset)
-
-        out = filter_reactions(newmreactants, newmproducts, reactions)
-            
-        rset = list(set(reactions) - set(out))
-
-        msets = [set(i.reactants+i.products) for i in rset]
-        
-        for i, iset in enumerate(msets): #test that all the reactions we removed are missing a reactant or a product
-            self.assertTrue(iset & lrset != set(),msg='reaction {0} removed improperly'.format(rset[i]))
-        
-        outsets = [set(i.reactants+i.products) for i in out]
-            
-        for i, iset in enumerate(outsets): #test that all the reactions left in aren't missing any reactants or products
-            self.assertTrue(iset & lrset == set(),msg='reaction {0} left in improperly, should have removed in based on presence of {1}'.format(out[i],iset & lrset))
 
     def test_react_molecules(self):
         """
@@ -684,6 +720,21 @@ class TestKinetics(unittest.TestCase):
         self.assertNotEqual(s2.molecule[0].atoms[0].id, -1)
         # checks second resonance structure id
         self.assertNotEqual(s2.molecule[1].atoms[0].id, -1)
+
+    def test_ensure_independent_atom_ids_no_resonance(self):
+        """
+        Ensure ensure_independent_atom_ids does not generate resonance
+        """
+        s1 = Species().fromSMILES('CCC')
+        s2 = Species().fromSMILES('C=C[CH]C')
+        self.assertEqual(s2.molecule[0].atoms[0].id, -1)
+
+        ensure_independent_atom_ids([s1, s2],resonance=False)
+        # checks resonance structures
+        self.assertEqual(len(s2.molecule),1)
+        # checks that atom ids are changed
+        for atom in s2.molecule[0].atoms:
+            self.assertNotEqual(atom.id, -1)
 
     def testSaveEntry(self):
         """
@@ -772,13 +823,10 @@ class TestKinetics(unittest.TestCase):
         r2 = Species(molecule=[Molecule().fromAdjacencyList(adjlist[1])])
         p1 = Species(molecule=[Molecule().fromAdjacencyList(adjlist[2])])
         p2 = Species(molecule=[Molecule().fromAdjacencyList(adjlist[3])])
-        r1.generate_resonance_structures(keepIsomorphic=True)
-        p1.generate_resonance_structures(keepIsomorphic=True)
-        
-        
-        rxn = TemplateReaction(reactants = [r1, r2], 
-                               products = [p1, p2]
-)
+        r1.generate_resonance_structures(keep_isomorphic=True)
+        p1.generate_resonance_structures(keep_isomorphic=True)
+
+        rxn = TemplateReaction(reactants=[r1, r2], products=[p1, p2])
         
         rxn.degeneracy = family.calculateDegeneracy(rxn)
         self.assertEqual(rxn.degeneracy, 6)
@@ -786,6 +834,37 @@ class TestKinetics(unittest.TestCase):
         family.addReverseAttribute(rxn)
         
         self.assertEqual(rxn.reverse.degeneracy, 6)
+
+    def test_calculate_degeneracy_for_non_reactive_molecule(self):
+        """
+        tests that the calculateDegeneracy method gets the degeneracy correct for unreactive molecules
+        and that __generateReactions work correctly with the react_non_reactive flag set to `True`.
+        """
+        from rmgpy.data.rmg import getDB
+        from rmgpy.data.kinetics.family import TemplateReaction
+
+        adjlist = ['''
+        multiplicity 2
+        1 H u1 p0 c0''',
+                   '''
+        multiplicity 2
+        1 O u1 p1 c+1 {2,D}
+        2 N u0 p2 c-1 {1,D}''',
+                   '''
+        1 O u0 p1 c+1 {2,D} {3,S}
+        2 N u0 p2 c-1 {1,D}
+        3 H u0 p0 c0 {1,S}''']
+
+        family = getDB('kinetics').families['R_Recombination']
+        r1 = Species(molecule=[Molecule().fromAdjacencyList(adjlist[0])])
+        r2 = Species(molecule=[Molecule().fromAdjacencyList(adjlist[1])])  # r2 is not the representative structure of
+        # NO, but it is the correct structure participating in this reaction
+        p1 = Species(molecule=[Molecule().fromAdjacencyList(adjlist[2])])
+        r2.generate_resonance_structures(keep_isomorphic=True)
+
+        rxn = TemplateReaction(reactants=[r1, r2], products=[p1])
+        rxn.degeneracy = family.calculateDegeneracy(rxn)
+        self.assertEqual(rxn.degeneracy, 1)
 
     def test_generate_reactions_from_families_with_resonance(self):
         """Test that we can generate reactions from families with resonance structures"""
@@ -836,12 +915,38 @@ class TestKinetics(unittest.TestCase):
         self.assertEqual(len(reaction_list), 1)
         self.assertEqual(reaction_list[0].degeneracy, 2)
 
-        reaction_list = self.database.kinetics.generate_reactions_from_families(reactants, products, only_families=['H_Abstraction'], resonance=False)
 
+
+    def test_generate_reactions_from_families_product_resonance2(self):
+        """Test that we can specify the no product resonance structure when generating reactions"""
+        reactants = [
+            Molecule().fromSMILES('CCC=C'),
+            Molecule().fromSMILES('[H]'),
+        ]
+        products = [
+            Molecule().fromSMILES('CC=C[CH2]'),
+            Molecule().fromSMILES('[H][H]'),
+        ]
+
+        reaction_list = self.database.kinetics.generate_reactions_from_families(reactants, products, only_families=['H_Abstraction'], resonance=False)
         self.assertEqual(len(reaction_list), 0)
+
+        self.assertTrue(isinstance(products[0],Species))
+        self.assertEqual(len(products[0].molecule),1)
 
     def test_generate_reactions_from_libraries(self):
         """Test that we can generate reactions from libraries"""
+        reactants = [
+            Molecule().fromSMILES('CC=O'),
+            Molecule().fromSMILES('[H]'),
+        ]
+
+        reaction_list = self.database.kinetics.generate_reactions_from_libraries(reactants)
+
+        self.assertEqual(len(reaction_list), 3)
+
+    def test_generate_reactions_from_libraries2(self):
+        """Test that we can generate reactions from libraries specifying products"""
         reactants = [
             Molecule().fromSMILES('CC=O'),
             Molecule().fromSMILES('[H]'),
@@ -850,11 +955,131 @@ class TestKinetics(unittest.TestCase):
             Molecule().fromSMILES('[CH2]C=O'),
             Molecule().fromSMILES('[H][H]'),
         ]
-
-        reaction_list = self.database.kinetics.generate_reactions_from_libraries(reactants)
-
-        self.assertEqual(len(reaction_list), 3)
-
         reaction_list_2 = self.database.kinetics.generate_reactions_from_libraries(reactants, products)
 
         self.assertEqual(len(reaction_list_2), 1)
+
+    def test_add_atom_labels_for_reaction(self):
+        """Test that addAtomLabelsForReaction can identify reactions with resonance
+        The molecule [CH]=C=C has resonance in this reaction"""
+        from rmgpy.data.rmg import getDB
+        reactants = [
+            Molecule().fromSMILES('C=C=C'),
+            Molecule().fromSMILES('[CH]=C=C'),
+        ]
+        products = [
+            Molecule().fromSMILES('C#C[CH2]'),
+            Molecule().fromSMILES('C#CC'),
+        ]
+        reaction = TemplateReaction(reactants =reactants,
+                                    products = products,
+                                    family = 'H_Abstraction')
+        reaction.ensure_species(reactant_resonance=True, product_resonance=True)
+        family = getDB('kinetics').families['H_Abstraction']
+        family.addAtomLabelsForReaction(reaction, output_with_resonance=False)
+
+        # test that the reaction has labels
+        found_labels = []
+        for species in reaction.reactants:
+            for atom in species.molecule[0].atoms:
+                if atom.label != '':
+                    found_labels.append(atom.label)
+        self.assertEqual(len(found_labels), 3)
+        self.assertIn('*1',found_labels)
+        self.assertIn('*2',found_labels)
+        self.assertIn('*3',found_labels)
+
+        # test for the products too
+        found_labels = []
+        for species in reaction.products:
+            for atom in species.molecule[0].atoms:
+                if atom.label != '':
+                    found_labels.append(atom.label)
+        self.assertEqual(len(found_labels), 3)
+        self.assertIn('*1',found_labels)
+        self.assertIn('*2',found_labels)
+        self.assertIn('*3',found_labels)
+
+    def test_add_atom_labels_for_reaction_2(self):
+        """Test that addAtomLabelsForReaction can identify reactions with identical references
+        The molecule [CH]=C=C has resonance in this reaction"""
+        from rmgpy.data.rmg import getDB
+        s1 = Species().fromSMILES('C=C=C')
+        s2 = Species().fromSMILES('C=C=[CH]')
+        s3 = Species().fromSMILES('C#CC')
+        s2.generate_resonance_structures()
+        reactants = [s1,s2]
+        products = [s2,s3]
+        reaction = TemplateReaction(reactants =reactants,
+                                    products = products,
+                                    family = 'H_Abstraction')
+        family = getDB('kinetics').families['H_Abstraction']
+        print reaction.reactants
+        print reaction.products
+        family.addAtomLabelsForReaction(reaction, output_with_resonance=False)
+
+        # test that the reaction has labels
+        found_labels = []
+        for species in reaction.reactants:
+            for atom in species.molecule[0].atoms:
+                if atom.label != '':
+                    found_labels.append(atom.label)
+        self.assertEqual(len(found_labels), 3,'wrong number of labels found {0}'.format(found_labels))
+        self.assertIn('*1',found_labels)
+        self.assertIn('*2',found_labels)
+        self.assertIn('*3',found_labels)
+
+        # test for the products too
+        found_labels = []
+        for species in reaction.products:
+            for atom in species.molecule[0].atoms:
+                if atom.label != '':
+                    found_labels.append(atom.label)
+        self.assertEqual(len(found_labels), 3)
+        self.assertIn('*1',found_labels)
+        self.assertIn('*2',found_labels)
+        self.assertIn('*3',found_labels)
+
+    def test_add_atom_labels_for_reaction_3(self):
+        """Test that addAtomLabelsForReaction can identify reactions with resonance and isotopes"""
+        from rmgpy.data.rmg import getDB
+        mr0 = Molecule().fromAdjacencyList('1    C u0 p0 c0 i13 {3,D} {4,S} {5,S}\n2 *1 C u0 p0 c0 {3,D} {6,S} {7,S}\n3    C u0 p0 c0 {1,D} {2,D}\n4    H u0 p0 c0 {1,S}\n5    H u0 p0 c0 {1,S}\n6    H u0 p0 c0 {2,S}\n7 *4 H u0 p0 c0 {2,S}\n')
+        mr1a = Molecule().fromAdjacencyList('multiplicity 2\n1    C u0 p0 c0 i13 {2,D} {4,S} {5,S}\n2    C u0 p0 c0 {1,D} {3,D}\n3 *1 C u1 p0 c0 {2,D} {6,S}\n4    H u0 p0 c0 {1,S}\n5    H u0 p0 c0 {1,S}\n6    H u0 p0 c0 {3,S}\n')
+        mr1b = Molecule().fromAdjacencyList('multiplicity 2\n1    C u1 p0 c0 i13 {2,S} {4,S} {5,S}\n2    C u0 p0 c0 {1,S} {3,T}\n3 *1 C u0 p0 c0 {2,T} {6,S}\n4    H u0 p0 c0 {1,S}\n5    H u0 p0 c0 {1,S}\n6    H u0 p0 c0 {3,S}\n')
+        mp1a = Molecule().fromAdjacencyList('multiplicity 2\n1    C u0 p0 c0 {2,D} {4,S} {5,S}\n2    C u0 p0 c0 {1,D} {3,D}\n3 *1 C u1 p0 c0 i13 {2,D} {6,S}\n4    H u0 p0 c0 {1,S}\n5    H u0 p0 c0 {1,S}\n6    H u0 p0 c0 {3,S}\n')
+        mp1b = Molecule().fromAdjacencyList('multiplicity 2\n1    C u1 p0 c0 {2,S} {4,S} {5,S}\n2    C u0 p0 c0 {1,S} {3,T}\n3 *1 C u0 p0 c0 i13 {2,T} {6,S}\n4    H u0 p0 c0 {1,S}\n5    H u0 p0 c0 {1,S}\n6    H u0 p0 c0 {3,S}\n')
+        s1 = Species(molecule = [mr0])
+        s2 = Species(molecule = [mr1a,mr1b])
+        s3 = Species(molecule = [mp1a,mp1b])
+        reactants = [s1,s2]
+        products = [s1,s3]
+        reaction = TemplateReaction(reactants =reactants,
+                                    products = products,
+                                    family = 'H_Abstraction')
+        family = getDB('kinetics').families['H_Abstraction']
+        print reaction.reactants
+        print reaction.products
+        family.addAtomLabelsForReaction(reaction, output_with_resonance=False)
+
+        # test that the reaction has labels
+        found_labels = []
+        for species in reaction.reactants:
+            for atom in species.molecule[0].atoms:
+                if atom.label != '':
+                    found_labels.append(atom.label)
+        self.assertEqual(len(found_labels), 3,'wrong number of labels found {0}'.format(found_labels))
+        self.assertIn('*1',found_labels)
+        self.assertIn('*2',found_labels)
+        self.assertIn('*3',found_labels)
+
+        # test for the products too
+        found_labels = []
+        for species in reaction.products:
+            for atom in species.molecule[0].atoms:
+                if atom.label != '':
+                    found_labels.append(atom.label)
+        self.assertEqual(len(found_labels), 3)
+        self.assertIn('*1',found_labels)
+        self.assertIn('*2',found_labels)
+        self.assertIn('*3',found_labels)
+

@@ -1,28 +1,29 @@
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2009-2011 by the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 cimport rmgpy.constants as constants
 from rmgpy.species cimport Species, TransitionState
@@ -45,11 +46,16 @@ cdef class Reaction:
     cdef public bint reversible
     cdef public TransitionState transitionState
     cdef public KineticsModel kinetics
+    cdef public Arrhenius network_kinetics
     cdef public bint duplicate
     cdef public float _degeneracy
     cdef public list pairs
+    cdef public bint allow_pdep_route
+    cdef public bint elementary_high_p
     cdef public str comment
     cdef public dict k_effective_cache
+    cdef public bint is_forward
+    cdef public bint allow_max_rate_violation
     
     cpdef bint isIsomerization(self)
 
@@ -89,7 +95,7 @@ cdef class Reaction:
 
     cpdef reverseThisArrheniusRate(self, Arrhenius kForward, str reverseUnits)
 
-    cpdef generateReverseRateCoefficient(self)
+    cpdef generateReverseRateCoefficient(self, bint network_kinetics=?)
 
     cpdef numpy.ndarray calculateTSTRateCoefficients(self, numpy.ndarray Tlist)
 
@@ -105,4 +111,14 @@ cdef class Reaction:
     
     cpdef copy(self)
 
-cpdef bint _isomorphicSpeciesList(list list1, list list2, bint checkIdentical=?, bint checkOnlyLabel=?)
+    cpdef ensure_species(self, bint reactant_resonance=?, bint product_resonance=?)
+
+    cpdef list check_collision_limit_violation(self, float t_min, float t_max, float p_min, float p_max)
+
+    cpdef calculate_coll_limit(self, float temp, bint reverse=?)
+
+    cpdef get_reduced_mass(self, bint reverse=?)
+
+    cpdef get_mean_sigma_and_epsilon(self, bint reverse=?)
+
+cpdef bint isomorphic_species_lists(list list1, list list2, bint check_identical=?, bint only_check_label=?)

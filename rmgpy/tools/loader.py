@@ -1,32 +1,32 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 
 """
@@ -34,24 +34,30 @@ This module contains functions for load existing RMG simulations
 by reading in files.
 """
 import os.path
-
+import warnings
 from rmgpy.chemkin import loadChemkinFile
 from rmgpy.solver.liquid import LiquidReactor
 from rmgpy.solver.base import TerminationConversion
 
-def loadRMGJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=True, useJava=False, useChemkinNames=False):
+def loadRMGJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=True, useJava=False,
+               useChemkinNames=False, checkDuplicates=True):
 
     if useJava:
         # The argument is an RMG-Java input file
-        rmg = loadRMGJavaJob(inputFile, chemkinFile, speciesDict, generateImages, useChemkinNames=useChemkinNames)
+        warnings.warn("The RMG-Java input is no longer supported and may be"\
+            "removed in version 2.3.", DeprecationWarning)
+        rmg = loadRMGJavaJob(inputFile, chemkinFile, speciesDict, generateImages,
+                             useChemkinNames=useChemkinNames, checkDuplicates=checkDuplicates)
         
     else:
         # The argument is an RMG-Py input file
-        rmg = loadRMGPyJob(inputFile, chemkinFile, speciesDict, generateImages, useChemkinNames=useChemkinNames)
+        rmg = loadRMGPyJob(inputFile, chemkinFile, speciesDict, generateImages,
+                           useChemkinNames=useChemkinNames, checkDuplicates=checkDuplicates)
 
     return rmg
 
-def loadRMGPyJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=True, useChemkinNames=False):
+def loadRMGPyJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=True,
+                 useChemkinNames=False, checkDuplicates=True):
     """
     Load the results of an RMG-Py job generated from the given `inputFile`.
     """
@@ -67,7 +73,8 @@ def loadRMGPyJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=T
         chemkinFile = os.path.join(os.path.dirname(inputFile), 'chemkin', 'chem.inp')
     if not speciesDict:
         speciesDict = os.path.join(os.path.dirname(inputFile), 'chemkin', 'species_dictionary.txt')
-    speciesList, reactionList = loadChemkinFile(chemkinFile, speciesDict, useChemkinNames=useChemkinNames)
+    speciesList, reactionList = loadChemkinFile(chemkinFile, speciesDict,
+                                                useChemkinNames=useChemkinNames, checkDuplicates=checkDuplicates)
     
     # Map species in input file to corresponding species in Chemkin file
     speciesDict = {}
@@ -101,7 +108,8 @@ def loadRMGPyJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=T
         for t in reactionSystem.termination:
             if isinstance(t, TerminationConversion):
                 t.species = speciesDict[t.species]
-        reactionSystem.sensitiveSpecies = [speciesDict[spec] for spec in reactionSystem.sensitiveSpecies]
+        if reactionSystem.sensitiveSpecies != ['all']:
+            reactionSystem.sensitiveSpecies = [speciesDict[spec] for spec in reactionSystem.sensitiveSpecies]
     
     # Set reaction model to match model loaded from Chemkin file
     rmg.reactionModel.core.species = speciesList
@@ -121,10 +129,14 @@ def loadRMGPyJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=T
     
     return rmg
 
-def loadRMGJavaJob(inputFile, chemkinFile=None, speciesDict=None, useChemkinNames=False):
+
+def loadRMGJavaJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=True,
+                   useChemkinNames=False, checkDuplicates=True):
     """
     Load the results of an RMG-Java job generated from the given `inputFile`.
     """
+    warnings.warn("The RMG-Java input is no longer supported and may be"\
+            "removed in version 2.3.", DeprecationWarning)
     from rmgpy.rmg.main import RMG
     from rmgpy.molecule import Molecule
     
@@ -139,7 +151,8 @@ def loadRMGJavaJob(inputFile, chemkinFile=None, speciesDict=None, useChemkinName
         chemkinFile = os.path.join(os.path.dirname(inputFile), 'chemkin', 'chem.inp')
     if not speciesDict:
         speciesDict = os.path.join(os.path.dirname(inputFile), 'RMG_Dictionary.txt')
-    speciesList, reactionList = loadChemkinFile(chemkinFile, speciesDict, useChemkinNames=useChemkinNames)
+    speciesList, reactionList = loadChemkinFile(chemkinFile, speciesDict,
+                                                useChemkinNames=useChemkinNames, checkDuplicates=checkDuplicates)
     
     # Bath gas species don't appear in RMG-Java species dictionary, so handle
     # those as a special case
@@ -178,15 +191,16 @@ def loadRMGJavaJob(inputFile, chemkinFile=None, speciesDict=None, useChemkinName
     rmg.reactionModel.core.reactions = reactionList
     
     # RMG-Java doesn't generate species images, so draw them ourselves now
-    speciesPath = os.path.join(os.path.dirname(inputFile), 'species')
-    try:
-        os.mkdir(speciesPath)
-    except OSError:
-        pass
-    for species in speciesList:
-
-        path = os.path.join(speciesPath + '/{0!s}.png'.format(species))
-        species.molecule[0].draw(str(path))
+    if generateImages:
+        speciesPath = os.path.join(os.path.dirname(inputFile), 'species')
+        try:
+            os.mkdir(speciesPath)
+        except OSError:
+            pass
+        for species in speciesList:
+            path = os.path.join(speciesPath + '/{0!s}.png'.format(species))
+            if not os.path.exists(path):
+                species.molecule[0].draw(str(path))
     
     return rmg
 

@@ -1,31 +1,29 @@
-# encoding: utf-8
-
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 """
 This module contains functions for kekulization of a aromatic molecule.
@@ -61,28 +59,28 @@ from rmgpy.exceptions import KekulizationError, AtomTypeError
 cpdef kekulize(Molecule mol):
     """
     Kekulize an aromatic molecule in place. If the molecule cannot be kekulized,
-    an AtomTypeError will be raised. However, the molecule will be left in
+    a KekulizationError will be raised. However, the molecule will be left in
     a semi-kekulized state. Therefore, if the original molecule needs to be kept,
     it is advisable to create a copy before kekulizing.
 
     Args: :class:`Molecule` object to be kekulized
     """
-    cdef list ring, rings, aromaticRings, resolvedRings
-    cdef set endoBonds, exoBonds
+    cdef list ring, rings, aromatic_rings, resolved_rings
+    cdef set endo_bonds, exo_bonds
     cdef Atom atom1, atom2, atom
     cdef Bond bond
     cdef bint aromatic, successful, bridged
     cdef int itercount, maxiter
-    cdef AromaticRing aromaticRing
+    cdef AromaticRing aromatic_ring
 
     # Get all potentially aromatic rings
     rings = mol.getAllCyclesOfSize(6)
 
     # Identify aromatic rings and categorize endocyclic and exocyclic bonds for each ring
-    aromaticRings = []
+    aromatic_rings = []
     for ring in rings:
-        endoBonds = set()
-        exoBonds = set()
+        endo_bonds = set()
+        exo_bonds = set()
         aromatic = True
         for atom1 in ring:
             # Check if this is a bridged ring
@@ -90,37 +88,40 @@ cpdef kekulize(Molecule mol):
             for atom2, bond in atom1.bonds.iteritems():
                 if bridged and sum([1 if atom in ring else 0 for atom in atom2.bonds.iterkeys()]) > 2:
                     # This atom2 is the other end of the bridging bond, so don't consider it as a part of the ring
-                    exoBonds.add(bond)
+                    exo_bonds.add(bond)
                     continue
                 elif atom2 in ring:
                     if abs(round(bond.order) - bond.order) < 1e-9:
                         aromatic = False
                         break
-                    endoBonds.add(bond)
+                    endo_bonds.add(bond)
                 else:
-                    exoBonds.add(bond)
+                    exo_bonds.add(bond)
             if not aromatic:
                 break
         if aromatic:
             # Use an AromaticRing object to store the info about this ring
-            aromaticRings.append(AromaticRing(atoms=ring, endoBonds=endoBonds, exoBonds=exoBonds))
+            aromatic_rings.append(AromaticRing(atoms=ring, endo_bonds=endo_bonds, exo_bonds=exo_bonds))
 
-    resolvedRings = []
+    resolved_rings = []
     itercount = 0
-    maxiter = 2 * len(aromaticRings)
-    while aromaticRings and itercount < maxiter:
+    maxiter = 2 * len(aromatic_rings)
+    while aromatic_rings and itercount < maxiter:
         # Update and sort the remaining rings
-        prioritizeRings(aromaticRings)
+        prioritize_rings(aromatic_rings)
         # Take the next ring off the stack
-        aromaticRing = aromaticRings.pop()
+        aromatic_ring = aromatic_rings.pop()
         # Try to kekulize this ring
-        successful = aromaticRing.kekulize()
+        successful = aromatic_ring.kekulize()
         if successful:
-            resolvedRings.append(aromaticRing)
+            resolved_rings.append(aromatic_ring)
         else:
             # Put it back in the list, which will get resorted by DOF in the next iteration
-            aromaticRings.append(aromaticRing)
+            aromatic_rings.append(aromatic_ring)
         itercount += 1
+
+    if aromatic_rings:
+        raise KekulizationError('Unable to kekulize molecule, reached maximum attempts:/n{0}'.format(mol.toAdjacencyList()))
 
     try:
         mol.updateAtomTypes(logSpecies=False)
@@ -128,19 +129,19 @@ cpdef kekulize(Molecule mol):
         logging.debug('Unable to kekulize molecule, final result was invalid:/n{0}'.format(mol.toAdjacencyList()))
         raise KekulizationError('Unable to kekulize molecule, final result was invalid.')
 
-cdef list prioritizeRings(list aromaticList):
+cdef list prioritize_rings(list item_list):
     """Update list of AromaticRing objects, then sort by DOF."""
     cdef AromaticRing item, x
-    for item in aromaticList:
+    for item in item_list:
         item.update()
-    return aromaticList.sort(key=lambda x: (x.endoDOF, x.exoDOF), reverse=True)
+    return item_list.sort(key=lambda x: (x.endo_dof, x.exo_dof), reverse=True)
 
-cdef list prioritizeBonds(list aromaticList):
+cdef list prioritize_bonds(list item_list):
     """Update list of Aromatic Bond objects, then sort by DOF."""
     cdef AromaticBond item, x
-    for item in aromaticList:
+    for item in item_list:
         item.update()
-    return aromaticList.sort(key=lambda x: (x.doublePossible, not x.doubleRequired, x.endoDOF, x.exoDOF), reverse=True)
+    return item_list.sort(key=lambda x: (x.double_possible, not x.double_required, x.endo_dof, x.exo_dof), reverse=True)
 
 cdef class AromaticRing(object):
     """
@@ -148,68 +149,72 @@ cdef class AromaticRing(object):
 
     DO NOT use outside of this module. This class does not do any aromaticity perception.
     """
-    cdef list atoms
-    cdef set endoBonds, exoBonds
-    cdef public int endoDOF, exoDOF
+    cdef public list atoms, resolved, unresolved
+    cdef set endo_bonds, exo_bonds
+    cdef public int endo_dof, exo_dof
 
-    def __init__(self, atoms=None, endoBonds=None, exoBonds=None, endoDOF=-1, exoDOF=-1):
+    def __init__(self, atoms=None, endo_bonds=None, exo_bonds=None, endo_dof=-1, exo_dof=-1):
         self.atoms = atoms
-        self.endoBonds = endoBonds
-        self.exoBonds = exoBonds
-        self.endoDOF = endoDOF
-        self.exoDOF = exoDOF
+        self.endo_bonds = endo_bonds
+        self.exo_bonds = exo_bonds
+        self.endo_dof = endo_dof
+        self.exo_dof = exo_dof
+        self.resolved = []
+        self.unresolved = []
 
     cpdef update(self):
         """
         Update the degree of freedom information for this aromatic ring.
 
-        `endoDOF` refers to the number of bonds in the ring without fixed bond orders.
-        `exoDOF`  refers to the number of bonds outside the ring without fixed bond orders.
+        `endo_dof` refers to the number of bonds in the ring without fixed bond orders.
+        `exo_dof`  refers to the number of bonds outside the ring without fixed bond orders.
         """
-        cdef int endoDOF, exoDOF
+        cdef int endo_dof, exo_dof
         cdef Bond bond
 
-        endoDOF = 0
-        for bond in self.endoBonds:
+        endo_dof = 0
+        for bond in self.endo_bonds:
             if bond.isBenzene():
                 # Add one dof for each aromatic bond
-                endoDOF += 1
-        exoDOF = 0
-        for bond in self.exoBonds:
+                endo_dof += 1
+        exo_dof = 0
+        for bond in self.exo_bonds:
             if bond.isBenzene():
                 # Add one dof for each aromatic bond
-                exoDOF += 1
-        self.endoDOF = endoDOF
-        self.exoDOF = exoDOF
+                exo_dof += 1
+        self.endo_dof = endo_dof
+        self.exo_dof = exo_dof
 
-    cpdef tuple processBonds(self):
+        self.process_bonds()
+
+    cpdef tuple process_bonds(self):
         """Create AromaticBond objects for each endocyclic bond."""
-        cdef list resolved, unresolved
         cdef Bond bond0
-        cdef AromaticBond aromaticBond
+        cdef int i
 
-        resolved = []
-        unresolved = []
-        for bond0 in self.endoBonds:
-            aromaticBond = AromaticBond(bond=bond0, ringBonds=self.endoBonds)
+        if not self.unresolved and not self.resolved:
+            # We just started on this ring
+            for bond0 in self.endo_bonds:
+                self.unresolved.append(AromaticBond(bond=bond0, ring_bonds=self.endo_bonds))
 
-            if abs(round(bond0.order) - bond0.order) < 1e-9:
+        i = 0
+        while i < len(self.unresolved):
+            bond0 = self.unresolved[i].bond
+            if bond0.isOrder(round(bond0.order)):
                 # Bond has already been assigned, so mark as resolved
-                resolved.append(aromaticBond)
+                self.resolved.append(self.unresolved.pop(i))
             elif bond0.isOrder(2.5):
                 # Bond was incremented, so it must be a double bond
                 bond0.order = 2
-                resolved.append(aromaticBond)
+                self.resolved.append(self.unresolved.pop(i))
             elif bond0.isOrder(0.5):
                 # Bond was decremented, so it must be a single bond
                 bond0.order = 1
-                resolved.append(aromaticBond)
+                self.resolved.append(self.unresolved.pop(i))
             else:
-                unresolved.append(aromaticBond)
+                i += 1
 
-        assert len(resolved) + len(unresolved) == len(self.endoBonds)
-
-        return resolved, unresolved
+        assert len(self.resolved) + len(self.unresolved) == len(self.endo_bonds)
 
     cpdef bint kekulize(self) except -2:
         """
@@ -221,52 +226,50 @@ cdef class AromaticRing(object):
         cdef int itercount, maxiter
         cdef AromaticBond bond
 
-        resolved, unresolved = self.processBonds()
-
         # Check status
-        if len(unresolved) == 0:
+        if len(self.unresolved) == 0:
             return True
 
         itercount = 0
-        maxiter = 2 * len(unresolved)
-        while unresolved and itercount < maxiter:
+        maxiter = 2 * len(self.unresolved)
+        while self.unresolved and itercount < maxiter:
             # Update and sort the unresolved bonds
-            prioritizeBonds(unresolved)
+            prioritize_bonds(self.unresolved)
             # Take the next bond off the stack
-            bond = unresolved.pop()
+            bond = self.unresolved.pop()
 
-            if bond.doublePossible and bond.doubleRequired:
+            if bond.double_possible and bond.double_required:
                 # This bond must be a double bond to satisfy atom valence
                 bond.bond.order = 2
-                resolved.append(bond)
-                self.endoDOF -= 1
-            elif bond.doublePossible and not bond.doubleRequired:
+                self.resolved.append(bond)
+                self.endo_dof -= 1
+            elif bond.double_possible and not bond.double_required:
                 # This could be a double bond, but we don't know for sure
                 # There are a few cases where it's safe to assume that it is a double bond:
                 #   - All exo bonds are defined, and no endo bonds have been defined
                 #   - Exo bonds adjacent to the current bond are defined, and no endo bonds have been defined
                 #   - Exo bonds adjacent to the current bond are not defined, but one adjacent endo bond is defined
                 #   - This is the last undefined endo bond
-                if ((self.endoDOF == 6 and self.exoDOF == 0)
-                        or (self.endoDOF == 6 and bond.exoDOF == 0)
-                        or (bond.endoDOF == 1 and (bond.exoDOF == 1 or bond.exoDOF == 2))
-                        or self.endoDOF == 1):
+                if ((self.endo_dof == 6 and self.exo_dof == 0)
+                        or (self.endo_dof == 6 and bond.exo_dof == 0)
+                        or (bond.endo_dof == 1 and (bond.exo_dof == 1 or bond.exo_dof == 2))
+                        or self.endo_dof == 1):
                     # Go ahead an assume this bond is double
                     bond.bond.order = 2
-                    resolved.append(bond)
-                    self.endoDOF -= 1
+                    self.resolved.append(bond)
+                    self.endo_dof -= 1
                 else:
                     # Come back to this bond later
-                    unresolved.append(bond)
+                    self.unresolved.append(bond)
             else:
                 # Double bond is not possible, so it must be a single bond
                 bond.bond.order = 1
-                resolved.append(bond)
-                self.endoDOF -= 1
+                self.resolved.append(bond)
+                self.endo_dof -= 1
 
             itercount += 1
 
-        if unresolved:
+        if self.unresolved:
             # We've hit the iteration limit, but could not solve the ring
             return False
 
@@ -278,36 +281,36 @@ cdef class AromaticBond(object):
 
     DO NOT use outside of this module. This class does not do any aromaticity perception.
     """
-    cdef Bond bond
-    cdef set ringBonds
-    cdef public int endoDOF, exoDOF
-    cdef public bint doublePossible, doubleRequired
+    cdef public Bond bond
+    cdef public set ring_bonds
+    cdef public int endo_dof, exo_dof
+    cdef public bint double_possible, double_required
 
-    def __init__(self, bond=None, ringBonds=None, endoDOF=-1, exoDOF=-1, doublePossible=True, doubleRequired=False):
+    def __init__(self, bond=None, ring_bonds=None, endo_dof=-1, exo_dof=-1, double_possible=True, double_required=False):
         self.bond = bond
-        self.ringBonds = ringBonds
-        self.endoDOF = endoDOF
-        self.exoDOF = exoDOF
-        self.doublePossible = doublePossible
-        self.doubleRequired = doubleRequired
+        self.ring_bonds = ring_bonds
+        self.endo_dof = endo_dof
+        self.exo_dof = exo_dof
+        self.double_possible = double_possible
+        self.double_required = double_required
 
     cpdef update(self):
         """
         Update the local degree of freedom information for this aromatic bond.
         The DOF counts do not include the bond itself, only its adjacent bonds.
 
-        `endoDOF` refers to the number of adjacent bonds in the ring without fixed bond orders.
-        `exoDOF`  refers to the number of adjacent bonds outside the ring without fixed bond orders.
+        `endo_dof` refers to the number of adjacent bonds in the ring without fixed bond orders.
+        `exo_dof`  refers to the number of adjacent bonds outside the ring without fixed bond orders.
         """
-        cdef dict bondOrders, valences
+        cdef dict valences
         cdef Atom atom
         cdef Bond bond
-        cdef int endoDOF, exoDOF, occupied, uncertain, available
+        cdef int endo_dof, exo_dof, occupied, uncertain, available
 
         valences = PeriodicSystem.valences
 
-        endoDOF = 0
-        exoDOF = 0
+        endo_dof = 0
+        exo_dof = 0
         for atom in [self.bond.atom1, self.bond.atom2]:
             occupied = 0
             uncertain = 0
@@ -321,10 +324,10 @@ cdef class AromaticBond(object):
                     occupied += 1
                     uncertain += 1
                     if bond is not self.bond:
-                        if bond in self.ringBonds:
-                            endoDOF += 1
+                        if bond in self.ring_bonds:
+                            endo_dof += 1
                         else:
-                            exoDOF += 1
+                            exo_dof += 1
                 else:
                     raise KekulizationError('Unexpected bond order {0}.'.format(bond.order))
             # Count radicals and lone pairs
@@ -336,11 +339,11 @@ cdef class AromaticBond(object):
                 raise KekulizationError('Atom {0} cannot have negative available valence.'.format(atom))
             elif available == 0:
                 # There are no extra electrons available, so this bond cannot be a double bond
-                self.doublePossible = False
+                self.double_possible = False
             elif available == 1 and uncertain == 1:
                 # There is an extra electron available, but the current bond is the only uncertain one,
                 # so it must be a double bond
-                self.doubleRequired = True
+                self.double_required = True
 
-        self.endoDOF = endoDOF
-        self.exoDOF = exoDOF
+        self.endo_dof = endo_dof
+        self.exo_dof = exo_dof

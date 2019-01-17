@@ -1,32 +1,32 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 """
 Contains classes and functions for working with the bibliographic information.
@@ -100,11 +100,11 @@ class Reference:
         reconstruct the object.
         """
         string = u'Reference(\n'
-        if len(self.authors) != 0: string += u'    authors = [{0}],\n'.format(', '.join(['"{0}"'.format(author) for author in self.authors]))
-        if self.title != '':       string += u'    title = {0!r},\n'.format(self.title)
-        if self.year != '':        string += u'    year = "{0}",\n'.format(self.year)
-        if self.doi != '':         string += u'    doi = "{0}",\n'.format(self.doi)
-        if self.url != '':         string += u'    url = "{0}",\n'.format(self.url)
+        if len(self.authors) != 0: string += u'    authors = [{0}],\n'.format(', '.join(['{0!r}'.format(author.encode("utf-8")) for author in self.authors]))
+        if self.title != '':       string += u'    title = {0!r},\n'.format(self.title.encode("utf-8"))
+        if self.year != '':        string += u'    year = {0!r},\n'.format(self.year.encode("utf-8"))
+        if self.doi != '':         string += u'    doi = {0!r},\n'.format(self.doi.encode("utf-8"))
+        if self.url != '':         string += u'    url = {0!r},\n'.format(self.url.encode("utf-8"))
         return string + u')'
 
     def getAuthorString(self):
@@ -188,17 +188,17 @@ class Article(Reference):
         reconstruct the object.
         """
         string = u'Article(\n'
-        if len(self.authors) != 0: string += u'    authors = [{0}],\n'.format(', '.join(['"{0}"'.format(author) for author in self.authors]))
-        if self.title != '':       string += u'    title = {0!r},\n'.format(self.title)
-        if self.journal != '':     string += u'    journal = "{0}",\n'.format(self.journal)
-        if self.volume != '':      string += u'    volume = "{0}",\n'.format(self.volume)
-        if self.number != '':      string += u'    number = "{0}",\n'.format(self.number)
-        if self.pages != '':       string += u'    pages = """{0}""",\n'.format(self.pages)
-        if self.year != '':        string += u'    year = "{0}",\n'.format(self.year)
-        if self.doi != '':         string += u'    doi = "{0}",\n'.format(self.doi)
-        if self.url != '':         string += u'    url = "{0}",\n'.format(self.url)
+        if len(self.authors) != 0: string += u'    authors = [{0}],\n'.format(', '.join(['{0!r}'.format(author.encode("utf-8")) for author in self.authors]))
+        if self.title != '':       string += u'    title = {0!r},\n'.format(self.title.encode("utf-8"))
+        if self.journal != '':     string += u'    journal = {0!r},\n'.format(self.journal.encode("utf-8"))
+        if self.volume != '':      string += u'    volume = {0!r},\n'.format(self.volume.encode("utf-8"))
+        if self.number != '':      string += u'    number = {0!r},\n'.format(self.number.encode("utf-8"))
+        if self.pages != '':       string += u'    pages = {0!r},\n'.format(self.pages.encode("utf-8"))
+        if self.year != '':        string += u'    year = {0!r},\n'.format(self.year.encode("utf-8"))
+        if self.doi != '':         string += u'    doi = {0!r},\n'.format(self.doi.encode("utf-8"))
+        if self.url != '':         string += u'    url = {0!r},\n'.format(self.url.encode("utf-8"))
         return string + u')'
-
+    
 ################################################################################
 
 class Book(Reference):
@@ -256,16 +256,16 @@ class Book(Reference):
         reconstruct the object.
         """
         string = u'Book(\n'
-        if len(self.authors) != 0: string += u'    authors = [{0}],\n'.format(', '.join(['"{0}"'.format(author) for author in self.authors]))
-        if self.title != '':       string += u'    title = {0!r},\n'.format(self.title)
-        if self.publisher != '':   string += u'    publisher = "{0}",\n'.format(self.publisher)
-        if self.address != '':     string += u'    address = "{0}",\n'.format(self.address)
-        if self.volume != '':      string += u'    volume = "{0}",\n'.format(self.volume)
-        if self.series != '':      string += u'    series = """{0}""",\n'.format(self.series)
-        if self.edition != '':     string += u'    edition = """{0}""",\n'.format(self.edition)
-        if self.year != '':        string += u'    year = "{0}",\n'.format(self.year)
-        if self.doi != '':         string += u'    doi = "{0}",\n'.format(self.doi)
-        if self.url != '':         string += u'    url = "{0}",\n'.format(self.url)
+        if len(self.authors) != 0: string += u'    authors = [{0}],\n'.format(', '.join(['{0!r}'.format(author.encode("utf-8")) for author in self.authors]))
+        if self.title != '':       string += u'    title = {0!r},\n'.format(self.title.encode("utf-8"))
+        if self.publisher != '':   string += u'    publisher = {0!r},\n'.format(self.publisher.encode("utf-8"))
+        if self.address != '':     string += u'    address = {0!r},\n'.format(self.address.encode("utf-8"))
+        if self.volume != '':      string += u'    volume = {0!r},\n'.format(self.volume.encode("utf-8"))
+        if self.series != '':      string += u'    series = {0!r},\n'.format(self.series.encode("utf-8"))
+        if self.edition != '':     string += u'    edition = {0!r},\n'.format(self.edition.encode("utf-8"))
+        if self.year != '':        string += u'    year = {0!r},\n'.format(self.year.encode("utf-8"))
+        if self.doi != '':         string += u'    doi = {0!r},\n'.format(self.doi.encode("utf-8"))
+        if self.url != '':         string += u'    url = {0!r},\n'.format(self.url.encode("utf-8"))
         return string + u')'
 
 ################################################################################
@@ -316,13 +316,13 @@ class Thesis(Reference):
         reconstruct the object.
         """
         string = u'Thesis(\n'
-        if len(self.authors) != 0: string += u'    authors = [{0}],\n'.format(', '.join(['"{0}"'.format(author) for author in self.authors]))
-        if self.title != '':       string += u'    title = {0!r},\n'.format(self.title)
-        if self.degree != '':      string += u'    degree = "{0}",\n'.format(self.degree)
-        if self.school != '':      string += u'    school = "{0}",\n'.format(self.school)
-        if self.year != '':        string += u'    year = "{0}",\n'.format(self.year)
-        if self.doi != '':         string += u'    doi = "{0}",\n'.format(self.doi)
-        if self.url != '':         string += u'    url = "{0}",\n'.format(self.url)
+        if len(self.authors) != 0: string += u'    authors = [{0}],\n'.format(', '.join(['{0!r}'.format(author.encode("utf-8")) for author in self.authors]))
+        if self.title != '':       string += u'    title = {0!r},\n'.format(self.title.encode("utf-8"))
+        if self.degree != '':      string += u'    degree = {0!r},\n'.format(self.degree.encode("utf-8"))
+        if self.school != '':      string += u'    school = {0!r},\n'.format(self.school.encode("utf-8"))
+        if self.year != '':        string += u'    year = {0!r},\n'.format(self.year.encode("utf-8"))
+        if self.doi != '':         string += u'    doi = {0!r},\n'.format(self.doi.encode("utf-8"))
+        if self.url != '':         string += u'    url = {0!r},\n'.format(self.url.encode("utf-8"))
         return string + u')'
 
 ################################################################################

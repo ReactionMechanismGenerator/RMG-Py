@@ -1,38 +1,39 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 import os
 import unittest
 import shutil 
 from nose.plugins.attrib import attr
 from main import RMG
+from main import RMG_Memory
 from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy import getPath
@@ -50,9 +51,7 @@ class TestMain(unittest.TestCase):
         cls.outputDir = 'output'
         cls.databaseDirectory = settings['database.directory']
 
-        cls.seedThermo = os.path.join(cls.databaseDirectory, 'thermo', 'libraries', 'testSeed.py')
         cls.seedKinetics = os.path.join(cls.databaseDirectory, 'kinetics', 'libraries', 'testSeed')
-        cls.seedThermoEdge = os.path.join(cls.databaseDirectory, 'thermo', 'libraries', 'testSeed_edge.py')
         cls.seedKineticsEdge = os.path.join(cls.databaseDirectory, 'kinetics', 'libraries', 'testSeed_edge')
 
         os.mkdir(os.path.join(cls.testDir, cls.outputDir))
@@ -73,9 +72,7 @@ class TestMain(unittest.TestCase):
         shutil.rmtree(os.path.join(cls.testDir, cls.outputDir))
 
         # Delete the seed libraries created in database
-        os.remove(cls.seedThermo)
         shutil.rmtree(cls.seedKinetics)
-        os.remove(cls.seedThermoEdge)
         shutil.rmtree(cls.seedKineticsEdge)
 
     def testRMGExecute(self):
@@ -95,7 +92,6 @@ class TestMain(unittest.TestCase):
         seedDir = os.path.join(self.testDir, self.outputDir, 'seed')
         self.assertTrue(os.path.exists)
 
-        self.assertTrue(os.path.exists(os.path.join(seedDir, self.rmg.name + '.py')))  # thermo library made
         self.assertTrue(os.path.exists(os.path.join(seedDir, self.rmg.name)))  # kinetics library folder made
 
         self.assertTrue(os.path.exists(os.path.join(seedDir, self.rmg.name, 'dictionary.txt')))  # dictionary file made
@@ -108,7 +104,6 @@ class TestMain(unittest.TestCase):
 
         name = self.rmg.name + '_edge'
 
-        self.assertTrue(os.path.exists(os.path.join(seedDir, name + '.py')))  # thermo library made
         self.assertTrue(os.path.exists(os.path.join(seedDir, name)))  # kinetics library folder made
 
         self.assertTrue(os.path.exists(os.path.join(seedDir, name, 'dictionary.txt')))  # dictionary file made
@@ -116,12 +111,10 @@ class TestMain(unittest.TestCase):
 
     def testRMGSeedLibraryCreation(self):
         """Test that seed mechanisms are created in the correct database locations."""
-        self.assertTrue(os.path.exists(self.seedThermo))
         self.assertTrue(os.path.exists(self.seedKinetics))
 
     def testRMGSeedEdgeLibraryCreation(self):
         """Test that edge seed mechanisms are created in the correct database locations."""
-        self.assertTrue(os.path.exists(self.seedThermo))
         self.assertTrue(os.path.exists(self.seedKinetics))
 
     def testRMGSeedWorks(self):
@@ -132,7 +125,7 @@ class TestMain(unittest.TestCase):
         # Load the seed libraries into the database
         self.rmg.database.load(
             path=self.databaseDirectory,
-            thermoLibraries=['testSeed', 'testSeed_edge'],
+            thermoLibraries=[],
             reactionLibraries=['testSeed', 'testSeed_edge'],
             seedMechanisms=['testSeed', 'testSeed_edge'],
             kineticsFamilies='default',
@@ -159,7 +152,19 @@ class TestMain(unittest.TestCase):
         self.rmg.reactionModel.addSeedMechanismToCore('testSeed_edge')  # try adding seed as seed mech
         self.assertTrue(len(self.rmg.reactionModel.core.species) > 0)
         self.assertTrue(len(self.rmg.reactionModel.core.reactions) > 0)
-
+    
+    def testRMGMemory(self):
+        """
+        test that RMG Memory objects function properly
+        """
+        for rxnsys in self.rmg.reactionSystems:
+            Rmem = RMG_Memory(rxnsys,None)
+            Rmem.generate_cond()
+            Rmem.get_cond()
+            Rmem.add_t_conv_N(1.0,.2,2)
+            Rmem.generate_cond()
+            Rmem.get_cond()
+        
     def testMakeCanteraInputFile(self):
         """
         This tests to ensure that a usable Cantera input file is created.

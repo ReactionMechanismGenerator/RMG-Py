@@ -1,41 +1,87 @@
-language: python
+language: c
 sudo: false
-python:
-  - "2.7"
+
 env:
   global:
     - secure: "L2ja+ZnV83w4qG3E8FwTjm0D6IWNOnj5wuFOjYTwbzQP4OAgLAWBzCMtxzWy5sMxFLtRgkswBH1d5f5kg8Ab7GIyAMFgQwe8UFqMJ+N05QNszE1mJkAvJtv2XN7669XXQhTt5EXfHrCcGZaODVnI2CEA8GB5DxiHO2Lcqf/xvgE="
-    - secure: "Fa/qcHKKkTzgNanhgz+XWXg5K+uae5Ukxd0hfzYaiOI4+ldFbyMrYbPpxxoYVXw1SSO0psSupLfPfXzHwyJpFOyc46P+fo+R3YgNTJwr2VfdvSC0bp9K01nlRJ/z62IpMwmDwR2UH5xnfTeB9nhtzviFNKZoDZ/GR7F1Wqd/nnU="
     - secure: "dkhvrkbNEHv55q3NU+lNJ0SqaNG0/vPMsG3X2eQvYjFsq/e8EliILtEtjrugSgeFohxqms0F+sSyDpw46mtn+jukYejdywLVL7w8o9pxlkHv8uEqYhNiwCD8RjNyRPQAS9jL+sAJiqdqUWR6AzjwaLproCe6rFzzGe7Io5oDLMg="
     - secure: "cfosGf5hvUhIlPoGJu0d/HFddrMwIFU7FfLwd8yRrMGkYv0ePOwAW9kmhFSxUYvuXkxzgD75cIICMFY2fSm6VXBXXzfPQD7vwzoApXf7a8vi0C64XhinXhdEyUYb5/v8fswa0zheUENYhUS1tOqDXT/h8EPNZT5wKizaA3O2Wa8="
     - secure: "QXuqKYuwCocqsTMePBc5OugBbQC4/t+335TYLdkletiateP/rF/eDsVRG792/BVq5gKRZgz3NH9ipTNm5pZoCbAEPt9+eDpfts8WeAbxmjdcEjfBxxwZ69wUTPAVrezTGn2k7W2UBdFrWeUNKPAVCKIkoviXqOHFitqJEC+c6JY="
     - secure: "jIyBEzR10l5SWvY5ouEYzA8YzPHIZNMXMBdcXwuwte8NCU8GBYUqhHA1L67nTaBdLhWbrZ2NireVKPQWJp3ctcI0IB6xZzaYlVpgN/udGPO+1MZd9Xhp9TWuJWrGZ9EoWGB9L5H+O7RYwcDMVH5CUrCIBdsSJuyE8aDpky1/IVE="
 
+stages:
+  - test
+  - name: documentation
+    if: branch = master AND type = push
+  - name: deploy
+    if: branch = stable AND type = push
+
 before_install:
   - cd ..
   # Install miniconda
-  - wget http://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then wget http://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then wget http://repo.continuum.io/miniconda/Miniconda2-latest-MacOSX-x86_64.sh -O miniconda.sh; fi
   - bash miniconda.sh -b -p $HOME/miniconda
   - export PATH=$HOME/miniconda/bin:$PATH
+  # Update conda
   - conda update --yes conda
   - conda info -a
-  # Clone RMG-database
-  - git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
-  - cd RMG-Py
+  # Set git info
+  - git config --global user.name "Travis Deploy"
+  - git config --global user.email "rmg_dev@mit.edu"
 
-install:
-  - conda env create -q -f environment_linux.yml
-  - source activate rmg_env
-  - conda install -y -c conda-forge codecov
-  - conda list
-  - yes 'Yes' | $HOME/miniconda/envs/rmg_env/bin/mopac $MOPACKEY > /dev/null
-  - make
-
-script: 
-  - make test-unittests
-  - make test-functional
-  - make test-database
-
-after_success:
-  - codecov
-  - bash ./deploy.sh
+jobs:
+  include:
+    - stage: test
+      install:
+        # Clone RMG-database
+        - git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
+        - cd RMG-Py
+        - conda env create -q -f environment_linux.yml
+        - source activate rmg_env
+        # Install codecov for coverage report
+        - conda install -y -c conda-forge codecov
+        - conda list
+        # Setup MOPAC license key
+        - yes 'Yes' | $HOME/miniconda/envs/rmg_env/bin/mopac $MOPACKEY > /dev/null
+        - make
+      script:
+        - make test-unittests
+        - make test-functional
+        - make test-database
+      after_success:
+        - codecov
+        - bash ./deploy.sh
+    - stage: documentation
+      install:
+        - cd RMG-Py
+        - conda env create -q -f environment_linux.yml
+        - source activate rmg_env
+        # Install sphinx for building documentation
+        - conda install -y sphinx
+        - conda list
+        # Modify setup.py
+        - sed -i '/embedsignature/s/^#//g' setup.py
+        - make
+        - cd documentation
+        - export COMMITMESSAGE="Automatic documentation rebuild"
+      script:
+        - make travis_setup clean html publish
+    - stage: deploy
+      install:
+        # Setup conda build
+        - conda install -y conda-build
+        - conda install -y anaconda-client
+        - conda config --add channels rmg
+        - conda config --set anaconda_upload yes
+      script:
+        - conda build --token $CONDA_TOKEN --user rmg RMG-Py/.conda
+    - os: osx
+      install:
+        # Setup conda build
+        - conda install -y conda-build
+        - conda install -y anaconda-client
+        - conda config --add channels rmg
+        - conda config --set anaconda_upload yes
+      script:
+        - conda build --token $CONDA_TOKEN --user rmg RMG-Py/.conda

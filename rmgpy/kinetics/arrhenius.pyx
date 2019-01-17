@@ -1,37 +1,38 @@
 # cython: embedsignature=True, cdivision=True
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 import numpy
 from libc.math cimport exp, log, sqrt, log10
 
 cimport rmgpy.constants as constants
 import rmgpy.quantity as quantity
+from rmgpy.exceptions import KineticsError
 ################################################################################
 
 cdef class Arrhenius(KineticsModel):
@@ -140,6 +141,10 @@ cdef class Arrhenius(KineticsModel):
         """
         import numpy.linalg
         import scipy.stats
+
+        assert len(Tlist) == len(klist), "length of temperatures and rates must be the same"
+        if len(Tlist) < 3+threeParams:
+            raise KineticsError('Not enough degrees of freedom to fit this Arrhenius expression')
         if threeParams:
             A = numpy.zeros((len(Tlist),3), numpy.float64)
             A[:,0] = numpy.ones_like(Tlist)
@@ -757,25 +762,9 @@ cdef class MultiPDepArrhenius(PDepKineticsModel):
         if P == 0:
             raise ValueError('No pressure specified to pressure-dependent MultiPDepArrhenius.getRateCoefficient().')
         
-        Plist1 = self.arrhenius[0].pressures.value_si
-        for arrh in self.arrhenius[1:]:
-            Plist2 = arrh.pressures.value_si
-            assert Plist1.shape[0] == Plist2.shape[0]
-            for i in range(Plist1.shape[0]):
-                assert 0.99 < (Plist2[i] / Plist1[i]) < 1.01            
-        
-        klow = 0.0; khigh = 0.0
+        k = 0
         for arrh in self.arrhenius:
-            Plow, Phigh, arrh_low, arrh_high = arrh.getAdjacentExpressions(P)
-            klow += arrh_low.getRateCoefficient(T)
-            khigh += arrh_high.getRateCoefficient(T)
-            
-        if klow == khigh == 0.0: 
-            return 0.0
-        elif Plow == Phigh:
-            k = klow
-        else:
-            k = klow * 10**(log10(P/Plow)/log10(Phigh/Plow)*log10(khigh/klow))
+            k += arrh.getRateCoefficient(T,P)
         
         return k
 

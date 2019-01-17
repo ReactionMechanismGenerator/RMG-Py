@@ -138,7 +138,7 @@ The `aA` and `bB` terms account for the contribution of hydrogen bonding between
 the surrounding solvent molecules. H-bonding interactions require two terms as the solute (or solvent) 
 can act as acceptor (donor) and vice versa. The descriptor `A` is a measure of the solute's ability 
 to donate a hydrogen bond (acidity) and the solvent descriptor `a` is a measure of the solvent's ability 
-to accept a hydrogen bond. A similar explanation applies to the `bB` term [Vitha2006]_, [Abraham1999]_, [Poole2009].
+to accept a hydrogen bond. A similar explanation applies to the `bB` term [Vitha2006]_, [Abraham1999]_, [Poole2009]_.
 
 
 The solvent descriptors (`c, e, s, a, b, l`) are largely treated as regressed empirical coefficients. Parameters are provided in RMG's database for the following solvents:
@@ -186,22 +186,40 @@ For estimating ΔG at temperatures other than 298 K, the enthalpy change associa
 
 where `A, B, E, S` and `L` are the same solute descriptors used in the Abraham model for the estimation of ΔG. The lowercase coefficients `c', a', b', e', s'` and `l'` depend only on the solvent and were obtained by fitting to experimental data. In RMG, this equation is implemented and together with ΔG(298 K) can be used to find ΔS(298 K). From this data, ΔG at other temperatures is found by extrapolation.
 
+.. _diffusionLimited:
 
 Diffusion-limited kinetics
 ==========================
-The next correction for liquid-phase reactions is to ensure that bimolecular reactions do not exceed their diffusion limits. The theory behind diffusive limits in solution phase reactions is well established ([Rice1985]_) and the effective rate constant of a bimolecular reaction is given as:
+The next correction for liquid-phase reactions is to ensure that bimolecular reactions do not exceed their diffusion
+limits. The theory behind diffusive limits in the solution phase for bimolecular reactions is well established
+([Rice1985]_) and has been extended to reactions of any order ([Flegg2016]_). The effective rate constant of a
+diffusion-limited reaction is given by:
 
-.. math::   k_{\textrm{eff}} = \frac {4\pi R\mathcal{D} k_{\textrm{int}}}{4\pi R\mathcal{D} + k_{\textrm{int}}}
+.. math::   k_{\textrm{eff}} = \frac {k_{\textrm{diff}} k_{\textrm{int}}}{k_{\textrm{diff}} + k_{\textrm{int}}}
    :label: diffusive_limit
 
-where `k`\ :sub:`int` is the intrinsic reaction rate, `R` is the sum of radii of the reactants and 
-`D` is the sum of the diffusivities of the reacting species. RMG uses the McGowan method for estimating 
+where `k`\ :sub:`int` is the intrinsic reaction rate, and `k`\ :sub:`diff` is the diffusion-limited rate, which is given
+by:
+
+.. math:: k_{\textrm{diff}} = \left[\prod_{i=2}^N\hat{D}_i^{3/2}\right]\frac{4\pi^{\alpha+1}}{\Gamma(\alpha)}\left(\frac{\sigma}{\sqrt{\Delta_N}}\right)^{2\alpha}
+   :label: smoluchowski
+
+where `α=(3N-5)/2` and
+
+.. math:: \hat{D}_i = D_i + \frac{1}{\sum_m^{i-1}D_m^{-1}}
+   :label: diff1
+
+.. math:: \Delta_N = \frac{\sum_{i=1}^N D_i^{-1}}{\sum_{i>m}(D_iD_m)^{-1}}
+   :label: diff2
+
+`D`\ :sub:`i` are the individual diffusivities and `σ` is the Smoluchowski radius, which would usually be fitted to
+experiment, but RMG approximates it as the sum of molecular radii. RMG uses the McGowan method for estimating
 radii, and diffusivities are estimated with the Stokes-Einstein equation using experimental solvent 
-viscosities (`\eta` (T)).  In a unimolecular to bimolecular reaction, for example, the forward rate 
-constant (`k`\ :sub:`f`\ ) can be slowed down if the reverse rate (`k`\ :sub:`r, eff`\ ) is diffusion 
-limited since the equilibrium constant (`K`\ :sub:`eq`\ ) is not affected by diffusion limitations. In cases 
-where both the forward and the reverse reaction rates are bimolecular, both diffusive limits are 
-estimated and RMG uses the direction with the larger magnitude.
+viscosities (`\eta` (T)). In a unimolecular to bimolecular reaction, for example, the forward rate
+constant (`k`\ :sub:`f`\ ) can be slowed down if the reverse rate (`k`\ :sub:`r, eff`\ ) is diffusion-limited
+since the equilibrium constant (`K`\ :sub:`eq`\ ) is not affected by diffusion limitations. In cases
+where both the forward and the reverse reaction rates are multimolecular, the forward rate coefficients limited in the
+forward and reverse directions are calculated and the limit with the smaller forward rate coefficient is used.  
 
 The viscosity of the solvent is calculated Pa.s using the solvent specified in the command line 
 and a correlation for the viscosity using parameters `A, B, C, D, E`:
@@ -362,4 +380,6 @@ This is an example of an input file for a liquid-phase system with constant spec
 
 .. [Mintz2009] \ C. Mintz et al. "Enthalpy of solvation correlations for organic solutes and gasesdissolved in acetonitrile and acetone." *Thermochim. Acta* **484(1-2)**, p. 65-69 (2009).
 
-.. [Rice1985] \ S.A. Rice. "Diffusion-limited reactions". In *Comprehensive Chemical Kinetics*, EditorsC.H. Bamford, C.F.H. Tipper and R.G. Compton. **25**, (1985).
+.. [Rice1985] \ S.A. Rice. "Diffusion-limited reactions." In *Comprehensive Chemical Kinetics*, EditorsC.H. Bamford, C.F.H. Tipper and R.G. Compton. **25**, (1985).
+
+.. [Flegg2016] \ M.B. Flegg. "Smoluchowski reaction kinetics for reactions of any order." *SIAM J. Appl. Math.* **76(4)**, p. 1403-1432 (2016).

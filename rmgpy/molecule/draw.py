@@ -1,32 +1,32 @@
 #!/usr/bin/env python
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 
-################################################################################
-#
-#   RMG - Reaction Mechanism Generator
-#
-#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
-#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the 'Software'),
-#   to deal in the Software without restriction, including without limitation
-#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#   and/or sell copies of the Software, and to permit persons to whom the
-#   Software is furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#   DEALINGS IN THE SOFTWARE.
-#
-################################################################################
+###############################################################################
+#                                                                             #
+# RMG - Reaction Mechanism Generator                                          #
+#                                                                             #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
+#                                                                             #
+# Permission is hereby granted, free of charge, to any person obtaining a     #
+# copy of this software and associated documentation files (the 'Software'),  #
+# to deal in the Software without restriction, including without limitation   #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,    #
+# and/or sell copies of the Software, and to permit persons to whom the       #
+# Software is furnished to do so, subject to the following conditions:        #
+#                                                                             #
+# The above copyright notice and this permission notice shall be included in  #
+# all copies or substantial portions of the Software.                         #
+#                                                                             #
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE #
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         #
+# DEALINGS IN THE SOFTWARE.                                                   #
+#                                                                             #
+###############################################################################
 
 """
 This module provides functionality for automatic two-dimensional drawing of the
@@ -54,6 +54,7 @@ import logging
 
 from rmgpy.qm.molecule import Geometry
 from rdkit.Chem import AllChem
+from rmgpy.molecule.molecule import Molecule
 
 from numpy.linalg import LinAlgError
 
@@ -176,7 +177,7 @@ class MoleculeDrawer:
         self.__findRingGroups()
         # Handle carbon monoxide special case
         if self.molecule.getFormula() == 'CO' and len(atomsToRemove) == 0:
-            # RDKit does not accept atom type Ot
+            # RDKit does not accept atom type O4tc
             self.molecule.removeAtom(self.molecule.atoms[-1])
             self.symbols = ['CO']
             self.molecule.atoms[0].charge = 0  # don't label the C as - if you're not drawing the O with a +
@@ -216,7 +217,7 @@ class MoleculeDrawer:
             self.molecule.removeAtom(self.molecule.atoms[-1])
             self.symbols = ['H2']
             self.coordinates = numpy.array([[0,0]], numpy.float64)
-        elif self.symbols == ['O', 'O']:
+        elif molecule.isIsomorphic(Molecule(SMILES='[O][O]')):
             # Render as O2 instead of O-O
             self.molecule.removeAtom(self.molecule.atoms[-1])
             self.molecule.atoms[0].radicalElectrons = 0
@@ -309,7 +310,7 @@ class MoleculeDrawer:
         flag_charge = 0
         
         for atom in self.molecule.atoms:
-            if atom.charge != 0: #atomType.label in ['N5s','N5d','N5dd','N5t','N5b']:
+            if atom.charge != 0:
                  flag_charge = 1
                  break
         
