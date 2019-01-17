@@ -24,7 +24,7 @@ class TestMoleculeGeneration(unittest.TestCase):
     def test_aworking(self):
         g = rmgpy.molecule.group.Group()
 
-        # Cb-Cl from thermo groups
+        # Cb-Cs from thermo groups
         g.fromAdjacencyList("""
         1 * Cb u0 {2,S}
         2   Cs u0 {1,S}
