@@ -17,7 +17,7 @@ cpdef str toSMARTS(Molecule mol)
 
 cpdef str toSMILES(Molecule mol)
 
-cpdef toOBMol(Molecule mol)
+cpdef toOBMol(Molecule mol, bint returnMapping=*)
 
 cpdef toRDKitMol(Molecule mol, bint removeHs=*, bint returnMapping=*, bint sanitize=*)
 

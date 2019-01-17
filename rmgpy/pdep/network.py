@@ -5,11 +5,11 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2009 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the "Software"),
+#   copy of this software and associated documentation files (the 'Software'),
 #   to deal in the Software without restriction, including without limitation
 #   the rights to use, copy, modify, merge, publish, distribute, sublicense,
 #   and/or sell copies of the Software, and to permit persons to whom the
@@ -18,10 +18,10 @@
 #   The above copyright notice and this permission notice shall be included in
 #   all copies or substantial portions of the Software.
 #
-#   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 #   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-#   THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 #   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #   DEALINGS IN THE SOFTWARE.
@@ -39,25 +39,7 @@ import logging
 
 import rmgpy.constants as constants
 from rmgpy.reaction import Reaction
-
-################################################################################
-
-class NetworkError(Exception): 
-    pass
-
-class InvalidMicrocanonicalRateError(NetworkError):
-    """Used when the k(E) calculation does not give the correct kf(T) or Kc(T)"""
-    def __init__(self,message, k_ratio=1.0, Keq_ratio=1.0):
-        self.message = message
-        self.k_ratio = k_ratio
-        self.Keq_ratio = Keq_ratio
-    def badness(self):
-        """
-        How bad is the error?
-        
-        Returns the max of the absolute logarithmic errors of kf and Kc
-        """
-        return max(abs(math.log10(self.k_ratio)), abs(math.log10(self.Keq_ratio)))
+from rmgpy.exceptions import NetworkError, InvalidMicrocanonicalRateError
 
 ################################################################################
 
@@ -726,7 +708,15 @@ class Network:
         NJ = 1 if self.Jlist is None else len(self.Jlist)
         
         collFreq = numpy.zeros(Nisom, numpy.float64)
-        Mcoll = numpy.zeros((Nisom,Ngrains,NJ,Ngrains,NJ), numpy.float64)
+        
+        try:
+            Mcoll = numpy.zeros((Nisom,Ngrains,NJ,Ngrains,NJ), numpy.float64)
+        except MemoryError:
+            logging.warning('Collision matrix too large to manage')
+            newNgrains = int(Ngrains/2.0)
+            logging.warning('Adjusting to use {0} grains instead of {1}'.format(newNgrains,Ngrains))
+            self.Elist = self.selectEnergyGrains(self.T,grainCount = newNgrains)
+            return self.calculateCollisionModel()
         
         for i, isomer in enumerate(self.isomers):
             collFreq[i] = isomer.calculateCollisionFrequency(self.T, self.P, self.bathGas)

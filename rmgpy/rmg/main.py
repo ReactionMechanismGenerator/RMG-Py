@@ -5,8 +5,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2010 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -39,22 +39,27 @@ import logging
 import time
 import shutil
 import numpy
-import csv
 import gc
 import copy
+from copy import deepcopy
 
 from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.molecule import Molecule
 from rmgpy.solver.base import TerminationTime, TerminationConversion
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.data.rmg import RMGDatabase
-from rmgpy.data.base import ForbiddenStructureException, DatabaseError
+from rmgpy.exceptions import ForbiddenStructureException, DatabaseError
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
+
+from rmgpy.data.thermo import ThermoLibrary
+from rmgpy.data.base import Entry
+from rmgpy import settings
 
 from rmgpy.kinetics.diffusionLimited import diffusionLimiter
 
 from model import Species, CoreEdgeReactionModel
+from rmgpy.reaction import Reaction
 from pdep import PDepNetwork
 import rmgpy.util as util
 
@@ -64,7 +69,9 @@ from rmgpy.rmg.listener import SimulationProfileWriter, SimulationProfilePlotter
 from rmgpy.restart import RestartWriter
 from rmgpy.qm.main import QMDatabaseWriter
 from rmgpy.stats import ExecutionStatsWriter
+from rmgpy.thermo.thermoengine import submit
 from rmgpy.tools.sensitivity import plotSensitivity
+from cantera import ck2cti
 ################################################################################
 
 solvent = None
@@ -93,17 +100,8 @@ class RMG(util.Subject):
     `reactionSystems`                   A list of the reaction systems used in this job
     `database`                          The RMG database used in this job
     ----------------------------------- ------------------------------------------------
-    `absoluteTolerance`                 The absolute tolerance used in the ODE/DAE solver
-    `relativeTolerance`                 The relative tolerance used in the ODE/DAE solver
-    `sensitivityAbsoluteTolerance`      The absolute tolerance used in the ODE/DAE solver for the sensitivities
-    `sensitivityRelativeTolerance`      The relative tolerance used in the ODE/DAE solver for the sensitivities
-    `fluxToleranceKeepInEdge`           The relative species flux below which species are discarded from the edge
-    `fluxToleranceMoveToCore`           The relative species flux above which species are moved from the edge to the core
-    `fluxToleranceInterrupt`            The relative species flux above which the simulation will halt
-    `maximumEdgeSpecies`                The maximum number of edge species allowed at any time
-    `minCoreSizeForPrune`               Minimum number of core species before pruning is allowed
-    `minSpeciesExistIterationsForPrune` Minimum number of iterations a species must exist before it can be pruned
-    `filterReactions`                   Specify whether to filter reactions during model enlarging step
+    `modelSettingsList`                 List of ModelSettings objects containing information related to how to manage species/reaction movement
+    `simulatorSettingsList`             List of SimulatorSettings objects containing information on how to run simulations
     `unimolecularThreshold`             Array of flags indicating whether a species is above the unimolecular reaction threshold
     `bimolecularaThreshold`             Array of flags indicating whether two species are above the bimolecular reaction threshold
     `unimolecularReact`                 Array of flags indicating whether a species should react unimolecularly in the enlarge step
@@ -120,9 +118,11 @@ class RMG(util.Subject):
     `generatePlots`                     ``True`` to generate plots of the job execution statistics after each iteration, ``False`` otherwise
     `verboseComments`                   ``True`` to keep the verbose comments for database estimates, ``False`` otherwise
     `saveEdgeSpecies`                   ``True`` to save chemkin and HTML files of the edge species, ``False`` otherwise
+    `keepIrreversible`                  ``True`` to keep ireversibility of library reactions as is ('<=>' or '=>'). ``False`` (default) to force all library reactions to be reversible ('<=>')
     `pressureDependence`                Whether to process unimolecular (pressure-dependent) reaction networks
     `quantumMechanics`                  Whether to apply quantum mechanical calculations instead of group additivity to certain molecular types.
-    `wallTime`                          The maximum amount of CPU time in seconds to expend on this job; used to stop gracefully so we can still get profiling information
+    `wallTime`                          The maximum amount of CPU time in the form DD:HH:MM:SS to expend on this job; used to stop gracefully so we can still get profiling information
+    `kineticsdatastore`                 ``True`` if storing details of each kinetic database entry in text file, ``False`` otherwise
     ----------------------------------- ------------------------------------------------
     `initializationTime`                The time at which the job was initiated, in seconds since the epoch (i.e. from time.time())
     `done`                              Whether the job has completed (there is nothing new to add)
@@ -135,6 +135,8 @@ class RMG(util.Subject):
         self.inputFile = inputFile
         self.outputDirectory = outputDirectory
         self.clear()
+        self.modelSettingsList = []
+        self.simulatorSettingsList = []
     
     def clear(self):
         """
@@ -155,20 +157,14 @@ class RMG(util.Subject):
         self.reactionModel = None
         self.reactionSystems = None
         self.database = None
+        self.reactionSystem = None
         
-        self.fluxToleranceKeepInEdge = 0.0
-        self.fluxToleranceMoveToCore = 1.0
-        self.fluxToleranceInterrupt = 1.0
-        self.absoluteTolerance = 1.0e-8
-        self.relativeTolerance = 1.0e-4
-        self.sensitivityAbsoluteTolerance = 1.0e-6
-        self.sensitivityRelativeTolerance = 1.0e-4
-        self.maximumEdgeSpecies = 1000000
-        self.minCoreSizeForPrune = 50
-        self.minSpeciesExistIterationsForPrune = 2
+        self.modelSettingsList = []
+        self.simulatorSettingsList = []
+        
         self.filterReactions=False
-        self.unimoelcularReact = None
-        self.bimoleculaReact = None
+        self.unimolecularReact = None
+        self.bimolecularReact = None
         self.unimolecularThreshold = None
         self.bimolecularThreshold = None
         self.termination = []
@@ -183,11 +179,19 @@ class RMG(util.Subject):
         self.saveSimulationProfiles = None
         self.verboseComments = None
         self.saveEdgeSpecies = None
+        self.keepIrreversible = None
         self.pressureDependence = None
         self.quantumMechanics = None
         self.speciesConstraints = {}
-        self.wallTime = 0
+        self.wallTime = '00:00:00:00'
         self.initializationTime = 0
+        self.kineticsdatastore = None
+        
+        self.name = 'Seed'
+        self.generateSeedEachIteration = True
+        self.saveSeedToDatabase = False
+
+        self.thermoCentralDatabase = None
 
         self.execTime = []
     
@@ -207,11 +211,13 @@ class RMG(util.Subject):
         if self.pressureDependence:
             self.pressureDependence.outputFile = self.outputDirectory
             self.reactionModel.pressureDependence = self.pressureDependence
+        if self.solvent:
+            self.reactionModel.solventName = self.solvent
 
         self.reactionModel.verboseComments = self.verboseComments
+        self.reactionModel.saveEdgeSpecies = self.saveEdgeSpecies
         
         if self.quantumMechanics:
-            self.quantumMechanics.setDefaultOutputDirectory(self.outputDirectory)
             self.reactionModel.quantumMechanics = self.quantumMechanics
             
     def loadThermoInput(self, path=None):
@@ -226,7 +232,6 @@ class RMG(util.Subject):
         readThermoInputFile(path, self)
         
         if self.quantumMechanics:
-            self.quantumMechanics.setDefaultOutputDirectory(self.outputDirectory)
             self.reactionModel.quantumMechanics = self.quantumMechanics
         
     def checkInput(self):
@@ -316,12 +321,25 @@ class RMG(util.Subject):
                 self.speciesConstraints={}
                 for family in self.database.kinetics.families.values():
                     family.addKineticsRulesFromTrainingSet(thermoDatabase=self.database.thermo)
+
+                    #If requested by the user, write a text file for each kinetics family detailing the source of each entry
+                    if self.kineticsdatastore:
+                        logging.info('Writing sources of kinetic entries in family {0} to text file'.format(family.label))
+                        path = os.path.join(self.outputDirectory, 'kinetics_database', family.label + '.txt')
+                        with open(path, 'w') as f:
+                            for template_label, entries in family.rules.entries.iteritems():
+                                f.write("Template [{0}] uses the {1} following source(s):\n".format(template_label,str(len(entries))))
+                                for entry_index, entry in enumerate(entries):
+                                    f.write(str(entry_index+1) + ". " + entry.shortDesc + "\n" + entry.longDesc + "\n")
+                                f.write('\n')
+                            f.write('\n')
+
                 self.speciesConstraints=copySpeciesConstraints
             else:
                 logging.info('Training set explicitly not added to rate rules in kinetics families...')
             logging.info('Filling in rate rules in kinetics families by averaging...')
             for family in self.database.kinetics.families.values():
-                family.fillKineticsRulesByAveragingUp()
+                family.fillKineticsRulesByAveragingUp(verbose=self.verboseComments)
     
     def initialize(self, **kwargs):
         """
@@ -364,45 +382,36 @@ class RMG(util.Subject):
         # Make output subdirectories
         util.makeOutputSubdirectory(self.outputDirectory, 'pdep')
         util.makeOutputSubdirectory(self.outputDirectory, 'solver')
-        
-        # Do any necessary quantum mechanics startup
-        if self.quantumMechanics:
-            self.quantumMechanics.initialize()
+        util.makeOutputSubdirectory(self.outputDirectory, 'kinetics_database')
+
+        # Specifies if details of kinetic database entries should be stored according to user
+        try:
+            self.kineticsdatastore = kwargs['kineticsdatastore']
+        except KeyError:
+            self.kineticsdatastore = False
 
         # Load databases
         self.loadDatabase()
         
         # Do all liquid-phase startup things:
         if self.solvent:
-            Species.solventData = self.database.solvation.getSolventData(self.solvent)
-            Species.solventName = self.solvent
-            diffusionLimiter.enable(Species.solventData, self.database.solvation)
+            solventData = self.database.solvation.getSolventData(self.solvent)
+            diffusionLimiter.enable(solventData, self.database.solvation)
             logging.info("Setting solvent data for {0}".format(self.solvent))
-    
-        # Set wall time
-        try:
-            walltime = kwargs['walltime']
-        except KeyError:
-            walltime = '0'
 
-        if walltime  == '0': 
-            self.wallTime = 0
-        else:
-            data = walltime[0].split(':')
-            if len(data) == 1:
-                self.wallTime = int(data[-1])
-            elif len(data) == 2:
-                self.wallTime = int(data[-1]) + 60 * int(data[-2])
-            elif len(data) == 3:
-                self.wallTime = int(data[-1]) + 60 * int(data[-2]) + 3600 * int(data[-3])
-            elif len(data) == 4:
-                self.wallTime = int(data[-1]) + 60 * int(data[-2]) + 3600 * int(data[-3]) + 86400 * int(data[-4])
-            else:
-                raise ValueError('Invalid format for wall time; should be HH:MM:SS.')
-    
+        try:
+            self.wallTime = kwargs['walltime']
+        except KeyError:
+            pass
+
+        data = self.wallTime.split(':')
+        if not len(data) == 4:
+            raise ValueError('Invalid format for wall time {0}; should be DD:HH:MM:SS.'.format(self.wallTime))
+        self.wallTime = int(data[-1]) + 60 * int(data[-2]) + 3600 * int(data[-3]) + 86400 * int(data[-4])
+
         # Initialize reaction model
         if restart:
-            self.loadRestartFile(os.path.join(self.outputDirectory,'restart.pkl'))
+            self.initializeRestartRun(os.path.join(self.outputDirectory,'restart.pkl'))
         else:
     
             # Seed mechanisms: add species and reactions from seed mechanism
@@ -435,7 +444,12 @@ class RMG(util.Subject):
                         pass
                     else:
                         raise ForbiddenStructureException("Species constraints forbids input species {0}. Please reformulate constraints, remove the species, or explicitly allow it.".format(spec.label))
-            
+
+            # For liquidReactor, checks whether the solvent is listed as one of the initial species.
+            if self.solvent:
+                solventStructure = self.database.solvation.getSolventStructure(self.solvent)
+                self.database.solvation.checkSolventinInitialSpecies(self,solventStructure)
+
             #Check to see if user has input Singlet O2 into their input file or libraries
             #This constraint is special in that we only want to check it once in the input instead of every time a species is made
             if 'allowSingletO2' in self.speciesConstraints and self.speciesConstraints['allowSingletO2']:
@@ -455,10 +469,9 @@ class RMG(util.Subject):
                         RMG expects the triplet form of oxygen for correct usage in reaction families. Please change your input to SMILES='[O][O]'
                         If you actually want to use the singlet state, set the allowSingletO2=True inside of the Species Constraints block in your input file.
                         """.format(spec.label))
-                        
+
             for spec in self.initialSpecies:
-                spec.getThermoData(self.database, quantumMechanics=self.quantumMechanics)
-                spec.generateTransportData(self.database)
+                submit(spec,self.solvent)
                 
             # Add nonreactive species (e.g. bath gases) to core first
             # This is necessary so that the PDep algorithm can identify the bath gas            
@@ -523,8 +536,10 @@ class RMG(util.Subject):
 
         self.done = False
         
+        self.Tmax = max([x.T for x in self.reactionSystems]).value_si
+        
         # Initiate first reaction discovery step after adding all core species
-        if self.filterReactions:
+        if self.modelSettingsList[0].filterReactions:
             # Run the reaction system to update threshold and react flags
             for index, reactionSystem in enumerate(self.reactionSystems):
                 reactionSystem.initializeModel(
@@ -533,138 +548,209 @@ class RMG(util.Subject):
                     edgeSpecies = [],
                     edgeReactions = [],
                     pdepNetworks = self.reactionModel.networkList,
-                    atol = self.absoluteTolerance,
-                    rtol = self.relativeTolerance,
+                    atol = self.simulatorSettingsList[0].atol,
+                    rtol = self.simulatorSettingsList[0].rtol,
                     filterReactions=True,
                 )
                 self.updateReactionThresholdAndReactFlags(
                     rxnSysUnimolecularThreshold=reactionSystem.unimolecularThreshold, 
                     rxnSysBimolecularThreshold=reactionSystem.bimolecularThreshold)
-
+                
+        if not numpy.isinf(self.modelSettingsList[0].toleranceThermoKeepSpeciesInEdge):
+            self.reactionModel.setThermodynamicFilteringParameters(self.Tmax,toleranceThermoKeepSpeciesInEdge=self.modelSettingsList[0].toleranceThermoKeepSpeciesInEdge,
+                                                              minCoreSizeForPrune=self.modelSettingsList[0].minCoreSizeForPrune, 
+                                                              maximumEdgeSpecies =self.modelSettingsList[0].maximumEdgeSpecies,
+                                                              reactionSystems=self.reactionSystems)
+        
         self.reactionModel.enlarge(reactEdge=True, 
             unimolecularReact=self.unimolecularReact, 
             bimolecularReact=self.bimolecularReact)
-
+        
+        if not numpy.isinf(self.modelSettingsList[0].toleranceThermoKeepSpeciesInEdge):
+            self.reactionModel.thermoFilterDown(maximumEdgeSpecies=self.modelSettingsList[0].maximumEdgeSpecies)
+        
         logging.info('Completed initial enlarge edge step...')
+        
         self.saveEverything()
         
-        # Main RMG loop
-        while not self.done:
-                
-            self.done = True
-            objectsToEnlarge = []
-            allTerminated = True
-            numCoreSpecies = len(self.reactionModel.core.species)
-            for index, reactionSystem in enumerate(self.reactionSystems):
-                
-                # Conduct simulation
-                logging.info('Conducting simulation of reaction system %s...' % (index+1))
-                prune = True
-                if numCoreSpecies < self.minCoreSizeForPrune:
-                    # Turn pruning off if we haven't reached minimum core size.
-                    prune = False
-                    
-                terminated, obj = reactionSystem.simulate(
-                    coreSpecies = self.reactionModel.core.species,
-                    coreReactions = self.reactionModel.core.reactions,
-                    edgeSpecies = self.reactionModel.edge.species,
-                    edgeReactions = self.reactionModel.edge.reactions,
-                    toleranceKeepInEdge = self.fluxToleranceKeepInEdge if prune else 0,
-                    toleranceMoveToCore = self.fluxToleranceMoveToCore,
-                    toleranceInterruptSimulation = self.fluxToleranceInterrupt if prune else self.fluxToleranceMoveToCore,
-                    pdepNetworks = self.reactionModel.networkList,
-                    absoluteTolerance = self.absoluteTolerance,
-                    relativeTolerance = self.relativeTolerance,
-                    filterReactions=False,
-                )
-                allTerminated = allTerminated and terminated
-                logging.info('')
-                
-                # If simulation is invalid, note which species should be added to
-                # the core
-                if obj:
-                    if isinstance(obj, PDepNetwork):
-                        # Determine which species in that network has the highest leak rate
-                        # We do this here because we need a temperature and pressure
-                        # Store the maximum leak species along with the associated network
-                        obj = (obj, obj.getMaximumLeakSpecies(reactionSystem.T.value_si, reactionSystem.P.value_si))
-                    objectsToEnlarge.append(obj)
-                    self.done = False
-    
-    
-            if not self.done: # There is something that needs exploring/enlarging
-                
-                # If we reached our termination conditions, then try to prune
-                # species from the edge
-                if allTerminated:
-                    self.reactionModel.prune(self.reactionSystems, self.fluxToleranceKeepInEdge, self.maximumEdgeSpecies, self.minSpeciesExistIterationsForPrune)
-                    # Perform garbage collection after pruning
-                    collected = gc.collect()
-                    logging.info('Garbage collector: collected %d objects.' % (collected))
-    
-                # Enlarge objects identified by the simulation for enlarging
-                # These should be Species or Network objects
-                logging.info('')
-                objectsToEnlarge = list(set(objectsToEnlarge))
+        self.makeSeedMech(firstTime=True)
 
-                if len(objectsToEnlarge) == 0:
-                    raise Exception("Expected a species or pdep object to enlarge, but there wasn't one found.")
-                
-                # Add objects to enlarge to the core first
-                for objectToEnlarge in objectsToEnlarge:
-                    self.reactionModel.enlarge(objectToEnlarge)
-                
-                if len(self.reactionModel.core.species) > numCoreSpecies:
-                    # If there were core species added, then react the edge
-                    # If there were no new core species, it means the pdep network needs be updated through another enlarge core step
-                    if self.filterReactions:
-                        # Run a raw simulation to get updated reaction system threshold values
-                        for index, reactionSystem in enumerate(self.reactionSystems):
-                            # Run with the same conditions as with pruning off
-                            reactionSystem.simulate(
-                                coreSpecies = self.reactionModel.core.species,
-                                coreReactions = self.reactionModel.core.reactions,
-                                edgeSpecies = [],
-                                edgeReactions = [],
-                                toleranceKeepInEdge = 0,
-                                toleranceMoveToCore = self.fluxToleranceMoveToCore,
-                                toleranceInterruptSimulation = self.fluxToleranceMoveToCore,
-                                pdepNetworks = self.reactionModel.networkList,
-                                absoluteTolerance = self.absoluteTolerance,
-                                relativeTolerance = self.relativeTolerance,
-                                filterReactions=True,
-                            )
-                            self.updateReactionThresholdAndReactFlags(
-                                rxnSysUnimolecularThreshold = reactionSystem.unimolecularThreshold,
-                                rxnSysBimolecularThreshold = reactionSystem.bimolecularThreshold)
-    
-                        logging.info('')    
-                    else:
-                        self.updateReactionThresholdAndReactFlags()
-                    
-                    self.reactionModel.enlarge(reactEdge=True, 
-                            unimolecularReact=self.unimolecularReact, 
-                            bimolecularReact=self.bimolecularReact)
-
-            self.saveEverything()
-
-
-            # Consider stopping gracefully if the next iteration might take us
-            # past the wall time
-            if self.wallTime > 0 and len(self.execTime) > 1:
-                t = self.execTime[-1]
-                dt = self.execTime[-1] - self.execTime[-2]
-                if t + 3 * dt > self.wallTime:
-                    logging.info('MODEL GENERATION TERMINATED')
-                    logging.info('')
-                    logging.info('There is not enough time to complete the next iteration before the wall time is reached.')
-                    logging.info('The output model may be incomplete.')
-                    logging.info('')
-                    coreSpec, coreReac, edgeSpec, edgeReac = self.reactionModel.getModelSize()
-                    logging.info('The current model core has %s species and %s reactions' % (coreSpec, coreReac))
-                    logging.info('The current model edge has %s species and %s reactions' % (edgeSpec, edgeReac))
-                    return
+        maxNumSpcsHit = False #default
         
+        for q,modelSettings in enumerate(self.modelSettingsList):
+            if len(self.simulatorSettingsList) > 1: 
+                simulatorSettings = self.simulatorSettingsList[q]
+            else: #if they only provide one input for simulator use that everytime
+                simulatorSettings = self.simulatorSettingsList[0]
+
+            self.filterReactions = modelSettings.filterReactions
+
+            logging.info('Beginning model generation stage {0}\n\n'.format(q+1))
+            
+            self.done = False
+
+            # Main RMG loop
+            while not self.done:
+                
+                self.reactionModel.iterationNum += 1
+                self.done = True
+                objectsToEnlarge = []
+                
+                allTerminated = True
+                numCoreSpecies = len(self.reactionModel.core.species)
+
+                notResurrectedVec = [True for i in xrange(len(self.reactionSystems))]
+                
+                for index, reactionSystem in enumerate(self.reactionSystems):
+                    self.reactionSystem = reactionSystem
+                    # Conduct simulation
+                    logging.info('Conducting simulation of reaction system %s...' % (index+1))
+                    prune = True
+                    
+                    self.reactionModel.adjustSurface()
+                    
+                    if numCoreSpecies < modelSettings.minCoreSizeForPrune:
+                        # Turn pruning off if we haven't reached minimum core size.
+                        prune = False
+                        
+                    try: terminated,resurrected,obj,newSurfaceSpecies,newSurfaceReactions = reactionSystem.simulate(
+                        coreSpecies = self.reactionModel.core.species,
+                        coreReactions = self.reactionModel.core.reactions,
+                        edgeSpecies = self.reactionModel.edge.species,
+                        edgeReactions = self.reactionModel.edge.reactions,
+                        surfaceSpecies = self.reactionModel.surface.species,
+                        surfaceReactions = self.reactionModel.surface.reactions,
+                        pdepNetworks = self.reactionModel.networkList,
+                        prune = prune,
+                        modelSettings=modelSettings,
+                        simulatorSettings = simulatorSettings,
+                    )
+                    except:
+                        logging.error("Model core reactions:")
+                        if len(self.reactionModel.core.reactions) > 5:
+                            logging.error("Too many to print in detail")
+                        else:
+                            from rmgpy.cantherm.output import prettify
+                            logging.error(prettify(repr(self.reactionModel.core.reactions)))
+                        self.makeSeedMech()
+                        raise
+                    
+                    notResurrectedVec[index] = not resurrected
+                    
+                    if self.generateSeedEachIteration:
+                        self.makeSeedMech()
+                        
+                    self.done = self.reactionModel.addNewSurfaceObjects(obj,newSurfaceSpecies,newSurfaceReactions,reactionSystem)
+                    
+                    allTerminated = allTerminated and terminated
+                    logging.info('')
+                        
+                    # If simulation is invalid, note which species should be added to
+                    # the core
+                    if obj != [] and not (obj is None):
+                        objects = self.processToSpeciesNetworks(obj)
+                        for ob in objects:
+                            if not (ob in objectsToEnlarge):
+                                if isinstance(ob,Species): #keep Species before PDepNetworks
+                                    objectsToEnlarge.insert(0,ob)
+                                elif isinstance(ob[0],PDepNetwork):
+                                    objectsToEnlarge.append(ob)
+                                else:
+                                    raise TypeError('processed object not recognized')
+
+                        self.done = False
+                        
+                if not self.done: # There is something that needs exploring/enlarging
+
+                    # If we reached our termination conditions, then try to prune
+                    # species from the edge
+                    if allTerminated:
+                        self.reactionModel.prune(self.reactionSystems, modelSettings.fluxToleranceKeepInEdge, modelSettings.maximumEdgeSpecies, modelSettings.minSpeciesExistIterationsForPrune)
+                        # Perform garbage collection after pruning
+                        collected = gc.collect()
+                        logging.info('Garbage collector: collected %d objects.' % (collected))
+        
+                    # Enlarge objects identified by the simulation for enlarging
+                    # These should be Species or Network objects
+                    logging.info('')
+
+                    objectsToEnlarge = list(set(objectsToEnlarge))
+
+                    # Add objects to enlarge to the core first
+                    for objectToEnlarge in objectsToEnlarge:
+                        self.reactionModel.enlarge(objectToEnlarge)
+                        
+                    if len(self.reactionModel.core.species) > numCoreSpecies:
+                        tempModelSettings = deepcopy(modelSettings)
+                        tempModelSettings.toleranceKeepInEdge = 0
+                        # If there were core species added, then react the edge
+                        # If there were no new core species, it means the pdep network needs be updated through another enlarge core step
+                        if modelSettings.filterReactions:
+                            # Run a raw simulation to get updated reaction system threshold values
+                            for index, reactionSystem in enumerate(self.reactionSystems):
+                                # Run with the same conditions as with pruning off
+                                if notResurrectedVec[index]:
+                                    reactionSystem.simulate(
+                                        coreSpecies = self.reactionModel.core.species,
+                                        coreReactions = self.reactionModel.core.reactions,
+                                        edgeSpecies = [],
+                                        edgeReactions = [],
+                                        surfaceSpecies = self.reactionModel.surface.species,
+                                        surfaceReactions = self.reactionModel.surface.reactions,
+                                        pdepNetworks = self.reactionModel.networkList,
+                                        modelSettings = tempModelSettings,
+                                        simulatorSettings = simulatorSettings,
+                                    )
+                                    self.updateReactionThresholdAndReactFlags(
+                                        rxnSysUnimolecularThreshold = reactionSystem.unimolecularThreshold,
+                                        rxnSysBimolecularThreshold = reactionSystem.bimolecularThreshold)
+                                else:
+                                    logging.warn('Reaction thresholds/flags for Reaction System {0} was not updated due to resurrection'.format(index+1))
+        
+                            logging.info('')    
+                        else:
+                            self.updateReactionThresholdAndReactFlags()
+                            
+                        if not numpy.isinf(modelSettings.toleranceThermoKeepSpeciesInEdge):
+                            self.reactionModel.setThermodynamicFilteringParameters(self.Tmax, toleranceThermoKeepSpeciesInEdge=modelSettings.toleranceThermoKeepSpeciesInEdge,
+                                                              minCoreSizeForPrune=modelSettings.minCoreSizeForPrune, 
+                                                              maximumEdgeSpecies=modelSettings.maximumEdgeSpecies,
+                                                              reactionSystems=self.reactionSystems)
+        
+                        self.reactionModel.enlarge(reactEdge=True, 
+                                unimolecularReact=self.unimolecularReact, 
+                                bimolecularReact=self.bimolecularReact)
+                        
+                        if not numpy.isinf(self.modelSettingsList[0].toleranceThermoKeepSpeciesInEdge):
+                            self.reactionModel.thermoFilterDown(maximumEdgeSpecies=modelSettings.maximumEdgeSpecies)
+                    
+                    maxNumSpcsHit = len(self.reactionModel.core.species) >= modelSettings.maxNumSpecies
+
+                    if maxNumSpcsHit: #breaks the while loop 
+                        break
+                    
+                self.saveEverything()
+    
+                # Consider stopping gracefully if the next iteration might take us
+                # past the wall time
+                if self.wallTime > 0 and len(self.execTime) > 1:
+                    t = self.execTime[-1]
+                    dt = self.execTime[-1] - self.execTime[-2]
+                    if t + 3 * dt > self.wallTime:
+                        logging.info('MODEL GENERATION TERMINATED')
+                        logging.info('')
+                        logging.info('There is not enough time to complete the next iteration before the wall time is reached.')
+                        logging.info('The output model may be incomplete.')
+                        logging.info('')
+                        coreSpec, coreReac, edgeSpec, edgeReac = self.reactionModel.getModelSize()
+                        logging.info('The current model core has %s species and %s reactions' % (coreSpec, coreReac))
+                        logging.info('The current model edge has %s species and %s reactions' % (edgeSpec, edgeReac))
+                        return
+                    
+            if maxNumSpcsHit: #resets maxNumSpcsHit and continues the settings for loop
+                logging.info('The maximum number of species ({0}) has been hit, Exiting stage {1} ...'.format(modelSettings.maxNumSpecies,q+1))
+                maxNumSpcsHit = False
+                continue
         
         # Run sensitivity analysis post-model generation if sensitivity analysis is on
         for index, reactionSystem in enumerate(self.reactionSystems):
@@ -676,25 +762,29 @@ class RMG(util.Subject):
                 for spec in reactionSystem.sensitiveSpecies:
                     csvfilePath = os.path.join(self.outputDirectory, 'solver', 'sensitivity_{0}_SPC_{1}.csv'.format(index+1, spec.index))
                     sensWorksheet.append(csvfilePath)
-                    
-                terminated, obj = reactionSystem.simulate(
+                
+                terminated, resurrected,obj, surfaceSpecies, surfaceReactions = reactionSystem.simulate(
                     coreSpecies = self.reactionModel.core.species,
                     coreReactions = self.reactionModel.core.reactions,
                     edgeSpecies = self.reactionModel.edge.species,
                     edgeReactions = self.reactionModel.edge.reactions,
-                    toleranceKeepInEdge = self.fluxToleranceKeepInEdge,
-                    toleranceMoveToCore = self.fluxToleranceMoveToCore,
-                    toleranceInterruptSimulation = self.fluxToleranceInterrupt,
+                    surfaceSpecies = [],
+                    surfaceReactions = [],
                     pdepNetworks = self.reactionModel.networkList,
-                    absoluteTolerance = self.absoluteTolerance,
-                    relativeTolerance = self.relativeTolerance,
                     sensitivity = True,
-                    sensitivityAbsoluteTolerance = self.sensitivityAbsoluteTolerance,
-                    sensitivityRelativeTolerance = self.sensitivityRelativeTolerance,
                     sensWorksheet = sensWorksheet,
+                    modelSettings = self.modelSettingsList[-1],
+                    simulatorSettings = self.simulatorSettingsList[-1],
                 )
                 
                 plotSensitivity(self.outputDirectory, index, reactionSystem.sensitiveSpecies)
+
+        # generate Cantera files chem.cti & chem_annotated.cti in a designated `cantera` output folder
+        try:
+            self.generateCanteraFiles(os.path.join(self.outputDirectory, 'chemkin', 'chem.inp'))
+            self.generateCanteraFiles(os.path.join(self.outputDirectory, 'chemkin', 'chem_annotated.inp'))
+        except EnvironmentError:
+            logging.error('Could not generate Cantera files due to EnvironmentError. Check read\write privileges in output directory.')
                 
         # Write output file
         logging.info('')
@@ -705,6 +795,247 @@ class RMG(util.Subject):
         logging.info('The final model edge has %s species and %s reactions' % (edgeSpec, edgeReac))
         
         self.finish()
+    
+    def makeSeedMech(self,firstTime=False):
+        """
+        causes RMG to make a seed mechanism out of the current chem_annotated.inp and species_dictionary.txt
+        this seed mechanism is outputted in a seed folder within the run directory and automatically
+        added to as the (or replaces the current) 'Seed' thermo and kinetics libraries in database
+        
+        if run with firstTime=True it will change self.name to be unique within the thermo/kinetics libraries
+        by adding integers to the end of the name to prevent overwritting
+        """
+        
+        logging.info('Making seed mechanism...')
+        
+        name = self.name
+        
+        if self.saveSeedToDatabase and firstTime: #make sure don't overwrite current libraries
+            thermoNames = self.database.thermo.libraries.keys()
+            kineticsNames = self.database.kinetics.libraries.keys()
+                
+            if name in thermoNames or name in kineticsNames: 
+                q = 1
+                while name+str(q) in thermoNames or name+str(q) in kineticsNames:
+                    q += 1
+                self.name = name + str(q)
+        
+        seedDir = os.path.join(self.outputDirectory,'seed')
+        
+        if firstTime and not os.path.exists(seedDir): #if seed directory does not exist make it
+            os.mkdir(seedDir)
+        else:
+            shutil.rmtree(seedDir) #otherwise delete the old seed and make a new directory
+            os.mkdir(seedDir)
+            
+        speciesList = self.reactionModel.core.species
+        reactionList = self.reactionModel.core.reactions
+        edgeSpeciesList = self.reactionModel.edge.species
+        edgeReactionList = self.reactionModel.edge.reactions
+        
+        # Make species labels independent
+        oldLabels = self.makeSpeciesLabelsIndependent(speciesList)
+        edgeOldLabels = self.makeSpeciesLabelsIndependent(edgeSpeciesList)
+        
+        # load thermo library entries
+        thermoLibrary = ThermoLibrary(name=name)
+        for i,species in enumerate(speciesList): 
+            if species.thermo:
+                thermoLibrary.loadEntry(index = i + 1,
+                                        label = species.label,
+                                        molecule = species.molecule[0].toAdjacencyList(),
+                                        thermo = species.thermo,
+                                        shortDesc = species.thermo.comment
+               )                
+            else:
+                logging.warning('Species {0} did not contain any thermo data and was omitted from the thermo library.'.format(str(species)))
+                      
+        edgeThermoLibrary = ThermoLibrary(name=name+'_edge')
+        for i,species in enumerate(edgeSpeciesList): 
+            if species.thermo:
+                edgeThermoLibrary.loadEntry(index = i + 1,
+                                        label = species.label,
+                                        molecule = species.molecule[0].toAdjacencyList(),
+                                        thermo = species.thermo,
+                                        shortDesc = species.thermo.comment
+               )                
+            else:
+                logging.warning('Species {0} did not contain any thermo data and was omitted from the edge thermo library.'.format(str(species)))
+                   
+        # load kinetics library entries                    
+        kineticsLibrary = KineticsLibrary(name=name,duplicatesChecked=False)
+        kineticsLibrary.entries = {}
+        for i in range(len(reactionList)):
+            reaction = reactionList[i]        
+            entry = Entry(
+                    index = i+1,
+                    label = reaction.toLabeledStr(),
+                    item = reaction,
+                    data = reaction.kinetics,
+                )
+            try:
+        	    entry.longDesc = 'Originally from reaction library: ' + reaction.library + "\n" + reaction.kinetics.comment
+    	    except AttributeError:
+        	    entry.longDesc = reaction.kinetics.comment
+            kineticsLibrary.entries[i+1] = entry
+        
+        # Mark as duplicates where there are mixed pressure dependent and non-pressure dependent duplicate kinetics
+        # Even though CHEMKIN does not require a duplicate flag, RMG needs it.
+        # Using flag markDuplicates = True
+        
+        
+        # load kinetics library entries                    
+        edgeKineticsLibrary = KineticsLibrary(name=name+'_edge',duplicatesChecked=False)
+        edgeKineticsLibrary.entries = {}
+        for i,reaction in enumerate(edgeReactionList):       
+            entry = Entry(
+                    index = i+1,
+                    label = reaction.toLabeledStr(),
+                    item = reaction,
+                    data = reaction.kinetics,
+                )
+            try:
+        	    entry.longDesc = 'Originally from reaction library: ' + reaction.library + "\n" + reaction.kinetics.comment
+    	    except AttributeError:
+        	    entry.longDesc = reaction.kinetics.comment
+            edgeKineticsLibrary.entries[i+1] = entry
+        
+        # Mark as duplicates where there are mixed pressure dependent and non-pressure dependent duplicate kinetics
+        # Even though CHEMKIN does not require a duplicate flag, RMG needs it.
+        # Using flag markDuplicates = True
+        
+        
+        #save in database
+        if self.saveSeedToDatabase:
+            databaseDirectory = settings['database.directory']
+            try:
+                os.makedirs(os.path.join(databaseDirectory, 'kinetics', 'libraries',name))
+            except:
+                pass
+            thermoLibrary.save(os.path.join(databaseDirectory, 'thermo' ,'libraries', name + '.py'))
+            kineticsLibrary.save(os.path.join(databaseDirectory, 'kinetics', 'libraries', name, 'reactions.py'))
+            kineticsLibrary.saveDictionary(os.path.join(databaseDirectory, 'kinetics', 'libraries', name, 'dictionary.txt'))
+            
+            try:
+                os.makedirs(os.path.join(databaseDirectory, 'kinetics', 'libraries',name+'_edge'))
+            except:
+                pass
+            edgeThermoLibrary.save(os.path.join(databaseDirectory, 'thermo' ,'libraries', name +'_edge'+'.py'))
+            edgeKineticsLibrary.save(os.path.join(databaseDirectory, 'kinetics', 'libraries', name+'_edge', 'reactions.py'))
+            edgeKineticsLibrary.saveDictionary(os.path.join(databaseDirectory, 'kinetics', 'libraries', name+'_edge', 'dictionary.txt'))
+
+        #save in output directory
+        thermoLibrary.save(os.path.join(seedDir, name + '.py'))
+        kineticsLibrary.save(os.path.join(seedDir, name, 'reactions.py'))
+        kineticsLibrary.saveDictionary(os.path.join(seedDir, name, 'dictionary.txt'))
+        
+        edgeThermoLibrary.save(os.path.join(seedDir, name + '_edge'+ '.py'))
+        edgeKineticsLibrary.save(os.path.join(seedDir, name+'_edge', 'reactions.py'))
+        edgeKineticsLibrary.saveDictionary(os.path.join(seedDir, name+'_edge', 'dictionary.txt'))
+        
+        #change labels back so species aren't renamed
+        for i,label in enumerate(oldLabels):
+            speciesList[i].label = label
+        
+        for i,label in enumerate(edgeOldLabels):
+            edgeSpeciesList[i].label = label
+            
+    def makeSpeciesLabelsIndependent(self, species):
+        """
+        This method looks at the core species labels and makes sure none of them conflict
+        If a conflict occurs, the second occurance will have '-2' added
+        returns a list of the old labels
+        """
+        oldLabels = []
+        labels = set()
+        for spec in species:
+            oldLabels.append(spec.label)
+            duplicate_index = 1
+            potential_label = spec.label
+            while potential_label in labels:
+                duplicate_index += 1
+                potential_label = spec.label + '-{}'.format(duplicate_index)
+            spec.label = potential_label
+            labels.add(potential_label)
+        return oldLabels
+    
+    ################################################################################
+    def processToSpeciesNetworks(self,obj):
+        """
+        breaks down the objects returned by simulate into Species and PDepNetwork
+        components
+        """
+        
+        if isinstance(obj, PDepNetwork):
+            out = [self.processPdepNetworks(obj)]
+            return out
+        elif isinstance(obj, Species):
+            return [obj]
+        elif isinstance(obj,Reaction):
+            return list(self.processReactionsToSpecies(obj))
+        elif isinstance(obj,list): #list of species
+            rspcs = self.processReactionsToSpecies([k for k in obj if isinstance(k,Reaction)])
+            spcs = {k for k in obj if isinstance(k,Species)} | rspcs
+            nworks,pspcs = self.processPdepNetworks([k for k in obj if isinstance(k,PDepNetwork)])
+            spcs = list(spcs-pspcs) #avoid duplicate species
+            return spcs+nworks
+        else:
+            raise TypeError("improper call, obj input was incorrect")
+
+    def processPdepNetworks(self,obj):
+        """
+        properly processes PDepNetwork objects and lists of PDepNetwork objects returned from simulate
+        """
+        reactionSystem = self.reactionSystem
+        if isinstance(obj, PDepNetwork):
+            # Determine which species in that network has the highest leak rate
+            # We do this here because we need a temperature and pressure
+            # Store the maximum leak species along with the associated network
+            ob = (obj, obj.getMaximumLeakSpecies(reactionSystem.T.value_si, reactionSystem.P.value_si))
+            return ob
+        elif isinstance(obj,list):
+            spcs = [ob.getMaximumLeakSpecies(reactionSystem.T.value_si, reactionSystem.P.value_si) for ob in obj]
+            nworks = [(obj[i],spcs[i]) for i in xrange(len(obj))]
+            return nworks,set(spcs)
+        else:
+            raise TypeError("improper call, obj input was incorrect")
+            
+    def processReactionsToSpecies(self,obj):
+        """
+        properly processes Reaction objects and lists of Reaction objects returned from simulate
+        """
+        coreSpecies = self.reactionModel.core.species
+        filterFcn = lambda x: not ((x in coreSpecies)) #remove species already in core
+        if isinstance(obj,Reaction):
+            potentialSpcs = obj.reactants+obj.products
+            potentialSpcs = filter(filterFcn,potentialSpcs)
+        elif isinstance(obj,list) or isinstance(obj,set):
+            potentialSpcs = set()
+            for ob in obj:
+                potentialSpcs = potentialSpcs | set(ob.reactants+ob.products)
+            potentialSpcs = {sp for sp in potentialSpcs if filterFcn(sp)}
+        else:
+            raise TypeError("improper call, obj input was incorrect")
+        return potentialSpcs
+
+    def generateCanteraFiles(self, chemkinFile, **kwargs):
+        """
+        Convert a chemkin mechanism chem.inp file to a cantera mechanism file chem.cti
+        and save it in the cantera directory
+        """
+        transportFile = os.path.join(os.path.dirname(chemkinFile), 'tran.dat')
+        fileName = os.path.splitext(os.path.basename(chemkinFile))[0] + '.cti'
+        outName = os.path.join(self.outputDirectory, 'cantera', fileName)
+        canteraDir = os.path.dirname(outName)
+        try:
+            os.makedirs(canteraDir)
+        except OSError:
+            if not os.path.isdir(canteraDir):
+                raise
+        if os.path.exists(outName):
+            os.remove(outName)
+        parser = ck2cti.Parser()
+        parser.convertMech(chemkinFile, transportFile=transportFile, outName=outName, quiet=True, permissive=True, **kwargs)
 
     def initializeReactionThresholdAndReactFlags(self):
         numCoreSpecies = len(self.reactionModel.core.species)
@@ -816,7 +1147,7 @@ class RMG(util.Subject):
         """
         Output a header containing identifying information about RMG to the log.
         """
-        from rmgpy import __version__, getPath, settings
+        from rmgpy import __version__, getPath
         logging.log(level, '#########################################################')
         logging.log(level, '# RMG-Py - Reaction Mechanism Generator in Python       #')
         logging.log(level, '# Version: {0:44s} #'.format(__version__))
@@ -854,20 +1185,13 @@ class RMG(util.Subject):
                 logging.log(level, databaseCondaPackage)
                 logging.log(level,'')
 
-    
-    def loadRestartFile(self, path):
-        """
-        Load a restart file at `path` on disk.
-        """
-    
-        import cPickle
-    
-        # Unpickle the reaction model from the specified restart file
-        logging.info('Loading previous restart file...')
-        f = open(path, 'rb')
-        self.reactionModel = cPickle.load(f)
-        f.close()
-    
+    def initializeRestartRun(self, path):
+
+        from rmgpy.rmg.model import getFamilyLibraryObject
+
+        # read restart file
+        self.loadRestartFile(path)
+
         # A few things still point to the species in the input file, so update
         # those to point to the equivalent species loaded from the restart file
     
@@ -888,45 +1212,64 @@ class RMG(util.Subject):
     
         # The reactions and reactionDict still point to the old reaction families
         reactionDict = {}
-        oldFamilies = self.reactionModel.reactionDict.keys()
-        for family0 in self.reactionModel.reactionDict:
+        for family0_label in self.reactionModel.reactionDict:
     
             # Find the equivalent library or family in the newly-loaded kinetics database
-            family = None
-            if isinstance(family0, KineticsLibrary):
+            family_label = None
+            family0_obj = getFamilyLibraryObject(family0_label)
+            if isinstance(family0_obj, KineticsLibrary):
                 for label, database in self.database.kinetics.libraries.iteritems():
-                    if database.label == family0.label:
-                        family = database
+                    if database.label == family0_label:
+                        family_label = database.label
                         break
-            elif isinstance(family0, KineticsFamily):
+            elif isinstance(family0_obj, KineticsFamily):
                 for label, database in self.database.kinetics.families.iteritems():
-                    if database.label == family0.label:
-                        family = database
+                    if database.label == family0_label:
+                        family_label = database.label
                         break    
             else:
                 import pdb; pdb.set_trace()
-            if family is None:
-                raise Exception("Unable to find matching reaction family for %s" % family0.label)
+            if family_label is None:
+                raise Exception("Unable to find matching reaction family for %s" % family0_label)
     
             # Update each affected reaction to point to that new family
             # Also use that new family in a duplicate reactionDict
-            reactionDict[family] = {}
-            for reactant1 in self.reactionModel.reactionDict[family0]:
-                reactionDict[family][reactant1] = {}
-                for reactant2 in self.reactionModel.reactionDict[family0][reactant1]:
-                    reactionDict[family][reactant1][reactant2] = []
-                    if isinstance(family0, KineticsLibrary):
-                        for rxn in self.reactionModel.reactionDict[family0][reactant1][reactant2]:
+            reactionDict[family_label] = {}
+            for reactant1 in self.reactionModel.reactionDict[family0_label]:
+                reactionDict[family_label][reactant1] = {}
+                for reactant2 in self.reactionModel.reactionDict[family0_label][reactant1]:
+                    reactionDict[family_label][reactant1][reactant2] = []
+                    if isinstance(family0_obj, KineticsLibrary):
+                        for rxn in self.reactionModel.reactionDict[family0_label][reactant1][reactant2]:
                             assert isinstance(rxn, LibraryReaction)
-                            rxn.library = family.label
-                            reactionDict[family][reactant1][reactant2].append(rxn)
-                    elif isinstance(family0, KineticsFamily):
-                        for rxn in self.reactionModel.reactionDict[family0][reactant1][reactant2]:
+                            rxn.library = family_label
+                            reactionDict[family_label][reactant1][reactant2].append(rxn)
+                    elif isinstance(family0_obj, KineticsFamily):
+                        for rxn in self.reactionModel.reactionDict[family0_label][reactant1][reactant2]:
                             assert isinstance(rxn, TemplateReaction)
-                            rxn.family = family.label
-                            reactionDict[family][reactant1][reactant2].append(rxn)
+                            rxn.family_label = family_label
+                            reactionDict[family_label][reactant1][reactant2].append(rxn)
         
         self.reactionModel.reactionDict = reactionDict
+    
+    def loadRestartFile(self, path):
+        """
+        Load a restart file at `path` on disk.
+        """
+        import cPickle
+    
+        # Unpickle the reaction model from the specified restart file
+        logging.info('Loading previous restart file...')
+        f = open(path, 'rb')
+        rmg_restart = cPickle.load(f)
+        f.close()
+
+        self.reactionModel = rmg_restart.reactionModel
+        self.unimolecularReact = rmg_restart.unimolecularReact
+        self.bimolecularReact = rmg_restart.bimolecularReact
+        if self.filterReactions:
+            self.unimolecularThreshold = rmg_restart.unimolecularThreshold
+            self.bimolecularThreshold = rmg_restart.bimolecularThreshold
         
     def loadRMGJavaInput(self, path):
         """
@@ -942,7 +1285,7 @@ class RMG(util.Subject):
         self.reactionSystems = []
     
         Tlist = []; Plist = []; concentrationList = []; speciesDict = {}
-        termination = []; atol=1e-16; rtol=1e-8
+        termination = []
         
         with open(path, 'r') as f:
             line = self.readMeaningfulLineJava(f)
@@ -1062,14 +1405,6 @@ class RMG(util.Subject):
                     # Second meaningful line is the error tolerance
                     # We're not doing anything with this information yet!
                     line = self.readMeaningfulLineJava(f)
-                 
-                elif line.startswith('Atol:'):
-                    tokens = line.split()
-                    atol = float(tokens[1])
-                    
-                elif line.startswith('Rtol:'):
-                    tokens = line.split()
-                    rtol = float(tokens[1])
                 
                 line = self.readMeaningfulLineJava(f)
         
@@ -1138,9 +1473,9 @@ def initializeLog(verbose, log_file_name):
     if os.path.exists(log_file_name):
         backup = os.path.join(log_file_name[:-7], 'RMG_backup.log')
         if os.path.exists(backup):
-            print "Removing old "+backup
+            logging.info("Removing old "+backup)
             os.remove(backup)
-        print 'Moving {0} to {1}\n'.format(log_file_name, backup)
+        logging.info('Moving {0} to {1}\n'.format(log_file_name, backup))
         shutil.move(log_file_name, backup)
     fh = logging.FileHandler(filename=log_file_name) #, backupCount=3)
     fh.setLevel(min(logging.DEBUG,verbose)) # always at least VERBOSE in the file

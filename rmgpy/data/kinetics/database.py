@@ -5,8 +5,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2010 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -41,11 +41,13 @@ from rmgpy.kinetics import Arrhenius, ArrheniusEP, ThirdBody, Lindemann, Troe, \
 from rmgpy.molecule import Molecule, Group
 from rmgpy.species import Species
 from rmgpy.reaction import Reaction
-from rmgpy.data.base import LogicNode, DatabaseError
+from rmgpy.data.base import LogicNode
 
 from .family import  KineticsFamily
 from .library import LibraryReaction, KineticsLibrary
-from .common import filterReactions
+from .common import ensure_species, generate_molecule_combos, \
+                    find_degenerate_reactions, ensure_independent_atom_ids
+from rmgpy.exceptions import DatabaseError
 
 ################################################################################
 
@@ -213,6 +215,10 @@ class KineticsDatabase(object):
                     library.load(library_file, self.local_context, self.global_context)
                     self.libraries[library.label] = library
                 else:
+                    if library_name == "KlippensteinH2O2":
+                        logging.info("""\n** Note: The KlippensteinH2O2 library was replaced and is no longer available in RMG.
+For H2 combustion chemistry consider using either the BurkeH2inN2 or BurkeH2inArHe
+library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n""")
                     raise IOError("Couldn't find kinetics library {0}".format(library_file))
             # library order should've been set prior to this, with the given seed mechs and reaction libraries
             assert (len(self.libraryOrder) == len(libraries))
@@ -355,42 +361,46 @@ class KineticsDatabase(object):
                 onoff = 'on ' if self.recommendedFamilies[label] else 'off'
                 f.write("{num:<2d}    {onoff}     {label}\n".format(num=number, label=label, onoff=onoff))
     
-    def generateReactions(self, reactants, products=None):
+    def generate_reactions(self, reactants, products=None, only_families=None, resonance=True):
         """
         Generate all reactions between the provided list of one or two
         `reactants`, which should be :class:`Molecule` objects. This method
         searches the depository, libraries, and groups, in that order.
         """
         reactionList = []
-        reactionList.extend(self.generateReactionsFromLibraries(reactants, products))
-        reactionList.extend(self.generateReactionsFromFamilies(reactants, products))
+        if only_families is None:
+            reactionList.extend(self.generate_reactions_from_libraries(reactants, products))
+        reactionList.extend(self.generate_reactions_from_families(reactants, products, only_families=None, resonance=True))
         return reactionList
 
-    def generateReactionsFromLibraries(self, reactants, products):
+    def generate_reactions_from_libraries(self, reactants, products=None):
         """
-        Generate all reactions between the provided list of one or two
-        `reactants`, which should be :class:`Molecule` objects. This method
-        searches the depository.
+        Find all reactions from all loaded kinetics library involving the
+        provided `reactants`, which can be either :class:`Molecule` objects or
+        :class:`Species` objects.
         """
-        reactionList = []
-        for label, libraryType in self.libraryOrder:
+        reaction_list = []
+        for label, library_type in self.libraryOrder:
             # Generate reactions from reaction libraries (no need to generate them from seeds)
-            if libraryType == "Reaction Library":
-                reactionList.extend(self.generateReactionsFromLibrary(reactants, products, self.libraries[label]))
-        return reactionList
+            if library_type == "Reaction Library":
+                reaction_list.extend(self.generate_reactions_from_library(self.libraries[label], reactants, products=products))
+        return reaction_list
 
-    def generateReactionsFromLibrary(self, reactants, products, library):
+    def generate_reactions_from_library(self, library, reactants, products=None):
         """
-        Generate all reactions between the provided list of one or two
-        `reactants`, which should be :class:`Molecule` objects. This method
-        searches the depository.
+        Find all reactions from the specified kinetics library involving the
+        provided `reactants`, which can be either :class:`Molecule` objects or
+        :class:`Species` objects.
         """
-        reactionList = []
+        reactants = ensure_species(reactants)
+
+        reaction_list = []
         for entry in library.entries.values():
-            if entry.item.matchesMolecules(reactants):
+            if entry.item.matchesSpecies(reactants, products=products):
                 reaction = LibraryReaction(
                     reactants = entry.item.reactants[:],
                     products = entry.item.products[:],
+                    specificCollider = entry.item.specificCollider,
                     degeneracy = entry.item.degeneracy,
                     reversible = entry.item.reversible,
                     duplicate = entry.item.duplicate,
@@ -398,32 +408,79 @@ class KineticsDatabase(object):
                     library = library,
                     entry = entry,
                 )
-                reactionList.append(reaction)
-        if products:
-            reactionList = filterReactions(reactants, products, reactionList)
-        return reactionList
+                reaction_list.append(reaction)
 
-    def generateReactionsFromFamilies(self, reactants, products, only_families=None):
+        return reaction_list
+
+    def generate_reactions_from_families(self, reactants, products=None, only_families=None, resonance=True):
         """
-        Generate all reactions between the provided list of one or two
-        `reactants`, which should be :class:`Molecule` objects. This method
-        applies the reaction family.
-        If `only_families` is a list of strings, only families with those labels
-        are used.
+        Generate all reactions between the provided list or tuple of one or two
+        `reactants`, which can be either :class:`Molecule` objects or :class:`Species`
+        objects. This method can apply all kinetics families or a selected subset.
+
+        Args:
+            reactants:      Molecules or Species to react
+            products:       List of Molecules or Species of desired product structures (optional)
+            only_families:  List of family labels to generate reactions from (optional)
+                            Default is to generate reactions from all families
+            resonance:      Flag to generate resonance structures for reactants and products (optional)
+                            Default is True, resonance structures will be generated
+
+        Returns:
+            List of reactions containing Species objects with the specified reactants and products.
         """
-        # If there are two structures and they are the same, then make a copy
-        # of the second one so we can independently manipulate both of them 
-        # This is for the case where A + A --> products
-        if len(reactants) == 2 and reactants[0] == reactants[1]:
-            reactants[1] = reactants[1].copy(deep=True)
-        
-        reactionList = []
+        # Check if the reactants are the same
+        # If they refer to the same memory address, then make a deep copy so
+        # they can be manipulated independently
+        same_reactants = False
+        if len(reactants) == 2:
+            if reactants[0] is reactants[1]:
+                reactants[1] = reactants[1].copy(deep=True)
+                same_reactants = True
+            elif reactants[0].isIsomorphic(reactants[1]):
+                same_reactants = True
+
+        # Convert to Species objects if necessary
+        reactants = ensure_species(reactants)
+
+        # Label reactant atoms for proper degeneracy calculation
+        ensure_independent_atom_ids(reactants, resonance=resonance)
+
+        combos = generate_molecule_combos(reactants)
+
+        reaction_list = []
+        for combo in combos:
+            reaction_list.extend(self.react_molecules(combo, products=products, only_families=only_families, prod_resonance=resonance))
+
+        # Calculate reaction degeneracy
+        reaction_list = find_degenerate_reactions(reaction_list, same_reactants, kinetics_database=self)
+        # Add reverse attribute to families with ownReverse
+        to_delete = []
+        for i, rxn in enumerate(reaction_list):
+            family = self.families[rxn.family]
+            if family.ownReverse:
+                successful = family.addReverseAttribute(rxn)
+                if not successful:
+                    to_delete.append(i)
+        # Delete reactions which we could not find a reverse reaction for
+        for i in reversed(to_delete):
+            del reaction_list[i]
+
+        return reaction_list
+
+    def react_molecules(self, molecules, products=None, only_families=None, prod_resonance=True):
+        """
+        Generate reactions from all families for the input molecules.
+        """
+        reaction_list = []
         for label, family in self.families.iteritems():
             if only_families is None or label in only_families:
-                reactionList.extend(family.generateReactions(reactants))
-        if products:
-            reactionList = filterReactions(reactants, products, reactionList)
-        return reactionList
+                reaction_list.extend(family.generateReactions(molecules, products=products, prod_resonance=prod_resonance))
+
+        for reactant in molecules:
+            reactant.clearLabeledAtoms()
+
+        return reaction_list
 
     def getForwardReactionForFamilyEntry(self, entry, family, thermoDatabase):
         """
@@ -469,6 +526,7 @@ class KineticsDatabase(object):
             reaction = Reaction(
                 reactants = entry.item.reactants[:],
                 products = [],
+                specificCollider = entry.item.specificCollider,
                 kinetics = entry.data,
                 degeneracy = 1,
             )
@@ -483,17 +541,17 @@ class KineticsDatabase(object):
             reaction = Reaction(reactants=[], products=[])
             for molecule in entry.item.reactants:
                 reactant = Species(molecule=[molecule])
-                reactant.generateResonanceIsomers()
+                reactant.generate_resonance_structures()
                 reactant.thermo = thermoDatabase.getThermoData(reactant)
                 reaction.reactants.append(reactant)
             for molecule in entry.item.products:
                 product = Species(molecule=[molecule])
-                product.generateResonanceIsomers()
+                product.generate_resonance_structures()
                 product.thermo = thermoDatabase.getThermoData(product)
                 reaction.products.append(product)
 
             # Generate all possible reactions involving the reactant species
-            generatedReactions = self.generateReactionsFromFamilies([reactant.molecule for reactant in reaction.reactants], [], only_families=[family])
+            generatedReactions = self.generate_reactions_from_families([reactant.molecule for reactant in reaction.reactants], [], only_families=[family])
 
             # Remove from that set any reactions that don't produce the desired reactants and products
             forward = []; reverse = []
@@ -538,4 +596,136 @@ class KineticsDatabase(object):
         assert reaction is not None
         assert template is not None
         return reaction, template
+    
+    def extractSourceFromComments(self, reaction):
+        """
+        `reaction`: A reaction object containing kinetics data and kinetics data comments.  
+            Should be either a PDepReaction, LibraryReaction, or TemplateReaction object
+            as loaded from the rmgpy.chemkin.loadChemkinFile function
+        
+        Parses the verbose string of comments from the thermo data of the species object,
+        and extracts the thermo sources.
 
+        Returns a dictionary with keys of either 'Rate Rules', 'Training', 'Library', or 'PDep'.
+        A reaction can only be estimated using one of these methods.
+        
+        source = {'RateRules': (Family_Label, OriginalTemplate, RateRules),
+                  'Library': String_Name_of_Library_Used,
+                  'PDep': Network_Index,
+                  'Training':  (Family_Label, Training_Reaction_Entry),
+                  }
+        """
+        from rmgpy.rmg.pdep import PDepReaction
+        from rmgpy.data.kinetics.library import LibraryReaction
+        from rmgpy.data.kinetics.family import TemplateReaction
+        
+        source = {}
+        
+        if isinstance(reaction, TemplateReaction):
+            # This reaction comes from rate rules
+            training, dataSource = self.families[reaction.family].extractSourceFromComments(reaction)
+            if training:
+                source['Training'] = dataSource
+            else:
+                source['Rate Rules'] = dataSource
+        elif isinstance(reaction, LibraryReaction):
+            # This reaction comes from a reaction library or seed mechanism
+            source['Library'] = reaction.library
+            
+        elif isinstance(reaction, PDepReaction):
+            # This reaction is a pressure-dependent reaction
+            source['PDep'] = reaction.network.index
+        
+        else:
+            raise Exception('Reaction {} must be either a TemplateReaction, LibraryReaction, or PDepReaction object for source data to be extracted.'.format(reaction))
+            
+        return source
+    
+    def reconstructKineticsFromSource(self, reaction, source, fixBarrierHeight=False, forcePositiveBarrier=False):
+        """
+        Reaction is the original reaction with original kinetics.
+        Note that for Library and PDep reactions this function does not do anything other than return the original kinetics...
+        
+        You must enter source data in the appropriate format such as returned from returned from self.extractSourceFromComments, 
+        self-constructed.  
+        fixBarrierHeight and forcePositiveBarrier will change the kinetics based on the Reaction.fixBarrierHeight function.
+        Return Arrhenius form kinetics if the source is from training reaction or rate rules.
+        """
+        from rmgpy.data.thermo import findCp0andCpInf
+        from rmgpy.thermo import Wilhoit
+        if 'Library' in source:
+            return reaction.kinetics
+        elif 'PDep' in source:
+            return reaction.kinetics
+        else:
+            rxnCopy = deepcopy(reaction)
+            if 'Training' in source:
+                trainingEntry = source['Training'][1]
+                reverse = source['Training'][2]
+                if reverse:
+                    reverseKinetics = trainingEntry.data
+                    rxnCopy.kinetics = reverseKinetics
+                    forwardKinetics = rxnCopy.generateReverseRateCoefficient()
+                    kinetics = forwardKinetics
+                else:
+                    kinetics = trainingEntry.data
+            elif 'Rate Rules' in source:
+    
+                sourceDict = source['Rate Rules'][1]
+                rules = sourceDict['rules']
+                training = sourceDict['training']
+                degeneracy = sourceDict['degeneracy']
+    
+                logA = 0
+                n = 0
+                alpha = 0
+                E0 = 0
+                for ruleEntry, weight in rules:
+                    logA += numpy.log10(ruleEntry.data.A.value_si)*weight
+                    n += ruleEntry.data.n.value_si*weight
+                    alpha +=ruleEntry.data.alpha.value_si*weight
+                    E0 +=ruleEntry.data.E0.value_si*weight
+                for ruleEntry, trainingEntry, weight in training:
+                    logA += numpy.log10(ruleEntry.data.A.value_si)*weight
+                    n += ruleEntry.data.n.value_si*weight
+                    alpha +=ruleEntry.data.alpha.value_si*weight
+                    E0 +=ruleEntry.data.E0.value_si*weight
+                
+                Aunits = ruleEntry.data.A.units 
+                if Aunits == 'cm^3/(mol*s)' or Aunits == 'cm^3/(molecule*s)' or Aunits == 'm^3/(molecule*s)':
+                    Aunits = 'm^3/(mol*s)'
+                elif Aunits == 'cm^6/(mol^2*s)' or Aunits == 'cm^6/(molecule^2*s)' or Aunits == 'm^6/(molecule^2*s)':
+                    Aunits = 'm^6/(mol^2*s)'
+                elif Aunits == 's^-1' or Aunits == 'm^3/(mol*s)' or Aunits == 'm^6/(mol^2*s)':
+                    pass
+                else:
+                    raise Exception('Invalid units {0} for averaging kinetics.'.format(Aunits))
+                kinetics = ArrheniusEP(
+                    A = (degeneracy*10**logA, Aunits),
+                    n = n,
+                    alpha = alpha,
+                    E0 = (E0*0.001,"kJ/mol"),
+                )
+            else:
+                raise Exception("Source data must be either 'Library', 'PDep','Training', or 'Rate Rules'.")
+                
+            
+            # Convert ArrheniusEP to Arrhenius
+            if fixBarrierHeight:
+                for spc in rxnCopy.reactants + rxnCopy.products:
+                    # Need wilhoit to do this
+                    if not isinstance(spc.thermo, Wilhoit):
+                        findCp0andCpInf(spc, spc.thermo)
+                        wilhoit = spc.thermo.toWilhoit()
+                        spc.thermo = wilhoit
+                        
+                rxnCopy.kinetics = kinetics
+                rxnCopy.fixBarrierHeight(forcePositive=forcePositiveBarrier)
+                
+                return rxnCopy.kinetics
+            else:
+                
+                H298 = rxnCopy.getEnthalpyOfReaction(298)
+                if isinstance(kinetics, ArrheniusEP):
+                    kinetics = kinetics.toArrhenius(H298)
+                return kinetics

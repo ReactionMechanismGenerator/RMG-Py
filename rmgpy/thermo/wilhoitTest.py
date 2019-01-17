@@ -5,11 +5,11 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2009 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the "Software"),
+#   copy of this software and associated documentation files (the 'Software'),
 #   to deal in the Software without restriction, including without limitation
 #   the rights to use, copy, modify, merge, publish, distribute, sublicense,
 #   and/or sell copies of the Software, and to permit persons to whom the
@@ -18,10 +18,10 @@
 #   The above copyright notice and this permission notice shall be included in
 #   all copies or substantial portions of the Software.
 #
-#   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 #   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-#   THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 #   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #   DEALINGS IN THE SOFTWARE.
@@ -34,6 +34,8 @@ This script contains unit tests of the :mod:`rmgpy.thermo.wilhoit` module.
 
 import unittest
 import numpy
+import os.path
+import logging
 
 from rmgpy.thermo.wilhoit import Wilhoit
 import rmgpy.constants as constants
@@ -75,7 +77,14 @@ class TestWilhoit(unittest.TestCase):
             Tmax = (self.Tmax,"K"),
             comment = self.comment,
         )
-        
+
+    def tearDown(self):
+        """
+        Reset the database & liquid parameters for solution
+        """
+        import rmgpy.data.rmg
+        rmgpy.data.rmg.database = None
+
     def test_Cp0(self):
         """
         Test that the Wilhoit Cp0 property was properly set.
@@ -303,3 +312,51 @@ class TestWilhoit(unittest.TestCase):
         self.assertAlmostEqual(wilhoit.B.value_si, self.wilhoit.B.value_si, 2)
         self.assertAlmostEqual(wilhoit.H0.value_si, self.wilhoit.H0.value_si, 0)
         self.assertAlmostEqual(wilhoit.S0.value_si, self.wilhoit.S0.value_si, 2)
+
+    def testToWilhoit(self):
+        """
+        Test if the entropy computed from other thermo implementations is close to what Wilhoit computes.
+        """
+
+        from rmgpy import settings
+        from rmgpy.data.rmg import RMGDatabase, database
+        from rmgpy.species import Species
+
+        # Load databases
+        database = RMGDatabase()
+        database.loadThermo(os.path.join(settings['database.directory'], 'thermo'), thermoLibraries=['Narayanaswamy'])
+        database.loadSolvation(os.path.join(settings['database.directory'], 'solvation'))
+
+        spc = Species().fromSMILES('CC')
+        spc.getThermoData()
+
+        T = 1350.# not 298K!
+
+        # nasa to wilhoit
+        nasa = spc.thermo
+        Snasa = nasa.getEntropy(T)
+
+        nasaToWh = nasa.toWilhoit()
+        SnasaToWh = nasaToWh.getEntropy(T)
+
+        self.assertAlmostEqual(Snasa, SnasaToWh, -1)
+        self.assertEqual(nasa.comment,nasaToWh.comment)
+
+        # wilhoit to nasa conversion done in nasaTest.py
+
+        # thermo data to wilhoit:
+        td = nasa.toThermoData()
+        Std = td.getEntropy(T)
+
+        wilhoit = td.toWilhoit(B=1000.)        
+        Swh = wilhoit.getEntropy(T)
+
+        self.assertAlmostEqual(Std, Swh, -1)
+        self.assertEqual(td.comment,wilhoit.comment)
+
+        # wilhoit back to thermodata
+        td = wilhoit.toThermoData()
+        Std = td.getEntropy(T)
+
+        self.assertAlmostEqual(Std, Swh, -1)
+        self.assertEqual(td.comment,wilhoit.comment)

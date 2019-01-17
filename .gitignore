@@ -62,3 +62,7 @@ bin/symmetry
 
 # csv files
 *.csv
+
+# ipython folder except for notebooks
+ipython/*
+!ipython/*.ipynb

@@ -4,11 +4,11 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2009 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the "Software"),
+#   copy of this software and associated documentation files (the 'Software'),
 #   to deal in the Software without restriction, including without limitation
 #   the rights to use, copy, modify, merge, publish, distribute, sublicense,
 #   and/or sell copies of the Software, and to permit persons to whom the
@@ -17,10 +17,10 @@
 #   The above copyright notice and this permission notice shall be included in
 #   all copies or substantial portions of the Software.
 #
-#   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 #   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-#   THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 #   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #   DEALINGS IN THE SOFTWARE.
@@ -54,8 +54,8 @@ cdef class NASAPolynomial(HeatCapacityModel):
 
     """
     
-    def __init__(self, coeffs=None, Tmin=None, Tmax=None, E0=None, comment=''):
-        HeatCapacityModel.__init__(self, Tmin=Tmin, Tmax=Tmax, E0=E0, comment=comment)
+    def __init__(self, coeffs=None, Tmin=None, Tmax=None, E0=None, label='', comment=''):
+        HeatCapacityModel.__init__(self, Tmin=Tmin, Tmax=Tmax, E0=E0, label=label, comment=comment)
         self.coeffs = coeffs
         
     def __repr__(self):
@@ -71,6 +71,7 @@ cdef class NASAPolynomial(HeatCapacityModel):
         if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
         if self.E0 is not None: string += ', E0={0!r}'.format(self.E0)
+        if self.label != '': string += ', label="""{0}"""'.format(self.label)
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
@@ -79,7 +80,7 @@ cdef class NASAPolynomial(HeatCapacityModel):
         """
         A helper function used when pickling an object.
         """
-        return (NASAPolynomial, ([self.cm2, self.cm1, self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6], self.Tmin, self.Tmax, self.E0, self.comment))
+        return (NASAPolynomial, ([self.cm2, self.cm1, self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6], self.Tmin, self.Tmax, self.E0, self.label, self.comment))
 
     property coeffs:
         """The set of seven or nine NASA polynomial coefficients."""
@@ -134,6 +135,12 @@ cdef class NASAPolynomial(HeatCapacityModel):
         Add deltaH in J/mol to the base enthalpy of formation H298.
         """
         self.c5 += deltaH / constants.R
+
+    cpdef changeBaseEntropy(self, double deltaS):
+        """
+        Add deltaS in J/molK to the base entropy of formation S298.
+        """
+        self.c6 += deltaS / constants.R
 
     cdef double integral2_T0(self, double T):
         """
@@ -200,8 +207,8 @@ cdef class NASA(HeatCapacityModel):
 
     """
     
-    def __init__(self, polynomials=None, Tmin=None, Tmax=None, E0=None, comment=''):
-        HeatCapacityModel.__init__(self, Tmin=Tmin, Tmax=Tmax, E0=E0, comment=comment)
+    def __init__(self, polynomials=None, Tmin=None, Tmax=None, E0=None, Cp0=None, CpInf=None, label='', comment=''):
+        HeatCapacityModel.__init__(self, Tmin=Tmin, Tmax=Tmax, E0=E0, Cp0=Cp0, CpInf=CpInf, label=label, comment=comment)
         self.polynomials = polynomials
     
     def __repr__(self):
@@ -214,6 +221,9 @@ cdef class NASA(HeatCapacityModel):
         if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
         if self.E0 is not None: string += ', E0={0!r}'.format(self.E0)
+        if self.Cp0 is not None: string += ', Cp0={0!r}'.format(self.Cp0)
+        if self.CpInf is not None: string += ', CpInf={0!r}'.format(self.CpInf)
+        if self.label != '': string += ', label="""{0}"""'.format(self.label)
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
@@ -222,7 +232,7 @@ cdef class NASA(HeatCapacityModel):
         """
         A helper function used when pickling an object.
         """
-        return (NASA, (self.polynomials, self.Tmin, self.Tmax, self.E0, self.comment))
+        return (NASA, (self.polynomials, self.Tmin, self.Tmax, self.E0, self.Cp0, self.CpInf, self.label, self.comment))
 
     property polynomials:
         """The set of one, two, or three NASA polynomials."""
@@ -261,33 +271,33 @@ cdef class NASA(HeatCapacityModel):
     
     cpdef double getHeatCapacity(self, double T) except -1000000000:
         """
-        Return the dimensionless constant-pressure heat capacity
-        :math:`C_\\mathrm{p}(T)/R` at the specified temperature `T` in K.
+        Return the constant-pressure heat capacity
+        :math:`C_\\mathrm{p}(T)` in J/mol*K at the specified temperature `T` in K.
         """
         return self.selectPolynomial(T).getHeatCapacity(T)
     
     cpdef double getEnthalpy(self, double T) except 1000000000:
         """
-        Return the dimensionless enthalpy :math:`H(T)/RT` at the specified
+        Return the enthalpy :math:`H(T)` in J/mol at the specified
         temperature `T` in K.
         """
         return self.selectPolynomial(T).getEnthalpy(T)
     
     cpdef double getEntropy(self, double T) except -1000000000:
         """
-        Return the dimensionless entropy :math:`S(T)/R` at the specified
+        Return the entropy :math:`S(T)` in J/mol*K at the specified
         temperature `T` in K.
         """
         return self.selectPolynomial(T).getEntropy(T)
     
     cpdef double getFreeEnergy(self, double T) except 1000000000:
         """
-        Return the dimensionless Gibbs free energy :math:`G(T)/RT` at the
+        Return the Gibbs free energy :math:`G(T)` in J/mol at the
         specified temperature `T` in K.
         """
         return self.selectPolynomial(T).getFreeEnergy(T)
 
-    cpdef ThermoData toThermoData(self, double Cp0=0.0, double CpInf=0.0):
+    cpdef ThermoData toThermoData(self):
         """
         Convert the Wilhoit model to a :class:`ThermoData` object.
         """
@@ -301,13 +311,14 @@ cdef class NASA(HeatCapacityModel):
             Cpdata = (Cpdata,"J/(mol*K)"),
             H298 = (self.getEnthalpy(298)*0.001,"kJ/mol"),
             S298 = (self.getEntropy(298),"J/(mol*K)"),
-            Cp0 = (Cp0,"J/(mol*K)"),
-            CpInf = (CpInf,"J/(mol*K)"),
+            Cp0 = self.Cp0,
+            CpInf = self.CpInf,
             E0 = self.E0,
+            comment = self.comment
         )
 
     @cython.boundscheck(False)
-    cpdef Wilhoit toWilhoit(self, double Cp0, double CpInf):
+    cpdef Wilhoit toWilhoit(self):
         """
         Convert a :class:`MultiNASA` object `multiNASA` to a :class:`Wilhoit` 
         object. You must specify the linearity of the molecule `linear`, the number
@@ -315,7 +326,7 @@ cdef class NASA(HeatCapacityModel):
         `Nrotors` so the algorithm can determine the appropriate heat capacity
         limits at zero and infinite temperature.
         """
-        cdef double Tmin, Tmax, dT, H298, S298
+        cdef double Tmin, Tmax, dT, H298, S298, Cp0, CpInf
         cdef numpy.ndarray[numpy.float64_t, ndim=1] Tdata, Cpdata
         cdef int i
         
@@ -323,6 +334,8 @@ cdef class NASA(HeatCapacityModel):
         
         Tmin = self.Tmin.value_si
         Tmax = self.Tmax.value_si
+        Cp0 = self.Cp0.value_si
+        CpInf = self.CpInf.value_si
         dT = min(50.0, (Tmax - Tmin) / 100.)
         
         Tdata = numpy.arange(Tmin, Tmax, dT)
@@ -333,7 +346,7 @@ cdef class NASA(HeatCapacityModel):
         H298 = self.getEnthalpy(298)
         S298 = self.getEntropy(298)
         
-        return Wilhoit().fitToData(Tdata, Cpdata, Cp0, CpInf, H298, S298)
+        return Wilhoit(label=self.label,comment=self.comment).fitToData(Tdata, Cpdata, Cp0, CpInf, H298, S298)
     
     cpdef NASA changeBaseEnthalpy(self, double deltaH):
         """
@@ -343,7 +356,16 @@ cdef class NASA(HeatCapacityModel):
         for poly in self.polynomials:
             poly.changeBaseEnthalpy(deltaH)
         return self
-    
+
+    cpdef NASA changeBaseEntropy(self, double deltaS):
+        """
+        Add deltaS in J/molK to the base entropy of formation S298 and return the
+        modified NASA object
+        """
+        for poly in self.polynomials:
+            poly.changeBaseEntropy(deltaS)
+        return self
+
     def toCantera(self):
         """
         Return the cantera equivalent NasaPoly2 object from this NASA object.

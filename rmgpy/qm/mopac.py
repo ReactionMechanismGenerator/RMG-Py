@@ -1,13 +1,42 @@
+################################################################################
+#
+#   RMG - Reaction Mechanism Generator
+#
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
+#
+#   Permission is hereby granted, free of charge, to any person obtaining a
+#   copy of this software and associated documentation files (the 'Software'),
+#   to deal in the Software without restriction, including without limitation
+#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#   and/or sell copies of the Software, and to permit persons to whom the
+#   Software is furnished to do so, subject to the following conditions:
+#
+#   The above copyright notice and this permission notice shall be included in
+#   all copies or substantial portions of the Software.
+#
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+#   DEALINGS IN THE SOFTWARE.
+#
+################################################################################
+
 import os
 import re
 import external.cclib as cclib
 import logging
 from subprocess import Popen, PIPE
 import distutils.spawn
+import tempfile
+import shutil
 
 from rmgpy.molecule import Molecule
-from qmdata import CCLibData
 from molecule import QMMolecule
+from rmgpy.exceptions import DependencyError
 
 
 class Mopac:
@@ -20,7 +49,7 @@ class Mopac:
     inputFileExtension = '.mop'
     outputFileExtension = '.out'
     
-    executablesToTry = ('MOPAC2012.exe', 'MOPAC2009.exe', 'mopac')
+    executablesToTry = ('MOPAC2016.exe', 'MOPAC2012.exe', 'MOPAC2009.exe', 'mopac')
 
     for exe in executablesToTry:
         try:
@@ -37,7 +66,7 @@ class Mopac:
             if os.path.exists(executablePath):
                 break
         else:  # didn't break
-            executablePath = os.path.join(mopacEnv , '(MOPAC 2009 or 2012)')
+            executablePath = os.path.join(mopacEnv , '(MOPAC 2009 or 2012 or 2016)')
 
     usePolar = False #use polar keyword in MOPAC
     
@@ -70,18 +99,51 @@ class Mopac:
 
     def testReady(self):
         if not os.path.exists(self.executablePath):
-            raise Exception("Couldn't find MOPAC executable at {0}. Try setting your MOPAC_DIR environment variable.".format(self.executablePath))
+            raise DependencyError("Couldn't find MOPAC executable at {0}. Try setting your MOPAC_DIR environment variable.".format(self.executablePath))
+
+        # Check if MOPAC executable works properly
+        process = Popen(self.executablePath,
+                        stdin=PIPE,
+                        stdout=PIPE,
+                        stderr=PIPE)
+        stdout, stderr = process.communicate()
+
+        self.expired = False
+        if 'has expired' in stderr:
+            # The MOPAC executable is expired
+            logging.warning('\n'.join(stderr.split('\n')[2:7]))
+            self.expired = True
+        elif 'To install the MOPAC license' in stderr:
+            # The MOPAC executable exists, but the license has not been installed
+            raise DependencyError('\n'.join(stderr.split('\n')[0:9]))
+        elif 'MOPAC_LICENSE' in stderr:
+            # The MOPAC executable is in the wrong location on Windows; MOPAC_LICENSE must be set
+            raise DependencyError('\n'.join(stderr.split('\n')[0:11]))
 
     def run(self):
         self.testReady()
         # submits the input file to mopac
-        process = Popen([self.executablePath, self.inputFilePath], stderr=PIPE)
-        stdout, stderr = process.communicate()  # necessary to wait for executable termination!
-        if "ended normally" not in stderr:
-            logging.warning("Mopac error message:" + stderr.strip())
+        
+        dirpath = tempfile.mkdtemp()
+        # copy input file to temp dir:
+        tempInpFile = os.path.join(dirpath, os.path.basename(self.inputFilePath))
+        shutil.copy(self.inputFilePath, dirpath)      
+
+        process = Popen([self.executablePath, tempInpFile], stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        command = '\n' if self.expired else None  # press enter to pass expiration notice
+        stdout, stderr = process.communicate(input=command)  # necessary to wait for executable termination!
+        if "ended normally" not in stderr.strip():
+            logging.warning("Mopac error message:" + stderr)
+
+        # copy output file from temp dir to output dir:
+        tempOutFile = os.path.join(dirpath, os.path.basename(self.outputFilePath))
+        shutil.copy(tempOutFile, self.outputFilePath)
         # Wait for OS to flush the buffer to disk. There should be a better way
         import time
         time.sleep(1)
+
+        # delete temp folder:
+        shutil.rmtree(dirpath)
         return self.verifyOutputFile()
         
     def verifyOutputFile(self):
@@ -104,8 +166,7 @@ class Mopac:
         if not os.path.exists(self.outputFilePath):
             logging.debug("Output file {0} does not (yet) exist.".format(self.outputFilePath))
             return False
-    
-        InChIMatch=False #flag (1 or 0) indicating whether the InChI in the file matches InChIaug this can only be 1 if InChIFound is also 1
+
         InChIFound=False #flag (1 or 0) indicating whether an InChI was found in the log file
         
         # Initialize dictionary with "False"s 
@@ -128,16 +189,16 @@ class Mopac:
                     logFileInChI = line #output files should take up to 240 characters of the name in the input file
                     InChIFound = True
                     if self.uniqueIDlong in logFileInChI:
-                        InChIMatch = True
+                        pass
                     elif self.uniqueIDlong.startswith(logFileInChI):
                         logging.info("InChI too long to check, but beginning matches so assuming OK.")
-                        InChIMatch = True
+
                     else:
                         logging.warning("InChI in log file ({0}) didn't match that in geometry ({1}).".format(logFileInChI, self.uniqueIDlong))                    
                         # Use only up to first 80 characters to match due to MOPAC bug which deletes 81st character of InChI string
                         if self.uniqueIDlong.startswith(logFileInChI[:80]):
                             logging.warning("but the beginning matches so it's probably just a truncation problem.")
-                            InChIMatch = True
+
         # Check that ALL 'success' keywords were found in the file.
         if not all( successKeysFound.values() ):
             logging.error('Not all of the required keywords for success were found in the output file!')
@@ -146,10 +207,6 @@ class Mopac:
         if not InChIFound:
             logging.error("No InChI was found in the MOPAC output file {0}".format(self.outputFilePath))
             return False
-        
-        if not InChIMatch:
-            #InChIs do not match (most likely due to limited name length mirrored in log file (240 characters), but possibly due to a collision)
-            return self.checkForInChiKeyCollision(logFileInChI) # Not yet implemented!
 
         # Compare the optimized geometry to the original molecule
         qmData = self.parse()
@@ -162,9 +219,6 @@ class Mopac:
 
         logging.info("Successful {1} quantum result in {0}".format(self.outputFilePath, self.__class__.__name__))
         return True
-        
-        #InChIs do not match (most likely due to limited name length mirrored in log file (240 characters), but possibly due to a collision)
-        return self.checkForInChiKeyCollision(logFileInChI) # Not yet implemented!
     
     def getParser(self, outputFile):
         """
@@ -181,11 +235,11 @@ class MopacMol(QMMolecule, Mopac):
 
     #: Keywords that will be added at the top and bottom of the qm input file
     keywords = [
-                {'top':"precise nosym", 'bottom':"oldgeo thermo nosym precise "},
-                {'top':"precise nosym gnorm=0.0 nonr", 'bottom':"oldgeo thermo nosym precise "},
-                {'top':"precise nosym gnorm=0.0", 'bottom':"oldgeo thermo nosym precise "},
-                {'top':"precise nosym gnorm=0.0 bfgs", 'bottom':"oldgeo thermo nosym precise "},
-                {'top':"precise nosym recalc=10 dmax=0.10 nonr cycles=2000 t=2000", 'bottom':"oldgeo thermo nosym precise "},
+                {'top':"precise nosym THREADS=1", 'bottom':"oldgeo thermo nosym precise THREADS=1 "},
+                {'top':"precise nosym gnorm=0.0 nonr THREADS=1", 'bottom':"oldgeo thermo nosym precise THREADS=1 "},
+                {'top':"precise nosym gnorm=0.0 THREADS=1", 'bottom':"oldgeo thermo nosym precise THREADS=1 "},
+                {'top':"precise nosym gnorm=0.0 bfgs THREADS=1", 'bottom':"oldgeo thermo nosym precise THREADS=1 "},
+                {'top':"precise nosym recalc=10 dmax=0.10 nonr cycles=2000 t=2000 THREADS=1", 'bottom':"oldgeo thermo nosym precise THREADS=1 "},
                 ]
 
     def writeInputFile(self, attempt):
@@ -260,7 +314,7 @@ class MopacMol(QMMolecule, Mopac):
                 return None
         result = self.parse() # parsed in cclib
         result.source = source
-        return result # a CCLibData object
+        return result
 
 
 class MopacMolPMn(MopacMol):

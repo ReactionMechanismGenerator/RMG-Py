@@ -82,7 +82,10 @@ are to be used in addition to the Glarborg C3 library::
 	reactionLibraries = [('Glarborg/C3',False)],
 	 	
 The keyword False/True permits user to append all unused reactions (= kept in the edge) from this library to the chemkin file.
-True means those reactions will be appended.
+True means those reactions will be appended. Using just the string inputs would lead to
+a default value of `False`. In the previous example, this would look like::
+
+	reactionLibraries = ['Glarborg/C3'],
 
 The reaction libraries are stored in :file:`$RMG-database/input/kinetics/libraries/`
 and the `Location:` should be specified relative to this path.
@@ -175,10 +178,13 @@ List of species
 
 Species to be included in the core at the start of your RMG job are defined in the species block. 
 The label, reactive or inert, and structure of each reactant must be specified.
-The label field will be used throughout your mechanism to identify the species. Inert
-species in the model can be defined by setting reactive to be ``False``, for all
-other species the reactive status must be set as ``True``. The structure of the 
-species can be defined using either by using SMILES or :ref:`adjacencyList <rmgpy.molecule.adjlist>`.  
+
+The label field will be used throughout your mechanism to identify the species. 
+Inert species in the model can be defined by setting reactive to be ``False``. Reaction 
+families will no longer be applied to these species, but reactions of the inert from libraries 
+and seed mechanisms  will still be considered. For all other species the reactive status must 
+be set as ``True``. The structure of the species can be defined using either by using SMILES or 
+:ref:`adjacencyList <rmgpy.molecule.adjlist>`.  
 
 The following is an example of a typical species item, based on methane using SMILE or adjacency list to define the structure::
 
@@ -359,6 +365,24 @@ Because the ODE simulation is always interrupted, no pruning is performed.
 
 Please find more details about the theory behind pruning at :ref:`Pruning Theory <prune>`.
 
+Advanced Setting: Taking Multiple Species At A Time
+----------------------------------------------------
+Taking multiple objects (species, reactions or pdepNetworks) during a given simulation can often decrease your overall model generation time
+over only taking one.  For this purpose there is a maxNumObjsPerIter parameter that allows RMG to take
+that many species, reactions or pdepNetworks from a given simulation. This is done in the order they trigger their respective criteria.   
+
+For example ::
+
+	model(
+		toleranceKeepInEdge=0.0,
+		toleranceMoveToCore=0.1,
+		toleranceInterruptSimulation=0.1,
+		maxNumObjsPerIter=2,
+	)
+
+Note that this can also result in larger models, however, sometimes these larger models (from taking more than one
+object at a time) pick up chemistry that would otherwise have been missed.  
+
 .. _ontheflyquantumcalculations:
 
 On the fly Quantum Calculations
@@ -407,8 +431,20 @@ and works reasonably well while running more rapidly. The latter
 utilizes the steady-state/reservoir-state approach of Green and Bhatti [Green2007]_, 
 and is more theoretically sound but more expensive.
 
-The pressure dependence block should specify the following:
 
+The following is an example of pressure dependence options ::
+
+	pressureDependence(
+		method='modified strong collision',
+		maximumGrainSize=(0.5,'kcal/mol'),
+		minimumNumberOfGrains=250,
+		temperatures=(300,2000,'K',8),
+		pressures=(0.01,100,'bar',5),
+		interpolation=('Chebyshev', 6, 4),
+		maximumAtoms=16,
+	)
+
+The various options are as follows:
 
 Method used for estimating pressure dependent kinetics
 ------------------------------------------------------
@@ -462,10 +498,7 @@ Section 3.6.3 of the :file:`CHEMKIN_Theory.pdf` document.  These files are part 
 the CHEMKIN manual.  
 
 To fit a set of Chebyshev polynomials on inverse temperature and logarithmic pressure axes mapped 
-to [-1,1], use the line ::
-
-	interpolation=('Chebyshev', 6, 4)
-	
+to [-1,1], specify `''Chebyshev'` interpolation. 
 You should also specify the number of temperature and pressure basis functions by adding the appropriate integers. 
 For example, the following specifies that six basis functions in temperature and four in pressure should be used ::
 
@@ -474,6 +507,12 @@ For example, the following specifies that six basis functions in temperature and
 The auxillary information printed to the Chemkin chem.inp file will have the "CHEB"
 format.  Refer to Section 3.5.3 of the :file:`CHEMKIN_Input.pdf` document and/or 
 Section 3.6.4 of the :file:`CHEMKIN_Theory.pdf` document.
+
+Regarding the number of polynomial coeffients for Chebyshev interpolated rates,
+plese refer to the :class:`rmgpy.kinetics.Chebyshev` documentation. 
+The number of pressures and temperature coefficents should always be smaller 
+than the respective number of user-specified temperatures and pressures. 
+
 
 Maximum size of adduct for which pressure dependence kinetics be generated
 --------------------------------------------------------------------------
@@ -493,22 +532,7 @@ to turn off pressure dependence for all molecules larger than the given number
 of atoms (16 in the above example).
 
 
-The following is an example of pressure dependence options ::
-
-	pressureDependence(
-		method='modified strong collision',
-		maximumGrainSize=(0.5,'kcal/mol'),
-		minimumNumberOfGrains=250,
-		temperatures=(300,2000,'K',8),
-		pressures=(0.01,100,'bar',5),
-		interpolation=('Chebyshev', 6, 4),
-		maximumAtoms=16,
-	)
-
-Regarding the number of polynomial coeffients for Chebyshev interpolated rates,
-plese refer to the :class:`rmgpy.kinetics.Chebyshev` documentation. 
-The number of pressures and temperature coefficents should always be smaller 
-than the respective number of user-specified temperatures and pressures. 
+.. _miscellaneousoptions:
 
 Miscellaneous Options
 ===================== 
@@ -516,6 +540,9 @@ Miscellaneous Options
 Miscellaneous options:: 
 
     options(
+        name='Seed',
+        generateSeedEachIteration=True,
+        saveSeedToDatabase=True,
         units='si',
         saveRestartPeriod=(1,'hour'),
         generateOutputHTML=True,
@@ -524,6 +551,12 @@ Miscellaneous options::
         verboseComments=False,
         saveEdgeSpecies=True,
     )
+
+The ``name`` field is the name of any generated seed mechanisms
+
+Setting ``generateSeedEachIteration`` to ``True`` tells RMG to save and update a seed mechanism and thermo library during the current run
+
+Setting ``saveSeedToDatabase`` to ``True`` tells RMG (if generating a seed) to also save that seed mechanism and thermo library directly into the database
 
 The ``units`` field is set to ``si``.  Currently there are no other unit options.
 
@@ -540,6 +573,8 @@ Setting ``verboseComments`` to ``True`` will make RMG generate chemkin files wit
 
 Setting ``saveEdgeSpecies`` to ``True`` will make RMG generate chemkin files of the edge reactions in addition to the core model in files such as ``chem_edge.inp`` and ``chem_edge_annotated.inp`` files located inside the ``chemkin`` folder.  These files will be helpful in viewing RMG's estimate for edge reactions and seeing if certain reactions one expects are actually in the edge or not.  
 
+Setting ``keepIrreversible`` to ``True`` will make RMG import library reactions as is, whether they are reversible or irreversible in the library. Otherwise, if ``False`` (default value), RMG will force all library reactions to be reversible, and will assign the forward rate from the relevant library.
+
 
 Species Constraints
 ===================== 
@@ -551,13 +586,15 @@ all of RMG's reaction families. ::
     generatedSpeciesConstraints(
         allowed=['input species','seed mechanisms','reaction libraries'],
         maximumCarbonAtoms=10,
-        maximumHydrogenAtoms=10,
-        maximumOxygenAtoms=10,
-        maximumNitrogenAtoms=10,
-        maximumSiliconAtoms=10,
-        maximumSulfurAtoms=10,
+        maximumOxygenAtoms=2,
+        maximumNitrogenAtoms=2,
+        maximumSiliconAtoms=2,
+        maximumSulfurAtoms=2,
         maximumHeavyAtoms=10,
-        maximumRadicalElectrons=10,
+        maximumRadicalElectrons=2,
+        maximumSingletCarbenes=1,
+        maximumCarbeneRadicals=0,
+        maximumIsotopicAtoms=2,
         allowSingletO2 = False,
     )
 
@@ -572,4 +609,23 @@ forbidden groups.
 
 By default, the ``allowSingletO2`` flag is set to ``False``.  See :ref:`representing_oxygen` for more information.  
 
+
+Staging
+========
+
+It is now possible to concatenate different model and simulator blocks into the same run in stages.  Any given stage will terminate when the RMG run terminates and then the current group of model and simulator parameters will be switched out with the next group and the run will continue until that stage terminates.  Once the last stage terminates the run ends normally.  This is currently enabled only for the model and simulator blocks.  
+
+There must be the same number of each of these blocks (although only having one simulator block and many model blocks is enabled as well) and RMG will enter each stage these define in the order they were put in the input file. 
+
+To enable easier manipulation of staging a new parameter in the model block was developed maxNumSpecies that is the number of core species at which that stage (or if it is the last stage the entire model generation process) will terminate.  
+
+For example ::
+
+	model(
+		toleranceKeepInEdge=0.0,
+		toleranceMoveToCore=0.1,
+		toleranceInterruptSimulation=0.1,
+		maximumEdgeSpecies=100000,
+		maxNumSpecies=100
+	)
 

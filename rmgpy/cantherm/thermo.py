@@ -5,11 +5,11 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2009 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the "Software"),
+#   copy of this software and associated documentation files (the 'Software'),
 #   to deal in the Software without restriction, including without limitation
 #   the rights to use, copy, modify, merge, publish, distribute, sublicense,
 #   and/or sell copies of the Software, and to permit persons to whom the
@@ -18,10 +18,10 @@
 #   The above copyright notice and this permission notice shall be included in
 #   all copies or substantial portions of the Software.
 #
-#   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 #   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-#   THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 #   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #   DEALINGS IN THE SOFTWARE.
@@ -50,6 +50,10 @@ from rmgpy.statmech.conformer import Conformer
 from rmgpy.thermo.thermodata import ThermoData
 from rmgpy.thermo.nasa import NASAPolynomial, NASA
 from rmgpy.thermo.wilhoit import Wilhoit
+from rmgpy.chemkin import writeThermoEntry
+from rmgpy.species import Species
+from rmgpy.molecule import Molecule
+from rmgpy.molecule.util import retrieveElementCount
 
 ################################################################################
 
@@ -140,8 +144,8 @@ class ThermoJob:
         f = open(outputFile, 'a')
     
         f.write('# Thermodynamics for {0}:\n'.format(species.label))
-        H298 = species.thermo.getEnthalpy(298) / 4184.
-        S298 = species.thermo.getEntropy(298) / 4.184
+        H298 = species.getThermoData().getEnthalpy(298) / 4184.
+        S298 = species.getThermoData().getEntropy(298) / 4.184
         f.write('#   Enthalpy of formation (298 K)   = {0:9.3f} kcal/mol\n'.format(H298))
         f.write('#   Entropy of formation (298 K)    = {0:9.3f} cal/(mol*K)\n'.format(S298))
         f.write('#    =========== =========== =========== =========== ===========\n')
@@ -149,68 +153,32 @@ class ThermoJob:
         f.write('#    (K)         (cal/mol*K) (kcal/mol)  (cal/mol*K) (kcal/mol)\n')
         f.write('#    =========== =========== =========== =========== ===========\n')
         for T in [300,400,500,600,800,1000,1500,2000,2400]:
-            Cp = species.thermo.getHeatCapacity(T) / 4.184
-            H = species.thermo.getEnthalpy(T) / 4184.
-            S = species.thermo.getEntropy(T) / 4.184
-            G = species.thermo.getFreeEnergy(T) / 4184.
+            Cp = species.getThermoData().getHeatCapacity(T) / 4.184
+            H = species.getThermoData().getEnthalpy(T) / 4184.
+            S = species.getThermoData().getEntropy(T) / 4.184
+            G = species.getThermoData().getFreeEnergy(T) / 4184.
             f.write('#    {0:11g} {1:11.3f} {2:11.3f} {3:11.3f} {4:11.3f}\n'.format(T, Cp, H, S, G))
         f.write('#    =========== =========== =========== =========== ===========\n')
         
-        string = 'thermo(label={0!r}, thermo={1!r})'.format(species.label, species.thermo)
+        string = 'thermo(label={0!r}, thermo={1!r})'.format(species.label, species.getThermoData())
         f.write('{0}\n\n'.format(prettify(string)))
         
         f.close()
         
         f = open(os.path.join(os.path.dirname(outputFile), 'chem.inp'), 'a')
-        
-        thermo = species.thermo
-        if isinstance(thermo, NASA):
-        
-            poly_low = thermo.polynomials[0]
-            poly_high = thermo.polynomials[1]
-        
-            # Determine the number of each type of element in the molecule
-            elements = ['C','H','N','O']; elementCounts = [0,0,0,0]
-
-            # Remove elements with zero count
-            index = 2
-            while index < len(elementCounts):
-                if elementCounts[index] == 0:
-                    del elements[index]
-                    del elementCounts[index]
-                else:
-                    index += 1
-        
-            # Line 1
-            string = '{0:<16}        '.format(species.label)
-            if len(elements) <= 4:
-                # Use the original Chemkin syntax for the element counts
-                for symbol, count in zip(elements, elementCounts):
-                    string += '{0!s:<2}{1:<3d}'.format(symbol, count)
-                string += '     ' * (4 - len(elements))
+        if isinstance(species, Species):
+            if species.molecule and isinstance(species.molecule[0], Molecule):
+                elementCounts = retrieveElementCount(species.molecule[0])
             else:
-                string += '     ' * 4
-            string += 'G{0:<10.3f}{1:<10.3f}{2:<8.2f}      1'.format(poly_low.Tmin.value_si, poly_high.Tmax.value_si, poly_low.Tmax.value_si)
-            if len(elements) > 4:
-                string += '&\n'
-                # Use the new-style Chemkin syntax for the element counts
-                # This will only be recognized by Chemkin 4 or later
-                for symbol, count in zip(elements, elementCounts):
-                    string += '{0!s:<2}{1:<3d}'.format(symbol, count)
-            string += '\n'
-        
-            # Line 2
-            string += '{0:< 15.8E}{1:< 15.8E}{2:< 15.8E}{3:< 15.8E}{4:< 15.8E}    2\n'.format(poly_high.c0, poly_high.c1, poly_high.c2, poly_high.c3, poly_high.c4)
-        
-            # Line 3
-            string += '{0:< 15.8E}{1:< 15.8E}{2:< 15.8E}{3:< 15.8E}{4:< 15.8E}    3\n'.format(poly_high.c5, poly_high.c6, poly_low.c0, poly_low.c1, poly_low.c2)
-        
-            # Line 4
-            string += '{0:< 15.8E}{1:< 15.8E}{2:< 15.8E}{3:< 15.8E}                   4\n'.format(poly_low.c3, poly_low.c4, poly_low.c5, poly_low.c6)
-        
-            f.write(string)
-            
-            f.close()
+                try:
+                    elementCounts = species.props['elementCounts']
+                except KeyError:
+                    elementCounts = {'C': 0, 'H': 0}
+        else:
+            elementCounts = {'C': 0, 'H': 0}
+        string = writeThermoEntry(species, elementCounts=elementCounts, verbose=False)
+        f.write('{0}\n'.format(string))
+        f.close()
     
 
     def plot(self, outputDirectory):
@@ -238,7 +206,7 @@ class ThermoJob:
         Glist1 = numpy.zeros_like(Tlist)
         
         conformer = self.species.conformer
-        thermo = self.species.thermo
+        thermo = self.species.getThermoData()
         for i in range(Tlist.shape[0]):
             Cplist[i] = conformer.getHeatCapacity(Tlist[i])
             Slist[i] = conformer.getEntropy(Tlist[i])

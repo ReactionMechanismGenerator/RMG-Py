@@ -13,24 +13,27 @@ Project Supervisors:
  
 Current Developers: (rmg_dev@mit.edu)
 
-- Pierre L. Bhoorasingh
-- Connie Gao
+- Dr. Alon G. Dana
+- Mark Goldman
 - Kehang Han
-- Fariba Seyedzadeh Khanshan
+- Max Liu
 - Belinda Slakman
-- Dr. Nick M. Vandewiele
 - Nathan Yee
 
 Previous Developers: 
 
 - Dr. Joshua W. Allen
 - Jacob Barlow
+- Dr. Pierre L. Bhoorasingh
 - Dr. Beat A. Buesser
 - Dr. Caleb A. Class
+- Dr. Connie Gao
+- Dr. Fariba S. Khanshan
 - Victor Lambert
 - Dr. Shamel S. Merchant
 - Sean Troiano
 - Dr. Aaron Vandeputte
+- Dr. Nick M. Vandewiele
 
 
 ***********

@@ -4,11 +4,11 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2009 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the "Software"),
+#   copy of this software and associated documentation files (the 'Software'),
 #   to deal in the Software without restriction, including without limitation
 #   the rights to use, copy, modify, merge, publish, distribute, sublicense,
 #   and/or sell copies of the Software, and to permit persons to whom the
@@ -17,10 +17,10 @@
 #   The above copyright notice and this permission notice shall be included in
 #   all copies or substantial portions of the Software.
 #
-#   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 #   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-#   THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 #   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #   DEALINGS IN THE SOFTWARE.
@@ -44,8 +44,6 @@ cdef class Wilhoit(HeatCapacityModel):
     =============== ============================================================
     Attribute       Description
     =============== ============================================================
-    `Cp0`           The heat capacity at zero temperature
-    `CpInf`         The heat capacity at infinite temperature
     `a0`            The zeroth-order Wilhoit polynomial coefficient
     `a1`            The first-order Wilhoit polynomial coefficient
     `a2`            The second-order Wilhoit polynomial coefficient
@@ -61,10 +59,8 @@ cdef class Wilhoit(HeatCapacityModel):
     
     """
 
-    def __init__(self, Cp0=None, CpInf=None, a0=0.0, a1=0.0, a2=0.0, a3=0.0, H0=None, S0=None, B=None, Tmin=None, Tmax=None, comment=''):
-        HeatCapacityModel.__init__(self, Tmin=Tmin, Tmax=Tmax, comment=comment)
-        self.Cp0 = Cp0
-        self.CpInf = CpInf
+    def __init__(self, Cp0=None, CpInf=None, a0=0.0, a1=0.0, a2=0.0, a3=0.0, H0=None, S0=None, B=None, Tmin=None, Tmax=None, label='', comment=''):
+        HeatCapacityModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Cp0=Cp0, CpInf=CpInf, label=label, comment=comment)
         self.B = B
         self.a0 = a0
         self.a1 = a1
@@ -82,6 +78,7 @@ cdef class Wilhoit(HeatCapacityModel):
             self.Cp0, self.CpInf, self.a0, self.a1, self.a2, self.a3, self.H0, self.S0, self.B)
         if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.label != '': string += ', label="""{0}"""'.format(self.label)
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
@@ -90,21 +87,7 @@ cdef class Wilhoit(HeatCapacityModel):
         """
         A helper function used when pickling a Wilhoit object.
         """
-        return (Wilhoit, (self.Cp0, self.CpInf, self.a0, self.a1, self.a2, self.a3, self.H0, self.S0, self.B, self.Tmin, self.Tmax, self.comment))
-
-    property Cp0:
-        """The heat capacity at zero temperature."""
-        def __get__(self):
-            return self._Cp0
-        def __set__(self, value):
-            self._Cp0 = quantity.HeatCapacity(value)
-
-    property CpInf:
-        """The heat capacity at infinite temperature."""
-        def __get__(self):
-            return self._CpInf
-        def __set__(self, value):
-            self._CpInf = quantity.HeatCapacity(value)
+        return (Wilhoit, (self.Cp0, self.CpInf, self.a0, self.a1, self.a2, self.a3, self.H0, self.S0, self.B, self.Tmin, self.Tmax, self.label, self.comment))
 
     property B:
         """The Wilhoit scaled temperature coefficient."""
@@ -481,6 +464,7 @@ cdef class Wilhoit(HeatCapacityModel):
             Cp0 = self.Cp0,
             CpInf = self.CpInf,
             E0 = self.E0,
+            comment = self.comment
         )
     
     cpdef NASA toNASA(self, double Tmin, double Tmax, double Tint, bint fixedTint=False, bint weighting=True, int continuity=3):
@@ -581,6 +565,9 @@ cdef class Wilhoit(HeatCapacityModel):
             Tmin = nasa_low.Tmin,
             Tmax = nasa_high.Tmax,
             E0 = self.E0,
+            Cp0 = self.Cp0,
+            CpInf = self.CpInf,
+            label = self.label,
             comment = self.comment,
         )
     

@@ -19,15 +19,31 @@ The output file contains the entire contents of the input file. In
 addition, the output file contains a block of ``pdepreaction()`` calls. The 
 parameters of each ``pdepreaction()`` block match those of the ``reaction()`` 
 block from the input file, except that no transition state data is given and 
-the ``kinetics`` are by definition pressure-dependent. 
+the ``kinetics`` are by definition pressure-dependent.
 
-A ``pdepreaction()`` item is printed for the forward and reverse direction of 
-every reaction involving isomers and reactant channels only. For reactions 
-involving a product channel, there is only a ``pdepreaction()`` item for the 
-direction in which the product channel is the product of the reaction. To use
-this output, you must either keep all of the reactions and treat them as
-irreversible, or discard the duplicate reverse directions and treat the
-remaining reactions as reversible. This decision is left to the end user.
+A ``pdepreaction()`` item is printed for each reaction pathway possible in the
+network. Each reaction is reversible. Reactions in the opposite direction are
+provided as commented out, so a user can choose to use them if she/he desires.
+
+
+Chemkin Output File
+===================
+
+In addition to the ``output.py`` which contains the thermodynamic,
+kinetic, and pressure dependent results from a cantherm run, a Chemkin 
+input file, ``chem.inp`` is also returned. This file contains species and their 
+thermodynamic parameters for each species that has the ``thermo()`` in the 
+input file. The file also contains kinetics, both pressure dependent and high 
+pressure limit, which have the ``kinetics()`` or ``pressureDependence()`` module 
+called.
+
+For the output file to function, all the names of species should be in valid
+chemkin format. The butanol and ethyl examples both show how to obtain a valid 
+chemkin file.
+
+The ``chem.inp`` file can be used in Chemkin software package or converted to 
+a Cantera input file for use in Cantera software.
+
 
 Log File
 ========

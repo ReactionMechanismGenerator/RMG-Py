@@ -9,7 +9,7 @@ Binary Installation Using Anaconda for Windows
 .. image:: images/AnacondaInstallWindows.png
     :align: center
 
-* Now we want to install both RMG and the RMG-database binaries via the command prompt.  Dependencies will be installed automatically.  It is safest to make a new Anaconda environment for RMG and all its dependencies. Open a command prompt (either by finding it in your Program Files or by searching for ``cmd.exe``) and type the following to create the new environment named 'rmg_env' containing the latest stable version of the RMG program and its database. ::
+* Now we want to install both RMG and the RMG-database binaries via the command prompt. Dependencies will be installed automatically.  It is safest to make a new Anaconda environment for RMG and all its dependencies. Open a command prompt (either by finding it in your Program Files or by searching for ``cmd.exe``. You may need to run the command prompt as an administrator: to do this open up a file explorer and navigate to ``C:\Windows\System32`` and find the file ``cmd.exe``; right click on this file and select "run as administrator") and type the following to create the new environment named '``rmg_env``' containing the latest stable version of the RMG program and its database. ::
 
     conda create -c rmg --name rmg_env rmg rmgdatabase
     

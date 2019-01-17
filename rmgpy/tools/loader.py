@@ -5,7 +5,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2009-2011 by the RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -35,8 +36,8 @@ by reading in files.
 import os.path
 
 from rmgpy.chemkin import loadChemkinFile
-
-from rmgpy.solver.base import TerminationTime, TerminationConversion
+from rmgpy.solver.liquid import LiquidReactor
+from rmgpy.solver.base import TerminationConversion
 
 def loadRMGJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=True, useJava=False, useChemkinNames=False):
 
@@ -82,7 +83,21 @@ def loadRMGPyJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=T
     
     # Replace species in input file with those in Chemkin file
     for reactionSystem in rmg.reactionSystems:
-        reactionSystem.initialMoleFractions = dict([(speciesDict[spec], frac) for spec, frac in reactionSystem.initialMoleFractions.iteritems()])
+        if isinstance(reactionSystem, LiquidReactor):
+            # If there are constant species, map their input file names to
+            # corresponding species in Chemkin file
+            if reactionSystem.constSPCNames:
+                constSpeciesDict = {}
+                for spec0 in rmg.initialSpecies:
+                    for constSpecLabel in reactionSystem.constSPCNames:
+                        if spec0.label == constSpecLabel:
+                            constSpeciesDict[constSpecLabel] = speciesDict[spec0].label
+                            break
+                reactionSystem.constSPCNames = [constSpeciesDict[sname] for sname in reactionSystem.constSPCNames]
+
+            reactionSystem.initialConcentrations = dict([(speciesDict[spec], conc) for spec, conc in reactionSystem.initialConcentrations.iteritems()])
+        else:
+            reactionSystem.initialMoleFractions = dict([(speciesDict[spec], frac) for spec, frac in reactionSystem.initialMoleFractions.iteritems()])
         for t in reactionSystem.termination:
             if isinstance(t, TerminationConversion):
                 t.species = speciesDict[t.species]

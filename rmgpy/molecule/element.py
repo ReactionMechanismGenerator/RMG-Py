@@ -5,7 +5,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2009-2011 by the RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -42,18 +43,10 @@ comparisons.
 
 import cython
 from rdkit.Chem import GetPeriodicTable
+from rmgpy.exceptions import ElementError
 
 ################################################################################
 
-class ElementError(Exception):
-    """
-    An exception class for errors that occur while working with elements.
-    Pass a string describing the circumstances that caused the
-    exceptional behavior.
-    """
-    pass
-
-################################################################################
 _rdkit_periodic_table = GetPeriodicTable()
 class Element:
     """
@@ -68,18 +61,20 @@ class Element:
     `mass`      ``float``       The mass of the element in kg/mol
     `covRadius` ``float``       Covalent bond radius in Angstrom
     `isotope`   ``int``         The isotope integer of the element
+    `chemkinName` ``str``       The chemkin compatible representation of the element
     =========== =============== ================================================
     
     This class is specifically for properties that all atoms of the same element
     share. Ideally there is only one instance of this class for each element.
     """
     
-    def __init__(self, number, symbol, name, mass, isotope=-1):
+    def __init__(self, number, symbol, name, mass, isotope=-1, chemkinName=None):
         self.number = number
         self.symbol = intern(symbol)
         self.name = name
         self.mass = mass
         self.isotope = isotope
+        self.chemkinName = chemkinName or self.name
         try:
             self.covRadius = _rdkit_periodic_table.GetRcovalent(symbol)
         except RuntimeError:
@@ -104,6 +99,23 @@ class Element:
         A helper function used when pickling an object.
         """
         return (Element, (self.number, self.symbol, self.name, self.mass, self.isotope))
+
+class PeriodicSystem(object):
+    """
+    Collects hard-coded information of elements in periodic table. 
+
+    Currently it has static attributes:
+    `valences`: the number of bonds an element is able to form around it. 
+    `valence_electrons`: the number of electrons in  the outermost shell of the element that can
+    participate in bond formation. for instance, `S` has 6 outermost electrons (valence_electrons)
+    but 4 of them form lone pairs, the remaining 2 electrons can form bonds so the normal valence 
+    for `S` is 2.
+    `lone_pairs`: the number of lone pairs an element has
+    """
+
+    valences           = {'H': 1, 'He': 0, 'C': 4, 'N': 3, 'O': 2, 'Ne': 0, 'Si': 4, 'S': 2, 'Cl': 1, 'Ar': 0}
+    valence_electrons  = {'H': 1, 'He': 2, 'C': 4, 'N': 5, 'O': 6, 'Ne': 8, 'Si': 4, 'S': 6, 'Cl': 7, 'Ar': 8}
+    lone_pairs         = {'H': 0, 'He': 1, 'C': 0, 'N': 1, 'O': 2, 'Ne': 4, 'Si': 0, 'S': 2, 'Cl': 3, 'Ar': 4}
     
 ################################################################################
 
@@ -147,8 +159,8 @@ def getElement(value, isotope=-1):
 # Period 1
 #: Hydrogen
 H  = Element(1,   'H' , 'hydrogen'      , 0.00100794)
-D  = Element(1,   'H' , 'deuterium'     , 0.002014101, 2)
-T  = Element(1,   'H' , 'tritium'       , 0.003016049, 3)
+D  = Element(1,   'H' , 'deuterium'     , 0.002014101, 2, 'D')
+T  = Element(1,   'H' , 'tritium'       , 0.003016049, 3, 'T')
 He = Element(2,   'He', 'helium'        , 0.004002602)
 
 # Period 2
@@ -156,10 +168,10 @@ Li = Element(3,   'Li', 'lithium'       , 0.006941)
 Be = Element(4,   'Be', 'beryllium'     , 0.009012182)
 B  = Element(5,   'B',  'boron'         , 0.010811)
 C  = Element(6,   'C' , 'carbon'        , 0.0120107)
-C13= Element(6,   'C' , 'carbon-13'     , 0.0130033, 13)
+C13= Element(6,   'C' , 'carbon-13'     , 0.0130033, 13, 'CI')
 N  = Element(7,   'N' , 'nitrogen'      , 0.01400674)
 O  = Element(8,   'O' , 'oxygen'        , 0.0159994)
-O18= Element(8,   'O' , 'oxygen-18'     , 0.0179999, 18)
+O18= Element(8,   'O' , 'oxygen-18'     , 0.0179999, 18, 'OI')
 F  = Element(9,   'F' , 'fluorine'      , 0.018998403)
 Ne = Element(10,  'Ne', 'neon'          , 0.0201797)
 

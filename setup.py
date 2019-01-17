@@ -54,6 +54,9 @@ Cython.Compiler.Options.annotate = True
 # Turn on profiling capacity for all Cython modules
 #Cython.Compiler.Options.directive_defaults['profile'] = True
 
+# Embed docstrings in cythonized files - enable when building documentation
+#Cython.Compiler.Options._directive_defaults['embedsignature'] = True
+
 ################################################################################
 
 def getMainExtensionModules():
@@ -79,6 +82,7 @@ def getMainExtensionModules():
         Extension('rmgpy.molecule.inchi', ['rmgpy/molecule/inchi.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.resonance', ['rmgpy/molecule/resonance.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.pathfinder', ['rmgpy/molecule/pathfinder.py'], include_dirs=['.']),
+        Extension('rmgpy.molecule.kekulize', ['rmgpy/molecule/kekulize.pyx'], include_dirs=['.']),
         # Pressure dependence
         Extension('rmgpy.pdep.collision', ['rmgpy/pdep/collision.pyx']),
         Extension('rmgpy.pdep.configuration', ['rmgpy/pdep/configuration.pyx']),
@@ -187,6 +191,8 @@ scripts=['cantherm.py', 'rmg.py', 'scripts/diffModels.py', 'scripts/generateFlux
 
 modules = []
 for root, dirs, files in os.walk('rmgpy'):
+    if 'test_data' in root:
+        continue
     for file in files:
         if file.endswith('.py') or file.endswith('.pyx'):
             if 'Test' not in file and '__init__' not in file:

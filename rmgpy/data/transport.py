@@ -5,8 +5,8 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2010 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
 #   copy of this software and associated documentation files (the 'Software'),
@@ -343,7 +343,7 @@ class TransportDatabase(object):
             try:                
                 #Transport not found in any loaded libraries, so estimate
                 transport = self.getTransportPropertiesViaGroupEstimates(species)
-            except:
+            except (KeyError, AssertionError):
                 transport = self.getTransportPropertiesViaLennardJonesParameters(species)
 
         return transport
@@ -363,7 +363,10 @@ class TransportDatabase(object):
                 data[0].comment = label
                 transport.append(data)
         # Last entry is always the estimate from group additivity
-        transport.append(self.getTransportPropertiesViaGroupEstimates(species))
+        try:
+            transport.append(self.getTransportPropertiesViaGroupEstimates(species))
+        except (KeyError, AssertionError):
+            transport.append(self.getTransportPropertiesViaLennardJonesParameters(species))
             
         # Return all of the resulting transport parameters
         return transport

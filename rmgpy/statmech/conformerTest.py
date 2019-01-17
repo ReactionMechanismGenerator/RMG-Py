@@ -5,11 +5,11 @@
 #
 #   RMG - Reaction Mechanism Generator
 #
-#   Copyright (c) 2002-2009 Prof. William H. Green (whgreen@mit.edu) and the
-#   RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
 #   Permission is hereby granted, free of charge, to any person obtaining a
-#   copy of this software and associated documentation files (the "Software"),
+#   copy of this software and associated documentation files (the 'Software'),
 #   to deal in the Software without restriction, including without limitation
 #   the rights to use, copy, modify, merge, publish, distribute, sublicense,
 #   and/or sell copies of the Software, and to permit persons to whom the
@@ -18,10 +18,10 @@
 #   The above copyright notice and this permission notice shall be included in
 #   all copies or substantial portions of the Software.
 #
-#   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 #   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-#   THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 #   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 #   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 #   DEALINGS IN THE SOFTWARE.
@@ -33,10 +33,7 @@ This script contains unit tests of the :mod:`rmgpy.statmech.conformer` module.
 """
 
 import unittest
-from external.wip import work_in_progress
-import math
 import numpy
-import scipy.interpolate
 
 from rmgpy.statmech import Conformer, IdealGasTranslation, NonlinearRotor, HarmonicOscillator, \
                            LinearRotor, HinderedRotor 
@@ -278,16 +275,7 @@ class TestConformer(unittest.TestCase):
         result = sorted(abs(V).flat)
         for i,j in zip(expected, result):
             self.assertAlmostEqual(i, j, 4)
-        return # now because the following often fails:
-        self.assertAlmostEqual(V[0,0],  0.497140, 4)
-        self.assertAlmostEqual(V[0,1], -0.610114, 4)
-        self.assertAlmostEqual(V[0,2], -0.616938, 4)
-        self.assertAlmostEqual(V[1,0],  0.787360, 4)
-        self.assertAlmostEqual(V[1,1],  0.018454, 4)
-        self.assertAlmostEqual(V[1,2],  0.616218, 4)
-        self.assertAlmostEqual(V[2,0],  0.364578, 4)
-        self.assertAlmostEqual(V[2,1],  0.792099, 4)
-        self.assertAlmostEqual(V[2,2], -0.489554, 4)
+        return
 
     def test_getInternalReducedMomentOfInertia(self):
         """

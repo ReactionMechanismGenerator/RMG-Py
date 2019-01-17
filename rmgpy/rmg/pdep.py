@@ -3,28 +3,28 @@
 
 ################################################################################
 #
-#	RMG - Reaction Mechanism Generator
+#   RMG - Reaction Mechanism Generator
 #
-#	Copyright (c) 2002-2009 Prof. William H. Green (whgreen@mit.edu) and the
-#	RMG Team (rmg_dev@mit.edu)
+#   Copyright (c) 2002-2017 Prof. William H. Green (whgreen@mit.edu), 
+#   Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)
 #
-#	Permission is hereby granted, free of charge, to any person obtaining a
-#	copy of this software and associated documentation files (the 'Software'),
-#	to deal in the Software without restriction, including without limitation
-#	the rights to use, copy, modify, merge, publish, distribute, sublicense,
-#	and/or sell copies of the Software, and to permit persons to whom the
-#	Software is furnished to do so, subject to the following conditions:
+#   Permission is hereby granted, free of charge, to any person obtaining a
+#   copy of this software and associated documentation files (the 'Software'),
+#   to deal in the Software without restriction, including without limitation
+#   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+#   and/or sell copies of the Software, and to permit persons to whom the
+#   Software is furnished to do so, subject to the following conditions:
 #
-#	The above copyright notice and this permission notice shall be included in
-#	all copies or substantial portions of the Software.
+#   The above copyright notice and this permission notice shall be included in
+#   all copies or substantial portions of the Software.
 #
-#	THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#	FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-#	DEALINGS IN THE SOFTWARE.
+#   THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+#   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+#   DEALINGS IN THE SOFTWARE.
 #
 ################################################################################
 
@@ -41,16 +41,7 @@ import rmgpy.reaction
 
 from rmgpy.pdep import Conformer, Configuration
 from rmgpy.rmg.react import react
-
-################################################################################
-
-class PressureDependenceError(Exception):
-    """
-    An exception class to use when an error involving pressure dependence is
-    encountered. Pass a string describing the circumstances of the exceptional
-    behavior.
-    """
-    pass
+from rmgpy.exceptions import PressureDependenceError
 
 ################################################################################
 
@@ -61,6 +52,7 @@ class PDepReaction(rmgpy.reaction.Reaction):
                  label='',
                  reactants=None,
                  products=None,
+                 specificCollider=None,
                  network=None,
                  kinetics=None,
                  reversible=True,
@@ -74,6 +66,7 @@ class PDepReaction(rmgpy.reaction.Reaction):
                                          label,
                                          reactants,
                                          products,
+                                         specificCollider,
                                          kinetics,
                                          reversible,
                                          transitionState,
@@ -91,6 +84,7 @@ class PDepReaction(rmgpy.reaction.Reaction):
                                self.label,
                                self.reactants,
                                self.products,
+                               self.specificCollider,
                                self.network,
                                self.kinetics,
                                self.reversible,
@@ -294,11 +288,11 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         # Don't find reactions involving the new species as bimolecular
         # reactants or products with other core species (e.g. A + B <---> products)
 
-        newReactions = react(isomer)
+        newReactions = react((isomer,))
         
         return newReactions
 
-    def addPathReaction(self, newReaction, newSpecies):
+    def addPathReaction(self, newReaction):
         """
         Add a path reaction to the network. If the path reaction already exists,
         no action is taken.
@@ -449,7 +443,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         for product in products:
             self.products.append(Configuration(*product))
 
-    def update(self, reactionModel, database, pdepSettings):
+    def update(self, reactionModel, pdepSettings):
         """
         Regenerate the :math:`k(T,P)` values for this partial network if the
         network is marked as invalid.
@@ -491,26 +485,28 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         if self.valid: return
         # Do nothing if there are no explored wells
         if len(self.explored) == 0 and len(self.source) > 1: return
+        # Log the network being updated
+        logging.info("Updating {0:s}".format(self))
 
         # Generate states data for unimolecular isomers and reactants if necessary
         for isomer in self.isomers:
             spec = isomer.species[0]
-            if not spec.hasStatMech(): spec.generateStatMech(database)
+            if not spec.hasStatMech(): spec.generateStatMech()
         for reactants in self.reactants:
             for spec in reactants.species:
-                if not spec.hasStatMech(): spec.generateStatMech(database)
+                if not spec.hasStatMech(): spec.generateStatMech()
         # Also generate states data for any path reaction reactants, so we can
         # always apply the ILT method in the direction the kinetics are known
         for reaction in self.pathReactions:
             for spec in reaction.reactants:
-                if not spec.hasStatMech(): spec.generateStatMech(database)
+                if not spec.hasStatMech(): spec.generateStatMech()
         # While we don't need the frequencies for product channels, we do need
         # the E0, so create a conformer object with the E0 for the product
         # channel species if necessary
         for products in self.products:
             for spec in products.species:
                 if spec.conformer is None:
-                    spec.conformer = Conformer(E0=spec.thermo.E0)
+                    spec.conformer = Conformer(E0=spec.getThermoData().E0)
         
         # Determine transition state energies on potential energy surface
         # In the absence of any better information, we simply set it to
@@ -544,9 +540,8 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         bathGas = [spec for spec in reactionModel.core.species if not spec.reactive]
         self.bathGas = {}
         for spec in bathGas:
-            # is this really the only/best way to weight them? And what is alpha0?
+            # is this really the only/best way to weight them?
             self.bathGas[spec] = 1.0 / len(bathGas)
-            spec.collisionModel = SingleExponentialDown(alpha0=(4.86,'kcal/mol'))
 
         # Save input file
         if not self.label: self.label = str(self.index)
@@ -591,8 +586,6 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                         reactionModel.addReactionToEdge(netReaction)
 
                 # Set/update the net reaction kinetics using interpolation model
-                Tdata = job.Tlist.value_si
-                Pdata = job.Plist.value_si
                 kdata = K[:,:,i,j].copy()
                 order = len(netReaction.reactants)
                 kdata *= 1e6 ** (order-1)
