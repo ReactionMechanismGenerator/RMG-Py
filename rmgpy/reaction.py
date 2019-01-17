@@ -1109,6 +1109,13 @@ def _isomorphicSpeciesList(list1, list2, checkIdentical=False, checkOnlyLabel = 
                 comparison_method(list1[2], list2[0]) ):
             return True
     elif len(list1) == len(list2):
-        raise NotImplementedError("Can't check isomorphism of lists with {0} species/molecules".format(len(list1)))
+        # General case for N species 
+        num = len(list1) 
+        for permutation in itertools.permutations(range(num), num): 
+            for i,j in enumerate(permutation): 
+                if not comparison_method(list1[0], list2[j]): 
+                    break # this permutation not right
+            else:  # didn't break, so all N match in this order 
+                return True
     # nothing found
     return False
