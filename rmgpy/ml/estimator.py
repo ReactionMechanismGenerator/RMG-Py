@@ -31,6 +31,7 @@
 import os
 import numpy as np
 
+os.environ['KERAS_BACKEND'] = 'theano'
 from dde.predictor import Predictor
 
 from rmgpy.thermo import ThermoData
