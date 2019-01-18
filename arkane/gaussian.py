@@ -382,7 +382,7 @@ class GaussianLog:
         check_conformer_energy(Vlist, self.path)
         
         # Adjust energies to be relative to minimum energy conformer
-        # Also convert units from Hartree/particle to kJ/mol
+        # Also convert units from Hartree/particle to J/mol
         Vlist -= numpy.min(Vlist)
         Vlist *= constants.E_h * constants.Na
 
