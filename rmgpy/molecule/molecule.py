@@ -558,6 +558,8 @@ class Bond(Edge):
             return 'D'
         elif self.isTriple():
             return 'T'
+        elif self.isQuadruple():
+            return 'Q'
         elif self.isHydrogenBond():
             return 'H'
         else:
@@ -575,6 +577,8 @@ class Bond(Edge):
             self.order = 3
         elif newOrder == 'B':
             self.order = 1.5
+        elif newOrder == 'Q':
+            self.order = 4
         elif newOrder == 'H':
             self.order = 0
         else:
@@ -644,6 +648,13 @@ class Bond(Edge):
         """
         return self.isOrder(3)
 
+    def isQuadruple(self):
+        """
+        Return ``True`` if the bond represents a quadruple bond or ``False`` if
+        not.
+        """
+        return self.isOrder(4)
+
     def isBenzene(self):
         """
         Return ``True`` if the bond represents a benzene bond or ``False`` if
@@ -663,11 +674,11 @@ class Bond(Edge):
         Update the bond as a result of applying a CHANGE_BOND action to
         increase the order by one.
         """
-        if self.order <=2.0001:
+        if self.order <=3.0001:
             self.order += 1
         else:
             raise gr.ActionError('Unable to increment Bond due to CHANGE_BOND action: '+\
-            'Bond order "{0}" is greater than 2.'.format(self.order))
+            'Bond order "{0}" is greater than 3.'.format(self.order))
 
     def decrementOrder(self):
         """
@@ -687,7 +698,7 @@ class Bond(Edge):
         in bond order, and can be any real number.
         """
         self.order += order
-        if self.order < -0.0001 or self.order >3.0001:
+        if self.order < -0.0001 or self.order >4.0001:
             raise gr.ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid resulting order "{0}".'.format(self.order))
 
     def applyAction(self, action):

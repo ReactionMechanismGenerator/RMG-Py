@@ -507,7 +507,7 @@ class GroupAtom(Vertex):
         options for bond orders will not be counted
         """
         #count up number of bonds
-        single = 0; rDouble = 0; oDouble = 0; sDouble = 0; triple = 0; benzene = 0
+        single = 0; rDouble = 0; oDouble = 0; sDouble = 0; triple = 0; quadruple = 0; benzene = 0
         for atom2, bond12 in self.bonds.iteritems():
             if not wildcards and len(bond12.order) > 1:
                 continue
@@ -523,11 +523,13 @@ class GroupAtom(Vertex):
                     # rDouble is for double bonds NOT to oxygen or Sulfur
                     rDouble += 1
             if bond12.isTriple(wildcards = True): triple += 1
+            if bond12.isQuadruple(wildcards=True): quadruple += 1
             if bond12.isBenzene(wildcards = True): benzene += 1
 
         allDouble = rDouble + oDouble + sDouble
 
-        return [single, allDouble, rDouble, oDouble, sDouble, triple, benzene]
+        # Warning: some parts of code assume this matches precisely the list returned by getFeatures()
+        return [single, allDouble, rDouble, oDouble, sDouble, triple, quadruple, benzene]
 
     def makeSampleAtom(self):
         """
@@ -666,6 +668,8 @@ class GroupBond(Edge):
                 values.append('D')
             elif value == 3:
                 values.append('T')
+            elif value == 4:
+                values.append('Q')
             elif value == 1.5:
                 values.append('B')
             elif value == 0:
@@ -687,6 +691,8 @@ class GroupBond(Edge):
                 values.append(2)
             elif value == 'T':
                 values.append(3)
+            elif value == 'Q':
+                values.append(4)
             elif value == 'B':
                 values.append(1.5)
             elif value == 'H':
@@ -760,6 +766,21 @@ class GroupBond(Edge):
         else:
             return abs(self.order[0]-3) <= 1e-9 and len(self.order) == 1
 
+    def isQuadruple(self, wildcards = False):
+        """
+        Return ``True`` if the bond represents a quadruple bond or ``False`` if
+        not. If `wildcards` is ``False`` we return False anytime there is more
+        than one bond order, otherwise we return ``True`` if any of the options
+        are quadruple.
+        """
+        if wildcards:
+            for order in self.order:
+                if abs(order-4) <= 1e-9:
+                    return True
+            else: return False
+        else:
+            return abs(self.order[0]-4) <= 1e-9 and len(self.order) == 1
+
     def isBenzene(self, wildcards = False):
         """
         Return ``True`` if the bond represents a benzene bond or ``False`` if
@@ -797,7 +818,7 @@ class GroupBond(Edge):
         in bond order. `order` is normally 1 or -1, but can be any value
         """
         newOrder = [value + order for value in self.order]
-        if any([value < 0 or value > 3 for value in newOrder]):
+        if any([value < 0 or value > 4 for value in newOrder]):
             raise ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid resulting order "{0}".'.format(newOrder))
         # Change any modified benzene orders to the appropriate stable order
         newOrder = set(newOrder)
