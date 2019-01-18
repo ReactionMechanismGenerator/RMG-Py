@@ -1394,3 +1394,4 @@ class TerminationRateRatio:
     
     def __init__(self, ratio=0.01):
         self.ratio = ratio
+        

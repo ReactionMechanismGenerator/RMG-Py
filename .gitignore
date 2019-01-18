@@ -42,7 +42,6 @@ nbproject/*
 # PyCharm project files
 .idea/*
 
-
 # Unit test files
 .coverage
 testing/*

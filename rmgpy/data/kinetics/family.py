@@ -1546,6 +1546,7 @@ class KineticsFamily(Database):
         if self.forbidden is not None and self.forbidden.isMoleculeForbidden(molecule):
             return True
 
+
         return False
 
     def __createReaction(self, reactants, products, is_forward):
@@ -2096,6 +2097,7 @@ class KineticsFamily(Database):
                     logging.info("Removing {} reaction {!s} with no desorbed species".format(self.label, reaction))
                     continue  # to next reaction immediately
             rxnList = prunedList
+
 
         # If products is given, remove reactions from the reaction list that
         # don't generate the given products

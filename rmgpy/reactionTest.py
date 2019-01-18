@@ -239,6 +239,7 @@ class TestReaction(unittest.TestCase):
     """
     Contains unit tests of the Reaction class.
     """
+    
     def setUp(self):
         """
         A method that is called prior to each unit test in this class.

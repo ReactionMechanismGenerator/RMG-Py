@@ -230,6 +230,7 @@ def simpleReactor(temperature,
 
         else:
             sensitiveSpecies.append('all')
+    
     if not isinstance(T,list):
         sensitivityTemperature = T
     if not isinstance(P,list):
@@ -330,6 +331,7 @@ def liquidReactor(temperature,
     else:
         sensConditions = sensitivityConcentrations
         sensConditions['T'] = Quantity(sensitivityTemperature).value_si
+        
     system = LiquidReactor(T, initialConcentrations, nSims, termination, sensitiveSpecies, sensitivityThreshold, sensConditions, constantSpecies)
     rmg.reactionSystems.append(system)
     
