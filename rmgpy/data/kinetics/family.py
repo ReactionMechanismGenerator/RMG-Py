@@ -1813,7 +1813,7 @@ class KineticsFamily(Database):
             Degenerate reactions are returned as separate reactions.
         """
 
-        rxnList = []; speciesList = []
+        rxnList = []
 
         # Wrap each reactant in a list if not already done (this is done to 
         # allow for passing multiple resonance structures for each molecule)
@@ -1903,67 +1903,184 @@ class KineticsFamily(Database):
                                             rxn = self.__createReaction(reactantStructures, productStructures, forward)
                                             if rxn: rxnList.append(rxn)
         
-        # Trimolecular reactants: A + B + C --> products
+        # Termolecular reactants: A + B + C --> products
+        elif len(reactants) == 2 and len(template.reactants) == 3:
+            """
+            Two reactants but a termolecular template.
+            Could be A + X + X <=> BX + CX (dissociative adsorption)
+            or A + X + X <=> AXX (bidentate adsorption)
+            in which case, if one of the two reactants is an X
+            then we have a match and can just use it twice.
+            """
+            templateSites = [r for r in template.reactants if r.item.isSurfaceSite()]
+            if len(templateSites) == 2:
+                "Two surface sites in template. If there's a site in the reactants, use it twice."
+                if reactants[0][0].isSurfaceSite() and not reactants[1][0].isSurfaceSite():
+                    site1 = reactants[0][0]
+                    site2 = deepcopy(reactants[0][0])
+                    adsorbateMolecules = reactants[1]
+                    reactants.append([site2])
+                elif reactants[1][0].isSurfaceSite() and not reactants[0][0].isSurfaceSite():
+                    site1 = reactants[1][0]
+                    site2 = deepcopy(reactants[1][0])
+                    adsorbateMolecules = reactants[0]
+                    reactants.append([site2])
+                else:
+                    "No reaction with these reactants in this template"
+                    return []
+
+                if adsorbateMolecules[0].containsSurfaceSite():
+                    "An adsorbed molecule can't adsorb again"
+                    return []
+
+                for r in template.reactants:
+                    if not r.item.isSurfaceSite():
+                        templateAdsorbate = r
+                        break
+                else:
+                    raise KineticsError("Couldn't find non-site in template {0!r}".format(template))
+
+                mappingsA = self.__matchReactantToTemplate(site1, templateSites[0])
+                mappingsB = self.__matchReactantToTemplate(site2, templateSites[1])
+                for adsorbateMolecule in adsorbateMolecules:
+                    mappingsC = self.__matchReactantToTemplate(adsorbateMolecule, templateAdsorbate)
+                    for mapA, mapB, mapC in itertools.product(mappingsA, mappingsB, mappingsC):
+                        reactantStructures = [site1, site2, adsorbateMolecule]  # should be in same order as reaction template recipe?
+                        try:
+                            productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB, mapC], forward)
+                        except ForbiddenStructureException:
+                            pass
+                        else:
+                            if productStructures is not None:
+                                rxn = self.__createReaction(reactantStructures, productStructures, forward)
+                                if rxn: rxnList.append(rxn)
+            else:
+                raise NotImplementedError("Termolecluar template not containing two surface sites")
+
         elif len(reactants) == 3 and len(template.reactants) == 3:
+            """
+            This could be a surface reaction
+                A + X + X <=> BX + CX  (dissociative adsorption)
+                A + X + X <=> AXX      (bidentate adsorption)
+            or a termolecular gas phase reaction
+                A + B + C <=> stuff
+            We check the two scenarios in that order.
+            """
+            templateSites = [r for r in template.reactants if r.item.isSurfaceSite()]
+            if len(templateSites) == 2:
+                """
+                Three reactants and a termolecular template.
+                Could be A + X + X <=> BX + CX (dissociative adsorption)
+                or A + X + X <=> AXX (bidentate adsorption)
+                that was first found in the reverse direction
+                and so is being passed in with all three reactants identified.
+                """
+                # Should be 2 surface sites in reactants too.
+                # Find them, and find mappings of the other
+                m1, m2, m3 = (r[0] for r in reactants)
+                if m1.isSurfaceSite() and m2.isSurfaceSite() and not m3.isSurfaceSite():
+                    site1, site2 = m1, m2
+                    adsorbateMolecules = reactants[2]
+                elif m1.isSurfaceSite() and not m2.isSurfaceSite() and m3.isSurfaceSite():
+                    site1, site2 = m1, m3
+                    adsorbateMolecules = reactants[1]
+                elif not m1.isSurfaceSite() and m2.isSurfaceSite() and m3.isSurfaceSite():
+                    site1, site2 = m2, m3
+                    adsorbateMolecules = reactants[0]
+                else:
+                    "Three reactants not containing two surface sites"
+                    return []
 
-            moleculesA = reactants[0]
-            moleculesB = reactants[1]
-            moleculesC = reactants[2]
+                if adsorbateMolecules[0].containsSurfaceSite():
+                    "An adsorbed molecule can't adsorb again"
+                    return []
 
-            # Iterate over all resonance isomers of the reactants
-            for moleculeA in moleculesA:
-                for moleculeB in moleculesB:
-                    for moleculeC in moleculesC:
+                for r in template.reactants:
+                    if not r.item.isSurfaceSite():
+                        templateAdsorbate = r
+                        break
+                else:
+                    raise KineticsError("Couldn't find non-site in template {0!r}".format(template))
 
-                        def generate_products_and_reactions(order):
-                            """
-                            order = (0, 1, 2) corresponds to reactants stored as A + B + C, etc.
-                            """
-                            _mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[order[0]])
-                            _mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[order[1]])
-                            _mappingsC = self.__matchReactantToTemplate(moleculeC, template.reactants[order[2]])
+                mappingsA = self.__matchReactantToTemplate(site1, templateSites[0])
+                mappingsB = self.__matchReactantToTemplate(site2, templateSites[1])
+                for adsorbateMolecule in adsorbateMolecules:
+                    mappingsC = self.__matchReactantToTemplate(adsorbateMolecule, templateAdsorbate)
+                    # this just copied/pasted from above - not checked
+                    for mapA, mapB, mapC in itertools.product(mappingsA, mappingsB, mappingsC):
+                        reactantStructures = [site1, site2, adsorbateMolecule]
+                        try:
+                            productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB, mapC], forward)
+                        except ForbiddenStructureException:
+                            pass
+                        else:
+                            if productStructures is not None:
+                                rxn = self.__createReaction(reactantStructures, productStructures, forward)
+                                if rxn: rxnList.append(rxn)
 
-                            # Iterate over each pair of matches (A, B, C)
-                            for _mapA in _mappingsA:
-                                for _mapB in _mappingsB:
-                                    for _mapC in _mappingsC:
-                                        _reactantStructures = [moleculeA, moleculeB, moleculeC]
-                                        _maps = [_mapA, _mapB, _mapC]
-                                        # Reorder reactants in case we have a family with fewer reactant trees than
-                                        # reactants and different reactant orders can produce different products
-                                        _reactantStructures = [_reactantStructures[_i] for _i in order]
-                                        _maps = [_maps[_i] for _i in order]
-                                        try:
-                                            _productStructures = self.__generateProductStructures(_reactantStructures,
-                                                                                                  _maps,
-                                                                                                  forward)
-                                        except ForbiddenStructureException:
-                                            pass
-                                        else:
-                                            if _productStructures is not None:
-                                                _rxn = self.__createReaction(_reactantStructures,
-                                                                             _productStructures,
-                                                                             forward)
-                                                if _rxn: rxnList.append(_rxn)
+            else:
+                """
+                Not a bidentate surface reaction, just a gas-phase
+                Trimolecular reactants: A + B + C --> products
+                """
+                moleculesA = reactants[0]
+                moleculesB = reactants[1]
+                moleculesC = reactants[2]
 
-                        # Reactants stored as A + B + C
-                        generate_products_and_reactions((0, 1, 2))
+                # Iterate over all resonance isomers of the reactants
+                for moleculeA in moleculesA:
+                    for moleculeB in moleculesB:
+                        for moleculeC in moleculesC:
 
-                        # Only check for swapped reactants if they are different
-                        if reactants[1] is not reactants[2]:
-                            # Reactants stored as A + C + B
-                            generate_products_and_reactions((0, 2, 1))
-                        if reactants[0] is not reactants[1]:
-                            # Reactants stored as B + A + C
-                            generate_products_and_reactions((1, 0, 2))
-                        if reactants[0] is not reactants[2]:
-                            # Reactants stored as C + B + A
-                            generate_products_and_reactions((2, 1, 0))
-                            if reactants[0] is not reactants[1] and reactants[1] is not reactants[2]:
-                                # Reactants stored as C + A + B
-                                generate_products_and_reactions((2, 0, 1))
-                                # Reactants stored as B + C + A
-                                generate_products_and_reactions((1, 2, 0))
+                            def generate_products_and_reactions(order):
+                                """
+                                order = (0, 1, 2) corresponds to reactants stored as A + B + C, etc.
+                                """
+                                _mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[order[0]])
+                                _mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[order[1]])
+                                _mappingsC = self.__matchReactantToTemplate(moleculeC, template.reactants[order[2]])
+
+                                # Iterate over each pair of matches (A, B, C)
+                                for _mapA in _mappingsA:
+                                    for _mapB in _mappingsB:
+                                        for _mapC in _mappingsC:
+                                            _reactantStructures = [moleculeA, moleculeB, moleculeC]
+                                            _maps = [_mapA, _mapB, _mapC]
+                                            # Reorder reactants in case we have a family with fewer reactant trees than
+                                            # reactants and different reactant orders can produce different products
+                                            _reactantStructures = [_reactantStructures[_i] for _i in order]
+                                            _maps = [_maps[_i] for _i in order]
+                                            try:
+                                                _productStructures = self.__generateProductStructures(_reactantStructures,
+                                                                                                      _maps,
+                                                                                                      forward)
+                                            except ForbiddenStructureException:
+                                                pass
+                                            else:
+                                                if _productStructures is not None:
+                                                    _rxn = self.__createReaction(_reactantStructures,
+                                                                                 _productStructures,
+                                                                                 forward)
+                                                    if _rxn: rxnList.append(_rxn)
+
+                            # Reactants stored as A + B + C
+                            generate_products_and_reactions((0, 1, 2))
+
+                            # Only check for swapped reactants if they are different
+                            if reactants[1] is not reactants[2]:
+                                # Reactants stored as A + C + B
+                                generate_products_and_reactions((0, 2, 1))
+                            if reactants[0] is not reactants[1]:
+                                # Reactants stored as B + A + C
+                                generate_products_and_reactions((1, 0, 2))
+                            if reactants[0] is not reactants[2]:
+                                # Reactants stored as C + B + A
+                                generate_products_and_reactions((2, 1, 0))
+                                if reactants[0] is not reactants[1] and reactants[1] is not reactants[2]:
+                                    # Reactants stored as C + A + B
+                                    generate_products_and_reactions((2, 0, 1))
+                                    # Reactants stored as B + C + A
+                                    generate_products_and_reactions((1, 2, 0))
 
         # ToDo: try to remove this hard-coding of reaction family name..
         if not forward and 'adsorption' in self.label.lower():
@@ -2162,7 +2279,34 @@ class KineticsFamily(Database):
                     pairs.append([reaction.reactants[1], reaction.products[0]])
                     pairs.append([reaction.reactants[1], reaction.products[1]])
                     pairs.append([reaction.reactants[0], reaction.products[2]])
-
+        elif reaction.isSurfaceReaction():
+            # remove vacant active sites from consideration
+            reactants = [sp for sp in reaction.reactants if not sp.isSurfaceSite()]
+            products = [sp for sp in reaction.products if not sp.isSurfaceSite()]
+            if len(reactants) == 1 or len(products) == 1:
+                # When there is only one reactant (or one product), it is paired
+                # with each of the products (reactants)
+                for reactant in reactants:
+                    for product in products:
+                        pairs.append([reactant, product])
+            elif self.label.lower() == 'surface_abstraction':
+                # Hardcoding for surface abstraction: pair the reactant containing
+                # *1 with the product containing *3 and vice versa
+                assert len(reaction.reactants) == len(reaction.products) == 2
+                if reaction.reactants[0].containsLabeledAtom('*1'):
+                    if reaction.products[0].containsLabeledAtom('*3'):
+                        pairs.append([reaction.reactants[0], reaction.products[0]])
+                        pairs.append([reaction.reactants[1], reaction.products[1]])
+                    elif reaction.products[1].containsLabeledAtom('*3'):
+                        pairs.append([reaction.reactants[0], reaction.products[1]])
+                        pairs.append([reaction.reactants[1], reaction.products[0]])
+                elif reaction.reactants[1].containsLabeledAtom('*1'):
+                    if reaction.products[1].containsLabeledAtom('*3'):
+                        pairs.append([reaction.reactants[0], reaction.products[0]])
+                        pairs.append([reaction.reactants[1], reaction.products[1]])
+                    elif reaction.products[0].containsLabeledAtom('*3'):
+                        pairs.append([reaction.reactants[0], reaction.products[1]])
+                        pairs.append([reaction.reactants[1], reaction.products[0]])
         if not pairs:
             logging.debug('Preset mapping missing for determining reaction pairs for family {0!s}, falling back to Reaction.generatePairs'.format(self.label))
 
