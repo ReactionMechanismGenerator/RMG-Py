@@ -363,7 +363,7 @@ class RMG(util.Subject):
 
         #check libraries
         self.checkLibraries()
-
+        
         if self.bindingEnergies:
             self.database.thermo.setDeltaAtomicAdsorptionEnergies(self.bindingEnergies)
 
@@ -943,7 +943,7 @@ class RMG(util.Subject):
             logging.exception('Could not generate Cantera files due to EnvironmentError. Check read\write privileges in output directory.')
         except Exception:
             logging.exception('Could not generate Cantera files for some reason.')
-
+        
         self.check_model()
         # Write output file
         logging.info('')

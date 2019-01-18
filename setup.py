@@ -36,13 +36,13 @@ try:
     from distutils.extension import Extension
 except ImportError:
     print 'The distutils package is required to build or install RMG Py.'
-
+    
 try:
     from Cython.Distutils import build_ext
     import Cython.Compiler.Options
 except ImportError:
     print 'Cython (http://www.cython.org/) is required to build or install RMG Py.'
-
+    
 try:
     import numpy
 except ImportError:

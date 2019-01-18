@@ -315,7 +315,7 @@ class MoleculeDrawer:
         """
         atoms = self.molecule.atoms
         Natoms = len(atoms)
-
+        
 
         
         # Initialize array of coordinates
@@ -1135,7 +1135,7 @@ class MoleculeDrawer:
                 self.__drawLine(cr, x1 - du + dx, y1 - dv + dy, x2 - du - dx, y2 - dv - dy)
                 self.__drawLine(cr, x1 + du + dx, y1 + dv + dy, x2 + du - dx, y2 + dv - dy)
                 self.__drawLine(cr, x1 + 2 * du + dx, y1 + 2 * dv + dy, x2 + 2 * du - dx, y2 + 2 * dv - dy)
-        
+
     def __renderAtom(self, symbol, atom, x0, y0, cr, heavyFirst=True, drawLonePairs=False):
         """
         Render the `label` for an atom centered around the coordinates (`x0`, `y0`)

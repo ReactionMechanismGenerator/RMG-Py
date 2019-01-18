@@ -512,7 +512,7 @@ class TestGroupBond(unittest.TestCase):
                 self.fail('GroupBond.applyAction() unexpectedly processed a FORM_BOND action.')
             except ActionError:
                 pass
-
+    
     def testApplyActionIncrementBond(self):
         """
         Test the GroupBond.applyAction() method for a CHANGE_BOND action.

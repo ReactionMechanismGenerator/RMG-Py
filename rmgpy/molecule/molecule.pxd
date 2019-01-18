@@ -110,7 +110,7 @@ cdef class Bond(Edge):
     cpdef Edge copy(self)
     
     cpdef bint isOrder(self, float otherOrder)
-    
+
     cpdef bint isVanDerWaals(self) except -2
 
     cpdef bint isSingle(self) except -2
@@ -154,7 +154,7 @@ cdef class Molecule(Graph):
     cpdef bint hasAtom(self, Atom atom)
 
     cpdef bint hasBond(self, Atom atom1, Atom atom2)
-    
+
     cpdef bint containsSurfaceSite(self)
     
     cpdef bint isSurfaceSite(self)
@@ -162,7 +162,7 @@ cdef class Molecule(Graph):
     cpdef removeAtom(self, Atom atom)
 
     cpdef removeBond(self, Bond bond)
-    
+
     cpdef removeVanDerWaalsBonds(self)
 
     cpdef sortAtoms(self)

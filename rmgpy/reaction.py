@@ -53,7 +53,7 @@ import rmgpy.constants as constants
 from rmgpy.molecule.molecule import Molecule, Atom
 from rmgpy.molecule.element import Element
 from rmgpy.species import Species
-from rmgpy.kinetics.arrhenius import Arrhenius  #PyDev: @UnresolvedImport
+from rmgpy.kinetics.arrhenius import Arrhenius #PyDev: @UnresolvedImport
 from rmgpy.kinetics import KineticsData, ArrheniusEP, ThirdBody, Lindemann, Troe, Chebyshev, \
             PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, getRateCoefficientUnitsFromReactionOrder, \
             StickingCoefficient, SurfaceArrhenius, SurfaceArrheniusBEP, StickingCoefficientBEP  #PyDev: @UnresolvedImport
@@ -620,8 +620,8 @@ class Reaction:
                 self.k_effective_cache[T] = k
             return k
         else:
-            return  self.kinetics.getRateCoefficient(T, P)
-    
+            return self.kinetics.getRateCoefficient(T, P)
+
     def getSurfaceRateCoefficient(self, T, surfaceSiteDensity):
         """
         Return the overall surface rate coefficient for the forward reaction at
@@ -1362,7 +1362,7 @@ def isomorphic_species_lists(list1, list2, check_identical=False, only_check_lab
                          
     Returns True if the lists are isomorphic/identical & false otherwise
     """
-                
+
 ################################################################################
 
     def same(object1, object2, _check_identical=check_identical, _only_check_label=only_check_label):

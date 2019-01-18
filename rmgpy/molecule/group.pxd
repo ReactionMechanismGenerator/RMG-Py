@@ -65,7 +65,7 @@ cdef class GroupAtom(Vertex):
     cpdef bint equivalent(self, Vertex other) except -2
 
     cpdef bint isSpecificCaseOf(self, Vertex other) except -2
-    
+
     cpdef bint isSurfaceSite(self) except -2
 
     cpdef bint isOxygen(self)
@@ -136,11 +136,11 @@ cdef class Group(Graph):
     cpdef bint hasAtom(self, GroupAtom atom)
 
     cpdef bint hasBond(self, GroupAtom atom1, GroupAtom atom2)
-    
+
     cpdef removeAtom(self, GroupAtom atom)
 
     cpdef removeBond(self, GroupBond bond)
-    
+
     cpdef removeVanDerWaalsBonds(self)
 
     cpdef sortAtoms(self)
@@ -174,9 +174,9 @@ cdef class Group(Graph):
     cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?, bint generateInitialMap=?, bint saveOrder=?) except -2
 
     cpdef list findSubgraphIsomorphisms(self, Graph other, dict initialMap=?, bint saveOrder=?)
-
-    cpdef bint isIdentical(self, Graph other, bint saveOrder=?)
     
+    cpdef bint isIdentical(self, Graph other, bint saveOrder=?)
+
     cpdef bint isSurfaceSite(self) except -2
     
     cpdef bint containsSurfaceSite(self) except -2

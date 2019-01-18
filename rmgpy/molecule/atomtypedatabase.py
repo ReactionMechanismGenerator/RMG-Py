@@ -82,7 +82,7 @@ class Xt(AbstractAtomType):
             super(self.__class__, self).__init__(*args, **kwargs)
             self.double, self.triple, self.benzene, self.quadruple = 0, 1, 0, 0
             self.label = 't'
-
+                        
 class Xq(AbstractAtomType):
     def __init__(self, *args, **kwargs):
             super(self.__class__, self).__init__(*args, **kwargs)

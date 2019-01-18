@@ -1901,7 +1901,7 @@ class KineticsFamily(Database):
                                         if productStructures is not None:
                                             rxn = self.__createReaction(reactantStructures, productStructures, forward)
                                             if rxn: rxnList.append(rxn)
-
+        
         # Termolecular reactants: A + B + C --> products
         elif len(reactants) == 2 and len(template.reactants) == 3:
             """
