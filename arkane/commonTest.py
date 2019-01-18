@@ -270,24 +270,6 @@ class TestArkaneInput(unittest.TestCase):
         job.load()
 
 
-class TestStatmech(unittest.TestCase):
-    """
-    Contains unit tests of statmech.py
-    """
-    @classmethod
-    def setUp(self):
-        arkane = Arkane()
-        self.job_list = arkane.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                                         'data', 'Benzyl', 'input.py'))
-
-    def test_gaussian_log_file_error(self):
-        """Test that the proper error is raised if gaussian geometry and frequency file paths are the same"""
-        job = self.job_list[-2]
-        self.assertTrue(isinstance(job, StatMechJob))
-        with self.assertRaises(InputError):
-            job.load()
-
-
 class TestGetMass(unittest.TestCase):
     """
     Contains unit tests of common.py
