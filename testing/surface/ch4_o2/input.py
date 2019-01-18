@@ -1,11 +1,16 @@
 # Data sources
 database(
-    thermoLibraries=['surfaceThermo', 'primaryThermoLibrary', 'thermo_DFT_CCSDTF12_BAC','DFT_QCI_thermo'],
-    reactionLibraries = [('Deutschmann_Ni', False)],
+    thermoLibraries=['surfaceThermoPt', 'primaryThermoLibrary', 'thermo_DFT_CCSDTF12_BAC','DFT_QCI_thermo'],
+    reactionLibraries = [('CPOX_Pt/Deutschmann2006', False)],
     seedMechanisms = [],
     kineticsDepositories = ['training'],
     kineticsFamilies = ['surface','default'],
     kineticsEstimator = 'rate rules',
+    bindingEnergies = {
+                       'C':(-6.364, 'eV/molecule'), # Pt(111)
+                       'H':(-2.778, 'eV/molecule'), # UNKNOWN! (Using Ni value from Blaylock)
+                       'O':(-3.481, 'eV/molecule'), # Pt(111)
+                       },
 )
 
 species(
@@ -31,7 +36,6 @@ species(
     structure=SMILES("N#N"),
 )
 
-
 #-------
 species(
     label='vacantX',
@@ -41,7 +45,7 @@ species(
 #----------
 # Reaction systems
 surfaceReactor(
-    temperature=(1300,'K'),
+    temperature=(800,'K'),
     initialPressure=(1.0, 'bar'),
     initialGasMoleFractions={
         "CH4": 0.1,
@@ -73,7 +77,7 @@ options(
     units='si',
     saveRestartPeriod=None,
     generateOutputHTML=True,
-    generatePlots=True,
+    generatePlots=False, # Enable to make plots of core and edge size etc.. But takes 40% of the total runtime!
     saveEdgeSpecies=True,
     saveSimulationProfiles=True,
 )
