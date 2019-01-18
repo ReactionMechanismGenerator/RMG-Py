@@ -1665,7 +1665,14 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
     
     string += '{0!s:<51} '.format(reaction_string)
 
-    if isinstance(kinetics, _kinetics.Arrhenius):
+    if isinstance(kinetics, _kinetics.StickingCoefficient):
+        string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
+            kinetics.A.value_si / (kinetics.T0.value_si ** kinetics.n.value_si),
+            kinetics.n.value_si,
+            kinetics.Ea.value_si / 4184.
+        )
+        string += '\n    STICK'
+    elif isinstance(kinetics, _kinetics.Arrhenius):
         if not isinstance(kinetics, _kinetics.SurfaceArrhenius):
             assert 0.999 < kinetics.A.getConversionFactorFromSItoCM() / 1.0e6 ** (numReactants - 1) < 1.001, """
               Gas phase reaction \n{}
@@ -1991,14 +1998,13 @@ def saveChemkinSurfaceFile(path, species, reactions, verbose = True, checkForDup
     
     sorted_species = sorted(species, key=lambda species: species.index)
 
-    site_name = 'unknown'
-    for s in sorted_species:
-        if s.isSurfaceSite():
-            site_name = s.toChemkin()
-            break
-
     # Species section
-    f.write('SITE/{}/   SDEN/2.9E-9/\n'.format(site_name))
+    surface_name = None
+    if surface_name:
+        f.write('SITE/{}/'.format(surface_name))
+    else:
+        f.write('SITE ')
+    f.write('  SDEN/2.9E-9/\n')
     # todo: add surface site density from reactor simulation
     for spec in sorted_species:
         label = getSpeciesIdentifier(spec)
@@ -2112,14 +2118,14 @@ def saveChemkin(reactionModel, path, verbose_path, dictionaryPath=None, transpor
 
         saveChemkinFile(gas_path, gas_speciesList, gas_rxnList, verbose=False, checkForDuplicates=False) # We should already have marked everything as duplicates by now
         saveChemkinSurfaceFile(surface_path, surface_speciesList, surface_rxnList, verbose=False, checkForDuplicates=False) # We should already have marked everything as duplicates by now
-        logging.info('Saving verbose version of Chemkin files...')
-        saveChemkinFile(gas_path, gas_speciesList, gas_rxnList, verbose=True, checkForDuplicates=False) # We should already have marked everything as duplicates by now
-        saveChemkinSurfaceFile(surface_path, surface_speciesList, surface_rxnList, verbose=True, checkForDuplicates=False) # We should already have marked everything as duplicates by now
+        logging.info('Saving annotated version of Chemkin files...')
+        saveChemkinFile(gas_verbose_path, gas_speciesList, gas_rxnList, verbose=True, checkForDuplicates=False) # We should already have marked everything as duplicates by now
+        saveChemkinSurfaceFile(surface_verbose_path, surface_speciesList, surface_rxnList, verbose=True, checkForDuplicates=False) # We should already have marked everything as duplicates by now
 
     else:
         # Gas phase only
         saveChemkinFile(path, speciesList, rxnList, verbose = False, checkForDuplicates=False) # We should already have marked everything as duplicates by now
-        logging.info('Saving verbose version of Chemkin file...')
+        logging.info('Saving annotated version of Chemkin file...')
         saveChemkinFile(verbose_path, speciesList, rxnList, verbose=True, checkForDuplicates=False)
     if dictionaryPath:
         saveSpeciesDictionary(dictionaryPath, speciesList)
