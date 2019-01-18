@@ -1666,29 +1666,40 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
     string += '{0!s:<51} '.format(reaction_string)
 
     if isinstance(kinetics, _kinetics.Arrhenius):
+        if not isinstance(kinetics, _kinetics.SurfaceArrhenius):
+            assert 0.999 < kinetics.A.getConversionFactorFromSItoCM() / 1.0e6 ** (numReactants - 1) < 1.001, """
+              Gas phase reaction \n{}
+              with kinetics \n{}
+              with {} reactants was expected to have
+              kinetics.A.getConversionFactorFromSItoCM() = {}
+              but instead it is {}
+              """.format(string, repr(kinetics), numReactants, 1.0e6**(numReactants-1), kinetics.A.getConversionFactorFromSItoCM())
+            # debugging; for gas phase only
         string += '{0:<9.6e} {1:<9.3f} {2:<9.3f}'.format(
-            kinetics.A.value_si/ (kinetics.T0.value_si ** kinetics.n.value_si) * 1.0e6 ** (numReactants - 1),
+            kinetics.A.value_si / (kinetics.T0.value_si ** kinetics.n.value_si) * kinetics.A.getConversionFactorFromSItoCM(),
             kinetics.n.value_si,
             kinetics.Ea.value_si / 4184.
         )
     elif isinstance(kinetics, (_kinetics.Lindemann, _kinetics.Troe)):
         arrhenius = kinetics.arrheniusHigh
         string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
-            arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * 1.0e6 ** (numReactants - 1),
+            arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * arrhenius.A.getConversionFactorFromSItoCM(),
             arrhenius.n.value_si,
             arrhenius.Ea.value_si / 4184.
         )
     elif isinstance(kinetics, _kinetics.ThirdBody):
         arrhenius = kinetics.arrheniusLow
+        assert 0.999 < arrhenius.A.getConversionFactorFromSItoCM() / 1.0e6 ** (numReactants) < 1.001  # debugging; for gas phase only
         string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
-            arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * 1.0e6 ** (numReactants),
+            arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * arrhenius.A.getConversionFactorFromSItoCM(),
             arrhenius.n.value_si,
             arrhenius.Ea.value_si / 4184.
         )
     elif hasattr(kinetics,'highPlimit') and kinetics.highPlimit is not None:
         arrhenius = kinetics.highPlimit
+        assert 0.999 < arrhenius.A.getConversionFactorFromSItoCM() / 1.0e6 ** (numReactants - 1) < 1.001  # debugging; for gas phase only
         string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
-            arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * 1.0e6 ** (numReactants - 1),
+            arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * arrhenius.A.getConversionFactorFromSItoCM(),
             arrhenius.n.value_si,
             arrhenius.Ea.value_si / 4184.
             )
@@ -1717,8 +1728,9 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
         if isinstance(kinetics, (_kinetics.Lindemann, _kinetics.Troe)):
             # Write low-P kinetics
             arrhenius = kinetics.arrheniusLow
+            assert 0.999 < arrhenius.A.getConversionFactorFromSItoCM() / 1.0e6 ** (numReactants) < 1.001  # debugging; for gas phase only
             string += '    LOW/ {0:<9.3e} {1:<9.3f} {2:<9.3f}/\n'.format(
-                arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * 1.0e6 ** (numReactants),
+                arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * arrhenius.A.getConversionFactorFromSItoCM(),
                 arrhenius.n.value_si,
                 arrhenius.Ea.value_si / 4184.
             )
@@ -1732,14 +1744,16 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
         for P, arrhenius in zip(kinetics.pressures.value_si, kinetics.arrhenius):
             if isinstance(arrhenius, _kinetics.MultiArrhenius):
                 for arrh in arrhenius.arrhenius:
+                    assert 0.999 < arrh.A.getConversionFactorFromSItoCM() / 1.0e6 ** (numReactants - 1) < 1.001  # debugging; for gas phase only
                     string += '    PLOG/ {0:<9.6f} {1:<9.3e} {2:<9.3f} {3:<9.3f}/\n'.format(P / 101325.,
-                    arrh.A.value_si / (arrh.T0.value_si ** arrh.n.value_si) * 1.0e6 ** (numReactants - 1),
+                    arrh.A.value_si / (arrh.T0.value_si ** arrh.n.value_si) * arrh.A.getConversionFactorFromSItoCM(),
                     arrh.n.value_si,
                     arrh.Ea.value_si / 4184.
                     )
             else:
-                string += '    PLOG/ {0:<9.3f} {1:<9.3e} {2:<9.3f} {3:<9.3f}/\n'.format(P / 101325.,
-                    arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * 1.0e6 ** (numReactants - 1),
+                assert 0.999 < arrhenius.A.getConversionFactorFromSItoCM() / 1.0e6 ** (numReactants - 1) < 1.001  # debugging; for gas phase only
+                string += '    PLOG/ {0:<9.6f} {1:<9.3e} {2:<9.3f} {3:<9.3f}/\n'.format(P / 101325.,
+                    arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * arrhenius.A.getConversionFactorFromSItoCM(),
                     arrhenius.n.value_si,
                     arrhenius.Ea.value_si / 4184.
                 )
@@ -1760,7 +1774,7 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
             for i in range(kinetics.degreeT):
                 for j in range(kinetics.degreeP):
                     coeffs.append(kinetics.coeffs.value_si[i,j])
-            coeffs[0] += 6 * (numReactants - 1)
+            coeffs[0] += 6 * (numReactants - 1)  # bypassing the Units.getConversionFactorFromSItoCM() because it's in log10 space?
             for i in range(len(coeffs)):
                 if i % 5 == 0: string += '    CHEB/'
                 string += ' {0:<12.3e}'.format(coeffs[i])
