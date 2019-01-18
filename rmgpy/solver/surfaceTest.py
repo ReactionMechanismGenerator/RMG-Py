@@ -76,7 +76,7 @@ class SurfaceReactorCheck(unittest.TestCase):
             termination=[])
 
         rxnSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies,
-                                  edgeReactions)
+                                  edgeReactions, surfaceSpecies, surfaceReactions)
 
         tlist = numpy.logspace(-13, -5, 81, dtype=numpy.float64)
 
@@ -200,7 +200,7 @@ class SurfaceReactorCheck(unittest.TestCase):
         # in chemkin, the sites are mostly occupied in about 1e-8 seconds.
 
         rxnSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies,
-                                  edgeReactions)
+                                  edgeReactions, surfaceSpecies, surfaceReactions)
 
         tlist = numpy.logspace(-13, -5, 81, dtype=numpy.float64)
 

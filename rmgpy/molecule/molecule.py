@@ -421,6 +421,9 @@ class Atom(Vertex):
         Update self.charge, according to the valence, and the
         number and types of bonds, radicals, and lone pairs.
         """
+        if self.isSurfaceSite():
+            self.charge = 0
+            return
         valence_electron = elements.PeriodicSystem.valence_electrons[self.symbol]
         order = self.getBondOrdersForAtom()
         self.charge = valence_electron - order - self.radicalElectrons - 2*self.lonePairs
@@ -560,6 +563,8 @@ class Bond(Edge):
             return 'T'
         elif self.isQuadruple():
             return 'Q'
+        elif self.isVanDerWaals():
+            return 'vdW'
         elif self.isHydrogenBond():
             return 'H'
         else:
@@ -579,8 +584,10 @@ class Bond(Edge):
             self.order = 1.5
         elif newOrder == 'Q':
             self.order = 4
-        elif newOrder == 'H':
+        elif newOrder == 'vdW':
             self.order = 0
+        elif newOrder == 'H':
+            self.order = 0.1
         else:
             # try to see if an float disguised as a string was input by mistake
             try:
@@ -615,6 +622,14 @@ class Bond(Edge):
         b.vertex2 = self.vertex2
         b.order = self.order
         return b
+
+
+    def isVanDerWaals(self):
+        """
+        Return ``True`` if the bond represents a van der Waals bond or 
+        ``False`` if not.
+        """
+        return self.isOrder(0) or self.order == 'vdW' #todo: remove 'vdW'
 
     def isOrder(self, otherOrder):
         """
@@ -920,6 +935,16 @@ class Molecule(Graph):
         self._fingerprint = None
         return self.removeEdge(bond)
 
+    def removeVanDerWaalsBonds(self):
+        """
+        Remove all van der Waals bonds.
+        """
+        cython.declare(atom=Atom, bond=Bond)
+        for atom in self.atoms:
+            for bond in atom.edges.values():
+                if bond.isVanDerWaals():
+                    self.removeBond(bond)
+
     def sortAtoms(self):
         """
         Sort the atoms in the graph. This can make certain operations, e.g.
@@ -1039,6 +1064,50 @@ class Molecule(Graph):
                 if atom.element.symbol == element:
                     numAtoms += 1
             return numAtoms
+
+    def getNumberOfRadicalElectrons(self):
+        """
+        Return the total number of radical electrons on all atoms in the
+        molecule. In this function, monoradical atoms count as one, biradicals
+        count as two, etc. 
+        """
+        cython.declare(numRadicals=cython.int, atom=Atom)
+        numRadicals = 0
+        for atom in self.vertices:
+            numRadicals += atom.radicalElectrons
+        return numRadicals
+    
+    def getGasCopiesOfSurfaceMolecule(self):
+        """
+        Create an iterable of gas-phase (desorbed) copies of a surface-bound molecule.
+        
+        This will likely be a radical, because of the dangling bond which used
+        to be to the surface. It's a list because we don't know which electronic 
+        state to return, e.g. two radicals or a lone pair when a "double-bond" 
+        desorbs, so we return both in an iterable.
+        """
+        mol = cython.declare(Molecule)
+        mol = self.copy(deep=True)
+        toDelete = []
+        for atom in mol.atoms:
+            if atom.element.symbol=='X':
+                toDelete.append(atom)
+        for atom in toDelete:
+            for bonded, bond in atom.bonds.iteritems():
+                if bond.isSingle():
+                    bonded.incrementRadical()
+                elif bond.isDouble():
+                    bonded.incrementRadical()
+                    bonded.incrementRadical()
+                elif bond.isTriple():
+                    bonded.incrementRadical()
+                    bonded.incrementLonePairs()
+                elif bond.isQuadruple():
+                    bonded.incrementLonePairs()
+                    bonded.incrementLonePairs()
+            mol.removeAtom(atom)
+        raise NotImplementedError("Code not finished?")
+            
 
     def copy(self, deep=False):
         """
@@ -1568,10 +1637,7 @@ class Molecule(Graph):
         and removes Hydrogen atoms.
         """
 
-        if self.containsSurfaceSite():
-            pass
-        else:
-            return translator.toSMILES(self)
+        return translator.toSMILES(self)
 
     def toRDKitMol(self, *args, **kwargs):
         """
@@ -1636,13 +1702,13 @@ class Molecule(Graph):
         Hbonds = self.find_H_bonds()
         for i,bd1 in enumerate(Hbonds):
             molc = self.copy(deep=True)
-            molc.addBond(Bond(molc.atoms[bd1[0]],molc.atoms[bd1[1]],order=0))
+            molc.addBond(Bond(molc.atoms[bd1[0]],molc.atoms[bd1[1]],order=0.1))
             structs.append(molc)
             for j,bd2 in enumerate(Hbonds):
                 if j<i and bd1[0] != bd2[0] and bd1[1] != bd2[1]:
                     molc = self.copy(deep=True)
-                    molc.addBond(Bond(molc.atoms[bd1[0]],molc.atoms[bd1[1]],order=0))
-                    molc.addBond(Bond(molc.atoms[bd2[0]],molc.atoms[bd2[1]],order=0))
+                    molc.addBond(Bond(molc.atoms[bd1[0]],molc.atoms[bd1[1]],order=0.1))
+                    molc.addBond(Bond(molc.atoms[bd2[0]],molc.atoms[bd2[1]],order=0.1))
                     structs.append(molc)
         
         return structs
@@ -1750,7 +1816,7 @@ class Molecule(Graph):
         Return the value of the heat capacity at zero temperature in J/mol*K.
         """
         if self.containsSurfaceSite():
-            return 0.0
+            return 0.01
         if len(self.atoms) == 1:
             return 2.5 * constants.R
         else:
@@ -1867,13 +1933,13 @@ class Molecule(Graph):
         """
         cython.declare(atom1=Atom, atom2=Atom, bond12=Bond, order=float)
         for atom1 in self.vertices:
-            if not atom1.isHydrogen():
+            if atom1.isHydrogen() or atom1.isSurfaceSite():
+                atom1.lonePairs = 0
+            else:
                 order = atom1.getBondOrdersForAtom()
                 atom1.lonePairs = (elements.PeriodicSystem.valence_electrons[atom1.symbol] - atom1.radicalElectrons - atom1.charge - int(order)) / 2.0
                 if atom1.lonePairs % 1 > 0 or atom1.lonePairs > 4:
                     logging.error("Unable to determine the number of lone pairs for element {0} in {1}".format(atom1,self))
-            else:
-                atom1.lonePairs = 0
                 
     def getNetCharge(self):
         """

@@ -207,6 +207,7 @@ cdef class ReactionSystem(DASx):
             
         if conditions:
             isConc = hasattr(self,'initialConcentrations')
+            # ToDo: I think this block is incompatible with surface.pyx catalyst reactors
             keys = conditions.keys()
             if 'T' in keys and hasattr(self,'T'):
                 self.T = Quantity(conditions['T'],'K')
@@ -978,6 +979,7 @@ cdef class ReactionSystem(DASx):
                 unimolecularThresholdVal = toleranceMoveToCore * charRate / unimolecularThresholdRateConstant
                 bimolecularThresholdVal = toleranceMoveToCore * charRate / bimolecularThresholdRateConstant
                 trimolecularThresholdVal = toleranceMoveToCore * charRate / trimolecularThresholdRateConstant
+
                 for i in xrange(numCoreSpecies):
                     if not unimolecularThreshold[i]:
                         # Check if core species concentration has gone above threshold for unimolecular reaction

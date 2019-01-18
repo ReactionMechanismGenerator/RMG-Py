@@ -42,6 +42,7 @@ represent, this should be the only module you need to change to do so.
 import cython
 from rmgpy.exceptions import AtomTypeError
 
+
 ################################################################################
 
 class AtomType:
@@ -238,6 +239,24 @@ Some charged atom types were merged together, and are marked as '*Composite atom
 """
 
 atomTypes = {}
+
+#: Surface sites:
+atomTypes['X'] = AtomType(label='X', generic=[], specific=['Xv', 'Xo'],
+                          single=[], allDouble=[], rDouble=[], oDouble=[], sDouble=[], triple=[],
+                          quadruple=[], benzene=[], lonePairs=[]
+                          )
+
+#: Vacant surface site
+atomTypes['Xv'] = AtomType('Xv', generic=['X'], specific=[],
+                           single=[0], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[0], quadruple=[0],
+                           benzene=[0], lonePairs=[0]
+                           )
+#: Occupied surface site
+atomTypes['Xo'] = AtomType('Xo', generic=['X'], specific=[],
+                           single=[0, 1], allDouble=[0, 1], rDouble=[], oDouble=[], sDouble=[], triple=[0, 1], quadruple=[0, 1],
+                           benzene=[0, 1], lonePairs=[]
+                           )
+
 atomTypes['R']    = AtomType(label='R', generic=[], specific=[
     'H',
     'R!H',
@@ -246,9 +265,10 @@ atomTypes['R']    = AtomType(label='R', generic=[], specific=[
     'C','Ca','Cs','Csc','Cd','CO','CS','Cdd','Cdc','Ct','Cb','Cbf','Cq','C2s','C2sc','C2d','C2dc','C2tc',
     'N','N0sc','N1s','N1sc','N1dc','N3s','N3sc','N3d','N3t','N3b','N5sc','N5dc','N5ddc','N5dddc','N5tc','N5b','N5bd',
     'O','Oa','O0sc','O2s','O2sc','O2d','O4sc','O4dc','O4tc','O4b',
+    'Ne',
     'Si','Sis','Sid','Sidd','Sit','SiO','Sib','Sibf','Siq',
     'S','Sa','S0sc','S2s','S2sc','S2d','S2dc','S2tc','S4s','S4sc','S4d','S4dd','S4dc','S4b','S4t','S4tdc','S6s','S6sc','S6d','S6dd','S6ddd','S6dc','S6t','S6td','S6tt','S6tdc',
-    'Cl','Cl1s',
+    'Cl','Cl1s','Ar',
     'I','I1s'])
 
 atomTypes['R!H']  = AtomType(label='R!H', generic=['R'], specific=[
@@ -257,9 +277,10 @@ atomTypes['R!H']  = AtomType(label='R!H', generic=['R'], specific=[
     'C','Ca','Cs','Csc','Cd','CO','CS','Cdd','Cdc','Ct','Cb','Cbf','Cq','C2s','C2sc','C2d','C2dc','C2tc',
     'N','N0sc','N1s','N1sc','N1dc','N3s','N3sc','N3d','N3t','N3b','N5sc','N5dc','N5ddc','N5dddc','N5tc','N5b','N5bd',
     'O','Oa','O0sc','O2s','O2sc','O2d','O4sc','O4dc','O4tc','O4b',
+    'Ne',
     'Si','Sis','Sid','Sidd','Sit','SiO','Sib','Sibf','Siq',
     'S','Sa','S0sc','S2s','S2sc','S2d','S2dc','S2tc','S4s','S4sc','S4d','S4dd','S4dc','S4b','S4t','S4tdc','S6s','S6sc','S6d','S6dd','S6ddd','S6dc','S6t','S6td','S6tt','S6tdc',
-    'Cl','Cl1s',
+    'Cl','Cl1s','Ar',
     'I','I1s'])
 
 atomTypes['Val4'] = AtomType(label='Val4', generic=['R','R!H'], specific=[
@@ -637,10 +658,12 @@ atomTypes['Cl1s'].setActions(incrementBond=[],               decrementBond=[],  
 atomTypes['I'  ].setActions(incrementBond=[],               decrementBond=[],               formBond=['I'],        breakBond=['I'],        incrementRadical=['I'],   decrementRadical=['I'],   incrementLonePair=[],      decrementLonePair=[])
 atomTypes['I1s'].setActions(incrementBond=[],               decrementBond=[],               formBond=['I1s'],      breakBond=['I1s'],      incrementRadical=['I1s'], decrementRadical=['I1s'], incrementLonePair=[],      decrementLonePair=[])
 
+atomTypes['Ar'  ].setActions(incrementBond=[],               decrementBond=[],               formBond=[],            breakBond=[],            incrementRadical=[],       decrementRadical=[],       incrementLonePair=[],      decrementLonePair=[])
+
 #list of elements that do not have more specific atomTypes
 #these are ordered on priority of picking if we encounter a more general atomType for make
-allElements=['H', 'C', 'O', 'N', 'S', 'Si', 'Cl', 'Ne', 'Ar', 'He',]
-nonSpecifics=['H', 'He', 'Ne', 'Ar',]
+allElements = ['H', 'C', 'O', 'N', 'S', 'Si', 'Ne', 'Ar', 'He']
+nonSpecifics = ['H', 'He', 'Ne', 'Ar']
 
 for atomType in atomTypes.values():
     for items in [atomType.generic, atomType.specific,

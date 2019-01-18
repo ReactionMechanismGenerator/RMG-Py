@@ -403,7 +403,7 @@ class TestGroupBond(unittest.TestCase):
         A method called before each unit test in this class.
         """
         self.bond = GroupBond(None, None, order=[2])
-        self.orderList = [[1], [2], [3], [1.5], [1,2], [2,1], [2,3], [1,2,3]]
+        self.orderList = [[1], [2], [3], [1.5], [1,2], [2,1], [2,3], [1,2,3]]  # todo : unit tests for vdw
     
     def testGetOrderStr(self):
         """
@@ -499,6 +499,9 @@ class TestGroupBond(unittest.TestCase):
     def testApplyActionFormBond(self):
         """
         Test the GroupBond.applyAction() method for a FORM_BOND action.
+
+        Tests that forming a bond between things already bonded, raises
+        an ActionError
         """
         action = ['FORM_BOND', '*1', 1, '*2']
         for order0 in self.orderList:
