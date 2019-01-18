@@ -46,7 +46,8 @@ from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStruct
 from rmgpy.reaction import Reaction, isomorphic_species_lists
 from rmgpy import settings
 from rmgpy.reaction import Reaction
-from rmgpy.kinetics import Arrhenius
+from rmgpy.kinetics import Arrhenius, SurfaceArrhenius,\
+                    SurfaceArrheniusBEP, StickingCoefficient, StickingCoefficientBEP
 from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.molecule.resonance import generate_optimal_aromatic_resonance_structures
 from rmgpy.species import Species
@@ -1088,12 +1089,36 @@ class KineticsFamily(Database):
             data = deepcopy(entry.data)
             data.changeT0(1)
             
+            if type(data) is Arrhenius:  # more specific than isinstance(data,Arrhenius) because we want to exclude inherited subclasses!
+                data = data.toArrheniusEP()
+            elif isinstance(data, StickingCoefficient):
+                data = StickingCoefficientBEP( #todo: perhaps make a method StickingCoefficient.StickingCoefficientBEP analogous to Arrhenius.toArrheniusEP
+                    A = deepcopy(data.A),
+                    n = deepcopy(data.n),
+                    alpha = 0,
+                    E0 = deepcopy(data.Ea),
+                    Tmin = deepcopy(data.Tmin),
+                    Tmax = deepcopy(data.Tmax)
+                    )
+            elif isinstance(data, SurfaceArrhenius):
+                data = SurfaceArrheniusBEP( #todo: perhaps make a method SurfaceArrhenius.toSurfaceArrheniusBEP analogous to Arrhenius.toArrheniusEP
+                    A = deepcopy(data.A),
+                    n = deepcopy(data.n),
+                    alpha = 0,
+                    E0 = deepcopy(data.Ea),
+                    Tmin = deepcopy(data.Tmin),
+                    Tmax = deepcopy(data.Tmax)
+                    )
+            else:
+                raise NotImplementedError("Unexpected training kinetics type {} for {}".format(type(data), entry))
+
+            
             new_entry = Entry(
                 index = index,
                 label = ';'.join([g.label for g in template]),
                 item=Reaction(reactants=[g.item for g in template],
                                                    products=[]),
-                data = data.toArrheniusEP(),
+                data=data,
                 rank = entry.rank,
                 reference=entry.reference,
                 shortDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.shortDesc,
