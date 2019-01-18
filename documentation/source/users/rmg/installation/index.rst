@@ -21,12 +21,14 @@ Installation on a Windows Platform
 
 Due to difficulties with dependencies, installation on Windows directly is no longer supported. Instead, it is
 recommended to run a Linux virtual machine from Windows and follow either the instructions for basic users
-(binary installation using Anaconda) or the instructions for developers.
+(binary installation using Anaconda) or the instructions for developers. Alternatively, it is also possible to install
+RMG in the Ubuntu subsystem now available on Windows 10.
 
 .. toctree::
     :maxdepth: 1
 
     virtualMachineSetup
+    linuxSubsystem
 
 
 For Basic Users: Binary Installation Using Anaconda
