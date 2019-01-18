@@ -67,7 +67,9 @@ cdef class Species:
     
     cpdef toAdjacencyList(self)
     
-    cpdef bint isSurfaceSpecies(self) except -2
+    cpdef bint containsSurfaceSite(self) except -2
+
+    cpdef bint isSurfaceSite(self) except -2
 
     cpdef bint hasStatMech(self) except -2
 
