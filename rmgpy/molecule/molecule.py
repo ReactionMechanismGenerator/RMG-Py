@@ -325,6 +325,12 @@ class Atom(Vertex):
         """
         return self.element.number == 9
 
+    def isSurfaceSite(self):
+        """
+        Return ``True`` if the atom represents a surface site or ``False`` if not.
+        """
+        return self.symbol == 'X'
+
     def isSilicon(self):
         """
         Return ``True`` if the atom represents a silicon atom or ``False`` if
@@ -906,6 +912,20 @@ class Molecule(Graph):
         by an bond, or ``False`` if not.
         """
         return self.hasEdge(atom1, atom2)
+
+    def containsSurfaceSite(self):
+        """
+        Returns ``True`` iff the molecule contains an 'X' surface site.
+        """
+        cython.declare(atom=Atom)
+        for atom in self.atoms:
+            if atom.symbol == 'X':
+                return True
+        return False
+
+    def isSurfaceSite(self):
+        "Returns ``True`` iff the molecule is nothing but a surface site 'X'."
+        return (len(self.atoms) == 1 and self.atoms[0].isSurfaceSite())
 
     def removeAtom(self, atom):
         """

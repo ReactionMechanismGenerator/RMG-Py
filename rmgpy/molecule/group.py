@@ -460,6 +460,14 @@ class GroupAtom(Vertex):
         # Otherwise self is in fact a specific case of other
         return True
 
+
+    def isSurfaceSite(self):
+        """
+        Return ``True`` if the atom represents a surface site or ``False`` if not.
+        """
+        siteType = atomTypes['X']
+        return all([s.isSpecificCaseOf(siteType) for s in self.atomType])
+
     def isOxygen(self):
         """
         Return ``True`` if the atom represents an oxygen atom or ``False`` if
@@ -1042,6 +1050,20 @@ class Group(Graph):
         by an bond, or ``False`` if not.
         """
         return self.hasEdge(atom1, atom2)
+
+    def containsSurfaceSite(self):
+        """
+        Returns ``True`` iff the group contains an 'X' surface site.
+        """
+        cython.declare(atom=GroupAtom)
+        for atom in self.atoms:
+            if atom.isSurfaceSite():
+                return True
+        return False
+
+    def isSurfaceSite(self):
+        "Returns ``True`` iff the group is nothing but a surface site 'X'."
+        return (len(self.atoms) == 1 and self.atoms[0].isSurfaceSite())
 
     def removeAtom(self, atom):
         """

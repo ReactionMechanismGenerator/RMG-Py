@@ -67,6 +67,8 @@ cdef class GroupAtom(Vertex):
 
     cpdef bint isSpecificCaseOf(self, Vertex other) except -2
 
+    cpdef bint isSurfaceSite(self) except -2
+
     cpdef bint isOxygen(self)
 
     cpdef bint isSulfur(self)
@@ -175,6 +177,10 @@ cdef class Group(Graph):
     cpdef list findSubgraphIsomorphisms(self, Graph other, dict initialMap=?, bint saveOrder=?)
     
     cpdef bint isIdentical(self, Graph other, bint saveOrder=?)
+
+    cpdef bint isSurfaceSite(self) except -2
+    
+    cpdef bint containsSurfaceSite(self) except -2
 
     cpdef bint isAromaticRing(self)
 

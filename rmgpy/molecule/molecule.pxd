@@ -73,6 +73,8 @@ cdef class Atom(Vertex):
 
     cpdef bint isNOS(self)
     
+    cpdef bint isSurfaceSite(self)
+    
     cpdef incrementRadical(self)
 
     cpdef decrementRadical(self)
@@ -152,6 +154,10 @@ cdef class Molecule(Graph):
     cpdef bint hasAtom(self, Atom atom)
 
     cpdef bint hasBond(self, Atom atom1, Atom atom2)
+
+    cpdef bint containsSurfaceSite(self)
+    
+    cpdef bint isSurfaceSite(self)
 
     cpdef removeAtom(self, Atom atom)
 
