@@ -523,7 +523,7 @@ class TestGetAtomType(unittest.TestCase):
         self.assertEqual(self.atomType(self.mol59, 0), 'C2dc')
         self.assertEqual(self.atomType(self.mol60, 2), 'C2dc')
         self.assertEqual(self.atomType(self.mol20, 0), 'C2tc')
-        self.assertEqual(self.atomType(self.mol29, 0), 'C2tc')
+        self.assertEqual(self.atomType(self.mol29, 0), 'C2tc')  # todo: add in a ciq unit test?
     
     def testNitrogenTypes(self):
         """
@@ -571,7 +571,7 @@ class TestGetAtomType(unittest.TestCase):
         self.assertEqual(self.atomType(self.mol4, 1), 'SiO')
         self.assertEqual(self.atomType(self.mol4, 5), 'Sid')
         self.assertEqual(self.atomType(self.mol4, 4), 'Sidd')
-        self.assertEqual(self.atomType(self.mol4, 7), 'Sit')
+        self.assertEqual(self.atomType(self.mol4, 7), 'Sit')  #todo: add in Siq unit test?
     
     def testSulfurTypes(self):
         """
