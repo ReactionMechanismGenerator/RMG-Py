@@ -35,7 +35,7 @@ jobs:
     - stage: test
       install:
         # Clone RMG-database
-        - git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
+        - git clone -b catmerge https://github.com/ReactionMechanismGenerator/RMG-database.git
         - cd RMG-Py
         - conda env create -q -f environment_linux.yml
         - source activate rmg_env
