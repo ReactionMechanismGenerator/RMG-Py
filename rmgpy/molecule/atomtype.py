@@ -224,8 +224,8 @@ therefore the first one in the list should always be an element.
 The atomTypes naming convention is:
 <element> <valence> <characteristic bonds> <charge(optional)>
 For example:
-- N3d is nitrogen with valence=3 (i.e., 3 electronce are able to form bonds or remain as radicals) with one double bond
-- S2tc is a charged sulful with valence=2 with a triple bonds
+- N3d is nitrogen with valence=3 (i.e., 3 electrons are able to form bonds or remain as radicals) with one double bond
+- S2tc is a charged sulfur with valence=2 with a triple bonds
 - Oa is atomic oxygen, i.e., a closed shell atom
 Some charged atom types were merged together, and are marked as '*Composite atomType'
 """
