@@ -979,7 +979,6 @@ cdef class ReactionSystem(DASx):
                 unimolecularThresholdVal = toleranceMoveToCore * charRate / unimolecularThresholdRateConstant
                 bimolecularThresholdVal = toleranceMoveToCore * charRate / bimolecularThresholdRateConstant
                 trimolecularThresholdVal = toleranceMoveToCore * charRate / trimolecularThresholdRateConstant
-
                 for i in xrange(numCoreSpecies):
                     if not unimolecularThreshold[i]:
                         # Check if core species concentration has gone above threshold for unimolecular reaction

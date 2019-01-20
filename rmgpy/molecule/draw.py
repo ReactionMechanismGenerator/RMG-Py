@@ -1111,7 +1111,6 @@ class MoleculeDrawer:
                 self.__drawLine(cr, x1 + du, y1 + dv, x2 + du, y2 + dv, dashed=True)
             else:
                 self.__drawLine(cr, x1, y1, x2, y2)
-
         else:
             # Draw bond on skeleton
             self.__drawLine(cr, x1, y1, x2, y2)

@@ -42,7 +42,6 @@ represent, this should be the only module you need to change to do so.
 import cython
 from rmgpy.exceptions import AtomTypeError
 
-
 ################################################################################
 
 class AtomType:

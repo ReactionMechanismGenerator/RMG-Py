@@ -510,7 +510,7 @@ class GroupAtom(Vertex):
         Returns: list of the number of bonds currently on the :class:GroupAtom
 
         If the argument wildcards is turned off then any bonds with multiple
-        options for bond orders will not be counted.
+        options for bond orders will not be counted
         """
         #count up number of bonds
         single = 0; rDouble = 0; oDouble = 0; sDouble = 0; triple = 0; quadruple = 0; benzene = 0
