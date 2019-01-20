@@ -554,6 +554,8 @@ class Bond(Edge):
             return 'T'
         elif self.isQuadruple():
             return 'Q'
+        elif self.isVanDerWaals():
+            return 'vdW'
         elif self.isHydrogenBond():
             return 'H'
         else:
@@ -573,6 +575,8 @@ class Bond(Edge):
             self.order = 1.5
         elif newOrder == 'Q':
             self.order = 4
+        elif newOrder == 'vdW':
+            self.order = 0
         elif newOrder == 'H':
             self.order = 0.1
         else:
@@ -609,6 +613,14 @@ class Bond(Edge):
         b.vertex2 = self.vertex2
         b.order = self.order
         return b
+
+
+    def isVanDerWaals(self):
+        """
+        Return ``True`` if the bond represents a van der Waals bond or 
+        ``False`` if not.
+        """
+        return self.isOrder(0) or self.order == 'vdW' #todo: remove 'vdW'
 
     def isOrder(self, otherOrder):
         """
@@ -899,6 +911,16 @@ class Molecule(Graph):
         """
         self._fingerprint = None
         return self.removeEdge(bond)
+
+    def removeVanDerWaalsBonds(self):
+        """
+        Remove all van der Waals bonds.
+        """
+        cython.declare(atom=Atom, bond=Bond)
+        for atom in self.atoms:
+            for bond in atom.edges.values():
+                if bond.isVanDerWaals():
+                    self.removeBond(bond)
 
     def sortAtoms(self):
         """

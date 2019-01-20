@@ -109,6 +109,8 @@ cdef class Bond(Edge):
     
     cpdef bint isOrder(self, float otherOrder)
 
+    cpdef bint isVanDerWaals(self) except -2
+
     cpdef bint isSingle(self) except -2
 
     cpdef bint isDouble(self) except -2
@@ -154,6 +156,8 @@ cdef class Molecule(Graph):
     cpdef removeAtom(self, Atom atom)
 
     cpdef removeBond(self, Bond bond)
+
+    cpdef removeVanDerWaalsBonds(self)
 
     cpdef sortAtoms(self)
     

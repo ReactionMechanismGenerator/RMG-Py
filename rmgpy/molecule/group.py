@@ -170,6 +170,9 @@ class GroupAtom(Vertex):
         where `order` specifies the order of the forming bond, and should be
         1 (since we only allow forming of single bonds).
         """
+        if order == 0:
+            # no change to atom types!
+            return
         if order != 1:
             raise ActionError('Unable to update GroupAtom due to FORM_BOND action: Invalid order "{0}".'.format(order))
         atomType = []
@@ -186,6 +189,9 @@ class GroupAtom(Vertex):
         where `order` specifies the order of the breaking bond, and should be
         1 (since we only allow breaking of single bonds).
         """
+        if order == 0:
+            # no change to atom types!
+            return
         if order != 1:
             raise ActionError('Unable to update GroupAtom due to BREAK_BOND action: Invalid order "{0}".'.format(order))
         atomType = []
@@ -665,6 +671,8 @@ class GroupBond(Edge):
             elif value == 1.5:
                 values.append('B')
             elif value == 0:
+                values.append('vdW')
+            elif value == 0.1:
                 values.append('H')
             else:
                 raise TypeError('Bond order number {} is not hardcoded as a string'.format(value))
@@ -685,6 +693,8 @@ class GroupBond(Edge):
                 values.append(3)
             elif value == 'Q':
                 values.append(4)
+            elif value == 'vdW':
+                values.append(0)
             elif value == 'B':
                 values.append(1.5)
             elif value == 'H':
@@ -772,6 +782,22 @@ class GroupBond(Edge):
             else: return False
         else:
             return abs(self.order[0]-4) <= 1e-9 and len(self.order) == 1
+
+    def isVanDerWaals(self, wildcards = False):
+        """
+        Return ``True`` if the bond represents a van der Waals bond or ``False`` if
+        not. If `wildcards` is ``False`` we return False anytime there is more
+        than one bond order, otherwise we return ``True`` if any of the options
+        are van der Waals.
+        """
+        if wildcards:
+            for order in self.order:
+                if abs(order[0]) <= 1e-9:
+                    return True
+            else:
+                return False
+        else:
+            return abs(self.order[0]) <= 1e-9 and len(self.order) == 1
 
     def isBenzene(self, wildcards = False):
         """
@@ -1026,6 +1052,16 @@ class Group(Graph):
         this removal.
         """
         return self.removeEdge(bond)
+
+    def removeVanDerWaalsBonds(self):
+        """
+        Remove all bonds that are definitely only van der Waals bonds.
+        """
+        cython.declare(atom=GroupAtom, bond=GroupBond)
+        for atom in self.atoms:
+            for bond in atom.edges.values():
+                if bond.isVanDerWaals(wildcards=False):
+                    self.removeBond(bond)
 
     def sortAtoms(self):
         """
