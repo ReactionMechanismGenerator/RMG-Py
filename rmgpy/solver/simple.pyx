@@ -171,11 +171,10 @@ cdef class SimpleReactor(ReactionSystem):
         
         # First call the base class version of the method
         # This initializes the attributes declared in the base class
-        ReactionSystem.initializeModel(self, coreSpecies, coreReactions, edgeSpecies, edgeReactions,
-                                       surfaceSpecies=surfaceSpecies, surfaceReactions=surfaceReactions,
-                                       pdepNetworks=pdepNetworks, atol=atol, rtol=rtol,
-                                       sensitivity=sensitivity, sens_atol=sens_atol, sens_rtol=sens_rtol,
-                                       filterReactions=filterReactions, conditions=conditions)
+        ReactionSystem.initializeModel(self, coreSpecies=coreSpecies, coreReactions=coreReactions, edgeSpecies=edgeSpecies,
+                                       edgeReactions=edgeReactions, surfaceSpecies=surfaceSpecies, surfaceReactions=surfaceReactions,
+                                       pdepNetworks=pdepNetworks, atol=atol, rtol=rtol, sensitivity=sensitivity, sens_atol=sens_atol,
+                                       sens_rtol=sens_rtol, filterReactions=filterReactions, conditions=conditions)
 
         # Set initial conditions
         self.set_initial_conditions()
