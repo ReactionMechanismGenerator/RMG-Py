@@ -27,7 +27,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
         """
         databaseDirectory = settings['database.directory']
         cls.database = RMGDatabase()
-        cls.database.load(databaseDirectory, kineticsFamilies='none', reactionLibraries=[])
+        cls.database.load(databaseDirectory, kineticsFamilies='all')
 
     # These are generators, that call the methods below.
     def test_kinetics(self):
@@ -886,9 +886,7 @@ The following adjList may have atoms in a different ordering than the input file
         for entryName, entry in group.entries.iteritems():
             try:
                 if isinstance(entry.item, Group):
-                    print('Trying to make sample molecule for {}'.format(entryName))
                     sampleMolecule = entry.item.makeSampleMolecule()
-                    print('Made molecule \n{}'.format(sampleMolecule.toAdjacencyList()))
 
                     #for now ignore sample atoms that use nitrogen types
                     nitrogen = False
