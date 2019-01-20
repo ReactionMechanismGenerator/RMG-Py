@@ -659,7 +659,7 @@ atomTypes['I1s'].setActions(incrementBond=[],               decrementBond=[],   
 
 
 #these are ordered on priority of picking if we encounter a more general atomType for make
-allElements=['H', 'C', 'O', 'N', 'S', 'Si', 'Cl', 'Ne', 'Ar', 'He',]
+allElements=['H', 'C', 'O', 'N', 'S', 'Si', 'Cl', 'Ne', 'Ar', 'He', 'X']
 #list of elements that do not have more specific atomTypes
 nonSpecifics=['H', 'He', 'Ne', 'Ar',]
 
