@@ -320,8 +320,15 @@ class MoleculeDrawer:
             self.coordinates[0, :] = [0.0, 0.0]
             return self.coordinates
         elif Natoms == 2:
-            self.coordinates[0, :] = [-0.5, 0.0]
-            self.coordinates[1, :] = [0.5, 0.0]
+            if atoms[0].isSurfaceSite():
+                self.coordinates[0, :] = [0.0, -0.5]
+                self.coordinates[1, :] = [0.0, 0.5]
+            elif atoms[1].isSurfaceSite():
+                self.coordinates[0, :] = [0.0, 0.5]
+                self.coordinates[1, :] = [0.0, -0.5]
+            else:
+                self.coordinates[0, :] = [-0.5, 0.0]
+                self.coordinates[1, :] = [0.5, 0.0]
             return self.coordinates
 
         # Decide whether we can use RDKit or have to generate coordinates ourselves
