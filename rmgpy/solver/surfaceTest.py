@@ -61,8 +61,6 @@ class SurfaceReactorCheck(unittest.TestCase):
         edgeSpecies = []
         coreReactions = [rxn1]
         edgeReactions = []
-        surfaceSpecies = []
-        surfaceReactions = []
 
         T = 1000
         initialP = 1.0e5
@@ -75,8 +73,7 @@ class SurfaceReactorCheck(unittest.TestCase):
             surfaceSiteDensity=(2.72e-9, 'mol/cm^2'),
             termination=[])
 
-        rxnSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies,
-                                  edgeReactions, surfaceSpecies, surfaceReactions)
+        rxnSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
 
         tlist = numpy.logspace(-13, -5, 81, dtype=numpy.float64)
 
@@ -184,8 +181,6 @@ class SurfaceReactorCheck(unittest.TestCase):
         edgeSpecies = []
         coreReactions = [rxn1]
         edgeReactions = []
-        surfaceSpecies = []
-        surfaceReactions = []
 
         T = 800.
         initialP = 1.0e5
@@ -199,8 +194,7 @@ class SurfaceReactorCheck(unittest.TestCase):
             termination=[])
         # in chemkin, the sites are mostly occupied in about 1e-8 seconds.
 
-        rxnSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies,
-                                  edgeReactions, surfaceSpecies, surfaceReactions)
+        rxnSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
 
         tlist = numpy.logspace(-13, -5, 81, dtype=numpy.float64)
 
