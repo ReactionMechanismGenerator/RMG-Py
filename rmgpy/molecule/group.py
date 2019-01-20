@@ -688,7 +688,7 @@ class GroupBond(Edge):
             elif value == 'B':
                 values.append(1.5)
             elif value == 'H':
-                values.append(0)
+                values.append(0.1)
             else:
                 # try to see if an float disguised as a string was input by mistake
                 try:
