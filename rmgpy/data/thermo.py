@@ -1998,7 +1998,7 @@ class ThermoDatabase(object):
         """
         node0 = database.descendTree(molecule, atom, None)
         if node0 is None:
-            raise KeyError('Node not found in database.')
+            raise KeyError('Node not found in thermo database for atom {0} in molecule {1}.'.format(atom, molecule))
 
         # It's possible (and allowed) that items in the tree may not be in the
         # library, in which case we need to fall up the tree until we find an
