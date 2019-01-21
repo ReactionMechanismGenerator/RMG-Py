@@ -782,13 +782,15 @@ SURFACERATECOEFFICIENT_CONVERSION_FACTORS = {
     (pq.m ** 2 / pq.s).dimensionality: 1.0,
     (pq.m ** 5 / pq.s).dimensionality: 1.0,
     (pq.m ** 2 / (pq.mol * pq.s)).dimensionality: 1.0,
-    (pq.m ** 5 / (pq.mol ** 2 * pq.s)).dimensionality: 1.0
+    (pq.m ** 5 / (pq.mol ** 2 * pq.s)).dimensionality: 1.0,
+    (pq.m ** 4 / (pq.mol ** 2 * pq.s)).dimensionality: 1.0,
 }
 SURFACERATECOEFFICIENT_COMMON_UNITS = [
     's^-1',  # unimolecular
     'm^3/(mol*s)', 'cm^3/(mol*s)', 'm^3/(molecule*s)', 'cm^3/(molecule*s)',  # single site adsorption
     'm^2/(mol*s)', 'cm^2/(mol*s)', 'm^2/(molecule*s)', 'cm^2/(molecule*s)',  # bimolecular surface (Langmuir-Hinshelwood)
     'm^5/(mol^2*s)', 'cm^5/(mol^2*s)', 'm^5/(molecule^2*s)', 'cm^5/(molecule^2*s)',  # dissociative adsorption
+    'm^4/(mol^2*s)', 'cm^4/(mol^2*s)', 'm^4/(molecule^2*s)', 'cm^4/(molecule^2*s)', # Surface_Bidentate_Dissociation
     ]
 def SurfaceRateCoefficient(*args, **kwargs):
     # Make a ScalarQuantity or ArrayQuantity object out of the given parameter
