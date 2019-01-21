@@ -23,6 +23,4 @@ geometry = Log('BenzylFreq.log')
 
 frequencies = Log('BenzylFreq.log')
 
-rotors = [ 
-    HinderedRotor(scanLog=Log('BenzylRot1.log'), pivots=[12,4], top=[12,13,14], symmetry=2, fit='best'),
-    ]
+rotors = [HinderedRotor(scanLog=Log('BenzylRot1.log'), pivots=[12,4], top=[12,13,14])]

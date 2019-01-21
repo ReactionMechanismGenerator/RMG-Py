@@ -351,8 +351,10 @@ scan in the following format::
 
 The ``Energy`` can be in units of ``kJ/mol``, ``J/mol``, ``cal/mol``, ``kcal/mol``, ``cm^-1`` or ``hartree``.
 
-The ``symmetry`` parameter will usually equal either 1, 2 or 3. Below are examples of internal rotor scans with these
-commonly encountered symmetry numbers. First, ``symmetry = 3``:
+The ``symmetry`` parameter will usually equal either 1, 2 or 3. It could be determined automatically by Arkane
+(by simply not specifying it altogether), however it is always better to explicitly specify it if it is known. If it is
+determined by Arkane, the log file will specify the determined value and what it was based on. Below are examples of
+internal rotor scans with these commonly encountered symmetry numbers. First, ``symmetry = 3``:
 
 .. image:: symmetry_3_example.png
 
