@@ -255,10 +255,11 @@ def update_headers():
     # Compile list of files to modify
     filelist = ['rmg.py', 'arkane.py', 'setup.py']
 
-    root_dirs = ['rmgpy', 'scripts']
+    root_dirs = ['rmgpy', 'arkane', 'scripts']
     for root_dir in root_dirs:
         for root, dirs, files in os.walk(root_dir):
-            if 'test_data' in root or 'files' in root or '/tools/data' in root or '/arkane/data' in root:
+            if 'test_data' in root or 'files' in root or '/tools/data' in root or 'arkane/data' in root:
+                print 'Skipping ' + root
                 continue
             print root
             for f in files:
