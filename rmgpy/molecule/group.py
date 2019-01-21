@@ -557,6 +557,7 @@ class GroupAtom(Vertex):
                           'Ne':4,
                           'Cl':3,
                           'Ar':4,
+                          'X':0,
         }
 
         for elementLabel in allElements:

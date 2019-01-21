@@ -76,13 +76,16 @@ class Element:
         self.mass = mass
         self.isotope = isotope
         self.chemkinName = chemkinName or self.name
-        try:
-            self.covRadius = _rdkit_periodic_table.GetRcovalent(symbol)
-        except RuntimeError:
-            import logging
-            logging.error("RDkit doesn't know element {0} so covalent radius unknown".format(symbol))
+        if symbol == 'X':
             self.covRadius = 0
-
+        else:
+            try:
+                self.covRadius = _rdkit_periodic_table.GetRcovalent(symbol)
+            except RuntimeError:
+                import logging
+                logging.error("RDkit doesn't know element {0} so covalent radius unknown".format(symbol))
+                self.covRadius = 0
+    
     def __str__(self):
         """
         Return a human-readable string representation of the object.
@@ -117,12 +120,12 @@ class PeriodicSystem(object):
     isotops of the same element may have slight different electronegativities, which is not reflected below
     """
 
-    valences          = {'H': 1, 'He': 0, 'C': 4, 'N': 3, 'O': 2, 'F': 1, 'Ne': 0, 'Si': 4, 'S': 2, 'Cl': 1, 'Ar': 0, 'I': 1}
-    valence_electrons = {'H': 1, 'He': 2, 'C': 4, 'N': 5, 'O': 6, 'F': 7, 'Ne': 8, 'Si': 4, 'S': 6, 'Cl': 7, 'Ar': 8, 'I': 7}
-    lone_pairs        = {'H': 0, 'He': 1, 'C': 0, 'N': 1, 'O': 2, 'F': 3, 'Ne': 4, 'Si': 0, 'S': 2, 'Cl': 3, 'Ar': 4, 'I': 3}
+    valences          = {'H': 1, 'He': 0, 'C': 4, 'N': 3, 'O': 2, 'F': 1, 'Ne': 0, 'Si': 4, 'S': 2, 'Cl': 1, 'Ar': 0, 'I': 1, 'X':1}  # todo: check if X should be 4
+    valence_electrons = {'H': 1, 'He': 2, 'C': 4, 'N': 5, 'O': 6, 'F': 7, 'Ne': 8, 'Si': 4, 'S': 6, 'Cl': 7, 'Ar': 8, 'I': 7, 'X':1}  # todo: check if X should be 4
+    lone_pairs        = {'H': 0, 'He': 1, 'C': 0, 'N': 1, 'O': 2, 'F': 3, 'Ne': 4, 'Si': 0, 'S': 2, 'Cl': 3, 'Ar': 4, 'I': 3, 'X':0}
     electronegativity = {'H': 2.20, 'D': 2.20, 'T': 2.20, 'C': 2.55, 'C13': 2.55, 'N': 3.04, 'O': 3.44, 'O18': 3.44,
-                         'F': 3.98, 'Si': 1.90, 'S': 2.58, 'Cl': 3.16, 'I': 2.66}
-
+                         'F': 3.98, 'Si': 1.90, 'S': 2.58, 'Cl': 3.16, 'I': 2.66, 'X': 0.0} # todo: check consequences of X=0.0
+    
 ################################################################################
 
 def getElement(value, isotope=-1):
@@ -161,6 +164,8 @@ def getElement(value, isotope=-1):
 # The elements are sorted by increasing atomic number and grouped by period
 # Recommended IUPAC nomenclature is used throughout (including 'aluminium' and
 # 'caesium')
+
+X = Element(0, 'X', 'surface_site' , 0.0)
 
 # Period 1
 #: Hydrogen
@@ -295,6 +300,7 @@ Cn = Element(112, 'Cn', 'copernicum'    , 0.285)
 
 # A list of the elements, sorted by increasing atomic number
 elementList = [
+    X,
     H, D, T, He,
     Li, Be, B, C, C13, N, O, O18, F, Ne,
     Na, Mg, Al, Si, P, S, Cl, Ar,

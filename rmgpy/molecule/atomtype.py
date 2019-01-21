@@ -238,6 +238,24 @@ Some charged atom types were merged together, and are marked as '*Composite atom
 """
 
 atomTypes = {}
+
+#: Surface sites:
+atomTypes['X'] = AtomType(label='X', generic=[], specific=['Xv', 'Xo'],
+                          single=[], allDouble=[], rDouble=[], oDouble=[], sDouble=[], triple=[],
+                          quadruple=[], benzene=[], lonePairs=[]
+                          )
+
+#: Vacant surface site
+atomTypes['Xv'] = AtomType('Xv', generic=['X'], specific=[],
+                           single=[0], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[0], quadruple=[0],
+                           benzene=[0], lonePairs=[0]
+                           )
+#: Occupied surface site
+atomTypes['Xo'] = AtomType('Xo', generic=['X'], specific=[],
+                           single=[0, 1], allDouble=[0, 1], rDouble=[], oDouble=[], sDouble=[], triple=[0, 1], quadruple=[0, 1],
+                           benzene=[0, 1], lonePairs=[]
+                           )
+
 atomTypes['R']    = AtomType(label='R', generic=[], specific=[
     'H',
     'R!H',
@@ -535,6 +553,10 @@ atomTypes['F1s'] = AtomType('F1s', generic=['R','R!H','F','Val7'],  specific=[],
                              single=[0,1], allDouble=[0], rDouble=[], oDouble=[], sDouble=[], triple=[0], benzene=[0], lonePairs=[3], charge=[0])
 # examples for F1s: HF, [F], FO, CH3F, F2
 
+atomTypes['X'   ].setActions(incrementBond=['X'],            decrementBond=['X'],            formBond=['X'],         breakBond=['X'],         incrementRadical=[],       decrementRadical=[],       incrementLonePair=[],      decrementLonePair=[])
+atomTypes['Xv'  ].setActions(incrementBond=[],               decrementBond=[],               formBond=['Xo'],        breakBond=[],            incrementRadical=[],       decrementRadical=[],       incrementLonePair=[],      decrementLonePair=[])
+atomTypes['Xo'  ].setActions(incrementBond=['Xo'],           decrementBond=['Xo'],           formBond=['Xo'],        breakBond=['Xv'],        incrementRadical=[],       decrementRadical=[],       incrementLonePair=[],      decrementLonePair=[])
+
 atomTypes['R'   ].setActions(incrementBond=['R'],            decrementBond=['R'],            formBond=['R'],         breakBond=['R'],         incrementRadical=['R'],    decrementRadical=['R'],    incrementLonePair=['R'],   decrementLonePair=['R'])
 atomTypes['R!H' ].setActions(incrementBond=['R!H'],          decrementBond=['R!H'],          formBond=['R!H'],       breakBond=['R!H'],       incrementRadical=['R!H'],  decrementRadical=['R!H'],  incrementLonePair=['R!H'], decrementLonePair=['R!H'])
 atomTypes['Val4'].setActions(incrementBond=['Val4'],         decrementBond=['Val4'],         formBond=['Val4'],      breakBond=['Val4'],      incrementRadical=['Val4'], decrementRadical=['Val4'], incrementLonePair=['Val4'],decrementLonePair=['Val4'])
@@ -645,7 +667,7 @@ atomTypes['F'  ].setActions(incrementBond=[],               decrementBond=[],   
 atomTypes['F1s'].setActions(incrementBond=[],               decrementBond=[],               formBond=['F1s'],      breakBond=['F1s'],      incrementRadical=['F1s'], decrementRadical=['F1s'], incrementLonePair=[],      decrementLonePair=[])
 
 #these are ordered on priority of picking if we encounter a more general atomType for make
-allElements=['H', 'C', 'O', 'N', 'S', 'Si', 'Cl', 'Ne', 'Ar', 'He',]
+allElements=['H', 'C', 'O', 'N', 'S', 'Si', 'Cl', 'Ne', 'Ar', 'He', 'X']
 #list of elements that do not have more specific atomTypes
 nonSpecifics=['H', 'He', 'Ne', 'Ar',]
 
