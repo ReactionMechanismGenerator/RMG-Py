@@ -422,6 +422,9 @@ class Atom(Vertex):
         Update self.charge, according to the valence, and the
         number and types of bonds, radicals, and lone pairs.
         """
+        if self.isSurfaceSite():
+            self.charge = 0
+            return
         valence_electron = elements.PeriodicSystem.valence_electrons[self.symbol]
         order = self.getBondOrdersForAtom()
         self.charge = valence_electron - order - self.radicalElectrons - 2*self.lonePairs
