@@ -496,8 +496,10 @@ scan in the following format:</p>
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">Energy</span></code> can be in units of <code class="docutils literal notranslate"><span class="pre">kJ/mol</span></code>, <code class="docutils literal notranslate"><span class="pre">J/mol</span></code>, <code class="docutils literal notranslate"><span class="pre">cal/mol</span></code>, <code class="docutils literal notranslate"><span class="pre">kcal/mol</span></code>, <code class="docutils literal notranslate"><span class="pre">cm^-1</span></code> or <code class="docutils literal notranslate"><span class="pre">hartree</span></code>.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">symmetry</span></code> parameter will usually equal either 1, 2 or 3. Below are examples of internal rotor scans with these
-commonly encountered symmetry numbers. First, <code class="docutils literal notranslate"><span class="pre">symmetry</span> <span class="pre">=</span> <span class="pre">3</span></code>:</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">symmetry</span></code> parameter will usually equal either 1, 2 or 3. It could be determined automatically by Arkane
+(by simply not specifying it altogether), however it is always better to explicitly specify it if it is known. If it is
+determined by Arkane, the log file will specify the determined value and what it was based on. Below are examples of
+internal rotor scans with these commonly encountered symmetry numbers. First, <code class="docutils literal notranslate"><span class="pre">symmetry</span> <span class="pre">=</span> <span class="pre">3</span></code>:</p>
 <img alt="../../_images/symmetry_3_example.png" src="../../_images/symmetry_3_example.png" />
 <p>Internal rotation of a methyl group is a common example of a hindered rotor with <code class="docutils literal notranslate"><span class="pre">symmetry</span> <span class="pre">=</span> <span class="pre">3</span></code>, such as the one
 above. As shown, all three minima (and maxima) have identical energies, hence <code class="docutils literal notranslate"><span class="pre">symmetry</span> <span class="pre">=</span> <span class="pre">3</span></code>.</p>
