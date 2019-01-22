@@ -32,12 +32,15 @@
 This module contains the TransportData class for storing transport properties.
 """
 
+import numpy
+
+from rmgpy.rmgobject import RMGObject
 from rmgpy import quantity
 from rmgpy.quantity import DipoleMoment, Energy, Length, Volume
 import rmgpy.constants as constants
-import numpy
 
-class TransportData:
+
+class TransportData(RMGObject):
     """
     A set of transport properties.
     
@@ -55,7 +58,8 @@ class TransportData:
     
     """
 
-    def __init__(self, shapeIndex=None, epsilon=None, sigma=None, dipoleMoment=None, polarizability=None, rotrelaxcollnum=None, comment = ''):
+    def __init__(self, shapeIndex=None, epsilon=None, sigma=None, dipoleMoment=None, polarizability=None,
+                 rotrelaxcollnum=None, comment = ''):
         self.shapeIndex = shapeIndex
         try:
             self.epsilon = Energy(epsilon)
@@ -69,7 +73,6 @@ class TransportData:
         self.rotrelaxcollnum = rotrelaxcollnum
         self.comment = comment
 
-    
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the
@@ -129,8 +132,7 @@ class TransportData:
         import cantera as ct
         
         ctTransport = ct.GasTransportData()
-        
-        
+
         if self.shapeIndex == 0:
             geometry = 'atom'
         elif self.shapeIndex == 1:

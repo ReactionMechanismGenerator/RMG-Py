@@ -41,7 +41,7 @@ from rmgpy.exceptions import CollisionError
 
 ################################################################################
 
-cdef class SingleExponentialDown:
+cdef class SingleExponentialDown(RMGObject):
     """
     A representation of a single exponential down model of collisional energy
     transfer. The attributes are:
@@ -94,12 +94,13 @@ cdef class SingleExponentialDown:
         def __get__(self):
             return self._alpha0
         def __set__(self, value):
-            try:
-                self._alpha0 = quantity.Frequency(value)
-                self._alpha0.value_si *= constants.h * constants.c * 100. * constants.Na
-                self._alpha0.units = 'kJ/mol'
-            except quantity.QuantityError:
-                self._alpha0 = quantity.Energy(value)
+            if value is not None:
+                try:
+                    self._alpha0 = quantity.Frequency(value)
+                    self._alpha0.value_si *= constants.h * constants.c * 100. * constants.Na
+                    self._alpha0.units = 'kJ/mol'
+                except quantity.QuantityError:
+                    self._alpha0 = quantity.Energy(value)
 
     property T0:
         """The reference temperature."""

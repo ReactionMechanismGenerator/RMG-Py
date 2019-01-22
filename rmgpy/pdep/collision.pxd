@@ -27,12 +27,13 @@
 
 cimport numpy
 
+from rmgpy.rmgobject cimport RMGObject
 from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
 
 
 ################################################################################
 
-cdef class SingleExponentialDown:
+cdef class SingleExponentialDown(RMGObject):
 
     cdef public ScalarQuantity _alpha0, _T0
     cdef public double n

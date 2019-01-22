@@ -34,7 +34,7 @@ degrees of freedom.
 
 ################################################################################
 
-cdef class Mode:
+cdef class Mode(RMGObject):
     """
     A base class for representing molecular degrees of freedom. The attributes
     are:

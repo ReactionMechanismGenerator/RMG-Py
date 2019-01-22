@@ -205,7 +205,7 @@ cdef  Vertex _getEdgeVertex1(Edge edge):
 cdef Vertex _getEdgeVertex2(Edge edge):
     return edge.vertex2
 
-cdef class Graph:
+cdef class Graph(object):
     """
     A graph data type. The vertices of the graph are stored in a list
     `vertices`; this provides a consistent traversal order. A single edge can

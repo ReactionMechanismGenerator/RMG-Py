@@ -125,6 +125,7 @@ cdef class LinearRotor(Rotation):
             self.rotationalConstant = rotationalConstant
         else:
             self.inertia = inertia
+        self.quantum = quantum
 
     def __repr__(self):
         """
@@ -296,6 +297,7 @@ cdef class NonlinearRotor(Rotation):
             self.rotationalConstant = rotationalConstant
         else:
             self.inertia = inertia
+        self.quantum = quantum
 
     def __repr__(self):
         """
@@ -473,6 +475,7 @@ cdef class KRotor(Rotation):
             self.rotationalConstant = rotationalConstant
         else:
             self.inertia = inertia
+        self.quantum = quantum
 
     def __repr__(self):
         """
@@ -645,6 +648,7 @@ cdef class SphericalTopRotor(Rotation):
             self.rotationalConstant = rotationalConstant
         else:
             self.inertia = inertia
+        self.quantum = quantum
 
     def __repr__(self):
         """

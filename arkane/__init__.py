@@ -33,3 +33,4 @@ from arkane.statmech import StatMechJob
 from arkane.thermo import ThermoJob
 from arkane.kinetics import KineticsJob
 from arkane.pdep import PressureDependenceJob
+from arkane.common import ArkaneSpecies
