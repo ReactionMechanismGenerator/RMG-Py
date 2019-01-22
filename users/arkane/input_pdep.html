@@ -75,8 +75,8 @@ either single or double quotes.</p>
 <p>The following is a list of all the components of a Arkane input file for pressure-dependent calculations:</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="30%" />
-<col width="70%" />
+<col width="23%" />
+<col width="77%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Component</th>
@@ -85,7 +85,14 @@ either single or double quotes.</p>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">modelChemistry</span></code></td>
-<td>Level of theory from quantum chemical calculations</td>
+<td>Level of theory from quantum chemical calculations, see <code class="docutils literal notranslate"><span class="pre">Model</span> <span class="pre">Chemistry</span></code> table below</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">levelOfTheory</span></code></td>
+<td>Level of theory, free text format (only used for archiving). Suggested format:
+<code class="docutils literal notranslate"><span class="pre">energy_method/basis_set//geometry_method/basis_set,</span> <span class="pre">rotors</span> <span class="pre">at</span> <span class="pre">rotor_method/basis_set</span></code></td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">author</span></code></td>
+<td>Author’s name. Used when saving statistical mechanics properties as a .yml file.</td>
 </tr>
 <tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">atomEnergies</span></code></td>
 <td>Dictionary of atomic energies at <code class="docutils literal notranslate"><span class="pre">modelChemistry</span></code> level</td>
@@ -173,16 +180,18 @@ This includes all unimolecular isomers, bimolecular reactants and products,
 and the bath gas(es). A species that appears in multiple bimolecular channels
 need only be specified with a single <code class="docutils literal notranslate"><span class="pre">species()</span></code> function.</p>
 <p>The input to the <code class="docutils literal notranslate"><span class="pre">species()</span></code> function for a pressure-dependent calculation is the same as for a
-<a class="reference external" href="input.html#species">thermodynamic orhigh-pressure limit kinetics calculation</a>, with the addition of a few extra
-parameters needed to describe collisional energy transfer. There are two options for providing input to the
+<a class="reference external" href="input.html#species">thermodynamic or high-pressure limit kinetics calculation</a>, with the addition of a few extra
+parameters needed to describe collisional energy transfer. There are three options for providing input to the
 <code class="docutils literal notranslate"><span class="pre">species()</span></code> function, which are described in the subsections below:</p>
 <p>1. By pointing to the output files of quantum chemistry calculations, which Arkane will parse for the necessary
-molecular properties
-2. By directly entering the molecular properties</p>
-<p>Within a single input file, both Option #1 and #2 may be used.</p>
-<p>Regardless of which option is used to specify molecular properties (e.g., vibrational frequencies, rotational constants)
-in the <code class="docutils literal notranslate"><span class="pre">species()</span></code> function, the four parameters listed below (mostly relating to the collisional energy transfer
-model) are always specified in the same way.</p>
+molecular properties.
+2. By directly entering the molecular properties.
+3. By pointing to an appropriate YAML file.</p>
+<p>Within a single input file, any of the above options may be used (note that the YAML format is currently not supported
+for transition states).</p>
+<p>Unless Option #3 (pointing to a YAML file) is used to specify molecular properties (e.g., vibrational frequencies,
+rotational constants) in the <code class="docutils literal notranslate"><span class="pre">species()</span></code> function, the four parameters listed below (mostly relating to the
+collisional energy transfer model) are always specified in the same way:</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="15%" />
@@ -273,7 +282,7 @@ all unimolecular isomers in the network (assuming helium is the bath gas). One h
 exponential down parameters is the following paper:
 <a class="reference external" href="http://www.sciencedirect.com/science/article/pii/S1540748914001084#s0060">http://www.sciencedirect.com/science/article/pii/S1540748914001084#s0060</a></p>
 <p>The following subsections describe how the remaining molecular properties can be input to the <code class="docutils literal notranslate"><span class="pre">species()</span></code> function
-using either Option #1 or #2 mentioned above.</p>
+using the above mentioned methods.</p>
 <div class="section" id="option-1-automatically-parse-quantum-chemistry-calculation-output">
 <h3>4.4.1. Option #1: Automatically Parse Quantum Chemistry Calculation Output<a class="headerlink" href="#option-1-automatically-parse-quantum-chemistry-calculation-output" title="Permalink to this headline">¶</a></h3>
 <p>For this option, the <code class="docutils literal notranslate"><span class="pre">species()</span></code> function only requires two parameters in addition to the four parameters in the table
@@ -787,7 +796,19 @@ radical <span class="math notranslate nohighlight">\(\ce{CH3C(=O)OO.}\)</span> (
 in <code class="docutils literal notranslate"><span class="pre">output.py</span></code>. Therefore, the user could directly copy the <code class="docutils literal notranslate"><span class="pre">conformer()</span></code> output of an Arkane job to another Arkane
 input file, change the name of the function to <code class="docutils literal notranslate"><span class="pre">species()</span></code> (or <code class="docutils literal notranslate"><span class="pre">transitionState()</span></code>, if appropriate, see next
 section) and run a new Arkane job in this manner. This can be useful if the user wants to easily switch a <code class="docutils literal notranslate"><span class="pre">species()</span></code>
-function from  Option #1 (parsing  quantum chemistry calculation output) to Option #2 (directly enter molecular properties).</p>
+function from <a class="reference internal" href="#option-1-automatically-parse-quantum-chemistry-calculation-output">Option #1: Automatically Parse Quantum Chemistry Calculation Output</a> to
+<a class="reference internal" href="#option-2-directly-enter-molecular-properties">Option #2: Directly Enter Molecular Properties</a>.</p>
+</div>
+<div class="section" id="option-3-automatically-parse-yaml-files">
+<h3>4.4.3. Option #3: Automatically Parse YAML files<a class="headerlink" href="#option-3-automatically-parse-yaml-files" title="Permalink to this headline">¶</a></h3>
+<p>Arkane automatically saves a .yml file representing an ArkaneSpecies in an <code class="docutils literal notranslate"><span class="pre">ArkaneSpecies</span></code> folder under the run
+directory with the statistical mechanics properties of a species along with additional useful metadata. This process is
+triggered whenever a <code class="docutils literal notranslate"><span class="pre">thermo</span></code> calculation is ran for a species with a specified structure. To automatically generate
+such file in the first place, a species has to be defined using one of the other options above. The generated .yml file
+could conveniently be used when referring to this species in subsequent Arkane jobs. We intend to create an online
+repository of Arkane .yml files, from which users would be able to pick the desired species calculated at an appropriate
+level of theory (if available), and directly use them for kinetic or pressure-dependent calculations. Once such
+repository becomes available, a full description will be added to these pages.</p>
 </div>
 </div>
 <div class="section" id="transition-states">
@@ -797,7 +818,8 @@ using a <code class="docutils literal notranslate"><span class="pre">transitionS
 <code class="docutils literal notranslate"><span class="pre">collisionModel</span></code> and <code class="docutils literal notranslate"><span class="pre">energyTransferModel</span></code> aren’t specified for a transition state). Like the <code class="docutils literal notranslate"><span class="pre">species()</span></code>
 function, the <code class="docutils literal notranslate"><span class="pre">transitionState()</span></code> function may also be specified in two ways:
 <a class="reference internal" href="#option-1-automatically-parse-quantum-chemistry-calculation-output">Option #1: Automatically Parse Quantum Chemistry Calculation Output</a> and
-<a class="reference internal" href="#option-2-directly-enter-molecular-properties">Option #2: Directly Enter Molecular Properties</a></p>
+<a class="reference internal" href="#option-2-directly-enter-molecular-properties">Option #2: Directly Enter Molecular Properties</a>.  Note that currently a transitions state cannot be specified
+using a CanthermSpecies file (Option #3).</p>
 <p>The following is an example of a typical <code class="docutils literal notranslate"><span class="pre">transitionState()</span></code> function using Option #1:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">transitionState</span><span class="p">(</span><span class="s1">&#39;isom1&#39;</span><span class="p">,</span> <span class="s1">&#39;isom1.py&#39;</span><span class="p">)</span>
 </pre></div>
@@ -1121,6 +1143,7 @@ examples.</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#option-2-directly-enter-molecular-properties">4.4.2. Option #2: Directly Enter Molecular Properties</a></li>
+<li><a class="reference internal" href="#option-3-automatically-parse-yaml-files">4.4.3. Option #3: Automatically Parse YAML files</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#transition-states">4.5. Transition States</a></li>

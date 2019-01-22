@@ -67,14 +67,14 @@ to compute and save the statistical mechanics information for a single
 species or transition state.</p>
 <dl class="method">
 <dt id="arkane.StatMechJob.execute">
-<code class="descname">execute</code><span class="sig-paren">(</span><em>outputFile=None</em>, <em>plot=False</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob.execute" title="Permalink to this definition">¶</a></dt>
+<code class="descname">execute</code><span class="sig-paren">(</span><em>outputFile=None</em>, <em>plot=False</em>, <em>pdep=False</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob.execute" title="Permalink to this definition">¶</a></dt>
 <dd><p>Execute the statistical mechanics job, saving the results to the
 given <cite>outputFile</cite> on disk.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="arkane.StatMechJob.load">
-<code class="descname">load</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob.load" title="Permalink to this definition">¶</a></dt>
+<code class="descname">load</code><span class="sig-paren">(</span><em>pdep=False</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob.load" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the statistical mechanics parameters for each conformer from
 the associated files on disk. Creates <code class="xref py py-class docutils literal notranslate"><span class="pre">Conformer</span></code> objects for
 each conformer and appends them to the list of conformers on the

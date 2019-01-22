@@ -61,7 +61,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.quantity.ArrayQuantity<a class="headerlink" href="#rmgpy-quantity-arrayquantity" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.quantity.ArrayQuantity">
-<em class="property">class </em><code class="descclassname">rmgpy.quantity.</code><code class="descname">ArrayQuantity</code><span class="sig-paren">(</span><em>value</em>, <em>units=''</em>, <em>uncertainty=None</em>, <em>uncertaintyType='+|-'</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.quantity.ArrayQuantity" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.quantity.</code><code class="descname">ArrayQuantity</code><span class="sig-paren">(</span><em>value=None</em>, <em>units=''</em>, <em>uncertainty=None</em>, <em>uncertaintyType='+|-'</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.quantity.ArrayQuantity" title="Permalink to this definition">¶</a></dt>
 <dd><p>The <a class="reference internal" href="#rmgpy.quantity.ArrayQuantity" title="rmgpy.quantity.ArrayQuantity"><code class="xref py py-class docutils literal notranslate"><span class="pre">ArrayQuantity</span></code></a> class provides a representation of an array of
 physical quantity values, with optional units and uncertainty information.
 The attributes are:</p>
@@ -101,6 +101,12 @@ of the given units of the quantity. For this reason, the SI equivalent of
 the <cite>value</cite> attribute can be directly accessed using the <cite>value_si</cite>
 attribute. This value is cached on the <a class="reference internal" href="#rmgpy.quantity.ArrayQuantity" title="rmgpy.quantity.ArrayQuantity"><code class="xref py py-class docutils literal notranslate"><span class="pre">ArrayQuantity</span></code></a> object for
 speed.</p>
+<dl class="method">
+<dt id="rmgpy.quantity.ArrayQuantity.as_dict">
+<code class="descname">as_dict</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#rmgpy.quantity.ArrayQuantity.as_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>A helper function for YAML dumping</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="rmgpy.quantity.ArrayQuantity.copy">
 <code class="descname">copy</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; ArrayQuantity<a class="headerlink" href="#rmgpy.quantity.ArrayQuantity.copy" title="Permalink to this definition">¶</a></dt>
@@ -163,6 +169,12 @@ and <code class="docutils literal notranslate"><span class="pre">False</span></c
 <code class="descname">isUncertaintyMultiplicative</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.quantity.ArrayQuantity.isUncertaintyMultiplicative" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the uncertainty is specified in multiplicative
 format and <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.quantity.ArrayQuantity.make_object">
+<code class="descname">make_object</code><span class="sig-paren">(</span><em>self</em>, <em>dict data</em>, <em>dict class_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.quantity.ArrayQuantity.make_object" title="Permalink to this definition">¶</a></dt>
+<dd><p>A helper function for YAML parsing</p>
 </dd></dl>
 
 <dl class="method">

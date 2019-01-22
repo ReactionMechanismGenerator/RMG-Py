@@ -71,8 +71,8 @@ either single or double quotes.</p>
 computations:</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="28%" />
-<col width="72%" />
+<col width="23%" />
+<col width="77%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Component</th>
@@ -81,7 +81,14 @@ computations:</p>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">modelChemistry</span></code></td>
-<td>Level of theory from quantum chemical calculations</td>
+<td>Level of theory from quantum chemical calculations, see <code class="docutils literal notranslate"><span class="pre">Model</span> <span class="pre">Chemistry</span></code> table below</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">levelOfTheory</span></code></td>
+<td>Level of theory, free text format (only used for archiving). Suggested format:
+<code class="docutils literal notranslate"><span class="pre">energy_method/basis_set//geometry_method/basis_set,</span> <span class="pre">rotors</span> <span class="pre">at</span> <span class="pre">rotor_method/basis_set</span></code></td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">author</span></code></td>
+<td>Author’s name. Used when saving statistical mechanics properties as a .yml file.</td>
 </tr>
 <tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">atomEnergies</span></code></td>
 <td>Dictionary of atomic energies at <code class="docutils literal notranslate"><span class="pre">modelChemistry</span></code> level</td>
@@ -402,21 +409,26 @@ The frequency scale factor is automatically assigned according to the supplied <
 </div>
 <div class="section" id="species">
 <h2>3.4. Species<a class="headerlink" href="#species" title="Permalink to this headline">¶</a></h2>
-<p>Each species of interest must be specified using a <code class="docutils literal notranslate"><span class="pre">species()</span></code> function, which can be input in two different ways,
+<p>Each species of interest must be specified using a <code class="docutils literal notranslate"><span class="pre">species()</span></code> function, which can be input in three different ways,
 discussed in the separate subsections below:</p>
 <p>1. By pointing to the output files of quantum chemistry calculations, which Arkane will parse for the necessary
-molecular properties
-2. By directly entering the molecular properties</p>
-<p>Within a single input file, both Option #1 and #2 may be used for different species.</p>
+molecular properties.
+2. By directly entering the molecular properties.
+3. By pointing to an appropriate YAML file.</p>
+<p>Within a single input file, any of the above options may be used for different species.</p>
 <div class="section" id="option-1-automatically-parse-quantum-chemistry-calculation-output">
 <h3>3.4.1. Option #1: Automatically Parse Quantum Chemistry Calculation Output<a class="headerlink" href="#option-1-automatically-parse-quantum-chemistry-calculation-output" title="Permalink to this headline">¶</a></h3>
 <p>For this option, the <code class="docutils literal notranslate"><span class="pre">species()</span></code> function only requires two parameters, as in the example below:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">species</span><span class="p">(</span><span class="s1">&#39;C2H6&#39;</span><span class="p">,</span> <span class="s1">&#39;C2H6.py&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">species</span><span class="p">(</span><span class="s1">&#39;C2H6&#39;</span><span class="p">,</span> <span class="s1">&#39;C2H6.py&#39;</span><span class="p">,</span>
+        <span class="n">structure</span> <span class="o">=</span> <span class="n">SMILES</span><span class="p">(</span><span class="s1">&#39;CC&#39;</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>The first parameter (<code class="docutils literal notranslate"><span class="pre">'C2H6'</span></code> above) is the species label, which can be referenced later in the input file. The second
 parameter (<code class="docutils literal notranslate"><span class="pre">'C2H6.py'</span></code> above) points to the location of another python file containing details of the species. This file
-will be referred to as the species input file.</p>
+will be referred to as the species input file. The third parameter (<code class="docutils literal notranslate"><span class="pre">'structure</span> <span class="pre">=</span> <span class="pre">SMILES('CC')'</span></code> above)
+gives the species structure (either SMILES, adjacencyList, or InChI could be used). The structure parameter isn’t
+necessary for the calculation, however if it is not specified a .yml file representing an ArkaneSpecies will not be
+generated.</p>
 <p>The species input file accepts the following parameters:</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -914,16 +926,29 @@ same internal rotation are commented out):</p>
 in <code class="docutils literal notranslate"><span class="pre">output.py</span></code>. Therefore, the user could directly copy the <code class="docutils literal notranslate"><span class="pre">conformer()</span></code> output of an Arkane job to another Arkane
 input file, change the name of the function to <code class="docutils literal notranslate"><span class="pre">species()</span></code> (or <code class="docutils literal notranslate"><span class="pre">transitionState()</span></code>, if appropriate, see next
 section) and run a new Arkane job in this manner. This can be useful if the user wants to easily switch a <code class="docutils literal notranslate"><span class="pre">species()</span></code>
-function from  Option #1 (parsing  quantum chemistry calculation output) to Option #2 (directly enter molecular properties).</p>
+function from <a class="reference internal" href="#option-1-automatically-parse-quantum-chemistry-calculation-output">Option #1: Automatically Parse Quantum Chemistry Calculation Output</a> to
+<a class="reference internal" href="#option-2-directly-enter-molecular-properties">Option #2: Directly Enter Molecular Properties</a>.</p>
+</div>
+<div class="section" id="option-3-automatically-parse-yaml-files">
+<h3>3.4.3. Option #3: Automatically Parse YAML files<a class="headerlink" href="#option-3-automatically-parse-yaml-files" title="Permalink to this headline">¶</a></h3>
+<p>Arkane automatically saves a .yml file representing an ArkaneSpecies in an <code class="docutils literal notranslate"><span class="pre">ArkaneSpecies</span></code> folder under the run
+directory with the statistical mechanics properties of a species along with additional useful metadata. This process is
+triggered whenever a <code class="docutils literal notranslate"><span class="pre">thermo</span></code> calculation is ran for a species with a specified structure. To automatically generate
+such file in the first place, a species has to be defined using one of the other options above. The generated .yml file
+could conveniently be used when referring to this species in subsequent Arkane jobs. We intend to create an online
+repository of Arkane .yml files, from which users would be able to pick the desired species calculated at an appropriate
+level of theory (if available), and directly use them for kinetic or pressure-dependent calculations. Once such
+repository becomes available, a full description will be added to these pages.</p>
 </div>
 </div>
 <div class="section" id="transition-state">
 <h2>3.5. Transition State<a class="headerlink" href="#transition-state" title="Permalink to this headline">¶</a></h2>
-<p>Transition state(s) are only required when performimg kinetics computations.
+<p>Transition state(s) are only required when performing kinetics computations.
 Each transition state of interest must be specified using a <code class="docutils literal notranslate"><span class="pre">transitionState()</span></code>
-function, which is analogous to the <code class="docutils literal notranslate"><span class="pre">species()</span></code> function described above. Therefore, the <code class="docutils literal notranslate"><span class="pre">transitionState()</span></code> function
-may also be specified in two ways: <a class="reference internal" href="#option-1-automatically-parse-quantum-chemistry-calculation-output">Option #1: Automatically Parse Quantum Chemistry Calculation Output</a> and
-<a class="reference internal" href="#option-2-directly-enter-molecular-properties">Option #2: Directly Enter Molecular Properties</a></p>
+function, which is analogous to the <code class="docutils literal notranslate"><span class="pre">species()</span></code> function described above. Therefore, the <code class="docutils literal notranslate"><span class="pre">transitionState()</span></code>
+function may also be specified in two ways: <a class="reference internal" href="#option-1-automatically-parse-quantum-chemistry-calculation-output">Option #1: Automatically Parse Quantum Chemistry Calculation Output</a> and
+<a class="reference internal" href="#option-2-directly-enter-molecular-properties">Option #2: Directly Enter Molecular Properties</a>. Note that currently a transitions state cannot be specified
+using a YAML file (Option #3).</p>
 <p>The following is an example of a typical <code class="docutils literal notranslate"><span class="pre">transitionState()</span></code> function using Option #1:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">transitionState</span><span class="p">(</span><span class="s1">&#39;TS&#39;</span><span class="p">,</span> <span class="s1">&#39;TS.py&#39;</span><span class="p">)</span>
 </pre></div>
@@ -1129,6 +1154,7 @@ Arkane point to a ‘ScanLog’ file. Another problem can arise when the potenti
 </ul>
 </li>
 <li><a class="reference internal" href="#option-2-directly-enter-molecular-properties">3.4.2. Option #2: Directly Enter Molecular Properties</a></li>
+<li><a class="reference internal" href="#option-3-automatically-parse-yaml-files">3.4.3. Option #3: Automatically Parse YAML files</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#transition-state">3.5. Transition State</a></li>

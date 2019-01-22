@@ -106,6 +106,12 @@ molecular system.</p>
 <dd><p>The ground-state energy (including zero-point energy) of the conformer.</p>
 </dd></dl>
 
+<dl class="method">
+<dt id="rmgpy.statmech.Conformer.as_dict">
+<code class="descname">as_dict</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#rmgpy.statmech.Conformer.as_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>A helper function for dumping objects as dictionaries for YAML files</p>
+</dd></dl>
+
 <dl class="attribute">
 <dt id="rmgpy.statmech.Conformer.coordinates">
 <code class="descname">coordinates</code><a class="headerlink" href="#rmgpy.statmech.Conformer.coordinates" title="Permalink to this definition">¶</a></dt>
@@ -270,6 +276,12 @@ constant and the J-rotor rotational constant.</p>
 kg. If a list <cite>atoms</cite> of atoms is specified, only those atoms will
 be used to calculate the center of mass. Otherwise, all atoms will be
 used.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.statmech.Conformer.make_object">
+<code class="descname">make_object</code><span class="sig-paren">(</span><em>self</em>, <em>dict data</em>, <em>dict class_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.statmech.Conformer.make_object" title="Permalink to this definition">¶</a></dt>
+<dd><p>A helper function for constructing objects from a dictionary (used when loading YAML files)</p>
 </dd></dl>
 
 <dl class="attribute">

@@ -112,6 +112,12 @@ temperature-independent value for <span class="math notranslate nohighlight">\(\
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.pdep.SingleExponentialDown.as_dict">
+<code class="descname">as_dict</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; dict<a class="headerlink" href="#rmgpy.pdep.SingleExponentialDown.as_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>A helper function for dumping objects as dictionaries for YAML files</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.pdep.SingleExponentialDown.calculateCollisionEfficiency">
 <code class="descname">calculateCollisionEfficiency</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em>, <em>ndarray Elist</em>, <em>ndarray Jlist</em>, <em>ndarray densStates</em>, <em>double E0</em>, <em>double Ereac</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.SingleExponentialDown.calculateCollisionEfficiency" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate an efficiency factor for collisions, particularly useful for the
@@ -148,6 +154,12 @@ corresponding to this collision model for a given set of energies
 <dd><p>Return the value of the <span class="math notranslate nohighlight">\(\alpha\)</span> parameter - the average energy
 transferred in a deactivating collision - in J/mol at temperature <cite>T</cite>
 in K.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.pdep.SingleExponentialDown.make_object">
+<code class="descname">make_object</code><span class="sig-paren">(</span><em>self</em>, <em>dict data</em>, <em>dict class_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.SingleExponentialDown.make_object" title="Permalink to this definition">¶</a></dt>
+<dd><p>A helper function for constructing objects from a dictionary (used when loading YAML files)</p>
 </dd></dl>
 
 <dl class="attribute">
