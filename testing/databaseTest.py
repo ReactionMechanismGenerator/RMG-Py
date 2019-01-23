@@ -7,6 +7,8 @@ import logging
 from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase
 from copy import copy
+import rmgpy.kinetics
+import quantities as pq
 from rmgpy.data.base import LogicOr
 from rmgpy.molecule import Group, ImplicitBenzeneError, UnexpectedChargeError
 from rmgpy.molecule.atomtype import atomTypes
@@ -113,9 +115,15 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             test.description = test_name
             self.compat_func_name = test_name
             yield test, library_name
-            
+
+            test = lambda x: self.kinetics_checkLibraryRateUnits(library)
+            test_name = "Kinetics library {0}: check rates have OK units?".format(library_name)
+            test.description = test_name
+            self.compat_func_name = test_name
+            yield test, library_name
+
             test = lambda x: self.kinetics_checkLibraryRatesAreReasonable(library)
-            test_name = "Kinetics library {0}: check rates can be evaluated?".format(library_name)
+            test_name = "Kinetics library {0}: check rates are reasonable?".format(library_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, library_name
@@ -424,7 +432,123 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                         continue
 
                     nose.tools.assert_false(speciesList[i].molecule[0].isIsomorphic(speciesList[j].molecule[0], initialMap), "Species {0} and species {1} in {2} database were found to be identical.".format(speciesList[i].label,speciesList[j].label,database.label))
-    
+
+    def kinetics_checkLibraryRateUnits(self, library):
+        """
+        This test ensures that every library reaction has acceptable units on the A factor.
+        """
+        boo = False
+
+        dimensionalities = {
+            1: (1 / pq.s).dimensionality ,
+            2: (pq.m**3 / pq.mole / pq.s).dimensionality,
+            3: ((pq.m**6) / (pq.mole**2) / pq.s).dimensionality,
+        }
+
+        for entry in library.entries.values():
+            k = entry.data
+            rxn = entry.item
+            molecularity = len(rxn.reactants)
+            try:
+                if isinstance(k, rmgpy.kinetics.Arrhenius):
+                    A = k.A
+                    if pq.Quantity(1.0, A.units).simplified.dimensionality != dimensionalities[molecularity]:
+                        boo = True
+                        logging.error('library reaction {0} from library {1}, has invalid units {2}'.format(rxn, library.label, A.units))
+                elif isinstance(k, (rmgpy.kinetics.Lindemann, rmgpy.kinetics.Troe )):
+                    A = k.arrheniusHigh.A
+                    if pq.Quantity(1.0, A.units).simplified.dimensionality != dimensionalities[molecularity]:
+                        boo = True
+                        logging.error('library reaction {0} from library {1}, has invalid high-pressure limit units {2}'.format(rxn, library.label, A.units))
+                elif isinstance(k, (rmgpy.kinetics.Lindemann, rmgpy.kinetics.Troe, rmgpy.kinetics.ThirdBody)):
+                    A = k.arrheniusLow.A
+                    if pq.Quantity(1.0, A.units).simplified.dimensionality != dimensionalities[molecularity+1]:
+                        boo = True
+                        logging.error('library reaction {0} from library {1}, has invalid low-pressure limit units {2}'.format(rxn, library.label, A.units))
+                elif hasattr(k, 'highPlimit') and k.highPlimit is not None:
+                    A = k.highPlimit.A
+                    if pq.Quantity(1.0, A.units).simplified.dimensionality != dimensionalities[molecularity-1]:
+                        boo = True
+                        logging.error(
+                            'library reaction {0} from library {1}, has invalid high-pressure limit units {2}'.format(rxn, library.label, A.units))
+                elif isinstance(k, rmgpy.kinetics.MultiArrhenius):
+                    for num, arrhenius in enumerate(k.arrhenius):
+                        A = arrhenius.A
+                        if pq.Quantity(1.0, A.units).simplified.dimensionality != dimensionalities[molecularity]:
+                            boo = True
+                            logging.error(
+                                'library reaction {0} from library {1}, has invalid units {2} on rate expression {3}'.format(
+                                    rxn, library.label, A.units, num+1)
+                            )
+
+                elif isinstance(k, rmgpy.kinetics.PDepArrhenius):
+                    for pa, arrhenius in zip(k.pressures.value_si, k.arrhenius):
+                        P = rmgpy.quantity.Pressure(1, k.pressures.units)
+                        P.value_si = pa
+
+                        if isinstance(arrhenius, rmgpy.kinetics.MultiArrhenius):
+                            # A PDepArrhenius may have MultiArrhenius within it
+                            # which is distinct (somehow) from MultiPDepArrhenius
+                            for num, arrhenius2 in enumerate(arrhenius.arrhenius):
+                                A = arrhenius2.A
+                                if pq.Quantity(1.0, A.units).simplified.dimensionality != dimensionalities[molecularity]:
+                                    boo = True
+                                    logging.error(
+                                        'library reaction {0} from library {1}, has invalid units {2} on {2!r} rate expression {3}'.format(
+                                            rxn, library.label, P, A.units, num + 1)
+                                    )
+                        else:
+                            A = arrhenius.A
+                            if pq.Quantity(1.0, A.units).simplified.dimensionality != dimensionalities[molecularity]:
+                                boo = True
+                                logging.error(
+                                    'library reaction {0} from library {1}, has invalid {2!r} units {3}'.format(
+                                        rxn, library.label, P, A.units)
+                                )
+
+                elif isinstance(k, rmgpy.kinetics.MultiPDepArrhenius):
+                    for num, k2 in enumerate(k.arrhenius):
+                        for pa, arrhenius in zip(k2.pressures.value_si, k2.arrhenius):
+                            P = rmgpy.quantity.Pressure(1, k2.pressures.units)
+                            P.value_si = pa
+                            if isinstance(arrhenius, rmgpy.kinetics.MultiArrhenius):
+                                # A MultiPDepArrhenius may have MultiArrhenius within it
+                                for arrhenius2 in arrhenius.arrhenius:
+                                    A = arrhenius2.A
+                                    if pq.Quantity(1.0, A.units).simplified.dimensionality != dimensionalities[
+                                        molecularity]:
+                                        boo = True
+                                        logging.error(
+                                            'library reaction {0} from library {1}, has invalid units {2} on {3!r} rate expression {4!r}'.format(
+                                                rxn, library.label, A.units, P, arrhenius2)
+                                        )
+                            else:
+                                A = arrhenius.A
+                                if pq.Quantity(1.0, A.units).simplified.dimensionality != dimensionalities[
+                                    molecularity]:
+                                    boo = True
+                                    logging.error(
+                                        'library reaction {0} from library {1}, has invalid {2!r} units {3} in rate expression {4}'.format(
+                                        rxn, library.label, P, A.units, num)
+                                    )
+
+
+                elif isinstance(k, rmgpy.kinetics.Chebyshev):
+                    if pq.Quantity(1.0, k.kunits).simplified.dimensionality != dimensionalities[molecularity]:
+                        boo = True
+                        logging.error(
+                            'library reaction {0} from library {1}, has invalid units {2}'.format(
+                                rxn, library.label, k.kunits)
+                        )
+
+                else:
+                    logging.warning('library reaction {0} from library {1}, did not have units checked.'.format(rxn, library.label))
+            except:
+                logging.error("Error when checking units on reaction {0} from library {1} with rate expression {2!r}.".format(rxn, library.label, k))
+                raise
+        if boo:
+            raise ValueError('library {0} has some incorrect units'.format(library.label))
+
     def kinetics_checkLibraryRatesAreReasonable(self, library):
         """
         This test ensures that every library reaction has reasonable kinetics at 1000 K, 1 bar
