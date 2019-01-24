@@ -486,6 +486,9 @@ class TestGetAtomType(unittest.TestCase):
         self.mol74 = Molecule().fromAdjacencyList('''1 H  u0 p0 c0 {2,S}
                                                      2 I  u0 p3 c0 {1,S}''')
 
+        self.mol75 = Molecule().fromAdjacencyList('''1 H  u0 p0 c0 {2,S}
+                                                     2 F  u0 p3 c0 {1,S}''')
+
     def atomType(self, mol, atomID):
         atom = mol.atoms[atomID]
         type = getAtomType(atom, mol.getBonds(atom))
@@ -615,6 +618,12 @@ class TestGetAtomType(unittest.TestCase):
         Test that getAtomType() returns appropriate iodine atom types.
         """
         self.assertEqual(self.atomType(self.mol74, 1), 'I1s')
+
+    def testFluorineTypes(self):
+        """
+        Test that getAtomType() returns appropriate fluorine atom types.
+        """
+        self.assertEqual(self.atomType(self.mol75, 1), 'F1s')
 
     def testOtherTypes(self):
         """
