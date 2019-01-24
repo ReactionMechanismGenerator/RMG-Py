@@ -38,8 +38,8 @@ cdef class Units(object):
     cpdef double getConversionFactorToSI(self) except -1
 
     cpdef double getConversionFactorFromSI(self) except -1
-    
-    cpdef double getConversionFactorFromSItoCM(self) except -1
+
+    cpdef double getConversionFactorFromSItoCmMolS(self) except -1
     
 ################################################################################
 
