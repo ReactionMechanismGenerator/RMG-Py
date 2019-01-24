@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -57,6 +57,7 @@ from arkane.statmech import StatMechJob
 from arkane.thermo import ThermoJob
 from arkane.pdep import PressureDependenceJob
 from arkane.explorer import ExplorerJob
+from arkane.common import is_pdep
 
 ################################################################################
 
@@ -264,7 +265,7 @@ class Arkane:
             if isinstance(job, ThermoJob):
                 job.execute(outputFile=outputFile, plot=self.plot)
             if isinstance(job, StatMechJob):
-                job.execute(outputFile=outputFile, plot=self.plot)
+                job.execute(outputFile=outputFile, plot=self.plot, pdep=is_pdep(self.jobList))
                 supporting_info.append(job.supporting_info)
 
         with open(chemkinFile, 'a') as f:

@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -382,7 +382,7 @@ class GaussianLog:
         check_conformer_energy(Vlist, self.path)
         
         # Adjust energies to be relative to minimum energy conformer
-        # Also convert units from Hartree/particle to kJ/mol
+        # Also convert units from Hartree/particle to J/mol
         Vlist -= numpy.min(Vlist)
         Vlist *= constants.E_h * constants.Na
 

@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -34,7 +34,7 @@ thermodynamics information for a single species.
 """
 
 import os.path
-import numpy.linalg
+import numpy as np
 import logging
 import string
 
@@ -53,6 +53,7 @@ from rmgpy.molecule import Molecule
 from rmgpy.molecule.util import retrieveElementCount
 
 from arkane.output import prettify
+from arkane.common import ArkaneSpecies
 
 ################################################################################
 
@@ -66,6 +67,7 @@ class ThermoJob(object):
     def __init__(self, species, thermoClass):
         self.species = species
         self.thermoClass = thermoClass
+        self.arkane_species = ArkaneSpecies(species=species)
     
     def execute(self, outputFile=None, plot=False):
         """
@@ -74,7 +76,13 @@ class ThermoJob(object):
         """
         self.generateThermo()
         if outputFile is not None:
-            self.save(outputFile)
+            self.arkane_species.chemkin_thermo_string = self.save(outputFile)
+            if self.species.molecule is None or len(self.species.molecule) == 0:
+                logging.debug("Not generating database YAML file for species {0}, since its structure wasn't"
+                              " specified".format(self.species.label))
+            else:
+                self.arkane_species.update_species_attributes(self.species)
+                self.arkane_species.save_yaml(path=os.path.dirname(outputFile))
             if plot:
                 self.plot(os.path.dirname(outputFile))
     
@@ -89,14 +97,14 @@ class ThermoJob(object):
     
         species = self.species
     
-        logging.info('Generating {0} thermo model for {1}...'.format(self.thermoClass, species))
+        logging.debug('Generating {0} thermo model for {1}...'.format(self.thermoClass, species))
         
         if species.thermo is not None:
             logging.info("Thermo already generated for species {}. Skipping thermo generation.".format(species))
             return None
         
-        Tlist = numpy.arange(10.0, 3001.0, 10.0, numpy.float64)
-        Cplist = numpy.zeros_like(Tlist)
+        Tlist = np.arange(10.0, 3001.0, 10.0, np.float64)
+        Cplist = np.zeros_like(Tlist)
         H298 = 0.0
         S298 = 0.0
         conformer = self.species.conformer
@@ -166,9 +174,9 @@ class ThermoJob(object):
             except ValueError:
                 logging.debug("Valid thermo for {0} is outside range for temperature {1}".format(species,T))
         f.write('#    =========== =========== =========== =========== ===========\n')
-        
-        string = 'thermo(label={0!r}, thermo={1!r})'.format(species.label, species.getThermoData())
-        f.write('{0}\n\n'.format(prettify(string)))
+
+        thermo_string = 'thermo(label={0!r}, thermo={1!r})'.format(species.label, species.getThermoData())
+        f.write('{0}\n\n'.format(prettify(thermo_string)))
         
         f.close()
         # write chemkin file
@@ -183,16 +191,17 @@ class ThermoJob(object):
                     elementCounts = {'C': 0, 'H': 0}
         else:
             elementCounts = {'C': 0, 'H': 0}
-        string = writeThermoEntry(species, elementCounts=elementCounts, verbose=True)
-        f.write('{0}\n'.format(string))
+        chemkin_thermo_string = writeThermoEntry(species, elementCounts=elementCounts, verbose=True)
+        f.write('{0}\n'.format(chemkin_thermo_string))
         f.close()
 
         # write species dictionary
         if isinstance(species, Species):
             if species.molecule and isinstance(species.molecule[0], Molecule):
                 with open(os.path.join(os.path.dirname(outputFile), 'species_dictionary.txt'), 'a') as f:
-                    f.write(species.molecule[0].toAdjacencyList(removeH=False,label=species.label))
+                    f.write(species.molecule[0].toAdjacencyList(removeH=False, label=species.label))
                     f.write('\n')
+        return chemkin_thermo_string
 
     def plot(self, outputDirectory):
         """
@@ -208,15 +217,15 @@ class ThermoJob(object):
         except ImportError:
             return
         
-        Tlist = numpy.arange(10.0, 2501.0, 10.0)
-        Cplist = numpy.zeros_like(Tlist)
-        Cplist1 = numpy.zeros_like(Tlist)
-        Hlist = numpy.zeros_like(Tlist)
-        Hlist1 = numpy.zeros_like(Tlist)
-        Slist = numpy.zeros_like(Tlist)
-        Slist1 = numpy.zeros_like(Tlist)
-        Glist = numpy.zeros_like(Tlist)
-        Glist1 = numpy.zeros_like(Tlist)
+        Tlist = np.arange(10.0, 2501.0, 10.0)
+        Cplist = np.zeros_like(Tlist)
+        Cplist1 = np.zeros_like(Tlist)
+        Hlist = np.zeros_like(Tlist)
+        Hlist1 = np.zeros_like(Tlist)
+        Slist = np.zeros_like(Tlist)
+        Slist1 = np.zeros_like(Tlist)
+        Glist = np.zeros_like(Tlist)
+        Glist1 = np.zeros_like(Tlist)
         
         conformer = self.species.conformer
         thermo = self.species.getThermoData()

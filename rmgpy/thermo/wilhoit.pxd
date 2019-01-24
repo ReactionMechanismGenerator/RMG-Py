@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -38,6 +38,10 @@ cdef class Wilhoit(HeatCapacityModel):
     
     cdef public ScalarQuantity _B, _H0, _S0
     cdef public double a0, a1, a2, a3
+
+    cpdef dict as_dict(self)
+
+    cpdef make_object(self, dict data, dict class_dict)
     
     cpdef double getHeatCapacity(self, double T) except -1000000000
 

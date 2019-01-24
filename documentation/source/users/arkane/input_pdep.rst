@@ -21,10 +21,13 @@ either single or double quotes.
 
 The following is a list of all the components of a Arkane input file for pressure-dependent calculations:
 
-=========================== ================================================================
+=========================== ============================================================================================
 Component                   Description
-=========================== ================================================================
-``modelChemistry``          Level of theory from quantum chemical calculations
+=========================== ============================================================================================
+``modelChemistry``          Level of theory from quantum chemical calculations, see ``Model Chemistry`` table below
+``levelOfTheory``           Level of theory, free text format (only used for archiving). Suggested format:
+                            ``energy_method/basis_set//geometry_method/basis_set, rotors at rotor_method/basis_set``
+``author``                  Author's name. Used when saving statistical mechanics properties as a .yml file.
 ``atomEnergies``            Dictionary of atomic energies at ``modelChemistry`` level
 ``frequencyScaleFactor``    A factor by which to scale all frequencies
 ``useHinderedRotors``       ``True`` if hindered rotors are used, ``False`` if not
@@ -38,7 +41,7 @@ Component                   Description
 ``statmech``                Loads statistical mechanics parameters
 ``thermo``                  Performs a thermodynamics computation
 ``kinetics``                Performs a high-pressure limit kinetic computation
-=========================== ================================================================
+=========================== ============================================================================================
 
 Note that many of the functions in the table above overlap with the functions available for
 `thermodynamics and high-pressure limit kinetics computations <input.html#syntax>`_. For most of these overlapping
@@ -90,19 +93,21 @@ and the bath gas(es). A species that appears in multiple bimolecular channels
 need only be specified with a single ``species()`` function.
 
 The input to the ``species()`` function for a pressure-dependent calculation is the same as for a
-`thermodynamic orhigh-pressure limit kinetics calculation <input.html#species>`_, with the addition of a few extra
-parameters needed to describe collisional energy transfer. There are two options for providing input to the
+`thermodynamic or high-pressure limit kinetics calculation <input.html#species>`_, with the addition of a few extra
+parameters needed to describe collisional energy transfer. There are three options for providing input to the
 ``species()`` function, which are described in the subsections below:
 
 1. By pointing to the output files of quantum chemistry calculations, which Arkane will parse for the necessary
-molecular properties
-2. By directly entering the molecular properties
+molecular properties.
+2. By directly entering the molecular properties.
+3. By pointing to an appropriate YAML file.
 
-Within a single input file, both Option #1 and #2 may be used.
+Within a single input file, any of the above options may be used (note that the YAML format is currently not supported
+for transition states).
 
-Regardless of which option is used to specify molecular properties (e.g., vibrational frequencies, rotational constants)
-in the ``species()`` function, the four parameters listed below (mostly relating to the collisional energy transfer
-model) are always specified in the same way.
+Unless Option #3 (pointing to a YAML file) is used to specify molecular properties (e.g., vibrational frequencies,
+rotational constants) in the ``species()`` function, the four parameters listed below (mostly relating to the
+collisional energy transfer model) are always specified in the same way:
 
 ======================= =================================== ====================================
 Parameter               Required?                           Description
@@ -171,7 +176,7 @@ exponential down parameters is the following paper:
 http://www.sciencedirect.com/science/article/pii/S1540748914001084#s0060
 
 The following subsections describe how the remaining molecular properties can be input to the ``species()`` function
-using either Option #1 or #2 mentioned above.
+using the above mentioned methods.
 
 Option #1: Automatically Parse Quantum Chemistry Calculation Output
 -------------------------------------------------------------------
@@ -351,8 +356,10 @@ scan in the following format::
 
 The ``Energy`` can be in units of ``kJ/mol``, ``J/mol``, ``cal/mol``, ``kcal/mol``, ``cm^-1`` or ``hartree``.
 
-The ``symmetry`` parameter will usually equal either 1, 2 or 3. Below are examples of internal rotor scans with these
-commonly encountered symmetry numbers. First, ``symmetry = 3``:
+The ``symmetry`` parameter will usually equal either 1, 2 or 3. It could be determined automatically by Arkane
+(by simply not specifying it altogether), however it is always better to explicitly specify it if it is known. If it is
+determined by Arkane, the log file will specify the determined value and what it was based on. Below are examples of
+internal rotor scans with these commonly encountered symmetry numbers. First, ``symmetry = 3``:
 
 .. image:: symmetry_3_example.png
 
@@ -571,7 +578,19 @@ Note that the format of the ``species()`` function above is identical to the ``c
 in ``output.py``. Therefore, the user could directly copy the ``conformer()`` output of an Arkane job to another Arkane
 input file, change the name of the function to ``species()`` (or ``transitionState()``, if appropriate, see next
 section) and run a new Arkane job in this manner. This can be useful if the user wants to easily switch a ``species()``
-function from  Option #1 (parsing  quantum chemistry calculation output) to Option #2 (directly enter molecular properties).
+function from `Option #1: Automatically Parse Quantum Chemistry Calculation Output`_ to
+`Option #2: Directly Enter Molecular Properties`_.
+
+Option #3: Automatically Parse YAML files
+-----------------------------------------
+Arkane automatically saves a .yml file representing an ArkaneSpecies in an ``ArkaneSpecies`` folder under the run
+directory with the statistical mechanics properties of a species along with additional useful metadata. This process is
+triggered whenever a ``thermo`` calculation is ran for a species with a specified structure. To automatically generate
+such file in the first place, a species has to be defined using one of the other options above. The generated .yml file
+could conveniently be used when referring to this species in subsequent Arkane jobs. We intend to create an online
+repository of Arkane .yml files, from which users would be able to pick the desired species calculated at an appropriate
+level of theory (if available), and directly use them for kinetic or pressure-dependent calculations. Once such
+repository becomes available, a full description will be added to these pages.
 
 Transition States
 =================
@@ -581,7 +600,8 @@ using a ``transitionState()`` function, however it has less parameters (``struct
 ``collisionModel`` and ``energyTransferModel`` aren't specified for a transition state). Like the ``species()``
 function, the ``transitionState()`` function may also be specified in two ways:
 `Option #1: Automatically Parse Quantum Chemistry Calculation Output`_ and
-`Option #2: Directly Enter Molecular Properties`_
+`Option #2: Directly Enter Molecular Properties`_.  Note that currently a transitions state cannot be specified
+using a CanthermSpecies file (Option #3).
 
 The following is an example of a typical ``transitionState()`` function using Option #1::
 

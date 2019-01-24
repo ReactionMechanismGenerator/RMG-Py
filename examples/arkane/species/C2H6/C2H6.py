@@ -28,7 +28,8 @@ frequencyScaleFactor = 0.99
 """pivot are the two atoms that are attached to the rotor
 top contains the atoms that are being rotated including one of the atoms from pivots
 symmetry is the symmetry number of the scan
-fit is fit of the scan data. It defaults to 'best', but can also be assigned as 'cosine' or 'fourier'"""
-rotors = [
-    HinderedRotor(scanLog=Log('ethane_scan_1.log'), pivots=[1,5], top=[1,2,3,4], symmetry=3, fit='best'),
-]
+fit is fit of the scan data. It defaults to 'best', but can also be assigned as 'cosine' or 'fourier'
+Principally, the rotor symmetry can be automatically determined by Arkane, but could also be given by the user
+(then the user's input overrides Arkane's determination):
+rotors = [HinderedRotor(scanLog=Log('ethane_scan_1.log'), pivots=[1,5], top=[1,2,3,4], symmetry=3, fit='best')]"""
+rotors = [HinderedRotor(scanLog=Log('ethane_scan_1.log'), pivots=[1,5], top=[1,2,3,4], fit='best')]

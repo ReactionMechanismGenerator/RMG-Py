@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -34,22 +34,21 @@ of freedom.
 """
 
 import numpy
+import logging
 import cython
 
 from libc.math cimport log, exp, sqrt
 
 cimport rmgpy.constants as constants
 import rmgpy.quantity as quantity
-
 from rmgpy.statmech.translation cimport *
 from rmgpy.statmech.rotation cimport *
 from rmgpy.statmech.vibration cimport *
 from rmgpy.statmech.torsion cimport *
-import logging
 from rmgpy.exceptions import StatmechError
 ################################################################################
 
-cdef class Conformer:
+cdef class Conformer(RMGObject):
     """
     A representation of an individual molecular conformation. The attributes 
     are:

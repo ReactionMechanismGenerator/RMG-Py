@@ -41,3 +41,4 @@ dependencies:
   - pymongo
   - mpmath
   - dde
+  - pyyaml
