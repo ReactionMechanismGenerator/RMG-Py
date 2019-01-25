@@ -341,7 +341,6 @@ class MoleculeDrawer:
         # Decide whether we can use RDKit or have to generate coordinates ourselves
         for atom in self.molecule.atoms:
             if atom.charge != 0:
-                 flag_charge = 1
                  useRDKit = False
                  break
         else: # didn't break
