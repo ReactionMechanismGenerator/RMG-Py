@@ -48,6 +48,7 @@ from rmgpy.thermo import NASAPolynomial, NASA, ThermoData, Wilhoit
 from rmgpy.molecule import Molecule, Bond, Group
 import rmgpy.molecule
 from rmgpy.species import Species
+import rmgpy.quantity
 from rmgpy.ml.estimator import MLEstimator
 
 #: This dictionary is used to add multiplicity to species label
@@ -1120,10 +1121,14 @@ class ThermoDatabase(object):
             logging.debug("Found thermo for {0} in {1}".format(species.label,thermo0[0].comment.lower()))
             assert len(thermo0) == 3, "thermo0 should be a tuple at this point: (thermoData, library, entry)"
             thermo0 = thermo0[0]
+
+            if species.containsSurfaceSite():
+                thermo0 = self.correctBindingEnergy(thermo0, species)
             return thermo0
 
         if species.containsSurfaceSite():
             thermo0 = self.getThermoDataForSurfaceSpecies(species)
+            thermo0 = self.correctBindingEnergy(thermo0, species)
             return thermo0
 
         try:
@@ -1256,6 +1261,83 @@ class ThermoDatabase(object):
         return thermo0
     
         
+    def setDeltaAtomicAdsorptionEnergies(self, bindingEnergies):
+        """
+        Sets and stores the change in atomic binding energy between
+        the desired and the Ni(111) default.
+
+        :param bindingEnergies: the required binding energies
+        :return: None (stores result in self.deltaAtomicAdsorptionEnergy)
+        """
+        # this depends on the two metal surfaces, the reference one
+        # used in the database of adsorption energies, and the desired surface
+        # These are the reference ones, Ni(111), from Blaylock's supplementary material
+        deltaAtomicAdosrptionEnergy = {
+            'C': rmgpy.quantity.Energy(-5.997, 'eV/molecule'),
+            'H': rmgpy.quantity.Energy(-2.778, 'eV/molecule'),
+            'O': rmgpy.quantity.Energy(-4.485, 'eV/molecule')
+        }
+        # These are for Pt, from Abild-Pedersen Phys Rev Lett 2007
+        deltaAtomicAdosrptionEnergy = {
+            'C': rmgpy.quantity.Energy(-6.364, 'eV/molecule'),
+            'H': rmgpy.quantity.Energy(-2.778, 'eV/molecule'), # UNKNOWN!!! (using Ni value from Blaylock)
+            'O': rmgpy.quantity.Energy(-3.481, 'eV/molecule')
+        }
+        for element in 'CHO':
+            deltaAtomicAdosrptionEnergy[element].value_si =  bindingEnergies[element].value_si - deltaAtomicAdosrptionEnergy[element].value_si
+        self.deltaAtomicAdsorptionEnergy = deltaAtomicAdosrptionEnergy
+
+    def correctBindingEnergy(self, thermo, species):
+        """
+        Changes the provided thermo, by applying a linear scaling relation
+        to correct the adsorption energy.
+
+        :param thermo: starting thermo data
+        :param species: the species (which is an adsorbate)
+        :return: corrected thermo
+        """
+        molecule = species.molecule[0]
+        # only want/need to do one resonance structure
+        surfaceSites = []
+        for atom in molecule.atoms:
+            if atom.isSurfaceSite():
+                surfaceSites.append(atom)
+        normalizedBonds = {'C':0., 'O':0., 'N':0., 'H':0.}
+        maxBondOrder = {'C':4., 'O':2., 'N':3., 'H':1.}
+        for site in surfaceSites:
+            numbonds = len(site.bonds)
+            if numbonds == 0:
+                #vanDerWaals
+                pass
+            else:
+                assert len(site.bonds) == 1, "Each surface site can only be bonded to 1 atom"
+                bondedAtom = site.bonds.keys()[0]
+                bond = site.bonds[bondedAtom]
+                if bond.isSingle():
+                    bondOrder = 1.
+                elif bond.isDouble():
+                    bondOrder = 2.
+                elif bond.isTriple():
+                    bondOrder = 3.
+                elif bond.isQuadruple():
+                    bondOrder = 4.
+                else:
+                    raise NotImplementedError("Can't remove surface bond of type {}".format(bond.order))
+
+                normalizedBonds[bondedAtom.symbol] += bondOrder / maxBondOrder[bondedAtom.symbol]
+
+        if not isinstance(thermo, ThermoData):
+            thermo = thermo.toThermoData()
+            findCp0andCpInf(species, thermo)
+
+        ## now edit the adsorptionThermo using LSR
+        for element in 'CHO':
+            changeInBindingEnergy = self.deltaAtomicAdsorptionEnergy[element].value_si * normalizedBonds[element]
+            thermo.H298.value_si += changeInBindingEnergy
+        thermo.comment += " Binding energy corrected by LSR."
+        return thermo
+
+
 
     def getThermoDataForSurfaceSpecies(self, species):
         """
