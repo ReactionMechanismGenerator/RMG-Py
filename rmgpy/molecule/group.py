@@ -2390,7 +2390,7 @@ class Group(Graph):
                     atom2.bonds[atom1].order = bond12.order
                     continue
 
-                atom1Bonds = atom1.countBonds()
+                atom1Bonds = atom1.countBonds() # countBonds list must match getFeatures list
                 atom2Bonds = atom2.countBonds()
                 requiredFeatures1 = [atom1Features[x][0] - atom1Bonds[x] if atom1Features[x] else 0 for x in range(len(atom1Bonds))]
                 requiredFeatures2 = [atom2Features[x][0] - atom2Bonds[x] if atom2Features[x] else 0 for x in range(len(atom2Bonds))]
