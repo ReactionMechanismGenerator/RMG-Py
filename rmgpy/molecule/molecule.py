@@ -1919,13 +1919,13 @@ class Molecule(Graph):
         """
         cython.declare(atom1=Atom, atom2=Atom, bond12=Bond, order=float)
         for atom1 in self.vertices:
-            if not atom1.isHydrogen():
+            if atom1.isHydrogen() or atom1.isSurfaceSite():
+                atom1.lonePairs = 0
+            else:
                 order = atom1.getBondOrdersForAtom()
                 atom1.lonePairs = (elements.PeriodicSystem.valence_electrons[atom1.symbol] - atom1.radicalElectrons - atom1.charge - int(order)) / 2.0
                 if atom1.lonePairs % 1 > 0 or atom1.lonePairs > 4:
                     logging.error("Unable to determine the number of lone pairs for element {0} in {1}".format(atom1,self))
-            else:
-                atom1.lonePairs = 0
                 
     def getNetCharge(self):
         """
