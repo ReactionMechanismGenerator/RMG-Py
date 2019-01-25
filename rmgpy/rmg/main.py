@@ -928,10 +928,18 @@ class RMG(util.Subject):
 
         # generate Cantera files chem.cti & chem_annotated.cti in a designated `cantera` output folder
         try:
-            self.generateCanteraFiles(os.path.join(self.outputDirectory, 'chemkin', 'chem.inp'))
-            self.generateCanteraFiles(os.path.join(self.outputDirectory, 'chemkin', 'chem_annotated.inp'))
+            if any([s.containsSurfaceSite() for s in self.reactionModel.core.species]):
+                self.generateCanteraFiles(os.path.join(self.outputDirectory, 'chemkin', 'chem-gas.inp'),
+                                          surfaceFile=(os.path.join(self.outputDirectory, 'chemkin', 'chem-surface.inp')))
+                self.generateCanteraFiles(os.path.join(self.outputDirectory, 'chemkin', 'chem_annotated-gas.inp'),
+                                      surfaceFile=(os.path.join(self.outputDirectory, 'chemkin', 'chem_annotated-surface.inp')))
+            else:  # gas phase only
+                self.generateCanteraFiles(os.path.join(self.outputDirectory, 'chemkin', 'chem.inp'))
+                self.generateCanteraFiles(os.path.join(self.outputDirectory, 'chemkin', 'chem_annotated.inp'))
         except EnvironmentError:
             logging.error('Could not generate Cantera files due to EnvironmentError. Check read\write privileges in output directory.')
+        except Exception:
+            logging.exception('Could not generate Cantera files for some reason.')
         
         self.check_model()
         
@@ -1225,6 +1233,8 @@ class RMG(util.Subject):
         transportFile = os.path.join(os.path.dirname(chemkinFile), 'tran.dat')
         fileName = os.path.splitext(os.path.basename(chemkinFile))[0] + '.cti'
         outName = os.path.join(self.outputDirectory, 'cantera', fileName)
+        if kwargs.has_key('surfaceFile'):
+            outName = outName.replace('-gas.', '.')
         canteraDir = os.path.dirname(outName)
         try:
             os.makedirs(canteraDir)
