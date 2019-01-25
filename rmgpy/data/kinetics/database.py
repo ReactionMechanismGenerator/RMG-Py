@@ -544,8 +544,8 @@ and immediately used in input files without any additional changes.
                 try:
                     reaction_list.extend(family.generateReactions(molecules, products=products, prod_resonance=prod_resonance))
                 except:
-                    print("Problem family: {}".format(label))
-                    print("Problem reactants: {}".format(molecules))
+                    logging.error("Problem family: {}".format(label))
+                    logging.error("Problem reactants: {}".format(molecules))
                     raise
 
         for reactant in molecules:
