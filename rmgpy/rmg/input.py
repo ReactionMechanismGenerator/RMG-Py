@@ -42,6 +42,7 @@ from rmgpy.quantity import Quantity
 from rmgpy.solver.base import TerminationTime, TerminationConversion, TerminationRateRatio
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.solver.liquid import LiquidReactor
+from rmgpy.solver.surface import SurfaceReactor
 from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
 from model import CoreEdgeReactionModel
 
@@ -305,6 +306,100 @@ def liquidReactor(temperature,
     system = LiquidReactor(T, initialConcentrations, nSims, termination, sensitiveSpecies, sensitivityThreshold, sensConditions, constantSpecies)
     rmg.reactionSystems.append(system)
     
+# Reaction systems
+def surfaceReactor(temperature,
+                   initialPressure,
+                  initialGasMoleFractions,
+                  initialSurfaceCoverages,
+                  surfaceVolumeRatio,
+                  surfaceSiteDensity,
+                  nSims=4,
+                  terminationConversion=None,
+                  terminationTime=None,
+                  sensitivity=None,
+                  sensitivityThreshold=1e-3):
+
+    logging.debug('Found SurfaceReactor reaction system')
+
+    for value in initialGasMoleFractions.values():
+        if value < 0:
+            raise InputError('Initial mole fractions cannot be negative.')
+    totalInitialMoles = sum(initialGasMoleFractions.values())
+    if totalInitialMoles != 1:
+        logging.warning('Initial gas mole fractions do not sum to one; renormalizing.')
+        logging.debug('')
+        logging.debug('Original composition:')
+        for spec, molfrac in initialGasMoleFractions.iteritems():
+            logging.debug("{0} = {1}".format(spec, molfrac))
+        for spec in initialGasMoleFractions:
+            initialGasMoleFractions[spec] /= totalInitialMoles
+        logging.info('')
+        logging.debug('Normalized mole fractions:')
+        for spec, molfrac in initialGasMoleFractions.iteritems():
+            logging.debug("{0} = {1}".format(spec, molfrac))
+
+    if not isinstance(temperature, list):
+        T = Quantity(temperature)
+    else:
+        if len(temperature) != 2:
+            raise InputError('Temperature ranges can either be in the form '
+                'of (number,units) or a list with 2 entries of the same format')
+        T = [Quantity(t) for t in temperature]
+
+    if not isinstance(initialPressure, list):
+        initialP = Quantity(initialPressure)
+    else:
+        if len(initialPressure) != 2:
+            raise InputError('Initial pressure ranges can either be in the form '
+                'of (number,units) or a list with 2 entries of the same format')
+        initialP = [Quantity(p) for p in initialPressure]
+
+    if not isinstance(temperature, list) and not isinstance(initialPressure, list):
+        nSims = 1
+    if any([isinstance(x, list) for x in initialGasMoleFractions.values()]) or \
+       any([isinstance(x, list) for x in initialSurfaceCoverages.values()]):
+        raise NotImplementedError("Can't do ranges on species concentrations for surface reactors yet.")
+
+    termination = []
+    if terminationConversion is not None:
+        for spec, conv in terminationConversion.iteritems():
+            termination.append(TerminationConversion(speciesDict[spec], conv))
+    if terminationTime is not None:
+        termination.append(TerminationTime(Quantity(terminationTime)))
+    if len(termination) == 0:
+        raise InputError('No termination conditions specified for reaction system #{0}.'.format(len(rmg.reactionSystems) + 2))
+
+    sensitiveSpecies = []
+    if sensitivity:
+        for spec in sensitivity:
+            sensitiveSpecies.append(speciesDict[spec])
+    if not isinstance(T, list):
+        sensitivityTemperature = T
+    if not isinstance(initialPressure, list):
+        sensitivityPressure = initialPressure
+    sensConditions = None
+    if sensitivity:
+        raise NotImplementedError("Can't currently do sensitivity with surface reactors.")
+        """
+        The problem is inside base.pyx it reads the dictionary 'sensConditions'
+        and guesses whether they're all concentrations (liquid reactor) or 
+        mole fractions (simple reactor). In fact, some may be surface coverages.
+        """
+
+    system = SurfaceReactor(T=T,
+                            initialP=initialP,
+                            initialGasMoleFractions=initialGasMoleFractions,
+                            initialSurfaceCoverages=initialSurfaceCoverages,
+                            surfaceVolumeRatio=surfaceVolumeRatio,
+                            surfaceSiteDensity=surfaceSiteDensity,
+                            nSims=nSims,
+                            termination=termination,
+                            sensitiveSpecies=sensitiveSpecies,
+                            sensitivityThreshold=sensitivityThreshold,
+                            sensConditions=sensConditions)
+    rmg.reactionSystems.append(system)
+    system.log_initial_conditions(number=len(rmg.reactionSystems))
+
 def simulator(atol, rtol, sens_atol=1e-6, sens_rtol=1e-4):
     rmg.simulatorSettingsList.append(SimulatorSettings(atol, rtol, sens_atol, sens_rtol))
     
@@ -581,6 +676,7 @@ def readInputFile(path, rmg0):
         'adjacencyList': adjacencyList,
         'simpleReactor': simpleReactor,
         'liquidReactor': liquidReactor,
+        'surfaceReactor': surfaceReactor,
         'simulator': simulator,
         'solvation': solvation,
         'model': model,
