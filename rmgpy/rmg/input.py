@@ -38,7 +38,7 @@ from copy import deepcopy
 from rmgpy import settings
 
 from rmgpy.molecule import Molecule
-from rmgpy.quantity import Quantity
+from rmgpy.quantity import Quantity, Energy
 from rmgpy.solver.base import TerminationTime, TerminationConversion, TerminationRateRatio
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.solver.liquid import LiquidReactor
@@ -62,6 +62,7 @@ def database(
              kineticsFamilies = 'default',
              kineticsDepositories = 'default',
              kineticsEstimator = 'rate rules',
+             bindingEnergies = None,
              ):
     # This function just stores the information about the database to be loaded
     # We don't actually load the database until after we're finished reading
@@ -104,6 +105,34 @@ def database(
         if not isinstance(kineticsFamilies,list):
             raise InputError("kineticsFamilies should be either 'default', 'all', 'none', or a list of names eg. ['H_Abstraction','R_Recombination'] or ['!Intra_Disproportionation'].")
         rmg.kineticsFamilies = kineticsFamilies
+    rmg.bindingEnergies = convertBindingEnergies(bindingEnergies)
+
+
+def convertBindingEnergies(bindingEnergies):
+    """
+    Process the bindingEnergies from the input file.
+    If "None" is passed, then it returns Ni(111) values.
+
+    :param bindingEnergies: a dictionary of element symbol: binding energy pairs (or None)
+    :return: the processed and checked dictionary
+    """
+    if bindingEnergies is None:
+        bindingEnergies = { # default values for Ni(111)
+                       'C':(-5.997, 'eV/molecule'),
+                       'H':(-2.778, 'eV/molecule'),
+                       'O':(-4.485, 'eV/molecule'),
+                       }
+    if not isinstance(bindingEnergies, dict): raise InputError("bindingEnergies should be None (for default) or a dict.")
+    newDict = {}
+    for element in 'CHO':
+        try:
+            newDict[element] = Energy(bindingEnergies[element])
+        except KeyError:
+            logging.error('Element {} missing from bindingEnergies dictionary'.format(element))
+            raise
+    return newDict
+
+
 
 def species(label, structure, reactive=True):
     logging.debug('Found {0} species "{1}" ({2})'.format('reactive' if reactive else 'nonreactive', label, structure.toSMILES()))
