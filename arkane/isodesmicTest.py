@@ -36,7 +36,8 @@ import unittest
 
 import numpy as np
 
-from arkane.isodesmic import ErrorCancelingSpecies, ErrorCancelingReaction, SpeciesConstraints
+from arkane.isodesmic import ErrorCancelingSpecies, ErrorCancelingReaction, SpeciesConstraints, ErrorCancelingScheme, \
+                             IsodesmicScheme
 from rmgpy.molecule import Molecule
 from rmgpy.species import Species
 
@@ -175,6 +176,28 @@ class TestSpeciesConstraints(unittest.TestCase):
         self.assertTrue(np.array_equal(consts_matrix, np.array([[6, 3, 0, 0, 0, 0, 6, 1, 0, 1, 0, 0],
                                                                 [10, 4, 0, 0, 0, 0, 10, 0, 0, 3, 0, 0],
                                                                 [6, 6, 0, 0, 0, 0, 6, 3, 0, 3, 0, 1]])))
+
+
+class TestErrorCancelingScheme(unittest.TestCase):
+    """
+    A class for testing that the ErrorCancelingScheme class functions properly
+    """
+
+    def setUp(self):
+        self.propene = ErrorCancelingSpecies(Molecule(SMILES='CC=C'), (100, 'kJ/mol'), 'test')
+        self.butane = ErrorCancelingSpecies(Molecule(SMILES='CCCC'), (150, 'kJ/mol'), 'test')
+        self.benzene = ErrorCancelingSpecies(Molecule(SMILES='c1ccccc1'), (-50, 'kJ/mol'), 'test')
+        self.caffeine = ErrorCancelingSpecies(Molecule(SMILES='CN1C=NC2=C1C(=O)N(C(=O)N2C)C'), (300, 'kJ/mol'), 'test')
+        self.ethyne = ErrorCancelingSpecies(Molecule(SMILES='C#C'), (200, 'kJ/mol'), 'test')
+
+    def test_creating_error_canceling_schemes(self):
+        scheme = ErrorCancelingScheme(self.propene, [self.butane, self.benzene, self.caffeine, self.ethyne], True, True)
+
+        self.assertEqual(scheme.reference_species, [self.butane])
+
+        isodesmic_scheme = IsodesmicScheme(self.propene, [self.butane, self.benzene, self.caffeine, self.ethyne])
+
+        self.assertEqual(isodesmic_scheme.reference_species, [self.butane, self.benzene])
 
 
 if __name__ == '__main__':
