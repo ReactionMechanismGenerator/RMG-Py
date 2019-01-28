@@ -547,7 +547,7 @@ atomTypes['I1s'] = AtomType('I1s', generic=['R','R!H','I','Val7'],  specific=[],
 
 atomTypes['X'   ].setActions(incrementBond=['X'],            decrementBond=['X'],            formBond=['X'],         breakBond=['X'],         incrementRadical=[],       decrementRadical=[],       incrementLonePair=[],      decrementLonePair=[])
 atomTypes['Xv'  ].setActions(incrementBond=[],               decrementBond=[],               formBond=['Xo'],        breakBond=[],            incrementRadical=[],       decrementRadical=[],       incrementLonePair=[],      decrementLonePair=[])
-atomTypes['Xo'  ].setActions(incrementBond=['Xo'],           decrementBond=['Xo'],           formBond=[],            breakBond=['Xv'],        incrementRadical=[],       decrementRadical=[],       incrementLonePair=[],      decrementLonePair=[])
+atomTypes['Xo'  ].setActions(incrementBond=['Xo'],           decrementBond=['Xo'],           formBond=['Xo'],        breakBond=['Xv'],        incrementRadical=[],       decrementRadical=[],       incrementLonePair=[],      decrementLonePair=[])
 
 atomTypes['R'   ].setActions(incrementBond=['R'],            decrementBond=['R'],            formBond=['R'],         breakBond=['R'],         incrementRadical=['R'],    decrementRadical=['R'],    incrementLonePair=['R'],   decrementLonePair=['R'])
 atomTypes['R!H' ].setActions(incrementBond=['R!H'],          decrementBond=['R!H'],          formBond=['R!H'],       breakBond=['R!H'],       incrementRadical=['R!H'],  decrementRadical=['R!H'],  incrementLonePair=['R!H'], decrementLonePair=['R!H'])
