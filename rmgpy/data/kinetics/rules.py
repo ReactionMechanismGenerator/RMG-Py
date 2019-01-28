@@ -77,7 +77,7 @@ class KineticsRules(Database):
                   nodalDistance=None,
                   treeDistances=None
                   ):
-
+            
         if isinstance(kinetics,Arrhenius):
             kinetics = kinetics.toArrheniusEP()
         entry = Entry(

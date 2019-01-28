@@ -719,7 +719,6 @@ class Reaction:
         if forcePositive and isinstance(self.kinetics, (Arrhenius, StickingCoefficient)) and self.kinetics.Ea.value_si < 0:
             self.kinetics.comment += "\nEa raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si/1000.)
             logging.info("For reaction {1!s} Ea raised from {0:.1f} to 0 kJ/mol.".format(self.kinetics.Ea.value_si/1000., self))
-
             self.kinetics.Ea.value_si = 0
         if self.kinetics.isPressureDependent() and self.network_kinetics is not None:
             Ea = self.network_kinetics.Ea.value_si
@@ -1316,8 +1315,6 @@ def isomorphic_species_lists(list1, list2, check_identical=False, only_check_lab
                          
     Returns True if the lists are isomorphic/identical & false otherwise
     """
-
-################################################################################
 
     def same(object1, object2, _check_identical=check_identical, _only_check_label=only_check_label):
         if _only_check_label:

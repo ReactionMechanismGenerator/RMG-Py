@@ -766,7 +766,8 @@ Energy = Enthalpy = FreeEnergy = UnitType('J/mol',
                          # the following hack also allows 'J' and 'kJ' etc. to be specified without /mol[ecule]
                          # so is not advisable (and fails unit tests)
                          # 'eV': constants.Na, # allow people to be lazy and neglect the "/molecule"
-})
+                         },
+)
 
 
 Entropy = HeatCapacity = UnitType('J/(mol*K)', commonUnits=['kJ/(mol*K)', 'cal/(mol*K)', 'kcal/(mol*K)'])
