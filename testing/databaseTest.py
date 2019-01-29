@@ -103,7 +103,13 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             for depository in family.depositories:
 
                 test = lambda x: self.kinetics_checkAdjlistsNonidentical(depository)
-                test_name = "Kinetics {1} Depository: check adjacency lists are nonidentical?".format(family_name, depository.label)
+                test_name = "Kinetics depository {0}: check adjacency lists are nonidentical?".format(depository.label)
+                test.description = test_name
+                self.compat_func_name = test_name
+                yield test, depository.label
+
+                test = lambda x: self.kinetics_checkRateUnitsAreCorrect(depository, tag='depository')
+                test_name = "Kinetics depository {0}: check rates have correct units?".format(depository.label)
                 test.description = test_name
                 self.compat_func_name = test_name
                 yield test, depository.label
@@ -116,8 +122,8 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             self.compat_func_name = test_name
             yield test, library_name
 
-            test = lambda x: self.kinetics_checkLibraryRateUnits(library)
-            test_name = "Kinetics library {0}: check rates have OK units?".format(library_name)
+            test = lambda x: self.kinetics_checkRateUnitsAreCorrect(library)
+            test_name = "Kinetics library {0}: check rates have correct units?".format(library_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, library_name
@@ -433,9 +439,9 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
 
                     nose.tools.assert_false(speciesList[i].molecule[0].isIsomorphic(speciesList[j].molecule[0], initialMap), "Species {0} and species {1} in {2} database were found to be identical.".format(speciesList[i].label,speciesList[j].label,database.label))
 
-    def kinetics_checkLibraryRateUnits(self, library):
+    def kinetics_checkRateUnitsAreCorrect(self, database, tag='library'):
         """
-        This test ensures that every library reaction has acceptable units on the A factor.
+        This test ensures that every reaction has acceptable units on the A factor.
         """
         boo = False
 
@@ -445,7 +451,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             3: ((pq.m**6) / (pq.mole**2) / pq.s).dimensionality,
         }
 
-        for entry in library.entries.values():
+        for entry in database.entries.values():
             k = entry.data
             rxn = entry.item
             molecularity = len(rxn.reactants)
@@ -454,31 +460,31 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                     A = k.A
                     if pq.Quantity(1.0, A.units).simplified.dimensionality != dimensionalities[molecularity]:
                         boo = True
-                        logging.error('library reaction {0} from library {1}, has invalid units {2}'.format(rxn, library.label, A.units))
+                        logging.error('Reaction {0} from {1} {2}, has invalid units {3}'.format(rxn, tag, database.label, A.units))
                 elif isinstance(k, (rmgpy.kinetics.Lindemann, rmgpy.kinetics.Troe )):
                     A = k.arrheniusHigh.A
                     if pq.Quantity(1.0, A.units).simplified.dimensionality != dimensionalities[molecularity]:
                         boo = True
-                        logging.error('library reaction {0} from library {1}, has invalid high-pressure limit units {2}'.format(rxn, library.label, A.units))
+                        logging.error('Reaction {0} from {1} {2}, has invalid high-pressure limit units {3}'.format(rxn, tag, database.label, A.units))
                 elif isinstance(k, (rmgpy.kinetics.Lindemann, rmgpy.kinetics.Troe, rmgpy.kinetics.ThirdBody)):
                     A = k.arrheniusLow.A
                     if pq.Quantity(1.0, A.units).simplified.dimensionality != dimensionalities[molecularity+1]:
                         boo = True
-                        logging.error('library reaction {0} from library {1}, has invalid low-pressure limit units {2}'.format(rxn, library.label, A.units))
+                        logging.error('Reaction {0} from {1} {2}, has invalid low-pressure limit units {3}'.format(rxn, tag, database.label, A.units))
                 elif hasattr(k, 'highPlimit') and k.highPlimit is not None:
                     A = k.highPlimit.A
                     if pq.Quantity(1.0, A.units).simplified.dimensionality != dimensionalities[molecularity-1]:
                         boo = True
                         logging.error(
-                            'library reaction {0} from library {1}, has invalid high-pressure limit units {2}'.format(rxn, library.label, A.units))
+                            'Reaction {0} from {1} {2}, has invalid high-pressure limit units {3}'.format(rxn, tag, database.label, A.units))
                 elif isinstance(k, rmgpy.kinetics.MultiArrhenius):
                     for num, arrhenius in enumerate(k.arrhenius):
                         A = arrhenius.A
                         if pq.Quantity(1.0, A.units).simplified.dimensionality != dimensionalities[molecularity]:
                             boo = True
                             logging.error(
-                                'library reaction {0} from library {1}, has invalid units {2} on rate expression {3}'.format(
-                                    rxn, library.label, A.units, num+1)
+                                'Reaction {0} from {1} {2}, has invalid units {3} on rate expression {4}'.format(
+                                    rxn, tag, database.label, A.units, num + 1)
                             )
 
                 elif isinstance(k, rmgpy.kinetics.PDepArrhenius):
@@ -494,16 +500,16 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                                 if pq.Quantity(1.0, A.units).simplified.dimensionality != dimensionalities[molecularity]:
                                     boo = True
                                     logging.error(
-                                        'library reaction {0} from library {1}, has invalid units {2} on {2!r} rate expression {3}'.format(
-                                            rxn, library.label, P, A.units, num + 1)
+                                        'Reaction {0} from {1} {2}, has invalid units {3} on {4!r} rate expression {5}'.format(
+                                            rxn, tag, database.label, A.units, P, num + 1)
                                     )
                         else:
                             A = arrhenius.A
                             if pq.Quantity(1.0, A.units).simplified.dimensionality != dimensionalities[molecularity]:
                                 boo = True
                                 logging.error(
-                                    'library reaction {0} from library {1}, has invalid {2!r} units {3}'.format(
-                                        rxn, library.label, P, A.units)
+                                    'Reaction {0} from {1} {2}, has invalid {3!r} units {4}'.format(
+                                        rxn, tag, database.label, P, A.units)
                                 )
 
                 elif isinstance(k, rmgpy.kinetics.MultiPDepArrhenius):
@@ -519,8 +525,8 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                                         molecularity]:
                                         boo = True
                                         logging.error(
-                                            'library reaction {0} from library {1}, has invalid units {2} on {3!r} rate expression {4!r}'.format(
-                                                rxn, library.label, A.units, P, arrhenius2)
+                                            'Reaction {0} from {1} {2}, has invalid units {3} on {4!r} rate expression {5!r}'.format(
+                                                rxn, tag, database.label, A.units, P, arrhenius2)
                                         )
                             else:
                                 A = arrhenius.A
@@ -528,8 +534,8 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                                     molecularity]:
                                     boo = True
                                     logging.error(
-                                        'library reaction {0} from library {1}, has invalid {2!r} units {3} in rate expression {4}'.format(
-                                        rxn, library.label, P, A.units, num)
+                                        'Reaction {0} from {1} {2}, has invalid {3!r} units {4} in rate expression {5}'.format(
+                                        rxn, tag, database.label, P, A.units, num)
                                     )
 
 
@@ -537,17 +543,17 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                     if pq.Quantity(1.0, k.kunits).simplified.dimensionality != dimensionalities[molecularity]:
                         boo = True
                         logging.error(
-                            'library reaction {0} from library {1}, has invalid units {2}'.format(
-                                rxn, library.label, k.kunits)
+                            'Reaction {0} from {1} {2}, has invalid units {3}'.format(
+                                rxn, tag, database.label, k.kunits)
                         )
 
                 else:
-                    logging.warning('library reaction {0} from library {1}, did not have units checked.'.format(rxn, library.label))
+                    logging.warning('Reaction {0} from {1} {2}, did not have units checked.'.format(rxn, tag, database.label))
             except:
-                logging.error("Error when checking units on reaction {0} from library {1} with rate expression {2!r}.".format(rxn, library.label, k))
+                logging.error("Error when checking units on reaction {0} from {1} {2} with rate expression {3!r}.".format(rxn, tag, database.label, k))
                 raise
         if boo:
-            raise ValueError('library {0} has some incorrect units'.format(library.label))
+            raise ValueError('{0} {1} has some incorrect units'.format(tag.capitalize(), database.label))
 
     def kinetics_checkLibraryRatesAreReasonable(self, library):
         """
