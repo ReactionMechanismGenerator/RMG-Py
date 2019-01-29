@@ -4,6 +4,21 @@
 Heterogeneous Catalysis Systems and Surface Reactions
 *****************************************************
 
+Need to describe:
+ * input file
+     * surfacereactor
+         * surface site density
+     *  binding energies
+ * how to represent adsorbates
+     * atom types (X, Xv, Xo)
+     * van der Waals (same chemgraph, no bond)
+ * reaction family set (how to choose them in input file, with and without gas phase)
+ * reaction libraries
+
+theory:
+* linear scaling relationships
+
+
 To simulate surfaces in RMG requires a module in your input file for liquid-phase::
 
 
