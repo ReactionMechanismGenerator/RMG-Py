@@ -29,6 +29,7 @@
 ###############################################################################
 
 import copy
+import logging
 from time import time
 
 import numpy as np
@@ -88,7 +89,7 @@ class ReactorModPiece(ModPiece):
                 for i, rxn in enumerate(cantera.reactionList):
                     if rxn.index == ind:
                         new_kParams.append(i)
-                        print 'Replacing reaction index {0} with {1} for reaction {2!s}'.format(ind, i, rxn)
+                        logging.debug('Replacing reaction index {0} with {1} for reaction {2!s}'.format(ind, i, rxn))
                         break
                 else:
                     raise ValueError('Could not find requested index {0} in reaction list.'.format(ind))
@@ -97,7 +98,7 @@ class ReactorModPiece(ModPiece):
                 for i, spc in enumerate(cantera.speciesList):
                     if spc.index == ind:
                         new_gParams.append(i)
-                        print 'Replacing species index {0} with {1} for species {2!s}'.format(ind, i, spc)
+                        logging.debug('Replacing species index {0} with {1} for species {2!s}'.format(ind, i, spc))
                         break
                 else:
                     raise ValueError('Could not find requested index {0} in species list.'.format(ind))
@@ -116,13 +117,13 @@ class ReactorModPiece(ModPiece):
             self.kUncertaintyFactors = {}
             for i, rxnIndex in enumerate(kParams):
                 self.kUncertaintyFactors[rxnIndex] = kUncertaintyFactors[rxnIndex]
-                print 'For {0}, set uncertainty factor to {1}'.format(cantera.reactionList[rxnIndex], kUncertaintyFactors[rxnIndex])
+                logging.debug('For {0}, set uncertainty factor to {1}'.format(cantera.reactionList[rxnIndex], kUncertaintyFactors[rxnIndex]))
             
             gUncertaintyFactors = [val * np.sqrt(3) for val in gUncertainty]
             self.gUncertaintyFactors = {}
             for i, spcIndex in enumerate(gParams):
                 self.gUncertaintyFactors[spcIndex] = gUncertaintyFactors[spcIndex]
-                print 'For {0}, set uncertainty factor to {1}'.format(cantera.speciesList[spcIndex], gUncertaintyFactors[spcIndex])
+                logging.debug('For {0}, set uncertainty factor to {1}'.format(cantera.speciesList[spcIndex], gUncertaintyFactors[spcIndex]))
             
         else:
             # In the correlated case, keep track of which reactions and species each 
@@ -385,9 +386,9 @@ class ReactorPCEFactory:
 
         end_time = time()
         time_taken = end_time - start_time
-        print 'Polynomial Chaos Expansion construction took {0:2f} seconds.'.format(time_taken)
+        logging.info('Polynomial Chaos Expansion construction took {0:2f} seconds.'.format(time_taken))
 
-    def compareOutput(self, testPoint):
+    def compareOutput(self, testPoint, log=True):
         """
         Evaluate the PCEs against what the real output might give for a test point.
         testPoint is an array of all the values in terms of factor of f
@@ -401,23 +402,32 @@ class ReactorPCEFactory:
 
         reactorMod = self.reactorMod
 
+        output = ''
         for i in range(reactorMod.numConditions):
-            print 'Condition {}'.format(i + 1)
-            print '======================================================='
-            print str(reactorMod.cantera.conditions[i])
-            print ''
-            print 'Condition {} Mole Fractions Evaluated at Test Point'.format(i + 1)
-            print '========================================'
-            print 'Species     True output     PCE output'
-            print '========================================'
+            output += """============================================================
+Condition {0}
+------------------------------------------------------------
+{1!s}
+============================================================
+Condition {0} Mole Fractions Evaluated at Test Point
+------------------------------------------------------------
+Species                      True Output          PCE Output
+------------------------------------------------------------
+""".format(i + 1, reactorMod.cantera.conditions[i])
+
             for j, outputSpecies in enumerate(reactorMod.outputSpeciesList):
                 outputIndex = i * reactorMod.numOutputSpecies + j
-                print '{0:10} {1:11.2f} {2:14.2f}'.format(outputSpecies.toChemkin(), trueOutput[outputIndex], pceOutput[outputIndex])
-            print ''
+                output += '{0:<20}{1:>20.3f}{2:>20.3f}\n'.format(outputSpecies.toChemkin(), trueOutput[outputIndex], pceOutput[outputIndex])
+            output += '============================================================\n'
+
+        if log:
+            logging.info(output)
+        else:
+            print(output)
 
         return trueOutput, pceOutput
 
-    def analyzeResults(self):
+    def analyzeResults(self, log=True):
         """
         Obtain the results: the prediction mean and variance, as well as the global sensitivity indices
         Returns a tuple containing the following statistics
@@ -434,38 +444,41 @@ class ReactorPCEFactory:
         stddev_percent = stddev / mean * 100.0
 
         cov = pce.ComputeCovariance()
-        # print "Covariance = ", cov
 
         # Extract the global sensitivity indices
         mainSens = np.array(pce.ComputeAllMainSensitivityIndices())
         totalSens = np.array(pce.ComputeAllSobolTotalSensitivityIndices())
 
+        output = ''
         for i in range(reactorMod.numConditions):
+            output += """============================================================
+Condition {0}
+------------------------------------------------------------
+{1!s}
+============================================================
+Condition {0} Mole Fractions
+------------------------------------------------------------
+Species                   Mean         Stddev     Stddev (%)
+------------------------------------------------------------
+""".format(i + 1, reactorMod.cantera.conditions[i])
 
-            print 'Condition {}'.format(i + 1)
-            print '======================================================='
-            print str(reactorMod.cantera.conditions[i])
-
-            print ''
-            print 'Condition {} Mole Fractions'.format(i + 1)
-            print '=============================================='
-            print 'Species     Mean       Stddev     Stddev (%)'
-            print '=============================================='
             for j, outputSpecies in enumerate(reactorMod.outputSpeciesList):
                 outputIndex = i * reactorMod.numOutputSpecies + j
-                print '{0:10} {1:10.3e} {2:10.3e} {3:10.3f}'.format(outputSpecies.toChemkin(),
-                                                                    mean[outputIndex],
-                                                                    stddev[outputIndex],
-                                                                    stddev_percent[outputIndex])
-            print ''
+                output += '{0:<15}{1:>15.3e}{2:>15.3e}{3:>15.3f}\n'.format(outputSpecies.toChemkin(),
+                                                                           mean[outputIndex],
+                                                                           stddev[outputIndex],
+                                                                           stddev_percent[outputIndex])
+            output += '============================================================\n\n'
 
             if reactorMod.kParams:
-                print ''
-                print 'Condition {} Reaction Sensitivities'.format(i + 1)
-                print '==============================================================================='
-                print 'Description                                             sens_main  sens_total'
-                print '==============================================================================='
+                output += """====================================================================================================
+Condition {0} Reaction Rate Sensitivity Indices
+----------------------------------------------------------------------------------------------------
+Description                                                                 sens_main     sens_total
+""".format(i + 1)
+
                 for j, outputSpecies in enumerate(reactorMod.outputSpeciesList):
+                    output += '----------------------------------------------------------------------------------------------------\n'
                     outputIndex = i * reactorMod.numOutputSpecies + j
                     for k, descriptor in enumerate(reactorMod.kParams):
                         parameterIndex = k
@@ -475,18 +488,20 @@ class ReactorPCEFactory:
                         else:
                             description = 'dln[{0}]/dln[{1}]'.format(outputSpecies.toChemkin(), descriptor)
 
-                        print '{0:55} {1:10.3f} {2:10.3f}'.format(description,
-                                                                  mainSens[outputIndex][parameterIndex],
-                                                                  totalSens[outputIndex][parameterIndex])
-            if reactorMod.gParams:
-                print ''
-                print 'Condition {} Thermo Sensitivities'.format(i + 1)
-                print '==========================================================='
-                print 'Description                         sens_main  sens_total'
-                print '==========================================================='
-                for j, outputSpecies in enumerate(reactorMod.outputSpeciesList):
-                    outputIndex = i * reactorMod.numOutputSpecies + j
+                        output += '{0:<70}{1:>14.3f}%{2:>14.3f}%\n'.format(description,
+                                                                           100 * mainSens[outputIndex][parameterIndex],
+                                                                           100 * totalSens[outputIndex][parameterIndex])
+                output += '====================================================================================================\n\n'
 
+            if reactorMod.gParams:
+                output += """====================================================================================================
+Condition {0} Thermochemistry Sensitivity Indices
+----------------------------------------------------------------------------------------------------
+Description                                                                 sens_main     sens_total
+""".format(i + 1)
+                for j, outputSpecies in enumerate(reactorMod.outputSpeciesList):
+                    output += '----------------------------------------------------------------------------------------------------\n'
+                    outputIndex = i * reactorMod.numOutputSpecies + j
                     for g, descriptor in enumerate(reactorMod.gParams):
                         parameterIndex = len(reactorMod.kParams) + g
                         if not reactorMod.correlated:
@@ -495,9 +510,14 @@ class ReactorPCEFactory:
                         else:
                             description = 'dln[{0}]/dG[{1}]'.format(outputSpecies.toChemkin(), descriptor)
 
-                        print '{0:35} {1:10.3f} {2:10.3f}'.format(description,
-                                                                  mainSens[outputIndex][parameterIndex],
-                                                                  totalSens[outputIndex][parameterIndex])
-            print ''
+                        output += '{0:<70}{1:>14.3f}%{2:>14.3f}%\n'.format(description,
+                                                                           100 * mainSens[outputIndex][parameterIndex],
+                                                                           100 * totalSens[outputIndex][parameterIndex])
+                output += '====================================================================================================\n\n'
+
+        if log:
+            logging.info(output)
+        else:
+            print(output)
 
         return mean, var, cov, mainSens, totalSens
