@@ -253,7 +253,11 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
                         label=os.path.dirname(library_file)[len(path)+1:]
                         logging.info('Loading kinetics library {0} from {1}...'.format(label, library_file))
                         library = KineticsLibrary(label=label)
-                        library.load(library_file, self.local_context, self.global_context)
+                        try:
+                            library.load(library_file, self.local_context, self.global_context)
+                        except:
+                            logging.error("Problem loading reaction library {0!r}".format(library_file))
+                            raise
                         self.libraries[library.label] = library
                         self.libraryOrder.append((library.label,'Reaction Library'))
 
