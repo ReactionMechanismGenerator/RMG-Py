@@ -115,13 +115,15 @@ class ReactorModPiece(ModPiece):
             kUncertaintyFactors = [val * np.sqrt(3) / np.log(10) for val in kUncertainty]
             self.kUncertaintyFactors = {}
             for i, rxnIndex in enumerate(kParams):
-                self.kUncertaintyFactors[rxnIndex] = kUncertaintyFactors[i]
-
+                self.kUncertaintyFactors[rxnIndex] = kUncertaintyFactors[rxnIndex]
+                print 'For {0}, set uncertainty factor to {1}'.format(cantera.reactionList[rxnIndex], kUncertaintyFactors[rxnIndex])
+            
             gUncertaintyFactors = [val * np.sqrt(3) for val in gUncertainty]
             self.gUncertaintyFactors = {}
             for i, spcIndex in enumerate(gParams):
-                self.gUncertaintyFactors[spcIndex] = gUncertaintyFactors[i]
-
+                self.gUncertaintyFactors[spcIndex] = gUncertaintyFactors[spcIndex]
+                print 'For {0}, set uncertainty factor to {1}'.format(cantera.speciesList[spcIndex], gUncertaintyFactors[spcIndex])
+            
         else:
             # In the correlated case, keep track of which reactions and species each 
             # uncertain parameter affects 
