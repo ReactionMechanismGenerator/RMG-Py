@@ -3015,6 +3015,11 @@ class KineticsFamily(Database):
                             logging.error(c)
                             logging.error(atm.reg_dim_atm)
                             logging.error(atm.reg_dim_u)
+                        logging.error("bonds:")
+                        for bd in parent.item.getAllEdges():
+                            ind1 = parent.item.atoms.index(bd.vertex1)
+                            ind2 = parent.item.atoms.index(bd.vertex2)
+                            logging.error(((ind1,ind2),bd.order,bd.reg_dim))
                         for rxn in rs:
                             for react in rxn.reactants:
                                 logging.error(react.toAdjacencyList())
