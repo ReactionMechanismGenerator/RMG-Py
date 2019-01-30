@@ -602,8 +602,18 @@ cdef class ArrheniusBM(KineticsModel):
         ydata = np.array(ydata)
 
         #fit parmeters
-
-        params = curve_fit(kfcn,xdata,ydata,sigma=sigmas,p0=[1.0,1.0,w0/10.0])
+        boo = True
+        xtol = 1e-8
+        ftol = 1e-8
+        while boo:
+          boo = False
+          try:
+            params = curve_fit(kfcn,xdata,ydata,sigma=sigmas,p0=[1.0,1.0,w0/10.0],xtol=xtol,ftol=ftol)
+          except:
+            if xtol < 1.0:
+              boo = True
+              xtol *= 10.0
+              ftol *= 10.0
 
         lnA,n,E0 = params[0].tolist()
         A = np.exp(lnA)
