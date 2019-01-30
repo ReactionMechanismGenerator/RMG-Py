@@ -86,7 +86,7 @@ class GroupAtom(Vertex):
         self.lonePairs = lonePairs or []
 
         self.props = props or {}
-        
+
         self.reg_dim_atm = [[],[]]
         self.reg_dim_u = [[],[]]
         self.reg_dim_r = [[],[]]
@@ -247,10 +247,10 @@ class GroupAtom(Vertex):
                 if electron < 0:
                     raise ActionError('Unable to update GroupAtom due to LOSE_RADICAL action: Invalid radical electron set "{0}".'.format(self.radicalElectrons))
                 radicalElectrons.append(electron)
-            
+
         # Set the new radical electron counts
         self.radicalElectrons = radicalElectrons
-        
+
     def __gainPair(self, pair):
         """
         Update the atom group as a result of applying a GAIN_PAIR action,
@@ -334,7 +334,7 @@ class GroupAtom(Vertex):
         where `other` can be either an :class:`Atom` or an :class:`GroupAtom`
         object. When comparing two :class:`GroupAtom` objects, this function
         respects wildcards, e.g. ``R!H`` is equivalent to ``C``.
-        
+
         """
         cython.declare(group=GroupAtom)
         if not isinstance(other, GroupAtom):
@@ -343,7 +343,7 @@ class GroupAtom(Vertex):
             # because that would create an import cycle
             return other.equivalent(self)
         group=other
-        
+
         cython.declare(atomType1=AtomType, atomtype2=AtomType, radical1=cython.short, radical2=cython.short,
                        lp1=cython.short, lp2=cython.short, charge1=cython.short, charge2=cython.short)
         # Compare two atom groups for equivalence
@@ -402,7 +402,7 @@ class GroupAtom(Vertex):
         """
         Returns ``True`` if `self` is the same as `other` or is a more
         specific case of `other`. Returns ``False`` if some of `self` is not
-        included in `other` or they are mutually exclusive. 
+        included in `other` or they are mutually exclusive.
         """
         cython.declare(group=GroupAtom)
         if not isinstance(other, GroupAtom):
@@ -411,8 +411,8 @@ class GroupAtom(Vertex):
             # because that would create an import cycle
             return other.isSpecificCaseOf(self)
         group=other
-        
-        cython.declare(atomType1=AtomType, atomtype2=AtomType, radical1=cython.short, radical2=cython.short, 
+
+        cython.declare(atomType1=AtomType, atomtype2=AtomType, radical1=cython.short, radical2=cython.short,
                        lp1=cython.short, lp2=cython.short, charge1=cython.short, charge2=cython.short)
         # Compare two atom groups for equivalence
         # Each atom type in self must have an equivalent in other (and vice versa)
@@ -628,7 +628,7 @@ class GroupBond(Edge):
             raise ActionError('order list given {} does not consist of only strings or only numbers'.format(order))
         else:
             self.order = order or []
-        
+
         self.reg_dim = [[],[]]
 
     def __str__(self):
@@ -655,7 +655,7 @@ class GroupBond(Edge):
         attributes of the copy will not affect the original.
         """
         return GroupBond(self.vertex1, self.vertex2, self.order[:])
-        
+
     def getOrderStr(self):
         """
         returns a list of strings representing the bond order
@@ -679,12 +679,12 @@ class GroupBond(Edge):
             else:
                 raise TypeError('Bond order number {} is not hardcoded as a string'.format(value))
         return values
-        
+
     def setOrderStr(self, newOrder):
         """
         set the bond order using a valid bond-order character list
         """
-        
+
         values = []
         for value in newOrder:
             if value == 'S':
@@ -707,28 +707,28 @@ class GroupBond(Edge):
                     values.append(float(value))
                 except ValueError:
                     raise TypeError('Bond order {} is not hardcoded into this method'.format(value))
-        self.order = values      
+        self.order = values
 
-        
+
     def getOrderNum(self):
         """
         returns the bond order as a list of numbers
         """
         return self.order
-            
+
     def setOrderNum(self, newOrder):
         """
         change the bond order with a list of numbers
         """
         self.order = newOrder
-            
+
     def isSingle(self, wildcards = False):
         """
         Return ``True`` if the bond represents a single bond or ``False`` if
         not. If `wildcards` is ``False`` we return False anytime there is more
         than one bond order, otherwise we return ``True`` if any of the options
         are single.
-        
+
         NOTE: we can replace the absolute value relation with math.isclose when
         we swtich to python 3.5+
         """
@@ -830,7 +830,7 @@ class GroupBond(Edge):
             else: return False
         else:
             return abs(self.order[0]) <= 1e-9 and len(self.order) == 1
-        
+
     def __changeBond(self, order):
         """
         Update the bond group as a result of applying a CHANGE_BOND action,
@@ -879,7 +879,7 @@ class GroupBond(Edge):
             # because that would create an import cycle
             return other.equivalent(self)
         gb = other
-        
+
         cython.declare(order1=float, order2=float)
         # Compare two bond groups for equivalence
         # Each atom type in self must have an equivalent in other (and vice versa)
@@ -909,7 +909,7 @@ class GroupBond(Edge):
             # because that would create an import cycle
             return other.isSpecificCaseOf(self)
         gb = other
-        
+
         cython.declare(order1=float, order2=float)
         # Compare two bond groups for equivalence
         # Each atom type in self must have an equivalent in other
@@ -938,13 +938,13 @@ class Group(Graph):
     """
     A representation of a molecular substructure group using a graph data
     type, extending the :class:`Graph` class. The attributes are:
-    
+
     =================== =================== ====================================
     Attribute           Type                Description
     =================== =================== ====================================
     `atoms`             ``list``            Aliases for the `vertices` storing :class:`GroupAtom`
     `multiplicity`      ``list``            Range of multiplicities accepted for the group
-    `props`             ``dict``            Dictionary of arbitrary properties/flags classifying state of Group object 
+    `props`             ``dict``            Dictionary of arbitrary properties/flags classifying state of Group object
     =================== =================== ====================================
 
     Corresponding alias methods to Molecule have also been provided.
@@ -957,10 +957,10 @@ class Group(Graph):
         self.elementCount = {}
         self.radicalCount = -1
         self.update()
-    
+
     def __deepcopy__(self, memo):
         return self.copy(deep=True)
-    
+
     def __reduce__(self):
         """
         A helper function used when pickling an object.
@@ -1158,7 +1158,7 @@ class Group(Graph):
         g = Graph.merge(self, other)
         molecule = Group(atoms=g.vertices)
         return molecule
-    
+
     def _merge(self, other):
         """
         merge group other into self
@@ -1177,12 +1177,12 @@ class Group(Graph):
             molecule = Group(atoms=g.vertices)
             molecules.append(molecule)
         return molecules
-    
+
     def _split(self):
         """
         Convert a single :class:`Group` object containing two or more
         unconnected groups into separate class:`Group` objects.
-        This changes the original group object, but avoids copying it.  
+        This changes the original group object, but avoids copying it.
         """
         graphs = Graph._split(self)
         molecules = []
@@ -1190,7 +1190,7 @@ class Group(Graph):
             molecule = Group(atoms=g.vertices)
             molecules.append(molecule)
         return molecules
-                               
+
     def getExtensions(self,R=None,basename='',atmInd=None, atmInd2=None, Nsplits=None):
         """
         generate all allowed group extensions and their complements
@@ -1198,24 +1198,24 @@ class Group(Graph):
         """
         cython.declare(atoms=list,atm=GroupAtom,atm2=GroupAtom,bd=GroupBond,i=int,j=int,
                        extents=list,RnH=list,typ=list)
-        
+
         extents = []
-        
+
         if Nsplits is None:
             Nsplits = len(self.split())
-            
+
         #generate appropriate R and R!H
         if R is None:
             R = ['H','C','N','O','Si','S','Cl'] #set of possible R elements/atoms
             R = [atomTypes[x] for x in R]
-        
+
         Rbonds = [1,2,3,1.5]
         Run = [0,1,2,3]
-        
+
         RnH = R[:]
         RnH.remove(atomTypes['H'])
-        
-        
+
+
         atoms = self.atoms
         if atmInd is None:
             for i,atm in enumerate(atoms):
@@ -1233,7 +1233,7 @@ class Group(Graph):
                         if typ[0].label == 'R':
                             extents.extend(self.specifyAtomExtensions(i,basename,atm.reg_dim_atm[0])) #specify types of atoms
                         elif typ[0].label == 'R!H':
-                            extents.extend(self.specifyAtomExtensions(i,basename,list(set(atm.reg_dim_atm[0]) & set(R)))) 
+                            extents.extend(self.specifyAtomExtensions(i,basename,list(set(atm.reg_dim_atm[0]) & set(R))))
                     else:
                         extents.extend(self.specifyAtomExtensions(i,basename,list(set(typ) & set(atm.reg_dim_atm[0]))))
                 if atm.reg_dim_u[0] == []:
@@ -1250,7 +1250,7 @@ class Group(Graph):
                             extents.extend(self.specifyUnpairedExtensions(i,basename,list(set(atm.radicalElectrons) & set(atm.reg_dim_u[0]))))
                 if atm.reg_dim_r[0] == [] and not 'inRing' in atm.props.keys():
                     extents.extend(self.specifyRingExtensions(i,basename))
-               
+
                 extents.extend(self.specifyExternalNewBondExtensions(i,basename,Rbonds))
                 for j,atm2 in enumerate(atoms):
                     if j<i and not self.hasBond(atm,atm2):
@@ -1261,7 +1261,7 @@ class Group(Graph):
                             extents.extend(self.specifyBondExtensions(i,j,basename,bd.order))
                         elif len(bd.order) > 1:
                             extents.extend(self.specifyBondExtensions(i,j,basename,bd.reg_dim[0]))
-        
+
         elif atmInd is not None and atmInd2 is not None: #if both atmInd and atmInd2 are defined only look at the bonds between them
             i = atmInd
             j = atmInd2
@@ -1275,7 +1275,7 @@ class Group(Graph):
                     extents.extend(self.specifyBondExtensions(i,j,basename,bd.order))
                 elif len(bd.order) > 1:
                     extents.extend(self.specifyBondExtensions(i,j,basename,bd.reg_dim[0]))
-                    
+
         elif atmInd is not None: #look at the atom at atmInd
             i = atmInd
             atm = atoms[i]
@@ -1293,7 +1293,7 @@ class Group(Graph):
                     if typ[0].label == 'R':
                         extents.extend(self.specifyAtomExtensions(i,basename,atm.reg_dim_atm[0])) #specify types of atoms
                     elif typ[0].label == 'R!H':
-                        extents.extend(self.specifyAtomExtensions(i,basename,list(set(atm.reg_dim_atm[0]) & set(R)))) 
+                        extents.extend(self.specifyAtomExtensions(i,basename,list(set(atm.reg_dim_atm[0]) & set(R))))
                 else:
                     extents.extend(self.specifyAtomExtensions(i,basename,list(set(typ) & set(atm.reg_dim_atm[0]))))
             if atm.reg_dim_u == []:
@@ -1310,7 +1310,7 @@ class Group(Graph):
                         extents.extend(self.specifyUnpairedExtensions(i,basename,list(set(atm.radicalElectrons) & set(atm.reg_dim_u[0]))))
             if atm.reg_dim_r[0] == [] and not 'inRing' in atm.props.keys():
                 extents.extend(self.specifyRingExtensions(i,basename))
-                
+
             extents.extend(self.specifyExternalNewBondExtensions(i,basename,Rbonds))
             for j,atm2 in enumerate(atoms):
                 if j<i and not self.hasBond(atm,atm2):
@@ -1321,22 +1321,22 @@ class Group(Graph):
                         extents.extend(self.specifyBondExtensions(i,j,basename,bd.order))
                     elif len(bd.order) > 1:
                         extents.extend(self.specifyBondExtensions(i,j,basename,bd.reg_dim[0]))
-        
+
         else:
             raise ValueError('atmInd must be defined if atmInd2 is defined')
-            
+
         return extents
-    
+
     def specifyAtomExtensions(self,i,basename,R):
         """
         generates extensions for specification of the type of atom defined by a given atomtype
         or set of atomtypes
         """
         cython.declare(grps=list,labelList=list,Rset=set,item=AtomType,grp=Group,grpc=Group,k=AtomType,p=str)
-        
+
         grps = []
         labelList = []
-        
+
         Rset = set(R)
         for item in R:
             grp = deepcopy(self)
@@ -1344,8 +1344,8 @@ class Group(Graph):
             old_atom_type = grp.atoms[i].atomType
             grp.atoms[i].atomType = [item]
             grpc.atoms[i].atomType = list(Rset-{item})
-            
-            
+
+
             if len(old_atom_type ) > 1:
                 old_atom_type_str = ''
                 for k in old_atom_type:
@@ -1356,25 +1356,25 @@ class Group(Graph):
                 old_atom_type_str = old_atom_type[0].label
 
             grps.append((grp,grpc,basename+'_'+str(i+1)+old_atom_type_str+'->'+item.label,'atomExt',(i,)))
-            
+
         return grps
-    
+
     def specifyRingExtensions(self,i,basename):
         """
         generates extensions for specifying if an atom is in a ring
         """
         cython.declare(grps=list,labelList=list,grp=Group,grpc=Group,atom_type=list,atom_type_str=str,k=AtomType,p=str)
-        
+
         grps = []
         labelList = []
-        
+
         grp = deepcopy(self)
         grpc = deepcopy(self)
         grp.atoms[i].props['inRing'] = True
         grpc.atoms[i].props['inRing'] = False
-        
+
         atom_type = grp.atoms[i].atomType
-        
+
         if len(atom_type ) > 1:
             atom_type_str = ''
             for k in atom_type:
@@ -1383,28 +1383,28 @@ class Group(Graph):
                 atom_type_str += p
         else:
             atom_type_str = atom_type[0].label
-        
+
         grps.append((grp,grpc,basename+'_'+str(i+1)+atom_type_str+'-inRing','ringExt',(i,)))
-            
+
         return grps
-    
+
     def specifyUnpairedExtensions(self,i,basename,Run):
         """
         generates extensions for specification of the number of electrons on a given atom
         """
-        
+
         grps = []
         labelList = []
-        
+
         Rset = set(Run)
         for item in Run:
             grp = deepcopy(self)
             grpc = deepcopy(self)
             grp.atoms[i].radicalElectrons = [item]
             grpc.atoms[i].radicalElectrons = list(Rset-{item})
-            
+
             atom_type = grp.atoms[i].atomType
-            
+
             if len(atom_type ) > 1:
                 atom_type_str = ''
                 for k in atom_type:
@@ -1413,26 +1413,26 @@ class Group(Graph):
                     atom_type_str += p
             else:
                 atom_type_str = atom_type[0].label
-            
+
             grps.append((grp,grpc,basename+'_'+str(i+1)+atom_type_str+'-u'+str(item),'elExt',(i,)))
-            
+
         return grps
-    
+
     def specifyInternalNewBondExtensions(self,i,j,Nsplits,basename,Rbonds):
         """
         generates extensions for creation of a bond (of undefined order)
         between two atoms indexed i,j that already exist in the group and are unbonded
         """
         cython.declare(newgrp=Group)
-        
+
         labelList = []
-        
+
         newgrp = deepcopy(self)
         newgrp.addBond(GroupBond(newgrp.atoms[i],newgrp.atoms[j],Rbonds))
-        
+
         atom_type_i = newgrp.atoms[i].atomType
         atom_type_j = newgrp.atoms[j].atomType
-        
+
         if len(atom_type_i) > 1:
             atom_type_i_str = ''
             for k in atom_type_i:
@@ -1449,21 +1449,21 @@ class Group(Graph):
                 atom_type_j_str += p
         else:
             atom_type_j_str = atom_type_j[0].label
-                
-        if len(newgrp.split()) < Nsplits: #if this formed a bond between two seperate groups in the 
+
+        if len(newgrp.split()) < Nsplits: #if this formed a bond between two seperate groups in the
             return []
         else:
             return [(newgrp,None,basename+'_Int-'+str(i+1)+atom_type_i_str+'-'+str(j+1)+atom_type_j_str,'intNewBondExt',(i,j))]
-    
+
     def specifyExternalNewBondExtensions(self,i,basename,Rbonds):
         """
         generates extensions for the creation of a bond (of undefined order) between
         an atom and a new atom that is not H
         """
         cython.declare(GA=GroupAtom,newgrp=Group,j=int)
-        
+
         labelList = []
-        
+
         GA = GroupAtom([atomTypes['R!H']])
         newgrp = deepcopy(self)
         newgrp.addAtom(GA)
@@ -1478,9 +1478,9 @@ class Group(Graph):
                 atom_type_str += p
         else:
             atom_type_str = atom_type[0].label
-        
+
         return [(newgrp,None,basename+'_Ext-'+str(i+1)+atom_type_str+'-R','extNewBondExt',(len(newgrp.atoms)-1,))]
-    
+
     def specifyBondExtensions(self,i,j,basename,Rbonds):
         """
         generates extensions for the specification of bond order for a given bond
@@ -1497,10 +1497,10 @@ class Group(Graph):
             grp.atoms[j].bonds[grp.atoms[i]].order = [bd]
             grpc.atoms[i].bonds[grpc.atoms[j]].order = list(Rbset-{bd})
             grpc.atoms[j].bonds[grpc.atoms[i]].order = list(Rbset-{bd})
-            
+
             atom_type_i = grp.atoms[i].atomType
             atom_type_j = grp.atoms[j].atomType
-            
+
             if len(atom_type_i) > 1:
                 atom_type_i_str = ''
                 for k in atom_type_i:
@@ -1517,9 +1517,9 @@ class Group(Graph):
                     atom_type_j_str += p
             else:
                 atom_type_j_str = atom_type_j[0].label
-            
+
             grps.append((grp,grpc,basename+'_Sp-'+str(i+1)+atom_type_i_str+bdict[bd]+str(j+1)+atom_type_j_str,'bondExt',(i,j)))
-        
+
         return grps
 
     def clearLabeledAtoms(self):
@@ -1676,7 +1676,7 @@ class Group(Graph):
         mapping from `self` to `other` (i.e. the atoms of `self` are the keys,
         while the atoms of `other` are the values). The `other` parameter must
         be a :class:`Group` object, or a :class:`TypeError` is raised.
-        """        
+        """
         cython.declare(group=Group)
         cython.declare(mult1=cython.short, mult2=cython.short)
         cython.declare(a=GroupAtom,L=list)
@@ -1685,7 +1685,7 @@ class Group(Graph):
         if not isinstance(other, Group):
             raise TypeError('Got a {0} object for parameter "other", when a Group object is required.'.format(other.__class__))
         group = other
-        
+
         if generateInitialMap:
             initialMap = dict()
             for atom in self.atoms:
@@ -1694,7 +1694,7 @@ class Group(Graph):
                     initialMap[atom] = L[0]
             if not self.isMappingValid(other,initialMap,equivalent=False):
                 return False
-                
+
         if self.multiplicity:
             for mult1 in self.multiplicity:
                 if group.multiplicity:
@@ -1727,7 +1727,7 @@ class Group(Graph):
         if not isinstance(other, Group):
             raise TypeError('Got a {0} object for parameter "other", when a Group object is required.'.format(other.__class__))
         group = other
-        
+
         if self.multiplicity:
             for mult1 in self.multiplicity:
                 if group.multiplicity:
@@ -1737,10 +1737,10 @@ class Group(Graph):
                         return []
         else:
             if group.multiplicity: return []
-                
+
         # Do the isomorphism comparison
         return Graph.findSubgraphIsomorphisms(self, other, initialMap, saveOrder=saveOrder)
-    
+
     def isIdentical(self, other, saveOrder=False):
         """
         Returns ``True`` if `other` is identical and ``False`` otherwise.
@@ -1752,7 +1752,7 @@ class Group(Graph):
         # isomorphism, so raise an exception if this is not what was requested
         if not isinstance(other, Group):
             raise TypeError('Got a {0} object for parameter "other", when a Group object is required.'.format(other.__class__))
-        # An identical group is always a child of itself and 
+        # An identical group is always a child of itself and
         # is the only case where that is true. Therefore
         # if we do both directions of isSubgraphIsmorphic, we need
         # to get True twice for it to be identical
@@ -2075,7 +2075,7 @@ class Group(Graph):
         are many dangling Cb or Cbf atoms not in a ring, it is likely fail. In the database test
         (the only use thus far), we will require that any group with more than 3 Cbfs have
         complete rings. This is much stricter than this method can handle, but right now
-        this method cannot handle very general cases, so it is better to be conservative. 
+        this method cannot handle very general cases, so it is better to be conservative.
         """
         #First define some helper functions
         def checkSet(superList, subList):
@@ -2473,7 +2473,7 @@ class Group(Graph):
 
         #create the molecule
         newMolecule = mol.Molecule(atoms = groupToMol.values())
-            
+
         #Add explicit bonds to :Atoms:
         for atom1 in modifiedGroup.atoms:
             for atom2, bond12 in atom1.bonds.iteritems():
