@@ -3050,7 +3050,7 @@ class KineticsFamily(Database):
         Returns a dictionary mapping {rxn:Ln(k_Est/k_Train)}
         """
         if templateRxnMap is None:
-            templateRxnMap = self.getReactionMatches(removeDegeneracy=True,getReverse=True)
+            templateRxnMap = self.getReactionMatches(removeDegeneracy=True,getReverse=True,fixLabels=True)
 
         rxns = np.array(templateRxnMap['Root'])
 
@@ -3332,6 +3332,19 @@ class KineticsFamily(Database):
         and returns the resulting list of reactions in the forward direction with thermo
         assigned
         """
+
+        def getLabelFixedMol(mol,rootLabels):
+            nmol = mol.copy(deep=True)
+            for atm in nmol.atoms:
+                if atm.label not in rootLabels:
+                    atm.label = ''
+            return nmol
+
+        def fixLabelsMol(mol,rootLabels):
+            for atm in mol.atoms:
+                if atm.label not in rootLabels:
+                    atm.label = ''
+
         if self.ownReverse and getReverse:
             revRxns = []
             rkeys = self.reverseMap.keys()
@@ -3362,8 +3375,7 @@ class KineticsFamily(Database):
             else:
                 root = deepcopy(r)
 
-        if fixLabels:
-            rootLabels = [x.label for x in root.atoms if x.label != '']
+        rootLabels = [x.label for x in root.atoms if x.label != '']
 
         for i,r in enumerate(entries):
             if estimateThermo:
@@ -3383,6 +3395,8 @@ class KineticsFamily(Database):
 
             mol = None
             for react in rxns[i].reactants:
+                if fixLabels:
+                    fixLabelsMol(react.molecule[0],rootLabels)
                 if mol:
                     mol = mol.merge(react.molecule[0])
                 else:
@@ -3393,8 +3407,7 @@ class KineticsFamily(Database):
                     if atm.label not in rootLabels:
                         atm.label = ''
 
-
-            if mol.isSubgraphIsomorphic(root,generateInitialMap=True):
+            if mol.isSubgraphIsomorphic(root,generateInitialMap=True) or (not fixLabels and getLabelFixedMol(mol,rootLabels).isSubgraphIsomorphic(root,generateInitialMap=True)):
                 rxns[i].is_forward = True
                 if self.ownReverse and getReverse:
                     mol = None
@@ -3404,38 +3417,57 @@ class KineticsFamily(Database):
                         else:
                             mol = deepcopy(react.molecule[0])
 
-
-                    if mol.isSubgraphIsomorphic(root,generateInitialMap=True): #try product structures
-                        products = rxns[i].products
+                    if mol.isSubgraphIsomorphic(root,generateInitialMap=True) or (not fixLabels and getLabelFixedMol(mol,rootLabels).isSubgraphIsomorphic(root,generateInitialMap=True)): #try product structures
+                        products = [Species(molecule=[getLabelFixedMol(x.molecule[0],rootLabels)],thermo=x.thermo) for x in rxns[i].products]
                     else:
                         products = self.applyRecipe([s.molecule[0] for s in rxns[i].reactants],forward=True)
                         products = [Species(molecule=[p]) for p in products]
 
-                    prods = []
-                    for p in products:
-                        for atm in p.molecule[0].atoms:
-                            if atm.label in rkeys:
-                                atm.label = reverseMap[atm.label]
+                    assert products != []
+                    prodmol = None
+                    for react in rxns[i].products:
+                        if prodmol:
+                            prodmol = prodmol.merge(react.molecule[0])
+                        else:
+                            prodmol = deepcopy(react.molecule[0])
 
+                    assert products != []
+                    if not prodmol.isSubgraphIsomorphic(root,generateInitialMap=True):
+                        mol = None
+                        for react in products:
+                            if mol:
+                                mol = mol.merge(react.molecule[0])
+                            else:
+                                mol = deepcopy(react.molecule[0])
+                        assert products != []
+                        if not mol.isSubgraphIsomorphic(root,generateInitialMap=True):
+                            for p in products:
+                                for atm in p.molecule[0].atoms:
+                                    if atm.label in rkeys:
+                                        atm.label = reverseMap[atm.label]
 
-                        prods.append(Species(molecule=[p.molecule[0]]))
-
-                    rrev = Reaction(reactants=prods,products=rxns[i].reactants,kinetics=rxns[i].generateReverseRateCoefficient(),rank=rxns[i].rank)
-
+                    reacts = [Species(molecule=[getLabelFixedMol(x.molecule[0],rootLabels)],thermo=x.thermo) for x in rxns[i].reactants]
+                    assert products != []
+                    rrev = Reaction(reactants=products,products=reacts,kinetics=rxns[i].generateReverseRateCoefficient(),rank=rxns[i].rank)
                     rrev.is_forward = False
-
 
                     if estimateThermo:
                         for r in rrev.reactants:
                             if r.thermo is None:
                                 r.thermo = tdb.getThermoData(deepcopy(r))
 
-
                     revRxns.append(rrev)
 
                 continue
             else:
-                assert not self.ownReverse
+                if self.ownReverse:
+                    logging.error("rxn")
+                    logging.error(str(rxns[i]))
+                    logging.error("root")
+                    logging.error(root.toAdjacencyList())
+                    logging.error("mol")
+                    logging.error(mol.toAdjacencyList())
+                    raise ValueError("couldn't match reaction")
 
                 mol = None
                 for react in rxns[i].products:
