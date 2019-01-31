@@ -18,7 +18,7 @@
     
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="3.2.1. Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX" href="anacondaUser.html" />
+    <link rel="next" title="3.1.2. Installing RMG in the Linux Subsystem on Windows 10" href="linuxSubsystem.html" />
     <link rel="prev" title="3. Installation" href="index.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
@@ -39,7 +39,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="anacondaUser.html" title="3.2.1. Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX"
+          <a href="linuxSubsystem.html" title="3.1.2. Installing RMG in the Linux Subsystem on Windows 10"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="index.html" title="3. Installation"
@@ -60,8 +60,34 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="setting-up-a-linux-virtual-machine-from-windows">
 <span id="virtualmachinesetup"></span><h1>3.1.1. Setting up a Linux Virtual Machine from Windows<a class="headerlink" href="#setting-up-a-linux-virtual-machine-from-windows" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="checking-if-virtualization-technology-is-enabled">
+<h2>3.1.1.1. Checking if Virtualization Technology is Enabled<a class="headerlink" href="#checking-if-virtualization-technology-is-enabled" title="Permalink to this headline">¶</a></h2>
+<p>While most PCs have CPUs that support running virtual machines (i.e. virtualization technology), it is possible that
+this feature has been disabled in your BIOS settings. If this is the case, then you will have to enable this technology
+in your BIOS settings.</p>
+<p>First, check to see if virtualization technology is currently enabled on your computer by opening the Task Manager in
+Windows 8/10. Click on the <code class="docutils literal notranslate"><span class="pre">Performance</span></code> tab–from here you can see if virtualization technology is enabled.</p>
+<img alt="../../../_images/Virtualization_Enabled.png" class="align-center" src="../../../_images/Virtualization_Enabled.png" />
+<p>For Windows 7 or earlier you can download and run
+<a class="reference external" href="http://www.microsoft.com/en-us/download/details.aspx?id=592">Microsoft’s Virtualization Detection Tool</a>.</p>
+<p>If enabled, you can continue on with installing a virtual machine on your PC. If virtualization is currently disabled,
+though, you will have to enable this from the BIOS setting on your computer. How to do this varies from PC to PC (we
+recommend doing a quick google search for your make/model, as there are many instructions for this online), but the
+basic steps are as follows:</p>
+<p>1. Restart the PC. As soon as the PC turns back on, enter the BIOS settings (this usually involves pressing the <code class="docutils literal notranslate"><span class="pre">F2</span></code>
+or <code class="docutils literal notranslate"><span class="pre">F12</span></code> keys, but will depend on your make/model). If you see the computer loading Windows then you have missed the
+opportunity, and should restart the PC to try again. If Secure Boot is enabled on your PC then there may be additional
+steps to reaching the BIOS settings (for example see these <a class="reference external" href="https://www.laptopmag.com/articles/access-bios-windows-10">instructions</a>).</p>
+<p>2. From the BIOS settings, find the section on virtualization, and enable the virtualization technology. Save these
+changes and restart the PC.</p>
+<p>For more information, please see online tutorials like
+<a class="reference external" href="https://support.bluestacks.com/hc/en-us/articles/115003910391-How-can-I-enable-virtualization-VT-on-my-PC-">this one here</a>.</p>
+<p><strong>Note that changing your BIOS settings can be risky, so follow online tutorials carefully</strong>. If you are unsure of what
+to do even after looking for online tutorials, consider following the instructions for installing RMG inside the Linux
+subsystem in Windows 10 (<a class="reference internal" href="linuxSubsystem.html#linuxsubsystem"><span class="std std-ref">Installing RMG in the Linux Subsystem on Windows 10</span></a>)</p>
+</div>
 <div class="section" id="downloading-a-linux-iso-file">
-<h2>3.1.1.1. Downloading a Linux .iso File<a class="headerlink" href="#downloading-a-linux-iso-file" title="Permalink to this headline">¶</a></h2>
+<h2>3.1.1.2. Downloading a Linux .iso File<a class="headerlink" href="#downloading-a-linux-iso-file" title="Permalink to this headline">¶</a></h2>
 <p>If this is your first time using a Linux operating system, we recommend using Ubuntu 18.04, as it is one of the most
 popular Linux distributions out there, with plenty of support available online. Otherwise you are welcome to try out
 any other Linux distribution you like (see <a class="reference external" href="https://distrowatch.com/">Linux DistroWatch</a>).</p>
@@ -73,7 +99,7 @@ Ubuntu is completely free to download and use, so you do not need to make a dona
 feel free to proceed with the remaining sections.</p>
 </div>
 <div class="section" id="choosing-a-vm-software">
-<h2>3.1.1.2. Choosing a VM Software<a class="headerlink" href="#choosing-a-vm-software" title="Permalink to this headline">¶</a></h2>
+<h2>3.1.1.3. Choosing a VM Software<a class="headerlink" href="#choosing-a-vm-software" title="Permalink to this headline">¶</a></h2>
 <p>There a quite a few software options for running a virtual machine from Windows, including <a class="reference external" href="https://my.vmware.com/en/web/vmware/info/slug/desktop_end_user_computing/vmware_workstation_pro/15_0">VMware Workstation Pro</a>
 and <a class="reference external" href="https://www.virtualbox.org/wiki/Downloads">Oracle VirtualBox</a>. VMware Workstation Pro is the recommended choice, though check to see if your institution has
 access to it (since it is not free). If not, VirtualBox (which is free) runs well and will work just as fine. Use the
@@ -82,7 +108,7 @@ hyperlinks below to jump ahead to the setup instructions for the virtual machine
 <p><a class="reference internal" href="#virtualbox"><span class="std std-ref">Setting up a Linux Virtual Machine using VirtualBox</span></a></p>
 </div>
 <div class="section" id="setting-up-a-linux-virtual-machine-using-workstation-pro">
-<span id="workstationpro"></span><h2>3.1.1.3. Setting up a Linux Virtual Machine using Workstation Pro<a class="headerlink" href="#setting-up-a-linux-virtual-machine-using-workstation-pro" title="Permalink to this headline">¶</a></h2>
+<span id="workstationpro"></span><h2>3.1.1.4. Setting up a Linux Virtual Machine using Workstation Pro<a class="headerlink" href="#setting-up-a-linux-virtual-machine-using-workstation-pro" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic simple">
 <li>Follow your institution’s instructions for downloading VMware Workstation Pro and obtaining the required license key.</li>
 <li>At the end of the installation process for Workstation Pro, remember to enter in the required license key.</li>
@@ -111,7 +137,7 @@ of CPUs allocated to the VM as well as increasing the memory.</p>
 </ol>
 </div>
 <div class="section" id="setting-up-a-linux-virtual-machine-using-virtualbox">
-<span id="virtualbox"></span><h2>3.1.1.4. Setting up a Linux Virtual Machine using VirtualBox<a class="headerlink" href="#setting-up-a-linux-virtual-machine-using-virtualbox" title="Permalink to this headline">¶</a></h2>
+<span id="virtualbox"></span><h2>3.1.1.5. Setting up a Linux Virtual Machine using VirtualBox<a class="headerlink" href="#setting-up-a-linux-virtual-machine-using-virtualbox" title="Permalink to this headline">¶</a></h2>
 <p>1. Go to the <a class="reference external" href="https://www.virtualbox.org/wiki/Downloads">Oracle VirtualBox</a> website and click on the download link for “Windows hosts” (highlighted orange in the
 image below)</p>
 <img alt="../../../_images/VirtualBoxDownload.png" class="align-center" src="../../../_images/VirtualBoxDownload.png" />
@@ -216,10 +242,11 @@ follow the instructions for Linux and Mac OSX systems.</p>
   <h3><a href="../../../contents.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">3.1.1. Setting up a Linux Virtual Machine from Windows</a><ul>
-<li><a class="reference internal" href="#downloading-a-linux-iso-file">3.1.1.1. Downloading a Linux .iso File</a></li>
-<li><a class="reference internal" href="#choosing-a-vm-software">3.1.1.2. Choosing a VM Software</a></li>
-<li><a class="reference internal" href="#setting-up-a-linux-virtual-machine-using-workstation-pro">3.1.1.3. Setting up a Linux Virtual Machine using Workstation Pro</a></li>
-<li><a class="reference internal" href="#setting-up-a-linux-virtual-machine-using-virtualbox">3.1.1.4. Setting up a Linux Virtual Machine using VirtualBox</a></li>
+<li><a class="reference internal" href="#checking-if-virtualization-technology-is-enabled">3.1.1.1. Checking if Virtualization Technology is Enabled</a></li>
+<li><a class="reference internal" href="#downloading-a-linux-iso-file">3.1.1.2. Downloading a Linux .iso File</a></li>
+<li><a class="reference internal" href="#choosing-a-vm-software">3.1.1.3. Choosing a VM Software</a></li>
+<li><a class="reference internal" href="#setting-up-a-linux-virtual-machine-using-workstation-pro">3.1.1.4. Setting up a Linux Virtual Machine using Workstation Pro</a></li>
+<li><a class="reference internal" href="#setting-up-a-linux-virtual-machine-using-virtualbox">3.1.1.5. Setting up a Linux Virtual Machine using VirtualBox</a></li>
 </ul>
 </li>
 </ul>
@@ -230,8 +257,8 @@ follow the instructions for Linux and Mac OSX systems.</p>
   <p class="topless"><a href="index.html"
                         title="previous chapter">3. Installation</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="anacondaUser.html"
-                        title="next chapter">3.2.1. Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX</a></p>
+  <p class="topless"><a href="linuxSubsystem.html"
+                        title="next chapter">3.1.2. Installing RMG in the Linux Subsystem on Windows 10</a></p>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -273,7 +300,7 @@ follow the instructions for Linux and Mac OSX systems.</p>
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="anacondaUser.html" title="3.2.1. Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX"
+          <a href="linuxSubsystem.html" title="3.1.2. Installing RMG in the Linux Subsystem on Windows 10"
              >next</a> |</li>
         <li class="right" >
           <a href="index.html" title="3. Installation"
