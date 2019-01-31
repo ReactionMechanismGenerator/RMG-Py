@@ -133,6 +133,19 @@ of <cite>units</cite> from the SI equivalent units.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.quantity.ScalarQuantity.getConversionFactorFromSItoCmMolS">
+<code class="descname">getConversionFactorFromSItoCmMolS</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.quantity.ScalarQuantity.getConversionFactorFromSItoCmMolS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the conversion factor for converting into SI units
+only with all lengths in cm, instead of m.
+This is useful for outputting chemkin file kinetics.
+Depending on the stoichiometry of the reaction the reaction rate
+coefficient could be /s, cm^3/mol/s, cm^6/mol^2/s, and for
+heterogeneous reactions even more possibilities.
+Only lengths are changed. Everything else is in SI, i.e.
+moles (not molecules) and seconds (not minutes).</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.quantity.ScalarQuantity.getConversionFactorToSI">
 <code class="descname">getConversionFactorToSI</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.quantity.ScalarQuantity.getConversionFactorToSI" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the conversion factor for converting a quantity in a given set
