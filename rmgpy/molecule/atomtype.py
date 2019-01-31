@@ -224,8 +224,8 @@ therefore the first one in the list should always be an element.
 The atomTypes naming convention is:
 <element> <valence> <characteristic bonds> <charge(optional)>
 For example:
-- N3d is nitrogen with valence=3 (i.e., 3 electronce are able to form bonds or remain as radicals) with one double bond
-- S2tc is a charged sulful with valence=2 with a triple bonds
+- N3d is nitrogen with valence=3 (i.e., 3 electrons are able to form bonds or remain as radicals) with one double bond
+- S2tc is a charged sulfur with valence=2 with a triple bonds
 - Oa is atomic oxygen, i.e., a closed shell atom
 Some charged atom types were merged together, and are marked as '*Composite atomType'
 """
@@ -626,9 +626,9 @@ atomTypes['I1s'].setActions(incrementBond=[],               decrementBond=[],   
 atomTypes['F'  ].setActions(incrementBond=[],               decrementBond=[],               formBond=['F'],        breakBond=['F'],        incrementRadical=['F'],   decrementRadical=['F'],   incrementLonePair=[],      decrementLonePair=[])
 atomTypes['F1s'].setActions(incrementBond=[],               decrementBond=[],               formBond=['F1s'],      breakBond=['F1s'],      incrementRadical=['F1s'], decrementRadical=['F1s'], incrementLonePair=[],      decrementLonePair=[])
 
-#list of elements that do not have more specific atomTypes
 #these are ordered on priority of picking if we encounter a more general atomType for make
 allElements=['H', 'C', 'O', 'N', 'S', 'Si', 'Cl', 'Ne', 'Ar', 'He',]
+#list of elements that do not have more specific atomTypes
 nonSpecifics=['H', 'He', 'Ne', 'Ar',]
 
 for atomType in atomTypes.values():

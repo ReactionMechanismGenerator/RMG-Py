@@ -193,6 +193,10 @@ if 'minimal' in sys.argv:
             if os.path.splitext(source)[1] == '.pyx':
                 ext_modules.append(module)
 
+# Remove duplicates while preserving order:
+from collections import OrderedDict
+ext_modules = list(OrderedDict.fromkeys(ext_modules))
+
 scripts=['Arkane.py',
          'rmg.py',
          'scripts/checkModels.py',

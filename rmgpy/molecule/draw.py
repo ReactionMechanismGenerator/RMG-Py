@@ -307,27 +307,31 @@ class MoleculeDrawer:
         """
         atoms = self.molecule.atoms
         Natoms = len(atoms)
-        flag_charge = 0
         
-        for atom in self.molecule.atoms:
-            if atom.charge != 0:
-                 flag_charge = 1
-                 break
+
         
         # Initialize array of coordinates
         self.coordinates = coordinates = numpy.zeros((Natoms, 2))
-        
-        if flag_charge == 1:
-            # If there are only one or two atoms to draw, then determining the
-            # coordinates is trivial
-            if Natoms == 1:
-                self.coordinates[0,:] = [0.0, 0.0]
-                return self.coordinates
-            elif Natoms == 2:
-                self.coordinates[0,:] = [-0.5, 0.0]
-                self.coordinates[1,:] = [0.5, 0.0]
-                return self.coordinates
-        
+
+        # If there are only one or two atoms to draw, then determining the
+        # coordinates is trivial
+        if Natoms == 1:
+            self.coordinates[0, :] = [0.0, 0.0]
+            return self.coordinates
+        elif Natoms == 2:
+            self.coordinates[0, :] = [-0.5, 0.0]
+            self.coordinates[1, :] = [0.5, 0.0]
+            return self.coordinates
+
+        # Decide whether we can use RDKit or have to generate coordinates ourselves
+        for atom in self.molecule.atoms:
+            if atom.charge != 0:
+                 useRDKit = False
+                 break
+        else: # didn't break
+            useRDKit = True
+
+        if not useRDKit:
             if len(self.cycles) > 0:
                 # Cyclic molecule
                 backbone = self.__findCyclicBackbone()
@@ -350,7 +354,8 @@ class MoleculeDrawer:
                 else:
                     angle = math.atan2(vector0[0], vector0[1]) - math.pi / 2
                     rot = numpy.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], numpy.float64)
-                    coordinates = numpy.dot(coordinates, rot)
+                    # need to keep self.coordinates and coordinates referring to the same object
+                    self.coordinates = coordinates = numpy.dot(coordinates, rot)
                 
             # Center backbone at origin
             xmin = numpy.min(coordinates[:,0])
@@ -375,8 +380,7 @@ class MoleculeDrawer:
             return coordinates
             
         else:
-            
-            # Use rdkit 2D coordinate generation:
+            # Use RDKit 2D coordinate generation:
             
             # Generate the RDkit molecule from the RDkit molecule, use geometry
             # in order to match the atoms in the rdmol with the atoms in the
@@ -390,7 +394,7 @@ class MoleculeDrawer:
             for atom in atoms:
                 index = rdAtomIdx[atom]
                 point = rdmol.GetConformer(0).GetAtomPosition(index)
-                coordinates[index,:]= [point.x*0.6, point.y*0.6]
+                coordinates[index,:] = [point.x*0.6, point.y*0.6]
             
             # RDKit generates some molecules more vertically than horizontally,
             # Especially linear ones. This will reflect any molecule taller than

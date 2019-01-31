@@ -34,8 +34,10 @@ particularly the :class:`Quantity` class for representing physical quantities.
 """
 
 import numpy
+import cython
 import quantities as pq
 import logging
+import re
 
 import rmgpy.constants as constants
 from rmgpy.exceptions import QuantityError
@@ -86,7 +88,8 @@ class Units(object):
     # A dict of conversion factors (to SI) for each of the frequent units
     # Here we also define that cm^-1 is not to be converted to m^-1 (or Hz, J, K, etc.)
     conversionFactors = {'cm^-1': 1.0}
-    
+
+
     def __init__(self, units=''):
         if units in NOT_IMPLEMENTED_UNITS:
             raise NotImplementedError(
@@ -116,6 +119,35 @@ class Units(object):
         of `units` from the SI equivalent units.
         """
         return 1.0 / self.getConversionFactorToSI()
+
+    # A dict of conversion factors from SI (with same dimensionality as keys)
+    # to combinations of cm/mol/s which is like SI except cm instead of m. Used as a cache.
+    conversionFactorsFromSItoCmMolS = {'s^-1': 1.0}
+    def getConversionFactorFromSItoCmMolS(self):
+        """
+        Return the conversion factor for converting into SI units
+        only with all lengths in cm, instead of m.
+        This is useful for outputting chemkin file kinetics.
+        Depending on the stoichiometry of the reaction the reaction rate
+        coefficient could be /s, cm^3/mol/s, cm^6/mol^2/s, and for
+        heterogeneous reactions even more possibilities.
+        Only lengths are changed. Everything else is in SI, i.e.
+        moles (not molecules) and seconds (not minutes).
+        """
+        cython.declare(factor=cython.double, metres=cython.int)
+        try:
+            factor = Units.conversionFactorsFromSItoCmMolS[self.units]
+        except KeyError:
+            # Fall back to (slower) quantities package for units not seen before
+            dimensionality = pq.Quantity(1.0, self.units).simplified.dimensionality
+            metres = dimensionality.get(pq.m, 0)
+            factor = 100 ** metres
+
+            # Cache the conversion factor so we don't ever need to use
+            # quantities to compute it again
+            Units.conversionFactorsFromSItoCmMolS[self.units] = factor
+        return factor
+
 
 ################################################################################
 

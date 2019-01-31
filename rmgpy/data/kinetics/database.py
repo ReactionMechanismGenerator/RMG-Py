@@ -207,7 +207,11 @@ class KineticsDatabase(object):
         for label in selected_families:
             familyPath = os.path.join(path, label)
             family = KineticsFamily(label=label)
-            family.load(familyPath, self.local_context, self.global_context, depositoryLabels=depositories)
+            try:
+                family.load(familyPath, self.local_context, self.global_context, depositoryLabels=depositories)
+            except:
+                logging.error("Error when loading reaction family {!r}".format(familyPath))
+                raise
             self.families[label] = family
 
     def loadLibraries(self, path, libraries=None):
@@ -532,7 +536,12 @@ and immediately used in input files without any additional changes.
         reaction_list = []
         for label, family in self.families.iteritems():
             if only_families is None or label in only_families:
-                reaction_list.extend(family.generateReactions(molecules, products=products, prod_resonance=prod_resonance))
+                try:
+                    reaction_list.extend(family.generateReactions(molecules, products=products, prod_resonance=prod_resonance))
+                except:
+                    logging.error("Problem family: {}".format(label))
+                    logging.error("Problem reactants: {}".format(molecules))
+                    raise
 
         for reactant in molecules:
             reactant.clearLabeledAtoms()

@@ -1649,28 +1649,30 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
 
     if isinstance(kinetics, _kinetics.Arrhenius):
         string += '{0:<9.6e} {1:<9.3f} {2:<9.3f}'.format(
-            kinetics.A.value_si/ (kinetics.T0.value_si ** kinetics.n.value_si) * 1.0e6 ** (numReactants - 1),
+            kinetics.A.value_si / (kinetics.T0.value_si ** kinetics.n.value_si) * kinetics.A.getConversionFactorFromSItoCmMolS(),
             kinetics.n.value_si,
             kinetics.Ea.value_si / 4184.
         )
     elif isinstance(kinetics, (_kinetics.Lindemann, _kinetics.Troe)):
         arrhenius = kinetics.arrheniusHigh
         string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
-            arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * 1.0e6 ** (numReactants - 1),
+            arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * arrhenius.A.getConversionFactorFromSItoCmMolS(),
             arrhenius.n.value_si,
             arrhenius.Ea.value_si / 4184.
         )
     elif isinstance(kinetics, _kinetics.ThirdBody):
         arrhenius = kinetics.arrheniusLow
+        assert 0.999 < arrhenius.A.getConversionFactorFromSItoCmMolS() / 1.0e6 ** (numReactants) < 1.001  # debugging; for gas phase only
         string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
-            arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * 1.0e6 ** (numReactants),
+            arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * arrhenius.A.getConversionFactorFromSItoCmMolS(),
             arrhenius.n.value_si,
             arrhenius.Ea.value_si / 4184.
         )
     elif hasattr(kinetics,'highPlimit') and kinetics.highPlimit is not None:
         arrhenius = kinetics.highPlimit
+        assert 0.999 < arrhenius.A.getConversionFactorFromSItoCmMolS() / 1.0e6 ** (numReactants - 1) < 1.001  # debugging; for gas phase only
         string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
-            arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * 1.0e6 ** (numReactants - 1),
+            arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * arrhenius.A.getConversionFactorFromSItoCmMolS(),
             arrhenius.n.value_si,
             arrhenius.Ea.value_si / 4184.
             )
@@ -1699,8 +1701,9 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
         if isinstance(kinetics, (_kinetics.Lindemann, _kinetics.Troe)):
             # Write low-P kinetics
             arrhenius = kinetics.arrheniusLow
+            assert 0.999 < arrhenius.A.getConversionFactorFromSItoCmMolS() / 1.0e6 ** (numReactants) < 1.001  # debugging; for gas phase only
             string += '    LOW/ {0:<9.3e} {1:<9.3f} {2:<9.3f}/\n'.format(
-                arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * 1.0e6 ** (numReactants),
+                arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * arrhenius.A.getConversionFactorFromSItoCmMolS(),
                 arrhenius.n.value_si,
                 arrhenius.Ea.value_si / 4184.
             )
@@ -1714,14 +1717,16 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
         for P, arrhenius in zip(kinetics.pressures.value_si, kinetics.arrhenius):
             if isinstance(arrhenius, _kinetics.MultiArrhenius):
                 for arrh in arrhenius.arrhenius:
+                    assert 0.999 < arrh.A.getConversionFactorFromSItoCmMolS() / 1.0e6 ** (numReactants - 1) < 1.001  # debugging; for gas phase only
                     string += '    PLOG/ {0:<9.6f} {1:<9.3e} {2:<9.3f} {3:<9.3f}/\n'.format(P / 101325.,
-                    arrh.A.value_si / (arrh.T0.value_si ** arrh.n.value_si) * 1.0e6 ** (numReactants - 1),
+                    arrh.A.value_si / (arrh.T0.value_si ** arrh.n.value_si) * arrh.A.getConversionFactorFromSItoCmMolS(),
                     arrh.n.value_si,
                     arrh.Ea.value_si / 4184.
                     )
             else:
-                string += '    PLOG/ {0:<9.3f} {1:<9.3e} {2:<9.3f} {3:<9.3f}/\n'.format(P / 101325.,
-                    arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * 1.0e6 ** (numReactants - 1),
+                assert 0.999 < arrhenius.A.getConversionFactorFromSItoCmMolS() / 1.0e6 ** (numReactants - 1) < 1.001  # debugging; for gas phase only
+                string += '    PLOG/ {0:<9.6f} {1:<9.3e} {2:<9.3f} {3:<9.3f}/\n'.format(P / 101325.,
+                    arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * arrhenius.A.getConversionFactorFromSItoCmMolS(),
                     arrhenius.n.value_si,
                     arrhenius.Ea.value_si / 4184.
                 )
@@ -1742,7 +1747,7 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
             for i in range(kinetics.degreeT):
                 for j in range(kinetics.degreeP):
                     coeffs.append(kinetics.coeffs.value_si[i,j])
-            coeffs[0] += 6 * (numReactants - 1)
+            coeffs[0] += 6 * (numReactants - 1)  # bypassing the Units.getConversionFactorFromSItoCmMolS() because it's in log10 space?
             for i in range(len(coeffs)):
                 if i % 5 == 0: string += '    CHEB/'
                 string += ' {0:<12.3e}'.format(coeffs[i])
@@ -1990,31 +1995,23 @@ def saveChemkin(reactionModel, path, verbose_path, dictionaryPath=None, transpor
     """
     Save a Chemkin file for the current model as well as any desired output
     species and reactions to `path`. If `saveEdgeSpecies` is True, then 
-    a chemkin file and dictionary file for the core and edge species and reactions
-    will be saved.  
+    a chemkin file and dictionary file for the core AND edge species and reactions
+    will be saved.  It also saves verbose versions of each file.
     """
-    
-    if saveEdgeSpecies == False:
-        speciesList = reactionModel.core.species + reactionModel.outputSpeciesList
-        rxnList = reactionModel.core.reactions + reactionModel.outputReactionList
-        saveChemkinFile(path, speciesList, rxnList, verbose = False, checkForDuplicates=False) # We should already have marked everything as duplicates by now        
-        logging.info('Saving current model to verbose Chemkin file...')
-        saveChemkinFile(verbose_path, speciesList, rxnList, verbose = True, checkForDuplicates=False)
-        if dictionaryPath:
-            saveSpeciesDictionary(dictionaryPath, speciesList)
-        if transportPath:
-            saveTransportFile(transportPath, speciesList)
-        
-    else:
+    if saveEdgeSpecies:
         speciesList = reactionModel.core.species + reactionModel.edge.species
         rxnList = reactionModel.core.reactions + reactionModel.edge.reactions
-        saveChemkinFile(path, speciesList, rxnList, verbose = False, checkForDuplicates=False)        
-        logging.info('Saving current core and edge to verbose Chemkin file...')
-        saveChemkinFile(verbose_path, speciesList, rxnList, verbose = True, checkForDuplicates=False)
-        if dictionaryPath:
-            saveSpeciesDictionary(dictionaryPath, speciesList)
-        if transportPath:
-            saveTransportFile(transportPath, speciesList)
+    else:
+        speciesList = reactionModel.core.species + reactionModel.outputSpeciesList
+        rxnList = reactionModel.core.reactions + reactionModel.outputReactionList
+
+    saveChemkinFile(path, speciesList, rxnList, verbose = False, checkForDuplicates=False) # We should already have marked everything as duplicates by now
+    logging.info('Saving verbose version of Chemkin file...')
+    saveChemkinFile(verbose_path, speciesList, rxnList, verbose=True, checkForDuplicates=False)
+    if dictionaryPath:
+        saveSpeciesDictionary(dictionaryPath, speciesList)
+    if transportPath:
+        saveTransportFile(transportPath, speciesList)
 
 def saveChemkinFiles(rmg):
     """

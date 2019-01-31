@@ -46,6 +46,8 @@ cdef class ReactionSystem(DASx):
     cdef public int numCoreSpecies
     cdef public int numCoreReactions
     cdef public int numEdgeSpecies
+    cdef public int numSurfaceSpecies
+    cdef public int numSurfaceReactions
     cdef public int numEdgeReactions
     cdef public int numPdepNetworks
     cdef public int neq
