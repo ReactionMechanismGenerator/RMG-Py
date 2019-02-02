@@ -193,7 +193,14 @@ class ExplorerJob(object):
             incomplete = False
             for T in Tlist:
                 for P in Plist:
-                    if network.getLeakCoefficient(T=T,P=P) > self.explore_tol:
+                    kchar = 0.0 #compute the characteristic rate coefficient by summing all rate coefficients from the reactant channel
+                    for rxn in self.network.netReactions:#reaction_model.core.reactions+reaction_model.edge.reactions:
+                        if set(rxn.reactants) == set(self.source) and len(rxn.products) == 1 and rxn.products[0].molecule[0].getFormula() == form:
+                            kchar += rxn.kinetics.getRateCoefficient(T=T,P=P)
+                        elif set(rxn.products) == set(self.source) and len(rxn.reactants) == 1 and rxn.reactants[0].molecule[0].getFormula() == form:
+                            kchar += rxn.generateReverseRateCoefficient(network_kinetics=True).getRateCoefficient(T=T,P=P)
+
+                    if network.getLeakCoefficient(T=T,P=P) > self.explore_tol*kchar:
                         incomplete = True
                         spc = network.getMaximumLeakSpecies(T=T,P=P)
                         if forbiddenStructures.isMoleculeForbidden(spc.molecule[0]):
