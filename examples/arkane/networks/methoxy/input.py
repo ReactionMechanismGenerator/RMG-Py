@@ -206,7 +206,7 @@ pressureDependence(
 
 explorer(
     source=['methoxy'],
-    explore_tol=(1e-2,'s^-1'),
+    explore_tol=0.01,
     energy_tol=8e1,
     flux_tol=1e-6,
      bathGas={'He':1.0},
