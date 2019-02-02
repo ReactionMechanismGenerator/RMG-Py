@@ -143,10 +143,19 @@ class ExplorerJob(object):
                     self.source[i] = spc
         
         # react initial species
-        flags = np.array([s.molecule[0].getFormula()==form for s in reaction_model.core.species])
+        if len(self.source) == 1:
+            flags = np.array([s.molecule[0].getFormula()==form for s in reaction_model.core.species])
+            biflags = np.zeros((len(reaction_model.core.species),len(reaction_model.core.species)))
+        elif len(self.source) == 2:
+            flags = np.array([False for s in reaction_model.core.species])
+            biflags = np.array([[False for i in xrange(len(reaction_model.core.species))] for j in xrange(len(reaction_model.core.species))])
+            biflags[reaction_model.core.species.index(self.source[0]),reaction_model.core.species.index(self.source[1])] = True
+        else:
+            raise ValueError("Reactant channels with greater than 2 reactants not supported")
+
         reaction_model.enlarge(reactEdge=True,unimolecularReact=flags,
-                      bimolecularReact=np.zeros((len(reaction_model.core.species),len(reaction_model.core.species))))
-        
+                      bimolecularReact=biflags)
+
         # find the network we're interested in
         for nwk in reaction_model.networkList:
             if set(nwk.source) == set(self.source):
