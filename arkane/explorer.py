@@ -119,9 +119,9 @@ class ExplorerJob(object):
         mmol = None
         for spc in self.source:
             if mmol:
-                mmol.merge(spc.molecule[0])
+                mmol = mmol.merge(spc.molecule[0])
             else:
-                mmol = spc.molecule[0]
+                mmol = spc.molecule[0].copy(deep=True)
 
         form = mmol.getFormula()
         
