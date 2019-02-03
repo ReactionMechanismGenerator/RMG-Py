@@ -811,13 +811,13 @@ class CoreEdgeReactionModel:
             if rxn is None:
                 # Skip this reaction because there was something wrong with it
                 continue
+            spcs = []
             if isNew:
                 # We've made a new reaction, so make sure the species involved
                 # are in the core or edge
                 allSpeciesInCore = True
                 # Add the reactant and product species to the edge if necessary
                 # At the same time, check if all reactants and products are in the core
-                spcs = []
                 for spec in rxn.reactants:
                     if spec not in self.core.species:
                         allSpeciesInCore = False
