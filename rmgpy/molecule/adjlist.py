@@ -93,9 +93,8 @@ class ConsistencyChecker(object):
                 
             theoretical = valence - order - atom.radicalElectrons - 2*atom.lonePairs
 
-            if np.isclose(-0.1, theoretical):
-                pass
-            elif atom.charge != theoretical:
+            if not (-0.301 < atom.charge - theoretical < 0.301):
+                # It should be 0, but -0.1 is caused by a Hydrogen bond
                 raise InvalidAdjacencyListError(
                     ('Invalid valency for atom {symbol} ({type}) with {radicals} unpaired electrons, '
                     '{lonePairs} pairs of electrons, {charge} charge, and bonds [{bonds}].'
