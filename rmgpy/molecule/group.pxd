@@ -139,6 +139,8 @@ cdef class Group(Graph):
 
     cpdef removeBond(self, GroupBond bond)
 
+    cpdef removeVanDerWaalsBonds(self)
+
     cpdef sortAtoms(self)
 
     cpdef list sortByConnectivity(self, list atomList)

@@ -354,13 +354,16 @@ class TestGroupAtom(unittest.TestCase):
 3    C ux     {1,S} {5,D}
 4    C u[0,1] {2,B}
 5    O u0     {3,D}
+6    C u0     {7,Q}
+7    C u0     {6,Q}
 """
         test = Group().fromAdjacencyList(adjlist)
-        #returns a list of [single, allDouble, rDouble, oDouble, sDouble, triple, benzene]
-        self.assertListEqual([1,0,0,0,0,0,0], test.atoms[0].countBonds())
-        self.assertListEqual([1,1,1,0,0,1,0], test.atoms[0].countBonds(wildcards = True))
-        self.assertListEqual([0,0,0,0,0,0,1], test.atoms[3].countBonds())
-        self.assertListEqual([1,1,0,1,0,0,0], test.atoms[2].countBonds())
+        #returns a list of [single, allDouble, rDouble, oDouble, sDouble, triple, quadruple, benzene]
+        self.assertListEqual([1,0,0,0,0,0,0,0], test.atoms[0].countBonds())
+        self.assertListEqual([1,1,1,0,0,1,0,0], test.atoms[0].countBonds(wildcards = True))
+        self.assertListEqual([0,0,0,0,0,0,0,1], test.atoms[3].countBonds())
+        self.assertListEqual([1,1,0,1,0,0,0,0], test.atoms[2].countBonds())
+        self.assertListEqual([0,0,0,0,0,0,1,0], test.atoms[5].countBonds())
 
     def testHasWildcards(self):
         """
@@ -400,7 +403,7 @@ class TestGroupBond(unittest.TestCase):
         A method called before each unit test in this class.
         """
         self.bond = GroupBond(None, None, order=[2])
-        self.orderList = [[1], [2], [3], [1.5], [1,2], [2,1], [2,3], [1,2,3]]
+        self.orderList = [[1], [2], [3], [1.5], [1,2], [2,1], [2,3], [1,2,3]]  # todo : unit tests for vdw
     
     def testGetOrderStr(self):
         """
@@ -496,6 +499,9 @@ class TestGroupBond(unittest.TestCase):
     def testApplyActionFormBond(self):
         """
         Test the GroupBond.applyAction() method for a FORM_BOND action.
+
+        Tests that forming a bond between things already bonded, raises
+        an ActionError
         """
         action = ['FORM_BOND', '*1', 1, '*2']
         for order0 in self.orderList:

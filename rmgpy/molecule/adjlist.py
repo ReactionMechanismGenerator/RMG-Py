@@ -35,6 +35,7 @@ adjacency list format used by Reaction Mechanism Generator (RMG).
 import logging
 import warnings
 import re
+import numpy as np
 from .molecule import Atom, Bond, getAtomType
 from .group import GroupAtom, GroupBond
 from .element import getElement, PeriodicSystem
@@ -89,7 +90,8 @@ class ConsistencyChecker(object):
                 
             theoretical = valence - order - atom.radicalElectrons - 2*atom.lonePairs
 
-            if atom.charge != theoretical:
+            if not (-0.301 < atom.charge - theoretical < 0.301):
+                # It should be 0, but -0.1 is caused by a Hydrogen bond
                 raise InvalidAdjacencyListError(
                     ('Invalid valency for atom {symbol} ({type}) with {radicals} unpaired electrons, '
                     '{lonePairs} pairs of electrons, {charge} charge, and bonds [{bonds}].'

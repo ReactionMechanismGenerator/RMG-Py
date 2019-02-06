@@ -36,7 +36,7 @@ from rmgpy.tools.plot import SimulationPlot
 class SimulationProfileWriter(object):
     """
     SimulationProfileWriter listens to a ReactionSystem subject
-    and writes the species mole fractions as a function of the reaction time
+    and writes the species mole numbers as a function of the reaction time
     to a csv file.
 
 
@@ -70,7 +70,7 @@ class SimulationProfileWriter(object):
 
         Writes to a csv file:
             - header row with species names
-            - each row with mole fractions of the core species in the given reaction system.
+            - each row with number of moles of the core species in the given reaction system.
         """
 
         filename = os.path.join(
@@ -103,7 +103,7 @@ class SimulationProfilePlotter(object):
     A new instance of the class can be appended to a subject as follows:
     
     reactionSystem = ...
-    listener = SimulationProfilPlotter()
+    listener = SimulationProfilePlotter()
     reactionSystem.attach(listener)
 
     Whenever the subject calls the .notify() method, the
@@ -145,4 +145,4 @@ class SimulationProfilePlotter(object):
                 )
             )
             
-        SimulationPlot(csvFile=csvFile, numSpecies=10, ylabel='Mole Fraction').plot(pngFile)
+        SimulationPlot(csvFile=csvFile, numSpecies=10, ylabel='Moles').plot(pngFile)

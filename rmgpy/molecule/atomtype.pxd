@@ -46,6 +46,7 @@ cdef class AtomType:
     cdef public list oDouble
     cdef public list sDouble
     cdef public list triple
+    cdef public list quadruple
     cdef public list benzene
     cdef public list lonePairs
     cdef public list charge

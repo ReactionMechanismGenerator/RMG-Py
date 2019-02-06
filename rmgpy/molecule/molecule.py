@@ -552,6 +552,10 @@ class Bond(Edge):
             return 'D'
         elif self.isTriple():
             return 'T'
+        elif self.isQuadruple():
+            return 'Q'
+        elif self.isVanDerWaals():
+            return 'vdW'
         elif self.isHydrogenBond():
             return 'H'
         else:
@@ -569,8 +573,12 @@ class Bond(Edge):
             self.order = 3
         elif newOrder == 'B':
             self.order = 1.5
-        elif newOrder == 'H':
+        elif newOrder == 'Q':
+            self.order = 4
+        elif newOrder == 'vdW':
             self.order = 0
+        elif newOrder == 'H':
+            self.order = 0.1
         else:
             # try to see if an float disguised as a string was input by mistake
             try:
@@ -606,6 +614,14 @@ class Bond(Edge):
         b.order = self.order
         return b
 
+
+    def isVanDerWaals(self):
+        """
+        Return ``True`` if the bond represents a van der Waals bond or 
+        ``False`` if not.
+        """
+        return self.isOrder(0) or self.order == 'vdW' #todo: remove 'vdW'
+
     def isOrder(self, otherOrder):
         """
         Return ``True`` if the bond is of order otherOrder or ``False`` if
@@ -638,6 +654,13 @@ class Bond(Edge):
         """
         return self.isOrder(3)
 
+    def isQuadruple(self):
+        """
+        Return ``True`` if the bond represents a quadruple bond or ``False`` if
+        not.
+        """
+        return self.isOrder(4)
+
     def isBenzene(self):
         """
         Return ``True`` if the bond represents a benzene bond or ``False`` if
@@ -650,18 +673,18 @@ class Bond(Edge):
         Return ``True`` if the bond represents a hydrogen bond or ``False`` if
         not.
         """
-        return self.isOrder(0)
+        return self.isOrder(0.1)
     
     def incrementOrder(self):
         """
         Update the bond as a result of applying a CHANGE_BOND action to
         increase the order by one.
         """
-        if self.order <=2.0001:
+        if self.order <=3.0001:
             self.order += 1
         else:
             raise gr.ActionError('Unable to increment Bond due to CHANGE_BOND action: '+\
-            'Bond order "{0}" is greater than 2.'.format(self.order))
+            'Bond order "{0}" is greater than 3.'.format(self.order))
 
     def decrementOrder(self):
         """
@@ -681,7 +704,7 @@ class Bond(Edge):
         in bond order, and can be any real number.
         """
         self.order += order
-        if self.order < -0.0001 or self.order >3.0001:
+        if self.order < -0.0001 or self.order >4.0001:
             raise gr.ActionError('Unable to update Bond due to CHANGE_BOND action: Invalid resulting order "{0}".'.format(self.order))
 
     def applyAction(self, action):
@@ -708,13 +731,21 @@ class Bond(Edge):
         the atom labels in alphabetical order (i.e. 'C-H' is possible but not 'H-C')
         :return: str
         """
-        bond_symbol_mapping = {0: '~', 1: '-', 1.5: ':', 2: '=', 3: '#'}
+        bond_symbol_mapping = {0.1: '~', 1: '-', 1.5: ':', 2: '=', 3: '#'}
         atom_labels = [self.atom1.symbol, self.atom2.symbol]
         atom_labels.sort()
         try:
             bond_symbol = bond_symbol_mapping[self.getOrderNum()]
         except KeyError:
-            bond_symbol = '<bond order {0}>'.format(self.getOrderNum())
+            # Direct lookup didn't work, but before giving up try
+            # with the isOrder() method which allows a little latitude
+            # for floating point errors.
+            for order,symbol in bond_symbol_mapping.iteritems():
+                if self.isOrder(order):
+                    bond_symbol = symbol
+                    break
+            else: # didn't break
+                bond_symbol = '<bond order {0}>'.format(self.getOrderNum())
         return '{0}{1}{2}'.format(atom_labels[0], bond_symbol, atom_labels[1])
 
 
@@ -880,6 +911,16 @@ class Molecule(Graph):
         """
         self._fingerprint = None
         return self.removeEdge(bond)
+
+    def removeVanDerWaalsBonds(self):
+        """
+        Remove all van der Waals bonds.
+        """
+        cython.declare(atom=Atom, bond=Bond)
+        for atom in self.atoms:
+            for bond in atom.edges.values():
+                if bond.isVanDerWaals():
+                    self.removeBond(bond)
 
     def sortAtoms(self):
         """
@@ -1570,7 +1611,7 @@ class Molecule(Graph):
                     atm_cov = atm_covs[0]
                 if (atm_cov.isOxygen() or atm_cov.isNitrogen()): #this H can be H-bonded
                     for k,atm2 in enumerate(ONatoms):
-                        if all([q.order != 0 for q in atm2.bonds.values()]): #atm2 not already H bonded
+                        if all([not numpy.isclose(0.1, q.order) for q in atm2.bonds.values()]): #atm2 not already H bonded
                             dist = len(find_shortest_path(atm1,atm2))-1
                             if dist > 3:
                                 j = ONinds[k]
@@ -1594,13 +1635,13 @@ class Molecule(Graph):
         Hbonds = self.find_H_bonds()
         for i,bd1 in enumerate(Hbonds):
             molc = self.copy(deep=True)
-            molc.addBond(Bond(molc.atoms[bd1[0]],molc.atoms[bd1[1]],order=0))
+            molc.addBond(Bond(molc.atoms[bd1[0]],molc.atoms[bd1[1]],order=0.1))
             structs.append(molc)
             for j,bd2 in enumerate(Hbonds):
                 if j<i and bd1[0] != bd2[0] and bd1[1] != bd2[1]:
                     molc = self.copy(deep=True)
-                    molc.addBond(Bond(molc.atoms[bd1[0]],molc.atoms[bd1[1]],order=0))
-                    molc.addBond(Bond(molc.atoms[bd2[0]],molc.atoms[bd2[1]],order=0))
+                    molc.addBond(Bond(molc.atoms[bd1[0]],molc.atoms[bd1[1]],order=0.1))
+                    molc.addBond(Bond(molc.atoms[bd2[0]],molc.atoms[bd2[1]],order=0.1))
                     structs.append(molc)
         
         return structs
@@ -1615,7 +1656,7 @@ class Molecule(Graph):
             for j,atm2 in enumerate(atoms):
                 if j<i and self.hasBond(atm1,atm2):
                     bd = self.getBond(atm1,atm2)
-                    if bd.order == 0:
+                    if numpy.isclose(0.1, bd.order):
                         self.removeBond(bd)
         return
     
