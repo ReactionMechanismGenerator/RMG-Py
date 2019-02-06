@@ -14,7 +14,8 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -678,6 +679,12 @@ this removal.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.Group.removeVanDerWaalsBonds">
+<code class="descname">removeVanDerWaalsBonds</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.removeVanDerWaalsBonds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove all bonds that are definitely only van der Waals bonds.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.Group.removeVertex">
 <code class="descname">removeVertex</code><span class="sig-paren">(</span><em>self</em>, <em>Vertex vertex</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.removeVertex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove <cite>vertex</cite> and all edges associated with it from the graph. Does
@@ -939,7 +946,7 @@ and radical electrons. This method is used for products of specific families wit
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

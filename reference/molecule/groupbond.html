@@ -14,7 +14,8 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -162,6 +163,15 @@ are hydrogen bonds.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.GroupBond.isQuadruple">
+<code class="descname">isQuadruple</code><span class="sig-paren">(</span><em>self</em>, <em>wildcards=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupBond.isQuadruple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the bond represents a quadruple bond or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
+not. If <cite>wildcards</cite> is <code class="docutils literal notranslate"><span class="pre">False</span></code> we return False anytime there is more
+than one bond order, otherwise we return <code class="docutils literal notranslate"><span class="pre">True</span></code> if any of the options
+are quadruple.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.GroupBond.isSingle">
 <code class="descname">isSingle</code><span class="sig-paren">(</span><em>self</em>, <em>bool wildcards=False</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.GroupBond.isSingle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the bond represents a single bond or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
@@ -187,6 +197,15 @@ included in <cite>other</cite> or they are mutually exclusive.</p>
 not. If <cite>wildcards</cite> is <code class="docutils literal notranslate"><span class="pre">False</span></code> we return False anytime there is more
 than one bond order, otherwise we return <code class="docutils literal notranslate"><span class="pre">True</span></code> if any of the options
 are triple.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.GroupBond.isVanDerWaals">
+<code class="descname">isVanDerWaals</code><span class="sig-paren">(</span><em>self</em>, <em>wildcards=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupBond.isVanDerWaals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the bond represents a van der Waals bond or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
+not. If <cite>wildcards</cite> is <code class="docutils literal notranslate"><span class="pre">False</span></code> we return False anytime there is more
+than one bond order, otherwise we return <code class="docutils literal notranslate"><span class="pre">True</span></code> if any of the options
+are van der Waals.</p>
 </dd></dl>
 
 <dl class="method">
@@ -361,7 +380,7 @@ are triple.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

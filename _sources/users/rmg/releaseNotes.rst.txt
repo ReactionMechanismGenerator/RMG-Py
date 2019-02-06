@@ -4,6 +4,16 @@
 Release Notes
 *************
 
+
+RMG-Py Version 2.3.... 
+======================
+(pre-release development version)
+
+- Miscellaneous changes:
+    - Output files in 'solver' directory now show species amounts (numbers of moles) not mole fractions.
+
+
+
 RMG-Py Version 2.3.0
 ====================
 Date: Dec 20, 2018

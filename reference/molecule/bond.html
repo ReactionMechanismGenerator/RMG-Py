@@ -14,7 +14,8 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -187,6 +188,13 @@ we swtich to python 3.5+</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.Bond.isQuadruple">
+<code class="descname">isQuadruple</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Bond.isQuadruple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the bond represents a quadruple bond or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
+not.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.Bond.isSingle">
 <code class="descname">isSingle</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Bond.isSingle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the bond represents a single bond or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
@@ -206,6 +214,13 @@ otherwise. <cite>other</cite> can be either a <a class="reference internal" href
 <code class="descname">isTriple</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Bond.isTriple" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the bond represents a triple bond or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
 not.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Bond.isVanDerWaals">
+<code class="descname">isVanDerWaals</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Bond.isVanDerWaals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the bond represents a van der Waals bond or
+<code class="docutils literal notranslate"><span class="pre">False</span></code> if not.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -397,7 +412,7 @@ following bond types:</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

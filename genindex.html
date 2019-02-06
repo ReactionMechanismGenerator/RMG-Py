@@ -15,7 +15,8 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="#" />
     <link rel="search" title="Search" href="search.html" />
@@ -3433,12 +3434,12 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.isEdgeInCycle">(rmgpy.molecule.Molecule method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.isFluorine">isFluorine() (rmgpy.molecule.Atom method)</a>
 </li>
       <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.isHydrogen">isHydrogen() (rmgpy.molecule.Atom method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/molecule/bond.html#rmgpy.molecule.Bond.isHydrogenBond">isHydrogenBond() (rmgpy.molecule.Bond method)</a>
 
       <ul>
@@ -3589,6 +3590,12 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/kinetics/troe.html#rmgpy.kinetics.Troe.isPressureValid">(rmgpy.kinetics.Troe method)</a>
 </li>
       </ul></li>
+      <li><a href="reference/molecule/bond.html#rmgpy.molecule.Bond.isQuadruple">isQuadruple() (rmgpy.molecule.Bond method)</a>
+
+      <ul>
+        <li><a href="reference/molecule/groupbond.html#rmgpy.molecule.GroupBond.isQuadruple">(rmgpy.molecule.GroupBond method)</a>
+</li>
+      </ul></li>
       <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.isRadical">isRadical() (rmgpy.molecule.Molecule method)</a>
 </li>
       <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.isSilicon">isSilicon() (rmgpy.molecule.Atom method)</a>
@@ -3729,6 +3736,12 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.isUnimolecular">(rmgpy.reaction.Reaction method)</a>
 </li>
         <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.isUnimolecular">(rmgpy.rmg.pdep.PDepReaction method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/molecule/bond.html#rmgpy.molecule.Bond.isVanDerWaals">isVanDerWaals() (rmgpy.molecule.Bond method)</a>
+
+      <ul>
+        <li><a href="reference/molecule/groupbond.html#rmgpy.molecule.GroupBond.isVanDerWaals">(rmgpy.molecule.GroupBond method)</a>
 </li>
       </ul></li>
       <li><a href="reference/molecule/graph.html#rmgpy.molecule.graph.Graph.isVertexInCycle">isVertexInCycle() (rmgpy.molecule.graph.Graph method)</a>
@@ -4991,6 +5004,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/qm/qmverifier.html#rmgpy.qm.qmverifier.QMVerifier">QMVerifier (class in rmgpy.qm.qmverifier)</a>
 </li>
+      <li><a href="reference/molecule/atomtype.html#rmgpy.molecule.AtomType.quadruple">quadruple (rmgpy.molecule.AtomType attribute)</a>
+</li>
       <li><a href="reference/quantity/quantity.html#rmgpy.quantity.Quantity">Quantity() (in module rmgpy.quantity)</a>
 </li>
   </ul></td>
@@ -5177,6 +5192,12 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       </ul></li>
       <li><a href="reference/rmg/coreedgereactionmodel.html#rmgpy.rmg.model.CoreEdgeReactionModel.removeSpeciesFromEdge">removeSpeciesFromEdge() (rmgpy.rmg.model.CoreEdgeReactionModel method)</a>
 </li>
+      <li><a href="reference/molecule/group.html#rmgpy.molecule.Group.removeVanDerWaalsBonds">removeVanDerWaalsBonds() (rmgpy.molecule.Group method)</a>
+
+      <ul>
+        <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.removeVanDerWaalsBonds">(rmgpy.molecule.Molecule method)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/molecule/graph.html#rmgpy.molecule.graph.Graph.removeVertex">removeVertex() (rmgpy.molecule.graph.Graph method)</a>
@@ -6668,7 +6689,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

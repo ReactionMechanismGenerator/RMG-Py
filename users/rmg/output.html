@@ -14,7 +14,8 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -93,7 +94,8 @@ network.</p>
 </div>
 <div class="section" id="the-solver-folder">
 <h2>7.4. The Solver Folder<a class="headerlink" href="#the-solver-folder" title="Permalink to this headline">¶</a></h2>
-<p>RMG currently includes a solver for isothermal batch reactors. This is in fact a critical part of the model enlargement algorithm. If you have included simulations in your input file, the solutions will be located in <code class="docutils literal notranslate"><span class="pre">/solver</span></code>. You will probably only be interested in the files with the largest number tags.</p>
+<p>RMG currently includes a solver for isothermal batch reactors. This is in fact a critical part of the model enlargement algorithm. If you have included simulations in your input file, the solutions will be located in <code class="docutils literal notranslate"><span class="pre">/solver</span></code>. You will probably only be interested in the files with the largest number tags.
+Please note that up to and including RMG-Py version 2.3.0 these files showed mole fraction of each species at each step, but they now show amount (number of moles) of each species; you must divide by the sum if you wish to get a mole fraction.</p>
 </div>
 </div>
 
@@ -199,7 +201,7 @@ network.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

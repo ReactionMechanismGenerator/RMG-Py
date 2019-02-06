@@ -14,7 +14,8 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -61,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.molecule.AtomType<a class="headerlink" href="#rmgpy-molecule-atomtype" title="Permalink to this headline">¶</a></h1>
 <span class="target" id="atom-types"></span><dl class="class">
 <dt id="rmgpy.molecule.AtomType">
-<em class="property">class </em><code class="descclassname">rmgpy.molecule.</code><code class="descname">AtomType</code><span class="sig-paren">(</span><em>label=''</em>, <em>generic=None</em>, <em>specific=None</em>, <em>single=None</em>, <em>allDouble=None</em>, <em>rDouble=None</em>, <em>oDouble=None</em>, <em>sDouble=None</em>, <em>triple=None</em>, <em>benzene=None</em>, <em>lonePairs=None</em>, <em>charge=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.AtomType" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.molecule.</code><code class="descname">AtomType</code><span class="sig-paren">(</span><em>label=''</em>, <em>generic=None</em>, <em>specific=None</em>, <em>single=None</em>, <em>allDouble=None</em>, <em>rDouble=None</em>, <em>oDouble=None</em>, <em>sDouble=None</em>, <em>triple=None</em>, <em>quadruple=None</em>, <em>benzene=None</em>, <em>lonePairs=None</em>, <em>charge=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.AtomType" title="Permalink to this definition">¶</a></dt>
 <dd><p>A class for internal representation of atom types. Using unique objects
 rather than strings allows us to use fast pointer comparisons instead of
 slow string comparisons, as well as store extra metadata. In particular,
@@ -151,15 +152,19 @@ involving this atom type are taken. The attributes are:</p>
 <td>‘’list’‘</td>
 <td>The total number of triple bonds on the atom</td>
 </tr>
-<tr class="row-even"><td>‘benzene’</td>
+<tr class="row-even"><td>‘quadruple’</td>
+<td>‘’list’‘</td>
+<td>The total number of quadruple bonds on the atom</td>
+</tr>
+<tr class="row-odd"><td>‘benzene’</td>
 <td>‘’list’‘</td>
 <td>The total number of benzene bonds on the atom</td>
 </tr>
-<tr class="row-odd"><td>‘lonePairs’</td>
+<tr class="row-even"><td>‘lonePairs’</td>
 <td>‘’list’‘</td>
 <td>The number of lone pairs on the atom</td>
 </tr>
-<tr class="row-even"><td>‘charge’</td>
+<tr class="row-odd"><td>‘charge’</td>
 <td>‘’list’‘</td>
 <td>The partial charge of the atom</td>
 </tr>
@@ -391,6 +396,20 @@ atom type <cite>atomType2</cite> or <code class="docutils literal notranslate"><
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">oDouble</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.molecule.AtomType.quadruple">
+<code class="descname">quadruple</code><a class="headerlink" href="#rmgpy.molecule.AtomType.quadruple" title="Permalink to this definition">¶</a></dt>
+<dd><p>list</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">quadruple</td>
 </tr>
 </tbody>
 </table>
@@ -872,7 +891,7 @@ molecular substructure patterns via an RMG-style adjacency list.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2019, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.4.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
