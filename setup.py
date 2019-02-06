@@ -71,6 +71,7 @@ def getMainExtensionModules():
         Extension('rmgpy.kinetics.falloff', ['rmgpy/kinetics/falloff.pyx']),
         Extension('rmgpy.kinetics.model', ['rmgpy/kinetics/model.pyx']),
         Extension('rmgpy.kinetics.tunneling', ['rmgpy/kinetics/tunneling.pyx']),
+	Extension('rmgpy.kinetics.uncertainties',['rmgpy/kinetics/uncertainties.pyx']),
         # Molecules and molecular representations
         Extension('rmgpy.molecule.atomtype', ['rmgpy/molecule/atomtype.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.element', ['rmgpy/molecule/element.py'], include_dirs=['.']),

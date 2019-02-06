@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 ###############################################################################
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
@@ -28,25 +25,14 @@
 #                                                                             #
 ###############################################################################
 
-"""
-This module contains information related to kinetic uncertainties
-"""
 
-from rmgpy.quantity import Quantity
+################################################################################
 
-rank_accuracy_map ={1:(0.0,'kcal/mol'),
-                  2:(0.5,'kcal/mol'),
-                  3:(1.0,'kcal/mol'),
-                  4:(1.5,'kcal/mol'),
-                  5:(2.5,'kcal/mol'),
-                  6:(3.5,'kcal/mol'),
-                  7:(4.0,'kcal/mol'),
-                  8:(5.0,'kcal/mol'),
-                  9:(14.0,'kcal/mol'),
-                  10:(14.0,'kcal/mol'),
-                  None:(14.0,'kcal/mol'),
-                  0:(14.0,'kcal/mol'),
-                  '':(14.0,'kcal/mol'),
-                  11:(14.0,'kcal/mol'),
-                  }
-rank_accuracy_map = {key:Quantity(value) for key,value in rank_accuracy_map.iteritems()}
+cdef class RateUncertainty(object):
+
+    cdef public double _Tref
+    cdef public double _dE
+    cdef public double _f
+
+    cpdef double getEnergyUncertaintyFactor(self, double T)
+    cpdef double getConstantUncertaintyFactor(self)
