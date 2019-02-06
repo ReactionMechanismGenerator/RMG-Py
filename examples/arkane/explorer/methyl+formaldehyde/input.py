@@ -6,7 +6,7 @@ This example illustrates how more complex explorer jobs work.  In this case the 
 and since CH3 can add across the double bond two ways this results in two pressure dependent networks.  
 """
 database(
-    thermoLibraries = ['primaryThermoLibrary','Klippenstein_Glarborg2016','thermo_DFT_CCSDTF12_BAC','CBS_QB3_1dHR','DFT_QCI_thermo'],
+    thermoLibraries = ['primaryThermoLibrary'],
     reactionLibraries = [],
     kineticsDepositories = ['training'],
     kineticsFamilies = 'default',
