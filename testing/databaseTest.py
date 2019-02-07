@@ -1035,8 +1035,11 @@ The following adjList may have atoms in a different ordering than the input file
         for entryName, entry in group.entries.iteritems():
             try:
                 if isinstance(entry.item, Group):
-                    sampleMolecule = entry.item.makeSampleMolecule()
-
+                    try:
+                        sampleMolecule = entry.item.makeSampleMolecule()
+                    except:
+                        logging.error("Problem making sample molecule for group {}\n{}".format(entryName, entry.item.toAdjacencyList()))
+                        raise
                     #for now ignore sample atoms that use nitrogen types
                     nitrogen = False
                     for atom in sampleMolecule.atoms:
