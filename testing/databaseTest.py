@@ -455,8 +455,24 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             k = entry.data
             rxn = entry.item
             molecularity = len(rxn.reactants)
+            surface_reactants = sum([1 for s in rxn.reactants if s.containsSurfaceSite()])
             try:
-                if isinstance(k, rmgpy.kinetics.Arrhenius):
+
+                if isinstance(k, rmgpy.kinetics.StickingCoefficient):
+                    "Should be dimensionless"
+                    A = k.A
+                    if A.units:
+                        boo = True
+                        logging.error('Reaction {0} from {1} {2}, has invalid units {3}'.format(rxn, tag, database.label, A.units))
+                elif isinstance(k, rmgpy.kinetics.SurfaceArrhenius):
+                    A = k.A
+                    expected = copy(dimensionalities[molecularity])
+                    # for each surface reactant but one, switch from (m3/mol) to (m2/mol)
+                    expected[pq.m] -= (surface_reactants-1)
+                    if pq.Quantity(1.0, A.units).simplified.dimensionality != expected :
+                        boo = True
+                        logging.error('Reaction {0} from {1} {2}, has invalid units {3}'.format(rxn, tag, database.label, A.units))
+                elif isinstance(k, rmgpy.kinetics.Arrhenius): # (but not SurfaceArrhenius, which came first)
                     A = k.A
                     if pq.Quantity(1.0, A.units).simplified.dimensionality != dimensionalities[molecularity]:
                         boo = True
