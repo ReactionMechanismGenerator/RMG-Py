@@ -266,12 +266,6 @@ cdef class KineticsModel:
                 
         return discrepancy
     
-    cpdef double getUncertaintyFactor(self, double T) except -2:
-        """
-        Calculate the multiplicative uncertainty factor at a given T from the energy uncertainty
-        """
-        return np.exp(self.uncertainty.value_si/(T*8.314))
-    
     def setCanteraKinetics(self, ctReaction, speciesList):
         """
         Sets the kinetics for a cantera reaction object.
