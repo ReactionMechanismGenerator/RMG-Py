@@ -161,7 +161,7 @@ cdef class KineticsModel:
         def __get__(self):
             return self._uncertainty
         def __set__(self, value):
-            self._uncertainty = quantity.Energy(value)
+            self._uncertainty = value
 
     cpdef bint isPressureDependent(self) except -2:
         """
