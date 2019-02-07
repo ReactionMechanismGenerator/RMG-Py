@@ -28,6 +28,7 @@
 cimport numpy
 
 from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
+from rmgpy.kinetics.uncertainties cimport RateUncertainty
 
 ################################################################################
 
@@ -41,8 +42,8 @@ cdef class KineticsModel:
     
     cdef public ScalarQuantity _Tmin, _Tmax
     cdef public ScalarQuantity _Pmin, _Pmax
-    cdef public ScalarQuantity _uncertainty
-    
+    cdef public RateUncertainty _uncertainty
+
     cdef public str comment
     
     cpdef bint isPressureDependent(self) except -2
@@ -59,7 +60,6 @@ cdef class KineticsModel:
     
     cpdef double discrepancy(self, KineticsModel otherKinetics) except -2
     
-    cpdef double getUncertaintyFactor(self, double T) except -2
 
 cdef class PDepKineticsModel(KineticsModel):
     
