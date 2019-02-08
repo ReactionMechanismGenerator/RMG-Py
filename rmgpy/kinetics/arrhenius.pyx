@@ -62,8 +62,8 @@ cdef class Arrhenius(KineticsModel):
 
     """
 
-    def __init__(self, A=None, n=0.0, Ea=None, T0=(1.0,"K"), Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
-        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
+    def __init__(self, A=None, n=0.0, Ea=None, T0=(1.0,"K"), Tmin=None, Tmax=None, Pmin=None, Pmax=None, uncertainty=None, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, uncertainty=uncertainty, comment=comment)
         self.A = A
         self.n = n
         self.Ea = Ea
@@ -79,6 +79,7 @@ cdef class Arrhenius(KineticsModel):
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
         if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
         if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
+        if self.uncertainty: string += ', uncertainty={0!r}'.format(self.uncertainty)
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
@@ -87,7 +88,7 @@ cdef class Arrhenius(KineticsModel):
         """
         A helper function used when pickling an Arrhenius object.
         """
-        return (Arrhenius, (self.A, self.n, self.Ea, self.T0, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
+        return (Arrhenius, (self.A, self.n, self.Ea, self.T0, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.uncertainty, self.comment))
 
     property A:
         """The preexponential factor."""
@@ -280,6 +281,7 @@ cdef class Arrhenius(KineticsModel):
                           Tmax = self.Tmax,
                           Pmin = self.Pmin,
                           Pmax = self.Pmax,
+                          uncertainty = self.uncertainty,
                           comment = self.comment)
         return aep
 ################################################################################
@@ -306,8 +308,8 @@ cdef class ArrheniusEP(KineticsModel):
 
     """
 
-    def __init__(self, A=None, n=0.0, alpha=0.0, E0=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
-        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
+    def __init__(self, A=None, n=0.0, alpha=0.0, E0=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, uncertainty=None, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, uncertainty=uncertainty, comment=comment)
         self.A = A
         self.n = n
         self.alpha = alpha
@@ -323,6 +325,7 @@ cdef class ArrheniusEP(KineticsModel):
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
         if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
         if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
+        if self.uncertainty is not None: string += ', uncertainty={0!r}'.format(self.uncertainty)
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
@@ -331,7 +334,7 @@ cdef class ArrheniusEP(KineticsModel):
         """
         A helper function used when pickling an ArrheniusEP object.
         """
-        return (ArrheniusEP, (self.A, self.n, self.alpha, self.E0, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
+        return (ArrheniusEP, (self.A, self.n, self.alpha, self.E0, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.uncertainty, self.comment))
 
     property A:
         """The preexponential factor."""
@@ -401,6 +404,7 @@ cdef class ArrheniusEP(KineticsModel):
             Tmax = self.Tmax,
             Pmin = self.Pmin,
             Pmax = self.Pmax,
+            uncertainty = self.uncertainty,
             comment = self.comment,
         )
 
@@ -459,8 +463,8 @@ cdef class ArrheniusBM(KineticsModel):
 
     """
 
-    def __init__(self, A=None, n=0.0, w0=(0.0,'J/mol'), E0=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
-        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
+    def __init__(self, A=None, n=0.0, w0=(0.0,'J/mol'), E0=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, uncertainty=None, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, uncertainty=uncertainty, comment=comment)
         self.A = A
         self.n = n
         self.w0 = w0
@@ -476,6 +480,7 @@ cdef class ArrheniusBM(KineticsModel):
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
         if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
         if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
+        if self.uncertainty is not None: string += ', uncertainty={0!r}'.format(self.uncertainty)
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
@@ -484,7 +489,7 @@ cdef class ArrheniusBM(KineticsModel):
         """
         A helper function used when pickling an ArrheniusEP object.
         """
-        return (ArrheniusBM, (self.A, self.n, self.w0, self.E0, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
+        return (ArrheniusBM, (self.A, self.n, self.w0, self.E0, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.uncertainty, self.comment))
 
     property A:
         """The preexponential factor."""
@@ -554,6 +559,7 @@ cdef class ArrheniusBM(KineticsModel):
             T0 = (1,"K"),
             Tmin = self.Tmin,
             Tmax = self.Tmax,
+            uncertainty=self.uncertainty,
             comment = self.comment,
         )
 
