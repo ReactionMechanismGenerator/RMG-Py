@@ -41,6 +41,7 @@ from copy import deepcopy
 from collections import OrderedDict
 from sklearn.model_selection import KFold
 import multiprocessing as mp
+from scipy import stats
 
 from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStructures,\
@@ -50,6 +51,7 @@ from rmgpy import settings
 from rmgpy.reaction import Reaction
 from rmgpy.kinetics import Arrhenius
 from rmgpy.kinetics.arrhenius import ArrheniusBM
+from rmgpy.kinetics.uncertainties import RateUncertainty
 from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.molecule.resonance import generate_optimal_aromatic_resonance_structures
 from rmgpy.species import Species
@@ -3006,7 +3008,7 @@ class KineticsFamily(Database):
             raise e
         return grps
 
-    def makeBMRulesFromTemplateRxnMap(self,templateRxnMap,nprocs=1):
+    def makeBMRulesFromTemplateRxnMap(self,templateRxnMap,nprocs=1,Tref=1000.0,alpha=0.3,fmax=1.0e5):
 
         ruleKeys = self.rules.entries.keys()
         for entry in self.groups.entries.values():
@@ -3017,7 +3019,7 @@ class KineticsFamily(Database):
 
         entries = self.groups.entries.values()
         rxnlists = [templateRxnMap[entry.label] if entry.label in templateRxnMap.keys() else [] for entry in entries]
-        inputs = [(self.forwardRecipe.actions,rxns) for rxns in rxnlists]
+        inputs = [(self.forwardRecipe.actions,rxns,Tref,alpha,fmax) for rxns in rxnlists]
 
         pool = mp.Pool(nprocs)
 
@@ -3830,11 +3832,30 @@ def makeRule(rr):
     """
     function for parallelization of rule calculation
     """
-    recipe,rxns = rr
+    recipe,rxns,Tref,alpha,fmax = rr
+
     if rxns != []:
-        return ArrheniusBM().fitToReactions(rxns,recipe=recipe)
+        lnks = np.log(np.array([rxn.getRateCoefficient(T=Tref) for rxn in rxns]))
+        kin = ArrheniusBM().fitToReactions(rxns,recipe=recipe)
+        if len(lnks) == 1:
+            kin.uncertainty = RateUncertainty(Tref=Tref,f=fmax)
+        else:
+            f = np.exp(2.0*getStdCI(lnks,alpha))
+            if fmax > f:
+                f = fmax
+            kin.uncertainty = RateUncertainty(Tref=Tref, f=f)
+        return kin
     else:
         return None
+
+def getStdCI(vals,c):
+    """
+    calculates the maximum standard deviation within the confidence
+    interval c (ex: 95% -> c = 0.95) for data vals
+    """
+    s = np.std(vals,ddof=1)
+    f = stats.chi2.ppf(0.5-c/2,len(vals)-1)
+    return s*np.sqrt((len(vals)-1)/f)
 
 def spawnTreeProcess(family,templateRxnMap,obj,T,nprocs,depth):
     parentConn, childConn = mp.Pipe()
