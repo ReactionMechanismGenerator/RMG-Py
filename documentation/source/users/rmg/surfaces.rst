@@ -18,8 +18,31 @@ Need to describe:
 theory:
 * linear scaling relationships
 
+other things to update:
+* table of atom types in users/rmg/database/introduction.rst 
+* table of atom types in reference/molecule/atomtype.rst
 
-To simulate surfaces in RMG requires a module in your input file for liquid-phase::
+
+Example input file: methane steam reforming
+-------------------------------------------------------
+
+This is a simple input file steam reforming of methane 
+
+.. literalinclude:: ../../../../examples/rmg/catalysis/methane_steam/input.py
+
+Example input file: methane oxidation
+--------------------------------------------------------
+
+This is an input file for catalytic partial oxidation (CPOX) of methane
+
+.. literalinclude:: ../../../../examples/rmg/catalysis/ch4_o2/input.py
+
+
+
+
+The text below here is just copied from the Liquids page
+--------------------------------------------------------
+To simulate liquids in RMG requires a module in your input file for liquid-phase::
 
 
     solvation(
