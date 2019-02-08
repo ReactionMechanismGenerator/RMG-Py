@@ -37,11 +37,11 @@ from rmgpy.exceptions import InputError
 from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
 
 from arkane.common import get_element_mass
-
+from arkane.statmech import Log
 ################################################################################
 
 
-class MolproLog:
+class MolproLog(Log):
     """
     Represents a Molpro log file. The attribute `path` refers to the
     location on disk of the Molpro log file of interest. Methods are provided

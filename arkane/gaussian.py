@@ -38,11 +38,12 @@ from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, Har
 from rmgpy.exceptions import InputError
 
 from arkane.common import check_conformer_energy, get_element_mass
+from arkane.statmech import Log
 
 ################################################################################
 
 
-class GaussianLog:
+class GaussianLog(Log):
     """
     Represent a log file from Gaussian. The attribute `path` refers to the
     location on disk of the Gaussian log file of interest. Methods are provided

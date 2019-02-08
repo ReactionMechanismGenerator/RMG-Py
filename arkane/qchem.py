@@ -38,11 +38,12 @@ from rmgpy.exceptions import InputError
 from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
 
 from arkane.common import check_conformer_energy, get_element_mass
+from arkane.statmech import Log
 
 ################################################################################
 
 
-class QChemLog:
+class QChemLog(Log):
     """
     Represent an output file from QChem. The attribute `path` refers to the
     location on disk of the QChem output file of interest. Methods are provided
