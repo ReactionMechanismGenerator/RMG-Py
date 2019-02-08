@@ -1,7 +1,7 @@
 # Data sources
 database(
     thermoLibraries=['surfaceThermoPt', 'primaryThermoLibrary', 'thermo_DFT_CCSDTF12_BAC','DFT_QCI_thermo'],
-    reactionLibraries = [('CPOX_Pt/Deutschmann2006', False)],
+    reactionLibraries = [('Surface/CPOX_Pt/Deutschmann2006', False)],
     seedMechanisms = [],
     kineticsDepositories = ['training'],
     kineticsFamilies = ['surface','default'],

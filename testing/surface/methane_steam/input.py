@@ -1,7 +1,7 @@
 # Data sources
 database(
     thermoLibraries=['surfaceThermo', 'primaryThermoLibrary', 'thermo_DFT_CCSDTF12_BAC'],
-    reactionLibraries = [('Deutschmann_Ni', True)],
+    reactionLibraries = [('Surface/Deutschmann_Ni', True)],
     seedMechanisms = [],
     kineticsDepositories = ['training'],
     kineticsFamilies = 'default',
