@@ -37,10 +37,13 @@ import numpy as np
 import logging
 import warnings
 import codecs
+import random
+import multiprocessing as mp
+
 from copy import deepcopy
 from collections import OrderedDict
 from sklearn.model_selection import KFold
-import multiprocessing as mp
+from scipy import stats
 
 from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStructures,\
@@ -48,9 +51,11 @@ from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStruct
 from rmgpy.reaction import Reaction, same_species_lists
 from rmgpy import settings
 from rmgpy.reaction import Reaction
+from rmgpy.kinetics.uncertainties import rank_accuracy_map
 from rmgpy.kinetics import Arrhenius, SurfaceArrhenius,\
                     SurfaceArrheniusBEP, StickingCoefficient, StickingCoefficientBEP
 from rmgpy.kinetics.arrhenius import ArrheniusBM
+from rmgpy.kinetics.uncertainties import RateUncertainty
 from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.molecule.resonance import generate_optimal_aromatic_resonance_structures
 from rmgpy.species import Species
@@ -3213,7 +3218,7 @@ class KineticsFamily(Database):
             raise e
         return grps
 
-    def makeBMRulesFromTemplateRxnMap(self,templateRxnMap,nprocs=1):
+    def makeBMRulesFromTemplateRxnMap(self,templateRxnMap,nprocs=1,Tref=1000.0,alpha=0.3,fmax=1.0e5):
 
         ruleKeys = self.rules.entries.keys()
         for entry in self.groups.entries.values():
@@ -3224,7 +3229,7 @@ class KineticsFamily(Database):
 
         entries = self.groups.entries.values()
         rxnlists = [templateRxnMap[entry.label] if entry.label in templateRxnMap.keys() else [] for entry in entries]
-        inputs = [(self.forwardRecipe.actions,rxns) for rxns in rxnlists]
+        inputs = [(self.forwardRecipe.actions,rxns,Tref,alpha,fmax) for rxns in rxnlists]
 
         pool = mp.Pool(nprocs)
 
@@ -4033,11 +4038,32 @@ def getObjectiveFunction(kinetics1,kinetics2,obj=informationGain,T=1000.0):
 
 def makeRule(rr):
     """
-    function for parallelization of rule calculation
+    function for parallelization of rule and uncertainty calculation
+    Errors in Ln(k) at each reaction are treated as samples from a weighted normal distribution
+    weights are inverse variance weights based on estimates of the error in Ln(k) for each individual reaction
     """
-    recipe,rxns = rr
-    if rxns != []:
-        return ArrheniusBM().fitToReactions(rxns,recipe=recipe)
+    recipe,rxns,Tref,fmax,label,ranks = rr
+    N = len(rxns)
+    for i,rxn in enumerate(rxns):
+        rxn.rank = ranks[i]
+    rxns = np.array(rxns)
+    if N > 0:
+        kin = ArrheniusBM().fitToReactions(rxns,recipe=recipe)
+        if N == 1:
+            kin.uncertainty = RateUncertainty(mu=0.0,var=(np.log(fmax)/2.0)**2,N=1,Tref=Tref,correlation=label)
+        else:
+            dlnks = np.array([np.log(ArrheniusBM().fitToReactions(rxns[list(set(xrange(len(rxns)))-set([i,]))],
+                    recipe=recipe).toArrhenius(rxn.getEnthalpyOfReaction(Tref)).getRateCoefficient(T=Tref)/rxn.getRateCoefficient(T=Tref)) for i,
+                    rxn in enumerate(rxns)]) # 1)fit to set of reactions without the current reaction (k)  2)compute log(kfit/kactual) at Tref
+            varis = (np.array([rank_accuracy_map[rxn.rank].value_si for rxn in rxns])/(2.0*8.314*Tref))**2
+            #weighted average calculations
+            ws = 1.0/varis
+            V1  = ws.sum()
+            V2 = (ws**2).sum()
+            mu = np.dot(ws,dlnks)/V1
+            s = np.sqrt(np.dot(ws,(dlnks-mu)**2)/(V1-V2/V1))
+            kin.uncertainty = RateUncertainty(mu=mu,var=s**2,N=N,Tref=Tref,correlation=label)
+        return kin
     else:
         return None
 
