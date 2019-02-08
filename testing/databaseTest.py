@@ -989,7 +989,8 @@ The following adjList may have atoms in a different ordering than the input file
                     atoms = sampleMolecule.getLabeledAtoms()
                     match = family.groups.descendTree(sampleMolecule, atoms, strict=True, root = root)
                     tst1.append((match, "Group {0} does not match its root node, {1}".format(entryName, root.label)))
-                    tst2.append((entry, [match]+family.groups.ancestors(match), """In group {0}, a sample molecule made from node {1} returns node {2} when descending the tree.
+                    if tst1[-1][0] is not None:
+                        tst2.append((entry, [match]+family.groups.ancestors(match), """In group {0}, a sample molecule made from node {1} returns node {2} when descending the tree.
 Sample molecule AdjList:
 {3}
 
@@ -1035,6 +1036,7 @@ Origin Group AdjList:
             if tst1[i][0] is None:
                 logging.error(tst1[i][1])
                 boo = True
+        for i in xrange(len(tst2)):
             if tst2[i][0] not in tst2[i][1]:
                 logging.error(tst2[i][2])
                 boo = True
@@ -1060,14 +1062,16 @@ Origin Group AdjList:
                 child = ascendParent
                 ascendParent = ascendParent.parent
                 tst1.append((ascendParent is not None, "Node {node} in {group} group was found in the tree without a proper parent.".format(node=child, group=group_name)))
-                tst2.append((child in ascendParent.children, "Node {node} in {group} group was found in the tree without a proper parent.".format(node=nodeName, group=group_name)))
-                tst3.append((child is ascendParent, "Node {node} in {group} is a parent to itself".format(node=nodeName, group=group_name)))
+                if tst1[-1] is not None:
+                    tst2.append((child in ascendParent.children, "Node {node} in {group} group was found in the tree without a proper parent.".format(node=nodeName, group=group_name)))
+                    tst3.append((child is ascendParent, "Node {node} in {group} is a parent to itself".format(node=nodeName, group=group_name)))
 
         boo = False
         for i in xrange(len(tst1)):
             if not tst1[i][0]:
                 logging.error(tst1[i][1])
                 boo = True
+        for i in xrange(len(tst2)):
             if not tst2[i][0]:
                 logging.error(tst2[i][1])
                 boo = True
@@ -1121,7 +1125,7 @@ Origin Group AdjList:
                 ancestorNode = parentNode
                 while ancestorNode not in group.top and isinstance(ancestorNode.item, LogicOr):
                     ancestorNode = ancestorNode.parent
-                if isinstance(ancestorNode.item, Group):
+                if isinstance(ancestorNode.item, Group) and tst1[-1][0]:
                     tst2.append((group.matchNodeToChild(ancestorNode, childNode),
                                     "In {group} group, node {ancestor} is not a proper ancestor of its child {child}.".format(group=group_name, ancestor=ancestorNode, child=nodeName))
 )
