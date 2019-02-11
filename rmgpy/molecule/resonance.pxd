@@ -54,7 +54,7 @@ cpdef list generate_optimal_aromatic_resonance_structures(Graph mol, dict featur
 
 cpdef list generate_aromatic_resonance_structure(Graph mol, list aromatic_bonds=?, bint copy=?)
 
-cpdef list generate_aryne_resonance_structures(Molecule mol)
+cpdef list generate_aryne_resonance_structures(Graph mol)
 
 cpdef list generate_kekule_structure(Graph mol)
 
