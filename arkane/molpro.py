@@ -37,7 +37,7 @@ from rmgpy.exceptions import InputError
 from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
 
 from arkane.common import get_element_mass
-from arkane.statmech import Log
+from arkane.log import Log
 ################################################################################
 
 
@@ -167,7 +167,7 @@ class MolproLog(Log):
 
         return coord, number, mass
 
-    def loadConformer(self, symmetry=None, spinMultiplicity=0, opticalIsomers=1, symfromlog=None, label=''):
+    def loadConformer(self, symmetry=None, spinMultiplicity=0, opticalIsomers=None, symfromlog=None, label=''):
         """
         Load the molecular degree of freedom data from a log file created as
         the result of a MolPro "Freq" quantum chemistry calculation with the thermo printed.
@@ -266,6 +266,8 @@ class MolproLog(Log):
 
         # Close file when finished
         f.close()
+        if opticalIsomers is None:
+            opticalIsomers = self.get_optical_isomers_and_symmetry_number()[0]
         return Conformer(E0=(E0*0.001,"kJ/mol"), modes=modes, spinMultiplicity=spinMultiplicity,
                          opticalIsomers=opticalIsomers), unscaled_frequencies
 

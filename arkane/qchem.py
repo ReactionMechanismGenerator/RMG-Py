@@ -38,7 +38,7 @@ from rmgpy.exceptions import InputError
 from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
 
 from arkane.common import check_conformer_energy, get_element_mass
-from arkane.statmech import Log
+from arkane.log import Log
 
 ################################################################################
 
@@ -167,7 +167,7 @@ class QChemLog(Log):
 
         return coord, number, mass
 
-    def loadConformer(self, symmetry=None, spinMultiplicity=0, opticalIsomers=1, symfromlog=None, label=''):
+    def loadConformer(self, symmetry=None, spinMultiplicity=0, opticalIsomers=None, symfromlog=None, label=''):
         """
         Load the molecular degree of freedom data from an output file created as the result of a
         QChem "Freq" calculation. As QChem's guess of the external symmetry number is not always correct,
@@ -262,6 +262,8 @@ class QChemLog(Log):
 
         # Close file when finished
         f.close()
+        if opticalIsomers is None:
+            opticalIsomers = self.get_optical_isomers_and_symmetry_number()[0]
         modes = mmass + rot + freq
         return Conformer(E0=(E0*0.001,"kJ/mol"), modes=modes, spinMultiplicity=spinMultiplicity,
                          opticalIsomers=opticalIsomers), unscaled_frequencies

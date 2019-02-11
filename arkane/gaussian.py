@@ -38,7 +38,7 @@ from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, Har
 from rmgpy.exceptions import InputError
 
 from arkane.common import check_conformer_energy, get_element_mass
-from arkane.statmech import Log
+from arkane.log import Log
 
 ################################################################################
 
@@ -157,7 +157,7 @@ class GaussianLog(Log):
         
         return coord, number, mass
 
-    def loadConformer(self, symmetry=None, spinMultiplicity=0, opticalIsomers=1, symfromlog=None, label=''):
+    def loadConformer(self, symmetry=None, spinMultiplicity=0, opticalIsomers=None, symfromlog=None, label=''):
         """
         Load the molecular degree of freedom data from a log file created as
         the result of a Gaussian "Freq" quantum chemistry calculation. As
@@ -252,7 +252,8 @@ class GaussianLog(Log):
 
         # Close file when finished
         f.close()
-
+        if opticalIsomers is None:
+            opticalIsomers = self.get_optical_isomers_and_symmetry_number()[0]
         return Conformer(E0=(E0*0.001,"kJ/mol"), modes=modes, spinMultiplicity=spinMultiplicity,
                          opticalIsomers=opticalIsomers), unscaled_frequencies
 
