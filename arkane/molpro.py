@@ -167,7 +167,7 @@ class MolproLog(Log):
 
         return coord, number, mass
 
-    def loadConformer(self, symmetry=None, spinMultiplicity=0, opticalIsomers=None, symfromlog=None, label=''):
+    def loadConformer(self, symmetry=None, spinMultiplicity=0, opticalIsomers=None, label=''):
         """
         Load the molecular degree of freedom data from a log file created as
         the result of a MolPro "Freq" quantum chemistry calculation with the thermo printed.
@@ -176,7 +176,12 @@ class MolproLog(Log):
         modes = []
         unscaled_frequencies = []
         E0 = 0.0
-
+        if opticalIsomers is None or symmetry is None:
+            _opticalIsomers, _symmetry = self.get_optical_isomers_and_symmetry_number()
+            if opticalIsomers is None:
+                opticalIsomers = _opticalIsomers
+            if symmetry is None:
+                symmetry = _symmetry
         f = open(self.path, 'r')
         line = f.readline()
         while line != '':
@@ -224,10 +229,6 @@ class MolproLog(Log):
                         mass = float(line.split()[2])
                         translation = IdealGasTranslation(mass=(mass,"amu"))
                         modes.append(translation)
-                    # Read MolPro's estimate of the external symmetry number
-                    elif 'Rotational Symmetry factor' in line and symmetry is None:
-                        if symfromlog is True:
-                            symmetry = int(float(line.split()[3]))
 
                     # Read moments of inertia for external rotational modes
                     elif 'Rotational Constants' in line and line.split()[-1]=='[GHz]':
@@ -266,8 +267,6 @@ class MolproLog(Log):
 
         # Close file when finished
         f.close()
-        if opticalIsomers is None:
-            opticalIsomers = self.get_optical_isomers_and_symmetry_number()[0]
         return Conformer(E0=(E0*0.001,"kJ/mol"), modes=modes, spinMultiplicity=spinMultiplicity,
                          opticalIsomers=opticalIsomers), unscaled_frequencies
 

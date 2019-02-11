@@ -253,17 +253,13 @@ class StatMechJob(object):
 
         try:
             linear = local_context['linear']
-            symfromlog = False
         except KeyError:
             externalSymmetry = None
-            symfromlog = True
 
         try:
             externalSymmetry = local_context['externalSymmetry']
-            symfromlog = False
         except KeyError:
             externalSymmetry = None
-            symfromlog = True
 
         try:
             spinMultiplicity = local_context['spinMultiplicity']
@@ -364,7 +360,6 @@ class StatMechJob(object):
         conformer, unscaled_frequencies = statmechLog.loadConformer(symmetry=externalSymmetry,
                                                                     spinMultiplicity=spinMultiplicity,
                                                                     opticalIsomers=opticalIsomers,
-                                                                    symfromlog=symfromlog,
                                                                     label=self.species.label)
         for mode in conformer.modes:
             if isinstance(mode, (LinearRotor, NonlinearRotor)):

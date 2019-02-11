@@ -167,7 +167,7 @@ class QChemLog(Log):
 
         return coord, number, mass
 
-    def loadConformer(self, symmetry=None, spinMultiplicity=0, opticalIsomers=None, symfromlog=None, label=''):
+    def loadConformer(self, symmetry=None, spinMultiplicity=0, opticalIsomers=None, label=''):
         """
         Load the molecular degree of freedom data from an output file created as the result of a
         QChem "Freq" calculation. As QChem's guess of the external symmetry number is not always correct,
@@ -177,6 +177,12 @@ class QChemLog(Log):
         modes = []; freq = []; mmass = []; rot = []; inertia = []
         unscaled_frequencies = []
         E0 = 0.0
+        if opticalIsomers is None or symmetry is None:
+            _opticalIsomers, _symmetry = self.get_optical_isomers_and_symmetry_number()
+            if opticalIsomers is None:
+                opticalIsomers = _opticalIsomers
+            if symmetry is None:
+                symmetry = _symmetry
         f = open(self.path, 'r')
         line = f.readline()
         while line != '':
@@ -228,11 +234,6 @@ class QChemLog(Log):
                     elif 'Eigenvalues --' in line:
                         inertia = [float(d) for d in line.split()[-3:]]
 
-                    # Read QChem's estimate of the external rotational symmetry number, which may very well be incorrect
-                    elif 'Rotational Symmetry Number is' in line and symfromlog:
-                        symmetry = int(float(line.split()[-1]))
-                        logging.debug('Rotational Symmetry read from QChem is {}'.format(str(symmetry)))
-
                     # Read the next line in the file
                     line = f.readline()
 
@@ -240,8 +241,6 @@ class QChemLog(Log):
             line = f.readline()
 
             if len(inertia):
-                if symmetry is None:
-                    symmetry = 1
                 if inertia[0] == 0.0:
                     # If the first eigenvalue is 0, the rotor is linear
                     inertia.remove(0.0)
@@ -262,8 +261,6 @@ class QChemLog(Log):
 
         # Close file when finished
         f.close()
-        if opticalIsomers is None:
-            opticalIsomers = self.get_optical_isomers_and_symmetry_number()[0]
         modes = mmass + rot + freq
         return Conformer(E0=(E0*0.001,"kJ/mol"), modes=modes, spinMultiplicity=spinMultiplicity,
                          opticalIsomers=opticalIsomers), unscaled_frequencies
