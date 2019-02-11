@@ -273,7 +273,8 @@ class StatMechJob(object):
         try:
             opticalIsomers = local_context['opticalIsomers']
         except KeyError:
-            raise InputError('Required attribute "opticalIsomers" not found in species file {0!r}.'.format(path))
+            logging.debug('No opticalIsomers provided, estimating them from the quantum file.')
+            opticalIsomers = None
 
         try:
             energy = local_context['energy']
