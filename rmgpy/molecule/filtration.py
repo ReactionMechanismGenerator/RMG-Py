@@ -114,7 +114,7 @@ def get_octet_deviation(mol, allow_expanded_octet=True):
 
     octet_deviation = 0  # This is the overall "score" for the molecule, summed across all non-H atoms
     for atom in mol.vertices:
-        if atom.isHydrogen() or isinstance(atom, CuttingLabel):
+        if isinstance(atom, CuttingLabel) or atom.isHydrogen():
             continue
         val_electrons = 2 * (int(atom.getBondOrdersForAtom()) + atom.lonePairs) + atom.radicalElectrons
         if atom.isCarbon() or atom.isNitrogen() or atom.isOxygen():
