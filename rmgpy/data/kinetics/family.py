@@ -1508,7 +1508,10 @@ class KineticsFamily(Database):
 
         # Remove vdW bonds
         for struct in product_structures:
-            struct.remove_van_der_waals_bonds()
+            if isinstance(struct, Fragment):
+                continue
+            else:
+                struct.remove_van_der_waals_bonds()
 
         # Make sure we don't create a different net charge between reactants and products
         reactant_net_charge = product_net_charge = 0
