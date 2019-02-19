@@ -1083,6 +1083,33 @@ class CoreEdgeReactionModel:
                     for rxn in nwk.netReactions:
                         if spec in rxn.reactants or spec in rxn.products:
                             nwk.netReactions.remove(rxn)
+
+                allspcs = self.core.species+self.edge.species
+                boo = True
+                spcs = []
+                rxns = []
+                for rxn in self.core.reactions+self.edge.reactions:
+                    for sp in rxn.reactants+rxn.products:
+                        boo = sp in allspcs
+                        if not boo:
+                            spcs.append(sp)
+                            rxns.append(rxn)
+                for nwk in self.networkList:
+                    for rxn in nwk.pathReactions+nwk.netReactions:
+                        for sp in rxn.reactants+rxn.products:
+                            boo = sp in allspcs
+                            if not boo:
+                                spcs.append(sp)
+                                rxns.append(rxn)
+
+                if not boo:
+                    logging.error("after trying to add")
+                    logging.error(spec)
+                    logging.error("problems finding:")
+                    logging.error(spcs)
+                    logging.error(rxns)
+                    raise ValueError
+
                 return []
 
         # Add the species to the core
