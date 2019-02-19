@@ -662,6 +662,7 @@ class RMG(util.Subject):
                 unimolecularReact=self.unimolecularReact,
                 bimolecularReact=self.bimolecularReact,
                 trimolecularReact=self.trimolecularReact)
+            allspcs = self.reactionModel.core.species+self.reactionModel.edge.species
             for rxn in self.reactionModel.core.reactions+self.reactionModel.edge.reactions:
                 for sp in rxn.reactants+rxn.products:
                     boo = sp in allspcs
@@ -735,6 +736,7 @@ class RMG(util.Subject):
                             # Turn pruning off if we haven't reached minimum core size.
                             prune = False
 
+                        allspcs = self.reactionModel.core.species+self.reactionModel.edge.species
                         for rxn in self.reactionModel.core.reactions+self.reactionModel.edge.reactions:
                             for sp in rxn.reactants+rxn.products:
                                 boo = sp in allspcs
@@ -742,7 +744,7 @@ class RMG(util.Subject):
                                     logging.error(rxn)
                                     logging.error(sp)
                                     raise ValueError
-                                    
+
                         try: terminated,resurrected,obj,newSurfaceSpecies,newSurfaceReactions,t,x = reactionSystem.simulate(
                             coreSpecies = self.reactionModel.core.species,
                             coreReactions = self.reactionModel.core.reactions,
@@ -796,6 +798,7 @@ class RMG(util.Subject):
                         # Add objects to enlarge to the core first
                         for objectToEnlarge in objectsToEnlarge:
                             self.reactionModel.enlarge(objectToEnlarge)
+                            allspcs = self.reactionModel.core.species+self.reactionModel.edge.species
                             for rxn in self.reactionModel.core.reactions+self.reactionModel.edge.reactions:
                                 for sp in rxn.reactants+rxn.products:
                                     boo = sp in allspcs
@@ -862,6 +865,7 @@ class RMG(util.Subject):
                                 bimolecularReact=self.bimolecularReact,
                                 trimolecularReact=self.trimolecularReact)
 
+                        allspcs = self.reactionModel.core.species+self.reactionModel.edge.species
                         for rxn in self.reactionModel.core.reactions+self.reactionModel.edge.reactions:
                             for sp in rxn.reactants+rxn.products:
                                 boo = sp in allspcs
