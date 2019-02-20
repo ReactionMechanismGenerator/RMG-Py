@@ -723,6 +723,16 @@ class CoreEdgeReactionModel:
                 # we need to make sure the barrier is positive.
                 reaction.fixBarrierHeight(forcePositive=True)
 
+        allspcs = self.core.species+self.edge.species
+        for rxn1 in self.core.reactions+self.edge.reactions:
+            for sp in rxn1.reactants+rxn1.products:
+                boo = sp in allspcs
+                if not boo:
+                    logging.error(rxn1)
+                    logging.error(sp)
+                    logging.error(sp in self.core.species)
+                    raise ValueError
+
         # Update unimolecular (pressure dependent) reaction networks
         if self.pressureDependence:
             # Recalculate k(T,P) values for modified networks
@@ -732,6 +742,16 @@ class CoreEdgeReactionModel:
         # Check new core and edge reactions for Chemkin duplicates
         # The same duplicate reaction gets brought into the core
         # at the same time, so there is no danger in checking all of the edge.
+        allspcs = self.core.species+self.edge.species
+        for rxn1 in self.core.reactions+self.edge.reactions:
+            for sp in rxn1.reactants+rxn1.products:
+                boo = sp in allspcs
+                if not boo:
+                    logging.error(rxn1)
+                    logging.error(sp)
+                    logging.error(sp in self.core.species)
+                    raise ValueError
+
         newCoreReactions = self.core.reactions[numOldCoreReactions:]
         newEdgeReactions = self.edge.reactions[numOldEdgeReactions:]
         checkedReactions = self.core.reactions[:numOldCoreReactions] + self.edge.reactions[:numOldEdgeReactions]
@@ -753,6 +773,15 @@ class CoreEdgeReactionModel:
         )
 
         logging.info('')
+        allspcs = self.core.species+self.edge.species
+        for rxn1 in self.core.reactions+self.edge.reactions:
+            for sp in rxn1.reactants+rxn1.products:
+                boo = sp in allspcs
+                if not boo:
+                    logging.error(rxn1)
+                    logging.error(sp)
+                    logging.error(sp in self.core.species)
+                    raise ValueError
 
     def addNewSurfaceObjects(self,obj,newSurfaceSpecies,newSurfaceReactions,reactionSystem):
         """
