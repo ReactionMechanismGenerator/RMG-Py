@@ -678,15 +678,15 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         # Figure out which configurations are isomers, reactant channels, and product channels
         self.updateConfigurations(reactionModel)
 
-        allspcs = self.core.species+self.edge.species
+        allspcs = reactionModel.core.species+reactionModel.edge.species
         for rxn1 in self.pathReactions+self.netReactions:
             for sp in rxn1.reactants+rxn1.products:
                 boo = sp in allspcs
                 if not boo:
                     logging.error(rxn1)
                     logging.error(sp)
-                    logging.error(rxn1 in self.core.reactions)
-                    logging.error(sp in self.core.species)
+                    logging.error(rxn1 in reactionModel.core.reactions)
+                    logging.error(sp in reactionModel.core.species)
                     logging.error(rxn1 in self.pathReactions)
                     raise ValueError
 
@@ -782,15 +782,15 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         configurations.extend([product.species[:] for product in self.products])
         j = configurations.index(self.source)
 
-        allspcs = self.core.species+self.edge.species
+        allspcs = reactionModel.core.species+reactionModel.edge.species
         for rxn1 in self.pathReactions+self.netReactions:
             for sp in rxn1.reactants+rxn1.products:
                 boo = sp in allspcs
                 if not boo:
                     logging.error(rxn1)
                     logging.error(sp)
-                    logging.error(rxn1 in self.core.reactions)
-                    logging.error(sp in self.core.species)
+                    logging.error(rxn1 in reactionModel.core.reactions)
+                    logging.error(sp in reactionModel.core.species)
                     logging.error(rxn1 in self.pathReactions)
                     raise ValueError
 
@@ -882,15 +882,15 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                             logging.info('    k(T,P) = {0:9.2e}    k(T) = {1:9.2e}'.format(K[t,p,i,j], kinf))
                         break
 
-        allspcs = self.core.species+self.edge.species
+        allspcs = reactionModel.core.species+reactionModel.edge.species
         for rxn1 in self.pathReactions+self.netReactions:
             for sp in rxn1.reactants+rxn1.products:
                 boo = sp in allspcs
                 if not boo:
                     logging.error(rxn1)
                     logging.error(sp)
-                    logging.error(rxn1 in self.core.reactions)
-                    logging.error(sp in self.core.species)
+                    logging.error(rxn1 in reactionModel.core.reactions)
+                    logging.error(sp in reactionModel.core.species)
                     logging.error(rxn1 in self.pathReactions)
                     raise ValueError
         # Delete intermediate arrays to conserve memory
