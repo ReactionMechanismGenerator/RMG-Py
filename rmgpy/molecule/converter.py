@@ -85,6 +85,8 @@ def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
     # Add the bonds
     for atom1 in mol.vertices:
         for atom2, bond in atom1.edges.iteritems():
+            if bond.isHydrogenBond():
+                continue
             index1 = atoms.index(atom1)
             index2 = atoms.index(atom2)
             if index1 < index2:
