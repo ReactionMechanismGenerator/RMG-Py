@@ -687,6 +687,15 @@ class CoreEdgeReactionModel:
                     pass
                 self.processNewReactions([rxn], spc)
 
+            allspcs = self.core.species+self.edge.species
+            for rxn1 in self.core.reactions+self.edge.reactions:
+                for sp in rxn1.reactants+rxn1.products:
+                    boo = sp in allspcs
+                    if not boo:
+                        logging.error(rxn1)
+                        logging.error(sp)
+                        logging.error(sp in self.core.species)
+                        raise ValueError
         ################################################################
         # Begin processing the new species and reactions
 
@@ -831,6 +840,8 @@ class CoreEdgeReactionModel:
                             spcs.append(spec)
                             self.addSpeciesToEdge(spec)
 
+
+
             isomerAtoms = sum([len(spec.molecule[0].atoms) for spec in rxn.reactants])
 
             # Decide whether or not to handle the reaction as a pressure-dependent reaction
@@ -874,6 +885,19 @@ class CoreEdgeReactionModel:
                         self.core.reactions.remove(rxn)
                     if rxn in self.edge.reactions:
                         self.edge.reactions.remove(rxn)
+
+            allspcs = self.core.species+self.edge.species
+            for rxn1 in self.core.reactions+self.edge.reactions:
+                for sp in rxn1.reactants+rxn1.products:
+                    boo = sp in allspcs
+                    if not boo:
+                        logging.error(rxn1)
+                        logging.error(sp)
+                        logging.error(sp in self.core.species)
+                        logging.error(rxn)
+                        logging.error(rxn.reactants)
+                        logging.error(rxn.products)
+                        raise ValueError
 
             if not numpy.isinf(self.toleranceThermoKeepSpeciesInEdge) and spcs != []: #do thermodynamic filtering
                 self.thermoFilterSpecies(spcs)
