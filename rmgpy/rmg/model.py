@@ -1136,6 +1136,11 @@ class CoreEdgeReactionModel:
                     for rxn in nwk.netReactions:
                         if spec in rxn.reactants or spec in rxn.products:
                             nwk.netReactions.remove(rxn)
+                    if spec in nwk.explored:
+                        nwk.explored.remove(spec)
+                    if spec in nwk.isomers:
+                        nwk.isomers.remove(spec)
+
 
                 allspcs = self.core.species+self.edge.species
                 boo = True
