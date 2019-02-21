@@ -1141,7 +1141,7 @@ class CoreEdgeReactionModel:
                             nwk.reactants.remove(config)
                     for config in list(nwk.products):
                         if spec in config.species:
-                            nwk.products.remove(config)    
+                            nwk.products.remove(config)
                     if spec in nwk.explored:
                         nwk.explored.remove(spec)
                     if spec in nwk.isomers:
@@ -1868,6 +1868,17 @@ class CoreEdgeReactionModel:
         count = sum([1 for network in self.networkList if not network.valid and not (len(network.explored) == 0 and len(network.source) > 1)])
         logging.info('Updating {0:d} modified unimolecular reaction networks (out of {1:d})...'.format(count, len(self.networkList)))
 
+        allspcs = self.core.species+self.edge.species
+        for rxn1 in self.core.reactions+self.edge.reactions:
+            for sp in rxn1.reactants+rxn1.products:
+                boo = sp in allspcs
+                if not boo:
+                    logging.error(rxn1)
+                    logging.error(sp)
+                    logging.error(rxn1 in self.core.reactions)
+                    logging.error(sp in self.core.species)
+                    raise ValueError
+                    
         # Iterate over all the networks, updating the invalid ones as necessary
         # self = reactionModel object
         updatedNetworks = []
