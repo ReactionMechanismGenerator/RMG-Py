@@ -1130,12 +1130,18 @@ class CoreEdgeReactionModel:
                     logging.info("Removing Forbidden Reaction from Edge: {0}".format(rxn))
 
                 for nwk in self.networkList:
-                    for rxn in nwk.pathReactions:
+                    for rxn in list(nwk.pathReactions):
                         if spec in rxn.reactants or spec in rxn.products:
                             nwk.pathReactions.remove(rxn)
-                    for rxn in nwk.netReactions:
+                    for rxn in list(nwk.netReactions):
                         if spec in rxn.reactants or spec in rxn.products:
                             nwk.netReactions.remove(rxn)
+                    for config in list(nwk.reactants):
+                        if spec in config.species:
+                            nwk.reactants.remove(config)
+                    for config in list(nwk.products):
+                        if spec in config.species:
+                            nwk.products.remove(config)    
                     if spec in nwk.explored:
                         nwk.explored.remove(spec)
                     if spec in nwk.isomers:
