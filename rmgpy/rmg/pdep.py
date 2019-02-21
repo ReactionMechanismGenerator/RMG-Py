@@ -675,7 +675,21 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         activeKRotor = job.activeKRotor
         rmgmode = job.rmgmode
 
+        allspcs = reactionModel.core.species+reactionModel.edge.species
+        for rxn1 in self.pathReactions+self.netReactions:
+            for sp in rxn1.reactants+rxn1.products:
+                boo = sp in allspcs
+                if not boo:
+                    logging.error(rxn1)
+                    logging.error(sp)
+                    logging.error(rxn1 in reactionModel.core.reactions)
+                    logging.error(sp in reactionModel.core.species)
+                    logging.error(rxn1 in self.pathReactions)
+                    raise ValueError
+
         # Figure out which configurations are isomers, reactant channels, and product channels
+        isoms = self.isomers[:]
+        expl = self.explored[:]
         self.updateConfigurations(reactionModel)
 
         allspcs = reactionModel.core.species+reactionModel.edge.species
@@ -688,6 +702,10 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                     logging.error(rxn1 in reactionModel.core.reactions)
                     logging.error(sp in reactionModel.core.species)
                     logging.error(rxn1 in self.pathReactions)
+                    logging.error("isomers before")
+                    logging.error(isoms)
+                    logging.error("explored before")
+                    logging.error(expl)
                     raise ValueError
 
         # Make sure we have high-P kinetics for all path reactions
