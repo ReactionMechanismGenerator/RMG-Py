@@ -674,7 +674,22 @@ class CoreEdgeReactionModel:
 
         else:
             # We are reacting the edge
-
+            allspcs = self.core.species+self.edge.species
+            for nwk in self.networkList:
+                for rxn1 in nwk.pathReactions+nwk.netReactions:
+                    for sp in rxn1.reactants+rxn1.products:
+                        boo = sp in allspcs
+                        if not boo:
+                            logging.error(rxn1)
+                            logging.error(sp)
+                            logging.error(rxn1 in reactionModel.core.reactions)
+                            logging.error(sp in reactionModel.core.species)
+                            logging.error(rxn1 in self.pathReactions)
+                            logging.error(nwk.isomers)
+                            logging.error(nwk.source)
+                            logging.error(nwk.explored)
+                            raise ValueError
+                            
             rxns = reactAll(self.core.species, numOldCoreSpecies,
                             unimolecularReact, bimolecularReact, trimolecularReact=trimolecularReact)
             spcs = [self.retrieveNewSpecies(rxn) for rxn in rxns]
@@ -687,15 +702,6 @@ class CoreEdgeReactionModel:
                     pass
                 self.processNewReactions([rxn], spc)
 
-            allspcs = self.core.species+self.edge.species
-            for rxn1 in self.core.reactions+self.edge.reactions:
-                for sp in rxn1.reactants+rxn1.products:
-                    boo = sp in allspcs
-                    if not boo:
-                        logging.error(rxn1)
-                        logging.error(sp)
-                        logging.error(sp in self.core.species)
-                        raise ValueError
         ################################################################
         # Begin processing the new species and reactions
 
@@ -724,14 +730,20 @@ class CoreEdgeReactionModel:
                 reaction.fixBarrierHeight(forcePositive=True)
 
         allspcs = self.core.species+self.edge.species
-        for rxn1 in self.core.reactions+self.edge.reactions:
-            for sp in rxn1.reactants+rxn1.products:
-                boo = sp in allspcs
-                if not boo:
-                    logging.error(rxn1)
-                    logging.error(sp)
-                    logging.error(sp in self.core.species)
-                    raise ValueError
+        for nwk in self.networkList:
+            for rxn1 in nwk.pathReactions+nwk.netReactions:
+                for sp in rxn1.reactants+rxn1.products:
+                    boo = sp in allspcs
+                    if not boo:
+                        logging.error(rxn1)
+                        logging.error(sp)
+                        logging.error(rxn1 in reactionModel.core.reactions)
+                        logging.error(sp in reactionModel.core.species)
+                        logging.error(rxn1 in self.pathReactions)
+                        logging.error(nwk.isomers)
+                        logging.error(nwk.source)
+                        logging.error(nwk.explored)
+                        raise ValueError
 
         # Update unimolecular (pressure dependent) reaction networks
         if self.pressureDependence:
@@ -743,14 +755,20 @@ class CoreEdgeReactionModel:
         # The same duplicate reaction gets brought into the core
         # at the same time, so there is no danger in checking all of the edge.
         allspcs = self.core.species+self.edge.species
-        for rxn1 in self.core.reactions+self.edge.reactions:
-            for sp in rxn1.reactants+rxn1.products:
-                boo = sp in allspcs
-                if not boo:
-                    logging.error(rxn1)
-                    logging.error(sp)
-                    logging.error(sp in self.core.species)
-                    raise ValueError
+        for nwk in self.networkList:
+            for rxn1 in nwk.pathReactions+nwk.netReactions:
+                for sp in rxn1.reactants+rxn1.products:
+                    boo = sp in allspcs
+                    if not boo:
+                        logging.error(rxn1)
+                        logging.error(sp)
+                        logging.error(rxn1 in reactionModel.core.reactions)
+                        logging.error(sp in reactionModel.core.species)
+                        logging.error(rxn1 in self.pathReactions)
+                        logging.error(nwk.isomers)
+                        logging.error(nwk.source)
+                        logging.error(nwk.explored)
+                        raise ValueError
 
         newCoreReactions = self.core.reactions[numOldCoreReactions:]
         newEdgeReactions = self.edge.reactions[numOldEdgeReactions:]
@@ -1166,6 +1184,17 @@ class CoreEdgeReactionModel:
                             if not boo:
                                 spcs.append(sp)
                                 rxns.append(rxn)
+                    for config in nwk.reactants:
+                        if spec in config.species:
+                            raise ValueError
+                    for config in nwk.products:
+                        if spec in config.species:
+                            raise ValueError
+                    for config in nwk.isomers:
+                        if spec in config.species:
+                            raise ValueError
+                    if spec in nwk.explored:
+                        raise ValueError
 
                 if not boo:
                     logging.error("after trying to add")
@@ -1174,6 +1203,22 @@ class CoreEdgeReactionModel:
                     logging.error(spcs)
                     logging.error(rxns)
                     raise ValueError
+
+                allspcs = self.core.species+self.edge.species
+                for nwk in self.networkList:
+                    for rxn1 in nwk.pathReactions+nwk.netReactions:
+                        for sp in rxn1.reactants+rxn1.products:
+                            boo = sp in allspcs
+                            if not boo:
+                                logging.error(rxn1)
+                                logging.error(sp)
+                                logging.error(rxn1 in reactionModel.core.reactions)
+                                logging.error(sp in reactionModel.core.species)
+                                logging.error(rxn1 in self.pathReactions)
+                                logging.error(nwk.isomers)
+                                logging.error(nwk.source)
+                                logging.error(nwk.explored)
+                                raise ValueError
 
                 return []
 
@@ -1825,6 +1870,21 @@ class CoreEdgeReactionModel:
         each net reaction in the network, and the resulting reactions added or
         updated.
         """
+        allspcs = self.core.species+self.edge.species
+        for nwk in self.networkList:
+            for rxn1 in nwk.pathReactions+nwk.netReactions:
+                for sp in rxn1.reactants+rxn1.products:
+                    boo = sp in allspcs
+                    if not boo:
+                        logging.error(rxn1)
+                        logging.error(sp)
+                        logging.error(rxn1 in reactionModel.core.reactions)
+                        logging.error(sp in reactionModel.core.species)
+                        logging.error(rxn1 in self.pathReactions)
+                        logging.error(nwk.isomers)
+                        logging.error(nwk.source)
+                        logging.error(nwk.explored)
+                        raise ValueError
 
         # Merge networks if necessary
         # Two partial networks having the same source and containing one or
@@ -1856,30 +1916,26 @@ class CoreEdgeReactionModel:
                         index += 1
 
         allspcs = self.core.species+self.edge.species
-        for rxn1 in self.core.reactions+self.edge.reactions:
-            for sp in rxn1.reactants+rxn1.products:
-                boo = sp in allspcs
-                if not boo:
-                    logging.error(rxn1)
-                    logging.error(sp)
-                    logging.error(rxn1 in self.core.reactions)
-                    logging.error(sp in self.core.species)
-                    raise ValueError
+        for nwk in self.networkList:
+            for rxn1 in nwk.pathReactions+nwk.netReactions:
+                for sp in rxn1.reactants+rxn1.products:
+                    boo = sp in allspcs
+                    if not boo:
+                        logging.error(rxn1)
+                        logging.error(sp)
+                        logging.error(rxn1 in reactionModel.core.reactions)
+                        logging.error(sp in reactionModel.core.species)
+                        logging.error(rxn1 in self.pathReactions)
+                        logging.error(nwk.isomers)
+                        logging.error(nwk.source)
+                        logging.error(nwk.explored)
+                        raise ValueError
 
         count = sum([1 for network in self.networkList if not network.valid and not (len(network.explored) == 0 and len(network.source) > 1)])
         logging.info('Updating {0:d} modified unimolecular reaction networks (out of {1:d})...'.format(count, len(self.networkList)))
 
-        allspcs = self.core.species+self.edge.species
-        for rxn1 in self.core.reactions+self.edge.reactions:
-            for sp in rxn1.reactants+rxn1.products:
-                boo = sp in allspcs
-                if not boo:
-                    logging.error(rxn1)
-                    logging.error(sp)
-                    logging.error(rxn1 in self.core.reactions)
-                    logging.error(sp in self.core.species)
-                    raise ValueError
-                    
+
+
         # Iterate over all the networks, updating the invalid ones as necessary
         # self = reactionModel object
         updatedNetworks = []
@@ -1943,17 +1999,6 @@ class CoreEdgeReactionModel:
                     reaction.reversible = True
             # Move to the next core reaction
             index += 1
-
-        allspcs = self.core.species+self.edge.species
-        for rxn1 in self.core.reactions+self.edge.reactions:
-            for sp in rxn1.reactants+rxn1.products:
-                boo = sp in allspcs
-                if not boo:
-                    logging.error(rxn1)
-                    logging.error(sp)
-                    logging.error(rxn1 in self.core.reactions)
-                    logging.error(sp in self.core.species)
-                    raise ValueError
 
 
     def markChemkinDuplicates(self):
