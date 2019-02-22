@@ -1845,25 +1845,6 @@ class CoreEdgeReactionModel:
 
         # Add the path reaction to that network
         network.addPathReaction(newReaction)
-        
-        allspcs = self.core.species+self.edge.species
-        if network:
-            nwk = network
-            for rxn1 in nwk.pathReactions+nwk.netReactions:
-                for sp in rxn1.reactants+rxn1.products:
-                    boo = sp in allspcs
-                    if not boo:
-                        logging.error(rxn1)
-                        logging.error(sp)
-                        logging.error(rxn1 in self.core.reactions)
-                        logging.error(sp in self.core.species)
-                        logging.error(rxn1 in nwk.pathReactions)
-                        logging.error(nwk.isomers)
-                        logging.error(nwk.source)
-                        logging.error(nwk.explored)
-                        logging.error(newReaction)
-                        logging.error(newSpecies)
-                        raise ValueError
 
     def updateUnimolecularReactionNetworks(self):
         """
