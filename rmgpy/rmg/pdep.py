@@ -655,24 +655,6 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         from rmgpy.kinetics import Arrhenius, KineticsData, MultiArrhenius
         from rmgpy.pdep.collision import SingleExponentialDown
         from rmgpy.pdep.reaction import fitInterpolationModel
-        isoms = self.isomers[:]
-        expl = self.explored[:]
-
-        allspcs = reactionModel.core.species+reactionModel.edge.species
-        for rxn1 in self.pathReactions+self.netReactions:
-            for sp in rxn1.reactants+rxn1.products:
-                boo = sp in allspcs
-                if not boo:
-                    logging.error(rxn1)
-                    logging.error(sp)
-                    logging.error(rxn1 in reactionModel.core.reactions)
-                    logging.error(sp in reactionModel.core.species)
-                    logging.error(rxn1 in self.pathReactions)
-                    logging.error("isomers before")
-                    logging.error(isoms)
-                    logging.error("explored before")
-                    logging.error(expl)
-                    raise ValueError
         # Get the parameters for the pressure dependence calculation
         job = pdepSettings
         job.network = self

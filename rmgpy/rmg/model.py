@@ -674,22 +674,6 @@ class CoreEdgeReactionModel:
 
         else:
             # We are reacting the edge
-            allspcs = self.core.species+self.edge.species
-            for nwk in self.networkList:
-                for rxn1 in nwk.pathReactions+nwk.netReactions:
-                    for sp in rxn1.reactants+rxn1.products:
-                        boo = sp in allspcs
-                        if not boo:
-                            logging.error(rxn1)
-                            logging.error(sp)
-                            logging.error(rxn1 in self.core.reactions)
-                            logging.error(sp in self.core.species)
-                            logging.error(rxn1 in self.pathReactions)
-                            logging.error(nwk.isomers)
-                            logging.error(nwk.source)
-                            logging.error(nwk.explored)
-                            raise ValueError
-
             rxns = reactAll(self.core.species, numOldCoreSpecies,
                             unimolecularReact, bimolecularReact, trimolecularReact=trimolecularReact)
             spcs = [self.retrieveNewSpecies(rxn) for rxn in rxns]
@@ -704,7 +688,7 @@ class CoreEdgeReactionModel:
                             logging.error(sp)
                             logging.error(rxn1 in self.core.reactions)
                             logging.error(sp in self.core.species)
-                            logging.error(rxn1 in self.pathReactions)
+                            logging.error(rxn1 in nwk.pathReactions)
                             logging.error(nwk.isomers)
                             logging.error(nwk.source)
                             logging.error(nwk.explored)
@@ -730,7 +714,7 @@ class CoreEdgeReactionModel:
                             logging.error(sp)
                             logging.error(rxn1 in self.core.reactions)
                             logging.error(sp in self.core.species)
-                            logging.error(rxn1 in self.pathReactions)
+                            logging.error(rxn1 in nwk.pathReactions)
                             logging.error(nwk.isomers)
                             logging.error(nwk.source)
                             logging.error(nwk.explored)
@@ -763,22 +747,6 @@ class CoreEdgeReactionModel:
                 # If this is going to be run through pressure dependence code,
                 # we need to make sure the barrier is positive.
                 reaction.fixBarrierHeight(forcePositive=True)
-
-        allspcs = self.core.species+self.edge.species
-        for nwk in self.networkList:
-            for rxn1 in nwk.pathReactions+nwk.netReactions:
-                for sp in rxn1.reactants+rxn1.products:
-                    boo = sp in allspcs
-                    if not boo:
-                        logging.error(rxn1)
-                        logging.error(sp)
-                        logging.error(rxn1 in self.core.reactions)
-                        logging.error(sp in self.core.species)
-                        logging.error(rxn1 in self.pathReactions)
-                        logging.error(nwk.isomers)
-                        logging.error(nwk.source)
-                        logging.error(nwk.explored)
-                        raise ValueError
 
         # Update unimolecular (pressure dependent) reaction networks
         if self.pressureDependence:
@@ -944,21 +912,26 @@ class CoreEdgeReactionModel:
                     if rxn in self.edge.reactions:
                         self.edge.reactions.remove(rxn)
 
-            allspcs = self.core.species+self.edge.species
-            for rxn1 in self.core.reactions+self.edge.reactions:
+            if not numpy.isinf(self.toleranceThermoKeepSpeciesInEdge) and spcs != []: #do thermodynamic filtering
+                self.thermoFilterSpecies(spcs)
+
+        allspcs = self.core.species+self.edge.species
+        for nwk in self.networkList:
+            for rxn1 in nwk.pathReactions+nwk.netReactions:
                 for sp in rxn1.reactants+rxn1.products:
                     boo = sp in allspcs
                     if not boo:
                         logging.error(rxn1)
                         logging.error(sp)
+                        logging.error(rxn1 in self.core.reactions)
                         logging.error(sp in self.core.species)
-                        logging.error(rxn)
-                        logging.error(rxn.reactants)
-                        logging.error(rxn.products)
+                        logging.error(rxn1 in nwk.pathReactions)
+                        logging.error(nwk.isomers)
+                        logging.error(nwk.source)
+                        logging.error(nwk.explored)
+                        logging.error(newReactions)
+                        logging.error(newSpecies)
                         raise ValueError
-
-            if not numpy.isinf(self.toleranceThermoKeepSpeciesInEdge) and spcs != []: #do thermodynamic filtering
-                self.thermoFilterSpecies(spcs)
 
     def applyKineticsToReaction(self, reaction):
         """
@@ -1872,6 +1845,25 @@ class CoreEdgeReactionModel:
 
         # Add the path reaction to that network
         network.addPathReaction(newReaction)
+        
+        allspcs = self.core.species+self.edge.species
+        if network:
+            nwk = network
+            for rxn1 in nwk.pathReactions+nwk.netReactions:
+                for sp in rxn1.reactants+rxn1.products:
+                    boo = sp in allspcs
+                    if not boo:
+                        logging.error(rxn1)
+                        logging.error(sp)
+                        logging.error(rxn1 in self.core.reactions)
+                        logging.error(sp in self.core.species)
+                        logging.error(rxn1 in nwk.pathReactions)
+                        logging.error(nwk.isomers)
+                        logging.error(nwk.source)
+                        logging.error(nwk.explored)
+                        logging.error(newReaction)
+                        logging.error(newSpecies)
+                        raise ValueError
 
     def updateUnimolecularReactionNetworks(self):
         """
