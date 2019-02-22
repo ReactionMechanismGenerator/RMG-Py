@@ -1142,10 +1142,11 @@ class CoreEdgeReactionModel:
                     for config in list(nwk.products):
                         if spec in config.species:
                             nwk.products.remove(config)
+                    for config in list(nwk.isomers):
+                        if spec in config.species:
+                            nwk.isomers.remove(config)
                     if spec in nwk.explored:
                         nwk.explored.remove(spec)
-                    if spec in nwk.isomers:
-                        nwk.isomers.remove(spec)
 
 
                 allspcs = self.core.species+self.edge.species
