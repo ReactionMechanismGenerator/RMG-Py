@@ -915,24 +915,6 @@ class CoreEdgeReactionModel:
             if not numpy.isinf(self.toleranceThermoKeepSpeciesInEdge) and spcs != []: #do thermodynamic filtering
                 self.thermoFilterSpecies(spcs)
 
-        allspcs = self.core.species+self.edge.species
-        for nwk in self.networkList:
-            for rxn1 in nwk.pathReactions+nwk.netReactions:
-                for sp in rxn1.reactants+rxn1.products:
-                    boo = sp in allspcs
-                    if not boo:
-                        logging.error(rxn1)
-                        logging.error(sp)
-                        logging.error(rxn1 in self.core.reactions)
-                        logging.error(sp in self.core.species)
-                        logging.error(rxn1 in nwk.pathReactions)
-                        logging.error(nwk.isomers)
-                        logging.error(nwk.source)
-                        logging.error(nwk.explored)
-                        logging.error(newReactions)
-                        logging.error(newSpecies)
-                        raise ValueError
-
     def applyKineticsToReaction(self, reaction):
         """
         retrieve the best kinetics for the reaction and apply it towards the forward
