@@ -1065,16 +1065,8 @@ class CoreEdgeReactionModel:
 
                 #remove forbidden species from edge
                 logging.info("Species {0} was Forbidden and not added to Core...Removing from Edge.".format(spec))
-                self.edge.species.remove(spec)
-                # Search edge for reactions that contain forbidden species
-                for rxn in self.edge.reactions:
-                    if spec in rxn.reactants or spec in rxn.products:                        
-                        rxnList.append(rxn)
-                
-                #Remove any reactions that are globally forbidden from Edge
-                for rxn in rxnList:
-                    self.edge.reactions.remove(rxn)
-                    logging.info("Removing Forbidden Reaction from Edge: {0}".format(rxn))
+                self.removeSpeciesFromEdge(self.reactionSystems,spec)
+
                 return []
         
         # Add the species to the core
