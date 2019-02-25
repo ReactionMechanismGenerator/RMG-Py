@@ -732,24 +732,26 @@ cdef class ReactionSystem(DASx):
 
                     if invalidObjects == []:
                         #species flux criterion
-                        if len(edgeSpeciesRateRatios) > 0:
-                            ind = numpy.argmax(edgeSpeciesRateRatios)
+                        if len(self.edgeSpeciesRates) > 0:
+                            ind = numpy.argmax(self.edgeSpeciesRates)
+                            charRate = sqrt(numpy.sum(self.coreSpeciesRates * self.coreSpeciesRates))
                             obj = edgeSpecies[ind]
-                            logging.info('At time {0:10.4e} s, species {1} at rate ratio {2} was added to model core in model resurrection process'.format(self.t, obj,edgeSpeciesRates[ind]))
+                            logging.info('At time {0:10.4e} s, species {1} at rate ratio {2} was added to model core in model resurrection process'.format(self.t, obj,self.edgeSpeciesRates[ind]/charRate))
                             invalidObjects.append(obj)
-                        
+
                         if totalDivAccumNums and len(totalDivAccumNums) > 0: #if dynamics data available
                             ind = numpy.argmax(totalDivAccumNums)
                             obj = edgeReactions[ind]
                             logging.info('At time {0:10.4e} s, Reaction {1} at dynamics number {2} was added to model core in model resurrection process'.format(self.t, obj,totalDivAccumNums[ind]))
                             invalidObjects.append(obj)
-                        
+
                         if pdepNetworks != [] and networkLeakRateRatios != []:
                             ind = numpy.argmax(networkLeakRateRatios)
                             obj = pdepNetworks[ind]
-                            logging.info('At time {0:10.4e} s, PDepNetwork #{1:d} at network leak rate {2} was sent for exploring during model resurrection process'.format(self.t, obj.index, networkLeakRateRatios[ind]))
-                            invalidObjects.append(obj)
-                    
+                            if not numpy.isnan(networkLeakRateRatios[ind]) and networkLeakRateRatios[ind] > 0.0:
+                              logging.info('At time {0:10.4e} s, PDepNetwork #{1:d} at network leak rate {2} was sent for exploring during model resurrection process'.format(self.t, obj.index, networkLeakRateRatios[ind]))
+                              invalidObjects.append(obj)
+
                     if invalidObjects != []:
                         return False,True,invalidObjects,surfaceSpecies,surfaceReactions,self.t,conversion
                     else:
