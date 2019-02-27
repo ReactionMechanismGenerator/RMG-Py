@@ -321,13 +321,13 @@ def _read_kinetics_reaction(line, species_dict, Aunits, Eunits):
 
     # Split the reaction equation into reactants and products
     reversible = True
-    reactants, products = reaction.split('=')
     if '<=>' in reaction:
-        reactants = reactants[:-1]
-        products = products[1:]
+        reactants, products = reaction.split('<=>')
     elif '=>' in reaction:
-        products = products[1:]
+        reactants, products = reaction.split('=>')
         reversible = False
+    else:
+        reactants, products = reaction.split('=')
     specific_collider = None
     # search for a third body collider, e.g., '(+M)', '(+m)', or a specific species like '(+N2)',
     #     matching `(+anything_other_than_ending_parenthesis)`:
