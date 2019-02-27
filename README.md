@@ -2,7 +2,7 @@
 
 [![Build status](https://img.shields.io/travis/ReactionMechanismGenerator/RMG-Py/master.svg)](https://travis-ci.org/ReactionMechanismGenerator/RMG-Py)
 [![Codecov report](https://img.shields.io/codecov/c/github/ReactionMechanismGenerator/RMG-Py/master.svg)](https://codecov.io/gh/ReactionMechanismGenerator/RMG-Py)
-[![Codacy report](https://img.shields.io/codacy/grade/c4b23c89e2e6486e981704d8d973d3e7/master.svg)](https://www.codacy.com/app/ReactionMechanismGenerator/RMG-Py/dashboard)
+[![Codacy report](https://img.shields.io/codacy/grade/5c12cecf3d01400a92ea20e14ca0b880/master.svg)](https://www.codacy.com/app/ReactionMechanismGenerator/RMG-Py/dashboard)
 [![GitHub release](https://img.shields.io/github/release/ReactionMechanismGenerator/RMG-Py.svg)](https://github.com/ReactionMechanismGenerator/RMG-Py/releases)
 [![Anconda](https://img.shields.io/conda/v/rmg/rmg.svg)](https://anaconda.org/rmg/rmg)
 [![Gitter](https://img.shields.io/gitter/room/ReactionMechanismGenerator/RMG-Py.svg)](https://gitter.im/ReactionMechanismGenerator/RMG-Py)
