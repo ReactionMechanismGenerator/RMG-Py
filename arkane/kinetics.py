@@ -149,7 +149,7 @@ class KineticsJob(object):
             self.save(outputFile)
             if plot:
                 self.plot(os.path.dirname(outputFile))
-            self.draw(os.path.dirname(outputFile))
+                self.draw(os.path.dirname(outputFile))
             if self.sensitivity_conditions is not None:
                 logging.info('\n\nRunning sensitivity analysis...')
                 sa(self, os.path.dirname(outputFile))
