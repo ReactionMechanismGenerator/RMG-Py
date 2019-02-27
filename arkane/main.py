@@ -121,7 +121,7 @@ class Arkane:
             metavar='DIR', help='use DIR as output directory')
 
         # Add options for controlling generation of plots
-        parser.add_argument('-p', '--plot', action='store_true', default=True, help='generate plots of results')
+        parser.add_argument('-p', '--plot', action='store_true', default=False, help='generate plots of results')
 
         args = parser.parse_args()
         
