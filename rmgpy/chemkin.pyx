@@ -76,7 +76,7 @@ def readThermoEntry(entry, Tmin=0, Tint=0, Tmax=0):
     Format specification at http://www2.galcit.caltech.edu/EDL/public/formats/chemkin.html
     """
     lines = entry.splitlines()
-    species = str(lines[0][0:18].split()[0].strip())
+    species = str(lines[0][0:22].split()[0].strip())
     
     comment = lines[0][len(species):24].strip()
     formula = {}
@@ -1450,7 +1450,7 @@ def writeThermoEntry(species, elementCounts=None, verbose=True):
                     string += "! {0}\n".format(line) 
 
     # Line 1
-    string += '{0:<16}        '.format(getSpeciesIdentifier(species))
+    string += '{0:<22}  '.format(species.label)
     if len(elementCounts) <= 4:
         # Use the original Chemkin syntax for the element counts
         for key, count in elementCounts.iteritems():
@@ -1497,9 +1497,9 @@ def writeReactionString(reaction, javaLibrary = False):
     kinetics = reaction.kinetics
     
     if kinetics is None:
-        reaction_string = ' + '.join([getSpeciesIdentifier(reactant) for reactant in reaction.reactants])
+        reaction_string = ' + '.join([reactant.label for reactant in reaction.reactants])
         reaction_string += ' => ' if not reaction.reversible else ' = '
-        reaction_string += ' + '.join([getSpeciesIdentifier(product) for product in reaction.products])
+        reaction_string += ' + '.join([product.label for product in reaction.products])
         return reaction_string
 
     if reaction.specificCollider is not None:
@@ -1540,10 +1540,10 @@ def writeReactionString(reaction, javaLibrary = False):
             else:
                 thirdBody = ('(+' + getSpeciesIdentifier(reaction.specificCollider) + ')') if reaction.specificCollider else '(+M)'
         
-        reaction_string = '+'.join([getSpeciesIdentifier(reactant) for reactant in reaction.reactants])
+        reaction_string = '+'.join([reactant.label for reactant in reaction.reactants])
         reaction_string += thirdBody
-        reaction_string += '=' if reaction.reversible else '=>'
-        reaction_string += '+'.join([getSpeciesIdentifier(product) for product in reaction.products])
+        reaction_string += '<=>' if reaction.reversible else '=>'
+        reaction_string += '+'.join([product.label for product in reaction.products])
         reaction_string += thirdBody
 
     if len(reaction_string) > 52:
@@ -1914,11 +1914,11 @@ def saveChemkinFile(path, species, reactions, verbose = True, checkForDuplicates
     # Species section
     f.write('SPECIES\n')
     for spec in sorted_species:
-        label = getSpeciesIdentifier(spec)
+        label = spec.label
         if verbose:
-            f.write('    {0!s:<16}    ! {1}\n'.format(label, str(spec)))
+            f.write('    {0!s:<22}    ! {1}\n'.format(label, str(spec)))
         else:
-            f.write('    {0!s:<16}\n'.format(label))
+            f.write('    {0!s:<22}\n'.format(label))
     f.write('END\n\n\n\n')
 
     # Thermodynamics section
