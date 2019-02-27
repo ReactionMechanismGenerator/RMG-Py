@@ -313,13 +313,14 @@ def _readKineticsReaction(line, speciesDict, Aunits, Eunits):
     
     # Split the reaction equation into reactants and products
     reversible = True
-    reactants, products = reaction.split('=')
     if '<=>' in reaction:
-        reactants = reactants[:-1]
-        products = products[1:]
+        reactants, products = reaction.split('<=>')
     elif '=>' in reaction:
-        products = products[1:]
+        reactants, products = reaction.split('=>')
         reversible = False
+    else:
+        reactants, products = reaction.split('=')
+
     specificCollider = None
     # search for a third body collider, e.g., '(+M)', '(+m)', or a specific species like '(+N2)', matching `(+anythingOtherThanEndingParenthesis)`:
     collider = re.search('\(\+[^\)]+\)',reactants)
