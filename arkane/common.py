@@ -182,10 +182,10 @@ class ArkaneSpecies(RMGObject):
         """
         Save the species with all statMech data to a .yml file
         """
-        if not os.path.exists(os.path.join(os.path.abspath(path),'ArkaneSpecies', '')):
-            os.mkdir(os.path.join(os.path.abspath(path),'ArkaneSpecies', ''))
+        if not os.path.exists(os.path.join(os.path.abspath(path), 'species', '')):
+            os.mkdir(os.path.join(os.path.abspath(path), 'species', ''))
         valid_chars = "-_.()<=>+ %s%s" % (string.ascii_letters, string.digits)
-        filename = os.path.join('ArkaneSpecies',
+        filename = os.path.join('species',
                                 ''.join(c for c in self.label if c in valid_chars) + '.yml')
         full_path = os.path.join(path, filename)
         with open(full_path, 'w') as f:
