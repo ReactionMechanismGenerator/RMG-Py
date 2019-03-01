@@ -44,6 +44,7 @@ from rmgpy.exceptions import SpeciesError
 
 from arkane.sensitivity import KineticsSensitivity as sa
 from arkane.output import prettify
+from arkane.common import ArkaneSpecies
 
 ################################################################################
 
@@ -100,6 +101,8 @@ class KineticsJob(object):
             self.sensitivity_conditions = [quantity.Quantity(condition) for condition in sensitivity_conditions]
         else:
             self.sensitivity_conditions = None
+
+        self.arkane_species = ArkaneSpecies(species=self.reaction.transitionState)
     
     @property
     def Tmin(self):
@@ -291,7 +294,18 @@ class KineticsJob(object):
         f.write('{0}\n'.format(string))
             
         f.close()
-        
+
+        # We're saving a YAML file for TSs iff structures of the respective reactant/s and product/s are known
+        if all ([spc.molecule is not None and len(spc.molecule)
+                 for spc in self.reaction.reactants + self.reaction.products]):
+            self.arkane_species.update_species_attributes(self.reaction.transitionState)
+            self.arkane_species.reaction_label = reaction.label
+            self.arkane_species.reactants = [{'label': spc.label, 'adjacency_list': spc.molecule[0].toAdjacencyList()}
+                                             for spc in self.reaction.reactants]
+            self.arkane_species.products = [{'label': spc.label, 'adjacency_list': spc.molecule[0].toAdjacencyList()}
+                                             for spc in self.reaction.products]
+            self.arkane_species.save_yaml(path=os.path.dirname(outputFile))
+
     def plot(self, outputDirectory):
         """
         Plot both the raw kinetics data and the Arrhenius fit versus 
