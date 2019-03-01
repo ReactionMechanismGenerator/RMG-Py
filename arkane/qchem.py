@@ -271,20 +271,18 @@ class QChemLog:
         in the file is returned. The zero-point energy is *not* included in
         the returned value.
         """
-        E0 = None
+        e0 = None
         with open(self.path, 'r') as f:
+            a = b = 0
             for line in f:
                 if 'Final energy is' in line:
-                    E0 = float(line.split()[3]) * constants.E_h * constants.Na
-                    logging.debug('energy is {}'.format(str(E0)))
-            if E0 is None:
-                for line in f:
-                    if 'Total energy in the final basis set' in line:
-                        E0 = float(line.split()[8]) * constants.E_h * constants.Na
-                        logging.debug('energy is {}'.format(str(E0)))
-        if E0 is None:
+                    a = float(line.split()[3]) * constants.E_h * constants.Na
+                if 'Total energy in the final basis set' in line:
+                    b = float(line.split()[8]) * constants.E_h * constants.Na
+                e0 = a or b
+        if e0 is None:
             raise InputError('Unable to find energy in QChem output file.')
-        return E0
+        return e0
         
     def loadZeroPointEnergy(self,frequencyScaleFactor=1.):
         """
