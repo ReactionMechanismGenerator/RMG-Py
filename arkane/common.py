@@ -35,10 +35,6 @@ import time
 import string
 
 import yaml
-try:
-    from yaml import CDumper as Dumper, CLoader as Loader, CSafeLoader as SafeLoader
-except ImportError:
-    from yaml import Dumper, Loader, SafeLoader
 
 from rmgpy.rmgobject import RMGObject
 from rmgpy import __version__
@@ -59,6 +55,16 @@ import rmgpy.constants as constants
 from arkane.pdep import PressureDependenceJob
 
 ################################################################################
+
+
+# Add a custom string representer to use block literals for multiline strings
+def str_repr(dumper, data):
+    if len(data.splitlines()) > 1:
+        return dumper.represent_scalar('tag:yaml.org,2002:str', data, style='|')
+    return dumper.represent_scalar('tag:yaml.org,2002:str', data)
+
+
+yaml.add_representer(str, str_repr)
 
 
 class ArkaneSpecies(RMGObject):
@@ -206,7 +212,7 @@ class ArkaneSpecies(RMGObject):
                                 ''.join(c for c in self.label if c in valid_chars) + '.yml')
         full_path = os.path.join(path, filename)
         with open(full_path, 'w') as f:
-            f.write(yaml.dump(data=self.as_dict(), Dumper=Dumper))
+            yaml.dump(data=self.as_dict(), stream=f)
         logging.debug('Dumping species {0} data as {1}'.format(self.label, filename))
 
     def load_yaml(self, path, species, pdep=False):
