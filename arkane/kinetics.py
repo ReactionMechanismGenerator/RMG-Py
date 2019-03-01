@@ -78,8 +78,8 @@ class KineticsJob(object):
         
         if Tlist is not None:
             self.Tlist = quantity.Quantity(Tlist)
-            self.Tmin = quantity.Quantity(numpy.min(self.Tlist.value_si),"K")
-            self.Tmax = quantity.Quantity(numpy.max(self.Tlist.value_si),"K")
+            self.Tmin = quantity.Quantity(numpy.min(self.Tlist.value_si), "K")
+            self.Tmax = quantity.Quantity(numpy.max(self.Tlist.value_si), "K")
             self.Tcount = len(self.Tlist.value_si)
         else:
             if Tmin and Tmax is not None:
@@ -87,7 +87,7 @@ class KineticsJob(object):
                 if self.Tcount <= 3.:
                     self.Tcount = 50
                 
-                stepsize = (self.Tmax.value_si-self.Tmin.value_si)/self.Tcount
+                stepsize = (self.Tmax.value_si-self.Tmin.value_si) / self.Tcount
                 
                 self.Tlist = quantity.Quantity(numpy.arange(self.Tmin.value_si, self.Tmax.value_si+stepsize, stepsize),"K")
             else:
@@ -203,8 +203,7 @@ class KineticsJob(object):
         f = open(outputFile, 'a')
 
         if self.usedTST:
-            #If TST is not used, eg. it was given in 'reaction', then this will
-            #throw an error.
+            # If TST is not used, eg. it was given in 'reaction', then this will throw an error.
             f.write('#   ======= =========== =========== =========== ===============\n')
             f.write('#   Temp.   k (TST)     Tunneling   k (TST+T)   Units\n')
             f.write('#   ======= =========== =========== =========== ===============\n')
