@@ -1,0 +1,118 @@
+RMG_version: 2.3.0
+adjacency_list: 'multiplicity 2
+
+  1 N u0 p1 c0 {2,S} {3,S} {4,S}
+
+  2 N u1 p1 c0 {1,S} {5,S}
+
+  3 H u0 p0 c0 {1,S}
+
+  4 H u0 p0 c0 {1,S}
+
+  5 H u0 p0 c0 {2,S}
+
+'
+chemkin_thermo_string: "N2H3                    H   3N   2          G    10.000  3000.000
+  \ 478.04      1\n 2.42935350E+00 1.15088524E-02-6.01470204E-06 1.59974609E-09-1.70089224E-13
+  \   2\n 2.62991058E+04 1.15861374E+01 4.04880122E+00-4.38083729E-03 5.11833994E-05
+  \   3\n-8.84029667E-08 5.22512137E-11 2.61709988E+04 5.24801815E+00                   4\n"
+class: ArkaneSpecies
+conformer:
+  E0: {class: ScalarQuantity, units: kJ/mol, value: 217.5941511308007}
+  class: Conformer
+  coordinates:
+    class: ArrayQuantity
+    units: angstroms
+    value:
+    - [0.5911145648999999, 0.0244451654, -0.0678630404]
+    - [1.0135987356, 0.9037019196, 0.192072468]
+    - [1.1319865485, -0.7946247076, 0.1523660207]
+    - [-0.7335224652, -0.15121609699999997, 0.0219065915]
+    - [-1.1487299823, 0.7783193088, -0.022743346499999997]
+  mass:
+    class: ArrayQuantity
+    units: amu
+    value: [14.00307400443, 1.00782503224, 1.00782503224, 14.00307400443, 1.00782503224]
+  modes:
+  - class: IdealGasTranslation
+    mass: {class: ScalarQuantity, units: amu, value: 31.02963}
+    quantum: false
+  - class: NonlinearRotor
+    inertia:
+      class: ArrayQuantity
+      units: amu*angstrom^2
+      value: [2.4406613783304905, 16.233158126996372, 18.436369321320495]
+    quantum: false
+    rotationalConstant:
+      class: ArrayQuantity
+      units: cm^-1
+      value: [6.9069921796688485, 1.0384688500824495, 0.9143681578266991]
+    symmetry: 1
+  - class: HarmonicOscillator
+    frequencies:
+      class: ArrayQuantity
+      units: cm^-1
+      value: [498.38599999999997, 689.379, 1119.6225, 1255.374, 1450.6834999999999,
+        1618.2994999999999, 3380.5179000000003, 3443.7716, 3578.3494]
+    quantum: true
+  number:
+    class: ArrayQuantity
+    value: [7.0, 1.0, 1.0, 7.0, 1.0]
+  opticalIsomers: 1
+  spinMultiplicity: 2
+datetime: 2019-02-08 10:54
+energy_transfer_model:
+  T0: {class: ScalarQuantity, units: K, value: 298.0}
+  alpha0: {class: ScalarQuantity, units: kcal/mol, value: 0.5718}
+  class: SingleExponentialDown
+  n: 0.85
+frequency_scale_factor: 0.97
+inchi: InChI=1S/H3N2/c1-2/h1H,2H2
+inchi_key: LURQBQNWDYASPJ-UHFFFAOYSA-N
+label: N2H3
+molecular_weight: {class: ScalarQuantity, units: amu, value: 31.037303539597616}
+smiles: N[NH]
+thermo:
+  Cp0: {class: ScalarQuantity, units: J/(mol*K), value: 33.257888}
+  CpInf: {class: ScalarQuantity, units: J/(mol*K), value: 108.08813599999999}
+  E0: {class: ScalarQuantity, units: kJ/mol, value: 217.5982414374718}
+  Tmax: {class: ScalarQuantity, units: K, value: 3000.0}
+  Tmin: {class: ScalarQuantity, units: K, value: 10.0}
+  class: NASA
+  polynomials:
+    polynomial1:
+      Tmax: {class: ScalarQuantity, units: K, value: 478.03958064238446}
+      Tmin: {class: ScalarQuantity, units: K, value: 10.0}
+      class: NASAPolynomial
+      coeffs: [4.048801217514377, -0.004380837294145292, 5.1183399410225476e-05, -8.840296666123828e-08,
+        5.2251213652638824e-11, 26170.998820660265, 5.248018149320447]
+    polynomial2:
+      Tmax: {class: ScalarQuantity, units: K, value: 3000.0}
+      Tmin: {class: ScalarQuantity, units: K, value: 478.03958064238446}
+      class: NASAPolynomial
+      coeffs: [2.429353498535635, 0.011508852361713253, -6.014702036913381e-06, 1.5997460938324017e-09,
+        -1.7008922397812e-13, 26299.105807657168, 11.586137428890732]
+thermo_data:
+  Cp (cal/mol*K): {1000 K: '18.59', 1500 K: '21.26', 2000 K: '22.78', 2400 K: '23.60',
+    300 K: '10.69', 400 K: '12.25', 500 K: '13.65', 600 K: '14.89', 800 K: '16.96'}
+  H298: 54.62 kcal/mol
+  S298: 56.84 cal/mol*K
+transport_data:
+  class: TransportData
+  epsilon: {class: ScalarQuantity, units: J/mol, value: 1662.89}
+  sigma: {class: ScalarQuantity, units: angstrom, value: 3.9}
+use_bond_corrections: false
+use_hindered_rotors: true
+xyz: '5
+
+  N2H3
+
+  N 5.911145649e-11 2.44451654e-12 -6.78630404e-12
+
+  H 1.0135987356e-10 9.037019196e-11 1.92072468e-11
+
+  H 1.1319865485e-10 -7.946247076e-11 1.523660207e-11
+
+  N -7.335224652e-11 -1.51216097e-11 2.19065915e-12
+
+  H -1.1487299823e-10 7.783193088e-11 -2.27433465e-12'
