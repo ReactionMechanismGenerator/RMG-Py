@@ -247,11 +247,22 @@ class ArkaneSpecies(RMGObject):
                       'Wilhoit': Wilhoit,
                       'NASA': NASA,
                       }
+        freq_data = None
+        if 'imaginary_frequency' in data:
+            freq_data = data['imaginary_frequency']
+            del data['imaginary_frequency']
         self.make_object(data=data, class_dict=class_dict)
-        if pdep and (self.transport_data is None or self.energy_transfer_model is None):
+        if freq_data is not None:
+            self.imaginary_frequency = ScalarQuantity()
+            self.imaginary_frequency.make_object(data=freq_data, class_dict=dict())
+        self.adjacency_list = data['adjacency_list'] if 'adjacency_list' in data else None
+        self.inchi = data['inchi'] if 'inchi' in data else None
+        self.smiles = data['smiles'] if 'smiles' in data else None
+        self.is_ts = data['is_ts'] if 'is_ts' in data else False
+        if pdep and not self.is_ts and (self.transport_data is None or self.energy_transfer_model is None):
             raise ValueError('Transport data and an energy transfer model must be given if pressure-dependent '
                              'calculations are requested. Check file {0}'.format(path))
-        if pdep and self.smiles is None and self.adjacency_list is None\
+        if pdep and not self.is_ts and self.smiles is None and self.adjacency_list is None\
                 and self.inchi is None and self.molecular_weight is None:
             raise ValueError('The molecular weight was not specified, and a structure was not given so it could '
                              'not be calculated. Specify either the molecular weight or structure if '
