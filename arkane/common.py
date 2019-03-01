@@ -188,11 +188,8 @@ class ArkaneSpecies(RMGObject):
         filename = os.path.join('ArkaneSpecies',
                                 ''.join(c for c in self.label if c in valid_chars) + '.yml')
         full_path = os.path.join(path, filename)
-        content = yaml.dump(data=self.as_dict(), Dumper=Dumper)
-        # remove empty lines from the file (multi-line strings have excess new line brakes for some reason):
-        content = content.replace('\n\n', '\n')
         with open(full_path, 'w') as f:
-            f.write(content)
+            f.write(yaml.dump(data=self.as_dict(), Dumper=Dumper))
         logging.debug('Dumping species {0} data as {1}'.format(self.label, filename))
 
     def load_yaml(self, path, species, pdep=False):
