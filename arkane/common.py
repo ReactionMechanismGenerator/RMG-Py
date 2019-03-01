@@ -53,6 +53,7 @@ from rmgpy.statmech.vibration import HarmonicOscillator
 from rmgpy.pdep.collision import SingleExponentialDown
 from rmgpy.transport import TransportData
 from rmgpy.thermo import NASA, Wilhoit
+from rmgpy.species import Species, TransitionState
 import rmgpy.constants as constants
 
 from arkane.pdep import PressureDependenceJob
@@ -68,11 +69,14 @@ class ArkaneSpecies(RMGObject):
                  frequency_scale_factor=None, use_hindered_rotors=None, use_bond_corrections=None, atom_energies='',
                  chemkin_thermo_string='', smiles=None, adjacency_list=None, inchi=None, inchi_key=None, xyz=None,
                  molecular_weight=None, symmetry_number=None, transport_data=None, energy_transfer_model=None,
-                 thermo=None, thermo_data=None, label=None, datetime=None, RMG_version=None):
+                 thermo=None, thermo_data=None, label=None, datetime=None, RMG_version=None, reactants=None,
+                 products=None, reaction_label=None, is_ts=None):
+        # reactants/products/reaction_label need to be in the init() to avoid error when loading a TS YAML file,
+        # but we don't use them
         if species is None and conformer is None:
-            # Expecting to get a `species` when generating the object within Arkane,
-            # or a `conformer` when parsing from YAML.
-            raise ValueError('No species or conformer was passed to the ArkaneSpecies object')
+            # Expecting to get a species or a TS when generating the object within Arkane,
+            # or a conformer when parsing from YAML.
+            raise ValueError('No species (or TS) or conformer was passed to the ArkaneSpecies object')
         if conformer is not None:
             self.conformer = conformer
         if label is None and species is not None:
@@ -86,18 +90,26 @@ class ArkaneSpecies(RMGObject):
         self.use_hindered_rotors = use_hindered_rotors
         self.use_bond_corrections = use_bond_corrections
         self.atom_energies = atom_energies
-        self.chemkin_thermo_string = chemkin_thermo_string
-        self.smiles = smiles
-        self.adjacency_list = adjacency_list
-        self.inchi = inchi
-        self.inchi_key = inchi_key
         self.xyz = xyz
         self.molecular_weight = molecular_weight
         self.symmetry_number = symmetry_number
-        self.transport_data = transport_data
-        self.energy_transfer_model = energy_transfer_model  # check pdep flag
-        self.thermo = thermo
-        self.thermo_data = thermo_data
+        self.is_ts = is_ts if is_ts is not None else isinstance(species, TransitionState)
+        if not self.is_ts:
+            self.chemkin_thermo_string = chemkin_thermo_string
+            self.smiles = smiles
+            self.adjacency_list = adjacency_list
+            self.inchi = inchi
+            self.inchi_key = inchi_key
+            self.transport_data = transport_data
+            self.energy_transfer_model = energy_transfer_model
+            self.thermo = thermo
+            self.thermo_data = thermo_data
+        else:
+            # initialize TS-related attributes
+            self.imaginary_frequency = None
+            self.reaction_label = ''
+            self.reactants = list()
+            self.products = list()
         if species is not None:
             self.update_species_attributes(species)
         self.RMG_version = RMG_version if RMG_version is not None else __version__
@@ -117,12 +129,17 @@ class ArkaneSpecies(RMGObject):
 
     def update_species_attributes(self, species=None):
         """
-        Update the object with a new species (while keeping non-species-dependent attributes unchanged)
+        Update the object with a new species/TS (while keeping non-species-dependent attributes unchanged)
         """
         if species is None:
             raise ValueError('No species was passed to ArkaneSpecies')
         self.label = species.label
-        if species.molecule is not None and len(species.molecule) > 0:
+        if isinstance(species, TransitionState):
+            self.imaginary_frequency = species.frequency
+            if species.conformer is not None:
+                self.conformer = species.conformer
+                self.xyz = self.update_xyz_string()
+        elif species.molecule is not None and len(species.molecule) > 0:
             self.smiles = species.molecule[0].toSMILES()
             self.adjacency_list = species.molecule[0].toAdjacencyList()
             try:
@@ -202,8 +219,8 @@ class ArkaneSpecies(RMGObject):
             data = yaml.safe_load(stream=f)
         try:
             if species.label != data['label']:
-                logging.warning('Found different labels for species: {0} in input file, and {1} in the .yml file. '
-                                'Using the label "{0}" for this species.'.format(species.label, data['label']))
+                logging.debug('Found different labels for species: {0} in input file, and {1} in the .yml file. '
+                              'Using the label "{0}" for this species.'.format(species.label, data['label']))
         except KeyError:
             # Lacking label in the YAML file is strange, but accepted
             logging.debug('Did not find label for species {0} in .yml file.'.format(species.label))
