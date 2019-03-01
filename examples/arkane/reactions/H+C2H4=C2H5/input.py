@@ -1,14 +1,21 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# This example also generates YAML files for all species and TS
+# A YAML file is generated for species if they're structure is defined and Thermo() is called,
+# and for TS if all the respective reactant/s and product/s have structures
+
 modelChemistry = "CBS-QB3"
 frequencyScaleFactor = 0.99
 useHinderedRotors = False
 useBondCorrections = True
 
-species('H', '../../species/H/H.py')
-species('C2H4', '../../species/C2H4/ethene.py')
-species('C2H5', '../../species/C2H5/ethyl.py')
+species('H', '../../species/H/H.py',
+       structure=SMILES('[H]'))
+species('C2H4', '../../species/C2H4/ethene.py',
+       structure=SMILES('C=C'))
+species('C2H5', '../../species/C2H5/ethyl.py',
+       structure=SMILES('[CH2]C'))
 transitionState('TS', 'TS.py')
 
 thermo('H','NASA')

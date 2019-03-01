@@ -1,19 +1,31 @@
 RMG_version: 2.3.0
 adjacency_list: '1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+
   2 C u0 p0 c0 {1,S} {6,S} {7,S} {8,S}
+
   3 H u0 p0 c0 {1,S}
+
   4 H u0 p0 c0 {1,S}
+
   5 H u0 p0 c0 {1,S}
+
   6 H u0 p0 c0 {2,S}
+
   7 H u0 p0 c0 {2,S}
+
   8 H u0 p0 c0 {2,S}
-  '
+
+'
 author: I.B. Modeling
 chemkin_thermo_string: 'C2H6                    H   6C   2          G    10.000  3000.000  650.75      1
+
   -3.07955238E-01 2.45265786E-02-1.24126639E-05 3.07709642E-09-3.01448276E-13    2
+
   -1.06954638E+04 2.26275649E+01 4.03054858E+00-2.14149353E-03 4.90589370E-05    3
+
   -5.98988799E-08 2.38924897E-11-1.12601125E+04 3.56080023E+00                   4
-  '
+
+'
 class: ArkaneSpecies
 conformer:
   E0: {class: ScalarQuantity, units: kJ/mol, value: -93.62123301113816}
@@ -73,7 +85,7 @@ conformer:
     value: [6.0, 1.0, 1.0, 1.0, 6.0, 1.0, 1.0, 1.0]
   opticalIsomers: 1
   spinMultiplicity: 1
-datetime: 2018-12-26 22:07
+datetime: 2019-02-08 12:09
 energy_transfer_model:
   T0: {class: ScalarQuantity, units: K, value: 300.0}
   alpha0: {class: ScalarQuantity, units: kJ/mol, value: 3.5886}
@@ -83,7 +95,7 @@ frequency_scale_factor: 0.99
 inchi: InChI=1S/C2H6/c1-2/h1-2H3
 inchi_key: OTMSDBZUPAUEDD-UHFFFAOYSA-N
 label: C2H6
-molecular_weight: {class: ScalarQuantity, units: amu, value: 30.069042884392132}
+molecular_weight: {class: ScalarQuantity, units: amu, value: 30.06904288439213}
 smiles: CC
 thermo:
   Cp0: {class: ScalarQuantity, units: J/(mol*K), value: 33.257888}
@@ -113,12 +125,21 @@ thermo_data:
 use_bond_corrections: false
 use_hindered_rotors: true
 xyz: '8
+
   C2H6
+
   C 7.54e-14 1.193e-13 5.52e-14
+
   H 7.4e-14 1.171e-13 1.094138e-10
+
   H 1.043766e-10 1.171e-13 -3.28202e-11
+
   H -4.47603e-11 9.42895e-11 -3.28253e-11
+
   C -7.60142e-11 -1.203896e-10 -5.57483e-11
+
   H -7.60128e-11 -1.203874e-10 -1.651069e-10
+
   H -3.11785e-11 -2.145598e-10 -2.28678e-11
+
   H -1.803154e-10 -1.203874e-10 -2.28729e-11'
