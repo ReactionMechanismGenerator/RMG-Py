@@ -43,7 +43,9 @@ cdef class Configuration:
     cpdef bint isUnimolecular(self) except -2
     
     cpdef bint isBimolecular(self) except -2
-    
+
+    cpdef bint isTermolecular(self) except -2
+
     cpdef bint isTransitionState(self) except -2
     
     cpdef bint hasStatMech(self) except -2
