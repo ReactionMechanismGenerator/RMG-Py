@@ -138,16 +138,17 @@ class ConverterTest(unittest.TestCase):
             Molecule().fromSMILES('C=CC=C'),
             Molecule().fromSMILES('C#C[CH2]'),
             Molecule().fromSMILES('c1ccccc1'),
-            Molecule().fromSMILES('[13CH3]C')
+            Molecule().fromSMILES('[13CH3]C'),
+            Molecule().fromSMILES('O=CCO').generate_H_bonded_structures()[0],
         ]
+        self.test_Hbond_free_mol = Molecule().fromSMILES('O=CCO')
 
     def test_rdkit_round_trip(self):
         """Test conversion to and from RDKitMol"""
         for mol in self.test_mols:
             rdkit_mol = toRDKitMol(mol)
             new_mol = fromRDKitMol(Molecule(), rdkit_mol)
-
-            self.assertTrue(mol.isIsomorphic(new_mol))
+            self.assertTrue(mol.isIsomorphic(new_mol) or self.test_Hbond_free_mol.isIsomorphic(new_mol))
             self.assertEqual(mol.get_element_count(), new_mol.get_element_count())
 
     def test_ob_round_trip(self):
@@ -155,6 +156,5 @@ class ConverterTest(unittest.TestCase):
         for mol in self.test_mols:
             ob_mol = toOBMol(mol)
             new_mol = fromOBMol(Molecule(), ob_mol)
-
-            self.assertTrue(mol.isIsomorphic(new_mol))
+            self.assertTrue(mol.isIsomorphic(new_mol) or self.test_Hbond_free_mol.isIsomorphic(new_mol))
             self.assertEqual(mol.get_element_count(), new_mol.get_element_count())

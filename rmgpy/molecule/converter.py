@@ -88,6 +88,8 @@ def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
     # Add the bonds
     for atom1 in mol.vertices:
         for atom2, bond in atom1.edges.iteritems():
+            if bond.isHydrogenBond():
+                continue
             index1 = atoms.index(atom1)
             index2 = atoms.index(atom2)
             if index1 < index2:
@@ -228,6 +230,8 @@ def toOBMol(mol, returnMapping=False):
     orders = {1: 1, 2: 2, 3: 3, 4: 4, 1.5: 5}
     for atom1 in mol.vertices:
         for atom2, bond in atom1.edges.iteritems():
+            if bond.isHydrogenBond():
+                continue
             index1 = atoms.index(atom1)
             index2 = atoms.index(atom2)
             if index1 < index2:

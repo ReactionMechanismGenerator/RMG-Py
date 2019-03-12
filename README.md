@@ -2,7 +2,7 @@
 
 [![Build status](https://img.shields.io/travis/ReactionMechanismGenerator/RMG-Py/master.svg)](https://travis-ci.org/ReactionMechanismGenerator/RMG-Py)
 [![Codecov report](https://img.shields.io/codecov/c/github/ReactionMechanismGenerator/RMG-Py/master.svg)](https://codecov.io/gh/ReactionMechanismGenerator/RMG-Py)
-[![Codacy report](https://img.shields.io/codacy/grade/c4b23c89e2e6486e981704d8d973d3e7/master.svg)](https://www.codacy.com/app/ReactionMechanismGenerator/RMG-Py/dashboard)
+[![Codacy report](https://img.shields.io/codacy/grade/5c12cecf3d01400a92ea20e14ca0b880/master.svg)](https://www.codacy.com/app/ReactionMechanismGenerator/RMG-Py/dashboard)
 [![GitHub release](https://img.shields.io/github/release/ReactionMechanismGenerator/RMG-Py.svg)](https://github.com/ReactionMechanismGenerator/RMG-Py/releases)
 [![Anconda](https://img.shields.io/conda/v/rmg/rmg.svg)](https://anaconda.org/rmg/rmg)
 [![Gitter](https://img.shields.io/gitter/room/ReactionMechanismGenerator/RMG-Py.svg)](https://gitter.im/ReactionMechanismGenerator/RMG-Py)
@@ -14,9 +14,9 @@ a tool for automatically generating chemical reaction
 mechanisms for modeling reaction systems including pyrolysis, combustion,
 atmospheric science, and more.
 
-It also includes **CanTherm**, the package for calculating thermodynamics, high-pressure-limit
+It also includes **Arkane**, the package for calculating thermodynamics, high-pressure-limit
 rate coefficients, and pressure dependent rate coefficients from quantum chemical calculations.
-CanTherm is compatible with a variety of ab initio quantum chemistry software programs, including but not limited to
+Arkane is compatible with a variety of ab initio quantum chemistry software programs:
 Gaussian, MOPAC, QChem, and MOLPRO.
 
 *This branch is for the heterogeneous catalysis version!* (be sure to use the corresponding branch in the RMG-database)
@@ -30,11 +30,9 @@ You can either download the source from GitHub and compile yourself, or download
 Please see the [Download and Install](http://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/installation/index.html) page for detailed instructions.
 
 ## Documentation
-- [RMG Documentation](http://ReactionMechanismGenerator.github.io/RMG-Py/) ([PDF version](https://github.com/ReactionMechanismGenerator/RMG-Py/raw/master/documentation/RMG-Py_and_CanTherm_Documentation.pdf))
-- [CanTherm Documentation](http://ReactionMechanismGenerator.github.io/RMG-Py/users/cantherm/) ([PDF version](https://github.com/ReactionMechanismGenerator/RMG-Py/raw/master/documentation/RMG-Py_and_CanTherm_Documentation.pdf))
+- [RMG Documentation](http://ReactionMechanismGenerator.github.io/RMG-Py/users/rmg/index.html) ([PDF version](https://github.com/ReactionMechanismGenerator/RMG-Py/raw/master/documentation/RMG-Py_and_Arkane_Documentation.pdf))
+- [Arkane Documentation](http://ReactionMechanismGenerator.github.io/RMG-Py/users/arkane/index.html) ([PDF version](https://github.com/ReactionMechanismGenerator/RMG-Py/raw/master/documentation/RMG-Py_and_Arkane_Documentation.pdf))
 - [RMG API Reference](http://reactionmechanismgenerator.github.io/RMG-Py/reference/index.html) ([PDF version](https://github.com/ReactionMechanismGenerator/RMG-Py/raw/master/documentation/RMG-Py_API_Reference.pdf))
-
-Alternatively, PDF versions of all the documentation can also be found in the `documentation` folder of the source code.  
 
 ## How to Contribute
 Please see the [Contributor Guidelines](https://github.com/ReactionMechanismGenerator/RMG-Py/wiki/RMG-Contributor-Guidelines)
