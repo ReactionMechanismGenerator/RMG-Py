@@ -1284,7 +1284,7 @@ class ThermoDatabase(object):
             'O': rmgpy.quantity.Energy(-3.586, 'eV/molecule'),
             'N': rmgpy.quantity.Energy(-4.352, 'eV/molecule'),
         }
-        for element in 'CHON':
+        for element in 'CHO':
             deltaAtomicAdosrptionEnergy[element].value_si =  bindingEnergies[element].value_si - deltaAtomicAdosrptionEnergy[element].value_si
         self.deltaAtomicAdsorptionEnergy = deltaAtomicAdosrptionEnergy
 
