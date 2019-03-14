@@ -662,6 +662,8 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds,
                 atomEnergies = {'H':-0.499818 + SOC['H'], 'N':-54.520543 + SOC['N'], 'O':-74.987624+ SOC['O'], 'C':-37.785385+ SOC['C'], 'P':-340.817186+ SOC['P'], 'S': -397.657360+ SOC['S']}
             elif modelChemistry == 'm06-2x/cc-pvtz':
                 atomEnergies = {'H':-0.498135 + SOC['H'], 'N':-54.586780 + SOC['N'], 'O':-75.064242+ SOC['O'], 'C':-37.842468+ SOC['C'], 'P':-341.246985+ SOC['P'], 'S': -398.101240+ SOC['S']}
+            elif modelChemistry == 'wb97x-d3/6-311+g(d,p)':
+                atomEnergies = {'H':0, 'N':0, 'O':0, 'C':0, 'P':0, 'S':0}
             elif modelChemistry == 'g3':
                 atomEnergies = {'H':-0.5010030, 'N':-54.564343, 'O':-75.030991, 'C':-37.827717, 'P':-341.116432, 'S': -397.961110}
             elif modelChemistry == 'm08so/mg3s*': # * indicates that the grid size used in the [QChem] electronic
@@ -824,7 +826,9 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds,
         bondEnergies = {}
         # 'S-H', 'C-S', 'C=S', 'S-S', 'O-S', 'O=S', 'O=S=O' taken from http://hdl.handle.net/1721.1/98155 (both for
         # 'CCSD(T)-F12/cc-pVDZ-F12' and 'CCSD(T)-F12/cc-pVTZ-F12')
-        if modelChemistry == 'ccsd(t)-f12/cc-pvdz-f12':
+        if modelChemistry == 'wb97x-d3/6-311+g(d,p)':
+            bondEnergies = { 'C-H': 0 }
+        elif modelChemistry == 'ccsd(t)-f12/cc-pvdz-f12':
             bondEnergies = { 'C-H': -0.46, 'C-C': -0.68, 'C=C': -1.90, 'C#C': -3.13,
                 'O-H': -0.51, 'C-O': -0.23, 'C=O': -0.69, 'O-O': -0.02, 'C-N': -0.67,
                 'C=N': -1.46, 'C#N': -2.79, 'N-O': 0.74, 'N_O': -0.23, 'N=O': -0.51,
