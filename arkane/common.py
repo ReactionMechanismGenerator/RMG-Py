@@ -35,10 +35,6 @@ import time
 import string
 
 import yaml
-try:
-    from yaml import CDumper as Dumper, CLoader as Loader, CSafeLoader as SafeLoader
-except ImportError:
-    from yaml import Dumper, Loader, SafeLoader
 
 from rmgpy.rmgobject import RMGObject
 from rmgpy import __version__
@@ -53,11 +49,22 @@ from rmgpy.statmech.vibration import HarmonicOscillator
 from rmgpy.pdep.collision import SingleExponentialDown
 from rmgpy.transport import TransportData
 from rmgpy.thermo import NASA, Wilhoit
+from rmgpy.species import Species, TransitionState
 import rmgpy.constants as constants
 
 from arkane.pdep import PressureDependenceJob
 
 ################################################################################
+
+
+# Add a custom string representer to use block literals for multiline strings
+def str_repr(dumper, data):
+    if len(data.splitlines()) > 1:
+        return dumper.represent_scalar('tag:yaml.org,2002:str', data, style='|')
+    return dumper.represent_scalar('tag:yaml.org,2002:str', data)
+
+
+yaml.add_representer(str, str_repr)
 
 
 class ArkaneSpecies(RMGObject):
@@ -68,11 +75,14 @@ class ArkaneSpecies(RMGObject):
                  frequency_scale_factor=None, use_hindered_rotors=None, use_bond_corrections=None, atom_energies='',
                  chemkin_thermo_string='', smiles=None, adjacency_list=None, inchi=None, inchi_key=None, xyz=None,
                  molecular_weight=None, symmetry_number=None, transport_data=None, energy_transfer_model=None,
-                 thermo=None, thermo_data=None, label=None, datetime=None, RMG_version=None):
+                 thermo=None, thermo_data=None, label=None, datetime=None, RMG_version=None, reactants=None,
+                 products=None, reaction_label=None, is_ts=None):
+        # reactants/products/reaction_label need to be in the init() to avoid error when loading a TS YAML file,
+        # but we don't use them
         if species is None and conformer is None:
-            # Expecting to get a `species` when generating the object within Arkane,
-            # or a `conformer` when parsing from YAML.
-            raise ValueError('No species or conformer was passed to the ArkaneSpecies object')
+            # Expecting to get a species or a TS when generating the object within Arkane,
+            # or a conformer when parsing from YAML.
+            raise ValueError('No species (or TS) or conformer was passed to the ArkaneSpecies object')
         if conformer is not None:
             self.conformer = conformer
         if label is None and species is not None:
@@ -86,18 +96,26 @@ class ArkaneSpecies(RMGObject):
         self.use_hindered_rotors = use_hindered_rotors
         self.use_bond_corrections = use_bond_corrections
         self.atom_energies = atom_energies
-        self.chemkin_thermo_string = chemkin_thermo_string
-        self.smiles = smiles
-        self.adjacency_list = adjacency_list
-        self.inchi = inchi
-        self.inchi_key = inchi_key
         self.xyz = xyz
         self.molecular_weight = molecular_weight
         self.symmetry_number = symmetry_number
-        self.transport_data = transport_data
-        self.energy_transfer_model = energy_transfer_model  # check pdep flag
-        self.thermo = thermo
-        self.thermo_data = thermo_data
+        self.is_ts = is_ts if is_ts is not None else isinstance(species, TransitionState)
+        if not self.is_ts:
+            self.chemkin_thermo_string = chemkin_thermo_string
+            self.smiles = smiles
+            self.adjacency_list = adjacency_list
+            self.inchi = inchi
+            self.inchi_key = inchi_key
+            self.transport_data = transport_data
+            self.energy_transfer_model = energy_transfer_model
+            self.thermo = thermo
+            self.thermo_data = thermo_data
+        else:
+            # initialize TS-related attributes
+            self.imaginary_frequency = None
+            self.reaction_label = ''
+            self.reactants = list()
+            self.products = list()
         if species is not None:
             self.update_species_attributes(species)
         self.RMG_version = RMG_version if RMG_version is not None else __version__
@@ -117,12 +135,17 @@ class ArkaneSpecies(RMGObject):
 
     def update_species_attributes(self, species=None):
         """
-        Update the object with a new species (while keeping non-species-dependent attributes unchanged)
+        Update the object with a new species/TS (while keeping non-species-dependent attributes unchanged)
         """
         if species is None:
             raise ValueError('No species was passed to ArkaneSpecies')
         self.label = species.label
-        if species.molecule is not None and len(species.molecule) > 0:
+        if isinstance(species, TransitionState):
+            self.imaginary_frequency = species.frequency
+            if species.conformer is not None:
+                self.conformer = species.conformer
+                self.xyz = self.update_xyz_string()
+        elif species.molecule is not None and len(species.molecule) > 0:
             self.smiles = species.molecule[0].toSMILES()
             self.adjacency_list = species.molecule[0].toAdjacencyList()
             try:
@@ -182,17 +205,14 @@ class ArkaneSpecies(RMGObject):
         """
         Save the species with all statMech data to a .yml file
         """
-        if not os.path.exists(os.path.join(os.path.abspath(path),'ArkaneSpecies', '')):
-            os.mkdir(os.path.join(os.path.abspath(path),'ArkaneSpecies', ''))
+        if not os.path.exists(os.path.join(os.path.abspath(path), 'species', '')):
+            os.mkdir(os.path.join(os.path.abspath(path), 'species', ''))
         valid_chars = "-_.()<=>+ %s%s" % (string.ascii_letters, string.digits)
-        filename = os.path.join('ArkaneSpecies',
+        filename = os.path.join('species',
                                 ''.join(c for c in self.label if c in valid_chars) + '.yml')
         full_path = os.path.join(path, filename)
-        content = yaml.dump(data=self.as_dict(), Dumper=Dumper)
-        # remove empty lines from the file (multi-line strings have excess new line brakes for some reason):
-        content = content.replace('\n\n', '\n')
         with open(full_path, 'w') as f:
-            f.write(content)
+            yaml.dump(data=self.as_dict(), stream=f)
         logging.debug('Dumping species {0} data as {1}'.format(self.label, filename))
 
     def load_yaml(self, path, species, pdep=False):
@@ -205,8 +225,8 @@ class ArkaneSpecies(RMGObject):
             data = yaml.safe_load(stream=f)
         try:
             if species.label != data['label']:
-                logging.warning('Found different labels for species: {0} in input file, and {1} in the .yml file. '
-                                'Using the label "{0}" for this species.'.format(species.label, data['label']))
+                logging.debug('Found different labels for species: {0} in input file, and {1} in the .yml file. '
+                              'Using the label "{0}" for this species.'.format(species.label, data['label']))
         except KeyError:
             # Lacking label in the YAML file is strange, but accepted
             logging.debug('Did not find label for species {0} in .yml file.'.format(species.label))
@@ -233,11 +253,22 @@ class ArkaneSpecies(RMGObject):
                       'Wilhoit': Wilhoit,
                       'NASA': NASA,
                       }
+        freq_data = None
+        if 'imaginary_frequency' in data:
+            freq_data = data['imaginary_frequency']
+            del data['imaginary_frequency']
         self.make_object(data=data, class_dict=class_dict)
-        if pdep and (self.transport_data is None or self.energy_transfer_model is None):
+        if freq_data is not None:
+            self.imaginary_frequency = ScalarQuantity()
+            self.imaginary_frequency.make_object(data=freq_data, class_dict=dict())
+        self.adjacency_list = data['adjacency_list'] if 'adjacency_list' in data else None
+        self.inchi = data['inchi'] if 'inchi' in data else None
+        self.smiles = data['smiles'] if 'smiles' in data else None
+        self.is_ts = data['is_ts'] if 'is_ts' in data else False
+        if pdep and not self.is_ts and (self.transport_data is None or self.energy_transfer_model is None):
             raise ValueError('Transport data and an energy transfer model must be given if pressure-dependent '
                              'calculations are requested. Check file {0}'.format(path))
-        if pdep and self.smiles is None and self.adjacency_list is None\
+        if pdep and not self.is_ts and self.smiles is None and self.adjacency_list is None\
                 and self.inchi is None and self.molecular_weight is None:
             raise ValueError('The molecular weight was not specified, and a structure was not given so it could '
                              'not be calculated. Specify either the molecular weight or structure if '

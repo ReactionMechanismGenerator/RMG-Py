@@ -50,6 +50,7 @@ from rmgpy.statmech.torsion import Torsion, HinderedRotor, FreeRotor
 from rmgpy.statmech.conformer import Conformer
 from rmgpy.exceptions import InputError
 from rmgpy.quantity import Quantity
+from rmgpy.molecule.molecule import Molecule
 
 from arkane.output import prettify
 from arkane.gaussian import GaussianLog
@@ -176,10 +177,7 @@ class StatMechJob(object):
         self.atomEnergies = None
         self.supporting_info = [self.species.label]
         self.bonds = None
-
-        if isinstance(species, Species):
-            # Currently we do not dump and load transition states in YAML form
-            self.arkane_species = ArkaneSpecies(species=species)
+        self.arkane_species = ArkaneSpecies(species=species)
 
     def execute(self, outputFile=None, plot=False, pdep=False):
         """
@@ -200,15 +198,22 @@ class StatMechJob(object):
         species object.
         """
         path = self.path
-        TS = isinstance(self.species, TransitionState)
+        is_ts = isinstance(self.species, TransitionState)
         _, file_extension = os.path.splitext(path)
         if file_extension in ['.yml', '.yaml']:
-            if TS:
-                raise NotImplementedError('Loading transition states from a YAML file is still unsupported.')
             self.arkane_species.load_yaml(path=path, species=self.species, pdep=pdep)
             self.species.conformer = self.arkane_species.conformer
-            self.species.transportData = self.arkane_species.transport_data
-            self.species.energyTransferModel = self.arkane_species.energy_transfer_model
+            if is_ts:
+                self.species.frequency = self.arkane_species.imaginary_frequency
+            else:
+                self.species.transportData = self.arkane_species.transport_data
+                self.species.energyTransferModel = self.arkane_species.energy_transfer_model
+                if self.arkane_species.adjacency_list is not None:
+                    self.species.molecule = [Molecule().fromAdjacencyList(adjlist=self.arkane_species.adjacency_list)]
+                elif self.arkane_species.inchi is not None:
+                    self.species.molecule = [Molecule().fromInChI(inchistr=self.arkane_species.inchi)]
+                elif self.arkane_species.smiles is not None:
+                    self.species.molecule = [Molecule().fromSMILES(smilesstr=self.arkane_species.smiles)]
             return
 
         logging.info('Loading statistical mechanics parameters for {0}...'.format(self.species.label))
@@ -425,7 +430,7 @@ class StatMechJob(object):
         conformer.E0 = (E0_withZPE*0.001,"kJ/mol")
 
         # If loading a transition state, also read the imaginary frequency
-        if TS:
+        if is_ts:
             neg_freq = statmechLog.loadNegativeFrequency()
             self.species.frequency = (neg_freq * self.frequencyScaleFactor, "cm^-1")
             self.supporting_info.append(neg_freq)
@@ -523,7 +528,7 @@ class StatMechJob(object):
                         rotorCount += 1
 
             logging.debug('    Determining frequencies from reduced force constant matrix...')
-            frequencies = numpy.array(projectRotors(conformer, F, rotors, linear, TS))
+            frequencies = numpy.array(projectRotors(conformer, F, rotors, linear, is_ts))
 
         elif len(conformer.modes) > 2:
             if len(rotors) > 0:
@@ -558,7 +563,6 @@ class StatMechJob(object):
         f = open(outputFile, 'a')
 
         conformer = self.species.conformer
-
         coordinates = conformer.coordinates.value_si * 1e10
         number = conformer.number.value_si
 
@@ -905,7 +909,7 @@ class Log(object):
         self.software_log = software_log
 
 
-def projectRotors(conformer, F, rotors, linear, TS):
+def projectRotors(conformer, F, rotors, linear, is_ts):
     """
     For a given `conformer` with associated force constant matrix `F`, lists of
     rotor information `rotors`, `pivots`, and `top1`, and the linearity of the
@@ -919,7 +923,7 @@ def projectRotors(conformer, F, rotors, linear, TS):
 
     Nrotors = len(rotors)
     Natoms = len(conformer.mass.value)
-    Nvib = 3 * Natoms - (5 if linear else 6) - Nrotors - (1 if (TS) else 0)
+    Nvib = 3 * Natoms - (5 if linear else 6) - Nrotors - (1 if (is_ts) else 0)
     mass = conformer.mass.value_si
     coordinates = conformer.coordinates.getValue()
 

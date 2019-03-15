@@ -308,7 +308,7 @@ class TestArkaneSpecies(unittest.TestCase):
         cls.dump_path = os.path.join(path, 'C2H6')
         cls.dump_input_path = os.path.join(cls.dump_path, 'input.py')
         cls.dump_output_file = os.path.join(cls.dump_path, 'output.py')
-        cls.dump_yaml_file = os.path.join(cls.dump_path, 'ArkaneSpecies', 'C2H6.yml')
+        cls.dump_yaml_file = os.path.join(cls.dump_path, 'species', 'C2H6.yml')
 
         cls.load_path = os.path.join(path, 'C2H6_from_yaml')
         cls.load_input_path = os.path.join(cls.load_path, 'input.py')

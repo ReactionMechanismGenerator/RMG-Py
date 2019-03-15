@@ -78,9 +78,10 @@ class ThermoJob(object):
         if outputFile is not None:
             self.arkane_species.chemkin_thermo_string = self.save(outputFile)
             if self.species.molecule is None or len(self.species.molecule) == 0:
-                logging.debug("Not generating database YAML file for species {0}, since its structure wasn't"
+                logging.debug("Not generating a YAML file for species {0}, since its structure wasn't"
                               " specified".format(self.species.label))
             else:
+                # We're saving a YAML file for species iff Thermo is called and they're structure is known
                 self.arkane_species.update_species_attributes(self.species)
                 self.arkane_species.save_yaml(path=os.path.dirname(outputFile))
             if plot:

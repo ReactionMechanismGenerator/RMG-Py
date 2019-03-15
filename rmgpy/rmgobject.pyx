@@ -55,8 +55,11 @@ cdef class RMGObject(object):
             if val is not None and not callable(val) and val != '':
                 output_dict[attr] = val
         for key, val in output_dict.iteritems():
-            if isinstance(val, list) and val and isinstance(val[0], RMGObject):
-                output_dict[key] = [v.as_dict() for v in val]
+            if isinstance(val, list) and val:
+                if isinstance(val[0], RMGObject):
+                    output_dict[key] = [v.as_dict() for v in val]
+                else:
+                    output_dict[key] = val
             elif isinstance(val, np.ndarray):
                 output_dict[key] = val.tolist()
             elif not isinstance(val, (int, float, str, dict)) and val:
@@ -82,26 +85,30 @@ cdef class RMGObject(object):
                 obj.make_object(val, class_dict)
                 logging.debug("made object {0}".format(class_name))
                 data[key] = obj
-            elif isinstance(val, list) and val and isinstance(val[0], dict) and 'class' in val[0]:
-                # Call make_object to make a list of objects within the parent object (as in Conformer.Modes)
-                data[key] = list()
-                for entry in val:
-                    class_name = entry['class']
-                    del entry['class']
-                    try:
-                        class_to_make = class_dict[class_name]
-                    except KeyError:
-                        raise KeyError("Class {0} must be provided in the 'class_dict' parameter "
-                                       "to make the object.".format(class_name))
-                    obj = class_to_make()
-                    if class_name in ['LinearRotor', 'NonlinearRotor', 'KRotor', 'SphericalTopRotor', 'HinderedRotor',
-                                      'FreeRotor'] and 'rotationalConstant' in entry and 'inertia' in entry:
-                            # Either `rotationalConstant` or `inertia` should be specified for a rotor.
-                            # Here both are specified, so we delete `inertia`.
-                            del entry['inertia']
-                    obj.make_object(entry, class_dict)
-                    logging.debug("made object {0}".format(class_name))
-                    data[key].append(obj)
+            elif isinstance(val, list) and val:
+                if isinstance(val[0], dict) and 'class' in val[0]:
+                    # Call make_object to make a list of objects within the parent object (as in Conformer.Modes)
+                    data[key] = list()
+                    for entry in val:
+                        class_name = entry['class']
+                        del entry['class']
+                        try:
+                            class_to_make = class_dict[class_name]
+                        except KeyError:
+                            raise KeyError("Class {0} must be provided in the 'class_dict' parameter "
+                                           "to make the object.".format(class_name))
+                        obj = class_to_make()
+                        if class_name in ['LinearRotor', 'NonlinearRotor', 'KRotor', 'SphericalTopRotor', 'HinderedRotor',
+                                          'FreeRotor'] and 'rotationalConstant' in entry and 'inertia' in entry:
+                                # Either `rotationalConstant` or `inertia` should be specified for a rotor.
+                                # Here both are specified, so we delete `inertia`.
+                                del entry['inertia']
+                        obj.make_object(entry, class_dict)
+                        logging.debug("made object {0}".format(class_name))
+                        data[key].append(obj)
+                else:
+                    # print 'not a class dict', val
+                    data[key] = val
             elif isinstance(val, str):
                 try:
                     float(val)
