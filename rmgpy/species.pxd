@@ -96,6 +96,8 @@ cdef class Species:
     cpdef bint has_reactive_molecule(self) except -1
 
     cpdef Species copy(self, bint deep=?)
+
+    cpdef set_structure(self, str structure)
     
 ################################################################################
 

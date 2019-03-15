@@ -717,8 +717,26 @@ class Species(object):
             alpha0 = (300*0.011962,"kJ/mol"),
             T0 = (300,"K"),
             n = 0.85,
-        ) 
+        )
+
+    def set_structure(self, structure):
+        """
+        Set self.molecule from `structure` which could be either a SMILES string or an adjacency list multi-line string
+        """
+        if not self.molecule:
+            try:
+                self.molecule = [Molecule(SMILES=structure)]
+            except ValueError:
+                try:
+                    self.molecule = [Molecule().fromAdjacencyList(structure)]
+                except ValueError:
+                    logging.error("Cannot understand the given structure '{0}' of species {1}. Could not "
+                                  "interpret it as SMILES nor as adjacency list".format(structure, self.label))
+                    raise
+            self.generate_resonance_structures()
+
 ################################################################################
+
 
 class TransitionState():
     """
