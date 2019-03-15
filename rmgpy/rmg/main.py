@@ -524,8 +524,9 @@ class RMG(util.Subject):
 
             # For liquidReactor, checks whether the solvent is listed as one of the initial species.
             if self.solvent:
-                solventStructure = self.database.solvation.getSolventStructure(self.solvent)
-                self.database.solvation.checkSolventinInitialSpecies(self,solventStructure)
+                solvent_structure_list = self.database.solvation.getSolventStructure(self.solvent)
+                for spc in solvent_structure_list:
+                    self.database.solvation.checkSolventinInitialSpecies(self, spc)
 
             #Check to see if user has input Singlet O2 into their input file or libraries
             #This constraint is special in that we only want to check it once in the input instead of every time a species is made
