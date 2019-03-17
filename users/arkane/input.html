@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>3. Creating Input Files for Thermodynamics and High-Pressure Limit Kinetics Computations &#8212; RMG-Py 2.1.0 Documentation</title>
+    <title>3. Creating Input Files &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     
@@ -19,7 +19,7 @@
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="4. Creating Input Files for Pressure Dependent Calculations" href="input_pdep.html" />
+    <link rel="next" title="4. Creating Input Files for Automated Pressure Dependent Network Exploration" href="input_explorer.html" />
     <link rel="prev" title="2. Installation" href="installation.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
@@ -40,7 +40,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="input_pdep.html" title="4. Creating Input Files for Pressure Dependent Calculations"
+          <a href="input_explorer.html" title="4. Creating Input Files for Automated Pressure Dependent Network Exploration"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="installation.html" title="2. Installation"
@@ -58,8 +58,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="creating-input-files-for-thermodynamics-and-high-pressure-limit-kinetics-computations">
-<h1>3. Creating Input Files for Thermodynamics and High-Pressure Limit Kinetics Computations<a class="headerlink" href="#creating-input-files-for-thermodynamics-and-high-pressure-limit-kinetics-computations" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="creating-input-files">
+<h1>3. Creating Input Files<a class="headerlink" href="#creating-input-files" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
 <h2>3.1. Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
 <p>The format of Arkane input files is based on Python syntax. In fact, Arkane
@@ -123,6 +123,26 @@ computations:</p>
 </tr>
 <tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">kinetics</span></code></td>
 <td>Performs a high-pressure limit kinetic computation</td>
+</tr>
+</tbody>
+</table>
+<p>For pressure dependent kinetics output, the following components are necessary:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="23%" />
+<col width="77%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Component</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">network</span></code></td>
+<td>Divides species into reactants, isomers, products and bath gases</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">pressureDependence</span></code></td>
+<td>Defines parameters necessary for solving master equation</td>
 </tr>
 </tbody>
 </table>
@@ -714,6 +734,99 @@ for specifying the same <code class="docutils literal notranslate"><span class="
 </div>
 <p>Note that the atom labels identified within the rotor section should correspond to the indicated geometry.</p>
 </div>
+<div class="section" id="additional-parameters-for-pressure-dependent-networks">
+<h4>3.4.1.3. Additional parameters for pressure dependent networks<a class="headerlink" href="#additional-parameters-for-pressure-dependent-networks" title="Permalink to this headline">¶</a></h4>
+<p>Additional parameters apply only to molecules in pressure depedent networks</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="15%" />
+<col width="22%" />
+<col width="63%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Required?</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">structure</span></code></td>
+<td>all species except bath gas</td>
+<td>A chemical structure for the species defined using either SMILES, adjacencyList, or InChI</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">molecularWeight</span></code></td>
+<td>optional for all species</td>
+<td>The molecular weight, if not given it is calculated based on the structure</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">reactive</span></code></td>
+<td>only bath gases</td>
+<td>Boolean indicating whether the molecule reacts, set to <code class="docutils literal notranslate"><span class="pre">False</span></code> for bath gases. default is <code class="docutils literal notranslate"><span class="pre">True</span></code></td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">collisionModel</span></code></td>
+<td>unimolecular isomers and bath gases</td>
+<td>Transport data for the species</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">energyTransferModel</span></code></td>
+<td>unimolecular isomers</td>
+<td>Assigned with <code class="docutils literal notranslate"><span class="pre">SingleExponentialDown</span></code> model</td>
+</tr>
+</tbody>
+</table>
+<p>The <code class="docutils literal notranslate"><span class="pre">structure</span></code> parameter is defined by SMILES, adjList, or InChI.  For instance, either representation is
+acceptable for the acetone molecule:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">structure</span> <span class="o">=</span> <span class="n">SMILES</span><span class="p">(</span><span class="s1">&#39;CC(C)=O&#39;</span><span class="p">)</span>
+
+<span class="n">structure</span> <span class="o">=</span> <span class="n">adjacencyList</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;1  C u0 p0 c0 {2,S} {5,S} {6,S} {7,S}</span>
+<span class="s2">                             2  C u0 p0 c0 {1,S} {3,S} {4,D}</span>
+<span class="s2">                             3  C u0 p0 c0 {2,S} {8,S} {9,S} {10,S}</span>
+<span class="s2">                             4  O u0 p2 c0 {2,D}</span>
+<span class="s2">                             5  H u0 p0 c0 {1,S}</span>
+<span class="s2">                             6  H u0 p0 c0 {1,S}</span>
+<span class="s2">                             7  H u0 p0 c0 {1,S}</span>
+<span class="s2">                             8  H u0 p0 c0 {3,S}</span>
+<span class="s2">                             9  H u0 p0 c0 {3,S}</span>
+<span class="s2">                             10 H u0 p0 c0 {3,S}&quot;&quot;&quot;</span><span class="p">)</span>
+
+<span class="n">structure</span> <span class="o">=</span> <span class="n">InChI</span><span class="p">(</span><span class="s1">&#39;InChI=1S/C3H6O/c1-3(2)4/h1-2H3&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">molecularWeight</span></code> parameter should be defined in the quantity format <code class="docutils literal notranslate"><span class="pre">(value,</span> <span class="pre">'units')</span></code>
+, for example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">molecularWeight</span> <span class="o">=</span> <span class="p">(</span><span class="mf">44.04</span><span class="p">,</span> <span class="s1">&#39;g/mol&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If the <code class="docutils literal notranslate"><span class="pre">molecularWeight</span></code> parameter is not given, it is calculated by Arkane based
+on the chemical structure.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">collisionModel</span></code> is defined for unimolecular isomers with the transport data using a
+<code class="docutils literal notranslate"><span class="pre">TransportData</span></code> object:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">collisionModel</span> <span class="o">=</span> <span class="n">TransportData</span><span class="p">(</span><span class="n">sigma</span><span class="o">=</span><span class="p">(</span><span class="mf">3.70</span><span class="p">,</span><span class="s1">&#39;angstrom&#39;</span><span class="p">),</span> <span class="n">epsilon</span><span class="o">=</span><span class="p">(</span><span class="mf">94.9</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">sigma</span></code> and <code class="docutils literal notranslate"><span class="pre">epsilon</span></code> are Lennard-Jones parameters, which can be estimated using the Joback method on the
+<a class="reference external" href="http://rmg.mit.edu/molecule_search">RMG website</a>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">energyTransferModel</span></code> model available is a <code class="docutils literal notranslate"><span class="pre">SingleExponentialDown</span></code>.</p>
+<ul>
+<li><p class="first"><code class="docutils literal notranslate"><span class="pre">SingleExponentialDown</span></code> - Specify <code class="docutils literal notranslate"><span class="pre">alpha0</span></code>, <code class="docutils literal notranslate"><span class="pre">T0</span></code> and <code class="docutils literal notranslate"><span class="pre">n</span></code> for the
+average energy transferred in a deactiving collision</p>
+<div class="math notranslate nohighlight">
+\[\left&lt; \Delta E_\mathrm{down} \right&gt; = \alpha_0 \left( \frac{T}{T_0} \right)^n\]</div>
+</li>
+</ul>
+<p>An example of a typical <code class="docutils literal notranslate"><span class="pre">energyTransferModel</span></code> function is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">energyTransferModel</span> <span class="o">=</span> <span class="n">SingleExponentialDown</span><span class="p">(</span>
+        <span class="n">alpha0</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.5718</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">),</span>
+        <span class="n">T0</span> <span class="o">=</span> <span class="p">(</span><span class="mi">300</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="mf">0.85</span><span class="p">,</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+<p>Parameters for the single exponential down model of collisional energy transfer are usually obtained from analogous
+systems in literature. For example, if the user is interested in a pressure-dependent network with overall molecular
+formula C7H8, the single exponential down parameters for toluene in helium availabe from literature could be used for
+all unimolecular isomers in the network (assuming helium is the bath gas). One helpful literature source for calculated
+exponential down parameters is the following paper:
+<a class="reference external" href="http://www.sciencedirect.com/science/article/pii/S1540748914001084#s0060">http://www.sciencedirect.com/science/article/pii/S1540748914001084#s0060</a></p>
+</div>
 </div>
 <div class="section" id="option-2-directly-enter-molecular-properties">
 <h3>3.4.2. Option #2: Directly Enter Molecular Properties<a class="headerlink" href="#option-2-directly-enter-molecular-properties" title="Permalink to this headline">¶</a></h3>
@@ -726,9 +839,9 @@ files of the underlying quantum chemistry calculations are rarely provided.</p>
 <p>For this option, there are a number of required parameters associated with the <code class="docutils literal notranslate"><span class="pre">species()</span></code> function</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="15%" />
 <col width="18%" />
-<col width="67%" />
+<col width="21%" />
+<col width="62%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Parameter</th>
@@ -757,10 +870,6 @@ files of the underlying quantum chemistry calculations are rarely provided.</p>
 <td>yes</td>
 <td>The number of optical isomers of the species, sets to 1 by default if not used</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">reactive</span></code></td>
-<td>only bath gases</td>
-<td>Boolean indicating whether the molecule reacts, set to <code class="docutils literal notranslate"><span class="pre">False</span></code> for bath gases. default is <code class="docutils literal notranslate"><span class="pre">True</span></code></td>
-</tr>
 </tbody>
 </table>
 <p>The <code class="docutils literal notranslate"><span class="pre">label</span></code> parameter should be set to a string with the desired name for the species, which can be reference later in
@@ -780,7 +889,7 @@ relative energies between various <code class="docutils literal notranslate"><sp
 literature for the energy of some reactant(s) to be arbitrarily defined as zero, and the energies of all transition
 states, intermediates and products are reported relative to that.</p>
 <p>Also note that the value of <code class="docutils literal notranslate"><span class="pre">E0</span></code> provided here will be used directly, i.e., no atom or bond corrections will be applied.</p>
-<p>If you want Cantherm to correct for zero point energy, you can either just place
+<p>If you want Arkane to correct for zero point energy, you can either just place
 the raw units in Hartree (as if it were read directly from quantum):</p>
 <blockquote>
 <div>E0 = 547.6789753223456</div></blockquote>
@@ -929,6 +1038,63 @@ input file, change the name of the function to <code class="docutils literal not
 section) and run a new Arkane job in this manner. This can be useful if the user wants to easily switch a <code class="docutils literal notranslate"><span class="pre">species()</span></code>
 function from <a class="reference internal" href="#option-1-automatically-parse-quantum-chemistry-calculation-output">Option #1: Automatically Parse Quantum Chemistry Calculation Output</a> to
 <a class="reference internal" href="#option-2-directly-enter-molecular-properties">Option #2: Directly Enter Molecular Properties</a>.</p>
+<div class="section" id="id1">
+<h4>3.4.2.1. Additional parameters for pressure dependent networks<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<p>Additional parameters apply only to molecules in pressure depedent networks</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="15%" />
+<col width="22%" />
+<col width="63%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Required?</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">structure</span></code></td>
+<td>all species except bath gas</td>
+<td>A chemical structure for the species defined using either SMILES, adjacencyList, or InChI</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">reactive</span></code></td>
+<td>only bath gases</td>
+<td>Boolean indicating whether the molecule reacts, set to <code class="docutils literal notranslate"><span class="pre">False</span></code> for bath gases. default is <code class="docutils literal notranslate"><span class="pre">True</span></code></td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">collisionModel</span></code></td>
+<td>unimolecular isomers and bath gases</td>
+<td>Transport data for the species</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">energyTransferModel</span></code></td>
+<td>unimolecular isomers</td>
+<td>Assigned with <code class="docutils literal notranslate"><span class="pre">SingleExponentialDown</span></code> model</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">thermo</span></code></td>
+<td>optional</td>
+<td>Thermo data for the species</td>
+</tr>
+</tbody>
+</table>
+<p>The parameters <code class="docutils literal notranslate"><span class="pre">structure</span></code>, <code class="docutils literal notranslate"><span class="pre">molecularWeight</span></code>, <code class="docutils literal notranslate"><span class="pre">collisionModel</span></code> and <code class="docutils literal notranslate"><span class="pre">energyTransferModel</span></code> were already discussed
+above in <a href="#id2"><span class="problematic" id="id3">`Species Parameters`_</span></a>.</p>
+<p>When the <code class="docutils literal notranslate"><span class="pre">thermo</span></code> parameter is specified, Arkane will approximate the modes
+of vibration and energy from the thermodynamic parameters, and will utilize this
+in its solution of the pressure dependent network. This is analygous to how RMG
+calculates thermodynamic parameters for pressure dependent mechanisms.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">thermo</span></code> parameter has the following synatx:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">thermo</span> <span class="o">=</span> <span class="n">NASA</span><span class="p">(</span><span class="n">polynomials</span><span class="o">=</span><span class="p">[</span>
+                    <span class="n">NASAPolynomial</span><span class="p">(</span><span class="n">coeffs</span><span class="o">=</span><span class="p">[</span><span class="mf">3.81543</span><span class="p">,</span><span class="mf">0.0114632</span><span class="p">,</span><span class="mf">0.000281868</span><span class="p">,</span>
+                                     <span class="o">-</span><span class="mf">5.70609e-07</span><span class="p">,</span><span class="mf">3.57113e-10</span><span class="p">,</span><span class="mf">45814.7</span><span class="p">,</span><span class="mf">14.9594</span><span class="p">],</span>
+                              <span class="n">Tmin</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span> <span class="n">Tmax</span><span class="o">=</span><span class="p">(</span><span class="mf">510.16</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">)),</span>
+                    <span class="n">NASAPolynomial</span><span class="p">(</span><span class="n">coeffs</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">1.32176</span><span class="p">,</span><span class="mf">0.0893697</span><span class="p">,</span><span class="o">-</span><span class="mf">5.78295e-05</span><span class="p">,</span>
+                                     <span class="mf">1.78722e-08</span><span class="p">,</span><span class="o">-</span><span class="mf">2.11223e-12</span><span class="p">,</span><span class="mf">45849.2</span><span class="p">,</span><span class="mf">31.4869</span><span class="p">],</span>
+                              <span class="n">Tmin</span><span class="o">=</span><span class="p">(</span><span class="mf">510.16</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span> <span class="n">Tmax</span><span class="o">=</span><span class="p">(</span><span class="mi">3000</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">))</span>
+                          <span class="p">],</span>
+              <span class="n">Tmin</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span> <span class="n">Tmax</span><span class="o">=</span><span class="p">(</span><span class="mi">3000</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">)),</span>
+</pre></div>
+</div>
+</div>
 </div>
 <div class="section" id="option-3-automatically-parse-yaml-files">
 <h3>3.4.3. Option #3: Automatically Parse YAML files<a class="headerlink" href="#option-3-automatically-parse-yaml-files" title="Permalink to this headline">¶</a></h3>
@@ -989,29 +1155,40 @@ Each reaction of interest must be specified using a <code class="docutils litera
 which accepts the following parameters:</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="26%" />
-<col width="74%" />
+<col width="15%" />
+<col width="13%" />
+<col width="72%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Required?</th>
 <th class="head">Description</th>
 </tr>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">label</span></code></td>
-<td>A unique string label used as an identifier</td>
+<td>All reactions</td>
+<td>A name for the reaction</td>
 </tr>
 <tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">reactants</span></code></td>
-<td>A list of strings indicating the labels of the reactant species</td>
+<td>All reactions</td>
+<td>A list of reactant species</td>
 </tr>
 <tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">products</span></code></td>
-<td>A list of strings indicating the labels of the product species</td>
+<td>All reactions</td>
+<td>A list of product species</td>
 </tr>
 <tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">transitionState</span></code></td>
-<td>The string label of the transition state</td>
+<td>All reactions</td>
+<td>The transition state</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">tunneling</span></code></td>
-<td>Method of estimating the quantum tunneling factor (optional)</td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">kinetics</span></code></td>
+<td>Optional</td>
+<td>The high pressure-limit kinetics for the reaction, for pdep calculations</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">tunneling</span></code></td>
+<td>Optional</td>
+<td>The type of tunneling model (either ‘Eckhart’ or ‘Wigner’) to use for tunneling through the reaction barrier</td>
 </tr>
 </tbody>
 </table>
@@ -1025,10 +1202,33 @@ which accepts the following parameters:</p>
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>Note: the quantum tunneling factor method that may be assigned is either <code class="docutils literal notranslate"><span class="pre">'Eckart'</span></code> or <code class="docutils literal notranslate"><span class="pre">'Wigner'</span></code>.</p>
+<p>Note that the reactants and products must have been previously declared using a <code class="docutils literal notranslate"><span class="pre">species()</span></code> function,
+using the same name labels. Transition states must also be previously declared using a
+<code class="docutils literal notranslate"><span class="pre">transitionState()</span></code> function.
+The quantum tunneling factor method that may be assigned is either <code class="docutils literal notranslate"><span class="pre">'Eckart'</span></code> or <code class="docutils literal notranslate"><span class="pre">'Wigner'</span></code>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">kinetics</span></code> parameter is only useful in pressure dependent calculations.
+If the optional <code class="docutils literal notranslate"><span class="pre">kinetics</span></code> parameter is specified, Arkane will perform an inverse
+Laplace transform (ILT) on the high pressure-limit kinetics provided to estimate
+the microcanonical rate coefficients, <span class="math notranslate nohighlight">\(k(E)\)</span>, needed for the master
+equation (refer to Theory manual for more detail). This feature is useful for
+barrierless reactions, such as radical recombinations, which don’t have an
+obvious transition state. If the ILT approach to calculating <span class="math notranslate nohighlight">\(k(E)\)</span> is taken,
+a placeholder <code class="docutils literal notranslate"><span class="pre">transitionState</span></code> must still be defined with an <code class="docutils literal notranslate"><span class="pre">E0</span></code> equal
+to the energy of the higher energy species
+it is connecting.
+If the optional <code class="docutils literal notranslate"><span class="pre">kinetics</span></code> entry is not specified, Arkane will calculate the required kinetic
+coefficients on its own. The <code class="docutils literal notranslate"><span class="pre">kinetics</span></code> entry is particularly useful to specify rates of barrierless
+reactions (for which Arkane cannot yet calculate high-pressure limit rates).
+The <code class="docutils literal notranslate"><span class="pre">kinetics</span></code> argument has the following syntax:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kinetics</span> <span class="o">=</span> <span class="n">Arrhenius</span><span class="p">(</span><span class="n">A</span><span class="o">=</span><span class="p">(</span><span class="mf">2.65e6</span><span class="p">,</span><span class="s1">&#39;m^3/(mol*s)&#39;</span><span class="p">),</span> <span class="n">n</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">Ea</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">),</span> <span class="n">T0</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s2">&quot;K&quot;</span><span class="p">)),</span>
+</pre></div>
 </div>
-<div class="section" id="thermodynamics-computations">
-<h2>3.7. Thermodynamics Computations<a class="headerlink" href="#thermodynamics-computations" title="Permalink to this headline">¶</a></h2>
+<p>For high pressure limit kinetics calculations, specifying the <code class="docutils literal notranslate"><span class="pre">kinetics</span></code>
+parameter will just output the value specified by the <code class="docutils literal notranslate"><span class="pre">kinetics</span></code> parameter,
+without using transition state theory.</p>
+</div>
+<div class="section" id="thermodynamics">
+<h2>3.7. Thermodynamics<a class="headerlink" href="#thermodynamics" title="Permalink to this headline">¶</a></h2>
 <p>Use a <code class="docutils literal notranslate"><span class="pre">thermo()</span></code> function to make Arkane execute the thermodynamic
 parameters computatiom for a species. Pass the string label of the species
 you wish to compute the  thermodynamic parameters for and the type of
@@ -1040,8 +1240,8 @@ output file.</p>
 </pre></div>
 </div>
 </div>
-<div class="section" id="kinetics-computations">
-<h2>3.8. Kinetics Computations<a class="headerlink" href="#kinetics-computations" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="high-pressure-limit-kinetics">
+<h2>3.8. High Pressure Limit Kinetics<a class="headerlink" href="#high-pressure-limit-kinetics" title="Permalink to this headline">¶</a></h2>
 <p>Use a <code class="docutils literal notranslate"><span class="pre">kinetics()</span></code> function to make Arkane execute the high-pressure limit kinetic
 parameters computation for a reaction. The <code class="docutils literal notranslate"><span class="pre">'label'</span></code> string must correspond to that of
 a defined <code class="docutils literal notranslate"><span class="pre">reaction()</span></code> function. If desired, define a temperature range and number
@@ -1075,21 +1275,190 @@ with the reaction label, delineates the semi-normalized sensitivity coefficients
 at all requested conditions. A horizontal bar figure is automatically generated per reaction with subplots for both the
 forward and reverse direction at all conditions.</p>
 </div>
+<div class="section" id="pressure-dependent-network-specification">
+<h2>3.9. Pressure Dependent Network Specification<a class="headerlink" href="#pressure-dependent-network-specification" title="Permalink to this headline">¶</a></h2>
+<p>To obtain pressure dependent rates, you need to add two different sections to
+the file. First, a declaration for the overall network must be given using the
+<code class="docutils literal notranslate"><span class="pre">network()</span></code> function, which specifies which spiecies are contained in this
+reaction network. After that you will need to create a <code class="docutils literal notranslate"><span class="pre">pressureDependence()</span></code>
+block that indicates how the pressure dependence calculation should be conducted.</p>
+<p>This section will go over the first of these sections, the <code class="docutils literal notranslate"><span class="pre">network()</span></code> function.
+This includes setting the following paramters:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="78%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">label</span></code></td>
+<td>A name for the network</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">isomers</span></code></td>
+<td>A list of species participating in unimolecular reaction channels</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">reactants</span></code></td>
+<td>A list of the species that participate in bimolecular reactant channels</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">bathGas</span></code></td>
+<td>A dictionary of bath gases and their respective mole fractions, adding up to 1.0</td>
+</tr>
+</tbody>
+</table>
+<p>Arkane is largely able to determine the molecular configurations that define
+the potential energy surface for your reaction network simply by inspecting the
+path reactions. However, you must indicate which unimolecular and bimolecular
+configurations you wish to include in the master equation formulation; all
+others will be treated as irreversible sinks.</p>
+<p>Note that all species and bath gases used in the <code class="docutils literal notranslate"><span class="pre">network</span></code> function must have been
+previously declared with the same name labels in a previous <code class="docutils literal notranslate"><span class="pre">species</span></code> function in the
+input file.</p>
+<p>You do not need to specify the product channels (infinite sinks) in this
+manner, as any configuration not marked as an isomer or reactant channel will
+be treated as a product channel.</p>
+<p>An example of the <code class="docutils literal notranslate"><span class="pre">network</span></code> function is given below along with a scheme of the network:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">network</span><span class="p">(</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;acetyl + O2&#39;</span><span class="p">,</span>
+    <span class="n">isomers</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;acetylperoxy&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;hydroperoxylvinoxy&#39;</span><span class="p">,</span>
+    <span class="p">],</span>
+    <span class="n">reactants</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s1">&#39;acetyl&#39;</span><span class="p">,</span> <span class="s1">&#39;oxygen&#39;</span><span class="p">),</span>
+    <span class="p">],</span>
+    <span class="n">bathGas</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;nitrogen&#39;</span><span class="p">:</span> <span class="mf">0.4</span><span class="p">,</span>
+        <span class="s1">&#39;argon&#39;</span><span class="p">:</span> <span class="mf">0.6</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../../_images/acetyl+O2.jpg" src="../../_images/acetyl+O2.jpg" />
+<p>Image source: <a class="reference external" href="http://hdl.handle.net/1721.1/81677">J.W. Allen, PhD dissertation, MIT 2013</a>,
+calculated at the RQCISD(T)/CBS//B3LYP/6-311++G(d,p) level of theory</p>
+</div>
+<div class="section" id="pressure-dependent-rate-calculation">
+<h2>3.10. Pressure Dependent Rate Calculation<a class="headerlink" href="#pressure-dependent-rate-calculation" title="Permalink to this headline">¶</a></h2>
+<p>The overall parameters for the pressure-dependence calculation must be defined in a
+<code class="docutils literal notranslate"><span class="pre">pressureDependence()</span></code> function at the end of the input file. The parameters are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="9%" />
+<col width="71%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Required?</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">label</span></code></td>
+<td>Yes</td>
+<td>Use the name for the <code class="docutils literal notranslate"><span class="pre">network</span></code> declared previously</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">method</span></code></td>
+<td>Yes</td>
+<td>Method to use for calculating the pdep network. Use either <code class="docutils literal notranslate"><span class="pre">'modified</span> <span class="pre">strong</span> <span class="pre">collision'</span></code>, <code class="docutils literal notranslate"><span class="pre">'reservoir</span> <span class="pre">state'</span></code>, or <code class="docutils literal notranslate"><span class="pre">'chemically-significant</span> <span class="pre">eigenvalues'</span></code></td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">interpolationModel</span></code></td>
+<td>Yes</td>
+<td>Select the output type for the pdep kinetics, either in <code class="docutils literal notranslate"><span class="pre">'chebyshev'</span></code> or <code class="docutils literal notranslate"><span class="pre">'pdeparrhenius'</span></code> (plog) format</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">activeKRotor</span></code></td>
+<td>No</td>
+<td>A flag indicating whether to treat the K-rotor as active or adiabatic (default <code class="docutils literal notranslate"><span class="pre">True</span></code>)</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">activeJRotor</span></code></td>
+<td>No</td>
+<td>A flag indicating whether to treat the J-rotor as active or adiabatic (default <code class="docutils literal notranslate"><span class="pre">True</span></code>)</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">Tmin</span></code>/<code class="docutils literal notranslate"><span class="pre">Tmax</span></code>/<code class="docutils literal notranslate"><span class="pre">Tcount</span></code> <strong>or</strong> <code class="docutils literal notranslate"><span class="pre">Tlist</span></code></td>
+<td>Yes</td>
+<td>Define temperatures at which to compute (and output) <span class="math notranslate nohighlight">\(k(T,P)\)</span></td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">Pmin</span></code>/<code class="docutils literal notranslate"><span class="pre">Pmax</span></code>/<code class="docutils literal notranslate"><span class="pre">Pcount</span></code> <strong>or</strong> <code class="docutils literal notranslate"><span class="pre">Plist</span></code></td>
+<td>Yes</td>
+<td>Define pressures at which to compute (and output) <span class="math notranslate nohighlight">\(k(T,P)\)</span></td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">maximumGrainSize</span></code></td>
+<td>Yes</td>
+<td>Defines the upper bound on grain spacing in master equation calculations.</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">minimumGrainCount</span></code></td>
+<td>Yes</td>
+<td>Defines the minimum number of grains in master equation calculation.</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">sensitivity_conditions</span></code></td>
+<td>No</td>
+<td>Specifies the conditions at which to run a network sensitivity analysis.</td>
+</tr>
+</tbody>
+</table>
+<p>An example of the Pressure-dependent algorithm parameters function for the acetyl + O2 network is shown below:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pressureDependence</span><span class="p">(</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;acetyl + O2&#39;</span><span class="p">,</span>
+    <span class="n">Tmin</span><span class="o">=</span><span class="p">(</span><span class="mf">300.0</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span> <span class="n">Tmax</span><span class="o">=</span><span class="p">(</span><span class="mf">2000.0</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">),</span> <span class="n">Tcount</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+    <span class="n">Pmin</span><span class="o">=</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span><span class="s1">&#39;bar&#39;</span><span class="p">),</span> <span class="n">Pmax</span><span class="o">=</span><span class="p">(</span><span class="mf">100.0</span><span class="p">,</span><span class="s1">&#39;bar&#39;</span><span class="p">),</span> <span class="n">Pcount</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="c1">#Tlist = ([300, 400, 600, 800, 1000, 1250, 1500, 1750, 2000],&#39;K&#39;)</span>
+    <span class="c1">#Plist = ([0.01, 0.1, 1.0, 10.0, 100.0],&#39;bar&#39;)</span>
+    <span class="n">maximumGrainSize</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">),</span>
+    <span class="n">minimumGrainCount</span> <span class="o">=</span> <span class="mi">250</span><span class="p">,</span>
+    <span class="n">method</span> <span class="o">=</span> <span class="s1">&#39;modified strong collision&#39;</span><span class="p">,</span>
+    <span class="c1">#method = &#39;reservoir state&#39;,</span>
+    <span class="c1">#method = &#39;chemically-significant eigenvalues&#39;,</span>
+    <span class="n">interpolationModel</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;chebyshev&#39;</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+    <span class="c1">#interpolationModel = (&#39;pdeparrhenius&#39;),</span>
+    <span class="c1">#activeKRotor = True,</span>
+    <span class="n">activeJRotor</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">sensitivity_conditions</span> <span class="o">=</span> <span class="p">[[(</span><span class="mi">1000</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;bar&#39;</span><span class="p">)],</span> <span class="p">[(</span><span class="mi">1500</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;bar&#39;</span><span class="p">)]]</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<div class="section" id="temperature-and-pressure-ranges">
+<h3>3.10.1. Temperature and Pressure Ranges<a class="headerlink" href="#temperature-and-pressure-ranges" title="Permalink to this headline">¶</a></h3>
+<p>Arkane will compute the <span class="math notranslate nohighlight">\(k(T,P)\)</span> values on a grid of temperature and
+pressure points. <code class="docutils literal notranslate"><span class="pre">Tmin</span></code>, <code class="docutils literal notranslate"><span class="pre">Tmax</span></code>, and <code class="docutils literal notranslate"><span class="pre">Tcount</span></code> values, as well as <code class="docutils literal notranslate"><span class="pre">Pmin</span></code>, <code class="docutils literal notranslate"><span class="pre">Pmax</span></code>, and <code class="docutils literal notranslate"><span class="pre">Pcount</span></code> parameter
+values must be provided. Arkane will automatically choose the intermediate temperatures based on the interpolation model
+you wish to fit. This is the recommended approach.</p>
+<p>Alternatively, the grid of temperature and pressure points can be specified explicitly using <code class="docutils literal notranslate"><span class="pre">Tlist</span></code> and/or <code class="docutils literal notranslate"><span class="pre">Plist</span></code>.</p>
+</div>
+<div class="section" id="energy-grains">
+<h3>3.10.2. Energy Grains<a class="headerlink" href="#energy-grains" title="Permalink to this headline">¶</a></h3>
+<p>Determine the fineness of the energy grains to be used in the master equation calculations.  Dictate
+the <code class="docutils literal notranslate"><span class="pre">maximumGrainSize</span></code>, and the <code class="docutils literal notranslate"><span class="pre">minimumGrainCount</span></code>.</p>
+</div>
+<div class="section" id="sensitivity-analysis">
+<h3>3.10.3. Sensitivity analysis<a class="headerlink" href="#sensitivity-analysis" title="Permalink to this headline">¶</a></h3>
+<p>Arkane also has the ability to vary barrier heights and generate sensitivity coefficients as a function of changes
+in <code class="docutils literal notranslate"><span class="pre">E0</span></code> with the <code class="docutils literal notranslate"><span class="pre">sensitivity_conditions</span></code> argument. For each desired condition, place its corresponding temperature
+and pressure within the list of <code class="docutils literal notranslate"><span class="pre">sensitivity_conditions</span></code>. See the example above for syntax.</p>
+<p>The output of a sensitivity analysis is saved into a <code class="docutils literal notranslate"><span class="pre">sensitivity</span></code> folder in the output directory. A text file, named
+with the network label, delineates the semi-normalized sensitivity coefficients <code class="docutils literal notranslate"><span class="pre">dln(k)/dE0</span></code> in units of <code class="docutils literal notranslate"><span class="pre">mol/J</span></code>
+for all network reactions (both directions if reversible) at all requested conditions. Horizontal bar figures are
+automatically generated per network reaction, showing the semi-normalized sensitivity coefficients at all conditions.</p>
+</div>
+</div>
 <div class="section" id="examples">
-<h2>3.9. Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<h2>3.11. Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
 <p>Perhaps the best way to learn the input file syntax is by example. To that end,
 a number of example input files and their corresponding output have been given
-in the <code class="docutils literal notranslate"><span class="pre">examples</span></code> directory.</p>
+in the <code class="docutils literal notranslate"><span class="pre">examples/arkane</span></code> directory.</p>
 </div>
 <div class="section" id="troubleshooting-and-faqs">
-<h2>3.10. Troubleshooting and FAQs<a class="headerlink" href="#troubleshooting-and-faqs" title="Permalink to this headline">¶</a></h2>
+<h2>3.12. Troubleshooting and FAQs<a class="headerlink" href="#troubleshooting-and-faqs" title="Permalink to this headline">¶</a></h2>
 <p>1) The network that Arkane generated and the resulting pdf file show abnormally large
 absolute values. What’s going on?</p>
 <blockquote>
 <div>This can happen if the number of atoms and atom types is not properly defined or consistent in your input file(s).</div></blockquote>
 </div>
 <div class="section" id="arkane-user-checklist">
-<h2>3.11. Arkane User Checklist<a class="headerlink" href="#arkane-user-checklist" title="Permalink to this headline">¶</a></h2>
+<h2>3.13. Arkane User Checklist<a class="headerlink" href="#arkane-user-checklist" title="Permalink to this headline">¶</a></h2>
 <p>Using Arkane, or any rate theory package for that matter, requires careful consideration and management of a large
 amount of data, files, and input parameters. As a result, it is easy to make a mistake somewhere. This checklist was
 made to minimize such mistakes for users:</p>
@@ -1144,7 +1513,7 @@ Arkane point to a ‘ScanLog’ file. Another problem can arise when the potenti
         <div class="menuitem">
   <h3><a href="../../contents.html">Table of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">3. Creating Input Files for Thermodynamics and High-Pressure Limit Kinetics Computations</a><ul>
+<li><a class="reference internal" href="#">3. Creating Input Files</a><ul>
 <li><a class="reference internal" href="#syntax">3.1. Syntax</a></li>
 <li><a class="reference internal" href="#model-chemistry">3.2. Model Chemistry</a></li>
 <li><a class="reference internal" href="#frequency-scale-factor">3.3. Frequency Scale Factor</a></li>
@@ -1152,19 +1521,30 @@ Arkane point to a ‘ScanLog’ file. Another problem can arise when the potenti
 <li><a class="reference internal" href="#option-1-automatically-parse-quantum-chemistry-calculation-output">3.4.1. Option #1: Automatically Parse Quantum Chemistry Calculation Output</a><ul>
 <li><a class="reference internal" href="#without-hindered-free-rotors">3.4.1.1. Without Hindered/Free Rotors</a></li>
 <li><a class="reference internal" href="#with-hindered-free-rotors">3.4.1.2. With Hindered/Free Rotors</a></li>
+<li><a class="reference internal" href="#additional-parameters-for-pressure-dependent-networks">3.4.1.3. Additional parameters for pressure dependent networks</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#option-2-directly-enter-molecular-properties">3.4.2. Option #2: Directly Enter Molecular Properties</a></li>
+<li><a class="reference internal" href="#option-2-directly-enter-molecular-properties">3.4.2. Option #2: Directly Enter Molecular Properties</a><ul>
+<li><a class="reference internal" href="#id1">3.4.2.1. Additional parameters for pressure dependent networks</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#option-3-automatically-parse-yaml-files">3.4.3. Option #3: Automatically Parse YAML files</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#transition-state">3.5. Transition State</a></li>
 <li><a class="reference internal" href="#reaction">3.6. Reaction</a></li>
-<li><a class="reference internal" href="#thermodynamics-computations">3.7. Thermodynamics Computations</a></li>
-<li><a class="reference internal" href="#kinetics-computations">3.8. Kinetics Computations</a></li>
-<li><a class="reference internal" href="#examples">3.9. Examples</a></li>
-<li><a class="reference internal" href="#troubleshooting-and-faqs">3.10. Troubleshooting and FAQs</a></li>
-<li><a class="reference internal" href="#arkane-user-checklist">3.11. Arkane User Checklist</a></li>
+<li><a class="reference internal" href="#thermodynamics">3.7. Thermodynamics</a></li>
+<li><a class="reference internal" href="#high-pressure-limit-kinetics">3.8. High Pressure Limit Kinetics</a></li>
+<li><a class="reference internal" href="#pressure-dependent-network-specification">3.9. Pressure Dependent Network Specification</a></li>
+<li><a class="reference internal" href="#pressure-dependent-rate-calculation">3.10. Pressure Dependent Rate Calculation</a><ul>
+<li><a class="reference internal" href="#temperature-and-pressure-ranges">3.10.1. Temperature and Pressure Ranges</a></li>
+<li><a class="reference internal" href="#energy-grains">3.10.2. Energy Grains</a></li>
+<li><a class="reference internal" href="#sensitivity-analysis">3.10.3. Sensitivity analysis</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#examples">3.11. Examples</a></li>
+<li><a class="reference internal" href="#troubleshooting-and-faqs">3.12. Troubleshooting and FAQs</a></li>
+<li><a class="reference internal" href="#arkane-user-checklist">3.13. Arkane User Checklist</a></li>
 </ul>
 </li>
 </ul>
@@ -1175,8 +1555,8 @@ Arkane point to a ‘ScanLog’ file. Another problem can arise when the potenti
   <p class="topless"><a href="installation.html"
                         title="previous chapter">2. Installation</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="input_pdep.html"
-                        title="next chapter">4. Creating Input Files for Pressure Dependent Calculations</a></p>
+  <p class="topless"><a href="input_explorer.html"
+                        title="next chapter">4. Creating Input Files for Automated Pressure Dependent Network Exploration</a></p>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -1218,7 +1598,7 @@ Arkane point to a ‘ScanLog’ file. Another problem can arise when the potenti
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="input_pdep.html" title="4. Creating Input Files for Pressure Dependent Calculations"
+          <a href="input_explorer.html" title="4. Creating Input Files for Automated Pressure Dependent Network Exploration"
              >next</a> |</li>
         <li class="right" >
           <a href="installation.html" title="2. Installation"

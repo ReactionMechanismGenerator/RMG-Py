@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>5. Creating Input Files for Automated Pressure Dependent Network Exploration &#8212; RMG-Py 2.1.0 Documentation</title>
+    <title>4. Creating Input Files for Automated Pressure Dependent Network Exploration &#8212; RMG-Py 2.1.0 Documentation</title>
     <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     
@@ -19,8 +19,8 @@
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="6. Running Arkane" href="running.html" />
-    <link rel="prev" title="4. Creating Input Files for Pressure Dependent Calculations" href="input_pdep.html" />
+    <link rel="next" title="5. Running Arkane" href="running.html" />
+    <link rel="prev" title="3. Creating Input Files" href="input.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -40,10 +40,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="running.html" title="6. Running Arkane"
+          <a href="running.html" title="5. Running Arkane"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="input_pdep.html" title="4. Creating Input Files for Pressure Dependent Calculations"
+          <a href="input.html" title="3. Creating Input Files"
              accesskey="P">previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
   <li><a href="../../index.html">2.3.0 Documentation</a> &raquo;</li>
@@ -59,9 +59,9 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <div class="section" id="creating-input-files-for-automated-pressure-dependent-network-exploration">
-<h1>5. Creating Input Files for Automated Pressure Dependent Network Exploration<a class="headerlink" href="#creating-input-files-for-automated-pressure-dependent-network-exploration" title="Permalink to this headline">¶</a></h1>
+<h1>4. Creating Input Files for Automated Pressure Dependent Network Exploration<a class="headerlink" href="#creating-input-files-for-automated-pressure-dependent-network-exploration" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="syntax">
-<h2>5.1. Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
+<h2>4.1. Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h2>
 <p>Network exploration starts from a pressure dependent calculation job so naturally it requires an input file
 containing everything required for a pressure-dependent calculation input file.  In addition all species
 blocks must have a structure input and there must be a database block in the job.  At the end of the
@@ -78,7 +78,7 @@ pressure-dependent calculation input file you append an explorer block.  For exa
 source channel.  The network is expanded starting from this starting isomer/channel.</p>
 </div>
 <div class="section" id="network-exploration">
-<h2>5.2. Network Exploration<a class="headerlink" href="#network-exploration" title="Permalink to this headline">¶</a></h2>
+<h2>4.2. Network Exploration<a class="headerlink" href="#network-exploration" title="Permalink to this headline">¶</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">explore_tol</span></code> is largest acceptable total rate at which isomers inside the network isomerize to become
 isomers that are not part of the network.  Network expansion is done starting from just the network source using
 values from the rest of the Arkane job when available, otherwise from RMG.  It cycles through all of the
@@ -89,7 +89,7 @@ again.  Once this loop is finished a network_full.py file is generated in the pd
 explored network.</p>
 </div>
 <div class="section" id="network-reduction">
-<h2>5.3. Network Reduction<a class="headerlink" href="#network-reduction" title="Permalink to this headline">¶</a></h2>
+<h2>4.3. Network Reduction<a class="headerlink" href="#network-reduction" title="Permalink to this headline">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">energy_tol</span></code> and <code class="docutils literal notranslate"><span class="pre">flux_tol</span></code> control reduction of the full network.  This is highly recommended as the full model
 will often contain many unimportant reactions.  How strict you decide to set these parameters should be related
 to how much you trust the thermo and rate information being used in the job.</p>
@@ -139,10 +139,10 @@ containing the reduced network.</p>
         <div class="menuitem">
   <h3><a href="../../contents.html">Table of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">5. Creating Input Files for Automated Pressure Dependent Network Exploration</a><ul>
-<li><a class="reference internal" href="#syntax">5.1. Syntax</a></li>
-<li><a class="reference internal" href="#network-exploration">5.2. Network Exploration</a></li>
-<li><a class="reference internal" href="#network-reduction">5.3. Network Reduction</a></li>
+<li><a class="reference internal" href="#">4. Creating Input Files for Automated Pressure Dependent Network Exploration</a><ul>
+<li><a class="reference internal" href="#syntax">4.1. Syntax</a></li>
+<li><a class="reference internal" href="#network-exploration">4.2. Network Exploration</a></li>
+<li><a class="reference internal" href="#network-reduction">4.3. Network Reduction</a></li>
 </ul>
 </li>
 </ul>
@@ -150,11 +150,11 @@ containing the reduced network.</p>
         </div>
         <div class="menuitem">
   <h4>Previous topic</h4>
-  <p class="topless"><a href="input_pdep.html"
-                        title="previous chapter">4. Creating Input Files for Pressure Dependent Calculations</a></p>
+  <p class="topless"><a href="input.html"
+                        title="previous chapter">3. Creating Input Files</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="running.html"
-                        title="next chapter">6. Running Arkane</a></p>
+                        title="next chapter">5. Running Arkane</a></p>
         </div>
         <div class="menuitem">
 <div role="note" aria-label="source link">
@@ -196,10 +196,10 @@ containing the reduced network.</p>
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="running.html" title="6. Running Arkane"
+          <a href="running.html" title="5. Running Arkane"
              >next</a> |</li>
         <li class="right" >
-          <a href="input_pdep.html" title="4. Creating Input Files for Pressure Dependent Calculations"
+          <a href="input.html" title="3. Creating Input Files"
              >previous</a> |</li>
   <li><a href="http://rmg.mit.edu/">RMG</a> &raquo;</li>
   <li><a href="../../index.html">2.3.0 Documentation</a> &raquo;</li>
