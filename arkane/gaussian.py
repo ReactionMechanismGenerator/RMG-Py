@@ -149,7 +149,10 @@ class GaussianLog:
         number = numpy.array(number, numpy.int)
         mass = numpy.array(mass, numpy.float64)
         if len(number) == 0 or len(coord) == 0 or len(mass) == 0:
-            raise InputError('Unable to read atoms from Gaussian geometry output file {0}'.format(self.path))
+            raise InputError('Unable to read atoms from Gaussian geometry output file {0}. '
+                             'Make sure the output file is not corrupt.\nNote: if your species has '
+                             '50 or more atoms, you will need to add the `iop(2/9=2000)` keyword to your '
+                             'input file so Gaussian will print the input orientation geomerty.'.format(self.path))
         
         return coord, number, mass
 
