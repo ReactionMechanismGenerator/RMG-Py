@@ -857,7 +857,14 @@ class CoreEdgeReactionModel:
         """
         # Only reactions from families should be missing kinetics
         assert isinstance(reaction, TemplateReaction)
-        
+
+        qdooh = Group().fromAdjacencyList("""
+            1  O u0 p2 c0 {2,S} {4,S}
+            2  O u0 p2 c0 {1,S} {3,S}
+            3  R!H u1 px c0 {2,S}
+            4  H u0 p0  c0 {1,S}
+            """)
+
         family = getFamilyLibraryObject(reaction.family)
 
         # Get the kinetics for the reaction
@@ -874,7 +881,16 @@ class CoreEdgeReactionModel:
                 rev_kinetics, rev_source, rev_entry, rev_isForward = family.getKinetics(reaction.reverse, templateLabels=reaction.reverse.template, degeneracy=reaction.reverse.degeneracy, estimator=self.kineticsEstimator, returnAllKinetics=False)
                 # Now decide which direction's kinetics to keep
                 keepReverse = False
-                if (entry is not None and rev_entry is None):
+                qdoohinprod = any([x.isSubgraphIsomorphic(qdooh) for y in reaction.products for x in y.molecule])
+                qdoohinreact = any([x.isSubgraphIsomorphic(qdooh) for y in reaction.reactants for x in y.molecule])
+
+                if qdoohinprod and not qdoohinreact:
+                    keepReverse = False
+                    reason = "This direction avoided qdooh being a reactant"
+                elif qdoohinreact and not qdoohinprod:
+                    keepReverse = True
+                    reason = "This direction avoided qdooh being a reactant"
+                elif (entry is not None and rev_entry is None):
                     # Only the forward has an entry, meaning an exact match in a depository or template
                     # the reverse must have used an averaged estimated node - so use forward.
                     reason = "This direction matched an entry in {0}, the other was just an estimate.".format(reaction.family)
