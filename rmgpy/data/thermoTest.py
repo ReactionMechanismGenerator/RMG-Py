@@ -573,6 +573,16 @@ multiplicity 2
                         msg="Did not select the molecule with the lowest H298 "
                             "as a the thermo entry for C=C[CH][O] / C=CC=O")
 
+        smiles = 'CS(=O)#S(=O)C'
+        # when using group additivity should instead select CS(=O)S(=O)C which has a lower enthalpy 
+        spec = Species().from_smiles(smiles)
+        thermo_gav1 = self.database.get_thermo_data_from_groups(spec)
+        spec.generate_resonance_structures()
+        thermo_gav2 = self.database.get_thermo_data_from_groups(spec)
+        self.assertTrue(thermo_gav2.get_enthalpy(298) < thermo_gav1.get_enthalpy(298),
+                        msg="Did not select the molecule with the lowest H298 "
+                            "as a the thermo entry for CS(=O)S(=O)C / CS(=O)#S(=O)C")
+
     def test_thermo_for_mixed_reactive_and_nonreactive_molecules(self):
         """Test that the thermo entry of nonreactive molecules isn't selected for a species, even if it's more stable"""
 
