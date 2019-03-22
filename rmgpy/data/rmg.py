@@ -50,7 +50,8 @@ database = None
 
 ################################################################################
 
-class RMGDatabase:
+
+class RMGDatabase(object):
     """
     The primary class for working with the RMG database.
     """
@@ -62,15 +63,12 @@ class RMGDatabase:
         self.kinetics = None
         self.statmech = None
         self.solvation = None
-        
+
         # Store the newly created database in the module.
         global database
-#        assert database is None, "Should only make one instance of RMGDatabase because it's stored as a module-level variable."
-        if database is None:
-            database = self
-        else:
-            logging.warning("Should only make one instance of RMGDatabase because it's stored as a module-level variable!")
-            logging.warning("Unexpected behaviour may result!")
+        if database is not None:
+            logging.warning('An instance of RMGDatabase already exists. Re-initializing it.')
+        database = self
 
     def load(self,
              path,
