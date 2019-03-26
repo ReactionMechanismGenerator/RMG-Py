@@ -617,7 +617,7 @@ def loadInputFile(path):
     with open(path, 'r') as f:
         try:
             exec f in global_context, local_context
-        except (NameError, TypeError, SyntaxError), e:
+        except (NameError, TypeError, SyntaxError):
             logging.error('The input file {0!r} was invalid:'.format(path))
             raise
 

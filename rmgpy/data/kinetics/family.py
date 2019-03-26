@@ -542,7 +542,7 @@ class KineticsFamily(Database):
                             self.forwardTemplate.reactants.append(token)
                         elif token != '+' and atArrow:
                             self.forwardTemplate.products.append(token)
-        except IOError, e:
+        except IOError as e:
             logging.exception('Database template file "' + e.filename + '" not found.')
             raise
         finally:

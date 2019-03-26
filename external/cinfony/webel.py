@@ -257,7 +257,7 @@ class Molecule(object):
         elif format == "names":
             try:
                 output = nci(_quo(self.smiles), "%s" % format).rstrip().split("\n")
-            except urllib2.URLError, e:
+            except urllib2.URLError as e:
                 if e.code == 404:
                     output = []
         elif format in ['inchi', 'inchikey']:
@@ -267,7 +267,7 @@ class Molecule(object):
             format = format + "_name"
             try:
                 output = nci(_quo(self.smiles), "%s" % format).rstrip()
-            except urllib2.URLError, e:
+            except urllib2.URLError as e:
                 if e.code == 404:
                     output = ""
         else:

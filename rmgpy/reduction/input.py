@@ -44,10 +44,10 @@ def loadReductionInput(reductionFile):
     full_path = os.path.abspath(os.path.expandvars(reductionFile))
     try:
         f = open(full_path)
-    except IOError, e:
+    except IOError:
         logging.error('The input file "{0}" could not be opened.'.format(full_path))
         logging.info('Check that the file exists and that you have read access.')
-        raise e
+        raise
 
     logging.info('Reading input file "{0}"...'.format(full_path))
     
@@ -64,7 +64,7 @@ def loadReductionInput(reductionFile):
         targets = local_context['targets']
         tolerance = local_context['tolerance']
 
-    except (NameError, TypeError, SyntaxError), e:
+    except (NameError, TypeError, SyntaxError) as e:
         logging.error('The input file "{0}" was invalid:'.format(full_path))
         logging.exception(e)
         raise

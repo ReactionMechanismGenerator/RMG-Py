@@ -553,10 +553,10 @@ def readInputFile(path, rmg0):
     full_path = os.path.abspath(os.path.expandvars(path))
     try:
         f = open(full_path)
-    except IOError, e:
+    except IOError:
         logging.error('The input file "{0}" could not be opened.'.format(full_path))
         logging.info('Check that the file exists and that you have read access.')
-        raise e
+        raise
 
     logging.info('Reading input file "{0}"...'.format(full_path))
     logging.info(f.read())
@@ -594,7 +594,7 @@ def readInputFile(path, rmg0):
 
     try:
         exec f in global_context, local_context
-    except (NameError, TypeError, SyntaxError), e:
+    except (NameError, TypeError, SyntaxError) as e:
         logging.error('The input file "{0}" was invalid:'.format(full_path))
         logging.exception(e)
         raise
@@ -628,10 +628,10 @@ def readThermoInputFile(path, rmg0):
     full_path = os.path.abspath(os.path.expandvars(path))
     try:
         f = open(full_path)
-    except IOError, e:
+    except IOError:
         logging.error('The input file "{0}" could not be opened.'.format(full_path))
         logging.info('Check that the file exists and that you have read access.')
-        raise e
+        raise
 
     logging.info('Reading input file "{0}"...'.format(full_path))
 
@@ -659,7 +659,7 @@ def readThermoInputFile(path, rmg0):
 
     try:
         exec f in global_context, local_context
-    except (NameError, TypeError, SyntaxError), e:
+    except (NameError, TypeError, SyntaxError) as e:
         logging.error('The input file "{0}" was invalid:'.format(full_path))
         logging.exception(e)
         raise
@@ -866,8 +866,8 @@ def getInput(name):
                 return obj
             else:
                 raise Exception
-        except Exception, e:
+        except Exception:
             logging.debug("Did not find a way to obtain the variable for {}.".format(name))
-            raise e
+            raise
 
     raise Exception('Could not get variable with name: {}'.format(name))

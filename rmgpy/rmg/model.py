@@ -354,7 +354,7 @@ class CoreEdgeReactionModel:
         try:
             spec = Species(index=speciesIndex, label=label, molecule=[molecule], reactive=reactive,
                  thermo=object.thermo, transportData=object.transportData)
-        except AttributeError, e:
+        except AttributeError:
             spec = Species(index=speciesIndex, label=label, molecule=[molecule], reactive=reactive)
         
         spec.creationIteration = self.iterationNum
@@ -629,7 +629,7 @@ class CoreEdgeReactionModel:
                     rxn = self.inflate(rxn)
                     try:
                         rxn.reverse = self.inflate(rxn.reverse)
-                    except AttributeError, e:
+                    except AttributeError:
                         pass
                     
                 self.processNewReactions(newReactions, newSpecies, pdepNetwork)
@@ -656,7 +656,7 @@ class CoreEdgeReactionModel:
                                 rxn = self.inflate(rxn)
                                 try:
                                     rxn.reverse = self.inflate(rxn.reverse)
-                                except AttributeError, e:
+                                except AttributeError:
                                     pass
 
                             self.processNewReactions(newReactions, species, network)
@@ -683,7 +683,7 @@ class CoreEdgeReactionModel:
                 rxn = self.inflate(rxn) 
                 try:
                     rxn.reverse = self.inflate(rxn.reverse)
-                except AttributeError, e:
+                except AttributeError:
                     pass
                 self.processNewReactions([rxn], spc)
 
@@ -1914,8 +1914,6 @@ class CoreEdgeReactionModel:
         except KeyError: # no such short-list: must be new, unless in seed.
             return []
 
-
-
     def inflate(self, rxn):
         """
         Convert reactions from
@@ -1949,12 +1947,8 @@ class CoreEdgeReactionModel:
         polling the index species dictionary.
         """
         if isinstance(obj, int):
-            try:
-                spc = self.indexSpeciesDict[obj]
-                return spc
-            except KeyError, e:
-                raise e
-
+            spc = self.indexSpeciesDict[obj]
+            return spc
         return obj
 
     def retrieveNewSpecies(self, deflatedRxn):
@@ -2023,13 +2017,13 @@ def getFamilyLibraryObject(label):
     try:
         fam = kinetics.families[label]
         return fam
-    except KeyError, e:
+    except KeyError:
         pass
 
     try:
         lib = kinetics.libraries[label]
         return lib
-    except KeyError, e:
+    except KeyError:
         pass
 
     raise Exception('Could not retrieve the family/library: {}'.format(label))
