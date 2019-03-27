@@ -51,7 +51,7 @@ try:
     from scoop._types import FutureQueue
     from scoop.broker.structs import BrokerInfo
 
-except ImportError, e:
+except ImportError:
     logging.debug("Could not properly import SCOOP.")
 
 

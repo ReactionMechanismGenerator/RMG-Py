@@ -39,7 +39,7 @@ import rmgpy
 
 try:
     from scoop import futures
-except ImportError, e:
+except ImportError:
     logging.debug("Could not properly import SCOOP.")
 
 from .input import load

@@ -221,7 +221,7 @@ class SymmetryJob:
         """
         try:
             pp = Popen(command, stdout=PIPE, stderr=PIPE)
-        except OSError, e:
+        except OSError as e:
             logging.error(e)
             raise Exception('Running symmetry on the point group calculation has failed.  Please check if symmetry program is installed on your system in RMG-Py/bin/symmetry or on your path.')
         stdout, stderr = pp.communicate()

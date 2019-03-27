@@ -135,7 +135,7 @@ def readThermoEntry(entry, Tmin=0, Tint=0, Tmax=0):
         a4_low = Ffloat(lines[3][15:30].strip())
         a5_low = Ffloat(lines[3][30:45].strip())
         a6_low = Ffloat(lines[3][45:60].strip())
-    except (IndexError, ValueError), e:
+    except (IndexError, ValueError) as e:
         logging.warning('Error while reading thermo entry for species {0}'.format(species))
         logging.warning(e.message)
         return species, None, None
@@ -1320,12 +1320,12 @@ def readReactionsBlock(f, speciesDict, readComments = True):
         try:
             reaction = readKineticsEntry(kinetics, speciesDict, Aunits, Eunits)
             reaction = readReactionComments(reaction, comments, read = readComments)
-        except ChemkinError, e:
+        except ChemkinError as e:
             if e.message == "Skip reaction!":
                 logging.warning("Skipping the reaction {0!r}".format(kinetics))
                 continue
             else:
-                raise e
+                raise
         reactionList.append(reaction)
         
     return reactionList

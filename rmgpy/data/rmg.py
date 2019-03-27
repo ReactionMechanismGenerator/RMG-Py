@@ -266,8 +266,8 @@ def getDB(name=''):
                 return db
             else:
                 raise DatabaseError
-        except DatabaseError, e:
+        except DatabaseError:
             logging.debug("Did not find a way to obtain the broadcasted database for {}.".format(name))
-            raise e
+            raise
 
     raise DatabaseError('Could not get database with name: {}'.format(name))

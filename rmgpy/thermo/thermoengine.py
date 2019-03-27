@@ -131,7 +131,7 @@ def generateThermoData(spc, thermoClass=NASA, solventName=''):
     try:
         thermodb = getDB('thermo')
         if not thermodb: raise Exception
-    except Exception, e:
+    except Exception:
         logging.debug('Could not obtain the thermo database. Not generating thermo...')
         return None
     
@@ -145,7 +145,7 @@ def generateThermoData(spc, thermoClass=NASA, solventName=''):
     
     try:
         thermoCentralDatabase = getInput('thermoCentralDatabase')
-    except Exception, e:
+    except Exception:
         logging.debug('thermoCentralDatabase could not be found.')
         thermoCentralDatabase = None
     

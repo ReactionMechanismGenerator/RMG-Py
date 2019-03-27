@@ -204,10 +204,10 @@ def loadThermoDataFile(filePath):
                 'int32': numpy.int32,
             }
             exec resultFile in global_context, local_context
-    except IOError, e:
+    except IOError:
         logging.info("Couldn't read thermo file {0}".format(filePath))
         return None
-    except (NameError, TypeError, SyntaxError), e:
+    except (NameError, TypeError, SyntaxError) as e:
         logging.error('The thermo file "{0}" was invalid:'.format(filePath))
         logging.exception(e)
         return None

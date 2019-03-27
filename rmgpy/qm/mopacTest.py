@@ -45,7 +45,7 @@ from rmgpy.exceptions import DependencyError
 NO_MOPAC = NO_LICENCE = False
 try:
     Mopac().testReady()
-except DependencyError, e:
+except DependencyError as e:
     if "Couldn't find MOPAC executable" in e.message:
         NO_MOPAC = NO_LICENCE = True
     elif 'To install the MOPAC license' in e.message or 'MOPAC_LICENSE' in e.message:

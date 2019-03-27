@@ -510,7 +510,7 @@ class Reaction:
         for product in self.products:
             try:
                 dGrxn += product.getFreeEnergy(T)
-            except Exception as e:
+            except Exception:
                 logging.error("Problem with product {!r} in reaction {!s}".format(reactant, self))
                 raise
         return dGrxn

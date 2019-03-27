@@ -96,9 +96,9 @@ def parseCCLibData(cclibData, groundStateDegeneracy):
         atomCoords = (cclibData.atomcoords[-1], 'angstrom')
         frequencies = (cclibData.vibfreqs, 'cm^-1')
 
-    except AttributeError, e:
+    except AttributeError:
         logging.error("The passed in cclibData has these attributes: {0!r}".format(cclibData._attrlist))
-        raise e
+        raise
 
     if hasattr(cclibData, 'stericenergy'):
         stericEnergy = (cclibData.stericenergy, 'eV/molecule')
