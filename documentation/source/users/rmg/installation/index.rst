@@ -86,13 +86,3 @@ Please visit the page below for detailed information on all of RMG's dependencie
     :maxdepth: 1
     
     dependencies
-
-Installation FAQ
-================
-
-This section collects frequently asked questions on installation of RMG.
-
-.. toctree::
-    :maxdepth: 1
-    
-    faq
