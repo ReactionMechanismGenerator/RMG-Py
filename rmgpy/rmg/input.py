@@ -345,6 +345,7 @@ def surfaceReactor(temperature,
                   nSims=4,
                   terminationConversion=None,
                   terminationTime=None,
+                  terminationRateRatio=None,
                   sensitivity=None,
                   sensitivityThreshold=1e-3):
 
@@ -395,6 +396,8 @@ def surfaceReactor(temperature,
             termination.append(TerminationConversion(speciesDict[spec], conv))
     if terminationTime is not None:
         termination.append(TerminationTime(Quantity(terminationTime)))
+    if terminationRateRatio is not None:
+        termination.append(TerminationRateRatio(terminationRateRatio))
     if len(termination) == 0:
         raise InputError('No termination conditions specified for reaction system #{0}.'.format(len(rmg.reactionSystems) + 2))
 
