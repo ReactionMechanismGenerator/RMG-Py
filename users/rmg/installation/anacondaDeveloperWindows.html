@@ -61,15 +61,17 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="installation-by-source-using-anaconda-environment-for-windows">
 <span id="anacondadeveloperwindows"></span><h1>3.4.4. Installation by Source Using Anaconda Environment for Windows<a class="headerlink" href="#installation-by-source-using-anaconda-environment-for-windows" title="Permalink to this headline">¶</a></h1>
-<ul class="simple">
-<li>Download and install the <a class="reference external" href="https://www.anaconda.com/download/">Anaconda Python Platform</a> for Python 2.7 (make sure not to install Python 3.0+, which is incompatible with RMG). We recommend changing the default install path to <code class="docutils literal notranslate"><span class="pre">C:\Anaconda\</span></code> in order to avoid spaces in the install path and be easily accessible. It is recommended to append Anaconda to your PATH as well as setting it as your default Python executable.  All other settings can remain as their defaults.</li>
-</ul>
-<img alt="../../../_images/AnacondaInstallWindows.png" class="align-center" src="../../../_images/AnacondaInstallWindows.png" />
-<ul class="simple">
-<li>Install <a class="reference external" href="http://git-scm.com/download/win">Git</a>, the open source version control package. When asked, append Git tools to your Command Prompt. It is also recommended to commit Unix-style line endings:</li>
-</ul>
-<img alt="../../../_images/InstallGit.png" class="align-center" src="../../../_images/InstallGit.png" />
-<ul>
+<ol class="arabic">
+<li><p class="first">Download and install the <a class="reference external" href="https://www.anaconda.com/download/">Anaconda Python Platform</a> for Python 2.7 (make sure not to install Python 3.0+, which is incompatible with RMG). We recommend changing the default install path to <code class="docutils literal notranslate"><span class="pre">C:\Anaconda\</span></code> in order to avoid spaces in the install path and be easily accessible. It is recommended to append Anaconda to your PATH as well as setting it as your default Python executable.  All other settings can remain as their defaults.</p>
+<blockquote>
+<div><img alt="../../../_images/AnacondaInstallWindows.png" class="align-center" src="../../../_images/AnacondaInstallWindows.png" />
+</div></blockquote>
+</li>
+<li><p class="first">Install <a class="reference external" href="http://git-scm.com/download/win">Git</a>, the open source version control package. When asked, append Git tools to your Command Prompt. It is also recommended to commit Unix-style line endings:</p>
+<blockquote>
+<div><img alt="../../../_images/InstallGit.png" class="align-center" src="../../../_images/InstallGit.png" />
+</div></blockquote>
+</li>
 <li><p class="first">Open Git CMD or a command prompt (either by finding it in your Program Files or by searching for <code class="docutils literal notranslate"><span class="pre">cmd.exe</span></code>. You may have to run the command prompt as an administrator. To do so right click on <code class="docutils literal notranslate"><span class="pre">cmd.exe.</span></code> and select Run as Administrator).  Install the latest versions of RMG and RMG-database through cloning the source code via Git. Make sure to start in an appropriate local directory where you want both RMG-Py and RMG-database folders to exist. We recommend creating a folder such as <code class="docutils literal notranslate"><span class="pre">C:\Code\</span></code></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ReactionMechanismGenerator</span><span class="o">/</span><span class="n">RMG</span><span class="o">-</span><span class="n">Py</span><span class="o">.</span><span class="n">git</span>
 <span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ReactionMechanismGenerator</span><span class="o">/</span><span class="n">RMG</span><span class="o">-</span><span class="n">database</span><span class="o">.</span><span class="n">git</span>
@@ -106,12 +108,12 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </pre></div>
 </div>
 </li>
-</ul>
+</ol>
 <p>You may now use RMG-Py, Arkane, as well as any of the <a class="reference internal" href="../modules/index.html#modules"><span class="std std-ref">Standalone Modules</span></a> included in the RMG-Py package.</p>
 <div class="section" id="test-suite">
 <h2>3.4.4.1. Test Suite<a class="headerlink" href="#test-suite" title="Permalink to this headline">¶</a></h2>
 <p>There are a number of basic tests you can run on the newly installed RMG.  It is recommended to run them regularly to ensure the code and databases are behaving normally.</p>
-<ul>
+<ol class="arabic">
 <li><p class="first"><strong>Unit test suite</strong>: this will run all the unit tests in the <code class="docutils literal notranslate"><span class="pre">rmgpy</span></code> package</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Py</span>
 <span class="n">mingw32</span><span class="o">-</span><span class="n">make</span> <span class="n">test</span>
@@ -124,12 +126,12 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </pre></div>
 </div>
 </li>
-</ul>
+</ol>
 </div>
 <div class="section" id="running-examples">
 <h2>3.4.4.2. Running Examples<a class="headerlink" href="#running-examples" title="Permalink to this headline">¶</a></h2>
 <p>A number of basic examples can be run immediately.  Additional example input files can be found in the <code class="docutils literal notranslate"><span class="pre">RMG-Py\examples</span></code> folder.  Please read more on <a class="reference internal" href="../examples.html#examples"><span class="std std-ref">Example Input Files</span></a> in the documentation.</p>
-<ul>
+<ol class="arabic">
 <li><p class="first"><strong>Minimal Example</strong>: this will run an Ethane pyrolysis model.  It should take less than a minute to complete. The results will be in the <code class="docutils literal notranslate"><span class="pre">RMG-Py\testing\minimal</span></code> folder:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Py</span>
 <span class="n">mingw32</span><span class="o">-</span><span class="n">make</span> <span class="n">eg1</span>
@@ -154,7 +156,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </pre></div>
 </div>
 </li>
-</ul>
+</ol>
 </div>
 </div>
 

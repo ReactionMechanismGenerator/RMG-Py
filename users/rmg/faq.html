@@ -60,13 +60,111 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="frequently-asked-questions">
 <h1>16. Frequently Asked Questions<a class="headerlink" href="#frequently-asked-questions" title="Permalink to this headline">¶</a></h1>
-<p>For any other questions related to RMG and its usage and installation, please
-post an issue at <a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">https://github.com/ReactionMechanismGenerator/RMG-Py/issues</a> and the RMG
-developers will get back to you as soon as we can.  You can also search for your problem on the issues
-page to see if there are already solutions in development.  Alternatively, you can email us at
-<a class="reference external" href="mailto:rmg_dev&#37;&#52;&#48;mit&#46;edu">rmg_dev<span>&#64;</span>mit<span>&#46;</span>edu</a>.</p>
-<div class="section" id="why-can-t-my-adjacency-lists-be-read-any-more">
-<h2>16.1. Why can’t my adjacency lists be read any more?<a class="headerlink" href="#why-can-t-my-adjacency-lists-be-read-any-more" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="introduction">
+<h2>16.1. Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>We have compiled some common questions about installing and using RMG below.
+For any other questions related to RMG and its usage and installation, please
+post an issue on our <a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">GitHub issues page</a>,
+where you can also search for any previous reports of your issue.
+Alternatively, you can also ask questions via the <a class="reference external" href="https://gitter.im/ReactionMechanismGenerator/RMG-Py">RMG-Py chat room</a>
+or by contacting us directly at <a class="reference external" href="mailto:rmg_dev&#37;&#52;&#48;mit&#46;edu">rmg_dev<span>&#64;</span>mit<span>&#46;</span>edu</a>.</p>
+</div>
+<div class="section" id="installing-rmg">
+<h2>16.2. Installing RMG<a class="headerlink" href="#installing-rmg" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><p class="first"><strong>How can I install RMG-Py without Anaconda?</strong></p>
+<p>Usually we don’t recommend installing RMG-Py without Anaconda because it takes longer and is easier to get trouble
+with package management. But one still can try direct installation on Linux or MacOS by following
+<a class="reference internal" href="installation/linux.html#linux"><span class="std std-ref">Linux instruction</span></a> or <a class="reference internal" href="installation/macos.html#macos"><span class="std std-ref">MacOS instruction</span></a>. The RMG team does not use this install approach
+internally any more, so these instructions are not actively maintained.</p>
+</li>
+<li><p class="first"><strong>Why does RMG-Py not work natively on Windows?</strong></p>
+<p>One major challenge with supporting Windows is ensuring that all of our dependencies support Windows. This becomes
+non-trivial as we add more dependencies to support increasing RMG functionality. Ensuring that code within RMG is
+platform-agnostic is also challenging, since it is rarely the first priority for new development because our main
+focus is on research.</p>
+</li>
+<li><p class="first"><strong>What is the recommended way to run RMG-Py on Windows?</strong></p>
+<p>The currently recommended way to run RMG on Windows is to set up a Linux environment. There are multiple ways you
+can approach this. Windows 10 supports a Linux subsystem which allows one to set up a Linux environment within
+Windows without using virtualization. You can find instructions on setting up RMG within the Linux subsystem
+<a class="reference internal" href="installation/linuxSubsystem.html#linuxsubsystem"><span class="std std-ref">here</span></a>.</p>
+<p>Another option would be to set up a full Linux virtual machine using something like VirtualBox or VMWare Workstation.
+The benefit of this option is being able to run in a full Linux environment. However, running two operating systems
+simultaneously does result in excess resource overhead, so it may not be suitable for running extended RMG jobs.
+Instructions for setting up a virtual machine can be found <a class="reference internal" href="installation/virtualMachineSetup.html#virtualmachinesetup"><span class="std std-ref">here</span></a>.</p>
+<p>A third option that we are currently beginning to explore using <a class="reference external" href="https://www.docker.com/">Docker</a>, which is a
+container-based infrastructure which shares the same benefits as a virtual machine but with less overhead. There
+are some test images of RMG-Py which can be found on <a class="reference external" href="https://hub.docker.com/">Docker Hub</a> if you would like to
+give this a try. More detailed instructions will be made available once we officially support this approach.</p>
+</li>
+<li><p class="first"><strong>Windows binary installation gives ``WindowsError: [Error 5]``?</strong></p>
+<p>Error 5 is access is denied, so this is either a permissions error, or an issue with the Windows file lock.
+<a class="reference external" href="https://github.com/conda/conda/issues/708">These posts</a> suggest rebooting the computer (in case it’s a file lock),
+and running the anaconda prompt, from which you run <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">create</span> <span class="pre">-c</span> <span class="pre">rmg</span> <span class="pre">--name</span> <span class="pre">rmg_env</span> <span class="pre">rmg</span> <span class="pre">rmgdatabase</span></code>,
+as an administrator (in case it’s a permissions error). Please checkout one example from a user having
+<a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues/779">Windows binary installation issue</a>.</p>
+</li>
+</ol>
+</div>
+<div class="section" id="running-rmg">
+<h2>16.3. Running RMG<a class="headerlink" href="#running-rmg" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><p class="first"><strong>How do I run a basic RMG job?</strong></p>
+<p>Please see step-by-step instructions in the either the <a class="reference internal" href="installation/anacondaUser.html#anacondauser"><span class="std std-ref">binary</span></a> or <a class="reference internal" href="installation/anacondaDeveloper.html#anacondadeveloper"><span class="std std-ref">source</span></a>
+installation instructions. In general, the syntax is</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rmg</span><span class="o">.</span><span class="n">py</span> <span class="nb">input</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>if the RMG-Py directory has been properly added to PATH. For the binary installation, this is done automatically,
+but you will need to do this yourself if installing from source.</p>
+<p>For information on writing an RMG input file, please see the <a class="reference internal" href="input.html#input"><span class="std std-ref">documentation</span></a>.</p>
+</li>
+<li><p class="first"><strong>Why did I get</strong> <code class="docutils literal notranslate"><span class="pre">ImportError:</span> <span class="pre">No</span> <span class="pre">module</span> <span class="pre">named</span> <span class="pre">graph</span></code> <strong>when trying to run RMG?</strong></p>
+<p>This error is commonly seen when RMG is run before compiling. The <code class="docutils literal notranslate"><span class="pre">graph</span></code> module just happens to be one of the
+first Cython modules to be imported. To resolve this, compile RMG using the <code class="docutils literal notranslate"><span class="pre">make</span></code> command while in the main
+RMG-Py directory.</p>
+</li>
+<li><p class="first"><strong>Why did I get</strong> <code class="docutils literal notranslate"><span class="pre">ImportError:</span> <span class="pre">No</span> <span class="pre">module</span> <span class="pre">named</span> <span class="pre">cantera</span></code> <strong>when trying to run RMG?</strong></p>
+<p>This error is commonly seen when RMG is run without properly setting up the Anaconda environment. The <code class="docutils literal notranslate"><span class="pre">cantera</span></code>
+module happens to be one of the first dependencies to be imported. To resolve this, activate the RMG environment
+using <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">rmg_env</span></code>. If the environment has not already been created, create the environment according
+to the <a class="reference internal" href="installation/anacondaDeveloper.html#anacondadeveloper"><span class="std std-ref">Linux installation instructions</span></a>.</p>
+</li>
+<li><p class="first"><strong>What is an</strong> <code class="docutils literal notranslate"><span class="pre">UndeterminableKineticsError</span></code>?</p>
+<p>This is a common cause of crashed RMG jobs. It is often due to inconsistencies in how reaction templates are
+defined in RMG-database, and occasionally due to inconsistencies in resonance structure generation. Unfortunately,
+this type of error can be very difficult to debug. You can post such issues to our
+<a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">GitHub issues page</a>.</p>
+</li>
+<li><p class="first"><strong>What is an</strong> <code class="docutils literal notranslate"><span class="pre">InvalidMicrocanonicalRateError</span></code>?</p>
+<p>This is another common cause of crashed RMG jobs when using the pressure dependence module. It is due to a failure
+to converge the microcanonical rate calculation for a pressure dependent network. It can be due to a variety of
+factors, such as poor thermochemistry or rate constants. Unfortunately, there is currently no good way to debug and
+fix these types of errors.</p>
+</li>
+<li><p class="first"><strong>Why did I get</strong> <code class="docutils literal notranslate"><span class="pre">Segmentation</span> <span class="pre">fault:11</span></code> <strong>after installing RMG on my machine?</strong></p>
+<p><strong>Segmentation fault</strong> is a typical error in C code, caused by a program trying to read or write an illegal memory
+location, i.e. one it is not allowed to access. The most common cause in RMG is a conflict between two different
+versions of a shared library. RMG has some dependencies which are written in C++, e.g. rdkit, openbabel. If you
+compile one of these with a different version of some compiler library, or you compile RMG using one version and
+run it with another, you will often get a Segmentation fault. Chances are those packages are not up to date, or
+maybe your environmental variable <code class="docutils literal notranslate"><span class="pre">PATH</span></code> is messed up so that the wrong version of something is being found.
+Please see one example from a user having same
+<a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-website/issues/125">Segmentation fault issue</a>.</p>
+</li>
+<li><p class="first"><strong>Why did I get</strong> <code class="docutils literal notranslate"><span class="pre">IOError:</span> <span class="pre">[Errno</span> <span class="pre">13]</span> <span class="pre">Permission</span> <span class="pre">denied:</span> <span class="pre">'C:\\RMG.log'</span></code></p>
+<p>You do not have permission to write to the log file. Try running the RMG from a different folder that you do have
+write permission to, such as within your user’s documents directory, or else try running the command prompt as an
+Administrator (so that you have write permission everywhere). See for example
+<a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues/817">issue #817</a>.</p>
+</li>
+</ol>
+</div>
+<div class="section" id="miscellaneous">
+<h2>16.4. Miscellaneous<a class="headerlink" href="#miscellaneous" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><p class="first"><strong>Why can’t my adjacency lists be read any more?</strong></p>
 <p>The adjacency list syntax changed in July 2014.
 The minimal requirement for most translations is to prefix the number
 of unpaired electrons with the letter <cite>u</cite>.</p>
@@ -90,11 +188,11 @@ of unpaired electrons with the letter <cite>u</cite>.</p>
 <span class="mi">6</span> <span class="o">*</span><span class="mi">2</span> <span class="n">C</span> <span class="n">u0</span> <span class="p">{</span><span class="mi">5</span><span class="p">,</span><span class="n">S</span><span class="p">}</span>
 </pre></div>
 </div>
-<p>The new syntax, however, allows much
-greater flexibility, including definition of lone pairs, partial charges,
-wildcards, and molecule multiplicities, and was necessary to allow us to
-add Nitrogen chemistry.
+<p>The new syntax, however, allows much greater flexibility, including definition of lone pairs, partial charges,
+wildcards, and molecule multiplicities, and was necessary to allow us to add Nitrogen chemistry.
 See <a class="reference internal" href="../../reference/molecule/adjlist.html#rmgpy-molecule-adjlist"><span class="std std-ref">Adjacency Lists</span></a> for details of the new syntax.</p>
+</li>
+</ol>
 </div>
 </div>
 
@@ -128,7 +226,10 @@ See <a class="reference internal" href="../../reference/molecule/adjlist.html#rm
   <h3><a href="../../contents.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">16. Frequently Asked Questions</a><ul>
-<li><a class="reference internal" href="#why-can-t-my-adjacency-lists-be-read-any-more">16.1. Why can’t my adjacency lists be read any more?</a></li>
+<li><a class="reference internal" href="#introduction">16.1. Introduction</a></li>
+<li><a class="reference internal" href="#installing-rmg">16.2. Installing RMG</a></li>
+<li><a class="reference internal" href="#running-rmg">16.3. Running RMG</a></li>
+<li><a class="reference internal" href="#miscellaneous">16.4. Miscellaneous</a></li>
 </ul>
 </li>
 </ul>

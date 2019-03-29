@@ -64,19 +64,22 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <p>Setting environment variables in Windows allows for easier shortcutting and usage of RMG scripts and packages.</p>
 <div class="section" id="setting-the-rmgpy-variable">
 <h2>3.4.5.1. Setting the <code class="docutils literal notranslate"><span class="pre">RMGPy</span></code> variable<a class="headerlink" href="#setting-the-rmgpy-variable" title="Permalink to this headline">¶</a></h2>
-<ul class="simple">
-<li>If you have a search bar available in your start menu, search for “environment variables” and select “Edit environment variables for your account”.  Alternatively, navigate to this settings window by first going to “Control Panel &gt; System”, then clicking “Advanced system settings”.</li>
-</ul>
-<img alt="../../../_images/ControlPanel.png" class="align-center" src="../../../_images/ControlPanel.png" />
-<ul class="simple">
-<li>Once the “System Properties” window opens, click on “Environment Variables…” in the “Advanced” tab.</li>
-</ul>
-<img alt="../../../_images/SystemProperties.png" class="align-center" src="../../../_images/SystemProperties.png" />
-<ul class="simple">
-<li>Once the “Environment Variables” window opens, click on “New” under the “User variables”.</li>
-</ul>
-<img alt="../../../_images/EnvironmentVariables.png" class="align-center" src="../../../_images/EnvironmentVariables.png" />
-<ul>
+<ol class="arabic">
+<li><p class="first">If you have a search bar available in your start menu, search for “environment variables” and select “Edit environment variables for your account”.  Alternatively, navigate to this settings window by first going to “Control Panel &gt; System”, then clicking “Advanced system settings”.</p>
+<blockquote>
+<div><img alt="../../../_images/ControlPanel.png" class="align-center" src="../../../_images/ControlPanel.png" />
+</div></blockquote>
+</li>
+<li><p class="first">Once the “System Properties” window opens, click on “Environment Variables…” in the “Advanced” tab.</p>
+<blockquote>
+<div><img alt="../../../_images/SystemProperties.png" class="align-center" src="../../../_images/SystemProperties.png" />
+</div></blockquote>
+</li>
+<li><p class="first">Once the “Environment Variables” window opens, click on “New” under the “User variables”.</p>
+<blockquote>
+<div><img alt="../../../_images/EnvironmentVariables.png" class="align-center" src="../../../_images/EnvironmentVariables.png" />
+</div></blockquote>
+</li>
 <li><p class="first">Set a new variable with the name <code class="docutils literal notranslate"><span class="pre">RMGPy</span></code> with the appropriate value directed at your RMG path.</p>
 <p>If you installed the binary version of RMG, the environment value should be set to:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">C</span><span class="p">:</span>\<span class="n">Anaconda</span>\<span class="n">envs</span>\<span class="n">rmg_env</span>\<span class="n">Scripts</span>\
@@ -94,7 +97,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
 <li><p class="first">Click “Ok” on all screens to confirm the changes.</p>
 </li>
-</ul>
+</ol>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">If you set any new environment variables, you must close and reopen any command prompts previously open before the changes can take effect.</p>

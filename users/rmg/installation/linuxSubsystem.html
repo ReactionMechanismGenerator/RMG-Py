@@ -68,11 +68,13 @@ determined from the “About” tab in the system settings (see the “OS build�
 </div>
 <div class="section" id="installing-the-linux-subsystem">
 <h2>3.1.2.2. Installing the Linux Subsystem<a class="headerlink" href="#installing-the-linux-subsystem" title="Permalink to this headline">¶</a></h2>
-<p>1. Follow the instructions provided by Microsoft to install the Linux subsystem, available <a class="reference external" href="https://docs.microsoft.com/en-us/windows/wsl/install-win10">here</a>. The basic steps include enabling the Windows Linux
+<ol class="arabic">
+<li><p class="first">Follow the instructions provided by Microsoft to install the Linux subsystem, available <a class="reference external" href="https://docs.microsoft.com/en-us/windows/wsl/install-win10">here</a>. The basic steps include enabling the Windows Linux
 subsystem from a powershell <strong>run as an administrator</strong>, and downloading the latest LTS version of Ubuntu
 <em>from the Windows store</em>. We recommend Ubuntu (for which these instructions were made) over the other Linux
 distributions.</p>
-<p>2. Once the Linux subsystem is installed, open a web browser in Windows and go to the
+</li>
+<li><p class="first">Once the Linux subsystem is installed, open a web browser in Windows and go to the
 <a class="reference external" href="https://www.anaconda.com/download/#linux">Anaconda Python Platform Downloads Page</a>. Go to the tab for the
 <strong>Linux Installer</strong>, and <strong>right click</strong> on the download icon for Python 2.7 to copy the link location. Open an Ubuntu
 terminal (type in <code class="docutils literal notranslate"><span class="pre">Ubuntu</span></code> into the Windows search bar if you are unsure where to find it) and paste the link
@@ -82,7 +84,8 @@ into the terminal immediately after typing the <code class="docutils literal not
 </div>
 <p>Your exact link will look similar to the one above, but may be a more recent version of the installer. Execute this
 command in the terminal to begin downloading the installer.</p>
-<p>3. Once the Anaconda installer has downloaded, execute the following commands in the Ubuntu terminal, changing the name
+</li>
+<li><p class="first">Once the Anaconda installer has downloaded, execute the following commands in the Ubuntu terminal, changing the name
 of <code class="docutils literal notranslate"><span class="pre">Anaconda2-2018.12-Linux-x86_64.sh</span></code> to match the name of the script you downloaded.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="n">Anaconda2</span><span class="o">-</span><span class="mf">2018.12</span><span class="o">-</span><span class="n">Linux</span><span class="o">-</span><span class="n">x86_64</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
@@ -91,7 +94,7 @@ of <code class="docutils literal notranslate"><span class="pre">Anaconda2-2018.1
 to install). <strong>When prompted to append Anaconda to your PATH, select or type Yes</strong>. When prompted, do NOT install
 Microsoft VSCode. If you are interested in this lightweight IDE then you will want to install this into Windows 10
 instead of inside the linux subsystem.</p>
-<ol class="arabic" start="4">
+</li>
 <li><p class="first">Execute the following commands to make sure that all of the required packages in Ubuntu are also installed:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">gcc</span>
 <span class="n">sudo</span> <span class="n">apt</span> <span class="n">install</span> <span class="n">g</span><span class="o">++</span>
@@ -100,9 +103,10 @@ instead of inside the linux subsystem.</p>
 </pre></div>
 </div>
 </li>
-</ol>
-<p>5. Follow the instructions for either the binary (<a class="reference internal" href="anacondaUser.html#anacondauser"><span class="std std-ref">Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX</span></a>) or source installation (<a class="reference internal" href="anacondaDeveloper.html#anacondadeveloper"><span class="std std-ref">Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX</span></a>)
+<li><p class="first">Follow the instructions for either the binary (<a class="reference internal" href="anacondaUser.html#anacondauser"><span class="std std-ref">Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX</span></a>) or source installation (<a class="reference internal" href="anacondaDeveloper.html#anacondadeveloper"><span class="std std-ref">Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX</span></a>)
 for the Linux Operating system. Follow these instructions from the point directly after installing Anaconda.</p>
+</li>
+</ol>
 </div>
 </div>
 

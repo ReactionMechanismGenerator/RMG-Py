@@ -16,6 +16,7 @@ Briefly, RMG depends on the following packages, almost all of which can be found
 * **cairocffi:** a set of Python bindings and object-oriented API for cairo
 * **coverage:** code coverage measurement for Python
 * **cython:** compiling Python modules to C for speed up
+* **dde:** Data Driven Estimator for neural network thermochemistry prediction
 * **ffmpeg:** (optional) used to encode videos, necessary for generating video flux diagrams
 * **gaussian:** (optional) commerical software program for quantum mechanical calculations.  Must be installed separately.
 * **gcc:** GNU compiler collection for C,C++, and Fortran. (MinGW is used in windows)
@@ -28,6 +29,7 @@ Briefly, RMG depends on the following packages, almost all of which can be found
 * **matplotlib:** library for making plots
 * **mock:** for unit-testing
 * **mopac:** semi-empirical software package for QM calculations
+* **mpmath:** for arbitrary-precision arithmetic used in Arkane
 * **muq:** (optional) MIT Uncertainty Quantification library, used for global uncertainty analysis
 * **networkx:** (optional) network analysis for reaction-path analysis IPython notebook
 * **nose:** advanced unit test controls
@@ -39,6 +41,7 @@ Briefly, RMG depends on the following packages, almost all of which can be found
 * **pydqed:** constrained nonlinear optimization
 * **pyparsing:** a general parsing module for python
 * **pyrdl:** RingDecomposerLib for graph ring perception
+* **pyyaml:** Python framework for YAML
 * **pyzmq:** Python bindings for zeroMQ
 * **quantities:** unit conversion
 * **rdkit:** open-source cheminformatics toolkit
