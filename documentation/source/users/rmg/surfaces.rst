@@ -6,12 +6,12 @@ Heterogeneous Catalysis Systems and Surface Reactions
 
 Need to describe:
  * input file
-     * surfacereactor
-         * surface site density
-     *  binding energies
- * how to represent adsorbates
+     * surfacereactor (draft added below)
+         * surface site density (included in draft)
+     *  binding energies 
+ * how to represent adsorbates (draft added below)
      * atom types (X, Xv, Xo)
-     * van der Waals (same chemgraph, no bond)
+     * van der Waals (same chemgraph, no bond) (included in draft)
  * reaction family set (how to choose them in input file, with and without gas phase)
  * reaction libraries
 
@@ -21,6 +21,65 @@ theory:
 other things to update:
 * table of atom types in users/rmg/database/introduction.rst 
 * table of atom types in reference/molecule/atomtype.rst
+
+RMG-Cat can model constant temperature and volume systems for surface reactions. The temperature, initial pressure, initial mole fractions of the reactant species, initial surface coverages, catalytic surface area to volume ratio in the reactor and surface site density are defined for each individual reaction system in the input file. As for the simple reactor model in RMG, the initial mole fractions are defined using the label for the species in the species block. It can include gas-phase and/or adsorbed species. The surface site density is the amount of active catalytic sites per unit surface, and varies depending on the catalyst in question.
+
+The following is an example of a surface reactor system for catalytic combustion of methane over a Pt catalyst::
+
+    surfaceReactor(
+        temperature=(800,'K'),
+        initialPressure=(1.0, 'bar'),
+        initialGasMoleFractions={
+            "CH4": 0.0500,
+            "O2": 0.1995,
+            "N2": 0.7505,
+        },
+        initialSurfaceCoverages={
+            "X": 1.0,
+        },
+        surfaceVolumeRatio=(1.0e4, 'm^-1'),
+        surfaceSiteDensity=(2.72e-9, 'mol/cm^2'),
+        terminationConversion = { "CH4":0.9,}
+        terminationRateRatio=0.01
+    )
+
+*Binding energies
+
+Adsorbate representation
+========================
+Adsorbates are represented using chemical graph theory (ChemGraph), such that atoms are represented by nodes and bonds between them by edges. This way each adsorbate is represented by an adjacency list. (add link to main rmg adjacency list documentation)
+Specific to RMG-Cat is the metal-adsorbate bond for adsorbates. Firstly, there needs to be a species representation for the binding site in the RMG-Cat input file. This can be added as follows::
+
+    species(
+        label='X',
+        reactive=True,
+        structure=adjacencyList("1 X u0"),
+    )
+
+Adsorbates in RMG-Cat can currently have one or two metal binding sites, and can be bound to the sites with single, double, triple or quadruple bonds. The following is an example for the adjacency list of adsorbed methoxy with one binding site::
+
+    structure=adjacencyList("
+    1 X  u0 p0 c0 {3,S}
+    2 C  u0 p0 c0 {3,S} {4,S} {5,S} {6,S}
+    3 O  u0 p2 c0 {1,S} {2,S}
+    4 H  u0 p0 c0 {2,S}
+    5 H  u0 p0 c0 {2,S}
+    6 H  u0 p0 c0 {2,S}
+    "),
+    
+Additionally, the adsorbates in RMG-Cat can be physisorbed (have a van der Waals bond to the surface). The adjacency lists for physisorbed species are structured the same way as for other adsorbates, except that there is no bond edge for the binding site. Following is an adjacency list for physisorbed methane::
+
+    structure=adjacencyList("
+    1 X  u0 p0 c0
+    2 C  u0 p0 c0 {3,S} {4,S} {5,S} {6,S}
+    3 H  u0 p0 c0 {2,S}
+    4 H  u0 p0 c0 {2,S}
+    5 H  u0 p0 c0 {2,S}
+    6 H  u0 p0 c0 {2,S}
+    "),
+
+This implementation currently does not distinguish between different binding sites on a given facet. Instead, the lowest energy binding site for a given adsorbate is assumed, consistent with the mean-field approach of the kinetics (add reference: RMG-Cat 2017 paper).
+
 
 
 Example input file: methane steam reforming
