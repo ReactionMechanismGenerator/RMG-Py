@@ -117,14 +117,15 @@ def convertBindingEnergies(bindingEnergies):
     :return: the processed and checked dictionary
     """
     if bindingEnergies is None:
-        bindingEnergies = { # default values for Ni(111)
-                       'C':(-5.997, 'eV/molecule'),
-                       'H':(-2.778, 'eV/molecule'),
-                       'O':(-4.485, 'eV/molecule'),
+        bindingEnergies = { # default values for Pt(111)
+                       'C':(-6.750, 'eV/molecule'),
+                       'H':(-2.479, 'eV/molecule'),
+                       'O':(-3.586, 'eV/molecule'),
+                       'N':(-4.352, 'eV/molecule'),
                        }
     if not isinstance(bindingEnergies, dict): raise InputError("bindingEnergies should be None (for default) or a dict.")
     newDict = {}
-    for element in 'CHO':
+    for element in 'CHON':
         try:
             newDict[element] = Energy(bindingEnergies[element])
         except KeyError:
