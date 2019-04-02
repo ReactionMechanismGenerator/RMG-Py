@@ -81,6 +81,35 @@ Additionally, the adsorbates in RMG-Cat can be physisorbed (have a van der Waals
 This implementation currently does not distinguish between different binding sites on a given facet. Instead, the lowest energy binding site for a given adsorbate is assumed, consistent with the mean-field approach of the kinetics (add reference: RMG-Cat 2017 paper).
 
 
+Use of thermo libraries for surface reaction systems
+-------------------------------------------------------
+For surface species, thermo libraries provided in the input files are checked first for an exact match of a given adsorbate, and those thermodynamic properties are used. In order to predict the thermodynamic properties for species that are not in the database, RMG-Cat uses a precompiled adsorption correction with the thermodynamic properties of the gas-phase precursor (add reference: RMG-Cat 2017 paper).
+
+Following is an example for how a thermo library for species adsorbed on platinum is provided in the input file database block::
+
+    thermoLibraries=['surfaceThermoPt']
+    
+
+Reaction families and libraries for surface reaction systems
+------------------------------------------------------------
+In the latest version of the RMG database, surface reaction families have been added. These include adsorption/desorption, bond fission and H abstraction (add reference: RMG-Cat 2017 paper). For surface reaction families to be considered in the mechanism generation, the 'surface' kinetics family keyword needs to be included in the database section of the input file as follows::
+
+    kineticsFamilies =['surface','default']
+    
+For surface reactions proposed by reaction families that do not have an exact match in the internal database of reactions, Arrhenius parameters are estimated according to a set of rules specific to that reaction family. The estimation rules are derived automatically from the database of known rate coefficients and formulated as Brønsted-Evans-Polanyi relationships (add reference: RMG-Cat 2017 paper).
+
+The user can provide a surface reaction library containing a set of preferred rate coefficients for the mechanism. Just like for gas-phase reaction libraries, values in the provided reaction library are automatically used for the respective proposed reactions. The reactions in the reaction library are not required to be a part of the predefined reaction families (RMG-Cat 2017 reference).
+
+Following is an example where a mechanism for catalytic partial oxidation of methane on platinum by Deutschmann and co-workers (add reference: Deutschmann 2006 paper) is provided as a reaction library in the database section of the input file::
+
+    reactionLibraries = [('Surface/CPOX_Pt/Deutschmann2006', False)]   
+
+
+Linear scaling relations
+==========================
+
+
+
 
 Example input file: methane steam reforming
 -------------------------------------------------------
