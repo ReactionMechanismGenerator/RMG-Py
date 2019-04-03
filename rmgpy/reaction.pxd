@@ -69,7 +69,7 @@ cdef class Reaction:
     
     cpdef bint matchesSpecies(self, list reactants, list products=?)
 
-    cpdef bint isIsomorphic(self, Reaction other, bint eitherDirection=?, bint checkIdentical=?, bint checkOnlyLabel=?, bint checkTemplateRxnProducts=?)
+    cpdef bint isIsomorphic(self, Reaction other, bint eitherDirection=?, bint checkIdentical=?, bint checkOnlyLabel=?, bint strict=?, bint checkTemplateRxnProducts=?) except -2
 
     cpdef double getEnthalpyOfReaction(self, double T)
 

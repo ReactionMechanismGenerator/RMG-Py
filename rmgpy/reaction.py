@@ -414,24 +414,22 @@ class Reaction:
         else:
             return False
 
-    def isIsomorphic(self, other, eitherDirection=True, checkIdentical = False,
-                     checkOnlyLabel = False, checkTemplateRxnProducts=False):
+    def isIsomorphic(self, other, eitherDirection=True, checkIdentical=False,
+                     checkOnlyLabel=False, strict=True, checkTemplateRxnProducts=False):
         """
         Return ``True`` if this reaction is the same as the `other` reaction,
         or ``False`` if they are different. The comparison involves comparing
         isomorphism of reactants and products, and doesn't use any kinetic
         information.
 
-        If `eitherDirection=False` then the directions must match.
-
-        `checkIdentical` indicates that atom ID's must match and is used in
-                        checking degeneracy
-        `checkOnlyLabel` indicates that the string representation will be 
-                        checked, ignoring the molecular structure comparisons
-        `checkTemplateRxnProducts` indicates that only the products of the
-                        reaction are checked for isomorphism. This is used when
-                        we know the reactants are identical, i.e. in generating
-                        reactions.
+        Args:
+            eitherDirection (bool, optional):          if ``False``,then the reaction direction must match.
+            checkIdentical (bool, optional):           if ``True``, check that atom ID's match (used for checking degeneracy)
+            checkOnlyLabel (bool, optional):           if ``True``, only check the string representation,
+                                                       ignoring molecular structure comparisons
+            strict (bool, optional):                   if ``False``, perform isomorphism ignoring electrons
+            checkTemplateRxnProducts (bool, optional): if ``True``, only check isomorphism of reaction products
+                                                       (used when we know the reactants are identical, i.e. in generating reactions)
         """
         if checkTemplateRxnProducts:
             try:
@@ -442,17 +440,20 @@ class Reaction:
 
             return same_species_lists(species1, species2,
                                       check_identical=checkIdentical,
-                                      only_check_label=checkOnlyLabel)
+                                      only_check_label=checkOnlyLabel,
+                                      strict=strict)
 
         # Compare reactants to reactants
         forwardReactantsMatch = same_species_lists(self.reactants, other.reactants,
                                                    check_identical=checkIdentical,
-                                                   only_check_label=checkOnlyLabel)
+                                                   only_check_label=checkOnlyLabel,
+                                                   strict=strict)
         
         # Compare products to products
         forwardProductsMatch = same_species_lists(self.products, other.products,
                                                   check_identical=checkIdentical,
-                                                  only_check_label=checkOnlyLabel)
+                                                  only_check_label=checkOnlyLabel,
+                                                  strict=strict)
 
         # Compare specificCollider to specificCollider
         ColliderMatch = (self.specificCollider == other.specificCollider)
@@ -466,12 +467,14 @@ class Reaction:
         # Compare reactants to products
         reverseReactantsMatch = same_species_lists(self.reactants, other.products,
                                                    check_identical=checkIdentical,
-                                                   only_check_label=checkOnlyLabel)
+                                                   only_check_label=checkOnlyLabel,
+                                                   strict=strict)
 
         # Compare products to reactants
         reverseProductsMatch = same_species_lists(self.products, other.reactants,
                                                   check_identical=checkIdentical,
-                                                  only_check_label=checkOnlyLabel)
+                                                  only_check_label=checkOnlyLabel,
+                                                  strict=strict)
 
         # should have already returned if it matches forwards, or we're not allowed to match backwards
         return reverseReactantsMatch and reverseProductsMatch and ColliderMatch
