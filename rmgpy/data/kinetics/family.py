@@ -43,7 +43,7 @@ from collections import OrderedDict
 from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStructures,\
                             getAllCombinations
-from rmgpy.reaction import Reaction, isomorphic_species_lists
+from rmgpy.reaction import Reaction, same_species_lists
 from rmgpy import settings
 from rmgpy.reaction import Reaction
 from rmgpy.kinetics import Arrhenius
@@ -1532,7 +1532,7 @@ class KineticsFamily(Database):
         """
 
         # Make sure the products are in fact different than the reactants
-        if isomorphic_species_lists(reactants, products):
+        if same_species_lists(reactants, products):
             return None
 
         # Create and return template reaction object
@@ -1946,7 +1946,7 @@ class KineticsFamily(Database):
                                 products0[i] = aromaticStructs[0]
 
                 # Skip reactions that don't match the given products
-                if isomorphic_species_lists(products, products0):
+                if same_species_lists(products, products0):
                     rxnList.append(reaction)
 
         # Determine the reactant-product pairs to use for flux analysis
@@ -2363,7 +2363,7 @@ class KineticsFamily(Database):
                 pass
             else:
                 if product_structures is not None:
-                    if isomorphic_species_lists(list(products), list(product_structures)):
+                    if same_species_lists(list(products), list(product_structures)):
                         return reactant_structures, product_structures
                     else:
                         continue

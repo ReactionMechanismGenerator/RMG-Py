@@ -40,7 +40,7 @@ from rmgpy.kinetics import Arrhenius, ArrheniusEP, ThirdBody, Lindemann, Troe, \
                            Chebyshev, KineticsData
 from rmgpy.molecule import Molecule, Group
 from rmgpy.species import Species
-from rmgpy.reaction import Reaction, isomorphic_species_lists
+from rmgpy.reaction import Reaction, same_species_lists
 from rmgpy.data.base import LogicNode
 
 from .family import  KineticsFamily
@@ -615,11 +615,11 @@ and immediately used in input files without any additional changes.
             # Remove from that set any reactions that don't produce the desired reactants and products
             forward = []; reverse = []
             for rxn in generatedReactions:
-                if (isomorphic_species_lists(reaction.reactants, rxn.reactants)
-                        and isomorphic_species_lists(reaction.products, rxn.products)):
+                if (same_species_lists(reaction.reactants, rxn.reactants)
+                        and same_species_lists(reaction.products, rxn.products)):
                     forward.append(rxn)
-                if (isomorphic_species_lists(reaction.reactants, rxn.products)
-                        and isomorphic_species_lists(reaction.products, rxn.reactants)):
+                if (same_species_lists(reaction.reactants, rxn.products)
+                        and same_species_lists(reaction.products, rxn.reactants)):
                     reverse.append(rxn)
 
             # We should now know whether the reaction is given in the forward or
