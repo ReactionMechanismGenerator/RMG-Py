@@ -6,23 +6,26 @@ Heterogeneous Catalysis Systems and Surface Reactions
 
 Need to describe:
  * input file
-     * surfacereactor (draft added below)
-         * surface site density (included in draft)
-     *  binding energies 
- * how to represent adsorbates (draft added below)
-     * atom types (X, Xv, Xo)
-     * van der Waals (same chemgraph, no bond) (included in draft)
- * reaction family set (how to choose them in input file, with and without gas phase)
- * reaction libraries
+     * surfacereactor - done, waiting for review
+         * surface site density - done, waiting for review
+     *  binding energies - done, waiting for review
+ * how to represent adsorbates
+     * atom types (X, Xv, Xo) - done, waiting for review
+     * van der Waals (same chemgraph, no bond) - done, waiting for review
+ * reaction family set (how to choose them in input file, with and without gas phase) - done, waiting for review
+ * reaction libraries - done, waiting for review
 
 theory:
-* linear scaling relationships
+* linear scaling relationships - done, waiting for review
 
 other things to update:
 * table of atom types in users/rmg/database/introduction.rst 
 * table of atom types in reference/molecule/atomtype.rst
 
-RMG-Cat can model constant temperature and volume systems for surface reactions. The temperature, initial pressure, initial mole fractions of the reactant species, initial surface coverages, catalytic surface area to volume ratio in the reactor and surface site density are defined for each individual reaction system in the input file. As for the simple reactor model in RMG, the initial mole fractions are defined using the label for the species in the species block. It can include gas-phase and/or adsorbed species. The surface site density is the amount of active catalytic sites per unit surface, and varies depending on the catalyst in question.
+
+Several surface specific features need to be considered when setting up an input file for RMG-Cat reaction mechanism generation, as they cause certain aspects of it to deviate from the standard gas-phase RMG input file.
+
+Firstly, RMG-Cat can model constant temperature and volume systems for surface reactions. The temperature, initial pressure, initial mole fractions of the reactant species, initial surface coverages, catalytic surface area to volume ratio in the reactor and surface site density are defined for each individual reaction system in the input file. As for the simple reactor model in RMG, the initial mole fractions are defined using the label for the species in the species block. It can include gas-phase and/or adsorbed species. The surface site density is the amount of active catalytic sites per unit surface, and varies depending on the catalyst in question.
 
 The following is an example of a surface reactor system for catalytic combustion of methane over a Pt catalyst::
 
@@ -43,11 +46,20 @@ The following is an example of a surface reactor system for catalytic combustion
         terminationRateRatio=0.01
     )
 
-*Binding energies
+
+It is also required to provide the adsorption energies of C, N, O and H on the surface being investigated in the input file for RMG-Cat to generate a mechanism. This enables application of linear scaling relations, see below (add: link to LSR chapter). The following is an example where the default binding energies of the four atoms on Pt(111) have been added in the input file database module::
+
+    bindingEnergies = { # default values for Pt(111)
+                       'H':(-2.479, 'eV/molecule'),
+                       'O':(-3.586, 'eV/molecule'),
+                       'C':(-6.750, 'eV/molecule'),
+                       'N':(-4.352, 'eV/molecule'),
+                       }
+                       
 
 Adsorbate representation
 ========================
-Adsorbates are represented using chemical graph theory (ChemGraph), such that atoms are represented by nodes and bonds between them by edges. This way each adsorbate is represented by an adjacency list. (add link to main rmg adjacency list documentation)
+Adsorbates are represented using chemical graph theory (ChemGraph), such that atoms are represented by nodes and bonds between them by edges. This way each adsorbate is represented by an adjacency list (add: link to main rmg adjacency list documentation).
 Specific to RMG-Cat is the metal-adsorbate bond for adsorbates. Firstly, there needs to be a species representation for the binding site in the RMG-Cat input file. This can be added as follows::
 
     species(
@@ -56,7 +68,9 @@ Specific to RMG-Cat is the metal-adsorbate bond for adsorbates. Firstly, there n
         structure=adjacencyList("1 X u0"),
     )
 
-Adsorbates in RMG-Cat can currently have one or two metal binding sites, and can be bound to the sites with single, double, triple or quadruple bonds. The following is an example for the adjacency list of adsorbed methoxy with one binding site::
+The surface binding sites 'X' can either be vacant, 'Xv', or occupied, 'Xo' in which case it has a molecule adsorbed on it.
+
+Adsorbates in RMG-Cat can currently have one or two surface binding sites, and can be bound to the sites with single, double, triple or quadruple bonds. The following is an example for the adjacency list of adsorbed methoxy with one binding site::
 
     structure=adjacencyList("
     1 X  u0 p0 c0 {3,S}
@@ -78,36 +92,51 @@ Additionally, the adsorbates in RMG-Cat can be physisorbed (have a van der Waals
     6 H  u0 p0 c0 {2,S}
     "),
 
-This implementation currently does not distinguish between different binding sites on a given facet. Instead, the lowest energy binding site for a given adsorbate is assumed, consistent with the mean-field approach of the kinetics (add reference: RMG-Cat 2017 paper).
+This implementation currently does not distinguish between different binding sites on a given facet. Instead, the lowest energy binding site for a given adsorbate is assumed, consistent with the mean-field approach of the kinetics ([Goldsmith2017]_).
 
 
 Use of thermo libraries for surface reaction systems
 -------------------------------------------------------
-For surface species, thermo libraries provided in the input files are checked first for an exact match of a given adsorbate, and those thermodynamic properties are used. In order to predict the thermodynamic properties for species that are not in the database, RMG-Cat uses a precompiled adsorption correction with the thermodynamic properties of the gas-phase precursor (add reference: RMG-Cat 2017 paper).
+For surface species, thermo libraries provided in the input files are checked first for an exact match of a given adsorbate, and those thermodynamic properties are used. In order to predict the thermodynamic properties for species that are not in the database, RMG-Cat uses a precompiled adsorption correction with the thermodynamic properties of the gas-phase precursor ([Goldsmith2017]_).
 
-Following is an example for how a thermo library for species adsorbed on platinum is provided in the input file database block::
+Following is an example for how a thermo library for species adsorbed on platinum is provided in the input file database module::
 
     thermoLibraries=['surfaceThermoPt']
     
+This can be added along with other gas-phase reaction libraries for coupling of gas-phase and surface reactions.
 
 Reaction families and libraries for surface reaction systems
 ------------------------------------------------------------
-In the latest version of the RMG database, surface reaction families have been added. These include adsorption/desorption, bond fission and H abstraction (add reference: RMG-Cat 2017 paper). For surface reaction families to be considered in the mechanism generation, the 'surface' kinetics family keyword needs to be included in the database section of the input file as follows::
+In the latest version of the RMG database, surface reaction families have been added. These include adsorption/desorption, bond fission and H abstraction ([Goldsmith2017]_). For surface reaction families to be considered in the mechanism generation, the 'surface' kinetics family keyword needs to be included in the database section of the input file as follows::
 
     kineticsFamilies =['surface','default']
     
-For surface reactions proposed by reaction families that do not have an exact match in the internal database of reactions, Arrhenius parameters are estimated according to a set of rules specific to that reaction family. The estimation rules are derived automatically from the database of known rate coefficients and formulated as Brønsted-Evans-Polanyi relationships (add reference: RMG-Cat 2017 paper).
+This allows for RMG-Cat to consider both surface and gas reaction families. If inlcuding only surface reactions is desired, that can be attained by removing the 'default' keyword.
 
-The user can provide a surface reaction library containing a set of preferred rate coefficients for the mechanism. Just like for gas-phase reaction libraries, values in the provided reaction library are automatically used for the respective proposed reactions. The reactions in the reaction library are not required to be a part of the predefined reaction families (RMG-Cat 2017 reference).
+For surface reactions proposed by reaction families that do not have an exact match in the internal database of reactions, Arrhenius parameters are estimated according to a set of rules specific to that reaction family. The estimation rules are derived automatically from the database of known rate coefficients and formulated as Brønsted-Evans-Polanyi relationships ([Goldsmith2017]_).
 
-Following is an example where a mechanism for catalytic partial oxidation of methane on platinum by Deutschmann and co-workers (add reference: Deutschmann 2006 paper) is provided as a reaction library in the database section of the input file::
+The user can provide a surface reaction library containing a set of preferred rate coefficients for the mechanism. Just like for gas-phase reaction libraries, values in the provided reaction library are automatically used for the respective proposed reactions. The reactions in the reaction library are not required to be a part of the predefined reaction families ([Goldsmith2017]_).
+
+Following is an example where a mechanism for catalytic partial oxidation of methane on platinum by Quiceno et al. ([Deutschmann2006]_) is provided as a reaction library in the database section of the input file::
 
     reactionLibraries = [('Surface/CPOX_Pt/Deutschmann2006', False)]   
 
+Gas-phase reaction libraries should be included there as well for coupled gas-phase/surface mechanism generation.
 
 Linear scaling relations
 ==========================
+In surface reaction mechanism generation with RMG-Cat, linear scaling relations are used to investigate surface reaction systems occurring on surfaces that do not have DFT-based values in the database ([Mazeau2019]_). This is especially useful for alloy catalysts as conducting DFT calculations for such systems is impractical. Linear scaling relations for heterogeneous catalysis are based on the finding of Abild-Pedersen et al. ([Abild2007]_) that the adsorption energies of hydrogen-containing molecules of carbon, oxygen, sulfur, and nitrogen on transition metal surfaces scale linearly with the adsorption energy of the surface-bonded atom. Using this linear relationship, the energy of a species (`AH`\ :sub:`x`\ ) on any metal M2 can be estimated from the known energy on metal M1, :math:`\Delta E_{M1}^{AH_x}`, and the adsorption energies of atom A on the two metals M1 and M2 as follows:
 
+.. math:: \Delta E_{M2}^{AH_x}=\Delta E_{M1}^{AH_x}+\gamma(x)(\Delta E_{M2}^A - \Delta E_{M1}^A),    
+    :label: LSReqn
+    
+where
+
+.. math:: \gamma (x)=(x_{max}-x)/x_{max}, 
+    :label: gammaeqn
+
+is the is the slope of the linear relationship between (`AH`\ :sub:`x`\ ) and A, and (`x`\ :sub:`max`\ ) is the maximum number of hydrogen atoms that can bond to the central atom A.
+Since the adsorption energy of (`AH`\ :sub:`x`\ ) is proportional to adsorption energies on different metals, full calculations for every reaction intermediate on every metal are not necessary. Therefore, having this implemented in RMG-Cat allows for independent model generation for any metal surface. By effect it enables the expedient, high-throughput screening of catalysts for any surface catalyzed reaction of interest ([Mazeau2019]_).
 
 
 
@@ -126,7 +155,16 @@ This is an input file for catalytic partial oxidation (CPOX) of methane
 .. literalinclude:: ../../../../examples/rmg/catalysis/ch4_o2/input.py
 
 
+.. [Goldsmith2017] \ C.F. Goldsmith and R.H. West. "Automatic Generation of Microkinetic Mechanisms for Heterogeneous Catalysis." *J. Phys. Chem. C.* **121(18)**, p. 9970–9981 (2017).
 
+.. [Deutschmann2006] \ R. Quiceno, J. Pérez-Ramírez, J. Warnatz and O. Deutschmann. "Modeling the high-temperature catalytic partion oxidation of methane over platinum gauze: Detailed gas-phase and surface chemistries coupled with 3D flow field simulations." *Appl. Catal., A* **303(2)**, p. 166-176 (2006).
+
+.. [Mazeau2019] \ E.J. Mazeau, P. Satupte, K. Blondal, C.F. Goldsmith and R.H. West. "Linear Scaling Relationships and Sensitivity Analyses in RMG-Cat." *Unpublished*.
+
+.. [Abild2007] \ F. Abild-Pedersen, J. Greeley, F. Studt, J. Rossmeisl, T.R. Munter, P.G. Moses, E. Skúlason, T. Bligaard, and J.K. Nørskov. "Scaling Properties of Adsorption Energies for Hydrogen-Containing Molecules on Transition-Metal Surfaces." *Phys. Rev. Lett.* **99(1)**, p. 4-7 (2007).
+
+
+Phys. Rev. Lett. 99, 016105 – Published 6 July 2007
 
 The text below here is just copied from the Liquids page
 --------------------------------------------------------
