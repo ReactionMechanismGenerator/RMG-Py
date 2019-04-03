@@ -204,30 +204,30 @@ class Species(object):
             self.molecule = self.molecule[0].generate_resonance_structures(keep_isomorphic=keep_isomorphic,
                                                                            filter_structures=filter_structures)
     
-    def isIsomorphic(self, other, generate_res=False, generateInitialMap=False):
+    def isIsomorphic(self, other, generate_res=False, generateInitialMap=False, strict=True):
         """
         Return ``True`` if the species is isomorphic to `other`, which can be
         either a :class:`Molecule` object or a :class:`Species` object.
-        If generate_res is ``True`` and other is a :class:`Species` object, the resonance structures of other will
-        be generated and isomorphically compared against self. This is useful for situations where a
-        "non-representative" resonance structure of self is generated, and it should be identified as the same Species,
-        and be assigned a reactive=False flag.
+
+        Args:
+            generateInitialMap (bool, optional): If ``True``, make initial map by matching labeled atoms
+            strict (bool, optional):             If ``False``, perform isomorphism ignoring electrons.
         """
         if isinstance(other, Molecule):
             for molecule in self.molecule:
-                if molecule.isIsomorphic(other,generateInitialMap=generateInitialMap):
+                if molecule.isIsomorphic(other, generateInitialMap=generateInitialMap, strict=strict):
                     return True
         elif isinstance(other, Species):
             for molecule1 in self.molecule:
                 for molecule2 in other.molecule:
-                    if molecule1.isIsomorphic(molecule2,generateInitialMap=generateInitialMap):
+                    if molecule1.isIsomorphic(molecule2, generateInitialMap=generateInitialMap, strict=strict):
                         return True
             if generate_res:
                 other_copy = other.copy(deep=True)
                 other_copy.generate_resonance_structures(keep_isomorphic=False)
                 for molecule1 in self.molecule:
                     for molecule2 in other_copy.molecule:
-                        if molecule1.isIsomorphic(molecule2,generateInitialMap=generateInitialMap):
+                        if molecule1.isIsomorphic(molecule2, generateInitialMap=generateInitialMap):
                             # If they are isomorphic and this was found only by generating resonance structures, append
                             # the structure in other to self.molecule as unreactive, since it is a non-representative
                             # resonance structure of it, and return `True`.
