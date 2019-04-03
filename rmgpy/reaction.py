@@ -420,13 +420,13 @@ class Reaction:
             products (list, optional): Species required on the other side
         """
         # Check forward direction
-        if isomorphic_species_lists(self.reactants, reactants):
-            if products is None or isomorphic_species_lists(self.products, products):
+        if same_species_lists(self.reactants, reactants):
+            if products is None or same_species_lists(self.products, products):
                 return True
             else:
                 return False
-        elif isomorphic_species_lists(self.products, reactants):
-            if products is None or isomorphic_species_lists(self.reactants, products):
+        elif same_species_lists(self.products, reactants):
+            if products is None or same_species_lists(self.reactants, products):
                 return True
             else:
                 return False
@@ -459,19 +459,22 @@ class Reaction:
             except AttributeError:
                 raise TypeError('Only use checkTemplateRxnProducts flag for TemplateReactions.')
 
-            return isomorphic_species_lists(species1, species2,
-                                            check_identical=checkIdentical,
-                                            only_check_label=checkOnlyLabel,generateInitialMap=generateInitialMap)
+            return same_species_lists(species1, species2,
+                                      check_identical=checkIdentical,
+                                      only_check_label=checkOnlyLabel,
+                                      generate_initial_map=generateInitialMap)
 
         # Compare reactants to reactants
-        forwardReactantsMatch = isomorphic_species_lists(self.reactants, other.reactants,
-                                                         check_identical=checkIdentical,
-                                                         only_check_label=checkOnlyLabel,generateInitialMap=generateInitialMap)
+        forwardReactantsMatch = same_species_lists(self.reactants, other.reactants,
+                                                   check_identical=checkIdentical,
+                                                   only_check_label=checkOnlyLabel,
+                                                   generate_initial_map=generateInitialMap)
         
         # Compare products to products
-        forwardProductsMatch = isomorphic_species_lists(self.products, other.products,
-                                                        check_identical=checkIdentical,
-                                                        only_check_label=checkOnlyLabel,generateInitialMap=generateInitialMap)
+        forwardProductsMatch = same_species_lists(self.products, other.products,
+                                                  check_identical=checkIdentical,
+                                                  only_check_label=checkOnlyLabel,
+                                                  generate_initial_map=generateInitialMap)
 
         # Compare specificCollider to specificCollider
         ColliderMatch = (self.specificCollider == other.specificCollider)
@@ -483,17 +486,19 @@ class Reaction:
             return False
         
         # Compare reactants to products
-        reverseReactantsMatch = isomorphic_species_lists(self.reactants, other.products,
-                                                         check_identical=checkIdentical,
-                                                         only_check_label=checkOnlyLabel,generateInitialMap=generateInitialMap)
+        reverseReactantsMatch = same_species_lists(self.reactants, other.products,
+                                                   check_identical=checkIdentical,
+                                                   only_check_label=checkOnlyLabel,
+                                                   generate_initial_map=generateInitialMap)
 
         # Compare products to reactants
-        reverseProductsMatch = isomorphic_species_lists(self.products, other.reactants,
-                                                        check_identical=checkIdentical,
-                                                        only_check_label=checkOnlyLabel,generateInitialMap=generateInitialMap)
+        reverseProductsMatch = same_species_lists(self.products, other.reactants,
+                                                  check_identical=checkIdentical,
+                                                  only_check_label=checkOnlyLabel,
+                                                  generate_initial_map=generateInitialMap)
 
         # should have already returned if it matches forwards, or we're not allowed to match backwards
-        return  (reverseReactantsMatch and reverseProductsMatch and ColliderMatch)
+        return reverseReactantsMatch and reverseProductsMatch and ColliderMatch
 
     def getEnthalpyOfReaction(self, T):
         """
@@ -1321,28 +1326,33 @@ class Reaction:
         mean_epsilons = reduce((lambda x, y: x * y), epsilons) ** (1 / len(epsilons))
         return mean_sigmas, mean_epsilons
 
-def isomorphic_species_lists(list1, list2, check_identical=False, only_check_label=False, generateInitialMap=False):
+
+def same_species_lists(list1, list2, check_identical=False, only_check_label=False, generate_initial_map=False, strict=True):
     """
-    This method compares whether lists of species or molecules are isomorphic
-    or identical. It is used for the 'isIsomorphic' method of Reaction class.
-    It likely can be useful elswehere as well:
-        
-        list1 - list of species/molecule objects of reaction1
-        list2 - list of species/molecule objects of reaction2
-        check_identical - if true, uses the 'isIdentical' comparison
-                          if false, uses the 'isIsomorphic' comparison
-        only_check_label - only look at species' labels, no isomorphism checks
-                         
-    Returns True if the lists are isomorphic/identical & false otherwise
+    This method compares whether two lists of species or molecules are the same,
+    given the comparison options provided. It is used for the `is_same` method
+    of :class:`Reaction`, but may also be useful in other situations.
+
+    Args:
+        list1 (list):                          list of :class:`Species` or :class:`Molecule` objects
+        list2 (list):                          list of :class:`Species` or :class:`Molecule` objects
+        check_identical (bool, optional):      if ``True``, use isIdentical comparison and compare atom IDs
+        only_check_label (bool, optional):     if ``True``, only compare the label attribute of each species
+        generate_initial_map (bool, optional): if ``True``, initialize map by pairing atoms with same labels
+        strict (bool, optional):               if ``False``, perform isomorphism ignoring electrons
+
+    Returns:
+        ``True`` if the lists are the same and ``False`` otherwise
     """
 
-    def same(object1, object2, _check_identical=check_identical, _only_check_label=only_check_label, _generate_initial_map=generateInitialMap):
+    def same(object1, object2, _check_identical=check_identical, _only_check_label=only_check_label,
+             _generate_initial_map=generate_initial_map, _strict=strict):
         if _only_check_label:
             return str(object1) == str(object2)
         elif _check_identical:
             return object1.isIdentical(object2)
         else:
-            return object1.isIsomorphic(object2,generateInitialMap=_generate_initial_map)
+            return object1.isIsomorphic(object2, generateInitialMap=_generate_initial_map, strict=_strict)
 
     if len(list1) == len(list2) == 1:
         if same(list1[0], list2[0]):

@@ -126,4 +126,4 @@ cdef class Reaction:
 
     cpdef get_mean_sigma_and_epsilon(self, bint reverse=?)
 
-cpdef bint isomorphic_species_lists(list list1, list list2, bint check_identical=?, bint only_check_label=?, bint generateInitialMap=?)
+cpdef bint same_species_lists(list list1, list list2, bint check_identical=?, bint only_check_label=?, bint generate_initial_map=?, bint strict=?) except -2
