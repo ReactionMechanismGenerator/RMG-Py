@@ -204,23 +204,27 @@ class Species(object):
             self.molecule = self.molecule[0].generate_resonance_structures(keep_isomorphic=keep_isomorphic,
                                                                            filter_structures=filter_structures)
     
-    def isIsomorphic(self, other, generate_res=False):
+    def isIsomorphic(self, other, strict=True, generate_res=False):
         """
         Return ``True`` if the species is isomorphic to `other`, which can be
         either a :class:`Molecule` object or a :class:`Species` object.
-        If generate_res is ``True`` and other is a :class:`Species` object, the resonance structures of other will
-        be generated and isomorphically compared against self. This is useful for situations where a
-        "non-representative" resonance structure of self is generated, and it should be identified as the same Species,
-        and be assigned a reactive=False flag.
+
+        Args:
+            strict (bool, optional):       If ``False``, perform isomorphism ignoring electrons.
+            generate_res (bool, optional): If ``True`` and other is a :class:`Species` object, the resonance structures
+                                           of other will be generated and isomorphically compared against self. This
+                                           is useful for situations where a "non-representative" resonance structure of
+                                           self is generated, and it should be identified as the same Species, and be
+                                           assigned a reactive=False flag.
         """
         if isinstance(other, Molecule):
             for molecule in self.molecule:
-                if molecule.isIsomorphic(other):
+                if molecule.isIsomorphic(other, strict=strict):
                     return True
         elif isinstance(other, Species):
             for molecule1 in self.molecule:
                 for molecule2 in other.molecule:
-                    if molecule1.isIsomorphic(molecule2):
+                    if molecule1.isIsomorphic(molecule2, strict=strict):
                         return True
             if generate_res:
                 other_copy = other.copy(deep=True)
