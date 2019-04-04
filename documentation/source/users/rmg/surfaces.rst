@@ -103,7 +103,64 @@ Following is an example for how a thermo library for species adsorbed on platinu
 
     thermoLibraries=['surfaceThermoPt']
     
-This can be added along with other gas-phase reaction libraries for coupling of gas-phase and surface reactions.
+This can be added along with other gas-phase reaction libraries for coupling of gas-phase and surface reactions, but all of the libraries are in the folder ``RMG-database/input/thermo/libraries/`` in the latest version.
+
+The folder ``RMG-database/input/thermo/groups/`` contains the adsorption corrections for the change in thermodynamic properties of a species upon adsorption from the gas-phase. Currently the database has adsorption corrections for nickel (adsorptionNi.py) and platinum (adsorptionPt.py).
+
+An example of an adsorption correction entry is shown below::
+
+    entry(
+        index = 40,
+        label = "C-*R3",
+        group =
+    """
+    1 X  u0 p0 c0 {2,S}
+    2 C  u0 p0 c0 {1,S} {3,[S,D]} {4,[S,D]}
+    3 R  u0 px c0 {2,[S,D]}
+    4 R  u0 px c0 {2,[S,D]}
+    """,
+        thermo=ThermoData(
+            Tdata=([300, 400, 500, 600, 800, 1000, 1500], 'K'),
+            Cpdata=([-0.45, 0.61, 1.42, 2.02, 2.81, 3.26, 3.73], 'cal/(mol*K)'),
+            H298=(-41.64, 'kcal/mol'),
+            S298=(-32.73, 'cal/(mol*K)'),
+        ),
+        shortDesc=u"""Came from CH3 single-bonded on Pt(111)""",
+        longDesc=u"""Calculated by Katrin Blondal at Brown University using statistical mechanics (files: compute_NASA_for_Pt-adsorbates.ipynb and compute_NASA_for_Pt-gas_phase.ipynb). Based on DFT calculations by Jelena Jelic at KIT.
+                DFT binding energy: -1.770 eV.
+                Linear scaling parameters: ref_adatom_C = -6.750 eV, psi = -0.08242 eV, gamma_C(X) = 0.250.
+
+       CR3
+       |
+    ***********
+    """
+    )
+
+Here, R in the label 'C-*R3' represents any atom, where the H atoms in methyl have been replaced by wild cards. This enables RMG-Cat to determine which species in the thermo database is the closest match for the adsorbate in question, using a hierachical tree for functional groups. This is defined at the bottom of the adsorption corrections files, e.g.::
+
+    tree(
+    """
+    L1: R*
+        L2: R*single_chemisorbed
+            L3: C*
+                L4: Cq*
+                L4: C#*R
+                    L5: C#*CR3
+                    L5: C#*NR2
+                    L5: C#*OR
+                L4: C=*R2
+                    L5: C=*RCR3
+                    L5: C=*RNR2
+                    L5: C=*ROR
+                L4: C=*(=R)
+                    L5: C=*(=C)
+                    L5: C=*(=NR)
+                L4: C-*R3
+                    L5: C-*R2CR3
+                    ...
+
+When RMG-Cat has found the closest match, it reads the corresponding adsorption correction from the database and uses it with the thermo of the original adsorbate's gas-phase precursor to estimate its enthalpy, entropy and heat capacity.
+
 
 Reaction families and libraries for surface reaction systems
 ------------------------------------------------------------
@@ -121,7 +178,19 @@ Following is an example where a mechanism for catalytic partial oxidation of met
 
     reactionLibraries = [('Surface/CPOX_Pt/Deutschmann2006', False)]   
 
-Gas-phase reaction libraries should be included there as well for coupled gas-phase/surface mechanism generation.
+Gas-phase reaction libraries should be included there as well for accurate coupled gas-phase/surface mechanism generation.
+
+The following is a list of the current pre-packaged surface reaction libraries in RMG-Cat:
+
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Library                                                      |Description                                                                               |
++=============================================================+==========================================================================================+
+|Surface/Deutschmann_Ni                                       |Steam- and CO2-Reforming as well as Oxidation of Methane over Nickel-Based Catalysts|
++-------------------------------------------------------------+------------------------------------------------------------------------------------------+
+|Surface/CPOX_Pt/Deutschmann2006                              |High-temperature catalytic partial oxidation of methane over platinum                                                               |
++-------------------------------------------------------------+---------------------------------------------------------------------
+---------------------+
+
 
 Linear scaling relations
 ==========================
