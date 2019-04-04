@@ -55,6 +55,7 @@ cdef class Species:
     cdef public bint explicitlyAllowed
     cdef str _fingerprint
     cdef str _inchi
+    cdef str _smiles
 
     cpdef generate_resonance_structures(self, bint keep_isomorphic=?, bint filter_structures=?)
     
