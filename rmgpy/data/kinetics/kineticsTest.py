@@ -590,6 +590,19 @@ class TestReactionDegeneracy(unittest.TestCase):
 
         self.assertFalse(reaction_list[0].duplicate)
 
+    def test_degeneracy_resonance_keep_isomorphic(self):
+        """Test that we get the correct degeneracy for [CH2]C=C[CH2] + [H].
+
+        Incorrect results would be obtained if isomorphic resonance structures are not kept."""
+        family_label = 'R_Recombination'
+        reactants = ['[CH2]C=C[CH2]', '[OH]']
+        products = ['[CH2]C(O)C=C']
+
+        correct_rxn_num = 1
+        correct_degeneracy = {2}
+
+        self.assert_correct_reaction_degeneracy(reactants, correct_rxn_num, correct_degeneracy, family_label, products)
+
 
 class TestKineticsCommentsParsing(unittest.TestCase):
 
