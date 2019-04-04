@@ -1118,7 +1118,7 @@ class Reaction:
         
         return other
 
-    def ensure_species(self, reactant_resonance=False, product_resonance=True):
+    def ensure_species(self, reactant_resonance=False, product_resonance=False):
         """
         Ensure the reaction contains species objects in its reactant and product
         attributes. If the reaction is found to hold molecule objects, it

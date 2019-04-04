@@ -1631,6 +1631,8 @@ class KineticsFamily(Database):
                 elif rxn.products[1].isIsomorphic(rxn.products[2]):
                     sameReactants = 2
 
+            ensure_independent_atom_ids(rxn.products)
+
             reactionList = self.__generateReactions([spc.molecule for spc in rxn.products],
                                                     products=rxn.reactants, forward=True,
                                                     react_non_reactive=react_non_reactive)
@@ -1665,7 +1667,7 @@ class KineticsFamily(Database):
                 else:
                     logging.error("Still experiencing error: Expecting one matching reverse reaction, not {0} in reaction family {1} for forward reaction {2}.\n".format(len(reactions), self.label, str(rxn)))
                     raise KineticsError("Did not find reverse reaction in reaction family {0} for reaction {1}.".format(self.label, str(rxn)))
-            elif len(reactions) > 1 and not all([reactions[0].isIsomorphic(other, checkTemplateRxnProducts=True) for other in reactions]):
+            elif len(reactions) > 1 and not all([reactions[0].isIsomorphic(other, strict=False, checkTemplateRxnProducts=True) for other in reactions]):
                 logging.error("Expecting one matching reverse reaction. Recieved {0} reactions with multiple non-isomorphic ones in reaction family {1} for forward reaction {2}.\n".format(len(reactions), self.label, str(rxn)))
                 logging.info("Found the following reverse reactions")
                 for rxn0 in reactions:
