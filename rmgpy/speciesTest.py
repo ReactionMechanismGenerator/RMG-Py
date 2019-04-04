@@ -77,7 +77,23 @@ class TestSpecies(unittest.TestCase):
             molecularWeight=(28.03,'amu'),
             reactive=True,
         )
-        
+
+        self.species2 = Species().fromAdjacencyList(
+            """
+            1  C u0 p0 c0 {2,D} {6,S} {7,S}
+            2  C u0 p0 c0 {1,D} {3,S} {8,S}
+            3  C u0 p0 c0 {2,S} {4,D} {9,S}
+            4  C u0 p0 c0 {3,D} {5,S} {10,S}
+            5  C u0 p0 c0 {4,S} {6,D} {11,S}
+            6  C u0 p0 c0 {1,S} {5,D} {12,S}
+            7  H u0 p0 c0 {1,S}
+            8  H u0 p0 c0 {2,S}
+            9  H u0 p0 c0 {3,S}
+            10 H u0 p0 c0 {4,S}
+            11 H u0 p0 c0 {5,S}
+            12 H u0 p0 c0 {6,S}
+            """)
+
     def testPickle(self):
         """
         Test that a Species object can be pickled and unpickled.
@@ -324,63 +340,32 @@ Thermo library: primaryThermoLibrary
 
     def test_fingerprint_property(self):
         """Test that the fingerprint property works"""
-        spc = Species().fromAdjacencyList(
-            """
-            1  C u0 p0 c0 {2,D} {6,S} {7,S}
-            2  C u0 p0 c0 {1,D} {3,S} {8,S}
-            3  C u0 p0 c0 {2,S} {4,D} {9,S}
-            4  C u0 p0 c0 {3,D} {5,S} {10,S}
-            5  C u0 p0 c0 {4,S} {6,D} {11,S}
-            6  C u0 p0 c0 {1,S} {5,D} {12,S}
-            7  H u0 p0 c0 {1,S}
-            8  H u0 p0 c0 {2,S}
-            9  H u0 p0 c0 {3,S}
-            10 H u0 p0 c0 {4,S}
-            11 H u0 p0 c0 {5,S}
-            12 H u0 p0 c0 {6,S}
-            """)
-
-        self.assertEqual(spc.fingerprint, 'C6H6')
+        self.assertEqual(self.species2.fingerprint, 'C6H6')
 
     def test_inchi_property(self):
         """Test that the InChI property works"""
-        spc = Species().fromAdjacencyList(
-            """
-            1  C u0 p0 c0 {2,D} {6,S} {7,S}
-            2  C u0 p0 c0 {1,D} {3,S} {8,S}
-            3  C u0 p0 c0 {2,S} {4,D} {9,S}
-            4  C u0 p0 c0 {3,D} {5,S} {10,S}
-            5  C u0 p0 c0 {4,S} {6,D} {11,S}
-            6  C u0 p0 c0 {1,S} {5,D} {12,S}
-            7  H u0 p0 c0 {1,S}
-            8  H u0 p0 c0 {2,S}
-            9  H u0 p0 c0 {3,S}
-            10 H u0 p0 c0 {4,S}
-            11 H u0 p0 c0 {5,S}
-            12 H u0 p0 c0 {6,S}
-            """)
-
-        self.assertEqual(spc.InChI, 'InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H')
+        self.assertEqual(self.species2.InChI, 'InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H')
 
     def test_multiplicity_property(self):
         """Test that the fingerprint property works"""
-        spc = Species().fromAdjacencyList(
-            """
-            1  C u0 p0 c0 {2,D} {6,S} {7,S}
-            2  C u0 p0 c0 {1,D} {3,S} {8,S}
-            3  C u0 p0 c0 {2,S} {4,D} {9,S}
-            4  C u0 p0 c0 {3,D} {5,S} {10,S}
-            5  C u0 p0 c0 {4,S} {6,D} {11,S}
-            6  C u0 p0 c0 {1,S} {5,D} {12,S}
-            7  H u0 p0 c0 {1,S}
-            8  H u0 p0 c0 {2,S}
-            9  H u0 p0 c0 {3,S}
-            10 H u0 p0 c0 {4,S}
-            11 H u0 p0 c0 {5,S}
-            12 H u0 p0 c0 {6,S}
-            """)
+        self.assertEqual(self.species2.multiplicity, 1)
 
-        self.assertEqual(spc.multiplicity, 1)
+    def test_smiles_property(self):
+        """Test that the InChI property works"""
+        self.assertEqual(self.species2.SMILES, 'C1=CC=CC=C1')
+
+    def test_inchi_instantiation(self):
+        """Test that we can create a species using the InChI argument"""
+        test = Species(InChI='InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H')
+
+        self.assertTrue(test.isIsomorphic(self.species2))
+
+    def test_smiles_instantiation(self):
+        """Test that we can create a species using the SMILES argument"""
+        test = Species(SMILES='C1=CC=CC=C1')
+
+        self.assertTrue(test.isIsomorphic(self.species2))
+
 
 ################################################################################
 

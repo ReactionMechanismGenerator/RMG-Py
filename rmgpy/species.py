@@ -81,16 +81,16 @@ class Species(object):
                                 always considered regardless of this variable
     `props`                 A generic 'properties' dictionary to store user-defined flags
     `aug_inchi`             Unique augmented inchi
-    `isSolvent`             Boolean describing whether this species is the solvent
+    `symmetryNumber`        Estimated symmetry number of the species, using the resonance hybrid
     `creationIteration`     Iteration which the species is created within the reaction mechanism generation algorithm
+    `explicitlyAllowed`     Flag to exempt species from forbidden structure checks
     ======================= ====================================================
 
     """
 
-    def __init__(self, index=-1, label='', thermo=None, conformer=None, 
-                 molecule=None, transportData=None, molecularWeight=None, 
-                 energyTransferModel=None, reactive=True, props=None, aug_inchi=None,
-                 symmetryNumber = -1, creationIteration = 0, explicitlyAllowed=False):
+    def __init__(self, index=-1, label='', thermo=None, conformer=None, molecule=None, transportData=None,
+                 molecularWeight=None, energyTransferModel=None, reactive=True, props=None, SMILES='', InChI='',
+                 aug_inchi=None, symmetryNumber = -1, creationIteration = 0, explicitlyAllowed=False):
         self.index = index
         self.label = label
         self.thermo = thermo
@@ -108,14 +108,23 @@ class Species(object):
         self.explicitlyAllowed = explicitlyAllowed
         self._fingerprint = None
         self._inchi = None
+        self._smiles = None
+
+        if InChI and SMILES:
+            logging.warning('Both InChI and SMILES provided for Species instantiation, using InChI and ignoring SMILES.')
+        if InChI:
+            self.molecule = [Molecule(InChI=InChI)]
+            self._inchi = InChI
+        elif SMILES:
+            self.molecule = [Molecule(SMILES=SMILES)]
+            self._smiles = SMILES
+
         # Check multiplicity of each molecule is the same
         if molecule is not None and len(molecule)>1:
             mult = molecule[0].multiplicity
             for m in molecule[1:]:
                 if mult != m.multiplicity:
                     raise SpeciesError('Multiplicities of molecules in species {species} do not match.'.format(species=label))
-        
-
 
     def __repr__(self):
         """
@@ -171,6 +180,18 @@ class Species(object):
             if self.molecule:
                 self._inchi = self.molecule[0].InChI
         return self._inchi
+
+    @property
+    def SMILES(self):
+        """
+        SMILES string representation of this species. Read-only.
+
+        Note that SMILES representations for different resonance structures of the same species may be different.
+        """
+        if self._smiles is None:
+            if self.molecule:
+                self._smiles = self.molecule[0].SMILES
+        return self._smiles
 
     @property
     def multiplicity(self):
