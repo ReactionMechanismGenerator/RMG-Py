@@ -226,15 +226,15 @@ class TestSpecies(unittest.TestCase):
                                                                 5 O u0 p3 c-1 {3,S}""")
 
         # check that the structures are not isomorphic if resonance structures are not generated:
-        self.assertFalse(spc1_correct.isIsomorphic(spc1_nonrepresentative, generate_res=False))
+        self.assertFalse(spc1_correct.isIsomorphic(spc1_nonrepresentative, strict=True))
 
         # check that the nonrepresentative structure is isomorphic by generating resonance structures:
-        self.assertTrue(spc1_correct.isIsomorphic(spc1_nonrepresentative, generate_res=True))
-        self.assertTrue(spc2_correct.isIsomorphic(spc2_nonrepresentative, generate_res=True))
-        self.assertTrue(spc3_correct.isIsomorphic(spc3_nonrepresentative, generate_res=True))
-        self.assertTrue(spc4_correct.isIsomorphic(spc4_nonrepresentative, generate_res=True))
-        self.assertTrue(spc5_correct.isIsomorphic(spc5_nonrepresentative, generate_res=True))
-        self.assertTrue(spc6_correct.isIsomorphic(spc6_nonrepresentative, generate_res=True))
+        self.assertTrue(spc1_correct.isIsomorphic(spc1_nonrepresentative, strict=False))
+        self.assertTrue(spc2_correct.isIsomorphic(spc2_nonrepresentative, strict=False))
+        self.assertTrue(spc3_correct.isIsomorphic(spc3_nonrepresentative, strict=False))
+        self.assertTrue(spc4_correct.isIsomorphic(spc4_nonrepresentative, strict=False))
+        self.assertTrue(spc5_correct.isIsomorphic(spc5_nonrepresentative, strict=False))
+        self.assertTrue(spc6_correct.isIsomorphic(spc6_nonrepresentative, strict=False))
 
     def testGetResonanceHybrid(self):
         """
