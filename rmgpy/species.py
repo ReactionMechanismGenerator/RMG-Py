@@ -225,19 +225,21 @@ class Species(object):
             raise ValueError('Unexpected value "{0!r}" for other parameter; should be a Molecule or Species object.'.format(other))
         return False
 
-    def isIdentical(self, other):
+    def isIdentical(self, other, strict=True):
         """
         Return ``True`` if at least one molecule of the species is identical to `other`,
         which can be either a :class:`Molecule` object or a :class:`Species` object.
+
+        If ``strict=False``, performs the check ignoring electrons and resonance structures.
         """
         if isinstance(other, Molecule):
             for molecule in self.molecule:
-                if molecule.isIdentical(other):
+                if molecule.isIdentical(other, strict=strict):
                     return True
         elif isinstance(other, Species):
             for molecule1 in self.molecule:
                 for molecule2 in other.molecule:
-                    if molecule1.isIdentical(molecule2):
+                    if molecule1.isIdentical(molecule2, strict=strict):
                         return True
         else:
             raise ValueError('Unexpected value "{0!r}" for other parameter;'

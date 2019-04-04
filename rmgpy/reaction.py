@@ -1284,7 +1284,7 @@ def same_species_lists(list1, list2, check_identical=False, only_check_label=Fal
         if _only_check_label:
             return str(object1) == str(object2)
         elif _check_identical:
-            return object1.isIdentical(object2)
+            return object1.isIdentical(object2, strict=_strict)
         else:
             return object1.isIsomorphic(object2, strict=_strict)
 

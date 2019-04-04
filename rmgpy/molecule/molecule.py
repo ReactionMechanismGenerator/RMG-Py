@@ -2244,13 +2244,15 @@ class Molecule(Graph):
             return True
         return False
 
-    def isIdentical(self, other):
+    def isIdentical(self, other, strict=True):
         """
         Performs isomorphism checking, with the added constraint that atom IDs must match.
 
         Primary use case is tracking atoms in reactions for reaction degeneracy determination.
 
         Returns :data:`True` if two graphs are identical and :data:`False` otherwise.
+
+        If ``strict=False``, performs the check ignoring electrons and resonance structures.
         """
         cython.declare(atomIndicies=set, otherIndices=set, atomList=list, otherList=list, mapping = dict)
 
@@ -2272,7 +2274,7 @@ class Molecule(Graph):
             for atom1, atom2 in itertools.izip(atomList, otherList):
                 mapping[atom1] = atom2
 
-            return self.isMappingValid(other, mapping)
+            return self.isMappingValid(other, mapping, equivalent=True, strict=strict)
         else:
             # The molecules don't have the same set of indices, so they are not identical
             return False
