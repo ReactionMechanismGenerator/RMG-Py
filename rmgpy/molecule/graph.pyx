@@ -1075,25 +1075,28 @@ cdef class Graph(object):
         return longest_cycle
         
         
-    cpdef bint isMappingValid(self, Graph other, dict mapping, bint equivalent=True) except -2:
+    cpdef bint isMappingValid(self, Graph other, dict mapping, bint equivalent=True, bint strict=True) except -2:
         """
         Check that a proposed `mapping` of vertices from `self` to `other`
         is valid by checking that the vertices and edges involved in the
-        mapping are mutually equivalent.  If equivalent is true it checks
-        if atoms and edges are equivalent, if false it checks if they 
-        are specific cases of each other.  
+        mapping are mutually equivalent.  If equivalent is ``True`` it checks
+        if atoms and edges are equivalent, if ``False`` it checks if they
+        are specific cases of each other. If strict is ``True``, electrons
+        and bond orders are considered, and ignored if ``False``.
         """
         cdef Vertex vertex1, vertex2
         cdef list vertices1, vertices2
         cdef bint selfHasEdge, otherHasEdge
         cdef int i, j
-        
-        method = 'equivalent' if equivalent else 'isSpecificCaseOf'
-        
+
         # Check that the mapped pairs of vertices compare True
         for vertex1, vertex2 in mapping.items():
-            if not getattr(vertex1,method)(vertex2):
-                return False
+            if equivalent:
+                if not vertex1.equivalent(vertex2, strict=strict):
+                    return False
+            else:
+                if not vertex1.isSpecificCaseOf(vertex2):
+                    return False
             
         # Check that any edges connected mapped vertices are equivalent
         vertices1 = mapping.keys()
@@ -1104,10 +1107,15 @@ cdef class Graph(object):
                 otherHasEdge = other.hasEdge(vertices2[i], vertices2[j])
                 if selfHasEdge and otherHasEdge:
                     # Both graphs have the edge, so we must check it for equivalence
-                    edge1 = self.getEdge(vertices1[i], vertices1[j])
-                    edge2 = other.getEdge(vertices2[i], vertices2[j])
-                    if not getattr(edge1,method)(edge2):
-                        return False
+                    if strict:
+                        edge1 = self.getEdge(vertices1[i], vertices1[j])
+                        edge2 = other.getEdge(vertices2[i], vertices2[j])
+                        if equivalent:
+                            if not edge1.equivalent(edge2):
+                                return False
+                        else:
+                            if not edge1.isSpecificCaseOf(edge2):
+                                return False
                 elif not equivalent and selfHasEdge and not otherHasEdge: 
                     #in the subgraph case self can have edges other doesn't have
                     continue
