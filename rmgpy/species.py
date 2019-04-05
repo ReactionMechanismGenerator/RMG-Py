@@ -181,6 +181,7 @@ class Species(object):
         if self._inchi is None:
             if self.molecule:
                 self._inchi = self.molecule[0].InChI
+                self.aug_inchi = self.molecule[0].toAugmentedInChI()
         return self._inchi
 
     @property
@@ -780,7 +781,7 @@ class Species(object):
           - regenerate resonance structures
         """
         if len(self.molecule) == 0:
-            self.molecule = [Molecule(InChI=self.InChI)]
+            self.molecule = [Molecule().fromAugmentedInChI(self.aug_inchi)]
             self.generate_resonance_structures()
 
 
