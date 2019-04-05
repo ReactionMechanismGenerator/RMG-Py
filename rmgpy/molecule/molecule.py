@@ -1279,7 +1279,7 @@ class Molecule(Graph):
 
         return element_count
 
-    def isIsomorphic(self, other, initialMap=None, saveOrder=False, strict=True):
+    def isIsomorphic(self, other, initialMap=None, saveOrder=False, strict=True, inchi=False):
         """
         Returns :data:`True` if two graphs are isomorphic and :data:`False`
         otherwise. The `initialMap` attribute can be used to specify a required
@@ -1292,6 +1292,7 @@ class Molecule(Graph):
             initialMap (dict, optional): initial atom mapping to use
             saveOrder (bool, optional):  if ``True``, reset atom order after performing atom isomorphism
             strict (bool, optional):     if ``False``, perform isomorphism ignoring electrons
+            inchi (bool, optional):      if ``True``, compare InChI strings instead graphs
         """
         # It only makes sense to compare a Molecule to a Molecule for full
         # isomorphism, so raise an exception if this is not what was requested
@@ -1305,6 +1306,9 @@ class Molecule(Graph):
         # check multiplicity
         if self.multiplicity != other.multiplicity:
             return False
+        # Compare InChI strings if requested
+        if inchi:
+            return self.InChI == other.InChI
         # Do the full isomorphism comparison
         result = Graph.isIsomorphic(self, other, initialMap, saveOrder=saveOrder, strict=strict)
         return result

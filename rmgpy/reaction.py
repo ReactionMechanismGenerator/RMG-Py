@@ -415,7 +415,8 @@ class Reaction:
             return False
 
     def isIsomorphic(self, other, eitherDirection=True, checkIdentical=False,
-                     checkOnlyLabel=False, strict=True, checkTemplateRxnProducts=False):
+                     checkOnlyLabel=False, strict=True, inchi=False,
+                     checkTemplateRxnProducts=False):
         """
         Return ``True`` if this reaction is the same as the `other` reaction,
         or ``False`` if they are different. The comparison involves comparing
@@ -428,6 +429,7 @@ class Reaction:
             checkOnlyLabel (bool, optional):           if ``True``, only check the string representation,
                                                        ignoring molecular structure comparisons
             strict (bool, optional):                   if ``False``, perform isomorphism ignoring electrons
+            inchi (bool, optional):                    if ``True``, compare InChI strings instead graphs
             checkTemplateRxnProducts (bool, optional): if ``True``, only check isomorphism of reaction products
                                                        (used when we know the reactants are identical, i.e. in generating reactions)
         """
@@ -441,19 +443,22 @@ class Reaction:
             return same_species_lists(species1, species2,
                                       check_identical=checkIdentical,
                                       only_check_label=checkOnlyLabel,
-                                      strict=strict)
+                                      strict=strict,
+                                      inchi=inchi)
 
         # Compare reactants to reactants
         forwardReactantsMatch = same_species_lists(self.reactants, other.reactants,
                                                    check_identical=checkIdentical,
                                                    only_check_label=checkOnlyLabel,
-                                                   strict=strict)
+                                                   strict=strict,
+                                                   inchi=inchi)
         
         # Compare products to products
         forwardProductsMatch = same_species_lists(self.products, other.products,
                                                   check_identical=checkIdentical,
                                                   only_check_label=checkOnlyLabel,
-                                                  strict=strict)
+                                                  strict=strict,
+                                                  inchi=inchi)
 
         # Compare specificCollider to specificCollider
         ColliderMatch = (self.specificCollider == other.specificCollider)
@@ -468,13 +473,15 @@ class Reaction:
         reverseReactantsMatch = same_species_lists(self.reactants, other.products,
                                                    check_identical=checkIdentical,
                                                    only_check_label=checkOnlyLabel,
-                                                   strict=strict)
+                                                   strict=strict,
+                                                   inchi=inchi)
 
         # Compare products to reactants
         reverseProductsMatch = same_species_lists(self.products, other.reactants,
                                                   check_identical=checkIdentical,
                                                   only_check_label=checkOnlyLabel,
-                                                  strict=strict)
+                                                  strict=strict,
+                                                  inchi=inchi)
 
         # should have already returned if it matches forwards, or we're not allowed to match backwards
         return reverseReactantsMatch and reverseProductsMatch and ColliderMatch
@@ -1263,7 +1270,7 @@ class Reaction:
         return mean_sigmas, mean_epsilons
 
 
-def same_species_lists(list1, list2, check_identical=False, only_check_label=False, strict=True):
+def same_species_lists(list1, list2, check_identical=False, only_check_label=False, strict=True, inchi=False):
     """
     This method compares whether two lists of species or molecules are the same,
     given the comparison options provided. It is used for the `is_same` method
@@ -1280,13 +1287,14 @@ def same_species_lists(list1, list2, check_identical=False, only_check_label=Fal
         ``True`` if the lists are the same and ``False`` otherwise
     """
 
-    def same(object1, object2, _check_identical=check_identical, _only_check_label=only_check_label, _strict=strict):
+    def same(object1, object2, _check_identical=check_identical,
+             _only_check_label=only_check_label, _strict=strict, _inchi=inchi):
         if _only_check_label:
             return str(object1) == str(object2)
         elif _check_identical:
             return object1.isIdentical(object2, strict=_strict)
         else:
-            return object1.isIsomorphic(object2, strict=_strict)
+            return object1.isIsomorphic(object2, strict=_strict, inchi=_inchi)
 
     if len(list1) == len(list2) == 1:
         if same(list1[0], list2[0]):

@@ -225,14 +225,17 @@ class Species(object):
             self.molecule = self.molecule[0].generate_resonance_structures(keep_isomorphic=keep_isomorphic,
                                                                            filter_structures=filter_structures)
     
-    def isIsomorphic(self, other, strict=True):
+    def isIsomorphic(self, other, strict=True, inchi=False):
         """
         Return ``True`` if the species is isomorphic to `other`, which can be
         either a :class:`Molecule` object or a :class:`Species` object.
 
         Args:
             strict (bool, optional): If ``False``, perform isomorphism ignoring electrons.
+            inchi (bool, optional):  If ``True``, compare InChI strings instead graphs
         """
+        if inchi:
+            return self.InChI == other.InChI
         if isinstance(other, Molecule):
             for molecule in self.molecule:
                 if molecule.isIsomorphic(other, strict=strict):

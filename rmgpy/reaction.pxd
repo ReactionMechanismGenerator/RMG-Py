@@ -69,7 +69,8 @@ cdef class Reaction:
     
     cpdef bint matchesSpecies(self, list reactants, list products=?)
 
-    cpdef bint isIsomorphic(self, Reaction other, bint eitherDirection=?, bint checkIdentical=?, bint checkOnlyLabel=?, bint strict=?, bint checkTemplateRxnProducts=?) except -2
+    cpdef bint isIsomorphic(self, Reaction other, bint eitherDirection=?, bint checkIdentical=?, bint checkOnlyLabel=?,
+                            bint strict=?, bint inchi=?, bint checkTemplateRxnProducts=?) except -2
 
     cpdef double getEnthalpyOfReaction(self, double T)
 
@@ -121,4 +122,4 @@ cdef class Reaction:
 
     cpdef get_mean_sigma_and_epsilon(self, bint reverse=?)
 
-cpdef bint same_species_lists(list list1, list list2, bint check_identical=?, bint only_check_label=?, bint strict=?) except -2
+cpdef bint same_species_lists(list list1, list list2, bint check_identical=?, bint only_check_label=?, bint strict=?, bint inchi=?) except -2

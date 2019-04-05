@@ -2344,6 +2344,40 @@ multiplicity 2
         self.assertEqual(bonds['H-O'], 2)
         self.assertEqual(bonds['H~O'], 2)
 
+    def test_inchi_isomorphism(self):
+        """Test inchi and strict options for isIsomorphic"""
+        mol1 = Molecule().fromAdjacencyList("""
+1  *1 C u0 p0 c0 {3,S} {9,S} {10,S} {11,S}
+2  *2 C u0 p0 c0 {4,S} {12,S} {13,S} {14,S}
+3     C u0 p0 c0 {1,S} {4,S} {5,D}
+4     C u0 p0 c0 {2,S} {3,S} {6,D}
+5     C u0 p0 c0 {3,D} {7,S} {15,S}
+6     C u0 p0 c0 {4,D} {8,S} {18,S}
+7     C u0 p0 c0 {5,S} {8,D} {16,S}
+8     C u0 p0 c0 {6,S} {7,D} {17,S}
+9     H u0 p0 c0 {1,S}
+10    H u0 p0 c0 {1,S}
+11    H u0 p0 c0 {1,S}
+12    H u0 p0 c0 {2,S}
+13    H u0 p0 c0 {2,S}
+14    H u0 p0 c0 {2,S}
+15    H u0 p0 c0 {5,S}
+16    H u0 p0 c0 {7,S}
+17    H u0 p0 c0 {8,S}
+18    H u0 p0 c0 {6,S}
+""")
+        mol1.assignAtomIDs()
+        res = mol1.generate_resonance_structures()
+        mol2 = res[0]
+
+        # Normal isomorphism (default settings)
+        self.assertFalse(mol1.isIsomorphic(mol2))
+        # InChI comparison
+        self.assertTrue(mol1.isIsomorphic(mol2, inchi=True))
+        # Isomorphism without electrons
+        self.assertTrue(mol1.isIsomorphic(mol2, strict=False))
+
+
 ################################################################################
 
 if __name__ == '__main__':
