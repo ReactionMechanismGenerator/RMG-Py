@@ -108,6 +108,7 @@ class Species(object):
         self.creationIteration = creationIteration
         self.explicitlyAllowed = explicitlyAllowed
         self._fingerprint = None
+        self._multiplicity = -1
         self._inchi = None
         self._smiles = None
 
@@ -196,11 +197,11 @@ class Species(object):
 
     @property
     def multiplicity(self):
-        """Fingerprint of this species, taken from molecule attribute. Read-only."""
-        if self.molecule:
-            return self.molecule[0].multiplicity
-        else:
-            return None
+        """Multiplicity of this species, taken from molecule attribute. Read-only."""
+        if self._multiplicity == -1:
+            if self.molecule:
+                self._multiplicity = self.molecule[0].multiplicity
+        return self._multiplicity
 
     @property
     def molecularWeight(self):
@@ -246,7 +247,7 @@ class Species(object):
             inchi (bool, optional):  If ``True``, compare InChI strings instead graphs
         """
         if inchi:
-            return self.InChI == other.InChI
+            return self.multiplicity == other.multiplicity and self.InChI == other.InChI
         if isinstance(other, Molecule):
             for molecule in self.molecule:
                 if molecule.isIsomorphic(other, strict=strict):
@@ -764,10 +765,10 @@ class Species(object):
         Reduce object to minimal representation to save on memory.
         The following reductions are made:
 
-          - ``InChI`` attribute is updated
+          - ``multiplicity`` and ``InChI`` attributes are updated
           - ``molecule`` attribute is set to empty list
         """
-        if self.InChI is not None:
+        if self.multiplicity != -1 and self.InChI is not None:
             self.molecule = []
 
     def expand(self):

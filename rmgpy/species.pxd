@@ -54,6 +54,7 @@ cdef class Species:
     cdef public int creationIteration
     cdef public bint explicitlyAllowed
     cdef str _fingerprint
+    cdef int _multiplicity
     cdef str _inchi
     cdef str _smiles
 
