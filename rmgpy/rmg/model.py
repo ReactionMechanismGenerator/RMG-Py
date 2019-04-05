@@ -245,7 +245,7 @@ class CoreEdgeReactionModel:
 
         # First check cache and return if species is found
         for i, spec in enumerate(self.speciesCache):
-            if spec is not None and spec.isIsomorphic(molecule, strict=False):
+            if spec is not None and spec.isIsomorphic(molecule, inchi=True):
                 self.speciesCache.pop(i)
                 self.speciesCache.insert(0, spec)
                 return spec
@@ -258,7 +258,7 @@ class CoreEdgeReactionModel:
             pass
         else:
             for spec in species_list:
-                if spec.isIsomorphic(molecule, strict=False):
+                if spec.isIsomorphic(molecule, inchi=True):
                     self.speciesCache.pop()
                     self.speciesCache.insert(0, spec)
                     return spec
@@ -994,6 +994,8 @@ class CoreEdgeReactionModel:
 
         assert spec not in self.core.species, "Tried to add species {0} to core, but it's already there".format(spec.label)
 
+        spec.expand()
+
         forbidden_structures = getDB('forbidden')
         
         # check RMG globally forbidden structures
@@ -1034,10 +1036,12 @@ class CoreEdgeReactionModel:
                 logging.debug("Moving reaction from edge to core: {0}".format(rxn))
         return rxnList
 
-    def addSpeciesToEdge(self, spec):
+    def addSpeciesToEdge(self, spec, reduce=True):
         """
         Add a species `spec` to the reaction model edge.
         """
+        if reduce:
+            spec.reduce()
         self.edge.species.append(spec)
     
     def setThermodynamicFilteringParameters(self,Tmax, toleranceThermoKeepSpeciesInEdge,minCoreSizeForPrune,maximumEdgeSpecies,reactionSystems):
