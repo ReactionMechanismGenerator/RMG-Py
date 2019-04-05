@@ -95,6 +95,10 @@ cdef class Species:
     cpdef bint has_reactive_molecule(self) except -1
 
     cpdef Species copy(self, bint deep=?)
+
+    cpdef reduce(self)
+
+    cpdef expand(self)
     
 ################################################################################
 

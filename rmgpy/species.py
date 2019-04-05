@@ -747,6 +747,31 @@ class Species(object):
             T0 = (300,"K"),
             n = 0.85,
         ) 
+
+    def reduce(self):
+        """
+        Reduce object to minimal representation to save on memory.
+        The following reductions are made:
+
+          - ``InChI`` attribute is updated
+          - ``molecule`` attribute is set to empty list
+        """
+        if self.InChI is not None:
+            self.molecule = []
+
+    def expand(self):
+        """
+        Expand object back to full representation.
+        The following changes are made:
+
+          - regenerate :class:`Molecule` objects from stored InChI
+          - regenerate resonance structures
+        """
+        if len(self.molecule) == 0:
+            self.molecule = [Molecule(InChI=self.InChI)]
+            self.generate_resonance_structures()
+
+
 ################################################################################
 
 class TransitionState():
