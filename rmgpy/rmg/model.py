@@ -770,7 +770,7 @@ class CoreEdgeReactionModel:
                             spcs.append(spec)
                             self.addSpeciesToEdge(spec)
                     
-            isomerAtoms = sum([len(spec.molecule[0].atoms) for spec in rxn.reactants])
+            isomerAtoms = sum([spec.atom_count() for spec in rxn.reactants])
             
             # Decide whether or not to handle the reaction as a pressure-dependent reaction
             pdep = True

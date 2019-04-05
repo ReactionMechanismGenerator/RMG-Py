@@ -51,6 +51,7 @@ from operator import itemgetter
 import rmgpy.quantity as quantity
 
 from rmgpy.molecule.molecule import Atom, Bond, Molecule
+from rmgpy.molecule.util import retrieveElementCount
 from rmgpy.pdep import SingleExponentialDown
 from rmgpy.statmech.conformer import Conformer
 from rmgpy.thermo import Wilhoit, NASA, ThermoData
@@ -211,6 +212,16 @@ class Species(object):
     @molecularWeight.setter
     def molecularWeight(self, value):
         self._molecularWeight = quantity.Mass(value)
+
+    def atom_count(self):
+        """
+        Returns total number of atoms in the species.
+        """
+        if self.molecule:
+            return len(self.molecule[0].atoms)
+        else:
+            element_count = retrieveElementCount(self.InChI)
+            return sum(element_count.values())
 
     def generate_resonance_structures(self, keep_isomorphic=True, filter_structures=True):
         """
