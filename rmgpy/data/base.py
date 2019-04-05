@@ -327,9 +327,12 @@ class Database:
                     speciesDict[product.label] = product
             
         with open(path, 'w') as f:
-            for label in speciesDict.keys():
-                f.write(speciesDict[label].molecule[0].toAdjacencyList(label=label, removeH=False))
-                f.write('\n')
+            for label, spec in speciesDict.iteritems():
+                if spec.molecule:
+                    f.write(spec.molecule[0].toAdjacencyList(label=label, removeH=False))
+                    f.write('\n')
+                else:
+                    f.write('{0}\n{1}\n\n'.format(label, spec.InChI))
 
     def save(self, path):
         """

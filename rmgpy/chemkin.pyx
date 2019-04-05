@@ -1435,7 +1435,7 @@ def writeThermoEntry(species, elementCounts=None, verbose=True):
 
     # Determine the number of each type of element in the molecule
     if elementCounts is None:
-        elementCounts = retrieveElementCount(species.molecule[0])
+        elementCounts = retrieveElementCount(species.InChI)
     
     string = ''
     # Write thermo comments
@@ -1834,12 +1834,15 @@ def saveSpeciesDictionary(path, species, oldStyle=False):
                     f.write("\n// " + "\n// ".join(newAdjList.splitlines()) + '\n')
             else:
                 try:
-                    for mol in spec.molecule:
-                        if mol.reactive:
-                            f.write(mol.toAdjacencyList(label=getSpeciesIdentifier(spec), removeH=False))
-                            break
+                    if spec.molecule:
+                        for mol in spec.molecule:
+                            if mol.reactive:
+                                f.write(mol.toAdjacencyList(label=getSpeciesIdentifier(spec), removeH=False))
+                                break
+                        else:
+                            raise AssertionError('No reactive structures were found for species {0}.'.format(getSpeciesIdentifier(spec)))
                     else:
-                        raise AssertionError('No reactive structures were found for species {0}.'.format(getSpeciesIdentifier(spec)))
+                        f.write('{0}\n{1}\n\n'.format(getSpeciesIdentifier(spec), spec.InChI))
                 except:
                     raise ChemkinError('Ran into error saving dictionary for species {0}. Please check your files.'.format(getSpeciesIdentifier(spec)))
             f.write('\n')
