@@ -130,7 +130,7 @@ def get_octet_deviation(mol, allow_expanded_octet=True):
                 # This results in O=S=O as a representative structure for SO2 rather than O=[:S+][:::O-],
                 # and in CS(=O)C as a representative structure for DMSO rather than C[:S+]([:::O-])C.
                 if atom.lone_pairs <= 1:
-                    octet_deviation += min(abs(8 - val_electrons), abs(10 - val_electrons))  # octet/dectet on S p[0,1]
+                    octet_deviation += min(abs(8 - val_electrons), abs(10 - val_electrons), abs(12 - val_electrons))  # octet/dectet on S p[0,1]
                     # eg [O-][S+]=O, O[S]=O, OS([O])=O, O=S(=O)(O)O
                 elif atom.lone_pairs >= 2:
                     octet_deviation += abs(8 - val_electrons)  # octet on S p[2,3]

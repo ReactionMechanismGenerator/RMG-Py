@@ -127,7 +127,7 @@ class FiltrationTest(unittest.TestCase):
         """
         mol = Molecule().from_adjacency_list(adj)
         octet_deviation = get_octet_deviation(mol)
-        self.assertEqual(octet_deviation, 3.0)
+        self.assertEqual(octet_deviation, 1.0)
 
     def radical_site_test(self):
         """Test that a charged molecule isn't filtered if it introduces new radical site"""
