@@ -721,7 +721,7 @@ def readInputFile(path, rmg0):
 
     logging.info('Reading input file "{0}"...'.format(full_path))
     logging.info(f.read())
-    f.seek(0)# return to beginning of file
+    f.seek(0)  # return to beginning of file
 
     setGlobalRMG(rmg0)
     rmg.reactionModel = CoreEdgeReactionModel()
@@ -755,7 +755,11 @@ def readInputFile(path, rmg0):
         'thermoCentralDatabase': thermoCentralDatabase,
         'uncertainty': uncertainty,
     }
-
+    thermo_libraries, reaction_libraries = None, None
+    if isinstance(rmg0.thermoLibraries, list):
+        thermo_libraries = rmg0.thermoLibraries
+    if isinstance(rmg0.reactionLibraries, list):
+        reaction_libraries = rmg0.reactionLibraries
     try:
         exec f in global_context, local_context
     except (NameError, TypeError, SyntaxError) as e:
@@ -764,6 +768,10 @@ def readInputFile(path, rmg0):
         raise
     finally:
         f.close()
+    if thermo_libraries is not None:
+        rmg0.thermoLibraries.extend(thermo_libraries)
+    if reaction_libraries is not None:
+        rmg0.reactionLibraries.extend(reaction_libraries)
     
     rmg.speciesConstraints['explicitlyAllowedMolecules'] = []         
     broadcast(rmg.speciesConstraints, 'speciesConstraints')
