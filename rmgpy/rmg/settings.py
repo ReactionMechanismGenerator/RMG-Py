@@ -57,6 +57,7 @@ This module contains settings classes for manipulation of RMG run parameters
 import numpy
 from rmgpy.quantity import Quantity
 
+
 class ModelSettings(object):
     """
     class for holding the parameters affecting an RMG run
@@ -113,7 +114,8 @@ class ModelSettings(object):
             self.maxNumObjsPerIter = numpy.inf
         else:
             self.maxNumObjsPerIter = maxNumObjsPerIter
-            
+
+
 class SimulatorSettings(object):
     """
     class for holding the parameters affecting the behavior of the solver
