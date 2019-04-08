@@ -254,7 +254,8 @@ class StatMechJob(object):
         try:
             linear = local_context['linear']
         except KeyError:
-            externalSymmetry = None
+            logging.error('You did not set whether the molecule is linear with the required `linear` parameter')
+            raise
 
         try:
             externalSymmetry = local_context['externalSymmetry']
