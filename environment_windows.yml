@@ -42,3 +42,4 @@ dependencies:
   - mpmath
   - dde
   - pyyaml
+  - textgenrnn

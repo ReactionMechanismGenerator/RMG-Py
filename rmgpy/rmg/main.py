@@ -1363,6 +1363,21 @@ class RMG(util.Subject):
         """
         Complete the model generation.
         """
+        # Print neural network-generated quote
+        import datetime
+        import textwrap
+        try:
+            from textgenrnn.quotes import get_quote
+        except ImportError:
+            pass
+        else:
+            quote = '"' + get_quote() + '"'
+            logging.info('')
+            logging.info(textwrap.fill(quote, subsequent_indent=' '))
+            logging.info('             ---Quote-generating neural network, {}'.format(
+                datetime.datetime.now().strftime("%B %Y")
+            ))
+
         # Log end timestamp
         logging.info('')
         logging.info('RMG execution terminated at ' + time.asctime())
