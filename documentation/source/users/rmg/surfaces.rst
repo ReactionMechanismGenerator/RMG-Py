@@ -233,12 +233,9 @@ This is an input file for catalytic partial oxidation (CPOX) of methane
 .. [Abild2007] \ F. Abild-Pedersen, J. Greeley, F. Studt, J. Rossmeisl, T.R. Munter, P.G. Moses, E. Skúlason, T. Bligaard, and J.K. Nørskov. "Scaling Properties of Adsorption Energies for Hydrogen-Containing Molecules on Transition-Metal Surfaces." *Phys. Rev. Lett.* **99(1)**, p. 4-7 (2007).
 
 
-Phys. Rev. Lett. 99, 016105 – Published 6 July 2007
-
 The text below here is just copied from the Liquids page
 --------------------------------------------------------
 To simulate liquids in RMG requires a module in your input file for liquid-phase::
-
 
     solvation(
         solvent='octane'
