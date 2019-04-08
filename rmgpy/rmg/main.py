@@ -612,13 +612,14 @@ class RMG(util.Subject):
                 reactionSystem.attach(SimulationProfilePlotter(
                     self.outputDirectory, index, self.reactionModel.core.species))  
 
-    def execute(self, **kwargs):
+    def execute(self, initialize=True, **kwargs):
         """
         Execute an RMG job using the command-line arguments `args` as returned
         by the :mod:`argparse` package.
+        `initialize` is a ``bool`` flag to determine whether self.initialize() is called
         """
-    
-        self.initialize(**kwargs)
+        if initialize:
+            self.initialize(**kwargs)
 
         # register listeners
         self.register_listeners()
