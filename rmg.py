@@ -36,8 +36,17 @@ import os.path
 import argparse
 import logging
 import rmgpy
+from rmgpy.exceptions import DependencyError
 
 from rmgpy.rmg.main import RMG, initializeLog, processProfileStats, makeProfileGraph
+import rmg_arc
+
+try:
+    from arc import ARC
+except ImportError:
+    arc_available = False
+else:
+    arc_available = True
 
 ################################################################################
 
@@ -91,6 +100,9 @@ def parse_command_line_arguments(command_line_args=None):
                         help='output a folder, kinetics_database, that contains a .txt file for each reaction family '
                              'listing the source(s) for each entry')
 
+    # Add option to iteratively run RMG and ARC by supplying a valid ARC input file
+    parser.add_argument('-a', '--arc', metavar='ARC', type=str, nargs=1, help="ARC's input file")
+
     args = parser.parse_args(command_line_args)
 
     # Process args to set correct default values and format
@@ -138,8 +150,6 @@ def main():
             level = logging.WARNING
         initializeLog(level, os.path.join(args.output_directory, 'RMG.log'))
 
-    logging.info(rmgpy.settings.report())
-
     kwargs = {
         'restart': args.restart,
         'walltime': args.walltime,
@@ -168,11 +178,18 @@ def main():
         log_file = os.path.join(args.output_directory, 'RMG.log')
         processProfileStats(stats_file, log_file)
         makeProfileGraph(stats_file)
-
     else:
-
-        rmg = RMG(inputFile=args.file, outputDirectory=args.output_directory)
-        rmg.execute(**kwargs)
+        if args.arc:
+            if arc_available:
+                rmg_arc.main(args, kwargs)
+            else:
+                raise DependencyError('ARC is unavailable. Make sure ARC is properly installed and appended to PATH '
+                                      'before running it along with RMG. For further information, See the ARC '
+                                      'installation instructions at https://github.com/ReactionMechanismGenerator/ARC')
+        else:
+            rmg = RMG(inputFile=args.file, outputDirectory=args.output_directory)
+            logging.info(rmgpy.settings.report())
+            rmg.execute(**kwargs)
 
 
 ################################################################################
