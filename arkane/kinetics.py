@@ -242,7 +242,7 @@ class KineticsJob(object):
                 except (SpeciesError, ZeroDivisionError):
                     k = reaction.getRateCoefficient(T)
                     kappa = 0
-                    logging.info("The species in reaction {} do not have adequate information for TST, "
+                    logging.info("The species in reaction {0} do not have adequate information for TST, "
                                  "using default kinetics values.".format(reaction))
                 tunneling = reaction.transitionState.tunneling
                 ks.append(k)
@@ -270,9 +270,8 @@ class KineticsJob(object):
                 krev = k / Keq
                 k0revs.append(k0rev)
                 krevs.append(krev)
-                f.write('#    {0:4g} K {1:11.3e}   {2}  {3:11.3e}   {4:11.3e}      {5}\n'.format(T, Keq, self.Kequnits,
-                                                                                                 k0rev, krev,
-                                                                                                 self.krunits))
+                f.write('#    {0:4g} K {1:11.3e}   {2}  {3:11.3e}   {4:11.3e}      {5}\n'.format(
+                    T, Keq, self.Kequnits, k0rev, krev, self.krunits))
 
             f.write('#   ======= ============ =========== ============ ============= =========\n')
             f.write('\n\n')
