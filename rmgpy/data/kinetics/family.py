@@ -53,8 +53,7 @@ from rmgpy import settings
 from rmgpy.reaction import Reaction
 from rmgpy.kinetics.uncertainties import rank_accuracy_map
 from rmgpy.kinetics import Arrhenius, SurfaceArrhenius,\
-                    SurfaceArrheniusBEP, StickingCoefficient, StickingCoefficientBEP
-from rmgpy.kinetics.arrhenius import ArrheniusBM
+                    SurfaceArrheniusBEP, StickingCoefficient, StickingCoefficientBEP, ArrheniusBM
 from rmgpy.kinetics.uncertainties import RateUncertainty
 from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.molecule.resonance import generate_optimal_aromatic_resonance_structures
