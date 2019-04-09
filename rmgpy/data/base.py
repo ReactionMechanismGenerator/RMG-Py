@@ -110,7 +110,7 @@ class Entry(object):
 
     def __repr__(self):
         return '<Entry index={0:d} label="{1}">'.format(self.index, self.label)
-    
+
     @property
     def longDesc(self):
         return self._longDesc
@@ -129,6 +129,23 @@ class Entry(object):
             self._shortDesc = None
         else:
             self._shortDesc = unicode(value)
+    def getAllDescendants(self):
+        """
+        retrieve all the descendants of entry
+        """
+        newNodes = [self]
+        totNodes = []
+        tempNodes = []
+        while newNodes != []:
+            for entry2 in newNodes:
+                for child in entry2.children:
+                    tempNodes.append(child)
+            totNodes.extend(newNodes)
+            newNodes = tempNodes
+            tempNodes = []
+
+        totNodes.remove(self)
+        return totNodes
 
 ################################################################################
 
@@ -156,7 +173,7 @@ class Database:
     :meth:`generateOldLibraryEntry` methods in order to load and save from the
     new and old database formats.
     """
-    
+
     local_context = {}
     local_context['Reference'] = Reference
     local_context['Article'] = Article
@@ -217,7 +234,7 @@ class Database:
         # add in anything from the Class level dictionary.
         for key, value in Database.local_context.iteritems():
             local_context[key]=value
-        
+
         # Process the file
         f = open(path, 'r')
         try:
@@ -232,7 +249,7 @@ class Database:
         self.solvent = local_context['solvent']
         self.shortDesc = local_context['shortDesc']
         self.longDesc = local_context['longDesc'].strip()
-        
+
         # Return the loaded database (to allow for Database().load() syntax)
         return self
 
@@ -269,7 +286,7 @@ class Database:
             entry.index = index
 
         return entries
-    
+
     def getSpecies(self, path, resonance=True):
         """
         Load the dictionary containing all of the species in a kinetics library or depository.
@@ -302,12 +319,12 @@ class Database:
                         raise DatabaseError('Species label "{0}" used for multiple species in {1}.'.format(label, str(self)))
                     speciesDict[label] = species
 
-        
+
         return speciesDict
-    
+
     def saveDictionary(self, path):
         """
-        Extract species from all entries associated with a kinetics library or depository and save them 
+        Extract species from all entries associated with a kinetics library or depository and save them
         to the path given.
         """
         try:
@@ -321,11 +338,11 @@ class Database:
             for reactant in entry.item.reactants:
                 if reactant.label not in speciesDict:
                     speciesDict[reactant.label] = reactant
-                    
+
             for product in entry.item.products:
                 if product.label not in speciesDict:
                     speciesDict[product.label] = product
-            
+
         with open(path, 'w') as f:
             for label in speciesDict.keys():
                 f.write(speciesDict[label].molecule[0].toAdjacencyList(label=label, removeH=False))
@@ -333,7 +350,7 @@ class Database:
 
     def save(self, path):
         """
-        Save the current database to the file at location `path` on disk. 
+        Save the current database to the file at location `path` on disk.
         """
         try:
             os.makedirs(os.path.dirname(path))
@@ -349,7 +366,7 @@ class Database:
         f.write('longDesc = u"""\n')
         f.write(self.longDesc.strip() + '\n')
         f.write('"""\n')
-        
+
         for entry in entries:
             self.saveEntry(f, entry)
 
@@ -377,19 +394,19 @@ class Database:
         except Exception:
             logging.error('Error while reading database {0!r}.'.format(os.path.dirname(dictstr)))
             raise
-        
+
         try:
             if treestr != '': self.loadOldTree(treestr)
         except Exception:
             logging.error('Error while reading database {0!r}.'.format(os.path.dirname(treestr)))
             raise
-        
+
         try:
             self.loadOldLibrary(libstr, numParameters, numLabels)
         except Exception:
             logging.error('Error while reading database {0!r}.'.format(os.path.dirname(libstr)))
             raise
-          
+
         return self
 
     def loadOldDictionary(self, path, pattern):
@@ -499,7 +516,7 @@ class Database:
                     entry = self.entries[label]
                 except KeyError:
                     raise DatabaseError('Unable to find entry "{0}" from tree in dictionary.'.format(label))
-                
+
                 if isinstance(parent, str):
                     raise DatabaseError('Unable to find parent entry "{0}" of entry "{1}" in tree.'.format(parent, label))
 
@@ -510,10 +527,10 @@ class Database:
                 else:
                     entry.parent = None
                     self.top.append(entry)
-                    
+
                 # Save the level of the tree into the entry
                 entry.level = level
-                
+
                 # Add node to list of parents for subsequent iteration
                 parents.append(label)
 
@@ -581,7 +598,7 @@ class Database:
         """
 
         entries = []
-        
+
         flib = None
         try:
             flib = codecs.open(path, 'r', 'utf-8', errors='replace')
@@ -694,7 +711,7 @@ class Database:
                     for entry2 in getLogicNodeComponents(descendant):
                         if entry2 not in entries:
                             entries.append(entry2)
-                
+
             # Don't forget entries that aren't in the tree
             for entry in self.entries.values():
                 if entry not in entries:
@@ -734,7 +751,7 @@ class Database:
                     f.write('{0}\n\n'.format(entry.item))
                 else:
                     raise DatabaseError('Unexpected item with label {0} encountered in dictionary while attempting to save.'.format(entry.label))
-            
+
             if entriesNotInTree:
                 f.write(comment("These entries do not appear in the tree:\n\n"))
             for entry in entriesNotInTree:
@@ -750,8 +767,8 @@ class Database:
                     f.write(comment('{0}\n\n'.format(entry.item)))
                 else:
                     raise DatabaseError('Unexpected item with label {0} encountered in dictionary while attempting to save.'.format(entry.label))
-           
-           
+
+
             f.close()
         except IOError:
             logging.exception('Unable to save old-style dictionary to "{0}".'.format(os.path.abspath(path)))
@@ -798,7 +815,7 @@ class Database:
             # Save the library in order by index
             entries = self.entries.values()
             entries.sort(key=lambda x: x.index)
-            
+
             f = codecs.open(path, 'w',  'utf-8')
             records = []
             for entry in entries:
@@ -862,9 +879,9 @@ class Database:
             descendants.append(child)
             descendants.extend(self.descendants(child))
         return descendants
-    
+
     def matchNodeToNode(self, node, nodeOther):
-        """ 
+        """
         Return `True` if `node` and `nodeOther` are identical.  Otherwise, return `False`.
         Both `node` and `nodeOther` must be Entry types with items containing Group or LogicNode types.
         """
@@ -875,20 +892,20 @@ class Database:
         else:
             # Assume nonmatching
             return False
-        
-    def matchNodeToChild(self, parentNode, childNode):        
-        """ 
+
+    def matchNodeToChild(self, parentNode, childNode):
+        """
         Return `True` if `parentNode` is a parent of `childNode`.  Otherwise, return `False`.
         Both `parentNode` and `childNode` must be Entry types with items containing Group or LogicNode types.
         If `parentNode` and `childNode` are identical, the function will also return `False`.
         """
-        
+
         if isinstance(parentNode.item, Group) and isinstance(childNode.item, Group):
             if self.matchNodeToStructure(parentNode,childNode.item, atoms=childNode.item.getLabeledAtoms(), strict=True) is True:
                 if self.matchNodeToStructure(childNode,parentNode.item, atoms=parentNode.item.getLabeledAtoms(), strict=True) is False:
-                    return True                
+                    return True
             return False
-        
+
         #If the parentNode is a Group and the childNode is a LogicOr there is nothing to check,
         #except that the parent is listed in the attributes. However, we do need to check that everything down this
         #family line is consistent, which is done in the databaseTest unitTest
@@ -915,10 +932,10 @@ class Database:
         include extra labels, and so we only require that every labeled atom in
         the functional group represented by `node` has an equivalent labeled
         atom in `structure`.
-        
-        Matching to structure is more strict than to node.  All labels in structure must 
+
+        Matching to structure is more strict than to node.  All labels in structure must
         be found in node.  However the reverse is not true, unless `strict` is set to True.
-        
+
         =================== ========================================================
         Attribute           Description
         =================== ========================================================
@@ -942,7 +959,7 @@ class Database:
                     logging.log(0, "Label {0} is in group {1} but not in structure".format(label, node))
                     if strict:
                         # structure must match all labeled atoms in node if strict is set to True
-                        return False 
+                        return False
                     continue # with the next label - ring structures might not have all labeled atoms
                 center = centers[label]
                 atom = atoms[label]
@@ -977,13 +994,13 @@ class Database:
             # Without this we would hit a lot of nodes that are ambiguous
             flaggedAtoms = [atom for label, atom in structure.getLabeledAtoms().iteritems() if label not in centers]
             for atom in flaggedAtoms: atom.ignore = True
-            
+
             # use mapped (labeled) atoms to try to match subgraph
             result = structure.isSubgraphIsomorphic(group, initialMap)
-            
+
             # Restore atoms flagged in previous step
             for atom in flaggedAtoms: atom.ignore = False
-                
+
             return result
 
     def descendTree(self, structure, atoms, root=None, strict=False):
@@ -994,7 +1011,7 @@ class Database:
         If root=None then uses the first matching top node.
 
         Returns None if there is no matching root.
-        
+
         Set strict to ``True`` if all labels in final matched node must match that of the
         structure.  This is used in kinetics groups to find the correct reaction template, but
         not generally used in other GAVs due to species generally not being prelabeled.
@@ -1008,7 +1025,7 @@ class Database:
                 return None
         elif not self.matchNodeToStructure(root, structure, atoms, strict):
             return None
-        
+
         next = []
         for child in root.children:
             if self.matchNodeToStructure(child, structure, atoms, strict):
@@ -1104,7 +1121,7 @@ class LogicOr(LogicNode):
     def matchToStructure(self,database,structure,atoms,strict=False):
         """
         Does this node in the given database match the given structure with the labeled atoms?
-        
+
         Setting `strict` to True makes enforces matching of atomLabels in the structure to every
         atomLabel in the node.
         """
@@ -1128,7 +1145,7 @@ class LogicOr(LogicNode):
                 if node not in other.components:
                     return False
         return True
-        
+
     def getPossibleStructures(self, entries):
         """
         Return a list of the possible structures below this node.
@@ -1153,7 +1170,7 @@ class LogicAnd(LogicNode):
     def matchToStructure(self,database,structure,atoms,strict=False):
         """
         Does this node in the given database match the given structure with the labeled atoms?
-        
+
         Setting `strict` to True makes enforces matching of atomLabels in the structure to every
         atomLabel in the node.
         """
@@ -1236,7 +1253,7 @@ def removeCommentFromLine(line):
 def splitLineAndComment(line):
     """
     Returns a tuple(line, comment) based on a '//' comment delimiter.
-    
+
     Either `line` or `comment` may be ''.
     Does not strip whitespace, nor remove more than two slashes.
     """
@@ -1269,7 +1286,7 @@ class ForbiddenStructures(Database):
     A database consisting solely of structures that are forbidden
     from occurring.
     """
-    
+
     def isMoleculeForbidden(self, molecule):
         """
         Return ``True`` if the given :class:`Molecule` object `molecule`
@@ -1297,13 +1314,13 @@ class ForbiddenStructures(Database):
                         return True
             else:
                 raise NotImplementedError('Checking is only implemented for forbidden Groups, Molecule, and Species.')
-            
+
         # Until we have more thermodynamic data of molecular ions we will forbid them
         if molecule.getNetCharge() != 0:
             return True
-        
+
         return False
-    
+
     def loadOld(self, path):
         """
         Load an old forbidden structures file from the location `path` on disk.
@@ -1320,7 +1337,7 @@ class ForbiddenStructures(Database):
     def loadEntry(self, label, group=None, molecule=None, species=None, shortDesc='', longDesc=''):
         """
         Load an entry from the forbidden structures database. This method is
-        automatically called during loading of the forbidden structures 
+        automatically called during loading of the forbidden structures
         database.
         """
         from rmgpy.species import Species
@@ -1347,14 +1364,14 @@ class ForbiddenStructures(Database):
             shortDesc = shortDesc,
             longDesc = longDesc.strip(),
         )
-    
+
     def saveEntry(self, f, entry, name='entry'):
         """
         Save an `entry` from the forbidden structures database. This method is
-        automatically called during saving of the forbidden structures 
+        automatically called during saving of the forbidden structures
         database.
         """
-        
+
         f.write('{0}(\n'.format(name))
         f.write('    label = "{0}",\n'.format(entry.label))
         if isinstance(entry.item, Molecule):

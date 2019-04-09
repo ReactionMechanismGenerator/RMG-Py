@@ -60,7 +60,7 @@ def saveEntry(f, entry):
                 smiles = mol
             else:
                 smiles = mol.toSMILES()
-                
+
             efficiencies[smiles] = eff
         keys = efficiencies.keys()
         keys.sort()
@@ -116,7 +116,7 @@ def saveEntry(f, entry):
             entry.data.efficiencies = efficiencies
     else:
         f.write('    kinetics = None,\n')
-            
+
     # Write reference
     if entry.reference is not None:
         reference = entry.reference.toPrettyRepr()
@@ -125,12 +125,12 @@ def saveEntry(f, entry):
         for line in lines[1:-1]:
             f.write('    {0}\n'.format(line))
         f.write('    ),\n'.format(lines[0]))
-    
+
     if entry.referenceType != "":
         f.write('    referenceType = "{0}",\n'.format(entry.referenceType))
     if entry.rank is not None:
         f.write('    rank = {0},\n'.format(entry.rank))
-        
+
     if entry.shortDesc.strip() !='':
         f.write('    shortDesc = u"""')
         try:
@@ -138,7 +138,7 @@ def saveEntry(f, entry):
         except:
             f.write(entry.shortDesc.strip().encode('ascii', 'ignore')+ "\n")
         f.write('""",\n')
-    
+
     if entry.longDesc.strip() !='':
         f.write('    longDesc = \n')
         f.write('u"""\n')
@@ -402,21 +402,3 @@ def reduce_same_reactant_degeneracy(reaction, same_reactants=None):
                         'Degeneracy of reaction {} was decreased by 50% to {} since two of the reactants '
                         'are identical'.format(reaction, reaction.degeneracy)
                     )
-
-def getAllDescendants(entry):
-    """
-    retrieve all the descendants of entry
-    """
-    newNodes = [entry]
-    totNodes = []
-    tempNodes = []
-    while newNodes != []:
-        for entry2 in newNodes:
-            for child in entry2.children:
-                tempNodes.append(child)
-        totNodes.extend(newNodes)
-        newNodes = tempNodes
-        tempNodes = []
-
-    totNodes.remove(entry)
-    return totNodes
