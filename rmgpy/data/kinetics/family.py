@@ -2542,7 +2542,6 @@ class KineticsFamily(Database):
                 
         return kinetics, entry
 
-
     def getReactionTemplateLabels(self, reaction):
         """
         Retrieve the template for the reaction and 
@@ -2980,7 +2979,6 @@ class KineticsFamily(Database):
         
         return out
 
-
     def extendNode(self,parent,templateRxnMap,obj=None,T=1000.0,):
         """
         Constructs an extension to the group parent based on evaluation 
@@ -3105,7 +3103,6 @@ class KineticsFamily(Database):
         templateRxnMap = self.getReactionMatches(thermoDatabase=thermoDatabase,removeDegeneracy=True,fixLabels=True,exactMatchesOnly=True,getReverse=True)
 
         self.makeTreeNodes(templateRxnMap=templateRxnMap,obj=obj,T=T,nprocs=nprocs-1,depth=0)
-
 
     def makeTreeNodes(self,templateRxnMap=None,obj=None,T=1000.0,nprocs=0,depth=0):
 
@@ -3359,9 +3356,7 @@ class KineticsFamily(Database):
                 errors[rxn] = np.log(k/krxn)
         
         return errors
-            
-            
-    
+
     def simpleRegularization(self, node):
         """
         Simplest regularization algorithm
