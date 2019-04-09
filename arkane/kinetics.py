@@ -353,7 +353,7 @@ class KineticsJob(object):
             ' + '.join([reactant.label for reactant in self.reaction.reactants]),
             '<=>', ' + '.join([product.label for product in self.reaction.products]))
         plt.title(reaction_str)
-        plt.xlabel('1000 / Temperature (1000/K)')
+        plt.xlabel('1000 / Temperature (K^-1)')
         plt.ylabel('Rate coefficient ({0})'.format(self.kunits))
 
         plot_path = os.path.join(outputDirectory, 'plots')
