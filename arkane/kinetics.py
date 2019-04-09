@@ -435,6 +435,13 @@ class KineticsDrawer:
         """
         E0min = min(self.wells[0].E0, self.wells[1].E0, self.reaction.transitionState.conformer.E0.value_si)
         E0max = max(self.wells[0].E0, self.wells[1].E0, self.reaction.transitionState.conformer.E0.value_si)
+        if E0max - E0min > 5e5:
+            # the energy barrier in one of the reaction directions is larger than 500 kJ/mol, warn the user
+            logging.warning('The energy differences between the stationary points of reaction {0} '
+                            'seems too large.'.format(self.reaction))
+            logging.warning('Got the following energies:\nWell 1: {0} kJ/mol\nTS: {1} kJ/mol\nWell 2: {2}'
+                            ' kJ/mol'.format(self.wells[0].E0 / 1000., self.wells[1].E0 / 1000.,
+                                             self.reaction.transitionState.conformer.E0.value_si / 1000.))
         return E0min, E0max
 
     def __useStructureForLabel(self, configuration):
