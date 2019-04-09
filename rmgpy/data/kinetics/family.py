@@ -49,8 +49,7 @@ from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStruct
 from rmgpy.reaction import Reaction, isomorphic_species_lists
 from rmgpy import settings
 from rmgpy.reaction import Reaction
-from rmgpy.kinetics import Arrhenius
-from rmgpy.kinetics.arrhenius import ArrheniusBM
+from rmgpy.kinetics import Arrhenius, ArrheniusBM
 from rmgpy.kinetics.uncertainties import RateUncertainty
 from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.molecule.resonance import generate_optimal_aromatic_resonance_structures
