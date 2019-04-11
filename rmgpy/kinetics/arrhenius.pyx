@@ -561,12 +561,12 @@ cdef class ArrheniusBM(KineticsModel):
             comment = self.comment,
         )
 
-    def fitToReactions(self,rxns,w0=None,family=None,Ts=None):
+    def fitToReactions(self,rxns,w0=None,recipe=None,Ts=None):
         """
         Fit an ArrheniusBM model to a list of reactions at the given temperatures,
         w0 must be either given or estimated using the family object
         """
-        assert w0 is not None or family is not None, 'either w0 or family must be specified'
+        assert w0 is not None or recipe is not None, 'either w0 or recipe must be specified'
 
         if Ts is None:
             Ts = [300.0,500.0,600.0,700.0,800.0,900.0,1000.0,1100.0,1200.0,1500.0]
