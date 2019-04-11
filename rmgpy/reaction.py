@@ -1276,10 +1276,8 @@ def isomorphic_species_lists(list1, list2, check_identical=False, only_check_lab
             return str(object1) == str(object2)
         elif _check_identical:
             return object1.isIdentical(object2)
-        elif not _generate_initial_map:
-            return object1.isIsomorphic(object2)
         else:
-            return object1.isIsomorphic(object2,generateInitialMap=True)
+            return object1.isIsomorphic(object2,generateInitialMap=_generate_initial_map)
 
     if len(list1) == len(list2) == 1:
         if same(list1[0], list2[0]):

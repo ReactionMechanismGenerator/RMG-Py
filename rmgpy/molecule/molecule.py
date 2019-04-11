@@ -1280,7 +1280,7 @@ class Molecule(Graph):
                         return False
                     else:
                         initialMap[atom] = L[0]
-            if not self.isMappingValid(other,initialMap,equivalent=False):
+            if not self.isMappingValid(other,initialMap,equivalent=True):
                 return False
             
         # Do the full isomorphism comparison
