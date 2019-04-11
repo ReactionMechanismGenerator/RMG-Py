@@ -3034,8 +3034,8 @@ class KineticsFamily(Database):
             self.simpleRegularization(child)
             
         grp = node.item
-        
-        R = ['H','C','N','O','Si','S'] #set of possible R elements/atoms
+
+        R = ['H','C','N','O','Si','S','Cl'] #set of possible R elements/atoms
         R = [atomTypes[x] for x in R]
         
         RnH = R[:]
