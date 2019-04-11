@@ -78,6 +78,8 @@ from rmgpy.qm.main import QMDatabaseWriter
 from rmgpy.stats import ExecutionStatsWriter
 from rmgpy.thermo.thermoengine import submit
 from rmgpy.tools.simulate import plot_sensitivity
+from rmgpy.tools.uncertainty import Uncertainty, process_local_results
+
 ################################################################################
 
 solvent = None
@@ -220,6 +222,7 @@ class RMG(util.Subject):
         self.saveSeedToDatabase = False
 
         self.thermoCentralDatabase = None
+        self.uncertainty = None
 
         self.execTime = []
     
@@ -910,37 +913,8 @@ class RMG(util.Subject):
         
         if not self.generateSeedEachIteration:
             self.makeSeedMech(firstTime=True)
-            
-        # Run sensitivity analysis post-model generation if sensitivity analysis is on
-        for index, reactionSystem in enumerate(self.reactionSystems):
-            
-            if reactionSystem.sensitiveSpecies and reactionSystem.sensConditions:
-                logging.info('Conducting sensitivity analysis of reaction system %s...' % (index+1))
 
-                if reactionSystem.sensitiveSpecies == ['all']:
-                    reactionSystem.sensitiveSpecies = self.reactionModel.core.species
-                    
-                sensWorksheet = []
-                for spec in reactionSystem.sensitiveSpecies:
-                    csvfilePath = os.path.join(self.outputDirectory, 'solver', 'sensitivity_{0}_SPC_{1}.csv'.format(index+1, spec.index))
-                    sensWorksheet.append(csvfilePath)
-                
-                terminated, resurrected,obj, surfaceSpecies, surfaceReactions,t,x = reactionSystem.simulate(
-                    coreSpecies = self.reactionModel.core.species,
-                    coreReactions = self.reactionModel.core.reactions,
-                    edgeSpecies = self.reactionModel.edge.species,
-                    edgeReactions = self.reactionModel.edge.reactions,
-                    surfaceSpecies = [],
-                    surfaceReactions = [],
-                    pdepNetworks = self.reactionModel.networkList,
-                    sensitivity = True,
-                    sensWorksheet = sensWorksheet,
-                    modelSettings = ModelSettings(toleranceMoveToCore=1e8,toleranceInterruptSimulation=1e8),
-                    simulatorSettings = self.simulatorSettingsList[-1],
-                    conditions = reactionSystem.sensConditions,
-                )
-                
-                plot_sensitivity(self.outputDirectory, index, reactionSystem.sensitiveSpecies)
+        self.run_model_analysis()
 
         # generate Cantera files chem.cti & chem_annotated.cti in a designated `cantera` output folder
         try:
@@ -967,7 +941,162 @@ class RMG(util.Subject):
         logging.info('The final model edge has %s species and %s reactions' % (edgeSpec, edgeReac))
         
         self.finish()
-    
+
+    def run_model_analysis(self, number=10):
+        """
+        Run sensitivity and uncertainty analysis if requested.
+        """
+        if self.uncertainty is not None and self.uncertainty['global']:
+            try:
+                import libmuqModelling
+            except ImportError:
+                logging.error('Unable to import MUQ. Skipping global uncertainty analysis.')
+                self.uncertainty['global'] = False
+            else:
+                import re
+                import random
+                from rmgpy.tools.canteraModel import Cantera
+                from rmgpy.tools.muq import ReactorPCEFactory
+
+        # Run sensitivity analysis post-model generation if sensitivity analysis is on
+        for index, reactionSystem in enumerate(self.reactionSystems):
+
+            if reactionSystem.sensitiveSpecies and reactionSystem.sensConditions:
+                logging.info('Conducting sensitivity analysis of reaction system {0}...'.format(index + 1))
+
+                if reactionSystem.sensitiveSpecies == ['all']:
+                    reactionSystem.sensitiveSpecies = self.reactionModel.core.species
+
+                sensWorksheet = []
+                for spec in reactionSystem.sensitiveSpecies:
+                    csvfilePath = os.path.join(self.outputDirectory, 'solver',
+                                               'sensitivity_{0}_SPC_{1}.csv'.format(index + 1, spec.index))
+                    sensWorksheet.append(csvfilePath)
+
+                terminated, resurrected, obj, surfaceSpecies, surfaceReactions, t, x = reactionSystem.simulate(
+                    coreSpecies=self.reactionModel.core.species,
+                    coreReactions=self.reactionModel.core.reactions,
+                    edgeSpecies=self.reactionModel.edge.species,
+                    edgeReactions=self.reactionModel.edge.reactions,
+                    surfaceSpecies=[],
+                    surfaceReactions=[],
+                    pdepNetworks=self.reactionModel.networkList,
+                    sensitivity=True,
+                    sensWorksheet=sensWorksheet,
+                    modelSettings=ModelSettings(toleranceMoveToCore=1e8, toleranceInterruptSimulation=1e8),
+                    simulatorSettings=self.simulatorSettingsList[-1],
+                    conditions=reactionSystem.sensConditions,
+                )
+
+                plot_sensitivity(self.outputDirectory, index, reactionSystem.sensitiveSpecies, number=number)
+
+        if self.uncertainty is not None and self.uncertainty['local']:
+            correlation = []
+            if self.uncertainty['uncorrelated']: correlation.append(False)
+            if self.uncertainty['correlated']: correlation.append(True)
+
+            # Set up Uncertainty object
+            uncertainty = Uncertainty(outputDirectory=self.outputDirectory)
+            uncertainty.database = self.database
+            uncertainty.speciesList, uncertainty.reactionList = self.reactionModel.core.species, self.reactionModel.core.reactions
+            uncertainty.extractSourcesFromModel()
+
+            # Reload reaction families with verbose comments if necessary
+            if not self.verboseComments:
+                logging.info('Reloading kinetics families with verbose comments for uncertainty analysis...')
+                self.database.kinetics.loadFamilies(os.path.join(self.databaseDirectory, 'kinetics', 'families'),
+                                                    self.kineticsFamilies, self.kineticsDepositories)
+                for family in self.database.kinetics.families.itervalues():
+                    family.addKineticsRulesFromTrainingSet(thermoDatabase=self.database.thermo)
+                    family.fillKineticsRulesByAveragingUp(verbose=True)
+
+            for correlated in correlation:
+                uncertainty.assignParameterUncertainties(correlated=correlated)
+
+                for index, reactionSystem in enumerate(self.reactionSystems):
+                    if reactionSystem.sensitiveSpecies and reactionSystem.sensConditions:
+                        logging.info('Conducting {0}correlated local uncertainty analysis for '
+                                     'reaction system {1}...\n'.format('un' if not correlated else '', index + 1))
+                        results = uncertainty.localAnalysis(reactionSystem.sensitiveSpecies,
+                                                            reactionSystemIndex=index,
+                                                            correlated=correlated,
+                                                            number=self.uncertainty['localnum'])
+                        logging.info('Local uncertainty analysis results for reaction system {0}:\n'.format(index + 1))
+                        local_result, local_result_str = process_local_results(results, reactionSystem.sensitiveSpecies,
+                                                                               number=self.uncertainty['localnum'])
+                        logging.info(local_result_str)
+
+                        if self.uncertainty['global']:
+                            logging.info('Conducting {0}correlated global uncertainty analysis for '
+                                         'reaction system {1}...'.format('un' if not correlated else '', index + 1))
+                            # Get simulation conditions
+                            for criteria in reactionSystem.termination:
+                                if isinstance(criteria, TerminationTime):
+                                    time = ([criteria.time.value], criteria.time.units)
+                                    break
+                            else:
+                                time = self.uncertainty['time']
+                            Tlist = ([reactionSystem.sensConditions['T']], 'K')
+                            Plist = ([reactionSystem.sensConditions['P']], 'Pa')
+                            molFracList = [reactionSystem.sensConditions.copy()]
+                            del molFracList[0]['T']
+                            del molFracList[0]['P']
+
+                            # Set up Cantera reactor
+                            job = Cantera(speciesList=uncertainty.speciesList, reactionList=uncertainty.reactionList,
+                                          outputDirectory=os.path.join(self.outputDirectory, 'global_uncertainty'))
+                            job.loadModel()
+                            job.generateConditions(
+                                reactorTypeList=['IdealGasConstPressureTemperatureReactor'],
+                                reactionTimeList=time,
+                                molFracList=molFracList,
+                                Tlist=Tlist,
+                                Plist=Plist,
+                            )
+
+                            # Extract uncertain parameters from local analysis
+                            kParams = []
+                            gParams = []
+                            for spc in reactionSystem.sensitiveSpecies:
+                                _, reaction_c, thermo_c = local_result[spc]
+                                for label, _, _ in reaction_c[:self.uncertainty['globalnum']]:
+                                    if correlated:
+                                        kParam = label
+                                    else:
+                                        # For uncorrelated, we need the reaction index
+                                        k_index = label.split(':')[0]  # Looks like 'k1234: A+B=C+D'
+                                        kParam = int(k_index[1:])
+                                    kParams.append(kParam)
+                                for label, _, _ in thermo_c[:self.uncertainty['globalnum']]:
+                                    if correlated:
+                                        gParam = label
+                                    else:
+                                        # For uncorrelated, we need the species index
+                                        match = re.search(r'dG\[\S+\((\d+)\)\]', label)
+                                        gParam = int(match.group(1))
+                                    gParams.append(gParam)
+
+                            reactorPCEFactory = ReactorPCEFactory(
+                                cantera=job,
+                                outputSpeciesList=reactionSystem.sensitiveSpecies,
+                                kParams=kParams,
+                                kUncertainty=uncertainty.kineticInputUncertainties,
+                                gParams=gParams,
+                                gUncertainty=uncertainty.thermoInputUncertainties,
+                                correlated=correlated,
+                            )
+
+                            logging.info('Generating PCEs...')
+                            reactorPCEFactory.generatePCE(runTime=self.uncertainty['pcetime'])
+
+                            # Try a test point to see how well the PCE performs
+                            reactorPCEFactory.compareOutput([random.uniform(-1.0,1.0) for i in range(len(kParams)+len(gParams))])
+
+                            # Analyze results and save statistics
+                            reactorPCEFactory.analyzeResults()
+                    else:
+                        logging.info('Unable to run uncertainty analysis. Must specify sensitivity analysis options in reactor options.')
+
     def check_model(self):
         """
         Run checks on the RMG model
