@@ -95,7 +95,16 @@ cdef class LiquidReactor(ReactionSystem):
                 continue
             initialConcentrations[speciesDict[label]] = moleFrac
         self.initialConcentrations = initialConcentrations
-    
+
+        conditions = {}
+        if self.sensConditions is not None:
+            for label, value in self.sensConditions.iteritems():
+                if label == 'T':
+                    conditions[label] = value
+                else:
+                    conditions[speciesDict[label]] = value
+        self.sensConditions = conditions
+
     def get_constSPCIndices (self, coreSpecies):
         "Allow to identify constant Species position in solver"
         for spc in self.constSPCNames:
