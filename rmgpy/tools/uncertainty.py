@@ -644,7 +644,7 @@ class Uncertainty:
 
         plot_sensitivity(self.outputDirectory, reactionSystemIndex, reactionSystem.sensitiveSpecies, number=number, fileformat=fileformat)
 
-    def localAnalysis(self, sensitiveSpecies, correlated=False, number=10, fileformat='.png'):
+    def localAnalysis(self, sensitiveSpecies, reactionSystemIndex=0, correlated=False, number=10, fileformat='.png'):
         """
         Conduct local uncertainty analysis on the reaction model.
         sensitiveSpecies is a list of sensitive Species objects
@@ -654,7 +654,7 @@ class Uncertainty:
         output = {}
         for sensSpecies in sensitiveSpecies:
             csvfilePath = os.path.join(self.outputDirectory, 'solver',
-                                       'sensitivity_{0}_SPC_{1}.csv'.format(1, sensSpecies.index))
+                                       'sensitivity_{0}_SPC_{1}.csv'.format(reactionSystemIndex+1, sensSpecies.index))
             time, dataList = parseCSVData(csvfilePath)
             # Assign uncertainties
             thermoDataList = []
