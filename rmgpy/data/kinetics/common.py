@@ -417,6 +417,6 @@ def getAllDescendants(entry):
         totNodes.extend(newNodes)
         newNodes = tempNodes
         tempNodes = []
-    
+
     totNodes.remove(entry)
     return totNodes
