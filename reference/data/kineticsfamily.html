@@ -157,7 +157,7 @@ and group name name</p>
 
 <dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.addKineticsRulesFromTrainingSet">
-<code class="descname">addKineticsRulesFromTrainingSet</code><span class="sig-paren">(</span><em>thermoDatabase=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.addKineticsRulesFromTrainingSet" title="Permalink to this definition">¶</a></dt>
+<code class="descname">addKineticsRulesFromTrainingSet</code><span class="sig-paren">(</span><em>thermoDatabase=None</em>, <em>trainIndices=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.addKineticsRulesFromTrainingSet" title="Permalink to this definition">¶</a></dt>
 <dd><p>For each reaction involving real reactants and products in the training
 set, add a rate rule for that reaction.</p>
 </dd></dl>
@@ -206,6 +206,31 @@ identical reactants (since you will be reducing them later in the algorithm), ad
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.cleanTreeGroups">
+<code class="descname">cleanTreeGroups</code><span class="sig-paren">(</span><em>thermoDatabase=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.cleanTreeGroups" title="Permalink to this definition">¶</a></dt>
+<dd><p>clears groups and rules in the tree, generates an appropriate
+root group to start from and then reads training reactions
+Note this only works if a single top node (not a logic node)
+can be generated</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.crossValidate">
+<code class="descname">crossValidate</code><span class="sig-paren">(</span><em>folds=5</em>, <em>templateRxnMap=None</em>, <em>T=1000.0</em>, <em>iters=0</em>, <em>random_state=1</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.crossValidate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform K-fold cross validation on an automatically generated tree at temperature T
+after finding an appropriate node for kinetics estimation it will move up the tree
+iters times.
+Returns a dictionary mapping {rxn:Ln(k_Est/k_Train)}</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.crossValidateOld">
+<code class="descname">crossValidateOld</code><span class="sig-paren">(</span><em>folds=5</em>, <em>T=1000.0</em>, <em>random_state=1</em>, <em>estimator='rate rules'</em>, <em>thermoDatabase=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.crossValidateOld" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform K-fold cross validation on an automatically generated tree at temperature T
+Returns a dictionary mapping {rxn:Ln(k_Est/k_Train)}</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.descendTree">
 <code class="descname">descendTree</code><span class="sig-paren">(</span><em>structure</em>, <em>atoms</em>, <em>root=None</em>, <em>strict=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.descendTree" title="Permalink to this definition">¶</a></dt>
 <dd><p>Descend the tree in search of the functional group node that best
@@ -251,22 +276,16 @@ and is None if some averaging or use of a parent node took place.</p>
 
 <dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.evalExt">
-<code class="descname">evalExt</code><span class="sig-paren">(</span><em>parent</em>, <em>ext</em>, <em>extname</em>, <em>obj=None</em>, <em>T=1000.0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.evalExt" title="Permalink to this definition">¶</a></dt>
+<code class="descname">evalExt</code><span class="sig-paren">(</span><em>parent</em>, <em>ext</em>, <em>extname</em>, <em>templateRxnMap</em>, <em>obj=None</em>, <em>T=1000.0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.evalExt" title="Permalink to this definition">¶</a></dt>
 <dd><p>evaluates the objective function obj
 for the extension ext with name extname to the parent entry parent</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.extendNode">
-<code class="descname">extendNode</code><span class="sig-paren">(</span><em>parent</em>, <em>thermoDatabase=None</em>, <em>obj=None</em>, <em>T=1000.0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.extendNode" title="Permalink to this definition">¶</a></dt>
+<code class="descname">extendNode</code><span class="sig-paren">(</span><em>parent</em>, <em>templateRxnMap</em>, <em>thermoDatabase=None</em>, <em>obj=None</em>, <em>T=1000.0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.extendNode" title="Permalink to this definition">¶</a></dt>
 <dd><p>Constructs an extension to the group parent based on evaluation
 of the objective function obj</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.kinetics.KineticsFamily.extendRegularization">
-<code class="descname">extendRegularization</code><span class="sig-paren">(</span><em>node</em>, <em>inds</em>, <em>regs</em>, <em>typ</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.extendRegularization" title="Permalink to this definition">¶</a></dt>
-<dd><p>Applies a regularization down the tree from a given parent node</p>
 </dd></dl>
 
 <dl class="method">
@@ -372,13 +391,6 @@ have two children one of which has no kinetics data and no children
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.data.kinetics.KineticsFamily.getEntriesReactions">
-<code class="descname">getEntriesReactions</code><span class="sig-paren">(</span><em>template</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.getEntriesReactions" title="Permalink to this definition">¶</a></dt>
-<dd><p>retrieves all training reactions whose kinetics
-are associated with the entry template</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.getEntriesToSave">
 <code class="descname">getEntriesToSave</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.getEntriesToSave" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a sorted list of the entries in this database that should be
@@ -388,7 +400,7 @@ saved to the output file.</p>
 
 <dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.getExtensionEdge">
-<code class="descname">getExtensionEdge</code><span class="sig-paren">(</span><em>parent</em>, <em>obj</em>, <em>T</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.getExtensionEdge" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getExtensionEdge</code><span class="sig-paren">(</span><em>parent</em>, <em>templateRxnMap</em>, <em>obj</em>, <em>T</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.getExtensionEdge" title="Permalink to this definition">¶</a></dt>
 <dd><p>finds the set of all extension groups to parent such that
 1) the extension group divides the set of reactions under parent
 2) No generalization of the extension group divides the set of reactions under parent</p>
@@ -463,6 +475,13 @@ If RMG cannot find appropriate labels, (None, None) will be returned.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.getReactionMatches">
+<code class="descname">getReactionMatches</code><span class="sig-paren">(</span><em>rxns=None</em>, <em>thermoDatabase=None</em>, <em>removeDegeneracy=False</em>, <em>estimateThermo=True</em>, <em>fixLabels=False</em>, <em>exactMatchesOnly=False</em>, <em>getReverse=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.getReactionMatches" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns a dictionary mapping for each entry in the tree:
+(entry.label,entry.item) : list of all training reactions (or the list given) that match that entry</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.getReactionPairs">
 <code class="descname">getReactionPairs</code><span class="sig-paren">(</span><em>reaction</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.getReactionPairs" title="Permalink to this definition">¶</a></dt>
 <dd><p>For a given <cite>reaction</cite> with properly-labeled <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> objects
@@ -515,13 +534,6 @@ the [(rate_rule_entry, training_reaction_entry, weight_used_in_average),…]</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.data.kinetics.KineticsFamily.getTemplateKinetics">
-<code class="descname">getTemplateKinetics</code><span class="sig-paren">(</span><em>template</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.getTemplateKinetics" title="Permalink to this definition">¶</a></dt>
-<dd><p>retrives a list of all the kinetics objects
-associated with a given template</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.getTopLevelGroups">
 <code class="descname">getTopLevelGroups</code><span class="sig-paren">(</span><em>root</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.getTopLevelGroups" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a list of group nodes that are the highest in the tree starting at node “root”.
@@ -537,10 +549,32 @@ nodes. We then return a list of all group nodes found along the way.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.getTrainingSet">
+<code class="descname">getTrainingSet</code><span class="sig-paren">(</span><em>thermoDatabase=None</em>, <em>removeDegeneracy=False</em>, <em>estimateThermo=True</em>, <em>fixLabels=False</em>, <em>getReverse=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.getTrainingSet" title="Permalink to this definition">¶</a></dt>
+<dd><p>retrieves all reactions in the training set, assigns thermo to the species objects
+reverses reactions as necessary so that all reactions are in the forward direction
+and returns the resulting list of reactions in the forward direction with thermo
+assigned</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.getw0">
+<code class="descname">getw0</code><span class="sig-paren">(</span><em>rxn</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.getw0" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculates the w0 for Blower Masel kinetics by calculating wf (total bond energy of bonds formed)
+and wb (total bond energy of bonds broken) with w0 = (wf+wb)/2</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.hasRateRule">
 <code class="descname">hasRateRule</code><span class="sig-paren">(</span><em>template</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.hasRateRule" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if a rate rule with the given <cite>template</cite> currently
 exists, or <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.isEntryMatch">
+<code class="descname">isEntryMatch</code><span class="sig-paren">(</span><em>mol</em>, <em>entry</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.isEntryMatch" title="Permalink to this definition">¶</a></dt>
+<dd><p>determines if the labeled molecule object of reactants matches the entry entry</p>
 </dd></dl>
 
 <dl class="method">
@@ -618,6 +652,12 @@ dictionary.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.makeTree">
+<code class="descname">makeTree</code><span class="sig-paren">(</span><em>obj=None</em>, <em>regularization=&lt;function simpleRegularization&gt;</em>, <em>thermoDatabase=None</em>, <em>T=1000.0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.makeTree" title="Permalink to this definition">¶</a></dt>
+<dd><p>generates tree structure and then generates rules for the tree</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.matchNodeToChild">
 <code class="descname">matchNodeToChild</code><span class="sig-paren">(</span><em>parentNode</em>, <em>childNode</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.matchNodeToChild" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <cite>True</cite> if <cite>parentNode</cite> is a parent of <cite>childNode</cite>.  Otherwise, return <cite>False</cite>.
@@ -681,17 +721,8 @@ not discard duplicate entries.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.data.kinetics.KineticsFamily.prepareTreeForGeneration">
-<code class="descname">prepareTreeForGeneration</code><span class="sig-paren">(</span><em>thermoDatabase=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.prepareTreeForGeneration" title="Permalink to this definition">¶</a></dt>
-<dd><p>clears groups and rules in the tree, generates an appropriate
-root group to start from and then reads training reactions
-Note this only works if a single top node (not a logic node)
-can be generated</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.regularize">
-<code class="descname">regularize</code><span class="sig-paren">(</span><em>regularization=&lt;function simpleRegularization&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.regularize" title="Permalink to this definition">¶</a></dt>
+<code class="descname">regularize</code><span class="sig-paren">(</span><em>regularization=&lt;function simpleRegularization&gt;</em>, <em>keepRoot=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.regularize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Regularizes the tree according to the regularization function regularization</p>
 </dd></dl>
 
@@ -817,7 +848,7 @@ of that atom</p>
 
 <dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.splitReactions">
-<code class="descname">splitReactions</code><span class="sig-paren">(</span><em>rxns</em>, <em>oldlabel</em>, <em>newgrp</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.splitReactions" title="Permalink to this definition">¶</a></dt>
+<code class="descname">splitReactions</code><span class="sig-paren">(</span><em>rxns</em>, <em>newgrp</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.splitReactions" title="Permalink to this definition">¶</a></dt>
 <dd><p>divides the reactions in rxns between the new
 group structure newgrp and the old structure with
 label oldlabel

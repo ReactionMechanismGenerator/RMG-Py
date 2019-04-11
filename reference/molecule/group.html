@@ -357,7 +357,7 @@ Takes the RC and recursively merges all cycles which share vertices.</p>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Group.getExtensions">
-<code class="descname">getExtensions</code><span class="sig-paren">(</span><em>self</em>, <em>R=None</em>, <em>basename=''</em>, <em>atmInd=None</em>, <em>atmInd2=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.getExtensions" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getExtensions</code><span class="sig-paren">(</span><em>self</em>, <em>R=None</em>, <em>basename=''</em>, <em>atmInd=None</em>, <em>atmInd2=None</em>, <em>Nsplits=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.getExtensions" title="Permalink to this definition">¶</a></dt>
 <dd><p>generate all allowed group extensions and their complements
 note all atomtypes except for elements and R/R!H’s must be removed</p>
 </dd></dl>
@@ -766,6 +766,12 @@ an atom and a new atom that is not H</p>
 <code class="descname">specifyInternalNewBondExtensions</code><span class="sig-paren">(</span><em>self</em>, <em>i</em>, <em>j</em>, <em>Nsplits</em>, <em>basename</em>, <em>Rbonds</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.specifyInternalNewBondExtensions" title="Permalink to this definition">¶</a></dt>
 <dd><p>generates extensions for creation of a bond (of undefined order)
 between two atoms indexed i,j that already exist in the group and are unbonded</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Group.specifyRingExtensions">
+<code class="descname">specifyRingExtensions</code><span class="sig-paren">(</span><em>self</em>, <em>i</em>, <em>basename</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.specifyRingExtensions" title="Permalink to this definition">¶</a></dt>
+<dd><p>generates extensions for specifying if an atom is in a ring</p>
 </dd></dl>
 
 <dl class="method">

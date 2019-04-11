@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.reaction.Reaction<a class="headerlink" href="#rmgpy-reaction-reaction" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.reaction.Reaction">
-<em class="property">class </em><code class="descclassname">rmgpy.reaction.</code><code class="descname">Reaction</code><span class="sig-paren">(</span><em>index=-1</em>, <em>label=''</em>, <em>reactants=None</em>, <em>products=None</em>, <em>specificCollider=None</em>, <em>kinetics=None</em>, <em>network_kinetics=None</em>, <em>reversible=True</em>, <em>transitionState=None</em>, <em>duplicate=False</em>, <em>degeneracy=1</em>, <em>pairs=None</em>, <em>allow_pdep_route=False</em>, <em>elementary_high_p=False</em>, <em>allow_max_rate_violation=False</em>, <em>comment=''</em>, <em>is_forward=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.reaction.</code><code class="descname">Reaction</code><span class="sig-paren">(</span><em>index=-1</em>, <em>label=''</em>, <em>reactants=None</em>, <em>products=None</em>, <em>specificCollider=None</em>, <em>kinetics=None</em>, <em>network_kinetics=None</em>, <em>reversible=True</em>, <em>transitionState=None</em>, <em>duplicate=False</em>, <em>degeneracy=1</em>, <em>pairs=None</em>, <em>allow_pdep_route=False</em>, <em>elementary_high_p=False</em>, <em>allow_max_rate_violation=False</em>, <em>rank=None</em>, <em>comment=''</em>, <em>is_forward=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.reaction.Reaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>A chemical reaction. The attributes are:</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -142,6 +142,10 @@ Only unimolecular library reactions with high pressure limit kinetics should be 
 <tr class="row-odd"><td><cite>is_forward</cite></td>
 <td><code class="docutils literal notranslate"><span class="pre">bool</span></code></td>
 <td>Indicates if the reaction was generated in the forward (true) or reverse (false)</td>
+</tr>
+<tr class="row-even"><td><cite>rank</cite></td>
+<td><code class="docutils literal notranslate"><span class="pre">int</span></code></td>
+<td>Integer indicating the accuracy of the kinetics for this reaction</td>
 </tr>
 </tbody>
 </table>
@@ -555,7 +559,7 @@ each side of the reaction equation, or <code class="docutils literal notranslate
 
 <dl class="method">
 <dt id="rmgpy.reaction.Reaction.isIsomorphic">
-<code class="descname">isIsomorphic</code><span class="sig-paren">(</span><em>self</em>, <em>Reaction other</em>, <em>bool eitherDirection=True</em>, <em>bool checkIdentical=False</em>, <em>bool checkOnlyLabel=False</em>, <em>bool checkTemplateRxnProducts=False</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.reaction.Reaction.isIsomorphic" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isIsomorphic</code><span class="sig-paren">(</span><em>self</em>, <em>Reaction other</em>, <em>bool eitherDirection=True</em>, <em>bool checkIdentical=False</em>, <em>bool checkOnlyLabel=False</em>, <em>bool checkTemplateRxnProducts=False</em>, <em>bool generateInitialMap=False</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.reaction.Reaction.isIsomorphic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if this reaction is the same as the <cite>other</cite> reaction,
 or <code class="docutils literal notranslate"><span class="pre">False</span></code> if they are different. The comparison involves comparing
 isomorphism of reactants and products, and doesn’t use any kinetic
@@ -693,6 +697,20 @@ and products of this reaction. Both directions are checked.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">products</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.reaction.Reaction.rank">
+<code class="descname">rank</code><a class="headerlink" href="#rmgpy.reaction.Reaction.rank" title="Permalink to this definition">¶</a></dt>
+<dd><p>object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">rank</td>
 </tr>
 </tbody>
 </table>

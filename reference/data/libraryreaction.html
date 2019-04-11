@@ -497,7 +497,7 @@ each side of the reaction equation, or <code class="docutils literal notranslate
 
 <dl class="method">
 <dt id="rmgpy.data.kinetics.LibraryReaction.isIsomorphic">
-<code class="descname">isIsomorphic</code><span class="sig-paren">(</span><em>self</em>, <em>Reaction other</em>, <em>bool eitherDirection=True</em>, <em>bool checkIdentical=False</em>, <em>bool checkOnlyLabel=False</em>, <em>bool checkTemplateRxnProducts=False</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.isIsomorphic" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isIsomorphic</code><span class="sig-paren">(</span><em>self</em>, <em>Reaction other</em>, <em>bool eitherDirection=True</em>, <em>bool checkIdentical=False</em>, <em>bool checkOnlyLabel=False</em>, <em>bool checkTemplateRxnProducts=False</em>, <em>bool generateInitialMap=False</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.isIsomorphic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if this reaction is the same as the <cite>other</cite> reaction,
 or <code class="docutils literal notranslate"><span class="pre">False</span></code> if they are different. The comparison involves comparing
 isomorphism of reactants and products, and doesn’t use any kinetic
@@ -635,6 +635,20 @@ and products of this reaction. Both directions are checked.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">products</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.data.kinetics.LibraryReaction.rank">
+<code class="descname">rank</code><a class="headerlink" href="#rmgpy.data.kinetics.LibraryReaction.rank" title="Permalink to this definition">¶</a></dt>
+<dd><p>object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">rank</td>
 </tr>
 </tbody>
 </table>
