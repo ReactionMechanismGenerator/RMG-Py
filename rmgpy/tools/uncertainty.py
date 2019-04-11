@@ -706,8 +706,9 @@ class Uncertainty:
 
             if not correlated:
                 # Add the reaction index to the data label of the reaction uncertainties
+                # data.index stores the physical index of the reaction + 1, so we convert it to the RMG index here
                 for data in reactionDataList:
-                    data.label = 'k' + str(data.index) + ': ' + data.label.split()[-1]
+                    data.label = 'k' + str(self.reactionList[data.index-1].index) + ': ' + data.label.split()[-1]
 
             if correlated:
                 folder = os.path.join(self.outputDirectory, 'correlated')
