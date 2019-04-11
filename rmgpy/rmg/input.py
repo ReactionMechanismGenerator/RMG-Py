@@ -675,6 +675,20 @@ def thermoCentralDatabase(host,
                                                             application)
                     
 
+def uncertainty(localAnalysis=False, globalAnalysis=False, uncorrelated=True, correlated=True,
+                localNumber=10, globalNumber=5, terminationTime=None, pceRunTime=1800):
+    rmg.uncertainty = {
+        'local': localAnalysis if not globalAnalysis else True,  # Must run local before global
+        'global': globalAnalysis,
+        'uncorrelated': uncorrelated,
+        'correlated': correlated,
+        'localnum': localNumber,
+        'globalnum': globalNumber,
+        'time': terminationTime,
+        'pcetime': pceRunTime,
+    }
+
+
 ################################################################################
 
 def setGlobalRMG(rmg0):
@@ -733,7 +747,8 @@ def readInputFile(path, rmg0):
         'pressureDependence': pressureDependence,
         'options': options,
         'generatedSpeciesConstraints': generatedSpeciesConstraints,
-        'thermoCentralDatabase': thermoCentralDatabase
+        'thermoCentralDatabase': thermoCentralDatabase,
+        'uncertainty': uncertainty,
     }
 
     try:
