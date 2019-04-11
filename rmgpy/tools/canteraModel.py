@@ -240,7 +240,7 @@ class Cantera:
         'V0List'                A tuple giving the ([list of initial specific volumes], units)
         """
 
-        self.conditions = generateCanteraConditions(reactorTypeList, reactionTimeList, molFracList, Tlist, Plist)
+        self.conditions = generateCanteraConditions(reactorTypeList, reactionTimeList, molFracList, Tlist, Plist, Vlist)
 
     def loadModel(self):
         """
