@@ -52,7 +52,6 @@ from rmgpy.kinetics.arrhenius import ArrheniusBM
 from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.molecule.resonance import generate_optimal_aromatic_resonance_structures
 from rmgpy.species import Species
-from rmgpy.molecule.molecule import Bond
 from rmgpy.molecule.atomtype import atomTypes
 
 from .common import saveEntry, ensure_species, find_degenerate_reactions, generate_molecule_combos,\
