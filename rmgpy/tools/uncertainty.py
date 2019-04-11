@@ -727,3 +727,43 @@ class Uncertainty:
             output[sensSpecies] = (totalVariance, reactionUncertainty, thermoUncertainty)
 
         return output
+
+
+def process_local_results(results, sensitiveSpecies, number=10):
+    """
+    Return a dictionary of processed results along with a formatted string
+    given results from local uncertainty analysis.
+    """
+    processed_results = {}
+    for spc in sensitiveSpecies:
+        total_var, reaction_u, thermo_u = results[spc]
+        reaction_c = []
+        for label, reaction, u in reaction_u:
+            reaction_c.append((label, reaction, u / total_var * 100))
+        reaction_c.sort(key=lambda x: abs(x[2]), reverse=True)
+
+        thermo_c = []
+        for label, species, u in thermo_u:
+            thermo_c.append((label, species, u / total_var * 100))
+        thermo_c.sort(key=lambda x: abs(x[2]), reverse=True)
+
+        processed_results[spc] = (total_var, reaction_c, thermo_c)
+
+    output = ''
+    for spc in sensitiveSpecies:
+        output += '================================================================================\n'
+        total_var, reaction_c, thermo_c = processed_results[spc]
+        output += 'Total variance [(d ln(c))^2] for species {0} is {1:.6f}\n'.format(spc.label, total_var)
+        output += '--------------------------------------------------------------------------------\n'
+        output += 'Top {0:2} reaction rate contributors                              Sensitivity Index\n'.format(number)
+        output += '--------------------------------------------------------------------------------\n'
+        for label, reaction, c in reaction_c[:number]:
+            output += '{0:<65}{1:>14.4f}%\n'.format(label, c)
+        output += '--------------------------------------------------------------------------------\n'
+        output += 'Top {0:2} thermochemistry contributors                            Sensitivity Index\n'.format(number)
+        output += '--------------------------------------------------------------------------------\n'
+        for label, species, c in thermo_c[:number]:
+            output += '{0:<65}{1:>14.4f}%\n'.format(label, c)
+        output += '================================================================================\n\n'
+
+    return processed_results, output
