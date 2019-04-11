@@ -1809,7 +1809,7 @@ class KineticsFamily(Database):
                 grps = template.reactants[0].item.split()
                 template_reactants = []
                 for grp in grps:
-                    entry = deepcopy(template.reactants[0])
+                    entry = template.reactants[0]
                     entry.item = grp
                     template_reactants.append(entry)
             except AttributeError:
