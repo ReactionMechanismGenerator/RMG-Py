@@ -119,10 +119,10 @@ class KineticsGroups(Database):
 
         # Descend reactant trees as far as possible
         template = []
-        if len(forwardTemplate) == 1 and len(reaction.reactants) > len(forwardTemplate) and not self.label.lower().startswith('r_recombination'):
+        if len(forwardTemplate) == 1 and len(reaction.reactants) > len(forwardTemplate) and not self.label.lower().startswith('r_recombination') and not self.label.lower().startswith('bimolec_hydroperoxide_decomposition') and not self.label.lower().startswith('peroxyl_disproportionation'):
             entry = forwardTemplate[0]
             group = entry.item
-    
+
             r = None
             for react in reaction.reactants:
                 if isinstance(react,Species):
