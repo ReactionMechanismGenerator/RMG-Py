@@ -1275,11 +1275,12 @@ class Molecule(Graph):
             initialMap = dict()
             for atom in self.atoms:
                 if atom.label and atom.label != '':
-                    L = [a for a in other.atoms if a.label == atom.label]
-                    if L == []:
-                        return False
+                    for a in other.atoms:
+                        if a.label == atom.label:
+                            initialMap[atom] = a
+                            break
                     else:
-                        initialMap[atom] = L[0]
+                        return False
             if not self.isMappingValid(other,initialMap,equivalent=True):
                 return False
             
