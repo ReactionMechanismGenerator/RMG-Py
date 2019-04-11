@@ -96,12 +96,12 @@ def parseCSVData(csvFile):
             rxn = data.label.split()[1]
             index = data.label.split()[0][:-2].rpartition('dln[k')[2]
             data.reaction = rxn
-            data.index = index
+            data.index = int(index)
         elif thermoSensPattern.search(data.label):
             species = data.label[:-1].rpartition('dG[')[2]
             data.species = species
             if indexPattern.search(species):
-                data.index = species[:-1].rpartition('(')[2]
+                data.index = int(species[:-1].rpartition('(')[2])
             
         dataList.append(data)
         
