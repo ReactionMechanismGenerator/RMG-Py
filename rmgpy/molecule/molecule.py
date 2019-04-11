@@ -57,6 +57,7 @@ import rmgpy.molecule.resonance as resonance
 from .kekulize import kekulize
 from .adjlist import Saturator
 from rmgpy.exceptions import DependencyError
+from rmgpy.molecule.element import BDEs
 
 ################################################################################
 
@@ -516,7 +517,17 @@ class Bond(Edge):
     @property
     def atom2(self):
         return self.vertex2
-
+    
+    def getBDE(self):
+        """
+        estimate the bond dissociation energy in J/mol of the bond based on the order of the bond
+        and the atoms involved in the bond
+        """
+        try:
+            return BDEs[(self.atom1.element.symbol,self.atom2.element.symbol,self.order)]
+        except KeyError:
+            raise KeyError('Bond Dissociation energy not known for combination: ({0},{1},{2})'.format(self.atom1.element.symbol, self.atom2.element.symbol,self.order))
+    
     def equivalent(self, other):
         """
         Return ``True`` if `other` is indistinguishable from this bond, or
@@ -787,6 +798,8 @@ class Molecule(Graph):
         if multiplicity != -187:  # it was set explicitly, so re-set it (fromSMILES etc may have changed it)
             self.multiplicity = multiplicity
     
+    def __deepcopy__(self, memo):
+        return self.copy(deep=True)
     
     def __hash__(self):
         return hash((self.fingerprint))
@@ -1236,7 +1249,7 @@ class Molecule(Graph):
 
         return element_count
 
-    def isIsomorphic(self, other, initialMap=None,saveOrder=False):
+    def isIsomorphic(self, other, initialMap=None, generateInitialMap=False, saveOrder=False):
         """
         Returns :data:`True` if two graphs are isomorphic and :data:`False`
         otherwise. The `initialMap` attribute can be used to specify a required
@@ -1257,6 +1270,20 @@ class Molecule(Graph):
         # check multiplicity
         if self.multiplicity != other.multiplicity:
             return False
+        
+        if generateInitialMap:
+            initialMap = dict()
+            for atom in self.atoms:
+                if atom.label and atom.label != '':
+                    for a in other.atoms:
+                        if a.label == atom.label:
+                            initialMap[atom] = a
+                            break
+                    else:
+                        return False
+            if not self.isMappingValid(other,initialMap,equivalent=True):
+                return False
+            
         # Do the full isomorphism comparison
         result = Graph.isIsomorphic(self, other, initialMap, saveOrder=saveOrder)
         return result
@@ -1326,7 +1353,10 @@ class Molecule(Graph):
             for atom in self.atoms:
                 if atom.label and atom.label != '':
                     L = [a for a in other.atoms if a.label == atom.label]
-                    initialMap[atom] = L[0]
+                    if L == []:
+                        return False
+                    else:
+                        initialMap[atom] = L[0]
             if not self.isMappingValid(other,initialMap,equivalent=False):
                 return False
             

@@ -888,7 +888,46 @@ class TestMolecule(unittest.TestCase):
         molecule2 = Molecule().fromSMILES('C[CH]C=CC=C')
         self.assertTrue(molecule1.isIsomorphic(molecule2))
         self.assertTrue(molecule2.isIsomorphic(molecule1))
-
+        
+        molecule1 = Molecule().fromAdjacencyList("""
+multiplicity 2
+1  *1 C u0 p0 c0 {2,D} {8,S} {9,S}
+2  C u0 p0 c0 {1,D} {3,S} {10,S}
+3  C u0 p0 c0 {2,S} {4,D} {11,S}
+4  C u0 p0 c0 {3,D} {5,S} {12,S}
+5  C u1 p0 c0 {4,S} {6,S} {7,S}
+6  H u0 p0 c0 {5,S}
+7  C u0 p0 c0 {5,S} {13,S} {14,S} {15,S}
+8  *2 H u0 p0 c0 {1,S}
+9  H u0 p0 c0 {1,S}
+10 H u0 p0 c0 {2,S}
+11 H u0 p0 c0 {3,S}
+12 H u0 p0 c0 {4,S}
+13 H u0 p0 c0 {7,S}
+14 H u0 p0 c0 {7,S}
+15 H u0 p0 c0 {7,S}""")
+        molecule2 = Molecule().fromAdjacencyList("""
+multiplicity 2
+1  *1 C u0 p0 c0 {2,D} {13,S} {9,S}
+2  C u0 p0 c0 {1,D} {3,S} {10,S}
+3  C u0 p0 c0 {2,S} {4,D} {11,S}
+4  C u0 p0 c0 {3,D} {5,S} {12,S}
+5  C u1 p0 c0 {4,S} {6,S} {7,S}
+6  H u0 p0 c0 {5,S}
+7  C u0 p0 c0 {5,S} {8,S} {14,S} {15,S}
+8  H u0 p0 c0 {7,S}
+9  H u0 p0 c0 {1,S}
+10 H u0 p0 c0 {2,S}
+11 H u0 p0 c0 {3,S}
+12 H u0 p0 c0 {4,S}
+13 *2 H u0 p0 c0 {1,S}
+14 H u0 p0 c0 {7,S}
+15 H u0 p0 c0 {7,S}""")
+        
+        self.assertTrue(molecule1.isIsomorphic(molecule2,generateInitialMap=True))
+        self.assertTrue(molecule2.isIsomorphic(molecule1,generateInitialMap=True))
+    
+        
     def testSubgraphIsomorphism(self):
         """
         Check the graph isomorphism functions.

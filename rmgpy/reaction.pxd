@@ -56,6 +56,7 @@ cdef class Reaction:
     cdef public dict k_effective_cache
     cdef public bint is_forward
     cdef public bint allow_max_rate_violation
+    cdef public object rank
     
     cpdef bint isIsomerization(self)
 
@@ -69,7 +70,7 @@ cdef class Reaction:
     
     cpdef bint matchesSpecies(self, list reactants, list products=?)
 
-    cpdef bint isIsomorphic(self, Reaction other, bint eitherDirection=?, bint checkIdentical=?, bint checkOnlyLabel=?, bint checkTemplateRxnProducts=?)
+    cpdef bint isIsomorphic(self, Reaction other, bint eitherDirection=?, bint checkIdentical=?, bint checkOnlyLabel=?, bint checkTemplateRxnProducts=?, bint generateInitialMap=?)
 
     cpdef double getEnthalpyOfReaction(self, double T)
 
@@ -121,4 +122,4 @@ cdef class Reaction:
 
     cpdef get_mean_sigma_and_epsilon(self, bint reverse=?)
 
-cpdef bint isomorphic_species_lists(list list1, list list2, bint check_identical=?, bint only_check_label=?)
+cpdef bint isomorphic_species_lists(list list1, list list2, bint check_identical=?, bint only_check_label=?, bint generateInitialMap=?)

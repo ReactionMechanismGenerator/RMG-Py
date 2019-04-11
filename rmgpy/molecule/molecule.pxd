@@ -185,7 +185,7 @@ cdef class Molecule(Graph):
 
     cpdef dict get_element_count(self)
 
-    cpdef bint isIsomorphic(self, Graph other, dict initialMap=?, bint saveOrder=?) except -2
+    cpdef bint isIsomorphic(self, Graph other, dict initialMap=?, bint generateInitialMap=?, bint saveOrder=?) except -2
 
     cpdef list findIsomorphism(self, Graph other, dict initialMap=?, bint saveOrder=?)
 

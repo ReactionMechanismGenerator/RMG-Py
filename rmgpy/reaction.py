@@ -86,6 +86,7 @@ class Reaction:
                                                     Only unimolecular library reactions with high pressure limit kinetics should be flagged (not if the kinetics were measured at some relatively low pressure)
     `comment`           ``str``                     A description of the reaction source (optional)
     `is_forward`        ``bool``                    Indicates if the reaction was generated in the forward (true) or reverse (false)
+    `rank`              ``int``                     Integer indicating the accuracy of the kinetics for this reaction
     =================== =========================== ============================
     
     """
@@ -106,6 +107,7 @@ class Reaction:
                  allow_pdep_route=False,
                  elementary_high_p=False,
                  allow_max_rate_violation=False,
+                 rank=None,
                  comment='',
                  is_forward=None,
                  ):
@@ -127,6 +129,7 @@ class Reaction:
         self.k_effective_cache = {}
         self.is_forward = is_forward
         self.allow_max_rate_violation = allow_max_rate_violation
+        self.rank = rank
 
     def __repr__(self):
         """
@@ -149,6 +152,7 @@ class Reaction:
         if self.allow_pdep_route: string += 'allow_pdep_route={0}, '.format(self.allow_pdep_route)
         if self.elementary_high_p: string += 'elementary_high_p={0}, '.format(self.elementary_high_p)
         if self.comment != '': string += 'comment={0!r}, '.format(self.comment)
+        if self.rank is not None: string += 'rank={0!r},'.format(self.rank)
         string = string[:-2] + ')'
         return string
 
@@ -190,6 +194,7 @@ class Reaction:
                            self.pairs,
                            self.allow_pdep_route,
                            self.elementary_high_p,
+                           self.rank,
                            self.comment
                            ))
 
@@ -407,7 +412,7 @@ class Reaction:
             return False
 
     def isIsomorphic(self, other, eitherDirection=True, checkIdentical = False,
-                     checkOnlyLabel = False, checkTemplateRxnProducts=False):
+                     checkOnlyLabel = False, checkTemplateRxnProducts=False, generateInitialMap=False):
         """
         Return ``True`` if this reaction is the same as the `other` reaction,
         or ``False`` if they are different. The comparison involves comparing
@@ -434,17 +439,17 @@ class Reaction:
 
             return isomorphic_species_lists(species1, species2,
                                             check_identical=checkIdentical,
-                                            only_check_label=checkOnlyLabel)
+                                            only_check_label=checkOnlyLabel,generateInitialMap=generateInitialMap)
 
         # Compare reactants to reactants
         forwardReactantsMatch = isomorphic_species_lists(self.reactants, other.reactants,
                                                          check_identical=checkIdentical,
-                                                         only_check_label=checkOnlyLabel)
+                                                         only_check_label=checkOnlyLabel,generateInitialMap=generateInitialMap)
         
         # Compare products to products
         forwardProductsMatch = isomorphic_species_lists(self.products, other.products,
                                                         check_identical=checkIdentical,
-                                                        only_check_label=checkOnlyLabel)
+                                                        only_check_label=checkOnlyLabel,generateInitialMap=generateInitialMap)
 
         # Compare specificCollider to specificCollider
         ColliderMatch = (self.specificCollider == other.specificCollider)
@@ -458,12 +463,12 @@ class Reaction:
         # Compare reactants to products
         reverseReactantsMatch = isomorphic_species_lists(self.reactants, other.products,
                                                          check_identical=checkIdentical,
-                                                         only_check_label=checkOnlyLabel)
+                                                         only_check_label=checkOnlyLabel,generateInitialMap=generateInitialMap)
 
         # Compare products to reactants
         reverseProductsMatch = isomorphic_species_lists(self.products, other.reactants,
                                                         check_identical=checkIdentical,
-                                                        only_check_label=checkOnlyLabel)
+                                                        only_check_label=checkOnlyLabel,generateInitialMap=generateInitialMap)
 
         # should have already returned if it matches forwards, or we're not allowed to match backwards
         return  (reverseReactantsMatch and reverseProductsMatch and ColliderMatch)
@@ -1251,7 +1256,7 @@ class Reaction:
         mean_epsilons = reduce((lambda x, y: x * y), epsilons) ** (1 / len(epsilons))
         return mean_sigmas, mean_epsilons
 
-def isomorphic_species_lists(list1, list2, check_identical=False, only_check_label=False):
+def isomorphic_species_lists(list1, list2, check_identical=False, only_check_label=False, generateInitialMap=False):
     """
     This method compares whether lists of species or molecules are isomorphic
     or identical. It is used for the 'isIsomorphic' method of Reaction class.
@@ -1266,13 +1271,13 @@ def isomorphic_species_lists(list1, list2, check_identical=False, only_check_lab
     Returns True if the lists are isomorphic/identical & false otherwise
     """
 
-    def same(object1, object2, _check_identical=check_identical, _only_check_label=only_check_label):
+    def same(object1, object2, _check_identical=check_identical, _only_check_label=only_check_label, _generate_initial_map=generateInitialMap):
         if _only_check_label:
             return str(object1) == str(object2)
         elif _check_identical:
             return object1.isIdentical(object2)
         else:
-            return object1.isIsomorphic(object2)
+            return object1.isIsomorphic(object2,generateInitialMap=_generate_initial_map)
 
     if len(list1) == len(list2) == 1:
         if same(list1[0], list2[0]):

@@ -69,7 +69,24 @@ cdef class ArrheniusEP(KineticsModel):
     cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
     
     cpdef changeRate(self, double factor)
+################################################################################
+
+cdef class ArrheniusBM(KineticsModel):
     
+    cdef public ScalarQuantity _A
+    cdef public ScalarQuantity _n
+    cdef public ScalarQuantity _w0
+    cdef public ScalarQuantity _E0
+    
+    cpdef double getRateCoefficient(self, double T, double dHrxn=?) except -1
+
+    cpdef double getActivationEnergy(self, double dHrxn) except -1
+    
+    cpdef Arrhenius toArrhenius(self, double dHrxn)
+
+    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
+    
+    cpdef changeRate(self, double factor)
 ################################################################################
 
 cdef class PDepArrhenius(PDepKineticsModel):
