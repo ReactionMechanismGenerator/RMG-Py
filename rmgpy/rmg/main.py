@@ -1148,7 +1148,6 @@ class RMG(util.Subject):
 
         # Check all core reactions (in both directions) for collision limit violation
         violators = []
-        num_rxn_violators = 0
         for rxn in self.reactionModel.core.reactions:
             if rxn.isSurfaceReaction():
                 # Don't check collision limits for surface reactions.
@@ -1157,7 +1156,6 @@ class RMG(util.Subject):
                                                                 p_min=self.Pmin, p_max=self.Pmax)
             if violator_list:
                 violators.extend(violator_list)
-                num_rxn_violators += 1
         # Whether or not violators were found, rename 'collision_rate_violators.log' if it exists
         new_file = os.path.join(self.outputDirectory, 'collision_rate_violators.log')
         old_file = os.path.join(self.outputDirectory, 'collision_rate_violators_OLD.log')
@@ -1170,33 +1168,21 @@ class RMG(util.Subject):
         if violators:
             logging.info("\n")
             logging.warning("{0} CORE reactions violate the collision rate limit!"
-                            "\nSee the 'collision_rate_violators.log' for details.\n\n".format(num_rxn_violators))
+                            "\nSee the 'collision_rate_violators.log' for details.\n\n".format(len(violators)))
             with open(new_file, 'w') as violators_f:
                 violators_f.write('*** Collision rate limit violators report ***\n'
                                   '"Violation factor" is the ratio of the rate coefficient to the collision limit'
                                   ' rate at the relevant conditions\n\n')
                 for violator in violators:
-                    rxn_string = str(violator[0])
-                    kinetics = violator[0].kinetics
-                    comment=''
-                    if isinstance(violator[0], TemplateReaction):
-                        comment = violator[0].kinetics.comment
-                        violator[0].kinetics.comment = ''  # the comment is printed better when outside of the object
-                    if isinstance(violator[0], LibraryReaction):
-                        comment = 'Kinetic library: {0}'.format(violator[0].library)
-                    if isinstance(violator[0], PDepReaction):
-                        comment = 'Network #{0}'.format(violator[0].network)
+                    rxn_string = violator[0].toChemkin()
                     direction = violator[1]
                     ratio = violator[2]
                     condition = violator[3]
-                    violators_f.write('{0}\n{1}\n{2}\nDirection: {3}\nViolation factor: {4:.2f}\n'
-                                      'Violation condition: {5}\n\n'.format(
-                                        rxn_string, kinetics, comment, direction, ratio, condition))
-                    if isinstance(violator[0], TemplateReaction):
-                        # although this is the end of the run, restore the original comment
-                        violator[0].kinetics.comment = comment
+                    violators_f.write('{rxn}\nDirection: {dir}\nViolation factor: {factor:.2f}\n'
+                                      'Violation condition: {cond}\n\n\n'.format(
+                                       rxn=rxn_string, dir=direction, factor=ratio, cond=condition))
         else:
-            logging.info("No collision rate violators found.")
+            logging.info("No collision rate violators found in the core.")
 
     def makeSeedMech(self,firstTime=False):
         """
