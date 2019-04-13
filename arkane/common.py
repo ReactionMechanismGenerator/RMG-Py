@@ -316,7 +316,7 @@ def check_conformer_energy(Vlist, path):
 
 def get_element_mass(input_element, isotope=None):
     """
-    Returns the mass and z number of the requested isotop for a given element.
+    Returns the mass and z number of the requested isotope for a given element.
     'input_element' can be wither the atomic number (integer) or an element symbol.
     'isotope' is an integer of the atomic z number. If 'isotope' is None, returns the most common isotope.
     Data taken from NIST, https://physics.nist.gov/cgi-bin/Compositions/stand_alone.pl (accessed October 2018)
