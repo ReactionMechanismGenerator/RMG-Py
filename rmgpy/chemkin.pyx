@@ -324,10 +324,10 @@ def _readKineticsReaction(line, speciesDict, Aunits, Eunits):
         reversible = False
     specificCollider = None
     # search for a third body collider, e.g., '(+M)', '(+m)', or a specific species like '(+N2)', matching `(+anythingOtherThanEndingParenthesis)`:
-    collider = re.search('\(\+[^\)]+\)',reactants)
+    collider = re.search(r'\(\+[^)]+\)',reactants)
     if collider is not None:
         collider = collider.group(0) # save string value rather than the object
-        assert collider == re.search('\(\+[^\)]+\)',products).group(0), "Third body colliders in reactants and products of reaction {0} are not identical!".format(reaction)
+        assert collider == re.search(r'\(\+[^)]+\)',products).group(0), "Third body colliders in reactants and products of reaction {0} are not identical!".format(reaction)
         extraParenthesis = collider.count('(') -1
         for i in xrange(extraParenthesis):
             collider += ')' # allow for species like N2(5) or CH2(T)(15) to be read as specific colliders, although currently not implemented in Chemkin. See RMG-Py #1070
