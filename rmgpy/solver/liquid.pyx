@@ -42,6 +42,7 @@ import rmgpy.constants as constants
 cimport rmgpy.constants as constants
 from rmgpy.quantity import Quantity
 from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
+from rmgpy.data.rmg import getDB
 
 cdef class LiquidReactor(ReactionSystem):
     """
@@ -117,7 +118,8 @@ cdef class LiquidReactor(ReactionSystem):
     cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
                           list surfaceSpecies=None, list surfaceReactions=None, list pdepNetworks=None,
                           atol=1e-16, rtol=1e-8, sensitivity=False, sens_atol=1e-6, sens_rtol=1e-4,
-                          filterReactions=False, dict conditions=None):
+                          filterReactions=False, list unimolecularFilterFit=None, list bimolecularFilterFit=None,
+                          dict conditions=None):
         """
         Initialize a simulation of the liquid reactor using the provided kinetic
         model.
@@ -133,7 +135,8 @@ cdef class LiquidReactor(ReactionSystem):
                                        surfaceSpecies=surfaceSpecies, surfaceReactions=surfaceReactions,
                                        pdepNetworks=pdepNetworks, atol=atol, rtol=rtol,
                                        sensitivity=sensitivity, sens_atol=sens_atol, sens_rtol=sens_rtol,
-                                       filterReactions=filterReactions, conditions=conditions)
+                                       filterReactions=filterReactions, unimolecularFilterFit=unimolecularFilterFit,
+                                       bimolecularFilterFit=bimolecularFilterFit, conditions=conditions)
 
         # Set initial conditions
         self.set_initial_conditions()
@@ -166,18 +169,34 @@ cdef class LiquidReactor(ReactionSystem):
                 self.Keq[j] = rxn.getEquilibriumConstant(self.T.value_si)
                 self.kb[j] = self.kf[j] / self.Keq[j]
 
-    def get_threshold_rate_constants(self, modelSettings):
+    def get_threshold_rate_constants(self):
         """
         Get the threshold rate constants for reaction filtering.
 
-        modelSettings is not used here, but is needed so that the method
+        lists are not used here, but are needed so that the method
         matches the one in simpleReactor.
         """
-        # Set the maximum unimolecular rate to be kB*T/h
-        unimolecular_threshold_rate_constant = 2.08366122e10 * self.T.value_si
+        families = getDB('kinetics').families.keys()
+
         # Set the maximum bi/trimolecular rates based on the Smoluchowski and Stokes-Einstein equations
-        bimolecular_threshold_rate_constant = 22.2 * self.T.value_si / self.viscosity
-        trimolecular_threshold_rate_constant = 0.11 * self.T.value_si / self.viscosity
+        unimolecular_threshold_rate_constant_tmp = []
+        bimolecular_threshold_rate_constant_tmp = []
+        trimolecular_threshold_rate_constant_tmp = []
+        for k in xrange(len(families)):
+            unimolecular_threshold_rate_constant_tmp.append(2.08366122e10 * self.T.value_si)
+            bimolecular_threshold_rate_constant_tmp.append(22.2 * self.T.value_si / self.viscosity)
+            trimolecular_threshold_rate_constant_tmp.append(0.11 * self.T.value_si / self.viscosity)
+
+        # Generate dictionary with reaction families as keys and kinetics as values
+        unimolecular_threshold_rate_constant = {
+            key: value for key, value in zip(families, unimolecular_threshold_rate_constant_tmp)
+        }
+        bimolecular_threshold_rate_constant = {
+            key: value for key, value in zip(families, bimolecular_threshold_rate_constant_tmp)
+        }
+        trimolecular_threshold_rate_constant = {
+            key: value for key, value in zip(families, trimolecular_threshold_rate_constant_tmp)
+        }
         return (unimolecular_threshold_rate_constant,
                 bimolecular_threshold_rate_constant,
                 trimolecular_threshold_rate_constant)

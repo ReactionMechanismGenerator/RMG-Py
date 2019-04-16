@@ -55,6 +55,7 @@ from rmgpy.quantity import Quantity
 from rmgpy.chemkin import getSpeciesIdentifier
 from rmgpy.reaction import Reaction
 from rmgpy.species import Species
+from rmgpy.data.rmg import getDB
 
 ################################################################################
 
@@ -176,13 +177,22 @@ cdef class ReactionSystem(DASx):
         # Flag to indicate whether or not reactions with 3 reactants are present 
         self.trimolecular = False
         
-        # reaction filtration, unimolecularThreshold is a vector with length of number of core species
-        # bimolecularThreshold is a square matrix with length of number of core species
-        # trimolecularThreshold is a rank-3 tensor with length of number of core species
-        # A value of 1 in the matrix indicates the species is above the threshold to react or participate in those reactions
+        # Reaction filtering:
+        # unimolecularThreshold is a matrix with length of number of core species and number
+        # of reaction families in RMG.
+        # bimolecularThreshold is a rank-3 tensor with length of number of core species in two dimensions and 
+        # number of reaction families in third dimension.
+        # trimolecularThreshold is a rank-4 tensor with length of number of core species in three dimensions and
+        # number of reaction families in fourth dimension.
+        # A value of 1 in the matrix indicates the species is above the threshold to react or participate in those
+        # reactions
         self.unimolecularThreshold = None
         self.bimolecularThreshold = None
         self.trimolecularThreshold = None
+
+        # Arrhenius fits loaded from file 'FilterArrheniusFits' are stored here
+        self.unimolecularFilterFit = None
+        self.bimolecularFilterFit = None
 
     def __reduce__(self):
         """
@@ -193,13 +203,17 @@ cdef class ReactionSystem(DASx):
     cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
                           list surfaceSpecies=None, list surfaceReactions=None, list pdepNetworks=None,
                           atol=1e-16, rtol=1e-8, sensitivity=False, sens_atol=1e-6, sens_rtol=1e-4,
-                          filterReactions=False, dict conditions=None):
+                          filterReactions=False, list unimolecularFilterFit=None, list bimolecularFilterFit=None,
+                          dict conditions=None):
         """
         Initialize a simulation of the reaction system using the provided
         kinetic model. You will probably want to create your own version of this
         method in the derived class; don't forget to also call the base class
         version, too.
         """
+
+        len_families = len(getDB('kinetics').families.keys())
+
         if surfaceSpecies is None:
             surfaceSpecies = []
         if surfaceReactions is None:
@@ -255,11 +269,17 @@ cdef class ReactionSystem(DASx):
         self.networkLeakRates = numpy.zeros((self.numPdepNetworks), numpy.float64)
         self.maxNetworkLeakRateRatios = numpy.zeros((len(self.prunableNetworks)), numpy.float64)
         self.sensitivityCoefficients = numpy.zeros((self.numCoreSpecies, self.numCoreReactions), numpy.float64)
-        self.unimolecularThreshold = numpy.zeros((self.numCoreSpecies), bool)
-        self.bimolecularThreshold = numpy.zeros((self.numCoreSpecies, self.numCoreSpecies), bool)
+        self.unimolecularThreshold = numpy.zeros((self.numCoreSpecies, len_families), bool)
+
+        # Value number 3 is the number of reaction families in RMG
+        self.bimolecularThreshold = numpy.zeros((self.numCoreSpecies, self.numCoreSpecies, len_families), bool)
+
         if self.trimolecular:
-            self.trimolecularThreshold = numpy.zeros((self.numCoreSpecies, self.numCoreSpecies, self.numCoreSpecies),
-                                                     bool)
+            self.trimolecularThreshold = numpy.zeros((self.numCoreSpecies, self.numCoreSpecies,
+                self.numCoreSpecies, len_families), bool)
+
+        self.unimolecularFilterFit = unimolecularFilterFit
+        self.bimolecularFilterFit = bimolecularFilterFit
 
         surfaceSpecies,surfaceReactions = self.initialize_surface(coreSpecies,coreReactions,surfaceSpecies,surfaceReactions)
         
@@ -448,24 +468,30 @@ cdef class ReactionSystem(DASx):
         self.y0 = numpy.zeros(self.neq, numpy.float64)
     
     def set_initial_reaction_thresholds(self):
-        
+
+        # Number of families in RMG
+        len_families = len(getDB('kinetics').families.keys())
+
         # Set unimolecular and bimolecular thresholds as true for any concentrations greater than 0
         numCoreSpecies = len(self.coreSpeciesConcentrations)
         for i in xrange(numCoreSpecies):
-            if self.coreSpeciesConcentrations[i] > 0:
-                self.unimolecularThreshold[i] = True
+            for k in xrange(len_families):
+                if self.coreSpeciesConcentrations[i] > 0:
+                    self.unimolecularThreshold[i,k] = True
         for i in xrange(numCoreSpecies):
             for j in xrange(i, numCoreSpecies):
-                if self.coreSpeciesConcentrations[i] > 0 and self.coreSpeciesConcentrations[j] > 0:
-                    self.bimolecularThreshold[i,j] = True
+                for k in xrange(len_families):
+                    if self.coreSpeciesConcentrations[i] > 0 and self.coreSpeciesConcentrations[j] > 0:
+                        self.bimolecularThreshold[i,j,k] = True
         if self.trimolecular:
             for i in xrange(numCoreSpecies):
                 for j in xrange(i, numCoreSpecies):
                     for k in xrange(j, numCoreSpecies):
-                        if (self.coreSpeciesConcentrations[i] > 0
-                                and self.coreSpeciesConcentrations[j] > 0
-                                and self.coreSpeciesConcentrations[k] > 0):
-                            self.trimolecularThreshold[i,j,k] = True
+                        for l in xrange(len_families):
+                            if (self.coreSpeciesConcentrations[i] > 0
+                                    and self.coreSpeciesConcentrations[j] > 0
+                                    and self.coreSpeciesConcentrations[k] > 0):
+                                self.trimolecularThreshold[i,j,k,l] = True
 
     def set_initial_derivative(self):
         """
@@ -569,8 +595,9 @@ cdef class ReactionSystem(DASx):
     @cython.boundscheck(False)
     cpdef simulate(self, list coreSpecies, list coreReactions, list edgeSpecies, 
         list edgeReactions,list surfaceSpecies, list surfaceReactions,
-        list pdepNetworks=None, bool prune=False, bool sensitivity=False, list sensWorksheet=None, object modelSettings=None,
-        object simulatorSettings=None, dict conditions=None):
+        list pdepNetworks=None, bool prune=False, bool sensitivity=False, list sensWorksheet=None,
+        object modelSettings=None, object simulatorSettings=None, list unimolecularFilterFit=None,
+        list bimolecularFilterFit=None, dict conditions=None):
         """
         Simulate the reaction system with the provided reaction model,
         consisting of lists of core species, core reactions, edge species, and
@@ -606,7 +633,9 @@ cdef class ReactionSystem(DASx):
         cdef numpy.ndarray[numpy.float64_t,ndim=1] surfaceTotalDivAccumNums, surfaceSpeciesRateRatios
         cdef numpy.ndarray[numpy.float64_t, ndim=1] forwardRateCoefficients, coreSpeciesConcentrations
         cdef double prevTime, totalMoles, c, volume, RTP, maxCharRate, BR, RR
-        cdef double unimolecularThresholdVal, bimolecularThresholdVal, trimolecularThresholdVal
+        cdef numpy.ndarray[numpy.float64_t,ndim=1] unimolecularThresholdVal 
+        cdef numpy.ndarray[numpy.float64_t,ndim=1] bimolecularThresholdVal 
+        cdef numpy.ndarray[numpy.float64_t,ndim=1] trimolecularThresholdVal
         cdef bool useDynamicsTemp, firstTime, useDynamics, terminateAtMaxObjects, schanged
         cdef numpy.ndarray[numpy.float64_t, ndim=1] edgeReactionRates
         cdef double reactionRate, production, consumption
@@ -669,7 +698,7 @@ cdef class ReactionSystem(DASx):
         self.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions, surfaceSpecies, surfaceReactions, 
                              pdepNetworks, absoluteTolerance, relativeTolerance, sensitivity,
                              sensitivityAbsoluteTolerance, sensitivityRelativeTolerance,
-                             filterReactions, conditions)
+                             filterReactions, unimolecularFilterFit, bimolecularFilterFit, conditions)
 
         prunableSpeciesIndices = self.prunableSpeciesIndices
         prunableNetworkIndices = self.prunableNetworkIndices
@@ -979,32 +1008,41 @@ cdef class ReactionSystem(DASx):
                     
             if filterReactions:
                 # Calculate thresholds for reactions
-                (unimolecularThresholdRateConstant,
-                 bimolecularThresholdRateConstant,
-                 trimolecularThresholdRateConstant) = self.get_threshold_rate_constants(modelSettings)
-                unimolecularThresholdVal = toleranceMoveToCore * charRate / unimolecularThresholdRateConstant
-                bimolecularThresholdVal = toleranceMoveToCore * charRate / bimolecularThresholdRateConstant
-                trimolecularThresholdVal = toleranceMoveToCore * charRate / trimolecularThresholdRateConstant
+                (kvals_uni, kvals_bi) = self.get_threshold_rate_constants()
+
+                unimolecularThresholdVal = numpy.zeros(len(kvals_uni))
+                for i in xrange(len(kvals_uni)):
+                    unimolecularThresholdVal[i] = (toleranceMoveToCore * charRate / kvals_uni[i])
+
+                bimolecularThresholdVal = numpy.zeros(len(kvals_bi))
+                trimolecularThresholdVal = numpy.zeros(len(kvals_bi))
+                for i in xrange(len(kvals_bi)):
+                    bimolecularThresholdVal[i] = (toleranceMoveToCore * charRate / kvals_bi[i])
+                    trimolecularThresholdVal[i] = (toleranceMoveToCore * charRate * 1e3 / kvals_bi[i])
+
                 for i in xrange(numCoreSpecies):
-                    if not unimolecularThreshold[i]:
-                        # Check if core species concentration has gone above threshold for unimolecular reaction
-                        if coreSpeciesConcentrations[i] > unimolecularThresholdVal:
-                            unimolecularThreshold[i] = True
+                    for k in xrange(len(unimolecularThresholdVal)):
+                        if not unimolecularThreshold[i,k]:
+                            # Check if core species concentration has gone above threshold for unimolecular reaction
+                            if coreSpeciesConcentrations[i] > unimolecularThresholdVal[k]:
+                                unimolecularThreshold[i,k] = True
                 for i in xrange(numCoreSpecies):
                     for j in xrange(i, numCoreSpecies):
-                        if not bimolecularThreshold[i,j]:
-                            if coreSpeciesConcentrations[i]*coreSpeciesConcentrations[j] > bimolecularThresholdVal:
-                                bimolecularThreshold[i,j] = True
+                        for k in xrange(len(bimolecularThresholdVal)):
+                            if not bimolecularThreshold[i,j,k]:
+                                if coreSpeciesConcentrations[i]*coreSpeciesConcentrations[j] > bimolecularThresholdVal[k]:
+                                    bimolecularThreshold[i,j,k] = True
                 if self.trimolecular:
                     for i in xrange(numCoreSpecies):
                         for j in xrange(i, numCoreSpecies):
                             for k in xrange(j, numCoreSpecies):
-                                if not trimolecularThreshold[i,j,k]:
-                                    if (coreSpeciesConcentrations[i]*
-                                        coreSpeciesConcentrations[j]*
-                                        coreSpeciesConcentrations[k]
-                                            > trimolecularThresholdVal):
-                                        trimolecularThreshold[i,j,k] = True
+                                for l in xrange(len(trimolecularThresholdVal)):
+                                    if not trimolecularThreshold[i,j,k,l]:
+                                        if (coreSpeciesConcentrations[i]*
+                                            coreSpeciesConcentrations[j]*
+                                            coreSpeciesConcentrations[k]
+                                                > trimolecularThresholdVal[l]):
+                                            trimolecularThreshold[i,j,k,l] = True
             
             
             ###############################################################################

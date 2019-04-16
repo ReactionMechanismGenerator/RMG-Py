@@ -37,6 +37,7 @@ import numpy as np
 import logging
 import warnings
 import codecs
+import yaml
 from copy import deepcopy
 from collections import OrderedDict
 from sklearn.model_selection import KFold
@@ -63,6 +64,9 @@ from .rules import KineticsRules
 from rmgpy.exceptions import InvalidActionError, ReactionPairsError, KineticsError,\
                              UndeterminableKineticsError, ForbiddenStructureException,\
                              KekulizationError, ActionError, DatabaseError
+from rmgpy.rmgobject import recursive_make_object
+from rmgpy.rmgobject import RMGObject
+from rmgpy.quantity import ScalarQuantity
 import itertools
 ################################################################################
 
@@ -3868,3 +3872,82 @@ def getObjectiveFunction(kinetics1,kinetics2,obj=informationGain,T=1000.0):
     
     return obj(ks1,ks2), N1 == 0
 
+################################################################################
+
+class ArrheniusRMGObject(RMGObject):
+    """
+    Child class of RMG Object for storing filter Arrhenius fits.
+    """
+
+    def __init__(self, unimol=None, bimol=None):
+        if unimol:
+            self.unimol = unimol
+        else:
+            self.unimol = {}
+        if bimol:
+            self.bimol = bimol
+        else:
+            self.bimol = {}
+
+    def load_yaml(self, path, class_dictionary):
+        with open(path, 'r') as f:
+            data = yaml.safe_load(stream=f)
+
+        data = {key:data[key] for key in data if key!='class'}
+        args = recursive_make_object(data, class_dictionary)
+        self.__init__(**args)
+
+
+def LoadFilterFits(self):
+    """
+    Load Arrhenius fits of the highest rates in each training reaction family from a file located at `fits_location`
+    on disk.
+
+    For reaction filtering, the loaded fits per reaction family are sorted to correspond to the user
+    defined families.
+    """
+
+    from rmgpy.data.rmg import getDB
+    families = getDB('kinetics').families.keys()
+
+    fits_location = os.path.join(settings['database.directory'],'FilterArrheniusFits')
+
+    logging.debug("""Loading Arrhenius fits from {0} based on training reactions
+    to generate custom filter criteria for each reaction family""".format(
+        os.path.join(fits_location)))
+
+    class_dictionary = {'ScalarQuantity': ScalarQuantity,
+                        'Arrhenius': Arrhenius,
+                        'ArrheniusRMGObject': ArrheniusRMGObject,
+                        }
+    obj = ArrheniusRMGObject()
+    obj.load_yaml(fits_location, class_dictionary)
+
+    # List of unimolecular kinetics
+    filter_unimol_families = []
+    unimol_kinetics_list_tmp  = []
+    for filter_family, Arrhenius_fit in obj.unimol.items():
+        filter_unimol_families.append(filter_family)
+        unimol_kinetics_list_tmp.append(Arrhenius_fit)
+
+    # List of bimolecular kinetics
+    filter_bimol_families = []
+    bimol_kinetics_list_tmp = []
+    for filter_family, Arrhenius_fit in obj.bimol.items():
+        filter_bimol_families.append(filter_family)
+        bimol_kinetics_list_tmp.append(Arrhenius_fit)
+
+    # Sort to match family list in getDB
+    unimol_kinetics_list = []
+    bimol_kinetics_list = []
+    for family in families:
+        for index, filter_family in enumerate(filter_unimol_families):
+            if family == filter_family:
+                unimol_kinetics_list.append(unimol_kinetics_list_tmp[index])
+        for index, filter_family in enumerate(filter_bimol_families):
+            if family == filter_family:
+                bimol_kinetics_list.append(bimol_kinetics_list_tmp[index])
+
+    # Trimolecular fit is adapted from bimolecular fit
+    self.reactionSystems[0].unimolecularFilterFit = unimol_kinetics_list
+    self.reactionSystems[0].bimolecularFilterFit  = bimol_kinetics_list

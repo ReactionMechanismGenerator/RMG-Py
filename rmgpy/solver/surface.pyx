@@ -131,6 +131,8 @@ cdef class SurfaceReactor(ReactionSystem):
                           sens_atol=1e-6,
                           sens_rtol=1e-4,
                           filterReactions=False,
+                          list unimolecularFilterFit=None,
+                          list bimolecularFilterFit=None,
                           dict conditions=None,
                           ):
         """
@@ -154,6 +156,8 @@ cdef class SurfaceReactor(ReactionSystem):
                                        sens_atol=sens_atol,
                                        sens_rtol=sens_rtol,
                                        filterReactions=filterReactions,
+                                       unimolecularFilterFit=unimolecularFilterFit,
+                                       bimolecularFilterFit=bimolecularFilterFit,
                                        conditions=conditions,
                                        )
         cdef numpy.ndarray[numpy.int_t, ndim=1] speciesOnSurface, reactionsOnSurface
