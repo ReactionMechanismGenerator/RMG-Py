@@ -277,6 +277,9 @@ class Uncertainty:
         self.kineticInputUncertainties = None
         self.outputDirectory = outputDirectory if outputDirectory else os.getcwd()
 
+        # For extra species needed for correlated analysis but not in model
+        self.extraSpecies = []
+
         # Make output directory if it does not yet exist:
         if not os.path.exists(self.outputDirectory):
             try:
@@ -365,9 +368,8 @@ class Uncertainty:
         Must be done after loading model and database to work.
         """
         self.speciesSourcesDict = {}
-        ignoreSpcs = []
         for species in self.speciesList:
-            if species not in ignoreSpcs:
+            if species not in self.extraSpecies:
                 source = self.database.thermo.extractSourceFromComments(species)
 
                 # Now prep the source data
@@ -386,7 +388,7 @@ class Uncertainty:
                     saturatedSpecies, ignoreSpc = self.retrieveSaturatedSpeciesFromList(species)
 
                     if ignoreSpc:  # this is saturated species that isn't in the actual model
-                        ignoreSpcs.append(saturatedSpecies)
+                        self.extraSpecies.append(saturatedSpecies)
 
                     if 'Library' in source:
                         source['Library'] = self.speciesList.index(saturatedSpecies)
@@ -417,7 +419,7 @@ class Uncertainty:
                 raise Exception('Source of kinetics must be either Library, PDep, Training, or Rate Rules')
             self.reactionSourcesDict[reaction] = source
 
-        for spc in ignoreSpcs:
+        for spc in self.extraSpecies:
             self.speciesList.remove(spc)
 
     def compileAllSources(self):
@@ -515,7 +517,10 @@ class Uncertainty:
                 dG = {}
                 if 'Library' in source:
                     pdG = gParamEngine.getPartialUncertaintyValue(source, 'Library', corrParam=source['Library'])
-                    label = 'Library {}'.format(self.speciesList[source['Library']].toChemkin())
+                    try:
+                        label = 'Library {}'.format(self.speciesList[source['Library']].toChemkin())
+                    except IndexError:
+                        label = 'Library {}'.format(self.extraSpecies[source['Library'] - len(self.speciesList)].toChemkin())
                     dG[label] = pdG
                 if 'QM' in source:
                     pdG = gParamEngine.getPartialUncertaintyValue(source, 'QM', corrParam=source['QM'])
