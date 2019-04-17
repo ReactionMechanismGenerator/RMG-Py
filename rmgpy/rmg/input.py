@@ -755,7 +755,7 @@ def pressure_dependence(
 def options(name='Seed', generateSeedEachIteration=True, saveSeedToDatabase=False, units='si', saveRestartPeriod=None,
             generateOutputHTML=False, generatePlots=False, saveSimulationProfiles=False, verboseComments=False,
             saveEdgeSpecies=False, keepIrreversible=False, trimolecularProductReversible=True, wallTime='00:00:00:00',
-            saveSeedModulus=-1):
+            saveSeedModulus=-1, generateLabeledReactions=False):
     if saveRestartPeriod:
         logging.warning("`saveRestartPeriod` flag was set in the input file, but this feature has been removed. Please "
                         "remove this line from the input file. This will throw an error after RMG-Py 3.1. For "
@@ -772,6 +772,9 @@ def options(name='Seed', generateSeedEachIteration=True, saveSeedToDatabase=Fals
     rmg.generate_plots = generatePlots
     rmg.save_simulation_profiles = saveSimulationProfiles
     rmg.verbose_comments = verboseComments
+    if generateLabeledReactions:
+        logging.warning('Generate Labeled Adjacency List for reactions option was turned on.')
+    rmg.generate_labeled_reactions = generateLabeledReactions
     if saveEdgeSpecies:
         logging.warning(
             'Edge species saving was turned on. This will slow down model generation for large simulations.')
@@ -1197,6 +1200,7 @@ def save_input_file(path, rmg):
     f.write('options(\n')
     f.write('    units = "{0}",\n'.format(rmg.units))
     f.write('    generateOutputHTML = {0},\n'.format(rmg.generate_output_html))
+    f.write('    generateLabeledReactions = {0},\n'.format(rmg.generate_labeled_reactions))
     f.write('    generatePlots = {0},\n'.format(rmg.generate_plots))
     f.write('    saveSimulationProfiles = {0},\n'.format(rmg.save_simulation_profiles))
     f.write('    saveEdgeSpecies = {0},\n'.format(rmg.save_edge_species))
@@ -1228,6 +1232,8 @@ def get_input(name):
             return rmg.ml_estimator, rmg.ml_settings
         elif name == 'thermo_central_database':
             return rmg.thermo_central_database
+        elif name == 'generate_labeled_reactions':
+            return rmg.generate_labeled_reactions
         else:
             raise Exception('Unrecognized keyword: {}'.format(name))
 
