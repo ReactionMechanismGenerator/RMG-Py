@@ -1313,16 +1313,19 @@ class KineticsFamily(Database):
         else:
             self.reverseRecipe.applyForward(reactantStructure, unique)
 
-        if not reactantStructure.props['validAromatic']:
-            if isinstance(reactantStructure, Molecule):
+        # Now that we have applied the recipe, let's start calling
+        # this thing the productStructure (although it's the same object in memory)
+        productStructure = reactantStructure
+
+        if not productStructure.props['validAromatic']:
+            if isinstance(productStructure, Molecule):
                 # For molecules, kekulize the product to redistribute bonds appropriately
-                reactantStructure.kekulize()
+                productStructure.kekulize()
             else:
                 # For groups, we ignore the product template for a purely aromatic group
                 # If there is an analagous aliphatic group in the family, then the product template will be identical
                 # There should NOT be any families that consist solely of aromatic reactant templates
                 return []
-        productStructure = reactantStructure
 
         if not forward:
             # Hardcoding of reaction family for reverse of radical recombination
