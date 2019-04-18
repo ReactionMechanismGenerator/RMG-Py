@@ -1373,14 +1373,16 @@ def save_labeled_reactions_file(path, reaction_model, part_core_edge='core'):
         reactions = [rxn for rxn in reaction_model.edge.reactions] + reaction_model.output_reaction_list
 
     with open(path, "w") as f:
+        f.write('---\nreactions:\n')
         for i, rxn in enumerate(reactions):
-            f.write("{0:d}\n{1!s}\n{2!s}\n".format(i, rxn, rxn.family))
-            try:
-                f.write(rxn.adjacency_list)
-                f.write("\n")
-            except:
-                pass
-            f.write("============================================================================\n")
+            f.write(f"  - index: {i:d}\n    reaction: {rxn!s}\n    reaction_family: {rxn.family!s}\n")
+            if hasattr(rxn, 'adjacency_list'):
+                for line in rxn.adjacency_list.splitlines(True):
+                    if line in ('reactant\n', 'product\n'):
+                        f.write('    {0}: |\n'.format(line.strip()))
+                    elif line.strip():
+                        f.write('        '+line)
+            f.write("\n")
 
 def save_labeled_reactions(rmg):
     """
