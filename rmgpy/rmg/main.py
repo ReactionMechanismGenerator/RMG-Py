@@ -946,18 +946,6 @@ class RMG(util.Subject):
         """
         Run sensitivity and uncertainty analysis if requested.
         """
-        if self.uncertainty is not None and self.uncertainty['global']:
-            try:
-                import libmuqModelling
-            except ImportError:
-                logging.error('Unable to import MUQ. Skipping global uncertainty analysis.')
-                self.uncertainty['global'] = False
-            else:
-                import re
-                import random
-                from rmgpy.tools.canteraModel import Cantera
-                from rmgpy.tools.muq import ReactorPCEFactory
-
         # Run sensitivity analysis post-model generation if sensitivity analysis is on
         for index, reactionSystem in enumerate(self.reactionSystems):
 
@@ -989,6 +977,24 @@ class RMG(util.Subject):
                 )
 
                 plot_sensitivity(self.outputDirectory, index, reactionSystem.sensitiveSpecies, number=number)
+
+        self.run_uncertainty_analysis()
+
+    def run_uncertainty_analysis(self):
+        """
+        Run uncertainty analysis if proper settings are available.
+        """
+        if self.uncertainty is not None and self.uncertainty['global']:
+            try:
+                import libmuqModelling
+            except ImportError:
+                logging.error('Unable to import MUQ. Skipping global uncertainty analysis.')
+                self.uncertainty['global'] = False
+            else:
+                import re
+                import random
+                from rmgpy.tools.canteraModel import Cantera
+                from rmgpy.tools.muq import ReactorPCEFactory
 
         if self.uncertainty is not None and self.uncertainty['local']:
             correlation = []
