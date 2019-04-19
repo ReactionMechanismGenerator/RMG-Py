@@ -599,7 +599,6 @@ class Uncertainty:
 
         from rmgpy.solver import SimpleReactor, TerminationTime
         from rmgpy.quantity import Quantity
-        from rmgpy.tools.simulate import plot_sensitivity
         from rmgpy.rmg.listener import SimulationProfileWriter, SimulationProfilePlotter
         from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
         T = Quantity(T)

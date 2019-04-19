@@ -32,49 +32,13 @@ import os.path
 import logging
 from time import time
 
+import rmgpy.util as util
+from rmgpy.kinetics.diffusionLimited import diffusionLimiter
 from rmgpy.rmg.listener import SimulationProfileWriter, SimulationProfilePlotter
-from .loader import loadRMGJob
-import rmgpy.util as util 
-from rmgpy.tools.plot import ReactionSensitivityPlot, ThermoSensitivityPlot
 from rmgpy.rmg.settings import ModelSettings
 from rmgpy.solver.liquid import LiquidReactor
-from rmgpy.kinetics.diffusionLimited import diffusionLimiter
-
-def plot_sensitivity(outputDirectory, reactionSystemIndex, sensitiveSpeciesList, number=10, fileformat='.png'):
-    """
-    A function for plotting the top reaction thermo sensitivities (the number is 
-    inputted as the variable `number`) in bar plot format.
-    To be called after running a simulation on a particular reactionSystem.
-    """
-    
-    for species in sensitiveSpeciesList:
-        csvFile = os.path.join(
-            outputDirectory,
-            'solver',
-            'sensitivity_{0}_SPC_{1}.csv'.format(
-                reactionSystemIndex + 1, species.index
-                )
-            )
-        
-        reactionPlotFile = os.path.join(
-            outputDirectory,
-            'solver',
-            'sensitivity_{0}_SPC_{1}_reactions'.format(
-                reactionSystemIndex + 1, species.index
-                ) + fileformat
-            )
-        
-        thermoPlotFile = os.path.join(
-            outputDirectory,
-            'solver',
-            'sensitivity_{0}_SPC_{1}_thermo'.format(
-                reactionSystemIndex + 1, species.index
-                ) + fileformat
-            )
-
-        ReactionSensitivityPlot(csvFile=csvFile, numReactions=number).barplot(reactionPlotFile)
-        ThermoSensitivityPlot(csvFile=csvFile, numSpecies=number).barplot(thermoPlotFile)
-
+from rmgpy.tools.loader import loadRMGJob
+from rmgpy.tools.plot import plot_sensitivity
 
 
 def simulate(rmg, diffusionLimited=True):

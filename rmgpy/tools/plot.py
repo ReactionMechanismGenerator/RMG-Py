@@ -28,14 +28,54 @@
 #                                                                             #
 ###############################################################################
 
+import os
+
 import matplotlib as mpl
 # Force matplotlib to not use any Xwindows backend.
 # This must be called before pylab, matplotlib.pyplot, or matplotlib.backends is imported
 mpl.use('Agg')
 import matplotlib.pyplot as plt
-from rmgpy.tools.data import GenericData
 import numpy
-        
+
+from rmgpy.tools.data import GenericData
+
+
+def plot_sensitivity(outputDirectory, reactionSystemIndex, sensitiveSpeciesList, number=10, fileformat='.png'):
+    """
+    A function for plotting the top reaction thermo sensitivities (the number is
+    inputted as the variable `number`) in bar plot format.
+    To be called after running a simulation on a particular reactionSystem.
+    """
+
+    for species in sensitiveSpeciesList:
+        csvFile = os.path.join(
+            outputDirectory,
+            'solver',
+            'sensitivity_{0}_SPC_{1}.csv'.format(
+                reactionSystemIndex + 1, species.index
+            )
+        )
+
+        reactionPlotFile = os.path.join(
+            outputDirectory,
+            'solver',
+            'sensitivity_{0}_SPC_{1}_reactions'.format(
+                reactionSystemIndex + 1, species.index
+            ) + fileformat
+        )
+
+        thermoPlotFile = os.path.join(
+            outputDirectory,
+            'solver',
+            'sensitivity_{0}_SPC_{1}_thermo'.format(
+                reactionSystemIndex + 1, species.index
+            ) + fileformat
+        )
+
+        ReactionSensitivityPlot(csvFile=csvFile, numReactions=number).barplot(reactionPlotFile)
+        ThermoSensitivityPlot(csvFile=csvFile, numSpecies=number).barplot(thermoPlotFile)
+
+
 def parseCSVData(csvFile):
     """
     This function parses a typical csv file outputted from a simulation or
@@ -108,12 +148,14 @@ def parseCSVData(csvFile):
         
     return time, dataList
 
+
 def findNearest(array, value):
     """
     Returns the index of the closest value in a sorted array
     """
     idx = (numpy.abs(array-value)).argmin()
     return idx
+
 
 def linearlyInterpolatePoint(xArray, yArray, xValue):
     """
@@ -140,6 +182,7 @@ def linearlyInterpolatePoint(xArray, yArray, xValue):
     else:
         yValue=yArray[lowerIndex]+dydx*(xValue-xArray[lowerIndex])
     return yValue
+
 
 class GenericPlot(object):
     """
