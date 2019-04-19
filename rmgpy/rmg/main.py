@@ -1923,7 +1923,8 @@ def initializeLog(verbose, log_file_name):
 
     # create file handler
     if os.path.exists(log_file_name):
-        backup = os.path.join(log_file_name[:-7], 'RMG_backup.log')
+        name, ext = os.path.splitext(log_file_name)
+        backup = name + '_backup' + ext
         if os.path.exists(backup):
             logging.info("Removing old "+backup)
             os.remove(backup)
