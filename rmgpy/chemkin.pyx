@@ -1954,7 +1954,7 @@ def saveChemkinFile(path, species, reactions, verbose = True, checkForDuplicates
 
     # Thermodynamics section
     f.write('THERM ALL\n')
-    f.write('    300.000  1000.000  5000.000\n\n')
+    f.write('   300.000  1000.000  5000.000\n\n')
     for spec in sorted_species:
         f.write(writeThermoEntry(spec, verbose=verbose))
         f.write('\n')
