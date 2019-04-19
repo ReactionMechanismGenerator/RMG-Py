@@ -35,6 +35,7 @@ from time import time
 import rmgpy.util as util
 from rmgpy.kinetics.diffusionLimited import diffusionLimiter
 from rmgpy.rmg.listener import SimulationProfileWriter, SimulationProfilePlotter
+from rmgpy.rmg.main import initializeLog
 from rmgpy.rmg.settings import ModelSettings
 from rmgpy.solver.liquid import LiquidReactor
 from rmgpy.tools.loader import loadRMGJob
@@ -86,6 +87,9 @@ def simulate(rmg, diffusionLimited=True):
             # Store constant species indices
             if reactionSystem.constSPCNames is not None:
                 reactionSystem.get_constSPCIndices(rmg.reactionModel.core.species)
+        elif rmg.uncertainty is not None:
+            rmg.verboseComments = True
+            rmg.loadDatabase()
         
         reactionSystem.simulate(
             coreSpecies=rmg.reactionModel.core.species,
@@ -103,14 +107,20 @@ def simulate(rmg, diffusionLimited=True):
         
         if reactionSystem.sensitiveSpecies:
             plot_sensitivity(rmg.outputDirectory, index, reactionSystem.sensitiveSpecies)
+            rmg.run_uncertainty_analysis()
+
 
 def run_simulation(inputFile, chemkinFile, dictFile, diffusionLimited=True, checkDuplicates=True):
     """
     Runs a standalone simulation of RMG.  Runs sensitivity analysis if sensitive species are given.
+    Also runs uncertainty analysis if uncertainty options block is present in input file.
+
     diffusionLimited=True implies that if it is a liquid reactor diffusion limitations will be enforced
     otherwise they will not be in a liquid reactor
     """
-    
+    output_dir = os.path.abspath(os.path.dirname(inputFile))
+    initializeLog(logging.INFO, os.path.join(output_dir, 'simulate.log'))
+
     rmg = loadRMGJob(inputFile, chemkinFile, dictFile, generateImages=False, checkDuplicates=checkDuplicates)
     
     start_time = time()
@@ -118,4 +128,4 @@ def run_simulation(inputFile, chemkinFile, dictFile, diffusionLimited=True, chec
     simulate(rmg,diffusionLimited)
     end_time = time()
     time_taken = end_time - start_time
-    print "Simulation took {0} seconds".format(time_taken)
+    logging.info("Simulation took {0} seconds".format(time_taken))
