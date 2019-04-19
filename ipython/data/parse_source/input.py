@@ -1,8 +1,8 @@
 # Data sources
 database(
     thermoLibraries = ['primaryThermoLibrary'],
-    reactionLibraries = [('C3', False)],
-    seedMechanisms = ['GRI-Mech3.0'],
+    reactionLibraries = [],
+    seedMechanisms = [],
     kineticsDepositories = ['training'],
     kineticsFamilies = 'default',
     kineticsEstimator = 'rate rules',
@@ -15,27 +15,24 @@ species(
     structure=SMILES("CC"),
 )
 
-species(
-    label='N2',
-    reactive=False,
-    structure=adjacencyList("""
-    1 N u0 p1 c0 {2,T}
-    2 N u0 p1 c0 {1,T}
-    """),
-)
-
 # Reaction systems
 simpleReactor(
     temperature=(1350,'K'),
     pressure=(1.0,'bar'),
     initialMoleFractions={
-        "ethane": 0.1,
-        "N2": 0.9
+        "ethane": 1.0,
     },
     terminationConversion={
         'ethane': 0.9,
     },
-    terminationTime=(1e6,'s'),
+    terminationTime=(1e2,'s'),
+    sensitivity=['ethane'],
+)
+
+uncertainty(
+    localAnalysis=True,
+    globalAnalysis=True,
+    pceRunTime=60,
 )
 
 simulator(
@@ -57,15 +54,4 @@ options(
     generatePlots=False,
     saveEdgeSpecies=True,
     saveSimulationProfiles=True,
-    verboseComments=True,
 )
-
-pressureDependence(
-    method='modified strong collision',
-    maximumGrainSize=(0.5,'kcal/mol'),
-    minimumNumberOfGrains=250,
-    temperatures=(300,2200,'K',2),
-    pressures=(0.01,100,'bar',3),
-    interpolation=('Chebyshev', 6, 4),
-    maximumAtoms=15,
- )
