@@ -1465,7 +1465,7 @@ class KineticsFamily(Database):
                 # For groups, we ignore the product template for a purely aromatic group
                 # If there is an analagous aliphatic group in the family, then the product template will be identical
                 # There should NOT be any families that consist solely of aromatic reactant templates
-                return []
+                return ([], []) if return_adjacency_lists else [] # (though I doubt this is ever called with return_adjacency_lists=True for a Group not a Molecule)
 
         if not forward:
             # Hardcoding of reaction family for reverse of peroxyl disproportionation
@@ -1727,7 +1727,10 @@ class KineticsFamily(Database):
 
         # Generate the product structures by applying the forward reaction recipe
         try:
-            product_structures, reaction_adjacency_lists = self.apply_recipe(reactant_structures, forward=forward, relabel_atoms=relabel_atoms, return_adjacency_lists=True)
+            if return_adjacency_lists:
+                product_structures, reaction_adjacency_lists = self.apply_recipe(reactant_structures, forward=forward, relabel_atoms=relabel_atoms, return_adjacency_lists=True)
+            else:
+                product_structures = self.apply_recipe(reactant_structures, forward=forward, relabel_atoms=relabel_atoms, return_adjacency_lists=False)
             if not product_structures:
                 return (None, None) if return_adjacency_lists else None
         except (InvalidActionError, KekulizationError):
@@ -2073,6 +2076,8 @@ class KineticsFamily(Database):
                 specified reactants and products within this family.
             Degenerate reactions are returned as separate reactions.
         """
+        from rmgpy.rmg.input import get_input
+        save_adjacency_lists = get_input('generate_labeled_reactions')
 
         rxn_list = []
 
@@ -2121,15 +2126,20 @@ class KineticsFamily(Database):
                     for mapping in mappings:
                         reactant_structures = [molecule]
                         try:
-                            product_structures, reaction_adjacency_list = self._generate_product_structures(reactant_structures,
+                            if save_adjacency_lists:
+                                product_structures, reaction_adjacency_list = self._generate_product_structures(reactant_structures,
                                                                                    [mapping], forward, relabel_atoms, return_adjacency_lists=True)
+                            else:
+                                product_structures = self._generate_product_structures(reactant_structures,
+                                                                                   [mapping], forward, relabel_atoms, return_adjacency_lists=False)
                         except ForbiddenStructureException:
                             pass
                         else:
                             if product_structures is not None:
                                 rxn = self._create_reaction(reactant_structures, product_structures, forward)
                                 if rxn:
-                                    rxn.adjacency_list = reaction_adjacency_list
+                                    if save_adjacency_lists:
+                                        rxn.adjacency_list = reaction_adjacency_list
                                     rxn_list.append(rxn)
 
         # Bimolecular reactants: A + B --> products
@@ -2164,15 +2174,20 @@ class KineticsFamily(Database):
                                 # that can produce different products depending on the order of reactants
                                 reactant_structures = [molecule_b, molecule_a]
                                 try:
-                                    product_structures, reaction_adjacency_list = self._generate_product_structures(reactant_structures,
-                                                                                           [map_b, map_a], forward, relabel_atoms,return_adjacency_lists=True)
+                                    if save_adjacency_lists:
+                                        product_structures, reaction_adjacency_list = self._generate_product_structures(reactant_structures,
+                                                                                           [map_b, map_a], forward, rrelabel_atoms, eturn_adjacency_lists=True)
+                                    else:
+                                        product_structures = self._generate_product_structures(reactant_structures,
+                                                                                           [map_b, map_a], forward, relabel_atoms, return_adjacency_lists=False)
                                 except ForbiddenStructureException:
                                     pass
                                 else:
                                     if product_structures is not None:
                                         rxn = self._create_reaction(reactant_structures, product_structures, forward)
                                         if rxn:
-                                            rxn.adjacency_list = reaction_adjacency_list
+                                            if save_adjacency_lists:
+                                                rxn.adjacency_list = reaction_adjacency_list
                                             rxn_list.append(rxn)
 
                         # Only check for swapped reactants if they are different
@@ -2187,8 +2202,12 @@ class KineticsFamily(Database):
                                 for map_b in mappings_b:
                                     reactant_structures = [molecule_a, molecule_b]
                                     try:
-                                        product_structures, reaction_adjacency_list = self._generate_product_structures(reactant_structures,
+                                        if save_adjacency_lists:
+                                            product_structures, reaction_adjacency_list = self._generate_product_structures(reactant_structures,
                                                                                                [map_a, map_b], forward, relabel_atoms, return_adjacency_lists=True)
+                                        else:
+                                            product_structures = self._generate_product_structures(reactant_structures,
+                                                                                               [map_a, map_b], forward, relabel_atoms, return_adjacency_lists=False)
                                     except ForbiddenStructureException:
                                         pass
                                     else:
@@ -2196,7 +2215,8 @@ class KineticsFamily(Database):
                                             rxn = self._create_reaction(reactant_structures, product_structures,
                                                                         forward)
                                             if rxn:
-                                                rxn.adjacency_list = reaction_adjacency_list
+                                                if save_adjacency_lists:
+                                                    rxn.adjacency_list = reaction_adjacency_list
                                                 rxn_list.append(rxn)
 
         # Termolecular reactants: A + B + C --> products
@@ -2244,18 +2264,25 @@ class KineticsFamily(Database):
                         reactant_structures = [site1, site2, adsorbateMolecule]
                         # should be in same order as reaction template recipe?
                         try:
-                            product_structures, reaction_adjacency_list = self._generate_product_structures(reactant_structures,
+                            if save_adjacency_lists:
+                                product_structures, reaction_adjacency_list = self._generate_product_structures(reactant_structures,
                                                                                    [map_a, map_b, map_c],
                                                                                    forward,
                                                                                    relabel_atoms,
                                                                                    return_adjacency_lists=True)
+                            else:
+                                product_structures = self._generate_product_structures(reactant_structures,
+                                                            [map_a, map_b, map_c],
+                                                            forward,
+                                                            return_adjacency_lists=False)
                         except ForbiddenStructureException:
                             pass
                         else:
                             if product_structures is not None:
                                 rxn = self._create_reaction(reactant_structures, product_structures, forward)
                                 if rxn:
-                                    rxn.adjacency_list = reaction_adjacency_list
+                                    if save_adjacency_lists:
+                                        rxn.adjacency_list = reaction_adjacency_list
                                     rxn_list.append(rxn)
             else:
                 # _generate_reactions was called with mismatched number of reactants and templates
@@ -2314,20 +2341,26 @@ class KineticsFamily(Database):
                     for map_a, map_b, map_c in itertools.product(mappings_a, mappings_b, mappings_c):
                         reactant_structures = [site1, site2, adsorbateMolecule]
                         try:
-                            product_structures, reaction_adjacency_list = self._generate_product_structures(reactant_structures,
+                            if save_adjacency_lists:
+                                product_structures, reaction_adjacency_list = self._generate_product_structures(reactant_structures,
                                                                                    [map_a, map_b, map_c],
                                                                                    forward,
                                                                                    relabel_atoms,
                                                                                    return_adjacency_lists=True)
+                            else:
+                                product_structures = self._generate_product_structures(reactant_structures,
+                                                                                   [map_a, map_b, map_c],
+                                                                                   forward,
+                                                                                   return_adjacency_lists=False)
                         except ForbiddenStructureException:
                             pass
                         else:
                             if product_structures is not None:
                                 rxn = self._create_reaction(reactant_structures, product_structures, forward)
                                 if rxn:
-                                    rxn.adjacency_list = reaction_adjacency_list
+                                    if save_adjacency_lists:
+                                        rxn.adjacency_list = reaction_adjacency_list
                                     rxn_list.append(rxn)
-
             else:
                 """
                 Not a bidentate surface reaction, just a gas-phase
@@ -2361,12 +2394,20 @@ class KineticsFamily(Database):
                                             _reactantStructures = [_reactantStructures[_i] for _i in order]
                                             _maps = [_maps[_i] for _i in order]
                                             try:
-                                                _productStructures, _reaction_adjacency_list = self._generate_product_structures(
-                                                    _reactantStructures,
-                                                    _maps,
-                                                    forward,
-                                                    relabel_atoms,
-                                                    return_adjacency_lists=True)
+                                                if save_adjacency_lists:
+                                                    _productStructures, _reaction_adjacency_list = self._generate_product_structures(
+                                                        _reactantStructures,
+                                                        _maps,
+                                                        forward,
+                                                        relabel_atoms, 
+                                                        return_adjacency_lists=True)
+                                                else:
+                                                    _productStructures = self._generate_product_structures(
+                                                        _reactantStructures,
+                                                        _maps,
+                                                        forward,
+                                                        relabel_atoms, 
+                                                        return_adjacency_lists=False)
                                             except ForbiddenStructureException:
                                                 pass
                                             else:
@@ -2375,7 +2416,8 @@ class KineticsFamily(Database):
                                                                                  _productStructures,
                                                                                  forward)
                                                     if _rxn:
-                                                        _rxn.adjacency_list = _reaction_adjacency_list
+                                                        if save_adjacency_lists:
+                                                            _rxn.adjacency_list = _reaction_adjacency_list
                                                         rxn_list.append(_rxn)
 
                             # Reactants stored as A + B + C
