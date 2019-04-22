@@ -1,11 +1,17 @@
 # Data sources
 database(
-    thermoLibraries=['surfaceThermo', 'primaryThermoLibrary', 'thermo_DFT_CCSDTF12_BAC'],
+    thermoLibraries=['surfaceThermoPt', 'primaryThermoLibrary', 'thermo_DFT_CCSDTF12_BAC'],
     reactionLibraries = [('Surface/Deutschmann_Ni', True)],
     seedMechanisms = [],
     kineticsDepositories = ['training'],
-    kineticsFamilies = 'default',
+    kineticsFamilies = ['surface','default'],
     kineticsEstimator = 'rate rules',
+    bindingEnergies = { # default values for Pt(111)
+                       'H':(-2.479, 'eV/molecule'),
+                       'O':(-3.586, 'eV/molecule'),
+                       'C':(-6.750, 'eV/molecule'),
+                       'N':(-4.352, 'eV/molecule'),
+                       },
 )
 
 # List of species
