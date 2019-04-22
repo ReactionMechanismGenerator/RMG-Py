@@ -1012,9 +1012,12 @@ class RMG(util.Subject):
                 logging.info('Reloading kinetics families with verbose comments for uncertainty analysis...')
                 self.database.kinetics.loadFamilies(os.path.join(self.databaseDirectory, 'kinetics', 'families'),
                                                     self.kineticsFamilies, self.kineticsDepositories)
+                # Temporarily remove species constraints for the training reactions
+                self.speciesConstraints, speciesConstraintsCopy = {}, self.speciesConstraints
                 for family in self.database.kinetics.families.itervalues():
                     family.addKineticsRulesFromTrainingSet(thermoDatabase=self.database.thermo)
                     family.fillKineticsRulesByAveragingUp(verbose=True)
+                self.speciesConstraints = speciesConstraintsCopy
 
             for correlated in correlation:
                 uncertainty.assignParameterUncertainties(correlated=correlated)
