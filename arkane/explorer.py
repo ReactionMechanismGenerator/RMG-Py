@@ -278,7 +278,7 @@ class ExplorerJob(object):
                         warns.append('Reaction {0} in the input file was not included in the reduced model.'.format(rxn))
 
         self.networks = networks
-        for network in self.networks:
+        for p,network in enumerate(self.networks):
             self.pdepjob.network = network
 
             if len(self.networks) > 1:
@@ -289,6 +289,8 @@ class ExplorerJob(object):
                 stot = outputFile
 
             self.pdepjob.execute(stot, plot, format='pdf', print_summary=True)
+            if os.path.isfile('network.pdf'):
+                os.rename('network.pdf','network'+str(p)+'.pdf')
 
             if warns != []:
                 logging.info('\nOUTPUT WARNINGS:\n')
