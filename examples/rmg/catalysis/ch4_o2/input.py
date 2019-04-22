@@ -6,10 +6,11 @@ database(
     kineticsDepositories = ['training'],
     kineticsFamilies = ['surface','default'],
     kineticsEstimator = 'rate rules',
-    bindingEnergies = {
-                       'C':(-6.364, 'eV/molecule'), # Pt(111)
-                       'H':(-2.778, 'eV/molecule'), # UNKNOWN! (Using Ni value from Blaylock)
-                       'O':(-3.481, 'eV/molecule'), # Pt(111)
+    bindingEnergies = { # default values for Pt(111)
+                       'H':(-2.479, 'eV/molecule'),
+                       'O':(-3.586, 'eV/molecule'),
+                       'C':(-6.750, 'eV/molecule'),
+                       'N':(-4.352, 'eV/molecule'),
                        },
 )
 
@@ -18,7 +19,6 @@ species(
     reactive=True,
     structure=SMILES("[CH4]"),
 )
-
 
 species(
    label='O2',
@@ -36,7 +36,6 @@ species(
     structure=SMILES("N#N"),
 )
 
-#-------
 species(
     label='vacantX',
     reactive=True,
@@ -70,7 +69,7 @@ model(
     toleranceKeepInEdge=0.0,
     toleranceMoveToCore=1e-5,
     toleranceInterruptSimulation=0.1,
-    maximumEdgeSpecies=100000
+    maximumEdgeSpecies=100000,
 )
 
 options(
