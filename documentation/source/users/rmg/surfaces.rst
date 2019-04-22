@@ -4,14 +4,17 @@
 Heterogeneous Catalysis Systems and Surface Reactions
 *****************************************************
 
+RMG can now be used to study heterogenous catalysis and surface reactions.
+Initially developed in a fork of RMG called RMG-Cat ([Goldsmith2017]_),
+this is now a part of the main RMG software.
 Several surface specific features need to be considered when setting up an input file 
-for RMG-Cat reaction mechanism generation, as they cause certain aspects of it to 
+for surface reaction mechanism generation, as they cause certain aspects of it to 
 deviate from the standard gas-phase RMG input file.
 
 
 Reactor specifications
 ========================
-Firstly, RMG-Cat can model constant temperature and volume systems for surface reactions. 
+For surface chemistry, RMG can model constant temperature and volume systems. 
 The temperature, initial pressure, initial mole fractions of the reactant species, 
 initial surface coverages, 
 catalytic surface area to volume ratio in the reactor, 
@@ -46,19 +49,6 @@ The following is an example of a surface reactor system for catalytic combustion
         terminationRateRatio=0.01
     )
 
-It is also required to provide the adsorption energies of C, N, O and H on the surface 
-being investigated in the input file for RMG-Cat to generate a mechanism. 
-This enables the application of linear scaling relations (LSRs), as described below.
-The following is an example using the default binding energies of the four atoms on Pt(111).
-Deviating from these values will result in adsorption energies taken from the 
-thermochemistry libraries being modified::
-
-    bindingEnergies = { # default values for Pt(111)
-                       'H':(-2.479, 'eV/molecule'),
-                       'O':(-3.586, 'eV/molecule'),
-                       'C':(-6.750, 'eV/molecule'),
-                       'N':(-4.352, 'eV/molecule'),
-                       }
                        
 Adsorbate representation
 -------------------------
@@ -112,10 +102,11 @@ Thermochemistry
 RMG will first check thermochemistry libraries for adsorbates.
 Failing that, the gas phase thermochemistry will be used and an adsortion correction added.
 The gas phase thermochemistry will be estimated using the methods specified for regular
-species (libraries, automated quantum mechanics, machine learning, group additivity, etc.)
+gas phase species (libraries, automated quantum mechanics, machine learning, group additivity, etc.)
+and the adsorption correction estimated as described below.
 Finally, the adsorbed species will have its energy changed using linear scaling relationships,
 to allow for metals other than Platinum(111) to be simulated.
-These methods are described below.
+These methods are all described below.
 
 Use of thermo libraries for surface systems
 ---------------------------------------------
@@ -237,6 +228,20 @@ Therefore, having this implemented in RMG-Cat allows for independent model gener
 By effect it enables the expedient, high-throughput screening of catalysts for any surface 
 catalyzed reaction of interest ([Mazeau2019]_).
 
+
+Because of this feature,
+it is required to provide the adsorption energies of C, N, O and H on the surface 
+being investigated in the input file for RMG-Cat to generate a mechanism. 
+The following is an example using the default binding energies of the four atoms on Pt(111).
+Deviating from these values will result in adsorption energies being modified, 
+even for species taken from the thermochemistry libraries::
+
+    bindingEnergies = { # default values for Pt(111)
+                       'H':(-2.479, 'eV/molecule'),
+                       'O':(-3.586, 'eV/molecule'),
+                       'C':(-6.750, 'eV/molecule'),
+                       'N':(-4.352, 'eV/molecule'),
+                       }
 
 
 Reactions and kinetics
