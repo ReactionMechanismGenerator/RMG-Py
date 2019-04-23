@@ -257,7 +257,12 @@ class Arkane:
             # write each species in species block
             for job in self.jobList:
                 if isinstance(job, ThermoJob):
-                    f.write(job.species.toChemkin())
+                    f.write(job.species.label)
+                    if len(job.species.label) > 16:
+                        f.write('   ! species label is longer than chemkin supports. Consider shortening it.')
+                        logging.warning('Species {} has a label {} char longer '\
+                                        'than chemkin supports. Consider '\
+                                        'shortening it.'.format(job.species.label, len(job.species.label) - 16))
                     f.write('\n')
 
             f.write('\nEND\n\n\n\n')

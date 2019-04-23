@@ -1683,8 +1683,7 @@ def writeKineticsEntry(reaction, speciesList, verbose=True, javaLibrary=False, c
     
     kinetics = reaction.kinetics
     numReactants = len(reaction.reactants)
-    reaction_string = writeReactionString(reaction, javaLibrary, use_label = use_label)
-    
+    reaction_string = writeReactionString(reaction, javaLibrary, use_label=use_label)
     string += '{0!s:<51} '.format(reaction_string)
 
     if isinstance(kinetics, _kinetics.StickingCoefficient):

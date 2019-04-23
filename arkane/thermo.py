@@ -193,7 +193,7 @@ class ThermoJob(object):
                     elementCounts = {'C': 0, 'H': 0}
         else:
             elementCounts = {'C': 0, 'H': 0}
-        chemkin_thermo_string = writeThermoEntry(species, elementCounts=elementCounts, verbose=True)
+        chemkin_thermo_string = writeThermoEntry(species, elementCounts=elementCounts, verbose=True, use_label=True)
         f.write('{0}\n'.format(chemkin_thermo_string))
         f.close()
 
