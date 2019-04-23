@@ -1732,7 +1732,7 @@ def write_reaction_string(reaction, java_library=False):
 
     if kinetics is None:
         reaction_string = ' + '.join([get_species_identifier(reactant) for reactant in reaction.reactants])
-        reaction_string += ' => ' if not reaction.reversible else ' = '
+        reaction_string += ' <=> ' if reaction.reversible else ' => '
         reaction_string += ' + '.join([get_species_identifier(product) for product in reaction.products])
         return reaction_string
 
@@ -1777,7 +1777,7 @@ def write_reaction_string(reaction, java_library=False):
 
         reaction_string = '+'.join([get_species_identifier(reactant) for reactant in reaction.reactants])
         reaction_string += third_body
-        reaction_string += '=' if reaction.reversible else '=>'
+        reaction_string += '<=>' if reaction.reversible else '=>'
         reaction_string += '+'.join([get_species_identifier(product) for product in reaction.products])
         reaction_string += third_body
 
