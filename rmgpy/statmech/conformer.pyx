@@ -50,9 +50,9 @@ from rmgpy.exceptions import StatmechError
 
 cdef class Conformer(RMGObject):
     """
-    A representation of an individual molecular conformation. The attributes 
+    A representation of an individual molecular conformation. The attributes
     are:
-    
+
     =================== ========================================================
     Attribute           Description
     =================== ========================================================
@@ -64,11 +64,11 @@ cdef class Conformer(RMGObject):
     `mass`              An array of masses of each atom in the conformer
     `coordinates`       An array of 3D coordinates of each atom in the conformer
     =================== ========================================================
-    
+
     Note that the `spinMultiplicity` reflects the electronic mode of the
-    molecular system.    
+    molecular system.
     """
-    
+
     def __init__(self, E0=None, modes=None, spinMultiplicity=1, opticalIsomers=1, number=None, mass=None, coordinates=None):
         self.E0 = E0
         self.modes = modes or []
@@ -90,13 +90,13 @@ cdef class Conformer(RMGObject):
             result += ', opticalIsomers={0:d}'.format(self.opticalIsomers)
         result += ')'
         return result
-    
+
     def __reduce__(self):
         """
         A helper function used when pickling a Conformer object.
         """
         return (Conformer, (self.E0, self.modes, self.spinMultiplicity, self.opticalIsomers, self.number, self.mass, self.coordinates))
-    
+
     property E0:
         """The ground-state energy (including zero-point energy) of the conformer."""
         def __get__(self):
@@ -158,7 +158,7 @@ cdef class Conformer(RMGObject):
         for mode in self.modes:
             H += mode.getEnthalpy(T)
         return H
-    
+
     cpdef double getEntropy(self, double T) except -100000000:
         """
         Return the entropy in J/mol*K for the system at the specified
@@ -176,7 +176,7 @@ cdef class Conformer(RMGObject):
         temperature `T` in K.
         """
         return self.getEnthalpy(T) - T * self.getEntropy(T)
-        
+
     cpdef numpy.ndarray getSumOfStates(self, numpy.ndarray Elist):
         """
         Return the sum of states :math:`N(E)` at the specified energies `Elist`
@@ -185,9 +185,9 @@ cdef class Conformer(RMGObject):
         cdef numpy.ndarray sumStates = None
         cdef Mode mode
         for mode in self.modes:
-            sumStates = mode.getSumOfStates(Elist, sumStates)        
+            sumStates = mode.getSumOfStates(Elist, sumStates)
         return sumStates * self.spinMultiplicity * self.opticalIsomers
-        
+
     cpdef numpy.ndarray getDensityOfStates(self, numpy.ndarray Elist):
         """
         Return the density of states :math:`\\rho(E) \\ dE` at the specified
@@ -203,7 +203,7 @@ cdef class Conformer(RMGObject):
 
     cpdef double getTotalMass(self, atoms=None) except -1:
         """
-        Calculate and return the total mass of the atoms in the conformer in 
+        Calculate and return the total mass of the atoms in the conformer in
         kg. If a list `atoms` of atoms is specified, only those atoms will
         be used to calculate the center of mass. Otherwise, all atoms will be
         used.
@@ -217,25 +217,25 @@ cdef class Conformer(RMGObject):
     cpdef numpy.ndarray getCenterOfMass(self, atoms=None):
         """
         Calculate and return the [three-dimensional] position of the center of
-        mass of the conformer in m. If a list `atoms` of atoms is specified, 
-        only those atoms will be used to calculate the center of mass. 
+        mass of the conformer in m. If a list `atoms` of atoms is specified,
+        only those atoms will be used to calculate the center of mass.
         Otherwise, all atoms will be used.
         """
         cdef numpy.ndarray[numpy.float64_t,ndim=1] mass
         cdef numpy.ndarray[numpy.float64_t,ndim=2] coordinates
         cdef double totalMass
         cdef int atom
-        
+
         mass = self._mass.value_si
         coordinates = self._coordinates.value_si
-        
+
         if atoms is None: atoms = range(1, mass.shape[0]+1)
         center = numpy.zeros(3); totalMass = 0.0
         for atom in atoms:
             center += mass[atom-1] * coordinates[atom-1,:]
             totalMass += mass[atom-1]
         center /= totalMass
-        
+
         return center
 
     cpdef getNumberDegreesOfFreedom(self):
@@ -245,7 +245,7 @@ cdef class Conformer(RMGObject):
         """
         cdef int N, Natoms, expectedDegreesOfFreedom
         cdef Mode mode
-        N = 0 
+        N = 0
         for mode in self.modes:
             if isinstance(mode, HinderedRotor):
                 N += 1
@@ -254,31 +254,33 @@ cdef class Conformer(RMGObject):
             elif isinstance(mode, IdealGasTranslation):
                 # found the translational degrees of freedom
                 N += 3
-            elif type(mode) == NonlinearRotor: 
-                N += 3  
+            elif type(mode) == NonlinearRotor:
+                N += 3
             elif type(mode) == LinearRotor:
                 N += 2
             elif type(mode) == KRotor:
                 N += 1
             elif type(mode) == SphericalTopRotor:
                 N += 3
+            elif hasattr(mode,'dof'):
+                N += mode.dof
             else:
                 raise TypeError("Mode type {0!r} not supported".format(mode))
-        
+
         if self.mass:
             Natoms =  len(self.mass.value)
             # what the total number of degrees of freedom for the species should be
             expectedDegreesOfFreedom = Natoms * 3
             if N != expectedDegreesOfFreedom:
-                raise ValueError('The total degrees of molecular freedom for this species should be {0}'.format(expectedDegreesOfFreedom))          
+                raise ValueError('The total degrees of molecular freedom for this species should be {0}'.format(expectedDegreesOfFreedom))
 
         return N
-    
+
     @cython.boundscheck(False)
     @cython.wraparound(False)
     cpdef numpy.ndarray getMomentOfInertiaTensor(self):
         """
-        Calculate and return the moment of inertia tensor for the conformer 
+        Calculate and return the moment of inertia tensor for the conformer
         in kg*m^2. If the coordinates are not at the center of mass, they are
         temporarily shifted there for the purposes of this calculation.
         """
@@ -288,13 +290,13 @@ cdef class Conformer(RMGObject):
         cdef numpy.ndarray[numpy.float64_t,ndim=2] I
         cdef double m
         cdef int atom
-        
+
         mass = self._mass.value_si
         coordinates = self._coordinates.value_si
-        
+
         I = numpy.zeros((3,3), numpy.float64)
         centerOfMass = self.getCenterOfMass()
-        
+
         atoms = range(1, mass.shape[0]+1)
         for atom in atoms:
             m = mass[atom-1]
@@ -308,39 +310,39 @@ cdef class Conformer(RMGObject):
         I[1,0] = I[0,1]
         I[2,0] = I[0,2]
         I[2,1] = I[1,2]
-        
+
         return I
-    
+
     cpdef getPrincipalMomentsOfInertia(self):
         """
-        Calculate and return the principal moments of inertia and corresponding 
-        principal axes for the conformer. The moments of inertia are in 
+        Calculate and return the principal moments of inertia and corresponding
+        principal axes for the conformer. The moments of inertia are in
         kg*m^2, while the principal axes have unit length.
         """
         I0 = self.getMomentOfInertiaTensor()
         # Since I0 is real and symmetric, diagonalization is always possible
         I, V = numpy.linalg.eig(I0)
         return I, V
-    
+
     @cython.boundscheck(False)
     @cython.wraparound(False)
     cpdef double getInternalReducedMomentOfInertia(self, pivots, top1, option=3) except -1:
         """
         Calculate and return the reduced moment of inertia for an internal
-        torsional rotation around the axis defined by the two atoms in 
+        torsional rotation around the axis defined by the two atoms in
         `pivots`. The list `top1` contains the atoms that should be considered
         as part of the rotating top; this list should contain the pivot atom
         connecting the top to the rest of the molecule.    The procedure used is
         that of Pitzer [1]_, which is described as :math:`I^{(2,option)}` by East
         and Radom [2]_. In this procedure, the molecule is divided into two
         tops: those at either end of the hindered rotor bond. The moment of
-        inertia of each top is evaluated using an axis determined by option. 
-        Finally, the reduced moment of inertia is evaluated from the moment of inertia 
-        of each top via the formula (I1*I2)/(I1+I2).  
-        
+        inertia of each top is evaluated using an axis determined by option.
+        Finally, the reduced moment of inertia is evaluated from the moment of inertia
+        of each top via the formula (I1*I2)/(I1+I2).
+
         Option corresponds to 3 possible ways of calculating the internal reduced moment of inertia
         as discussed in East and Radom [2]
-        
+
         +----------+---------------------------------------------------------------------------------------------------+
         |option = 1|moments of inertia of each rotating group calculated about the axis containing the twisting bond   |
         +----------+---------------------------------------------------------------------------------------------------+
@@ -350,11 +352,11 @@ cdef class Conformer(RMGObject):
         |option = 3|moments of inertia of each rotating group calculated about the axis passing through the            |
         |          |centers of mass of both groups                                                                     |
         +----------+---------------------------------------------------------------------------------------------------+
-        
+
         .. math:: \\frac{1}{I^{(2,option)}} = \\frac{1}{I_1} + \\frac{1}{I_2}
-        
+
         .. [1] Pitzer, K. S. *J. Chem. Phys.* **14**, p. 239-243 (1946).
-        
+
         .. [2] East, A. L. L. and Radom, L. *J. Chem. Phys.* **106**, p. 6655-6674 (1997).
         """
         cdef numpy.ndarray[numpy.float64_t,ndim=1] mass
@@ -362,10 +364,10 @@ cdef class Conformer(RMGObject):
         cdef numpy.ndarray[numpy.float64_t,ndim=1] top1CenterOfMass, top2CenterOfMass, coordPivot1, coordPivot2, axis
         cdef double I1, I2
         cdef int Natoms, atom
-        
+
         mass = self._mass.value_si
         coordinates = self._coordinates.value_si
-        
+
         # The total number of atoms in the geometry
         Natoms = mass.shape[0]
 
@@ -377,14 +379,14 @@ cdef class Conformer(RMGObject):
 
         # Enumerate atoms in other top
         top2 = [i+1 for i in range(Natoms) if i+1 not in top1]
-        
+
         #determine the axis/axes to calculate the moment of inertia about
         if option == 3:
-            
+
             # Determine centers of mass of each top
             top1CenterOfMass = self.getCenterOfMass(top1)
             top2CenterOfMass = self.getCenterOfMass(top2)
-            
+
             axis = (top1CenterOfMass - top2CenterOfMass)
             axis /= numpy.linalg.norm(axis)
             # Determine moments of inertia of each top
@@ -398,15 +400,15 @@ cdef class Conformer(RMGObject):
                 r2 = coordinates[atom-1,:] - top2CenterOfMass
                 r2 -= numpy.dot(r2, axis) * axis
                 I2 += mass[atom-1] * numpy.linalg.norm(r2)**2
-                          
+
         elif option == 2:
-            
+
             # Determine centers of mass of each top
             top1CenterOfMass = self.getCenterOfMass(top1)
             top2CenterOfMass = self.getCenterOfMass(top2)
             coordPivot1 = coordinates[pivots[0]-1,:]
             coordPivot2 = coordinates[pivots[1]-1,:]
-            
+
             axis = coordPivot1-coordPivot2
             axis /= numpy.linalg.norm(axis)
             # Determine moments of inertia of each top
@@ -420,14 +422,14 @@ cdef class Conformer(RMGObject):
                 r2 = coordinates[atom-1,:] - top2CenterOfMass
                 r2 -= numpy.dot(r2, axis) * axis
                 I2 += mass[atom-1] * numpy.linalg.norm(r2)**2
-            
+
         elif option == 1:
-            
+
             coordPivot1 = coordinates[pivots[0]-1,:]
             coordPivot2 = coordinates[pivots[1]-1,:]
             axis = coordPivot1-coordPivot2
             axis /= numpy.linalg.norm(axis)
-            
+
             # Determine moments of inertia of each top
             I1 = 0.0
             for atom in top1:
@@ -439,11 +441,11 @@ cdef class Conformer(RMGObject):
                 r2 = coordinates[atom-1,:] - coordPivot2
                 r2 -= numpy.dot(r2, axis) * axis
                 I2 += mass[atom-1] * numpy.linalg.norm(r2)**2
-                          
+
         else:
-            
+
             raise ValueError("option {0} unimplemented or non-existant".format(option))
-        
+
         return I1*I2/(I1+I2)
 
     @cython.boundscheck(False)
@@ -479,22 +481,22 @@ cdef class Conformer(RMGObject):
                 Krotor = KRotor(rotationalConstant=(A-B,"cm^-1"), symmetry=mode.symmetry)
 
         return Jrotor, Krotor
-    
+
     cpdef list getActiveModes(self, bint activeJRotor=False, bint activeKRotor=True):
         """
         Return a list of the active molecular degrees of freedom of the
         molecular system.
         """
         cdef list modes = []
-        
+
         for mode in self.modes:
             if isinstance(mode, IdealGasTranslation):
                 continue
             elif isinstance(mode, LinearRotor):
-                if activeJRotor: 
+                if activeJRotor:
                     modes.append(mode)
             elif isinstance(mode, NonlinearRotor):
-                if activeJRotor and activeKRotor: 
+                if activeJRotor and activeKRotor:
                     modes.append(mode)
                 elif not activeJRotor and activeKRotor:
                     Jrotor, Krotor = self.getSymmetricTopRotors()
@@ -512,10 +514,10 @@ cpdef double phi(double beta, int k, double E, logQ) except -10000000:
     Evaluate the value of the objective function used in the method of
     steepest descents to compute the sum and/or density of states from the
     partition function.
-    
+
     :param beta: The value of :math:`\\left( k_\\mathrm{B} T \\right)^{-1}`
                  in mol/J to evaluate the objective function at
-    :param k:    0 if computing the density of states, 1 if computing the sum 
+    :param k:    0 if computing the density of states, 1 if computing the sum
                  of states
     :param E:    The energy at which to compute the sum or density of states in
                  J/mol
@@ -538,7 +540,7 @@ def getDensityOfStatesForst(numpy.ndarray[numpy.float64_t,ndim=1] Elist, logQ, i
     ground state. The parameter `logQ` should be a callable object that accepts
     the current temperature in K as a parameter and returns the natural
     logarithm of the partition function at that temperature. The optional
-    `order` parameter indicates the order of the steepest descents 
+    `order` parameter indicates the order of the steepest descents
     approximation to apply (1 or 2); the first-order approximation is smoother,
     faster to compute, and generally accurate enough for most applications.
     """
@@ -546,26 +548,26 @@ def getDensityOfStatesForst(numpy.ndarray[numpy.float64_t,ndim=1] Elist, logQ, i
     cdef numpy.ndarray[numpy.float64_t,ndim=1] densStates, sumStates
     cdef double x, dx, v, E, dE
     cdef int i, k
-    
+
     if order != 1 and order != 2:
         raise ValueError('Invalid value {0} for order parameter; valid values are 1 or 2.'.format(order))
-    
+
     import scipy.optimize
     dE = Elist[1] - Elist[0]
-    
+
     densStates = numpy.zeros_like(Elist)
     sumStates = numpy.zeros_like(Elist)
-    
+
     # Initial guess for first minimization
     x = 1e-4
-    
+
     # Use method of steepest descents to compute sum of states
     k = 1
-    
+
     # Iterate over energies
     for i in range(1, Elist.shape[0]):
         E = Elist[i]
-        
+
         # Find minimum of phi  func x0  arg     xtol  ftol maxi  maxf fullout  disp retall  callback
         try:
             x = scipy.optimize.fmin(phi, x, (k, E, logQ), 1e-8, 1e-8, 100, 1000, False, False, False, None)
@@ -573,17 +575,17 @@ def getDensityOfStatesForst(numpy.ndarray[numpy.float64_t,ndim=1] Elist, logQ, i
             break
         x = float(x)
         dx = 1e-2 * x
-        
+
         # Evaluate derivatives needed for steepest descents approximation numerically
         d2fdx2 = (phi(x+dx, k, E, logQ) - 2 * phi(x, k, E, logQ) + phi(x-dx, k, E, logQ)) / (dx*dx)
-        
+
         # Apply first-order steepest descents approximation (accurate to 1-3%, smoother)
         v = phi(x, k, E, logQ)
         if k == 1:
             sumStates[i] = exp(v) / sqrt(2 * constants.pi * d2fdx2)
         else:
             densStates[i] = exp(v) / sqrt(2 * constants.pi * d2fdx2)
-        
+
         if order == 2:
             # Apply second-order steepest descents approximation (more accurate, less smooth)
             d3fdx3 = (phi(x+1.5*dx, k, E, logQ) - 3 * phi(x+0.5*dx, k, E, logQ) + 3 * phi(x-0.5*dx, k, E, logQ) - phi(x-1.5*dx, k, E, logQ)) / (dx**3)
@@ -592,9 +594,9 @@ def getDensityOfStatesForst(numpy.ndarray[numpy.float64_t,ndim=1] Elist, logQ, i
                 sumStates[i] *= 1 + d4fdx4 / 8. / (d2fdx2**2) - 5. * (d3fdx3**2) / 24. / (d2fdx2**3)
             else:
                 densStates[i] *= 1 + d4fdx4 / 8. / (d2fdx2**2) - 5. * (d3fdx3**2) / 24. / (d2fdx2**3)
-    
+
         if k == 1:
             d3fdx3 = (phi(x+1.5*dx, k, E, logQ) - 3 * phi(x+0.5*dx, k, E, logQ) + 3 * phi(x-0.5*dx, k, E, logQ) - phi(x-1.5*dx, k, E, logQ)) / (dx**3)
             densStates[i] = sumStates[i] * (x + d3fdx3 / (2. * d2fdx2 * d2fdx2))
-        
+
     return densStates * dE, sumStates
