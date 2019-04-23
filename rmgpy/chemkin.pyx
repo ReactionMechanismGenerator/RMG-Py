@@ -1473,12 +1473,14 @@ def get_species_identifier(species):
 
 ################################################################################
 
-
-def write_thermo_entry(species, element_counts=None, verbose=True):
+def write_thermo_entry(species, element_counts=None, verbose=True, use_label=False):
     """
     Return a string representation of the NASA model readable by Chemkin.
     To use this method you must have exactly two NASA polynomials in your
     model, and you must use the seven-coefficient forms for each.
+
+    Use `use_label=True` to force use of the default RMG species label instead
+    of a Chemkin compatible species identifier in the reaction string.
     """
 
     thermo = species.get_thermo_data()
@@ -1510,8 +1512,10 @@ def write_thermo_entry(species, element_counts=None, verbose=True):
                     string += "! {0}\n".format(line)
 
     # Line 1
-
-    string += '{0:<24}'.format(get_species_identifier(species))
+    if use_label:
+        string += '{0:<24}'.format(species.label)
+    else:
+        string += '{0:<24}'.format(get_species_identifier(species))
     if len(element_counts) <= 4:
         # Use the original Chemkin syntax for the element counts
         for key, count in element_counts.items():
@@ -1564,17 +1568,25 @@ def write_thermo_entry(species, element_counts=None, verbose=True):
 
 ################################################################################
 
-
-def write_reaction_string(reaction, java_library=False):
+def write_reaction_string(reaction, java_library=False, use_label=False):
     """
     Return a reaction string in chemkin format.
+
+    Use `use_label=True` to force use of the default RMG species label instead
+    of a Chemkin compatible species identifier in the reaction string.
     """
     kinetics = reaction.kinetics
 
     if kinetics is None:
-        reaction_string = ' + '.join([get_species_identifier(reactant) for reactant in reaction.reactants])
-        reaction_string += ' => ' if not reaction.reversible else ' = '
-        reaction_string += ' + '.join([get_species_identifier(product) for product in reaction.products])
+        if use_label:
+            reaction_string = ' + '.join([reactant.label for reactant in reaction.reactants])
+        else:
+            reaction_string = ' + '.join([get_species_identifier(reactant) for reactant in reaction.reactants])
+        reaction_string += ' => ' if not reaction.reversible else ' <=> '
+        if use_label:
+            reaction_string += ' + '.join([product.label for product in reaction.products])
+        else:
+            reaction_string += ' + '.join([get_species_identifier(product) for product in reaction.products])
         return reaction_string
 
     if reaction.specific_collider is not None and not isinstance(kinetics, (_kinetics.Lindemann, _kinetics.Troe)):
@@ -1616,10 +1628,16 @@ def write_reaction_string(reaction, java_library=False):
                 third_body = '(+{0})'.format(
                     get_species_identifier(reaction.specific_collider)) if reaction.specific_collider else '(+M)'
 
-        reaction_string = '+'.join([get_species_identifier(reactant) for reactant in reaction.reactants])
+        if use_label:
+            reaction_string = ' + '.join([reactant.label for reactant in reaction.reactants])
+        else:
+            reaction_string = ' + '.join([get_species_identifier(reactant) for reactant in reaction.reactants])
         reaction_string += third_body
-        reaction_string += '=' if reaction.reversible else '=>'
-        reaction_string += '+'.join([get_species_identifier(product) for product in reaction.products])
+        reaction_string += '<=>' if reaction.reversible else '=>'
+        if use_label:
+            reaction_string += ' + '.join([product.label for product in reaction.products])
+        else:
+            reaction_string += ' + '.join([get_species_identifier(product) for product in reaction.products])
         reaction_string += third_body
 
     if len(reaction_string) > 52:
@@ -1628,14 +1646,16 @@ def write_reaction_string(reaction, java_library=False):
 
 ################################################################################
 
-
-def write_kinetics_entry(reaction, species_list, verbose=True, java_library=False, commented=False):
+def writeKineticsEntry(reaction, species_list, verbose=True, java_library=False, commented=False, use_label=False):
     """
     Return a string representation of the reaction as used in a Chemkin
     file. Use `verbose = True` to turn on kinetics comments.
     Use `commented = True` to comment out the entire reaction.
     Use java_library = True in order to generate a kinetics entry suitable
     for an RMG-Java kinetics library.
+
+    Use `use_label=True` to force use of the default RMG species label instead
+    of a Chemkin compatible species identifier in the reaction string.
     """
     string = ""
 
@@ -1719,7 +1739,7 @@ def write_kinetics_entry(reaction, species_list, verbose=True, java_library=Fals
 
     kinetics = reaction.kinetics
     num_reactants = len(reaction.reactants)
-    reaction_string = write_reaction_string(reaction, java_library)
+    reaction_string = write_reaction_string(reaction, java_library, use_label=use_label)
 
     string += '{0!s:<51} '.format(reaction_string)
 
