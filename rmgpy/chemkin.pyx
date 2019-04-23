@@ -73,10 +73,10 @@ def readThermoEntry(entry, Tmin=0, Tint=0, Tmax=0):
     the label of the species and the thermodynamics model as a :class:`NASA`
     object.
     
-    Format specification at http://www2.galcit.caltech.edu/EDL/public/formats/chemkin.html
+    For format specification, see the Chemkin Input Manual
     """
     lines = entry.splitlines()
-    species = str(lines[0][0:18].split()[0].strip())
+    species = str(lines[0][0:24].split()[0].strip())
     
     comment = lines[0][len(species):24].strip()
     formula = {}
@@ -1466,7 +1466,7 @@ def writeThermoEntry(species, elementCounts=None, verbose=True):
                     string += "! {0}\n".format(line) 
 
     # Line 1
-    string += '{0:<16}        '.format(getSpeciesIdentifier(species))
+    string += '{0:<24}'.format(getSpeciesIdentifier(species))
     if len(elementCounts) <= 4:
         # Use the original Chemkin syntax for the element counts
         for key, count in elementCounts.iteritems():
@@ -1948,9 +1948,9 @@ def saveChemkinFile(path, species, reactions, verbose = True, checkForDuplicates
     for spec in sorted_species:
         label = getSpeciesIdentifier(spec)
         if verbose:
-            f.write('    {0!s:<16}    ! {1}\n'.format(label, str(spec)))
+            f.write('    {0!s:<24}  ! {1}\n'.format(label, str(spec)))
         else:
-            f.write('    {0!s:<16}\n'.format(label))
+            f.write('    {0!s:<24}\n'.format(label))
     f.write('END\n\n\n\n')
 
     # Thermodynamics section
