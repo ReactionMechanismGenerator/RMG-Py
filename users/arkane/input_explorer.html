@@ -68,7 +68,7 @@ blocks must have a structure input and there must be a database block in the job
 pressure-dependent calculation input file you append an explorer block.  For example</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">explorer</span><span class="p">(</span>
     <span class="n">source</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;methoxy&#39;</span><span class="p">],</span>
-    <span class="n">explore_tol</span><span class="o">=</span><span class="p">(</span><span class="mf">1e-2</span><span class="p">,</span><span class="s1">&#39;s^-1&#39;</span><span class="p">),</span>
+    <span class="n">explore_tol</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
     <span class="n">energy_tol</span><span class="o">=</span><span class="mf">1e4</span><span class="p">,</span>
     <span class="n">flux_tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span>
 <span class="p">)</span>
@@ -79,11 +79,10 @@ source channel.  The network is expanded starting from this starting isomer/chan
 </div>
 <div class="section" id="network-exploration">
 <h2>4.2. Network Exploration<a class="headerlink" href="#network-exploration" title="Permalink to this headline">¶</a></h2>
-<p>The <code class="docutils literal notranslate"><span class="pre">explore_tol</span></code> is largest acceptable total rate at which isomers inside the network isomerize to become
-isomers that are not part of the network.  Network expansion is done starting from just the network source using
+<p>The <code class="docutils literal notranslate"><span class="pre">explore_tol</span></code> is a fraction of the flux from all net reactions from the source to the other channels in the network.  Network expansion is done starting from just the network source using
 values from the rest of the Arkane job when available, otherwise from RMG.  It cycles through all of the
 temperature and pressure points specified for fitting in the pressure dependence job and checks the total network
-leak rate at each one.  Whenever this rate is greater than <code class="docutils literal notranslate"><span class="pre">explore_tol</span></code> the outside isomer with the most leak is
+leak rate at each one.  Whenever this rate is greater than <code class="docutils literal notranslate"><span class="pre">explore_tol*kchar</span></code>, where <code class="docutils literal notranslate"><span class="pre">kchar</span></code> is the total flux from all net reactions away from the source, the outside isomer with the most leak is
 added to the network and reacted and the loop is flagged to cycle through all of the temperatures and pressures
 again.  Once this loop is finished a network_full.py file is generated in the pdep directory that has the full
 explored network.</p>
