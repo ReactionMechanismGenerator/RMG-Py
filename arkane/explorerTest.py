@@ -72,21 +72,21 @@ class testExplorerJob(unittest.TestCase):
         """
         test that the right number of reactions are in output network
         """
-        self.assertEqual(len(self.explorerjob.network.pathReactions),6)
-    
+        self.assertEqual(len(self.explorerjob.networks[0].pathReactions),6)
+
     def test_isomers(self):
         """
         test that the right number of isomers are in the output network
         """
-        self.assertEqual(len(self.explorerjob.network.isomers),2)
-    
+        self.assertEqual(len(self.explorerjob.networks[0].isomers),2)
+
     def test_job_rxns(self):
         """
         test that in this case all the reactions in the job
         ended up in the final network
         """
         for rxn in self.explorerjob.jobRxns:
-            self.assertIn(rxn,self.explorerjob.network.pathReactions)
+            self.assertIn(rxn,self.explorerjob.networks[0].pathReactions)
 
 
 if __name__ == '__main__':

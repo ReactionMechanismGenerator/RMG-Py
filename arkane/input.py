@@ -497,7 +497,7 @@ def pressureDependence(label,
     jobList.append(job)
 
 
-def explorer(source, explore_tol=(0.01,'s^-1'), energy_tol=np.inf, flux_tol=0.0, bathGas=None, maximumRadicalElectrons=np.inf):
+def explorer(source, explore_tol=0.01, energy_tol=np.inf, flux_tol=0.0, bathGas=None, maximumRadicalElectrons=np.inf):
     global jobList,speciesDict
     for job in jobList:
         if isinstance(job, PressureDependenceJob):
@@ -505,17 +505,15 @@ def explorer(source, explore_tol=(0.01,'s^-1'), energy_tol=np.inf, flux_tol=0.0,
             break
     else:
         raise InputError('the explorer block must occur after the pressureDependence block')
-    
+
     source = [speciesDict[name] for name in source]
-    
-    explore_tol = Quantity(explore_tol)
-    
+
     if bathGas:
         bathGas0 = bathGas or {}; bathGas = {}
         for spec, fraction in bathGas0.items():
             bathGas[speciesDict[spec]] = fraction
-        
-    job = ExplorerJob(source=source,pdepjob=pdepjob,explore_tol=explore_tol.value_si,
+
+    job = ExplorerJob(source=source,pdepjob=pdepjob,explore_tol=explore_tol,
                 energy_tol=energy_tol,flux_tol=flux_tol,bathGas=bathGas, maximumRadicalElectrons=maximumRadicalElectrons)
     jobList.append(job)
 
