@@ -1305,3 +1305,39 @@ class HinderedRotor2D(Mode):
        except OSError:
            pass
 
+
+   def readScan(self):
+       """
+       Read quantum optimization job files at self.calcPath to determine
+       vectors of angles (self.phi1s, self.phi2s), xyz coordinates (self.xyzs)
+       energies (self.Es) and atom numbers (self.atnums) for each point
+       """
+       phi1s = []
+       phi2s = []
+       xyzs = []
+       Es = []
+       atnums = []
+       for f in os.listdir(self.calcPath):
+           if len(f.split('_')) != 4:
+               continue
+           s,name,phi1,phi2 = f.split('_')
+           phi2,idf = '.'.join(phi2.split('.')[:-1]),phi2.split('.')[-1]
+           if idf != 'out':
+               continue
+           phi1s.append(float(phi1))
+           phi2s.append(float(phi2.split(".")[0]))
+
+           fpath = os.path.join(self.calcPath,f)
+           lg = Log(fpath)
+           lg.determine_qm_software(fpath)
+
+           Es.append(lg.software_log.loadEnergy())
+           xyz,atnum,_ = lg.software_log.loadGeometry()
+           xyzs.append(xyz)
+           atnums.append(atnum)
+
+       self.xyzs = xyzs
+       self.phi1s = phi1s
+       self.phi2s = phi2s
+       self.Es = Es
+       self.atnums = atnums
