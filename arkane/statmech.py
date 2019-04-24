@@ -48,6 +48,7 @@ from rmgpy.statmech.rotation import Rotation, LinearRotor, NonlinearRotor, KRoto
 from rmgpy.statmech.vibration import Vibration, HarmonicOscillator
 from rmgpy.statmech.torsion import Torsion, HinderedRotor, FreeRotor
 from rmgpy.statmech.conformer import Conformer
+from rmgpy.statmech.mode import Mode
 from rmgpy.exceptions import InputError
 from rmgpy.quantity import Quantity
 from rmgpy.molecule.molecule import Molecule
@@ -83,7 +84,7 @@ class ScanLog(object):
         'cm^-1': 1.0/(constants.h * constants.c * 100. * constants.Na),
         'hartree': 1.0/(constants.E_h * constants.Na),
     }
-        
+
     def __init__(self, path):
         self.path = path
 
@@ -95,17 +96,17 @@ class ScanLog(object):
         angles = []; energies = []
         angleUnits = None; energyUnits = None
         angleFactor = None; energyFactor = None
-        
+
         with open(self.path, 'r') as stream:
             for line in stream:
                 line = line.strip()
                 if line == '': continue
-                
+
                 tokens = line.split()
                 if angleUnits is None or energyUnits is None:
                     angleUnits = tokens[1][1:-1]
                     energyUnits = tokens[3][1:-1]
-                    
+
                     try:
                         angleFactor = ScanLog.angleFactors[angleUnits]
                     except KeyError:
@@ -114,7 +115,7 @@ class ScanLog(object):
                         energyFactor = ScanLog.energyFactors[energyUnits]
                     except KeyError:
                         raise ValueError('Invalid energy units {0!r}.'.format(energyUnits))
-            
+
                 else:
                     angles.append(float(tokens[0]) / angleFactor)
                     energies.append(float(tokens[1]) / energyFactor)
@@ -122,9 +123,9 @@ class ScanLog(object):
         angles = np.array(angles)
         energies = np.array(energies)
         energies -= energies[0]
-        
+
         return angles, energies
-        
+
     def save(self, angles, energies, angleUnits='radians', energyUnits='kJ/mol'):
         """
         Save the scan energies to the file using the given `angles` in radians
@@ -132,7 +133,7 @@ class ScanLog(object):
         use the given `angleUnits` for angles and `energyUnits` for energies.
         """
         assert len(angles) == len(energies)
-        
+
         try:
             angleFactor = ScanLog.angleFactors[angleUnits]
         except KeyError:
@@ -141,7 +142,7 @@ class ScanLog(object):
             energyFactor = ScanLog.energyFactors[energyUnits]
         except KeyError:
             raise ValueError('Invalid energy units {0!r}.'.format(energyUnits))
-        
+
         with open(self.path, 'w') as stream:
             stream.write('{0:>24} {1:>24}\n'.format(
                 'Angle ({0})'.format(angleUnits),
@@ -1248,3 +1249,59 @@ def determine_rotor_symmetry(energies, label, pivots):
         logging.info('Determined a symmetry number of {0} for rotor of species {1} between pivots {2}'
                      ' based on the {3}.'.format(symmetry, label, pivots, reason))
     return symmetry
+
+class HinderedRotor2D(Mode):
+   """
+   A statistical mechanical model of a 2D-dimensional hindered rotor.
+   Computation of eigenvalues and fourier fitting outsourced to
+   Q2DTor software
+
+   The attributes are:
+
+   ======================== ===================================================
+   Attribute                Description
+   ======================== ===================================================
+   `name`                   The Q2DTor name of the rotor
+   `torsion1`               The 1-indexed atom indices of the atoms involved in the first rotor
+   `torsion2`               The 1-indexed atom indices of the atoms involved in the second rotor
+   `torsigma1`              The symmetry number of the first rotor
+   `torsigma2`              The symmetry number of the second rotor
+   `calcPath`               The directory containing all of the rotor point calculations formated:  name_angle1_angle2
+   `symmetry`               Q2DTor symmetry identifier ('none','a','b','c','ab','bc','ac','abc')
+   `evals`                  Array of energy levels for the 2D-HR
+   `energy`                 Function mapping quantum number to energy level
+   ======================== ===================================================
+   """
+
+   def __init__(self,name,torsigma1,torsigma2,calcPath,symmetry='none',pivots1=None,pivots2=None,top1=None,top2=None):
+       Mode.__init__(self, True)
+       self.dof = 2
+
+       self.name = name
+       self.calcPath = calcPath
+
+       self.torsion1 = None
+       self.torsion2 = None
+       self.torsigma1 = torsigma1
+       self.torsigma2 = torsigma2
+       self.symmetry = symmetry
+
+       self.pivots1 = pivots1
+       self.pivots2 = pivots2
+       self.top1 = top1
+       self.top2 = top2
+
+       self.xyzs = []
+       self.phi1s = []
+       self.phi2s = []
+       self.Es = []
+       self.atnums = []
+
+       #prepare a directory to run q2dtor in
+       self.q2dtor_path = os.path.join(os.path.split(calcPath)[0],name)
+       try:
+           os.mkdir(self.q2dtor_path)
+           os.mkdir(os.path.join(self.q2dtor_path,'IOfiles'))
+       except OSError:
+           pass
+
