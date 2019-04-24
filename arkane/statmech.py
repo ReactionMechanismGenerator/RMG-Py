@@ -1551,3 +1551,15 @@ end_temperatures                   #
        """
        out = subprocess.check_call(['python2',os.environ['Q2DTor'],self.name,'--tor2dns'],
                        cwd=self.q2dtor_path)
+       self.readEigvals()
+
+   def readEigvals(self):
+       """
+       reads an available .evals file to get the QM energy levels
+       for the 2D-NS rotors
+       """
+       f = open(os.path.join(self.q2dtor_path,'IOfiles',self.name+'.evals'),'rU')
+       out = f.readlines()
+       evals = [float(x.split()[1]) for x in out[2:]] #cm^-1
+       self.evals = np.array(evals)*10**2*constants.c*constants.h*constants.Na #J/mol
+       self.energy = lambda x: self.evals[x]
