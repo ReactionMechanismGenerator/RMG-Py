@@ -38,6 +38,8 @@ import os.path
 import math
 import numpy as np
 import logging
+import subprocess
+import os
 
 from rdkit.Chem import GetPeriodicTable
 
@@ -1518,3 +1520,34 @@ end_temperatures                   #
        f = open(os.path.join(self.q2dtor_path,self.name+".inp"),'w')
        f.write(inp)
        f.close()
+
+   def getIcsFile(self):
+       """
+       use Q2DTor to generate a .ics file
+       """
+       out = subprocess.check_call(['python2',os.environ['Q2DTor'],self.name,'--init'],
+                       cwd=self.q2dtor_path)
+
+   def fitFourier(self):
+       """
+       use Q2DTor to fit fourier coefficients
+       to the potential
+       """
+       out = subprocess.check_call(['python2',os.environ['Q2DTor'],self.name,'--fourier'],
+                       cwd=self.q2dtor_path)
+
+   def getSplistfile(self):
+       """
+       use Q2DTor to generate a .splist file
+       """
+       out = subprocess.check_call(['python2',os.environ['Q2DTor'],self.name,'--findsp'],
+                       cwd=self.q2dtor_path)
+
+   def getEigvals(self):
+       """
+       use Q2DTor to determine the QM energy levels for the 2D-NS
+       rotors
+       writes a .evals file and reads it to fill self.evals and self.energy
+       """
+       out = subprocess.check_call(['python2',os.environ['Q2DTor'],self.name,'--tor2dns'],
+                       cwd=self.q2dtor_path)
