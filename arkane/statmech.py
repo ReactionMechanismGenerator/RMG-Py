@@ -922,7 +922,7 @@ def projectRotors(conformer, F, rotors, linear, is_ts):
     harmonic oscillator vibrational frequencies using the force constant matrix.
     """
 
-    Nrotors = len(rotors)
+    Nrotors = sum([2 if len(x)==8 else 1 for x in rotors])
     Natoms = len(conformer.mass.value)
     Nvib = 3 * Natoms - (5 if linear else 6) - Nrotors - (1 if (is_ts) else 0)
     mass = conformer.mass.value_si
