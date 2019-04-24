@@ -1055,27 +1055,38 @@ def projectRotors(conformer, F, rotors, linear, is_ts):
     for i, rotor in enumerate(rotors):
         if len(rotor) == 5:
             scanLog, pivots, top, symmetry, fit = rotor
+            pivotss = [pivots]
+            tops = [top]
         elif len(rotor) == 3:
             pivots, top, symmetry = rotor
-        # Determine pivot atom
-        if pivots[0] in top:
-            pivot1 = pivots[0]
-            pivot2 = pivots[1]
-        elif pivots[1] in top:
-            pivot1 = pivots[1]
-            pivot2 = pivots[0]
-        else: raise Exception('Could not determine pivot atom.')
-        # Projection vectors for internal rotation
-        e12 = coordinates[pivot1-1,:] - coordinates[pivot2-1,:]
-        for j in range(Natoms):
-            atom=j+1
-            if atom in top:
-                e31 = coordinates[atom-1,:] - coordinates[pivot1-1,:]
-                Dint[3*(atom-1):3*(atom-1)+3,counter] = numpy.cross(e31, e12)*amass[atom-1]
-            else:
-                e31 = coordinates[atom-1,:] - coordinates[pivot2-1,:]
-                Dint[3*(atom-1):3*(atom-1)+3,counter] = numpy.cross(e31, -e12)*amass[atom-1]
-        counter+=1
+            pivotss = [pivots]
+            tops = [top]
+        elif len(rotor) == 8:
+            scandir,pivots1,top1,symmetry1,pivots2,top2,symmetry2,symmetry = rotor
+            pivotss = [pivots1,pivots2]
+            tops = [top1,top2]
+        for i in xrange(len(tops)):
+            top = tops[i]
+            pivots = pivotss[i]
+            # Determine pivot atom
+            if pivots[0] in top:
+                pivot1 = pivots[0]
+                pivot2 = pivots[1]
+            elif pivots[1] in top:
+                pivot1 = pivots[1]
+                pivot2 = pivots[0]
+            else: raise Exception('Could not determine pivot atom.')
+            # Projection vectors for internal rotation
+            e12 = coordinates[pivot1-1,:] - coordinates[pivot2-1,:]
+            for j in range(Natoms):
+                atom=j+1
+                if atom in top:
+                    e31 = coordinates[atom-1,:] - coordinates[pivot1-1,:]
+                    Dint[3*(atom-1):3*(atom-1)+3,counter] = np.cross(e31, e12)*amass[atom-1]
+                else:
+                    e31 = coordinates[atom-1,:] - coordinates[pivot2-1,:]
+                    Dint[3*(atom-1):3*(atom-1)+3,counter] = np.cross(e31, -e12)*amass[atom-1]
+            counter+=1
 
     # Normal modes in mass weighted cartesian coordinates
     Vmw = np.dot(T,V)
