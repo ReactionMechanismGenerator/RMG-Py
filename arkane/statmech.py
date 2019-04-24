@@ -1305,6 +1305,26 @@ class HinderedRotor2D(Mode):
        except OSError:
            pass
 
+   def getTorsions(self):
+       """
+       determine torsions, not entirely necessary for 2D-NS, but important for E2DT
+       """
+       if not self.torsion1:
+           self.readGjf() #check it there is a gaussian format file
+
+       Natoms = len(self.xyzs[0]) #define a feasible torsion from pivots and tops
+       aset = set(list(xrange(1,Natoms+1)))
+       if not self.torsion1 and self.pivots1 and self.top1:
+           if self.pivots1[0] in self.top1:
+               self.torsion1 = [list(aset-set(self.top1))[0],self.pivots1[0],self.pivots1[1],self.top1[0]]
+           else:
+               self.torsion1 = [list(aset-set(self.top1))[0],self.pivots1[1],self.pivots1[0],self.top1[0]]
+
+       if not self.torsion2 and self.pivots2 and self.top2:
+           if self.pivots2[0] in self.top2:
+               self.torsion2 = [list(aset-set(self.top2))[0],self.pivots2[0],self.pivots2[1],self.top2[0]]
+           else:
+               self.torsion2 = [list(aset-set(self.top2))[0],self.pivots2[1],self.pivots2[0],self.top2[0]]
 
    def readScan(self):
        """
@@ -1341,3 +1361,37 @@ class HinderedRotor2D(Mode):
        self.phi2s = phi2s
        self.Es = Es
        self.atnums = atnums
+
+   def readGjf(self):
+       """
+       read gaussian input file to determine torsions, charge and multiplicity
+       unnecessary for 2D-NS
+       """
+       self.torsion1 = None
+       self.torsion2 = None
+       self.charge = None
+       self.multiplicity = None
+
+       for f in os.listdir(self.calcPath):
+           if len(f.split('_')) != 4:
+               continue
+           s,name,phi1,phi2 = f.split('_')
+           phi2,idf = phi2.split('.')
+           if idf == 'gjf' and float(phi1) == 0.0 and float(phi2) == 0.0:
+               fop = open(os.path.join(self.calcPath,f),'rU')
+               lines = fop.readlines()
+               for i,line in enumerate(lines):
+                   splitLine = line.split()
+                   if len(splitLine) < 2:
+                       continue
+                   elif splitLine[-1] == 'F' and len(splitLine) == 5:
+                       if not self.torsion1:
+                           self.torsion1 = [int(splitLine[i]) for i in xrange(4)]
+                       elif not self.torsion2:
+                           self.torsion2 = [int(splitLine[i]) for i in xrange(4)]
+                   elif not self.charge and len(splitLine) == 2 and len(lines[i+1].split()) == 4 and len(lines[i+1].split()[0]) <= 2:
+                       self.charge = int(splitLine[0])
+                       self.multiplicity = int(splitLine[1])
+
+
+
