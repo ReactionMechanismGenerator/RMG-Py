@@ -306,7 +306,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                 boo = True
                 logging.error(item[2])
         if boo:
-            raise ValueError("Error occured")
+            raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
     def kinetics_checkNodesInRulesFoundInGroups(self, family_name):
         """
@@ -331,7 +331,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                     tst1.append((node in family.groups.entries, "In {family} family, no group definition found for label {label} in rule {entry}".format(family=family_name, label=node, entry=entry)))
                     tst2.append((family.groups.entries[node] in topDescendants[i], "In {family} family, rule {entry} was found with groups out of order.  The correct order for a rule should be subgroups of {top}.".format(family=family_name, entry=entry, top=topGroupOrder)))
         boo = False
-        for i in xrange(len(tst1)):
+        for i in range(len(tst1)):
             if not tst1[i][0]:
                 logging.error(tst1[i][1])
                 boo = True
@@ -340,7 +340,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                 boo = True
 
         if boo:
-            raise ValueError("Error occured")
+            raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
     def kinetics_checkGroupsFoundInTree(self, family_name):
         """
@@ -364,11 +364,11 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                 tst3.append((child is ascendParent, "Group {group} in {family} family is a parent to itself".format(group=nodeName, family=family_name)))
 
         boo = False
-        for i in xrange(len(tst)):
+        for i in range(len(tst)):
             if tst[i][0]:
                 logging.error(tst[i][1])
                 boo = True
-        for i in xrange(len(tst1)):
+        for i in range(len(tst1)):
             if not tst1[i][0]:
                 logging.error(tst1[i][1])
                 boo = True
@@ -380,7 +380,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                 boo = True
 
         if boo:
-            raise ValueError("Error occured")
+            raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
     def kinetics_checkGroupsNonidentical(self, family_name):
         """
@@ -398,13 +398,13 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                 tst.append((family.matchNodeToNode(nodeGroup, nodeGroupOther), "Group {group} in {family} family was found to be identical to group {groupOther}".format(group=nodeName, family=family_name, groupOther=nodeNameOther)))
 
         boo = False
-        for i in xrange(len(tst)):
+        for i in range(len(tst)):
             if tst[i][0]:
                 logging.error(tst[i][1])
                 boo = True
 
         if boo:
-            raise ValueError("Error occured")
+            raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
     def kinetics_checkChildParentRelationships(self, family_name):
         """
@@ -443,13 +443,13 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                                     "In {family} family, group {ancestor} is not a proper ancestor of its child {child}.".format(family=family_name, ancestor=ancestorNode, child=nodeName)))
 
         boo = False
-        for i in xrange(len(tst)):
+        for i in range(len(tst)):
             if not tst[i][0]:
                 logging.error(tst[i][1])
                 boo = True
 
         if boo:
-            raise ValueError("Error occured")
+            raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
     def kinetics_checkSiblingsForParents(self, family_name):
         """
@@ -473,13 +473,13 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                     tst.append((family.matchNodeToChild(child1, child2),
                                             "In family {0}, node {1} is a parent of {2}, but they are written as siblings.".format(family_name, child1, child2)))
         boo = False
-        for i in xrange(len(tst)):
+        for i in range(len(tst)):
             if tst[i][0]:
                 logging.error(tst[i][1])
                 boo = True
 
         if boo:
-            raise ValueError("Error occured")
+            raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
     def kinetics_checkAdjlistsNonidentical(self, database):
         """
@@ -514,13 +514,13 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                     tst.append((speciesList[i].molecule[0].isIsomorphic(speciesList[j].molecule[0], initialMap), "Species {0} and species {1} in {2} database were found to be identical.".format(speciesList[i].label,speciesList[j].label,database.label)))
 
         boo = False
-        for i in xrange(len(tst)):
+        for i in range(len(tst)):
             if tst[i][0]:
                 logging.error(tst[i][1])
                 boo = True
 
         if boo:
-            raise ValueError("Error occured")
+            raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
     def kinetics_checkRateUnitsAreCorrect(self, database, tag='library'):
         """
@@ -706,13 +706,13 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                     tst.append((reactant_label==product_label, "Reactant label {0} matches that of product label {1} in a non-reversible family template.  Please rename product label.".format(reactant_label,product_label)))
 
             boo = False
-            for i in xrange(len(tst)):
+            for i in range(len(tst)):
                 if tst[i][0]:
                     logging.error(tst[i][1])
                     boo = True
 
             if boo:
-                raise ValueError("Error occured")
+                raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
     def kinetics_checkCdAtomType(self, family_name):
         """
@@ -765,13 +765,13 @@ The following adjList may have atoms in a different ordering than the input file
                                             """.format(family_name, entry, correctAtom, index+1, entry.item.toAdjacencyList())))
 
         boo = False
-        for i in xrange(len(tst)):
+        for i in range(len(tst)):
             if not tst[i][0]:
                 logging.error(tst[i][1])
                 boo = True
 
         if boo:
-            raise ValueError("Error occured")
+            raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
     def kinetics_checkUnimolecularGroups(self,family_name):
         """
@@ -925,13 +925,13 @@ The following adjList may have atoms in a different ordering than the input file
             tst.append((False,s))
 
         boo = False
-        for i in xrange(len(tst)):
+        for i in range(len(tst)):
             if not tst[i][0]:
                 logging.error(tst[i][1])
                 boo = True
 
         if boo:
-            raise ValueError("Error occured")
+            raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
     def kinetics_checkSampleDescendsToGroup(self, family_name):
         """
@@ -1032,15 +1032,15 @@ Origin Group AdjList:
                 print entryName
 
         boo = False
-        for i in xrange(len(tst1)):
+        for i in range(len(tst1)):
             if tst1[i][0] is None:
                 logging.error(tst1[i][1])
                 boo = True
-        for i in xrange(len(tst2)):
+        for i in range(len(tst2)):
             if tst2[i][0] not in tst2[i][1]:
                 logging.error(tst2[i][2])
                 boo = True
-        for i in xrange(len(tst3)):
+        for i in range(len(tst3)):
             if not tst3[i][0]:
                 logging.error(tst3[i][1])
                 boo = True
@@ -1067,11 +1067,11 @@ Origin Group AdjList:
                     tst3.append((child is ascendParent, "Node {node} in {group} is a parent to itself".format(node=nodeName, group=group_name)))
 
         boo = False
-        for i in xrange(len(tst1)):
+        for i in range(len(tst1)):
             if not tst1[i][0]:
                 logging.error(tst1[i][1])
                 boo = True
-        for i in xrange(len(tst2)):
+        for i in range(len(tst2)):
             if not tst2[i][0]:
                 logging.error(tst2[i][1])
                 boo = True
@@ -1095,7 +1095,7 @@ Origin Group AdjList:
                 tst.append((group.matchNodeToNode(nodeGroup, nodeGroupOther), "Node {node} in {group} group was found to be identical to node {nodeOther}".format(node=nodeName, group=group_name, nodeOther=nodeNameOther)))
 
         boo = False
-        for i in xrange(len(tst)):
+        for i in range(len(tst)):
             if tst[i][0]:
                 logging.error(tst[i][1])
                 boo = True
@@ -1131,11 +1131,11 @@ Origin Group AdjList:
 )
 
         boo = False
-        for i in xrange(len(tst1)):
+        for i in range(len(tst1)):
             if not tst1[i][0]:
                 logging.error(tst1[i][1])
                 boo = True
-        for i in xrange(len(tst2)):
+        for i in range(len(tst2)):
             if not tst2[i][0]:
                 logging.error(tst2[i][1])
                 boo = True
@@ -1169,7 +1169,7 @@ Origin Group AdjList:
                                             "In {0} group, node {1} is a parent of {2}, but they are written as siblings.".format(group_name, child1, child2)))
 
         boo = False
-        for i in xrange(len(tst)):
+        for i in range(len(tst)):
             if tst[i][0]:
                 logging.error(tst[i][1])
                 boo = True
@@ -1216,7 +1216,7 @@ The following adjList may have atoms in a different ordering than the input file
                                             """.format(group_name, entry, correctAtom, index+1, entry.item.toAdjacencyList())))
 
         boo = False
-        for i in xrange(len(tst)):
+        for i in range(len(tst)):
             if not tst[i][0]:
                 logging.error(tst[i][1])
                 boo = True
@@ -1290,14 +1290,14 @@ Origin Group AdjList:
                 print entryName
 
         boo = False
-        for i in xrange(len(tst1)):
+        for i in range(len(tst1)):
             if tst1[i][0] is None:
                 logging.error(tst1[i][1])
                 boo = True
             if tst2[i][0] not in tst2[i][1]:
                 logging.error(tst2[i][2])
                 boo = True
-        for i in xrange(len(tst3)):
+        for i in range(len(tst3)):
             if not tst3[i][0]:
                 logging.error(tst3[i][1])
                 boo = True
