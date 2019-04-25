@@ -1272,15 +1272,15 @@ class ThermoDatabase(object):
         # used in the database of adsorption energies, and the desired surface
 
         # These are for Pt(111), from Katrin
-        deltaAtomicAdosrptionEnergy = {
+        deltaAtomicAdsorptionEnergy = {
             'C': rmgpy.quantity.Energy(-6.750, 'eV/molecule'),
             'H': rmgpy.quantity.Energy(-2.479, 'eV/molecule'),
             'O': rmgpy.quantity.Energy(-3.586, 'eV/molecule'),
             'N': rmgpy.quantity.Energy(-4.352, 'eV/molecule'),
         }
         for element in 'CHON':
-            deltaAtomicAdosrptionEnergy[element].value_si =  bindingEnergies[element].value_si - deltaAtomicAdosrptionEnergy[element].value_si
-        self.deltaAtomicAdsorptionEnergy = deltaAtomicAdosrptionEnergy
+            deltaAtomicAdsorptionEnergy[element].value_si =  bindingEnergies[element].value_si - deltaAtomicAdsorptionEnergy[element].value_si
+        self.deltaAtomicAdsorptionEnergy = deltaAtomicAdsorptionEnergy
 
     def correctBindingEnergy(self, thermo, species):
         """
