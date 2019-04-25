@@ -14,10 +14,25 @@ deviate from the standard gas-phase RMG input file.
 
 Catalyst properties
 =====================
-A new block ``catalystProperties()`` should be added for specifying the catalyst surface to be used in the mechanism generation.  
-It includes the surface site density of the metal surface (``surfaceSiteDensity``), which is the amount of active catalytic sites per unit surface area.
+A new block ``catalystProperties()`` should be added for specifying the catalyst 
+surface to be used in the mechanism generation.  
+It includes the surface site density of the metal surface (``surfaceSiteDensity``), 
+which is the amount of active catalytic sites per unit surface area.
 It varies depending on the catalyst in question, but is held constant across simulations.
-This block should also contain the reference adatom binding energies (see linear scaling section below).
+This block should also contain the reference adatom binding energies 
+(see linear scaling section below).
+
+Here is an example catalyst properties block for Pt(111)::
+
+    catalystProperties(
+        bindingEnergies = { 
+                            'H': (-2.479, 'eV/molecule'),
+                            'O': (-3.586, 'eV/molecule'),
+                            'C': (-6.750, 'eV/molecule'),
+                            'N': (-4.352, 'eV/molecule'),
+                        },
+        surfaceSiteDensity=(2.72e-9, 'mol/cm^2'),
+    )
 
 
 Reactor specifications
@@ -50,7 +65,6 @@ The following is an example of a surface reactor system for catalytic combustion
             "X": 1.0,
         },
         surfaceVolumeRatio=(1.0e4, 'm^-1'),
-        surfaceSiteDensity=(2.72e-9, 'mol/cm^2'),
         terminationConversion = { "CH4":0.9 },
         terminationRateRatio=0.01
     )
