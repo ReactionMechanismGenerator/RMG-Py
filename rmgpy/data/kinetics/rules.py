@@ -590,29 +590,16 @@ class KineticsRules(Database):
             Aunits = 'm^5/(mol^2*s)'
         else:
             raise Exception('Invalid units {0} for averaging kinetics.'.format(Aunits))
-        if type(kinetics) is ArrheniusEP:
-            averagedKinetics = ArrheniusEP(
-                A=(10 ** logA, Aunits),
-                n=n,
-                alpha=alpha,
-                E0=(E0 * 0.001, "kJ/mol"),
-            )
-        elif type(kinetics) is SurfaceArrheniusBEP:
-            averagedKinetics = SurfaceArrheniusBEP(
-                A=(10 ** logA, Aunits),
-                n=n,
-                alpha=alpha,
-                E0=(E0 * 0.001, "kJ/mol"),
-            )
-        elif type(kinetics) is StickingCoefficientBEP:
-            averagedKinetics = StickingCoefficientBEP(
-                A=(10 ** logA, Aunits),
-                n=n,
-                alpha=alpha,
-                E0=(E0 * 0.001, "kJ/mol"),
-            )
-        else:
+
+        if type(kinetics) not in [ArrheniusEP, SurfaceArrheniusBEP, StickingCoefficientBEP]:
             raise Exception('Invalid kinetics type {0!r} for {1!r}.'.format(type(kinetics), self))
+
+        averagedKinetics = type(kinetics)(
+            A=(10 ** logA, Aunits),
+            n=n,
+            alpha=alpha,
+            E0=(E0 * 0.001, "kJ/mol"),
+        )
         return averagedKinetics
     
     def estimateKinetics(self, template, degeneracy=1):
