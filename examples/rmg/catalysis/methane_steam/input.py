@@ -9,24 +9,16 @@ database(
 )
 
 catalystProperties(
-    bindingEnergies = {  # default values for Ni(111)
+    bindingEnergies = {  # values for Ni(111)
                         'H': (-2.778, 'eV/molecule'),
                         'O': (-4.485, 'eV/molecule'),
                         'C': (-5.997, 'eV/molecule'),
-
-
+                        'N': (-4.352, 'eV/molecule'), # Unknown! don't use with Nitrogen adsorbates!
                       },
-    surfaceSiteDensity=(2.9e-9, 'mol/cm^2'),
+    surfaceSiteDensity=(2.9e-9, 'mol/cm^2'), # values for Ni(111)
 )
 
 # List of species
-#species(
-#    label='methyl',
-#    reactive=True,
-#    structure=SMILES("[CH3]"),
-#)
-
-
 
 species(
     label='CH4',
@@ -160,7 +152,6 @@ species(
     structure=SMILES("C=C"),
 )
 
-
 #-------
 species(
     label='site',
@@ -173,7 +164,6 @@ surfaceReactor(
     temperature=(1000,'K'),
     initialPressure=(1.0, 'bar'),
     initialGasMoleFractions={
-#        "methyl": 1.0,
         "CH4": 1.0,
         "O2": 0.0,
         "CO2": 1.2,
@@ -206,7 +196,7 @@ options(
     units='si',
     saveRestartPeriod=None,
     generateOutputHTML=True,
-    generatePlots=False, # Enable to make plots of core and edge size etc.. But takes 40% of the total runtime!
+    generatePlots=False, # Enable to make plots of core and edge size etc.. But takes a lot of the total runtime!
     saveEdgeSpecies=True,
     saveSimulationProfiles=True,
     verboseComments=True,
