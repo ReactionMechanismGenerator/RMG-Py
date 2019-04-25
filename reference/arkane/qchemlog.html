@@ -75,8 +75,16 @@ the QChem output file.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="arkane.qchem.QChemLog.get_optical_isomers_and_symmetry_number">
+<code class="descname">get_optical_isomers_and_symmetry_number</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.qchem.QChemLog.get_optical_isomers_and_symmetry_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method uses the symmetry package from RMG’s QM module
+and returns a tuple where the first element is the number
+of optical isomers and the second element is the symmetry number.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="arkane.qchem.QChemLog.loadConformer">
-<code class="descname">loadConformer</code><span class="sig-paren">(</span><em>symmetry=None</em>, <em>spinMultiplicity=0</em>, <em>opticalIsomers=1</em>, <em>symfromlog=None</em>, <em>label=''</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.qchem.QChemLog.loadConformer" title="Permalink to this definition">¶</a></dt>
+<code class="descname">loadConformer</code><span class="sig-paren">(</span><em>symmetry=None</em>, <em>spinMultiplicity=0</em>, <em>opticalIsomers=None</em>, <em>label=''</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.qchem.QChemLog.loadConformer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the molecular degree of freedom data from an output file created as the result of a
 QChem “Freq” calculation. As QChem’s guess of the external symmetry number is not always correct,
 you can use the <cite>symmetry</cite> parameter to substitute your own value;

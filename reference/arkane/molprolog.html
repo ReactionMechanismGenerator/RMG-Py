@@ -75,8 +75,16 @@ the MolPro log file.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="arkane.molpro.MolproLog.get_optical_isomers_and_symmetry_number">
+<code class="descname">get_optical_isomers_and_symmetry_number</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.molpro.MolproLog.get_optical_isomers_and_symmetry_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method uses the symmetry package from RMG’s QM module
+and returns a tuple where the first element is the number
+of optical isomers and the second element is the symmetry number.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="arkane.molpro.MolproLog.loadConformer">
-<code class="descname">loadConformer</code><span class="sig-paren">(</span><em>symmetry=None</em>, <em>spinMultiplicity=0</em>, <em>opticalIsomers=1</em>, <em>symfromlog=None</em>, <em>label=''</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.molpro.MolproLog.loadConformer" title="Permalink to this definition">¶</a></dt>
+<code class="descname">loadConformer</code><span class="sig-paren">(</span><em>symmetry=None</em>, <em>spinMultiplicity=0</em>, <em>opticalIsomers=None</em>, <em>label=''</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.molpro.MolproLog.loadConformer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the molecular degree of freedom data from a log file created as
 the result of a MolPro “Freq” quantum chemistry calculation with the thermo printed.</p>
 </dd></dl>
@@ -109,6 +117,13 @@ last is returned.</p>
 <dt id="arkane.molpro.MolproLog.loadNegativeFrequency">
 <code class="descname">loadNegativeFrequency</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.molpro.MolproLog.loadNegativeFrequency" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the negative frequency from a transition state frequency calculation in cm^-1.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.molpro.MolproLog.loadScanEnergies">
+<code class="descname">loadScanEnergies</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.molpro.MolproLog.loadScanEnergies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract the optimized energies in J/mol from a QChem log file, e.g. the
+result of a QChem “PES Scan” quantum chemistry calculation.</p>
 </dd></dl>
 
 <dl class="method">
