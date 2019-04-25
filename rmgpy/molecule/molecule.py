@@ -928,7 +928,7 @@ class Molecule(Graph):
 
     def isSurfaceSite(self):
         "Returns ``True`` iff the molecule is nothing but a surface site 'X'."
-        return (len(self.atoms) == 1 and self.atoms[0].isSurfaceSite())
+        return len(self.atoms) == 1 and self.atoms[0].isSurfaceSite()
 
     def removeAtom(self, atom):
         """
