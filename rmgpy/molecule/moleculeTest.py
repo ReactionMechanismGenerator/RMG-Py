@@ -137,7 +137,7 @@ class TestAtom(unittest.TestCase):
         """
         for element in elementList:
             atom = Atom(element=element, radicalElectrons=1, charge=0, label='*1', lonePairs=2)
-            if element.symbol == 'N':
+            if element.symbol == 'S':
                 self.assertTrue(atom.isSulfur())
             else:
                 self.assertFalse(atom.isSulfur())
