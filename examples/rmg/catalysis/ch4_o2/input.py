@@ -15,13 +15,8 @@ catalystProperties(
                           'O': (-3.586, 'eV/molecule'),
                           'C': (-6.750, 'eV/molecule'),
                           'N': (-4.352, 'eV/molecule'),
-                        #default values for Ni(111)
-                         # 'H': (-2.778, 'eV/molecule'),
-                         # 'O': (-4.485, 'eV/molecule'),
-                         # 'C': (-5.997, 'eV/molecule'),
-
                       },
-    surfaceSiteDensity=(2.72e-9, 'mol/cm^2'), #The value for Pt is 2.72e-9 and value for Ni is 2.92e-9  
+    surfaceSiteDensity=(2.72e-9, 'mol/cm^2'), # Default for Pt(111)
 )
 
 species(
@@ -65,7 +60,6 @@ surfaceReactor(
         "vacantX": 1.0,
     },
     surfaceVolumeRatio=(1.e5, 'm^-1'),
-
     terminationConversion = { "CH4":0.99,},
     terminationTime=(0.1, 's'),
 )
@@ -86,7 +80,7 @@ options(
     units='si',
     saveRestartPeriod=None,
     generateOutputHTML=True,
-    generatePlots=False, # Enable to make plots of core and edge size etc.. But takes 40% of the total runtime!
+    generatePlots=False, # Enable to make plots of core and edge size etc. But takes a lot of the total runtime!
     saveEdgeSpecies=True,
     saveSimulationProfiles=True,
 )
