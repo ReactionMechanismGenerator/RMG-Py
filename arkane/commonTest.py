@@ -257,12 +257,12 @@ class TestArkaneInput(unittest.TestCase):
         """Test thermo job execution for species from separate input file."""
         input.thermo('C2H4', 'NASA')
         job = jobList[-1]
-        filepath = os.path.join(self.directory, 'reactions', 'H+C2H4=C2H5', 'output.py')
-        job.execute(outputFile=filepath)
-        self.assertTrue(os.path.isfile(os.path.join(os.path.dirname(filepath), 'output.py')))
-        self.assertTrue(os.path.isfile(os.path.join(os.path.dirname(filepath), 'chem.inp')))
-        os.remove(os.path.join(os.path.dirname(filepath), 'output.py'))
-        os.remove(os.path.join(os.path.dirname(filepath), 'chem.inp'))
+        filepath = os.path.join(self.directory, 'reactions', 'H+C2H4=C2H5')
+        job.execute(output_directory=filepath)
+        self.assertTrue(os.path.isfile(os.path.join(filepath, 'output.py')))
+        self.assertTrue(os.path.isfile(os.path.join(filepath, 'chem.inp')))
+        os.remove(os.path.join(filepath, 'output.py'))
+        os.remove(os.path.join(filepath, 'chem.inp'))
 
     def testTransitionState(self):
         """Test loading of transition state input file."""
@@ -332,8 +332,8 @@ class TestArkaneSpecies(unittest.TestCase):
         """
         jobList = self.arkane.loadInputFile(self.dump_input_path)
         for job in jobList:
-            job.execute(outputFile=self.dump_output_file)
-        self.assertTrue(os.path.isfile(self.dump_yaml_file))
+            job.execute(output_directory=self.dump_path)
+        self.assertTrue(os.path.isfile(self.dump_output_file))
 
     def test_create_and_load_yaml(self):
         """
@@ -342,7 +342,7 @@ class TestArkaneSpecies(unittest.TestCase):
         # Create YAML file by running Arkane
         jobList = self.arkane.loadInputFile(self.dump_input_path)
         for job in jobList:
-            job.execute(outputFile=self.dump_output_file)
+            job.execute(output_directory=self.dump_path)
 
         # Load in newly created YAML file
         arkane_spc_old = jobList[0].arkane_species
