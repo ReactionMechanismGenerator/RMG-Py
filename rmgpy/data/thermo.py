@@ -1259,8 +1259,7 @@ class ThermoDatabase(object):
 
         # Return the resulting thermo parameters
         return thermo0
-    
-        
+
     def setDeltaAtomicAdsorptionEnergies(self, bindingEnergies):
         """
         Sets and stores the change in atomic binding energy between
@@ -1318,7 +1317,7 @@ class ThermoDatabase(object):
                 elif bond.isQuadruple():
                     bondOrder = 4.
                 else:
-                    raise NotImplementedError("Can't remove surface bond of type {}".format(bond.order))
+                    raise NotImplementedError("Unsupported bond order {0} for binding energy correction.".format(bond.order))
 
                 normalizedBonds[bondedAtom.symbol] += bondOrder / maxBondOrder[bondedAtom.symbol]
 
@@ -1333,8 +1332,6 @@ class ThermoDatabase(object):
         thermo.comment += " Binding energy corrected by LSR."
         return thermo
 
-
-
     def getThermoDataForSurfaceSpecies(self, species):
         """
         Get the thermo data for an adsorbed species,
@@ -1346,7 +1343,8 @@ class ThermoDatabase(object):
         Returns a :class:`ThermoData` object, with no Cp0 or CpInf
         """
 
-        assert not species.isSurfaceSite(), "Can't estimate thermo of vacant site. Should be in library (and should be 0)"
+        if species.isSurfaceSite():
+            raise DatabaseError("Can't estimate thermo of vacant site. Should be in library (and should be 0).")
 
         logging.debug(("Trying to generate thermo for surface species"
                         " with these {} resonance isomer(s):").format(len(species.molecule)))
