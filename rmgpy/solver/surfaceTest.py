@@ -22,7 +22,7 @@ class SurfaceReactorCheck(unittest.TestCase):
     def testSolveH2(self):
         """
         Test the surface batch reactor with a dissociative adsorption of H2
-        
+
         Here we choose a kinetic model consisting of the dissociative adsorption reaction
         H2 + 2X <=> 2 HX
         We use a SurfaceArrhenius for the rate expression.
@@ -133,7 +133,7 @@ class SurfaceReactorCheck(unittest.TestCase):
     def testSolveCH3(self):
         """
         Test the surface batch reactor with a nondissociative adsorption of CH3
-        
+
         Here we choose a kinetic model consisting of the  adsorption reaction
         CH3 + X <=>  CH3X
         We use a sticking coefficient for the rate expression.
@@ -246,23 +246,4 @@ class SurfaceReactorCheck(unittest.TestCase):
 
         # Check that we've reached equilibrium by the end
         self.assertAlmostEqual(reactionRates[-1, 0], 0.0, delta=1e-2)
-
-        # Visualize the simulation results
-        import pylab
-        fig = pylab.figure(figsize=(6, 6))
-        pylab.subplot(2, 1, 1)
-        pylab.semilogx(t, y[:, 2])
-        pylab.ylabel('Concentration (mol/m$^\\mathdefault{3 or 2}$)')
-        pylab.legend(['CH3X'], loc=4)
-        pylab.subplot(2, 1, 2)
-        pylab.semilogx(t, speciesRates)
-        pylab.legend(['CH3', 'X', 'CH3X'], loc=4)
-        pylab.xlabel('Time (s)')
-        pylab.ylabel('Rate (mol/m$^\\mathdefault{3 or 2}$*s)')
-        #fig.subplots_adjust(left=0.21, bottom=0.10, right=0.95, top=0.95, wspace=0.20, hspace=0.35)
-        pylab.tight_layout()
-        #pylab.show()
-        pylab.savefig('surfaceTestCH3.pdf')
-
-        return
-
+        
