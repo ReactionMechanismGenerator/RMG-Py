@@ -161,9 +161,11 @@ class MoleculeDrawer:
         # However, if this would remove all atoms, then don't remove any
         atomsToRemove = []
         self.implicitHydrogens = {}
+        surfaceSites = []
         for atom in self.molecule.atoms:
             if atom.isHydrogen() and atom.label == '': atomsToRemove.append(atom)
-        if len(atomsToRemove) < len(self.molecule.atoms):
+            elif atom.isSurfaceSite(): surfaceSites.append(atom)
+        if len(atomsToRemove) < len(self.molecule.atoms) - len(surfaceSites):
             for atom in atomsToRemove:
                 for atom2 in atom.bonds:
                     try:
@@ -239,6 +241,11 @@ class MoleculeDrawer:
             self.molecule.removeAtom(self.molecule.atoms[-1])
             self.symbols = ['CO2']
             self.coordinates = numpy.array([[0,0]], numpy.float64)
+        elif self.symbols == ['H', 'H', 'X']:
+            # Render as H2::X instead of crashing on H-H::X (vdW bond)
+            self.molecule.removeAtom(self.molecule.atoms[0])
+            self.symbols = ['H2', 'X']
+            self.coordinates = numpy.array([[0,-0.5],[0,0.5]], numpy.float64) * self.options['bondLength']
   
         # Create a dummy surface to draw to, since we don't know the bounding rect
         # We will copy this to another surface with the correct bounding rect
@@ -304,6 +311,7 @@ class MoleculeDrawer:
         """
         Generate the 2D coordinates to be used when drawing the current 
         molecule. The function uses rdKits 2D coordinate generation.
+        Updates the self.coordinates Array in place.
         """
         atoms = self.molecule.atoms
         Natoms = len(atoms)
@@ -319,8 +327,15 @@ class MoleculeDrawer:
             self.coordinates[0, :] = [0.0, 0.0]
             return self.coordinates
         elif Natoms == 2:
-            self.coordinates[0, :] = [-0.5, 0.0]
-            self.coordinates[1, :] = [0.5, 0.0]
+            if atoms[0].isSurfaceSite():
+                self.coordinates[0, :] = [0.0, -0.5]
+                self.coordinates[1, :] = [0.0, 0.5]
+            elif atoms[1].isSurfaceSite():
+                self.coordinates[0, :] = [0.0, 0.5]
+                self.coordinates[1, :] = [0.0, -0.5]
+            else:
+                self.coordinates[0, :] = [-0.5, 0.0]
+                self.coordinates[1, :] = [0.5, 0.0]
             return self.coordinates
 
         # Decide whether we can use RDKit or have to generate coordinates ourselves
@@ -377,8 +392,6 @@ class MoleculeDrawer:
             # minimize likelihood of overlap
             self.__generateNeighborCoordinates(backbone)
             
-            return coordinates
-            
         else:
             # Use RDKit 2D coordinate generation:
             
@@ -405,7 +418,27 @@ class MoleculeDrawer:
                 coordinates[:,0] = temp[:,1]
                 coordinates[:,1] = temp[:,0]
             
-            return coordinates
+        # For surface species, rotate them so the site is at the bottom.
+        if self.molecule.containsSurfaceSite():
+            if len(self.molecule.atoms) == 1:
+                return coordinates
+            for site in self.molecule.atoms:
+                if site.isSurfaceSite():
+                    break
+            else:
+                raise Exception("Can't find surface site")
+            if site.bonds:
+                adsorbate = site.bonds.keys()[0]
+                vector0 = coordinates[atoms.index(site), :] - coordinates[atoms.index(adsorbate), :]
+                angle = math.atan2(vector0[0], vector0[1]) - math.pi
+                rot = numpy.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], numpy.float64)
+                self.coordinates = coordinates = numpy.dot(coordinates, rot)
+            else:
+                # van der waals
+                index = atoms.index(site)
+                coordinates[index, 1] = min(coordinates[:, 1]) - 0.8  # just move the site down a bit
+                coordinates[index, 0] = coordinates[:, 0].mean()  # and center it
+
     
     def __findCyclicBackbone(self):
         """
@@ -1198,6 +1231,7 @@ class MoleculeDrawer:
             elif heavyAtom == 'Cl': cr.set_source_rgba(0.0, 1.0, 0.0, 1.0)
             elif heavyAtom == 'Br': cr.set_source_rgba(0.6, 0.2, 0.2, 1.0)
             elif heavyAtom == 'I':  cr.set_source_rgba(0.5, 0.0, 0.5, 1.0)
+            elif heavyAtom == 'X':  cr.set_source_rgba(0.5, 0.25, 0.5, 1.0)
             else:                   cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
     
             # Text itself

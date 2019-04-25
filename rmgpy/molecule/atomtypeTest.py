@@ -489,6 +489,18 @@ class TestGetAtomType(unittest.TestCase):
         self.mol75 = Molecule().fromAdjacencyList('''1 H  u0 p0 c0 {2,S}
                                                      2 F  u0 p3 c0 {1,S}''')
 
+        self.mol76 = Molecule().fromAdjacencyList('''1 H u0 p0 c0 {2,S}
+                                                     2 X u0 p0 c0 {1,S}''')
+
+        self.mol77 = Molecule().fromAdjacencyList('''1 C u0 p0 c0 {2,S} {3,S} {5,S} {6,S}
+                                                     2 H u0 p0 c0 {1,S}
+                                                     3 H u0 p0 c0 {1,S}
+                                                     4 X u0 p0 c0
+                                                     5 H u0 p0 c0 {1,S}
+                                                     6 H u0 p0 c0 {1,S}''')
+
+        self.mol78 = Molecule().fromAdjacencyList('''1 X u0 p0 c0''')
+
     def atomType(self, mol, atomID):
         atom = mol.atoms[atomID]
         type = getAtomType(atom, mol.getBonds(atom))
@@ -633,7 +645,24 @@ class TestGetAtomType(unittest.TestCase):
         self.assertEqual(self.atomType(self.mol7, 0), 'He')
         self.assertEqual(self.atomType(self.mol8, 0), 'Ne')
 
+    def testOccupiedSurfaceAtomType(self):
+        """
+        Test that getAtomType() works for occupied surface sites and for regular atoms in the complex.
+        """
+        self.assertEqual(self.atomType(self.mol76, 0), 'H')
+        self.assertEqual(self.atomType(self.mol76, 1), 'Xo')
+
+    def testVacantSurfaceSiteAtomType(self):
+        """
+        Test that getAtomType() works for vacant surface sites and for regular atoms in the complex.
+        """
+        self.assertEqual(self.atomType(self.mol77, 0), 'Cs')
+        self.assertEqual(self.atomType(self.mol77, 1), 'H')
+        self.assertEqual(self.atomType(self.mol77, 3), 'Xv')
+        self.assertEqual(self.atomType(self.mol78, 0), 'Xv')
+
 ################################################################################
+
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

@@ -325,6 +325,12 @@ class Atom(Vertex):
         """
         return self.element.number == 9
 
+    def isSurfaceSite(self):
+        """
+        Return ``True`` if the atom represents a surface site or ``False`` if not.
+        """
+        return self.symbol == 'X'
+
     def isSilicon(self):
         """
         Return ``True`` if the atom represents a silicon atom or ``False`` if
@@ -416,6 +422,9 @@ class Atom(Vertex):
         Update self.charge, according to the valence, and the
         number and types of bonds, radicals, and lone pairs.
         """
+        if self.isSurfaceSite():
+            self.charge = 0
+            return
         valence_electron = elements.PeriodicSystem.valence_electrons[self.symbol]
         order = self.getBondOrdersForAtom()
         self.charge = valence_electron - order - self.radicalElectrons - 2*self.lonePairs
@@ -906,6 +915,20 @@ class Molecule(Graph):
         by an bond, or ``False`` if not.
         """
         return self.hasEdge(atom1, atom2)
+
+    def containsSurfaceSite(self):
+        """
+        Returns ``True`` iff the molecule contains an 'X' surface site.
+        """
+        cython.declare(atom=Atom)
+        for atom in self.atoms:
+            if atom.symbol == 'X':
+                return True
+        return False
+
+    def isSurfaceSite(self):
+        "Returns ``True`` iff the molecule is nothing but a surface site 'X'."
+        return len(self.atoms) == 1 and self.atoms[0].isSurfaceSite()
 
     def removeAtom(self, atom):
         """
@@ -1778,6 +1801,8 @@ class Molecule(Graph):
         """
         Return the value of the heat capacity at zero temperature in J/mol*K.
         """
+        if self.containsSurfaceSite():
+            return 0.01
         if len(self.atoms) == 1:
             return 2.5 * constants.R
         else:
@@ -1789,10 +1814,13 @@ class Molecule(Graph):
         """
         cython.declare(Natoms=cython.int, Nvib=cython.int, Nrotors=cython.int)
         
+        if self.containsSurfaceSite():
+            # ToDo: internal rotors could still act as rotors
+            return constants.R * 3 * len(self.vertices)
+
         if len(self.vertices) == 1:
             return self.calculateCp0()
         else:
-            
             Natoms = len(self.vertices)
             Nvib = 3 * Natoms - (5 if self.isLinear() else 6)
             Nrotors = self.countInternalRotors()
@@ -1891,13 +1919,13 @@ class Molecule(Graph):
         """
         cython.declare(atom1=Atom, atom2=Atom, bond12=Bond, order=float)
         for atom1 in self.vertices:
-            if not atom1.isHydrogen():
+            if atom1.isHydrogen() or atom1.isSurfaceSite():
+                atom1.lonePairs = 0
+            else:
                 order = atom1.getBondOrdersForAtom()
                 atom1.lonePairs = (elements.PeriodicSystem.valence_electrons[atom1.symbol] - atom1.radicalElectrons - atom1.charge - int(order)) / 2.0
                 if atom1.lonePairs % 1 > 0 or atom1.lonePairs > 4:
                     logging.error("Unable to determine the number of lone pairs for element {0} in {1}".format(atom1,self))
-            else:
-                atom1.lonePairs = 0
                 
     def getNetCharge(self):
         """

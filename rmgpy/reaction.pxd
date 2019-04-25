@@ -66,6 +66,8 @@ cdef class Reaction:
     
     cpdef bint isUnimolecular(self)
 
+    cpdef bint isSurfaceReaction(self)
+
     cpdef bint hasTemplate(self, list reactants, list products)
     
     cpdef bint matchesSpecies(self, list reactants, list products=?)
@@ -91,6 +93,8 @@ cdef class Reaction:
     cpdef int getStoichiometricCoefficient(self, Species spec)
 
     cpdef double getRateCoefficient(self, double T, double P=?)
+
+    cpdef double getSurfaceRateCoefficient(self, double T, double surfaceSiteDensity) except -2
 
     cpdef fixBarrierHeight(self, bint forcePositive=?)
 

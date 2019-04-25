@@ -168,6 +168,8 @@ class RMG(util.Subject):
         self.kineticsEstimator = 'group additivity'
         self.solvent = None
         self.diffusionLimiter = None
+        self.surfaceSiteDensity = None
+        self.bindingEnergies = None
         
         self.reactionModel = None
         self.reactionSystems = None
@@ -235,6 +237,9 @@ class RMG(util.Subject):
             self.reactionModel.pressureDependence = self.pressureDependence
         if self.solvent:
             self.reactionModel.solventName = self.solvent
+
+        if self.surfaceSiteDensity:
+            self.reactionModel.surfaceSiteDensity = self.surfaceSiteDensity
 
         self.reactionModel.verboseComments = self.verboseComments
         self.reactionModel.saveEdgeSpecies = self.saveEdgeSpecies
@@ -364,6 +369,9 @@ class RMG(util.Subject):
         #check libraries
         self.checkLibraries()
         
+        if self.bindingEnergies:
+            self.database.thermo.setDeltaAtomicAdsorptionEnergies(self.bindingEnergies)
+
         #set global variable solvent
         if self.solvent:
             global solvent
@@ -928,13 +936,20 @@ class RMG(util.Subject):
 
         # generate Cantera files chem.cti & chem_annotated.cti in a designated `cantera` output folder
         try:
-            self.generateCanteraFiles(os.path.join(self.outputDirectory, 'chemkin', 'chem.inp'))
-            self.generateCanteraFiles(os.path.join(self.outputDirectory, 'chemkin', 'chem_annotated.inp'))
+            if any([s.containsSurfaceSite() for s in self.reactionModel.core.species]):
+                self.generateCanteraFiles(os.path.join(self.outputDirectory, 'chemkin', 'chem-gas.inp'),
+                                          surfaceFile=(os.path.join(self.outputDirectory, 'chemkin', 'chem-surface.inp')))
+                self.generateCanteraFiles(os.path.join(self.outputDirectory, 'chemkin', 'chem_annotated-gas.inp'),
+                                      surfaceFile=(os.path.join(self.outputDirectory, 'chemkin', 'chem_annotated-surface.inp')))
+            else:  # gas phase only
+                self.generateCanteraFiles(os.path.join(self.outputDirectory, 'chemkin', 'chem.inp'))
+                self.generateCanteraFiles(os.path.join(self.outputDirectory, 'chemkin', 'chem_annotated.inp'))
         except EnvironmentError:
-            logging.error('Could not generate Cantera files due to EnvironmentError. Check read\write privileges in output directory.')
+            logging.exception('Could not generate Cantera files due to EnvironmentError. Check read\write privileges in output directory.')
+        except Exception:
+            logging.exception('Could not generate Cantera files for some reason.')
         
         self.check_model()
-        
         # Write output file
         logging.info('')
         logging.info('MODEL GENERATION COMPLETED')
@@ -977,6 +992,9 @@ class RMG(util.Subject):
         violators = []
         num_rxn_violators = 0
         for rxn in self.reactionModel.core.reactions:
+            if rxn.isSurfaceReaction():
+                # Don't check collision limits for surface reactions.
+                continue
             violator_list = rxn.check_collision_limit_violation(t_min=self.Tmin, t_max=self.Tmax,
                                                             p_min=self.Pmin, p_max=self.Pmax)
             if violator_list:
@@ -1225,6 +1243,8 @@ class RMG(util.Subject):
         transportFile = os.path.join(os.path.dirname(chemkinFile), 'tran.dat')
         fileName = os.path.splitext(os.path.basename(chemkinFile))[0] + '.cti'
         outName = os.path.join(self.outputDirectory, 'cantera', fileName)
+        if kwargs.has_key('surfaceFile'):
+            outName = outName.replace('-gas.', '.')
         canteraDir = os.path.dirname(outName)
         try:
             os.makedirs(canteraDir)
@@ -1234,7 +1254,13 @@ class RMG(util.Subject):
         if os.path.exists(outName):
             os.remove(outName)
         parser = ck2cti.Parser()
-        parser.convertMech(chemkinFile, transportFile=transportFile, outName=outName, quiet=True, permissive=True, **kwargs)
+        try:
+            parser.convertMech(chemkinFile, transportFile=transportFile, outName=outName, quiet=True, permissive=True, **kwargs)
+        except ck2cti.InputParseError:
+            logging.exception("Error converting to Cantera format.")
+            logging.info("Trying again without transport data file.")
+            parser.convertMech(chemkinFile, outName=outName, quiet=True, permissive=True, **kwargs)
+
 
     def initializeReactionThresholdAndReactFlags(self):
         numCoreSpecies = len(self.reactionModel.core.species)

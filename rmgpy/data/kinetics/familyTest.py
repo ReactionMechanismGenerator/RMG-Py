@@ -800,7 +800,8 @@ class TestGenerateReactions(unittest.TestCase):
             path=os.path.join(settings['test_data.directory'], 'testing_database'),
             thermoLibraries=[],
             reactionLibraries=[],
-            kineticsFamilies=['H_Abstraction', 'R_Addition_MultipleBond','Singlet_Val6_to_triplet', 'R_Recombination'],
+            kineticsFamilies=['H_Abstraction', 'R_Addition_MultipleBond', 'Singlet_Val6_to_triplet', 'R_Recombination',
+                              'Baeyer-Villiger_step1_cat', 'Surface_Adsorption_Dissociative', 'Surface_Dissociation_vdW'],
             depository=False,
             solvation=False,
             testing=True,
@@ -902,4 +903,30 @@ multiplicity 2
 
         reactant = [Molecule(SMILES='[O-][N+]#N')]
         reactionList = self.database.kinetics.families['R_Recombination'].generateReactions(reactant)
+        self.assertEquals(len(reactionList), 0)
+
+    def test_reactant_num_mismatch(self):
+        """Test that we get no reactions for reactant/template size mismatch
+
+        This happens often because we test every combo of molecules against all families."""
+        reactants = [Molecule(SMILES='C'), Molecule(SMILES='[OH]')]
+        reactionList = self.database.kinetics.families['Singlet_Val6_to_triplet'].generateReactions(reactants)
+        self.assertEquals(len(reactionList), 0)
+        reactionList = self.database.kinetics.families['Baeyer-Villiger_step1_cat'].generateReactions(reactants)
+        self.assertEquals(len(reactionList), 0)
+        reactionList = self.database.kinetics.families['Surface_Adsorption_Dissociative'].generateReactions(reactants)
+        self.assertEquals(len(reactionList), 0)
+
+    def test_reactant_num_mismatch_2(self):
+        """Test that we get no reactions for reactant/template size mismatch
+
+        This happens often because we test every combo of molecules against all families."""
+        reactants = [
+            Molecule().fromSMILES('CC'),
+            Molecule().fromAdjacencyList('1 X u0'),
+            Molecule().fromAdjacencyList('1 X u0'),
+        ]
+        # reactionList = self.database.kinetics.families['Surface_Adsorption_Dissociative'].generateReactions(reactants)
+        # self.assertEquals(len(reactionList), 14)
+        reactionList = self.database.kinetics.families['Surface_Dissociation_vdW'].generateReactions(reactants)
         self.assertEquals(len(reactionList), 0)

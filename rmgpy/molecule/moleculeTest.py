@@ -98,16 +98,104 @@ class TestAtom(unittest.TestCase):
             else:
                 self.assertFalse(atom.isCarbon())
 
+    def testIsSilicon(self):
+        """
+        Test the Atom.isSilicon() method.
+        """
+        for element in elementList:
+            atom = Atom(element=element, radicalElectrons=1, charge=0, label='*1', lonePairs=0)
+            if element.symbol == 'Si':
+                self.assertTrue(atom.isSilicon())
+            else:
+                self.assertFalse(atom.isSilicon())
+
     def testIsOxygen(self):
         """
         Test the Atom.isOxygen() method.
         """
         for element in elementList:
-            atom = Atom(element=element, radicalElectrons=1, charge=0, label='*1', lonePairs=2)
+            atom = Atom(element=element, radicalElectrons=2, charge=0, label='*1', lonePairs=2)
             if element.symbol == 'O':
                 self.assertTrue(atom.isOxygen())
             else:
                 self.assertFalse(atom.isOxygen())
+
+    def testIsNitrogen(self):
+        """
+        Test the Atom.isNitrogen() method.
+        """
+        for element in elementList:
+            atom = Atom(element=element, radicalElectrons=1, charge=0, label='*1', lonePairs=1)
+            if element.symbol == 'N':
+                self.assertTrue(atom.isNitrogen())
+            else:
+                self.assertFalse(atom.isNitrogen())
+
+    def testIsSulfur(self):
+        """
+        Test the Atom.isSulfur() method.
+        """
+        for element in elementList:
+            atom = Atom(element=element, radicalElectrons=1, charge=0, label='*1', lonePairs=2)
+            if element.symbol == 'S':
+                self.assertTrue(atom.isSulfur())
+            else:
+                self.assertFalse(atom.isSulfur())
+
+    def testIsFluorine(self):
+        """
+        Test the Atom.isFluorine() method.
+        """
+        for element in elementList:
+            atom = Atom(element=element, radicalElectrons=1, charge=0, label='*1', lonePairs=3)
+            if element.symbol == 'F':
+                self.assertTrue(atom.isFluorine())
+            else:
+                self.assertFalse(atom.isFluorine())
+
+    def testIsChlorine(self):
+        """
+        Test the Atom.isChlorine() method.
+        """
+        for element in elementList:
+            atom = Atom(element=element, radicalElectrons=1, charge=0, label='*1', lonePairs=3)
+            if element.symbol == 'Cl':
+                self.assertTrue(atom.isChlorine())
+            else:
+                self.assertFalse(atom.isChlorine())
+
+    def testIsIodine(self):
+        """
+        Test the Atom.isIodine() method.
+        """
+        for element in elementList:
+            atom = Atom(element=element, radicalElectrons=1, charge=0, label='*1', lonePairs=3)
+            if element.symbol == 'I':
+                self.assertTrue(atom.isIodine())
+            else:
+                self.assertFalse(atom.isIodine())
+
+    def testIsNOS(self):
+        """
+        Test the Atom.isNOS() method.
+        """
+        for element in elementList:
+            atom = Atom(element=element, radicalElectrons=1, charge=0, label='*1', lonePairs=2)
+            if element.symbol in ['N', 'O', 'S']:
+                self.assertTrue(atom.isNOS())
+            else:
+                self.assertFalse(atom.isNOS())
+
+    def testIsSurfaceSite(self):
+        """
+        Test the Atom.isSurfaceSite() method.
+        """
+        for element in elementList:
+            atom = Atom(element=element, radicalElectrons=0, charge=0, label='*1', lonePairs=0)
+            if element.symbol == 'X':
+                self.assertTrue(atom.isSurfaceSite())
+            else:
+                self.assertFalse(atom.isSurfaceSite())
 
     def testIncrementRadical(self):
         """
@@ -1575,7 +1663,29 @@ multiplicity 2
         saturated_molecule = indenyl.copy(deep=True)
         saturated_molecule.saturate_radicals()
         self.assertTrue(saturated_molecule.isIsomorphic(indene))
-        
+
+    def testSurfaceMolecules(self):
+        """
+        Test that we can identify surface molecules.
+        """
+        adsorbed = Molecule().fromAdjacencyList("""
+                                                1 H u0 p0 c0 {2,S}
+                                                2 X u0 p0 c0 {1,S}
+                                                """)
+        self.assertTrue(adsorbed.containsSurfaceSite())
+        gas = Molecule().fromAdjacencyList("""
+                                        1 H u0 p0 c0 {2,S}
+                                        2 H u0 p0 c0 {1,S}
+                                        """)
+        self.assertFalse(gas.containsSurfaceSite())
+
+        surface_site = Molecule().fromAdjacencyList("""
+                                                1 X u0 p0 c0
+                                                """)
+        self.assertTrue((surface_site.isSurfaceSite()))
+        self.assertFalse((adsorbed.isSurfaceSite()))
+        self.assertFalse((gas.isSurfaceSite()))
+
     def testMalformedAugmentedInChI(self):
         """Test that augmented inchi without InChI layer raises Exception."""
         from .inchi import InchiException

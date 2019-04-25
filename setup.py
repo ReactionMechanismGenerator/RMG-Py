@@ -71,6 +71,7 @@ def getMainExtensionModules():
         Extension('rmgpy.kinetics.falloff', ['rmgpy/kinetics/falloff.pyx']),
         Extension('rmgpy.kinetics.model', ['rmgpy/kinetics/model.pyx']),
         Extension('rmgpy.kinetics.tunneling', ['rmgpy/kinetics/tunneling.pyx']),
+        Extension('rmgpy.kinetics.surface', ['rmgpy/kinetics/surface.pyx']),
         # Molecules and molecular representations
         Extension('rmgpy.molecule.atomtype', ['rmgpy/molecule/atomtype.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.element', ['rmgpy/molecule/element.py'], include_dirs=['.']),
@@ -121,6 +122,7 @@ def getSolverExtensionModules():
         Extension('rmgpy.solver.base', ['rmgpy/solver/base.pyx'], include_dirs=['.']),
         Extension('rmgpy.solver.simple', ['rmgpy/solver/simple.pyx'], include_dirs=['.']),
         Extension('rmgpy.solver.liquid', ['rmgpy/solver/liquid.pyx'], include_dirs=['.']),
+        Extension('rmgpy.solver.surface', ['rmgpy/solver/surface.pyx'], include_dirs=['.']),
     ]
 
 

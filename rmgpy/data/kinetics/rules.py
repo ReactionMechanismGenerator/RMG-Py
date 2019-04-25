@@ -45,7 +45,7 @@ from rmgpy.data.base import Database, Entry, getAllCombinations
 
 from rmgpy.quantity import Quantity, ScalarQuantity
 from rmgpy.reaction import Reaction
-from rmgpy.kinetics import ArrheniusEP, Arrhenius
+from rmgpy.kinetics import ArrheniusEP, Arrhenius, StickingCoefficientBEP, SurfaceArrheniusBEP
 from .common import saveEntry
 from rmgpy.exceptions import KineticsError, DatabaseError
 
@@ -580,14 +580,25 @@ class KineticsRules(Database):
         elif Aunits == 'cm^6/(mol^2*s)' or Aunits == 'cm^6/(molecule^2*s)' or Aunits == 'm^6/(molecule^2*s)':
             Aunits = 'm^6/(mol^2*s)'
         elif Aunits == 's^-1' or Aunits == 'm^3/(mol*s)' or Aunits == 'm^6/(mol^2*s)':
+            # they were already in SI
             pass
+        elif Aunits in ['m^2/(mol*s)', 'cm^2/(mol*s)', 'm^2/(molecule*s)', 'cm^2/(molecule*s)']:
+            # surface: bimolecular (Langmuir-Hinshelwood)
+            Aunits = 'm^2/(mol*s)'
+        elif Aunits in ['m^5/(mol^2*s)', 'cm^5/(mol^2*s)', 'm^5/(molecule^2*s)', 'cm^5/(molecule^2*s)']:
+            # surface: dissociative adsorption
+            Aunits = 'm^5/(mol^2*s)'
         else:
             raise Exception('Invalid units {0} for averaging kinetics.'.format(Aunits))
-        averagedKinetics = ArrheniusEP(
-            A = (10**logA,Aunits),
-            n = n,
-            alpha = alpha,
-            E0 = (E0*0.001,"kJ/mol"),
+
+        if type(kinetics) not in [ArrheniusEP, SurfaceArrheniusBEP, StickingCoefficientBEP]:
+            raise Exception('Invalid kinetics type {0!r} for {1!r}.'.format(type(kinetics), self))
+
+        averagedKinetics = type(kinetics)(
+            A=(10 ** logA, Aunits),
+            n=n,
+            alpha=alpha,
+            E0=(E0 * 0.001, "kJ/mol"),
         )
         return averagedKinetics
     

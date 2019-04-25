@@ -460,6 +460,14 @@ class GroupAtom(Vertex):
         # Otherwise self is in fact a specific case of other
         return True
 
+
+    def isSurfaceSite(self):
+        """
+        Return ``True`` if the atom represents a surface site or ``False`` if not.
+        """
+        siteType = atomTypes['X']
+        return all([s.isSpecificCaseOf(siteType) for s in self.atomType])
+
     def isOxygen(self):
         """
         Return ``True`` if the atom represents an oxygen atom or ``False`` if
@@ -548,15 +556,18 @@ class GroupAtom(Vertex):
         defaultLonePairs={'H': 0,
                           'D': 0,
                           'T': 0,
-                          'He':1,
+                          'He': 1,
                           'C': 0,
                           'O': 2,
                           'N': 1,
                           'Si':0,
                           'S': 2,
-                          'Ne':4,
-                          'Cl':3,
-                          'Ar':4,
+                          'Ne': 4,
+                          'Cl': 3,
+                          'F': 3,
+                          'I': 3,
+                          'Ar': 4,
+                          'X': 0,
         }
 
         for elementLabel in allElements:
@@ -1041,6 +1052,20 @@ class Group(Graph):
         by an bond, or ``False`` if not.
         """
         return self.hasEdge(atom1, atom2)
+
+    def containsSurfaceSite(self):
+        """
+        Returns ``True`` iff the group contains an 'X' surface site.
+        """
+        cython.declare(atom=GroupAtom)
+        for atom in self.atoms:
+            if atom.isSurfaceSite():
+                return True
+        return False
+
+    def isSurfaceSite(self):
+        "Returns ``True`` iff the group is nothing but a surface site 'X'."
+        return len(self.atoms) == 1 and self.atoms[0].isSurfaceSite()
 
     def removeAtom(self, atom):
         """
@@ -2367,7 +2392,7 @@ class Group(Graph):
                     atom2.bonds[atom1].order = bond12.order
                     continue
 
-                atom1Bonds = atom1.countBonds()
+                atom1Bonds = atom1.countBonds() # countBonds list must match getFeatures list
                 atom2Bonds = atom2.countBonds()
                 requiredFeatures1 = [atom1Features[x][0] - atom1Bonds[x] if atom1Features[x] else 0 for x in range(len(atom1Bonds))]
                 requiredFeatures2 = [atom2Features[x][0] - atom2Bonds[x] if atom2Features[x] else 0 for x in range(len(atom2Bonds))]
