@@ -168,6 +168,8 @@ class RMG(util.Subject):
         self.kineticsEstimator = 'group additivity'
         self.solvent = None
         self.diffusionLimiter = None
+        self.surfaceSiteDensity = None
+        self.bindingEnergies = None
         
         self.reactionModel = None
         self.reactionSystems = None
@@ -235,6 +237,9 @@ class RMG(util.Subject):
             self.reactionModel.pressureDependence = self.pressureDependence
         if self.solvent:
             self.reactionModel.solventName = self.solvent
+
+        if self.surfaceSiteDensity:
+            self.reactionModel.surfaceSiteDensity = self.surfaceSiteDensity
 
         self.reactionModel.verboseComments = self.verboseComments
         self.reactionModel.saveEdgeSpecies = self.saveEdgeSpecies

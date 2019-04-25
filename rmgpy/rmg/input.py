@@ -38,7 +38,7 @@ from copy import deepcopy
 from rmgpy import settings
 
 from rmgpy.molecule import Molecule
-from rmgpy.quantity import Quantity, Energy
+from rmgpy.quantity import Quantity, Energy, SurfaceConcentration
 from rmgpy.solver.base import TerminationTime, TerminationConversion, TerminationRateRatio
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.solver.liquid import LiquidReactor
@@ -62,7 +62,6 @@ def database(
              kineticsFamilies = 'default',
              kineticsDepositories = 'default',
              kineticsEstimator = 'rate rules',
-             bindingEnergies = None,
              ):
     # This function just stores the information about the database to be loaded
     # We don't actually load the database until after we're finished reading
@@ -105,13 +104,28 @@ def database(
         if not isinstance(kineticsFamilies,list):
             raise InputError("kineticsFamilies should be either 'default', 'all', 'none', or a list of names eg. ['H_Abstraction','R_Recombination'] or ['!Intra_Disproportionation'].")
         rmg.kineticsFamilies = kineticsFamilies
+
+
+def catalystProperties(bindingEnergies = None,
+                       surfaceSiteDensity = None,):
+    """
+    Specify the properties of the catalyst.
+    Binding energies of C,H,O,N atoms, and the surface site density.
+    Defaults to Pt(111) if not specified.
+    """
     rmg.bindingEnergies = convertBindingEnergies(bindingEnergies)
+
+    if surfaceSiteDensity is None:
+        surfaceSiteDensity = (2.72e-9, 'mol/cm^2')
+        logging.info("Using default surface site density of {0!r}".format(surfaceSiteDensity))
+    surfaceSiteDensity = SurfaceConcentration(*surfaceSiteDensity)
+    rmg.surfaceSiteDensity = surfaceSiteDensity
 
 
 def convertBindingEnergies(bindingEnergies):
     """
     Process the bindingEnergies from the input file.
-    If "None" is passed, then it returns Ni(111) values.
+    If "None" is passed, then it returns Pt(111) values.
 
     :param bindingEnergies: a dictionary of element symbol: binding energy pairs (or None)
     :return: the processed and checked dictionary
@@ -342,7 +356,6 @@ def surfaceReactor(temperature,
                   initialGasMoleFractions,
                   initialSurfaceCoverages,
                   surfaceVolumeRatio,
-                  surfaceSiteDensity,
                   nSims=4,
                   terminationConversion=None,
                   terminationTime=None,
@@ -424,7 +437,7 @@ def surfaceReactor(temperature,
                             initialGasMoleFractions=initialGasMoleFractions,
                             initialSurfaceCoverages=initialSurfaceCoverages,
                             surfaceVolumeRatio=surfaceVolumeRatio,
-                            surfaceSiteDensity=surfaceSiteDensity,
+                            surfaceSiteDensity=rmg.surfaceSiteDensity,
                             nSims=nSims,
                             termination=termination,
                             sensitiveSpecies=sensitiveSpecies,
@@ -702,6 +715,7 @@ def readInputFile(path, rmg0):
         'True': True,
         'False': False,
         'database': database,
+        'catalystProperties': catalystProperties,
         'species': species,
         'SMARTS': SMARTS,
         'SMILES': SMILES,
@@ -776,6 +790,7 @@ def readThermoInputFile(path, rmg0):
         'True': True,
         'False': False,
         'database': database,
+        'catalystProperties': catalystProperties,
         'species': species,
         'SMARTS': SMARTS,
         'SMILES': SMILES,
@@ -822,6 +837,14 @@ def saveInputFile(path, rmg):
     f.write('    kineticsFamilies = {0!r},\n'.format(rmg.kineticsFamilies))
     f.write('    kineticsEstimator = {0!r},\n'.format(rmg.kineticsEstimator))
     f.write(')\n\n')
+
+    if rmg.surfaceSiteDenisty or rmg.bindingEnergies:
+        f.write('catalystProperties(\n')
+        if rmg.surfaceSiteDenisty:
+            f.write('    surfaceSiteDensity = {0!r},'.format(rmg.surfaceSiteDensity))
+        if rmg.bindingEnergies:
+            f.write('    bindingEnergies = {0!r},'.format(rmg.bindingEnergies))
+        f.write(')\n\n')
 
     # Species
     for species in rmg.initialSpecies:

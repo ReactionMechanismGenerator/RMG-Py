@@ -1980,7 +1980,8 @@ def saveChemkinFile(path, species, reactions, verbose = True, checkForDuplicates
     logging.info("Chemkin file contains {0} reactions.".format(__chemkin_reaction_count))
     __chemkin_reaction_count = None
     
-def saveChemkinSurfaceFile(path, species, reactions, verbose = True, checkForDuplicates=True):
+def saveChemkinSurfaceFile(path, species, reactions, verbose = True, checkForDuplicates=True,
+                            surfaceSiteDensity=None):
     """
     Save a Chemkin *surface* input file to `path` on disk containing the provided lists
     of `species` and `reactions`.
@@ -1990,7 +1991,7 @@ def saveChemkinSurfaceFile(path, species, reactions, verbose = True, checkForDup
     # Check for duplicate
     if checkForDuplicates:
         markDuplicateReactions(reactions)
-    
+
     f = open(path, 'w')
     
     sorted_species = sorted(species, key=lambda species: species.index)
@@ -2001,7 +2002,10 @@ def saveChemkinSurfaceFile(path, species, reactions, verbose = True, checkForDup
         f.write('SITE/{}/'.format(surface_name))
     else:
         f.write('SITE ')
-    f.write('  SDEN/2.9E-9/\n')
+    if surfaceSiteDensity:
+        f.write('  SDEN/{0:.4E}/ ! mol/cm^2\n'.format(surfaceSiteDensity.value_si*1e-4))
+    else:
+        f.write('  SDEN/2.72E-9/ ! mol/cm^2 DEFAULT!')
     # todo: add surface site density from reactor simulation
     for spec in sorted_species:
         label = getSpeciesIdentifier(spec)
@@ -2114,10 +2118,10 @@ def saveChemkin(reactionModel, path, verbose_path, dictionaryPath=None, transpor
                 gas_rxnList.append(r)
 
         saveChemkinFile(gas_path, gas_speciesList, gas_rxnList, verbose=False, checkForDuplicates=False) # We should already have marked everything as duplicates by now
-        saveChemkinSurfaceFile(surface_path, surface_speciesList, surface_rxnList, verbose=False, checkForDuplicates=False) # We should already have marked everything as duplicates by now
+        saveChemkinSurfaceFile(surface_path, surface_speciesList, surface_rxnList, verbose=False, checkForDuplicates=False, surfaceSiteDensity=reactionModel.surfaceSiteDensity) # We should already have marked everything as duplicates by now
         logging.info('Saving annotated version of Chemkin files...')
         saveChemkinFile(gas_verbose_path, gas_speciesList, gas_rxnList, verbose=True, checkForDuplicates=False) # We should already have marked everything as duplicates by now
-        saveChemkinSurfaceFile(surface_verbose_path, surface_speciesList, surface_rxnList, verbose=True, checkForDuplicates=False) # We should already have marked everything as duplicates by now
+        saveChemkinSurfaceFile(surface_verbose_path, surface_speciesList, surface_rxnList, verbose=True, checkForDuplicates=False, surfaceSiteDensity=reactionModel.surfaceSiteDensity) # We should already have marked everything as duplicates by now
 
     else:
         # Gas phase only
@@ -2143,7 +2147,12 @@ def saveChemkinFiles(rmg):
     latest_chemkin_verbose_path = os.path.join(rmg.outputDirectory, 'chemkin', 'chem_annotated.inp')
     latest_dictionary_path = os.path.join(rmg.outputDirectory, 'chemkin','species_dictionary.txt')
     latest_transport_path = os.path.join(rmg.outputDirectory, 'chemkin', 'tran.dat')
-    saveChemkin(rmg.reactionModel, this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path, latest_transport_path, False)
+    saveChemkin(rmg.reactionModel,
+                this_chemkin_path,
+                latest_chemkin_verbose_path,
+                latest_dictionary_path,
+                latest_transport_path,
+                saveEdgeSpecies=False)
 
     if is_surface_model:
         paths = []
