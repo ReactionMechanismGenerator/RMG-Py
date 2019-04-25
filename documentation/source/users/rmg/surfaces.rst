@@ -12,6 +12,14 @@ for surface reaction mechanism generation, as they cause certain aspects of it t
 deviate from the standard gas-phase RMG input file.
 
 
+Catalyst properties
+=====================
+A new block ``catalystProperties()`` should be added for specifying the catalyst surface to be used in the mechanism generation.  
+It includes the surface site density of the metal surface (``surfaceSiteDensity``), which is the amount of active catalytic sites per unit surface area.
+It varies depending on the catalyst in question, but is held constant across simulations.
+This block should also contain the reference adatom binding energies (see linear scaling section below).
+
+
 Reactor specifications
 ========================
 For surface chemistry, RMG can model constant temperature and volume systems. 
@@ -25,8 +33,6 @@ in the species block.
 The ``initialGasMoleFractions`` dictionary should contain gas-phase species,
 the ``initialSurfaceCoverages`` dictionary should contain adsorbates and vacant sites.
 Both will be normalized if the values given do not sum to 1.00.
-The surface site density (``surfaceSiteDensity``) is the amount of active catalytic sites per unit surface area, 
-and varies depending on the catalyst in question, but is held constant across simulations.
 The ratio of catalyst surface area to gas phase volume (`surfaceVolumeRatio`) is determined by reactor geometry,
 and so may be different in each ``surfaceReactor`` simulation. 
 
