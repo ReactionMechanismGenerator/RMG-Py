@@ -69,7 +69,7 @@ def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
     rdkitmol = Chem.rdchem.EditableMol(Chem.rdchem.Mol())
     for index, atom in enumerate(mol.vertices):
         if atom.element.symbol == 'X':
-            rdAtom = Chem.rdchem.Atom('Ni')  # not sure how to do this with linear scaling when this might not be Ni
+            rdAtom = Chem.rdchem.Atom('Pt')  # not sure how to do this with linear scaling when this might not be Pt
         else:
             rdAtom = Chem.rdchem.Atom(atom.element.symbol)
         if atom.element.isotope != -1:
