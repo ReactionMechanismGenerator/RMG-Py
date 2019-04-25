@@ -3457,12 +3457,8 @@ class KineticsFamily(Database):
                 continue
             else:
                 if self.ownReverse:
-                    logging.error("rxn")
                     logging.error(str(rxns[i]))
-                    logging.error("root")
-                    logging.error(root.toAdjacencyList())
-                    logging.error("mol")
-                    logging.error(mol.toAdjacencyList())
+                    continue
                     raise ValueError("couldn't match reaction")
 
                 mol = None
@@ -3475,8 +3471,12 @@ class KineticsFamily(Database):
                 if mol.isSubgraphIsomorphic(root,generateInitialMap=True): #try product structures
                     products = rxns[i].products
                 else:
-                    products = self.applyRecipe([s.molecule[0] for s in rxns[i].reactants],forward=True)
-                    products = [Species(molecule=[p]) for p in products]
+                    try:
+                        products = self.applyRecipe([s.molecule[0] for s in rxns[i].reactants],forward=True)
+                        products = [Species(molecule=[p]) for p in products]
+                    except:
+                        logging.error(str(rxns[i]))
+                        continue
 
                 rrev = Reaction(reactants=products,products=rxns[i].reactants,kinetics=rxns[i].generateReverseRateCoefficient(),rank=rxns[i].rank)
 
