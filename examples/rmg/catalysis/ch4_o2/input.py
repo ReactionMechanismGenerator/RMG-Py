@@ -1,7 +1,7 @@
 # Data sources
 database(
-    thermoLibraries=['surfaceThermoPt', 'primaryThermoLibrary', 'thermo_DFT_CCSDTF12_BAC','DFT_QCI_thermo'],
-    reactionLibraries = [('Surface/CPOX_Pt/Deutschmann2006', False)],
+    thermoLibraries=['surfaceThermoPt', 'primaryThermoLibrary', 'thermo_DFT_CCSDTF12_BAC','DFT_QCI_thermo'], # 'surfaceThermoPt' is the default. Thermo data is derived using bindingEnergies for other metals 
+    reactionLibraries = [('Surface/CPOX_Pt/Deutschmann2006', False)], # when Ni is used change the library to Surface/Deutschmann_Ni 
     seedMechanisms = [],
     kineticsDepositories = ['training'],
     kineticsFamilies = ['surface','default'],
@@ -10,13 +10,18 @@ database(
 )
 
 catalystProperties(
-    bindingEnergies = {  # default values for Pt(111)
+    bindingEnergies = {  # default values for Pt(111)    
                           'H': (-2.479, 'eV/molecule'),
                           'O': (-3.586, 'eV/molecule'),
                           'C': (-6.750, 'eV/molecule'),
                           'N': (-4.352, 'eV/molecule'),
+                        #default values for Ni(111)
+                         # 'H': (-2.778, 'eV/molecule'),
+                         # 'O': (-4.485, 'eV/molecule'),
+                         # 'C': (-5.997, 'eV/molecule'),
+
                       },
-    surfaceSiteDensity=(2.72e-9, 'mol/cm^2'),
+    surfaceSiteDensity=(2.72e-9, 'mol/cm^2'), #The value for Pt is 2.72e-9 and value for Ni is 2.92e-9  
 )
 
 species(

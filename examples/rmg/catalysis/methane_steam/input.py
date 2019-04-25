@@ -1,7 +1,7 @@
 # Data sources
 database(
-    thermoLibraries=['surfaceThermoPt', 'primaryThermoLibrary', 'thermo_DFT_CCSDTF12_BAC'],
-    reactionLibraries = [('Surface/Deutschmann_Ni', True)],
+    thermoLibraries=['surfaceThermoPt', 'primaryThermoLibrary', 'thermo_DFT_CCSDTF12_BAC'], 
+    reactionLibraries = [('Surface/Deutschmann_Ni', True)], # when Pt is used change the library to Surface/CPOX_Pt/Deutschmann2006
     seedMechanisms = [],
     kineticsDepositories = ['training'],
     kineticsFamilies = ['surface','default'],
@@ -9,13 +9,14 @@ database(
 )
 
 catalystProperties(
-    bindingEnergies = {  # default values for Pt(111)
-                          'H': (-2.479, 'eV/molecule'),
-                          'O': (-3.586, 'eV/molecule'),
-                          'C': (-6.750, 'eV/molecule'),
-                          'N': (-4.352, 'eV/molecule'),
+    bindingEnergies = {  # default values for Ni(111)
+                        'H': (-2.778, 'eV/molecule'),
+                        'O': (-4.485, 'eV/molecule'),
+                        'C': (-5.997, 'eV/molecule'),
+
+
                       },
-    surfaceSiteDensity=(2.72e-9, 'mol/cm^2'),
+    surfaceSiteDensity=(2.9e-9, 'mol/cm^2'),
 )
 
 # List of species
