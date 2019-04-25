@@ -1,7 +1,7 @@
 # Data sources
 database(
-    thermoLibraries=['surfaceThermoPt', 'primaryThermoLibrary', 'thermo_DFT_CCSDTF12_BAC','DFT_QCI_thermo'],
-    reactionLibraries = [('Surface/CPOX_Pt/Deutschmann2006', False)],
+    thermoLibraries=['surfaceThermoPt', 'primaryThermoLibrary', 'thermo_DFT_CCSDTF12_BAC','DFT_QCI_thermo'], # 'surfaceThermoPt' is the default. Thermo data is derived using bindingEnergies for other metals 
+    reactionLibraries = [('Surface/CPOX_Pt/Deutschmann2006', False)], # when Ni is used change the library to Surface/Deutschmann_Ni 
     seedMechanisms = [],
     kineticsDepositories = ['training'],
     kineticsFamilies = ['surface','default'],
@@ -10,13 +10,13 @@ database(
 )
 
 catalystProperties(
-    bindingEnergies = {  # default values for Pt(111)
+    bindingEnergies = {  # default values for Pt(111)    
                           'H': (-2.479, 'eV/molecule'),
                           'O': (-3.586, 'eV/molecule'),
                           'C': (-6.750, 'eV/molecule'),
                           'N': (-4.352, 'eV/molecule'),
                       },
-    surfaceSiteDensity=(2.72e-9, 'mol/cm^2'),
+    surfaceSiteDensity=(2.72e-9, 'mol/cm^2'), # Default for Pt(111)
 )
 
 species(
@@ -60,7 +60,6 @@ surfaceReactor(
         "vacantX": 1.0,
     },
     surfaceVolumeRatio=(1.e5, 'm^-1'),
-
     terminationConversion = { "CH4":0.99,},
     terminationTime=(0.1, 's'),
 )
@@ -81,7 +80,7 @@ options(
     units='si',
     saveRestartPeriod=None,
     generateOutputHTML=True,
-    generatePlots=False, # Enable to make plots of core and edge size etc.. But takes 40% of the total runtime!
+    generatePlots=False, # Enable to make plots of core and edge size etc. But takes a lot of the total runtime!
     saveEdgeSpecies=True,
     saveSimulationProfiles=True,
 )
