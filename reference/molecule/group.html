@@ -185,6 +185,12 @@ this method cannot handle very general cases, so it is better to be conservative
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.Group.containsSurfaceSite">
+<code class="descname">containsSurfaceSite</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Group.containsSurfaceSite" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> iff the group contains an ‘X’ surface site.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.Group.copy">
 <code class="descname">copy</code><span class="sig-paren">(</span><em>self</em>, <em>bool deep=False</em><span class="sig-paren">)</span> &#x2192; Graph<a class="headerlink" href="#rmgpy.molecule.Group.copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a copy of the current graph. If <cite>deep</cite> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, a deep copy
@@ -559,6 +565,12 @@ The <cite>initialMap</cite> attribute can be used to specify a required
 mapping from <cite>self</cite> to <cite>other</cite> (i.e. the atoms of <cite>self</cite> are the keys,
 while the atoms of <cite>other</cite> are the values). The <cite>other</cite> parameter must
 be a <a class="reference internal" href="#rmgpy.molecule.Group" title="rmgpy.molecule.Group"><code class="xref py py-class docutils literal notranslate"><span class="pre">Group</span></code></a> object, or a <code class="xref py py-class docutils literal notranslate"><span class="pre">TypeError</span></code> is raised.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.Group.isSurfaceSite">
+<code class="descname">isSurfaceSite</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Group.isSurfaceSite" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> iff the group is nothing but a surface site ‘X’.</p>
 </dd></dl>
 
 <dl class="method">

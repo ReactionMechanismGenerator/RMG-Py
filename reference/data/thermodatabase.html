@@ -76,6 +76,28 @@ This should be done later by the calling function.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.data.thermo.ThermoDatabase.correctBindingEnergy">
+<code class="descname">correctBindingEnergy</code><span class="sig-paren">(</span><em>thermo</em>, <em>species</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.correctBindingEnergy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Changes the provided thermo, by applying a linear scaling relation
+to correct the adsorption energy.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>thermo</strong> – starting thermo data</li>
+<li><strong>species</strong> – the species (which is an adsorbate)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">corrected thermo</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.estimateRadicalThermoViaHBI">
 <code class="descname">estimateRadicalThermoViaHBI</code><span class="sig-paren">(</span><em>molecule</em>, <em>stableThermoEstimator</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.estimateRadicalThermoViaHBI" title="Permalink to this definition">¶</a></dt>
 <dd><p>Estimate the thermodynamics of a radical by saturating it,
@@ -147,6 +169,17 @@ estimation via machine learning and then group additivity.</p>
 learning or group additivity. Libraries and direct QM calculations
 are already corrected.</p>
 <p>Returns: ThermoData</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.thermo.ThermoDatabase.getThermoDataForSurfaceSpecies">
+<code class="descname">getThermoDataForSurfaceSpecies</code><span class="sig-paren">(</span><em>species</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.getThermoDataForSurfaceSpecies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the thermo data for an adsorbed species,
+by desorbing it, finding the thermo of the gas-phase
+species, then adding an adsorption correction that
+is found from the groups/adsorption tree.
+Does not apply linear scaling relationship.</p>
+<p>Returns a <code class="xref py py-class docutils literal notranslate"><span class="pre">ThermoData</span></code> object, with no Cp0 or CpInf</p>
 </dd></dl>
 
 <dl class="method">
@@ -313,6 +346,23 @@ points to the top-level folder of the thermo libraries.</p>
 <code class="descname">saveOld</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.saveOld" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save the old RMG thermo database to the given <cite>path</cite> on disk, where
 <cite>path</cite> points to the top-level folder of the old RMG database.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.data.thermo.ThermoDatabase.setDeltaAtomicAdsorptionEnergies">
+<code class="descname">setDeltaAtomicAdsorptionEnergies</code><span class="sig-paren">(</span><em>bindingEnergies</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.setDeltaAtomicAdsorptionEnergies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets and stores the change in atomic binding energy between
+the desired and the Pt(111) default.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>bindingEnergies</strong> – the required binding energies</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">None (stores result in self.deltaAtomicAdsorptionEnergy)</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>

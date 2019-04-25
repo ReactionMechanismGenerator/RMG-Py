@@ -407,6 +407,14 @@ as a reactant.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.rmg.pdep.PDepReaction.getSurfaceRateCoefficient">
+<code class="descname">getSurfaceRateCoefficient</code><span class="sig-paren">(</span><em>self</em>, <em>double T</em>, <em>double surfaceSiteDensity</em><span class="sig-paren">)</span> &#x2192; double<a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.getSurfaceRateCoefficient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the overall surface rate coefficient for the forward reaction at
+temperature <cite>T</cite> in K with surface site density <cite>surfaceSiteDensity</cite> in mol/m2.
+Value is returned in combination of [m,mol,s]</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.rmg.pdep.PDepReaction.getURL">
 <code class="descname">getURL</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.getURL" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a URL to search for this reaction in the rmg website.</p>
@@ -495,6 +503,12 @@ information.</p>
 we know the reactants are identical, i.e. in generating
 reactions.</dd>
 </dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.rmg.pdep.PDepReaction.isSurfaceReaction">
+<code class="descname">isSurfaceReaction</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.isSurfaceReaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if one or more reactants or products are surface species (or surface sites)</p>
 </dd></dl>
 
 <dl class="method">
