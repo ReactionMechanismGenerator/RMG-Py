@@ -183,7 +183,6 @@ class StatMechJob(object):
         self.applyBondEnergyCorrections = True
         self.bondEnergyCorrectionType = 'p'
         self.atomEnergies = None
-        self.supporting_info = [self.species.label]
         self.bonds = None
         self.arkane_species = ArkaneSpecies(species=species)
 
@@ -308,7 +307,7 @@ class StatMechJob(object):
         elif isinstance(energy, tuple) and len(energy) == 2:
             # this is likely meant to be a quantity object with ZPE already accounted for
             energy = Quantity(energy)
-            e_0 = energy.value_si  # in J/mol
+            e0 = energy.value_si  # in J/mol
         elif isinstance(energy, tuple) and len(energy) == 3:
             if energy[2].lower() == 'e_electronic':
                 energy = Quantity(energy[:2])
@@ -373,17 +372,11 @@ class StatMechJob(object):
                                                                     spinMultiplicity=spinMultiplicity,
                                                                     opticalIsomers=opticalIsomers,
                                                                     label=self.species.label)
-        translational_mode_exists = False
-        for mode in conformer.modes:
-            if isinstance(mode, (LinearRotor, NonlinearRotor)):
-                self.supporting_info.append(mode)
-                break
-            if isinstance(mode, (Translation, IdealGasTranslation)):
-                translational_mode_exists = True
-        if unscaled_frequencies:
-            self.supporting_info.append(unscaled_frequencies)
 
-        if not translational_mode_exists:
+        for mode in conformer.modes:
+            if isinstance(mode, (Translation, IdealGasTranslation)):
+                break
+        else:
             # Sometimes the translational mode is not appended to modes for monoatomic species
             conformer.modes.append(IdealGasTranslation(mass=self.species.molecularWeight))
 
@@ -424,17 +417,18 @@ class StatMechJob(object):
                 e_electronic *= constants.E_h * constants.Na  # convert Hartree/particle into J/mol
             if not self.applyAtomEnergyCorrections:
                 logging.warning('Atom corrections are not being used. Do not trust energies and thermo.')
-            e_electronic += get_energy_correction(
+            corrections = get_energy_correction(
                 self.modelChemistry, atoms, self.bonds, coordinates, number,
                 multiplicity=conformer.spinMultiplicity, atom_energies=self.atomEnergies,
                 apply_atom_corrections=self.applyAtomEnergyCorrections, apply_bac=self.applyBondEnergyCorrections,
                 bac_type=self.bondEnergyCorrectionType
             )
+            e_electronic_with_corrections = e_electronic + corrections
             # Get ZPE only for polyatomic species (monoatomic species don't have frequencies, so ZPE = 0)
             zpe = statmechLog.loadZeroPointEnergy() * zpe_scale_factor if len(number) > 1 else 0
             logging.debug('Scaled zero point energy (ZPE) is {0} J/mol'.format(zpe))
 
-            e0 = e_electronic + zpe
+            e0 = e_electronic_with_corrections + zpe
 
             logging.debug('         Harmonic frequencies scaling factor used = {0:g}'.format(self.frequencyScaleFactor))
             logging.debug('         Zero point energy scaling factor used = {0:g}'.format(zpe_scale_factor))
@@ -447,7 +441,6 @@ class StatMechJob(object):
         if is_ts:
             neg_freq = statmechLog.loadNegativeFrequency()
             self.species.frequency = (neg_freq * self.frequencyScaleFactor, "cm^-1")
-            self.supporting_info.append(neg_freq)
 
         # Read and fit the 1D hindered rotors if applicable
         # If rotors are found, the vibrational frequencies are also
@@ -564,6 +557,37 @@ class StatMechJob(object):
             if isinstance(mode, HarmonicOscillator):
                 mode.frequencies = (frequencies * self.frequencyScaleFactor, "cm^-1")
 
+        ##save supporting information for calculation
+        self.supporting_info = [self.species.label]
+        symmetry_read, optical_isomers_read, point_group_read = statmechLog.get_symmetry_properties()
+        self.supporting_info.append(externalSymmetry if externalSymmetry else symmetry_read)
+        self.supporting_info.append(opticalIsomers if opticalIsomers else optical_isomers_read)
+        self.supporting_info.append(point_group_read)
+        for mode in conformer.modes:
+            if isinstance(mode, (LinearRotor, NonlinearRotor)):
+                self.supporting_info.append(mode)
+                break
+        else:
+            self.supporting_info.append(None)
+        if unscaled_frequencies:
+            self.supporting_info.append(unscaled_frequencies)
+        else:
+            self.supporting_info.append(None)
+        if is_ts:
+            self.supporting_info.append(neg_freq)
+        else:
+            self.supporting_info.append(None)
+        self.supporting_info.append(e_electronic)
+        self.supporting_info.append(e_electronic + zpe)
+        self.supporting_info.append(e0)
+        self.supporting_info.append(list(map(lambda x: symbol_by_number[x],number))) #atom symbols
+        self.supporting_info.append(coordinates)
+        try:
+            t1d = energyLog.get_T1_diagnostic()
+        except (NotImplementedError, AttributeError):
+            t1d = None
+        self.supporting_info.append(t1d)
+        #save conformer
         self.species.conformer = conformer
 
     def write_output(self, output_directory):

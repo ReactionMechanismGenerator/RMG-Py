@@ -272,33 +272,40 @@ class Arkane:
                 job.execute(output_directory=self.outputDirectory, plot=self.plot)
             if isinstance(job, StatMechJob):
                 job.execute(output_directory=self.outputDirectory, plot=self.plot, pdep=is_pdep(self.jobList))
-                supporting_info.append(job.supporting_info)
+                if hasattr(job, 'supporting_info'):
+                    supporting_info.append(job.supporting_info)
 
         with open(chemkinFile, 'a') as f:
             f.write('\n')
             f.write('END\n\n\n\n')
             f.write('REACTIONS    KCAL/MOLE   MOLES\n\n')
 
-        supporting_info_file = os.path.join(self.outputDirectory, 'supporting_information.csv')
-        with open(supporting_info_file, 'wb') as csvfile:
-            writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-            writer.writerow(['Label', 'Rotational constant (cm-1)', 'Unscaled frequencies (cm-1)'])
-            for row in supporting_info:
-                label = row[0]
-                rot = '-'
-                freq = '-'
-                if len(row) > 1:  # monoatomic species have no frequencies nor rotational constants
-                    if isinstance(row[1].rotationalConstant.value, float):
+        if supporting_info:
+            # write supporting_info.csv for statmech jobs
+            supporting_info_file = os.path.join(self.outputDirectory, 'supporting_information.csv')
+            with open(supporting_info_file, 'wb') as csvfile:
+                writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                writer.writerow(['Label','Symmetry Number','Number of optical isomers','Symmetry Group',
+                                 'Rotational constant (cm-1)','Calculated Frequencies (unscaled and prior to projection, cm^-1)',
+                                 'Electronic energy (J/mol)','E0 (electronic energy + ZPE, J/mol)',
+                                 'E0 with atom and bond corrections (J/mol)','Atom XYZ coordinates (angstrom)',
+                                 'T1 diagnostic'])
+                for row in supporting_info:
+                    label = row[0]
+                    rot = '-'
+                    freq = '-'
+                    if row[4] is not None and isinstance(row[4].rotationalConstant.value, float):
                         # diatomic species have a single rotational constant
-                        rot = '{0:.2f}'.format(row[1].rotationalConstant.value)
-                    else:
-                        rot = ', '.join(['{0:.2f}'.format(s) for s in row[1].rotationalConstant.value])
-                    freq = ''
-                    if len(row) == 4:
-                        freq = '{0:.1f}'.format(abs(row[3])) + 'i, '
-                    freq += ', '.join(['{0:.1f}'.format(s) for s in row[2]])
-                writer.writerow([label, rot, freq])
-
+                        rot = '{0:.2f}'.format(row[4].rotationalConstant.value)
+                    elif row[4] is not None:
+                        rot = ', '.join(['{0:.2f}'.format(s) for s in row[4].rotationalConstant.value])
+                    if row[5] is not None:
+                        freq = ''
+                        if row[6] is not None: #there is a negative frequency
+                            freq = '{0:.1f}'.format(abs(row[6])) + 'i, '
+                        freq += ', '.join(['{0:.1f}'.format(s) for s in row[5]])
+                    atoms = ', '.join(["{0}    {1}".format(atom,"    ".join([str(c) for c in coords])) for atom, coords in zip(row[10], row[11])])
+                    writer.writerow([label, row[1], row[2], row[3], rot, freq, row[7],row[8], row[9],atoms,row[12]])
         # run kinetics and pdep jobs (also writes reaction blocks to Chemkin file)
         for job in self.jobList:
             if isinstance(job, KineticsJob):
