@@ -318,6 +318,7 @@ cdef class SurfaceReactor(ReactionSystem):
         """
         Get the threshold rate constants for reaction filtering.
         """
+        raise NotImplementedError("filterReactions=True for SurfaceReactor")
         # Set the maximum unimolecular rate to be kB*T/h
         unimolecular_threshold_rate_constant = 2.08366122e10 * self.T.value_si
         # Set the maximum bi/trimolecular rate by using the user-defined rate constant threshold
