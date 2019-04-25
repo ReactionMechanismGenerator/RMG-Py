@@ -123,7 +123,7 @@ cdef class StickingCoefficient(KineticsModel):
         Ea = self._Ea.value_si
         T0 = self._T0.value_si
         stickingCoefficient = A * (T / T0)**n * exp(-Ea / (constants.R * T))
-        if 0 > stickingCoefficient:
+        if stickingCoefficient < 0:
             raise ValueError("Sticking coefficients cannot be negative, check your preexponential factor.")
         return min(stickingCoefficient, 1.0)
 
