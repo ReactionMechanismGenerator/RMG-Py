@@ -753,6 +753,8 @@ Area = UnitType('m^2')
 
 Concentration = UnitType('mol/m^3')
 
+SurfaceConcentration = UnitType('mol/m^2')
+
 Dimensionless = UnitType('')
 
 DipoleMoment = UnitType('C*m', extraDimensionality={

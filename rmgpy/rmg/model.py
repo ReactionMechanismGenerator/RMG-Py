@@ -178,6 +178,7 @@ class CoreEdgeReactionModel:
     `networkCount`             A counter for the number of pressure-dependent networks created
     `indexSpeciesDict`         A dictionary with a unique index pointing to the species objects
     `solventName`              String describing solvent name for liquid reactions. Empty for non-liquid estimation
+    `surfaceSiteDensity`       The surface site density (a SurfaceConcentration quantity) or None if no heterogeneous catalyst.
     =========================  ==============================================================
 
 
@@ -232,6 +233,7 @@ class CoreEdgeReactionModel:
         self.newSurfaceSpcsLoss = set()
         self.newSurfaceRxnsLoss = set()
         self.solventName = ''
+        self.surfaceSiteDensity = None
 
     def checkForExistingSpecies(self, molecule):
         """

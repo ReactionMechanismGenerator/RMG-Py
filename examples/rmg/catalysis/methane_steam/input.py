@@ -6,12 +6,16 @@ database(
     kineticsDepositories = ['training'],
     kineticsFamilies = ['surface','default'],
     kineticsEstimator = 'rate rules',
-    bindingEnergies = { # default values for Pt(111)
-                       'H':(-2.479, 'eV/molecule'),
-                       'O':(-3.586, 'eV/molecule'),
-                       'C':(-6.750, 'eV/molecule'),
-                       'N':(-4.352, 'eV/molecule'),
-                       },
+)
+
+catalystProperties(
+    bindingEnergies = {  # default values for Pt(111)
+                          'H': (-2.479, 'eV/molecule'),
+                          'O': (-3.586, 'eV/molecule'),
+                          'C': (-6.750, 'eV/molecule'),
+                          'N': (-4.352, 'eV/molecule'),
+                      },
+    surfaceSiteDensity=(2.72e-9, 'mol/cm^2'),
 )
 
 # List of species
@@ -181,7 +185,6 @@ surfaceReactor(
         "site": 1.0,
     },
     surfaceVolumeRatio=(1.e5, 'm^-1'),
-    surfaceSiteDensity=(2.9e-9, 'mol/cm^2'),
     terminationConversion = { "CH4":0.9,},
     terminationTime=(0.01, 's'),
 )
