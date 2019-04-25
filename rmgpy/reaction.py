@@ -648,7 +648,12 @@ class Reaction:
                 if r.containsSurfaceSite():
                     rateCoefficient /= surfaceSiteDensity
                 else:
-                    adsorbate = r
+                    if adsorbate is None:
+                        adsorbate = r
+                    else:
+                        logging.error("Error in kinetics for reaction {0!s}: more than one adsorbate detected".format(self))
+                        raise ReactionError("More than one adsorbate detected")
+
             if adsorbate is None or adsorbate.containsSurfaceSite():
                 logging.error("Problem reaction: {0!s}".format(self))
                 raise ReactionError("Couldn't find the adsorbate!")
