@@ -1597,7 +1597,7 @@ class KineticsFamily(Database):
 
         if isinstance(templateReactant, list):
             templateReactant = templateReactant[0]
-        else:
+
             struct = templateReactant
 
         reactantContainsSurfaceSite = reactant.containsSurfaceSite()
