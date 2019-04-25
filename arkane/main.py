@@ -271,7 +271,7 @@ class Arkane:
             if isinstance(job, ThermoJob):
                 job.execute(output_directory=self.outputDirectory, plot=self.plot)
             if isinstance(job, StatMechJob):
-                job.execute(outputFile=outputFile, plot=self.plot, pdep=is_pdep(self.jobList))
+                job.execute(output_directory=self.outputDirectory, plot=self.plot, pdep=is_pdep(self.jobList))
                 supporting_info.append(job.supporting_info)
 
         with open(chemkinFile, 'a') as f:

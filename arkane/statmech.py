@@ -187,14 +187,20 @@ class StatMechJob(object):
         self.bonds = None
         self.arkane_species = ArkaneSpecies(species=species)
 
-    def execute(self, outputFile=None, plot=False, pdep=False):
+    def execute(self, output_directory=None, plot=False, pdep=False):
         """
-        Execute the statistical mechanics job, saving the results to the
-        given `outputFile` on disk.
+        Execute the statmech job, saving the results within
+        the `output_directory`.
+
+        If `plot` is True, then plots of the hindered rotor fits will be saved.
         """
         self.load(pdep)
-        if outputFile is not None:
-            self.save(outputFile)
+        if output_directory is not None:
+            try:
+                self.write_output(output_directory)
+            except Exception as e:
+                logging.warning("Could not write statmech output file due to error: "
+                                "{0} in species {1}".format(e, self.species.label))
         logging.debug('Finished statmech job for species {0}.'.format(self.species))
         logging.debug(repr(self.species))
 
@@ -560,12 +566,13 @@ class StatMechJob(object):
 
         self.species.conformer = conformer
 
-    def save(self, outputFile):
+    def write_output(self, output_directory):
         """
-        Save the results of the statistical mechanics job to the file located
-        at `path` on disk.
+        Save the results of the statmech job to the `output.py` file located
+        in `output_directory`.
         """
 
+        outputFile = os.path.join(output_directory, 'output.py')
         logging.info('Saving statistical mechanics parameters for {0}...'.format(self.species.label))
         f = open(outputFile, 'a')
 
