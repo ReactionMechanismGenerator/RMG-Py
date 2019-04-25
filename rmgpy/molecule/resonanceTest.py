@@ -1341,3 +1341,4 @@ class ClarTest(unittest.TestCase):
         mol_list = generate_resonance_structures(Molecule().fromAdjacencyList("""OX
 1 X u0 p0 c0 {2,D}
 2 O u0 p2 c0 {1,D}"""))
+        self.assertEquals(len(mol_list), 1)
