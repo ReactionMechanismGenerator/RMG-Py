@@ -137,6 +137,7 @@ def convertBindingEnergies(bindingEnergies):
                        'O':(-3.586, 'eV/molecule'),
                        'N':(-4.352, 'eV/molecule'),
                        }
+        logging.info("Using default binding energies for Pt(111):\n{0!r}".format(bindingEnergies))
     if not isinstance(bindingEnergies, dict): raise InputError("bindingEnergies should be None (for default) or a dict.")
     newDict = {}
     for element in 'CHON':
