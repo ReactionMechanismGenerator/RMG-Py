@@ -135,5 +135,13 @@ class MolproTest(unittest.TestCase):
         self.assertEqual(imaginary_freq, -1997.98)
 
 
+    def test_get_T1_diagnostic(self):
+        """
+        Ensure molpro can retrieve the T1 diagnostic from CCSD calculations
+        """
+        log=MolproLog(os.path.join(os.path.dirname(__file__),'data','ethylene_f12_dz.out'))
+        t1_diagnostic = log.get_T1_diagnostic()
+        self.assertAlmostEqual(t1_diagnostic, 0.01152184)
+
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
