@@ -186,7 +186,7 @@ An example of an adsorption correction entry is shown below::
     """
     )
 
-Here, R in the label ``C-*R3`` represents any atom, where the H atoms in methyl have been replaced by wild cards. 
+Here, R in the label ``C-*R3`` represents any atom, where the H atoms in methyl have been replaced by wild cards.
 This enables RMG-Cat to determine which species in the thermo database is the closest 
 match for the adsorbate in question, using a hierachical tree for functional groups. 
 This is defined at the bottom of the adsorption corrections files, e.g.::

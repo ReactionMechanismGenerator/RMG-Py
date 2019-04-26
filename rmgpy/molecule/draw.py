@@ -315,7 +315,9 @@ class MoleculeDrawer:
         """
         atoms = self.molecule.atoms
         Natoms = len(atoms)
+        
 
+        
         # Initialize array of coordinates
         self.coordinates = coordinates = numpy.zeros((Natoms, 2))
 
@@ -436,6 +438,7 @@ class MoleculeDrawer:
                 index = atoms.index(site)
                 coordinates[index, 1] = min(coordinates[:, 1]) - 0.8  # just move the site down a bit
                 coordinates[index, 0] = coordinates[:, 0].mean()  # and center it
+
     
     def __findCyclicBackbone(self):
         """
