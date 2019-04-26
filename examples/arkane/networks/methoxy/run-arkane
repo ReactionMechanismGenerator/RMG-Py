@@ -1,3 +1,0 @@
-#!/bin/bash                                                                                                                                    
-
-python ../../../../arkane.py input.py

@@ -1008,7 +1008,7 @@ Matched group AdjList:
                    backboneSample.item.toAdjacencyList() if mergesNecessary and root not in backboneRoots else '',
                    match.item.toAdjacencyList())))
 
-                except UnexpectedChargeError, e:
+                except UnexpectedChargeError as e:
                     tst3.append((False, """In family {0}, a sample molecule made from node {1} returns an unexpectedly charged molecule:
 Sample molecule AdjList:
 {2}
@@ -1269,7 +1269,7 @@ Matched group AdjList:
            entry.item.toAdjacencyList(),
            match.item.toAdjacencyList())))
 
-            except UnexpectedChargeError, e:
+            except UnexpectedChargeError as e:
                 tst3.append((False, """In family {0}, a sample molecule made from node {1} returns an unexpectedly charged molecule:
 Sample molecule AdjList:
 {2}

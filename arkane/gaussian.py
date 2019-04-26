@@ -38,11 +38,12 @@ from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, Har
 from rmgpy.exceptions import InputError
 
 from arkane.common import check_conformer_energy, get_element_mass
+from arkane.log import Log
 
 ################################################################################
 
 
-class GaussianLog:
+class GaussianLog(Log):
     """
     Represent a log file from Gaussian. The attribute `path` refers to the
     location on disk of the Gaussian log file of interest. Methods are provided
@@ -149,11 +150,14 @@ class GaussianLog:
         number = numpy.array(number, numpy.int)
         mass = numpy.array(mass, numpy.float64)
         if len(number) == 0 or len(coord) == 0 or len(mass) == 0:
-            raise InputError('Unable to read atoms from Gaussian geometry output file {0}'.format(self.path))
+            raise InputError('Unable to read atoms from Gaussian geometry output file {0}. '
+                             'Make sure the output file is not corrupt.\nNote: if your species has '
+                             '50 or more atoms, you will need to add the `iop(2/9=2000)` keyword to your '
+                             'input file so Gaussian will print the input orientation geomerty.'.format(self.path))
         
         return coord, number, mass
 
-    def loadConformer(self, symmetry=None, spinMultiplicity=0, opticalIsomers=1, symfromlog=None, label=''):
+    def loadConformer(self, symmetry=None, spinMultiplicity=0, opticalIsomers=None, label=''):
         """
         Load the molecular degree of freedom data from a log file created as
         the result of a Gaussian "Freq" quantum chemistry calculation. As
@@ -167,7 +171,12 @@ class GaussianLog:
         modes = []
         unscaled_frequencies = []
         E0 = 0.0
-
+        if opticalIsomers is None or symmetry is None:
+            _opticalIsomers, _symmetry = self.get_optical_isomers_and_symmetry_number()
+            if opticalIsomers is None:
+                opticalIsomers = _opticalIsomers
+            if symmetry is None:
+                symmetry = _symmetry
         f = open(self.path, 'r')
         line = f.readline()
         while line != '':
@@ -193,11 +202,6 @@ class GaussianLog:
                         mass = float(line.split()[2])
                         translation = IdealGasTranslation(mass=(mass,"amu"))
                         modes.append(translation)
-
-                    # Read Gaussian's estimate of the external symmetry number
-                    elif 'Rotational symmetry number' in line and symmetry is None:
-                        if symfromlog is True:
-                            symmetry = int(float(line.split()[3]))
 
                     # Read moments of inertia for external rotational modes
                     elif 'Rotational constants (GHZ):' in line:
@@ -248,7 +252,6 @@ class GaussianLog:
 
         # Close file when finished
         f.close()
-
         return Conformer(E0=(E0*0.001,"kJ/mol"), modes=modes, spinMultiplicity=spinMultiplicity,
                          opticalIsomers=opticalIsomers), unscaled_frequencies
 

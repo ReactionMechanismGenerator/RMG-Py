@@ -37,6 +37,7 @@ import rmgpy.constants as constants
 from external.wip import work_in_progress
 
 from arkane.gaussian import GaussianLog
+from arkane.statmech import determine_qm_software
 
 ################################################################################
 
@@ -54,7 +55,7 @@ class GaussianTest(unittest.TestCase):
         """
 
         log = GaussianLog(os.path.join(os.path.dirname(__file__),'data','ethylene.log'))
-        conformer, unscaled_frequencies = log.loadConformer(symfromlog=True)
+        conformer, unscaled_frequencies = log.loadConformer()
         E0 = log.loadEnergy()
         
         self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode,IdealGasTranslation)]) == 1)
@@ -81,7 +82,7 @@ class GaussianTest(unittest.TestCase):
         """
 
         log = GaussianLog(os.path.join(os.path.dirname(__file__),'data','oxygen.log'))
-        conformer, unscaled_frequencies = log.loadConformer(symfromlog=True)
+        conformer, unscaled_frequencies = log.loadConformer()
         E0 = log.loadEnergy()
         
         self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode,IdealGasTranslation)]) == 1)
@@ -109,7 +110,7 @@ class GaussianTest(unittest.TestCase):
         """
 
         log = GaussianLog(os.path.join(os.path.dirname(__file__),'data','ethylene_G3.log'))
-        conformer, unscaled_frequencies = log.loadConformer(symfromlog=True)
+        conformer, unscaled_frequencies = log.loadConformer()
         E0 = log.loadEnergy()
         
         self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode,IdealGasTranslation)]) == 1)
@@ -129,6 +130,33 @@ class GaussianTest(unittest.TestCase):
         self.assertAlmostEqual(E0 / constants.Na / constants.E_h, -78.562189, 4)
         self.assertEqual(conformer.spinMultiplicity, 1)
         self.assertEqual(conformer.opticalIsomers, 1)
+
+    def testLoadSymmetryAndOptics(self):
+        """
+        Uses a Gaussian03 log file for oxygen (O2) to test that its
+        molecular degrees of freedom can be properly read.
+        """
+
+        log = GaussianLog(os.path.join(os.path.dirname(__file__),'data','oxygen.log'))
+        optical, symmetry = log.get_optical_isomers_and_symmetry_number()
+        self.assertEqual(optical,1)
+        self.assertEqual(symmetry,2)
+
+        conf = log.loadConformer()[0]
+        self.assertEqual(conf.opticalIsomers, 1)
+        found_rotor = False
+        for mode in conf.modes:
+            if isinstance(mode,LinearRotor):
+                self.assertEqual(mode.symmetry,2)
+                found_rotor = True
+        self.assertTrue(found_rotor)
+
+    def testDetermineQMSoftware(self):
+        """
+        Ensures that determine_qm_software returns a GaussianLog object
+        """
+        log = determine_qm_software(os.path.join(os.path.dirname(__file__),'data','oxygen.log'))
+        self.assertIsInstance(log,GaussianLog)
 
 if __name__ == '__main__':
     unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )

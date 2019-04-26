@@ -63,7 +63,7 @@ def warnScoopStartedProperly(func):
             controller_not_started = not (
                 sys.modules['scoop.futures'].__dict__.get("_controller", None)
             )
-        except KeyError, e:
+        except KeyError:
             warnings.warn(
                     "SCOOP was not started properly.\n"
                     "Be sure to start your program with the "
@@ -128,7 +128,7 @@ def broadcast(obj, key):
             logger.debug('An object with the key {} was already broadcasted.'.format(key))
         else:
             shared.setConst(**kwargs)
-    except NameError, e:
+    except NameError:
         """
         Name error will be caught when the SCOOP library is not imported properly.
         """
@@ -163,7 +163,7 @@ def submit_(func, *args, **kwargs):
     try:
         task = submit(WorkerWrapper(func), *args, **kwargs)#returns immediately
         return task
-    except Exception, e:
+    except Exception:
         """
         Name error will be caught when the SCOOP library is not imported properly.
         """

@@ -30,10 +30,10 @@
 
 """
 This module defined the chemical elements available in RMG. Information for
-each element is stored as attributes of an object of the :class:`Element` 
-class. 
+each element is stored as attributes of an object of the :class:`Element`
+class.
 
-Element objects for each chemical element (1-112) have also been declared as 
+Element objects for each chemical element (1-112) have also been declared as
 module-level variables, using each element's symbol as its variable name. The
 :meth:`getElement` method can also be used to retrieve the :class:`Element`
 object associated with an atomic number or symbol. Generally applications will
@@ -44,6 +44,7 @@ comparisons.
 import cython
 from rdkit.Chem import GetPeriodicTable
 from rmgpy.exceptions import ElementError
+from rmgpy.quantity import Quantity
 
 ################################################################################
 
@@ -63,11 +64,11 @@ class Element:
     `isotope`     ``int``         The isotope integer of the element
     `chemkinName` ``str``         The chemkin compatible representation of the element
     ============= =============== ================================================
-    
+
     This class is specifically for properties that all atoms of the same element
     share. Ideally there is only one instance of this class for each element.
     """
-    
+
     def __init__(self, number, symbol, name, mass, isotope=-1, chemkinName=None):
         self.number = number
         self.symbol = intern(symbol)
@@ -90,7 +91,7 @@ class Element:
         Return a human-readable string representation of the object.
         """
         return self.symbol
-    
+
     def __repr__(self):
         """
         Return a representation that can be used to reconstruct the object.
@@ -105,13 +106,13 @@ class Element:
 
 class PeriodicSystem(object):
     """
-    Collects hard-coded information of elements in periodic table. 
+    Collects hard-coded information of elements in periodic table.
 
     Currently it has static attributes:
-    `valences`: the number of bonds an element is able to form around it. 
+    `valences`: the number of bonds an element is able to form around it.
     `valence_electrons`: the number of electrons in  the outermost shell of the element that can
     participate in bond formation. for instance, `S` has 6 outermost electrons (valence_electrons)
-    but 4 of them form lone pairs, the remaining 2 electrons can form bonds so the normal valence 
+    but 4 of them form lone pairs, the remaining 2 electrons can form bonds so the normal valence
     for `S` is 2.
     `lone_pairs`: the number of lone pairs an element has
     'electronegativity': The atom's electronegativity (how well can an atom attract electrons), taken from
@@ -124,7 +125,7 @@ class PeriodicSystem(object):
     lone_pairs        = {'H': 0, 'He': 1, 'C': 0, 'N': 1, 'O': 2, 'F': 3, 'Ne': 4, 'Si': 0, 'S': 2, 'Cl': 3, 'Ar': 4, 'I': 3, 'X':0}
     electronegativity = {'H': 2.20, 'D': 2.20, 'T': 2.20, 'C': 2.55, 'C13': 2.55, 'N': 3.04, 'O': 3.44, 'O18': 3.44,
                          'F': 3.98, 'Si': 1.90, 'S': 2.58, 'Cl': 3.16, 'I': 2.66, 'X': 0.0} # todo: check consequences of X=0.0
-    
+
 ################################################################################
 
 def getElement(value, isotope=-1):
@@ -161,7 +162,7 @@ def getElement(value, isotope=-1):
 # Declare an instance of each element (1 to 112)
 # The variable names correspond to each element's symbol
 # The elements are sorted by increasing atomic number and grouped by period
-# Recommended IUPAC nomenclature is used throughout (including 'aluminium' and 
+# Recommended IUPAC nomenclature is used throughout (including 'aluminium' and
 # 'caesium')
 
 X = Element(0, 'X', 'surface_site' , 0.0)
@@ -211,7 +212,7 @@ Zn = Element(30,  'Zn', 'zinc'          , 0.065409)
 Ga = Element(31,  'Ga', 'gallium'       , 0.069723)
 Ge = Element(32,  'Ge', 'germanium'     , 0.07264)
 As = Element(33,  'As', 'arsenic'       , 0.07492160)
-Se = Element(34,  'Se', 'selenium'      , 0.07896)  
+Se = Element(34,  'Se', 'selenium'      , 0.07896)
 Br = Element(35,  'Br', 'bromine'       , 0.079904)
 Kr = Element(36,  'Kr', 'krypton'       , 0.083798)
 
@@ -308,3 +309,33 @@ elementList = [
     Cs, Ba, La, Ce, Pr, Nd, Pm, Sm, Eu, Gd, Tb, Dy, Ho, Er, Tm, Yb, Lu, Hf, Ta, W, Re, Os, Ir, Pt, Au, Hg, Tl, Pb, Bi, Po, At, Rn,
     Fr, Ra, Ac, Th, Pa, U, Np, Pu, Am, Cm, Bk, Cf, Es, Fm, Md, No, Lr, Rf, Db, Sg, Bh, Hs, Mt, Ds, Rg, Cn
 ]
+
+#Bond Dissociation Energies
+#Reference: Huheey, pps. A-21 to A-34; T.L. Cottrell, "The Strengths of Chemical Bonds," 2nd ed., Butterworths, London, 1958; B. deB. Darwent, "National Standard Reference Data Series," National Bureau of Standards, No. 31, Washington, DC, 1970; S.W. Benson, J. Chem. Educ., 42, 502 (1965).
+#(C,C,1.5) was taken from an unsourced table that had similar values to those used below, should be replaced if a sourced value becomes available
+BDEDict = {('H','H',1.0):(432.0,'kJ/mol'),('H','C',1):(411.0,'kJ/mol'),
+          ('H','N',1):(386.0,'kJ/mol'), ('H','O',1.0):(459.0,'kJ/mol'),
+          ('H','S',1):(363.0,'kJ/mol'), ('H','Cl',1): (428.0,'kJ/mol'),
+          ('C','C',1):(346.0,'kJ/mol'), ('C','C',2):(602.0,'kJ/mol'),
+          ('C','C',3):(835.0,'kJ/mol'), ('C','Si',1):(318.0,'kJ/mol'),
+          ('C','N',1): (305.0,'kJ/mol'), ('C','N',2):(615.0,'kJ/mol'),
+          ('C','N',3):(887.0,'kJ/mol'), ('C','O',1):(358.0,'kJ/mol'),
+          ('C','O',2): (799.0,'kJ/mol'), ('C','O',3):(1072.0,'kJ/mol'),
+          ('C','S',1) : (272.0,'kJ/mol'), ('C','S',2):(573.0,'kJ/mol'),
+          ('C','Cl',1): (327.0,'kJ/mol'), ('Si','Si',1): (222.0,'kJ/mol'),
+          ('Si','N',1): (355.0,'kJ/mol'), ('Si','O',1):(452.0,'kJ/mol'),
+          ('Si','S',1):(293.0,'kJ/mol'), ('Si','Cl',1): (381.0,'kJ/mol'),
+          ('N','N',1): (167.0,'kJ/mol'), ('N','N',2) : (418.0,'kJ/mol'),
+          ('N','N',3) : (942.0,'kJ/mol'), ('N','O',1):(201.0,'kJ/mol'),
+          ('N','O',2) : (607.0,'kJ/mol'), ('N','Cl',1): (313.0,'kJ/mol'),
+          ('O','O',1) : (142.0, 'kJ/mol'), ('O','O',2): (494.0,'kJ/mol'),
+          ('S','O',2) : (522.0, 'kJ/mol'), ('S','S',1) : (226.0,'kJ/mol'),
+          ('S','S',2) : (425.0,'kJ/mol'), ('S','Cl',1) : (255.0,'kJ/mol'),
+          ('Cl','Cl',1) : (240.0, 'kJ/mol'), ('C','C',1.5): (518.0,'kJ/mol'),
+          ('O','S',1): (265.0,'kJ/mol')}
+
+BDEs = {}
+for key,value in BDEDict.iteritems():
+    q = Quantity(value).value_si
+    BDEs[(key[0],key[1],key[2])] = q
+    BDEs[(key[1],key[0],key[2])] = q

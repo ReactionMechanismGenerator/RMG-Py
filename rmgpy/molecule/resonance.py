@@ -1088,7 +1088,7 @@ def _clar_optimization(mol, constraints=None, max_num=None):
                     raise ILPSolutionError('Unable to add constraint, likely due to '
                                            'inconsistent aromatic ring perception.')
                 else:
-                    raise e
+                    raise
 
     status = lpsolve('solve', lp)
     obj_val, solution = lpsolve('get_solution', lp)[0:2]

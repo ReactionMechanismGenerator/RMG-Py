@@ -44,3 +44,5 @@ dependencies:
   - mpmath
   - dde
   - pyyaml
+  - textgenrnn
+  - scikit-learn

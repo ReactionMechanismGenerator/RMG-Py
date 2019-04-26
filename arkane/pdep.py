@@ -455,7 +455,24 @@ class PressureDependenceJob(object):
         Plist = self.Plist.value_si
         Tcount = Tlist.shape[0]
         Pcount = Plist.shape[0]
-        
+
+        f.write("#Thermo used:  \n")
+        spcs = []
+        for rxn in self.network.pathReactions:
+            spcs.extend(rxn.reactants)
+            spcs.extend(rxn.products)
+        for spc in spcs:
+            if spc.thermo:
+                f.write("#"+spc.label+"  SMILES: "+spc.molecule[0].toSMILES()+"\n")
+                f.write("#"+spc.thermo.comment+"\n")
+        f.write("\n#Path Reactions used:  \n")
+        for rxn in self.network.pathReactions:
+            if rxn.kinetics:
+                f.write("#"+str(rxn)+"\n")
+                for s in rxn.kinetics.comment.split("\n"):
+                    f.write("#"+s+"\n")
+        f.write("\n")
+
         count = 0
         printed_reactions = [] # list of rxns already printed
         for prod in range(Nprod):

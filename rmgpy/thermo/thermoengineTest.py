@@ -48,7 +48,7 @@ from rmgpy.thermo.thermoengine import submit
 
 try:
     from scoop import futures, _control, shared
-except ImportError, e:
+except ImportError:
     import logging as logging
     logging.debug("Could not properly import SCOOP.")
 

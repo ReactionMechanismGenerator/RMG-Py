@@ -41,7 +41,7 @@ from rmgpy.scoop_framework.framework import TestScoopCommon
 
 try:
     from scoop import futures, _control, shared
-except ImportError, e:
+except ImportError:
     import logging as logging
     logging.debug("Could not properly import SCOOP.")
 

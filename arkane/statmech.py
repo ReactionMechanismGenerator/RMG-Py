@@ -50,8 +50,10 @@ from rmgpy.statmech.torsion import Torsion, HinderedRotor, FreeRotor
 from rmgpy.statmech.conformer import Conformer
 from rmgpy.exceptions import InputError
 from rmgpy.quantity import Quantity
+from rmgpy.molecule.molecule import Molecule
 
 from arkane.output import prettify
+from arkane.log import Log
 from arkane.gaussian import GaussianLog
 from arkane.molpro import MolproLog
 from arkane.qchem import QChemLog
@@ -176,10 +178,7 @@ class StatMechJob(object):
         self.atomEnergies = None
         self.supporting_info = [self.species.label]
         self.bonds = None
-
-        if isinstance(species, Species):
-            # Currently we do not dump and load transition states in YAML form
-            self.arkane_species = ArkaneSpecies(species=species)
+        self.arkane_species = ArkaneSpecies(species=species)
 
     def execute(self, outputFile=None, plot=False, pdep=False):
         """
@@ -200,15 +199,22 @@ class StatMechJob(object):
         species object.
         """
         path = self.path
-        TS = isinstance(self.species, TransitionState)
+        is_ts = isinstance(self.species, TransitionState)
         _, file_extension = os.path.splitext(path)
         if file_extension in ['.yml', '.yaml']:
-            if TS:
-                raise NotImplementedError('Loading transition states from a YAML file is still unsupported.')
             self.arkane_species.load_yaml(path=path, species=self.species, pdep=pdep)
             self.species.conformer = self.arkane_species.conformer
-            self.species.transportData = self.arkane_species.transport_data
-            self.species.energyTransferModel = self.arkane_species.energy_transfer_model
+            if is_ts:
+                self.species.frequency = self.arkane_species.imaginary_frequency
+            else:
+                self.species.transportData = self.arkane_species.transport_data
+                self.species.energyTransferModel = self.arkane_species.energy_transfer_model
+                if self.arkane_species.adjacency_list is not None:
+                    self.species.molecule = [Molecule().fromAdjacencyList(adjlist=self.arkane_species.adjacency_list)]
+                elif self.arkane_species.inchi is not None:
+                    self.species.molecule = [Molecule().fromInChI(inchistr=self.arkane_species.inchi)]
+                elif self.arkane_species.smiles is not None:
+                    self.species.molecule = [Molecule().fromSMILES(smilesstr=self.arkane_species.smiles)]
             return
 
         logging.info('Loading statistical mechanics parameters for {0}...'.format(self.species.label))
@@ -235,7 +241,7 @@ class StatMechJob(object):
         with open(path, 'r') as f:
             try:
                 exec f in global_context, local_context
-            except (NameError, TypeError, SyntaxError), e:
+            except (NameError, TypeError, SyntaxError):
                 logging.error('The species file {0} was invalid:'.format(path))
                 raise
 
@@ -247,17 +253,14 @@ class StatMechJob(object):
 
         try:
             linear = local_context['linear']
-            symfromlog = False
         except KeyError:
-            externalSymmetry = None
-            symfromlog = True
+            logging.error('You did not set whether the molecule is linear with the required `linear` parameter')
+            raise
 
         try:
             externalSymmetry = local_context['externalSymmetry']
-            symfromlog = False
         except KeyError:
             externalSymmetry = None
-            symfromlog = True
 
         try:
             spinMultiplicity = local_context['spinMultiplicity']
@@ -267,7 +270,8 @@ class StatMechJob(object):
         try:
             opticalIsomers = local_context['opticalIsomers']
         except KeyError:
-            raise InputError('Required attribute "opticalIsomers" not found in species file {0!r}.'.format(path))
+            logging.debug('No opticalIsomers provided, estimating them from the quantum file.')
+            opticalIsomers = None
 
         try:
             energy = local_context['energy']
@@ -282,9 +286,8 @@ class StatMechJob(object):
                                  '{1!r}.'.format(self.modelChemistry, path))
         E0_withZPE, E0 = None, None
         energyLog = None
-        if isinstance(energy, Log):
-            energy.determine_qm_software(os.path.join(directory, energy.path))
-            energyLog = energy.software_log
+        if isinstance(energy, Log) and not isinstance(energy, (GaussianLog,QChemLog,MolproLog)):
+            energyLog = determine_qm_software(os.path.join(directory, energy.path))
         elif isinstance(energy, (GaussianLog,QChemLog,MolproLog)):
             energyLog = energy
             energyLog.path = os.path.join(directory, energyLog.path)
@@ -309,9 +312,8 @@ class StatMechJob(object):
             geomLog = local_context['geometry']
         except KeyError:
             raise InputError('Required attribute "geometry" not found in species file {0!r}.'.format(path))
-        if isinstance(geomLog, Log):
-            geomLog.determine_qm_software(os.path.join(directory, geomLog.path))
-            geomLog = geomLog.software_log
+        if isinstance(geomLog, Log) and not isinstance(energy, (GaussianLog,QChemLog,MolproLog)):
+            geomLog = determine_qm_software(os.path.join(directory, geomLog.path))
         else:
             geomLog.path = os.path.join(directory, geomLog.path)
 
@@ -319,9 +321,8 @@ class StatMechJob(object):
             statmechLog = local_context['frequencies']
         except KeyError:
             raise InputError('Required attribute "frequencies" not found in species file {0!r}.'.format(path))
-        if isinstance(statmechLog, Log):
-            statmechLog.determine_qm_software(os.path.join(directory, statmechLog.path))
-            statmechLog = statmechLog.software_log
+        if isinstance(statmechLog, Log) and not isinstance(energy, (GaussianLog,QChemLog,MolproLog)):
+            statmechLog = determine_qm_software(os.path.join(directory, statmechLog.path))
         else:
             statmechLog.path = os.path.join(directory, statmechLog.path)
 
@@ -360,7 +361,6 @@ class StatMechJob(object):
         conformer, unscaled_frequencies = statmechLog.loadConformer(symmetry=externalSymmetry,
                                                                     spinMultiplicity=spinMultiplicity,
                                                                     opticalIsomers=opticalIsomers,
-                                                                    symfromlog=symfromlog,
                                                                     label=self.species.label)
         for mode in conformer.modes:
             if isinstance(mode, (LinearRotor, NonlinearRotor)):
@@ -425,7 +425,7 @@ class StatMechJob(object):
         conformer.E0 = (E0_withZPE*0.001,"kJ/mol")
 
         # If loading a transition state, also read the imaginary frequency
-        if TS:
+        if is_ts:
             neg_freq = statmechLog.loadNegativeFrequency()
             self.species.frequency = (neg_freq * self.frequencyScaleFactor, "cm^-1")
             self.supporting_info.append(neg_freq)
@@ -457,9 +457,8 @@ class StatMechJob(object):
                         # the symmetry number will be derived from the scan
                         scanLog, pivots, top, fit = q
                     # Load the hindered rotor scan energies
-                    if isinstance(scanLog, Log):
-                        scanLog.determine_qm_software(os.path.join(directory, scanLog.path))
-                        scanLog = scanLog.software_log
+                    if isinstance(scanLog, Log) and not isinstance(energy, (GaussianLog,QChemLog,MolproLog)):
+                        scanLog = determine_qm_software(os.path.join(directory, scanLog.path))
                     if isinstance(scanLog, GaussianLog):
                         scanLog.path = os.path.join(directory, scanLog.path)
                         v_list, angle = scanLog.loadScanEnergies()
@@ -523,7 +522,7 @@ class StatMechJob(object):
                         rotorCount += 1
 
             logging.debug('    Determining frequencies from reduced force constant matrix...')
-            frequencies = numpy.array(projectRotors(conformer, F, rotors, linear, TS))
+            frequencies = numpy.array(projectRotors(conformer, F, rotors, linear, is_ts))
 
         elif len(conformer.modes) > 2:
             if len(rotors) > 0:
@@ -558,7 +557,6 @@ class StatMechJob(object):
         f = open(outputFile, 'a')
 
         conformer = self.species.conformer
-
         coordinates = conformer.coordinates.value_si * 1e10
         number = conformer.number.value_si
 
@@ -870,21 +868,11 @@ def applyEnergyCorrections(E0, modelChemistry, atoms, bonds,
 
     return E0
 
-
-class Log(object):
+def determine_qm_software(fullpath):
     """
-    Represent a general log file.
-    The attribute `path` refers to the location on disk of the log file of interest.
-    A method is provided to determine whether it is a Gaussian, Molpro, or QChem type.
+    Given a path to the log file of a QM software, determine whether it is Gaussian, Molpro, or QChem
     """
-    def __init__(self, path):
-        self.path = path
-
-    def determine_qm_software(self, fullpath):
-        """
-        Given a path to the log file of a QM software, determine whether it is Gaussian, Molpro, or QChem
-        """
-        f = open(fullpath, 'r')
+    with open(fullpath, 'r') as f:
         line = f.readline()
         software_log = None
         while line != '':
@@ -901,11 +889,12 @@ class Log(object):
                 software_log = MolproLog(fullpath)
                 break
             line = f.readline()
-        f.close()
-        self.software_log = software_log
+        else:
+            raise InputError("File at {0} could not be identified as a Gaussian, QChem or Molpro log file.".format(fullpath))
+    return software_log
 
 
-def projectRotors(conformer, F, rotors, linear, TS):
+def projectRotors(conformer, F, rotors, linear, is_ts):
     """
     For a given `conformer` with associated force constant matrix `F`, lists of
     rotor information `rotors`, `pivots`, and `top1`, and the linearity of the
@@ -919,7 +908,7 @@ def projectRotors(conformer, F, rotors, linear, TS):
 
     Nrotors = len(rotors)
     Natoms = len(conformer.mass.value)
-    Nvib = 3 * Natoms - (5 if linear else 6) - Nrotors - (1 if (TS) else 0)
+    Nvib = 3 * Natoms - (5 if linear else 6) - Nrotors - (1 if (is_ts) else 0)
     mass = conformer.mass.value_si
     coordinates = conformer.coordinates.getValue()
 

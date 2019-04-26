@@ -38,11 +38,12 @@ from rmgpy.exceptions import InputError
 from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, HarmonicOscillator, Conformer
 
 from arkane.common import check_conformer_energy, get_element_mass
+from arkane.log import Log
 
 ################################################################################
 
 
-class QChemLog:
+class QChemLog(Log):
     """
     Represent an output file from QChem. The attribute `path` refers to the
     location on disk of the QChem output file of interest. Methods are provided
@@ -166,7 +167,7 @@ class QChemLog:
 
         return coord, number, mass
 
-    def loadConformer(self, symmetry=None, spinMultiplicity=0, opticalIsomers=1, symfromlog=None, label=''):
+    def loadConformer(self, symmetry=None, spinMultiplicity=0, opticalIsomers=None, label=''):
         """
         Load the molecular degree of freedom data from an output file created as the result of a
         QChem "Freq" calculation. As QChem's guess of the external symmetry number is not always correct,
@@ -176,6 +177,12 @@ class QChemLog:
         modes = []; freq = []; mmass = []; rot = []; inertia = []
         unscaled_frequencies = []
         E0 = 0.0
+        if opticalIsomers is None or symmetry is None:
+            _opticalIsomers, _symmetry = self.get_optical_isomers_and_symmetry_number()
+            if opticalIsomers is None:
+                opticalIsomers = _opticalIsomers
+            if symmetry is None:
+                symmetry = _symmetry
         f = open(self.path, 'r')
         line = f.readline()
         while line != '':
@@ -227,11 +234,6 @@ class QChemLog:
                     elif 'Eigenvalues --' in line:
                         inertia = [float(d) for d in line.split()[-3:]]
 
-                    # Read QChem's estimate of the external rotational symmetry number, which may very well be incorrect
-                    elif 'Rotational Symmetry Number is' in line and symfromlog:
-                        symmetry = int(float(line.split()[-1]))
-                        logging.debug('Rotational Symmetry read from QChem is {}'.format(str(symmetry)))
-
                     # Read the next line in the file
                     line = f.readline()
 
@@ -239,8 +241,6 @@ class QChemLog:
             line = f.readline()
 
             if len(inertia):
-                if symmetry is None:
-                    symmetry = 1
                 if inertia[0] == 0.0:
                     # If the first eigenvalue is 0, the rotor is linear
                     inertia.remove(0.0)
@@ -271,20 +271,18 @@ class QChemLog:
         in the file is returned. The zero-point energy is *not* included in
         the returned value.
         """
-        E0 = None
+        e0 = None
         with open(self.path, 'r') as f:
+            a = b = 0
             for line in f:
                 if 'Final energy is' in line:
-                    E0 = float(line.split()[3]) * constants.E_h * constants.Na
-                    logging.debug('energy is {}'.format(str(E0)))
-            if E0 is None:
-                for line in f:
-                    if 'Total energy in the final basis set' in line:
-                        E0 = float(line.split()[8]) * constants.E_h * constants.Na
-                        logging.debug('energy is {}'.format(str(E0)))
-        if E0 is None:
+                    a = float(line.split()[3]) * constants.E_h * constants.Na
+                if 'Total energy in the final basis set' in line:
+                    b = float(line.split()[8]) * constants.E_h * constants.Na
+                e0 = a or b
+        if e0 is None:
             raise InputError('Unable to find energy in QChem output file.')
-        return E0
+        return e0
         
     def loadZeroPointEnergy(self,frequencyScaleFactor=1.):
         """

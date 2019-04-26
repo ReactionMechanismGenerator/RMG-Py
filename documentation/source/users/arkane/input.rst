@@ -1,6 +1,6 @@
-*************************************************************************************
-Creating Input Files for Thermodynamics and High-Pressure Limit Kinetics Computations
-*************************************************************************************
+********************
+Creating Input Files
+********************
 
 Syntax
 ======
@@ -35,6 +35,16 @@ Component                   Description
 ``thermo``                  Performs a thermodynamics computation
 ``kinetics``                Performs a high-pressure limit kinetic computation
 =========================== ============================================================================================
+
+For pressure dependent kinetics output, the following components are necessary:
+
+=========================== ============================================================================================
+Component                   Description
+=========================== ============================================================================================
+``network``                 Divides species into reactants, isomers, products and bath gases
+``pressureDependence``      Defines parameters necessary for solving master equation
+=========================== ============================================================================================
+
 
 Model Chemistry
 ===============
@@ -390,6 +400,77 @@ for specifying the same ``rotors`` entry are commented out)::
 
 Note that the atom labels identified within the rotor section should correspond to the indicated geometry.
 
+Additional parameters for pressure dependent networks
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Additional parameters apply only to molecules in pressure depedent networks
+
+======================= =================================== ====================================
+Parameter               Required?                           Description
+======================= =================================== ====================================
+``structure``           all species except bath gas         A chemical structure for the species defined using either SMILES, adjacencyList, or InChI
+``molecularWeight``     optional for all species            The molecular weight, if not given it is calculated based on the structure
+``reactive``            only bath gases                     Boolean indicating whether the molecule reacts, set to ``False`` for bath gases. default is ``True``
+``collisionModel``      unimolecular isomers and bath gases Transport data for the species
+``energyTransferModel`` unimolecular isomers                Assigned with ``SingleExponentialDown`` model
+======================= =================================== ====================================
+
+The ``structure`` parameter is defined by SMILES, adjList, or InChI.  For instance, either representation is
+acceptable for the acetone molecule: ::
+
+    structure = SMILES('CC(C)=O')
+
+    structure = adjacencyList("""1  C u0 p0 c0 {2,S} {5,S} {6,S} {7,S}
+                                 2  C u0 p0 c0 {1,S} {3,S} {4,D}
+                                 3  C u0 p0 c0 {2,S} {8,S} {9,S} {10,S}
+                                 4  O u0 p2 c0 {2,D}
+                                 5  H u0 p0 c0 {1,S}
+                                 6  H u0 p0 c0 {1,S}
+                                 7  H u0 p0 c0 {1,S}
+                                 8  H u0 p0 c0 {3,S}
+                                 9  H u0 p0 c0 {3,S}
+                                 10 H u0 p0 c0 {3,S}""")
+
+    structure = InChI('InChI=1S/C3H6O/c1-3(2)4/h1-2H3')
+
+The ``molecularWeight`` parameter should be defined in the quantity format ``(value, 'units')``
+, for example: ::
+
+    molecularWeight = (44.04, 'g/mol')
+
+If the ``molecularWeight`` parameter is not given, it is calculated by Arkane based
+on the chemical structure.
+
+The ``collisionModel`` is defined for unimolecular isomers with the transport data using a
+``TransportData`` object: ::
+
+    collisionModel = TransportData(sigma=(3.70,'angstrom'), epsilon=(94.9,'K'))
+
+``sigma`` and ``epsilon`` are Lennard-Jones parameters, which can be estimated using the Joback method on the
+`RMG website <http://rmg.mit.edu/molecule_search>`_.
+
+The ``energyTransferModel`` model available is a ``SingleExponentialDown``.
+
+* ``SingleExponentialDown`` - Specify ``alpha0``, ``T0`` and ``n`` for the
+  average energy transferred in a deactiving collision
+
+  .. math :: \left< \Delta E_\mathrm{down} \right> = \alpha_0 \left( \frac{T}{T_0} \right)^n
+
+An example of a typical ``energyTransferModel`` function is: ::
+
+    energyTransferModel = SingleExponentialDown(
+            alpha0 = (0.5718,'kcal/mol'),
+            T0 = (300,'K'),
+            n = 0.85,
+        )
+
+Parameters for the single exponential down model of collisional energy transfer are usually obtained from analogous
+systems in literature. For example, if the user is interested in a pressure-dependent network with overall molecular
+formula C7H8, the single exponential down parameters for toluene in helium availabe from literature could be used for
+all unimolecular isomers in the network (assuming helium is the bath gas). One helpful literature source for calculated
+exponential down parameters is the following paper:
+http://www.sciencedirect.com/science/article/pii/S1540748914001084#s0060
+
 
 Option #2: Directly Enter Molecular Properties
 ----------------------------------------------
@@ -410,7 +491,6 @@ Parameter               Required?                   Description
 ``modes``               yes                         The molecular degrees of freedom (see below)
 ``spinMultiplicity``    yes                         The ground-state spin multiplicity (degeneracy), sets to 1 by default if not used
 ``opticalIsomers``      yes                         The number of optical isomers of the species, sets to 1 by default if not used
-``reactive``            only bath gases             Boolean indicating whether the molecule reacts, set to ``False`` for bath gases. default is ``True``
 ======================= =========================== ====================================
 
 The ``label`` parameter should be set to a string with the desired name for the species, which can be reference later in
@@ -432,7 +512,7 @@ states, intermediates and products are reported relative to that.
 
 Also note that the value of ``E0`` provided here will be used directly, i.e., no atom or bond corrections will be applied.
 
-If you want Cantherm to correct for zero point energy, you can either just place
+If you want Arkane to correct for zero point energy, you can either just place
 the raw units in Hartree (as if it were read directly from quantum):
 
     E0 = 547.6789753223456
@@ -553,6 +633,43 @@ section) and run a new Arkane job in this manner. This can be useful if the user
 function from `Option #1: Automatically Parse Quantum Chemistry Calculation Output`_ to
 `Option #2: Directly Enter Molecular Properties`_.
 
+
+Additional parameters for pressure dependent networks
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Additional parameters apply only to molecules in pressure depedent networks
+
+======================= =================================== ====================================
+Parameter               Required?                           Description
+======================= =================================== ====================================
+``structure``           all species except bath gas         A chemical structure for the species defined using either SMILES, adjacencyList, or InChI
+``reactive``            only bath gases                     Boolean indicating whether the molecule reacts, set to ``False`` for bath gases. default is ``True``
+``collisionModel``      unimolecular isomers and bath gases Transport data for the species
+``energyTransferModel`` unimolecular isomers                Assigned with ``SingleExponentialDown`` model
+``thermo``              optional                            Thermo data for the species
+======================= =================================== ====================================
+
+The parameters ``structure``, ``molecularWeight``, ``collisionModel`` and ``energyTransferModel`` were already discussed
+above in `Species Parameters`_.
+
+When the ``thermo`` parameter is specified, Arkane will approximate the modes
+of vibration and energy from the thermodynamic parameters, and will utilize this
+in its solution of the pressure dependent network. This is analygous to how RMG
+calculates thermodynamic parameters for pressure dependent mechanisms.
+
+The ``thermo`` parameter has the following synatx::
+
+    thermo = NASA(polynomials=[
+                        NASAPolynomial(coeffs=[3.81543,0.0114632,0.000281868,
+                                         -5.70609e-07,3.57113e-10,45814.7,14.9594],
+                                  Tmin=(10,'K'), Tmax=(510.16,'K')),
+                        NASAPolynomial(coeffs=[-1.32176,0.0893697,-5.78295e-05,
+                                         1.78722e-08,-2.11223e-12,45849.2,31.4869],
+                                  Tmin=(510.16,'K'), Tmax=(3000,'K'))
+                              ],
+                  Tmin=(10,'K'), Tmax=(3000,'K')),
+
+
 Option #3: Automatically Parse YAML files
 -----------------------------------------
 Arkane automatically saves a .yml file representing an ArkaneSpecies in an ``ArkaneSpecies`` folder under the run
@@ -614,15 +731,16 @@ This is only required if you wish to perform a kinetics computation.
 Each reaction of interest must be specified using a ``reaction()`` function,
 which accepts the following parameters:
 
-====================== =========================================================
-Parameter              Description
-====================== =========================================================
-``label``              A unique string label used as an identifier
-``reactants``          A list of strings indicating the labels of the reactant species
-``products``           A list of strings indicating the labels of the product species
-``transitionState``    The string label of the transition state
-``tunneling``          Method of estimating the quantum tunneling factor (optional)
-====================== =========================================================
+====================== ==================== ============================================================================================================
+Parameter              Required?            Description
+====================== ==================== ============================================================================================================
+``label``              All reactions        A name for the reaction
+``reactants``          All reactions        A list of reactant species
+``products``           All reactions        A list of product species
+``transitionState``    All reactions        The transition state
+``kinetics``           Optional             The high pressure-limit kinetics for the reaction, for pdep calculations
+``tunneling``          Optional             The type of tunneling model (either 'Eckhart' or 'Wigner') to use for tunneling through the reaction barrier
+====================== ==================== ============================================================================================================
 
 The following is an example of a typical reaction function::
 
@@ -634,10 +752,35 @@ The following is an example of a typical reaction function::
         tunneling='Eckart'
     )
 
-Note: the quantum tunneling factor method that may be assigned is either ``'Eckart'`` or ``'Wigner'``.
+Note that the reactants and products must have been previously declared using a ``species()`` function,
+using the same name labels. Transition states must also be previously declared using a
+``transitionState()`` function.
+The quantum tunneling factor method that may be assigned is either ``'Eckart'`` or ``'Wigner'``.
 
-Thermodynamics Computations
-===========================
+
+The ``kinetics`` parameter is only useful in pressure dependent calculations.
+If the optional ``kinetics`` parameter is specified, Arkane will perform an inverse
+Laplace transform (ILT) on the high pressure-limit kinetics provided to estimate
+the microcanonical rate coefficients, :math:`k(E)`, needed for the master
+equation (refer to Theory manual for more detail). This feature is useful for
+barrierless reactions, such as radical recombinations, which don't have an
+obvious transition state. If the ILT approach to calculating :math:`k(E)` is taken,
+a placeholder ``transitionState`` must still be defined with an ``E0`` equal
+to the energy of the higher energy species
+it is connecting.
+If the optional ``kinetics`` entry is not specified, Arkane will calculate the required kinetic
+coefficients on its own. The ``kinetics`` entry is particularly useful to specify rates of barrierless
+reactions (for which Arkane cannot yet calculate high-pressure limit rates).
+The ``kinetics`` argument has the following syntax::
+
+    kinetics = Arrhenius(A=(2.65e6,'m^3/(mol*s)'), n=0.0, Ea=(0.0,'kcal/mol'), T0=(1,"K")),
+
+For high pressure limit kinetics calculations, specifying the ``kinetics``
+parameter will just output the value specified by the ``kinetics`` parameter,
+without using transition state theory.
+
+Thermodynamics
+==============
 
 Use a ``thermo()`` function to make Arkane execute the thermodynamic
 parameters computatiom for a species. Pass the string label of the species
@@ -650,8 +793,8 @@ Below is a typical ``thermo()`` execution function::
 
     thermo('ethane', 'NASA')
 
-Kinetics Computations
-=====================
+High Pressure Limit Kinetics
+============================
 
 Use a ``kinetics()`` function to make Arkane execute the high-pressure limit kinetic
 parameters computation for a reaction. The ``'label'`` string must correspond to that of
@@ -688,12 +831,142 @@ with the reaction label, delineates the semi-normalized sensitivity coefficients
 at all requested conditions. A horizontal bar figure is automatically generated per reaction with subplots for both the
 forward and reverse direction at all conditions.
 
+Pressure Dependent Network Specification
+========================================
+
+To obtain pressure dependent rates, you need to add two different sections to
+the file. First, a declaration for the overall network must be given using the
+``network()`` function, which specifies which spiecies are contained in this
+reaction network. After that you will need to create a ``pressureDependence()``
+block that indicates how the pressure dependence calculation should be conducted.
+
+This section will go over the first of these sections, the ``network()`` function.
+This includes setting the following paramters:
+
+====================== ================================================================================
+Parameter              Description
+====================== ================================================================================
+``label``              A name for the network
+``isomers``            A list of species participating in unimolecular reaction channels
+``reactants``          A list of the species that participate in bimolecular reactant channels
+``bathGas``            A dictionary of bath gases and their respective mole fractions, adding up to 1.0
+====================== ================================================================================
+
+Arkane is largely able to determine the molecular configurations that define
+the potential energy surface for your reaction network simply by inspecting the
+path reactions. However, you must indicate which unimolecular and bimolecular
+configurations you wish to include in the master equation formulation; all
+others will be treated as irreversible sinks.
+
+Note that all species and bath gases used in the ``network`` function must have been
+previously declared with the same name labels in a previous ``species`` function in the
+input file.
+
+You do not need to specify the product channels (infinite sinks) in this
+manner, as any configuration not marked as an isomer or reactant channel will
+be treated as a product channel.
+
+An example of the ``network`` function is given below along with a scheme of the network::
+
+
+    network(
+        label = 'acetyl + O2',
+        isomers = [
+            'acetylperoxy',
+            'hydroperoxylvinoxy',
+        ],
+        reactants = [
+            ('acetyl', 'oxygen'),
+        ],
+        bathGas = {
+            'nitrogen': 0.4,
+            'argon': 0.6,
+        }
+    )
+
+.. image:: acetyl+O2.jpg
+
+Image source: `J.W. Allen, PhD dissertation, MIT 2013 <http://hdl.handle.net/1721.1/81677>`_,
+calculated at the RQCISD(T)/CBS//B3LYP/6-311++G(d,p) level of theory
+
+Pressure Dependent Rate Calculation
+===================================
+
+The overall parameters for the pressure-dependence calculation must be defined in a
+``pressureDependence()`` function at the end of the input file. The parameters are:
+
+============================================= ==================== ============================================================================================================
+Parameter                                     Required?            Description
+============================================= ==================== ============================================================================================================
+``label``                                     Yes                  Use the name for the ``network`` declared previously
+``method``                                    Yes                  Method to use for calculating the pdep network. Use either ``'modified strong collision'``, ``'reservoir state'``, or ``'chemically-significant eigenvalues'``
+``interpolationModel``                        Yes                  Select the output type for the pdep kinetics, either in ``'chebyshev'`` or ``'pdeparrhenius'`` (plog) format
+``activeKRotor``                              No                   A flag indicating whether to treat the K-rotor as active or adiabatic (default ``True``)
+``activeJRotor``                              No                   A flag indicating whether to treat the J-rotor as active or adiabatic (default ``True``)
+``Tmin``/``Tmax``/``Tcount`` **or** ``Tlist`` Yes                  Define temperatures at which to compute (and output) :math:`k(T,P)`
+``Pmin``/``Pmax``/``Pcount`` **or** ``Plist`` Yes                  Define pressures at which to compute (and output) :math:`k(T,P)`
+``maximumGrainSize``                          Yes                  Defines the upper bound on grain spacing in master equation calculations.
+``minimumGrainCount``                         Yes                  Defines the minimum number of grains in master equation calculation.
+``sensitivity_conditions``                    No                   Specifies the conditions at which to run a network sensitivity analysis.
+============================================= ==================== ============================================================================================================
+
+An example of the Pressure-dependent algorithm parameters function for the acetyl + O2 network is shown below::
+
+    pressureDependence(
+        label='acetyl + O2',
+        Tmin=(300.0,'K'), Tmax=(2000.0,'K'), Tcount=8,
+        Pmin=(0.01,'bar'), Pmax=(100.0,'bar'), Pcount=5,
+        #Tlist = ([300, 400, 600, 800, 1000, 1250, 1500, 1750, 2000],'K')
+        #Plist = ([0.01, 0.1, 1.0, 10.0, 100.0],'bar')
+        maximumGrainSize = (1.0,'kcal/mol'),
+        minimumGrainCount = 250,
+        method = 'modified strong collision',
+        #method = 'reservoir state',
+        #method = 'chemically-significant eigenvalues',
+        interpolationModel = ('chebyshev', 6, 4),
+        #interpolationModel = ('pdeparrhenius'),
+        #activeKRotor = True,
+        activeJRotor = True,
+        sensitivity_conditions = [[(1000, 'K'), (1, 'bar')], [(1500, 'K'), (10, 'bar')]]
+    )
+
+
+Temperature and Pressure Ranges
+-------------------------------
+
+Arkane will compute the :math:`k(T,P)` values on a grid of temperature and
+pressure points. ``Tmin``, ``Tmax``, and ``Tcount`` values, as well as ``Pmin``, ``Pmax``, and ``Pcount`` parameter
+values must be provided. Arkane will automatically choose the intermediate temperatures based on the interpolation model
+you wish to fit. This is the recommended approach.
+
+Alternatively, the grid of temperature and pressure points can be specified explicitly using ``Tlist`` and/or ``Plist``.
+
+
+Energy Grains
+-------------
+
+Determine the fineness of the energy grains to be used in the master equation calculations.  Dictate
+the ``maximumGrainSize``, and the ``minimumGrainCount``.
+
+Sensitivity analysis
+--------------------
+
+Arkane also has the ability to vary barrier heights and generate sensitivity coefficients as a function of changes
+in ``E0`` with the ``sensitivity_conditions`` argument. For each desired condition, place its corresponding temperature
+and pressure within the list of ``sensitivity_conditions``. See the example above for syntax.
+
+The output of a sensitivity analysis is saved into a ``sensitivity`` folder in the output directory. A text file, named
+with the network label, delineates the semi-normalized sensitivity coefficients ``dln(k)/dE0`` in units of ``mol/J``
+for all network reactions (both directions if reversible) at all requested conditions. Horizontal bar figures are
+automatically generated per network reaction, showing the semi-normalized sensitivity coefficients at all conditions.
+
+
 Examples
 ========
 
 Perhaps the best way to learn the input file syntax is by example. To that end,
 a number of example input files and their corresponding output have been given
-in the ``examples`` directory.
+in the ``examples/arkane`` directory.
 
 Troubleshooting and FAQs
 ========================

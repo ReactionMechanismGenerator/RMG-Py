@@ -65,7 +65,7 @@ class PseudoSpecies:
         return "PseudoSpecies('{0}')".format(self.label)
     def __str__(self):
         return self.label
-    def isIsomorphic(self, other):
+    def isIsomorphic(self, other, generateInitialMap=False):
         return self.label.lower() == other.label.lower()
 
 class TestReactionIsomorphism(unittest.TestCase):
