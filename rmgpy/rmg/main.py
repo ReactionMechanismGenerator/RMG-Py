@@ -1075,7 +1075,8 @@ class RMG(util.Subject):
                                         # For uncorrelated, we need the reaction index
                                         k_index = label.split(':')[0]  # Looks like 'k1234: A+B=C+D'
                                         kParam = int(k_index[1:])
-                                    kParams.append(kParam)
+                                    if kParam not in kParams:
+                                        kParams.append(kParam)
                                 for label, _, _ in thermo_c[:self.uncertainty['globalnum']]:
                                     if correlated:
                                         gParam = label
@@ -1083,7 +1084,8 @@ class RMG(util.Subject):
                                         # For uncorrelated, we need the species index
                                         match = re.search(r'dG\[\S+\((\d+)\)\]', label)
                                         gParam = int(match.group(1))
-                                    gParams.append(gParam)
+                                    if gParam not in gParams:
+                                        gParams.append(gParam)
 
                             reactorPCEFactory = ReactorPCEFactory(
                                 cantera=job,
