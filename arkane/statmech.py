@@ -341,6 +341,7 @@ class StatMechJob(object):
 
         rotors = []
         if self.includeHinderedRotors:
+            self.raw_hindered_rotor_data = []
             try:
                 rotors = local_context['rotors']
             except KeyError:
@@ -471,26 +472,17 @@ class StatMechJob(object):
                     # Load the hindered rotor scan energies
                     if isinstance(scanLog, Log) and not isinstance(energy, (GaussianLog, QChemLog, MolproLog)):
                         scanLog = determine_qm_software(os.path.join(directory, scanLog.path))
-                    if isinstance(scanLog, GaussianLog):
-                        scanLog.path = os.path.join(directory, scanLog.path)
+                    scanLog.path = os.path.join(directory, scanLog.path)
+                    if isinstance(scanLog, (GaussianLog, QChemLog)):
                         v_list, angle = scanLog.loadScanEnergies()
-                        scanLogOutput = ScanLog(os.path.join(directory, '{0}_rotor_{1}.txt'.format(
-                            self.species.label, rotorCount + 1)))
-                        scanLogOutput.save(angle, v_list)
-                    elif isinstance(scanLog, QChemLog):
-                        scanLog.path = os.path.join(directory, scanLog.path)
-                        v_list, angle = scanLog.loadScanEnergies()
-                        scanLogOutput = ScanLog(os.path.join(directory, '{0}_rotor_{1}.txt'.format(
-                            self.species.label, rotorCount + 1)))
-                        scanLogOutput.save(angle, v_list)
                     elif isinstance(scanLog, ScanLog):
-                        scanLog.path = os.path.join(directory, scanLog.path)
                         angle, v_list = scanLog.load()
                     else:
                         raise InputError('Invalid log file type {0} for scan log.'.format(scanLog.__class__))
 
                     if symmetry is None:
                         symmetry = determine_rotor_symmetry(v_list, self.species.label, pivots)
+                    self.raw_hindered_rotor_data.append((self.species.label, rotorCount, symmetry, angle, v_list))
                     inertia = conformer.getInternalReducedMomentOfInertia(pivots, top) * constants.Na * 1e23
 
                     cosineRotor = HinderedRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)

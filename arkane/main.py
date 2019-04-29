@@ -39,6 +39,7 @@ import logging
 import argparse
 import time
 import csv
+import numpy as np
 
 try:
     import matplotlib
@@ -267,6 +268,7 @@ class Arkane:
 
         # run thermo and statmech jobs (also writes thermo blocks to Chemkin file)
         supporting_info = []
+        hindered_rotor_info = []
         for job in self.jobList:
             if isinstance(job, ThermoJob):
                 job.execute(output_directory=self.outputDirectory, plot=self.plot)
@@ -274,6 +276,9 @@ class Arkane:
                 job.execute(output_directory=self.outputDirectory, plot=self.plot, pdep=is_pdep(self.jobList))
                 if hasattr(job, 'supporting_info'):
                     supporting_info.append(job.supporting_info)
+                if hasattr(job, 'raw_hindered_rotor_data'):
+                    for hr_info in job.raw_hindered_rotor_data:
+                        hindered_rotor_info.append(hr_info)
 
         with open(chemkinFile, 'a') as f:
             f.write('\n')
@@ -305,7 +310,19 @@ class Arkane:
                             freq = '{0:.1f}'.format(abs(row[6])) + 'i, '
                         freq += ', '.join(['{0:.1f}'.format(s) for s in row[5]])
                     atoms = ', '.join(["{0}    {1}".format(atom,"    ".join([str(c) for c in coords])) for atom, coords in zip(row[10], row[11])])
-                    writer.writerow([label, row[1], row[2], row[3], rot, freq, row[7],row[8], row[9],atoms,row[12]])
+                    writer.writerow([label, row[1], row[2], row[3], rot, freq, row[7], row[8], row[9], atoms, row[12]])
+        if hindered_rotor_info:
+            hr_file = os.path.join(self.outputDirectory, 'hindered_rotor_scan_data.csv')
+            # find longest length to set column number for energies
+            max_energy_length = max([len(hr[4]) for hr in hindered_rotor_info])
+            with open(hr_file, 'wb') as csvfile:
+                writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                writer.writerow(['species', 'rotor_number', 'symmetry', 'resolution (degrees)',
+                                'pivot_atoms', 'frozen_atoms'] +
+                                ['energy (J/mol) {}'.format(i) for i in range(max_energy_length)])
+                for row in hindered_rotor_info:
+                    writer.writerow([row[0], row[1], row[2], row[3][1] * 180 / np.pi]
+                                    + [a for a in row[4]])
         # run kinetics and pdep jobs (also writes reaction blocks to Chemkin file)
         for job in self.jobList:
             if isinstance(job, KineticsJob):
