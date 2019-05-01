@@ -49,7 +49,7 @@ except:
 
 
 class ReactorModPiece(ModPiece):
-    def __init__(self, cantera, outputSpeciesList, kParams, kUncertainty, gParams, gUncertainty, correlated=False):
+    def __init__(self, cantera, outputSpeciesList, kParams, kUncertainty, gParams, gUncertainty, correlated=False, logx=True):
         """
         ======================= ====================================================
         Attribute               Description
@@ -71,13 +71,14 @@ class ReactorModPiece(ModPiece):
         
         `affectedReactions`      Used only in the correlated case, this is a list of the indices of the affected rxns for kParams
         `affectedSpecies`       Used only in the correlated case, this is a list of the indices of the affected species for gParams
-
+        `logx`                  A flag to set whether to use mole fraction or ln(mole fraction) as the output variable
         ============================================================================
         """
         self.cantera = cantera
         self.outputSpeciesList = outputSpeciesList
         self.outputSpeciesIndices = [cantera.speciesList.index(outputSpecies) for outputSpecies in outputSpeciesList]
         self.correlated = correlated
+        self.logx = logx
 
         # The size of the uncertain inputs: [parameters affecting k, parameters affecting free energy G]         
         self.inputSize = [len(kParams) + len(gParams)]
@@ -249,7 +250,10 @@ class ReactorModPiece(ModPiece):
             for j in range(self.numOutputSpecies):
                 speciesIndex = self.outputSpeciesIndices[j]
                 speciesGenericData = allData[i][1][2:]
-                output[i * self.numOutputSpecies + j] = np.log(speciesGenericData[speciesIndex].data[-1])
+                if self.logx:
+                    output[i * self.numOutputSpecies + j] = np.log(speciesGenericData[speciesIndex].data[-1])
+                else:
+                    output[i * self.numOutputSpecies + j] = speciesGenericData[speciesIndex].data[-1]
 
         # print ''
         # print 'Kinetics after'
@@ -327,7 +331,7 @@ class ReactorPCEFactory:
         6. Perform PCE analysis of desired outputs
     """
 
-    def __init__(self, cantera, outputSpeciesList, kParams, kUncertainty, gParams, gUncertainty, correlated=False):
+    def __init__(self, cantera, outputSpeciesList, kParams, kUncertainty, gParams, gUncertainty, correlated=False, logx=True):
 
         self.reactorMod = ReactorModPiece(cantera=cantera,
                                           outputSpeciesList=outputSpeciesList,
@@ -336,6 +340,7 @@ class ReactorPCEFactory:
                                           gParams=gParams,
                                           gUncertainty=gUncertainty,
                                           correlated=correlated,
+                                          logx=logx,
                                           )
 
         # Define the polynomials and quadrature rules in each dimension using a VariableCollection object. 
@@ -358,6 +363,7 @@ class ReactorPCEFactory:
         self.factory = SmolyakPCEFactory(varCollection, self.reactorMod)
 
         self.pce = None
+        self.logx = logx
 
     def generatePCE(self, runTime=None, startOrder=2, tolerance=None, fixedTerms=False):
         """
@@ -409,11 +415,11 @@ Condition {0}
 ------------------------------------------------------------
 {1!s}
 ============================================================
-Condition {0} Mole Fractions Evaluated at Test Point
+Condition {0} {2}Mole Fractions Evaluated at Test Point
 ------------------------------------------------------------
 Species                      True Output          PCE Output
 ------------------------------------------------------------
-""".format(i + 1, reactorMod.cantera.conditions[i])
+""".format(i + 1, reactorMod.cantera.conditions[i], 'Log ' if self.logx else '')
 
             for j, outputSpecies in enumerate(reactorMod.outputSpeciesList):
                 outputIndex = i * reactorMod.numOutputSpecies + j
@@ -456,11 +462,11 @@ Condition {0}
 ------------------------------------------------------------
 {1!s}
 ============================================================
-Condition {0} Mole Fractions
+Condition {0} {2}Mole Fractions
 ------------------------------------------------------------
 Species                   Mean         Stddev     Stddev (%)
 ------------------------------------------------------------
-""".format(i + 1, reactorMod.cantera.conditions[i])
+""".format(i + 1, reactorMod.cantera.conditions[i], 'Log ' if self.logx else '')
 
             for j, outputSpecies in enumerate(reactorMod.outputSpeciesList):
                 outputIndex = i * reactorMod.numOutputSpecies + j

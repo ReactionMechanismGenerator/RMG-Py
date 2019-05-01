@@ -676,7 +676,7 @@ def thermoCentralDatabase(host,
                     
 
 def uncertainty(localAnalysis=False, globalAnalysis=False, uncorrelated=True, correlated=True,
-                localNumber=10, globalNumber=5, terminationTime=None, pceRunTime=1800):
+                localNumber=10, globalNumber=5, terminationTime=None, pceRunTime=1800, logx=True):
     rmg.uncertainty = {
         'local': localAnalysis if not globalAnalysis else True,  # Must run local before global
         'global': globalAnalysis,
@@ -686,6 +686,7 @@ def uncertainty(localAnalysis=False, globalAnalysis=False, uncorrelated=True, co
         'globalnum': globalNumber,
         'time': terminationTime,
         'pcetime': pceRunTime,
+        'logx': logx,
     }
 
 
