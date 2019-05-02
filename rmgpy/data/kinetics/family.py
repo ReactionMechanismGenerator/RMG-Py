@@ -1460,7 +1460,8 @@ class KineticsFamily(Database):
             elif isinstance(struct, Group):
                 struct.resetRingMembership()
                 if label in ['1,2_insertion_co', 'r_addition_com', 'co_disproportionation',
-                             'intra_no2_ono_conversion', 'lone_electron_pair_bond']:
+                             'intra_no2_ono_conversion', 'lone_electron_pair_bond',
+                             '1,2_nh3_elimination', '1,3_nh3_elimination']:
                     struct.update_charge()
             else:
                 raise TypeError('Expecting Molecule or Group object, not {0}'.format(struct.__class__.__name__))
