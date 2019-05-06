@@ -52,7 +52,7 @@ class QChemLog(Log):
     """
 
     def __init__(self, path):
-        self.path = path
+        super(QChemLog, self).__init__(path)
 
     def getNumberOfAtoms(self):
         """
@@ -284,7 +284,7 @@ class QChemLog(Log):
             raise InputError('Unable to find energy in QChem output file.')
         return e0
         
-    def loadZeroPointEnergy(self,frequencyScaleFactor=1.):
+    def loadZeroPointEnergy(self):
         """
         Load the unscaled zero-point energy in J/mol from a QChem output file.
         """
@@ -293,7 +293,6 @@ class QChemLog(Log):
             for line in f:
                 if 'Zero point vibrational energy' in line:
                     ZPE = float(line.split()[4]) * 4184  # QChem's ZPE is in kcal/mol
-                    # scaledZPE = ZPE * frequencyScaleFactor
                     logging.debug('ZPE is {}'.format(str(ZPE)))
         if ZPE is not None:
             return ZPE

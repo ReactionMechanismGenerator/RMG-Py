@@ -38,6 +38,7 @@ from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, Har
 
 from arkane.common import get_element_mass
 from arkane.log import Log
+
 ################################################################################
 
 
@@ -45,69 +46,68 @@ class MolproLog(Log):
     """
     Represents a Molpro log file. The attribute `path` refers to the
     location on disk of the Molpro log file of interest. Methods are provided
-    to extract a variety of information into Arkane classes and/or NumPy
-    arrays. 
+    to extract a variety of information into Arkane classes and/or NumPy arrays.
     """
-    
+
     def __init__(self, path):
-        self.path = path
+        super(MolproLog, self).__init__(path)
 
     def getNumberOfAtoms(self):
         """
         Return the number of atoms in the molecular configuration used in
         the MolPro log file.
         """
-
-        Natoms = 0
+        n_atoms = 0
         # Open Molpro log file for parsing
         f = open(self.path, 'r')
         line = f.readline()
-        while line != '' and Natoms == 0:
+        while line != '' and n_atoms == 0:
             # Automatically determine the number of atoms
-            if 'ATOMIC COORDINATES' in line and Natoms == 0:
-                for i in range(4): line = f.readline()
+            if 'ATOMIC COORDINATES' in line and n_atoms == 0:
+                for i in range(4):
+                    line = f.readline()
                 while 'Bond lengths' not in line and 'nuclear charge' not in line.lower():
-                    Natoms += 1
+                    n_atoms += 1
                     line = f.readline()
             line = f.readline()
         # Close file when finished
         f.close()
         # Return the result
 
-        return Natoms - 1
+        return n_atoms - 1
 
     def loadForceConstantMatrix(self):
         """
         Print the force constant matrix by including the print, hessian command in the input file
         """
 
-        F = None
+        fc = None
 
-        Natoms = self.getNumberOfAtoms()
-        Nrows = Natoms * 3
+        n_atoms = self.getNumberOfAtoms()
+        n_rows = n_atoms * 3
 
         f = open(self.path, 'r')
         line = f.readline()
         while line != '':
             # Read force constant matrix
             if 'Force Constants (Second Derivatives of the Energy) in [a.u.]' in line:
-                F = numpy.zeros((Nrows,Nrows), numpy.float64)
-                for i in range(int(math.ceil(Nrows / 5.0))):
+                fc = numpy.zeros((n_rows, n_rows), numpy.float64)
+                for i in range(int(math.ceil(n_rows / 5.0))):
                     # Header row
                     line = f.readline()
                     # Matrix element rows
-                    for j in range(i*5, Nrows):
+                    for j in range(i*5, n_rows):
                         data = f.readline().split()
                         for k in range(len(data)-1):
-                            F[j,i*5+k] = float(data[k+1].replace('D', 'E'))
-                            F[i*5+k,j] = F[j,i*5+k]
+                            fc[j, i*5+k] = float(data[k+1].replace('D', 'E'))
+                            fc[i*5+k, j] = fc[j, i*5+k]
                 # Convert from atomic units (Hartree/Bohr_radius^2) to J/m^2
-                F *= 4.35974417e-18 / 5.291772108e-11**2
+                fc *= 4.35974417e-18 / 5.291772108e-11**2
             line = f.readline()
         # Close file when finished
         f.close()
 
-        return F
+        return fc
 
     def loadGeometry(self):
         """
@@ -139,12 +139,12 @@ class MolproLog(Log):
 
         # If no optimized coordinates were found, uses the input geometry
         # (for example if reading the geometry from a frequency file)
-        if coord == []:
+        if not coord:
             f = open(self.path, 'r')
             line = f.readline()
             while line != '':
                 if 'atomic coordinates' in line.lower():
-                    symbol = []; coord = []
+                    symbol, coord = [], []
                     for i in range(4):
                         line = f.readline()
                     while line != '\n':
@@ -175,7 +175,7 @@ class MolproLog(Log):
 
         modes = []
         unscaled_frequencies = []
-        E0 = 0.0
+        e0 = 0.0
         if opticalIsomers is None or symmetry is None:
             _opticalIsomers, _symmetry = self.get_optical_isomers_and_symmetry_number()
             if opticalIsomers is None:
@@ -227,21 +227,22 @@ class MolproLog(Log):
                     # Read molecular mass for external translational modes
                     elif 'Molecular Mass:' in line:
                         mass = float(line.split()[2])
-                        translation = IdealGasTranslation(mass=(mass,"amu"))
+                        translation = IdealGasTranslation(mass=(mass, "amu"))
                         modes.append(translation)
 
                     # Read moments of inertia for external rotational modes
-                    elif 'Rotational Constants' in line and line.split()[-1]=='[GHz]':
+                    elif 'Rotational Constants' in line and line.split()[-1] == '[GHz]':
                         inertia = [float(d) for d in line.split()[-4:-1]]
                         for i in range(3):
-                            inertia[i] = constants.h / (8 * constants.pi * constants.pi * inertia[i] * 1e9) *constants.Na*1e23
-                        rotation = NonlinearRotor(inertia=(inertia,"amu*angstrom^2"), symmetry=symmetry)
+                            inertia[i] = constants.h / (8 * constants.pi * constants.pi * inertia[i] * 1e9)\
+                                         * constants.Na * 1e23
+                        rotation = NonlinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
                         modes.append(rotation)
 
-                    elif 'Rotational Constant' in line and line.split()[3]=='[GHz]':
+                    elif 'Rotational Constant' in line and line.split()[3] == '[GHz]':
                         inertia = float(line.split()[2])
-                        inertia = constants.h / (8 * constants.pi * constants.pi * inertia * 1e9) *constants.Na*1e23
-                        rotation = LinearRotor(inertia=(inertia,"amu*angstrom^2"), symmetry=symmetry)
+                        inertia = constants.h / (8 * constants.pi * constants.pi * inertia * 1e9) * constants.Na * 1e23
+                        rotation = LinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
                         modes.append(rotation)
 
                     # Read vibrational modes
@@ -256,7 +257,7 @@ class MolproLog(Log):
                         if len(frequencies) > 0:
                             frequencies = [freq * 0.695039 for freq in frequencies]  # kB = 0.695039 cm^-1/K
                             unscaled_frequencies = frequencies
-                            vibration = HarmonicOscillator(frequencies=(frequencies,"cm^-1"))
+                            vibration = HarmonicOscillator(frequencies=(frequencies, "cm^-1"))
                             modes.append(vibration)
 
                     # Read the next line in the file
@@ -267,7 +268,7 @@ class MolproLog(Log):
 
         # Close file when finished
         f.close()
-        return Conformer(E0=(E0*0.001,"kJ/mol"), modes=modes, spinMultiplicity=spinMultiplicity,
+        return Conformer(E0=(e0 * 0.001, "kJ/mol"), modes=modes, spinMultiplicity=spinMultiplicity,
                          opticalIsomers=opticalIsomers), unscaled_frequencies
 
     def loadEnergy(self, frequencyScaleFactor=1.):
@@ -278,17 +279,21 @@ class MolproLog(Log):
         which it will parse out of the Molpro file. For the vdz and vtz basis sets f12a is
         a better approximation, but for higher basis sets f12b is a better approximation.
         """
-        E0 = None
+        e0 = None
         with open(self.path, 'r') as f:
             lines = f.readlines()
-            # Determine whether this is f12a or f12b according to the basis set, or whether this is MRCI.
-            f12a, f12b, mrci = False, False, False
+            # Determine whether the sp method is f12,
+            # if so whether we should parse f12a or f12b according to the basis set.
+            # Otherwise, check whether the sp method is MRCI.
+            f12, f12a, f12b, mrci = False, False, False, False
             for line in lines:
                 if 'basis' in line.lower():
                     if 'vtz' in line.lower() or 'vdz' in line.lower():
                         f12a = True  # MRCI could also have a vdz/vtz basis, so don't break yet
                     elif any(high_basis in line.lower() for high_basis in ['vqz', 'v5z', 'v6z', 'v7z', 'v8z']):
                         f12b = True  # MRCI could also have a v(4+)z basis, so don't break yet
+                elif 'ccsd' in line.lower() and 'f12' in line.lower():
+                    f12 = True
                 elif 'mrci' in line.lower():
                     mrci = True
                     f12a, f12b = False, False
@@ -302,44 +307,45 @@ class MolproLog(Log):
                                  ' MRCI, MRCI+Davidson are supported')
             # Search for E0
             for line in lines:
-                if f12a:
+                if f12 and f12a:
                     if 'CCSD(T)-F12a' in line and 'energy' in line:
-                        E0 = float(line.split()[-1])
+                        e0 = float(line.split()[-1])
                         break
-                    if 'Electronic Energy at 0' in line:
-                        E0 = float(line.split()[-2])
-                        break
-                elif f12b:
+                elif f12 and f12b:
                     if 'CCSD(T)-F12b' in line and 'energy' in line:
-                        E0 = float(line.split()[-1])
-                        break
-                    if 'Electronic Energy at 0' in line:
-                        E0 = float(line.split()[-2])
+                        e0 = float(line.split()[-1])
                         break
                 elif mrci:
                     # First search for MRCI+Davidson energy
                     if '(Davidson, relaxed reference)' in line:
-                        E0 = float(line.split()[3])
+                        e0 = float(line.split()[3])
                         logging.debug('Found MRCI+Davidson energy in molpro log file {0}, using this value'.format(
                             self.path))
                         break
-            if E0 is None and mrci:
+                elif not f12:
+                    if 'Electronic Energy at 0' in line:
+                        e0 = float(line.split()[-2])
+                        break
+                    if 'CCSD' in line and 'energy=' in line:
+                        e0 = float(line.split()[-1])
+                        break
+            if e0 is None and mrci:
                 # No Davidson correction is given, search for MRCI energy
                 read_e0 = False
                 for line in lines:
                     if read_e0:
-                        E0 = float(line.split()[0])
+                        e0 = float(line.split()[0])
                         logging.debug('Found MRCI energy in molpro log file {0}, using this value'
                                       ' (did NOT find MRCI+Davidson)'.format(self.path))
                         break
                     if all(w in line for w in ('MRCI', 'MULTI', 'HF-SCF')):
                         read_e0 = True
-        logging.debug('Molpro energy found is {0} Hartree'.format(E0))
+        logging.debug('Molpro energy found is {0} Hartree'.format(e0))
         # multiply E0 by correct constants
-        if E0 is not None:
-            E0 = E0 * constants.E_h * constants.Na
-            logging.debug('Molpro energy found is {0} J/mol'.format(E0))
-            return E0
+        if e0 is not None:
+            e0 *= constants.E_h * constants.Na
+            logging.debug('Molpro energy found is {0} J/mol'.format(e0))
+            return e0
         else:
             raise Exception('Unable to find energy in Molpro log file {0}.'.format(self.path))
 
@@ -348,7 +354,7 @@ class MolproLog(Log):
         Load the unscaled zero-point energy in J/mol from a MolPro log file.
         """
 
-        ZPE = None
+        zpe = None
 
         f = open(self.path, 'r')
         line = f.readline()
@@ -359,15 +365,15 @@ class MolproLog(Log):
             if 'Electronic Energy at 0 [K]:' in line:
                 electronic_energy = float(line.split()[5])
                 line = f.readline()
-                EEplusZPE = float(line.split()[5])
-                ZPE = (EEplusZPE-electronic_energy) * constants.E_h * constants.Na
+                ee_plus_zpe = float(line.split()[5])
+                zpe = (ee_plus_zpe - electronic_energy) * constants.E_h * constants.Na
             line = f.readline()
 
         # Close file when finished
         f.close()
 
-        if ZPE is not None:
-            return ZPE
+        if zpe is not None:
+            return zpe
         else:
             raise Exception('Unable to find zero-point energy in Molpro log file. Make sure that the'
                             ' keyword {frequencies, thermo, print,thermo} is included in the input file')
@@ -391,3 +397,9 @@ class MolproLog(Log):
             raise Exception('Unable to find imaginary frequency in Molpro output file {0}'.format(self.path))
         negativefrequency = -float(frequency)
         return negativefrequency
+
+    def loadScanEnergies(self):
+        """
+        Rotor scans are not implemented in Molpro
+        """
+        raise NotImplementedError('Rotor scans not implemented in Molpro')
