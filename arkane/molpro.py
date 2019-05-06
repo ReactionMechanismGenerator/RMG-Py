@@ -50,7 +50,7 @@ class MolproLog(Log):
     """
 
     def __init__(self, path):
-        self.path = path
+        super(MolproLog, self).__init__(path)
 
     def getNumberOfAtoms(self):
         """
@@ -392,3 +392,9 @@ class MolproLog(Log):
             raise Exception('Unable to find imaginary frequency in Molpro output file {0}'.format(self.path))
         negativefrequency = -float(frequency)
         return negativefrequency
+
+    def loadScanEnergies(self):
+        """
+        Rotor scans are not implemented in Molpro
+        """
+        raise NotImplementedError('Rotor scans not implemented in Molpro')

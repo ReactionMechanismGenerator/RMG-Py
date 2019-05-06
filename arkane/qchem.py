@@ -52,7 +52,7 @@ class QChemLog(Log):
     """
 
     def __init__(self, path):
-        self.path = path
+        super(QChemLog, self).__init__(path)
 
     def getNumberOfAtoms(self):
         """
