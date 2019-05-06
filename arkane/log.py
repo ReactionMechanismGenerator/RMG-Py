@@ -88,7 +88,7 @@ class Log(object):
         """
         raise NotImplementedError("loadGeometry is not implemented for the Log class")
 
-    def loadZeroPointEnergy(self,frequencyScaleFactor=1.):
+    def loadZeroPointEnergy(self):
         """
         Load the unscaled zero-point energy in J/mol from a QChem output file.
         """
