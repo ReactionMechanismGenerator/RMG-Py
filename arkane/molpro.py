@@ -282,14 +282,18 @@ class MolproLog(Log):
         e0 = None
         with open(self.path, 'r') as f:
             lines = f.readlines()
-            # Determine whether this is f12a or f12b according to the basis set, or whether this is MRCI.
-            f12a, f12b, mrci = False, False, False
+            # Determine whether the sp method is f12,
+            # if so whether we should parse f12a or f12b according to the basis set.
+            # Otherwise, check whether the sp method is MRCI.
+            f12, f12a, f12b, mrci = False, False, False, False
             for line in lines:
                 if 'basis' in line.lower():
                     if 'vtz' in line.lower() or 'vdz' in line.lower():
                         f12a = True  # MRCI could also have a vdz/vtz basis, so don't break yet
                     elif any(high_basis in line.lower() for high_basis in ['vqz', 'v5z', 'v6z', 'v7z', 'v8z']):
                         f12b = True  # MRCI could also have a v(4+)z basis, so don't break yet
+                elif 'ccsd' in line.lower() and 'f12' in line.lower():
+                    f12 = True
                 elif 'mrci' in line.lower():
                     mrci = True
                     f12a, f12b = False, False
@@ -303,19 +307,13 @@ class MolproLog(Log):
                                  ' MRCI, MRCI+Davidson are supported')
             # Search for E0
             for line in lines:
-                if f12a:
+                if f12 and f12a:
                     if 'CCSD(T)-F12a' in line and 'energy' in line:
                         e0 = float(line.split()[-1])
                         break
-                    if 'Electronic Energy at 0' in line:
-                        e0 = float(line.split()[-2])
-                        break
-                elif f12b:
+                elif f12 and f12b:
                     if 'CCSD(T)-F12b' in line and 'energy' in line:
                         e0 = float(line.split()[-1])
-                        break
-                    if 'Electronic Energy at 0' in line:
-                        e0 = float(line.split()[-2])
                         break
                 elif mrci:
                     # First search for MRCI+Davidson energy
@@ -323,6 +321,13 @@ class MolproLog(Log):
                         e0 = float(line.split()[3])
                         logging.debug('Found MRCI+Davidson energy in molpro log file {0}, using this value'.format(
                             self.path))
+                        break
+                elif not f12:
+                    if 'Electronic Energy at 0' in line:
+                        e0 = float(line.split()[-2])
+                        break
+                    if 'CCSD' in line and 'energy=' in line:
+                        e0 = float(line.split()[-1])
                         break
             if e0 is None and mrci:
                 # No Davidson correction is given, search for MRCI energy
