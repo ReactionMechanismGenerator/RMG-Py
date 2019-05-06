@@ -740,6 +740,7 @@ DipoleMoment = UnitType('C*m', extraDimensionality={
 Energy = Enthalpy = FreeEnergy = UnitType('J/mol',
     commonUnits=['kJ/mol', 'cal/mol', 'kcal/mol', 'eV/molecule'],
     extraDimensionality={'K': constants.R,
+                         'cm^-1': constants.h * constants.c * 100
                          # the following hack also allows 'J' and 'kJ' etc. to be specified without /mol[ecule]
                          # so is not advisable (and fails unit tests)
                          # 'eV': constants.Na, # allow people to be lazy and neglect the "/molecule"
