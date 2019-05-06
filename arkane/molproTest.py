@@ -32,7 +32,7 @@ import numpy
 import unittest
 import os
 
-from rmgpy.statmech import IdealGasTranslation, LinearRotor, NonlinearRotor, HarmonicOscillator, HinderedRotor
+from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, HarmonicOscillator, HinderedRotor
 import rmgpy.constants as constants
 
 from arkane.molpro import MolproLog
@@ -52,10 +52,10 @@ class MolproTest(unittest.TestCase):
         energy can be properly read.
         """
         
-        log=MolproLog(os.path.join(os.path.dirname(__file__),'data','ethylene_f12_dz.out'))
-        E0=log.loadEnergy()
+        log = MolproLog(os.path.join(os.path.dirname(__file__), 'data', 'ethylene_f12_dz.out'))
+        e0 = log.loadEnergy()
         
-        self.assertAlmostEqual(E0 / constants.Na / constants.E_h, -78.474353559604, 5)
+        self.assertAlmostEqual(e0 / constants.Na / constants.E_h, -78.474353559604, 5)
     
     def testLoadQzFromMolproLog_F12(self):
         """
@@ -63,10 +63,10 @@ class MolproTest(unittest.TestCase):
         energy can be properly read.
         """
         
-        log=MolproLog(os.path.join(os.path.dirname(__file__),'data','ethylene_f12_qz.out'))
-        E0=log.loadEnergy()
+        log = MolproLog(os.path.join(os.path.dirname(__file__), 'data', 'ethylene_f12_qz.out'))
+        e0 = log.loadEnergy()
         
-        self.assertAlmostEqual(E0 / constants.Na / constants.E_h, -78.472682755635, 5)
+        self.assertAlmostEqual(e0 / constants.Na / constants.E_h, -78.472682755635, 5)
 
     def testLoadRadFromMolproLog_F12(self):
         """
@@ -74,10 +74,10 @@ class MolproTest(unittest.TestCase):
         energy can be properly read.
         """
         
-        log=MolproLog(os.path.join(os.path.dirname(__file__),'data','OH_f12.out'))
-        E0=log.loadEnergy()
+        log = MolproLog(os.path.join(os.path.dirname(__file__), 'data', 'OH_f12.out'))
+        e0 = log.loadEnergy()
         
-        self.assertAlmostEqual(E0 / constants.Na / constants.E_h, -75.663696424380, 5)
+        self.assertAlmostEqual(e0 / constants.Na / constants.E_h, -75.663696424380, 5)
 
     def testLoadHOSIFromMolpro_log(self):
         """
@@ -85,25 +85,25 @@ class MolproTest(unittest.TestCase):
         molecular degrees of freedom can be properly read.
         """
 
-        log = MolproLog(os.path.join(os.path.dirname(__file__),'data','HOSI_ccsd_t1.out'))
+        log = MolproLog(os.path.join(os.path.dirname(__file__), 'data', 'HOSI_ccsd_t1.out'))
         conformer, unscaled_frequencies = log.loadConformer(spinMultiplicity=1)
-        E0 = log.loadEnergy()
+        e0 = log.loadEnergy()
 
-        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode,IdealGasTranslation)]) == 1)
-        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode,NonlinearRotor)]) == 1)
-        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode,HarmonicOscillator)]) == 1)
-        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode,HinderedRotor)]) == 0)
+        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)]) == 1)
+        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)]) == 1)
+        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)]) == 1)
+        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, HinderedRotor)]) == 0)
 
-        trans = [mode for mode in conformer.modes if isinstance(mode,IdealGasTranslation)][0]
-        rot = [mode for mode in conformer.modes if isinstance(mode,NonlinearRotor)][0]
-        vib = [mode for mode in conformer.modes if isinstance(mode,HarmonicOscillator)][0]
-        Tlist = numpy.array([298.15], numpy.float64)
+        trans = [mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)][0]
+        rot = [mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)][0]
+        vib = [mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)][0]
+        t_list = numpy.array([298.15], numpy.float64)
 
-        self.assertAlmostEqual(trans.getPartitionFunction(Tlist), 9.175364e7, delta=1e1)
-        self.assertAlmostEqual(rot.getPartitionFunction(Tlist), 1.00005557e5, delta=1e-2)
-        self.assertAlmostEqual(vib.getPartitionFunction(Tlist), 1.9734989e0, delta=1e-4)
+        self.assertAlmostEqual(trans.getPartitionFunction(t_list), 9.175364e7, delta=1e1)
+        self.assertAlmostEqual(rot.getPartitionFunction(t_list), 1.00005557e5, delta=1e-2)
+        self.assertAlmostEqual(vib.getPartitionFunction(t_list), 1.9734989e0, delta=1e-4)
 
-        self.assertAlmostEqual(E0 / constants.Na / constants.E_h, -768.275662, 4)
+        self.assertAlmostEqual(e0 / constants.Na / constants.E_h, -768.275662, 4)
         self.assertEqual(conformer.spinMultiplicity, 1)
         self.assertEqual(conformer.opticalIsomers, 1)
 
@@ -111,12 +111,13 @@ class MolproTest(unittest.TestCase):
         """
         Load the MRCI and MRCI+Davidson energies from a molpro output file
         """
-        mrci_log = MolproLog(os.path.join(os.path.dirname(__file__),'data','molpro_mrci.out'))
-        mrciq_log = MolproLog(os.path.join(os.path.dirname(__file__),'data','molpro_mrci+q.out'))
-        mrci_E0=mrci_log.loadEnergy()
-        mrciq_E0=mrciq_log.loadEnergy()
-        self.assertAlmostEqual(mrci_E0, -293217091.0381712, places=7)
-        self.assertAlmostEqual(mrciq_E0, -293284017.3925107, places=7)
+        mrci_log = MolproLog(os.path.join(os.path.dirname(__file__), 'data', 'molpro_mrci.out'))
+        mrciq_log = MolproLog(os.path.join(os.path.dirname(__file__), 'data', 'molpro_mrci+q.out'))
+        mrci_e0 = mrci_log.loadEnergy()
+        mrciq_e0 = mrciq_log.loadEnergy()
+        self.assertAlmostEqual(mrci_e0, -293217091.0381712, places=7)
+        self.assertAlmostEqual(mrciq_e0, -293284017.3925107, places=7)
+
 
 if __name__ == '__main__':
-    unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )
+    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
