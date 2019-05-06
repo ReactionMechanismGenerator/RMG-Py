@@ -107,6 +107,14 @@ class MolproTest(unittest.TestCase):
         self.assertEqual(conformer.spinMultiplicity, 1)
         self.assertEqual(conformer.opticalIsomers, 1)
 
+    def test_load_non_f12_e0(self):
+        """
+        Load E0 for CCSD(T) (without F12) from a molpro output file
+        """
+        molpro_log = MolproLog(os.path.join(os.path.dirname(__file__), 'data', 'TS_CCSD(T)_no_F12_sp_molpro.out'))
+        e0 = molpro_log.loadEnergy()
+        self.assertAlmostEqual(e0, -301585968.58196217, places=7)
+
     def test_load_mrci_e0(self):
         """
         Load the MRCI and MRCI+Davidson energies from a molpro output file
