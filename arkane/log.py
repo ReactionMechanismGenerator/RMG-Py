@@ -110,6 +110,25 @@ class Log(object):
         raise NotImplementedError("loadScanEnergies is not implemented for the Log class. "
                                   "This method should be implemented by a subclass.")
 
+    def load_scan_pivot_atoms(self):
+        """
+        Extract the atom numbers which the rotor scan pivots around
+        Return a list of atom numbers starting with the first atom as 1
+        """
+        raise NotImplementedError("load_scan_pivot_atoms is not implemented for the Log class")
+
+    def load_scan_frozen_atoms(self):
+        """
+        Extract the atom numbers which were frozen during the scan
+        Return a list of list of atom numbers starting with the first atom as 1
+        Each element of the outer lists represents a frozen bond
+        Inner lists with length 2 represent frozen bond lengths
+        Inner lists with length 3 represent frozen bond angles
+        Inner lists with length 4 represent frozen dihedral angles
+        """
+        raise NotImplementedError("load_scan_frozen_atoms is not implemented for the Log class")
+
+
     def loadNegativeFrequency(self):
         """
         Return the imaginary frequency from a transition state frequency

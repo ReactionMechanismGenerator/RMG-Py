@@ -384,6 +384,68 @@ class GaussianLog(Log):
 
         return Vlist, angle
 
+    def _load_scan_specs(self, letter_spec):
+        """
+        This method reads the ouptput file for optional parameters
+        sent to gaussian, and returns the list of optional parameters
+        as a list of tuples.
+
+        `letter_spec` is a character used to identify whether a specification
+        defines pivot atoms ('S'), frozen atoms ('F') or other attributes.
+
+        More information about the syntax can be found http://gaussian.com/opt/
+        """
+        output = []
+        reached_input_spec_section = False
+        with open(self.path, 'r') as f:
+            line = f.readline()
+            while line != '':
+                if reached_input_spec_section:
+                    terms = line.split()
+                    if len(terms) == 0:
+                        # finished reading specs
+                        break
+                    if terms[0] == 'D':
+                        action_index = 5  # dihedral angle with four terms
+                    elif terms[0] == 'A':
+                        action_index = 4  # valance angle with three terms
+                    elif terms[0] == 'B':
+                        action_index = 3  # bond length with 2 terms
+                    else:
+                        raise ValueError('This file has an option not supported by arkane.'
+                                        'Unable to read scan specs for line: {}'.format(line))
+                    if len(terms) > action_index:
+                        # specified type explicitly
+                        if terms[action_index] == letter_spec:
+                            output.append(terms[1:action_index])
+                    else:
+                        # no specific specification, assume freezing
+                        if letter_spec == 'F':
+                            output.append(terms[1:action_index])
+                if " The following ModRedundant input section has been read:" in line:
+                    reached_input_spec_section = True
+                line = f.readline()
+        return output
+
+    def load_scan_pivot_atoms(self):
+        """
+        Extract the atom numbers which the rotor scan pivots around
+        Return a list of atom numbers starting with the first atom as 1
+        """
+        output = self._load_scan_specs('S')
+        return output[0] if len(output) > 0 else []
+
+    def load_scan_frozen_atoms(self):
+        """
+        Extract the atom numbers which were frozen during the scan
+        Return a list of list of atom numbers starting with the first atom as 1
+        Each element of the outer lists represents a frozen bond
+        Inner lists with length 2 represent frozen bond lengths
+        Inner lists with length 3 represent frozen bond angles
+        Inner lists with length 4 represent frozen dihedral angles
+        """
+        return self._load_scan_specs('F')
+
     def loadNegativeFrequency(self):
         """
         Return the negative frequency from a transition state frequency
@@ -403,5 +465,6 @@ class GaussianLog(Log):
         frequencies.sort()
         frequency = [freq for freq in frequencies if freq < 0][0]
         if frequency is None:
-            raise Exception('Unable to find imaginary frequency in Gaussian output file {0}'.format(self.path))
+            raise Exception('Unable to find imaginary frequency of {1} '
+                            'in Gaussian output file {0}'.format(self.path, self.species.label))
         return frequency

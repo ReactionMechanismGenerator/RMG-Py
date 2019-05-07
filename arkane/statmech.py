@@ -475,14 +475,28 @@ class StatMechJob(object):
                     scanLog.path = os.path.join(directory, scanLog.path)
                     if isinstance(scanLog, (GaussianLog, QChemLog)):
                         v_list, angle = scanLog.loadScanEnergies()
+                        try:
+                            pivot_atoms = scanLog.load_scan_pivot_atoms()
+                        except Exception as e:
+                            logging.warning("Unable to find pivot atoms in scan due to error: {}".format(e))
+                            pivot_atoms = 'N/A'
+                        try:
+                            frozen_atoms = scanLog.load_scan_frozen_atoms()
+                        except Exception as e:
+                            logging.warning("Unable to find pivot atoms in scan due to error: {}".format(e))
+                            frozen_atoms = 'N/A'
                     elif isinstance(scanLog, ScanLog):
                         angle, v_list = scanLog.load()
+                        # no way to find pivot atoms or frozen atoms from ScanLog
+                        pivot_atoms = 'N/A'
+                        frozen_atoms = 'N/A'
                     else:
                         raise InputError('Invalid log file type {0} for scan log.'.format(scanLog.__class__))
 
                     if symmetry is None:
                         symmetry = determine_rotor_symmetry(v_list, self.species.label, pivots)
-                    self.raw_hindered_rotor_data.append((self.species.label, rotorCount, symmetry, angle, v_list))
+                    self.raw_hindered_rotor_data.append((self.species.label, rotorCount, symmetry, angle,
+                                                         v_list, pivot_atoms, frozen_atoms))
                     inertia = conformer.getInternalReducedMomentOfInertia(pivots, top) * constants.Na * 1e23
 
                     cosineRotor = HinderedRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
