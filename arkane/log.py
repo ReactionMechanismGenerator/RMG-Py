@@ -118,11 +118,12 @@ class Log(object):
         raise NotImplementedError("loadNegativeFrequency is not implemented for the Log class. "
                                   "This method should be implemented by a subclass.")
 
-    def get_optical_isomers_and_symmetry_number(self):
+    def get_symmetry_properties(self):
         """
         This method uses the symmetry package from RMG's QM module
         and returns a tuple where the first element is the number
-        of optical isomers and the second element is the symmetry number.
+        of optical isomers, the second element is the symmetry number,
+        and the third element is the point group identified.
         """
         coordinates, atom_numbers, _ = self.loadGeometry()
         unique_id = '0'  # Just some name that the SYMMETRY code gives to one of its jobs
@@ -152,7 +153,7 @@ class Log(object):
             else:
                 logging.error('Symmetry algorithm errored when computing point group\nfor log file located at{0}.\n'
                               'Manually provide values in Arkane input.'.format(self.path))
-            return optical_isomers, symmetry
+            return optical_isomers, symmetry, pg.pointGroup
         finally:
             shutil.rmtree(scr_dir)
 

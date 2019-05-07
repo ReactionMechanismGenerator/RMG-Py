@@ -183,7 +183,7 @@ class QChemLog(Log):
         unscaled_frequencies = []
         e0 = 0.0
         if opticalIsomers is None or symmetry is None:
-            _opticalIsomers, _symmetry = self.get_optical_isomers_and_symmetry_number()
+            _opticalIsomers, _symmetry, _ = self.get_symmetry_properties()
             if opticalIsomers is None:
                 opticalIsomers = _opticalIsomers
             if symmetry is None:
