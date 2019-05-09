@@ -79,6 +79,7 @@ class ArkaneSpecies(RMGObject):
                  products=None, reaction_label=None, is_ts=None):
         # reactants/products/reaction_label need to be in the init() to avoid error when loading a TS YAML file,
         # but we don't use them
+        super(ArkaneSpecies, self).__init__()
         if species is None and conformer is None:
             # Expecting to get a species or a TS when generating the object within Arkane,
             # or a conformer when parsing from YAML.
