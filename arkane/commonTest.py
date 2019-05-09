@@ -74,31 +74,31 @@ class TestArkaneJob(unittest.TestCase):
     Contains unit tests of the Arkane module and its interactions with other RMG modules.
     """
     @classmethod
-    def setUp(self):
+    def setUp(cls):
         arkane = Arkane()
         jobList = arkane.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                                           'data', 'methoxy.py'))
         pdepjob = jobList[-1]
-        self.kineticsjob = jobList[0]
+        cls.kineticsjob = jobList[0]
         pdepjob.activeJRotor = True
         network = pdepjob.network
-        self.Nisom = len(network.isomers)
-        self.Nreac = len(network.reactants)
-        self.Nprod = len(network.products)
-        self.Npath = len(network.pathReactions)
-        self.PathReaction2 = network.pathReactions[2]
-        self.TminValue = pdepjob.Tmin.value
-        self.Tmaxvalue = pdepjob.Tmax.value
-        self.TmaxUnits = pdepjob.Tmax.units
-        self.TlistValue = pdepjob.Tlist.value
-        self.PminValue = pdepjob.Pmin.value
-        self.Pcount = pdepjob.Pcount
-        self.Tcount = pdepjob.Tcount
-        self.GenTlist = pdepjob.generateTemperatureList()
-        self.PlistValue = pdepjob.Plist.value
-        self.maximumGrainSizeValue = pdepjob.maximumGrainSize.value
-        self.method = pdepjob.method
-        self.rmgmode = pdepjob.rmgmode
+        cls.Nisom = len(network.isomers)
+        cls.Nreac = len(network.reactants)
+        cls.Nprod = len(network.products)
+        cls.Npath = len(network.pathReactions)
+        cls.PathReaction2 = network.pathReactions[2]
+        cls.TminValue = pdepjob.Tmin.value
+        cls.Tmaxvalue = pdepjob.Tmax.value
+        cls.TmaxUnits = pdepjob.Tmax.units
+        cls.TlistValue = pdepjob.Tlist.value
+        cls.PminValue = pdepjob.Pmin.value
+        cls.Pcount = pdepjob.Pcount
+        cls.Tcount = pdepjob.Tcount
+        cls.GenTlist = pdepjob.generateTemperatureList()
+        cls.PlistValue = pdepjob.Plist.value
+        cls.maximumGrainSizeValue = pdepjob.maximumGrainSize.value
+        cls.method = pdepjob.method
+        cls.rmgmode = pdepjob.rmgmode
 
     # test Arkane's interactions with the network module
     def testNisom(self):
@@ -220,13 +220,13 @@ class TestArkaneInput(unittest.TestCase):
     Contains unit tests for loading and processing Arkane input files.
     """
     @classmethod
-    def setUp(self):
+    def setUp(cls):
         """Preparation for all unit tests in this class."""
-        self.directory = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)), 'examples', 'arkane')
-        self.modelChemistry = "cbs-qb3"
-        self.frequencyScaleFactor = 0.99
-        self.useHinderedRotors = False
-        self.useBondCorrections = True
+        cls.directory = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)), 'examples', 'arkane')
+        cls.modelChemistry = "cbs-qb3"
+        cls.frequencyScaleFactor = 0.99
+        cls.useHinderedRotors = False
+        cls.useBondCorrections = True
 
     def testSpecies(self):
         """Test loading of species input file."""
@@ -279,9 +279,9 @@ class TestStatmech(unittest.TestCase):
     Contains unit tests of statmech.py
     """
     @classmethod
-    def setUp(self):
+    def setUp(cls):
         arkane = Arkane()
-        self.job_list = arkane.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+        cls.job_list = arkane.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                                           'data', 'Benzyl', 'input.py'))
 
     def test_gaussian_log_file_error(self):

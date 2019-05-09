@@ -49,10 +49,10 @@ class TestStatmech(unittest.TestCase):
     Contains unit tests of the StatmechJob class.
     """
     @classmethod
-    def setUp(self):
+    def setUp(cls):
         arkane = Arkane()
-        self.job_list = arkane.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                                          'data', 'Benzyl', 'input.py'))
+        cls.job_list = arkane.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                                         'data', 'Benzyl', 'input.py'))
 
     def test_gaussian_log_file_error(self):
         """Test that the proper error is raised if gaussian geometry and frequency file paths are not the same"""
