@@ -609,7 +609,7 @@ class KineticsDrawer:
                 for c in column:
                     top0 = wellRects[c][1]
                     bottom0 = top + wellRects[c][3]
-                    if (top >= top0 and top <= bottom0) or (top <= top0 and top0 <= bottom):
+                    if (top0 <= top <= bottom0) or (top <= top0 <= bottom):
                         # Can't put it in this column
                         break
                 else:
@@ -639,7 +639,7 @@ class KineticsDrawer:
                 for c in column:
                     top0 = wellRects[c][1]
                     bottom0 = top0 + wellRects[c][3]
-                    if (top >= top0 and top <= bottom0) or (top <= top0 and top0 <= bottom):
+                    if (top0 <= top <= bottom0) or (top <= top0 <= bottom):
                         # Can't put it in this column
                         break
                 else:
