@@ -49,6 +49,7 @@ from arkane.common import ArkaneSpecies, get_element_mass
 from arkane.statmech import InputError, StatMechJob
 from arkane.input import jobList
 
+
 ################################################################################
 
 
@@ -56,14 +57,15 @@ class CommonTest(unittest.TestCase):
     """
     Contains unit tests of Arkane's common functions.
     """
+
     def test_check_conformer_energy(self):
         """
         test the check_conformer_energy function with an list of energies.
         """
         v_list = [-272.2779012225, -272.2774933703, -272.2768397635, -272.2778432059, -272.278645477, -272.2789602654,
-                 -272.2788749196, -272.278496709, -272.2779350675, -272.2777008843, -272.2777167286, -272.2780937643,
-                 -272.2784838846, -272.2788050464, -272.2787865352, -272.2785091607, -272.2779977452, -272.2777957743,
-                 -272.2779134906, -272.2781827547, -272.278443339, -272.2788244214, -272.2787748749]
+                  -272.2788749196, -272.278496709, -272.2779350675, -272.2777008843, -272.2777167286, -272.2780937643,
+                  -272.2784838846, -272.2788050464, -272.2787865352, -272.2785091607, -272.2779977452, -272.2777957743,
+                  -272.2779134906, -272.2781827547, -272.278443339, -272.2788244214, -272.2787748749]
         v_list = numpy.array(v_list, numpy.float64)
         v_diff = (v_list[0] - numpy.min(v_list)) * constants.E_h * constants.Na / 1000
         self.assertAlmostEqual(v_diff / 2.7805169838282797, 1, 5)
@@ -73,12 +75,13 @@ class TestArkaneJob(unittest.TestCase):
     """
     Contains unit tests of the Arkane module and its interactions with other RMG modules.
     """
+
     @classmethod
     def setUp(cls):
         """A method that is run before each unit test in this class"""
         arkane = Arkane()
         jobList = arkane.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                                          'data', 'methoxy.py'))
+                                                    'data', 'methoxy.py'))
         pdepjob = jobList[-1]
         cls.kineticsjob = jobList[0]
         pdepjob.activeJRotor = True
@@ -173,7 +176,8 @@ class TestArkaneJob(unittest.TestCase):
         """
         Test the pressure list.
         """
-        self.assertEqual(numpy.array_equal(self.PlistValue, numpy.array([0.01, 0.1, 1, 3, 10, 100, 1000])), True, msg=None)
+        self.assertEqual(numpy.array_equal(self.PlistValue, numpy.array([0.01, 0.1, 1, 3, 10, 100, 1000])), True,
+                         msg=None)
 
     def testGenerateTemperatureList(self):
         """
@@ -220,6 +224,7 @@ class TestArkaneInput(unittest.TestCase):
     """
     Contains unit tests for loading and processing Arkane input files.
     """
+
     @classmethod
     def setUp(cls):
         """Preparation for all unit tests in this class."""
@@ -263,7 +268,7 @@ class TestArkaneInput(unittest.TestCase):
         """Test loading of transition state input file."""
         ts = input.transitionState('TS', os.path.join(self.directory, 'reactions', 'H+C2H4=C2H5', 'TS.py'))
         self.assertTrue(isinstance(ts, TransitionState))
-    
+
     def testTransitionStateStatmech(self):
         """Test loading of statmech job from transition state input file."""
         job = jobList[-1]
@@ -279,12 +284,13 @@ class TestStatmech(unittest.TestCase):
     """
     Contains unit tests of statmech.py
     """
+
     @classmethod
     def setUp(cls):
         """A method that is run before each unit test in this class"""
         arkane = Arkane()
         cls.job_list = arkane.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                                          'data', 'Benzyl', 'input.py'))
+                                                         'data', 'Benzyl', 'input.py'))
 
     def test_gaussian_log_file_error(self):
         """Test that the proper error is raised if gaussian geometry and frequency file paths are the same"""
@@ -366,7 +372,7 @@ class TestArkaneSpecies(unittest.TestCase):
                 item_path = os.path.join(path, name)
                 if os.path.isfile(item_path):
                     extension = name.split('.')[-1]
-                    if name in cls.files_to_delete or\
+                    if name in cls.files_to_delete or \
                             (extension in cls.extensions_to_delete and name not in cls.files_to_keep):
                         os.remove(item_path)
                 else:
@@ -378,6 +384,7 @@ class TestGetMass(unittest.TestCase):
     """
     Contains unit tests of common.py
     """
+
     def test_get_mass(self):
         """Test that the correct mass/number/isotop is returned from get_element_mass"""
         self.assertEquals(get_element_mass(1), (1.00782503224, 1))  # test input by integer
