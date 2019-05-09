@@ -332,7 +332,7 @@ def reaction(label, reactants, products, transitionState=None, kinetics=None, tu
         rxns = db.generate_reactions_from_libraries(reactants=rxn.reactants,products=rxn.products)
         rxns = [r for r in rxns if r.elementary_high_p]
         
-        if rxns != []:
+        if rxns:
             for r in rxns:
                 if isinstance(rxn.kinetics, PDepKineticsModel):
                     boo = rxn.generate_high_p_limit_kinetics()

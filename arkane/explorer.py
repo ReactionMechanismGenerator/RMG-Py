@@ -292,7 +292,7 @@ class ExplorerJob(object):
             if os.path.isfile('network.pdf'):
                 os.rename('network.pdf','network'+str(p)+'.pdf')
 
-            if warns != []:
+            if warns:
                 logging.info('\nOUTPUT WARNINGS:\n')
                 for w in warns:
                     logging.warning(w)

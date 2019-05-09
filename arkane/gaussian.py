@@ -377,7 +377,7 @@ class GaussianLog(Log):
         f.close()
         
         #give warning in case this assumption is not true
-        if rigidScan==True:
+        if rigidScan:
             print '   Assuming', os.path.basename(self.path), 'is the output from a rigid scan...'
         
         Vlist = numpy.array(Vlist, numpy.float64)
