@@ -64,7 +64,7 @@ from rmgpy.kinetics.tunneling import Wigner, Eckart
 from rmgpy.kinetics.model import PDepKineticsModel, TunnelingModel
 
 from rmgpy.pdep.configuration import Configuration
-from rmgpy.pdep.network import Network  
+from rmgpy.pdep.network import Network
 from rmgpy.pdep.collision import SingleExponentialDown
 
 from rmgpy.molecule import Molecule
@@ -86,11 +86,12 @@ reactionDict = {}
 networkDict = {}
 jobList = []
 
+
 ################################################################################
 
 
-def database(thermoLibraries = None, transportLibraries = None, reactionLibraries = None, frequenciesLibraries = None,
-             kineticsFamilies = 'default', kineticsDepositories = 'default', kineticsEstimator = 'rate rules'):
+def database(thermoLibraries=None, transportLibraries=None, reactionLibraries=None, frequenciesLibraries=None,
+             kineticsFamilies='default', kineticsDepositories='default', kineticsEstimator='rate rules'):
     """Load the RMG database"""
     if isinstance(thermoLibraries, str):
         thermoLibraries = [thermoLibraries]
@@ -100,43 +101,46 @@ def database(thermoLibraries = None, transportLibraries = None, reactionLibrarie
         reactionLibraries = [reactionLibraries]
     if isinstance(frequenciesLibraries, str):
         frequenciesLibraries = [frequenciesLibraries]
-    
+
     databaseDirectory = settings['database.directory']
     thermoLibraries = thermoLibraries or []
     transportLibraries = transportLibraries
     reactionLibraries = reactionLibraries or []
     kineticsEstimator = kineticsEstimator
-    
+
     if kineticsDepositories == 'default':
         kineticsDepositories = ['training']
     elif kineticsDepositories == 'all':
         kineticsDepositories = None
     else:
-        if not isinstance(kineticsDepositories,list):
-            raise InputError("kineticsDepositories should be either 'default', 'all', or a list of names eg. ['training','PrIMe'].")
+        if not isinstance(kineticsDepositories, list):
+            raise InputError(
+                "kineticsDepositories should be either 'default', 'all', or a list of names eg. ['training','PrIMe'].")
         kineticsDepositories = kineticsDepositories
 
     if kineticsFamilies in ('default', 'all', 'none'):
         kineticsFamilies = kineticsFamilies
     else:
-        if not isinstance(kineticsFamilies,list):
-            raise InputError("kineticsFamilies should be either 'default', 'all', 'none', or a list of names eg. ['H_Abstraction','R_Recombination'] or ['!Intra_Disproportionation'].")
+        if not isinstance(kineticsFamilies, list):
+            raise InputError(
+                "kineticsFamilies should be either 'default', 'all', 'none', or a list of names eg. "
+                "['H_Abstraction','R_Recombination'] or ['!Intra_Disproportionation'].")
         kineticsFamilies = kineticsFamilies
 
     database = getDB() or RMGDatabase()
 
     database.load(
-            path = databaseDirectory,
-            thermoLibraries = thermoLibraries,
-            transportLibraries = transportLibraries,
-            reactionLibraries = reactionLibraries,
-            seedMechanisms = [],
-            kineticsFamilies = kineticsFamilies,
-            kineticsDepositories = kineticsDepositories,
-            depository = False, # Don't bother loading the depository information, as we don't use it
-        )
-    
-    for family in database.kinetics.families.values(): #load training
+        path=databaseDirectory,
+        thermoLibraries=thermoLibraries,
+        transportLibraries=transportLibraries,
+        reactionLibraries=reactionLibraries,
+        seedMechanisms=[],
+        kineticsFamilies=kineticsFamilies,
+        kineticsDepositories=kineticsDepositories,
+        depository=False,  # Don't bother loading the depository information, as we don't use it
+    )
+
+    for family in database.kinetics.families.values():  # load training
         family.addKineticsRulesFromTrainingSet(thermoDatabase=database.thermo)
 
     for family in database.kinetics.families.values():
@@ -149,7 +153,7 @@ def species(label, *args, **kwargs):
     if label in speciesDict:
         raise ValueError('Multiple occurrences of species with label {0!r}.'.format(label))
     logging.info('Loading species {0}...'.format(label))
-    
+
     spec = Species(label=label)
     speciesDict[label] = spec
 
@@ -164,7 +168,7 @@ def species(label, *args, **kwargs):
         raise InputError('species {0} can only have two non-keyword argument '
                          'which should be the species label and the '
                          'path to a quantum file.'.format(spec.label))
-    
+
     if len(kwargs) > 0:
         # The species parameters are given explicitly
         structure = None
@@ -200,7 +204,7 @@ def species(label, *args, **kwargs):
                 reactive = value
             else:
                 raise TypeError('species() got an unexpected keyword argument {0!r}.'.format(key))
-            
+
         if structure:
             spec.molecule = [structure]
         spec.conformer = Conformer(E0=E0, modes=modes, spinMultiplicity=spinMultiplicity, opticalIsomers=opticalIsomers)
@@ -216,7 +220,7 @@ def species(label, *args, **kwargs):
         spec.energyTransferModel = energyTransferModel
         spec.thermo = thermo
         spec.reactive = reactive
-        
+
         if spec.reactive and path is None and spec.thermo is None and spec.conformer.E0 is None:
             if not spec.molecule:
                 raise InputError('Neither thermo, E0, species file path, nor structure specified, cannot estimate'
@@ -258,13 +262,13 @@ def transitionState(label, *args, **kwargs):
     logging.info('Loading transition state {0}...'.format(label))
     ts = TransitionState(label=label)
     transitionStateDict[label] = ts
-    
+
     if len(args) == 1 and len(kwargs) == 0:
         # The argument is a path to a conformer input file
         path = args[0]
         job = StatMechJob(species=ts, path=path)
         jobList.append(job)
-    
+
     elif len(args) == 0:
         # The species parameters are given explicitly
         E0 = None
@@ -285,12 +289,13 @@ def transitionState(label, *args, **kwargs):
                 frequency = value
             else:
                 raise TypeError('transitionState() got an unexpected keyword argument {0!r}.'.format(key))
-        
-        ts.conformer = Conformer(E0=E0, modes=modes, spinMultiplicity=spinMultiplicity, opticalIsomers=opticalIsomers)  
+
+        ts.conformer = Conformer(E0=E0, modes=modes, spinMultiplicity=spinMultiplicity, opticalIsomers=opticalIsomers)
         ts.frequency = frequency
     else:
         if len(args) == 0 and len(kwargs) == 0:
-            raise InputError('The transitionState needs to reference a quantum job file or contain kinetic information.')
+            raise InputError(
+                'The transitionState needs to reference a quantum job file or contain kinetic information.')
         raise InputError('The transitionState can only link a quantum job or directly input information, not both.')
 
     return ts
@@ -316,19 +321,21 @@ def reaction(label, reactants, products, transitionState=None, kinetics=None, tu
         transitionState.tunneling = None
     elif transitionState and not isinstance(tunneling, TunnelingModel):
         raise ValueError('Unknown tunneling model {0!r}.'.format(tunneling))
-    rxn = Reaction(label=label, reactants=reactants, products=products, transitionState=transitionState, kinetics=kinetics)
-    
+    rxn = Reaction(label=label, reactants=reactants, products=products, transitionState=transitionState,
+                   kinetics=kinetics)
+
     if rxn.transitionState is None and rxn.kinetics is None:
         logging.info('estimating rate of reaction {0} using RMG-database')
-        if not all([m.molecule != [] for m in rxn.reactants+rxn.products]):
-            raise ValueError('chemical structures of reactants and products not available for RMG estimation of reaction {0}'.format(label))
-        for spc in rxn.reactants+rxn.products:
+        if not all([m.molecule != [] for m in rxn.reactants + rxn.products]):
+            raise ValueError('chemical structures of reactants and products not available for RMG estimation of '
+                             'reaction {0}'.format(label))
+        for spc in rxn.reactants + rxn.products:
             print spc.label
             print spc.molecule
         db = getDB('kinetics')
-        rxns = db.generate_reactions_from_libraries(reactants=rxn.reactants,products=rxn.products)
+        rxns = db.generate_reactions_from_libraries(reactants=rxn.reactants, products=rxn.products)
         rxns = [r for r in rxns if r.elementary_high_p]
-        
+
         if rxns:
             for r in rxns:
                 if isinstance(rxn.kinetics, PDepKineticsModel):
@@ -336,21 +343,22 @@ def reaction(label, reactants, products, transitionState=None, kinetics=None, tu
                 if boo:
                     rxn = r
                     break
-                
+
         if rxns == [] or not boo:
-            logging.info('No library reactions tagged with elementary_high_p found for reaction {0}, generating reactions from RMG families'.format(label))
-            rxn = list(db.generate_reactions_from_families(reactants=rxn.reactants,products=rxn.products))
+            logging.info('No library reactions tagged with elementary_high_p found for reaction {0}, generating '
+                         'reactions from RMG families'.format(label))
+            rxn = list(db.generate_reactions_from_families(reactants=rxn.reactants, products=rxn.products))
             model = CoreEdgeReactionModel()
             model.verboseComments = True
             for r in rxn:
                 model.applyKineticsToReaction(r)
-    
-    if isinstance(rxn,Reaction):
+
+    if isinstance(rxn, Reaction):
         reactionDict[label] = rxn
     else:
         for i in xrange(len(rxn)):
-            reactionDict[label+str(i)] = rxn[i]
-    
+            reactionDict[label + str(i)] = rxn[i]
+
     return rxn
 
 
@@ -358,18 +366,20 @@ def network(label, isomers=None, reactants=None, products=None, pathReactions=No
     """Load a network from an input file"""
     global networkDict, speciesDict, reactionDict
     logging.info('Loading network {0}...'.format(label))
-    isomers0 = isomers or []; isomers = []
+    isomers0 = isomers or []
+    isomers = []
     for isomer in isomers0:
-        if isinstance(isomer, (list,tuple)):
+        if isinstance(isomer, (list, tuple)):
             raise ValueError('Only one species can be present in a unimolecular isomer.')
         isomers.append(speciesDict[isomer])
-    
-    reactants0 = reactants or []; reactants = []
+
+    reactants0 = reactants or []
+    reactants = []
     for reactant in reactants0:
-        if not isinstance(reactant, (list,tuple)):
+        if not isinstance(reactant, (list, tuple)):
             reactant = [reactant]
         reactants.append(sorted([speciesDict[spec] for spec in reactant]))
-    
+
     if pathReactions is None:
         # Only add reactions that match reactants and/or isomers
         pathReactions = []
@@ -378,17 +388,20 @@ def network(label, isomers=None, reactants=None, products=None, pathReactions=No
                 # this reaction is not pressure dependent
                 continue
             reactant_is_isomer = len(rxn.reactants) == 1 and rxn.reactants[0] in isomers
-            product_is_isomer  = len(rxn.products)  == 1 and rxn.products[0]  in isomers
-            reactant_is_reactant = any([frozenset(rxn.reactants) == frozenset(reactant_pair) for reactant_pair in reactants])
-            product_is_reactant  = any([frozenset(rxn.products ) == frozenset(reactant_pair) for reactant_pair in reactants])
+            product_is_isomer = len(rxn.products) == 1 and rxn.products[0] in isomers
+            reactant_is_reactant = any(
+                [frozenset(rxn.reactants) == frozenset(reactant_pair) for reactant_pair in reactants])
+            product_is_reactant = any(
+                [frozenset(rxn.products) == frozenset(reactant_pair) for reactant_pair in reactants])
             if reactant_is_isomer or reactant_is_reactant or product_is_isomer or product_is_reactant:
                 pathReactions.append(rxn)
         logging.debug('Path reactions {} were found for network {}'.format([rxn.label for rxn in pathReactions], label))
     else:
-        pathReactions0 = pathReactions; pathReactions = []
+        pathReactions0 = pathReactions
+        pathReactions = []
         for rxn in pathReactions0:
             pathReactions.append(reactionDict[rxn])
-    
+
     if products is None:
         # Figure out which configurations are isomers, reactant channels, and product channels
         products = []
@@ -411,27 +424,29 @@ def network(label, isomers=None, reactants=None, products=None, pathReactions=No
             elif len(rxn.products) > 1 and rxn.products not in reactants and rxn.products not in products:
                 products.append(rxn.products)
     else:
-        products0 = products or []; products = []
+        products0 = products or []
+        products = []
         for product in products0:
-            if not isinstance(product, (list,tuple)):
+            if not isinstance(product, (list, tuple)):
                 product = [product]
             products.append(sorted([speciesDict[spec] for spec in product]))
 
     isomers = [Configuration(species) for species in isomers]
     reactants = [Configuration(*species) for species in reactants]
     products = [Configuration(*species) for species in products]
-        
-    bathGas0 = bathGas or {}; bathGas = {}
+
+    bathGas0 = bathGas or {}
+    bathGas = {}
     for spec, fraction in bathGas0.items():
         bathGas[speciesDict[spec]] = fraction
-    
+
     network = Network(
-        label = label, 
-        isomers = isomers, 
-        reactants = reactants, 
-        products = products, 
-        pathReactions = pathReactions, 
-        bathGas = bathGas,
+        label=label,
+        isomers=isomers,
+        reactants=reactants,
+        products=products,
+        pathReactions=pathReactions,
+        bathGas=bathGas,
     )
     networkDict[label] = network
 
@@ -477,27 +492,26 @@ def pressureDependence(label, Tmin=None, Tmax=None, Tcount=0, Tlist=None, Pmin=N
                        activeKRotor=True, activeJRotor=True, rmgmode=False, sensitivity_conditions=None):
     """Generate a pressure dependent job"""
     global jobList, networkDict
-    
+
     if isinstance(interpolationModel, str):
         interpolationModel = (interpolationModel,)
-        
+
     nwk = None
     if label in networkDict.keys():
         nwk = networkDict[label]
-        
-    job = PressureDependenceJob(network = nwk,
-        Tmin=Tmin, Tmax=Tmax, Tcount=Tcount, Tlist=Tlist,
-        Pmin=Pmin, Pmax=Pmax, Pcount=Pcount, Plist=Plist,
-        maximumGrainSize=maximumGrainSize, minimumGrainCount=minimumGrainCount,
-        method=method, interpolationModel=interpolationModel,
-        activeKRotor=activeKRotor, activeJRotor=activeJRotor,
-        rmgmode=rmgmode, sensitivity_conditions=sensitivity_conditions)
+
+    job = PressureDependenceJob(network=nwk, Tmin=Tmin, Tmax=Tmax, Tcount=Tcount, Tlist=Tlist,
+                                Pmin=Pmin, Pmax=Pmax, Pcount=Pcount, Plist=Plist,
+                                maximumGrainSize=maximumGrainSize, minimumGrainCount=minimumGrainCount,
+                                method=method, interpolationModel=interpolationModel,
+                                activeKRotor=activeKRotor, activeJRotor=activeJRotor,
+                                rmgmode=rmgmode, sensitivity_conditions=sensitivity_conditions)
     jobList.append(job)
 
 
 def explorer(source, explore_tol=0.01, energy_tol=np.inf, flux_tol=0.0, bathGas=None, maximumRadicalElectrons=np.inf):
     """Generate an explorer job"""
-    global jobList,speciesDict
+    global jobList, speciesDict
     for job in jobList:
         if isinstance(job, PressureDependenceJob):
             pdepjob = job
@@ -508,12 +522,14 @@ def explorer(source, explore_tol=0.01, energy_tol=np.inf, flux_tol=0.0, bathGas=
     source = [speciesDict[name] for name in source]
 
     if bathGas:
-        bathGas0 = bathGas or {}; bathGas = {}
+        bathGas0 = bathGas or {}
+        bathGas = {}
         for spec, fraction in bathGas0.items():
             bathGas[speciesDict[spec]] = fraction
 
-    job = ExplorerJob(source=source,pdepjob=pdepjob,explore_tol=explore_tol,
-                energy_tol=energy_tol,flux_tol=flux_tol,bathGas=bathGas, maximumRadicalElectrons=maximumRadicalElectrons)
+    job = ExplorerJob(source=source, pdepjob=pdepjob, explore_tol=explore_tol,
+                      energy_tol=energy_tol, flux_tol=flux_tol, bathGas=bathGas,
+                      maximumRadicalElectrons=maximumRadicalElectrons)
     jobList.append(job)
 
 
@@ -539,7 +555,7 @@ def loadNecessaryDatabases():
     from rmgpy.data.statmech import StatmechDatabase
     from rmgpy.data.transport import TransportDatabase
 
-    #only load if they are not there already.
+    # only load if they are not there already.
     try:
         getDB('transport')
         getDB('statmech')
@@ -547,10 +563,11 @@ def loadNecessaryDatabases():
         logging.info("Databases not found. Making databases")
         db = RMGDatabase()
         db.statmech = StatmechDatabase()
-        db.statmech.load(os.path.join(settings['database.directory'],'statmech'))
+        db.statmech.load(os.path.join(settings['database.directory'], 'statmech'))
 
         db.transport = TransportDatabase()
-        db.transport.load(os.path.join(settings['database.directory'],'transport'))
+        db.transport.load(os.path.join(settings['database.directory'], 'transport'))
+
 
 ################################################################################
 
@@ -561,15 +578,15 @@ def loadInputFile(path):
     the jobs defined in that file.
     """
     global speciesDict, transitionStateDict, reactionDict, networkDict, jobList
-    
+
     # Clear module-level variables
     speciesDict = {}
     transitionStateDict = {}
     reactionDict = {}
     networkDict = {}
     jobList = []
-    
-    global_context = { '__builtins__': None }
+
+    global_context = {'__builtins__': None}
     local_context = {
         '__builtins__': None,
         'True': True,
@@ -588,7 +605,7 @@ def loadInputFile(path):
         'SphericalTopRotor': SphericalTopRotor,
         'HarmonicOscillator': HarmonicOscillator,
         'HinderedRotor': HinderedRotor,
-        'FreeRotor':FreeRotor,
+        'FreeRotor': FreeRotor,
         # Thermo
         'ThermoData': ThermoData,
         'Wilhoit': Wilhoit,
@@ -605,7 +622,7 @@ def loadInputFile(path):
         'statmech': statmech,
         'thermo': thermo,
         'pressureDependence': pressureDependence,
-        'explorer':explorer,
+        'explorer': explorer,
         # Miscellaneous
         'SMILES': SMILES,
         'adjacencyList': adjacencyList,
@@ -633,12 +650,12 @@ def loadInputFile(path):
     use_atom_corrections = local_context.get('useAtomCorrections', True)
     use_bond_corrections = local_context.get('useBondCorrections', False)
     atom_energies = local_context.get('atomEnergies', None)
-    
+
     directory = os.path.dirname(path)
-    
+
     for rxn in reactionDict.values():
         rxn.elementary_high_p = True
-        
+
     for job in jobList:
         if isinstance(job, StatMechJob):
             job.path = os.path.join(directory, job.path)
@@ -661,5 +678,5 @@ def loadInputFile(path):
             job.arkane_species.use_bond_corrections = use_bond_corrections
             if atom_energies is not None:
                 job.arkane_species.atom_energies = atom_energies
-    
+
     return jobList, reactionDict, speciesDict, transitionStateDict, networkDict
