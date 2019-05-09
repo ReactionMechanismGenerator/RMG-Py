@@ -284,8 +284,8 @@ class KineticsJob(object):
             f.write('# krev (TST+T) = {0} \n\n'.format(kineticsrev))
 
         # Reaction path degeneracy is INCLUDED in the kinetics itself!
-        string = 'kinetics(label={0!r}, kinetics={1!r})'.format(reaction.label, reaction.kinetics)
-        f.write('{0}\n\n'.format(prettify(string)))
+        rxn_str = 'kinetics(label={0!r}, kinetics={1!r})'.format(reaction.label, reaction.kinetics)
+        f.write('{0}\n\n'.format(prettify(rxn_str)))
 
         f.close()
 
@@ -295,18 +295,18 @@ class KineticsJob(object):
         reaction = self.reaction
         kinetics = reaction.kinetics
 
-        string = ''
+        rxn_str = ''
         if reaction.kinetics.comment:
             for line in reaction.kinetics.comment.split("\n"):
-                string += "! {0}\n".format(line)
-        string += '{0!s:51} {1:9.3e} {2:9.3f} {3:9.3f}\n'.format(
+                rxn_str += "! {0}\n".format(line)
+        rxn_str += '{0!s:51} {1:9.3e} {2:9.3f} {3:9.3f}\n'.format(
             reaction,
             kinetics.A.value_si * factor,
             kinetics.n.value_si,
             kinetics.Ea.value_si / 4184.,
         )
 
-        f.write('{0}\n'.format(string))
+        f.write('{0}\n'.format(rxn_str))
 
         f.close()
 
