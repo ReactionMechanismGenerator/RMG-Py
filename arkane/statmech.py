@@ -984,7 +984,7 @@ def projectRotors(conformer, F, rotors, linear, is_ts):
 
     Nrotors = len(rotors)
     Natoms = len(conformer.mass.value)
-    Nvib = 3 * Natoms - (5 if linear else 6) - Nrotors - (1 if (is_ts) else 0)
+    Nvib = 3 * Natoms - (5 if linear else 6) - Nrotors - (1 if is_ts else 0)
     mass = conformer.mass.value_si
     coordinates = conformer.coordinates.getValue()
 
@@ -1059,7 +1059,7 @@ def projectRotors(conformer, F, rotors, linear, is_ts):
         for j in range(3 * Natoms):
             norm += P[j, i] * P[j, i]
         for j in range(3 * Natoms):
-            if (norm > 1E-15):
+            if norm > 1E-15:
                 P[j, i] /= numpy.sqrt(norm)
             else:
                 P[j, i] = 0.0
@@ -1076,7 +1076,7 @@ def projectRotors(conformer, F, rotors, linear, is_ts):
         norm = 0.0
         for j in range(3 * Natoms):
             norm += P[j, i] * P[j, i]
-        if (norm < 0.5):
+        if norm < 0.5:
             P[:, i:3 * Natoms + external - 1] = P[:, i + 1:3 * Natoms + external]
         else:
             i += 1
