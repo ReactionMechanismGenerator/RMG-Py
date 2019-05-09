@@ -105,7 +105,8 @@ endif
 	nosetests --nocapture --nologcapture --all-modules -A 'functional' --verbose --exe rmgpy arkane
 
 test-database:
-	nosetests -v -d testing/databaseTest.py	
+	nosetests --nocapture --nologcapture --verbose --detailed-errors testing/databaseTest.py
+
 eg0: all
 	mkdir -p testing/eg0
 	rm -rf testing/eg0/*
