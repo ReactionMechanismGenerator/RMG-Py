@@ -39,6 +39,7 @@ from external.wip import work_in_progress
 from arkane.gaussian import GaussianLog
 from arkane.statmech import determine_qm_software
 
+
 ################################################################################
 
 
@@ -47,6 +48,7 @@ class GaussianTest(unittest.TestCase):
     Contains unit tests for the chempy.io.gaussian module, used for reading
     and writing Gaussian files.
     """
+
     @work_in_progress
     def testLoadEthyleneFromGaussianLog_CBSQB3(self):
         """
@@ -54,18 +56,18 @@ class GaussianTest(unittest.TestCase):
         molecular degrees of freedom can be properly read.
         """
 
-        log = GaussianLog(os.path.join(os.path.dirname(__file__),'data','ethylene.log'))
+        log = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'ethylene.log'))
         conformer, unscaled_frequencies = log.loadConformer()
         E0 = log.loadEnergy()
-        
-        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode,IdealGasTranslation)]) == 1)
-        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode,NonlinearRotor)]) == 1)
-        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode,HarmonicOscillator)]) == 1)
-        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode,HinderedRotor)]) == 0)
 
-        trans = [mode for mode in conformer.modes if isinstance(mode,IdealGasTranslation)][0]
-        rot = [mode for mode in conformer.modes if isinstance(mode,NonlinearRotor)][0]
-        vib = [mode for mode in conformer.modes if isinstance(mode,HarmonicOscillator)][0]
+        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)]) == 1)
+        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)]) == 1)
+        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)]) == 1)
+        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, HinderedRotor)]) == 0)
+
+        trans = [mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)][0]
+        rot = [mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)][0]
+        vib = [mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)][0]
         Tlist = numpy.array([298.15], numpy.float64)
         self.assertAlmostEqual(trans.getPartitionFunction(Tlist), 5.83338e6, delta=1e1)
         self.assertAlmostEqual(rot.getPartitionFunction(Tlist), 2.59622e3, delta=1e-2)
@@ -81,23 +83,23 @@ class GaussianTest(unittest.TestCase):
         molecular degrees of freedom can be properly read.
         """
 
-        log = GaussianLog(os.path.join(os.path.dirname(__file__),'data','oxygen.log'))
+        log = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'oxygen.log'))
         conformer, unscaled_frequencies = log.loadConformer()
         E0 = log.loadEnergy()
-        
-        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode,IdealGasTranslation)]) == 1)
-        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode,LinearRotor)]) == 1)
-        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode,HarmonicOscillator)]) == 1)
-        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode,HinderedRotor)]) == 0)
 
-        trans = [mode for mode in conformer.modes if isinstance(mode,IdealGasTranslation)][0]
-        rot = [mode for mode in conformer.modes if isinstance(mode,LinearRotor)][0]
-        vib = [mode for mode in conformer.modes if isinstance(mode,HarmonicOscillator)][0]
+        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)]) == 1)
+        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, LinearRotor)]) == 1)
+        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)]) == 1)
+        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, HinderedRotor)]) == 0)
+
+        trans = [mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)][0]
+        rot = [mode for mode in conformer.modes if isinstance(mode, LinearRotor)][0]
+        vib = [mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)][0]
         Tlist = numpy.array([298.15], numpy.float64)
         self.assertAlmostEqual(trans.getPartitionFunction(Tlist), 7.11169e6, delta=1e1)
         self.assertAlmostEqual(rot.getPartitionFunction(Tlist), 7.13316e1, delta=1e-4)
         self.assertAlmostEqual(vib.getPartitionFunction(Tlist), 1.00037e0, delta=1e-4)
-        
+
         self.assertAlmostEqual(E0 / constants.Na / constants.E_h, -150.3784877, 4)
         self.assertEqual(conformer.spinMultiplicity, 3)
         self.assertEqual(conformer.opticalIsomers, 1)
@@ -109,20 +111,20 @@ class GaussianTest(unittest.TestCase):
         molecular degrees of freedom can be properly read.
         """
 
-        log = GaussianLog(os.path.join(os.path.dirname(__file__),'data','ethylene_G3.log'))
+        log = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'ethylene_G3.log'))
         conformer, unscaled_frequencies = log.loadConformer()
         E0 = log.loadEnergy()
-        
-        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode,IdealGasTranslation)]) == 1)
-        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode,NonlinearRotor)]) == 1)
-        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode,HarmonicOscillator)]) == 1)
-        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode,HinderedRotor)]) == 0)
 
-        trans = [mode for mode in conformer.modes if isinstance(mode,IdealGasTranslation)][0]
-        rot = [mode for mode in conformer.modes if isinstance(mode,NonlinearRotor)][0]
-        vib = [mode for mode in conformer.modes if isinstance(mode,HarmonicOscillator)][0]
+        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)]) == 1)
+        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)]) == 1)
+        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)]) == 1)
+        self.assertTrue(len([mode for mode in conformer.modes if isinstance(mode, HinderedRotor)]) == 0)
+
+        trans = [mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)][0]
+        rot = [mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)][0]
+        vib = [mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)][0]
         Tlist = numpy.array([298.15], numpy.float64)
-        
+
         self.assertAlmostEqual(trans.getPartitionFunction(Tlist), 5.83338e6, delta=1e1)
         self.assertAlmostEqual(rot.getPartitionFunction(Tlist), 2.53410e3, delta=1e-2)
         self.assertAlmostEqual(vib.getPartitionFunction(Tlist), 1.0304e0, delta=1e-4)
@@ -137,17 +139,17 @@ class GaussianTest(unittest.TestCase):
         molecular degrees of freedom can be properly read.
         """
 
-        log = GaussianLog(os.path.join(os.path.dirname(__file__),'data','oxygen.log'))
+        log = GaussianLog(os.path.join(os.path.dirname(__file__), 'data', 'oxygen.log'))
         optical, symmetry = log.get_optical_isomers_and_symmetry_number()
-        self.assertEqual(optical,1)
-        self.assertEqual(symmetry,2)
+        self.assertEqual(optical, 1)
+        self.assertEqual(symmetry, 2)
 
         conf = log.loadConformer()[0]
         self.assertEqual(conf.opticalIsomers, 1)
         found_rotor = False
         for mode in conf.modes:
-            if isinstance(mode,LinearRotor):
-                self.assertEqual(mode.symmetry,2)
+            if isinstance(mode, LinearRotor):
+                self.assertEqual(mode.symmetry, 2)
                 found_rotor = True
         self.assertTrue(found_rotor)
 
@@ -155,8 +157,9 @@ class GaussianTest(unittest.TestCase):
         """
         Ensures that determine_qm_software returns a GaussianLog object
         """
-        log = determine_qm_software(os.path.join(os.path.dirname(__file__),'data','oxygen.log'))
-        self.assertIsInstance(log,GaussianLog)
+        log = determine_qm_software(os.path.join(os.path.dirname(__file__), 'data', 'oxygen.log'))
+        self.assertIsInstance(log, GaussianLog)
+
 
 if __name__ == '__main__':
-    unittest.main( testRunner = unittest.TextTestRunner(verbosity=2) )
+    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
