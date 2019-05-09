@@ -51,6 +51,8 @@ class ExplorerJob(object):
         self.energy_tol = energy_tol
         self.flux_tol = flux_tol
         self.maximumRadicalElectrons = maximumRadicalElectrons
+        self.jobRxns = None
+        self.networks = None
         
         self.pdepjob = pdepjob
         
