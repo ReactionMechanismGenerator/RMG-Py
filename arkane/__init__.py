@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+initialize imports
+"""
+
 ###############################################################################
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #

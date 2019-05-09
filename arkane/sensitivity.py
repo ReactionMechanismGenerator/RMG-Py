@@ -106,12 +106,15 @@ class KineticsSensitivity(object):
         self.plot()
 
     def perturb(self, species):
+        """Perturb a species' E0"""
         species.conformer.E0.value_si += self.perturbation.value_si
 
     def unperturb(self, species):
+        """Return the species' E0 to its original value"""
         species.conformer.E0.value_si -= self.perturbation.value_si  # restore E0 to its original value
 
     def save(self):
+        """Save the SA results as tabulated data"""
         if not os.path.exists(self.sensitivity_path):
             os.mkdir(self.sensitivity_path)
         valid_chars = "-_.()<=> %s%s" % (string.ascii_letters, string.digits)
@@ -163,6 +166,7 @@ class KineticsSensitivity(object):
                        '='*(max_label-10)))
 
     def plot(self):
+        """Plot the SA results as horizontal bars"""
         try:
             import matplotlib.pyplot as plt
         except ImportError:
@@ -302,9 +306,11 @@ class PDepSensitivity(object):
                                                             'J/mol')
 
     def unperturb(self, entry):
+        """A helper function for calling self.perturb cleanly when unperturbing"""
         self.perturb(entry, unperturb=True)
 
     def save(self, wells, transition_states):
+        """Save the SA output as tabulated data"""
         if not os.path.exists(os.path.join(self.output_directory, 'sensitivity', '')):
             os.mkdir(os.path.join(self.output_directory, 'sensitivity', ''))
         valid_chars = "-_.()<=>+ %s%s" % (string.ascii_letters, string.digits)
@@ -340,6 +346,7 @@ class PDepSensitivity(object):
                            '='*(max_label-10)))
 
     def plot(self, wells, transition_states):
+        """Draw the SA results as horizontal bars"""
         try:
             import matplotlib.pyplot as plt
         except ImportError:

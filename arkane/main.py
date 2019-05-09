@@ -312,7 +312,7 @@ class Arkane:
         self.logFooter()
     
     def getLibraries(self):
-
+        """Get RMG kinetics and thermo libraries"""
         name = 'kineticsjobs'
                 
         speciesList = self.speciesDict.values()

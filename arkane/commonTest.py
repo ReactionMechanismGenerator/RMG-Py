@@ -75,6 +75,7 @@ class TestArkaneJob(unittest.TestCase):
     """
     @classmethod
     def setUp(cls):
+        """A method that is run before each unit test in this class"""
         arkane = Arkane()
         jobList = arkane.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                                           'data', 'methoxy.py'))
@@ -280,6 +281,7 @@ class TestStatmech(unittest.TestCase):
     """
     @classmethod
     def setUp(cls):
+        """A method that is run before each unit test in this class"""
         arkane = Arkane()
         cls.job_list = arkane.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                                           'data', 'Benzyl', 'input.py'))

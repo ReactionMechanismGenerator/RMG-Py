@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Arkane Gaussian module
+Used to parse Gaussian output files
+"""
+
 ###############################################################################
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #

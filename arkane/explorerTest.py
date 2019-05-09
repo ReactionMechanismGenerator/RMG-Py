@@ -45,7 +45,7 @@ class testExplorerJob(unittest.TestCase):
     """
     @classmethod
     def setUpClass(cls):
-
+        """A method that is run before each unit test in this class"""
         arkane = Arkane()
         
         cls.jobList = arkane.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),'data','methoxy_explore.py'))

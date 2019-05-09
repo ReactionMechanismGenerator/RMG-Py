@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Arkane common module
+"""
+
 ###############################################################################
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
@@ -59,6 +63,9 @@ from arkane.pdep import PressureDependenceJob
 
 # Add a custom string representer to use block literals for multiline strings
 def str_repr(dumper, data):
+    """
+    Repair YAML string representation
+    """
     if len(data.splitlines()) > 1:
         return dumper.represent_scalar('tag:yaml.org,2002:str', data, style='|')
     return dumper.represent_scalar('tag:yaml.org,2002:str', data)
@@ -183,6 +190,9 @@ class ArkaneSpecies(RMGObject):
                                     'Cp (cal/mol*K)': cp}
 
     def update_xyz_string(self):
+        """
+        Return an xyz string built from self.conformer
+        """
         if self.conformer is not None and self.conformer.number is not None:
             # generate the xyz-format string from the Conformer coordinates
             xyz_string = '{0}\n{1}'.format(len(self.conformer.number.value_si), self.label)
@@ -280,6 +290,7 @@ class ArkaneSpecies(RMGObject):
 
 
 def is_pdep(jobList):
+    """A helper function to determine whether a job is PressureDependenceJob or not"""
     for job in jobList:
         if isinstance(job, PressureDependenceJob):
             return True

@@ -89,15 +89,9 @@ jobList = []
 ################################################################################
 
 
-def database(
-             thermoLibraries = None,
-             transportLibraries = None,
-             reactionLibraries = None,
-             frequenciesLibraries = None,
-             kineticsFamilies = 'default',
-             kineticsDepositories = 'default',
-             kineticsEstimator = 'rate rules',
-             ):
+def database(thermoLibraries = None, transportLibraries = None, reactionLibraries = None, frequenciesLibraries = None,
+             kineticsFamilies = 'default', kineticsDepositories = 'default', kineticsEstimator = 'rate rules'):
+    """Load the RMG database"""
     if isinstance(thermoLibraries, str):
         thermoLibraries = [thermoLibraries]
     if isinstance(transportLibraries, str):
@@ -150,6 +144,7 @@ def database(
 
 
 def species(label, *args, **kwargs):
+    """Load a species from an input file"""
     global speciesDict, jobList
     if label in speciesDict:
         raise ValueError('Multiple occurrences of species with label {0!r}.'.format(label))
@@ -256,6 +251,7 @@ def species(label, *args, **kwargs):
 
 
 def transitionState(label, *args, **kwargs):
+    """Load a transition state from an input file"""
     global transitionStateDict
     if label in transitionStateDict:
         raise ValueError('Multiple occurrences of transition state with label {0!r}.'.format(label))
@@ -301,6 +297,7 @@ def transitionState(label, *args, **kwargs):
 
 
 def reaction(label, reactants, products, transitionState=None, kinetics=None, tunneling=''):
+    """Load a reaction from an input file"""
     global reactionDict, speciesDict, transitionStateDict
     if label in reactionDict:
         label = label + transitionState
@@ -358,6 +355,7 @@ def reaction(label, reactants, products, transitionState=None, kinetics=None, tu
 
 
 def network(label, isomers=None, reactants=None, products=None, pathReactions=None, bathGas=None):
+    """Load a network from an input file"""
     global networkDict, speciesDict, reactionDict
     logging.info('Loading network {0}...'.format(label))
     isomers0 = isomers or []; isomers = []
@@ -439,6 +437,7 @@ def network(label, isomers=None, reactants=None, products=None, pathReactions=No
 
 
 def kinetics(label, Tmin=None, Tmax=None, Tlist=None, Tcount=0, sensitivity_conditions=None):
+    """Generate a kinetics job"""
     global jobList, reactionDict
     try:
         rxn = reactionDict[label]
@@ -450,6 +449,7 @@ def kinetics(label, Tmin=None, Tmax=None, Tlist=None, Tcount=0, sensitivity_cond
 
 
 def statmech(label):
+    """Generate a statmech job"""
     global jobList, speciesDict, transitionStateDict
     if label in speciesDict or label in transitionStateDict:
         for job in jobList:
@@ -462,6 +462,7 @@ def statmech(label):
 
 
 def thermo(label, thermoClass):
+    """Generate a thermo job"""
     global jobList, speciesDict
     try:
         spec = speciesDict[label]
@@ -471,13 +472,10 @@ def thermo(label, thermoClass):
     jobList.append(job)
 
 
-def pressureDependence(label, 
-                       Tmin=None, Tmax=None, Tcount=0, Tlist=None,
-                       Pmin=None, Pmax=None, Pcount=0, Plist=None,
-                       maximumGrainSize=None, minimumGrainCount=0,
-                       method=None, interpolationModel=None,
-                       activeKRotor=True, activeJRotor=True, rmgmode=False,
-                       sensitivity_conditions=None):
+def pressureDependence(label, Tmin=None, Tmax=None, Tcount=0, Tlist=None, Pmin=None, Pmax=None, Pcount=0, Plist=None,
+                       maximumGrainSize=None, minimumGrainCount=0, method=None, interpolationModel=None,
+                       activeKRotor=True, activeJRotor=True, rmgmode=False, sensitivity_conditions=None):
+    """Generate a pressure dependent job"""
     global jobList, networkDict
     
     if isinstance(interpolationModel, str):
@@ -498,6 +496,7 @@ def pressureDependence(label,
 
 
 def explorer(source, explore_tol=0.01, energy_tol=np.inf, flux_tol=0.0, bathGas=None, maximumRadicalElectrons=np.inf):
+    """Generate an explorer job"""
     global jobList,speciesDict
     for job in jobList:
         if isinstance(job, PressureDependenceJob):
@@ -519,14 +518,17 @@ def explorer(source, explore_tol=0.01, energy_tol=np.inf, flux_tol=0.0, bathGas=
 
 
 def SMILES(smiles):
+    """Make a Molecule object from SMILES"""
     return Molecule().fromSMILES(smiles)
 
 
 def adjacencyList(adj):
+    """Make a Molecule object from an adjacency list"""
     return Molecule().fromAdjacencyList(adj)
 
 
 def InChI(inchi):
+    """Make a Molecule object from InChI"""
     return Molecule().fromInChI(inchi)
 
 

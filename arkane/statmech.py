@@ -154,10 +154,12 @@ class ScanLog(object):
 
 
 def hinderedRotor(scanLog, pivots, top, symmetry=None, fit='best'):
+    """Read a hindered rotor directive, and return the attributes in a list"""
     return [scanLog, pivots, top, symmetry, fit]
 
 
 def freeRotor(pivots,top,symmetry):
+    """Read a free rotor directive, and return the attributes in a list"""
     return [pivots,top,symmetry]
 
 

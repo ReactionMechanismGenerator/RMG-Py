@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+The Arkane Explorer module
+"""
+
 ###############################################################################
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
@@ -44,6 +48,9 @@ from rmgpy.exceptions import InputError
 
 
 class ExplorerJob(object):
+    """
+    A representation of an Arkane explorer job. This job is used to explore a potential energy surface (PES).
+    """
     def __init__(self, source, pdepjob, explore_tol, energy_tol=np.inf, flux_tol=0.0, 
                  bathGas=None, maximumRadicalElectrons=np.inf):
         self.source = source
@@ -78,8 +85,9 @@ class ExplorerJob(object):
             flux_tol=self.flux_tol
         )
         
-    def execute(self, outputFile, plot, format='pdf', print_summary=True, speciesList=None, thermoLibrary=None, kineticsLibrary=None):
-        
+    def execute(self, outputFile, plot, format='pdf', print_summary=True, speciesList=None, thermoLibrary=None,
+                kineticsLibrary=None):
+        """Execute an ExplorerJob"""
         logging.info('Exploring network...')
         
         rmg = RMG()

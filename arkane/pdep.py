@@ -238,7 +238,7 @@ class PressureDependenceJob(object):
         )
 
     def execute(self, outputFile, plot, format='pdf', print_summary=True):
-        
+        """Execute a PressureDependenceJob"""
         for config in self.network.isomers + self.network.reactants + self.network.products:
             for spec in config.species:
                 if spec.conformer.E0 is None:
@@ -319,6 +319,7 @@ class PressureDependenceJob(object):
         return self.Tlist.value_si
     
     def initialize(self):
+        """Initialize a PressureDependenceJob"""
         for reaction in self.network.pathReactions:
             tunneling = reaction.transitionState.tunneling
             # throw descriptive error if tunneling not allowed
@@ -388,7 +389,7 @@ class PressureDependenceJob(object):
         return self.Plist.value_si
 
     def fitInterpolationModels(self):
-            
+        """Fit all pressure dependent rates with interpolation models"""
         configurations = []
         configurations.extend(self.network.isomers)
         configurations.extend(self.network.reactants)
@@ -424,7 +425,7 @@ class PressureDependenceJob(object):
                 self.network.netReactions.append(reaction)
                 
     def fitInterpolationModel(self, Tdata, Pdata, kdata, kunits):
-        
+        """Fit an interpolation model to a pressure dependent rate"""
         Tmin = self.Tmin.value_si
         Tmax = self.Tmax.value_si
         Pmin = self.Pmin.value_si
@@ -444,7 +445,7 @@ class PressureDependenceJob(object):
         return kinetics
     
     def save(self, outputFile):
-        
+        """Save the output of a pressure dependent job"""
         logging.info('Saving pressure dependence results for network {0}...'.format(self.network.label))
         f = open(outputFile, 'a')
         f_chemkin = open(os.path.join(os.path.dirname(outputFile), 'chem.inp'), 'a')
@@ -535,7 +536,7 @@ class PressureDependenceJob(object):
         f_chemkin.close()
 
     def plot(self, outputDirectory):
-
+        """Plot pressure dependent rates"""
         # Skip this step if matplotlib is not installed
         try:
             import matplotlib.pyplot as plt

@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Arkane kinetics module
+"""
+
 ###############################################################################
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
@@ -404,6 +408,7 @@ class KineticsDrawer:
         self.clear()
 
     def clear(self):
+        """Clear the drawer"""
         self.reaction = None
         self.wells = None
         self.left = 0.0
