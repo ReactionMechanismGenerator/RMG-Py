@@ -42,6 +42,7 @@ import rmgpy.quantity as quantity
 from rmgpy.species import TransitionState
 from rmgpy.pdep import Configuration
 
+
 ################################################################################
 
 
@@ -127,7 +128,7 @@ class KineticsSensitivity(object):
             sa_f.write("Sensitivity analysis for reaction {0}\n\n"
                        "The semi-normalized sensitivity coefficients are calculated as dln(r)/dE0\n"
                        "by perturbing E0 of each well or TS by {1}, and are given in `mol/J` units.\n\n\n".format(
-                reaction_str, self.perturbation))
+                        reaction_str, self.perturbation))
             reactants_label = ' + '.join([reactant.label for reactant in self.job.reaction.reactants])
             ts_label = self.job.reaction.transitionState.label
             products_label = ' + '.join([reactant.label for reactant in self.job.reaction.products])
@@ -135,35 +136,35 @@ class KineticsSensitivity(object):
             sa_f.write('========================={0}=============================================\n'
                        '| Direction | Well or TS {1}| Temperature (K) | Sensitivity coefficient |\n'
                        '|-----------+------------{2}+-----------------+-------------------------|\n'.format(
-                       '='*(max_label-10), ' '*(max_label-10), '-'*(max_label-10)))
+                        '=' * (max_label - 10), ' ' * (max_label - 10), '-' * (max_label - 10)))
             for i, condition in enumerate(self.conditions):
                 sa_f.write('| Forward   | {0} {1}| {2:6.1f}          | {3:+1.2e}               |\n'.format(
-                    reactants_label, ' '*(max_label - len(reactants_label)), condition.value_si,
+                    reactants_label, ' ' * (max_label - len(reactants_label)), condition.value_si,
                     self.f_sa_coefficients[self.job.reaction.reactants[0]][i]))
             for i, condition in enumerate(self.conditions):
                 sa_f.write('| Forward   | {0} {1}| {2:6.1f}          | {3:+1.2e}               |\n'.format(
-                    products_label, ' '*(max_label - len(products_label)), condition.value_si,
+                    products_label, ' ' * (max_label - len(products_label)), condition.value_si,
                     self.f_sa_coefficients[self.job.reaction.products[0]][i]))
             for i, condition in enumerate(self.conditions):
                 sa_f.write('| Forward   | {0} {1}| {2:6.1f}          | {3:+1.2e}               |\n'.format(
-                    ts_label, ' '*(max_label - len(ts_label)), condition.value_si,
+                    ts_label, ' ' * (max_label - len(ts_label)), condition.value_si,
                     self.f_sa_coefficients[self.job.reaction.transitionState][i]))
             sa_f.write('|-----------+------------{0}+-----------------+-------------------------|\n'.format(
-                '-'*(max_label-10)))
+                '-' * (max_label - 10)))
             for i, condition in enumerate(self.conditions):
                 sa_f.write('| Reverse   | {0} {1}| {2:6.1f}          | {3:+1.2e}               |\n'.format(
-                    reactants_label, ' '*(max_label - len(reactants_label)), condition.value_si,
+                    reactants_label, ' ' * (max_label - len(reactants_label)), condition.value_si,
                     self.r_sa_coefficients[self.job.reaction.reactants[0]][i]))
             for i, condition in enumerate(self.conditions):
                 sa_f.write('| Reverse   | {0} {1}| {2:6.1f}          | {3:+1.2e}               |\n'.format(
-                    products_label, ' '*(max_label - len(products_label)), condition.value_si,
+                    products_label, ' ' * (max_label - len(products_label)), condition.value_si,
                     self.r_sa_coefficients[self.job.reaction.products[0]][i]))
             for i, condition in enumerate(self.conditions):
                 sa_f.write('| Reverse   | {0} {1}| {2:6.1f}          | {3:+1.2e}               |\n'.format(
-                    ts_label, ' '*(max_label - len(ts_label)), condition.value_si,
+                    ts_label, ' ' * (max_label - len(ts_label)), condition.value_si,
                     self.r_sa_coefficients[self.job.reaction.transitionState][i]))
             sa_f.write('========================={0}=============================================\n'.format(
-                       '='*(max_label-10)))
+                '=' * (max_label - 10)))
 
     def plot(self):
         """Plot the SA results as horizontal bars"""
@@ -321,29 +322,29 @@ class PDepSensitivity(object):
             sa_f.write("Sensitivity analysis for network {0}\n\n"
                        "The semi-normalized sensitivity coefficients are calculated as dln(r)/dE0\n"
                        "by perturbing E0 of each well or TS by {1},\n and are given in `mol/J` units.\n\n\n".format(
-                network_str, self.perturbation))
+                        network_str, self.perturbation))
             for rxn in self.job.network.netReactions:
                 reactants_label = ' + '.join([reactant.label for reactant in rxn.reactants])
                 products_label = ' + '.join([reactant.label for reactant in rxn.products])
                 reaction_str = '{0} {1} {2}'.format(reactants_label, '<=>', products_label)
-                sa_f.write('  Sensitivity of network reaction '+reaction_str+' :'+'\n')
+                sa_f.write('  Sensitivity of network reaction ' + reaction_str + ' :' + '\n')
                 max_label = 40
                 sa_f.write('========================={0}==================================================\n'
                            '| Well or TS {1}| Temperature (K) | Pressure (bar) | Sensitivity coefficient |\n'
                            '|------------{2}+-----------------+----------------+-------------------------|\n'.format(
-                           '='*(max_label-10), ' '*(max_label-10), '-'*(max_label-10)))
+                            '=' * (max_label - 10), ' ' * (max_label - 10), '-' * (max_label - 10)))
                 for entry in wells + transition_states:
                     if isinstance(entry, TransitionState):
                         entry_label = '(TS) ' + entry.label
                     elif isinstance(entry, Configuration):
                         entry_label = ' + '.join([species.label for species in entry.species])
-                    entry_label += ' '*(max_label - len(entry_label))
+                    entry_label += ' ' * (max_label - len(entry_label))
                     for i, condition in enumerate(self.conditions):
                         sa_f.write('| {0} | {1:6.1f}          | {2:8.2f}       | {3:+1.2e}               |\n'.format(
                             entry_label, condition[0].value_si, condition[1].value_si * 1e-5,
                             self.sa_coefficients[str(rxn)][entry][i]))
-                sa_f.write('========================={0}==================================================\n\n\n'.format(
-                           '='*(max_label-10)))
+                sa_f.write('========================={0}=================================================='
+                           '\n\n\n'.format('=' * (max_label - 10)))
 
     def plot(self, wells, transition_states):
         """Draw the SA results as horizontal bars"""
@@ -364,13 +365,14 @@ class PDepSensitivity(object):
                         min_sa = sa_condition
                     if max_sa < sa_condition:
                         max_sa = sa_condition
-            colors = ['b','g','r','c','m','y','k']
+            colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
             for i, condition in enumerate(self.conditions):
                 values = [self.sa_coefficients[str(rxn)][conf][i] for conf in wells + transition_states]
                 y_pos = np.arange(len(labels))
                 if len(self.conditions) > 1:
                     axis = ax[i]
-                else: axis = ax
+                else:
+                    axis = ax
                 axis.barh(y_pos, values, align='center', color=colors[i % len(colors)])
                 axis.set_yticks(y_pos)
                 axis.set_yticklabels(labels)
