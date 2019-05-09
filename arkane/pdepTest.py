@@ -63,7 +63,7 @@ class ArkaneTest(unittest.TestCase):
             shutil.rmtree(os.path.join(settings['test_data.directory'], 'arkane', 'tst1', d, ''))
         files = [f for f in os.listdir(cls.directory) if os.path.isfile(os.path.join(cls.directory, f))]
         for f in files:
-            if not 'pdep_sa' in f:
+            if 'pdep_sa' not in f:
                 os.remove(os.path.join(settings['test_data.directory'], 'arkane', 'tst1', f))
 
     def testPDepJob(self):
@@ -84,9 +84,9 @@ class ArkaneTest(unittest.TestCase):
         self.assertEquals(job.minimumGrainCount, 100)
         self.assertFalse(job.rmgmode)
         self.assertTrue(job.activeJRotor)
-        self.assertEquals(job.network.pathReactions[0].label,'acetylperoxy <=> hydroperoxylvinoxy')
-        self.assertAlmostEquals(job.network.pathReactions[0].transitionState.tunneling.E0_TS.value_si,-24267.2)
-        self.assertAlmostEquals(job.network.pathReactions[0].transitionState.tunneling.frequency.value_si,-1679.04)
+        self.assertEquals(job.network.pathReactions[0].label, 'acetylperoxy <=> hydroperoxylvinoxy')
+        self.assertAlmostEquals(job.network.pathReactions[0].transitionState.tunneling.E0_TS.value_si, -24267.2)
+        self.assertAlmostEquals(job.network.pathReactions[0].transitionState.tunneling.frequency.value_si, -1679.04)
         self.assertEquals(len(job.network.netReactions[0].reactants[0].conformer.modes), 6)
         # self.assertEquals(self.tst1.frequencyScaleFactor, 0.947)
 
@@ -96,7 +96,7 @@ class ArkaneTest(unittest.TestCase):
 
         # Test the generated network reaction
         dictionary = {'hydroperoxylvinoxy': Species().fromSMILES('[CH2]C(=O)OO'),
-        'acetylperoxy': Species().fromSMILES('CC(=O)O[O]')}
+                      'acetylperoxy': Species().fromSMILES('CC(=O)O[O]')}
         with open(os.path.join(self.directory, 'chem.inp'), 'r') as chem:
             reaction_list = readReactionsBlock(chem, dictionary)
         rxn = reaction_list[0]
@@ -127,5 +127,5 @@ class ArkaneTest(unittest.TestCase):
             shutil.rmtree(os.path.join(settings['test_data.directory'], 'arkane', 'tst1', d, ''))
         files = [f for f in os.listdir(cls.directory) if os.path.isfile(os.path.join(cls.directory, f))]
         for f in files:
-            if not 'pdep_sa' in f:
+            if 'pdep_sa' not in f:
                 os.remove(os.path.join(settings['test_data.directory'], 'arkane', 'tst1', f))
