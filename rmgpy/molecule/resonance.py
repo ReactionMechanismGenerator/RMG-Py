@@ -637,13 +637,8 @@ def generate_optimal_aromatic_resonance_structures(mol, features=None):
     if not features['isCyclic']:
         return []
 
+    # Copy the molecule so we don't affect the original
     molecule = mol.copy(deep=True)
-
-    # First get all rings in the molecule
-    rings = molecule.getAllSimpleCyclesOfSize(6)
-
-    # Then determine which ones are aromatic
-    aromatic_bonds = molecule.getAromaticRings(rings)[1]
 
     # Attempt to rearrange electrons to obtain a structure with the most aromatic rings
     # Possible rearrangements include aryne resonance and allyl resonance
@@ -658,38 +653,37 @@ def generate_optimal_aromatic_resonance_structures(mol, features=None):
 
     _generate_resonance_structures(kekule_list, res_list)
 
-    if len(kekule_list) > 1:
-        # We found additional structures, so we need to evaluate all of them
-        max_num = 0
-        mol_list = []
+    # Sort all of the generated structures by number of perceived aromatic rings
+    mol_dict = {}
+    for mol0 in kekule_list:
+        aromatic_bonds = mol0.getAromaticRings()[1]
+        num_aromatic = len(aromatic_bonds)
+        mol_dict.setdefault(num_aromatic, []).append((mol0, aromatic_bonds))
 
-        # Iterate through the adjacent resonance structures and keep the structures with the most aromatic rings
-        for mol0 in kekule_list:
-            aromatic_bonds = mol0.getAromaticRings()[1]
-            if len(aromatic_bonds) > max_num:
-                max_num = len(aromatic_bonds)
-                mol_list = [(mol0, aromatic_bonds)]
-            elif len(aromatic_bonds) == max_num:
-                mol_list.append((mol0, aromatic_bonds))
-    else:
-        # Otherwise, it is not possible to increase the number of aromatic rings by moving electrons,
-        # so go ahead with the inputted form of the molecule
-        mol_list = [(molecule, aromatic_bonds)]
+    # List of potential number of aromatic rings, sorted from largest to smallest
+    arom_options = sorted(mol_dict.keys(), reverse=True)
 
     new_mol_list = []
+    for num in arom_options:
+        mol_list = mol_dict[num]
+        # Generate the aromatic resonance structure(s)
+        for mol0, aromatic_bonds in mol_list:
+            # Aromatize the molecule in place
+            result = generate_aromatic_resonance_structure(mol0, aromatic_bonds, copy=False)
+            if not result:
+                # We failed to aromatize this molecule
+                # This could be due to incorrect aromaticity perception by RDKit
+                continue
 
-    # Generate the aromatic resonance structure(s)
-    for mol0, aromatic_bonds in mol_list:
-        # Aromatize the molecule in place
-        success = generate_aromatic_resonance_structure(mol0, aromatic_bonds, copy=False)
-        if not success:
-            continue
+            for mol1 in new_mol_list:
+                if mol1.isIsomorphic(mol0):
+                    break
+            else:
+                new_mol_list.append(mol0)
 
-        for mol1 in new_mol_list:
-            if mol1.isIsomorphic(mol0):
-                break
-        else:
-            new_mol_list.append(mol0)
+        if new_mol_list:
+            # We found the most aromatic resonance structures so there's no need to try smaller numbers
+            break
 
     return new_mol_list
 
