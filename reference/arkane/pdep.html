@@ -203,6 +203,24 @@ one of the following: <cite>pdf</cite>, <cite>svg</cite>, <cite>png</cite>.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="arkane.PressureDependenceJob.execute">
+<code class="descname">execute</code><span class="sig-paren">(</span><em>outputFile</em>, <em>plot</em>, <em>format='pdf'</em>, <em>print_summary=True</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.PressureDependenceJob.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute a PressureDependenceJob</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.PressureDependenceJob.fitInterpolationModel">
+<code class="descname">fitInterpolationModel</code><span class="sig-paren">(</span><em>Tdata</em>, <em>Pdata</em>, <em>kdata</em>, <em>kunits</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.PressureDependenceJob.fitInterpolationModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit an interpolation model to a pressure dependent rate</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.PressureDependenceJob.fitInterpolationModels">
+<code class="descname">fitInterpolationModels</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.PressureDependenceJob.fitInterpolationModels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit all pressure dependent rates with interpolation models</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="arkane.PressureDependenceJob.generatePressureList">
 <code class="descname">generatePressureList</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.PressureDependenceJob.generatePressureList" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns an array of pressures based on the interpolation <cite>model</cite>,
@@ -226,10 +244,28 @@ place <cite>Tmin</cite> and <cite>Tmax</cite> at the endpoints, yet the interpol
 valid up to these values.</p>
 </dd></dl>
 
+<dl class="method">
+<dt id="arkane.PressureDependenceJob.initialize">
+<code class="descname">initialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.PressureDependenceJob.initialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a PressureDependenceJob</p>
+</dd></dl>
+
 <dl class="attribute">
 <dt id="arkane.PressureDependenceJob.maximumGrainSize">
 <code class="descname">maximumGrainSize</code><a class="headerlink" href="#arkane.PressureDependenceJob.maximumGrainSize" title="Permalink to this definition">¶</a></dt>
 <dd><p>The maximum allowed energy grain size, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.PressureDependenceJob.plot">
+<code class="descname">plot</code><span class="sig-paren">(</span><em>outputDirectory</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.PressureDependenceJob.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot pressure dependent rates</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.PressureDependenceJob.save">
+<code class="descname">save</code><span class="sig-paren">(</span><em>outputFile</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.PressureDependenceJob.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the output of a pressure dependent job</p>
 </dd></dl>
 
 <dl class="method">
