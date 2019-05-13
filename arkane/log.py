@@ -38,11 +38,13 @@ import shutil
 from rmgpy.qm.qmdata import QMData
 from rmgpy.qm.symmetry import PointGroupCalculator
 
+
 class Log(object):
     """
     Represent a general log file.
     The attribute `path` refers to the location on disk of the log file of interest.
     """
+
     def __init__(self, path):
         self.path = path
 
@@ -116,7 +118,8 @@ class Log(object):
         """
         coordinates, atom_numbers, _ = self.loadGeometry()
         unique_id = '0'  # Just some name that the SYMMETRY code gives to one of its jobs
-        scr_dir = os.path.join(os.path.abspath('.'), str('scratch'))  # Scratch directory that the SYMMETRY code writes its files in
+        # Scratch directory that the SYMMETRY code writes its files in:
+        scr_dir = os.path.join(os.path.abspath('.'), str('scratch'))
         if not os.path.exists(scr_dir):
             os.makedirs(scr_dir)
         try:
@@ -127,15 +130,20 @@ class Log(object):
                 atomCoords=(coordinates, str('angstrom')),
                 energy=(0.0, str('kcal/mol'))  # Only needed to avoid error
             )
-            settings = type(str(''), (), dict(symmetryPath=str('symmetry'), scratchDirectory=scr_dir))()  # Creates anonymous class
+            # Dynamically create custom class to store the settings needed for the point group calculation
+            # Normally, it expects an rmgpy.qm.main.QMSettings object, but we don't need all of those settings
+            settings = type(str(''), (),
+                            dict(symmetryPath=str('symmetry'), scratchDirectory=scr_dir))()
             pgc = PointGroupCalculator(settings, unique_id, qmdata)
             pg = pgc.calculate()
             if pg is not None:
                 optical_isomers = 2 if pg.chiral else 1
                 symmetry = pg.symmetryNumber
-                logging.debug("Symmetry algorithm found {0} optical isomers and a symmetry number of {1}".format(optical_isomers,symmetry))
+                logging.debug("Symmetry algorithm found {0} optical isomers and a symmetry number of {1}".format(
+                    optical_isomers, symmetry))
             else:
-                logging.error("Symmetry algorithm errored when computing point group\nfor log file located at{0}.\nManually provide values in Arkane input.".format(self.path))
+                logging.error('Symmetry algorithm errored when computing point group\nfor log file located at{0}.\n'
+                              'Manually provide values in Arkane input.'.format(self.path))
             return optical_isomers, symmetry
         finally:
             shutil.rmtree(scr_dir)

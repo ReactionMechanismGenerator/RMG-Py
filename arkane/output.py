@@ -33,7 +33,8 @@ This module contains helper functionality for writing Arkane output files.
 """
 
 import ast
-    
+
+
 ################################################################################
 
 
@@ -43,38 +44,39 @@ class PrettifyVisitor(ast.NodeVisitor):
     version of the code used to create the tree. Used by the :func:`prettify`
     function.
     """
-    
+
     def __init__(self, level=0, indent=4):
         self.string = ''
         self.level = level
         self.indent = indent
-        
+
     def visit_Call(self, node):
         """
         Return a pretty representation of the class or function call 
         represented by `node`.
         """
         result = node.func.id + '(\n'
-        
+
         keywords = []
         for keyword in node.keywords:
             keywords.append('{0}={1}'.format(keyword.arg, self.visit(keyword.value)))
-        result = '{0}({1})'.format(node.func.id, ', '.join(keywords)) 
-        
+        result = '{0}({1})'.format(node.func.id, ', '.join(keywords))
+
         if len(result) > 80:
             result = node.func.id + '(\n'
-        
+
             self.level += 1
             for keyword in node.keywords:
-                result += '{2}{0} = {1},\n'.format(keyword.arg, self.visit(keyword.value), ' ' * (self.level * self.indent))
+                result += '{2}{0} = {1},\n'.format(keyword.arg, self.visit(keyword.value),
+                                                   ' ' * (self.level * self.indent))
             self.level -= 1
 
             result += ' ' * (self.level * self.indent) + ')'
-            
+
         self.string = result
-        
+
         return result
-    
+
     def visit_List(self, node):
         """
         Return a pretty representation of the list represented by `node`.
@@ -93,19 +95,19 @@ class PrettifyVisitor(ast.NodeVisitor):
             result = '[{0}]'.format(', '.join([self.visit(e) for e in node.elts]))
             self.string = result
             return result
-    
+
     def visit_Tuple(self, node):
         """
         Return a pretty representation of the tuple represented by `node`.
         """
         # If the tuple represents a quantity, keep it on one line
         isQuantity = True
-        if len(node.elts) == 0 or not isinstance(node.elts[0], (ast.Num,ast.List)) or (
-            isinstance(node.elts[0], ast.List) and any([not isinstance(e, ast.Num) for e in node.elts[0].elts])):
+        if len(node.elts) == 0 or not isinstance(node.elts[0], (ast.Num, ast.List)) or (
+                isinstance(node.elts[0], ast.List) and any([not isinstance(e, ast.Num) for e in node.elts[0].elts])):
             isQuantity = False
         elif len(node.elts) < 2 or not isinstance(node.elts[1], ast.Str):
             isQuantity = False
-        
+
         if not isQuantity:
             # Split elements onto multiple lines
             result = '(\n'
@@ -120,12 +122,13 @@ class PrettifyVisitor(ast.NodeVisitor):
             result = '({0})'.format(', '.join([self.visit(e) for e in node.elts]))
             self.string = result
             return result
-    
+
     def visit_Dict(self, node):
         """
         Return a pretty representation of the dict represented by `node`.
         """
-        if any([not isinstance(e, (ast.Str, ast.Num)) for e in node.keys]) or any([not isinstance(e, (ast.Str, ast.Num)) for e in node.values]):
+        if (any([not isinstance(e, (ast.Str, ast.Num)) for e in node.keys])
+                or any([not isinstance(e, (ast.Str, ast.Num)) for e in node.values])):
             # Split elements onto multiple lines
             result = '{\n'
             self.level += 1
@@ -137,10 +140,11 @@ class PrettifyVisitor(ast.NodeVisitor):
             return result
         else:
             # Keep elements on one line
-            result = '{{{0}}}'.format(', '.join(['{0}: {1}'.format(self.visit(key), self.visit(value)) for key, value in zip(node.keys, node.values)]))
+            result = '{{{0}}}'.format(', '.join(['{0}: {1}'.format(self.visit(key), self.visit(value))
+                                                 for key, value in zip(node.keys, node.values)]))
             self.string = result
             return result
-    
+
     def visit_Str(self, node):
         """
         Return a pretty representation of the string represented by `node`.
@@ -148,15 +152,16 @@ class PrettifyVisitor(ast.NodeVisitor):
         result = repr(node.s)
         self.string = result
         return result
-    
+
     def visit_Num(self, node):
         """
         Return a pretty representation of the number represented by `node`.
         """
         result = '{0:g}'.format(node.n)
-        #result = repr(node.n)
+        # result = repr(node.n)
         self.string = result
         return result
+
 
 def prettify(string, indent=4):
     """

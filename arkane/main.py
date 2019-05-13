@@ -39,8 +39,10 @@ import logging
 import argparse
 import time
 import csv
+
 try:
     import matplotlib
+
     matplotlib.rc('mathtext', default='regular')
 except ImportError:
     pass
@@ -58,6 +60,7 @@ from arkane.thermo import ThermoJob
 from arkane.pdep import PressureDependenceJob
 from arkane.explorer import ExplorerJob
 from arkane.common import is_pdep
+
 
 ################################################################################
 
@@ -85,55 +88,56 @@ class Arkane:
     You can also populate the attributes from the command line using the
     :meth:`parseCommandLineArguments()` method before running :meth:`execute()`.
     """
-    
+
     def __init__(self, inputFile=None, outputDirectory=None, verbose=logging.INFO):
         self.jobList = []
         self.inputFile = inputFile
         self.outputDirectory = outputDirectory
         self.verbose = verbose
-    
+
     def parseCommandLineArguments(self):
         """
         Parse the command-line arguments being passed to Arkane. This uses the
         :mod:`argparse` module, which ensures that the command-line arguments are
         sensible, parses them, and returns them.
         """
-    
-        parser = argparse.ArgumentParser(description=
-        """
-        Arkane is a Python toolkit for computing chemical reaction rates and other
-        properties used in detailed kinetics models using various methodologies
-        and theories.
+
+        parser = argparse.ArgumentParser(description="""
+        Arkane is a Python toolkit for computing chemical reaction rates
+        and other properties used in detailed kinetics models
+        using various methodologies and theories.
         """)
-        parser.add_argument('file', metavar='FILE', type=str, nargs=1,
-            help='a file describing the job to execute')
-    
+        parser.add_argument('file', metavar='FILE', type=str, nargs=1, help='a file describing the job to execute')
+
         # Options for controlling the amount of information printed to the console
         # By default a moderate level of information is printed; you can either
         # ask for less (quiet), more (verbose), or much more (debug)
         group = parser.add_mutually_exclusive_group()
-        group.add_argument('-q', '--quiet', action='store_const', const=logging.WARNING, default=logging.INFO, dest='verbose', help='only print warnings and errors')
-        group.add_argument('-v', '--verbose', action='store_const', const=logging.DEBUG, default=logging.INFO, dest='verbose', help='print more verbose output')
-        group.add_argument('-d', '--debug', action='store_const', const=0, default=logging.INFO, dest='verbose', help='print debug information')
-    
+        group.add_argument('-q', '--quiet', action='store_const', const=logging.WARNING, default=logging.INFO,
+                           dest='verbose', help='only print warnings and errors')
+        group.add_argument('-v', '--verbose', action='store_const', const=logging.DEBUG, default=logging.INFO,
+                           dest='verbose', help='print more verbose output')
+        group.add_argument('-d', '--debug', action='store_const', const=0, default=logging.INFO, dest='verbose',
+                           help='print debug information')
+
         # Add options for controlling what directories files are written to
         parser.add_argument('-o', '--output-directory', type=str, nargs=1, default='',
-            metavar='DIR', help='use DIR as output directory')
+                            metavar='DIR', help='use DIR as output directory')
 
         # Add options for controlling generation of plots
         parser.add_argument('-p', '--plot', action='store_true', default=True, help='generate plots of results')
 
         args = parser.parse_args()
-        
+
         # Extract the input file
-        self.inputFile = args.file[0] 
-        
+        self.inputFile = args.file[0]
+
         # Extract the log verbosity
         self.verbose = args.verbose
-        
+
         # Extract the plot settings
         self.plot = args.plot
-        
+
         # Determine the output directory
         # By default the directory containing the input file is used, unless an
         # alternate directory is specified using the -o flag
@@ -141,7 +145,7 @@ class Arkane:
             self.outputDirectory = os.path.abspath(args.output_directory[0])
         else:
             self.outputDirectory = os.path.dirname(os.path.abspath(args.file[0]))
-    
+
     def initializeLog(self, verbose=logging.INFO, logFile=None):
         """
         Set up a logger for Arkane to use to print output to stdout. The
@@ -151,7 +155,7 @@ class Arkane:
         # Create logger
         logger = logging.getLogger()
         logger.setLevel(verbose)
-    
+
         # Use custom level names for cleaner log output
         logging.addLevelName(logging.CRITICAL, 'Critical: ')
         logging.addLevelName(logging.ERROR, 'Error: ')
@@ -159,27 +163,27 @@ class Arkane:
         logging.addLevelName(logging.INFO, '')
         logging.addLevelName(logging.DEBUG, '')
         logging.addLevelName(0, '')
-    
+
         # Create formatter and add to handlers
         formatter = logging.Formatter('%(levelname)s%(message)s')
-        
+
         # Remove old handlers before adding ours
         while logger.handlers:
             logger.removeHandler(logger.handlers[0])
-       
+
         # Create console handler; send everything to stdout rather than stderr
         ch = logging.StreamHandler(sys.stdout)
         ch.setLevel(verbose)
         ch.setFormatter(formatter)
         logger.addHandler(ch)
-    
+
         # Create file handler; always be at least verbose in the file
         if logFile:
             fh = logging.FileHandler(filename=logFile)
-            fh.setLevel(min(logging.DEBUG,verbose))
+            fh.setLevel(min(logging.DEBUG, verbose))
             fh.setFormatter(formatter)
             logger.addHandler(fh)
-    
+
     def logHeader(self, level=logging.INFO):
         """
         Output a header containing identifying information about Arkane to the log.
@@ -187,7 +191,7 @@ class Arkane:
         from rmgpy import __version__
         logging.log(level, 'Arkane execution initiated at {0}'.format(time.asctime()))
         logging.log(level, '')
-    
+
         logging.log(level, '################################################################')
         logging.log(level, '#                                                              #')
         logging.log(level, '# Automated Reaction Kinetics and Network Exploration (Arkane) #')
@@ -200,7 +204,7 @@ class Arkane:
         logging.log(level, '#                                                              #')
         logging.log(level, '################################################################')
         logging.log(level, '')
-    
+
     def logFooter(self, level=logging.INFO):
         """
         Output a footer to the log.
@@ -214,27 +218,28 @@ class Arkane:
         loaded set of jobs as a list.
         """
         self.inputFile = inputFile
-        self.jobList, self.reactionDict, self.speciesDict, self.transitionStateDict, self.networkDict = loadInputFile(self.inputFile)
+        self.jobList, self.reactionDict, self.speciesDict, self.transitionStateDict, self.networkDict = loadInputFile(
+            self.inputFile)
         logging.info('')
         return self.jobList
-        
+
     def execute(self):
         """
         Execute, in order, the jobs found in input file specified by the
         `inputFile` attribute.
         """
-        
+
         # Initialize the logging system (both to the console and to a file in the
         # output directory)
         self.initializeLog(self.verbose, os.path.join(self.outputDirectory, 'arkane.log'))
-        
+
         # Print some information to the beginning of the log
         self.logHeader()
-        
+
         # Load the input file for the job
         self.jobList = self.loadInputFile(self.inputFile)
         logging.info('')
-        
+
         # Initialize (and clear!) the output files for the job
         if self.outputDirectory is None:
             self.outputDirectory = os.path.dirname(os.path.abspath(self.inputFile))
@@ -246,12 +251,12 @@ class Arkane:
         # write the chemkin files and run the thermo and then kinetics jobs
         with open(chemkinFile, 'w') as f:
             writeElementsSection(f)
-            
+
             f.write('SPECIES\n\n')
 
             # write each species in species block
             for job in self.jobList:
-                if isinstance(job,ThermoJob):
+                if isinstance(job, ThermoJob):
                     f.write(job.species.toChemkin())
                     f.write('\n')
 
@@ -276,7 +281,7 @@ class Arkane:
         supporting_info_file = os.path.join(self.outputDirectory, 'supporting_information.csv')
         with open(supporting_info_file, 'wb') as csvfile:
             writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-            writer.writerow(['Label','Rotational constant (cm-1)','Unscaled frequencies (cm-1)'])
+            writer.writerow(['Label', 'Rotational constant (cm-1)', 'Unscaled frequencies (cm-1)'])
             for row in supporting_info:
                 label = row[0]
                 rot = '-'
@@ -295,82 +300,87 @@ class Arkane:
 
         # run kinetics and pdep jobs (also writes reaction blocks to Chemkin file)
         for job in self.jobList:
-            if isinstance(job,KineticsJob):
+            if isinstance(job, KineticsJob):
                 job.execute(outputFile=outputFile, plot=self.plot)
-            elif isinstance(job, PressureDependenceJob) and not any([isinstance(job,ExplorerJob) for job in self.jobList]): #if there is an explorer job the pdep job will be run in the explorer job
+            elif isinstance(job, PressureDependenceJob) and not any([isinstance(job, ExplorerJob) for job in
+                                                                     self.jobList]):
+                # if there is an explorer job the pdep job will be run in the explorer job
                 if job.network is None:
-                    raise InputError('No network matched the label of the pressureDependence block and there is no explorer block to generate a network')
+                    raise InputError(
+                        'No network matched the label of the pressureDependence block and there is no explorer block '
+                        'to generate a network')
                 job.execute(outputFile=outputFile, plot=self.plot)
             elif isinstance(job, ExplorerJob):
-                thermoLibrary,kineticsLibrary,speciesList = self.getLibraries()
-                job.execute(outputFile=outputFile, plot=self.plot, speciesList=speciesList, thermoLibrary=thermoLibrary, kineticsLibrary=kineticsLibrary)
+                thermoLibrary, kineticsLibrary, speciesList = self.getLibraries()
+                job.execute(outputFile=outputFile, plot=self.plot, speciesList=speciesList, thermoLibrary=thermoLibrary,
+                            kineticsLibrary=kineticsLibrary)
 
         with open(chemkinFile, 'a') as f:
             f.write('END\n\n')
 
         # Print some information to the end of the log
         self.logFooter()
-    
-    def getLibraries(self):
 
+    def getLibraries(self):
+        """Get RMG kinetics and thermo libraries"""
         name = 'kineticsjobs'
-                
+
         speciesList = self.speciesDict.values()
         reactionList = self.reactionDict.values()
 
         # remove duplicate species
         for rxn in reactionList:
-            for i,rspc in enumerate(rxn.reactants):
+            for i, rspc in enumerate(rxn.reactants):
                 for spc in speciesList:
                     if spc.isIsomorphic(rspc):
                         rxn.reactants[i] = spc
                         break
-            for i,rspc in enumerate(rxn.products):
+            for i, rspc in enumerate(rxn.products):
                 for spc in speciesList:
                     if spc.isIsomorphic(rspc):
                         rxn.products[i] = spc
                         break
         del_inds = []
-        for i,spc1 in enumerate(speciesList):
-            for j,spc2 in enumerate(speciesList):
-                if j>i and spc1.isIsomorphic(spc2):
+        for i, spc1 in enumerate(speciesList):
+            for j, spc2 in enumerate(speciesList):
+                if j > i and spc1.isIsomorphic(spc2):
                     del_inds.append(j)
-        
+
         for j in sorted(del_inds)[::-1]:
             del speciesList[j]
-            
+
         thermoLibrary = ThermoLibrary(name=name)
-        for i,species in enumerate(speciesList): 
+        for i, species in enumerate(speciesList):
             if species.thermo:
-                thermoLibrary.loadEntry(index = i + 1,
-                                        label = species.label,
-                                        molecule = species.molecule[0].toAdjacencyList(),
-                                        thermo = species.thermo,
-                                        shortDesc = species.thermo.comment
-               )                
+                thermoLibrary.loadEntry(index=i + 1,
+                                        label=species.label,
+                                        molecule=species.molecule[0].toAdjacencyList(),
+                                        thermo=species.thermo,
+                                        shortDesc=species.thermo.comment)
             else:
-                logging.warning('Species {0} did not contain any thermo data and was omitted from the thermo library.'.format(str(species)))
+                logging.warning(
+                    'Species {0} did not contain any thermo data and was omitted from the thermo library.'.format(
+                        str(species)))
 
         # load kinetics library entries                    
-        kineticsLibrary = KineticsLibrary(name=name,autoGenerated=True)
+        kineticsLibrary = KineticsLibrary(name=name, autoGenerated=True)
         kineticsLibrary.entries = {}
-        for i,reaction in enumerate(reactionList):      
+        for i, reaction in enumerate(reactionList):
             entry = Entry(
-                    index = i+1,
-                    label = reaction.toLabeledStr(),
-                    item = reaction,
-                    data = reaction.kinetics,
-                )
+                index=i + 1,
+                label=reaction.toLabeledStr(),
+                item=reaction,
+                data=reaction.kinetics)
 
             if reaction.kinetics is not None:
-                if hasattr(reaction,'library') and reaction.library:
-                    entry.longDesc = 'Originally from reaction library: ' +\
+                if hasattr(reaction, 'library') and reaction.library:
+                    entry.longDesc = 'Originally from reaction library: ' + \
                                      reaction.library + "\n" + reaction.kinetics.comment
                 else:
                     entry.longDesc = reaction.kinetics.comment
-            
-            kineticsLibrary.entries[i+1] = entry
-        
+
+            kineticsLibrary.entries[i + 1] = entry
+
         kineticsLibrary.label = name
-        
-        return thermoLibrary,kineticsLibrary,speciesList
+
+        return thermoLibrary, kineticsLibrary, speciesList

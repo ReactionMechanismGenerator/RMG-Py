@@ -35,6 +35,7 @@ from nose.plugins.attrib import attr
 from arkane import Arkane
 from arkane.explorer import ExplorerJob
 
+
 ################################################################################
 
 
@@ -43,42 +44,45 @@ class testExplorerJob(unittest.TestCase):
     """
     Contains tests for ExplorerJob class execute method
     """
+
     @classmethod
     def setUpClass(cls):
-
+        """A method that is run before each unit test in this class"""
         arkane = Arkane()
-        
-        cls.jobList = arkane.loadInputFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),'data','methoxy_explore.py'))
+
+        cls.jobList = arkane.loadInputFile(
+            os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data', 'methoxy_explore.py'))
         for job in cls.jobList:
-            if not isinstance(job,ExplorerJob):
+            if not isinstance(job, ExplorerJob):
                 job.execute(outputFile=None, plot=None)
             else:
-                thermoLibrary,kineticsLibrary,speciesList = arkane.getLibraries()
-                job.execute(outputFile=None, plot=None, speciesList=speciesList, thermoLibrary=thermoLibrary, kineticsLibrary=kineticsLibrary)
+                thermoLibrary, kineticsLibrary, speciesList = arkane.getLibraries()
+                job.execute(outputFile=None, plot=None, speciesList=speciesList, thermoLibrary=thermoLibrary,
+                            kineticsLibrary=kineticsLibrary)
 
         cls.thermoLibrary = thermoLibrary
         cls.kineticsLibrary = kineticsLibrary
         cls.explorerjob = cls.jobList[-1]
         cls.pdepjob = cls.jobList[-2]
-    
+
     @classmethod
     def tearDownClass(cls):
         """A function that is run ONCE after all unit tests in this class."""
         # Reset module level database
         import rmgpy.data.rmg
         rmgpy.data.rmg.database.kinetics = None
-        
+
     def test_reactions(self):
         """
         test that the right number of reactions are in output network
         """
-        self.assertEqual(len(self.explorerjob.networks[0].pathReactions),6)
+        self.assertEqual(len(self.explorerjob.networks[0].pathReactions), 6)
 
     def test_isomers(self):
         """
         test that the right number of isomers are in the output network
         """
-        self.assertEqual(len(self.explorerjob.networks[0].isomers),2)
+        self.assertEqual(len(self.explorerjob.networks[0].isomers), 2)
 
     def test_job_rxns(self):
         """
@@ -86,7 +90,7 @@ class testExplorerJob(unittest.TestCase):
         ended up in the final network
         """
         for rxn in self.explorerjob.jobRxns:
-            self.assertIn(rxn,self.explorerjob.networks[0].pathReactions)
+            self.assertIn(rxn, self.explorerjob.networks[0].pathReactions)
 
 
 if __name__ == '__main__':

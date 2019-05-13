@@ -50,6 +50,7 @@ from rmgpy.exceptions import InvalidMicrocanonicalRateError, ModifiedStrongColli
 from arkane.output import prettify
 from arkane.sensitivity import PDepSensitivity as sa
 
+
 ################################################################################
 
 
@@ -100,22 +101,22 @@ class PressureDependenceJob(object):
     
     RMG mode should be turned off by default except in RMG jobs.    
     """
-    
-    def __init__(self, network, 
-        Tmin=None, Tmax=None, Tcount=0, Tlist=None,
-        Pmin=None, Pmax=None, Pcount=0, Plist=None,
-        maximumGrainSize=None, minimumGrainCount=0,
-        method=None, interpolationModel=None, maximumAtoms=None,
-        activeKRotor=True, activeJRotor=True, rmgmode=False, sensitivity_conditions=None):
+
+    def __init__(self, network,
+                 Tmin=None, Tmax=None, Tcount=0, Tlist=None,
+                 Pmin=None, Pmax=None, Pcount=0, Plist=None,
+                 maximumGrainSize=None, minimumGrainCount=0,
+                 method=None, interpolationModel=None, maximumAtoms=None,
+                 activeKRotor=True, activeJRotor=True, rmgmode=False, sensitivity_conditions=None):
         self.network = network
-        
+
         self.Tmin = Tmin
         self.Tmax = Tmax
         self.Tcount = Tcount
         if Tlist is not None:
             self.Tlist = Tlist
-            self.Tmin = (numpy.min(self.Tlist.value_si),"K")
-            self.Tmax = (numpy.max(self.Tlist.value_si),"K")
+            self.Tmin = (numpy.min(self.Tlist.value_si), "K")
+            self.Tmax = (numpy.max(self.Tlist.value_si), "K")
             self.Tcount = len(self.Tlist.value_si)
         else:
             self.Tlist = None
@@ -125,8 +126,8 @@ class PressureDependenceJob(object):
         self.Pcount = Pcount
         if Plist is not None:
             self.Plist = Plist
-            self.Pmin = (numpy.min(self.Plist.value_si)*1e-5,"bar")
-            self.Pmax = (numpy.max(self.Plist.value_si)*1e-5,"bar")
+            self.Pmin = (numpy.min(self.Plist.value_si) * 1e-5, "bar")
+            self.Pmax = (numpy.max(self.Plist.value_si) * 1e-5, "bar")
             self.Pcount = len(self.Plist.value_si)
         else:
             self.Plist = None
@@ -136,11 +137,11 @@ class PressureDependenceJob(object):
         self.Emin = None
         self.Emax = None
         self.Elist = None
-        
+
         self.method = method
         self.interpolationModel = interpolationModel
         self.maximumAtoms = maximumAtoms
-        
+
         self.activeKRotor = activeKRotor
         self.activeJRotor = activeJRotor
         self.rmgmode = rmgmode
@@ -152,56 +153,62 @@ class PressureDependenceJob(object):
                                            for condition in sensitivity_conditions]
         else:
             self.sensitivity_conditions = None
-        
+
         if self.Tlist is None and self.Tmin is not None and self.Tmax is not None and self.Tcount is not None:
             self.generateTemperatureList()
         if self.Plist is None and self.Pmin is not None and self.Pmax is not None and self.Pcount is not None:
             self.generatePressureList()
-        
+
     @property
     def Tmin(self):
         """The minimum temperature at which the computed k(T,P) values are valid, or ``None`` if not defined."""
         return self._Tmin
+
     @Tmin.setter
     def Tmin(self, value):
         self._Tmin = quantity.Temperature(value)
-    
+
     @property
     def Tmax(self):
         """The maximum temperature at which the computed k(T,P) values are valid, or ``None`` if not defined."""
         return self._Tmax
+
     @Tmax.setter
     def Tmax(self, value):
         self._Tmax = quantity.Temperature(value)
-    
+
     @property
     def Tlist(self):
         """The temperatures at which the k(T,P) values are computed."""
         return self._Tlist
+
     @Tlist.setter
     def Tlist(self, value):
         self._Tlist = quantity.Temperature(value)
-    
+
     @property
     def Pmin(self):
         """The minimum pressure at which the computed k(T,P) values are valid, or ``None`` if not defined."""
         return self._Pmin
+
     @Pmin.setter
     def Pmin(self, value):
         self._Pmin = quantity.Pressure(value)
-    
+
     @property
     def Pmax(self):
         """The maximum pressure at which the computed k(T,P) values are valid, or ``None`` if not defined."""
         return self._Pmax
+
     @Pmax.setter
     def Pmax(self, value):
         self._Pmax = quantity.Pressure(value)
-    
+
     @property
     def Plist(self):
         """The pressures at which the k(T,P) values are computed."""
         return self._Plist
+
     @Plist.setter
     def Plist(self, value):
         self._Plist = quantity.Pressure(value)
@@ -210,6 +217,7 @@ class PressureDependenceJob(object):
     def maximumGrainSize(self):
         """The maximum allowed energy grain size, or ``None`` if not defined."""
         return self._maximumGrainSize
+
     @maximumGrainSize.setter
     def maximumGrainSize(self, value):
         self._maximumGrainSize = quantity.Energy(value)
@@ -219,26 +227,26 @@ class PressureDependenceJob(object):
         Return a copy of the pressure dependence job.
         """
         return PressureDependenceJob(
-            network = self.network, 
-            Tmin = self.Tmax, 
-            Tmax = self.Tmax, 
-            Tcount = self.Tcount, 
-            Tlist = self.Tlist,
-            Pmin = self.Pmin, 
-            Pmax = self.Pmax, 
-            Pcount = self.Pcount, 
-            Plist = self.Plist,
-            maximumGrainSize = self.maximumGrainSize, 
-            minimumGrainCount = self.minimumGrainCount,
-            method = self.method, 
-            interpolationModel = self.interpolationModel,
-            activeKRotor = self.activeKRotor, 
-            activeJRotor = self.activeJRotor,
-            rmgmode = self.rmgmode,
+            network=self.network,
+            Tmin=self.Tmax,
+            Tmax=self.Tmax,
+            Tcount=self.Tcount,
+            Tlist=self.Tlist,
+            Pmin=self.Pmin,
+            Pmax=self.Pmax,
+            Pcount=self.Pcount,
+            Plist=self.Plist,
+            maximumGrainSize=self.maximumGrainSize,
+            minimumGrainCount=self.minimumGrainCount,
+            method=self.method,
+            interpolationModel=self.interpolationModel,
+            activeKRotor=self.activeKRotor,
+            activeJRotor=self.activeJRotor,
+            rmgmode=self.rmgmode,
         )
 
     def execute(self, outputFile, plot, format='pdf', print_summary=True):
-        
+        """Execute a PressureDependenceJob"""
         for config in self.network.isomers + self.network.reactants + self.network.products:
             for spec in config.species:
                 if spec.conformer.E0 is None:
@@ -248,17 +256,20 @@ class PressureDependenceJob(object):
         for reaction in self.network.pathReactions:
             transitionState = reaction.transitionState
             if transitionState.conformer and transitionState.conformer.E0 is None:
-                transitionState.conformer.E0 = (sum([spec.conformer.E0.value_si for spec in reaction.reactants]) + reaction.kinetics.Ea.value_si,"J/mol")
+                transitionState.conformer.E0 = (sum([spec.conformer.E0.value_si for spec in reaction.reactants])
+                                                + reaction.kinetics.Ea.value_si, 'J/mol')
                 logging.info('Approximated transitions state E0 for reaction {3} from kinetics '
-                             'A={0}, n={1}, Ea={2} J/mol'.format(reaction.kinetics.A.value_si,reaction.kinetics.n.value_si,reaction.kinetics.Ea.value_si,reaction.label))
+                             'A={0}, n={1}, Ea={2} J/mol'.format(reaction.kinetics.A.value_si,
+                                                                 reaction.kinetics.n.value_si,
+                                                                 reaction.kinetics.Ea.value_si, reaction.label))
         if print_summary:
             self.network.printSummary()
-        
+
         if outputFile is not None:
             self.draw(os.path.dirname(outputFile), format)
-        
+
         self.initialize()
-        
+
         self.K = self.network.calculateRateCoefficients(self.Tlist.value_si, self.Plist.value_si, self.method)
 
         self.fitInterpolationModels()
@@ -276,7 +287,7 @@ class PressureDependenceJob(object):
                     except (InvalidMicrocanonicalRateError, ModifiedStrongCollisionError) as exept:
                         logging.warn("Could not complete the sensitivity analysis with a perturbation of {0}"
                                      " kcal/mol, trying {1} kcal/mol instead.".format(
-                                        perturbation, perturbation / 2.0))
+                                      perturbation, perturbation / 2.0))
                         perturbation /= 2.0
                     else:
                         break
@@ -308,17 +319,18 @@ class PressureDependenceJob(object):
             # Distribute temperatures on a Gauss-Chebyshev grid
             Tlist = numpy.zeros(Tcount, numpy.float64)
             for i in range(Tcount):
-                T = -math.cos((2*i+1) * math.pi / (2*self.Tcount))
-                T = 2.0 / ((1.0/Tmax - 1.0/Tmin) * T + 1.0/Tmax + 1.0/Tmin)
+                T = -math.cos((2 * i + 1) * math.pi / (2 * self.Tcount))
+                T = 2.0 / ((1.0 / Tmax - 1.0 / Tmin) * T + 1.0 / Tmax + 1.0 / Tmin)
                 Tlist[i] = T
-            self.Tlist = (Tlist,"K")
+            self.Tlist = (Tlist, "K")
         else:
             # Distribute temperatures evenly on a T^-1 domain
-            Tlist = 1.0/numpy.linspace(1.0/Tmax, 1.0/Tmin, Tcount)
-            self.Tlist = (Tlist,"K")
+            Tlist = 1.0 / numpy.linspace(1.0 / Tmax, 1.0 / Tmin, Tcount)
+            self.Tlist = (Tlist, "K")
         return self.Tlist.value_si
-    
+
     def initialize(self):
+        """Initialize a PressureDependenceJob"""
         for reaction in self.network.pathReactions:
             tunneling = reaction.transitionState.tunneling
             # throw descriptive error if tunneling not allowed
@@ -328,12 +340,14 @@ class PressureDependenceJob(object):
                                  frequencies/quantum file""".format(reaction.label))
             # add tunneling parameters
             if isinstance(tunneling, Wigner) and tunneling.frequency is None:
-                tunneling.frequency = (reaction.transitionState.frequency.value_si,"cm^-1")
+                tunneling.frequency = (reaction.transitionState.frequency.value_si, "cm^-1")
             elif isinstance(tunneling, Eckart) and tunneling.frequency is None:
-                tunneling.frequency = (reaction.transitionState.frequency.value_si,"cm^-1")
-                tunneling.E0_reac = (sum([reactant.conformer.E0.value_si for reactant in reaction.reactants])*0.001,"kJ/mol")
-                tunneling.E0_TS = (reaction.transitionState.conformer.E0.value_si*0.001,"kJ/mol")
-                tunneling.E0_prod = (sum([product.conformer.E0.value_si for product in reaction.products])*0.001,"kJ/mol")
+                tunneling.frequency = (reaction.transitionState.frequency.value_si, "cm^-1")
+                tunneling.E0_reac = (sum([reactant.conformer.E0.value_si
+                                          for reactant in reaction.reactants]) * 0.001, "kJ/mol")
+                tunneling.E0_TS = (reaction.transitionState.conformer.E0.value_si * 0.001, "kJ/mol")
+                tunneling.E0_prod = (sum([product.conformer.E0.value_si
+                                          for product in reaction.products]) * 0.001, "kJ/mol")
             elif tunneling is not None:
                 if tunneling.frequency is not None:
                     # Frequency was given by the user
@@ -342,22 +356,22 @@ class PressureDependenceJob(object):
                     raise ValueError('Unknown tunneling model {0!r} for path reaction {1}.'.format(tunneling, reaction))
 
         maximumGrainSize = self.maximumGrainSize.value_si if self.maximumGrainSize is not None else 0.0
-        
+
         self.network.initialize(
-            Tmin = self.Tmin.value_si, 
-            Tmax = self.Tmax.value_si, 
-            Pmin = self.Pmin.value_si, 
-            Pmax = self.Pmax.value_si, 
-            maximumGrainSize = maximumGrainSize, 
-            minimumGrainCount = self.minimumGrainCount, 
-            activeJRotor = self.activeJRotor, 
-            activeKRotor = self.activeKRotor, 
-            rmgmode = self.rmgmode,
+            Tmin=self.Tmin.value_si,
+            Tmax=self.Tmax.value_si,
+            Pmin=self.Pmin.value_si,
+            Pmax=self.Pmax.value_si,
+            maximumGrainSize=maximumGrainSize,
+            minimumGrainCount=self.minimumGrainCount,
+            activeJRotor=self.activeJRotor,
+            activeKRotor=self.activeKRotor,
+            rmgmode=self.rmgmode,
         )
 
         self.generateTemperatureList()
         self.generatePressureList()
-    
+
     def generatePressureList(self):
         """
         Returns an array of pressures based on the interpolation `model`,
@@ -377,78 +391,77 @@ class PressureDependenceJob(object):
             # Distribute pressures on a Gauss-Chebyshev grid
             Plist = numpy.zeros(Pcount, numpy.float64)
             for i in range(Pcount):
-                P = -math.cos((2*i+1) * math.pi / (2*self.Pcount))
-                P = 10**(0.5 * ((math.log10(Pmax) - math.log10(Pmin)) * P + math.log10(Pmax) + math.log10(Pmin)))
+                P = -math.cos((2 * i + 1) * math.pi / (2 * self.Pcount))
+                P = 10 ** (0.5 * ((math.log10(Pmax) - math.log10(Pmin)) * P + math.log10(Pmax) + math.log10(Pmin)))
                 Plist[i] = P
-            self.Plist = (Plist*1e-5,"bar")
+            self.Plist = (Plist * 1e-5, "bar")
         else:
             # Distribute pressures evenly on a log domain
             Plist = 10.0 ** numpy.linspace(math.log10(Pmin), math.log10(Pmax), Pcount)
-            self.Plist = (Plist*1e-5,"bar")
+            self.Plist = (Plist * 1e-5, "bar")
         return self.Plist.value_si
 
     def fitInterpolationModels(self):
-            
+        """Fit all pressure dependent rates with interpolation models"""
         configurations = []
         configurations.extend(self.network.isomers)
         configurations.extend(self.network.reactants)
         configurations.extend(self.network.products)
-        
+
         self.network.netReactions = []
-        
+
         Nreac = self.network.Nisom + self.network.Nreac
         Nprod = Nreac + self.network.Nprod
-        
+
         Tmin = self.Tmin.value_si
         Tmax = self.Tmax.value_si
         Tdata = self.Tlist.value_si
         Pmin = self.Pmin.value_si
         Pmax = self.Pmax.value_si
         Pdata = self.Plist.value_si
-        
+
         for prod in range(Nprod):
             for reac in range(Nreac):
-                if reac == prod: continue
-                reaction = Reaction(
-                    reactants = configurations[reac].species,
-                    products = configurations[prod].species,
-                )
-                
-                kdata = self.K[:,:,prod,reac].copy()
+                if reac == prod:
+                    continue
+                reaction = Reaction(reactants=configurations[reac].species,
+                                    products=configurations[prod].species)
+
+                kdata = self.K[:, :, prod, reac].copy()
                 order = len(reaction.reactants)
-                kdata *= 1e6 ** (order-1)
+                kdata *= 1e6 ** (order - 1)
                 kunits = {1: 's^-1', 2: 'cm^3/(mol*s)', 3: 'cm^6/(mol^2*s)'}[order]
                 logging.debug('Fitting master eqn data to kinetics for reaction {}.'.format(reaction))
                 reaction.kinetics = self.fitInterpolationModel(Tdata, Pdata, kdata, kunits)
-                
+
                 self.network.netReactions.append(reaction)
-                
+
     def fitInterpolationModel(self, Tdata, Pdata, kdata, kunits):
-        
+        """Fit an interpolation model to a pressure dependent rate"""
         Tmin = self.Tmin.value_si
         Tmax = self.Tmax.value_si
         Pmin = self.Pmin.value_si
         Pmax = self.Pmax.value_si
-        
+
         model = self.interpolationModel[0].lower()
-        
+
         if model == 'chebyshev':
             kinetics = Chebyshev().fitToData(Tdata, Pdata, kdata, kunits,
-                self.interpolationModel[1], self.interpolationModel[2],
-                Tmin, Tmax, Pmin, Pmax,
-            )             
+                                             self.interpolationModel[1], self.interpolationModel[2],
+                                             Tmin, Tmax, Pmin, Pmax,
+                                             )
         elif model == 'pdeparrhenius':
             kinetics = PDepArrhenius().fitToData(Tdata, Pdata, kdata, kunits)
         else:
             raise Exception('Invalid interpolation model {0!r}.'.format(self.interpolationModel[0]))
         return kinetics
-    
+
     def save(self, outputFile):
-        
+        """Save the output of a pressure dependent job"""
         logging.info('Saving pressure dependence results for network {0}...'.format(self.network.label))
         f = open(outputFile, 'a')
         f_chemkin = open(os.path.join(os.path.dirname(outputFile), 'chem.inp'), 'a')
-    
+
         Nreac = self.network.Nisom + self.network.Nreac
         Nprod = Nreac + self.network.Nprod
         Tlist = self.Tlist.value_si
@@ -463,25 +476,26 @@ class PressureDependenceJob(object):
             spcs.extend(rxn.products)
         for spc in spcs:
             if spc.thermo:
-                f.write("#"+spc.label+"  SMILES: "+spc.molecule[0].toSMILES()+"\n")
-                f.write("#"+spc.thermo.comment+"\n")
+                f.write("#" + spc.label + "  SMILES: " + spc.molecule[0].toSMILES() + "\n")
+                f.write("#" + spc.thermo.comment + "\n")
         f.write("\n#Path Reactions used:  \n")
         for rxn in self.network.pathReactions:
             if rxn.kinetics:
-                f.write("#"+str(rxn)+"\n")
+                f.write("#" + str(rxn) + "\n")
                 for s in rxn.kinetics.comment.split("\n"):
-                    f.write("#"+s+"\n")
+                    f.write("#" + s + "\n")
         f.write("\n")
 
         count = 0
-        printed_reactions = [] # list of rxns already printed
+        printed_reactions = []  # list of rxns already printed
         for prod in range(Nprod):
             for reac in range(Nreac):
-                if reac == prod: continue
+                if reac == prod:
+                    continue
                 reaction = self.network.netReactions[count]
                 count += 1
                 # make sure we aren't double counting any reactions
-                if not any([reaction.isIsomorphic(other_rxn,checkOnlyLabel=True) \
+                if not any([reaction.isIsomorphic(other_rxn, checkOnlyLabel=True)
                             for other_rxn in printed_reactions]):
                     duplicate = False
                     # add reaction to printed reaction
@@ -491,35 +505,35 @@ class PressureDependenceJob(object):
                     duplicate = True
 
                 # write chemkin output.
-                string = writeKineticsEntry(reaction, speciesList=None, verbose=False, commented = duplicate)
+                string = writeKineticsEntry(reaction, speciesList=None, verbose=False, commented=duplicate)
                 f_chemkin.write('{0}\n'.format(string))
 
                 # write to 'output.py'
-                kdata = self.K[:,:,prod,reac].copy()
+                kdata = self.K[:, :, prod, reac].copy()
                 order = len(reaction.reactants)
-                kdata *= 1e6 ** (order-1)
+                kdata *= 1e6 ** (order - 1)
                 kunits = {1: 's^-1', 2: 'cm^3/(mol*s)', 3: 'cm^6/(mol^2*s)'}[order]
-                
+
                 f.write('#   =========== ')
                 f.write('=========== ' * Pcount)
                 f.write('\n')
                 f.write('#         T \ P ')
-                f.write(' '.join(['{0:11.3e}'.format(P*1e-5) for P in Plist]))
+                f.write(' '.join(['{0:11.3e}'.format(P * 1e-5) for P in Plist]))
                 f.write('\n')
                 f.write('#   =========== ')
                 f.write('=========== ' * Pcount)
                 f.write('\n')
-                
+
                 for t in range(Tcount):
                     f.write('#   {0:11g}'.format(Tlist[t]))
                     for p in range(Pcount):
-                        f.write(' {0:11.3e}'.format(kdata[t,p]))
+                        f.write(' {0:11.3e}'.format(kdata[t, p]))
                     f.write('\n')
-                
+
                 f.write('#   =========== ')
                 f.write('=========== ' * Pcount)
                 f.write('\n')
-                
+
                 string = 'pdepreaction(reactants={0!r}, products={1!r}, kinetics={2!r})'.format(
                     [reactant.label for reactant in reaction.reactants],
                     [product.label for product in reaction.products],
@@ -528,14 +542,14 @@ class PressureDependenceJob(object):
                 pdep_function = '{0}\n\n'.format(prettify(string))
                 if duplicate:
                     # add comments to the start of the string
-                    pdep_function = '#   ' + pdep_function.replace('\n','\n#   ')
+                    pdep_function = '#   ' + pdep_function.replace('\n', '\n#   ')
                 f.write(pdep_function)
 
         f.close()
         f_chemkin.close()
 
     def plot(self, outputDirectory):
-
+        """Plot pressure dependent rates"""
         # Skip this step if matplotlib is not installed
         try:
             import matplotlib.pyplot as plt
@@ -551,57 +565,59 @@ class PressureDependenceJob(object):
         Plist = self.Plist.value_si
         Tcount = Tlist.shape[0]
         Pcount = Plist.shape[0]
-        
+
         K = self.K
-        
+
         count = 0
         for prod in range(Nprod):
             for reac in range(Nreac):
-                if reac == prod: continue
+                if reac == prod:
+                    continue
                 reaction = self.network.netReactions[count]
                 count += 1
-                
+
                 reaction_str = '{0} {1} {2}'.format(
                     ' + '.join([reactant.label for reactant in reaction.reactants]),
                     '<=>' if prod < Nreac else '-->',
                     ' + '.join([product.label for product in reaction.products]),
                 )
-                
-                fig = plt.figure(figsize=(10,6))
-                
+
+                fig = plt.figure(figsize=(10, 6))
+
                 K2 = numpy.zeros((Tcount, Pcount))
                 if reaction.kinetics is not None:
                     for t in range(Tcount):
                         for p in range(Pcount):
-                            K2[t,p] = reaction.kinetics.getRateCoefficient(Tlist[t], Plist[p])
-                
-                K = self.K[:,:,prod,reac].copy()
+                            K2[t, p] = reaction.kinetics.getRateCoefficient(Tlist[t], Plist[p])
+
+                K = self.K[:, :, prod, reac].copy()
                 order = len(reaction.reactants)
-                K *= 1e6 ** (order-1)
-                K2 *= 1e6 ** (order-1)
+                K *= 1e6 ** (order - 1)
+                K2 *= 1e6 ** (order - 1)
                 kunits = {1: 's^-1', 2: 'cm^3/(mol*s)', 3: 'cm^6/(mol^2*s)'}[order]
 
-                plt.subplot(1,2,1)
+                plt.subplot(1, 2, 1)
                 for p in xrange(Pcount):
-                    plt.semilogy(1000.0 / Tlist, K[:,p], color=cm(1.*p/(Pcount-1)), marker='o', linestyle='',
-                                   label=str('%.2e' % (Plist[p]/1e+5)) + ' bar')
+                    plt.semilogy(1000.0 / Tlist, K[:, p], color=cm(1. * p / (Pcount - 1)), marker='o', linestyle='',
+                                 label=str('%.2e' % (Plist[p] / 1e+5)) + ' bar')
                     if reaction.kinetics is not None:
-                        plt.semilogy(1000.0 / Tlist, K2[:,p], color=cm(1.*p/(Pcount-1)), marker='', linestyle='-')
+                        plt.semilogy(1000.0 / Tlist, K2[:, p], color=cm(1. * p / (Pcount - 1)), marker='',
+                                     linestyle='-')
                 plt.xlabel('1000 / Temperature (1000/K)')
                 plt.ylabel('Rate coefficient ({0})'.format(kunits))
                 plt.title(reaction_str)
                 plt.legend()
-                
-                plt.subplot(1,2,2)
+
+                plt.subplot(1, 2, 2)
                 for t in xrange(Tcount):
-                    plt.loglog(Plist*1e-5, K[t,:], color=cm(1.*t/(Tcount-1)), marker='o', linestyle='',
-                                   label=str('%.0d' % Tlist[t]) + ' K')
-                    plt.loglog(Plist*1e-5, K2[t,:], color=cm(1.*t/(Tcount-1)), marker='', linestyle='-')
+                    plt.loglog(Plist * 1e-5, K[t, :], color=cm(1. * t / (Tcount - 1)), marker='o', linestyle='',
+                               label=str('%.0d' % Tlist[t]) + ' K')
+                    plt.loglog(Plist * 1e-5, K2[t, :], color=cm(1. * t / (Tcount - 1)), marker='', linestyle='-')
                 plt.xlabel('Pressure (bar)')
                 plt.ylabel('Rate coefficient ({0})'.format(kunits))
                 plt.title(reaction_str)
                 plt.legend()
-                
+
                 fig.subplots_adjust(left=0.10, bottom=0.13, right=0.95, top=0.92, wspace=0.3, hspace=0.3)
                 if not os.path.exists(os.path.join(outputDirectory, 'plots', '')):
                     os.mkdir(os.path.join(outputDirectory, 'plots', ''))
@@ -617,7 +633,7 @@ class PressureDependenceJob(object):
         You may also generate different formats of drawings, by changing format to 
         one of the following: `pdf`, `svg`, `png`.
         """
-        
+
         # Skip this step if cairo is not installed
         try:
             import cairocffi as cairo
@@ -626,11 +642,11 @@ class PressureDependenceJob(object):
                 import cairo
             except ImportError:
                 return
-        
+
         from rmgpy.pdep.draw import NetworkDrawer
-        
+
         path = os.path.join(outputDirectory, 'network.' + format)
-        
+
         NetworkDrawer().draw(self.network, format=format, path=path)
 
     def saveInputFile(self, path):
@@ -638,19 +654,19 @@ class PressureDependenceJob(object):
         Save an Arkane input file for the pressure dependence job to `path` on disk.
         """
         speciesList = self.network.getAllSpecies()
-        
+
         # Add labels for species, reactions, transition states that don't have them
         for i, spec in enumerate(speciesList):
             if not spec.label:
-                spec.label = 'species{0:d}'.format(i+1)
+                spec.label = 'species{0:d}'.format(i + 1)
         for i, rxn in enumerate(self.network.pathReactions):
             if not rxn.label:
-                rxn.label = 'reaction{0:d}'.format(i+1)
+                rxn.label = 'reaction{0:d}'.format(i + 1)
             if not rxn.transitionState.label:
-                rxn.transitionState.label = 'TS{0:d}'.format(i+1)
+                rxn.transitionState.label = 'TS{0:d}'.format(i + 1)
         if not self.network.label:
             self.network.label = 'network'
-        
+
         with open(path, 'w') as f:
             # Write species
             for spec in speciesList:
@@ -673,11 +689,11 @@ class PressureDependenceJob(object):
                 if spec.transportData is not None:
                     f.write('    collisionModel = {0!r},\n'.format(spec.transportData))
                 if spec.energyTransferModel is not None:
-                    f.write('    energyTransferModel = {0!r},\n'.format(spec.energyTransferModel))                    
+                    f.write('    energyTransferModel = {0!r},\n'.format(spec.energyTransferModel))
                 if spec.thermo is not None:
-                    f.write('    thermo = {0!r},\n'.format(spec.thermo))                    
+                    f.write('    thermo = {0!r},\n'.format(spec.thermo))
                 f.write(')\n\n')
-            
+
             # Write transition states
             for rxn in self.network.pathReactions:
                 ts = rxn.transitionState
@@ -694,9 +710,9 @@ class PressureDependenceJob(object):
                     f.write('    spinMultiplicity = {0:d},\n'.format(ts.conformer.spinMultiplicity))
                     f.write('    opticalIsomers = {0:d},\n'.format(ts.conformer.opticalIsomers))
                 if ts.frequency is not None:
-                    f.write('    frequency = {0!r},\n'.format(ts.frequency))                    
+                    f.write('    frequency = {0!r},\n'.format(ts.frequency))
                 f.write(')\n\n')
-                
+
             # Write reactions
             for rxn in self.network.pathReactions:
                 ts = rxn.transitionState
@@ -715,7 +731,7 @@ class PressureDependenceJob(object):
                 if ts.tunneling is not None:
                     f.write('    tunneling = {0!r},\n'.format(ts.tunneling.__class__.__name__))
                 f.write(')\n\n')
-            
+
             # Write network
             f.write('network(\n')
             f.write('    label = {0!r},\n'.format(self.network.label))
@@ -732,7 +748,7 @@ class PressureDependenceJob(object):
                 f.write('        {0!r}: {1:g},\n'.format(str(spec), frac))
             f.write('    },\n')
             f.write(')\n\n')
-            
+
             # Write pressure dependence
             f.write('pressureDependence(\n')
             f.write('    label = {0!r},\n'.format(self.network.label))

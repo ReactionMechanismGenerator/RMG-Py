@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Arkane kinetics module
+"""
+
 ###############################################################################
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
@@ -33,7 +37,7 @@ import numpy
 import string
 import logging
 
-from rmgpy.kinetics.arrhenius import Arrhenius, ArrheniusEP, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius 
+from rmgpy.kinetics.arrhenius import Arrhenius, ArrheniusEP, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius
 from rmgpy.kinetics.chebyshev import Chebyshev
 from rmgpy.kinetics.falloff import ThirdBody, Lindemann, Troe
 from rmgpy.kinetics.kineticsdata import KineticsData, PDepKineticsData
@@ -46,6 +50,7 @@ from arkane.sensitivity import KineticsSensitivity as sa
 from arkane.output import prettify
 from arkane.common import ArkaneSpecies
 
+
 ################################################################################
 
 
@@ -57,9 +62,9 @@ class KineticsJob(object):
     `usedTST` - a boolean representing if TST was used to calculate the kinetics
                 if kinetics is already given in the input, then it is False.
     """
-    
-    def __init__(self, reaction,  
-                 Tmin=None, 
+
+    def __init__(self, reaction,
+                 Tmin=None,
                  Tmax=None,
                  Tlist=None,
                  Tcount=0,
@@ -69,14 +74,14 @@ class KineticsJob(object):
             self.Tmin = quantity.Quantity(Tmin)
         else:
             self.Tmin = None
-            
+
         if Tmax is not None:
             self.Tmax = quantity.Quantity(Tmax)
         else:
             self.Tmax = None
-        
+
         self.Tcount = Tcount
-        
+
         if Tlist is not None:
             self.Tlist = quantity.Quantity(Tlist)
             self.Tmin = quantity.Quantity(numpy.min(self.Tlist.value_si), "K")
@@ -84,16 +89,17 @@ class KineticsJob(object):
             self.Tcount = len(self.Tlist.value_si)
         else:
             if Tmin and Tmax is not None:
-                
+
                 if self.Tcount <= 3.:
                     self.Tcount = 50
-                
-                stepsize = (self.Tmax.value_si-self.Tmin.value_si) / self.Tcount
-                
-                self.Tlist = quantity.Quantity(numpy.arange(self.Tmin.value_si, self.Tmax.value_si+stepsize, stepsize),"K")
+
+                stepsize = (self.Tmax.value_si - self.Tmin.value_si) / self.Tcount
+
+                self.Tlist = quantity.Quantity(numpy.arange(self.Tmin.value_si,
+                                                            self.Tmax.value_si + stepsize, stepsize), 'K')
             else:
                 self.Tlist = None
-        
+
         self.reaction = reaction
         self.kunits = None
 
@@ -103,31 +109,34 @@ class KineticsJob(object):
             self.sensitivity_conditions = None
 
         self.arkane_species = ArkaneSpecies(species=self.reaction.transitionState)
-    
+
     @property
     def Tmin(self):
         """The minimum temperature at which the computed k(T) values are valid, or ``None`` if not defined."""
         return self._Tmin
+
     @Tmin.setter
     def Tmin(self, value):
         self._Tmin = quantity.Temperature(value)
-    
+
     @property
     def Tmax(self):
         """The maximum temperature at which the computed k(T) values are valid, or ``None`` if not defined."""
         return self._Tmax
+
     @Tmax.setter
     def Tmax(self, value):
         self._Tmax = quantity.Temperature(value)
-    
+
     @property
     def Tlist(self):
         """The temperatures at which the k(T) values are computed."""
         return self._Tlist
+
     @Tlist.setter
     def Tlist(self, value):
         self._Tlist = quantity.Temperature(value)
-        
+
     def execute(self, outputFile=None, plot=True):
         """
         Execute the kinetics job, saving the results to the given `outputFile` on disk.
@@ -146,25 +155,27 @@ class KineticsJob(object):
                 sa(self, os.path.dirname(outputFile))
         logging.debug('Finished kinetics job for reaction {0}.'.format(self.reaction))
         logging.debug(repr(self.reaction))
-    
-    def generateKinetics(self,Tlist=None):
+
+    def generateKinetics(self, Tlist=None):
         """
         Generate the kinetics data for the reaction and fit it to a modified Arrhenius model.
         """
 
         if isinstance(self.reaction.kinetics, Arrhenius):
             return None
-        self.usedTST=True
+        self.usedTST = True
         kineticsClass = 'Arrhenius'
-        
+
         tunneling = self.reaction.transitionState.tunneling
         if isinstance(tunneling, Wigner) and tunneling.frequency is None:
-            tunneling.frequency = (self.reaction.transitionState.frequency.value_si,"cm^-1")
+            tunneling.frequency = (self.reaction.transitionState.frequency.value_si, "cm^-1")
         elif isinstance(tunneling, Eckart) and tunneling.frequency is None:
-            tunneling.frequency = (self.reaction.transitionState.frequency.value_si,"cm^-1")
-            tunneling.E0_reac = (sum([reactant.conformer.E0.value_si for reactant in self.reaction.reactants])*0.001,"kJ/mol")
-            tunneling.E0_TS = (self.reaction.transitionState.conformer.E0.value_si*0.001,"kJ/mol")
-            tunneling.E0_prod = (sum([product.conformer.E0.value_si for product in self.reaction.products])*0.001,"kJ/mol")
+            tunneling.frequency = (self.reaction.transitionState.frequency.value_si, "cm^-1")
+            tunneling.E0_reac = (sum([reactant.conformer.E0.value_si
+                                      for reactant in self.reaction.reactants]) * 0.001, "kJ/mol")
+            tunneling.E0_TS = (self.reaction.transitionState.conformer.E0.value_si * 0.001, "kJ/mol")
+            tunneling.E0_prod = (sum([product.conformer.E0.value_si
+                                      for product in self.reaction.products]) * 0.001, "kJ/mol")
         elif tunneling is not None:
             if tunneling.frequency is not None:
                 # Frequency was given by the user
@@ -173,36 +184,37 @@ class KineticsJob(object):
                 raise ValueError('Unknown tunneling model {0!r} for reaction {1}.'.format(tunneling, self.reaction))
         logging.debug('Generating {0} kinetics model for {1}...'.format(kineticsClass, self.reaction))
         if Tlist is None:
-            Tlist = 1000.0/numpy.arange(0.4, 3.35, 0.05)
+            Tlist = 1000.0 / numpy.arange(0.4, 3.35, 0.05)
         klist = numpy.zeros_like(Tlist)
         for i in range(Tlist.shape[0]):
             klist[i] = self.reaction.calculateTSTRateCoefficient(Tlist[i])
 
         order = len(self.reaction.reactants)
-        klist *= 1e6 ** (order-1)
+        klist *= 1e6 ** (order - 1)
         self.kunits = {1: 's^-1', 2: 'cm^3/(mol*s)', 3: 'cm^6/(mol^2*s)'}[order]
-        self.Kequnits = {2:'mol^2/cm^6', 1:'mol/cm^3', 0:'       ', -1:'cm^3/mol', -2:'cm^6/mol^2'}[len(self.reaction.products)-len(self.reaction.reactants)]
+        self.Kequnits = {2: 'mol^2/cm^6', 1: 'mol/cm^3', 0: '       ', -1: 'cm^3/mol', -2: 'cm^6/mol^2'}[
+            len(self.reaction.products) - len(self.reaction.reactants)]
         self.krunits = {1: 's^-1', 2: 'cm^3/(mol*s)', 3: 'cm^6/(mol^2*s)'}[len(self.reaction.products)]
         self.reaction.kinetics = Arrhenius().fitToData(Tlist, klist, kunits=self.kunits)
         self.reaction.elementary_high_p = True
-        
+
     def save(self, outputFile):
         """
         Save the results of the kinetics job to the file located
         at `path` on disk.
         """
         reaction = self.reaction
-        
+
         ks = []
         k0s = []
         k0revs = []
         krevs = []
-        
+
         logging.info('Saving kinetics for {0}...'.format(reaction))
-        
+
         order = len(self.reaction.reactants)
-        factor = 1e6 ** (order-1)
-        
+        factor = 1e6 ** (order - 1)
+
         f = open(outputFile, 'a')
 
         if self.usedTST:
@@ -210,13 +222,13 @@ class KineticsJob(object):
             f.write('#   ======= =========== =========== =========== ===============\n')
             f.write('#   Temp.   k (TST)     Tunneling   k (TST+T)   Units\n')
             f.write('#   ======= =========== =========== =========== ===============\n')
-            
-            if self.Tlist is None:
-                Tlist = numpy.array([300,400,500,600,800,1000,1500,2000])
-            else:
-                Tlist =self.Tlist.value_si
 
-            for T in Tlist:  
+            if self.Tlist is None:
+                Tlist = numpy.array([300, 400, 500, 600, 800, 1000, 1500, 2000])
+            else:
+                Tlist = self.Tlist.value_si
+
+            for T in Tlist:
                 tunneling = reaction.transitionState.tunneling
                 reaction.transitionState.tunneling = None
                 try:
@@ -227,10 +239,11 @@ class KineticsJob(object):
                 try:
                     k = reaction.calculateTSTRateCoefficient(T) * factor
                     kappa = k / k0
-                except (SpeciesError,ZeroDivisionError):
+                except (SpeciesError, ZeroDivisionError):
                     k = reaction.getRateCoefficient(T)
                     kappa = 0
-                    logging.info("The species in reaction {} do not have adequate information for TST, using default kinetics values.".format(reaction))
+                    logging.info("The species in reaction {} do not have adequate information for TST, "
+                                 "using default kinetics values.".format(reaction))
                 tunneling = reaction.transitionState.tunneling
                 ks.append(k)
                 k0s.append(k0)
@@ -238,7 +251,7 @@ class KineticsJob(object):
                 f.write('#    {0:4g} K {1:11.3e} {2:11g} {3:11.3e} {4}\n'.format(T, k0, kappa, k, self.kunits))
             f.write('#   ======= =========== =========== =========== ===============\n')
             f.write('\n\n')
-            
+
             f.write('#   ======= ============ =========== ============ ============= =========\n')
             f.write('#   Temp.    Kc (eq)        Units     krev (TST)   krev (TST+T)   Units\n')
             f.write('#   ======= ============ =========== ============ ============= =========\n')
@@ -249,61 +262,63 @@ class KineticsJob(object):
             else:
                 keq_unit_converter = 1
 
-            for n,T in enumerate(Tlist):
+            for n, T in enumerate(Tlist):
                 k = ks[n]
                 k0 = k0s[n]
                 Keq = keq_unit_converter * reaction.getEquilibriumConstant(T)  # getEquilibriumConstant returns SI units
-                k0rev = k0/Keq
-                krev =  k/Keq
+                k0rev = k0 / Keq
+                krev = k / Keq
                 k0revs.append(k0rev)
                 krevs.append(krev)
-                f.write('#    {0:4g} K {1:11.3e}   {2}  {3:11.3e}   {4:11.3e}      {5}\n'.format(T, Keq, self.Kequnits, k0rev, krev, self.krunits))
+                f.write('#    {0:4g} K {1:11.3e}   {2}  {3:11.3e}   {4:11.3e}      {5}\n'.format(T, Keq, self.Kequnits,
+                                                                                                 k0rev, krev,
+                                                                                                 self.krunits))
 
             f.write('#   ======= ============ =========== ============ ============= =========\n')
             f.write('\n\n')
 
             kinetics0rev = Arrhenius().fitToData(Tlist, numpy.array(k0revs), kunits=self.krunits)
             kineticsrev = Arrhenius().fitToData(Tlist, numpy.array(krevs), kunits=self.krunits)
-            
+
             f.write('# krev (TST) = {0} \n'.format(kinetics0rev))
             f.write('# krev (TST+T) = {0} \n\n'.format(kineticsrev))
 
         # Reaction path degeneracy is INCLUDED in the kinetics itself!
-        string = 'kinetics(label={0!r}, kinetics={1!r})'.format(reaction.label, reaction.kinetics)
-        f.write('{0}\n\n'.format(prettify(string)))
-        
+        rxn_str = 'kinetics(label={0!r}, kinetics={1!r})'.format(reaction.label, reaction.kinetics)
+        f.write('{0}\n\n'.format(prettify(rxn_str)))
+
         f.close()
-        
+
         # Also save the result to chem.inp
         f = open(os.path.join(os.path.dirname(outputFile), 'chem.inp'), 'a')
-        
+
         reaction = self.reaction
         kinetics = reaction.kinetics
 
-        string = ''
+        rxn_str = ''
         if reaction.kinetics.comment:
             for line in reaction.kinetics.comment.split("\n"):
-                string += "! {0}\n".format(line)
-        string += '{0!s:51} {1:9.3e} {2:9.3f} {3:9.3f}\n'.format(
+                rxn_str += "! {0}\n".format(line)
+        rxn_str += '{0!s:51} {1:9.3e} {2:9.3f} {3:9.3f}\n'.format(
             reaction,
             kinetics.A.value_si * factor,
             kinetics.n.value_si,
             kinetics.Ea.value_si / 4184.,
         )
-                
-        f.write('{0}\n'.format(string))
-            
+
+        f.write('{0}\n'.format(rxn_str))
+
         f.close()
 
         # We're saving a YAML file for TSs iff structures of the respective reactant/s and product/s are known
-        if all ([spc.molecule is not None and len(spc.molecule)
-                 for spc in self.reaction.reactants + self.reaction.products]):
+        if all([spc.molecule is not None and len(spc.molecule)
+                for spc in self.reaction.reactants + self.reaction.products]):
             self.arkane_species.update_species_attributes(self.reaction.transitionState)
             self.arkane_species.reaction_label = reaction.label
             self.arkane_species.reactants = [{'label': spc.label, 'adjacency_list': spc.molecule[0].toAdjacencyList()}
                                              for spc in self.reaction.reactants]
             self.arkane_species.products = [{'label': spc.label, 'adjacency_list': spc.molecule[0].toAdjacencyList()}
-                                             for spc in self.reaction.products]
+                                            for spc in self.reaction.products]
             self.arkane_species.save_yaml(path=os.path.dirname(outputFile))
 
     def plot(self, outputDirectory):
@@ -321,7 +336,7 @@ class KineticsJob(object):
         if self.Tlist is not None:
             t_list = [t for t in self.Tlist.value_si]
         else:
-            t_list = 1000.0/numpy.arange(0.4, 3.35, 0.05)
+            t_list = 1000.0 / numpy.arange(0.4, 3.35, 0.05)
         klist = numpy.zeros_like(t_list)
         klist2 = numpy.zeros_like(t_list)
         for i in xrange(len(t_list)):
@@ -329,8 +344,8 @@ class KineticsJob(object):
             klist2[i] = self.reaction.kinetics.getRateCoefficient(t_list[i])
 
         order = len(self.reaction.reactants)
-        klist *= 1e6 ** (order-1)
-        klist2 *= 1e6 ** (order-1)
+        klist *= 1e6 ** (order - 1)
+        klist2 *= 1e6 ** (order - 1)
         t_list = [1000.0 / t for t in t_list]
         plt.semilogy(t_list, klist, 'ob', label='TST calculation')
         plt.semilogy(t_list, klist2, '-k', label='Fitted rate')
@@ -400,10 +415,12 @@ class KineticsDrawer:
             'TSwidth': 16,
             'E0offset': 0.0,
         }
-        if options: self.options.update(options)
+        if options:
+            self.options.update(options)
         self.clear()
 
     def clear(self):
+        """Clear the drawer"""
         self.reaction = None
         self.wells = None
         self.left = 0.0
@@ -481,7 +498,8 @@ class KineticsDrawer:
         plusRect = self.__getTextSize('+', format=format)
 
         for rect in boundingRects:
-            if width < rect[2]: width = rect[2]
+            if width < rect[2]:
+                width = rect[2]
             height += rect[3] + plusRect[3]
         height -= plusRect[3]
 
@@ -559,9 +577,8 @@ class KineticsDrawer:
         # Choose multiplier to convert energies to desired units (on figure only)
         Eunits = self.options['Eunits']
         try:
-            Emult = \
-            {'J/mol': 1.0, 'kJ/mol': 0.001, 'cal/mol': 1.0 / 4.184, 'kcal/mol': 1.0 / 4184., 'cm^-1': 1.0 / 11.962}[
-                Eunits]
+            Emult = {'J/mol': 1.0, 'kJ/mol': 0.001, 'cal/mol': 1.0 / 4.184, 'kcal/mol': 1.0 / 4184.,
+                     'cm^-1': 1.0 / 11.962}[Eunits]
         except KeyError:
             raise Exception('Invalid value "{0}" for Eunits parameter.'.format(Eunits))
 
@@ -593,7 +610,8 @@ class KineticsDrawer:
         for i in range(len(self.wells)):
             l, t, w, h = labelRects[i]
             x, y = coordinates[i, :]
-            if w < wellWidth: w = wellWidth
+            if w < wellWidth:
+                w = wellWidth
             t -= 6 + Eheight
             h += 6 + Eheight
             wellRects.append([l + x - 0.5 * w, t + y + 6, w, h])
@@ -609,7 +627,7 @@ class KineticsDrawer:
                 for c in column:
                     top0 = wellRects[c][1]
                     bottom0 = top + wellRects[c][3]
-                    if (top >= top0 and top <= bottom0) or (top <= top0 and top0 <= bottom):
+                    if (top0 <= top <= bottom0) or (top <= top0 <= bottom):
                         # Can't put it in this column
                         break
                 else:
@@ -639,7 +657,7 @@ class KineticsDrawer:
                 for c in column:
                     top0 = wellRects[c][1]
                     bottom0 = top0 + wellRects[c][3]
-                    if (top >= top0 and top <= bottom0) or (top <= top0 and top0 <= bottom):
+                    if (top0 <= top <= bottom0) or (top <= top0 <= bottom):
                         # Can't put it in this column
                         break
                 else:
@@ -743,7 +761,7 @@ class KineticsDrawer:
             E0 = well.E0 * 0.001 - E0_offset
             E0 = "{0:.1f}".format(E0 * 1000. * Emult)
             extents = cr.text_extents(E0)
-            x = x0 - extents[2] / 2.0;
+            x = x0 - extents[2] / 2.0
             y = y0 - 6.0
             cr.rectangle(x + extents[0] - 2.0, y + extents[1] - 2.0, extents[2] + 4.0, extents[3] + 4.0)
             cr.set_source_rgba(1.0, 1.0, 1.0, 0.75)
@@ -765,12 +783,14 @@ class KineticsDrawer:
         else:
             surface.finish()
 
+
 class Well:
     """
     A helper class representing a "well" of species
     `species_list` is a list of at least one entry
     `E0 `is the sum of all species' E0 in that list
     """
+
     def __init__(self, species_list):
         self.species_list = species_list
         self.E0 = sum([species.conformer.E0.value_si for species in species_list])
