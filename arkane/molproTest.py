@@ -126,6 +126,14 @@ class MolproTest(unittest.TestCase):
         self.assertAlmostEqual(mrci_e0, -293217091.0381712, places=7)
         self.assertAlmostEqual(mrciq_e0, -293284017.3925107, places=7)
 
+    def test_load_negative_frequency(self):
+        """
+        Load an imaginary frequency from a  molpro output file
+        """
+        freq_log = MolproLog(os.path.join(os.path.dirname(__file__), 'data', 'molpro_TS.out'))
+        imaginary_freq = freq_log.loadNegativeFrequency()
+        self.assertEqual(imaginary_freq, -1997.98)
+
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
