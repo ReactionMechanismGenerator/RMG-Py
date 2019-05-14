@@ -1704,16 +1704,21 @@ class ThermoDatabase(object):
             if species.molecule[0].isCyclic():
                 # Special treatment for cyclic compounds
                 entries = []
-                for thermo in thermoDataList:
+                for i, thermo in enumerate(thermoDataList):
                     ringGroups, polycyclicGroups = self.getRingGroupsFromComments(thermo)
                     
                     # Use rank as a metric for prioritizing thermo. 
                     # The smaller the rank, the better.
                     sumRank = numpy.sum([3 if entry.rank is None else entry.rank for entry in ringGroups + polycyclicGroups])
-                    entries.append((thermo, sumRank))
+
+                    # Also use number of aromatic rings as a metric, more aromatic rings is better
+                    # Group values are generally fitted to the most aromatic resonance structure
+                    numAromaticRings = species.molecule[i].countAromaticRings()
+
+                    entries.append((thermo, sumRank, -numAromaticRings))
                 
-                # Sort first by rank, then by enthalpy at 298 K
-                entries = sorted(entries, key=lambda entry: (entry[1], entry[0].getEnthalpy(298.)))
+                # Sort first by number of aromatic rings, then rank, then by enthalpy at 298 K
+                entries = sorted(entries, key=lambda entry: (entry[2], entry[1], entry[0].getEnthalpy(298.)))
                 indices = [thermoDataList.index(entry[0]) for entry in entries]
             else:
                 # For noncyclics, default to original algorithm of ordering thermo based on the most stable enthalpy
