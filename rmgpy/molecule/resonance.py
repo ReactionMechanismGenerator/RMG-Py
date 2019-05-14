@@ -331,15 +331,6 @@ def generate_allyl_delocalization_resonance_structures(mol):
                 bond23.decrementOrder()
                 # Make a copy of structure
                 structure = mol.copy(deep=True)
-                # Also copy the connectivity values, since they are the same
-                # for all resonance structures
-                for index in xrange(len(mol.vertices)):
-                    v1 = mol.vertices[index]
-                    v2 = structure.vertices[index]
-                    v2.connectivity1 = v1.connectivity1
-                    v2.connectivity2 = v1.connectivity2
-                    v2.connectivity3 = v1.connectivity3
-                    v2.sortingLabel = v1.sortingLabel
                 # Restore current structure
                 atom1.incrementRadical()
                 atom3.decrementRadical()
@@ -378,15 +369,6 @@ def generate_lone_pair_multiple_bond_resonance_structures(mol):
                 atom3.updateCharge()
                 # Make a copy of structure
                 structure = mol.copy(deep=True)
-                # Also copy the connectivity values, since they are the same
-                # for all resonance structures
-                for index in xrange(len(mol.vertices)):
-                    v1 = mol.vertices[index]
-                    v2 = structure.vertices[index]
-                    v2.connectivity1 = v1.connectivity1
-                    v2.connectivity2 = v1.connectivity2
-                    v2.connectivity3 = v1.connectivity3
-                    v2.sortingLabel = v1.sortingLabel
                 # Restore current structure
                 atom1.incrementLonePairs()
                 atom3.decrementLonePairs()
@@ -428,15 +410,6 @@ def generate_adj_lone_pair_radical_resonance_structures(mol):
                 atom2.updateCharge()
                 # Make a copy of structure
                 structure = mol.copy(deep=True)
-                # Also copy the connectivity values, since they are the same
-                # for all resonance structures
-                for index in xrange(len(mol.vertices)):
-                    v1 = mol.vertices[index]
-                    v2 = structure.vertices[index]
-                    v2.connectivity1 = v1.connectivity1
-                    v2.connectivity2 = v1.connectivity2
-                    v2.connectivity3 = v1.connectivity3
-                    v2.sortingLabel = v1.sortingLabel
                 # Restore current structure
                 atom1.incrementRadical()
                 atom1.decrementLonePairs()
@@ -479,15 +452,6 @@ def generate_adj_lone_pair_multiple_bond_resonance_structures(mol):
             atom2.updateCharge()
             # Make a copy of structure
             structure = mol.copy(deep=True)
-            # Also copy the connectivity values, since they are the same
-            # for all resonance structures
-            for index in xrange(len(mol.vertices)):
-                v1 = mol.vertices[index]
-                v2 = structure.vertices[index]
-                v2.connectivity1 = v1.connectivity1
-                v2.connectivity2 = v1.connectivity2
-                v2.connectivity3 = v1.connectivity3
-                v2.sortingLabel = v1.sortingLabel
             # Restore current structure
             if direction == 1:  # The direction <increasing> the bond order
                 atom1.incrementLonePairs()
@@ -541,15 +505,6 @@ def generate_adj_lone_pair_radical_multiple_bond_resonance_structures(mol):
                 atom2.updateCharge()
                 # Make a copy of structure
                 structure = mol.copy(deep=True)
-                # Also copy the connectivity values, since they are the same
-                # for all resonance structures
-                for index in xrange(len(mol.vertices)):
-                    v1 = mol.vertices[index]
-                    v2 = structure.vertices[index]
-                    v2.connectivity1 = v1.connectivity1
-                    v2.connectivity2 = v1.connectivity2
-                    v2.connectivity3 = v1.connectivity3
-                    v2.sortingLabel = v1.sortingLabel
                 # Restore current structure
                 if direction == 1:  # The direction <increasing> the bond order
                     atom1.incrementLonePairs()
@@ -593,15 +548,6 @@ def generate_N5dc_radical_resonance_structures(mol):
                 atom3.updateCharge()
                 # Make a copy of structure
                 structure = mol.copy(deep=True)
-                # Also copy the connectivity values, since they are the same
-                # for all resonance structures
-                for index in xrange(len(mol.vertices)):
-                    v1 = mol.vertices[index]
-                    v2 = structure.vertices[index]
-                    v2.connectivity1 = v1.connectivity1
-                    v2.connectivity2 = v1.connectivity2
-                    v2.connectivity3 = v1.connectivity3
-                    v2.sortingLabel = v1.sortingLabel
                 # Restore current structure
                 atom2.incrementRadical()
                 atom2.decrementLonePairs()
@@ -818,15 +764,6 @@ def generate_aryne_resonance_structures(mol):
                 bond.setOrderStr(new_orders[i])
             # Make a copy of the molecule
             new_mol = mol.copy(deep=True)
-            # Also copy the connectivity values, since they are the same
-            # for all resonance structures
-            for i in xrange(len(mol.vertices)):
-                v1 = mol.vertices[i]
-                v2 = new_mol.vertices[i]
-                v2.connectivity1 = v1.connectivity1
-                v2.connectivity2 = v1.connectivity2
-                v2.connectivity3 = v1.connectivity3
-                v2.sortingLabel = v1.sortingLabel
             # Undo the changes to the current molecule
             for i, bond in enumerate(bond_list):
                 bond.setOrderStr(bond_orders[i])
