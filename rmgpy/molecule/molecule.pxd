@@ -248,6 +248,8 @@ cdef class Molecule(Graph):
 
     cpdef identify_ring_membership(self)
 
+    cpdef int count_aromatic_rings(self)
+
     cpdef tuple get_aromatic_rings(self, list rings=?)
 
     cpdef list get_deterministic_sssr(self)
