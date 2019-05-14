@@ -248,6 +248,8 @@ cdef class Molecule(Graph):
 
     cpdef identifyRingMembership(self)
 
+    cpdef int countAromaticRings(self)
+
     cpdef tuple getAromaticRings(self, list rings=?)
 
     cpdef list getDeterministicSmallestSetOfSmallestRings(self)

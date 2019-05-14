@@ -2502,6 +2502,14 @@ multiplicity 2
         self.assertEqual(bonds['H-O'], 2)
         self.assertEqual(bonds['H~O'], 2)
 
+    def test_count_aromatic_rings(self):
+        """Test that we can count aromatic rings correctly."""
+        mol = Molecule(SMILES='c12ccccc1cccc2')
+        out = mol.generate_resonance_structures()
+        result = [m.countAromaticRings() for m in out]
+
+        self.assertEqual(result, [2, 1, 0])
+
 ################################################################################
 
 if __name__ == '__main__':
