@@ -2,7 +2,6 @@
 # encoding: utf-8
 
 bonds = {}
-linear = False
 
 externalSymmetry = 1
 

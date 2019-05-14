@@ -6,8 +6,6 @@ bonds = {
     'C-H': 4,
 }
 
-linear = False
-
 externalSymmetry = 4
 
 spinMultiplicity = 1
