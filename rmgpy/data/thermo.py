@@ -1693,7 +1693,6 @@ class ThermoDatabase(object):
         else:
             return thermo0
 
-
     def prioritizeThermo(self, species, thermoDataList):
         """
         Use some metrics to reorder a list of thermo data from best to worst.
@@ -1715,17 +1714,17 @@ class ThermoDatabase(object):
                     # Group values are generally fitted to the most aromatic resonance structure
                     numAromaticRings = species.molecule[i].countAromaticRings()
 
-                    entries.append((thermo, sumRank, -numAromaticRings))
-                
+                    entries.append((i, thermo, sumRank, -numAromaticRings))
+
                 # Sort first by number of aromatic rings, then rank, then by enthalpy at 298 K
-                entries = sorted(entries, key=lambda entry: (entry[2], entry[1], entry[0].getEnthalpy(298.)))
-                indices = [thermoDataList.index(entry[0]) for entry in entries]
+                entries.sort(key=lambda entry: (entry[3], entry[2], entry[1].getEnthalpy(298.)))
+                indices = [entry[0] for entry in entries]
             else:
                 # For noncyclics, default to original algorithm of ordering thermo based on the most stable enthalpy
                 H298 = numpy.array([t.getEnthalpy(298.) for t in thermoDataList])
-                indices = H298.argsort()
-            indices = numpy.array([i for i in indices if species.molecule[i].reactive] +\
-                        [i for i in indices if not species.molecule[i].reactive])
+                indices = H298.argsort().tolist()
+            # Sort indices again by the Molecule.reactive flag
+            indices.sort(key=lambda index: species.molecule[index].reactive, reverse=True)
         else:
             indices = [0]
         return indices
