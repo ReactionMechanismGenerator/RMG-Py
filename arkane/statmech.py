@@ -48,7 +48,7 @@ from rmgpy.statmech.rotation import Rotation, LinearRotor, NonlinearRotor, KRoto
 from rmgpy.statmech.vibration import Vibration, HarmonicOscillator
 from rmgpy.statmech.torsion import Torsion, HinderedRotor, FreeRotor
 from rmgpy.statmech.conformer import Conformer
-from rmgpy.exceptions import InputError
+from rmgpy.exceptions import InputError, StatmechError
 from rmgpy.quantity import Quantity
 from rmgpy.molecule.molecule import Molecule
 
@@ -259,8 +259,7 @@ class StatMechJob(object):
         try:
             linear = local_context['linear']
         except KeyError:
-            logging.error('You did not set whether the molecule is linear with the required `linear` parameter')
-            raise
+            linear = None
 
         try:
             externalSymmetry = local_context['externalSymmetry']
@@ -526,7 +525,7 @@ class StatMechJob(object):
                         rotorCount += 1
 
             logging.debug('    Determining frequencies from reduced force constant matrix...')
-            frequencies = numpy.array(projectRotors(conformer, F, rotors, linear, is_ts))
+            frequencies = numpy.array(projectRotors(conformer, F, rotors, linear, is_ts, label=self.species.label))
 
         elif len(conformer.modes) > 2:
             if len(rotors) > 0:
@@ -970,7 +969,34 @@ def determine_qm_software(fullpath):
     return software_log
 
 
-def projectRotors(conformer, F, rotors, linear, is_ts):
+def is_linear(coordinates):
+    """
+    Determine whether or not the species is linear from its 3D coordinates
+    First, try to reduce the problem into just two dimensions, use 3D if the problem cannot be reduced
+    `coordinates` is a numpy.array of the species' xyz coordinates
+    """
+    # epsilon is in degrees
+    # (from our experience, linear molecules have precisely 180.0 degrees between all atom triples)
+    epsilon = 0.1
+
+    number_of_atoms = len(coordinates)
+    if number_of_atoms == 1:
+        return False
+    if number_of_atoms == 2:
+        return True
+
+    # A tensor containing all distance vectors in the molecule
+    d = -numpy.array([c[:, numpy.newaxis] - c[numpy.newaxis, :] for c in coordinates.T])
+    for i in range(2, len(coordinates)):
+        u1 = d[:, 0, 1] / numpy.linalg.norm(d[:, 0, 1])  # unit vector between atoms 0 and 1
+        u2 = d[:, 1, i] / numpy.linalg.norm(d[:, 1, i])  # unit vector between atoms 1 and i
+        a = math.degrees(numpy.arccos(numpy.clip(numpy.dot(u1, u2), -1.0, 1.0)))  # angle between atoms 0, 1, i
+        if abs(180 - a) > epsilon and abs(a) > epsilon:
+            return False
+    return True
+
+
+def projectRotors(conformer, F, rotors, linear, is_ts, label):
     """
     For a given `conformer` with associated force constant matrix `F`, lists of
     rotor information `rotors`, `pivots`, and `top1`, and the linearity of the
@@ -981,12 +1007,15 @@ def projectRotors(conformer, F, rotors, linear, is_ts):
     Refer to Gaussian whitepaper (http://gaussian.com/vib/) for procedure to calculate
     harmonic oscillator vibrational frequencies using the force constant matrix.
     """
-
+    mass = conformer.mass.value_si
+    coordinates = conformer.coordinates.getValue()
+    if linear is None:
+        linear = is_linear(coordinates)
+        if linear:
+            logging.info('Determined species {0} to be linear.'.format(label))
     Nrotors = len(rotors)
     Natoms = len(conformer.mass.value)
     Nvib = 3 * Natoms - (5 if linear else 6) - Nrotors - (1 if is_ts else 0)
-    mass = conformer.mass.value_si
-    coordinates = conformer.coordinates.getValue()
 
     # Put origin in center of mass
     xm = 0.0
