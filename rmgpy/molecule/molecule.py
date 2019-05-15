@@ -1085,9 +1085,17 @@ class Molecule(Graph):
         If `deep` is ``False`` or not specified, a shallow copy is made: the
         original vertices and edges are used in the new graph.
         """
-        other = cython.declare(Molecule)
+        cython.declare(g=Graph, other=Molecule, i=int, v1=Vertex, v2=Vertex)
         g = Graph.copy(self, deep)
         other = Molecule(g.vertices)
+        # Copy connectivity values and sorting labels
+        for i in xrange(len(self.vertices)):
+            v1 = self.vertices[i]
+            v2 = other.vertices[i]
+            v2.connectivity1 = v1.connectivity1
+            v2.connectivity2 = v1.connectivity2
+            v2.connectivity3 = v1.connectivity3
+            v2.sortingLabel = v1.sortingLabel
         other.multiplicity = self.multiplicity
         other.reactive = self.reactive
         return other
