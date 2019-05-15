@@ -3306,8 +3306,10 @@ class KineticsFamily(Database):
                 
                 for q in xrange(iters):
                     if entry.parent:
-                        entry = entry.parent 
-                  
+                        entry = entry.parent
+
+                uncertainties[rxn] = self.rules.entries[entry.label][0].data.uncertainty
+
                 L = list(set(templateRxnMap[entry.label])-set(rxns_test))
 
                 if L != []:
@@ -3316,9 +3318,9 @@ class KineticsFamily(Database):
                     k = kinetics.getRateCoefficient(T)
                     errors[rxn] = np.log(k/krxn)
                 else:
-                    raise ValueError('only one piece of kinetics information in the tree?')  
-        
-        return errors
+                    raise ValueError('only one piece of kinetics information in the tree?')
+
+        return errors,uncertainties
 
     def crossValidateOld(self, folds=5, T=1000.0, random_state=1, estimator='rate rules', thermoDatabase=None):
         """
