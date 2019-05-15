@@ -3087,7 +3087,7 @@ class KineticsFamily(Database):
             
         return True
 
-    def generateTree(self,obj=None,thermoDatabase=None,T=1000.0,nprocs=1):
+    def generateTree(self,rxns=None,obj=None,thermoDatabase=None,T=1000.0,nprocs=1):
         """
         Generate a tree by greedy optimization based on the objective function obj
         the optimization is done by iterating through every group and if the group has
@@ -3100,7 +3100,7 @@ class KineticsFamily(Database):
         have two children one of which has no kinetics data and no children
         (its parent becomes the parent of its only relevant child node)
         """
-        templateRxnMap = self.getReactionMatches(thermoDatabase=thermoDatabase,removeDegeneracy=True,fixLabels=True,exactMatchesOnly=True,getReverse=True)
+        templateRxnMap = self.getReactionMatches(rxns=rxns,thermoDatabase=thermoDatabase,removeDegeneracy=True,fixLabels=True,exactMatchesOnly=True,getReverse=True)
 
         self.makeTreeNodes(templateRxnMap=templateRxnMap,obj=obj,T=T,nprocs=nprocs-1,depth=0)
 
