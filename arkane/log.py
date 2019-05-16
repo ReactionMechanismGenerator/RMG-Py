@@ -53,7 +53,8 @@ class Log(object):
         Return the number of atoms in the molecular configuration used in
         the MolPro log file.
         """
-        raise NotImplementedError("loadGeometry is not implemented for the Log class")
+        raise NotImplementedError("getNumberOfAtoms is not implemented for the Log class. "
+                                  "This method should be implemented by a subclass.")
 
     def loadForceConstantMatrix(self):
         """
@@ -63,7 +64,8 @@ class Log(object):
         are J/m^2. If no force constant matrix can be found in the log file,
         ``None`` is returned.
         """
-        raise NotImplementedError("loadGeometry is not implemented for the Log class")
+        raise NotImplementedError("loadForceConstantMatrix is not implemented for the Log class. "
+                                  "This method should be implemented by a subclass.")
 
     def loadGeometry(self):
         """
@@ -71,7 +73,8 @@ class Log(object):
         log file. If multiple such geometries are identified, only the
         last is returned.
         """
-        raise NotImplementedError("loadGeometry is not implemented for the Log class")
+        raise NotImplementedError("loadGeometry is not implemented for the Log class. "
+                                  "This method should be implemented by a subclass.")
 
     def loadConformer(self, symmetry=None, spinMultiplicity=0, opticalIsomers=None, label=''):
         """
@@ -80,7 +83,8 @@ class Log(object):
         you can use the `symmetry` parameter to substitute your own value;
         if not provided, the value in the QChem output file will be adopted.
         """
-        raise NotImplementedError("loadGeometry is not implemented for the Log class")
+        raise NotImplementedError("loadConformer is not implemented for the Log class. "
+                                  "This method should be implemented by a subclass.")
 
     def loadEnergy(self, frequencyScaleFactor=1.):
         """
@@ -88,27 +92,31 @@ class Log(object):
         in the file is returned. The zero-point energy is *not* included in
         the returned value.
         """
-        raise NotImplementedError("loadGeometry is not implemented for the Log class")
+        raise NotImplementedError("loadEnergy is not implemented for the Log class. "
+                                  "This method should be implemented by a subclass.")
 
     def loadZeroPointEnergy(self):
         """
         Load the unscaled zero-point energy in J/mol from a QChem output file.
         """
-        raise NotImplementedError("loadGeometry is not implemented for the Log class")
+        raise NotImplementedError("loadZeroPointEnergy is not implemented for the Log class. "
+                                  "This method should be implemented by a subclass.")
 
     def loadScanEnergies(self):
         """
         Extract the optimized energies in J/mol from a QChem log file, e.g. the
         result of a QChem "PES Scan" quantum chemistry calculation.
         """
-        raise NotImplementedError("loadGeometry is not implemented for the Log class")
+        raise NotImplementedError("loadScanEnergies is not implemented for the Log class. "
+                                  "This method should be implemented by a subclass.")
 
     def loadNegativeFrequency(self):
         """
         Return the imaginary frequency from a transition state frequency
         calculation in cm^-1.
         """
-        raise NotImplementedError("loadGeometry is not implemented for the Log class")
+        raise NotImplementedError("loadNegativeFrequency is not implemented for the Log class. "
+                                  "This method should be implemented by a subclass.")
 
     def get_optical_isomers_and_symmetry_number(self):
         """
