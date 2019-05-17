@@ -3214,7 +3214,7 @@ class KineticsFamily(Database):
             raise e
         return grps
 
-    def makeBMRulesFromTemplateRxnMap(self,templateRxnMap,nprocs=1,Tref=1000.0,alpha=0.3,fmax=1.0e5):
+    def makeBMRulesFromTemplateRxnMap(self,templateRxnMap,nprocs=1,Tref=1000.0,fmax=1.0e5):
 
         ruleKeys = self.rules.entries.keys()
         for entry in self.groups.entries.values():
@@ -3224,8 +3224,8 @@ class KineticsFamily(Database):
         index = max([e.index for e in self.rules.getEntries()] or [0]) + 1
 
         entries = self.groups.entries.values()
-        rxnlists = [templateRxnMap[entry.label] if entry.label in templateRxnMap.keys() else [] for entry in entries]
-        inputs = [(self.forwardRecipe.actions,rxns,Tref,alpha,fmax) for rxns in rxnlists]
+        rxnlists = [(templateRxnMap[entry.label],entry.label) if entry.label in templateRxnMap.keys() else [] for entry in entries]
+        inputs = [(self.forwardRecipe.actions,rxns,Tref,fmax,label,[r.rank for r in rxns]) for rxns,label in rxnlists]
 
         pool = mp.Pool(nprocs)
 
