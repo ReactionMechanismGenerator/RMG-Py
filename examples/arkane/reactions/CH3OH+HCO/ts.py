@@ -3,8 +3,6 @@
 
 bonds = {}
 
-linear = False
-
 externalSymmetry = 1
 
 spinMultiplicity = 2

@@ -171,7 +171,7 @@ The species input file accepts the following parameters:
 Parameter               Required?                   Description
 ======================= =========================== ====================================
 ``bonds``               optional                    Type and number of bonds in the species
-``linear``              yes                         ``True`` if the molecule is linear, ``False`` if not
+``linear``              optional                    ``True`` if the molecule is linear, ``False`` if not
 ``externalSymmetry``    yes                         The external symmetry number for rotation
 ``spinMultiplicity``    yes                         The ground-state spin multiplicity (degeneracy)
 ``opticalIsomers``      yes                         The number of optical isomers of the species

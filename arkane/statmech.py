@@ -36,7 +36,7 @@ information for a single species or transition state.
 
 import os.path
 import math
-import numpy
+import numpy as np
 import logging
 
 from rdkit.Chem import GetPeriodicTable
@@ -48,7 +48,7 @@ from rmgpy.statmech.rotation import Rotation, LinearRotor, NonlinearRotor, KRoto
 from rmgpy.statmech.vibration import Vibration, HarmonicOscillator
 from rmgpy.statmech.torsion import Torsion, HinderedRotor, FreeRotor
 from rmgpy.statmech.conformer import Conformer
-from rmgpy.exceptions import InputError
+from rmgpy.exceptions import InputError, StatmechError
 from rmgpy.quantity import Quantity
 from rmgpy.molecule.molecule import Molecule
 
@@ -120,8 +120,8 @@ class ScanLog(object):
                     angles.append(float(tokens[0]) / angleFactor)
                     energies.append(float(tokens[1]) / energyFactor)
 
-        angles = numpy.array(angles)
-        energies = numpy.array(energies)
+        angles = np.array(angles)
+        energies = np.array(energies)
         energies -= energies[0]
 
         return angles, energies
@@ -259,8 +259,7 @@ class StatMechJob(object):
         try:
             linear = local_context['linear']
         except KeyError:
-            logging.error('You did not set whether the molecule is linear with the required `linear` parameter')
-            raise
+            linear = None
 
         try:
             externalSymmetry = local_context['externalSymmetry']
@@ -490,8 +489,8 @@ class StatMechJob(object):
                     fourierRotor = HinderedRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
                     fourierRotor.fitFourierPotentialToData(angle, v_list)
 
-                    Vlist_cosine = numpy.zeros_like(angle)
-                    Vlist_fourier = numpy.zeros_like(angle)
+                    Vlist_cosine = np.zeros_like(angle)
+                    Vlist_fourier = np.zeros_like(angle)
                     for i in range(angle.shape[0]):
                         Vlist_cosine[i] = cosineRotor.getPotential(angle[i])
                         Vlist_fourier[i] = fourierRotor.getPotential(angle[i])
@@ -505,9 +504,9 @@ class StatMechJob(object):
                         rotorCount += 1
                         conformer.modes.append(rotor)
                     elif fit == 'best':
-                        rms_cosine = numpy.sqrt(numpy.sum((Vlist_cosine - v_list) * (Vlist_cosine - v_list)) /
+                        rms_cosine = np.sqrt(np.sum((Vlist_cosine - v_list) * (Vlist_cosine - v_list)) /
                                                 (len(v_list) - 1)) / 4184.
-                        rms_fourier = numpy.sqrt(numpy.sum((Vlist_fourier - v_list) * (Vlist_fourier - v_list)) /
+                        rms_fourier = np.sqrt(np.sum((Vlist_fourier - v_list) * (Vlist_fourier - v_list)) /
                                                  (len(v_list) - 1)) / 4184.
 
                         # Keep the rotor with the most accurate potential
@@ -526,7 +525,7 @@ class StatMechJob(object):
                         rotorCount += 1
 
             logging.debug('    Determining frequencies from reduced force constant matrix...')
-            frequencies = numpy.array(projectRotors(conformer, F, rotors, linear, is_ts))
+            frequencies = np.array(projectRotors(conformer, F, rotors, linear, is_ts, label=self.species.label))
 
         elif len(conformer.modes) > 2:
             if len(rotors) > 0:
@@ -535,15 +534,15 @@ class StatMechJob(object):
                              ' Gaussian to generate the force constant matrix, if running Molpro include keyword print,'
                              ' hessian')
             frequencies = conformer.modes[2].frequencies.value_si
-            rotors = numpy.array([])
+            rotors = np.array([])
         else:
             if len(rotors) > 0:
                 logging.warn('Force Constant Matrix Missing Ignoring rotors, if running Gaussian if not already'
                              ' present you need to add the keyword iop(7/33=1) in your Gaussian frequency job for'
                              ' Gaussian to generate the force constant matrix, if running Molpro include keyword print,'
                              ' hessian')
-            frequencies = numpy.array([])
-            rotors = numpy.array([])
+            frequencies = np.array([])
+            rotors = np.array([])
 
         for mode in conformer.modes:
             if isinstance(mode, HarmonicOscillator):
@@ -597,9 +596,9 @@ class StatMechJob(object):
         except ImportError:
             return
 
-        phi = numpy.arange(0, 6.3, 0.02, numpy.float64)
-        Vlist_cosine = numpy.zeros_like(phi)
-        Vlist_fourier = numpy.zeros_like(phi)
+        phi = np.arange(0, 6.3, 0.02, np.float64)
+        Vlist_cosine = np.zeros_like(phi)
+        Vlist_fourier = np.zeros_like(phi)
         for i in range(phi.shape[0]):
             Vlist_cosine[i] = cosineRotor.getPotential(phi[i])
             Vlist_fourier[i] = fourierRotor.getPotential(phi[i])
@@ -970,7 +969,34 @@ def determine_qm_software(fullpath):
     return software_log
 
 
-def projectRotors(conformer, F, rotors, linear, is_ts):
+def is_linear(coordinates):
+    """
+    Determine whether or not the species is linear from its 3D coordinates
+    First, try to reduce the problem into just two dimensions, use 3D if the problem cannot be reduced
+    `coordinates` is a numpy.array of the species' xyz coordinates
+    """
+    # epsilon is in degrees
+    # (from our experience, linear molecules have precisely 180.0 degrees between all atom triples)
+    epsilon = 0.1
+
+    number_of_atoms = len(coordinates)
+    if number_of_atoms == 1:
+        return False
+    if number_of_atoms == 2:
+        return True
+
+    # A tensor containing all distance vectors in the molecule
+    d = -np.array([c[:, np.newaxis] - c[np.newaxis, :] for c in coordinates.T])
+    for i in range(2, len(coordinates)):
+        u1 = d[:, 0, 1] / np.linalg.norm(d[:, 0, 1])  # unit vector between atoms 0 and 1
+        u2 = d[:, 1, i] / np.linalg.norm(d[:, 1, i])  # unit vector between atoms 1 and i
+        a = math.degrees(np.arccos(np.clip(np.dot(u1, u2), -1.0, 1.0)))  # angle between atoms 0, 1, i
+        if abs(180 - a) > epsilon and abs(a) > epsilon:
+            return False
+    return True
+
+
+def projectRotors(conformer, F, rotors, linear, is_ts, label):
     """
     For a given `conformer` with associated force constant matrix `F`, lists of
     rotor information `rotors`, `pivots`, and `top1`, and the linearity of the
@@ -981,12 +1007,15 @@ def projectRotors(conformer, F, rotors, linear, is_ts):
     Refer to Gaussian whitepaper (http://gaussian.com/vib/) for procedure to calculate
     harmonic oscillator vibrational frequencies using the force constant matrix.
     """
-
+    mass = conformer.mass.value_si
+    coordinates = conformer.coordinates.getValue()
+    if linear is None:
+        linear = is_linear(coordinates)
+        if linear:
+            logging.info('Determined species {0} to be linear.'.format(label))
     Nrotors = len(rotors)
     Natoms = len(conformer.mass.value)
     Nvib = 3 * Natoms - (5 if linear else 6) - Nrotors - (1 if is_ts else 0)
-    mass = conformer.mass.value_si
-    coordinates = conformer.coordinates.getValue()
 
     # Put origin in center of mass
     xm = 0.0
@@ -1008,22 +1037,22 @@ def projectRotors(conformer, F, rotors, linear, is_ts):
         coordinates[i, 1] -= ym
         coordinates[i, 2] -= zm
     # Make vector with the root of the mass in amu for each atom
-    amass = numpy.sqrt(mass / constants.amu)
+    amass = np.sqrt(mass / constants.amu)
 
     # Rotation matrix
     I = conformer.getMomentOfInertiaTensor()
-    PMoI, Ixyz = numpy.linalg.eigh(I)
+    PMoI, Ixyz = np.linalg.eigh(I)
 
     external = 6
     if linear:
         external = 5
 
-    D = numpy.zeros((Natoms * 3, external), numpy.float64)
+    D = np.zeros((Natoms * 3, external), np.float64)
 
-    P = numpy.zeros((Natoms, 3), numpy.float64)
+    P = np.zeros((Natoms, 3), np.float64)
 
     # Transform the coordinates to the principal axes
-    P = numpy.dot(coordinates, Ixyz)
+    P = np.dot(coordinates, Ixyz)
 
     for i in range(Natoms):
         # Projection vectors for translation
@@ -1047,9 +1076,9 @@ def projectRotors(conformer, F, rotors, linear, is_ts):
     # Make sure projection matrix is orthonormal
     import scipy.linalg
 
-    I = numpy.identity(Natoms * 3, numpy.float64)
+    I = np.identity(Natoms * 3, np.float64)
 
-    P = numpy.zeros((Natoms * 3, 3 * Natoms + external), numpy.float64)
+    P = np.zeros((Natoms * 3, 3 * Natoms + external), np.float64)
 
     P[:, 0:external] = D[:, 0:external]
     P[:, external:external + 3 * Natoms] = I[:, 0:3 * Natoms]
@@ -1060,7 +1089,7 @@ def projectRotors(conformer, F, rotors, linear, is_ts):
             norm += P[j, i] * P[j, i]
         for j in range(3 * Natoms):
             if norm > 1E-15:
-                P[j, i] /= numpy.sqrt(norm)
+                P[j, i] /= np.sqrt(norm)
             else:
                 P[j, i] = 0.0
         for j in range(i + 1, 3 * Natoms + external):
@@ -1082,7 +1111,7 @@ def projectRotors(conformer, F, rotors, linear, is_ts):
             i += 1
 
     # T is the transformation vector from cartesian to internal coordinates
-    T = numpy.zeros((Natoms * 3, 3 * Natoms - external), numpy.float64)
+    T = np.zeros((Natoms * 3, 3 * Natoms - external), np.float64)
 
     T[:, 0:3 * Natoms - external] = P[:, external:3 * Natoms]
 
@@ -1096,19 +1125,19 @@ def projectRotors(conformer, F, rotors, linear, is_ts):
                 for v in range(3):
                     Fm[3 * i + u, 3 * j + v] /= math.sqrt(mass[i] * mass[j])
 
-    Fint = numpy.dot(T.T, numpy.dot(Fm, T))
+    Fint = np.dot(T.T, np.dot(Fm, T))
 
     # Get eigenvalues of internal force constant matrix, V = 3N-6 * 3N-6
-    eig, V = numpy.linalg.eigh(Fint)
+    eig, V = np.linalg.eigh(Fint)
 
     logging.debug('Frequencies from internal Hessian')
     for i in range(3 * Natoms - external):
-        with numpy.warnings.catch_warnings():
-            numpy.warnings.filterwarnings('ignore', r'invalid value encountered in sqrt')
-            logging.debug(numpy.sqrt(eig[i]) / (2 * math.pi * constants.c * 100))
+        with np.warnings.catch_warnings():
+            np.warnings.filterwarnings('ignore', r'invalid value encountered in sqrt')
+            logging.debug(np.sqrt(eig[i]) / (2 * math.pi * constants.c * 100))
 
     # Now we can start thinking about projecting out the internal rotations
-    Dint = numpy.zeros((3 * Natoms, Nrotors), numpy.float64)
+    Dint = np.zeros((3 * Natoms, Nrotors), np.float64)
 
     counter = 0
     for i, rotor in enumerate(rotors):
@@ -1131,24 +1160,24 @@ def projectRotors(conformer, F, rotors, linear, is_ts):
             atom = j + 1
             if atom in top:
                 e31 = coordinates[atom - 1, :] - coordinates[pivot1 - 1, :]
-                Dint[3 * (atom - 1):3 * (atom - 1) + 3, counter] = numpy.cross(e31, e12) * amass[atom - 1]
+                Dint[3 * (atom - 1):3 * (atom - 1) + 3, counter] = np.cross(e31, e12) * amass[atom - 1]
             else:
                 e31 = coordinates[atom - 1, :] - coordinates[pivot2 - 1, :]
-                Dint[3 * (atom - 1):3 * (atom - 1) + 3, counter] = numpy.cross(e31, -e12) * amass[atom - 1]
+                Dint[3 * (atom - 1):3 * (atom - 1) + 3, counter] = np.cross(e31, -e12) * amass[atom - 1]
         counter += 1
 
     # Normal modes in mass weighted cartesian coordinates
-    Vmw = numpy.dot(T, V)
-    eigM = numpy.zeros((3 * Natoms - external, 3 * Natoms - external), numpy.float64)
+    Vmw = np.dot(T, V)
+    eigM = np.zeros((3 * Natoms - external, 3 * Natoms - external), np.float64)
 
     for i in range(3 * Natoms - external):
         eigM[i, i] = eig[i]
 
-    Fm = numpy.dot(Vmw, numpy.dot(eigM, Vmw.T))
+    Fm = np.dot(Vmw, np.dot(eigM, Vmw.T))
 
     # Internal rotations are not normal modes => project them on the normal modes and orthogonalize
     # Dintproj =  (3N-6) x (3N) x (3N) x (Nrotors)
-    Dintproj = numpy.dot(Vmw.T, Dint)
+    Dintproj = np.dot(Vmw.T, Dint)
 
     # Reconstruct Dint
     for i in range(Nrotors):
@@ -1163,7 +1192,7 @@ def projectRotors(conformer, F, rotors, linear, is_ts):
         for j in range(3 * Natoms):
             norm += Dint[j, i] * Dint[j, i]
         for j in range(3 * Natoms):
-            Dint[j, i] /= numpy.sqrt(norm)
+            Dint[j, i] /= np.sqrt(norm)
         for j in range(i + 1, Nrotors):
             proj = 0.0
             for k in range(3 * Natoms):
@@ -1171,13 +1200,13 @@ def projectRotors(conformer, F, rotors, linear, is_ts):
             for k in range(3 * Natoms):
                 Dint[k, j] -= proj * Dint[k, i]
 
-    Dintproj = numpy.dot(Vmw.T, Dint)
-    Proj = numpy.dot(Dint, Dint.T)
-    I = numpy.identity(Natoms * 3, numpy.float64)
+    Dintproj = np.dot(Vmw.T, Dint)
+    Proj = np.dot(Dint, Dint.T)
+    I = np.identity(Natoms * 3, np.float64)
     Proj = I - Proj
-    Fm = numpy.dot(Proj, numpy.dot(Fm, Proj))
+    Fm = np.dot(Proj, np.dot(Fm, Proj))
     # Get eigenvalues of mass-weighted force constant matrix
-    eig, V = numpy.linalg.eigh(Fm)
+    eig, V = np.linalg.eigh(Fm)
     eig.sort()
 
     # Convert eigenvalues to vibrational frequencies in cm^-1
@@ -1185,11 +1214,11 @@ def projectRotors(conformer, F, rotors, linear, is_ts):
 
     logging.debug('Frequencies from projected Hessian')
     for i in range(3 * Natoms):
-        with numpy.warnings.catch_warnings():
-            numpy.warnings.filterwarnings('ignore', r'invalid value encountered in sqrt')
-            logging.debug(numpy.sqrt(eig[i]) / (2 * math.pi * constants.c * 100))
+        with np.warnings.catch_warnings():
+            np.warnings.filterwarnings('ignore', r'invalid value encountered in sqrt')
+            logging.debug(np.sqrt(eig[i]) / (2 * math.pi * constants.c * 100))
 
-    return numpy.sqrt(eig[-Nvib:]) / (2 * math.pi * constants.c * 100)
+    return np.sqrt(eig[-Nvib:]) / (2 * math.pi * constants.c * 100)
 
 
 def assign_frequency_scale_factor(model_chemistry):
