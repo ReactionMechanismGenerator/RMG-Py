@@ -3087,7 +3087,7 @@ class KineticsFamily(Database):
             
         return True
 
-    def generateTree(self,rxns=None,obj=None,thermoDatabase=None,T=1000.0,nprocs=1):
+    def generateTree(self,rxns=None,obj=None,thermoDatabase=None,T=1000.0,nprocs=1,minSplitableEntryNum=2,minRxnsToSpawn=20):
         """
         Generate a tree by greedy optimization based on the objective function obj
         the optimization is done by iterating through every group and if the group has
@@ -3099,12 +3099,28 @@ class KineticsFamily(Database):
         if their parent has no kinetics data associated and they either have only one child or
         have two children one of which has no kinetics data and no children
         (its parent becomes the parent of its only relevant child node)
+        
+        Args:
+            rxns: List of reactions to generate tree from (if None pull the whole training set)
+            obj: Object to expand tree from (if None uses top node)
+            thermoDatabase: Thermodynamic database used for reversing training reactions 
+            T: Temperature the tree is optimized for
+            nprocs: Number of process for parallel tree generation 
+            minSplitableEntryNum: the minimum number of splitable reactions at a node in order to spawn a new process solving that node
+            minRxnsToSpawn: the minimum number of reactions at a node to spawn a new process solving that node
+            maxBatchSize: the maximum number of reactions allowed in a batch, most batches will be this size the last will be smaller, 
+                if the # of reactions < maxBatchSize the cascade algorithm is not used
+            outlierFraction: Fraction of reactions that are fastest/slowest and will be automatically included in the first batch 
+            stratumNum: Number of strata used in stratified sampling scheme 
+            maxRxnsToReoptNode: Nodes with more matching reactions than this will not be pruned
         """
-        templateRxnMap = self.getReactionMatches(rxns=rxns,thermoDatabase=thermoDatabase,removeDegeneracy=True,fixLabels=True,exactMatchesOnly=True,getReverse=True)
+        templateRxnMap = self.getReactionMatches(rxns=rxns,thermoDatabase=thermoDatabase,removeDegeneracy=True,fixLabels=True,
+                                                 exactMatchesOnly=True,getReverse=True)
 
-        self.makeTreeNodes(templateRxnMap=templateRxnMap,obj=obj,T=T,nprocs=nprocs-1,depth=0)
+        self.makeTreeNodes(templateRxnMap=templateRxnMap,obj=obj,T=T,nprocs=nprocs-1,depth=0,
+                           minSplitableEntryNum=minSplitableEntryNum,minRxnsToSpawn=minRxnsToSpawn)
 
-    def makeTreeNodes(self,templateRxnMap=None,obj=None,T=1000.0,nprocs=0,depth=0):
+    def makeTreeNodes(self,templateRxnMap=None,obj=None,T=1000.0,nprocs=0,depth=0,minSplitableEntryNum=2,minRxnsToSpawn=20):
 
         if depth > 0:
             root = self.groups.entries[templateRxnMap.keys()[0]]
@@ -3154,11 +3170,13 @@ class KineticsFamily(Database):
                 if not isinstance(entry.item, Group): #skip logic nodes
                     continue
                 if entry.index != -1 and len(templateRxnMap[entry.label])>1 and entry not in multCompletedNodes:
-                    if freeProcs > 0 and splitableEntryNum > 2 and len(templateRxnMap[entry.label])>20:
+                    if freeProcs > 0 and splitableEntryNum > minSplitableEntryNum and len(templateRxnMap[entry.label])>minRxnsToSpawn:
                         procsOut = int(len(templateRxnMap[entry.label])/psize*freeProcs)
                         freeProcs -= procsOut
                         assert freeProcs >= 0
-                        conn,p,name = spawnTreeProcess(family=self,templateRxnMap={entry.label:templateRxnMap[entry.label]},obj=obj,T=T,nprocs=procsOut-1,depth=depth)
+                        conn,p,name = spawnTreeProcess(family=self, templateRxnMap={entry.label:templateRxnMap[entry.label]},
+                                            obj=obj, T=T, nprocs=procsOut-1, depth=depth, minSplitableEntryNum=minSplitableEntryNum,
+                                            minRxnsToSpawn=minRxnsToSpawn)
                         activeProcs.append(p)
                         activeConns.append(conn)
                         procNames.append(name)
@@ -4072,14 +4090,14 @@ def makeRule(rr):
     else:
         return None
 
-def spawnTreeProcess(family,templateRxnMap,obj,T,nprocs,depth):
+def spawnTreeProcess(family,templateRxnMap,obj,T,nprocs,depth,minSplitableEntryNum,minRxnsToSpawn):
     parentConn, childConn = mp.Pipe()
     name = templateRxnMap.keys()[0]
-    p = mp.Process(target=childMakeTreeNodes,args=(family,childConn,templateRxnMap,obj,T,nprocs,depth,name))
+    p = mp.Process(target=childMakeTreeNodes,args=(family,childConn,templateRxnMap,obj,T,nprocs,depth,name,minSplitableEntryNum,minRxnsToSpawn))
     p.start()
     return parentConn,p,name
 
-def childMakeTreeNodes(family,childConn,templateRxnMap,obj,T,nprocs,depth,name):
+def childMakeTreeNodes(family,childConn,templateRxnMap,obj,T,nprocs,depth,name,minSplitableEntryNum,minRxnsToSpawn):
     delLabels = []
     rootlabel = templateRxnMap.keys()[0]
     for label in family.groups.entries.keys():
@@ -4090,6 +4108,6 @@ def childMakeTreeNodes(family,childConn,templateRxnMap,obj,T,nprocs,depth,name):
 
     family.groups.entries[rootlabel].parent = None
 
-    family.makeTreeNodes(templateRxnMap=templateRxnMap,obj=obj,T=T,nprocs=nprocs,depth=depth+1)
+    family.makeTreeNodes(templateRxnMap=templateRxnMap,obj=obj,T=T,nprocs=nprocs,depth=depth+1,minSplitableEntryNum=minSplitableEntryNum,minRxnsToSpawn=minRxnsToSpawn)
 
     childConn.send(family.groups.entries.values())
