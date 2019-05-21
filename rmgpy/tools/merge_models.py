@@ -122,10 +122,21 @@ def execute(inputModelFiles, **kwargs):
         finalModel = finalModel.merge(model)
         Nspec = len(finalModel.species)
         Nrxn = len(finalModel.reactions)
-        print 'Added {1:d} out of {2:d} ({3:.1f}%) unique species from model #{0:d}.'.format(i+1, Nspec - Nspec0, len(model.species), (Nspec - Nspec0) * 100. / len(model.species))
-        print 'Added {1:d} out of {2:d} ({3:.1f}%) unique reactions from model #{0:d}.'.format(i+1, Nrxn - Nrxn0, len(model.reactions), (Nrxn - Nrxn0) * 100. / len(model.reactions))
-    
-    print 'The merged model has {0:d} species and {1:d} reactions'.format(len(finalModel.species), len(finalModel.reactions))
+        if  len(model.species) > 0:
+            print('Added {1:d} out of {2:d} ({3:.1f}%) unique species from model '
+                  '#{0:d}.'.format(i+1, Nspec - Nspec0, len(model.species), (Nspec - Nspec0) * 100. / len(model.species)))
+        else:
+            print('Added {1:d} out of {2:d} unique species from model '
+                  '#{0:d}.'.format(i+1, Nspec - Nspec0, len(model.species)))
+
+        if len(model.reactions) > 0:
+            print('Added {1:d} out of {2:d} ({3:.1f}%) unique reactions from model '
+                  '#{0:d}.'.format(i+1, Nrxn - Nrxn0, len(model.reactions), (Nrxn - Nrxn0) * 100. / len(model.reactions)))
+        else:
+            print('Added {1:d} out of {2:d} unique reactions from model '
+                  '#{0:d}.'.format(i+1, Nrxn - Nrxn0, len(model.reactions)))
+    print('The merged model has {0:d} species and {1:d} reactions'
+          ''.format(len(finalModel.species), len(finalModel.reactions)))
         
     # Save the merged model to disk
     saveChemkinFile(outputChemkinFile, finalModel.species, finalModel.reactions)
