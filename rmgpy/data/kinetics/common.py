@@ -198,7 +198,7 @@ def ensure_independent_atom_ids(input_species, resonance=True):
     Modifies the list in place (replacing :class:`Molecule` with :class:`Species`).
     Returns None.
     """
-    ensure_species(input_species, resonance=resonance)
+    ensure_species(input_species, resonance=resonance, keep_isomorphic=True)
     # Method to check that all species' atom ids are different
     def independent_ids():
         num_atoms = 0
@@ -214,7 +214,7 @@ def ensure_independent_atom_ids(input_species, resonance=True):
         logging.debug('identical atom ids found between species. regenerating')
         for species in input_species:
             unreactive_mol_list = [mol for mol in species.molecule if not mol.reactive]
-            mol = species.molecule[0]
+            mol = [mol for mol in species.molecule if mol.reactive][0]  # Choose first reactive molecule
             mol.assignAtomIDs()
             species.molecule = [mol]
             # Remake resonance structures with new labels
@@ -275,7 +275,6 @@ def find_degenerate_reactions(rxn_list, same_reactants=None, template=None, kine
     # with degenerate transition states
     sorted_rxns = []
     for rxn0 in selected_rxns:
-        # find resonance structures for rxn0
         rxn0.ensure_species()
         if len(sorted_rxns) == 0:
             # This is the first reaction, so create a new sublist
@@ -288,9 +287,9 @@ def find_degenerate_reactions(rxn_list, same_reactants=None, template=None, kine
                 identical = False
                 sameTemplate = True
                 for rxn in sub_list:
-                    isomorphic = rxn0.isIsomorphic(rxn, checkIdentical=False, checkTemplateRxnProducts=True)
+                    isomorphic = rxn0.isIsomorphic(rxn, checkIdentical=False, strict=False, checkTemplateRxnProducts=True)
                     if isomorphic:
-                        identical = rxn0.isIsomorphic(rxn, checkIdentical=True, checkTemplateRxnProducts=True)
+                        identical = rxn0.isIsomorphic(rxn, checkIdentical=True, strict=False, checkTemplateRxnProducts=True)
                         if identical:
                             # An exact copy of rxn0 is already in our list, so we can move on
                             break

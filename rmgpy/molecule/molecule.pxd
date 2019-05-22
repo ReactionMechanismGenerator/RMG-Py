@@ -47,7 +47,7 @@ cdef class Atom(Vertex):
     cdef public int id
     cdef public dict props
     
-    cpdef bint equivalent(self, Vertex other) except -2
+    cpdef bint equivalent(self, Vertex other, bint strict=?) except -2
 
     cpdef bint isSpecificCaseOf(self, Vertex other) except -2
 
@@ -139,10 +139,11 @@ cdef class Molecule(Graph):
     cdef public bint reactive
     cdef public object rdMol
     cdef public int rdMolConfId
-    cdef str _fingerprint
-    cdef public str InChI
     cdef public dict props
-    
+    cdef str _fingerprint
+    cdef str _inchi
+    cdef str _smiles
+
     cpdef addAtom(self, Atom atom)
 
     cpdef addBond(self, Bond bond)
@@ -191,9 +192,9 @@ cdef class Molecule(Graph):
 
     cpdef dict get_element_count(self)
 
-    cpdef bint isIsomorphic(self, Graph other, dict initialMap=?, bint generateInitialMap=?, bint saveOrder=?) except -2
+    cpdef bint isIsomorphic(self, Graph other, dict initialMap=?, bint generateInitialMap=?, bint saveOrder=?, bint strict=?) except -2
 
-    cpdef list findIsomorphism(self, Graph other, dict initialMap=?, bint saveOrder=?)
+    cpdef list findIsomorphism(self, Graph other, dict initialMap=?, bint saveOrder=?, bint strict=?)
 
     cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?, bint generateInitialMap=?, bint saveOrder=?) except -2
 
@@ -257,7 +258,7 @@ cdef class Molecule(Graph):
 
     cpdef bint atomIDValid(self)
 
-    cpdef bint isIdentical(self, Molecule other) except -2
+    cpdef bint isIdentical(self, Molecule other, bint strict=?) except -2
 
     cpdef dict enumerate_bonds(self)
 

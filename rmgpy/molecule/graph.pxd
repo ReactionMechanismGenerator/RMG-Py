@@ -40,7 +40,7 @@ cdef class Vertex(object):
     
     cpdef Vertex copy(self)
 
-    cpdef bint equivalent(self, Vertex other) except -2
+    cpdef bint equivalent(self, Vertex other, bint strict=?) except -2
 
     cpdef bint isSpecificCaseOf(self, Vertex other) except -2
 
@@ -110,9 +110,9 @@ cdef class Graph(object):
     
     cpdef restore_vertex_order(self)
 
-    cpdef bint isIsomorphic(self, Graph other, dict initialMap=?, bint saveOrder=?) except -2
+    cpdef bint isIsomorphic(self, Graph other, dict initialMap=?, bint saveOrder=?, bint strict=?) except -2
 
-    cpdef list findIsomorphism(self, Graph other, dict initialMap=?, bint saveOrder=?)
+    cpdef list findIsomorphism(self, Graph other, dict initialMap=?, bint saveOrder=?, bint strict=?)
 
     cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?, bint saveOrder=?) except -2
 
@@ -156,6 +156,6 @@ cdef class Graph(object):
     
     cpdef list getLargestRing(self, Vertex vertex)
     
-    cpdef bint isMappingValid(self, Graph other, dict mapping, bint equivalent=?) except -2
+    cpdef bint isMappingValid(self, Graph other, dict mapping, bint equivalent=?, bint strict=?) except -2
 
     cpdef list get_edges_in_cycle(self, list vertices, bint sort=?)

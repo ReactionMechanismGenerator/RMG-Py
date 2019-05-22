@@ -77,7 +77,23 @@ class TestSpecies(unittest.TestCase):
             molecularWeight=(28.03,'amu'),
             reactive=True,
         )
-        
+
+        self.species2 = Species().fromAdjacencyList(
+            """
+            1  C u0 p0 c0 {2,D} {6,S} {7,S}
+            2  C u0 p0 c0 {1,D} {3,S} {8,S}
+            3  C u0 p0 c0 {2,S} {4,D} {9,S}
+            4  C u0 p0 c0 {3,D} {5,S} {10,S}
+            5  C u0 p0 c0 {4,S} {6,D} {11,S}
+            6  C u0 p0 c0 {1,S} {5,D} {12,S}
+            7  H u0 p0 c0 {1,S}
+            8  H u0 p0 c0 {2,S}
+            9  H u0 p0 c0 {3,S}
+            10 H u0 p0 c0 {4,S}
+            11 H u0 p0 c0 {5,S}
+            12 H u0 p0 c0 {6,S}
+            """)
+
     def testPickle(self):
         """
         Test that a Species object can be pickled and unpickled.
@@ -226,15 +242,15 @@ class TestSpecies(unittest.TestCase):
                                                                 5 O u0 p3 c-1 {3,S}""")
 
         # check that the structures are not isomorphic if resonance structures are not generated:
-        self.assertFalse(spc1_correct.isIsomorphic(spc1_nonrepresentative, generate_res=False))
+        self.assertFalse(spc1_correct.isIsomorphic(spc1_nonrepresentative, strict=True))
 
         # check that the nonrepresentative structure is isomorphic by generating resonance structures:
-        self.assertTrue(spc1_correct.isIsomorphic(spc1_nonrepresentative, generate_res=True))
-        self.assertTrue(spc2_correct.isIsomorphic(spc2_nonrepresentative, generate_res=True))
-        self.assertTrue(spc3_correct.isIsomorphic(spc3_nonrepresentative, generate_res=True))
-        self.assertTrue(spc4_correct.isIsomorphic(spc4_nonrepresentative, generate_res=True))
-        self.assertTrue(spc5_correct.isIsomorphic(spc5_nonrepresentative, generate_res=True))
-        self.assertTrue(spc6_correct.isIsomorphic(spc6_nonrepresentative, generate_res=True))
+        self.assertTrue(spc1_correct.isIsomorphic(spc1_nonrepresentative, strict=False))
+        self.assertTrue(spc2_correct.isIsomorphic(spc2_nonrepresentative, strict=False))
+        self.assertTrue(spc3_correct.isIsomorphic(spc3_nonrepresentative, strict=False))
+        self.assertTrue(spc4_correct.isIsomorphic(spc4_nonrepresentative, strict=False))
+        self.assertTrue(spc5_correct.isIsomorphic(spc5_nonrepresentative, strict=False))
+        self.assertTrue(spc6_correct.isIsomorphic(spc6_nonrepresentative, strict=False))
 
     def testGetResonanceHybrid(self):
         """
@@ -321,6 +337,35 @@ Thermo library: primaryThermoLibrary
         spc = Species(label="Ar", molecule=[Molecule(SMILES="[Ar]")], transportData=TransportData(shapeIndex=0, epsilon=(1134.93,'J/mol'), sigma=(3.33,'angstrom'), dipoleMoment=(2,'De'), polarizability=(1,'angstrom^3'), rotrelaxcollnum=15.0, comment="""GRI-Mech"""))
 
         self.assertTrue(spc.getTransportData() is spc.transportData)
+
+    def test_fingerprint_property(self):
+        """Test that the fingerprint property works"""
+        self.assertEqual(self.species2.fingerprint, 'C6H6')
+
+    def test_inchi_property(self):
+        """Test that the InChI property works"""
+        self.assertEqual(self.species2.InChI, 'InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H')
+
+    def test_multiplicity_property(self):
+        """Test that the fingerprint property works"""
+        self.assertEqual(self.species2.multiplicity, 1)
+
+    def test_smiles_property(self):
+        """Test that the InChI property works"""
+        self.assertEqual(self.species2.SMILES, 'C1=CC=CC=C1')
+
+    def test_inchi_instantiation(self):
+        """Test that we can create a species using the InChI argument"""
+        test = Species(InChI='InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H')
+
+        self.assertTrue(test.isIsomorphic(self.species2))
+
+    def test_smiles_instantiation(self):
+        """Test that we can create a species using the SMILES argument"""
+        test = Species(SMILES='C1=CC=CC=C1')
+
+        self.assertTrue(test.isIsomorphic(self.species2))
+
 
 ################################################################################
 

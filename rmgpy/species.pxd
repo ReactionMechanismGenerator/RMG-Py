@@ -53,12 +53,15 @@ cdef class Species:
     cdef public bint isSolvent
     cdef public int creationIteration
     cdef public bint explicitlyAllowed
+    cdef str _fingerprint
+    cdef str _inchi
+    cdef str _smiles
 
     cpdef generate_resonance_structures(self, bint keep_isomorphic=?, bint filter_structures=?)
     
-    cpdef bint isIsomorphic(self, other, bint generate_res=?, bint generateInitialMap=?) except -2
+    cpdef bint isIsomorphic(self, other, bint generateInitialMap=?, bint strict=?) except -2
 
-    cpdef bint isIdentical(self, other) except -2
+    cpdef bint isIdentical(self, other, bint strict=?) except -2
 
     cpdef bint is_structure_in_list(self, list species_list) except -2
     

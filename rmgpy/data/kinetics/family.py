@@ -44,7 +44,7 @@ from sklearn.model_selection import KFold
 from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStructures,\
                             getAllCombinations
-from rmgpy.reaction import Reaction, isomorphic_species_lists
+from rmgpy.reaction import Reaction, same_species_lists
 from rmgpy import settings
 from rmgpy.reaction import Reaction
 from rmgpy.kinetics import Arrhenius, SurfaceArrhenius,\
@@ -1570,7 +1570,7 @@ class KineticsFamily(Database):
         """
 
         # Make sure the products are in fact different than the reactants
-        if isomorphic_species_lists(reactants, products):
+        if same_species_lists(reactants, products):
             return None
 
         # Create and return template reaction object
@@ -1679,6 +1679,8 @@ class KineticsFamily(Database):
                 elif rxn.products[1].isIsomorphic(rxn.products[2]):
                     sameReactants = 2
 
+            ensure_independent_atom_ids(rxn.products)
+
             reactionList = self.__generateReactions([spc.molecule for spc in rxn.products],
                                                     products=rxn.reactants, forward=True,
                                                     react_non_reactive=react_non_reactive)
@@ -1713,7 +1715,7 @@ class KineticsFamily(Database):
                 else:
                     logging.error("Still experiencing error: Expecting one matching reverse reaction, not {0} in reaction family {1} for forward reaction {2}.\n".format(len(reactions), self.label, str(rxn)))
                     raise KineticsError("Did not find reverse reaction in reaction family {0} for reaction {1}.".format(self.label, str(rxn)))
-            elif len(reactions) > 1 and not all([reactions[0].isIsomorphic(other, checkTemplateRxnProducts=True) for other in reactions]):
+            elif len(reactions) > 1 and not all([reactions[0].isIsomorphic(other, strict=False, checkTemplateRxnProducts=True) for other in reactions]):
                 logging.error("Expecting one matching reverse reaction. Recieved {0} reactions with multiple non-isomorphic ones in reaction family {1} for forward reaction {2}.\n".format(len(reactions), self.label, str(rxn)))
                 logging.info("Found the following reverse reactions")
                 for rxn0 in reactions:
@@ -2129,24 +2131,13 @@ class KineticsFamily(Database):
         # If products is given, remove reactions from the reaction list that
         # don't generate the given products
         if products is not None:
-            ensure_species(products, resonance=prod_resonance)
-
             rxnList0 = rxnList[:]
             rxnList = []
             for reaction in rxnList0:
-            
-                products0 = reaction.products[:] if forward else reaction.reactants[:]
-
-                # For aromatics, generate aromatic resonance structures to accurately identify isomorphic species
-                if prod_resonance:
-                    for i, product in enumerate(products0):
-                        if product.isCyclic:
-                            aromaticStructs = generate_optimal_aromatic_resonance_structures(product)
-                            if aromaticStructs:
-                                products0[i] = aromaticStructs[0]
-
-                # Skip reactions that don't match the given products
-                if isomorphic_species_lists(products, products0):
+                products0 = reaction.products if forward else reaction.reactants
+                # Only keep reactions which give the requested products
+                # If prod_resonance=True, then use strict=False to consider all resonance structures
+                if same_species_lists(products, products0, strict=not prod_resonance):
                     rxnList.append(reaction)
 
         # Determine the reactant-product pairs to use for flux analysis
@@ -2590,7 +2581,7 @@ class KineticsFamily(Database):
                 pass
             else:
                 if product_structures is not None:
-                    if isomorphic_species_lists(list(products), list(product_structures)):
+                    if same_species_lists(list(products), list(product_structures)):
                         return reactant_structures, product_structures
                     else:
                         continue

@@ -1130,6 +1130,30 @@ multiplicity 2
         mapping = molecule.findSubgraphIsomorphisms(groupRing)
         self.assertEqual(len(mapping), 5)
 
+    def test_lax_isomorphism(self):
+        """Test that we can do isomorphism comparison with strict=False"""
+        mol1 = Molecule().fromAdjacencyList("""
+multiplicity 2
+1 O u0 p2 c0 {3,D}
+2 C u1 p0 c0 {3,S} {4,S} {5,S}
+3 C u0 p0 c0 {1,D} {2,S} {6,S}
+4 H u0 p0 c0 {2,S}
+5 H u0 p0 c0 {2,S}
+6 H u0 p0 c0 {3,S}
+        """)
+
+        mol2 = Molecule().fromAdjacencyList("""
+multiplicity 2
+1 O u1 p2 c0 {3,S}
+2 C u0 p0 c0 {3,D} {4,S} {5,S}
+3 C u0 p0 c0 {1,S} {2,D} {6,S}
+4 H u0 p0 c0 {2,S}
+5 H u0 p0 c0 {2,S}
+6 H u0 p0 c0 {3,S}
+        """)
+
+        self.assertTrue(mol1.isIsomorphic(mol2, strict=False))
+
     def testAdjacencyList(self):
         """
         Check the adjacency list read/write functions for a full molecule.
@@ -2266,6 +2290,18 @@ multiplicity 2
         molCopy = mol.copy(deep=True)
         self.assertTrue(mol.isIsomorphic(molCopy))
         self.assertTrue(mol.isIdentical(molCopy))
+
+    def testIdenticalTrue2(self):
+        """Test that isIdentical with strict=False returns True with allyl"""
+        mol = Molecule(SMILES='C=C[CH2]')
+        mol.assignAtomIDs()
+        res = mol.generate_resonance_structures(keep_isomorphic=True)
+        self.assertEqual(len(res), 2)
+
+        mol2 = res[1]
+        self.assertTrue(mol.isIsomorphic(mol2))
+        self.assertFalse(mol.isIdentical(mol2))
+        self.assertTrue(mol.isIdentical(mol2, strict=False))
 
     def testIdenticalFalse(self):
         """Test that the isIdentical returns False with butane"""

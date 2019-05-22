@@ -63,22 +63,22 @@ cdef class VF2:
         self.graph2 = value
         self.graph2.sortVertices()
 
-    cpdef bint isIsomorphic(self, Graph graph1, Graph graph2, dict initialMapping, bint saveOrder=False) except -2:
+    cpdef bint isIsomorphic(self, Graph graph1, Graph graph2, dict initialMapping, bint saveOrder=False, bint strict=True) except -2:
         """
         Return ``True`` if graph `graph1` is isomorphic to graph `graph2` with
         the optional initial mapping `initialMapping`, or ``False`` otherwise.
         """
-        self.isomorphism(graph1, graph2, initialMapping, False, False, saveOrder)
+        self.isomorphism(graph1, graph2, initialMapping, False, False, saveOrder=saveOrder, strict=strict)
         return self.isMatch
         
-    cpdef list findIsomorphism(self, Graph graph1, Graph graph2, dict initialMapping, bint saveOrder=False):
+    cpdef list findIsomorphism(self, Graph graph1, Graph graph2, dict initialMapping, bint saveOrder=False, bint strict=True):
         """
         Return a list of dicts of all valid isomorphism mappings from graph
         `graph1` to graph `graph2` with the optional initial mapping 
         `initialMapping`. If no valid isomorphisms are found, an empty list is
         returned.
         """
-        self.isomorphism(graph1, graph2, initialMapping, False, True, saveOrder)
+        self.isomorphism(graph1, graph2, initialMapping, False, True, saveOrder=saveOrder, strict=strict)
         return self.mappingList
 
     cpdef bint isSubgraphIsomorphic(self, Graph graph1, Graph graph2, dict initialMapping, bint saveOrder=False) except -2:
@@ -100,7 +100,7 @@ cdef class VF2:
         self.isomorphism(graph1, graph2, initialMapping, True, True, saveOrder)
         return self.mappingList
         
-    cdef isomorphism(self, Graph graph1, Graph graph2, dict initialMapping, bint subgraph, bint findAll, bint saveOrder=False):
+    cdef isomorphism(self, Graph graph1, Graph graph2, dict initialMapping, bint subgraph, bint findAll, bint saveOrder=False, bint strict=True):
         """
         Evaluate the isomorphism relationship between graphs `graph1` and
         `graph2` with optional initial mapping `initialMapping`. If `subgraph`
@@ -121,6 +121,7 @@ cdef class VF2:
         self.initialMapping = initialMapping
         self.subgraph = subgraph
         self.findAll = findAll
+        self.strict = strict
     
         # Clear previous result
         self.isMatch = False
@@ -285,7 +286,7 @@ cdef class VF2:
         if self.subgraph:
             if not vertex1.isSpecificCaseOf(vertex2): return False
         else:
-            if not vertex1.equivalent(vertex2): return False
+            if not vertex1.equivalent(vertex2, strict=self.strict): return False
         
         # Semantic check #2: adjacent vertices to vertex1 and vertex2 that are
         # already mapped should be connected by equivalent edges
@@ -295,12 +296,15 @@ cdef class VF2:
                 if vert1 not in vertex1.edges:
                     # The vertices are joined in graph2, but not in graph1
                     return False
-                edge1 = vertex1.edges[vert1]
-                edge2 = vertex2.edges[vert2]
-                if self.subgraph:
-                    if not edge1.isSpecificCaseOf(edge2): return False
-                else:
-                    if not edge1.equivalent(edge2): return False
+                if self.strict:
+                    # Check that the edges are equivalent
+                    # If self.strict=False, we only care that the edge exists
+                    edge1 = vertex1.edges[vert1]
+                    edge2 = vertex2.edges[vert2]
+                    if self.subgraph:
+                        if not edge1.isSpecificCaseOf(edge2): return False
+                    else:
+                        if not edge1.equivalent(edge2): return False
 
         # There could still be edges in graph1 that aren't in graph2; this is okay
         # for subgraph matching, but not for exact matching

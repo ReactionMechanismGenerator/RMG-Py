@@ -63,7 +63,7 @@ cdef class GroupAtom(Vertex):
 
     cpdef applyAction(self, list action)
 
-    cpdef bint equivalent(self, Vertex other) except -2
+    cpdef bint equivalent(self, Vertex other, bint strict=?) except -2
 
     cpdef bint isSpecificCaseOf(self, Vertex other) except -2
 
@@ -168,9 +168,9 @@ cdef class Group(Graph):
 
     cpdef update_charge(self)
 
-    cpdef bint isIsomorphic(self, Graph other, dict initialMap=?, bint saveOrder=?) except -2
+    cpdef bint isIsomorphic(self, Graph other, dict initialMap=?, bint saveOrder=?, bint strict=?) except -2
 
-    cpdef list findIsomorphism(self, Graph other, dict initialMap=?, bint saveOrder=?)
+    cpdef list findIsomorphism(self, Graph other, dict initialMap=?, bint saveOrder=?, bint strict=?)
 
     cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?, bint generateInitialMap=?, bint saveOrder=?) except -2
 

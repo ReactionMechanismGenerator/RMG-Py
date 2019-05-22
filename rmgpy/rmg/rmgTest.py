@@ -172,8 +172,8 @@ class TestRMGWorkFlow(unittest.TestCase):
 30    H u0 p0 c0 {14,S}
 31    H u0 p0 c0 {15,S}
 """)
-        found, reactive, spec = rmg_test.reactionModel.checkForExistingSpecies(mol_test)
-        assert found == True
+        spec = rmg_test.reactionModel.checkForExistingSpecies(mol_test)
+        self.assertIsNotNone(spec)
 
     def testRestartFileGenerationAndParsing(self):
         

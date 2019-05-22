@@ -328,7 +328,7 @@ class GroupAtom(Vertex):
         else:
             raise ActionError('Unable to update GroupAtom: Invalid action {0}".'.format(action))
 
-    def equivalent(self, other):
+    def equivalent(self, other, strict=True):
         """
         Returns ``True`` if `other` is equivalent to `self` or ``False`` if not,
         where `other` can be either an :class:`Atom` or an :class:`GroupAtom`
@@ -337,6 +337,8 @@ class GroupAtom(Vertex):
         
         """
         cython.declare(group=GroupAtom)
+        if not strict:
+            raise NotImplementedError('There is currently no implementation of the strict argument for Group objects.')
         if not isinstance(other, GroupAtom):
             # Let the equivalent method of other handle it
             # We expect self to be an Atom object, but can't test for it here
@@ -1010,9 +1012,18 @@ class Group(Graph):
         img = graph.create(prog='neato', format=format)
         return img
 
-    def __getAtoms(self): return self.vertices
-    def __setAtoms(self, atoms): self.vertices = atoms
-    atoms = property(__getAtoms, __setAtoms)
+    @property
+    def atoms(self):
+        """
+        List of atoms contained in the current molecule.
+
+        Renames the inherited vertices attribute of :class:`Graph`.
+        """
+        return self.vertices
+
+    @atoms.setter
+    def atoms(self, atoms):
+        self.vertices = atoms
 
     def addAtom(self, atom):
         """
@@ -1642,7 +1653,7 @@ class Group(Graph):
             if len(atom.radicalElectrons) >= 1:
                 self.radicalCount += atom.radicalElectrons[0]
 
-    def isIsomorphic(self, other, initialMap=None, saveOrder=False):
+    def isIsomorphic(self, other, initialMap=None, saveOrder=False, strict=True):
         """
         Returns ``True`` if two graphs are isomorphic and ``False``
         otherwise. The `initialMap` attribute can be used to specify a required
@@ -1650,6 +1661,8 @@ class Group(Graph):
         while the atoms of `other` are the values). The `other` parameter must
         be a :class:`Group` object, or a :class:`TypeError` is raised.
         """
+        if not strict:
+            raise NotImplementedError('There is currently no implementation of the strict argument for Group objects.')
         # It only makes sense to compare a Group to a Group for full
         # isomorphism, so raise an exception if this is not what was requested
         if not isinstance(other, Group):
@@ -1657,7 +1670,7 @@ class Group(Graph):
         # Do the isomorphism comparison
         return Graph.isIsomorphic(self, other, initialMap, saveOrder=saveOrder)
 
-    def findIsomorphism(self, other, initialMap=None, saveOrder=False):
+    def findIsomorphism(self, other, initialMap=None, saveOrder=False, strict=True):
         """
         Returns ``True`` if `other` is isomorphic and ``False``
         otherwise, and the matching mapping. The `initialMap` attribute can be
@@ -1667,6 +1680,8 @@ class Group(Graph):
         and the atoms of `other` for the values. The `other` parameter must
         be a :class:`Group` object, or a :class:`TypeError` is raised.
         """
+        if not strict:
+            raise NotImplementedError('There is currently no implementation of the strict argument for Group objects.')
         # It only makes sense to compare a Group to a Group for full
         # isomorphism, so raise an exception if this is not what was requested
         if not isinstance(other, Group):
