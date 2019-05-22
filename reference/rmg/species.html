@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.rmg.model.Species<a class="headerlink" href="#rmgpy-rmg-model-species" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.rmg.model.Species">
-<em class="property">class </em><code class="descclassname">rmgpy.rmg.model.</code><code class="descname">Species</code><span class="sig-paren">(</span><em>index=-1</em>, <em>label=''</em>, <em>thermo=None</em>, <em>conformer=None</em>, <em>molecule=None</em>, <em>transportData=None</em>, <em>molecularWeight=None</em>, <em>energyTransferModel=None</em>, <em>reactive=True</em>, <em>props=None</em>, <em>aug_inchi=None</em>, <em>symmetryNumber=-1</em>, <em>creationIteration=0</em>, <em>explicitlyAllowed=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.rmg.model.</code><code class="descname">Species</code><span class="sig-paren">(</span><em>index=-1</em>, <em>label=''</em>, <em>thermo=None</em>, <em>conformer=None</em>, <em>molecule=None</em>, <em>transportData=None</em>, <em>molecularWeight=None</em>, <em>energyTransferModel=None</em>, <em>reactive=True</em>, <em>props=None</em>, <em>SMILES=''</em>, <em>InChI=''</em>, <em>aug_inchi=None</em>, <em>symmetryNumber=-1</em>, <em>creationIteration=0</em>, <em>explicitlyAllowed=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.Species" title="Permalink to this definition">¶</a></dt>
 <dd><p>A chemical species, representing a local minimum on a potential energy
 surface. The attributes are:</p>
 <table border="1" class="docutils">
@@ -114,14 +114,30 @@ always considered regardless of this variable</dd>
 <tr class="row-even"><td><cite>aug_inchi</cite></td>
 <td>Unique augmented inchi</td>
 </tr>
-<tr class="row-odd"><td><cite>isSolvent</cite></td>
-<td>Boolean describing whether this species is the solvent</td>
+<tr class="row-odd"><td><cite>symmetryNumber</cite></td>
+<td>Estimated symmetry number of the species, using the resonance hybrid</td>
 </tr>
 <tr class="row-even"><td><cite>creationIteration</cite></td>
 <td>Iteration which the species is created within the reaction mechanism generation algorithm</td>
 </tr>
+<tr class="row-odd"><td><cite>explicitlyAllowed</cite></td>
+<td>Flag to exempt species from forbidden structure checks</td>
+</tr>
 </tbody>
 </table>
+<dl class="attribute">
+<dt id="rmgpy.rmg.model.Species.InChI">
+<code class="descname">InChI</code><a class="headerlink" href="#rmgpy.rmg.model.Species.InChI" title="Permalink to this definition">¶</a></dt>
+<dd><p>InChI string representation of this species. Read-only.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.rmg.model.Species.SMILES">
+<code class="descname">SMILES</code><a class="headerlink" href="#rmgpy.rmg.model.Species.SMILES" title="Permalink to this definition">¶</a></dt>
+<dd><p>SMILES string representation of this species. Read-only.</p>
+<p>Note that SMILES representations for different resonance structures of the same species may be different.</p>
+</dd></dl>
+
 <dl class="attribute">
 <dt id="rmgpy.rmg.model.Species.aug_inchi">
 <code class="descname">aug_inchi</code><a class="headerlink" href="#rmgpy.rmg.model.Species.aug_inchi" title="Permalink to this definition">¶</a></dt>
@@ -217,6 +233,12 @@ Molecule objects in self.molecule.</p>
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.rmg.model.Species.fingerprint">
+<code class="descname">fingerprint</code><a class="headerlink" href="#rmgpy.rmg.model.Species.fingerprint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fingerprint of this species, taken from molecule attribute. Read-only.</p>
 </dd></dl>
 
 <dl class="method">
@@ -397,20 +419,29 @@ or <code class="docutils literal notranslate"><span class="pre">False</span></co
 
 <dl class="method">
 <dt id="rmgpy.rmg.model.Species.isIdentical">
-<code class="descname">isIdentical</code><span class="sig-paren">(</span><em>self</em>, <em>other</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.rmg.model.Species.isIdentical" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isIdentical</code><span class="sig-paren">(</span><em>self</em>, <em>other</em>, <em>bool strict=True</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.rmg.model.Species.isIdentical" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if at least one molecule of the species is identical to <cite>other</cite>,
 which can be either a <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> object or a <a class="reference internal" href="#rmgpy.rmg.model.Species" title="rmgpy.rmg.model.Species"><code class="xref py py-class docutils literal notranslate"><span class="pre">Species</span></code></a> object.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">strict=False</span></code>, performs the check ignoring electrons and resonance structures.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.rmg.model.Species.isIsomorphic">
-<code class="descname">isIsomorphic</code><span class="sig-paren">(</span><em>self</em>, <em>other</em>, <em>bool generate_res=False</em>, <em>bool generateInitialMap=False</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.rmg.model.Species.isIsomorphic" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isIsomorphic</code><span class="sig-paren">(</span><em>self</em>, <em>other</em>, <em>bool generateInitialMap=False</em>, <em>bool strict=True</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.rmg.model.Species.isIsomorphic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the species is isomorphic to <cite>other</cite>, which can be
-either a <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> object or a <a class="reference internal" href="#rmgpy.rmg.model.Species" title="rmgpy.rmg.model.Species"><code class="xref py py-class docutils literal notranslate"><span class="pre">Species</span></code></a> object.
-If generate_res is <code class="docutils literal notranslate"><span class="pre">True</span></code> and other is a <a class="reference internal" href="#rmgpy.rmg.model.Species" title="rmgpy.rmg.model.Species"><code class="xref py py-class docutils literal notranslate"><span class="pre">Species</span></code></a> object, the resonance structures of other will
-be generated and isomorphically compared against self. This is useful for situations where a
-“non-representative” resonance structure of self is generated, and it should be identified as the same Species,
-and be assigned a reactive=False flag.</p>
+either a <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> object or a <a class="reference internal" href="#rmgpy.rmg.model.Species" title="rmgpy.rmg.model.Species"><code class="xref py py-class docutils literal notranslate"><span class="pre">Species</span></code></a> object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>generateInitialMap</strong> (<em>bool</em><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, make initial map by matching labeled atoms</li>
+<li><strong>strict</strong> (<em>bool</em><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">False</span></code>, perform isomorphism ignoring electrons.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
@@ -480,6 +511,12 @@ one Species in species list.</p>
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.rmg.model.Species.multiplicity">
+<code class="descname">multiplicity</code><a class="headerlink" href="#rmgpy.rmg.model.Species.multiplicity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fingerprint of this species, taken from molecule attribute. Read-only.</p>
 </dd></dl>
 
 <dl class="attribute">

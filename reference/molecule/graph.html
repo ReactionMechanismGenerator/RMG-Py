@@ -100,10 +100,23 @@ original vertices and edges are used in the new graph.</p>
 
 <dl class="method">
 <dt id="rmgpy.molecule.graph.Graph.findIsomorphism">
-<code class="descname">findIsomorphism</code><span class="sig-paren">(</span><em>self</em>, <em>Graph other</em>, <em>dict initialMap=None</em>, <em>bool saveOrder=False</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#rmgpy.molecule.graph.Graph.findIsomorphism" title="Permalink to this definition">¶</a></dt>
+<code class="descname">findIsomorphism</code><span class="sig-paren">(</span><em>self</em>, <em>Graph other</em>, <em>dict initialMap=None</em>, <em>bool saveOrder=False</em>, <em>bool strict=True</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#rmgpy.molecule.graph.Graph.findIsomorphism" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="xref py py-data docutils literal notranslate"><span class="pre">True</span></code> if <cite>other</cite> is subgraph isomorphic and <code class="xref py py-data docutils literal notranslate"><span class="pre">False</span></code>
 otherwise, and the matching mapping.
 Uses the VF2 algorithm of Vento and Foggia.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>initialMap</strong> (<em>dict</em><em>, </em><em>optional</em>) – initial atom mapping to use</li>
+<li><strong>saveOrder</strong> (<em>bool</em><em>, </em><em>optional</em>) – if <code class="docutils literal notranslate"><span class="pre">True</span></code>, reset atom order after performing atom isomorphism</li>
+<li><strong>strict</strong> (<em>bool</em><em>, </em><em>optional</em>) – if <code class="docutils literal notranslate"><span class="pre">False</span></code>, perform isomorphism ignoring electrons</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -286,19 +299,33 @@ is in one or more cycles in the graph, or <code class="xref py py-data docutils 
 
 <dl class="method">
 <dt id="rmgpy.molecule.graph.Graph.isIsomorphic">
-<code class="descname">isIsomorphic</code><span class="sig-paren">(</span><em>self</em>, <em>Graph other</em>, <em>dict initialMap=None</em>, <em>bool saveOrder=False</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.graph.Graph.isIsomorphic" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isIsomorphic</code><span class="sig-paren">(</span><em>self</em>, <em>Graph other</em>, <em>dict initialMap=None</em>, <em>bool saveOrder=False</em>, <em>bool strict=True</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.graph.Graph.isIsomorphic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="xref py py-data docutils literal notranslate"><span class="pre">True</span></code> if two graphs are isomorphic and <code class="xref py py-data docutils literal notranslate"><span class="pre">False</span></code>
 otherwise. Uses the VF2 algorithm of Vento and Foggia.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>initialMap</strong> (<em>dict</em><em>, </em><em>optional</em>) – initial atom mapping to use</li>
+<li><strong>saveOrder</strong> (<em>bool</em><em>, </em><em>optional</em>) – if <code class="docutils literal notranslate"><span class="pre">True</span></code>, reset atom order after performing atom isomorphism</li>
+<li><strong>strict</strong> (<em>bool</em><em>, </em><em>optional</em>) – if <code class="docutils literal notranslate"><span class="pre">False</span></code>, perform isomorphism ignoring electrons</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="rmgpy.molecule.graph.Graph.isMappingValid">
-<code class="descname">isMappingValid</code><span class="sig-paren">(</span><em>self</em>, <em>Graph other</em>, <em>dict mapping</em>, <em>bool equivalent=True</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.graph.Graph.isMappingValid" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isMappingValid</code><span class="sig-paren">(</span><em>self</em>, <em>Graph other</em>, <em>dict mapping</em>, <em>bool equivalent=True</em>, <em>bool strict=True</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.graph.Graph.isMappingValid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check that a proposed <cite>mapping</cite> of vertices from <cite>self</cite> to <cite>other</cite>
 is valid by checking that the vertices and edges involved in the
-mapping are mutually equivalent.  If equivalent is true it checks
-if atoms and edges are equivalent, if false it checks if they
-are specific cases of each other.</p>
+mapping are mutually equivalent.  If equivalent is <code class="docutils literal notranslate"><span class="pre">True</span></code> it checks
+if atoms and edges are equivalent, if <code class="docutils literal notranslate"><span class="pre">False</span></code> it checks if they
+are specific cases of each other. If strict is <code class="docutils literal notranslate"><span class="pre">True</span></code>, electrons
+and bond orders are considered, and ignored if <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
 </dd></dl>
 
 <dl class="method">

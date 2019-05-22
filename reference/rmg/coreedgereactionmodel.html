@@ -224,12 +224,10 @@ in the reaction database are iterated over to check if a reaction was overlooked
 <dt id="rmgpy.rmg.model.CoreEdgeReactionModel.checkForExistingSpecies">
 <code class="descname">checkForExistingSpecies</code><span class="sig-paren">(</span><em>molecule</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.checkForExistingSpecies" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check to see if an existing species contains the same
-<code class="xref py py-class docutils literal notranslate"><span class="pre">molecule.Molecule</span></code> as <cite>molecule</cite>.
-Returns <code class="docutils literal notranslate"><span class="pre">True</span></code>, <cite>reactive</cite>, and the matched species (if found) or
-<code class="docutils literal notranslate"><span class="pre">False</span></code>, <code class="docutils literal notranslate"><span class="pre">False</span></code>, and <code class="docutils literal notranslate"><span class="pre">None</span></code> (if not found).
-<cite>reactive</cite> is a boolean argument which is <code class="docutils literal notranslate"><span class="pre">False</span></code> if this molecule is an unrepresentative resonance structure
-of an existing species (i.e., was found to be isomorphic only by generating its unfiltered resonance structures)
-and True otherwise. It is emphasized that <cite>reactive</cite> relates to the <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> attribute.</p>
+<code class="xref py py-class docutils literal notranslate"><span class="pre">molecule.Molecule</span></code> as <cite>molecule</cite>. Comparison is done using
+isomorphism without consideration of electrons. Therefore, resonance
+structures of a species will all match each other.</p>
+<p>Returns the matched species if found and <cite>None</cite> otherwise.</p>
 </dd></dl>
 
 <dl class="method">

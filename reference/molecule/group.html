@@ -150,7 +150,8 @@ this method cannot handle very general cases, so it is better to be conservative
 <dl class="attribute">
 <dt id="rmgpy.molecule.Group.atoms">
 <code class="descname">atoms</code><a class="headerlink" href="#rmgpy.molecule.Group.atoms" title="Permalink to this definition">¶</a></dt>
-<dd><p>Group.__getAtoms(self)</p>
+<dd><p>List of atoms contained in the current molecule.</p>
+<p>Renames the inherited vertices attribute of <code class="xref py py-class docutils literal notranslate"><span class="pre">Graph</span></code>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -250,7 +251,7 @@ connects it to one atom of the group, ‘connectingAtom’. This is useful for m
 
 <dl class="method">
 <dt id="rmgpy.molecule.Group.findIsomorphism">
-<code class="descname">findIsomorphism</code><span class="sig-paren">(</span><em>self</em>, <em>Graph other</em>, <em>dict initialMap=None</em>, <em>bool saveOrder=False</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#rmgpy.molecule.Group.findIsomorphism" title="Permalink to this definition">¶</a></dt>
+<code class="descname">findIsomorphism</code><span class="sig-paren">(</span><em>self</em>, <em>Graph other</em>, <em>dict initialMap=None</em>, <em>bool saveOrder=False</em>, <em>bool strict=True</em><span class="sig-paren">)</span> &#x2192; list<a class="headerlink" href="#rmgpy.molecule.Group.findIsomorphism" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>other</cite> is isomorphic and <code class="docutils literal notranslate"><span class="pre">False</span></code>
 otherwise, and the matching mapping. The <cite>initialMap</cite> attribute can be
 used to specify a required mapping from <cite>self</cite> to <cite>other</cite> (i.e. the
@@ -538,7 +539,7 @@ opposed to molecules to groups)</p>
 
 <dl class="method">
 <dt id="rmgpy.molecule.Group.isIsomorphic">
-<code class="descname">isIsomorphic</code><span class="sig-paren">(</span><em>self</em>, <em>Graph other</em>, <em>dict initialMap=None</em>, <em>bool saveOrder=False</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Group.isIsomorphic" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isIsomorphic</code><span class="sig-paren">(</span><em>self</em>, <em>Graph other</em>, <em>dict initialMap=None</em>, <em>bool saveOrder=False</em>, <em>bool strict=True</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Group.isIsomorphic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if two graphs are isomorphic and <code class="docutils literal notranslate"><span class="pre">False</span></code>
 otherwise. The <cite>initialMap</cite> attribute can be used to specify a required
 mapping from <cite>self</cite> to <cite>other</cite> (i.e. the atoms of <cite>self</cite> are the keys,
@@ -548,12 +549,13 @@ be a <a class="reference internal" href="#rmgpy.molecule.Group" title="rmgpy.mol
 
 <dl class="method">
 <dt id="rmgpy.molecule.Group.isMappingValid">
-<code class="descname">isMappingValid</code><span class="sig-paren">(</span><em>self</em>, <em>Graph other</em>, <em>dict mapping</em>, <em>bool equivalent=True</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Group.isMappingValid" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isMappingValid</code><span class="sig-paren">(</span><em>self</em>, <em>Graph other</em>, <em>dict mapping</em>, <em>bool equivalent=True</em>, <em>bool strict=True</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.Group.isMappingValid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check that a proposed <cite>mapping</cite> of vertices from <cite>self</cite> to <cite>other</cite>
 is valid by checking that the vertices and edges involved in the
-mapping are mutually equivalent.  If equivalent is true it checks
-if atoms and edges are equivalent, if false it checks if they
-are specific cases of each other.</p>
+mapping are mutually equivalent.  If equivalent is <code class="docutils literal notranslate"><span class="pre">True</span></code> it checks
+if atoms and edges are equivalent, if <code class="docutils literal notranslate"><span class="pre">False</span></code> it checks if they
+are specific cases of each other. If strict is <code class="docutils literal notranslate"><span class="pre">True</span></code>, electrons
+and bond orders are considered, and ignored if <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
 </dd></dl>
 
 <dl class="method">

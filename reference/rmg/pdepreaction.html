@@ -185,7 +185,10 @@ Returns a list with the reaction object and the direction in which the violation
 <dl class="attribute">
 <dt id="rmgpy.rmg.pdep.PDepReaction.degeneracy">
 <code class="descname">degeneracy</code><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.degeneracy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reaction.__getDegneneracy(self)</p>
+<dd><p>The reaction path degeneracy for this reaction.</p>
+<p>If the reaction has kinetics, changing the degeneracy
+will adjust the reaction rate by a ratio of the new
+degeneracy to the old degeneracy.</p>
 </dd></dl>
 
 <dl class="method">
@@ -229,7 +232,7 @@ vector formats.</p>
 
 <dl class="method">
 <dt id="rmgpy.rmg.pdep.PDepReaction.ensure_species">
-<code class="descname">ensure_species</code><span class="sig-paren">(</span><em>self</em>, <em>bool reactant_resonance=False</em>, <em>bool product_resonance=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.ensure_species" title="Permalink to this definition">¶</a></dt>
+<code class="descname">ensure_species</code><span class="sig-paren">(</span><em>self</em>, <em>bool reactant_resonance=False</em>, <em>bool product_resonance=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.ensure_species" title="Permalink to this definition">¶</a></dt>
 <dd><p>Ensure the reaction contains species objects in its reactant and product
 attributes. If the reaction is found to hold molecule objects, it
 modifies the reactant, product and pairs to hold
@@ -487,22 +490,29 @@ each side of the reaction equation, or <code class="docutils literal notranslate
 
 <dl class="method">
 <dt id="rmgpy.rmg.pdep.PDepReaction.isIsomorphic">
-<code class="descname">isIsomorphic</code><span class="sig-paren">(</span><em>self</em>, <em>Reaction other</em>, <em>bool eitherDirection=True</em>, <em>bool checkIdentical=False</em>, <em>bool checkOnlyLabel=False</em>, <em>bool checkTemplateRxnProducts=False</em>, <em>bool generateInitialMap=False</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.isIsomorphic" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isIsomorphic</code><span class="sig-paren">(</span><em>self</em>, <em>Reaction other</em>, <em>bool eitherDirection=True</em>, <em>bool checkIdentical=False</em>, <em>bool checkOnlyLabel=False</em>, <em>bool checkTemplateRxnProducts=False</em>, <em>bool generateInitialMap=False</em>, <em>bool strict=True</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.isIsomorphic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if this reaction is the same as the <cite>other</cite> reaction,
 or <code class="docutils literal notranslate"><span class="pre">False</span></code> if they are different. The comparison involves comparing
 isomorphism of reactants and products, and doesn’t use any kinetic
 information.</p>
-<p>If <cite>eitherDirection=False</cite> then the directions must match.</p>
-<dl class="docutils">
-<dt><cite>checkIdentical</cite> indicates that atom ID’s must match and is used in</dt>
-<dd>checking degeneracy</dd>
-<dt><cite>checkOnlyLabel</cite> indicates that the string representation will be</dt>
-<dd>checked, ignoring the molecular structure comparisons</dd>
-<dt><cite>checkTemplateRxnProducts</cite> indicates that only the products of the</dt>
-<dd>reaction are checked for isomorphism. This is used when
-we know the reactants are identical, i.e. in generating
-reactions.</dd>
-</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>eitherDirection</strong> (<em>bool</em><em>, </em><em>optional</em>) – if <code class="docutils literal notranslate"><span class="pre">False</span></code>,then the reaction direction must match.</li>
+<li><strong>checkIdentical</strong> (<em>bool</em><em>, </em><em>optional</em>) – if <code class="docutils literal notranslate"><span class="pre">True</span></code>, check that atom ID’s match (used for checking degeneracy)</li>
+<li><strong>checkOnlyLabel</strong> (<em>bool</em><em>, </em><em>optional</em>) – if <code class="docutils literal notranslate"><span class="pre">True</span></code>, only check the string representation,
+ignoring molecular structure comparisons</li>
+<li><strong>checkTemplateRxnProducts</strong> (<em>bool</em><em>, </em><em>optional</em>) – if <code class="docutils literal notranslate"><span class="pre">True</span></code>, only check isomorphism of reaction products
+(used when we know the reactants are identical, i.e. in generating reactions)</li>
+<li><strong>generateInitialMap</strong> (<em>bool</em><em>, </em><em>optional</em>) – if <code class="docutils literal notranslate"><span class="pre">True</span></code>, initialize map by pairing atoms with same labels</li>
+<li><strong>strict</strong> (<em>bool</em><em>, </em><em>optional</em>) – if <code class="docutils literal notranslate"><span class="pre">False</span></code>, perform isomorphism ignoring electrons</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
