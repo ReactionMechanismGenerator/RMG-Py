@@ -181,6 +181,7 @@ class StatMechJob(object):
         self.includeHinderedRotors = True
         self.applyAtomEnergyCorrections = True
         self.applyBondEnergyCorrections = True
+        self.bondEnergyCorrectionType = 'p'
         self.atomEnergies = None
         self.supporting_info = [self.species.label]
         self.bonds = None
