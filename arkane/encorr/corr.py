@@ -39,6 +39,7 @@ from arkane.exceptions import AtomEnergyCorrectionError, BondAdditivityCorrectio
 
 import arkane.encorr.data as data
 import arkane.encorr.pbac as pbac
+import arkane.encorr.mbac as mbac
 
 
 def get_energy_correction(model_chemistry, atoms, bonds, coords, nums, multiplicity=1,
@@ -133,5 +134,8 @@ def get_bac(model_chemistry, bonds, coords, nums, bac_type='p', multiplicity=1):
     """
     if bac_type.lower() == 'p':  # Petersson-type BACs
         return pbac.get_bac(model_chemistry, bonds)
+    elif bac_type.lower() == 'm':  # Melius-type BACs
+        # Return negative because the correction is subtracted in the Melius paper
+        return -mbac.get_bac(model_chemistry, coords, nums, multiplicity=multiplicity)
     else:
         raise BondAdditivityCorrectionError('BAC type {} is not available'.format(bac_type))

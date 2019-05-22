@@ -404,3 +404,7 @@ pbac = {
     },
 
 }
+
+
+# Melius-type bond additivity correction parameters
+mbac = {}
