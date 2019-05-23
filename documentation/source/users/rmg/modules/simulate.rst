@@ -1,8 +1,8 @@
 .. _simulate:
 
-***********************************
-Simulation and Sensitivity Analysis
-***********************************
+***********************************************
+Simulation and Sensitivity/Uncertainty Analysis
+***********************************************
 
 For sensitivity analysis, RMG-Py must be compiled with the DASPK solver, which is done by default but has
 some dependency restrictions. (See :ref:`License Restrictions on Dependencies <dependenciesRestrictions>` for more details.) 
@@ -35,3 +35,6 @@ with the file name ``sensitivity_1_SPC_1.csv`` with the first index value indica
 the sensitivity analysis is conducted for.  Sensitivities to thermo of individual species is also saved as semi normalized sensitivities
 dln(C_i)/d(G_j) where the units are given in 1/(kcal mol-1). The sensitivityThreshold is set to some value so that only
 sensitivities for dln(C_i)/dln(k_j) > sensitivityThreshold  or dlnC_i/d(G_j) > sensitivityThreshold are saved to this file.  
+
+Uncertainty analysis can also be requested via input file options. For more details, see :ref:`uncertaintyanalysis`.
+The results of the analysis will be printed in the ``simulate.log`` file which is generated.
