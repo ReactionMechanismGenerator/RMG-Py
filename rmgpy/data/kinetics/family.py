@@ -2991,7 +2991,7 @@ class KineticsFamily(Database):
             rs = templateRxnMap[parent.label]
             for q,rxn in enumerate(rs):
                 for j in xrange(q):
-                    if not isomorphic_species_lists(rxn.reactants,rs[j].reactants,generateInitialMap=True):
+                    if not same_species_lists(rxn.reactants,rs[j].reactants,generate_initial_map=True):
                         for p,atm in enumerate(parent.item.atoms):
                             if atm.reg_dim_atm[0] != atm.reg_dim_atm[1]:
                                 logging.error('atom violation')
