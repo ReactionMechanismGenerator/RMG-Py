@@ -109,7 +109,7 @@ def saveEntry(f, entry):
         if hasattr(entry.data, 'efficiencies'):
             efficiencies = entry.data.efficiencies
             entry.data.efficiencies = dict(sortEfficiencies(entry.data.efficiencies))
-        kinetics = prettify(repr(entry.data))
+        kinetics = repr(entry.data) # todo prettify currently does not support uncertainty attribute
         kinetics = '    kinetics = {0},\n'.format(kinetics.replace('\n', '\n    '))
         f.write(kinetics)
         if hasattr(entry.data, 'efficiencies'):

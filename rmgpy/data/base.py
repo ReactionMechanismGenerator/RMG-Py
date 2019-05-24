@@ -45,6 +45,7 @@ except ImportError:
     OrderedDict = dict
 from rmgpy.molecule import Molecule, Group
 from rmgpy.kinetics.arrhenius import ArrheniusBM
+from rmgpy.kinetics.uncertainties import RateUncertainty
 from reference import Reference, Article, Book, Thesis
 from rmgpy.exceptions import DatabaseError, ForbiddenStructureException, InvalidAdjacencyListError
 
@@ -231,6 +232,7 @@ class Database:
         local_context['solvent'] = self.solvent
         local_context['shortDesc'] = self.shortDesc
         local_context['longDesc'] = self.longDesc
+        local_context['RateUncertainty'] = RateUncertainty
         # add in anything from the Class level dictionary.
         for key, value in Database.local_context.iteritems():
             local_context[key]=value
