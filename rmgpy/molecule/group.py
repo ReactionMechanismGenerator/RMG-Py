@@ -442,7 +442,7 @@ class GroupAtom(Vertex):
                         return False
         else:
             if group.lonePairs: return False
-        #Each charge in self must have an equivalent in other
+        # Each charge in self must have an equivalent in other
         if self.charge:
             for charge1 in self.charge:
                 if group.charge:
@@ -462,7 +462,6 @@ class GroupAtom(Vertex):
         # Otherwise self is in fact a specific case of other
         return True
 
-
     def isSurfaceSite(self):
         """
         Return ``True`` if the atom represents a surface site or ``False`` if not.
@@ -472,31 +471,42 @@ class GroupAtom(Vertex):
 
     def isOxygen(self):
         """
-        Return ``True`` if the atom represents an oxygen atom or ``False`` if
-        not.
+        Return ``True`` if the atom represents an oxygen atom or ``False`` if not.
         """
         allOxygens = [atomTypes['O']] + atomTypes['O'].specific
-        checkList=[x in allOxygens for x in self.atomType]
-
+        checkList = [x in allOxygens for x in self.atomType]
         return all(checkList)
 
     def isSulfur(self):
         """
-        Return ``True`` if the atom represents an sulfur atom or ``False`` if
-        not.
+        Return ``True`` if the atom represents an sulfur atom or ``False`` if not.
         """
         allSulfur = [atomTypes['S']] + atomTypes['S'].specific
-        checkList=[x in allSulfur for x in self.atomType]
+        checkList = [x in allSulfur for x in self.atomType]
+        return all(checkList)
 
+    def isNitrogen(self):
+        """
+        Return ``True`` if the atom represents an sulfur atom or ``False`` if not.
+        """
+        allNitrogen = [atomTypes['N']] + atomTypes['N'].specific
+        checkList = [x in allNitrogen for x in self.atomType]
+        return all(checkList)
+
+    def isCarbon(self):
+        """
+        Return ``True`` if the atom represents an sulfur atom or ``False`` if not.
+        """
+        allCarbon = [atomTypes['C']] + atomTypes['C'].specific
+        checkList = [x in allCarbon for x in self.atomType]
         return all(checkList)
 
     def hasWildcards(self):
         """
         Return ``True`` if the atom has wildcards in any of the attributes:
-        atomtype, electronpairs, lone pairs, charge, and bond order. Returns
+        atomtype, radical electrons, lone pairs, charge, and bond order. Returns
         ''False'' if no attribute has wildcards.
         """
-
         if len(self.atomType) > 1:
             return True
         elif len(self.radicalElectrons) > 1 or len(self.radicalElectrons) == 0:
@@ -506,7 +516,6 @@ class GroupAtom(Vertex):
         for bond in self.bonds.values():
             if len(bond.order) > 1:
                 return True
-
         return False
 
     def countBonds(self, wildcards = False):
@@ -516,7 +525,7 @@ class GroupAtom(Vertex):
         If the argument wildcards is turned off then any bonds with multiple
         options for bond orders will not be counted
         """
-        #count up number of bonds
+        # count up number of bonds
         single = 0; rDouble = 0; oDouble = 0; sDouble = 0; triple = 0; quadruple = 0; benzene = 0
         for atom2, bond12 in self.bonds.iteritems():
             if not wildcards and len(bond12.order) > 1:

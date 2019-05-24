@@ -73,6 +73,10 @@ cdef class GroupAtom(Vertex):
 
     cpdef bint isSulfur(self)
 
+    cpdef bint isNitrogen(self)
+
+    cpdef bint isCarbon(self)
+
     cpdef list countBonds(self, wildcards = ?)
 
     cpdef bint hasWildcards(self)

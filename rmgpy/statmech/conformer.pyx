@@ -338,13 +338,13 @@ cdef class Conformer(RMGObject):
         Finally, the reduced moment of inertia is evaluated from the moment of inertia 
         of each top via the formula (I1*I2)/(I1+I2).  
         
-        Option corresponds to 3 possible ways of calculating the internal reduced moment of inertia
-        as discussed in East and Radom [2]
+        ``option`` is an integer corresponding to one of three possible ways of calculating the internal reduced moment
+        of inertia, as discussed in East and Radom [2]
         
         +----------+---------------------------------------------------------------------------------------------------+
         |option = 1|moments of inertia of each rotating group calculated about the axis containing the twisting bond   |
         +----------+---------------------------------------------------------------------------------------------------+
-        |option = 2|(unimplemented) each moment of inertia of each rotating group is calculated about an axis parallel |
+        |option = 2|each moment of inertia of each rotating group is calculated about an axis parallel                 |
         |          |to the twisting bond and passing through its center of mass                                        |
         +----------+---------------------------------------------------------------------------------------------------+
         |option = 3|moments of inertia of each rotating group calculated about the axis passing through the            |
@@ -371,9 +371,11 @@ cdef class Conformer(RMGObject):
 
         # Check that exactly one pivot atom is in the specified top
         if pivots[0] not in top1 and pivots[1] not in top1:
-            raise ValueError('No pivot atom included in top; you must specify which pivot atom belongs with the specified top.')
+            raise ValueError('No pivot atom included in top; you must specify which pivot atom belongs with the'
+                             ' specified top.')
         elif pivots[0] in top1 and pivots[1] in top1:
-            raise ValueError('Both pivot atoms included in top; you must specify only one pivot atom that belongs with the specified top.')
+            raise ValueError('Both pivot atoms included in top; you must specify only one pivot atom that belongs'
+                             ' with the specified top.')
 
         # Enumerate atoms in other top
         top2 = [i+1 for i in range(Natoms) if i+1 not in top1]
@@ -412,8 +414,9 @@ cdef class Conformer(RMGObject):
             # Determine moments of inertia of each top
             I1 = 0.0
             for atom in top1:
-                r1 = coordinates[atom-1,:] - top1CenterOfMass #shift to the center of mass (goes through center of mass)
-                r1 -= numpy.dot(r1, axis) * axis #remove components parallel to the bond axis
+                # shift to the center of mass (goes through center of mass)
+                r1 = coordinates[atom-1,:] - top1CenterOfMass
+                r1 -= numpy.dot(r1, axis) * axis  # remove components parallel to the bond axis
                 I1 += mass[atom-1] * numpy.linalg.norm(r1)**2
             I2 = 0.0
             for atom in top2:
@@ -442,9 +445,9 @@ cdef class Conformer(RMGObject):
                           
         else:
             
-            raise ValueError("option {0} unimplemented or non-existant".format(option))
+            raise ValueError('Option {0} is invalid. Should be either 1, 2, or 3.'.format(option))
         
-        return I1*I2/(I1+I2)
+        return I1 * I2 / (I1 + I2)
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
