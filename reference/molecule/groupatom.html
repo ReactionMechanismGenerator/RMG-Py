@@ -247,7 +247,7 @@ respects wildcards, e.g. <code class="docutils literal notranslate"><span class=
 <dt id="rmgpy.molecule.GroupAtom.hasWildcards">
 <code class="descname">hasWildcards</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.GroupAtom.hasWildcards" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom has wildcards in any of the attributes:
-atomtype, electronpairs, lone pairs, charge, and bond order. Returns
+atomtype, radical electrons, lone pairs, charge, and bond order. Returns
 ‘’False’’ if no attribute has wildcards.</p>
 </dd></dl>
 
@@ -266,10 +266,21 @@ atomtype, electronpairs, lone pairs, charge, and bond order. Returns
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.molecule.GroupAtom.isCarbon">
+<code class="descname">isCarbon</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.GroupAtom.isCarbon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represents an sulfur atom or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="rmgpy.molecule.GroupAtom.isNitrogen">
+<code class="descname">isNitrogen</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.GroupAtom.isNitrogen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represents an sulfur atom or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.molecule.GroupAtom.isOxygen">
 <code class="descname">isOxygen</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.GroupAtom.isOxygen" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represents an oxygen atom or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
-not.</p>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represents an oxygen atom or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not.</p>
 </dd></dl>
 
 <dl class="method">
@@ -283,8 +294,7 @@ included in <cite>other</cite> or they are mutually exclusive.</p>
 <dl class="method">
 <dt id="rmgpy.molecule.GroupAtom.isSulfur">
 <code class="descname">isSulfur</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span> &#x2192; bool<a class="headerlink" href="#rmgpy.molecule.GroupAtom.isSulfur" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represents an sulfur atom or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
-not.</p>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represents an sulfur atom or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not.</p>
 </dd></dl>
 
 <dl class="method">
