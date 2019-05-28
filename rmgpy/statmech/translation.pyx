@@ -45,6 +45,7 @@ cimport rmgpy.statmech.schrodinger as schrodinger
 
 ################################################################################
 
+
 cdef class Translation(Mode):
     """
     A base class for all vibrational degrees of freedom. The attributes are:
@@ -55,15 +56,16 @@ cdef class Translation(Mode):
     `quantum`                ``True`` to use the quantum mechanical model, ``False`` to use the classical model
     ======================== ===================================================
 
-    In the majority of chemical applications, the vibrational energy levels are
-    widely spaced compared to :math:`k_\\mathrm{B} T`, which makes a quantum
-    mechanical treatment required.
+    In the majority of chemical applications, the translational energy levels are
+    much smaller than :math:`k_\\mathrm{B} T`, which makes a classical
+    mechanical treatment adequate.
     """
 
     def __init__(self, quantum=True):
         Mode.__init__(self, quantum)
 
 ################################################################################
+
 
 cdef class IdealGasTranslation(Translation):
     """
@@ -123,7 +125,7 @@ cdef class IdealGasTranslation(Translation):
             raise NotImplementedError('Quantum mechanical model not yet implemented for IdealGasTranslation.')
         else:
             mass = self._mass.value_si
-            qt = ((2 * constants.pi * mass) / (constants.h * constants.h)) ** 1.5 / 101325.
+            qt = ((2 * constants.pi * mass) / (constants.h ** 2)) ** 1.5 / 101325.  # assume P = 1 atm = 101325 Pa
             Q = qt * (constants.kB * T) ** 2.5
         return Q
 
@@ -179,7 +181,7 @@ cdef class IdealGasTranslation(Translation):
         else:
             mass = self._mass.value_si
             e_list = e_list / constants.Na
-            qt = ((2 * constants.pi * mass) / (constants.h * constants.h)) ** 1.5 / 101325.
+            qt = ((2 * constants.pi * mass) / (constants.h ** 2)) ** 1.5 / 101325.
             sum_states = qt * e_list ** 2.5 / (sqrt(constants.pi) * 15.0 / 8.0)
         return sum_states
 
@@ -198,7 +200,7 @@ cdef class IdealGasTranslation(Translation):
             mass = self._mass.value_si
             e_list = e_list / constants.Na
             dE = e_list[1] - e_list[0]
-            qt = ((2 * constants.pi * mass) / (constants.h * constants.h)) ** 1.5 / 101325.
+            qt = ((2 * constants.pi * mass) / (constants.h ** 2)) ** 1.5 / 101325.
             dens_states = qt * e_list ** 1.5 / (sqrt(constants.pi) * 0.75) * dE
             if dens_states_0 is not None:
                 dens_states = schrodinger.convolve(dens_states_0, dens_states)
