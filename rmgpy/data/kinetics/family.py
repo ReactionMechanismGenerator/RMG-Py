@@ -3640,6 +3640,8 @@ class KineticsFamily(Database):
                     mol = deepcopy(react.molecule[0])
             
             if fixLabels:
+                for prod in rxns[i].products:
+                    fixLabelsMol(prod.molecule[0],rootLabels)
                 for atm in mol.atoms:
                     if atm.label not in rootLabels:
                         atm.label = ''
@@ -3708,9 +3710,9 @@ class KineticsFamily(Database):
                         mol = mol.merge(react.molecule[0])
                     else:
                         mol = deepcopy(react.molecule[0])
-                
-                if mol.isSubgraphIsomorphic(root,generateInitialMap=True): #try product structures
-                    products = rxns[i].products
+
+                if mol.isSubgraphIsomorphic(root,generateInitialMap=True) or (not fixLabels and getLabelFixedMol(mol,rootLabels).isSubgraphIsomorphic(root,generateInitialMap=True)): #try product structures
+                    products = [Species(molecule=[getLabelFixedMol(x.molecule[0],rootLabels)],thermo=x.thermo) for x in rxns[i].products]
                 else:
                     products = self.applyRecipe([s.molecule[0] for s in rxns[i].reactants],forward=True)
                     products = [Species(molecule=[p]) for p in products]
