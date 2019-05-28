@@ -44,6 +44,7 @@ import rmgpy.statmech.schrodinger as schrodinger
 
 ################################################################################
 
+
 cdef class Translation(Mode):
     """
     A base class for all vibrational degrees of freedom. The attributes are:
@@ -54,15 +55,16 @@ cdef class Translation(Mode):
     `quantum`                ``True`` to use the quantum mechanical model, ``False`` to use the classical model
     ======================== ===================================================
 
-    In the majority of chemical applications, the vibrational energy levels are
-    widely spaced compared to :math:`k_\\mathrm{B} T`, which makes a quantum
-    mechanical treatment required.
+    In the majority of chemical applications, the translational energy levels are
+    much smaller than :math:`k_\\mathrm{B} T`, which makes a classical
+    mechanical treatment adequate.
     """
 
     def __init__(self, quantum=True):
         Mode.__init__(self, quantum)
 
 ################################################################################
+
 
 cdef class IdealGasTranslation(Translation):
     """
@@ -119,8 +121,8 @@ cdef class IdealGasTranslation(Translation):
             raise NotImplementedError('Quantum mechanical model not yet implemented for IdealGasTranslation.')
         else:
             mass = self._mass.value_si
-            qt = ((2 * constants.pi * mass) / (constants.h * constants.h))**1.5 / 101325.
-            Q = qt * (constants.kB * T)**2.5
+            qt = ((2 * constants.pi * mass) / (constants.h ** 2)) ** 1.5 / 101325.  # assume P = 1 atm = 101325 Pa
+            Q = qt * (constants.kB * T) ** 2.5
         return Q
         
     cpdef double getHeatCapacity(self, double T) except -100000000:
@@ -175,8 +177,8 @@ cdef class IdealGasTranslation(Translation):
         else:
             mass = self._mass.value_si
             Elist = Elist / constants.Na
-            qt = ((2 * constants.pi * mass) / (constants.h * constants.h))**1.5 / 101325.
-            sumStates = qt * Elist**2.5 / (sqrt(constants.pi) * 15.0/8.0)
+            qt = ((2 * constants.pi * mass) / (constants.h ** 2)) ** 1.5 / 101325.
+            sumStates = qt * Elist ** 2.5 / (sqrt(constants.pi) * 15.0 / 8.0)
         return sumStates
             
     cpdef numpy.ndarray getDensityOfStates(self, numpy.ndarray Elist, numpy.ndarray densStates0=None):
@@ -194,8 +196,8 @@ cdef class IdealGasTranslation(Translation):
             mass = self._mass.value_si
             Elist = Elist / constants.Na
             dE = Elist[1] - Elist[0]
-            qt = ((2 * constants.pi * mass) / (constants.h * constants.h))**1.5 / 101325.
-            densStates = qt * Elist**1.5 / (sqrt(constants.pi) * 0.75) * dE
+            qt = ((2 * constants.pi * mass) / (constants.h ** 2)) ** 1.5 / 101325.
+            densStates = qt * Elist ** 1.5 / (sqrt(constants.pi) * 0.75) * dE
             if densStates0 is not None:
                 densStates = schrodinger.convolve(densStates0, densStates)
         return densStates
