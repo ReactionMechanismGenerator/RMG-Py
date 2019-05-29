@@ -367,7 +367,7 @@ cdef class Configuration:
             
             Blist = []
             for spec in self.species:
-                Jrotor, Krotor = spec.conformer.getSymmetricTopRotors()
+                Jrotor = spec.conformer.getSymmetricTopRotors()[0]
                 Blist.append(float(Jrotor.rotationalConstant.value_si))
         
             for r0 in range(Ngrains):
@@ -431,7 +431,7 @@ cdef class Configuration:
             
             Blist = []
             for spec in self.species:
-                Jrotor, Krotor = spec.conformer.getSymmetricTopRotors()
+                Jrotor = spec.conformer.getSymmetricTopRotors()[0]
                 Blist.append(float(Jrotor.rotationalConstant.value_si))
         
             for r0 in range(Ngrains):
