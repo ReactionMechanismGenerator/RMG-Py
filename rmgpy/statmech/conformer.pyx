@@ -462,9 +462,9 @@ cdef class Conformer(RMGObject):
         constant and the J-rotor rotational constant.
         """
         cdef double A, B
-        cdef numpy.ndarray[numpy.float64_t,ndim=1] Blist
+        cdef numpy.ndarray[numpy.float64_t, ndim=1] Blist
 
-        Jrotor = None; Krotor = None
+        Jrotor, Krotor = None, None
         for mode in self.modes:
             if isinstance(mode, LinearRotor):
                 Jrotor = mode
@@ -478,8 +478,8 @@ cdef class Conformer(RMGObject):
                 else:
                     B = sqrt(Blist[1] * Blist[2])
                     A = Blist[0]
-                Jrotor = LinearRotor(rotationalConstant=(B,"cm^-1"), symmetry=1)
-                Krotor = KRotor(rotationalConstant=(A-B,"cm^-1"), symmetry=mode.symmetry)
+                Jrotor = LinearRotor(rotationalConstant=(B, "cm^-1"), symmetry=1)
+                Krotor = KRotor(rotationalConstant=(A-B, "cm^-1"), symmetry=mode.symmetry)
 
         return Jrotor, Krotor
     
@@ -500,8 +500,8 @@ cdef class Conformer(RMGObject):
                 if activeJRotor and activeKRotor: 
                     modes.append(mode)
                 elif not activeJRotor and activeKRotor:
-                    Jrotor, Krotor = self.getSymmetricTopRotors()
-                    modes.append(Krotor)
+                    k_rotor = self.getSymmetricTopRotors()[1]
+                    modes.append(k_rotor)
                 else:
                     continue
             else:
