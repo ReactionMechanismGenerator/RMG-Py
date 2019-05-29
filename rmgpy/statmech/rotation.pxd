@@ -121,3 +121,31 @@ cdef class SphericalTopRotor(Rotation):
     cpdef numpy.ndarray getSumOfStates(self, numpy.ndarray Elist, numpy.ndarray sumStates0=?)
     
     cpdef numpy.ndarray getDensityOfStates(self, numpy.ndarray Elist, numpy.ndarray densStates0=?)
+
+################################################################################
+
+cdef class SymmetricTopRotor(Rotation):
+
+    cdef public ArrayQuantity _inertia
+
+    cpdef double getIA(self) except -1
+
+    cpdef double getIC(self) except -1
+
+    cpdef double getLevelEnergy(self, int J) except -1
+
+    cpdef double getKLevelEnergy(self, int J, double T) except -1
+
+    cpdef int getLevelDegeneracy(self, int J) except -1
+
+    cpdef double getPartitionFunction(self, double T) except -1
+
+    cpdef double getHeatCapacity(self, double T) except -100000000
+
+    cpdef double getEnthalpy(self, double T) except 100000000
+
+    cpdef double getEntropy(self, double T) except -100000000
+
+    cpdef numpy.ndarray getSumOfStates(self, numpy.ndarray Elist, numpy.ndarray sumStates0=?)
+
+    cpdef numpy.ndarray getDensityOfStates(self, numpy.ndarray Elist, numpy.ndarray densStates0=?)

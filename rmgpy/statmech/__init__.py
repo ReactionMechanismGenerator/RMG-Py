@@ -29,7 +29,7 @@
 ###############################################################################
 
 from .translation import Translation, IdealGasTranslation
-from .rotation import Rotation, LinearRotor, NonlinearRotor, KRotor, SphericalTopRotor
+from .rotation import Rotation, LinearRotor, NonlinearRotor, KRotor, SphericalTopRotor, SymmetricTopRotor
 from .vibration import Vibration, HarmonicOscillator
 from .torsion import Torsion, HinderedRotor
 from .conformer import Conformer

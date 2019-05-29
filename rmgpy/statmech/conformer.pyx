@@ -48,6 +48,7 @@ from rmgpy.statmech.torsion cimport *
 from rmgpy.exceptions import StatmechError
 ################################################################################
 
+
 cdef class Conformer(RMGObject):
     """
     A representation of an individual molecular conformation. The attributes 
@@ -261,6 +262,8 @@ cdef class Conformer(RMGObject):
             elif type(mode) == KRotor:
                 N += 1
             elif type(mode) == SphericalTopRotor:
+                N += 3
+            elif type(mode) == SymmetricTopRotor:
                 N += 3
             else:
                 raise TypeError("Mode type {0!r} not supported".format(mode))
