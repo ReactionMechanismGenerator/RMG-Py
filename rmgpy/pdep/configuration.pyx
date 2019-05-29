@@ -395,7 +395,8 @@ cdef class Configuration(object):
                 b_list.append(float(j_rotor.rotationalConstant.value_si))
 
             for r0 in range(n_grains):
-                if e_list[r0] >= E0: break
+                if e_list[r0] >= E0:
+                    break
 
             if len(b_list) == 1:
                 b1 = b_list[0] * 11.962  # cm^-1 to J/mol
@@ -403,7 +404,8 @@ cdef class Configuration(object):
                     for s in range(n_j):
                         j1 = j_list[s]
                         e = e_list[r] - E0 - b1 * j1 * (j1 + 1)
-                        if e < 0: break
+                        if e < 0:
+                            break
                         dens_states[r,s] = (2 * j1 + 1) * exp(f(e)) * d_j
 
             elif len(b_list) == 2:
