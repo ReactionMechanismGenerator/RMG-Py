@@ -53,6 +53,7 @@ RCOND = -1 if int(np.__version__.split('.')[1]) < 14 else None
 
 ################################################################################
 
+
 cdef class Torsion(Mode):
     """
     A base class for all torsional degrees of freedom. The attributes are:
@@ -66,7 +67,7 @@ cdef class Torsion(Mode):
 
     In the majority of chemical applications, the torsional energy levels are
     mostly close together compared to :math:`k_\\mathrm{B} T`, which makes the
-    torsional motion well-approximated by a semiclassical treatment. 
+    torsional motion well-approximated by a semiclassical treatment.
     """
 
     def __init__(self, symmetry=1, quantum=False):
@@ -97,6 +98,7 @@ cdef class Torsion(Mode):
         self.__init__(**kwargs)
 
 ################################################################################
+
 
 cdef class HinderedRotor(Torsion):
     """
@@ -197,7 +199,7 @@ cdef class HinderedRotor(Torsion):
         """
         Return the value of the rotational constant in J/mol.
         """
-        return constants.hbar * constants.hbar / (2 * self._inertia.value_si) * constants.Na
+        return constants.hbar ** 2 / (2 * self._inertia.value_si) * constants.Na
 
     cpdef double get_frequency(self) except -1:
         """
@@ -214,7 +216,7 @@ cdef class HinderedRotor(Torsion):
             fourier = self._fourier.value_si
             V0 = 0.0
             for k in range(fourier.shape[1]):
-                V0 -= fourier[0, k] * (k + 1) * (k + 1)
+                V0 -= fourier[0, k] * (k + 1) ** 2
             V0 /= constants.Na
             if V0 < 0:
                 raise NegativeBarrierException("Hindered rotor barrier height is less than 0 \n     Try running Arkane"
@@ -593,12 +595,15 @@ cdef class HinderedRotor(Torsion):
 
         return self
 
+
 cdef class FreeRotor(Torsion):
     """
     A statistical mechanical model of a one-dimensional hindered rotor.  
-    Based on Pfaendtner et al. 2007.  
+    Based on J. Pfaendtner, X. Yu, L.J. Broadbelt, Theoretical Chemistry Accounts 2007, 118, 881,
+    DOI: 10.1007/s00214-007-0376-5
+
     The attributes are:
-    
+
     ======================== ===================================================
     Attribute                Description
     ======================== ===================================================
@@ -621,8 +626,7 @@ cdef class FreeRotor(Torsion):
 
     def __repr__(self):
         """
-        Return a string representation that can be used to reconstruct the
-        FreeRotor object.
+        Return a string representation that can be used to reconstruct the FreeRotor object.
         """
         result = 'FreeRotor(inertia={0!r}, symmetry={1:d}'.format(self.inertia, self.symmetry)
         result += ')'
@@ -695,7 +699,7 @@ cdef class FreeRotor(Torsion):
         """
         Return the sum of states :math:`N(E)` at the specified energies `e_list`
         in J/mol above the ground state. 
-        formula from
+        formula from:
         Forst 1995 Journal of Computational Chemistry, Vol. 17, No. 8 954-961 (1996)
         """
         if sum_states_0:
