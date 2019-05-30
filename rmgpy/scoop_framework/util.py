@@ -55,6 +55,9 @@ def warnScoopStartedProperly(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         
+        warnings.warn("The option scoop is no longer supported"
+                      "and may be removed after Version: 2.4 ", DeprecationWarning)
+
         futures_not_loaded = 'scoop.futures' not in sys.modules
 
         warnings.simplefilter('ignore', RuntimeWarning)
@@ -104,6 +107,9 @@ class WorkerWrapper(object):
     """
     __name__ = 'WorkerWrapper'
 
+    warnings.warn("The option scoop is no longer supported"
+                  "and may be removed after Version: 2.4 ", DeprecationWarning)
+
     def __init__(self, myfn):
         self.myfn = myfn
 
@@ -121,7 +127,9 @@ def broadcast(obj, key):
     """
     Broadcasts the object across the workers using the key parameter as the key.
     """      
-    
+    warnings.warn("The option scoop is no longer supported"
+                  "and may be removed after Version: 2.4 ", DeprecationWarning)
+
     kwargs = {key : obj}
     try:
         if shared.getConst(key):
@@ -141,6 +149,8 @@ def get(key):
     parameter key.
     """
 
+    warnings.warn("The option scoop is no longer supported"
+                  "and may be removed after Version: 2.4 ", DeprecationWarning)
     try:
         data = shared.getConst(key, timeout=1e-9)
         return data
@@ -151,6 +161,8 @@ def get(key):
         logger.debug('SCOOP not loaded. Not retrieving the shared object with key {}'.format(key))
 
 def map_(*args, **kwargs):
+    warnings.warn("The option scoop is no longer supported"
+                  "and may be removed after Version: 2.4 ", DeprecationWarning)
     return map(WorkerWrapper(args[0]), *args[1:], **kwargs)
 
 def submit_(func, *args, **kwargs):
@@ -160,6 +172,8 @@ def submit_(func, *args, **kwargs):
     returns the return value of the called function, or
     when SCOOP is loaded, the future object.
     """
+    warnings.warn("The option scoop is no longer supported"
+                  "and may be removed after Version: 2.4 ", DeprecationWarning)
     try:
         task = submit(WorkerWrapper(func), *args, **kwargs)#returns immediately
         return task

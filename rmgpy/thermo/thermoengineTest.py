@@ -41,7 +41,6 @@ from external.wip import work_in_progress
 from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.rmg.main import RMG
-from rmgpy.scoop_framework.framework import TestScoopCommon
 
 from rmgpy.species import Species
 from rmgpy.thermo.thermoengine import submit
@@ -138,34 +137,6 @@ def funcSubmitGet():
 
     return True
 
-@work_in_progress
-class AsyncThermoTest(TestScoopCommon):
-
-    def __init__(self, *args, **kwargs):
-        # Parent initialization
-        super(self.__class__, self).__init__(*args, **kwargs)
-        
-        # Only setup the scoop framework once, and not in every test method:
-        super(self.__class__, self).setUp()
-
-    @unittest.skipUnless(sys.platform.startswith("linux"),
-                         "test currently only runs on linux")
-    def testSubmit(self):
-        """
-        Test that we can submit a request to generate
-        thermo/transport for a number of species.
-        """
-        result = futures._startup(funcSubmit)
-        self.assertEquals(result, True)
-
-    @unittest.skipUnless(sys.platform.startswith("linux"),
-                         "test currently only runs on linux")
-    def testGet(self):
-        """
-        Test that we can get the data of a number of species.
-        """
-        result = futures._startup(funcGet)
-        self.assertEquals(result, True)
 
 if __name__ == '__main__' and os.environ.get('IS_ORIGIN', "1") == "1":
     unittest.main()
