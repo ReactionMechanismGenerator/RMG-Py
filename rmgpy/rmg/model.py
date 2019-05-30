@@ -611,6 +611,10 @@ class CoreEdgeReactionModel:
             logging.info('Generating thermo for new species...')
             self.applyThermoToSpecies(procnum)
 
+        # Do thermodynamic filtering
+        if not numpy.isinf(self.toleranceThermoKeepSpeciesInEdge) and self.newSpeciesList != []:
+            self.thermoFilterSpecies(self.newSpeciesList)
+
         # Generate kinetics of new reactions
         if self.newReactionList:
             logging.info('Generating kinetics for new reactions...')
@@ -732,7 +736,6 @@ class CoreEdgeReactionModel:
             if rxn is None:
                 # Skip this reaction because there was something wrong with it
                 continue
-            spcs = []
             if isNew:
                 # We've made a new reaction, so make sure the species involved
                 # are in the core or edge
@@ -743,13 +746,11 @@ class CoreEdgeReactionModel:
                     if spec not in self.core.species:
                         allSpeciesInCore = False
                         if spec not in self.edge.species:
-                            spcs.append(spec)
                             self.addSpeciesToEdge(spec)
                 for spec in rxn.products:
                     if spec not in self.core.species:
                         allSpeciesInCore = False
                         if spec not in self.edge.species:
-                            spcs.append(spec)
                             self.addSpeciesToEdge(spec)
                     
             isomerAtoms = sum([len(spec.molecule[0].atoms) for spec in rxn.reactants])
@@ -795,10 +796,7 @@ class CoreEdgeReactionModel:
                         self.core.reactions.remove(rxn)
                     if rxn in self.edge.reactions:
                         self.edge.reactions.remove(rxn)
-            
-            if not numpy.isinf(self.toleranceThermoKeepSpeciesInEdge) and spcs != []: #do thermodynamic filtering
-                self.thermoFilterSpecies(spcs)
-                
+
     def applyThermoToSpecies(self, procnum):
         """
         Generate thermo for species. QM calculations are parallelized if requested.
