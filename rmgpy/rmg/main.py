@@ -464,7 +464,7 @@ class RMG(util.Subject):
         if maxproc > psutil.cpu_count():
             raise ValueError("""Invalid input for user defined maximum number of processes {0}; 
             should be an integer and smaller or equal to your available number of 
-            processes {1}""".format(maxproc, psutil.cpu_count()))
+            processors {1}""".format(maxproc, psutil.cpu_count()))
 
         # Load databases
         self.loadDatabase()
