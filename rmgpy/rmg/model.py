@@ -62,7 +62,7 @@ from rmgpy.kinetics import KineticsData, Arrhenius
 from rmgpy.data.rmg import getDB
         
 import rmgpy.data.rmg
-from .react import react_all, determine_procnum_from_RAM
+from .react import react_all
 from rmgpy.data.kinetics.common import ensure_independent_atom_ids, find_degenerate_reactions
 
 from pdep import PDepReaction, PDepNetwork
@@ -530,6 +530,10 @@ class CoreEdgeReactionModel:
         reactionsMovedFromEdge = []
         self.newReactionList = []; self.newSpeciesList = []
 
+        # Determine number of parallel processes.
+        from rmgpy.rmg.main import determine_procnum_from_RAM
+        procnum = determine_procnum_from_RAM()
+
         if reactEdge is False:
             # We are adding core species 
             newReactions = []
@@ -593,7 +597,7 @@ class CoreEdgeReactionModel:
         else:
             # We are reacting the edge
             rxns = react_all(self.core.species, numOldCoreSpecies,
-                             unimolecularReact, bimolecularReact, trimolecularReact=trimolecularReact)
+                             unimolecularReact, bimolecularReact, trimolecularReact=trimolecularReact, procnum=procnum)
 
             spcs = [self.retrieve_species(rxn) for rxn in rxns]
 
@@ -602,9 +606,6 @@ class CoreEdgeReactionModel:
 
         ################################################################
         # Begin processing the new species and reactions
-        
-        # Determine number of parallel processes.
-        procnum = determine_procnum_from_RAM()
 
         # Generate thermo for new species
         if self.newSpeciesList:

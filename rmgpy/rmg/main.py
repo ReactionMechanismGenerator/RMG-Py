@@ -39,6 +39,8 @@ import time
 import logging
 import os
 import shutil
+import resource
+import psutil
 
 import numpy as np
 import gc
@@ -441,13 +443,6 @@ class RMG(util.Subject):
         #Properly set filterReactions to initialize flags properly
         if len(self.modelSettingsList) > 0:
             self.filterReactions = self.modelSettingsList[0].filterReactions
-        
-        # See if memory profiling package is available
-        try:
-            import psutil
-        except ImportError:
-            logging.info('Optional package dependency "psutil" not found; memory profiling information will not be saved.')
-    
         
         # Make output subdirectories
         util.makeOutputSubdirectory(self.outputDirectory, 'pdep')
@@ -1737,6 +1732,31 @@ class RMG(util.Subject):
         return line
     
 ################################################################################
+
+def determine_procnum_from_RAM():
+    """
+    Get available RAM (GB)and procnum dependent on OS.
+    """
+    if sys.platform.startswith('linux'):
+        # linux
+        memory_available = psutil.virtual_memory().free / (1000.0 ** 3)
+        memory_use = psutil.Process(os.getpid()).memory_info()[0]/(1000.0 ** 3)
+        tmp = divmod(memory_available, memory_use)
+        tmp2 = min(maxproc, tmp[0])
+        procnum = max(1, int(tmp2))
+    elif sys.platform == "darwin":
+        # OS X
+        memory_available = psutil.virtual_memory().available/(1000.0 ** 3)
+        memory_use = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/(1000.0 ** 3)
+        tmp = divmod(memory_available, memory_use)
+        tmp2 = min(maxproc, tmp[0])
+        procnum = max(1, int(tmp2))
+    else:
+        # Everything else
+        procnum = 1
+
+    # Return the maximal number of processes for multiprocessing
+    return procnum
 
 def initializeLog(verbose, log_file_name):
     """

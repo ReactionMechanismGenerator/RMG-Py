@@ -33,45 +33,12 @@ Contains functions for generating reactions.
 """
 import itertools
 import logging
-import resource
-import psutil
-import os
-from sys import platform
 
 from rmgpy.data.rmg import getDB
 from multiprocessing import Pool
 
 ################################################################################
-
-def determine_procnum_from_RAM():
-    """
-    Get available RAM (GB)and procnum dependent on OS.
-    """
-
-    from rmgpy.rmg.main import maxproc
-
-    if platform.startswith('linux'):
-        # linux
-        memory_available = psutil.virtual_memory().free / (1000.0 ** 3)
-        memory_use = psutil.Process(os.getpid()).memory_info()[0]/(1000.0 ** 3)
-        tmp = divmod(memory_available, memory_use)
-        tmp2 = min(maxproc, tmp[0])
-        procnum = max(1, int(tmp2))
-    elif platform == "darwin":
-        # OS X
-        memory_available = psutil.virtual_memory().available/(1000.0 ** 3)
-        memory_use = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/(1000.0 ** 3)
-        tmp = divmod(memory_available, memory_use)
-        tmp2 = min(maxproc, tmp[0])
-        procnum = max(1, int(tmp2))
-    else:
-        # Everything else
-        procnum = 1
-
-    # Return the maximal number of processes for multiprocessing
-    return procnum
-
-def react(*spc_tuples):
+def react(spc_tuples, procnum=1):
     """
     Generate reactions between the species in the
     list of species tuples for all the reaction families available.
@@ -87,9 +54,6 @@ def react(*spc_tuples):
 
     Returns a flat generator object containing the generated Reaction objects.
     """
-
-    procnum = determine_procnum_from_RAM()
-
     # Execute multiprocessing map. It blocks until the result is ready.
     # This method chops the iterable into a number of chunks which it
     # submits to the process pool as separate tasks.
@@ -124,14 +88,11 @@ def react_species(species_tuple, only_families=None):
     return reactions
 
 
-def react_all(core_spc_list, numOldCoreSpecies, unimolecularReact, bimolecularReact, trimolecularReact=None):
+def react_all(core_spc_list, numOldCoreSpecies, unimolecularReact, bimolecularReact, trimolecularReact=None, procnum=1):
     """
     Reacts the core species list via uni-, bi-, and trimolecular
     reactions and splits reaction families per task for improved load balancing in parallel runs.
     """
-
-    procnum = determine_procnum_from_RAM()
-
     # Select reactive species that can undergo unimolecular reactions:
     spc_tuples = [(core_spc_list[i],)
                   for i in xrange(numOldCoreSpecies) if (unimolecularReact[i] and core_spc_list[i].reactive)]
@@ -184,7 +145,7 @@ def react_all(core_spc_list, numOldCoreSpecies, unimolecularReact, bimolecularRe
                 for item in split_list:
                     spc_fam_tuples.append((spc_tuple, item))
             else:
-                spc_fam_tuples.append((spc_tuple,))
+                spc_fam_tuples.append((spc_tuple, ))
 
-    return list(react(*spc_fam_tuples))
+    return list(react(spc_fam_tuples, procnum))
 

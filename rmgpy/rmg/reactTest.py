@@ -91,6 +91,7 @@ class TestReact(unittest.TestCase):
         """
         import rmgpy.rmg.main
         rmgpy.rmg.main.maxproc = 2
+        procnum = 2
 
         spcs = [
                 Species().fromSMILES('CC'),
@@ -100,7 +101,7 @@ class TestReact(unittest.TestCase):
                 ]
 
         N = len(spcs)
-        rxns = react_all(spcs, N, np.ones(N), np.ones([N, N]), np.ones([N, N, N]))
+        rxns = react_all(spcs, N, np.ones(N), np.ones([N, N]), np.ones([N, N, N]), procnum)
         self.assertIsNotNone(rxns)
         self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in rxns]))
 
