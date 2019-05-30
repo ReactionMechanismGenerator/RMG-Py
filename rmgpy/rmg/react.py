@@ -43,7 +43,7 @@ from multiprocessing import Pool
 
 def react(*spcTuples):
     """
-    Generate reactions between the species in the 
+    Generate reactions between the species in the
     list of species tuples for all the reaction families available.
 
     For each tuple of one or more Species objects [(spc1,), (spc2, spc3), ...]
@@ -89,16 +89,22 @@ def react(*spcTuples):
         logging.info('For reaction generation {0} process is used.'.format(procnum))
 
     # Execute multiprocessing map. It blocks until the result is ready.
-    # This method chops the iterable into a number of chunks which it 
-    # submits to the process pool as separate tasks. 
-    p = Pool(processes=procnum)
-    
-    reactions = p.map(
-                reactSpecies,
-                spcTuples)
+    # This method chops the iterable into a number of chunks which it
+    # submits to the process pool as separate tasks.
+    if procnum == 1:
+        reactions = map(
+                    reactSpecies,
+                    spc_tuples)
+    else:
+        p = Pool(processes=procnum)
+        
+        reactions = p.map(
+                    reactSpecies,
+	            spc_tuples)
+	
+        p.close()
+        p.join()
 
-    p.close()
-    p.join()
 
     return itertools.chain.from_iterable(reactions)
 
@@ -181,7 +187,7 @@ def reactAll(coreSpcList, numOldCoreSpecies, unimolecularReact, bimolecularReact
 
         # Identify and split families that are prone to generate many reactions into sublists.
         split_list = []
-        for i in enumerate(split_list_tmp):
+        for i in range(len(split_list_tmp)):
             if split_list_tmp[i] == 'H_Abstraction':
                 split_list_tmp[i] = []
                 split_list.append(['H_Abstraction'])

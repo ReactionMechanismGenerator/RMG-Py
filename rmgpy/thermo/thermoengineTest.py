@@ -33,10 +33,8 @@ This module contains unit tests of the rmgpy.parallel module.
 """
 
 import os
-import sys
 import unittest
 import random
-from external.wip import work_in_progress
 
 from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase

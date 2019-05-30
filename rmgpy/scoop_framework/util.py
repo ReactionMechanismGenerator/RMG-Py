@@ -40,7 +40,6 @@ from functools import wraps
 logger = None
 
 try:
-    from scoop import futures
     from scoop.futures import map, submit
     from scoop import shared
     from scoop import logger as scooplogger

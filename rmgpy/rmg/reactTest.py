@@ -35,8 +35,6 @@ import numpy as np
 from rmgpy import settings
 from rmgpy.data.kinetics import TemplateReaction
 from rmgpy.data.rmg import RMGDatabase
-from rmgpy.molecule import Molecule
-from rmgpy.reaction import Reaction
 from rmgpy.species import Species
 
 from rmgpy.rmg.main import RMG

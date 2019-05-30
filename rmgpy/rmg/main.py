@@ -39,8 +39,6 @@ import time
 import logging
 import os
 import shutil
-import psutil
-import resource
 
 import numpy as np
 import gc
@@ -60,7 +58,6 @@ from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
 from rmgpy.rmg.pdep import PDepReaction
 
-from rmgpy.data.thermo import ThermoLibrary
 from rmgpy.data.base import Entry
 from rmgpy import settings
 
@@ -532,7 +529,6 @@ class RMG(util.Subject):
                 if failsSpeciesConstraints(spec):
                     if 'allowed' in self.speciesConstraints and 'input species' in self.speciesConstraints['allowed']:
                         self.speciesConstraints['explicitlyAllowedMolecules'].append(spec.molecule[0])
-                        pass
                     else:
                         raise ForbiddenStructureException("Species constraints forbids input species {0}. Please reformulate constraints, remove the species, or explicitly allow it.".format(spec.label))
 
@@ -1706,8 +1702,10 @@ class RMG(util.Subject):
         assert len(Tlist) > 0
         assert len(Plist) > 0
         concentrationList = np.array(concentrationList)
-        assert concentrationList.shape[1] > 0  # An arbitrary number of concentrations is acceptable, and should be run for each reactor system 
-        
+        # An arbitrary number of concentrations is acceptable, and should be run for each reactor system
+        if not concentrationList.shape[1] > 0:
+            raise AssertionError()
+
         # Make a reaction system for each (T,P) combination
         for T in Tlist:
             for P in Plist:
