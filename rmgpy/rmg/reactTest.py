@@ -47,7 +47,7 @@ TESTFAMILY = ['H_Abstraction','R_Recombination','Intra_Disproportionation','Intr
         '1,4_Linear_birad_scission','R_Addition_MultipleBond','2+2_cycloaddition_Cd','Diels_alder_addition',
         'Intra_RH_Add_Exocyclic','Intra_Retro_Diels_alder_bicyclic','Intra_2+2_cycloaddition_Cd',
         'Birad_recombination','Intra_Diels_alder_monocyclic','1,4_Cyclic_birad_scission',
-        '1,2_Insertion_carbene']
+        '1,2_Insertion_carbene','1,2_Insertion_CO']
 
 class TestReact(unittest.TestCase):
 

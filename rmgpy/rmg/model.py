@@ -62,7 +62,7 @@ from rmgpy.kinetics import KineticsData, Arrhenius
 from rmgpy.data.rmg import getDB
         
 import rmgpy.data.rmg
-from .react import react_all
+from .react import react_all, determine_procnum_from_RAM
 from rmgpy.data.kinetics.common import ensure_independent_atom_ids, find_degenerate_reactions
 
 from pdep import PDepReaction, PDepNetwork
@@ -669,28 +669,8 @@ class CoreEdgeReactionModel:
                         if appendReactant:
                             spcs.append(spc)
     
-                    # Calculate quantum thermo in parallel
-                    from rmgpy.rmg.main import maxproc
-                    
-                    # Get available RAM (GB)and procnum dependent on OS
-                    if platform.startswith('linux'):
-                        # linux
-                        memoryavailable = psutil.virtual_memory().free / (1000.0 ** 3)
-                        memoryuse = psutil.Process(os.getpid()).memory_info()[0]/(1000.0 ** 3)
-                        tmp = divmod(memoryavailable, memoryuse)
-                        tmp2 = min(maxproc, tmp[0])
-                        procnum = max(1, int(tmp2))
-                    elif platform == "darwin":
-                        # OS X
-                        memoryavailable = psutil.virtual_memory().available/(1000.0 ** 3)
-                        memoryuse = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/(1000.0 ** 3)
-                        tmp = divmod(memoryavailable, memoryuse)
-                        tmp2 = min(maxproc, tmp[0])
-                        procnum = max(1, int(tmp2))
-                    else:
-                        # Everything else
-                        procnum = 1
-                
+                    procnum = determine_procnum_from_RAM()
+
                     # Execute multiprocessing map. It blocks until the result is ready.
                     # This method chops the iterable into a number of chunks which it
                     # submits to the process pool as separate tasks.

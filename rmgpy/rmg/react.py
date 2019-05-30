@@ -41,6 +41,43 @@ from sys import platform
 from rmgpy.data.rmg import getDB
 from multiprocessing import Pool
 
+################################################################################
+
+def determine_procnum_from_RAM():
+    """
+    Get available RAM (GB)and procnum dependent on OS.
+    """
+    from rmgpy.rmg.main import maxproc
+
+    if platform.startswith('linux'):
+        # linux
+        memory_available = psutil.virtual_memory().free / (1000.0 ** 3)
+        memory_use = psutil.Process(os.getpid()).memory_info()[0]/(1000.0 ** 3)
+        tmp = divmod(memory_available, memory_use)
+        tmp2 = min(maxproc, tmp[0])
+        procnum = max(1, int(tmp2))
+        if procnum == 1:
+            logging.info('For reaction generation {0} process is used.'.format(procnum))
+        else:
+            logging.info('For reaction generation {0} processes are used.'.format(procnum))
+    elif platform == "darwin":
+        # OS X
+        memory_available = psutil.virtual_memory().available/(1000.0 ** 3)
+        memory_use = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/(1000.0 ** 3)
+        tmp = divmod(memory_available, memory_use)
+        tmp2 = min(maxproc, tmp[0])
+        procnum = max(1, int(tmp2))
+        if procnum == 1:
+            logging.info('For reaction generation {0} process is used.'.format(procnum))
+        else:
+            logging.info('For reaction generation {0} processes are used.'.format(procnum))
+    else:
+        # Everything else
+        procnum = 1
+        logging.info('For reaction generation {0} process is used.'.format(procnum))
+
+    # Return the maximal number of processes for multiprocessing
+    return procnum
 
 def react(*spc_tuples):
     """
@@ -59,35 +96,7 @@ def react(*spc_tuples):
     Returns a flat generator object containing the generated Reaction objects.
     """
 
-    from rmgpy.rmg.main import maxproc
-
-    # Get available RAM (GB)and procnum dependent on OS.
-    if platform.startswith('linux'):
-        # linux
-        memory_available = psutil.virtual_memory().free / (1000.0 ** 3)
-        memory_use = psutil.Process(os.getpid()).memory_info()[0]/(1000.0 ** 3)
-        tmp = divmod(memory_available, memory_use)
-        tmp2 = min(maxproc, tmp[0])
-        procnum = max(1, int(tmp2))
-        if maxproc == 1:
-            logging.info('For reaction generation {0} process is used.'.format(procnum))
-        else:
-            logging.info('For reaction generation {0} processes are used.'.format(procnum))
-    elif platform == "darwin":
-        # OS X
-        memory_available = psutil.virtual_memory().available/(1000.0 ** 3)
-        memory_use = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/(1000.0 ** 3)
-        tmp = divmod(memory_available, memory_use)
-        tmp2 = min(maxproc, tmp[0])
-        procnum = max(1, int(tmp2))
-        if maxproc == 1:
-            logging.info('For reaction generation {0} process is used.'.format(procnum))
-        else:
-            logging.info('For reaction generation {0} processes are used.'.format(procnum))
-    else:
-        # Everything else
-        procnum = 1
-        logging.info('For reaction generation {0} process is used.'.format(procnum))
+    procnum = determine_procnum_from_RAM()
 
     # Execute multiprocessing map. It blocks until the result is ready.
     # This method chops the iterable into a number of chunks which it
@@ -129,7 +138,7 @@ def react_all(core_spc_list, numOldCoreSpecies, unimolecularReact, bimolecularRe
     reactions and splits reaction families per task for improved load balancing in parallel runs.
     """
 
-    from rmgpy.rmg.main import maxproc
+    procnum = determine_procnum_from_RAM()
 
     # Select reactive species that can undergo unimolecular reactions:
     spc_tuples = [(core_spc_list[i],)
@@ -152,7 +161,7 @@ def react_all(core_spc_list, numOldCoreSpecies, unimolecularReact, bimolecularRe
                         if core_spc_list[i].reactive and core_spc_list[j].reactive and core_spc_list[k].reactive:
                             spc_tuples.append((core_spc_list[i], core_spc_list[j], core_spc_list[k]))
 
-    if maxproc == 1:
+    if procnum == 1:
         # React all families like normal (provide empty argument for only_families)
         spc_fam_tuples = zip(spc_tuples)
     else:
