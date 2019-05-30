@@ -29,12 +29,14 @@
 ###############################################################################
 
 import os
+from multiprocessing import Pool
 
 import logging
 
 import rmgpy.qm.mopac
 import rmgpy.qm.gaussian
 from rmgpy.data.thermo import ThermoLibrary
+
 
 class QMSettings():
     """
@@ -226,7 +228,50 @@ class QMCalculator():
         else:
             raise Exception("Unknown QM software '{0}'".format(self.settings.software))
         return thermo0
-    
+
+    def runJobs(self, spc_list, procnum=1):
+        """
+        Run QM jobs for the provided species list (in parallel if requested).
+        """
+        mol_list = []
+        for spc in spc_list:
+            if spc.molecule[0].getRadicalCount() > self.settings.maxRadicalNumber:
+                for molecule in spc.molecule:
+                    if self.settings.onlyCyclics and molecule.isCyclic():
+                        saturated_mol = molecule.copy(deep=True)
+                        saturated_mol.saturate_radicals()
+                        if saturated_mol not in mol_list:
+                            mol_list.append(saturated_mol)
+            else:
+                if self.settings.onlyCyclics and spc.molecule[0].isCyclic():
+                    if spc.molecule[0] not in mol_list:
+                        mol_list.append(spc.molecule[0])
+        if mol_list:
+            # Zip arguments for use in map.
+            qm_arg_list = [(self, mol) for mol in mol_list]
+
+            if procnum == 1:
+                logging.info('Writing QM files with {0} process.'.format(procnum))
+                map(_write_QMfiles_star, qm_arg_list)
+            elif procnum > 1:
+                logging.info('Writing QM files with {0} processes.'.format(procnum))
+                p = Pool(processes=procnum)
+                p.map(_write_QMfiles_star, qm_arg_list)
+                p.close()
+                p.join()
+
+
+def _write_QMfiles_star(args):
+    """Wrapper to unpack zipped arguments for use with map"""
+    return _write_QMfiles(*args)
+
+
+def _write_QMfiles(quantumMechanics, mol):
+    """
+    If quantumMechanics is turned on thermo is calculated in parallel here.
+    """
+    quantumMechanics.getThermoData(mol)
+
 
 def save(rmg):
     # Save the QM thermo to a library if QM was turned on

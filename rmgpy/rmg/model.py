@@ -68,15 +68,6 @@ from rmgpy.data.kinetics.common import ensure_independent_atom_ids, find_degener
 from pdep import PDepReaction, PDepNetwork
 
 ################################################################################
-def _write_QMfiles_star(args):
-    """Wrapper to unpack zipped arguments for use with map"""
-    return write_QMfiles(*args)
-
-def write_QMfiles(mol, quantumMechanics):
-    """
-    If quantumMechanics is turned on thermo is calculated in parallel here. 
-    """
-    quantumMechanics.getThermoData(mol)
 
 class ReactionModel:
     """
@@ -814,37 +805,7 @@ class CoreEdgeReactionModel:
         quantumMechanics = getInput('quantumMechanics')
 
         if quantumMechanics:
-            # Generate a list of molecules.
-            mol_list = []
-            for spc in self.newSpeciesList:
-                if not spc.thermo:
-                    if spc.molecule[0].getRadicalCount() > quantumMechanics.settings.maxRadicalNumber:
-                        for molecule in spc.molecule:
-                            if quantumMechanics.settings.onlyCyclics and molecule.isCyclic():
-                                saturated_mol = molecule.copy(deep=True)
-                                saturated_mol.saturate_radicals()
-                                if saturated_mol not in mol_list:
-                                    mol_list.append(saturated_mol)
-                    else:
-                        if quantumMechanics.settings.onlyCyclics and spc.molecule[0].isCyclic():
-                            if spc.molecule[0] not in mol_list:
-                                mol_list.append(spc.molecule[0])
-            if mol_list:
-                # Zip arguments for use in map.
-	        mol_list_arg = []
-	        for mol in mol_list:
-	            mol_list_arg.append((mol, quantumMechanics))
-
-                if procnum == 1:
-                    logging.info('Writing QM files with {0} process.'.format(procnum))
-                    #map(quantumMechanics.getThermoData, mol_list)
-                    map(_write_QMfiles_star, mol_list_arg)
-                elif procnum > 1:
-                    logging.info('Writing QM files with {0} processes.'.format(procnum))
-                    p = Pool(processes=procnum)
-	            p.map(_write_QMfiles_star, mol_list_arg)
-	            p.close()
-	            p.join()
+            quantumMechanics.runJobs(self.newSpeciesList, procnum=procnum)
 
         # Serial thermo calculation for other methods
         map(self.generateThermo, self.newSpeciesList)
