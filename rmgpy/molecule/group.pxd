@@ -158,7 +158,7 @@ cdef class Group(Graph):
 
     cpdef bint containsLabeledAtom(self, str label)
 
-    cpdef GroupAtom getLabeledAtom(self, str label)
+    cpdef list getLabeledAtom(self, str label)
 
     cpdef dict getLabeledAtoms(self)
 

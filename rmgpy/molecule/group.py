@@ -1582,11 +1582,12 @@ class Group(Graph):
         Return the atom in the group that is labeled with the given `label`.
         Raises :class:`ValueError` if no atom in the group has that label.
         """
-        cython.declare(atom=GroupAtom)
-        for atom in self.vertices:
-            if atom.label == label: return atom
-        raise ValueError('No atom in the functional group has the label "{0}".'.format(label))
-
+        cython.declare(atom=GroupAtom,alist=list)
+        alist = [atom for atom in self.vertices if atom.label == label]
+        if alist == []:
+            raise ValueError('No atom in the functional group \n{1}\n has the label "{0}".'.format(label,self.toAdjacencyList()))
+        return alist
+    
     def getLabeledAtoms(self):
         """
         Return the labeled atoms as a ``dict`` with the keys being the labels
