@@ -36,6 +36,7 @@ import shutil
 from rmgpy import getPath
 from rmgpy.qm.main import QMSettings, QMCalculator
 from rmgpy.molecule import Molecule
+from rmgpy.species import Species
 
 from rmgpy.qm.gaussian import Gaussian
 from rmgpy.qm.mopac import Mopac
@@ -99,13 +100,12 @@ class TestQMCalculator(unittest.TestCase):
         """
         A function run before each unit test in this class.
         """
-        RMGpy_path = os.path.normpath(os.path.join(getPath(), '..'))
-
-        fileStore = os.path.join(RMGpy_path, 'testing', 'qm', 'QMfiles')
+        rmg_path = os.path.normpath(os.path.join(getPath(), '..'))
+        self.fileStore = os.path.join(rmg_path, 'testing', 'qm', 'QMfiles')
 
         self.mop1 = QMCalculator(software='mopac',
                                  method='pm3',
-                                 fileStore=fileStore
+                                 fileStore=self.fileStore
                                  )
 
         self.mop2 = QMCalculator(software='mopac',
@@ -114,12 +114,12 @@ class TestQMCalculator(unittest.TestCase):
 
         self.mop3 = QMCalculator(software='mopac',
                                  method='pm7',
-                                 fileStore=fileStore
+                                 fileStore=self.fileStore
                                  )
 
         self.mop4 = QMCalculator(software='mopac',
                                  method='pm8',
-                                 fileStore=fileStore
+                                 fileStore=self.fileStore
                                  )
 
         self.gauss1 = QMCalculator(software='gaussian',
@@ -128,22 +128,22 @@ class TestQMCalculator(unittest.TestCase):
 
         self.gauss2 = QMCalculator(software='gaussian',
                                    method='pm6',
-                                   fileStore=fileStore
+                                   fileStore=self.fileStore
                                    )
 
         self.gauss3 = QMCalculator(software='gaussian',
                                    method='pm7',
-                                   fileStore=fileStore
+                                   fileStore=self.fileStore
                                    )
 
         self.molpro1 = QMCalculator(software='molpro',
                                     method='mp2',
-                                    fileStore=fileStore
+                                    fileStore=self.fileStore
                                     )
 
-        self.qmmol1 = QMCalculator(fileStore=fileStore)
+        self.qmmol1 = QMCalculator(fileStore=self.fileStore)
 
-        self.qmmol2 = QMCalculator(fileStore=fileStore)
+        self.qmmol2 = QMCalculator(fileStore=self.fileStore)
 
     def testSetDefaultOutputDirectory(self):
         """
@@ -285,6 +285,25 @@ class TestQMCalculator(unittest.TestCase):
         self.assertAlmostEqual(thermo1.S298.value_si, 335.5438748, 0)  # to 1 decimal place
         self.assertAlmostEqual(thermo2.H298.value_si, 169326.2504, 0)  # to 1 decimal place
         self.assertAlmostEqual(thermo2.S298.value_si, 338.2696063, 0)  # to 1 decimal place
+
+    @unittest.skipIf(NO_MOPAC, "MOPAC not found. Try resetting your environment variables if you want to use it.")
+    @unittest.skipIf(NO_LICENCE, "MOPAC license not installed. Run mopac for instructions")
+    def testRunJobs(self):
+        """Test that runJobs() works properly."""
+        qm = QMCalculator(software='mopac',
+                          method='pm3',
+                          fileStore=self.fileStore,
+                          onlyCyclics=True,
+                          maxRadicalNumber=0,
+                          )
+        outputDirectory = os.path.join(qm.settings.fileStore, '..', '..')
+        qm.setDefaultOutputDirectory(outputDirectory)
+
+        spc1 = Species().fromSMILES('c1ccccc1')
+        spc2 = Species().fromSMILES('CC1C=CC=CC=1')
+        spcList = [spc1, spc2]
+
+        qm.runJobs(spcList, procnum=1)
 
 
 ################################################################################

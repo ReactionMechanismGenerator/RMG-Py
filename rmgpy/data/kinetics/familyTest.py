@@ -39,7 +39,7 @@ import logging
 from rmgpy import settings
 from rmgpy.data.thermo import ThermoDatabase
 from rmgpy.data.kinetics.database import KineticsDatabase
-from rmgpy.data.kinetics.family import TemplateReaction, generate_QMfiles
+from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.molecule import Molecule
 from rmgpy.species import Species
@@ -930,33 +930,3 @@ multiplicity 2
         # self.assertEquals(len(reactionList), 14)
         reactionList = self.database.kinetics.families['Surface_Dissociation_vdW'].generateReactions(reactants)
         self.assertEquals(len(reactionList), 0)
-
-def test_generate_QMfiles():
-    """Test that generate_QMfiles() works"""
-
-    from rmgpy.qm.main import QMCalculator
-    quantumMechanics = QMCalculator(software = 'mopac',
-            method = 'pm3',
-            fileStore = 'QMfiles',
-            scratchDirectory = './',
-            onlyCyclics = True,
-            maxRadicalNumber = 0,
-            )
-
-    spc1 = Species().fromSMILES('c1ccccc1')
-    spc2 = Species().fromSMILES('CC1C=CC=CC=1')
-    QMTP_list = [spc1, spc2]
-
-    procnum = 2
-
-    # Generate unique species list to avoid race conditions when writing the QMTP files in parallel.
-    for i, spc_QMTP in enumerate(QMTP_list):
-        if spc_QMTP:
-            spc_QMTP.generate_resonance_structures()
-            for j in range(i+1, len(QMTP_list)):
-                spc2_QMTP = QMTP_list[j]
-                if spc2_QMTP and spc_QMTP.isIsomorphic(spc2_QMTP):
-                    QMTP_list[j] = []
-    QMTP_list = filter(None, QMTP_list)
-    generate_QMfiles(QMTP_list, quantumMechanics, procnum)
-
