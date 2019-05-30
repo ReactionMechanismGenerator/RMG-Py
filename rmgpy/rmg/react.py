@@ -47,6 +47,7 @@ def determine_procnum_from_RAM():
     """
     Get available RAM (GB)and procnum dependent on OS.
     """
+
     from rmgpy.rmg.main import maxproc
 
     if platform.startswith('linux'):
@@ -56,10 +57,6 @@ def determine_procnum_from_RAM():
         tmp = divmod(memory_available, memory_use)
         tmp2 = min(maxproc, tmp[0])
         procnum = max(1, int(tmp2))
-        if procnum == 1:
-            logging.info('For reaction generation {0} process is used.'.format(procnum))
-        else:
-            logging.info('For reaction generation {0} processes are used.'.format(procnum))
     elif platform == "darwin":
         # OS X
         memory_available = psutil.virtual_memory().available/(1000.0 ** 3)
@@ -67,14 +64,9 @@ def determine_procnum_from_RAM():
         tmp = divmod(memory_available, memory_use)
         tmp2 = min(maxproc, tmp[0])
         procnum = max(1, int(tmp2))
-        if procnum == 1:
-            logging.info('For reaction generation {0} process is used.'.format(procnum))
-        else:
-            logging.info('For reaction generation {0} processes are used.'.format(procnum))
     else:
         # Everything else
         procnum = 1
-        logging.info('For reaction generation {0} process is used.'.format(procnum))
 
     # Return the maximal number of processes for multiprocessing
     return procnum
@@ -102,12 +94,12 @@ def react(*spc_tuples):
     # This method chops the iterable into a number of chunks which it
     # submits to the process pool as separate tasks.
     if procnum == 1:
+        logging.info('For reaction generation {0} process is used.'.format(procnum))
         reactions = map(_react_species_star, spc_tuples)
     else:
+        logging.info('For reaction generation {0} processes are used.'.format(procnum))
         p = Pool(processes=procnum)
-        
         reactions = p.map(_react_species_star, spc_tuples)
-
         p.close()
         p.join()
 
