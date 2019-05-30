@@ -129,17 +129,17 @@ def broadcast(obj, key):
     warnings.warn("The option scoop is no longer supported"
                   "and may be removed after Version: 2.4 ", DeprecationWarning)
 
-    kwargs = {key : obj}
-    try:
-        if shared.getConst(key):
-            logger.debug('An object with the key {} was already broadcasted.'.format(key))
-        else:
-            shared.setConst(**kwargs)
-    except NameError:
-        """
-        Name error will be caught when the SCOOP library is not imported properly.
-        """
-        logger.debug('SCOOP not loaded. Not broadcasting the object {}'.format(obj))
+    #    kwargs = {key : obj}
+    #    try:
+    #        if shared.getConst(key):
+    #            logger.debug('An object with the key {} was already broadcasted.'.format(key))
+    #        else:
+    #            shared.setConst(**kwargs)
+    #    except NameError, e:
+    #        """
+    #        Name error will be caught when the SCOOP library is not imported properly.
+    #        """
+    #        logger.debug('SCOOP not loaded. Not broadcasting the object {}'.format(obj))
 
 @warnScoopStartedProperly
 def get(key):    
@@ -150,14 +150,14 @@ def get(key):
 
     warnings.warn("The option scoop is no longer supported"
                   "and may be removed after Version: 2.4 ", DeprecationWarning)
-    try:
-        data = shared.getConst(key, timeout=1e-9)
-        return data
-    except NameError:
-        """
-        Name error will be caught when the SCOOP library is not imported properly.
-        """
-        logger.debug('SCOOP not loaded. Not retrieving the shared object with key {}'.format(key))
+    #    try:
+    #        data = shared.getConst(key, timeout=1e-9)
+    #        return data
+    #    except NameError:
+    #        """
+    #        Name error will be caught when the SCOOP library is not imported properly.
+    #        """
+    #        logger.debug('SCOOP not loaded. Not retrieving the shared object with key {}'.format(key))
 
 def map_(*args, **kwargs):
     warnings.warn("The option scoop is no longer supported"

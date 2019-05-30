@@ -596,13 +596,6 @@ class CoreEdgeReactionModel:
                 pdepNetwork, newSpecies = newObject
                 newReactions.extend(pdepNetwork.exploreIsomer(newSpecies))
 
-                for rxn in newReactions:
-                    rxn = self.inflate(rxn)
-                    try:
-                        rxn.reverse = self.inflate(rxn.reverse)
-                    except AttributeError:
-                        pass
-                    
                 self.processNewReactions(newReactions, newSpecies, pdepNetwork)
 
             else:
@@ -623,12 +616,6 @@ class CoreEdgeReactionModel:
                         products = products.species
                         if len(products) == 1 and products[0] == species:
                             newReactions = network.exploreIsomer(species)
-                            for rxn in newReactions:
-                                rxn = self.inflate(rxn)
-                                try:
-                                    rxn.reverse = self.inflate(rxn.reverse)
-                                except AttributeError:
-                                    pass
 
                             self.processNewReactions(newReactions, species, network)
                             network.updateConfigurations(self)
@@ -1943,33 +1930,6 @@ class CoreEdgeReactionModel:
             return self.reactionDict[family_label][key1][key2][:]
         except KeyError: # no such short-list: must be new, unless in seed.
             return []
-
-    def inflate(self, rxn):
-        """
-        Convert reactions from
-        reactants/products that are referring
-        to the core species index, to the respective Species objects.
-        """
-        reactants, products, pairs = [], [], []
-
-        for reactant in rxn.reactants:
-            reactant = self.getSpecies(reactant)  
-            reactants.append(reactant)
-
-        for product in rxn.products:
-            product = self.getSpecies(product)
-            products.append(product)
-
-        for reactant, product in rxn.pairs:
-            reactant = self.getSpecies(reactant)
-            product = self.getSpecies(product)
-            pairs.append((reactant, product))
-
-        rxn.reactants = reactants  
-        rxn.products = products
-        rxn.pairs = pairs
-
-        return rxn
 
     def getSpecies(self, obj):
         """

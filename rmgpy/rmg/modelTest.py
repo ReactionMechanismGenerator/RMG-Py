@@ -42,7 +42,6 @@ from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.thermo import *
 ###################################################
 
-
 class TestSpecies(unittest.TestCase):
     """
     Contains unit tests of the Species class.
