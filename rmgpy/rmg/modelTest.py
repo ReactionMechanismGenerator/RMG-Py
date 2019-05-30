@@ -134,6 +134,7 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         P.value_si = 101000.0
         rsys.T = T
         rsys.P = P
+        procnum = 2
         
         cerm = CoreEdgeReactionModel()
         
@@ -141,8 +142,8 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         spcs = [Species().fromSMILES('CC'), Species().fromSMILES('[CH3]')]
         spcTuples = [((spcA, spc), ['H_Abstraction']) for spc in spcs]
         
-        rxns = list(react(*spcTuples))
-        rxns += list(react(*[((spcs[0], spcs[1]), ['H_Abstraction'])]))
+        rxns = list(react(spcTuples, procnum))
+        rxns += list(react([((spcs[0], spcs[1]), ['H_Abstraction'])], procnum))
         
         for rxn in rxns:
             cerm.makeNewReaction(rxn)
@@ -240,11 +241,12 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         Test that CoreEdgeReactionModel.makeNewReaction method correctly works.
         """
 
+        procnum = 2
         spcA = Species().fromSMILES('[OH]')
         spcs = [Species().fromSMILES('CC'), Species().fromSMILES('[CH3]')]
         spcTuples = [((spcA, spc), ['H_Abstraction']) for spc in spcs]
 
-        rxns = list(react(*spcTuples))
+        rxns = list(react(spcTuples, procnum))
 
         cerm = CoreEdgeReactionModel()
 

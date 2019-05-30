@@ -91,8 +91,9 @@ def generate():
     spcA = Species().fromSMILES('[OH]')
     spcs = [Species().fromSMILES('CC'), Species().fromSMILES('[CH3]')]
     spcTuples = [(spcA, spc) for spc in spcs]
+    procnum = 2
 
-    reactionList = list(react(*spcTuples))
+    reactionList = list(react(spcTuples, procnum))
 
     if not reactionList: return False
 

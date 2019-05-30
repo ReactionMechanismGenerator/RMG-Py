@@ -76,12 +76,13 @@ class TestReact(unittest.TestCase):
         """
         import rmgpy.rmg.main
         rmgpy.rmg.main.maxproc = 2
+        procnum = 2
 
         spcA = Species().fromSMILES('[OH]')
         spcs = [Species().fromSMILES('CC'), Species().fromSMILES('[CH3]')]
         spcTuples = [((spcA, spc), ['H_Abstraction']) for spc in spcs]
 
-        reactionList = list(react(*spcTuples))
+        reactionList = list(react(spcTuples, procnum))
         self.assertIsNotNone(reactionList)
         self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in reactionList]))
 
