@@ -42,12 +42,8 @@ from rmgpy.rmg.react import react, react_all
 
 ###################################################
 
-TESTFAMILY = ['H_Abstraction','R_Recombination','Intra_Disproportionation','Intra_RH_Add_Endocyclic',
-        'Singlet_Carbene_Intra_Disproportionation','Intra_ene_reaction','Disproportionation',
-        '1,4_Linear_birad_scission','R_Addition_MultipleBond','2+2_cycloaddition_Cd','Diels_alder_addition',
-        'Intra_RH_Add_Exocyclic','Intra_Retro_Diels_alder_bicyclic','Intra_2+2_cycloaddition_Cd',
-        'Birad_recombination','Intra_Diels_alder_monocyclic','1,4_Cyclic_birad_scission',
-        '1,2_Insertion_carbene','1,2_Insertion_CO']
+TESTFAMILIES = ['H_Abstraction', 'R_Recombination', 'Disproportionation', 'R_Addition_MultipleBond']
+
 
 class TestReact(unittest.TestCase):
 
@@ -66,45 +62,81 @@ class TestReact(unittest.TestCase):
         self.rmg.database.loadForbiddenStructures(os.path.join(path, 'forbiddenStructures.py'))
         # kinetics family loading
         self.rmg.database.loadKinetics(os.path.join(path, 'kinetics'),
-                                       kineticsFamilies=TESTFAMILY,
+                                       kineticsFamilies=TESTFAMILIES,
                                        reactionLibraries=[]
                                        )
 
-    def testReactMultiproc(self):
+    def testReact(self):
         """
-        Test that reaction generation from the available families works with python multiprocessing.
+        Test that the ``react`` function works in serial
+        """
+        procnum = 1
+
+        spc_a = Species().fromSMILES('[OH]')
+        spcs = [Species().fromSMILES('CC'), Species().fromSMILES('[CH3]')]
+        spc_tuples = [((spc_a, spc), ['H_Abstraction']) for spc in spcs]
+
+        reaction_list = list(react(spc_tuples, procnum))
+        self.assertIsNotNone(reaction_list)
+        self.assertEqual(len(reaction_list), 3)
+        self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in reaction_list]))
+
+    def testReactParallel(self):
+        """
+        Test that the ``react`` function works in parallel using Python multiprocessing
         """
         import rmgpy.rmg.main
         rmgpy.rmg.main.maxproc = 2
         procnum = 2
 
-        spcA = Species().fromSMILES('[OH]')
+        spc_a = Species().fromSMILES('[OH]')
         spcs = [Species().fromSMILES('CC'), Species().fromSMILES('[CH3]')]
-        spcTuples = [((spcA, spc), ['H_Abstraction']) for spc in spcs]
+        spc_tuples = [((spc_a, spc), ['H_Abstraction']) for spc in spcs]
 
-        reactionList = list(react(spcTuples, procnum))
-        self.assertIsNotNone(reactionList)
-        self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in reactionList]))
+        reaction_list = list(react(spc_tuples, procnum))
+        self.assertIsNotNone(reaction_list)
+        self.assertEqual(len(reaction_list), 3)
+        self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in reaction_list]))
 
     def testReactAll(self):
         """
-        Test that the reactAll function works.
+        Test that the ``react_all`` function works in serial
+        """
+        procnum = 1
+
+        spcs = [
+                Species().fromSMILES('C=C'),
+                Species().fromSMILES('[CH3]'),
+                Species().fromSMILES('[OH]'),
+                Species().fromSMILES('CCCCCCCCCCC')
+                ]
+
+        n = len(spcs)
+        reaction_list = react_all(spcs, n, np.ones(n), np.ones([n, n]), np.ones([n, n, n]), procnum)
+        self.assertIsNotNone(reaction_list)
+        self.assertEqual(len(reaction_list), 44)
+        self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in reaction_list]))
+
+    def testReactAllParallel(self):
+        """
+        Test that the ``react_all`` function works in parallel using Python multiprocessing
         """
         import rmgpy.rmg.main
         rmgpy.rmg.main.maxproc = 2
         procnum = 2
 
         spcs = [
-                Species().fromSMILES('CC'),
+                Species().fromSMILES('C=C'),
                 Species().fromSMILES('[CH3]'),
                 Species().fromSMILES('[OH]'),
                 Species().fromSMILES('CCCCCCCCCCC')
                 ]
 
-        N = len(spcs)
-        rxns = react_all(spcs, N, np.ones(N), np.ones([N, N]), np.ones([N, N, N]), procnum)
-        self.assertIsNotNone(rxns)
-        self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in rxns]))
+        n = len(spcs)
+        reaction_list = react_all(spcs, n, np.ones(n), np.ones([n, n]), np.ones([n, n, n]), procnum)
+        self.assertIsNotNone(reaction_list)
+        self.assertEqual(len(reaction_list), 44)
+        self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in reaction_list]))
 
     def tearDown(self):
         """
@@ -112,6 +144,7 @@ class TestReact(unittest.TestCase):
         """
         import rmgpy.data.rmg
         rmgpy.data.rmg.database = None
+
 
 if __name__ == '__main__':
     unittest.main()
