@@ -315,6 +315,10 @@ class CoreEdgeReactionModel:
         if generateThermo:
             self.generateThermo(spec)
 
+        # If the species still does not have a label, set initial label as the SMILES
+        # This may change later after getting thermo in self.generateThermo()
+        if not spec.label:
+            spec.label = spec.SMILES
         logging.debug('Creating new species {0}'.format(spec.label))
 
         formula = molecule.getFormula()
@@ -809,24 +813,19 @@ class CoreEdgeReactionModel:
             quantumMechanics.runJobs(self.newSpeciesList, procnum=procnum)
 
         # Serial thermo calculation for other methods
-        map(self.generateThermo, self.newSpeciesList)
+        for spc in self.newSpeciesList:
+            self.generateThermo(spc, rename=True)
 
-    def generateThermo(self, spc):
+    def generateThermo(self, spc, rename=False):
         """
         Generate thermo for species.
         """
         if not spc.thermo:
             submit(spc, self.solventName)
-            if spc.thermo and spc.thermo.label != '': #check if thermo libraries have a name for it
-                logging.info('Species with SMILES of {0} named {1} based on thermo library name'.format(spc.molecule[0].toSMILES().replace('/','').replace('\\',''), spc.thermo.label))
+
+            if rename and spc.thermo and spc.thermo.label != '':  # check if thermo libraries have a name for it
+                logging.info('Species {0} renamed {1} based on thermo library name'.format(spc.label, spc.thermo.label))
                 spc.label = spc.thermo.label
-            else:
-                # Use SMILES as default format for label
-                # However, SMILES can contain slashes (to describe the
-                # stereochemistry around double bonds); since RMG doesn't
-                # distinguish cis and trans isomers, we'll just strip these out
-                # so that we can use the label in file paths
-                spc.label = spc.molecule[0].toSMILES().replace('/','').replace('\\','')
 
         spc.generateEnergyTransferModel()
 
