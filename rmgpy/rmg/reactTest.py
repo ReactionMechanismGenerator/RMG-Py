@@ -38,7 +38,7 @@ from rmgpy.data.rmg import RMGDatabase
 from rmgpy.species import Species
 
 from rmgpy.rmg.main import RMG
-from rmgpy.rmg.react import react, reactAll
+from rmgpy.rmg.react import react, react_all
 
 ###################################################
 
@@ -91,7 +91,7 @@ class TestReact(unittest.TestCase):
 
         spcA = Species().fromSMILES('[OH]')
         spcs = [Species().fromSMILES('CC'), Species().fromSMILES('[CH3]')]
-        spcTuples = [(spcA, spc, ['H_Abstraction']) for spc in spcs]
+        spcTuples = [((spcA, spc), ['H_Abstraction']) for spc in spcs]
 
         reactionList = list(react(*spcTuples))
         self.assertIsNotNone(reactionList)
@@ -112,7 +112,7 @@ class TestReact(unittest.TestCase):
                 ]
 
         N = len(spcs)
-        rxns = reactAll(spcs, N, np.ones(N), np.ones([N,N]), np.ones([N,N,N]))
+        rxns = react_all(spcs, N, np.ones(N), np.ones([N, N]), np.ones([N, N, N]))
         self.assertIsNotNone(rxns)
         self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in rxns]))
 

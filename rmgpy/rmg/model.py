@@ -62,7 +62,7 @@ from rmgpy.kinetics import KineticsData, Arrhenius
 from rmgpy.data.rmg import getDB
         
 import rmgpy.data.rmg
-from .react import reactAll
+from .react import react_all
 from rmgpy.data.kinetics.common import ensure_independent_atom_ids, find_degenerate_reactions
 
 from pdep import PDepReaction, PDepNetwork
@@ -632,8 +632,8 @@ class CoreEdgeReactionModel:
 
         else:
             # We are reacting the edge
-            rxns = reactAll(self.core.species, numOldCoreSpecies,
-                            unimolecularReact, bimolecularReact, trimolecularReact=trimolecularReact)
+            rxns = react_all(self.core.species, numOldCoreSpecies,
+                             unimolecularReact, bimolecularReact, trimolecularReact=trimolecularReact)
 
             # Get new species and save in spcs
             spcs_tmp = []
