@@ -389,7 +389,6 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         
         self.assertEquals(len(difset),1) #should be one because we thermo filtered down to one edge species
         
-
     def test_checkForExistingReaction_eliminates_identical_reactions(self):
         """
         Test that checkForExistingReaction catches identical reactions.

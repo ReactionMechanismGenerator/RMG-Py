@@ -595,15 +595,10 @@ class CoreEdgeReactionModel:
             rxns = react_all(self.core.species, numOldCoreSpecies,
                              unimolecularReact, bimolecularReact, trimolecularReact=trimolecularReact)
 
-            # Get new species and save in spcs
-            spcs = []
-            spcs_list = []
-            for rxn in rxns:
-                spcs.extend(rxn.reactants)
-                spcs.extend(rxn.products)
+            spcs = [self.retrieve_species(rxn) for rxn in rxns]
 
             for rxn, spc in zip(rxns, spcs):
-               self.processNewReactions([rxn], spc, generateThermo=False)
+                self.processNewReactions([rxn], spc, generateThermo=False)
 
         ################################################################
         # Begin processing the new species and reactions
@@ -1904,6 +1899,18 @@ class CoreEdgeReactionModel:
             return spc
         return obj
 
+    def retrieve_species(self, rxn):
+        """
+        Searches for the first reactant or product in the reaction that is
+        a core species, which was used to generate the reaction in the first
+        place. Reactants or products not represented in the core will be
+        a newly-generated structure.
+        """
+        for obj in itertools.chain(rxn.reactants, rxn.products):
+            for spc in self.core.species:
+                if obj.isIsomorphic(spc):
+                    return spc
+        raise Exception("No core species were found in either reactants or products of {0}!".format(rxn))
 
 def generateReactionKey(rxn, useProducts=False):
     """

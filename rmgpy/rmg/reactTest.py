@@ -70,18 +70,6 @@ class TestReact(unittest.TestCase):
                                        reactionLibraries=[]
                                        )
 
-#    def testReact(self):
-#        """
-#        Test that reaction generation from the available families works.
-#        """
-#        spcA = Species().fromSMILES('[OH]')
-#        spcs = [Species().fromSMILES('CC'), Species().fromSMILES('[CH3]')]
-#        spcTuples = [(spcA, spc, ['H_Abstraction']) for spc in spcs]
-#
-#        reactionList = list(react(*spcTuples))
-#        self.assertIsNotNone(reactionList)
-#        self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in reactionList]))
-
     def testReactMultiproc(self):
         """
         Test that reaction generation from the available families works with python multiprocessing.
@@ -115,7 +103,6 @@ class TestReact(unittest.TestCase):
         rxns = react_all(spcs, N, np.ones(N), np.ones([N, N]), np.ones([N, N, N]))
         self.assertIsNotNone(rxns)
         self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in rxns]))
-
 
     def tearDown(self):
         """
