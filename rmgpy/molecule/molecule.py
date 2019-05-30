@@ -1434,19 +1434,33 @@ class Molecule(Graph):
                 return False
             elif element_count[element] < count:
                 return False
-        
+
         if generateInitialMap:
+            keys = []
+            atms = []
             initialMap = dict()
             for atom in self.atoms:
                 if atom.label and atom.label != '':
                     L = [a for a in other.atoms if a.label == atom.label]
                     if L == []:
                         return False
-                    else:
+                    elif len(L) == 1:
                         initialMap[atom] = L[0]
-            if not self.isMappingValid(other,initialMap,equivalent=False):
-                return False
-            
+                    else:
+                        keys.append(atom)
+                        atms.append(L)
+            if atms:
+                for atmlist in itertools.product(*atms):
+                    for i,key in enumerate(keys):
+                        initialMap[key] = atmlist[i]
+                    if self.isMappingValid(other,initialMap,equivalent=False) and Graph.isSubgraphIsomorphic(self, other, initialMap, saveOrder=saveOrder):
+                        return True
+                else:
+                    return False
+            else:
+                if not self.isMappingValid(other,initialMap,equivalent=False):
+                    return False
+
         # Do the isomorphism comparison
         result = Graph.isSubgraphIsomorphic(self, other, initialMap, saveOrder=saveOrder)
         return result

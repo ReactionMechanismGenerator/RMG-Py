@@ -35,6 +35,7 @@ reaction sites).
 """
 
 import cython
+import itertools
 
 from .graph import Vertex, Edge, Graph
 from .atomtype import atomTypes, allElements, nonSpecifics, getFeatures, AtomType
@@ -1726,14 +1727,32 @@ class Group(Graph):
         # isomorphism, so raise an exception if this is not what was requested
         if not isinstance(other, Group):
             raise TypeError('Got a {0} object for parameter "other", when a Group object is required.'.format(other.__class__))
+
         group = other
         
         if generateInitialMap:
+            keys = []
+            atms = []
             initialMap = dict()
             for atom in self.atoms:
                 if atom.label and atom.label != '':
                     L = [a for a in other.atoms if a.label == atom.label]
+                    if L == []:
+                        return False
+                    elif len(L) == 1:
                     initialMap[atom] = L[0]
+                    else:
+                        keys.append(atom)
+                        atms.append(L)
+            if atms:
+                for atmlist in itertools.product(*atms):
+                    for i,key in enumerate(keys):
+                        initialMap[key] = atmlist[i]
+                    if self.isMappingValid(other,initialMap,equivalent=False) and Graph.isSubgraphIsomorphic(self, other, initialMap, saveOrder=saveOrder):
+                        return True
+                else:
+                    return False
+            else:
             if not self.isMappingValid(other,initialMap,equivalent=False):
                 return False
                 
