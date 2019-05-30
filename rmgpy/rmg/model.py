@@ -58,12 +58,37 @@ from rmgpy.data.rmg import getDB
         
 import rmgpy.data.rmg
 from .react import reactAll
+from rmgpy.data.kinetics.common import ensure_independent_atom_ids, find_degenerate_reactions
 
 from pdep import PDepReaction, PDepNetwork
 
 # generateThermoDataFromQM under the Species class imports the qm package
 
 ################################################################################
+def CalculateThermoParallel(spc):
+    from rmgpy.rmg.input import getInput
+
+    try:
+        quantumMechanics = getInput('quantumMechanics')
+    except Exception:
+        logging.debug('Quantum Mechanics DB could not be found.')
+        quantumMechanics = None
+
+    spc.generate_resonance_structures()
+    original_molecule = spc.molecule[0]
+
+    if not quantumMechanics:
+        pass
+    else:
+        if quantumMechanics.settings.onlyCyclics and not original_molecule.isCyclic():
+#            print 'pass'
+        else: 
+            print 'try a QM calculation'
+            if original_molecule.getRadicalCount() > quantumMechanics.settings.maxRadicalNumber:
+                print 'Too many radicals for direct calculation: use HBI.'
+            else: 
+                print 'Not too many radicals: do a direct calculation.'
+                thermo0 = quantumMechanics.getThermoData(original_molecule) # returns None if it fails
 
 class ReactionModel:
     """
@@ -618,8 +643,54 @@ class CoreEdgeReactionModel:
 
             rxns = reactAll(self.core.species, numOldCoreSpecies,
                             unimolecularReact, bimolecularReact, trimolecularReact=trimolecularReact)
-            spcs = [self.retrieveNewSpecies(rxn) for rxn in rxns]
+            #spcs = [self.retrieveNewSpecies(rxn) for rxn in rxns]
+
+            # get new species and save in spcs
+            spcs = []
+            for rxn in rxns:
+                spcs.extend(rxn.reactants)
+                spcs.extend(rxn.products)
+
+            ensure_independent_atom_ids(spcs, resonance=True) 
             
+            # Get available RAM (GB)and procnum dependent on OS
+            if platform.startswith('linux'):
+                # linux
+                memoryavailable = psutil.virtual_memory().free / (1000.0 ** 3)
+                memoryuse = psutil.Process(os.getpid()).memory_info()[0]/(1000.0 ** 3)
+                tmp = divmod(memoryavailable, memoryuse)
+#                logging.info("Memory use is {0} GB, available memory is {2} GB and max allowed "
+#                             "number of processes is {1}.".format(memoryuse, tmp[0], memoryavailable))
+                tmp2 = min(maxproc, tmp[0])
+                procnum = max(1, int(tmp2))
+            elif platform == "darwin":
+                # OS X
+                memoryavailable = psutil.virtual_memory().available/(1000.0 ** 3)
+                memoryuse = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/(1000.0 ** 3)
+                tmp = divmod(memoryavailable, memoryuse)
+#                logging.info("Memory use is {0} GB, available memory is {2} GB and max allowed "
+#                             "number of processes is {1}.".format(memoryuse, tmp[0], memoryavailable))
+                tmp2 = min(maxproc, tmp[0])
+                procnum = max(1, int(tmp2))
+            else:
+                # Everything else
+                procnum = 1
+        
+            # Execute multiprocessing map. It blocks until the result is ready.
+            # This method chops the iterable into a number of chunks which it
+            # submits to the process pool as separate tasks.
+            p = Pool(processes=procnum)
+            p.map(CalculateThermoParallel,spcs)
+#            for spc in spcs:
+#                spc.generate_resonance_structures()
+#                original_molecule = spc.molecule[0]
+#                # Returns unsorted list, depending on which one is returned fastest
+#                p.apply_async(submit_own, (original_molecule,))
+            p.close()
+            p.join()
+
+            ensure_independent_atom_ids(spcs, resonance=True)
+
             for rxn, spc in zip(rxns, spcs):
                 rxn = self.inflate(rxn) 
                 try:
