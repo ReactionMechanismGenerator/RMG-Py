@@ -41,7 +41,7 @@ from sys import platform
 from rmgpy.data.rmg import getDB
 from multiprocessing import Pool
 
-def react(*spcTuples):
+def react(*spc_tuples):
     """
     Generate reactions between the species in the
     list of species tuples for all the reaction families available.
@@ -109,26 +109,26 @@ def react(*spcTuples):
     return itertools.chain.from_iterable(reactions)
 
 
-def reactSpecies(speciesTupleTmp):
+def reactSpecies(species_tuple_tmp):
     """
     Given a tuple of Species objects, generates all possible reactions
     from the loaded reaction families and combines degenerate reactions.
     """
 
-    speciesTuple = speciesTupleTmp[0:-1]
-    own_families = speciesTupleTmp[-1]
+    species_tuple = species_tuple_tmp[0:-1]
+    own_families = species_tuple_tmp[-1]
 
-    speciesTuple = tuple([spc.copy(deep=True) for spc in speciesTuple])
+    species_tuple = tuple([spc.copy(deep=True) for spc in species_tuple])
 
-    reactions = getDB('kinetics').generate_reactions_from_families(speciesTuple, only_families=own_families)
+    reactions = getDB('kinetics').generate_reactions_from_families(species_tuple, only_families=own_families)
 
     return reactions
 
 
-def reactAll(coreSpcList, numOldCoreSpecies, unimolecularReact, bimolecularReact, trimolecularReact=None):
+def reactAll(core_spc_list, numOldCoreSpecies, unimolecularReact, bimolecularReact, trimolecularReact=None):
     """
     Reacts the core species list via uni-, bi-, and trimolecular
-    reactions.
+    reactions and splits reaction families per task for improved load balancing in parallel runs.
     """
 
     from rmgpy.rmg.main import maxproc

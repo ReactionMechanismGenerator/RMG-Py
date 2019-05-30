@@ -49,6 +49,7 @@ from rmgpy import settings
 from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.quantity import Quantity
 from rmgpy.species import Species
+from rmgpy.molecule.molecule import Molecule
 from rmgpy.thermo.thermoengine import submit
 from rmgpy.reaction import Reaction
 from rmgpy.exceptions import ForbiddenStructureException
@@ -67,6 +68,7 @@ from rmgpy.data.kinetics.common import ensure_independent_atom_ids, find_degener
 from pdep import PDepReaction, PDepNetwork
 
 ################################################################################
+
 def calculate_thermo_parallel(spc):
     """
     If quantumMechanics is turned on in the input file species thermo data is calculated 
@@ -84,17 +86,11 @@ def calculate_thermo_parallel(spc):
     spc.generate_resonance_structures()
     original_molecule = spc.molecule[0]
 
-#    if not quantumMechanics:
-#        pass
-#    else:
     if quantumMechanics.settings.onlyCyclics and not original_molecule.isCyclic():
         pass
-        #print 'pass'
     else: 
-        #print 'try a QM calculation'
         if original_molecule.getRadicalCount() > quantumMechanics.settings.maxRadicalNumber:
             pass
-            #print 'Too many radicals for direct calculation: use HBI.'
         else: 
             logging.info('Not too many radicals: do a direct QM calculation.')
             thermo0 = quantumMechanics.getThermoData(original_molecule) # returns None if it fails
@@ -649,13 +645,8 @@ class CoreEdgeReactionModel:
 
         else:
             # We are reacting the edge
-
             rxns = reactAll(self.core.species, numOldCoreSpecies,
                             unimolecularReact, bimolecularReact, trimolecularReact=trimolecularReact)
-
-#            # Calculate reaction degeneracy
-#            from rmgpy.data.rmg import getDB
-#            rxns = find_degenerate_reactions(rxns, kinetics_database=getDB('kinetics'))
 
             # Get new species and save in spcs
             spcs_tmp = []
@@ -677,28 +668,19 @@ class CoreEdgeReactionModel:
             else:
                 if not spcs_tmp:
                     spcs = spcs_tmp
-                    #pass
                 else:
                     # Generate unique list of species to be submitted to QM thermo calculation
-                    from rmgpy.molecule.molecule import Molecule
                     # intilize list 
                     spcs=[spcs_tmp[0]]
                     for counter, spc in enumerate (spcs_tmp):
-                        #print("counter {0} spc{1}".format(counter,spc))
                         for counter2, val in enumerate (spcs):
-                            #print("counter2 {0} val{1}".format(counter2,val))
                             if (spc.molecule[0].toSMILES() != val.molecule[0].toSMILES()):
-                                #print("Potentially append reactant to list.")
                                 appendReactant = True
                             else:
-                                #print("Reactant already in list.")
                                 appendReactant = False
                                 break
                         if appendReactant:
-                            #print("Append reactant to list.")
                             spcs.append(spc)
-                    #print spcs_tmp
-                    #print(spcs)
     
                     # Calculate quantum thermo in parallel
                     from rmgpy.rmg.main import maxproc
@@ -709,8 +691,6 @@ class CoreEdgeReactionModel:
                         memoryavailable = psutil.virtual_memory().free / (1000.0 ** 3)
                         memoryuse = psutil.Process(os.getpid()).memory_info()[0]/(1000.0 ** 3)
                         tmp = divmod(memoryavailable, memoryuse)
-        #                logging.info("Memory use is {0} GB, available memory is {2} GB and max allowed "
-        #                             "number of processes is {1}.".format(memoryuse, tmp[0], memoryavailable))
                         tmp2 = min(maxproc, tmp[0])
                         procnum = max(1, int(tmp2))
                     elif platform == "darwin":
@@ -718,8 +698,6 @@ class CoreEdgeReactionModel:
                         memoryavailable = psutil.virtual_memory().available/(1000.0 ** 3)
                         memoryuse = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/(1000.0 ** 3)
                         tmp = divmod(memoryavailable, memoryuse)
-        #                logging.info("Memory use is {0} GB, available memory is {2} GB and max allowed "
-        #                             "number of processes is {1}.".format(memoryuse, tmp[0], memoryavailable))
                         tmp2 = min(maxproc, tmp[0])
                         procnum = max(1, int(tmp2))
                     else:
@@ -730,12 +708,7 @@ class CoreEdgeReactionModel:
                     # This method chops the iterable into a number of chunks which it
                     # submits to the process pool as separate tasks.
                     p = Pool(processes=procnum)
-                    p.map(CalculateThermoParallel,spcs)
-        #            for spc in spcs:
-        #                spc.generate_resonance_structures()
-        #                original_molecule = spc.molecule[0]
-        #                # Returns unsorted list, depending on which one is returned fastest
-        #                p.apply_async(submit_own, (original_molecule,))
+                    p.map(calculate_thermo_parallel,spcs)
                     p.close()
                     p.join()
 

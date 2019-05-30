@@ -495,7 +495,9 @@ class RMG(util.Subject):
             pass
 
         if maxproc > psutil.cpu_count():
-            raise ValueError('Invalid input for user defined maximum number of processes {0}; should be an integer and smaller or equal to your available number of processes {1}'.format(maxproc, psutil.cpu_count()))
+            raise ValueError("""Invalid input for user defined maximum number of processes {0}; 
+            should be an integer and smaller or equal to your available number of 
+            processes {1}""".format(maxproc, psutil.cpu_count()))
 
         # Initialize reaction model
         if restart:

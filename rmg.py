@@ -126,7 +126,7 @@ def main():
     args = parse_command_line_arguments()
 
     if args.postprocess:
-        print "Postprocessing the profiler statistics (will be appended to RMG.log)"
+        logging.info("Postprocessing the profiler statistics (will be appended to RMG.log)")
     else:
         # Initialize the logging system (resets the RMG.log file)
         level = logging.INFO
