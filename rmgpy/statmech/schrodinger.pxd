@@ -29,14 +29,20 @@ cimport numpy
 
 ################################################################################
 
-cpdef double getPartitionFunction(double T, energy, degeneracy=?, int n0=?, int nmax=?, double tol=?) except -1
+cpdef double getPartitionFunction(double T, energy, degeneracy=?, int n0=?, qk_energy=?, int nmax=?,
+                                  double tol=?) except -1
 
-cpdef double getHeatCapacity(double T, energy, degeneracy=?, int n0=?, int nmax=?, double tol=?) except -100000000
+cpdef double getHeatCapacity(double T, energy, degeneracy=?, int n0=?, qk_energy=?, int nmax=?,
+                             double tol=?) except -100000000
 
-cpdef double getEnthalpy(double T, energy, degeneracy=?, int n0=?, int nmax=?, double tol=?) except 100000000
+cpdef double getEnthalpy(double T, energy, degeneracy=?, int n0=?, qk_energy=?, int nmax=?,
+                         double tol=?) except 100000000
 
-cpdef double getEntropy(double T, energy, degeneracy=?, int n0=?, int nmax=?, double tol=?) except -100000000
+cpdef double getEntropy(double T, energy, degeneracy=?, int n0=?, qk_energy=?, int nmax=?,
+                        double tol=?) except -100000000
 
-cpdef numpy.ndarray getSumOfStates(numpy.ndarray Elist, energy, degeneracy=?, int n0=?, numpy.ndarray sumStates0=?)
+cpdef numpy.ndarray getSumOfStates(numpy.ndarray Elist, energy, degeneracy=?, int n0=?, numpy.ndarray sumStates0=?,
+                                   qk_energy=?)
 
-cpdef numpy.ndarray getDensityOfStates(numpy.ndarray Elist, energy, degeneracy=?, int n0=?, numpy.ndarray densStates0=?)
+cpdef numpy.ndarray getDensityOfStates(numpy.ndarray Elist, energy, degeneracy=?, int n0=?, numpy.ndarray densStates0=?,
+                                       qk_energy=?)
