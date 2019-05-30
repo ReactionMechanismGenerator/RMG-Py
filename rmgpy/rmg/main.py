@@ -39,6 +39,8 @@ import time
 import logging
 import os
 import shutil
+import psutil
+import resource
 
 import numpy as np
 import gc
@@ -80,6 +82,9 @@ from rmgpy.tools.simulate import plot_sensitivity
 ################################################################################
 
 solvent = None
+
+# Maximum number of user defined processors
+maxproc = 1 
 
 class RMG(util.Subject):
     """
@@ -485,6 +490,15 @@ class RMG(util.Subject):
         if not len(data) == 4:
             raise ValueError('Invalid format for wall time {0}; should be DD:HH:MM:SS.'.format(self.wallTime))
         self.wallTime = int(data[-1]) + 60 * int(data[-2]) + 3600 * int(data[-3]) + 86400 * int(data[-4])
+
+        global maxproc
+        try:
+            maxproc = kwargs['maxproc']
+        except KeyError:
+            pass
+
+        if maxproc > psutil.cpu_count():
+            raise ValueError('Invalid input for user defined maximum number of processes {0}; should be an integer and smaller or equal to your available number of processes {1}'.format(maxproc, psutil.cpu_count()))
 
         # Initialize reaction model
         if restart:

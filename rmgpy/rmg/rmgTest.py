@@ -185,7 +185,7 @@ class TestRMGWorkFlow(unittest.TestCase):
         self.rmg.reactionModel.core.species.append(spc2)
 
         newReactions = []
-        newReactions.extend(react((spc1,spc2)))
+        newReactions.extend(react((spc1, spc2, ['H_Abstraction'])))
 
         # process newly generated reactions to make sure no duplicated reactions
         self.rmg.reactionModel.processNewReactions(newReactions, spc2, None)
