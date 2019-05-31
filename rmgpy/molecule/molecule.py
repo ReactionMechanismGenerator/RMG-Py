@@ -190,9 +190,10 @@ class Atom(Vertex):
                     and self.radicalElectrons == atom.radicalElectrons
                     and self.lonePairs        == atom.lonePairs
                     and self.charge           == atom.charge
-                    and self.atomType         is atom.atomType)
+                    and self.atomType         is atom.atomType
+                    and self.stereo           == atom.stereo)
             else:
-                return self.element is atom.element
+                return self.element is atom.element and self.stereo == atom.stereo
         elif isinstance(other, gr.GroupAtom):
             cython.declare(a=AtomType, radical=cython.short, lp=cython.short, charge=cython.short)
             if not strict:
@@ -218,6 +219,8 @@ class Atom(Vertex):
                     if self.charge == charge: break
                 else:
                     return False
+            if ap.stereo and self.stereo and self.stereo != ap.stereo:
+                return False
             if 'inRing' in self.props and 'inRing' in ap.props:
                 if self.props['inRing'] != ap.props['inRing']:
                     return False
@@ -265,6 +268,8 @@ class Atom(Vertex):
                     if self.charge == charge: break
                 else:
                     return False
+            if atom.stereo and self.stereo != atom.stereo:
+                return False
             if 'inRing' in self.props and 'inRing' in atom.props:
                 if self.props['inRing'] != atom.props['inRing']:
                     return False
@@ -560,19 +565,39 @@ class Bond(Edge):
         cython.declare(bond=Bond, bp=gr.GroupBond)
         if isinstance(other, Bond):
             bond = other
-            return self.isOrder(bond.getOrderNum())
+            return self.isOrder(bond.getOrderNum()) and self.stereo == bond.stereo
         elif isinstance(other, gr.GroupBond):
             bp = other
-            return any([self.isOrder(otherOrder) for otherOrder in bp.getOrderNum()])
+            for order in bp.getOrderNum():
+                if self.isOrder(order):
+                    break
+            else:
+                return False
+            if bp.stereo and self.stereo and self.stereo != bp.stereo:
+                return False
+            return True
 
     def isSpecificCaseOf(self, other):
         """
         Return ``True`` if `self` is a specific case of `other`, or ``False``
         otherwise. `other` can be either a :class:`Bond` or a
         :class:`GroupBond` object.
+
+        The only case where this differs from `equivalent` is when the
+        GroupBond is stereospecific but self is not.
         """
-        # There are no generic bond types, so isSpecificCaseOf is the same as equivalent
-        return self.equivalent(other)
+        if isinstance(other, Bond):
+            return self.equivalent(other)
+        elif isinstance(other, gr.GroupBond):
+            bp = other
+            for order in bp.getOrderNum():
+                if self.isOrder(order):
+                    break
+            else:
+                return False
+            if bp.stereo and self.stereo != other.stereo:
+                return False
+            return True
 
     def getOrderStr(self):
         """

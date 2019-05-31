@@ -395,6 +395,8 @@ class GroupAtom(Vertex):
                     if charge1 == charge2: break
                 else:
                     return False
+        if self.stereo != other.stereo:
+            return False
         # Other properties must have an equivalent in other (and vice versa)
         # Absence of the 'inRing' prop indicates a wildcard
         if 'inRing' in self.props and 'inRing' in group.props:
@@ -455,6 +457,8 @@ class GroupAtom(Vertex):
                         return False
         else:
             if group.charge: return False
+        if other.stereo and self.stereo != other.stereo:
+            return False
         # Other properties must have an equivalent in other
         # Absence of the 'inRing' prop indicates a wildcard
         if 'inRing' in self.props and 'inRing' in group.props:
@@ -920,6 +924,8 @@ class GroupBond(Edge):
                 if order1 == order2: break
             else:
                 return False
+        if self.stereo != other.stereo:
+            return False
         # Otherwise the two bond groups are equivalent
         return True
 
@@ -945,6 +951,8 @@ class GroupBond(Edge):
                 if order1 == order2: break
             else:
                 return False
+        if other.stereo and self.stereo != other.stereo:
+            return False
         # Otherwise self is in fact a specific case of other
         return True
 
