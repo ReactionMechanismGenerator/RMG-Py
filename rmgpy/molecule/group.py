@@ -61,6 +61,7 @@ class GroupAtom(Vertex):
     `label`             ``str``             A string label that can be used to tag individual atoms
     `lonePairs`         ``list``            The number of lone electron pairs
     'charge'            ''list''            The partial charge of the atom
+    `stereo`            ``str``             Label indicating stereochemistry of the atom (e.g. R/S)
     `props`             ``dict``            Dictionary for storing additional atom properties
     `reg_dim_atm`       ``list``            List of atom types that are free dimensions in tree optimization
     `reg_dim_u`         ``list``            List of unpaired electron numbers that are free dimensions in tree optimization
@@ -74,7 +75,7 @@ class GroupAtom(Vertex):
     order to match.
     """
 
-    def __init__(self, atomType=None, radicalElectrons=None, charge=None, label='', lonePairs=None, props=None):
+    def __init__(self, atomType=None, radicalElectrons=None, charge=None, label='', lonePairs=None, stereo=None, props=None):
         Vertex.__init__(self)
         self.atomType = atomType or []
         for index in range(len(self.atomType)):
@@ -84,6 +85,7 @@ class GroupAtom(Vertex):
         self.charge = charge or []
         self.label = label
         self.lonePairs = lonePairs or []
+        self.stereo = stereo
 
         self.props = props or {}
         
@@ -106,7 +108,7 @@ class GroupAtom(Vertex):
         atomType = self.atomType
         if atomType is not None:
             atomType = [a.label for a in atomType]
-        return (GroupAtom, (atomType, self.radicalElectrons, self.charge, self.label, self.lonePairs), d)
+        return (GroupAtom, (atomType, self.radicalElectrons, self.charge, self.label, self.lonePairs, self.stereo), d)
 
     def __setstate__(self, d):
         """
@@ -144,6 +146,7 @@ class GroupAtom(Vertex):
             self.charge[:],
             self.label,
             self.lonePairs[:],
+            self.stereo,
             deepcopy(self.props),
         )
 
@@ -635,6 +638,7 @@ class GroupBond(Edge):
     Attribute           Type                Description
     =================== =================== ====================================
     `order`             ``list``            The allowed bond orders (as character strings)
+    `stereo`            ``str``             Label indicating stereochemistry of the bond (e.g. E/Z)
     `reg_dim`           ``Boolean``         Indicates if this is a regularization dimension during tree generation
     =================== =================== ====================================
 
@@ -642,7 +646,7 @@ class GroupBond(Edge):
     group if it matches *any* item in the list.
     """
 
-    def __init__(self, atom1, atom2, order=None):
+    def __init__(self, atom1, atom2, order=None, stereo=None):
         Edge.__init__(self, atom1, atom2)
         if order is not None and all([isinstance(oneOrder,str) for oneOrder in order]):
             self.setOrderStr(order)
@@ -650,6 +654,7 @@ class GroupBond(Edge):
             raise ActionError('order list given {} does not consist of only strings or only numbers'.format(order))
         else:
             self.order = order or []
+        self.stereo = stereo
         
         self.reg_dim = [[],[]]
 
@@ -669,14 +674,14 @@ class GroupBond(Edge):
         """
         A helper function used when pickling an object.
         """
-        return (GroupBond, (self.vertex1, self.vertex2, self.order))
+        return (GroupBond, (self.vertex1, self.vertex2, self.order, self.stereo))
 
     def copy(self):
         """
         Return a deep copy of the :class:`GroupBond` object. Modifying the
         attributes of the copy will not affect the original.
         """
-        return GroupBond(self.vertex1, self.vertex2, self.order[:])
+        return GroupBond(self.vertex1, self.vertex2, self.order[:], self.stereo)
         
     def getOrderStr(self):
         """

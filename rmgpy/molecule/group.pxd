@@ -38,6 +38,7 @@ cdef class GroupAtom(Vertex):
     cdef public list charge
     cdef public str label
     cdef public list lonePairs
+    cdef public str stereo
 
     cdef public dict props
 
@@ -88,6 +89,7 @@ cdef class GroupAtom(Vertex):
 cdef class GroupBond(Edge):
 
     cdef public list order
+    cdef public str stereo
     cdef public list reg_dim
 
     cpdef Edge copy(self)
