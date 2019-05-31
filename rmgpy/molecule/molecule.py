@@ -87,6 +87,7 @@ class Atom(Vertex):
     `mass`              ``int``             atomic mass of element (read only)
     `number`            ``int``             atomic number of element (read only)
     `symbol`            ``str``             atomic symbol of element (read only)
+    `stereo`            ``str``             Label indicating stereochemistry of the atom (e.g. R/S)
     =================== =================== ====================================
 
     Additionally, the ``mass``, ``number``, and ``symbol`` attributes of the
@@ -94,7 +95,7 @@ class Atom(Vertex):
     e.g. ``atom.symbol`` instead of ``atom.element.symbol``.
     """
 
-    def __init__(self, element=None, radicalElectrons=0, charge=0, label='', lonePairs=-100, coords=numpy.array([]), id=-1, props=None):
+    def __init__(self, element=None, radicalElectrons=0, charge=0, label='', lonePairs=-100, coords=numpy.array([]), stereo=None, id=-1, props=None):
         Vertex.__init__(self)
         if isinstance(element, str):
             self.element = elements.__dict__[element]
@@ -106,6 +107,7 @@ class Atom(Vertex):
         self.atomType = None
         self.lonePairs = lonePairs
         self.coords = coords
+        self.stereo = stereo
         self.id = id
         self.props = props or {}
 
@@ -113,10 +115,11 @@ class Atom(Vertex):
         """
         Return a human-readable string representation of the object.
         """
-        return '{0}{1}{2}'.format(
+        return '{0}{1}{2}{3}'.format(
             str(self.element),
             '.' * self.radicalElectrons,
             '+' * self.charge if self.charge > 0 else '-' * -self.charge,
+            '({0})'.format(self.stereo) if self.stereo is not None else '',
         )
 
     def __repr__(self):
@@ -137,6 +140,7 @@ class Atom(Vertex):
             'sortingLabel': self.sortingLabel,
             'atomType': self.atomType.label if self.atomType else None,
             'lonePairs': self.lonePairs,
+            'stero': self.stereo,
         }
         if self.element.isotope == -1:
             element2pickle = self.element.symbol
@@ -155,6 +159,7 @@ class Atom(Vertex):
         self.sortingLabel = d['sortingLabel']
         self.atomType = atomTypes[d['atomType']] if d['atomType'] else None
         self.lonePairs = d['lonePairs']
+        self.stereo = d['stereo']
     
     @property
     def mass(self): return self.element.mass
@@ -284,6 +289,7 @@ class Atom(Vertex):
         a.atomType = self.atomType
         a.lonePairs = self.lonePairs
         a.coords = self.coords[:]
+        a.stereo = self.stereo
         a.id = self.id
         a.props = deepcopy(self.props)
         return a
@@ -495,16 +501,18 @@ class Bond(Edge):
     `order`             ``float``             The :ref:`bond type <bond-types>`
     `atom1`             ``Atom``              An Atom object connecting to the bond
     `atom2`             ``Atom``              An Atom object connecting to the bond
+    `stereo`            ``str``             Label indicating stereochemistry of the bond (e.g. E/Z)
     =================== =================== ====================================
 
     """
 
-    def __init__(self, atom1, atom2, order=1):
+    def __init__(self, atom1, atom2, order=1, stereo=None):
         Edge.__init__(self, atom1, atom2)
         if isinstance(order, str):
             self.setOrderStr(order)
         else:
             self.order = order
+        self.stereo = stereo
 
     def __str__(self):
         """
@@ -516,13 +524,14 @@ class Bond(Edge):
         """
         Return a representation that can be used to reconstruct the object.
         """
-        return '<Bond "{0}">'.format(self.order)
+        stereo = ' ({0})'.format(self.stereo) if self.stereo is not None else ''
+        return '<Bond "{0}{1}">'.format(self.order, stereo)
 
     def __reduce__(self):
         """
         A helper function used when pickling an object.
         """
-        return (Bond, (self.vertex1, self.vertex2, self.order))
+        return (Bond, (self.vertex1, self.vertex2, self.order, self.stereo))
 
     @property
     def atom1(self):
@@ -637,6 +646,7 @@ class Bond(Edge):
         b.vertex1 = self.vertex1
         b.vertex2 = self.vertex2
         b.order = self.order
+        b.stereo = self.stereo
         return b
 
 

@@ -44,6 +44,7 @@ cdef class Atom(Vertex):
     cdef public AtomType atomType
     cdef public numpy.ndarray coords
     cdef public short lonePairs
+    cdef public str stereo
     cdef public int id
     cdef public dict props
     
@@ -94,6 +95,7 @@ cdef class Atom(Vertex):
 cdef class Bond(Edge):
 
     cdef public float order
+    cdef public str stereo
 
     cpdef bint equivalent(self, Edge other) except -2
 
