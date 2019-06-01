@@ -274,11 +274,11 @@ cdef class HinderedRotor(Torsion):
         
         if self._fourier is not None:
             coeffs = self._fourier.value_si
-            V0 = -numpy.sum(coeffs[0,:])
+            V0 = -numpy.sum(coeffs[0, :])
         else:
             coeffs = numpy.zeros((2, self.symmetry), numpy.float64)
             V0 = 0.5 * self._barrier.value_si
-            coeffs[0, self.symmetry-1] = -V0
+            coeffs[0, self.symmetry - 1] = -V0
             
         # Populate Hamiltonian matrix (banded in lower triangular form)
         H = numpy.zeros((coeffs.shape[1] + 1, 2 * M + 1), numpy.complex64)
