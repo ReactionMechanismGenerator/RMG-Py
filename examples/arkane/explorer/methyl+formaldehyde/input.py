@@ -13,8 +13,6 @@ database(
     kineticsEstimator = 'rate rules',
 )
 
-
-
 species(
 label='CH3',
 structure=SMILES('[CH3]'),
