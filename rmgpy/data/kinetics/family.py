@@ -373,6 +373,7 @@ class ReactionRecipe:
 
 ################################################################################
 
+
 class KineticsFamily(Database):
     """
     A class for working with an RMG kinetics family: a set of reactions with 
@@ -1071,6 +1072,10 @@ class KineticsFamily(Database):
             logging.info('Must be because you turned off the training depository.')
             return
         
+        # Determine number of parallel processes.
+        from rmgpy.rmg.main import determine_procnum_from_RAM
+        procnum = determine_procnum_from_RAM()
+
         tentries = depository.entries
         
         index = max([e.index for e in self.rules.getEntries()] or [0]) + 1
@@ -1155,6 +1160,14 @@ class KineticsFamily(Database):
             # trainingSet=True used later to does not allow species to match a liquid phase library and get corrected thermo which will affect reverse rate calculation
             item = Reaction(reactants=[Species(molecule=[m.molecule[0].copy(deep=True)], label=m.label) for m in entry.item.reactants],
                              products=[Species(molecule=[m.molecule[0].copy(deep=True)], label=m.label) for m in entry.item.products])
+
+            if procnum > 1:
+                # If QMTP and multiprocessing write QMTP files here in parallel.
+                from rmgpy.rmg.input import getInput
+                quantumMechanics = getInput('quantumMechanics')
+                if quantumMechanics:
+                    quantumMechanics.runJobs(item.reactants+item.products, procnum=procnum)
+
             for reactant in item.reactants:
                 reactant.generate_resonance_structures()
                 reactant.thermo = thermoDatabase.getThermoData(reactant, trainingSet=True)

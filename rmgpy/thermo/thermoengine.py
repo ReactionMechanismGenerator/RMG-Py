@@ -32,10 +32,8 @@ import numpy
 import math
 
 import logging as logging
-from rmgpy.scoop_framework.util import submit_
 from rmgpy.data.rmg import getDB
 import rmgpy.constants as constants
-from rmgpy.molecule import Molecule
 from rmgpy.statmech import Conformer
 from rmgpy.thermo import Wilhoit, NASA, ThermoData
 import rmgpy.data.rmg
@@ -185,4 +183,5 @@ def submit(spc, solventName = ''):
     the result.
 
     """
-    spc.thermo = submit_(evaluator, spc, solventName= solventName)
+    spc.thermo = evaluator(spc, solventName= solventName)
+

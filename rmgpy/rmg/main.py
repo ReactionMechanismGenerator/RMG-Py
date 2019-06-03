@@ -39,6 +39,8 @@ import time
 import logging
 import os
 import shutil
+import resource
+import psutil
 
 import numpy as np
 import gc
@@ -58,7 +60,6 @@ from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
 from rmgpy.rmg.pdep import PDepReaction
 
-from rmgpy.data.thermo import ThermoLibrary
 from rmgpy.data.base import Entry
 from rmgpy import settings
 
@@ -80,6 +81,9 @@ from rmgpy.tools.simulate import plot_sensitivity
 ################################################################################
 
 solvent = None
+
+# Maximum number of user defined processors
+maxproc = 1 
 
 class RMG(util.Subject):
     """
@@ -440,13 +444,6 @@ class RMG(util.Subject):
         if len(self.modelSettingsList) > 0:
             self.filterReactions = self.modelSettingsList[0].filterReactions
         
-        # See if memory profiling package is available
-        try:
-            import psutil
-        except ImportError:
-            logging.info('Optional package dependency "psutil" not found; memory profiling information will not be saved.')
-    
-        
         # Make output subdirectories
         util.makeOutputSubdirectory(self.outputDirectory, 'pdep')
         util.makeOutputSubdirectory(self.outputDirectory, 'solver')
@@ -457,6 +454,17 @@ class RMG(util.Subject):
             self.kineticsdatastore = kwargs['kineticsdatastore']
         except KeyError:
             self.kineticsdatastore = False
+
+        global maxproc
+        try:
+            maxproc = kwargs['maxproc']
+        except KeyError:
+            pass
+
+        if maxproc > psutil.cpu_count():
+            raise ValueError("""Invalid input for user defined maximum number of processes {0}; 
+            should be an integer and smaller or equal to your available number of 
+            processors {1}""".format(maxproc, psutil.cpu_count()))
 
         # Load databases
         self.loadDatabase()
@@ -518,7 +526,6 @@ class RMG(util.Subject):
                 if failsSpeciesConstraints(spec):
                     if 'allowed' in self.speciesConstraints and 'input species' in self.speciesConstraints['allowed']:
                         self.speciesConstraints['explicitlyAllowedMolecules'].append(spec.molecule[0])
-                        pass
                     else:
                         raise ForbiddenStructureException("Species constraints forbids input species {0}. Please reformulate constraints, remove the species, or explicitly allow it.".format(spec.label))
 
@@ -1692,8 +1699,10 @@ class RMG(util.Subject):
         assert len(Tlist) > 0
         assert len(Plist) > 0
         concentrationList = np.array(concentrationList)
-        assert concentrationList.shape[1] > 0  # An arbitrary number of concentrations is acceptable, and should be run for each reactor system 
-        
+        # An arbitrary number of concentrations is acceptable, and should be run for each reactor system
+        if not concentrationList.shape[1] > 0:
+            raise AssertionError()
+
         # Make a reaction system for each (T,P) combination
         for T in Tlist:
             for P in Plist:
@@ -1723,6 +1732,31 @@ class RMG(util.Subject):
         return line
     
 ################################################################################
+
+def determine_procnum_from_RAM():
+    """
+    Get available RAM (GB)and procnum dependent on OS.
+    """
+    if sys.platform.startswith('linux'):
+        # linux
+        memory_available = psutil.virtual_memory().free / (1000.0 ** 3)
+        memory_use = psutil.Process(os.getpid()).memory_info()[0]/(1000.0 ** 3)
+        tmp = divmod(memory_available, memory_use)
+        tmp2 = min(maxproc, tmp[0])
+        procnum = max(1, int(tmp2))
+    elif sys.platform == "darwin":
+        # OS X
+        memory_available = psutil.virtual_memory().available/(1000.0 ** 3)
+        memory_use = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/(1000.0 ** 3)
+        tmp = divmod(memory_available, memory_use)
+        tmp2 = min(maxproc, tmp[0])
+        procnum = max(1, int(tmp2))
+    else:
+        # Everything else
+        procnum = 1
+
+    # Return the maximal number of processes for multiprocessing
+    return procnum
 
 def initializeLog(verbose, log_file_name):
     """

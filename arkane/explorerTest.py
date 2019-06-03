@@ -76,7 +76,7 @@ class testExplorerJob(unittest.TestCase):
         """
         test that the right number of reactions are in output network
         """
-        self.assertEqual(len(self.explorerjob.networks[0].pathReactions), 6)
+        self.assertEqual(len(self.explorerjob.networks[0].pathReactions), 5)
 
     def test_isomers(self):
         """

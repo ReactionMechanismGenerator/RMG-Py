@@ -42,7 +42,6 @@ from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.thermo import *
 ###################################################
 
-
 class TestSpecies(unittest.TestCase):
     """
     Contains unit tests of the Species class.
@@ -135,15 +134,16 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         P.value_si = 101000.0
         rsys.T = T
         rsys.P = P
+        procnum = 2
         
         cerm = CoreEdgeReactionModel()
         
         spcA = Species().fromSMILES('[OH]')
         spcs = [Species().fromSMILES('CC'), Species().fromSMILES('[CH3]')]
-        spcTuples = [(spcA, spc) for spc in spcs]
+        spcTuples = [((spcA, spc), ['H_Abstraction']) for spc in spcs]
         
-        rxns = list(react(*spcTuples))
-        rxns += list(react(*[(spcs[0],spcs[1])]))
+        rxns = list(react(spcTuples, procnum))
+        rxns += list(react([((spcs[0], spcs[1]), ['H_Abstraction'])], procnum))
         
         for rxn in rxns:
             cerm.makeNewReaction(rxn)
@@ -241,11 +241,12 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         Test that CoreEdgeReactionModel.makeNewReaction method correctly works.
         """
 
+        procnum = 2
         spcA = Species().fromSMILES('[OH]')
         spcs = [Species().fromSMILES('CC'), Species().fromSMILES('[CH3]')]
-        spcTuples = [(spcA, spc) for spc in spcs]
+        spcTuples = [((spcA, spc), ['H_Abstraction']) for spc in spcs]
 
-        rxns = list(react(*spcTuples))
+        rxns = list(react(spcTuples, procnum))
 
         cerm = CoreEdgeReactionModel()
 
@@ -390,33 +391,6 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         
         self.assertEquals(len(difset),1) #should be one because we thermo filtered down to one edge species
         
-    def testInflate(self):
-        """
-        Test that CoreEdgeReactionModel.inflate method correctly works.
-        """
-        spcA = Species().fromSMILES('[OH]')
-        spcs = [Species().fromSMILES('CC'), Species().fromSMILES('[CH3]')]
-        spcTuples = [(spcA, spc) for spc in spcs]
-
-        rxns = list(react(*spcTuples))
-
-        cerm = CoreEdgeReactionModel()
-
-        for rxn in rxns:
-            cerm.makeNewReaction(rxn)
-
-        """
-        3 expected H-abstraction reactions:
-            OH + CC = H2O + C[CH2]
-            OH + [CH3] = H2O + [CH2]
-            OH + [CH3] = [O] + C
-        """
-        for i, rxn in enumerate(rxns):
-            rxns[i] = cerm.inflate(rxn)
-
-        for rxn in rxns:
-            self.assertTrue(rxn.isBalanced())
-
     def test_checkForExistingReaction_eliminates_identical_reactions(self):
         """
         Test that checkForExistingReaction catches identical reactions.

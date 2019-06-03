@@ -37,7 +37,7 @@ from .model import Species
 from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.molecule import Molecule
-from rmgpy.rmg.react import react
+from rmgpy.rmg.react import react_species
 from rmgpy.restart import saveRestartFile
 import rmgpy
 from rmgpy.data.base import ForbiddenStructures
@@ -97,7 +97,7 @@ class TestRMGWorkFlow(unittest.TestCase):
         # react
         spc = Species().fromSMILES("O=C[C]=C")
         spc.generate_resonance_structures()
-        newReactions = react((spc,))
+        newReactions = react_species((spc,))
 
         # try to pick out the target reaction 
         mol_H = Molecule().fromSMILES("[H]")
@@ -111,7 +111,7 @@ class TestRMGWorkFlow(unittest.TestCase):
 
         # react again
         newReactions_reverse = []
-        newReactions_reverse.extend(react((spc,)))
+        newReactions_reverse.extend(react_species((spc,)))
 
         # try to pick out the target reaction 
         target_rxns_reverse = findTargetRxnsContaining(mol_H, mol_C3H2O, newReactions_reverse)
@@ -185,7 +185,7 @@ class TestRMGWorkFlow(unittest.TestCase):
         self.rmg.reactionModel.core.species.append(spc2)
 
         newReactions = []
-        newReactions.extend(react((spc1,spc2)))
+        newReactions.extend(react_species((spc1, spc2)))
 
         # process newly generated reactions to make sure no duplicated reactions
         self.rmg.reactionModel.processNewReactions(newReactions, spc2, None)

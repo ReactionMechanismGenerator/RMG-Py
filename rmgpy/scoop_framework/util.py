@@ -40,7 +40,6 @@ from functools import wraps
 logger = None
 
 try:
-    from scoop import futures
     from scoop.futures import map, submit
     from scoop import shared
     from scoop import logger as scooplogger
@@ -55,6 +54,9 @@ def warnScoopStartedProperly(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         
+        warnings.warn("The option scoop is no longer supported"
+                      "and may be removed after Version: 2.4 ", DeprecationWarning)
+
         futures_not_loaded = 'scoop.futures' not in sys.modules
 
         warnings.simplefilter('ignore', RuntimeWarning)
@@ -104,6 +106,9 @@ class WorkerWrapper(object):
     """
     __name__ = 'WorkerWrapper'
 
+    warnings.warn("The option scoop is no longer supported"
+                  "and may be removed after Version: 2.4 ", DeprecationWarning)
+
     def __init__(self, myfn):
         self.myfn = myfn
 
@@ -121,18 +126,20 @@ def broadcast(obj, key):
     """
     Broadcasts the object across the workers using the key parameter as the key.
     """      
-    
-    kwargs = {key : obj}
-    try:
-        if shared.getConst(key):
-            logger.debug('An object with the key {} was already broadcasted.'.format(key))
-        else:
-            shared.setConst(**kwargs)
-    except NameError:
-        """
-        Name error will be caught when the SCOOP library is not imported properly.
-        """
-        logger.debug('SCOOP not loaded. Not broadcasting the object {}'.format(obj))
+    warnings.warn("The option scoop is no longer supported"
+                  "and may be removed after Version: 2.4 ", DeprecationWarning)
+
+    #    kwargs = {key : obj}
+    #    try:
+    #        if shared.getConst(key):
+    #            logger.debug('An object with the key {} was already broadcasted.'.format(key))
+    #        else:
+    #            shared.setConst(**kwargs)
+    #    except NameError, e:
+    #        """
+    #        Name error will be caught when the SCOOP library is not imported properly.
+    #        """
+    #        logger.debug('SCOOP not loaded. Not broadcasting the object {}'.format(obj))
 
 @warnScoopStartedProperly
 def get(key):    
@@ -141,16 +148,20 @@ def get(key):
     parameter key.
     """
 
-    try:
-        data = shared.getConst(key, timeout=1e-9)
-        return data
-    except NameError:
-        """
-        Name error will be caught when the SCOOP library is not imported properly.
-        """
-        logger.debug('SCOOP not loaded. Not retrieving the shared object with key {}'.format(key))
+    warnings.warn("The option scoop is no longer supported"
+                  "and may be removed after Version: 2.4 ", DeprecationWarning)
+    #    try:
+    #        data = shared.getConst(key, timeout=1e-9)
+    #        return data
+    #    except NameError:
+    #        """
+    #        Name error will be caught when the SCOOP library is not imported properly.
+    #        """
+    #        logger.debug('SCOOP not loaded. Not retrieving the shared object with key {}'.format(key))
 
 def map_(*args, **kwargs):
+    warnings.warn("The option scoop is no longer supported"
+                  "and may be removed after Version: 2.4 ", DeprecationWarning)
     return map(WorkerWrapper(args[0]), *args[1:], **kwargs)
 
 def submit_(func, *args, **kwargs):
@@ -160,6 +171,8 @@ def submit_(func, *args, **kwargs):
     returns the return value of the called function, or
     when SCOOP is loaded, the future object.
     """
+    warnings.warn("The option scoop is no longer supported"
+                  "and may be removed after Version: 2.4 ", DeprecationWarning)
     try:
         task = submit(WorkerWrapper(func), *args, **kwargs)#returns immediately
         return task

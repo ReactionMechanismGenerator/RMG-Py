@@ -35,16 +35,15 @@ import numpy as np
 from rmgpy import settings
 from rmgpy.data.kinetics import TemplateReaction
 from rmgpy.data.rmg import RMGDatabase
-from rmgpy.molecule import Molecule
-from rmgpy.reaction import Reaction
 from rmgpy.species import Species
 
 from rmgpy.rmg.main import RMG
-from rmgpy.rmg.react import react, reactAll, deflate, deflateReaction
+from rmgpy.rmg.react import react, react_all
 
 ###################################################
 
-TESTFAMILY = 'H_Abstraction'
+TESTFAMILIES = ['H_Abstraction', 'R_Recombination', 'Disproportionation', 'R_Addition_MultipleBond']
+
 
 class TestReact(unittest.TestCase):
 
@@ -63,138 +62,81 @@ class TestReact(unittest.TestCase):
         self.rmg.database.loadForbiddenStructures(os.path.join(path, 'forbiddenStructures.py'))
         # kinetics family loading
         self.rmg.database.loadKinetics(os.path.join(path, 'kinetics'),
-                                       kineticsFamilies=[TESTFAMILY],
+                                       kineticsFamilies=TESTFAMILIES,
                                        reactionLibraries=[]
                                        )
 
     def testReact(self):
         """
-        Test that reaction generation from the available families works.
+        Test that the ``react`` function works in serial
         """
-        spcA = Species().fromSMILES('[OH]')
+        procnum = 1
+
+        spc_a = Species().fromSMILES('[OH]')
         spcs = [Species().fromSMILES('CC'), Species().fromSMILES('[CH3]')]
-        spcTuples = [(spcA, spc) for spc in spcs]
+        spc_tuples = [((spc_a, spc), ['H_Abstraction']) for spc in spcs]
 
-        reactionList = list(react(*spcTuples))
-        self.assertIsNotNone(reactionList)
-        self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in reactionList]))
+        reaction_list = list(react(spc_tuples, procnum))
+        self.assertIsNotNone(reaction_list)
+        self.assertEqual(len(reaction_list), 3)
+        self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in reaction_list]))
 
-    def testDeflate(self):
+    def testReactParallel(self):
         """
-        Test that reaction deflate function works.
+        Test that the ``react`` function works in parallel using Python multiprocessing
         """
-        molA = Species().fromSMILES('[OH]')
-        molB = Species().fromSMILES('CC')
-        molC = Species().fromSMILES('[CH3]')
+        import rmgpy.rmg.main
+        rmgpy.rmg.main.maxproc = 2
+        procnum = 2
 
-        reactants = [molA, molB]
+        spc_a = Species().fromSMILES('[OH]')
+        spcs = [Species().fromSMILES('CC'), Species().fromSMILES('[CH3]')]
+        spc_tuples = [((spc_a, spc), ['H_Abstraction']) for spc in spcs]
 
-        # both reactants were already part of the core:
-        reactantIndices = [1, 2]
-
-        rxn = Reaction(reactants=[molA, molB], products=[molC],
-        pairs=[(molA, molC), (molB, molC)])
-
-        deflate([rxn], reactants, reactantIndices)
-
-        for spc, t in zip(rxn.reactants, [int, int]):
-            self.assertTrue(isinstance(spc, t))
-        self.assertEquals(rxn.reactants, reactantIndices)
-        for spc in rxn.products:
-            self.assertTrue(isinstance(spc, Species))
-
-        # one of the reactants was not yet part of the core:
-        reactantIndices = [-1, 2]
-
-        rxn = Reaction(reactants=[molA, molB], products=[molC],
-                pairs=[(molA, molC), (molB, molC)])
-
-        deflate([rxn], reactants, reactantIndices)
-
-        for spc, t in zip(rxn.reactants, [Species, int]):
-            self.assertTrue(isinstance(spc, t))
-        for spc in rxn.products:
-            self.assertTrue(isinstance(spc, Species))
-
-    def testReactStoreIndices(self):
-        """
-        Test that reaction generation keeps track of the original species indices.
-        """
-
-        indices = {'[OH]':1, 'CC':2, '[CH3]':3}
-
-        # make it bidirectional so that we can look-up indices as well:
-        revd=dict([reversed(i) for i in indices.items()])
-        indices.update(revd)
-
-        spcA = Species(index=indices['[OH]']).fromSMILES('[OH]')
-        spcs = [Species(index=indices['CC']).fromSMILES('CC'),
-                Species(index=indices['[CH3]']).fromSMILES('[CH3]')]
-
-        spcTuples = [(spcA, spc) for spc in spcs]
-
-        reactionList = list(react(*spcTuples))
-        self.assertIsNotNone(reactionList)
-        self.assertEquals(len(reactionList), 3)
-        for rxn in reactionList:
-            for i, reactant in enumerate(rxn.reactants):
-                rxn.reactants[i] = Molecule().fromSMILES(indices[reactant])
-            self.assertTrue(rxn.isBalanced())
+        reaction_list = list(react(spc_tuples, procnum))
+        self.assertIsNotNone(reaction_list)
+        self.assertEqual(len(reaction_list), 3)
+        self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in reaction_list]))
 
     def testReactAll(self):
         """
-        Test that the reactAll function works.
+        Test that the ``react_all`` function works in serial
         """
+        procnum = 1
 
         spcs = [
-                Species().fromSMILES('CC'),
+                Species().fromSMILES('C=C'),
                 Species().fromSMILES('[CH3]'),
-                Species().fromSMILES('[OH]')
+                Species().fromSMILES('[OH]'),
+                Species().fromSMILES('CCCCCCCCCCC')
                 ]
 
-        N = len(spcs)
-        rxns = reactAll(spcs, N, np.ones(N), np.ones([N,N]))
-        self.assertIsNotNone(rxns)
-        self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in rxns]))
+        n = len(spcs)
+        reaction_list = react_all(spcs, n, np.ones(n), np.ones([n, n]), np.ones([n, n, n]), procnum)
+        self.assertIsNotNone(reaction_list)
+        self.assertEqual(len(reaction_list), 44)
+        self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in reaction_list]))
 
-    def testDeflateReaction(self):
+    def testReactAllParallel(self):
         """
-        Test if the deflateReaction function works.
+        Test that the ``react_all`` function works in parallel using Python multiprocessing
         """
+        import rmgpy.rmg.main
+        rmgpy.rmg.main.maxproc = 2
+        procnum = 2
 
-        molA = Species().fromSMILES('[OH]')
-        molB = Species().fromSMILES('CC')
-        molC = Species().fromSMILES('[CH3]')
+        spcs = [
+                Species().fromSMILES('C=C'),
+                Species().fromSMILES('[CH3]'),
+                Species().fromSMILES('[OH]'),
+                Species().fromSMILES('CCCCCCCCCCC')
+                ]
 
-        # both reactants were already part of the core:
-        reactantIndices = [1, 2]
-        molDict = {molA.molecule[0]: 1, molB.molecule[0]: 2}
-
-        rxn = Reaction(reactants=[molA, molB], products=[molC],
-        pairs=[(molA, molC), (molB, molC)])
-
-        deflateReaction(rxn, molDict)
-
-        for spc, t in zip(rxn.reactants, [int, int]):
-            self.assertTrue(isinstance(spc, t))
-        self.assertEquals(rxn.reactants, reactantIndices)
-        for spc in rxn.products:
-            self.assertTrue(isinstance(spc, Species))
-
-        # one of the reactants was not yet part of the core:
-        reactantIndices = [-1, 2]
-        molDict = {molA.molecule[0]: molA, molB.molecule[0]: 2}
-
-        rxn = Reaction(reactants=[molA, molB], products=[molC],
-                pairs=[(molA, molC), (molB, molC)])
-
-        deflateReaction(rxn, molDict)
-
-        for spc, t in zip(rxn.reactants, [Species, int]):
-            self.assertTrue(isinstance(spc, t), 'Species {} is not of type {}'.format(spc,t))
-        for spc in rxn.products:
-            self.assertTrue(isinstance(spc, Species))
-
+        n = len(spcs)
+        reaction_list = react_all(spcs, n, np.ones(n), np.ones([n, n]), np.ones([n, n, n]), procnum)
+        self.assertIsNotNone(reaction_list)
+        self.assertEqual(len(reaction_list), 44)
+        self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in reaction_list]))
 
     def tearDown(self):
         """
@@ -202,6 +144,7 @@ class TestReact(unittest.TestCase):
         """
         import rmgpy.data.rmg
         rmgpy.data.rmg.database = None
+
 
 if __name__ == '__main__':
     unittest.main()

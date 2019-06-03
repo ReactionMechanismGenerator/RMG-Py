@@ -478,6 +478,8 @@ and immediately used in input files without any additional changes.
         # Check if the reactants are the same
         # If they refer to the same memory address, then make a deep copy so
         # they can be manipulated independently
+        if isinstance(reactants, tuple):
+            reactants = list(reactants)
         same_reactants = 0
         if len(reactants) == 2:
             if reactants[0] is reactants[1]:
@@ -512,8 +514,6 @@ and immediately used in input files without any additional changes.
                     same_reactants = 2
 
         # Label reactant atoms for proper degeneracy calculation (cannot be in tuple)
-        if isinstance(reactants, tuple):
-            reactants = list(reactants)
         ensure_independent_atom_ids(reactants, resonance=resonance)
 
         combos = generate_molecule_combos(reactants)

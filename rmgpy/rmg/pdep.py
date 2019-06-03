@@ -44,7 +44,7 @@ import rmgpy.reaction
 from rmgpy.constants import R
 
 from rmgpy.pdep import Conformer, Configuration
-from rmgpy.rmg.react import react
+from rmgpy.rmg.react import react_species
 from rmgpy.exceptions import PressureDependenceError, NetworkError
 from rmgpy.data.kinetics.library import LibraryReaction
 
@@ -300,7 +300,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         # Don't find reactions involving the new species as bimolecular
         # reactants or products with other core species (e.g. A + B <---> products)
 
-        newReactions = react((isomer,))
+        newReactions = react_species((isomer,))
         
         return newReactions
 
