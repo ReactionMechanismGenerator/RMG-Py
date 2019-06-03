@@ -287,9 +287,16 @@ class ReactionRecipe:
 
                 label1, info, label2 = action[1:]
 
+                if label1 != label2:
                 # Find associated atoms
-                atom1 = struct.getLabeledAtom(label1)
-                atom2 = struct.getLabeledAtom(label2)
+                    atom1 = struct.getLabeledAtom(label1)[0]
+                    atom2 = struct.getLabeledAtom(label2)[0]
+                else:
+                    atoms = struct.getLabeledAtom(label1) #should never have more than two if this action is valid
+                    if len(atoms) > 2:
+                        raise InvalidActionError('Invalid atom labels encountered.')
+                    atom1,atom2 = atoms
+                    
                 if atom1 is None or atom2 is None or atom1 is atom2:
                     raise InvalidActionError('Invalid atom labels encountered.')
 
@@ -330,7 +337,8 @@ class ReactionRecipe:
                 change = int(change)
 
                 # Find associated atom
-                atom = struct.getLabeledAtom(label)
+                atoms = struct.getLabeledAtom(label)
+                for atom in atoms:
                 if atom is None:
                     raise InvalidActionError('Unable to find atom with label "{0}" while applying reaction recipe.'.format(label))
 
@@ -347,7 +355,9 @@ class ReactionRecipe:
                 change = int(change)
 
                 # Find associated atom
-                atom = struct.getLabeledAtom(label)
+                atoms = struct.getLabeledAtom(label)
+
+                for atom in atoms:
                 if atom is None:
                     raise InvalidActionError('Unable to find atom with label "{0}" while applying reaction recipe.'.format(label))
 
@@ -2191,6 +2201,10 @@ class KineticsFamily(Database):
             for reactant in reaction.reactants:
                 reactant.clearLabeledAtoms()
             for label, atom in reaction.labeledAtoms:
+                if isinstance(atom,list):
+                    for atm in atom:
+                        atm.label = label
+                else:
                 atom.label = label
             
             # Generate metadata about the reaction that we will need later
