@@ -149,18 +149,22 @@ computations:</p>
 </div>
 <div class="section" id="model-chemistry">
 <h2>3.2. Model Chemistry<a class="headerlink" href="#model-chemistry" title="Permalink to this headline">¶</a></h2>
-<p>The first item in the input file should be a <code class="docutils literal notranslate"><span class="pre">modelChemistry</span></code> assignment
-with a string describing the model chemistry.</p>
-<p>Arkane uses this information to adjust the computed energies to the usual gas-phase reference
+<p>The first item in the input file should be a <code class="docutils literal notranslate"><span class="pre">modelChemistry</span></code> assignment with a string describing the model
+chemistry. The <code class="docutils literal notranslate"><span class="pre">modelChemistry</span></code> could either be in a <cite>single point // frequency</cite> format, e.g.,
+<cite>CCSD(T)-F12a/aug-cc-pVTZ//B3LYP/6-311++G(3df,3pd)</cite>, just the <cite>single point</cite>, e.g., <cite>CCSD(T)-F12a/aug-cc-pVTZ</cite>,
+or a composite method, e.g., <cite>CBS-QB3</cite>.</p>
+<p>Arkane uses the single point level to adjust the computed energies to the usual gas-phase reference
 states by applying atom, bond and spin-orbit coupling energy corrections. This is particularly
 important for <code class="docutils literal notranslate"><span class="pre">thermo()</span></code> calculations (see below). Note that the user must specify under the
 <code class="docutils literal notranslate"><span class="pre">species()</span></code> function the type and number of bonds for Arkane to apply these corrections.
+The frequency level is used to determine the frequency scaling factor if not given in the input file, and if it exists
+in Arkane (see the below table for existing frequency scaling factors).
 The example below specifies CBS-QB3 as the model chemistry:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">modelChemistry</span> <span class="o">=</span> <span class="s2">&quot;CBS-QB3&quot;</span>
 </pre></div>
 </div>
-<p>Alternatively, the atomic energies at the <code class="docutils literal notranslate"><span class="pre">modelChemistry</span></code> level of theory can be directly
-specified in the input file by providing a dictionary of these energies in the following format:</p>
+<p>Also, the atomic energies at the single point level of theory can be directly specified in the input file by providing
+a dictionary of these energies in the following format:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">atomEnergies</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">&#39;H&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.499818</span><span class="p">,</span>
     <span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">37.78552</span><span class="p">,</span>

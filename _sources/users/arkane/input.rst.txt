@@ -49,19 +49,23 @@ Component                   Description
 Model Chemistry
 ===============
 
-The first item in the input file should be a ``modelChemistry`` assignment
-with a string describing the model chemistry.
+The first item in the input file should be a ``modelChemistry`` assignment with a string describing the model
+chemistry. The ``modelChemistry`` could either be in a `single point // frequency` format, e.g.,
+`CCSD(T)-F12a/aug-cc-pVTZ//B3LYP/6-311++G(3df,3pd)`, just the `single point`, e.g., `CCSD(T)-F12a/aug-cc-pVTZ`,
+or a composite method, e.g., `CBS-QB3`.
 
-Arkane uses this information to adjust the computed energies to the usual gas-phase reference
+Arkane uses the single point level to adjust the computed energies to the usual gas-phase reference
 states by applying atom, bond and spin-orbit coupling energy corrections. This is particularly
 important for ``thermo()`` calculations (see below). Note that the user must specify under the
 ``species()`` function the type and number of bonds for Arkane to apply these corrections.
+The frequency level is used to determine the frequency scaling factor if not given in the input file, and if it exists
+in Arkane (see the below table for existing frequency scaling factors).
 The example below specifies CBS-QB3 as the model chemistry::
 
     modelChemistry = "CBS-QB3"
 
-Alternatively, the atomic energies at the ``modelChemistry`` level of theory can be directly
-specified in the input file by providing a dictionary of these energies in the following format::
+Also, the atomic energies at the single point level of theory can be directly specified in the input file by providing
+a dictionary of these energies in the following format::
 
     atomEnergies = {
         'H': -0.499818,
