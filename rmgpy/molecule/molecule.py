@@ -1451,6 +1451,8 @@ class Molecule(Graph):
                         atms.append(L)
             if atms:
                 for atmlist in itertools.product(*atms):
+                    if len(set(atmlist)) != len(atmlist): #skip entries that map multiple graph atoms to the same subgraph atom
+                        continue
                     for i,key in enumerate(keys):
                         initialMap[key] = atmlist[i]
                     if self.isMappingValid(other,initialMap,equivalent=False) and Graph.isSubgraphIsomorphic(self, other, initialMap, saveOrder=saveOrder):

@@ -1373,8 +1373,6 @@ class Group(Graph):
         cython.declare(grps=list,labelList=list,Rset=set,item=AtomType,grp=Group,grpc=Group,k=AtomType,p=str)
         
         grps = []
-        labelList = []
-        
         Rset = set(R)
         for item in R:
             grp = deepcopy(self)
@@ -1382,9 +1380,9 @@ class Group(Graph):
             old_atom_type = grp.atoms[i].atomType
             grp.atoms[i].atomType = [item]
             grpc.atoms[i].atomType = list(Rset-{item})
-            
-            
+
             if len(old_atom_type ) > 1:
+                labelList = []
                 old_atom_type_str = ''
                 for k in old_atom_type:
                     labelList.append(k.label)
@@ -1746,6 +1744,8 @@ class Group(Graph):
                         atms.append(L)
             if atms:
                 for atmlist in itertools.product(*atms):
+                    if len(set(atmlist)) != len(atmlist): #skip entries that map multiple graph atoms to the same subgraph atom
+                        continue
                     for i,key in enumerate(keys):
                         initialMap[key] = atmlist[i]
                     if self.isMappingValid(other,initialMap,equivalent=False) and Graph.isSubgraphIsomorphic(self, other, initialMap, saveOrder=saveOrder):
