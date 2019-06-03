@@ -638,14 +638,16 @@ def loadInputFile(path):
             logging.error('The input file {0!r} was invalid:'.format(path))
             raise
 
-    model_chemistry = local_context.get('modelChemistry', '')
-    level_of_theory = local_context.get('levelOfTheory', '')
+    model_chemistry = local_context.get('modelChemistry', '').lower()
+    sp_level, freq_level = process_model_chemistry(model_chemistry)
+
     author = local_context.get('author', '')
-    if 'frequencyScaleFactor' not in local_context:
-        logging.debug('Assigning a frequencyScaleFactor according to the modelChemistry...')
-        frequency_scale_factor = assign_frequency_scale_factor(model_chemistry)
-    else:
+    if 'frequencyScaleFactor' in local_context:
         frequency_scale_factor = local_context.get('frequencyScaleFactor')
+    else:
+        logging.debug('Tying to assign a frequencyScaleFactor according to the frequency '
+                      'level of theory {0}'.format(freq_level))
+        frequency_scale_factor = assign_frequency_scale_factor(freq_level)
     use_hindered_rotors = local_context.get('useHinderedRotors', True)
     use_atom_corrections = local_context.get('useAtomCorrections', True)
     use_bond_corrections = local_context.get('useBondCorrections', False)
@@ -659,7 +661,7 @@ def loadInputFile(path):
     for job in jobList:
         if isinstance(job, StatMechJob):
             job.path = os.path.join(directory, job.path)
-            job.modelChemistry = model_chemistry.lower()
+            job.modelChemistry = sp_level
             job.frequencyScaleFactor = frequency_scale_factor
             job.includeHinderedRotors = use_hindered_rotors
             job.applyAtomEnergyCorrections = use_atom_corrections
@@ -667,12 +669,7 @@ def loadInputFile(path):
             job.atomEnergies = atom_energies
         if isinstance(job, ThermoJob):
             job.arkane_species.author = author
-            job.arkane_species.level_of_theory = level_of_theory
-            if '//' in level_of_theory:
-                level_of_theory_energy = level_of_theory.split('//')[0]
-                if level_of_theory_energy != model_chemistry:
-                    # Only log the model chemistry if it isn't identical to the first part of level_of_theory
-                    job.arkane_species.model_chemistry = model_chemistry
+            job.arkane_species.level_of_theory = model_chemistry
             job.arkane_species.frequency_scale_factor = frequency_scale_factor
             job.arkane_species.use_hindered_rotors = use_hindered_rotors
             job.arkane_species.use_bond_corrections = use_bond_corrections
@@ -680,3 +677,33 @@ def loadInputFile(path):
                 job.arkane_species.atom_energies = atom_energies
 
     return jobList, reactionDict, speciesDict, transitionStateDict, networkDict
+
+
+def process_model_chemistry(model_chemistry):
+    """Process the model chemistry string representation
+
+    Args:
+        model_chemistry (str, unicode): A representation of the model chemistry in an sp//freq format
+                                        e.g., 'CCSD(T)-F12a/aug-cc-pVTZ//B3LYP/6-311++G(3df,3pd)',
+                                        or a composite method, e.g. 'CBS-QB3'.
+
+    Returns:
+        str, unicode: The single point energy level of theory
+        str, unicode: The frequency level of theory
+    """
+    if model_chemistry.count('//') > 1:
+        raise InputError('The model chemistry seems wrong. It should either be a composite method (like CBS-QB3) '
+                         'or of the form sp//geometry, e.g., CCSD(T)-F12a/aug-cc-pVTZ//B3LYP/6-311++G(3df,3pd), '
+                         'and should not contain more than one appearance of "//".\n'
+                         'Got: {0}'.format(model_chemistry))
+    elif '//' in model_chemistry:
+        # assume this is an sp//freq format, split
+        sp_level, freq_level = model_chemistry.split('//')
+    else:
+        # assume the sp and freq levels are the same, assign the model chemistry to both
+        # (this could also be a composite method, and we'll expect the same behavior)
+        sp_level = freq_level = model_chemistry
+        if model_chemistry.startswith('cbs-qb3'):
+            # hard code for CBS-QB3-Paraskevas which has the same frequency scaling factor as CBS-QB3
+            freq_level = 'cbs-qb3'
+    return sp_level, freq_level

@@ -10,6 +10,7 @@ modelChemistry = "CCSD(T)-F12/aug-cc-pVTZ"
 
 useHinderedRotors = True
 useBondCorrections = False
+frequencyScaleFactor = 0.978
 
 species('NH', 'NH.yml')
 species('NH2','NH2.yml')

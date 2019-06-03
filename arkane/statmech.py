@@ -1225,6 +1225,12 @@ def assign_frequency_scale_factor(model_chemistry):
     """
     Assign the frequency scaling factor according to the model chemistry.
     Refer to https://comp.chem.umn.edu/freqscale/index.html for future updates of these factors
+
+    Args:
+        model_chemistry (str, unicode): The frequency level of theory.
+
+    Returns:
+        float: The frequency scaling factor (1 by default).
     """
     freq_dict = {'cbs-qb3': 0.99,  # J. Chem. Phys. 1999, 110, 2822–2827
                  'cbs-qb3-paraskevas': 0.99,
@@ -1280,14 +1286,15 @@ def assign_frequency_scale_factor(model_chemistry):
                  'wb97x-d/aug-cc-pvtz': 0.974,
                  # Taken from https://comp.chem.umn.edu/freqscale/version3b2.htm as ωB97X-D/maug-cc-pVTZ
                  }
-    scale_factor = freq_dict.get(model_chemistry.lower(), 1)
-    if scale_factor == 1:
-        logging.warning('No frequency scale factor found for model chemistry {0}; assuming a value of unity.'.format(
-            model_chemistry))
+    scaling_factor = freq_dict.get(model_chemistry.lower(), 1)
+    if scaling_factor == 1:
+        logging.warning('No frequency scaling factor found for model chemistry {0}. Assuming a value of unity. '
+                        'This will affect the partition function and all quantities derived from it '
+                        '(thermo quantities and rate coefficients).'.format(model_chemistry))
     else:
         logging.info('Assigned a frequency scale factor of {0} for model chemistry {1}'.format(
-            scale_factor, model_chemistry))
-    return scale_factor
+            scaling_factor, model_chemistry))
+    return scaling_factor
 
 
 def determine_rotor_symmetry(energies, label, pivots):

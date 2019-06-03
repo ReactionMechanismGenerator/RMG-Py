@@ -6,7 +6,6 @@
 # and for TS if all the respective reactant/s and product/s have structures
 
 modelChemistry = "CBS-QB3"
-frequencyScaleFactor = 0.99
 useHinderedRotors = False
 useBondCorrections = True
 
@@ -31,8 +30,8 @@ reaction(
 )
 
 statmech('TS')
-kinetics(    
-	label = 'H + C2H4 <=> C2H5',
+kinetics(
+    label = 'H + C2H4 <=> C2H5',
     Tmin = (400,'K'), Tmax = (1200,'K'), Tcount = 6, # this can be changed to any desired temperature range with any number of temperatures
     Tlist = ([400,500,700,900,1100,1200],'K'),
     )
