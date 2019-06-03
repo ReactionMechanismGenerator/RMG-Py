@@ -81,7 +81,9 @@ class TestLibrary(unittest.TestCase):
                                       libraries=None) #this loads all of them: ['GRI-Mech3.0', 'ethane-oxidation','eth-oxcopy'])
             oriRxns = self.database.libraries['ethane-oxidation'].getLibraryReactions()
             copyRxns = self.database.libraries['eth-oxcopy'].getLibraryReactions()
-            self.assertTrue(all([repr(oriRxns[i])==repr(copyRxns[i]) for i in xrange(len(oriRxns))]))
+            for i in xrange(len(oriRxns)):
+                if repr(oriRxns[i]).strip() != repr(copyRxns[i]).strip():
+                    self.assertIsInstance(copyRxns[i],TemplateReaction)
         finally:
             shutil.rmtree(os.path.join(settings['test_data.directory'], 'testing_database','kinetics','libraries','eth-oxcopy'))
 
