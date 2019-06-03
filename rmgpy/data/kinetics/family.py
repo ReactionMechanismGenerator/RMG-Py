@@ -3773,8 +3773,12 @@ class KineticsFamily(Database):
                     mol = deepcopy(r.molecule[0])
                 else:
                     mol = mol.merge(r.molecule[0])
-                    
-            if not self.isEntryMatch(mol,root):
+            try:
+                flag = not self.isEntryMatch(mol,root,resonance=True)
+            except:
+                flag = not self.isEntryMatch(mol,root,resonance=False)
+
+            if flag:
                 logging.error(root.item.toAdjacencyList())
                 logging.error(mol.toAdjacencyList())
                 for r in rxn.reactants:
@@ -3789,7 +3793,7 @@ class KineticsFamily(Database):
             
             while entry.children != []:
                 for child in entry.children:
-                    if self.isEntryMatch(mol,child):
+                    if self.isEntryMatch(mol,child,resonance=False):
                         entry = child
                         rxnLists[child.label].append(rxn)
                         break
@@ -3808,16 +3812,32 @@ class KineticsFamily(Database):
         return rxnLists
 
 
-    def isEntryMatch(self, mol, entry):
+    def isEntryMatch(self, mol, entry, resonance=True):
         """
         determines if the labeled molecule object of reactants matches the entry entry
         """
         if isinstance(entry.item,Group):
-            structs = mol.generate_resonance_structures()
+            if resonance:
+                structs = mol.generate_resonance_structures()
+            else:
+                structs = [mol]
             return any([mol.isSubgraphIsomorphic(entry.item,generateInitialMap=True) for mol in structs])
         elif isinstance(entry.item,LogicOr):
-            return any([self.isEntryMatch(mol,self.groups.entries[c]) for c in entry.item.components])
-        
+            return any([self.isEntryMatch(mol,self.groups.entries[c],resonance=resonance) for c in entry.item.components])
+
+    def rxnsMatchNode(self, node, rxns):
+        for rxn in rxns:
+            mol = None
+            for r in rxn.reactants:
+                if mol is None:
+                    mol = deepcopy(r.molecule[0])
+                else:
+                    mol = mol.merge(r.molecule[0])
+
+            if not self.isEntryMatch(mol,node,resonance=False):
+                return False
+
+        return True
 
     def retrieveOriginalEntry(self, templateLabel):
         """
