@@ -968,13 +968,12 @@ class Database:
                 # Make sure labels actually point to atoms.
                 if center is None or atom is None:
                     return False
-                if isinstance(center, list):
-                    # Currently, no node in the database should have duplicate labels
-                    # The capability to have duplicate labels in Group() exists but does not have any functionality.
-                    raise DatabaseError('Nodes in the database should not have duplicate labels. Node {0} does.'.format(node))
                 # Semantic check #1: atoms with same label are equivalent
-                if not atom.isSpecificCaseOf(center):
-                    return False
+                if isinstance(center, list) or isinstance(atom, list):
+                    pass
+                else:
+                    if not atom.isSpecificCaseOf(center):
+                        return False
                 # Semantic check #2: labeled atoms that share bond in the group (node)
                 # also share equivalent (or more specific) bond in the structure
                 for atom2, atom1 in initialMap.iteritems():
@@ -990,7 +989,8 @@ class Database:
                         logging.debug("We don't mind that structure "+ str(structure) +
                             " has bond but group {0} doesn't".format(node))
                 # Passed semantic checks, so add to maps of already-matched atoms
-                initialMap[atom] = center
+                if not (isinstance(center, list) or isinstance(atom,list)):
+                    initialMap[atom] = center
             # Labeled atoms in the structure that are not in the group should
             # not be considered in the isomorphism check, so flag them temporarily
             # Without this we would hit a lot of nodes that are ambiguous
@@ -1306,13 +1306,11 @@ class ForbiddenStructures(Database):
                 # We need to do subgraph isomorphism
                 entryLabeledAtoms = entry.item.getLabeledAtoms()
                 moleculeLabeledAtoms = molecule.getLabeledAtoms()
-                initialMap = {}
                 for label in entryLabeledAtoms:
                     # all group labels must be present in the molecule
                     if label not in moleculeLabeledAtoms: break
-                    initialMap[moleculeLabeledAtoms[label]] = entryLabeledAtoms[label]
                 else:
-                    if molecule.isMappingValid(entry.item, initialMap) and molecule.isSubgraphIsomorphic(entry.item, initialMap):
+                    if molecule.isSubgraphIsomorphic(entry.item, generateInitialMap=True):
                         return True
             else:
                 raise NotImplementedError('Checking is only implemented for forbidden Groups, Molecule, and Species.')
