@@ -60,7 +60,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <div class="section" id="running-a-job">
 <span id="running"></span><h1>6. Running a Job<a class="headerlink" href="#running-a-job" title="Permalink to this headline">¶</a></h1>
-<p>Running RMG job is easy and under different situations you might want add additional flag as the following examples.</p>
+<p>Running a basic RMG job is straightforward. However, depending on your case you might want to add the flags outlined in the following examples.</p>
 <p><strong>Note:</strong> In all these examples <code class="docutils literal notranslate"><span class="pre">rmg.py</span></code> should be the path to your installed RMG (eg. yours might be <code class="docutils literal notranslate"><span class="pre">/Users/joeblogs/Code/RMG-Py/rmg.py</span></code>) and <code class="docutils literal notranslate"><span class="pre">input.py</span></code> is the path to the input file you wish to run (eg. yours might be <code class="docutils literal notranslate"><span class="pre">RMG-runs/hexadiene/input.py</span></code>).  If you get an error like <code class="docutils literal notranslate"><span class="pre">python:</span> <span class="pre">can't</span> <span class="pre">open</span> <span class="pre">file</span> <span class="pre">'rmg.py':</span> <span class="pre">[Errno</span> <span class="pre">2]</span> <span class="pre">No</span> <span class="pre">such</span> <span class="pre">file</span> <span class="pre">or</span> <span class="pre">directory</span></code>  then probably the first of these is wrong. If you get an error like <code class="docutils literal notranslate"><span class="pre">IOError:</span> <span class="pre">[Errno</span> <span class="pre">2]</span> <span class="pre">No</span> <span class="pre">such</span> <span class="pre">file</span> <span class="pre">or</span> <span class="pre">directory:</span> <span class="pre">'/some/path/to/input.py'</span></code> then probably the second of these is wrong.</p>
 <p>Basic run:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">rmg</span><span class="o">.</span><span class="n">py</span> <span class="nb">input</span><span class="o">.</span><span class="n">py</span>
@@ -74,77 +74,75 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">rmg</span><span class="o">.</span><span class="n">py</span> <span class="nb">input</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">p</span>
 </pre></div>
 </div>
-<p>We recommend you make a job-specific directory for each RMG simulation. Some jobs can take quite a while to complete, so we also recommend using a job scheduler (if working in an linux environment).</p>
-<p>The instructions below describe more special cases for running an RMG job.</p>
+<p>We recommend you make a job-specific directory for each RMG simulation. Some jobs can take quite a while to complete, so we also recommend using a job scheduler if working in an linux environment.</p>
+<p>The instructions below describe special cases for running an RMG job.</p>
 <div class="section" id="running-rmg-in-parallel-with-slurm">
 <h2>6.1. Running RMG in parallel with SLURM<a class="headerlink" href="#running-rmg-in-parallel-with-slurm" title="Permalink to this headline">¶</a></h2>
-<p>RMG has the capability to run using multiple cores. Here is an example
-job submission script for an RMG-Py job with a SLURM scheduler</p>
-<p>The job named <code class="docutils literal notranslate"><span class="pre">min_par</span></code> reserves 24 CPUs on a single node
-(<code class="docutils literal notranslate"><span class="pre">-np</span> <span class="pre">24</span></code>), but uses only 12 workers (= 12 CPUs) in parallel during
+<p>RMG has the option to use multiple processes on one node for reaction generation and on-the-fly Quantum Mechanics Thermodynamic Property (QMTP) calculation. Here is an example submission script for an RMG-Py job with a SLURM scheduler.</p>
+<p>The job reserves 24 tasks on a single node, but uses only 12 processes in parallel during
 the RMG-Py simulation.</p>
 <p>Make sure that:</p>
 <ul class="simple">
 <li>the queue named <code class="docutils literal notranslate"><span class="pre">debug</span></code> exists on your SLURM scheduler.</li>
-<li>you modify the path to the parent folder of the RMG-Py installation folder</li>
-<li>you have an anaconda environment named <code class="docutils literal notranslate"><span class="pre">rmg_env</span></code> that contains RMG-Py’s dependencies</li>
+<li>you modify the path to the parent folder of the RMG-Py installation folder.</li>
+<li>you have an anaconda environment named <code class="docutils literal notranslate"><span class="pre">rmg_env</span></code> that contains RMG-Py’s dependencies.</li>
 <li>the working directory from which you launched the job contains the RMG-Py input file <code class="docutils literal notranslate"><span class="pre">input.py</span></code></li>
 </ul>
-<p><code class="docutils literal notranslate"><span class="pre">-v</span></code> adds verbosity to the output log file.</p>
 <div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span>#!/bin/bash
+
 #SBATCH -p debug
-#SBATCH -J min_par
+#SBATCH -J jobname
 #SBATCH -n 24
 
-hosts=$(srun bash -c hostname)
-
-WORKERS=12
-
+Processes=12
 RMG_WS=/path/to/RMG/parent/folder
 export PYTHONPATH=$PYTHONPATH:$RMG_WS/RMG-Py/
 
 source activate rmg_env
-python -m scoop -n $WORKERS --host $hosts -v $RMG_WS/RMG-Py/rmg.py input.py
+
+python  -n $Processes $RMG_WS/RMG-Py/rmg.py input.py
+
 source deactivate
 </pre></div>
 </div>
 </div>
 <div class="section" id="running-rmg-in-parallel-with-sge">
 <h2>6.2. Running RMG in parallel with SGE<a class="headerlink" href="#running-rmg-in-parallel-with-sge" title="Permalink to this headline">¶</a></h2>
-<p>RMG has the capability to run using multiple cores. Here is an example
-using the SGE scheduler.</p>
-<p>In order to help understand, the example job is also named <code class="docutils literal notranslate"><span class="pre">min_par</span></code>
-reserving 24 CPUs on a single node (<code class="docutils literal notranslate"><span class="pre">#$</span> <span class="pre">-pe</span> <span class="pre">singlenode</span> <span class="pre">24</span></code>), but uses
-only 12 workers (= 12 CPUs) in parallel during the RMG-Py simulation.</p>
+<p>RMG has the option to use multiple processes on one node for reaction generation and on-the-fly Quantum Mechanics Thermodynamic Property (QMTP) calculation. Here is an example submission script for an RMG-Py job with a SGE scheduler.</p>
+<p>The job reserves 24 tasks on a single node, but uses only 12 processes in parallel during
+the RMG-Py simulation.</p>
 <p>Make sure that:</p>
 <ul class="simple">
-<li>the queue named <code class="docutils literal notranslate"><span class="pre">normal</span></code> exists on your SGE scheduler</li>
+<li>the queue named <code class="docutils literal notranslate"><span class="pre">debug</span></code> exists on your SGE scheduler.</li>
 <li>you modify the path to the parent folder of the RMG-Py installation
-folder</li>
+folder.</li>
 <li>you have an anaconda environment named <code class="docutils literal notranslate"><span class="pre">rmg_env</span></code> that contains
-RMG-Py’s dependencies</li>
+RMG-Py’s dependencies.</li>
 <li>the working directory from which you launched the job
-contains the RMG-Py input file <code class="docutils literal notranslate"><span class="pre">input.py</span></code></li>
+contains the RMG-Py input file <code class="docutils literal notranslate"><span class="pre">input.py</span></code>.</li>
 </ul>
-<p><code class="docutils literal notranslate"><span class="pre">-v</span></code> adds verbosity to the output log file</p>
 <div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span>#! /bin/bash
 
-#$ -o job.log
-#$ -l normal
-#$ -N min_par
+#$ -l debug
+#$ -N jobname
 #$ -pe singlenode 24
 
-WORKERS=12
-
+Processes=12
 RMG_WS=/path/to/RMG/parent/folder
 export PYTHONPATH=$PYTHONPATH:$RMG_WS/RMG-Py/
 
 source activate rmg_env
-python -m scoop --tunnel -n $WORKERS -v $RMG_WS/RMG-Py/rmg.py input.py
+
+python -n $Processes $RMG_WS/RMG-Py/rmg.py input.py
 
 source deactivate
 </pre></div>
 </div>
+</div>
+<div class="section" id="details-on-the-implementation">
+<h2>6.3. Details on the implementation<a class="headerlink" href="#details-on-the-implementation" title="Permalink to this headline">¶</a></h2>
+<p>Currently, multiprocessing is implemented for reaction generation and the generation of QMfiles when using the QMTP option to compute thermodynamic properties of species. The processes are spawned and closed within each function. The number of processes is determined based on the ratio of currently available RAM and currently used RAM. The user can input the maximum number of allowed processes from the command line. For each reaction generation or QMTP call the number of processes will be the minimum value of either the number of allowed processes due to user input or the value obtained by the RAM ratio. The RAM limitation is employed, because multiprocessing is forking the base process and the memory limit (SWAP + RAM) might be exceeded when using too many processors for a base process large in memory.</p>
+<p>In python 3.4 new forking contexts ‘spawn’ and ‘forkserver’ are available. These methods will create new processes which share nothing or limited state with the parent and all memory passing is explicit. Once RMG is transferred to python 3 it is recommended to use the spawn or forkserver forking context to potentially allow for an increased number of processes.</p>
 </div>
 </div>
 
@@ -180,6 +178,7 @@ source deactivate
 <li><a class="reference internal" href="#">6. Running a Job</a><ul>
 <li><a class="reference internal" href="#running-rmg-in-parallel-with-slurm">6.1. Running RMG in parallel with SLURM</a></li>
 <li><a class="reference internal" href="#running-rmg-in-parallel-with-sge">6.2. Running RMG in parallel with SGE</a></li>
+<li><a class="reference internal" href="#details-on-the-implementation">6.3. Details on the implementation</a></li>
 </ul>
 </li>
 </ul>

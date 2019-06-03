@@ -204,6 +204,12 @@ or reverse direction (if reverse, flip the direaction).</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.applyThermoToSpecies">
+<code class="descname">applyThermoToSpecies</code><span class="sig-paren">(</span><em>procnum</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.applyThermoToSpecies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate thermo for species. QM calculations are parallelized if requested.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.rmg.model.CoreEdgeReactionModel.checkForExistingReaction">
 <code class="descname">checkForExistingReaction</code><span class="sig-paren">(</span><em>rxn</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.checkForExistingReaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check to see if an existing reaction has the same reactants, products, and
@@ -258,6 +264,12 @@ to form edge reactions.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.generateThermo">
+<code class="descname">generateThermo</code><span class="sig-paren">(</span><em>spc</em>, <em>rename=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.generateThermo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate thermo for species.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.rmg.model.CoreEdgeReactionModel.getLists">
 <code class="descname">getLists</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.getLists" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return lists of all of the species and reactions in the core and the
@@ -288,14 +300,6 @@ respectively, in the matrix.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.inflate">
-<code class="descname">inflate</code><span class="sig-paren">(</span><em>rxn</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.inflate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert reactions from
-reactants/products that are referring
-to the core species index, to the respective Species objects.</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="rmgpy.rmg.model.CoreEdgeReactionModel.initializeIndexSpeciesDict">
 <code class="descname">initializeIndexSpeciesDict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.initializeIndexSpeciesDict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Populates the core species dictionary</p>
@@ -318,7 +322,7 @@ the model edge and/or core.</p>
 
 <dl class="method">
 <dt id="rmgpy.rmg.model.CoreEdgeReactionModel.makeNewReaction">
-<code class="descname">makeNewReaction</code><span class="sig-paren">(</span><em>forward</em>, <em>checkExisting=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.makeNewReaction" title="Permalink to this definition">¶</a></dt>
+<code class="descname">makeNewReaction</code><span class="sig-paren">(</span><em>forward</em>, <em>checkExisting=True</em>, <em>generateThermo=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.makeNewReaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make a new reaction given a <code class="xref py py-class docutils literal notranslate"><span class="pre">Reaction</span></code> object <cite>forward</cite>.
 The reaction is added to the global list of reactions.
 Returns the reaction in the direction that corresponds to the
@@ -332,7 +336,7 @@ made such that the forward reaction is exothermic at 298K.</p>
 
 <dl class="method">
 <dt id="rmgpy.rmg.model.CoreEdgeReactionModel.makeNewSpecies">
-<code class="descname">makeNewSpecies</code><span class="sig-paren">(</span><em>object</em>, <em>label=''</em>, <em>reactive=True</em>, <em>checkForExisting=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.makeNewSpecies" title="Permalink to this definition">¶</a></dt>
+<code class="descname">makeNewSpecies</code><span class="sig-paren">(</span><em>object</em>, <em>label=''</em>, <em>reactive=True</em>, <em>checkForExisting=True</em>, <em>generateThermo=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.makeNewSpecies" title="Permalink to this definition">¶</a></dt>
 <dd><p>Formally create a new species from the specified <cite>object</cite>, which can be
 either a <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> object or an <a class="reference internal" href="../species/species.html#rmgpy.species.Species" title="rmgpy.species.Species"><code class="xref py py-class docutils literal notranslate"><span class="pre">rmgpy.species.Species</span></code></a>
 object. It is emphasized that <cite>reactive</cite> relates to the <a class="reference internal" href="species.html#rmgpy.rmg.model.Species" title="rmgpy.rmg.model.Species"><code class="xref py py-class docutils literal notranslate"><span class="pre">Species</span></code></a> attribute, while <cite>reactive_structure</cite>
@@ -358,7 +362,7 @@ the enlargement are passed in the <cite>newCoreSpecies</cite>, <cite>newCoreReac
 
 <dl class="method">
 <dt id="rmgpy.rmg.model.CoreEdgeReactionModel.processNewReactions">
-<code class="descname">processNewReactions</code><span class="sig-paren">(</span><em>newReactions</em>, <em>newSpecies</em>, <em>pdepNetwork=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.processNewReactions" title="Permalink to this definition">¶</a></dt>
+<code class="descname">processNewReactions</code><span class="sig-paren">(</span><em>newReactions</em>, <em>newSpecies</em>, <em>pdepNetwork=None</em>, <em>generateThermo=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.processNewReactions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Process a list of newly-generated reactions involving the new core
 species or explored isomer <cite>newSpecies</cite> in network <cite>pdepNetwork</cite>.</p>
 <p>Makes a reaction and decides where to put it: core, edge, or PDepNetwork.</p>
@@ -411,13 +415,12 @@ same keys as the parameters.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.retrieveNewSpecies">
-<code class="descname">retrieveNewSpecies</code><span class="sig-paren">(</span><em>deflatedRxn</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.retrieveNewSpecies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Searches for the first reactant or product in the deflated reaction
-that is represented by an integer.</p>
-<p>Such an object refers to a core species that was used to generate the
-reaction in the first place. Reactants or products represented by an
-object that is not an integer will be a newly-generated structure.</p>
+<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.retrieve_species">
+<code class="descname">retrieve_species</code><span class="sig-paren">(</span><em>rxn</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.retrieve_species" title="Permalink to this definition">¶</a></dt>
+<dd><p>Searches for the first reactant or product in the reaction that is
+a core species, which was used to generate the reaction in the first
+place. Reactants or products not represented in the core will be
+a newly-generated structure.</p>
 </dd></dl>
 
 <dl class="method">
