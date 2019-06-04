@@ -207,9 +207,9 @@ class InputTest(unittest.TestCase):
         self.assertEqual(sp, 'wb97x-d3/def2-tzvp')
         self.assertEqual(freq, 'wb97x-d3/def2-tzvp')
 
-        mc = 'cbs-qb3-paraskevas'
+        mc = 'cbs-qb3'
         sp, freq = process_model_chemistry(mc)
-        self.assertEqual(sp, 'cbs-qb3-paraskevas')
+        self.assertEqual(sp, 'cbs-qb3')
         self.assertEqual(freq, 'cbs-qb3')
 
         with self.assertRaises(InputError):
