@@ -703,7 +703,4 @@ def process_model_chemistry(model_chemistry):
         # assume the sp and freq levels are the same, assign the model chemistry to both
         # (this could also be a composite method, and we'll expect the same behavior)
         sp_level = freq_level = model_chemistry
-        if model_chemistry.startswith('cbs-qb3'):
-            # hard code for CBS-QB3-Paraskevas which has the same frequency scaling factor as CBS-QB3
-            freq_level = 'cbs-qb3'
     return sp_level, freq_level
