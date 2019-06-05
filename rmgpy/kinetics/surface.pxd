@@ -44,6 +44,8 @@ cdef class StickingCoefficient(KineticsModel):
 
     cpdef changeT0(self, double T0)
 
+    cpdef fitToData(self, numpy.ndarray Tlist, numpy.ndarray klist, str kunits, double T0=?, numpy.ndarray weights=?, bint threeParams=?)
+
     cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
     
     cpdef changeRate(self, double factor)
