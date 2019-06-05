@@ -1169,9 +1169,12 @@ class KineticsFamily(Database):
                     quantumMechanics.runJobs(item.reactants+item.products, procnum=procnum)
 
             for reactant in item.reactants:
+                # Clear atom labels to avoid effects on thermo generation, ok because this is a deepcopy
+                reactant.molecule[0].clearLabeledAtoms()
                 reactant.generate_resonance_structures()
                 reactant.thermo = thermoDatabase.getThermoData(reactant, trainingSet=True)
             for product in item.products:
+                product.molecule[0].clearLabeledAtoms()
                 product.generate_resonance_structures()
                 product.thermo = thermoDatabase.getThermoData(product,trainingSet=True)
             # Now that we have the thermo, we can get the reverse k(T)
