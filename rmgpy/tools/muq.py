@@ -28,28 +28,28 @@
 #                                                                             #
 ###############################################################################
 
-from time import time 
-import copy   
-import numpy
-from rmgpy.tools.canteraModel import Cantera
+import copy
+import logging
+from time import time
+
+import numpy as np
+
 try:
-    #import muq.libmuqModelling
     from libmuqModelling import ModPiece
-    #import muq.libmuqUtilities as libmuqUtilities
-    #import muq.libmuqApproximation as libmuqApproximation
     from libmuqUtilities import LegendrePolynomials1DRecursive, GaussPattersonQuadrature1D, VariableCollection
     from libmuqApproximation import SmolyakPCEFactory
 except:
-    ModPiece = object  
-    print 'Could not import MUQ.  Please check that it is installed correctly before using the global uncertainty modules.'
+    ModPiece = object
+    print('Could not import MUQ. Please check that it is installed correctly before using the global uncertainty modules.')
 
 # You must install the MUQ library before using this.  Add the folder containing
 # libmuqUtilities.so, libmuqApproximation.so, etc to your $PYTHONPATH
 # For linux users, you can install via 'conda install -c rmg muq' to your environment
 # and add the ~/anaconda/envs/your_env/lib folder to your $PYTHONPATH
 
+
 class ReactorModPiece(ModPiece):
-    def __init__(self, cantera, outputSpeciesList, kParams, kUncertainty, gParams, gUncertainty, correlated=False):
+    def __init__(self, cantera, outputSpeciesList, kParams, kUncertainty, gParams, gUncertainty, correlated=False, logx=True):
         """
         ======================= ====================================================
         Attribute               Description
@@ -71,35 +71,60 @@ class ReactorModPiece(ModPiece):
         
         `affectedReactions`      Used only in the correlated case, this is a list of the indices of the affected rxns for kParams
         `affectedSpecies`       Used only in the correlated case, this is a list of the indices of the affected species for gParams
-
+        `logx`                  A flag to set whether to use mole fraction or ln(mole fraction) as the output variable
         ============================================================================
         """
         self.cantera = cantera
         self.outputSpeciesList = outputSpeciesList
         self.outputSpeciesIndices = [cantera.speciesList.index(outputSpecies) for outputSpecies in outputSpeciesList]
         self.correlated = correlated
+        self.logx = logx
 
         # The size of the uncertain inputs: [parameters affecting k, parameters affecting free energy G]         
         self.inputSize = [len(kParams) + len(gParams)]
 
+        if not self.correlated:
+            # Convert input indices (RMG indices) into species list indices
+            new_kParams = []
+            for ind in kParams:
+                for i, rxn in enumerate(cantera.reactionList):
+                    if rxn.index == ind:
+                        new_kParams.append(i)
+                        logging.debug('Replacing reaction index {0} with {1} for reaction {2!s}'.format(ind, i, rxn))
+                        break
+                else:
+                    raise ValueError('Could not find requested index {0} in reaction list.'.format(ind))
+            new_gParams = []
+            for ind in gParams:
+                for i, spc in enumerate(cantera.speciesList):
+                    if spc.index == ind:
+                        new_gParams.append(i)
+                        logging.debug('Replacing species index {0} with {1} for species {2!s}'.format(ind, i, spc))
+                        break
+                else:
+                    raise ValueError('Could not find requested index {0} in species list.'.format(ind))
+            kParams = new_kParams
+            gParams = new_gParams
 
-        self.kParams = kParams  # for uncorrelated case, these are indices of reactions
-                                # for correlated case, this is the
-                                # list of labels for the uncertain parameters to be perturbed, i.e. 'H_Abstraction CHO/Oa'
-        self.gParams = gParams  # for uncorrelated case, these are indices of the species
-                                # for correlated case, this is the
-                                # list of labels for the uncertain thermo parameters to be perturbed, i.e. 'Group(ring) cyclohexane'
+        # for uncorrelated case, these are indices of reactions
+        # for correlated case, this is the list of labels for the uncertain parameters to be perturbed, i.e. 'H_Abstraction CHO/Oa'
+        self.kParams = kParams
+        # for uncorrelated case, these are indices of the species
+        # for correlated case, this is the list of labels for the uncertain thermo parameters to be perturbed, i.e. 'Group(ring) cyclohexane'
+        self.gParams = gParams
 
         if not self.correlated:
-            kUncertaintyFactors = [val*numpy.sqrt(3)/numpy.log(10) for val in kUncertainty]
+            kUncertaintyFactors = [val * np.sqrt(3) / np.log(10) for val in kUncertainty]
             self.kUncertaintyFactors = {}
             for i, rxnIndex in enumerate(kParams):
-                self.kUncertaintyFactors[rxnIndex] = kUncertaintyFactors[i]
+                self.kUncertaintyFactors[rxnIndex] = kUncertaintyFactors[rxnIndex]
+                logging.debug('For {0}, set uncertainty factor to {1}'.format(cantera.reactionList[rxnIndex], kUncertaintyFactors[rxnIndex]))
             
-            gUncertaintyFactors = [val*numpy.sqrt(3) for val in gUncertainty]
+            gUncertaintyFactors = [val * np.sqrt(3) for val in gUncertainty]
             self.gUncertaintyFactors = {}
             for i, spcIndex in enumerate(gParams):
-                self.gUncertaintyFactors[spcIndex] = gUncertaintyFactors[i]
+                self.gUncertaintyFactors[spcIndex] = gUncertaintyFactors[spcIndex]
+                logging.debug('For {0}, set uncertainty factor to {1}'.format(cantera.speciesList[spcIndex], gUncertaintyFactors[spcIndex]))
             
         else:
             # In the correlated case, keep track of which reactions and species each 
@@ -111,7 +136,7 @@ class ReactorModPiece(ModPiece):
                 for rxnIndex, rxnInputDict in enumerate(kUncertainty):
                     if kParam in rxnInputDict:
                         affectedReactions.add(rxnIndex)
-                        uncertaintyFactor = rxnInputDict[kParam]*numpy.sqrt(3)/numpy.log(10)
+                        uncertaintyFactor = rxnInputDict[kParam] * np.sqrt(3) / np.log(10)
                         # If this parameter string contributes to the reaction, add this reaction index
                         rxnPartialUncertainty.append((rxnIndex, uncertaintyFactor))
                 self.kUncertaintyFactors[kParam] = rxnPartialUncertainty  # list of indices of the reactions affected
@@ -124,30 +149,30 @@ class ReactorModPiece(ModPiece):
                 for spcIndex, spcInputDict in enumerate(gUncertainty):
                     if gParam in spcInputDict:
                         affectedSpecies.add(spcIndex)
-                        uncertaintyFactor = spcInputDict[gParam]*numpy.sqrt(3)
+                        uncertaintyFactor = spcInputDict[gParam] * np.sqrt(3)
                         # If this parameter contributes to the species thermo, add this species index
-                        spcPartialUncertainty.append((spcIndex,uncertaintyFactor))
+                        spcPartialUncertainty.append((spcIndex, uncertaintyFactor))
                 self.gUncertaintyFactors[gParam] = spcPartialUncertainty
             self.affectedSpecies = list(affectedSpecies)
 
         # The size of the vector corresponding to the outputs to be analyzed for uncertainty analysis
         # is equal to the number of cantera conditions involved multiplied by the number of desired observables
-        outputSize = len(cantera.conditions)*len(outputSpeciesList)
-        
+        outputSize = len(cantera.conditions) * len(outputSpeciesList)
+
         self.numOutputSpecies = len(outputSpeciesList)
         self.numConditions = len(cantera.conditions)
-        
+
         # Initialize the ModPiece with some input and output size specifications
         ModPiece.__init__(self,
-                                         self.inputSize, 
-                                         outputSize, 
-                                         False, # No GradientImpl
-                                         False, # No JacobianImpl
-                                         False, # No HessianImpl
-                                         False, # Not random)
-                                         False, # Not random)
-                                        )
-        
+                          self.inputSize,
+                          outputSize,
+                          False,  # No GradientImpl
+                          False,  # No JacobianImpl
+                          False,  # No HessianImpl
+                          False,  # Not random)
+                          False,  # Not random)
+                          )
+
     def EvaluateImpl(self, ins):
         """
         Evaluate the desired output mole fractions based on a set of inputs ins = [[k_rv], [G_rv]] which contains the 
@@ -156,28 +181,28 @@ class ReactorModPiece(ModPiece):
         The output returned contains [Condition1_outputMoleFraction1, Condition1_outputMoleFraction2, Condition2_output.... ConditionN_output...]
         """
         assert len(ins[0]) == self.inputSize[0], "Number of inputs matches number of uncertain parameters"
-        
+
         k_rv = ins[0][0:len(self.kParams)]
         G_rv = ins[0][len(self.kParams):]
-        
+
         ## Check that the number of inputs is correct
-        #assert len(k_rv) == len(self.kParams), "Number of inputs matches number of kParams"
-        #assert len(G_rv) == len(self.gParams), "Number of inputs matches number of gParams"
+        # assert len(k_rv) == len(self.kParams), "Number of inputs matches number of kParams"
+        # assert len(G_rv) == len(self.gParams), "Number of inputs matches number of gParams"
 
         if not self.correlated:
             # Make deepcopies of the thermo and kinetics so as to not modify the originals in the speciesList and reactionList
             originalThermo = [copy.deepcopy(self.cantera.speciesList[index].thermo) for index in self.gParams]
             originalKinetics = [copy.deepcopy(self.cantera.reactionList[index].kinetics) for index in self.kParams]
-        
-    #         print ''
-    #         print 'Kinetics before'
-    #         ctReactions = self.cantera.model.reactions()
-    #         print ctReactions[0].rate
-    #         print ''
-    #         print 'Thermo before'
-    #         ctSpecies = self.cantera.model.species()
-    #         print ctSpecies[5].thermo.h(298)
-            
+
+            # print ''
+            # print 'Kinetics before'
+            # ctReactions = self.cantera.model.reactions()
+            # print ctReactions[0].rate
+            # print ''
+            # print 'Thermo before'
+            # ctSpecies = self.cantera.model.species()
+            # print ctSpecies[5].thermo.h(298)
+
             # Scale the thermo and kinetics of the current objects        
             for i, rv in enumerate(k_rv):
                 rxnIndex = self.kParams[i]
@@ -188,60 +213,63 @@ class ReactorModPiece(ModPiece):
 
         else:
             # Make deepcopies of the thermo and kinetics so as to not modify the originals in the speciesList and reactionList
-            originalKinetics = [copy.deepcopy(self.cantera.reactionList[index].kinetics) for index in self.affectedReactions]
+            originalKinetics = [copy.deepcopy(self.cantera.reactionList[index].kinetics) for index in
+                                self.affectedReactions]
             originalThermo = [copy.deepcopy(self.cantera.speciesList[index].thermo) for index in self.affectedSpecies]
-            
-            mappedReactionScaling = {index:0.0 for index in self.affectedReactions}
-            mappedSpeciesScaling = {index:0.0 for index in self.affectedSpecies}
+
+            mappedReactionScaling = {index: 0.0 for index in self.affectedReactions}
+            mappedSpeciesScaling = {index: 0.0 for index in self.affectedSpecies}
 
             for i, kParam in enumerate(self.kParams):
                 for rxnIndex, uncertaintyFactor in self.kUncertaintyFactors[kParam]:
-                    mappedReactionScaling[rxnIndex] += k_rv[i]*uncertaintyFactor
+                    mappedReactionScaling[rxnIndex] += k_rv[i] * uncertaintyFactor
 
             for i, gParam in enumerate(self.gParams):
                 for spcIndex, uncertaintyFactor in self.gUncertaintyFactors[gParam]:
-                    mappedSpeciesScaling[spcIndex] += G_rv[i]*uncertaintyFactor
-            
+                    mappedSpeciesScaling[spcIndex] += G_rv[i] * uncertaintyFactor
+
             for rxnIndex, uncertaintyFactor in mappedReactionScaling.iteritems():
                 self.scaleToKinetics(1.0, uncertaintyFactor, rxnIndex)
             for spcIndex, uncertaintyFactor in mappedSpeciesScaling.iteritems():
                 self.scaleToThermo(1.0, uncertaintyFactor, spcIndex)
 
-
         # The model must be refreshed when there are any thermo changes
         # kinetics can be refreshed automatically so we don't need to recreate the Solution() object.
         if G_rv:
             self.cantera.refreshModel()
-        
+
         # Run the cantera simulation
         allData = self.cantera.simulate()
-        
+
         # Create a vector to hold the ModPiece output, which will be the mole fraction of the output species of interest
-        output = numpy.zeros(self.outputSize)
-        
+        output = np.zeros(self.outputSize)
+
         # Extract the final time point for each of the mole fractions within the outputSpeciesList
-        
+
         for i in range(self.numConditions):
             for j in range(self.numOutputSpecies):
-                speciesIndex = self.outputSpeciesIndices[j]                
-                speciesGenericData = allData[i][1][2:]                
-                output[i*self.numOutputSpecies+j]=speciesGenericData[speciesIndex].data[-1]
-                
-#         print ''
-#         print 'Kinetics after'
-#         ctReactions = self.cantera.model.reactions()
-#         print ctReactions[0].rate
-#         print ''
-#         print 'Thermo after'
-#         ctSpecies = self.cantera.model.species()
-#         print ctSpecies[5].thermo.h(298)
+                speciesIndex = self.outputSpeciesIndices[j]
+                speciesGenericData = allData[i][1][2:]
+                if self.logx:
+                    output[i * self.numOutputSpecies + j] = np.log(speciesGenericData[speciesIndex].data[-1])
+                else:
+                    output[i * self.numOutputSpecies + j] = speciesGenericData[speciesIndex].data[-1]
+
+        # print ''
+        # print 'Kinetics after'
+        # ctReactions = self.cantera.model.reactions()
+        # print ctReactions[0].rate
+        # print ''
+        # print 'Thermo after'
+        # ctSpecies = self.cantera.model.species()
+        # print ctSpecies[5].thermo.h(298)
 
         if not self.correlated:
             # Now reset the cantera object's speciesList and reactionList back to original thermo and kinetics 
             for i, thermo in enumerate(originalThermo):
                 index = self.gParams[i]
                 self.cantera.speciesList[index].thermo = thermo
-                
+
             for i, kinetics in enumerate(originalKinetics):
                 index = self.kParams[i]
                 self.cantera.reactionList[index].kinetics = kinetics
@@ -252,10 +280,9 @@ class ReactorModPiece(ModPiece):
             for i, kinetics in enumerate(originalKinetics):
                 index = self.affectedReactions[i]
                 self.cantera.reactionList[index].kinetics = kinetics
-            
+
         return list(output)
-    
-            
+
     def scaleToKinetics(self, randomInput, uncertaintyFactor, reactionIndex):
         """
         This function takes a random uniform input X = Unif(-1,1) and scales the kinetics within a reaction to that value, given
@@ -265,17 +292,15 @@ class ReactorModPiece(ModPiece):
         
         The kinetics is permanently altered in the cantera model and must be reset to its original value after the evaluation is finished.
         """
-        
-        rxn = self.cantera.reactionList[reactionIndex]
-        factor = randomInput*uncertaintyFactor
-        
-        
-        # The rate is loguniform in k
-        rxn.kinetics.changeRate(10**factor)
-        self.cantera.modifyReactionKinetics(reactionIndex, rxn)
-        
 
-    def scaleToThermo(self,randomInput, uncertaintyFactor, speciesIndex):
+        rxn = self.cantera.reactionList[reactionIndex]
+        factor = randomInput * uncertaintyFactor
+
+        # The rate is loguniform in k
+        rxn.kinetics.changeRate(10 ** factor)
+        self.cantera.modifyReactionKinetics(reactionIndex, rxn)
+
+    def scaleToThermo(self, randomInput, uncertaintyFactor, speciesIndex):
         """
         This function takes a random normal input X = Unif(-1,1) and scales the thermodynamics for a species to that value,
         given that the thermo has a uniform distribution G = Unif(-Gmin,Gmax)
@@ -286,12 +311,12 @@ class ReactorModPiece(ModPiece):
         """
 
         species = self.cantera.speciesList[speciesIndex]
-        deltaH = randomInput*uncertaintyFactor*4184.0   # Convert kcal/mol to J/mol
-        
+        deltaH = randomInput * uncertaintyFactor * 4184.0  # Convert kcal/mol to J/mol
+
         species.thermo.changeBaseEnthalpy(deltaH)
-        self.cantera.modifySpeciesThermo(speciesIndex, species, useChemkinIdentifier = True)
-        
-        
+        self.cantera.modifySpeciesThermo(speciesIndex, species, useChemkinIdentifier=True)
+
+
 class ReactorPCEFactory:
     """
     This class uses MUQ to generate adaptive Polynomial Chaos Expansions for global uncertainty analysis in chemical reaction systems. 
@@ -305,41 +330,41 @@ class ReactorPCEFactory:
         5. Create EvaluateImpl function within model class that runs simulation based on reactor conditions through Cantera
         6. Perform PCE analysis of desired outputs
     """
-    
-    def __init__(self, cantera, outputSpeciesList, kParams, kUncertainty, gParams, gUncertainty, correlated=False):
-        
-        
+
+    def __init__(self, cantera, outputSpeciesList, kParams, kUncertainty, gParams, gUncertainty, correlated=False, logx=True):
+
         self.reactorMod = ReactorModPiece(cantera=cantera,
-                            outputSpeciesList=outputSpeciesList,
-                            kParams=kParams,
-                            kUncertainty = kUncertainty,
-                            gParams = gParams,
-                            gUncertainty = gUncertainty,
-                            correlated = correlated,
-                            )
-        
-        
+                                          outputSpeciesList=outputSpeciesList,
+                                          kParams=kParams,
+                                          kUncertainty=kUncertainty,
+                                          gParams=gParams,
+                                          gUncertainty=gUncertainty,
+                                          correlated=correlated,
+                                          logx=logx,
+                                          )
+
         # Define the polynomials and quadrature rules in each dimension using a VariableCollection object. 
         # We can do this directly using the classes from libmuqUtilities. Build the PCE factory for the ReactorModPiece this way.
         # Uniform random variables used chemical kinetics uncertainty propagation uses Legendre polynomials
         # We select the Gauss-Patterson quadrature as it is recommended as the fastest in the Patrick Conrad, Youssef Marzouk paper
-        
+
         # Select the polynomial and quadrature families 
         polyFamily = LegendrePolynomials1DRecursive()
         quadFamily = GaussPattersonQuadrature1D()
-        
+
         # Create a random variable collection for each of the uncertain variables
         varCollection = VariableCollection()
         for i, rxnIndex in enumerate(kParams):
-            varCollection.PushVariable("k{0}".format(i+1), polyFamily, quadFamily)
+            varCollection.PushVariable("k{0}".format(i + 1), polyFamily, quadFamily)
         for i, speciesIndex in enumerate(gParams):
-            varCollection.PushVariable("G{0}".format(i+1), polyFamily, quadFamily)
-        
+            varCollection.PushVariable("G{0}".format(i + 1), polyFamily, quadFamily)
+
         # Initialize the PCE Factory
-        self.factory = SmolyakPCEFactory(varCollection, self.reactorMod) 
-        
+        self.factory = SmolyakPCEFactory(varCollection, self.reactorMod)
+
         self.pce = None
-        
+        self.logx = logx
+
     def generatePCE(self, runTime=None, startOrder=2, tolerance=None, fixedTerms=False):
         """
         Generate the PCEs adaptively. There are three methods for doing so. 
@@ -348,28 +373,28 @@ class ReactorPCEFactory:
         Option 2: Adaptively construct PCE to error tolerance
         Option 3: Used a fixed order, and (optionally) adapt later.  
         """
-        
+
         # Also monitor the amount of time it takes
         start_time = time()
         if runTime:
             # Option 1: Adaptive for a pre-specified amount of time
-            self.pce = self.factory.StartAdaptiveTimed(startOrder,runTime)
+            self.pce = self.factory.StartAdaptiveTimed(startOrder, runTime)
         elif tolerance:
             # Option 2: adaptively construct PCE to error tolerance
-            self.pce = self.factory.StartAdaptiveToTolerance(startOrder,tolerance)
+            self.pce = self.factory.StartAdaptiveToTolerance(startOrder, tolerance)
         elif fixedTerms:
             # Option 3: Used a fixed order, and (optionally) adapt later
             self.pce = self.factory.StartFixedTerms(startOrder)
-        #     # Optionally adapt to tolerance later:
-        #     pce = self.AdaptToTolerance(tolerance)
+            # # Optionally adapt to tolerance later:
+            # pce = self.AdaptToTolerance(tolerance)
         else:
             raise Exception('Must have at least one chosen method')
-    
+
         end_time = time()
         time_taken = end_time - start_time
-        print 'Polynomial Chaos Expansion construction took {0:2f} seconds.'.format(time_taken)
-        
-    def compareOutput(self, testPoint):
+        logging.info('Polynomial Chaos Expansion construction took {0:2f} seconds.'.format(time_taken))
+
+    def compareOutput(self, testPoint, log=True):
         """
         Evaluate the PCEs against what the real output might give for a test point.
         testPoint is an array of all the values in terms of factor of f
@@ -377,29 +402,38 @@ class ReactorPCEFactory:
         Returns a tuple containing the 
         (true output mole fractions, pce output mole fractions) evaluated at the test point.
         """
-        
+
         trueOutput = self.reactorMod.Evaluate([testPoint])
         pceOutput = self.pce.Evaluate(testPoint)
-        
+
         reactorMod = self.reactorMod
-        
+
+        output = ''
         for i in range(reactorMod.numConditions):
-            print 'Condition {}'.format(i+1)
-            print '======================================================='
-            print str(reactorMod.cantera.conditions[i])
-            print ''
-            print 'Condition {} Mole Fractions Evaluated at Test Point'.format(i+1)
-            print '========================================'
-            print 'Species     True output     PCE output'
-            print '========================================'
+            output += """============================================================
+Condition {0}
+------------------------------------------------------------
+{1!s}
+============================================================
+Condition {0} {2}Mole Fractions Evaluated at Test Point
+------------------------------------------------------------
+Species                      True Output          PCE Output
+------------------------------------------------------------
+""".format(i + 1, reactorMod.cantera.conditions[i], 'Log ' if self.logx else '')
+
             for j, outputSpecies in enumerate(reactorMod.outputSpeciesList):
-                outputIndex = i*reactorMod.numOutputSpecies+j
-                print '{0:10} {1:11.2f} {2:14.2f}'.format(outputSpecies.toChemkin(),trueOutput[outputIndex],pceOutput[outputIndex])
-            print ''
-            
+                outputIndex = i * reactorMod.numOutputSpecies + j
+                output += '{0:<20}{1:>20.3f}{2:>20.3f}\n'.format(outputSpecies.toChemkin(), trueOutput[outputIndex], pceOutput[outputIndex])
+            output += '============================================================\n'
+
+        if log:
+            logging.info(output)
+        else:
+            print(output)
+
         return trueOutput, pceOutput
-    
-    def analyzeResults(self):
+
+    def analyzeResults(self, log=True):
         """
         Obtain the results: the prediction mean and variance, as well as the global sensitivity indices
         Returns a tuple containing the following statistics
@@ -409,87 +443,87 @@ class ReactorPCEFactory:
         reactorMod = self.reactorMod
         pce = self.pce
         # Compute the mean and variance for each of the uncertain parameters
-        mean = numpy.array(pce.ComputeMean())
-        
-        var = numpy.array(pce.ComputeVariance())
-        stddev = numpy.sqrt(var)
-        stddev_percent = stddev/mean*100.0
-        
-        
-        
+        mean = np.array(pce.ComputeMean())
+
+        var = np.array(pce.ComputeVariance())
+        stddev = np.sqrt(var)
+        stddev_percent = stddev / mean * 100.0
+
         cov = pce.ComputeCovariance()
-        # print "Covariance = ", cov
-        
-        
+
         # Extract the global sensitivity indices
-        mainSens = numpy.array(pce.ComputeAllMainSensitivityIndices())
-        totalSens = numpy.array(pce.ComputeAllSobolTotalSensitivityIndices())
-        
-        
+        mainSens = np.array(pce.ComputeAllMainSensitivityIndices())
+        totalSens = np.array(pce.ComputeAllSobolTotalSensitivityIndices())
+
+        output = ''
         for i in range(reactorMod.numConditions):
-            
-            print 'Condition {}'.format(i+1)
-            print '======================================================='
-            print str(reactorMod.cantera.conditions[i])
-            
-            print ''
-            print 'Condition {} Mole Fractions'.format(i+1)
-            print '=============================================='
-            print 'Species     Mean       Stddev     Stddev (%)'
-            print '=============================================='
+            output += """============================================================
+Condition {0}
+------------------------------------------------------------
+{1!s}
+============================================================
+Condition {0} {2}Mole Fractions
+------------------------------------------------------------
+Species                   Mean         Stddev     Stddev (%)
+------------------------------------------------------------
+""".format(i + 1, reactorMod.cantera.conditions[i], 'Log ' if self.logx else '')
+
             for j, outputSpecies in enumerate(reactorMod.outputSpeciesList):
-                outputIndex = i*reactorMod.numOutputSpecies+j
-                print '{0:10} {1:10.3e} {2:10.3e} {3:10.3f}'.format(outputSpecies.toChemkin(), 
-                                                          mean[outputIndex], 
-                                                          stddev[outputIndex],
-                                                          stddev_percent[outputIndex])
-            print ''
-        
+                outputIndex = i * reactorMod.numOutputSpecies + j
+                output += '{0:<15}{1:>15.3e}{2:>15.3e}{3:>15.3f}\n'.format(outputSpecies.toChemkin(),
+                                                                           mean[outputIndex],
+                                                                           stddev[outputIndex],
+                                                                           stddev_percent[outputIndex])
+            output += '============================================================\n\n'
+
             if reactorMod.kParams:
-                print ''
-                print 'Condition {} Reaction Sensitivities'.format(i+1)
-                print '==============================================================================='
-                print 'Description                                             sens_main  sens_total'
-                print '==============================================================================='
+                output += """====================================================================================================
+Condition {0} Reaction Rate Sensitivity Indices
+----------------------------------------------------------------------------------------------------
+Description                                                                 sens_main     sens_total
+""".format(i + 1)
+
                 for j, outputSpecies in enumerate(reactorMod.outputSpeciesList):
-                    outputIndex = i*reactorMod.numOutputSpecies+j
+                    output += '----------------------------------------------------------------------------------------------------\n'
+                    outputIndex = i * reactorMod.numOutputSpecies + j
                     for k, descriptor in enumerate(reactorMod.kParams):
-                        parameterIndex=k
+                        parameterIndex = k
                         if not reactorMod.correlated:
                             description = 'dln[{0}]/dln[{1}]'.format(outputSpecies.toChemkin(),
-                                                                 reactorMod.cantera.reactionList[descriptor].toChemkin(kinetics=False),
-                                                                 )
+                                                                     reactorMod.cantera.reactionList[descriptor].toChemkin(kinetics=False))
                         else:
-                            description = 'dln[{0}]/dln[{1}]'.format(outputSpecies.toChemkin(),
-                                                                 descriptor,
-                                                                 )
-                        print '{0:55} {1:10.3f} {2:10.3f}'.format(description,
-                                                                    mainSens[outputIndex][parameterIndex],
-                                                                 totalSens[outputIndex][parameterIndex],
-                                                                 )
+                            description = 'dln[{0}]/dln[{1}]'.format(outputSpecies.toChemkin(), descriptor)
+
+                        output += '{0:<70}{1:>14.3f}%{2:>14.3f}%\n'.format(description,
+                                                                           100 * mainSens[outputIndex][parameterIndex],
+                                                                           100 * totalSens[outputIndex][parameterIndex])
+                output += '====================================================================================================\n\n'
+
             if reactorMod.gParams:
-                print ''
-                print 'Condition {} Thermo Sensitivities'.format(i+1)
-                print '==========================================================='
-                print 'Description                         sens_main  sens_total'
-                print '==========================================================='
+                output += """====================================================================================================
+Condition {0} Thermochemistry Sensitivity Indices
+----------------------------------------------------------------------------------------------------
+Description                                                                 sens_main     sens_total
+""".format(i + 1)
                 for j, outputSpecies in enumerate(reactorMod.outputSpeciesList):
-                    outputIndex = i*reactorMod.numOutputSpecies+j
-                    
+                    output += '----------------------------------------------------------------------------------------------------\n'
+                    outputIndex = i * reactorMod.numOutputSpecies + j
                     for g, descriptor in enumerate(reactorMod.gParams):
-                        parameterIndex = len(reactorMod.kParams)+g
+                        parameterIndex = len(reactorMod.kParams) + g
                         if not reactorMod.correlated:
                             description = 'dln[{0}]/dG[{1}]'.format(outputSpecies.toChemkin(),
-                                                             reactorMod.cantera.speciesList[descriptor].toChemkin(),)
+                                                                    reactorMod.cantera.speciesList[descriptor].toChemkin())
                         else:
-                            description = 'dln[{0}]/dG[{1}]'.format(outputSpecies.toChemkin(),
-                                                             descriptor)
-                        
-                        print '{0:35} {1:10.3f} {2:10.3f}'.format(description,
-                                                                 mainSens[outputIndex][parameterIndex],
-                                                                 totalSens[outputIndex][parameterIndex],
-                                                                 )
-            print ''
-            
+                            description = 'dln[{0}]/dG[{1}]'.format(outputSpecies.toChemkin(), descriptor)
+
+                        output += '{0:<70}{1:>14.3f}%{2:>14.3f}%\n'.format(description,
+                                                                           100 * mainSens[outputIndex][parameterIndex],
+                                                                           100 * totalSens[outputIndex][parameterIndex])
+                output += '====================================================================================================\n\n'
+
+        if log:
+            logging.info(output)
+        else:
+            print(output)
+
         return mean, var, cov, mainSens, totalSens
-        

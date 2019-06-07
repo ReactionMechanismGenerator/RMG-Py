@@ -29,16 +29,20 @@
 ###############################################################################
 
 import os
-import numpy
-import rmgpy.util as util 
+
+import numpy as np
+
+import rmgpy.util as util
 from rmgpy.species import Species
 from rmgpy.tools.plot import *
-from rmgpy.tools. data import GenericData
+from rmgpy.tools.data import GenericData
+
 
 class ThermoParameterUncertainty:
     """
     This class is an engine that generates the species uncertainty based on its thermo sources.
     """
+
     def __init__(self, dG_library=1.5, dG_QM=3.0, dG_GAV=1.5, dG_group=0.10):
         """
         Initialize the different uncertainties dG_library, dG_QM, dG_GAV, and dG_other with set values
@@ -51,7 +55,7 @@ class ThermoParameterUncertainty:
         self.dG_QM = dG_QM
         self.dG_GAV = dG_GAV
         self.dG_group = dG_group
-        
+
     def getUncertaintyValue(self, source):
         """
         Retrieve the uncertainty value in kcal/mol when the source of the thermo of a species is given.
@@ -65,8 +69,8 @@ class ThermoParameterUncertainty:
             dG += self.dG_GAV  # Add a fixed uncertainty for the GAV method
             for groupType, groupEntries in source['GAV'].iteritems():
                 groupWeights = [groupTuple[-1] for groupTuple in groupEntries]
-                dG += numpy.sum([weight*self.dG_group for weight in groupWeights])
-           
+                dG += np.sum([weight * self.dG_group for weight in groupWeights])
+
         return dG
 
     def getPartialUncertaintyValue(self, source, corrSourceType, corrParam=None, corrGroupType=None):
@@ -96,14 +100,14 @@ class ThermoParameterUncertainty:
                     groupList = source['GAV'][corrGroupType]
                     for group, weight in groupList:
                         if group == corrParam:
-                            return weight*self.dG_group
-                            
+                            return weight * self.dG_group
+
         elif corrSourceType == 'Estimation':
             if 'GAV' in source:
                 return self.dG_GAV
         else:
             raise Exception('Thermo correlated source must be GAV, QM, Library, or Estimation')
-    
+
         # If we get here, it means the correlated parameter was not found
         return None
 
@@ -114,15 +118,16 @@ class ThermoParameterUncertainty:
         This is equivalent to sqrt(3)*dG in a uniform uncertainty interval
         """
         dG = self.getUncertaintyValue(source)
-        f = numpy.sqrt(3)*dG
-        
-    
-    
+        f = np.sqrt(3) * dG
+
+
 class KineticParameterUncertainty:
     """
     This class is an engine that generates the reaction uncertainty based on its kinetic sources.
     """
-    def __init__(self, dlnk_library=0.5, dlnk_training=0.5, dlnk_pdep=2.0, dlnk_family=1.0, dlnk_nonexact=3.5, dlnk_rule=0.5):
+
+    def __init__(self, dlnk_library=0.5, dlnk_training=0.5, dlnk_pdep=2.0, dlnk_family=1.0, dlnk_nonexact=3.5,
+                 dlnk_rule=0.5):
         """
         Initialize the different uncertainties dlnk
         
@@ -143,38 +148,38 @@ class KineticParameterUncertainty:
         dlnk = 0.0
         if 'Library' in source:
             # Should be a single library reaction source
-            dlnk +=self.dlnk_library
+            dlnk += self.dlnk_library
         elif 'PDep' in source:
             # Should be a single pdep reaction source
-            dlnk +=self.dlnk_pdep
+            dlnk += self.dlnk_pdep
         elif 'Training' in source:
             # Should be a single training reaction
             # Although some training entries may be used in reverse,
             # We still consider the kinetics to be directly dependent 
-            dlnk +=self.dlnk_training
+            dlnk += self.dlnk_training
         elif 'Rate Rules' in source:
             familyLabel = source['Rate Rules'][0]
             sourceDict = source['Rate Rules'][1]
             exact = sourceDict['exact']
             ruleWeights = [ruleTuple[-1] for ruleTuple in sourceDict['rules']]
             trainingWeights = [trainingTuple[-1] for trainingTuple in sourceDict['training']]
-                
-            dlnk += self.dlnk_family**2
+
+            dlnk += self.dlnk_family ** 2
             N = len(ruleWeights) + len(trainingWeights)
             if not exact:
                 # nonexactness contribution increases as N increases
-                dlnk += numpy.log10(N+1)*self.dlnk_nonexact
-                
+                dlnk += np.log10(N + 1) * self.dlnk_nonexact
+
             # Add the contributions from rules
-            dlnk += numpy.sum([weight*self.dlnk_rule for weight in ruleWeights])
+            dlnk += np.sum([weight * self.dlnk_rule for weight in ruleWeights])
             # Add the contributions from training
             # Even though these source from training reactions, we actually
             # use the uncertainty for rate rules, since these are now approximations
             # of the original reaction.  We consider these to be independent of original the training
             # parameters because the rate rules may be reversing the training reactions,
             # which leads to more complicated dependence
-            dlnk += numpy.sum([weight*self.dlnk_rule for weight in trainingWeights])
-            
+            dlnk += np.sum([weight * self.dlnk_rule for weight in trainingWeights])
+
         return dlnk
 
     def getPartialUncertaintyValue(self, source, corrSourceType, corrParam=None, corrFamily=None):
@@ -196,11 +201,11 @@ class KineticParameterUncertainty:
                     if rules:
                         for ruleEntry, weight in rules:
                             if corrParam == ruleEntry:
-                                return weight*self.dlnk_rule
+                                return weight * self.dlnk_rule
                     if training:
                         for ruleEntry, trainingEntry, weight in training:
                             if corrParam == ruleEntry:
-                                return weight*self.dlnk_rule
+                                return weight * self.dlnk_rule
 
         # Writing it this way in the function is not the most efficient, but makes it easy to use, and
         # testing a few if statements is not too costly
@@ -221,7 +226,7 @@ class KineticParameterUncertainty:
 
         elif corrSourceType == 'Estimation':
             # Return all the uncorrelated uncertainty associated with using an estimation scheme
-            
+
             if 'Rate Rules' in source:
                 sourceDict = source['Rate Rules'][1]
                 exact = sourceDict['exact']
@@ -231,14 +236,14 @@ class KineticParameterUncertainty:
                 N = len(sourceDict['rules']) + len(sourceDict['training'])
                 if not exact:
                     # nonexactness contribution increases as N increases
-                    dlnk += numpy.log10(N+1)*self.dlnk_nonexact
+                    dlnk += np.log10(N + 1) * self.dlnk_nonexact
                 return dlnk
         else:
             raise Exception('Kinetics correlated source must be Rate Rules, Library, PDep, Training, or Estimation')
-    
+
         # If we get here, it means that we did not find the correlated parameter in the source
         return None
-    
+
     def getUncertaintyFactor(self, source):
         """
         Retrieve the uncertainty factor f when the source of the reaction kinetics are given.
@@ -246,7 +251,8 @@ class KineticParameterUncertainty:
         This is equivalent to sqrt(3)/ln(10) * dlnk  in a uniform uncertainty interval
         """
         dlnk = self.getUncertaintyValue(source)
-        f = numpy.sqrt(3)/numpy.log(10)*dlnk
+        f = np.sqrt(3) / np.log(10) * dlnk
+
 
 class Uncertainty:
     """
@@ -261,8 +267,8 @@ class Uncertainty:
         `outputDirectoy`: directory path for saving output files from the analyses
         """
         self.database = None
-        self.speciesList = speciesList 
-        self.reactionList = reactionList 
+        self.speciesList = speciesList
+        self.reactionList = reactionList
         self.speciesSourcesDict = None
         self.reactionSourcesDict = None
         self.allThermoSources = None
@@ -270,15 +276,18 @@ class Uncertainty:
         self.thermoInputUncertainties = None
         self.kineticInputUncertainties = None
         self.outputDirectory = outputDirectory if outputDirectory else os.getcwd()
-        
+
+        # For extra species needed for correlated analysis but not in model
+        self.extraSpecies = []
+
         # Make output directory if it does not yet exist:
         if not os.path.exists(self.outputDirectory):
             try:
                 os.makedirs(self.outputDirectory)
             except:
                 raise Exception('Uncertainty output directory could not be created.')
-            
-    def loadDatabase(self, kineticsFamilies='all',kineticsDepositories=None,thermoLibraries=None, reactionLibraries=None):
+
+    def loadDatabase(self, kineticsFamilies='all', kineticsDepositories=None, thermoLibraries=None, reactionLibraries=None):
         """
         This function loads a single copy of the RMGDatabase with full verbose averaging
         of the rate rule to trace kinetics sources.  
@@ -286,30 +295,28 @@ class Uncertainty:
         By default, this function loads all the kinetics families, only the training kinetics depository,
         the primaryThermoLibrary, and no reaction libraries.  
         """
-        from rmgpy.data.rmg import RMGDatabase 
+        from rmgpy.data.rmg import RMGDatabase
         from rmgpy import settings
-        
+
         if not kineticsDepositories:
             kineticsDepositories = ['training']
         if not thermoLibraries:
             thermoLibraries = ['primaryThermoLibrary']
         if not reactionLibraries:
             reactionLibraries = []
-            
-            
+
         self.database = RMGDatabase()
-        self.database.load(settings['database.directory'], 
-                          kineticsFamilies=kineticsFamilies, 
-                          kineticsDepositories=kineticsDepositories,
-                          thermoLibraries=thermoLibraries,
-                          reactionLibraries=reactionLibraries,
-                          )
-        
-    
+        self.database.load(
+            settings['database.directory'],
+            kineticsFamilies=kineticsFamilies,
+            kineticsDepositories=kineticsDepositories,
+            thermoLibraries=thermoLibraries,
+            reactionLibraries=reactionLibraries,
+        )
+
         # Prepare the database by loading training reactions but not averaging the rate rules
         for familyLabel, family in self.database.kinetics.families.iteritems():
             family.addKineticsRulesFromTrainingSet(thermoDatabase=self.database.thermo)
-        
             family.fillKineticsRulesByAveragingUp(verbose=True)
 
     def loadModel(self, chemkinPath, dictionaryPath, transportPath=None):
@@ -329,13 +336,13 @@ class Uncertainty:
                                                               dictionaryPath=dictionaryPath,
                                                               transportPath=transportPath)
 
-    def retrieveSaturatedSpeciesFromList(self,species):
+    def retrieveSaturatedSpeciesFromList(self, species):
         """
         Given a radical `species`, this function retrieves the saturated species objects from a list of species objects
         and returns the saturated species object along with a boolean that indicates if the species is not part of the model
         (True->not in the model, False->in the model)
         """
-        
+
         molecule = species.molecule[0]
         assert molecule.isRadical(), "Method only valid for radicals."
         saturatedStruct = molecule.copy(deep=True)
@@ -343,16 +350,16 @@ class Uncertainty:
         for otherSpecies in self.speciesList:
             if otherSpecies.isIsomorphic(saturatedStruct):
                 return otherSpecies, False
-        
-        #couldn't find saturated species in the model, try libraries
+
+        # couldn't find saturated species in the model, try libraries
         newSpc = Species(molecule=[saturatedStruct])
         thermo = self.database.thermo.getThermoDataFromLibraries(newSpc)
-        
+
         if thermo is not None:
             newSpc.thermo = thermo
             self.speciesList.append(newSpc)
             return newSpc, True
-        else:         
+        else:
             raise Exception('Could not retrieve saturated species form of {0} from the species list'.format(species))
 
     def extractSourcesFromModel(self):
@@ -361,43 +368,43 @@ class Uncertainty:
         Must be done after loading model and database to work.
         """
         self.speciesSourcesDict = {}
-        ignoreSpcs = []
         for species in self.speciesList:
-            if not species in ignoreSpcs:
+            if species not in self.extraSpecies:
                 source = self.database.thermo.extractSourceFromComments(species)
-            
+
                 # Now prep the source data
                 # Do not alter the GAV information, but reassign QM and Library sources to the species indices that they came from
                 if len(source.keys()) == 1:
                     # The thermo came from a single source, so we know it comes from a value describing the exact species
                     if 'Library' in source:
-                        source['Library'] = self.speciesList.index(species)   # Use just the species index in self.speciesList, for better shorter printouts when debugging
+                        # Use just the species index in self.speciesList, for better shorter printouts when debugging
+                        source['Library'] = self.speciesList.index(species)
                     if 'QM' in source:
                         source['QM'] = self.speciesList.index(species)
-                        
+
                 elif len(source.keys()) == 2:
-                    # The thermo has two sources, which indicates it's an HBI correction on top of a library or QM value.  We must retrieve the original
-                    # saturated molecule's thermo instead of using the radical species as the source of thermo
-                    saturatedSpecies,ignoreSpc = self.retrieveSaturatedSpeciesFromList(species)
-                    
-                    if ignoreSpc: #this is saturated species that isn't in the actual model
-                        ignoreSpcs.append(saturatedSpecies)
-                        
+                    # The thermo has two sources, which indicates it's an HBI correction on top of a library or QM value.
+                    # We must retrieve the original saturated molecule's thermo instead of using the radical species as the source of thermo
+                    saturatedSpecies, ignoreSpc = self.retrieveSaturatedSpeciesFromList(species)
+
+                    if ignoreSpc:  # this is saturated species that isn't in the actual model
+                        self.extraSpecies.append(saturatedSpecies)
+
                     if 'Library' in source:
                         source['Library'] = self.speciesList.index(saturatedSpecies)
                     if 'QM' in source:
                         source['QM'] = self.speciesList.index(saturatedSpecies)
                 else:
                     raise Exception('Source of thermo should not use more than two sources out of QM, Library, or GAV.')
-                
+
                 self.speciesSourcesDict[species] = source
-        
+
         self.reactionSourcesDict = {}
         for reaction in self.reactionList:
             source = self.database.kinetics.extractSourceFromComments(reaction)
             # Prep the source data 
-            # Consider any library or PDep reaction to be an independent parameter for now and assign the source to the index of the
-            # reaction within self.reactionList
+            # Consider any library or PDep reaction to be an independent parameter for now
+            # and assign the source to the index of the reaction within self.reactionList
             if 'Library' in source:
                 source['Library'] = self.reactionList.index(reaction)
             elif 'PDep' in source:
@@ -411,46 +418,45 @@ class Uncertainty:
             else:
                 raise Exception('Source of kinetics must be either Library, PDep, Training, or Rate Rules')
             self.reactionSourcesDict[reaction] = source
-        
-        for spc in ignoreSpcs:
+
+        for spc in self.extraSpecies:
             self.speciesList.remove(spc)
-            
+
     def compileAllSources(self):
         """
         Compile two dictionaries composed of all the thermo and kinetic sources.  Must
         be performed after extractSourcesFromModel function
         """
         # Account for all the thermo sources
-        allThermoSources = {'GAV':{}, 'Library':set(), 'QM':set()}
+        allThermoSources = {'GAV': {}, 'Library': set(), 'QM': set()}
         for source in self.speciesSourcesDict.values():
             if 'GAV' in source:
                 for groupType in source['GAV'].keys():
                     groupEntries = [groupTuple[0] for groupTuple in source['GAV'][groupType]]
-                    if not groupType in allThermoSources['GAV']:
+                    if groupType not in allThermoSources['GAV']:
                         allThermoSources['GAV'][groupType] = set(groupEntries)
                     else:
                         allThermoSources['GAV'][groupType].update(groupEntries)
             if 'Library' in source:
-                allThermoSources['Library'].add(source['Library'])  
+                allThermoSources['Library'].add(source['Library'])
             if 'QM' in source:
-                allThermoSources['QM'].add(source['QM'])   
+                allThermoSources['QM'].add(source['QM'])
 
-                
-        # Convert to lists
+                # Convert to lists
         self.allThermoSources = {}
         self.allThermoSources['Library'] = list(allThermoSources['Library'])
         self.allThermoSources['QM'] = list(allThermoSources['QM'])
         self.allThermoSources['GAV'] = {}
         for groupType in allThermoSources['GAV'].keys():
             self.allThermoSources['GAV'][groupType] = list(allThermoSources['GAV'][groupType])
-                
+
         # Account for all the kinetics sources
-        allKineticSources = {'Rate Rules':{}, 'Training':{}, 'Library':[], 'PDep':[]}
+        allKineticSources = {'Rate Rules': {}, 'Training': {}, 'Library': [], 'PDep': []}
         for source in self.reactionSourcesDict.values():
             if 'Training' in source:
                 familyLabel = source['Training'][0]
                 trainingEntry = source['Training'][1]
-                if not familyLabel in allKineticSources['Training']:
+                if familyLabel not in allKineticSources['Training']:
                     allKineticSources['Training'][familyLabel] = set([trainingEntry])
                 else:
                     allKineticSources['Training'][familyLabel].add(trainingEntry)
@@ -465,7 +471,7 @@ class Uncertainty:
                 training = sourceDict['training']
                 if rules:
                     ruleEntries = [ruleTuple[0] for ruleTuple in rules]
-                    if not familyLabel in allKineticSources['Rate Rules']:
+                    if familyLabel not in allKineticSources['Rate Rules']:
                         allKineticSources['Rate Rules'][familyLabel] = set(ruleEntries)
                     else:
                         allKineticSources['Rate Rules'][familyLabel].update(ruleEntries)
@@ -473,11 +479,11 @@ class Uncertainty:
                     # Even though they are from training reactions, we consider the rate rules derived from the training
                     # reactions to be noncorrelated, due to the fact that some may be reversed.
                     trainingRules = [trainingTuple[0] for trainingTuple in training]  # Pick the rate rule entries
-                    if not familyLabel in allKineticSources['Rate Rules']:
+                    if familyLabel not in allKineticSources['Rate Rules']:
                         allKineticSources['Rate Rules'][familyLabel] = set(trainingRules)
                     else:
                         allKineticSources['Rate Rules'][familyLabel].update(trainingRules)
-        
+
         self.allKineticSources = {}
         self.allKineticSources['Library'] = allKineticSources['Library']
         self.allKineticSources['PDep'] = allKineticSources['PDep']
@@ -485,20 +491,23 @@ class Uncertainty:
         self.allKineticSources['Rate Rules'] = {}
         for familyLabel in allKineticSources['Rate Rules'].keys():
             self.allKineticSources['Rate Rules'][familyLabel] = list(allKineticSources['Rate Rules'][familyLabel])
-            
+
         self.allKineticSources['Training'] = {}
         for familyLabel in allKineticSources['Training'].keys():
             self.allKineticSources['Training'][familyLabel] = list(allKineticSources['Training'][familyLabel])
-    
-    def assignParameterUncertainties(self, gParamEngine = ThermoParameterUncertainty(), kParamEngine = KineticParameterUncertainty(), correlated=False):
+
+    def assignParameterUncertainties(self, gParamEngine=None, kParamEngine=None, correlated=False):
         """
         Assign uncertainties based on the sources of the species thermo and reaction kinetics.
         """
-        
+        if gParamEngine is None:
+            gParamEngine = ThermoParameterUncertainty()
+        if kParamEngine is None:
+            kParamEngine = KineticParameterUncertainty()
+
         self.thermoInputUncertainties = []
         self.kineticInputUncertainties = []
 
-        
         for species in self.speciesList:
             if not correlated:
                 dG = gParamEngine.getUncertaintyValue(self.speciesSourcesDict[species])
@@ -508,10 +517,13 @@ class Uncertainty:
                 dG = {}
                 if 'Library' in source:
                     pdG = gParamEngine.getPartialUncertaintyValue(source, 'Library', corrParam=source['Library'])
-                    label = 'Library {}'.format(self.speciesList[source['Library']].toChemkin())
+                    try:
+                        label = 'Library {}'.format(self.speciesList[source['Library']].toChemkin())
+                    except IndexError:
+                        label = 'Library {}'.format(self.extraSpecies[source['Library'] - len(self.speciesList)].toChemkin())
                     dG[label] = pdG
                 if 'QM' in source:
-                    pdG = gParamEngine.getPartialUncertaintyValue(source, 'QM',corrParam=source['QM'])
+                    pdG = gParamEngine.getPartialUncertaintyValue(source, 'QM', corrParam=source['QM'])
                     label = 'QM {}'.format(self.speciesList[source['QM']].toChemkin())
                     dG[label] = pdG
                 if 'GAV' in source:
@@ -522,11 +534,10 @@ class Uncertainty:
                             dG[label] = pdG
                     # We also know if there is group additivity used, there will be uncorrelated estimation error
                     est_pdG = gParamEngine.getPartialUncertaintyValue(source, 'Estimation')
-                    if est_pdG: 
+                    if est_pdG:
                         label = 'Estimation {}'.format(species.toChemkin())
                         dG[label] = est_pdG
                 self.thermoInputUncertainties.append(dG)
-
 
         for reaction in self.reactionList:
             if not correlated:
@@ -541,40 +552,43 @@ class Uncertainty:
                     rules = sourceDict['rules']
                     training = sourceDict['training']
                     for ruleEntry, weight in rules:
-                        dplnk = kParamEngine.getPartialUncertaintyValue(source, 'Rate Rules', corrParam=ruleEntry, corrFamily=family)
+                        dplnk = kParamEngine.getPartialUncertaintyValue(source, 'Rate Rules', corrParam=ruleEntry,
+                                                                        corrFamily=family)
                         label = '{} {}'.format(family, ruleEntry)
-                        dlnk[label]=dplnk
+                        dlnk[label] = dplnk
 
                     for ruleEntry, trainingEntry, weight in training:
-                        dplnk = kParamEngine.getPartialUncertaintyValue(source, 'Rate Rules', corrParam=ruleEntry, corrFamily=family)
+                        dplnk = kParamEngine.getPartialUncertaintyValue(source, 'Rate Rules', corrParam=ruleEntry,
+                                                                        corrFamily=family)
                         label = '{} {}'.format(family, ruleEntry)
-                        dlnk[label]=dplnk
+                        dlnk[label] = dplnk
 
                     # There is also estimation error if rate rules are used
                     est_dplnk = kParamEngine.getPartialUncertaintyValue(source, 'Estimation')
                     if est_dplnk:
                         label = 'Estimation {}'.format(reaction.toChemkin(self.speciesList, kinetics=False))
-                        dlnk[label]=est_dplnk
+                        dlnk[label] = est_dplnk
 
                 elif 'PDep' in source:
                     dplnk = kParamEngine.getPartialUncertaintyValue(source, 'PDep', source['PDep'])
                     label = 'PDep {}'.format(reaction.toChemkin(self.speciesList, kinetics=False))
-                    dlnk[label]=dplnk
+                    dlnk[label] = dplnk
 
                 elif 'Library' in source:
                     dplnk = kParamEngine.getPartialUncertaintyValue(source, 'Library', source['Library'])
                     label = 'Library {}'.format(reaction.toChemkin(self.speciesList, kinetics=False))
-                    dlnk[label]=dplnk
+                    dlnk[label] = dplnk
 
                 elif 'Training' in source:
                     dplnk = kParamEngine.getPartialUncertaintyValue(source, 'Training', source['Training'])
                     family = source['Training'][0]
                     label = 'Training {} {}'.format(family, reaction.toChemkin(self.speciesList, kinetics=False))
-                    dlnk[label]=dplnk
-                
+                    dlnk[label] = dplnk
+
                 self.kineticInputUncertainties.append(dlnk)
 
-    def sensitivityAnalysis(self, initialMoleFractions, sensitiveSpecies, T, P, terminationTime, sensitivityThreshold=1e-3, number=10, fileformat='.png'):
+    def sensitivityAnalysis(self, initialMoleFractions, sensitiveSpecies, T, P, terminationTime,
+                            sensitivityThreshold=1e-3, number=10, fileformat='.png'):
         """
         Run sensitivity analysis using the RMG solver in a single ReactionSystem object
         
@@ -582,69 +596,69 @@ class Uncertainty:
         sensitiveSpecies is a list of sensitive Species objects
         number is the number of top species thermo or reaction kinetics desired to be plotted
         """
-        
-        
+
         from rmgpy.solver import SimpleReactor, TerminationTime
         from rmgpy.quantity import Quantity
-        from rmgpy.tools.simulate import plot_sensitivity
         from rmgpy.rmg.listener import SimulationProfileWriter, SimulationProfilePlotter
         from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
         T = Quantity(T)
         P = Quantity(P)
-        termination=[TerminationTime(Quantity(terminationTime))]
-                                     
+        termination = [TerminationTime(Quantity(terminationTime))]
+
         reactionSystem = SimpleReactor(T=T,
                                        P=P,
                                        initialMoleFractions=initialMoleFractions,
                                        termination=termination,
                                        sensitiveSpecies=sensitiveSpecies,
                                        sensitivityThreshold=sensitivityThreshold)
-        
+
         # Create the csv worksheets for logging sensitivity
         util.makeOutputSubdirectory(self.outputDirectory, 'solver')
         sensWorksheet = []
         reactionSystemIndex = 0
         for spec in reactionSystem.sensitiveSpecies:
-            csvfilePath = os.path.join(self.outputDirectory, 'solver', 'sensitivity_{0}_SPC_{1}.csv'.format(reactionSystemIndex+1, spec.index))
+            csvfilePath = os.path.join(self.outputDirectory, 'solver',
+                                       'sensitivity_{0}_SPC_{1}.csv'.format(reactionSystemIndex + 1, spec.index))
             sensWorksheet.append(csvfilePath)
 
         reactionSystem.attach(SimulationProfileWriter(
-            self.outputDirectory, reactionSystemIndex, self.speciesList))  
+            self.outputDirectory, reactionSystemIndex, self.speciesList))
         reactionSystem.attach(SimulationProfilePlotter(
             self.outputDirectory, reactionSystemIndex, self.speciesList))
-        
-        simulatorSettings = SimulatorSettings() #defaults
-        
-        modelSettings = ModelSettings() #defaults
+
+        simulatorSettings = SimulatorSettings()  # defaults
+
+        modelSettings = ModelSettings()  # defaults
         modelSettings.fluxToleranceMoveToCore = 0.1
         modelSettings.fluxToleranceInterrupt = 1.0
         modelSettings.fluxToleranceKeepInEdge = 0.0
-        
+
         reactionSystem.simulate(
-            coreSpecies = self.speciesList,
-            coreReactions = self.reactionList,
-            edgeSpecies = [],
-            edgeReactions = [],
-            surfaceSpecies = [],
-            surfaceReactions = [],
-            modelSettings = modelSettings,
-            simulatorSettings = simulatorSettings,
-            sensitivity = True,
-            sensWorksheet = sensWorksheet,
+            coreSpecies=self.speciesList,
+            coreReactions=self.reactionList,
+            edgeSpecies=[],
+            edgeReactions=[],
+            surfaceSpecies=[],
+            surfaceReactions=[],
+            modelSettings=modelSettings,
+            simulatorSettings=simulatorSettings,
+            sensitivity=True,
+            sensWorksheet=sensWorksheet,
         )
-        
-        
+
         plot_sensitivity(self.outputDirectory, reactionSystemIndex, reactionSystem.sensitiveSpecies, number=number, fileformat=fileformat)
-    
-    def localAnalysis(self, sensitiveSpecies, correlated=False, number=10, fileformat='.png'):
+
+    def localAnalysis(self, sensitiveSpecies, reactionSystemIndex=0, correlated=False, number=10, fileformat='.png'):
         """
         Conduct local uncertainty analysis on the reaction model.
         sensitiveSpecies is a list of sensitive Species objects
         number is the number of highest contributing uncertain parameters desired to be plotted
         fileformat can be either .png, .pdf, or .svg
         """
+        output = {}
         for sensSpecies in sensitiveSpecies:
-            csvfilePath = os.path.join(self.outputDirectory, 'solver', 'sensitivity_{0}_SPC_{1}.csv'.format(1, sensSpecies.index))
+            csvfilePath = os.path.join(self.outputDirectory, 'solver',
+                                       'sensitivity_{0}_SPC_{1}.csv'.format(reactionSystemIndex+1, sensSpecies.index))
             time, dataList = parseCSVData(csvfilePath)
             # Assign uncertainties
             thermoDataList = []
@@ -656,17 +670,16 @@ class Uncertainty:
                             index = self.speciesList.index(species)
                             break
                     else:
-                        raise Exception('Chemkin name {} of species in the CSV file does not match anything in the species list.'.format(data.species))
-                    
+                        raise Exception('Chemkin name {} of species in the CSV file does not match anything in the '
+                                        'species list.'.format(data.species))
+
                     data.uncertainty = self.thermoInputUncertainties[index]
                     thermoDataList.append(data)
-
 
                 if data.reaction:
                     rxnIndex = int(data.index) - 1
                     data.uncertainty = self.kineticInputUncertainties[rxnIndex]
                     reactionDataList.append(data)
-
 
             if correlated:
                 correlatedThermoData = {}
@@ -675,15 +688,15 @@ class Uncertainty:
                     for label, dpG in data.uncertainty.iteritems():
                         if label in correlatedThermoData:
                             # Unpack the labels and partial uncertainties
-                            correlatedThermoData[label].data[-1] += data.data[-1]*dpG   # Multiply the sensitivity with the partial uncertainty
+                            correlatedThermoData[label].data[-1] += data.data[-1] * dpG  # Multiply the sensitivity with the partial uncertainty
                         else:
-                            correlatedThermoData[label] = GenericData(data=[data.data[-1]*dpG], uncertainty=1, label=label, species='dummy')
+                            correlatedThermoData[label] = GenericData(data=[data.data[-1] * dpG], uncertainty=1, label=label, species='dummy')
                 for data in reactionDataList:
                     for label, dplnk in data.uncertainty.iteritems():
                         if label in correlatedReactionData:
-                            correlatedReactionData[label].data[-1] += data.data[-1]*dplnk
+                            correlatedReactionData[label].data[-1] += data.data[-1] * dplnk
                         else:
-                            correlatedReactionData[label] = GenericData(data=[data.data[-1]*dplnk], uncertainty=1, label=label, reaction='dummy')
+                            correlatedReactionData[label] = GenericData(data=[data.data[-1] * dplnk], uncertainty=1, label=label, reaction='dummy')
 
                 thermoDataList = correlatedThermoData.values()
                 reactionDataList = correlatedReactionData.values()
@@ -691,17 +704,71 @@ class Uncertainty:
             # Compute total variance
             totalVariance = 0.0
             for data in thermoDataList:
-                totalVariance += (data.data[-1]*data.uncertainty)**2
+                totalVariance += (data.data[-1] * data.uncertainty) ** 2
             for data in reactionDataList:
-                totalVariance += (data.data[-1]*data.uncertainty)**2
+                totalVariance += (data.data[-1] * data.uncertainty) ** 2
 
             if not correlated:
                 # Add the reaction index to the data label of the reaction uncertainties
+                # data.index stores the physical index of the reaction + 1, so we convert it to the RMG index here
                 for data in reactionDataList:
-                    data.label = 'k'+str(data.index) + ': ' + data.label.split()[-1]
-            
-            thermoUncertaintyPlotPath = os.path.join(self.outputDirectory, 'thermoLocalUncertainty_{0}'.format(sensSpecies.toChemkin()) + fileformat)
-            reactionUncertaintyPlotPath = os.path.join(self.outputDirectory, 'kineticsLocalUncertainty_{0}'.format(sensSpecies.toChemkin()) + fileformat)
-            ReactionSensitivityPlot(xVar=time,yVar=reactionDataList,numReactions=number).uncertaintyPlot(totalVariance, filename=reactionUncertaintyPlotPath)
-            ThermoSensitivityPlot(xVar=time,yVar=thermoDataList,numSpecies=number).uncertaintyPlot(totalVariance, filename=thermoUncertaintyPlotPath)
+                    data.label = 'k' + str(self.reactionList[data.index-1].index) + ': ' + data.label.split()[-1]
 
+            if correlated:
+                folder = os.path.join(self.outputDirectory, 'correlated')
+            else:
+                folder = os.path.join(self.outputDirectory, 'uncorrelated')
+            if not os.path.exists(folder):
+                try:
+                    os.makedirs(folder)
+                except OSError as e:
+                    raise OSError('Uncertainty output directory could not be created: {0}'.format(e.message))
+
+            rPath = os.path.join(folder, 'kineticsLocalUncertainty_{0}'.format(sensSpecies.toChemkin()) + fileformat)
+            tPath = os.path.join(folder, 'thermoLocalUncertainty_{0}'.format(sensSpecies.toChemkin()) + fileformat)
+            reactionUncertainty = ReactionSensitivityPlot(xVar=time, yVar=reactionDataList, numReactions=number).uncertaintyPlot(totalVariance, filename=rPath)
+            thermoUncertainty = ThermoSensitivityPlot(xVar=time, yVar=thermoDataList, numSpecies=number).uncertaintyPlot(totalVariance, filename=tPath)
+
+            output[sensSpecies] = (totalVariance, reactionUncertainty, thermoUncertainty)
+
+        return output
+
+
+def process_local_results(results, sensitiveSpecies, number=10):
+    """
+    Return a dictionary of processed results along with a formatted string
+    given results from local uncertainty analysis.
+    """
+    processed_results = {}
+    for spc in sensitiveSpecies:
+        total_var, reaction_u, thermo_u = results[spc]
+        reaction_c = []
+        for label, reaction, u in reaction_u:
+            reaction_c.append((label, reaction, u / total_var * 100))
+        reaction_c.sort(key=lambda x: abs(x[2]), reverse=True)
+
+        thermo_c = []
+        for label, species, u in thermo_u:
+            thermo_c.append((label, species, u / total_var * 100))
+        thermo_c.sort(key=lambda x: abs(x[2]), reverse=True)
+
+        processed_results[spc] = (total_var, reaction_c, thermo_c)
+
+    output = ''
+    for spc in sensitiveSpecies:
+        output += '================================================================================\n'
+        total_var, reaction_c, thermo_c = processed_results[spc]
+        output += 'Total variance [(d ln(c))^2] for species {0} is {1:.6f}\n'.format(spc.label, total_var)
+        output += '--------------------------------------------------------------------------------\n'
+        output += 'Top {0:2} reaction rate contributors                              Sensitivity Index\n'.format(number)
+        output += '--------------------------------------------------------------------------------\n'
+        for label, reaction, c in reaction_c[:number]:
+            output += '{0:<65}{1:>14.4f}%\n'.format(label, c)
+        output += '--------------------------------------------------------------------------------\n'
+        output += 'Top {0:2} thermochemistry contributors                            Sensitivity Index\n'.format(number)
+        output += '--------------------------------------------------------------------------------\n'
+        for label, species, c in thermo_c[:number]:
+            output += '{0:<65}{1:>14.4f}%\n'.format(label, c)
+        output += '================================================================================\n\n'
+
+    return processed_results, output

@@ -28,14 +28,54 @@
 #                                                                             #
 ###############################################################################
 
+import os
+
 import matplotlib as mpl
 # Force matplotlib to not use any Xwindows backend.
 # This must be called before pylab, matplotlib.pyplot, or matplotlib.backends is imported
 mpl.use('Agg')
 import matplotlib.pyplot as plt
-from rmgpy.tools.data import GenericData
 import numpy
-        
+
+from rmgpy.tools.data import GenericData
+
+
+def plot_sensitivity(outputDirectory, reactionSystemIndex, sensitiveSpeciesList, number=10, fileformat='.png'):
+    """
+    A function for plotting the top reaction thermo sensitivities (the number is
+    inputted as the variable `number`) in bar plot format.
+    To be called after running a simulation on a particular reactionSystem.
+    """
+
+    for species in sensitiveSpeciesList:
+        csvFile = os.path.join(
+            outputDirectory,
+            'solver',
+            'sensitivity_{0}_SPC_{1}.csv'.format(
+                reactionSystemIndex + 1, species.index
+            )
+        )
+
+        reactionPlotFile = os.path.join(
+            outputDirectory,
+            'solver',
+            'sensitivity_{0}_SPC_{1}_reactions'.format(
+                reactionSystemIndex + 1, species.index
+            ) + fileformat
+        )
+
+        thermoPlotFile = os.path.join(
+            outputDirectory,
+            'solver',
+            'sensitivity_{0}_SPC_{1}_thermo'.format(
+                reactionSystemIndex + 1, species.index
+            ) + fileformat
+        )
+
+        ReactionSensitivityPlot(csvFile=csvFile, numReactions=number).barplot(reactionPlotFile)
+        ThermoSensitivityPlot(csvFile=csvFile, numSpecies=number).barplot(thermoPlotFile)
+
+
 def parseCSVData(csvFile):
     """
     This function parses a typical csv file outputted from a simulation or
@@ -96,17 +136,18 @@ def parseCSVData(csvFile):
             rxn = data.label.split()[1]
             index = data.label.split()[0][:-2].rpartition('dln[k')[2]
             data.reaction = rxn
-            data.index = index
+            data.index = int(index)
         elif thermoSensPattern.search(data.label):
             species = data.label[:-1].rpartition('dG[')[2]
             data.species = species
             if indexPattern.search(species):
-                data.index = species[:-1].rpartition('(')[2]
+                data.index = int(species[:-1].rpartition('(')[2])
             
         dataList.append(data)
         
         
     return time, dataList
+
 
 def findNearest(array, value):
     """
@@ -114,6 +155,7 @@ def findNearest(array, value):
     """
     idx = (numpy.abs(array-value)).argmin()
     return idx
+
 
 def linearlyInterpolatePoint(xArray, yArray, xValue):
     """
@@ -140,6 +182,7 @@ def linearlyInterpolatePoint(xArray, yArray, xValue):
     else:
         yValue=yArray[lowerIndex]+dydx*(xValue-xArray[lowerIndex])
     return yValue
+
 
 class GenericPlot(object):
     """
@@ -490,7 +533,10 @@ class ReactionSensitivityPlot(GenericPlot):
         newYVar = newYVar[:self.numReactions]
 
         GenericPlot(xVar=None, yVar=newYVar, xlabel ="Uncertainty Contribution (%)").barplot(filename=filename)
-        
+
+        return reactionUncertainty
+
+
 class ThermoSensitivityPlot(GenericPlot):
     """
     A class for plotting the top sensitivities to a thermo DeltaG value of species within the model.
@@ -598,3 +644,5 @@ class ThermoSensitivityPlot(GenericPlot):
         newYVar.sort(key=lambda x: abs(x.data[0]), reverse = True)
         newYVar = newYVar[:self.numSpecies]
         GenericPlot(xVar=None, yVar=newYVar, xlabel ="Uncertainty Contribution (%)").barplot(filename=filename)
+
+        return thermoUncertainty

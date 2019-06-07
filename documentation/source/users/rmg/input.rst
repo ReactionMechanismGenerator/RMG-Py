@@ -771,6 +771,70 @@ to turn off pressure dependence for all molecules larger than the given number
 of atoms (16 in the above example).
 
 
+.. _uncertaintyanalysis:
+
+Uncertainty Analysis
+====================
+
+It is possible to request automatic uncertainty analysis following the convergence of an RMG simulation by including
+an uncertainty options block in the input file::
+
+    uncertainty(
+        localAnalysis=False,
+        globalAnalysis=False,
+        uncorrelated=True,
+        correlated=True,
+        localNumber=10,
+        globalNumber=5,
+        terminationTime=None,
+        pceRunTime=1800,
+        logx=True
+    )
+
+RMG can perform local uncertainty analysis using first-order sensitivity coefficients output by the native RMG solver.
+This is enabled by setting ``localAnalysis=True``. Performing local uncertainty analysis requires suitable settings in
+the reactor block (see :ref:`reactionsystem`). At minimum, the output species to perform sensitivity analysis on must
+be specified, via the ``sensitivity`` argument. RMG will then perform local uncertainty analysis on the same species.
+Species and reactions with the largest sensitivity indices will be reported in the log file and output figures.
+The number of parameters reported can be adjusted using ``localNumber``.
+
+RMG can also perform global uncertainty analysis, implemented using Cantera [Cantera]_ and the MIT Uncertainty
+Quantification (MUQ) [MUQ]_ library. This is enabled by setting ``globalAnalysis=True``. Note that local analysis
+is a required prerequisite of running the global analysis (at least for this semi-automatic approach), so
+``localAnalysis`` will be enabled regardless of the input file setting. The analysis is performed by allowing the
+input parameters with the largest sensitivity indices (as determined from the local uncertainty analysis) to vary
+while performing reactor simulations using Cantera. MUQ is used to fit a Polynomial Chaos Expansion (PCE) to the
+resulting output surface. The number of input parameters chosen can be adjusted using ``globalNumber``.
+Note that this number applies independently to thermo and rate parameters and output species.
+For example ``globalNumber=5`` for analysis on a single output species will result in 10 parameters being varied, while
+having two output species could result in up to 20 parameters being varied, assuming no overlap in the sensitive input
+parameters for each output.
+
+The ``uncorrelated`` and ``correlated`` options refer to two approaches for uncertainty analysis. Uncorrelated means
+that all input parameters are considered to be independent, each with their own uncertainty bounds. Thus, the output
+uncertainty distribution is determined on the basis that every input parameter could vary within the full range of
+its uncertainty bounds. Correlated means that inherent relationships between parameters (such as rate rules for kinetics
+or group additivity values for thermochemistry) are accounted for, which reduces the uncertainty space of the input
+parameters.
+
+Finally, there are a few miscellaneous options for global uncertainty analysis. The ``terminationTime`` applies for the
+reactor simulation. It is only necessary if termination time is not specified in the reactor settings (i.e. only other
+termination criteria are used). The ``pceRunTime`` sets the time limit for fitting the PCE to the output surface.
+Longer run times allow more simulations to be performed, leading to more accurate results. The ``logx`` option toggles
+the output parameter space between mole fractions and log mole fractions. Results in mole fraction space are more
+physically meaningful, while results in log mole fraction space can be directly compared against local uncertainty
+results.
+
+**Important Note:** The current implementation of uncertainty analysis assigns values for input parameter
+uncertainties based on the estimation method used by RMG. Actual uncertainties associated with the original data sources
+are not used. Thus, the output uncertainties reported by these analyses should be viewed with this in mind.
+
+.. [Cantera] Goodwin, D.G.; Moffat, H.K.; Speth, R.L. Cantera: An object-oriented software toolkit for
+                chemical kinetics, thermodynamics, and transport processes; http://www.cantera.org
+.. [MUQ] Conrad, P.R.; Parno, M.D.; Davis, A.D.; Marzouk, Y.M. MIT Uncertainty Quantification Library (MUQ); http://muq.mit.edu/
+.. [Gao2016] Gao, C. W.; Ph.D. Thesis. 2016.
+
+
 .. _miscellaneousoptions:
 
 Miscellaneous Options
