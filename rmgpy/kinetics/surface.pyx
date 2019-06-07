@@ -32,6 +32,7 @@ from libc.math cimport exp, log, sqrt, log10
 
 cimport rmgpy.constants as constants
 import rmgpy.quantity as quantity
+from rmgpy.exceptions import KineticsError
 
 ################################################################################
 
@@ -126,6 +127,61 @@ cdef class StickingCoefficient(KineticsModel):
         if stickingCoefficient < 0:
             raise ValueError("Sticking coefficients cannot be negative, check your preexponential factor.")
         return min(stickingCoefficient, 1.0)
+
+    cpdef fitToData(self, numpy.ndarray Tlist, numpy.ndarray klist, str kunits, double T0=1,
+                    numpy.ndarray weights=None, bint threeParams=True):
+        """
+        Fit Arrhenius parameters to a set of sticking coefficient data `klist`
+        in units of `kunits` corresponding to a set of temperatures `Tlist` in
+        K. A linear least-squares fit is used, which guarantees that the
+        resulting parameters provide the best possible approximation to the
+        data.
+        """
+        import numpy.linalg
+        import scipy.stats
+
+        assert len(Tlist) == len(klist), "length of temperatures and rates must be the same"
+        if len(Tlist) < 3 + threeParams:
+            raise KineticsError('Not enough degrees of freedom to fit this Arrhenius expression')
+        if threeParams:
+            A = numpy.zeros((len(Tlist), 3), numpy.float64)
+            A[:, 0] = numpy.ones_like(Tlist)
+            A[:, 1] = numpy.log(Tlist / T0)
+            A[:, 2] = -1.0 / constants.R / Tlist
+        else:
+            A = numpy.zeros((len(Tlist), 2), numpy.float64)
+            A[:, 0] = numpy.ones_like(Tlist)
+            A[:, 1] = -1.0 / constants.R / Tlist
+        b = numpy.log(klist)
+        if weights is not None:
+            for n in range(b.size):
+                A[n, :] *= weights[n]
+                b[n] *= weights[n]
+        x, residues, rank, s = numpy.linalg.lstsq(A, b)
+
+        # Determine covarianace matrix to obtain parameter uncertainties
+        count = klist.size
+        cov = residues[0] / (count - 3) * numpy.linalg.inv(numpy.dot(A.T, A))
+        t = scipy.stats.t.ppf(0.975, count - 3)
+
+        if not threeParams:
+            x = numpy.array([x[0], 0, x[1]])
+            cov = numpy.array([[cov[0, 0], 0, cov[0, 1]], [0, 0, 0], [cov[1, 0], 0, cov[1, 1]]])
+
+        self.A = (exp(x[0]), kunits)
+        self.n = x[1]
+        self.Ea = (x[2] * 0.001, "kJ/mol")
+        self.T0 = (T0, "K")
+        self.Tmin = (numpy.min(Tlist), "K")
+        self.Tmax = (numpy.max(Tlist), "K")
+        self.comment = 'Fitted to {0:d} data points; dA = *|/ {1:g}, dn = +|- {2:g}, dEa = +|- {3:g} kJ/mol'.format(
+            len(Tlist),
+            exp(sqrt(cov[0, 0])),
+            sqrt(cov[1, 1]),
+            sqrt(cov[2, 2]) * 0.001,
+        )
+
+        return self
 
     cpdef changeT0(self, double T0):
         """

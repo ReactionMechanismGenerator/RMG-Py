@@ -772,6 +772,9 @@ class ThermoDatabase(object):
         }
         self.global_context = {}
 
+        # Catalyst properties
+        self.setDeltaAtomicAdsorptionEnergies()
+
     def __reduce__(self):
         """
         A helper function used when pickling a ThermoDatabase object.
@@ -1260,27 +1263,44 @@ class ThermoDatabase(object):
         # Return the resulting thermo parameters
         return thermo0
 
-    def setDeltaAtomicAdsorptionEnergies(self, bindingEnergies):
+    def setDeltaAtomicAdsorptionEnergies(self, bindingEnergies=None):
         """
         Sets and stores the change in atomic binding energy between
         the desired and the Pt(111) default.
 
-        :param bindingEnergies: the required binding energies
-        :return: None (stores result in self.deltaAtomicAdsorptionEnergy)
-        """
-        # this depends on the two metal surfaces, the reference one
-        # used in the database of adsorption energies, and the desired surface
+        This depends on the two metal surfaces: the reference one used in
+        the database of adsorption energies, and the desired surface.
 
-        # These are for Pt(111), from Katrin
-        deltaAtomicAdsorptionEnergy = {
+        If bindingEnergies are not provided, resets the values to those
+        of the Pt(111) default.
+
+        Args:
+            bindingEnergies (dict, optional): the desired binding energies with
+                elements as keys and binding energy/unit tuples as values
+
+        Returns:
+            None, stores result in self.deltaAtomicAdsorptionEnergy
+        """
+        referenceBindingEnergies = {
             'C': rmgpy.quantity.Energy(-6.750, 'eV/molecule'),
             'H': rmgpy.quantity.Energy(-2.479, 'eV/molecule'),
             'O': rmgpy.quantity.Energy(-3.586, 'eV/molecule'),
             'N': rmgpy.quantity.Energy(-4.352, 'eV/molecule'),
         }
-        for element in 'CHON':
-            deltaAtomicAdsorptionEnergy[element].value_si =  bindingEnergies[element].value_si - deltaAtomicAdsorptionEnergy[element].value_si
-        self.deltaAtomicAdsorptionEnergy = deltaAtomicAdsorptionEnergy
+
+        # Use Pt(111) reference if no binding energies are provided
+        if bindingEnergies is None:
+            bindingEnergies = referenceBindingEnergies
+
+        self.deltaAtomicAdsorptionEnergy = {
+            'C': rmgpy.quantity.Energy(0.0, 'eV/molecule'),
+            'H': rmgpy.quantity.Energy(0.0, 'eV/molecule'),
+            'O': rmgpy.quantity.Energy(0.0, 'eV/molecule'),
+            'N': rmgpy.quantity.Energy(0.0, 'eV/molecule'),
+        }
+
+        for element, deltaEnergy in self.deltaAtomicAdsorptionEnergy.iteritems():
+            deltaEnergy.value_si = bindingEnergies[element].value_si - referenceBindingEnergies[element].value_si
 
     def correctBindingEnergy(self, thermo, species):
         """
