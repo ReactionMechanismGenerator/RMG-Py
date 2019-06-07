@@ -1227,79 +1227,79 @@ def projectRotors(conformer, F, rotors, linear, is_ts, label):
     return np.sqrt(eig[-Nvib:]) / (2 * math.pi * constants.c * 100)
 
 
-def assign_frequency_scale_factor(model_chemistry):
+def assign_frequency_scale_factor(freq_level):
     """
     Assign the frequency scaling factor according to the model chemistry.
     Refer to https://comp.chem.umn.edu/freqscale/index.html for future updates of these factors
 
+    Sources:
+        [1] I.M. Alecu, J. Zheng, Y. Zhao, D.G. Truhlar, J. Chem. Theory Comput. 2010, 6, 2872, DOI: 10.1021/ct100326h
+        [2] http://cccbdb.nist.gov/vibscalejust.asp
+        [3] http://comp.chem.umn.edu/freqscale/190107_Database_of_Freq_Scale_Factors_v4.pdf
+        [4] Calculated as described in 10.1021/ct100326h
+        [5] J.A. Montgomery, M.J. Frisch, J. Chem. Phys. 1999, 110, 2822–2827, DOI: 10.1063/1.477924
+
     Args:
-        model_chemistry (str, unicode): The frequency level of theory.
+        freq_level (str, unicode): The frequency level of theory.
 
     Returns:
         float: The frequency scaling factor (1 by default).
     """
-    freq_dict = {'cbs-qb3': 0.99,  # J. Chem. Phys. 1999, 110, 2822–2827
-                 'cbs-qb3-paraskevas': 0.99,
-                 # 'g3': ,
-                 'm08so/mg3s*': 0.983,  # DOI: 10.1021/ct100326h, taken as 'M08-SO/MG3S'
-                 'm06-2x/cc-pvtz': 0.955,  # http://cccbdb.nist.gov/vibscalejust.asp
-                 # 'klip_1': ,
-                 # 'klip_2': ,
-                 # 'klip_3': ,
-                 # 'klip_2_cc': ,
-                 # 'ccsd(t)-f12/cc-pvdz-f12_h-tz': ,
-                 # 'ccsd(t)-f12/cc-pvdz-f12_h-qz': ,
-                 'ccsd(t)-f12/cc-pvdz-f12': 0.979,
-                 # http://cccbdb.nist.gov/vibscalejust.asp, taken as 'ccsd(t)/cc-pvdz'
-                 'ccsd(t)-f12/cc-pvtz-f12': 0.984,
-                 # Taken from https://comp.chem.umn.edu/freqscale/version3b2.htm as CCSD(T)-F12a/cc-pVTZ-F12
-                 'ccsd(t)-f12/cc-pvqz-f12': 0.970,
-                 # http://cccbdb.nist.gov/vibscalejust.asp, taken as 'ccsd(t)/cc-pvqz'
-                 'ccsd(t)-f12/cc-pcvdz-f12': 0.971,
-                 # http://cccbdb.nist.gov/vibscalejust.asp, taken as 'ccsd(t)/cc-pcvdz'
-                 'ccsd(t)-f12/cc-pcvtz-f12': 0.966,
-                 # 'ccsd(t)-f12/cc-pcvqz-f12': ,
-                 # 'ccsd(t)-f12/cc-pvtz-f12(-pp)': ,
-                 # 'ccsd(t)/aug-cc-pvtz(-pp)': ,
-                 'ccsd(t)-f12/aug-cc-pvdz': 0.963,
-                 # http://cccbdb.nist.gov/vibscalejust.asp, taken as 'ccsd(t)/aug-cc-pvdz'
-                 'ccsd(t)-f12/aug-cc-pvtz': 0.970,
-                 # http://cccbdb.nist.gov/vibscalejust.asp, taken as 'ccsd(t)/aug-cc-pvtz'
-                 'ccsd(t)-f12/aug-cc-pvqz': 0.975,
-                 # http://cccbdb.nist.gov/vibscalejust.asp, taken as 'ccsd(t)/aug-cc-pvqz'
-                 # 'b-ccsd(t)-f12/cc-pvdz-f12': ,
-                 # 'b-ccsd(t)-f12/cc-pvtz-f12': ,
-                 # 'b-ccsd(t)-f12/cc-pvqz-f12': ,
-                 # 'b-ccsd(t)-f12/cc-pcvdz-f12': ,
-                 # 'b-ccsd(t)-f12/cc-pcvtz-f12': ,
-                 # 'b-ccsd(t)-f12/cc-pcvqz-f12': ,
-                 # 'b-ccsd(t)-f12/aug-cc-pvdz': ,
-                 # 'b-ccsd(t)-f12/aug-cc-pvtz': ,
-                 # 'b-ccsd(t)-f12/aug-cc-pvqz': ,
-                 'mp2_rmp2_pvdz': 0.953,  # http://cccbdb.nist.gov/vibscalejust.asp, taken as ',p2/cc-pvdz'
-                 'mp2_rmp2_pvtz': 0.950,  # http://cccbdb.nist.gov/vibscalejust.asp, taken as ',p2/cc-pvdz'
-                 'mp2_rmp2_pvqz': 0.962,  # http://cccbdb.nist.gov/vibscalejust.asp, taken as ',p2/cc-pvdz'
-                 'ccsd-f12/cc-pvdz-f12': 0.947,  # http://cccbdb.nist.gov/vibscalejust.asp, taken as ccsd/cc-pvdz
-                 # 'ccsd(t)-f12/cc-pvdz-f12_noscale': ,
-                 # 'g03_pbepbe_6-311++g_d_p': ,
-                 # 'fci/cc-pvdz': ,
-                 # 'fci/cc-pvtz': ,
-                 # 'fci/cc-pvqz': ,
-                 # 'bmk/cbsb7': ,
-                 # 'bmk/6-311g(2d,d,p)': ,
-                 'b3lyp/6-31g**': 0.961,  # http://cccbdb.nist.gov/vibscalejust.asp
-                 'b3lyp/6-311+g(3df,2p)': 0.967,  # http://cccbdb.nist.gov/vibscalejust.asp
-                 'wb97x-d/aug-cc-pvtz': 0.974,
-                 # Taken from https://comp.chem.umn.edu/freqscale/version3b2.htm as ωB97X-D/maug-cc-pVTZ
+    freq_dict = {'hf/sto-3g': 0.817,  # [2]
+                 'hf/6-31g': 0.903,  # [2]
+                 'hf/6-31g(d)': 0.899,  # [2]
+                 'hf/6-31g(d,p)': 0.903,  # [2]
+                 'hf/6-31g+(d,p)': 0.904,  # [2]
+                 'hf/6-31+g(d,p)': 0.915 * 1.014,  # [1] Table 7
+                 'pm3': 0.940 * 1.014,  # [1] Table 7, the 0.940 value is the ZPE scale factor
+                 'pm6': 1.078 * 1.014,  # [1] Table 7, the 1.078 value is the ZPE scale factor
+                 'b3lyp/6-31g(d,p)': 0.961,  # [2]
+                 'b3lyp/6-311g(d,p)': 0.967,  # [2]
+                 'b3lyp/6-311+g(3df,2p)': 0.967,  # [2]
+                 'b3lyp/6-311+g(3df,2pd)': 0.970,  # [2]
+                 'm06-2x/6-31g(d,p)': 0.952,  # [2]
+                 'm06-2x/6-31+g(d,p)': 0.979,  # [3]
+                 'm06-2x/6-311+g(d,p)': 0.983,  # [3]
+                 'm06-2x/6-311++g(d,p)': 0.983,  # [3]
+                 'm06-2x/cc-pvtz': 0.955,  # [2]
+                 'm06-2x/aug-cc-pvdz': 0.993,  # [3]
+                 'm06-2x/aug-cc-pvtz': 0.985,  # [1] Table 3, [3]
+                 'm06-2x/def2-tzvp': 0.984,  # [3]
+                 'm06-2x/def2-qzvp': 0.983,  # [3]
+                 'm06-2x/def2-tzvpp': 0.983,  # [1] Table 3, [3]
+                 'm08so/mg3s*': 0.995,  # [1] Table 3, taken as 'M08-SO/MG3S'
+                 'wb97x-d/aug-cc-pvtz': 0.988,  # [3], taken as 'ωB97X-D/maug-cc-pVTZ'
+                 'wb97xd/6-311++g(d,p)': 0.988,  # [4]
+                 'mp2_rmp2_pvdz': 0.953,  # [2], taken as 'MP2/cc-pVDZ'
+                 'mp2_rmp2_pvtz': 0.950,  # [2], taken as 'MP2/cc-pVTZ'
+                 'mp2_rmp2_pvqz': 0.962,  # [2], taken as 'MP2/cc-pVQZ'
+                 'cbs-qb3': 0.99 * 1.014,  # [5], the 0.99 value is the ZPE scale factor of CBS-QB3
+                 'cbs-qb3-paraskevas': 0.99 * 1.014,  # [5], the 0.99 value is the ZPE scale factor of CBS-QB3
+                 'ccsd-f12/cc-pvdz-f12': 0.947,  # [2], taken as 'CCSD/cc-pVDZ'
+                 'ccsd(t)/cc-pvdz': 0.979,  # [2]
+                 'ccsd(t)/cc-pvtz': 0.975,  # [2]
+                 'ccsd(t)/cc-pvqz': 0.970,  # [2]
+                 'ccsd(t)/aug-cc-pvdz': 0.963,  # [2]
+                 'ccsd(t)/aug-cc-pvtz': 1.001,  # [3]
+                 'ccsd(t)/aug-cc-pvqz': 0.975,  # [2]
+                 'ccsd(t)/cc-pv(t+d)z': 0.965,  # [2]
+                 'ccsd(t)-f12/cc-pvdz-f12': 0.997,  # [3], taken as 'CCSD(T)-F12a/cc-pVDZ-F12'
+                 'ccsd(t)-f12/cc-pvtz-f12': 0.998,  # [3], taken as 'CCSD(T)-F12a/cc-pVTZ-F12'
+                 'ccsd(t)-f12/cc-pvqz-f12': 0.998,  # [3], taken as 'CCSD(T)-F12b/VQZF12//CCSD(T)-F12a/TZF'
+                 'ccsd(t)-f12/cc-pcvdz-f12': 0.997,  # [3], taken as 'CCSD(T)-F12a/cc-pVDZ-F12'
+                 'ccsd(t)-f12/cc-pcvtz-f12': 0.998,  # [3], taken as 'CCSD(T)-F12a/cc-pVTZ-F12'
+                 'ccsd(t)-f12/aug-cc-pvdz': 0.997,  # [3], taken as 'CCSD(T)/cc-pVDZ'
+                 'ccsd(t)-f12/aug-cc-pvtz': 0.998,  # [3], taken as CCSD(T)-F12a/cc-pVTZ-F12
+                 'ccsd(t)-f12/aug-cc-pvqz': 0.998,  # [3], taken as 'CCSD(T)-F12b/VQZF12//CCSD(T)-F12a/TZF'
                  }
-    scaling_factor = freq_dict.get(model_chemistry.lower(), 1)
+    scaling_factor = freq_dict.get(freq_level.lower(), 1)
     if scaling_factor == 1:
         logging.warning('No frequency scaling factor found for model chemistry {0}. Assuming a value of unity. '
                         'This will affect the partition function and all quantities derived from it '
-                        '(thermo quantities and rate coefficients).'.format(model_chemistry))
+                        '(thermo quantities and rate coefficients).'.format(freq_level))
     else:
-        logging.info('Assigned a frequency scale factor of {0} for model chemistry {1}'.format(
-            scaling_factor, model_chemistry))
+        logging.info('Assigned a frequency scale factor of {0} for the frequency level of theory {1}'.format(
+            scaling_factor, freq_level))
     return scaling_factor
 
 
