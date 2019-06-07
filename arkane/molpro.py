@@ -266,7 +266,7 @@ class MolproLog(Log):
         return Conformer(E0=(e0 * 0.001, "kJ/mol"), modes=modes, spinMultiplicity=spinMultiplicity,
                          opticalIsomers=opticalIsomers), unscaled_frequencies
 
-    def loadEnergy(self, frequencyScaleFactor=1.):
+    def loadEnergy(self, zpe_scale_factor=1.):
         """
         Return either the f12 or MRCI energy in J/mol from a Molpro Logfile.
         If the MRCI job outputted the MRCI+Davidson energy, the latter is returned.
@@ -274,7 +274,7 @@ class MolproLog(Log):
         which it will parse out of the Molpro file. For the vdz and vtz basis sets f12a is
         a better approximation, but for higher basis sets f12b is a better approximation.
         """
-        e0 = None
+        e_elect = None
         with open(self.path, 'r') as f:
             lines = f.readlines()
             # Determine whether the sp method is f12,
@@ -300,47 +300,47 @@ class MolproLog(Log):
             else:
                 raise ValueError('Could not determine type of calculation. Currently, CCSD(T)-F12a, CCSD(T)-F12b,'
                                  ' MRCI, MRCI+Davidson are supported')
-            # Search for E0
+            # Search for e_elect
             for line in lines:
                 if f12 and f12a:
                     if 'CCSD(T)-F12a' in line and 'energy' in line:
-                        e0 = float(line.split()[-1])
+                        e_elect = float(line.split()[-1])
                         break
                 elif f12 and f12b:
                     if 'CCSD(T)-F12b' in line and 'energy' in line:
-                        e0 = float(line.split()[-1])
+                        e_elect = float(line.split()[-1])
                         break
                 elif mrci:
                     # First search for MRCI+Davidson energy
                     if '(Davidson, relaxed reference)' in line:
-                        e0 = float(line.split()[3])
+                        e_elect = float(line.split()[3])
                         logging.debug('Found MRCI+Davidson energy in molpro log file {0}, using this value'.format(
                             self.path))
                         break
                 elif not f12:
                     if 'Electronic Energy at 0' in line:
-                        e0 = float(line.split()[-2])
+                        e_elect = float(line.split()[-2])
                         break
                     if 'CCSD' in line and 'energy=' in line:
-                        e0 = float(line.split()[-1])
+                        e_elect = float(line.split()[-1])
                         break
-            if e0 is None and mrci:
+            if e_elect is None and mrci:
                 # No Davidson correction is given, search for MRCI energy
-                read_e0 = False
+                read_e_elect = False
                 for line in lines:
-                    if read_e0:
-                        e0 = float(line.split()[0])
+                    if read_e_elect:
+                        e_elect = float(line.split()[0])
                         logging.debug('Found MRCI energy in molpro log file {0}, using this value'
                                       ' (did NOT find MRCI+Davidson)'.format(self.path))
                         break
                     if all(w in line for w in ('MRCI', 'MULTI', 'HF-SCF')):
-                        read_e0 = True
-        logging.debug('Molpro energy found is {0} Hartree'.format(e0))
-        # multiply E0 by correct constants
-        if e0 is not None:
-            e0 *= constants.E_h * constants.Na
-            logging.debug('Molpro energy found is {0} J/mol'.format(e0))
-            return e0
+                        read_e_elect = True
+        logging.debug('Molpro energy found is {0} Hartree'.format(e_elect))
+        # multiply e_elect by correct constants
+        if e_elect is not None:
+            e_elect *= constants.E_h * constants.Na
+            logging.debug('Molpro energy found is {0} J/mol'.format(e_elect))
+            return e_elect
         else:
             raise Exception('Unable to find energy in Molpro log file {0}.'.format(self.path))
 

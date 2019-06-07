@@ -45,7 +45,6 @@ from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, Har
 from arkane.common import check_conformer_energy, get_element_mass
 from arkane.log import Log
 
-
 ################################################################################
 
 
@@ -65,9 +64,8 @@ class QChemLog(Log):
         Return the number of atoms in the molecular configuration used in
         the QChem output file.
         """
-
         Natoms = 0
-        # Open QChem log file for parsing
+
         with open(self.path, 'r') as f:
             line = f.readline()
             while line != '' and Natoms == 0:
@@ -90,7 +88,6 @@ class QChemLog(Log):
         are J/m^2. If no force constant matrix can be found in the log file,
         ``None`` is returned.
         """
-
         F = None
 
         Natoms = self.getNumberOfAtoms()
@@ -184,7 +181,7 @@ class QChemLog(Log):
         rot = []
         inertia = []
         unscaled_frequencies = []
-        E0 = 0.0
+        e0 = 0.0
         if opticalIsomers is None or symmetry is None:
             _opticalIsomers, _symmetry = self.get_optical_isomers_and_symmetry_number()
             if opticalIsomers is None:
@@ -269,16 +266,16 @@ class QChemLog(Log):
                     inertia = []
 
         modes = mmass + rot + freq
-        return Conformer(E0=(E0 * 0.001, "kJ/mol"), modes=modes, spinMultiplicity=spinMultiplicity,
+        return Conformer(E0=(e0 * 0.001, "kJ/mol"), modes=modes, spinMultiplicity=spinMultiplicity,
                          opticalIsomers=opticalIsomers), unscaled_frequencies
 
-    def loadEnergy(self, frequencyScaleFactor=1.):
+    def loadEnergy(self, zpe_scale_factor=1.):
         """
         Load the energy in J/mol from a QChem log file. Only the last energy
         in the file is returned. The zero-point energy is *not* included in
         the returned value.
         """
-        e0 = None
+        e_elect = None
         with open(self.path, 'r') as f:
             a = b = 0
             for line in f:
@@ -286,23 +283,23 @@ class QChemLog(Log):
                     a = float(line.split()[3]) * constants.E_h * constants.Na
                 if 'Total energy in the final basis set' in line:
                     b = float(line.split()[8]) * constants.E_h * constants.Na
-                e0 = a or b
-        if e0 is None:
+                e_elect = a or b
+        if e_elect is None:
             raise InputError('Unable to find energy in QChem output file.')
-        return e0
+        return e_elect
 
     def loadZeroPointEnergy(self):
         """
         Load the unscaled zero-point energy in J/mol from a QChem output file.
         """
-        ZPE = None
+        zpe = None
         with open(self.path, 'r') as f:
             for line in f:
                 if 'Zero point vibrational energy' in line:
-                    ZPE = float(line.split()[4]) * 4184  # QChem's ZPE is in kcal/mol
-                    logging.debug('ZPE is {}'.format(str(ZPE)))
-        if ZPE is not None:
-            return ZPE
+                    zpe = float(line.split()[4]) * 4184  # QChem's ZPE is in kcal/mol, convert to J/mol
+                    logging.debug('ZPE is {}'.format(str(zpe)))
+        if zpe is not None:
+            return zpe
         else:
             raise InputError('Unable to find zero-point energy in QChem output file.')
 
