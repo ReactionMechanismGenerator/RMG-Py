@@ -64,20 +64,17 @@ class MolproLog(Log):
         """
         n_atoms = 0
         # Open Molpro log file for parsing
-        f = open(self.path, 'r')
-        line = f.readline()
-        while line != '' and n_atoms == 0:
-            # Automatically determine the number of atoms
-            if 'ATOMIC COORDINATES' in line and n_atoms == 0:
-                for i in range(4):
-                    line = f.readline()
-                while 'Bond lengths' not in line and 'nuclear charge' not in line.lower():
-                    n_atoms += 1
-                    line = f.readline()
+        with open(self.path, 'r') as f:
             line = f.readline()
-        # Close file when finished
-        f.close()
-        # Return the result
+            while line != '' and n_atoms == 0:
+                # Automatically determine the number of atoms
+                if 'ATOMIC COORDINATES' in line and n_atoms == 0:
+                    for i in range(4):
+                        line = f.readline()
+                    while 'Bond lengths' not in line and 'nuclear charge' not in line.lower():
+                        n_atoms += 1
+                        line = f.readline()
+                line = f.readline()
 
         return n_atoms - 1
 
@@ -87,30 +84,27 @@ class MolproLog(Log):
         """
 
         fc = None
-
         n_atoms = self.getNumberOfAtoms()
         n_rows = n_atoms * 3
 
-        f = open(self.path, 'r')
-        line = f.readline()
-        while line != '':
-            # Read force constant matrix
-            if 'Force Constants (Second Derivatives of the Energy) in [a.u.]' in line:
-                fc = numpy.zeros((n_rows, n_rows), numpy.float64)
-                for i in range(int(math.ceil(n_rows / 5.0))):
-                    # Header row
-                    line = f.readline()
-                    # Matrix element rows
-                    for j in range(i*5, n_rows):
-                        data = f.readline().split()
-                        for k in range(len(data)-1):
-                            fc[j, i*5+k] = float(data[k+1].replace('D', 'E'))
-                            fc[i*5+k, j] = fc[j, i*5+k]
-                # Convert from atomic units (Hartree/Bohr_radius^2) to J/m^2
-                fc *= 4.35974417e-18 / 5.291772108e-11**2
+        with open(self.path, 'r') as f:
             line = f.readline()
-        # Close file when finished
-        f.close()
+            while line != '':
+                # Read force constant matrix
+                if 'Force Constants (Second Derivatives of the Energy) in [a.u.]' in line:
+                    fc = numpy.zeros((n_rows, n_rows), numpy.float64)
+                    for i in range(int(math.ceil(n_rows / 5.0))):
+                        # Header row
+                        line = f.readline()
+                        # Matrix element rows
+                        for j in range(i*5, n_rows):
+                            data = f.readline().split()
+                            for k in range(len(data)-1):
+                                fc[j, i*5+k] = float(data[k+1].replace('D', 'E'))
+                                fc[i*5+k, j] = fc[j, i*5+k]
+                    # Convert from atomic units (Hartree/Bohr_radius^2) to J/m^2
+                    fc *= 4.35974417e-18 / 5.291772108e-11**2
+                line = f.readline()
 
         return fc
 
@@ -123,41 +117,39 @@ class MolproLog(Log):
 
         symbol, coord, mass, number = [], [], [], []
 
-        f = open(self.path, 'r')
-        line = f.readline()
-        while line != '':
-            # Automatically determine the number of atoms
-            if 'Current geometry' in line:
-                symbol, coord = [], []
-                while 'ENERGY' not in line:
-                    line = f.readline()
-                line = f.readline()
-                while line != '\n':
-                    data = line.split()
-                    symbol.append(str(data[0]))
-                    coord.append([float(data[1]), float(data[2]), float(data[3])])
-                    line = f.readline()
-                line = f.readline()
+        with open(self.path, 'r') as f:
             line = f.readline()
-        # Close file when finished
-        f.close()
+            while line != '':
+                # Automatically determine the number of atoms
+                if 'Current geometry' in line:
+                    symbol, coord = [], []
+                    while 'ENERGY' not in line:
+                        line = f.readline()
+                    line = f.readline()
+                    while line != '\n':
+                        data = line.split()
+                        symbol.append(str(data[0]))
+                        coord.append([float(data[1]), float(data[2]), float(data[3])])
+                        line = f.readline()
+                    line = f.readline()
+                line = f.readline()
 
         # If no optimized coordinates were found, uses the input geometry
         # (for example if reading the geometry from a frequency file)
         if not coord:
-            f = open(self.path, 'r')
-            line = f.readline()
-            while line != '':
-                if 'atomic coordinates' in line.lower():
-                    symbol, coord = [], []
-                    for i in range(4):
-                        line = f.readline()
-                    while line != '\n':
-                        data = line.split()
-                        symbol.append(str(data[1]))
-                        coord.append([float(data[3]), float(data[4]), float(data[5])])
-                        line = f.readline()
+            with open(self.path, 'r') as f:
                 line = f.readline()
+                while line != '':
+                    if 'atomic coordinates' in line.lower():
+                        symbol, coord = [], []
+                        for i in range(4):
+                            line = f.readline()
+                        while line != '\n':
+                            data = line.split()
+                            symbol.append(str(data[1]))
+                            coord.append([float(data[3]), float(data[4]), float(data[5])])
+                            line = f.readline()
+                    line = f.readline()
 
         # Assign appropriate mass to each atom in the molecule
         for atom1 in symbol:
@@ -187,92 +179,90 @@ class MolproLog(Log):
                 opticalIsomers = _opticalIsomers
             if symmetry is None:
                 symmetry = _symmetry
-        f = open(self.path, 'r')
-        line = f.readline()
-        while line != '':
+        with open(self.path, 'r') as f:
+            line = f.readline()
+            while line != '':
 
-            # Read the spin multiplicity if not explicitly given
-            if spinMultiplicity == 0 and 'spin' in line:
-                splits = line.replace('=', ' ').replace(',', ' ').split(' ')
-                for i, s in enumerate(splits):
-                    if 'spin' in s:
-                        spinMultiplicity = int(splits[i+1]) + 1
+                # Read the spin multiplicity if not explicitly given
+                if spinMultiplicity == 0 and 'spin' in line:
+                    splits = line.replace('=', ' ').replace(',', ' ').split(' ')
+                    for i, s in enumerate(splits):
+                        if 'spin' in s:
+                            spinMultiplicity = int(splits[i+1]) + 1
+                            logging.debug(
+                                'Conformer {0} is assigned a spin multiplicity of {1}'.format(label, spinMultiplicity))
+                            break
+                if spinMultiplicity == 0 and 'SPIN SYMMETRY' in line:
+                    spin_symmetry = line.split()[-1]
+                    if spin_symmetry == 'Singlet':
+                        spinMultiplicity = 1
+                    elif spin_symmetry == 'Doublet':
+                        spinMultiplicity = 2
+                    elif spin_symmetry == 'Triplet':
+                        spinMultiplicity = 3
+                    elif spin_symmetry == 'Quartet':
+                        spinMultiplicity = 4
+                    elif spin_symmetry == 'Quintet':
+                        spinMultiplicity = 5
+                    elif spin_symmetry == 'Sextet':
+                        spinMultiplicity = 6
+                    if spinMultiplicity:
                         logging.debug(
                             'Conformer {0} is assigned a spin multiplicity of {1}'.format(label, spinMultiplicity))
                         break
-            if spinMultiplicity == 0 and 'SPIN SYMMETRY' in line:
-                spin_symmetry = line.split()[-1]
-                if spin_symmetry == 'Singlet':
-                    spinMultiplicity = 1
-                elif spin_symmetry == 'Doublet':
-                    spinMultiplicity = 2
-                elif spin_symmetry == 'Triplet':
-                    spinMultiplicity = 3
-                elif spin_symmetry == 'Quartet':
-                    spinMultiplicity = 4
-                elif spin_symmetry == 'Quintet':
-                    spinMultiplicity = 5
-                elif spin_symmetry == 'Sextet':
-                    spinMultiplicity = 6
-                if spinMultiplicity:
-                    logging.debug(
-                        'Conformer {0} is assigned a spin multiplicity of {1}'.format(label, spinMultiplicity))
-                    break
 
-            # The data we want is in the Thermochemistry section of the output
-            if 'THERMODYNAMICAL' in line:
-                modes = []
-                line = f.readline()
-                while line != '':
-
-                    # This marks the end of the thermochemistry section
-                    if '*************************************************' in line:
-                        break
-
-                    # Read molecular mass for external translational modes
-                    elif 'Molecular Mass:' in line:
-                        mass = float(line.split()[2])
-                        translation = IdealGasTranslation(mass=(mass, "amu"))
-                        modes.append(translation)
-
-                    # Read moments of inertia for external rotational modes
-                    elif 'Rotational Constants' in line and line.split()[-1] == '[GHz]':
-                        inertia = [float(d) for d in line.split()[-4:-1]]
-                        for i in range(3):
-                            inertia[i] = constants.h / (8 * constants.pi * constants.pi * inertia[i] * 1e9)\
-                                         * constants.Na * 1e23
-                        rotation = NonlinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
-                        modes.append(rotation)
-
-                    elif 'Rotational Constant' in line and line.split()[3] == '[GHz]':
-                        inertia = float(line.split()[2])
-                        inertia = constants.h / (8 * constants.pi * constants.pi * inertia * 1e9) * constants.Na * 1e23
-                        rotation = LinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
-                        modes.append(rotation)
-
-                    # Read vibrational modes
-                    elif 'Vibrational Temperatures' in line:
-                        frequencies = []
-                        frequencies.extend([float(d) for d in line.split()[3:]])
-                        line = f.readline()
-                        while line.strip() != '':
-                            frequencies.extend([float(d) for d in line.split()])
-                            line = f.readline()
-                        # Convert from K to cm^-1
-                        if len(frequencies) > 0:
-                            frequencies = [freq * 0.695039 for freq in frequencies]  # kB = 0.695039 cm^-1/K
-                            unscaled_frequencies = frequencies
-                            vibration = HarmonicOscillator(frequencies=(frequencies, "cm^-1"))
-                            modes.append(vibration)
-
-                    # Read the next line in the file
+                # The data we want is in the Thermochemistry section of the output
+                if 'THERMODYNAMICAL' in line:
+                    modes = []
                     line = f.readline()
+                    while line != '':
 
-            # Read the next line in the file
-            line = f.readline()
+                        # This marks the end of the thermochemistry section
+                        if '*************************************************' in line:
+                            break
 
-        # Close file when finished
-        f.close()
+                        # Read molecular mass for external translational modes
+                        elif 'Molecular Mass:' in line:
+                            mass = float(line.split()[2])
+                            translation = IdealGasTranslation(mass=(mass, "amu"))
+                            modes.append(translation)
+
+                        # Read moments of inertia for external rotational modes
+                        elif 'Rotational Constants' in line and line.split()[-1] == '[GHz]':
+                            inertia = [float(d) for d in line.split()[-4:-1]]
+                            for i in range(3):
+                                inertia[i] = constants.h / (8 * constants.pi * constants.pi * inertia[i] * 1e9)\
+                                             * constants.Na * 1e23
+                            rotation = NonlinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
+                            modes.append(rotation)
+
+                        elif 'Rotational Constant' in line and line.split()[3] == '[GHz]':
+                            inertia = float(line.split()[2])
+                            inertia = constants.h / (8 * constants.pi * constants.pi * inertia * 1e9) * constants.Na * 1e23
+                            rotation = LinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
+                            modes.append(rotation)
+
+                        # Read vibrational modes
+                        elif 'Vibrational Temperatures' in line:
+                            frequencies = []
+                            frequencies.extend([float(d) for d in line.split()[3:]])
+                            line = f.readline()
+                            while line.strip() != '':
+                                frequencies.extend([float(d) for d in line.split()])
+                                line = f.readline()
+                            # Convert from K to cm^-1
+                            if len(frequencies) > 0:
+                                frequencies = [freq * 0.695039 for freq in frequencies]  # kB = 0.695039 cm^-1/K
+                                unscaled_frequencies = frequencies
+                                vibration = HarmonicOscillator(frequencies=(frequencies, "cm^-1"))
+                                modes.append(vibration)
+
+                        # Read the next line in the file
+                        line = f.readline()
+
+                # Read the next line in the file
+                line = f.readline()
+
         return Conformer(E0=(e0 * 0.001, "kJ/mol"), modes=modes, spinMultiplicity=spinMultiplicity,
                          opticalIsomers=opticalIsomers), unscaled_frequencies
 
@@ -361,21 +351,18 @@ class MolproLog(Log):
 
         zpe = None
 
-        f = open(self.path, 'r')
-        line = f.readline()
-        while line != '':
-            # Do NOT read the ZPE from the "E(ZPE)=" line, as this is the scaled version!
-            # We will read in the unscaled ZPE and later multiply the scaling factor
-            # from the input file
-            if 'Electronic Energy at 0 [K]:' in line:
-                electronic_energy = float(line.split()[5])
-                line = f.readline()
-                ee_plus_zpe = float(line.split()[5])
-                zpe = (ee_plus_zpe - electronic_energy) * constants.E_h * constants.Na
+        with open(self.path, 'r') as f:
             line = f.readline()
-
-        # Close file when finished
-        f.close()
+            while line != '':
+                # Do NOT read the ZPE from the "E(ZPE)=" line, as this is the scaled version!
+                # We will read in the unscaled ZPE and later multiply the scaling factor
+                # from the input file
+                if 'Electronic Energy at 0 [K]:' in line:
+                    electronic_energy = float(line.split()[5])
+                    line = f.readline()
+                    ee_plus_zpe = float(line.split()[5])
+                    zpe = (ee_plus_zpe - electronic_energy) * constants.E_h * constants.Na
+                line = f.readline()
 
         if zpe is not None:
             return zpe
@@ -388,16 +375,16 @@ class MolproLog(Log):
         Return the negative frequency from a transition state frequency calculation in cm^-1.
         """
         frequency = None
-        f = open(self.path, 'r')
-        line = f.readline()
-        while line != '':
-            # Read vibrational frequencies
-            if 'Normal Modes of imaginary frequencies' in line:
-                for i in range(3):
-                    line = f.readline()
-                frequency = line.split()[2]
+        with open(self.path, 'r') as f:
             line = f.readline()
-        f.close()
+            while line != '':
+                # Read vibrational frequencies
+                if 'Normal Modes of imaginary frequencies' in line:
+                    for i in range(3):
+                        line = f.readline()
+                    frequency = line.split()[2]
+                line = f.readline()
+
         if frequency is None:
             raise Exception('Unable to find imaginary frequency in Molpro output file {0}'.format(self.path))
         negativefrequency = -float(frequency)

@@ -68,20 +68,18 @@ class QChemLog(Log):
 
         Natoms = 0
         # Open QChem log file for parsing
-        f = open(self.path, 'r')
-        line = f.readline()
-        while line != '' and Natoms == 0:
-            # Automatically determine the number of atoms
-            if 'Standard Nuclear Orientation' in line and Natoms == 0:
-                for i in range(3):
-                    line = f.readline()
-                while '----------------------------------------------------' not in line:
-                    Natoms += 1
-                    line = f.readline()
+        with open(self.path, 'r') as f:
             line = f.readline()
-        # Close file when finished
-        f.close()
-        # Return the result
+            while line != '' and Natoms == 0:
+                # Automatically determine the number of atoms
+                if 'Standard Nuclear Orientation' in line and Natoms == 0:
+                    for i in range(3):
+                        line = f.readline()
+                    while '----------------------------------------------------' not in line:
+                        Natoms += 1
+                        line = f.readline()
+                line = f.readline()
+
         return Natoms
 
     def loadForceConstantMatrix(self):
@@ -97,26 +95,24 @@ class QChemLog(Log):
 
         Natoms = self.getNumberOfAtoms()
         Nrows = Natoms * 3
-        f = open(self.path, 'r')
-        line = f.readline()
-        while line != '':
-            # Read force constant matrix
-            if 'Final Hessian.' in line or 'Hessian of the SCF Energy' in line:
-                F = numpy.zeros((Nrows, Nrows), numpy.float64)
-                for i in range(int(math.ceil(Nrows / 6.0))):
-                    # Header row
-                    line = f.readline()
-                    # Matrix element rows
-                    for j in range(Nrows):  # for j in range(i*6, Nrows):
-                        data = f.readline().split()
-                        for k in range(len(data) - 1):
-                            F[j, i * 6 + k] = float(data[k + 1])
-                            # F[i*5+k,j] = F[j,i*5+k]
-                # Convert from atomic units (Hartree/Bohr_radius^2) to J/m^2
-                F *= 4.35974417e-18 / 5.291772108e-11 ** 2
+        with open(self.path, 'r') as f:
             line = f.readline()
-        # Close file when finished
-        f.close()
+            while line != '':
+                # Read force constant matrix
+                if 'Final Hessian.' in line or 'Hessian of the SCF Energy' in line:
+                    F = numpy.zeros((Nrows, Nrows), numpy.float64)
+                    for i in range(int(math.ceil(Nrows / 6.0))):
+                        # Header row
+                        line = f.readline()
+                        # Matrix element rows
+                        for j in range(Nrows):  # for j in range(i*6, Nrows):
+                            data = f.readline().split()
+                            for k in range(len(data) - 1):
+                                F[j, i * 6 + k] = float(data[k + 1])
+                                # F[i*5+k,j] = F[j,i*5+k]
+                    # Convert from atomic units (Hartree/Bohr_radius^2) to J/m^2
+                    F *= 4.35974417e-18 / 5.291772108e-11 ** 2
+                line = f.readline()
 
         return F
 
@@ -195,85 +191,83 @@ class QChemLog(Log):
                 opticalIsomers = _opticalIsomers
             if symmetry is None:
                 symmetry = _symmetry
-        f = open(self.path, 'r')
-        line = f.readline()
-        while line != '':
-            # Read spin multiplicity if not explicitly given
-            if '$molecule' in line and spinMultiplicity == 0:
-                line = f.readline()
-                if len(line.split()) == 2:
-                    spinMultiplicity = int(float(line.split()[1]))
-                    logging.debug(
-                        'Conformer {0} is assigned a spin multiplicity of {1}'.format(label, spinMultiplicity))
-            # The rest of the data we want is in the Thermochemistry section of the output
-            elif 'VIBRATIONAL ANALYSIS' in line:
-                modes = []
-                line = f.readline()
-                while line != '':
-
-                    # This marks the end of the thermochemistry section
-                    if 'Thank you very much for using Q-Chem.' in line:
-                        break
-
-                    # Read vibrational modes
-                    elif 'VIBRATIONAL FREQUENCIES (CM**-1)' in line:
-                        frequencies = []
-                        while 'STANDARD THERMODYNAMIC QUANTITIES AT' not in line:
-                            if ' Frequency:' in line:
-                                if len(line.split()) == 4:
-                                    frequencies.extend([float(d) for d in line.split()[-3:]])
-                                elif len(line.split()) == 3:
-                                    frequencies.extend([float(d) for d in line.split()[-2:]])
-                                elif len(line.split()) == 2:
-                                    frequencies.extend([float(d) for d in line.split()[-1:]])
-                            line = f.readline()
-                        line = f.readline()
-                        # If there is an imaginary frequency, remove it
-                        if frequencies[0] < 0.0:
-                            frequencies = frequencies[1:]
-
-                        unscaled_frequencies = frequencies
-                        vibration = HarmonicOscillator(frequencies=(frequencies, "cm^-1"))
-                        # modes.append(vibration)
-                        freq.append(vibration)
-                    # Read molecular mass for external translational modes
-                    elif 'Molecular Mass:' in line:
-                        mass = float(line.split()[2])
-                        translation = IdealGasTranslation(mass=(mass, "amu"))
-                        # modes.append(translation)
-                        mmass.append(translation)
-
-                    # Read moments of inertia for external rotational modes, given in atomic units
-                    elif 'Eigenvalues --' in line:
-                        inertia = [float(d) for d in line.split()[-3:]]
-
-                    # Read the next line in the file
-                    line = f.readline()
-
-            # Read the next line in the file
+        with open(self.path, 'r') as f:
             line = f.readline()
+            while line != '':
+                # Read spin multiplicity if not explicitly given
+                if '$molecule' in line and spinMultiplicity == 0:
+                    line = f.readline()
+                    if len(line.split()) == 2:
+                        spinMultiplicity = int(float(line.split()[1]))
+                        logging.debug(
+                            'Conformer {0} is assigned a spin multiplicity of {1}'.format(label, spinMultiplicity))
+                # The rest of the data we want is in the Thermochemistry section of the output
+                elif 'VIBRATIONAL ANALYSIS' in line:
+                    modes = []
+                    line = f.readline()
+                    while line != '':
 
-            if len(inertia):
-                if inertia[0] == 0.0:
-                    # If the first eigenvalue is 0, the rotor is linear
-                    inertia.remove(0.0)
-                    logging.debug('inertia is {}'.format(str(inertia)))
-                    for i in range(2):
-                        inertia[i] *= (constants.a0 / 1e-10) ** 2
-                    inertia = numpy.sqrt(inertia[0] * inertia[1])
-                    rotation = LinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
-                    rot.append(rotation)
-                else:
-                    for i in range(3):
-                        inertia[i] *= (constants.a0 / 1e-10) ** 2
-                        rotation = NonlinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
-                        # modes.append(rotation)
-                    rot.append(rotation)
+                        # This marks the end of the thermochemistry section
+                        if 'Thank you very much for using Q-Chem.' in line:
+                            break
 
-                inertia = []
+                        # Read vibrational modes
+                        elif 'VIBRATIONAL FREQUENCIES (CM**-1)' in line:
+                            frequencies = []
+                            while 'STANDARD THERMODYNAMIC QUANTITIES AT' not in line:
+                                if ' Frequency:' in line:
+                                    if len(line.split()) == 4:
+                                        frequencies.extend([float(d) for d in line.split()[-3:]])
+                                    elif len(line.split()) == 3:
+                                        frequencies.extend([float(d) for d in line.split()[-2:]])
+                                    elif len(line.split()) == 2:
+                                        frequencies.extend([float(d) for d in line.split()[-1:]])
+                                line = f.readline()
+                            line = f.readline()
+                            # If there is an imaginary frequency, remove it
+                            if frequencies[0] < 0.0:
+                                frequencies = frequencies[1:]
 
-        # Close file when finished
-        f.close()
+                            unscaled_frequencies = frequencies
+                            vibration = HarmonicOscillator(frequencies=(frequencies, "cm^-1"))
+                            # modes.append(vibration)
+                            freq.append(vibration)
+                        # Read molecular mass for external translational modes
+                        elif 'Molecular Mass:' in line:
+                            mass = float(line.split()[2])
+                            translation = IdealGasTranslation(mass=(mass, "amu"))
+                            # modes.append(translation)
+                            mmass.append(translation)
+
+                        # Read moments of inertia for external rotational modes, given in atomic units
+                        elif 'Eigenvalues --' in line:
+                            inertia = [float(d) for d in line.split()[-3:]]
+
+                        # Read the next line in the file
+                        line = f.readline()
+
+                # Read the next line in the file
+                line = f.readline()
+
+                if len(inertia):
+                    if inertia[0] == 0.0:
+                        # If the first eigenvalue is 0, the rotor is linear
+                        inertia.remove(0.0)
+                        logging.debug('inertia is {}'.format(str(inertia)))
+                        for i in range(2):
+                            inertia[i] *= (constants.a0 / 1e-10) ** 2
+                        inertia = numpy.sqrt(inertia[0] * inertia[1])
+                        rotation = LinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
+                        rot.append(rotation)
+                    else:
+                        for i in range(3):
+                            inertia[i] *= (constants.a0 / 1e-10) ** 2
+                            rotation = NonlinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
+                            # modes.append(rotation)
+                        rot.append(rotation)
+
+                    inertia = []
+
         modes = mmass + rot + freq
         return Conformer(E0=(E0 * 0.001, "kJ/mol"), modes=modes, spinMultiplicity=spinMultiplicity,
                          opticalIsomers=opticalIsomers), unscaled_frequencies
