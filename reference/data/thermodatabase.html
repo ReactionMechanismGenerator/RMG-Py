@@ -350,16 +350,21 @@ points to the top-level folder of the thermo libraries.</p>
 
 <dl class="method">
 <dt id="rmgpy.data.thermo.ThermoDatabase.setDeltaAtomicAdsorptionEnergies">
-<code class="descname">setDeltaAtomicAdsorptionEnergies</code><span class="sig-paren">(</span><em>bindingEnergies</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.setDeltaAtomicAdsorptionEnergies" title="Permalink to this definition">¶</a></dt>
+<code class="descname">setDeltaAtomicAdsorptionEnergies</code><span class="sig-paren">(</span><em>bindingEnergies=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.thermo.ThermoDatabase.setDeltaAtomicAdsorptionEnergies" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets and stores the change in atomic binding energy between
 the desired and the Pt(111) default.</p>
+<p>This depends on the two metal surfaces: the reference one used in
+the database of adsorption energies, and the desired surface.</p>
+<p>If bindingEnergies are not provided, resets the values to those
+of the Pt(111) default.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>bindingEnergies</strong> – the required binding energies</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>bindingEnergies</strong> (<em>dict</em><em>, </em><em>optional</em>) – the desired binding energies with
+elements as keys and binding energy/unit tuples as values</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">None (stores result in self.deltaAtomicAdsorptionEnergy)</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">None, stores result in self.deltaAtomicAdsorptionEnergy</td>
 </tr>
 </tbody>
 </table>
