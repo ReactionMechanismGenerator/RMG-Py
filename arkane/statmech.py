@@ -403,11 +403,15 @@ class StatMechJob(object):
         conformer.number = number
         conformer.mass = (mass, "amu")
 
+        # The 1.014 factor represents the relationship between the harmonic frequencies scaling factor
+        # and the zero point energy scaling factor, see https://pubs.acs.org/doi/10.1021/ct100326h Section 3.1.3.
+        zpe_scale_factor = self.frequencyScaleFactor / 1.014
+
         logging.debug('    Reading energy...')
         if E0_withZPE is None:
             # The E0 that is read from the log file is without the ZPE and corresponds to E_elec
             if E0 is None:
-                E0 = energyLog.loadEnergy(self.frequencyScaleFactor)
+                E0 = energyLog.loadEnergy(zpe_scale_factor)  # in J/mol
             else:
                 E0 = E0 * constants.E_h * constants.Na  # Hartree/particle to J/mol
             if not self.applyAtomEnergyCorrections:
@@ -419,14 +423,10 @@ class StatMechJob(object):
                                         atomEnergies=self.atomEnergies,
                                         applyAtomEnergyCorrections=self.applyAtomEnergyCorrections,
                                         applyBondEnergyCorrections=self.applyBondEnergyCorrections)
-            if len(number) > 1:
-                ZPE = statmechLog.loadZeroPointEnergy() * self.frequencyScaleFactor
-            else:
-                # Monoatomic species don't have frequencies
-                ZPE = 0.0
-            logging.debug('Corrected minimum energy is {0} J/mol'.format(E0))
-            # The E0_withZPE at this stage contains the ZPE
+            # Get ZPE only for polyatomic species (monoatomic species don't have frequencies, so ZPE = 0)
+            ZPE = statmechLog.loadZeroPointEnergy() * zpe_scale_factor if len(number) > 1 else 0
             E0_withZPE = E0 + ZPE
+            logging.debug('Scaled zero point energy (ZPE) is {0} J/mol'.format(ZPE))
 
             logging.debug('         Scaling factor used = {0:g}'.format(self.frequencyScaleFactor))
             logging.debug('         ZPE (0 K) = {0:g} kcal/mol'.format(ZPE / 4184.))
