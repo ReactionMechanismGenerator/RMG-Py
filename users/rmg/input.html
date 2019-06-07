@@ -747,8 +747,78 @@ the line</p>
 of atoms (16 in the above example).</p>
 </div>
 </div>
+<div class="section" id="uncertainty-analysis">
+<span id="uncertaintyanalysis"></span><h2>4.10. Uncertainty Analysis<a class="headerlink" href="#uncertainty-analysis" title="Permalink to this headline">¶</a></h2>
+<p>It is possible to request automatic uncertainty analysis following the convergence of an RMG simulation by including
+an uncertainty options block in the input file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">uncertainty</span><span class="p">(</span>
+    <span class="n">localAnalysis</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">globalAnalysis</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">uncorrelated</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">correlated</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">localNumber</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">globalNumber</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="n">terminationTime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">pceRunTime</span><span class="o">=</span><span class="mi">1800</span><span class="p">,</span>
+    <span class="n">logx</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>RMG can perform local uncertainty analysis using first-order sensitivity coefficients output by the native RMG solver.
+This is enabled by setting <code class="docutils literal notranslate"><span class="pre">localAnalysis=True</span></code>. Performing local uncertainty analysis requires suitable settings in
+the reactor block (see <a class="reference internal" href="#reactionsystem"><span class="std std-ref">Reaction System</span></a>). At minimum, the output species to perform sensitivity analysis on must
+be specified, via the <code class="docutils literal notranslate"><span class="pre">sensitivity</span></code> argument. RMG will then perform local uncertainty analysis on the same species.
+Species and reactions with the largest sensitivity indices will be reported in the log file and output figures.
+The number of parameters reported can be adjusted using <code class="docutils literal notranslate"><span class="pre">localNumber</span></code>.</p>
+<p>RMG can also perform global uncertainty analysis, implemented using Cantera <a class="reference internal" href="#cantera" id="id5">[Cantera]</a> and the MIT Uncertainty
+Quantification (MUQ) <a class="reference internal" href="#muq" id="id6">[MUQ]</a> library. This is enabled by setting <code class="docutils literal notranslate"><span class="pre">globalAnalysis=True</span></code>. Note that local analysis
+is a required prerequisite of running the global analysis (at least for this semi-automatic approach), so
+<code class="docutils literal notranslate"><span class="pre">localAnalysis</span></code> will be enabled regardless of the input file setting. The analysis is performed by allowing the
+input parameters with the largest sensitivity indices (as determined from the local uncertainty analysis) to vary
+while performing reactor simulations using Cantera. MUQ is used to fit a Polynomial Chaos Expansion (PCE) to the
+resulting output surface. The number of input parameters chosen can be adjusted using <code class="docutils literal notranslate"><span class="pre">globalNumber</span></code>.
+Note that this number applies independently to thermo and rate parameters and output species.
+For example <code class="docutils literal notranslate"><span class="pre">globalNumber=5</span></code> for analysis on a single output species will result in 10 parameters being varied, while
+having two output species could result in up to 20 parameters being varied, assuming no overlap in the sensitive input
+parameters for each output.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">uncorrelated</span></code> and <code class="docutils literal notranslate"><span class="pre">correlated</span></code> options refer to two approaches for uncertainty analysis. Uncorrelated means
+that all input parameters are considered to be independent, each with their own uncertainty bounds. Thus, the output
+uncertainty distribution is determined on the basis that every input parameter could vary within the full range of
+its uncertainty bounds. Correlated means that inherent relationships between parameters (such as rate rules for kinetics
+or group additivity values for thermochemistry) are accounted for, which reduces the uncertainty space of the input
+parameters.</p>
+<p>Finally, there are a few miscellaneous options for global uncertainty analysis. The <code class="docutils literal notranslate"><span class="pre">terminationTime</span></code> applies for the
+reactor simulation. It is only necessary if termination time is not specified in the reactor settings (i.e. only other
+termination criteria are used). The <code class="docutils literal notranslate"><span class="pre">pceRunTime</span></code> sets the time limit for fitting the PCE to the output surface.
+Longer run times allow more simulations to be performed, leading to more accurate results. The <code class="docutils literal notranslate"><span class="pre">logx</span></code> option toggles
+the output parameter space between mole fractions and log mole fractions. Results in mole fraction space are more
+physically meaningful, while results in log mole fraction space can be directly compared against local uncertainty
+results.</p>
+<p><strong>Important Note:</strong> The current implementation of uncertainty analysis assigns values for input parameter
+uncertainties based on the estimation method used by RMG. Actual uncertainties associated with the original data sources
+are not used. Thus, the output uncertainties reported by these analyses should be viewed with this in mind.</p>
+<table class="docutils citation" frame="void" id="cantera" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id5">[Cantera]</a></td><td>Goodwin, D.G.; Moffat, H.K.; Speth, R.L. Cantera: An object-oriented software toolkit for
+chemical kinetics, thermodynamics, and transport processes; <a class="reference external" href="http://www.cantera.org">http://www.cantera.org</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="muq" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id6">[MUQ]</a></td><td>Conrad, P.R.; Parno, M.D.; Davis, A.D.; Marzouk, Y.M. MIT Uncertainty Quantification Library (MUQ); <a class="reference external" href="http://muq.mit.edu/">http://muq.mit.edu/</a></td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="gao2016" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[Gao2016]</td><td>Gao, C. W.; Ph.D. Thesis. 2016.</td></tr>
+</tbody>
+</table>
+</div>
 <div class="section" id="miscellaneous-options">
-<span id="miscellaneousoptions"></span><h2>4.10. Miscellaneous Options<a class="headerlink" href="#miscellaneous-options" title="Permalink to this headline">¶</a></h2>
+<span id="miscellaneousoptions"></span><h2>4.11. Miscellaneous Options<a class="headerlink" href="#miscellaneous-options" title="Permalink to this headline">¶</a></h2>
 <p>Miscellaneous options:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">options</span><span class="p">(</span>
     <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Seed&#39;</span><span class="p">,</span>
@@ -781,7 +851,7 @@ HTML file for your model containing all the species and reactions.  Turning this
 <p>Setting <code class="docutils literal notranslate"><span class="pre">trimolecularProductReversible</span></code> to <code class="docutils literal notranslate"><span class="pre">False</span></code> will not allow families with three products to react in the reverse direction. Default is <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
 </div>
 <div class="section" id="species-constraints">
-<h2>4.11. Species Constraints<a class="headerlink" href="#species-constraints" title="Permalink to this headline">¶</a></h2>
+<h2>4.12. Species Constraints<a class="headerlink" href="#species-constraints" title="Permalink to this headline">¶</a></h2>
 <p>RMG can generate mechanisms with a number of optional species constraints,
 such as total number of carbon atoms or electrons per species. These are applied to
 all of RMG’s reaction families.</p>
@@ -811,7 +881,7 @@ forbidden groups.</p>
 <p>By default, the <code class="docutils literal notranslate"><span class="pre">allowSingletO2</span></code> flag is set to <code class="docutils literal notranslate"><span class="pre">False</span></code>.  See <a class="reference internal" href="species.html#representing-oxygen"><span class="std std-ref">Representing Oxygen</span></a> for more information.</p>
 </div>
 <div class="section" id="staging">
-<h2>4.12. Staging<a class="headerlink" href="#staging" title="Permalink to this headline">¶</a></h2>
+<h2>4.13. Staging<a class="headerlink" href="#staging" title="Permalink to this headline">¶</a></h2>
 <p>It is now possible to concatenate different model and simulator blocks into the same run in stages.  Any given stage will terminate when the RMG run terminates and then the current group of model and simulator parameters will be switched out with the next group and the run will continue until that stage terminates.  Once the last stage terminates the run ends normally.  This is currently enabled only for the model and simulator blocks.</p>
 <p>There must be the same number of each of these blocks (although only having one simulator block and many model blocks is enabled as well) and RMG will enter each stage these define in the order they were put in the input file.</p>
 <p>To enable easier manipulation of staging a new parameter in the model block was developed maxNumSpecies that is the number of core species at which that stage (or if it is the last stage the entire model generation process) will terminate.</p>
@@ -893,9 +963,10 @@ forbidden groups.</p>
 <li><a class="reference internal" href="#maximum-size-of-adduct-for-which-pressure-dependence-kinetics-be-generated">4.9.5. Maximum size of adduct for which pressure dependence kinetics be generated</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#miscellaneous-options">4.10. Miscellaneous Options</a></li>
-<li><a class="reference internal" href="#species-constraints">4.11. Species Constraints</a></li>
-<li><a class="reference internal" href="#staging">4.12. Staging</a></li>
+<li><a class="reference internal" href="#uncertainty-analysis">4.10. Uncertainty Analysis</a></li>
+<li><a class="reference internal" href="#miscellaneous-options">4.11. Miscellaneous Options</a></li>
+<li><a class="reference internal" href="#species-constraints">4.12. Species Constraints</a></li>
+<li><a class="reference internal" href="#staging">4.13. Staging</a></li>
 </ul>
 </li>
 </ul>
