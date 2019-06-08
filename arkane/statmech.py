@@ -365,12 +365,19 @@ class StatMechJob(object):
                                                                     spinMultiplicity=spinMultiplicity,
                                                                     opticalIsomers=opticalIsomers,
                                                                     label=self.species.label)
+        translational_mode_exists = False
         for mode in conformer.modes:
             if isinstance(mode, (LinearRotor, NonlinearRotor)):
                 self.supporting_info.append(mode)
                 break
+            if isinstance(mode, (Translation, IdealGasTranslation)):
+                translational_mode_exists = True
         if unscaled_frequencies:
             self.supporting_info.append(unscaled_frequencies)
+
+        if not translational_mode_exists:
+            # Sometimes the translational mode is not appended to modes for monoatomic species
+            conformer.modes.append(IdealGasTranslation(mass=self.species.molecularWeight))
 
         if conformer.spinMultiplicity == 0:
             raise ValueError("Could not read spin multiplicity from log file {0},\n"
