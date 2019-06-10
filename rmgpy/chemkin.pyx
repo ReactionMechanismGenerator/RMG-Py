@@ -1417,13 +1417,10 @@ def get_species_identifier(species):
         # No index present -- probably not in RMG job
         # In this case just return the label (if the right size)
         if len(label) > 0 and not re.search(r'[^A-Za-z0-9\-_,\(\)\*#]+', label):
-            if len(label) <= 10:
-                return label
-            elif len(label) <= 15:
-                #logging.warning('Species label {0} is longer than 10 characters and may exceed chemkin string limit'.format(label))
+            if len(label) <= 16:
                 return label
             else:
-                logging.warning('Species label is longer than 15 characters and will break CHEMKIN 2.0')
+                logging.warning('Species label is longer than 16 characters and will break CHEMKIN 2.0')
                 return label
         else:
             # try the chemical formula if the species label is not present
@@ -1439,14 +1436,14 @@ def get_species_identifier(species):
         # The label can only contain alphanumeric characters, and -()*#_,
         if len(label) > 0 and species.index >= 0 and not re.search(r'[^A-Za-z0-9\-_,\(\)\*#]+', label):
             name = '{0}({1:d})'.format(label, species.index)
-            if len(name) <= 10:
+            if len(name) <= 16:
                 return name
 
         # Next try the chemical formula
         if len(species.molecule) > 0:
             # Try the chemical formula
             name = '{0}({1:d})'.format(species.molecule[0].get_formula(), species.index)
-            if len(name) <= 10:
+            if len(name) <= 16:
                 if 'obs' in label:
                     # For MBSampledReactor, keep observed species tag
                     return name + '_obs'
@@ -1460,7 +1457,7 @@ def get_species_identifier(species):
                 name = 'SX({0:d})'.format(species.index)
             else:
                 name = 'S({0:d})'.format(species.index)
-            if len(name) <= 10:
+            if len(name) <= 16:
                 if 'obs' in label:
                     # For MBSampledReactor, keep observed species tag
                     return name + '_obs'
@@ -1639,14 +1636,14 @@ def write_reaction_string(reaction, java_library=False, use_label=False):
         else:
             reaction_string += ' + '.join([get_species_identifier(product) for product in reaction.products])
         reaction_string += third_body
-
     if len(reaction_string) > 52:
         logging.warning("Chemkin reaction string {0!r} is too long for Chemkin 2!".format(reaction_string))
+
     return reaction_string
 
 ################################################################################
 
-def writeKineticsEntry(reaction, species_list, verbose=True, java_library=False, commented=False, use_label=False):
+def write_kinetics_entry(reaction, species_list, verbose=True, java_library=False, commented=False, use_label=False):
     """
     Return a string representation of the reaction as used in a Chemkin
     file. Use `verbose = True` to turn on kinetics comments.
