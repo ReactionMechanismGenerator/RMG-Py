@@ -29,112 +29,74 @@
 ###############################################################################
 
 """
-This script enables the automatic merging of two or more Chemkin files (and
-associated species dictionaries) into a single unified Chemkin file. Simply
-pass the paths of the Chemkin files and species dictionaries on the 
-command-line, e.g.
+This module contains a function for merging two or more Chemkin files (and
+associated species dictionaries) into a single unified Chemkin file.
 
-    $ python mergeModels.py --model1 /path/to/chem1.inp /path/to/species_dictionary1.txt --model2 /path/to/chem2.inp /path/to/species_dictionary2.txt
-
-The resulting merged files are placed in ``chem.inp`` and
-``species_dictionary.txt`` in the execution directory.
+Use the RMG-Py/scripts/mergeModels.py script for command line use.
 """
 
+from __future__ import print_function
+
 import os
-import os.path
-import argparse
 
 from rmgpy.chemkin import loadChemkinFile, saveChemkinFile, saveSpeciesDictionary, saveTransportFile
 from rmgpy.rmg.model import ReactionModel
 
 ################################################################################
 
-def parseCommandLineArguments():
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--model1', metavar='FILE', type=str, nargs='+',
-        help='the Chemkin files and species dictionaries of the first model to merge')
-    parser.add_argument('--model2', metavar='FILE', type=str, nargs='+',
-        help='the Chemkin files and species dictionaries of the second model to merge')
-    parser.add_argument('--model3', metavar='FILE', type=str, nargs='+',
-        help='the Chemkin files and species dictionaries of the third model to merge')
-    parser.add_argument('--model4', metavar='FILE', type=str, nargs='+',
-        help='the Chemkin files and species dictionaries of the fourth model to merge')
-    parser.add_argument('--model5', metavar='FILE', type=str, nargs='+',
-        help='the Chemkin files and species dictionaries of the fifth model to merge')
-    
-    args = parser.parse_args()
-    return args
+def execute(input_files, output_directory=None):
 
-def main():
-    """
-    Driver function that parses command line arguments and passes them to the execute function.
-    """
-    # Parse the command-line arguments (requires the argparse module)
-    args = parseCommandLineArguments()
+    if output_directory is None:
+        output_directory = os.getcwd()
 
-
-    transport = False
-    inputModelFiles = []
-    for model in [args.model1, args.model2, args.model3, args.model4, args.model5]:
-        if model is None: continue
-        if len(model) == 2:
-            inputModelFiles.append((model[0], model[1], None))
-        elif len(model) == 3:
-            transport = True
-            inputModelFiles.append((model[0], model[1], model[2]))
-        else:
-            raise Exception
-
-    kwargs = {
-            'wd': os.getcwd(),
-            'transport': transport,
-    }
-
-    execute(inputModelFiles, **kwargs)
-
-def execute(inputModelFiles, **kwargs):
-    
-    try:
-        wd = kwargs['wd']
-    except KeyError:
-        wd = os.getcwd()
-
-    transport = kwargs['transport']
-    
-    outputChemkinFile = os.path.join(wd, 'chem.inp')
-    outputSpeciesDictionary = os.path.join(wd, 'species_dictionary.txt')
-    outputTransportFile = os.path.join(wd, 'tran.dat') if transport else None
+    chem_output = os.path.join(output_directory, 'chem_merged.inp')
+    dict_output = os.path.join(output_directory, 'species_dictionary_merged.txt')
+    tran_output = os.path.join(output_directory, 'tran_merged.dat')
     
     # Load the models to merge
+    transport = False
     models = []
-    for chemkin, speciesPath, transportPath in inputModelFiles:
-        print 'Loading model #{0:d}...'.format(len(models)+1)
+    for chem_path, dict_path, tran_path in input_files:
+        if tran_path is not None:
+            transport = True
+        print('Loading model #{0:d}...'.format(len(models) + 1))
         model = ReactionModel()
-        model.species, model.reactions = loadChemkinFile(chemkin, speciesPath, transportPath=transportPath)
+        model.species, model.reactions = loadChemkinFile(chem_path, dict_path, transportPath=tran_path)
         models.append(model)
 
-    finalModel = ReactionModel()
+    final_model = ReactionModel()
     for i, model in enumerate(models):        
-        print 'Ignoring common species and reactions from model #{0:d}...'.format(i+1)
-        Nspec0 = len(finalModel.species)
-        Nrxn0 = len(finalModel.reactions)
-        finalModel = finalModel.merge(model)
-        Nspec = len(finalModel.species)
-        Nrxn = len(finalModel.reactions)
-        print 'Added {1:d} out of {2:d} ({3:.1f}%) unique species from model #{0:d}.'.format(i+1, Nspec - Nspec0, len(model.species), (Nspec - Nspec0) * 100. / len(model.species))
-        print 'Added {1:d} out of {2:d} ({3:.1f}%) unique reactions from model #{0:d}.'.format(i+1, Nrxn - Nrxn0, len(model.reactions), (Nrxn - Nrxn0) * 100. / len(model.reactions))
-    
-    print 'The merged model has {0:d} species and {1:d} reactions'.format(len(finalModel.species), len(finalModel.reactions))
-        
+        print('Ignoring common species and reactions from model #{0:d}...'.format(i + 1))
+        nspec0 = len(final_model.species)
+        nrxn0 = len(final_model.reactions)
+        final_model = final_model.merge(model)
+        nspec = len(final_model.species)
+        nrxn = len(final_model.reactions)
+
+        if len(model.species) == 0:
+            print('Added no species from model #{0:d} because it does not contain any species.'.format(i + 1))
+        else:
+            print('Added {1:d} out of {2:d} ({3:.1f}%) unique species from model '
+                  '#{0:d}.'.format(i + 1, nspec - nspec0, len(model.species),
+                                   (nspec - nspec0) * 100. / len(model.species)))
+        if len(model.reactions) == 0:
+            print('Added no reactions from model #{0:d} because it does not contain any reactions.'.format(i + 1))
+        else:
+            print('Added {1:d} out of {2:d} ({3:.1f}%) unique reactions from model '
+                  '#{0:d}.'.format(i + 1, nrxn - nrxn0, len(model.reactions),
+                                   (nrxn - nrxn0) * 100. / len(model.reactions)))
+
+    print('The merged model has {0:d} species and {1:d} reactions'.format(len(final_model.species),
+                                                                          len(final_model.reactions)))
+
     # Save the merged model to disk
-    saveChemkinFile(outputChemkinFile, finalModel.species, finalModel.reactions)
-    saveSpeciesDictionary(outputSpeciesDictionary, finalModel.species)
+    saveChemkinFile(chem_output, final_model.species, final_model.reactions)
+    saveSpeciesDictionary(dict_output, final_model.species)
     if transport:
-        saveTransportFile(outputTransportFile, finalModel.species)
-        
-    print 'Merged Chemkin file saved to {0}'.format(outputChemkinFile)
-    print 'Merged species dictionary saved to {0}'.format(outputSpeciesDictionary)
+        saveTransportFile(tran_output, final_model.species)
+
+    print('Merged Chemkin file saved to {0}'.format(chem_output))
+    print('Merged species dictionary saved to {0}'.format(dict_output))
     if transport:
-        print 'Merged transport file saved to {0}'.format(outputTransportFile)
-    
+        print('Merged transport file saved to {0}'.format(tran_output))
