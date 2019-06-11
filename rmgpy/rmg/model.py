@@ -85,20 +85,25 @@ class ReactionModel:
         """
         return (ReactionModel, (self.species, self.reactions))
 
-    def merge(self, other):
+    def merge(self, other, copy=True):
         """
-        Return a new :class:`ReactionModel` object that is the union of this
-        model and `other`.
+        Combine this model and `other` by adding unique species and reactions.
+
+        If ``copy=True``, returns a new ReactionModel instance.
+        If ``copy=False``, add new species and reactions to this instance.
         """
         if not isinstance(other, ReactionModel):
             raise ValueError('Expected type ReactionModel for other parameter, got {0}'.format(other.__class__))
 
-        # Initialize the merged model
-        finalModel = ReactionModel()
-        
-        # Put the current model into the merged model as-is
-        finalModel.species.extend(self.species)
-        finalModel.reactions.extend(self.reactions)
+        if copy:
+            # Initialize the merged model
+            finalModel = ReactionModel()
+
+            # Put the current model into the merged model as-is
+            finalModel.species.extend(self.species)
+            finalModel.reactions.extend(self.reactions)
+        else:
+            finalModel = self
         
         # Determine which species in other are already in self
         commonSpecies = {}; uniqueSpecies = []
