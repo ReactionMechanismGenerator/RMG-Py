@@ -70,9 +70,9 @@ def execute(input_files, output_directory=None, rmg=None, add_all=False):
         print('Ignoring common species and reactions from model #{0:d}...'.format(i + 1))
         nspec0 = len(final_model.species)
         nrxn0 = len(final_model.reactions)
-        final_model = final_model.merge(model)
         nspec = len(final_model.species)
         nrxn = len(final_model.reactions)
+        final_model, only_old, only_new = final_model.merge(model, copy=False)
 
         if len(model.species) == 0:
             print('Added no species from model #{0:d} because it does not contain any species.'.format(i + 1))

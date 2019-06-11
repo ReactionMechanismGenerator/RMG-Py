@@ -132,15 +132,22 @@ class ReactionModel:
                 uniqueReactions.append(rxn)
         
         # Add the unique species from other to the final model
+        nspcs0 = len(finalModel.species)
         finalModel.species.extend(uniqueSpecies)
     
-        # Renumber the unique species (to avoid name conflicts on save)
+        # Renumber all species (to avoid name conflicts on save)
         speciesIndex = 0
         for spec in finalModel.species:
             if spec.label not in ['Ar','N2','Ne','He']:
                 spec.index = speciesIndex + 1
                 speciesIndex += 1
-        
+
+        # Collect indices of species which were only in one of the two models
+        onlyOld = range(0, nspcs0)
+        onlyNew = range(nspcs0, len(finalModel.species))
+        for spec in commonSpecies.itervalues():
+            onlyOld.remove(finalModel.species.index(spec))
+
         # Make sure unique reactions only refer to species in the final model
         for rxn in uniqueReactions:
             for i, reactant in enumerate(rxn.reactants):
@@ -166,7 +173,7 @@ class ReactionModel:
         finalModel.reactions.extend(uniqueReactions)
     
         # Return the merged model
-        return finalModel
+        return finalModel, onlyOld, onlyNew
 
 ################################################################################
 
