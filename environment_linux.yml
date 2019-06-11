@@ -3,6 +3,7 @@ channels:
   - defaults
   - rmg
   - rdkit
+  - cantera
 dependencies:
   - cairo
   - cairocffi
