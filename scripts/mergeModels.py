@@ -40,6 +40,20 @@ The resulting merged files are placed in ``chem.inp`` and
 ``species_dictionary.txt`` in the execution directory by default.
 The output directory can be changed by passing a new path via the
 ``--output-directory`` argument.
+
+This script is also able to generate cross reactions between the models being
+merged. In other words, it will generate reactions between species which are
+exclusive to one model and species which are exclusive to another model.
+
+To use this functionality, an additional input file must be provided, similar
+to a standard RMG input file. The only required section is the ``database``
+section, which will set the database settings used for thermo and kinetics
+estimation and reaction generation.
+
+The ``--add-all`` flag will toggle whether or not new species created during
+the process of generating reactions will be added to the model. By default,
+cross reactions will only be added if all of the species are already in the
+model.
 """
 
 import argparse
