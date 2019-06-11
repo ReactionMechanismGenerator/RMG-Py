@@ -1846,6 +1846,16 @@ class Molecule(Graph):
                         return True    
         return False
 
+    def isHeterocyclic(self):
+        """
+        Returns ``True`` if the molecule is heterocyclic, or ``False`` if not.
+        """
+        if self.isCyclic():
+            for atom in self.atoms:
+                if atom.isNonHydrogen() and not atom.isCarbon() and self.isVertexInCycle(atom):
+                    return True
+        return False
+
     def countInternalRotors(self):
         """
         Determine the number of internal rotors in the structure. Any single
