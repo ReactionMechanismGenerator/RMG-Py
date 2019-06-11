@@ -45,7 +45,7 @@ from rmgpy.rmg.model import ReactionModel
 ################################################################################
 
 
-def execute(input_files, output_directory=None):
+def execute(input_files, output_directory=None, rmg=None, add_all=False):
 
     if output_directory is None:
         output_directory = os.getcwd()

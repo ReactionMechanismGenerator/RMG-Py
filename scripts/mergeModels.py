@@ -43,8 +43,11 @@ The output directory can be changed by passing a new path via the
 """
 
 import argparse
+import logging
+import os
 
 import rmgpy.tools.merge_models as merge_models
+from rmgpy.rmg.main import RMG, initializeLog
 
 ################################################################################
 
@@ -63,6 +66,21 @@ def parse_command_line_arguments():
                         help='the Chemkin files and species dictionaries of the fifth model to merge')
     parser.add_argument('-o', '--output-directory', metavar='DIR', nargs=1,
                         help='output directory for final merged mechanism')
+    parser.add_argument('-r', '--react', metavar='INPUT', nargs=1,
+                        help='provide RMG input file to generate bimolecular cross reactions between models')
+    parser.add_argument('-a', '--add-all', action='store_true',
+                        help='add all new species generated from cross reactions')
+
+    # RMG options
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('-q', '--quiet', action='store_true', help='only print warnings and errors')
+    group.add_argument('-v', '--verbose', action='store_true', help='print more verbose output')
+    group.add_argument('-d', '--debug', action='store_true', help='print debug information')
+
+    parser.add_argument('-n', '--maxproc', type=int, nargs=1, default=1,
+                        help='max number of processes used during reaction generation')
+    parser.add_argument('-t', '--walltime', type=str, nargs=1, default='00:00:00:00',
+                        metavar='DD:HH:MM:SS', help='set the maximum execution time')
 
     return parser.parse_args()
 
@@ -86,9 +104,41 @@ def main():
                              'Chemkin file, species dictionary, and an optional transport file.'.format(i + 1))
 
     if args.output_directory is not None:
-        args.output_directory = args.output_directory[0]
+        output_directory = args.output_directory[0]
+    else:
+        output_directory = os.getcwd()
 
-    merge_models.execute(input_files, output_directory=args.output_directory)
+    level = logging.INFO
+    if args.debug:
+        level = 0
+    elif args.verbose:
+        level = logging.DEBUG
+    elif args.quiet:
+        level = logging.WARNING
+
+    initializeLog(level, os.path.join(output_directory, 'merge.log'))
+
+    if args.react is not None:
+        input_file = args.react[0]
+
+        rmg = RMG(inputFile=input_file, outputDirectory=output_directory)
+
+        if args.walltime != '00:00:00:00':
+            args.walltime = args.walltime[0]
+
+        if args.maxproc != 1:
+            args.maxproc = args.maxproc[0]
+
+        kwargs = {
+            'walltime': args.walltime,
+            'maxproc': args.maxproc,
+        }
+
+        rmg.initialize(**kwargs)
+    else:
+        rmg = None
+
+    merge_models.execute(input_files, output_directory=output_directory, rmg=rmg, add_all=args.add_all)
 
 
 if __name__ == '__main__':
