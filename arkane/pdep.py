@@ -603,7 +603,7 @@ class PressureDependenceJob(object):
                     if reaction.kinetics is not None:
                         plt.semilogy(1000.0 / Tlist, K2[:, p], color=cm(1. * p / (Pcount - 1)), marker='',
                                      linestyle='-')
-                plt.xlabel('1000 / Temperature (1000/K)')
+                plt.xlabel('1000 / Temperature (K^-1)')
                 plt.ylabel('Rate coefficient ({0})'.format(kunits))
                 plt.title(reaction_str)
                 plt.legend()

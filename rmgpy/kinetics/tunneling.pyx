@@ -33,7 +33,7 @@ a reaction barrier.
 """
 
 import numpy
-
+import logging
 import cython
 from libc.math cimport abs, exp, sqrt, cosh
 
@@ -172,7 +172,11 @@ cdef class Eckart(TunnelingModel):
             dV2 = E0_TS - E0_reac
 
         if dV1 < 0 or dV2 < 0:
-            raise ValueError('One or both of the barrier heights of {0:g} and {1:g} kJ/mol encountered in Eckart method are invalid.'.format(dV1 / 1000., dV2 / 1000.)) 
+            logging.info('\n')
+            logging.error('Got the following wells:\nReactants: {0:g} kJ/mol\nTS: {1:g} kJ/mol\n'
+                          'Products: {2:g} kJ/mol\n'.format(E0_reac / 1000., E0_TS / 1000., E0_prod / 1000.))
+            raise ValueError('One or both of the barrier heights of {0:g} and {1:g} kJ/mol encountered in Eckart '
+                             'method are invalid.'.format(dV1 / 1000., dV2 / 1000.))
 
         # Ensure that dV1 is smaller than dV2
         assert dV1 <= dV2
