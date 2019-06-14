@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -62,6 +62,8 @@ Cython.Compiler.Options.annotate = True
 
 def getMainExtensionModules():
     return [
+        # RMG
+        Extension('rmgpy.rmgobject', ['rmgpy/rmgobject.pyx']),
         # Kinetics
         Extension('rmgpy.kinetics.arrhenius', ['rmgpy/kinetics/arrhenius.pyx']),
         Extension('rmgpy.kinetics.chebyshev', ['rmgpy/kinetics/chebyshev.pyx']),
@@ -69,6 +71,7 @@ def getMainExtensionModules():
         Extension('rmgpy.kinetics.falloff', ['rmgpy/kinetics/falloff.pyx']),
         Extension('rmgpy.kinetics.model', ['rmgpy/kinetics/model.pyx']),
         Extension('rmgpy.kinetics.tunneling', ['rmgpy/kinetics/tunneling.pyx']),
+        Extension('rmgpy.kinetics.surface', ['rmgpy/kinetics/surface.pyx']),
         # Molecules and molecular representations
         Extension('rmgpy.molecule.atomtype', ['rmgpy/molecule/atomtype.py'], include_dirs=['.']),
         Extension('rmgpy.molecule.element', ['rmgpy/molecule/element.py'], include_dirs=['.']),
@@ -119,11 +122,14 @@ def getSolverExtensionModules():
         Extension('rmgpy.solver.base', ['rmgpy/solver/base.pyx'], include_dirs=['.']),
         Extension('rmgpy.solver.simple', ['rmgpy/solver/simple.pyx'], include_dirs=['.']),
         Extension('rmgpy.solver.liquid', ['rmgpy/solver/liquid.pyx'], include_dirs=['.']),
+        Extension('rmgpy.solver.surface', ['rmgpy/solver/surface.pyx'], include_dirs=['.']),
     ]
 
 
 def getArkaneExtensionModules():
     return [
+        # RMG
+        Extension('rmgpy.rmgobject', ['rmgpy/rmgobject.pyx']),
         # Kinetics
         Extension('rmgpy.kinetics.arrhenius', ['rmgpy/kinetics/arrhenius.pyx']),
         Extension('rmgpy.kinetics.chebyshev', ['rmgpy/kinetics/chebyshev.pyx']),
@@ -188,6 +194,10 @@ if 'minimal' in sys.argv:
         for source in module.sources:
             if os.path.splitext(source)[1] == '.pyx':
                 ext_modules.append(module)
+
+# Remove duplicates while preserving order:
+from collections import OrderedDict
+ext_modules = list(OrderedDict.fromkeys(ext_modules))
 
 scripts=['Arkane.py',
          'rmg.py',

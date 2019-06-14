@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -96,9 +96,9 @@ def parseCCLibData(cclibData, groundStateDegeneracy):
         atomCoords = (cclibData.atomcoords[-1], 'angstrom')
         frequencies = (cclibData.vibfreqs, 'cm^-1')
 
-    except AttributeError, e:
+    except AttributeError:
         logging.error("The passed in cclibData has these attributes: {0!r}".format(cclibData._attrlist))
-        raise e
+        raise
 
     if hasattr(cclibData, 'stericenergy'):
         stericEnergy = (cclibData.stericenergy, 'eV/molecule')

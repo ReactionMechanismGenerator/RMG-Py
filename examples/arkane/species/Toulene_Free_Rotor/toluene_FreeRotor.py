@@ -7,8 +7,6 @@ bonds = {
     'C=C': 3,
 }
 
-linear = False
-
 externalSymmetry = 1
 
 spinMultiplicity = 1

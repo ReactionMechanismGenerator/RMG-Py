@@ -1,11 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Arkane Gaussian module
+Used to parse Gaussian output files
+"""
+
 ###############################################################################
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -38,11 +43,13 @@ from rmgpy.statmech import IdealGasTranslation, NonlinearRotor, LinearRotor, Har
 from rmgpy.exceptions import InputError
 
 from arkane.common import check_conformer_energy, get_element_mass
+from arkane.log import Log
+
 
 ################################################################################
 
 
-class GaussianLog:
+class GaussianLog(Log):
     """
     Represent a log file from Gaussian. The attribute `path` refers to the
     location on disk of the Gaussian log file of interest. Methods are provided
@@ -51,7 +58,7 @@ class GaussianLog:
     """
 
     def __init__(self, path):
-        self.path = path
+        super(GaussianLog, self).__init__(path)
 
     def getNumberOfAtoms(self):
         """
@@ -66,7 +73,8 @@ class GaussianLog:
         while line != '' and Natoms == 0:
             # Automatically determine the number of atoms
             if 'Input orientation:' in line and Natoms == 0:
-                for i in range(5): line = f.readline()
+                for i in range(5):
+                    line = f.readline()
                 while '---------------------------------------------------------------------' not in line:
                     Natoms += 1
                     line = f.readline()
@@ -97,18 +105,18 @@ class GaussianLog:
         while line != '':
             # Read force constant matrix
             if 'Force constants in Cartesian coordinates:' in line:
-                F = numpy.zeros((Nrows,Nrows), numpy.float64)
+                F = numpy.zeros((Nrows, Nrows), numpy.float64)
                 for i in range(int(math.ceil(Nrows / 5.0))):
                     # Header row
                     line = f.readline()
                     # Matrix element rows
-                    for j in range(i*5, Nrows):
+                    for j in range(i * 5, Nrows):
                         data = f.readline().split()
-                        for k in range(len(data)-1):
-                            F[j,i*5+k] = float(data[k+1].replace('D', 'E'))
-                            F[i*5+k,j] = F[j,i*5+k]
+                        for k in range(len(data) - 1):
+                            F[j, i * 5 + k] = float(data[k + 1].replace('D', 'E'))
+                            F[i * 5 + k, j] = F[j, i * 5 + k]
                 # Convert from atomic units (Hartree/Bohr_radius^2) to J/m^2
-                F *= 4.35974417e-18 / 5.291772108e-11**2
+                F *= 4.35974417e-18 / 5.291772108e-11 ** 2
             line = f.readline()
         # Close file when finished
         f.close()
@@ -130,7 +138,8 @@ class GaussianLog:
             # Automatically determine the number of atoms
             if 'Input orientation:' in line:
                 number, coord = [], []
-                for i in range(5): line = f.readline()
+                for i in range(5):
+                    line = f.readline()
                 while '---------------------------------------------------------------------' not in line:
                     data = line.split()
                     number.append(int(data[1]))
@@ -149,11 +158,14 @@ class GaussianLog:
         number = numpy.array(number, numpy.int)
         mass = numpy.array(mass, numpy.float64)
         if len(number) == 0 or len(coord) == 0 or len(mass) == 0:
-            raise InputError('Unable to read atoms from Gaussian geometry output file {0}'.format(self.path))
-        
+            raise InputError('Unable to read atoms from Gaussian geometry output file {0}. '
+                             'Make sure the output file is not corrupt.\nNote: if your species has '
+                             '50 or more atoms, you will need to add the `iop(2/9=2000)` keyword to your '
+                             'input file so Gaussian will print the input orientation geomerty.'.format(self.path))
+
         return coord, number, mass
 
-    def loadConformer(self, symmetry=None, spinMultiplicity=0, opticalIsomers=1, symfromlog=None, label=''):
+    def loadConformer(self, symmetry=None, spinMultiplicity=0, opticalIsomers=None, label=''):
         """
         Load the molecular degree of freedom data from a log file created as
         the result of a Gaussian "Freq" quantum chemistry calculation. As
@@ -167,7 +179,12 @@ class GaussianLog:
         modes = []
         unscaled_frequencies = []
         E0 = 0.0
-
+        if opticalIsomers is None or symmetry is None:
+            _opticalIsomers, _symmetry = self.get_optical_isomers_and_symmetry_number()
+            if opticalIsomers is None:
+                opticalIsomers = _opticalIsomers
+            if symmetry is None:
+                symmetry = _symmetry
         f = open(self.path, 'r')
         line = f.readline()
         while line != '':
@@ -191,25 +208,22 @@ class GaussianLog:
                     # Read molecular mass for external translational modes
                     elif 'Molecular mass:' in line:
                         mass = float(line.split()[2])
-                        translation = IdealGasTranslation(mass=(mass,"amu"))
+                        translation = IdealGasTranslation(mass=(mass, "amu"))
                         modes.append(translation)
-
-                    # Read Gaussian's estimate of the external symmetry number
-                    elif 'Rotational symmetry number' in line and symmetry is None:
-                        if symfromlog is True:
-                            symmetry = int(float(line.split()[3]))
 
                     # Read moments of inertia for external rotational modes
                     elif 'Rotational constants (GHZ):' in line:
                         inertia = [float(d) for d in line.split()[-3:]]
                         for i in range(3):
-                            inertia[i] = constants.h / (8 * constants.pi * constants.pi * inertia[i] * 1e9) *constants.Na*1e23
-                        rotation = NonlinearRotor(inertia=(inertia,"amu*angstrom^2"), symmetry=symmetry)
+                            inertia[i] = constants.h / (8 * constants.pi * constants.pi * inertia[i] * 1e9)\
+                                         * constants.Na * 1e23
+                        rotation = NonlinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
                         modes.append(rotation)
                     elif 'Rotational constant (GHZ):' in line:
                         inertia = [float(line.split()[3])]
-                        inertia[0] = constants.h / (8 * constants.pi * constants.pi * inertia[0] * 1e9) *constants.Na*1e23
-                        rotation = LinearRotor(inertia=(inertia[0],"amu*angstrom^2"), symmetry=symmetry)
+                        inertia[0] = constants.h / (8 * constants.pi * constants.pi * inertia[0] * 1e9)\
+                                     * constants.Na * 1e23
+                        rotation = LinearRotor(inertia=(inertia[0], "amu*angstrom^2"), symmetry=symmetry)
                         modes.append(rotation)
 
                     # Read vibrational modes
@@ -226,7 +240,7 @@ class GaussianLog:
                         if len(frequencies) > 0:
                             frequencies = [freq * 0.695039 for freq in frequencies]  # kB = 0.695039 cm^-1/K
                             unscaled_frequencies = frequencies
-                            vibration = HarmonicOscillator(frequencies=(frequencies,"cm^-1"))
+                            vibration = HarmonicOscillator(frequencies=(frequencies, "cm^-1"))
                             modes.append(vibration)
 
                     # Read ground-state energy
@@ -248,11 +262,10 @@ class GaussianLog:
 
         # Close file when finished
         f.close()
-
-        return Conformer(E0=(E0*0.001,"kJ/mol"), modes=modes, spinMultiplicity=spinMultiplicity,
+        return Conformer(E0=(E0 * 0.001, "kJ/mol"), modes=modes, spinMultiplicity=spinMultiplicity,
                          opticalIsomers=opticalIsomers), unscaled_frequencies
 
-    def loadEnergy(self,frequencyScaleFactor=1.):
+    def loadEnergy(self, frequencyScaleFactor=1.):
         """
         Load the energy in J/mol from a Gaussian log file. The file is checked 
         for a complete basis set extrapolation; if found, that value is 
@@ -261,7 +274,9 @@ class GaussianLog:
         CBS-QB3 value.
         """
 
-        E0 = None; E0_cbs = None; scaledZPE = None
+        E0 = None
+        E0_cbs = None
+        scaledZPE = None
 
         f = open(self.path, 'r')
         line = f.readline()
@@ -273,13 +288,13 @@ class GaussianLog:
                 E0_cbs = float(line.split()[3]) * constants.E_h * constants.Na
             elif 'G3(0 K)' in line:
                 E0_cbs = float(line.split()[2]) * constants.E_h * constants.Na
-            
+
             # Read the ZPE from the "E(ZPE)=" line, as this is the scaled version.
             # Gaussian defines the following as
             # E (0 K) = Elec + E(ZPE), 
             # The ZPE is the scaled ZPE given by E(ZPE) in the log file, 
             # hence to get the correct Elec from E (0 K) we need to subtract the scaled ZPE
-            
+
             elif 'E(ZPE)' in line:
                 scaledZPE = float(line.split()[1]) * constants.E_h * constants.Na
             elif '\\ZeroPoint=' in line:
@@ -292,15 +307,16 @@ class GaussianLog:
 
         # Close file when finished
         f.close()
-        
+
         if E0_cbs is not None:
             if scaledZPE is None:
                 raise Exception('Unable to find zero-point energy in Gaussian log file.')
             return E0_cbs - scaledZPE
         elif E0 is not None:
             return E0
-        else: raise Exception('Unable to find energy in Gaussian log file.')
-    
+        else:
+            raise Exception('Unable to find energy in Gaussian log file.')
+
     def loadZeroPointEnergy(self):
         """
         Load the unscaled zero-point energy in J/mol from a Gaussian log file.
@@ -327,7 +343,7 @@ class GaussianLog:
 
         # Close file when finished
         f.close()
-        
+
         if ZPE is not None:
             return ZPE
         else:
@@ -340,7 +356,7 @@ class GaussianLog:
         """
 
         optfreq = False
-        rigidScan=False
+        rigidScan = False
 
         # The array of potentials at each scan angle
         Vlist = []
@@ -353,15 +369,15 @@ class GaussianLog:
             # If the job contains a "freq" then we want to ignore the last energy
             if ' freq ' in line:
                 optfreq = True
-            #if # scan is keyword instead of # opt, then this is a rigid scan job
-            #and parsing the energies is done a little differently
+            # if # scan is keyword instead of # opt, then this is a rigid scan job
+            # and parsing the energies is done a little differently
             if '# scan' in line:
-                rigidScan=True
+                rigidScan = True
             # The lines containing "SCF Done" give the energy at each
             # iteration (even the intermediate ones)
             if 'SCF Done:' in line:
                 E = float(line.split()[4])
-                #rigid scans will only not optimize, so just append every time it finds an energy.
+                # rigid scans will only not optimize, so just append every time it finds an energy.
                 if rigidScan:
                     Vlist.append(E)
             # We want to keep the values of E that come most recently before
@@ -372,26 +388,28 @@ class GaussianLog:
             line = f.readline()
         # Close file when finished
         f.close()
-        
-        #give warning in case this assumption is not true
-        if rigidScan==True:
+
+        # give warning in case this assumption is not true
+        if rigidScan:
             print '   Assuming', os.path.basename(self.path), 'is the output from a rigid scan...'
-        
+
         Vlist = numpy.array(Vlist, numpy.float64)
-        # check to see if the scanlog indicates that a one of your reacting species may not be the lowest energy conformer
+        # check to see if the scanlog indicates that a one of your reacting species may not be
+        # the lowest energy conformer
         check_conformer_energy(Vlist, self.path)
-        
+
         # Adjust energies to be relative to minimum energy conformer
-        # Also convert units from Hartree/particle to kJ/mol
+        # Also convert units from Hartree/particle to J/mol
         Vlist -= numpy.min(Vlist)
         Vlist *= constants.E_h * constants.Na
 
-        if optfreq: Vlist = Vlist[:-1]
+        if optfreq:
+            Vlist = Vlist[:-1]
 
         # Determine the set of dihedral angles corresponding to the loaded energies
         # This assumes that you start at 0.0, finish at 360.0, and take
         # constant step sizes in between
-        angle = numpy.arange(0.0, 2*math.pi+0.00001, 2*math.pi/(len(Vlist)-1), numpy.float64)
+        angle = numpy.arange(0.0, 2 * math.pi + 0.00001, 2 * math.pi / (len(Vlist) - 1), numpy.float64)
 
         return Vlist, angle
 
@@ -411,7 +429,7 @@ class GaussianLog:
             line = f.readline()
         # Close file when finished
         f.close()
-        
+
         frequencies = [float(freq) for freq in frequencies]
         frequencies.sort()
         frequency = [freq for freq in frequencies if freq < 0][0]

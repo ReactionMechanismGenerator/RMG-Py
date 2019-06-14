@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -39,20 +39,24 @@ import warnings
 import codecs
 from copy import deepcopy
 from collections import OrderedDict
+from sklearn.model_selection import KFold
 
 from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStructures,\
                             getAllCombinations
-from rmgpy.reaction import Reaction, isomorphic_species_lists
+from rmgpy.reaction import Reaction, same_species_lists
 from rmgpy import settings
 from rmgpy.reaction import Reaction
-from rmgpy.kinetics import Arrhenius
+from rmgpy.kinetics import Arrhenius, SurfaceArrhenius,\
+                    SurfaceArrheniusBEP, StickingCoefficient, StickingCoefficientBEP
+from rmgpy.kinetics.arrhenius import ArrheniusBM
 from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.molecule.resonance import generate_optimal_aromatic_resonance_structures
 from rmgpy.species import Species
+from rmgpy.molecule.atomtype import atomTypes
 
 from .common import saveEntry, ensure_species, find_degenerate_reactions, generate_molecule_combos,\
-                    ensure_independent_atom_ids
+                    ensure_independent_atom_ids, getAllDescendants
 from .depository import KineticsDepository
 from .groups import KineticsGroups
 from .rules import KineticsRules
@@ -301,7 +305,9 @@ class ReactionRecipe:
                 elif (action[0] == 'FORM_BOND' and doForward) or (action[0] == 'BREAK_BOND' and not doForward):
                     if struct.hasBond(atom1, atom2):
                         raise InvalidActionError('Attempted to create an existing bond.')
-                    bond = GroupBond(atom1, atom2, order=[1]) if pattern else Bond(atom1, atom2, order=1)
+                    if info not in (1, 0): # Can only form single or vdW bonds
+                        raise InvalidActionError('Attempted to create bond of type {:!r}'.format(info))
+                    bond = GroupBond(atom1, atom2, order=[info]) if pattern else Bond(atom1, atom2, order=info)
                     struct.addBond(bond)
                     atom1.applyAction(['FORM_BOND', label1, info, label2])
                     atom2.applyAction(['FORM_BOND', label1, info, label2])
@@ -366,6 +372,7 @@ class ReactionRecipe:
 
 
 ################################################################################
+
 
 class KineticsFamily(Database):
     """
@@ -540,7 +547,7 @@ class KineticsFamily(Database):
                             self.forwardTemplate.reactants.append(token)
                         elif token != '+' and atArrow:
                             self.forwardTemplate.products.append(token)
-        except IOError, e:
+        except IOError as e:
             logging.exception('Database template file "' + e.filename + '" not found.')
             raise
         finally:
@@ -635,19 +642,20 @@ class KineticsFamily(Database):
         local_context['reversible'] = None
         local_context['boundaryAtoms'] = None
         local_context['treeDistances'] = None
+        local_context['reverseMap'] = None
         self.groups = KineticsGroups(label='{0}/groups'.format(self.label))
         logging.debug("Loading kinetics family groups from {0}".format(os.path.join(path, 'groups.py')))
         Database.load(self.groups, os.path.join(path, 'groups.py'), local_context, global_context)
         self.name = self.label
         self.boundaryAtoms = local_context.get('boundaryAtoms', None)
         self.treeDistances = local_context.get('treeDistances',None)
-        
+        self.reverseMap = local_context.get('reverseMap',None)
         # Generate the reverse template if necessary
         self.forwardTemplate.reactants = [self.groups.entries[label] for label in self.forwardTemplate.reactants]
         if self.ownReverse:
             self.forwardTemplate.products = self.forwardTemplate.reactants[:]
             self.reverseTemplate = None
-            self.reverseRecipe = None
+            self.reverseRecipe = self.forwardRecipe.getReverse()
         else:
             self.reverse = local_context.get('reverse', None)
             self.reversible = True if local_context.get('reversible', None) is None else local_context.get('reversible', None)
@@ -1052,7 +1060,7 @@ class KineticsFamily(Database):
             raise ValueError('No entry for template {0}.'.format(template))
         return entry
 
-    def addKineticsRulesFromTrainingSet(self, thermoDatabase=None):
+    def addKineticsRulesFromTrainingSet(self, thermoDatabase=None,trainIndices=None):
         """
         For each reaction involving real reactants and products in the training
         set, add a rate rule for that reaction.
@@ -1064,12 +1072,21 @@ class KineticsFamily(Database):
             logging.info('Must be because you turned off the training depository.')
             return
         
+        # Determine number of parallel processes.
+        from rmgpy.rmg.main import determine_procnum_from_RAM
+        procnum = determine_procnum_from_RAM()
+
         tentries = depository.entries
         
         index = max([e.index for e in self.rules.getEntries()] or [0]) + 1
         
         entries = depository.entries.values()
         entries.sort(key=lambda x: x.index)
+        
+        if trainIndices is not None:
+            entries = np.array(entries)
+            entries = entries[trainIndices]
+        
         reverse_entries = []
         for entry in entries:
             try:        
@@ -1086,12 +1103,36 @@ class KineticsFamily(Database):
             data = deepcopy(entry.data)
             data.changeT0(1)
             
+            if type(data) is Arrhenius:  # more specific than isinstance(data,Arrhenius) because we want to exclude inherited subclasses!
+                data = data.toArrheniusEP()
+            elif isinstance(data, StickingCoefficient):
+                data = StickingCoefficientBEP( #todo: perhaps make a method StickingCoefficient.StickingCoefficientBEP analogous to Arrhenius.toArrheniusEP
+                    A = deepcopy(data.A),
+                    n = deepcopy(data.n),
+                    alpha = 0,
+                    E0 = deepcopy(data.Ea),
+                    Tmin = deepcopy(data.Tmin),
+                    Tmax = deepcopy(data.Tmax)
+                    )
+            elif isinstance(data, SurfaceArrhenius):
+                data = SurfaceArrheniusBEP( #todo: perhaps make a method SurfaceArrhenius.toSurfaceArrheniusBEP analogous to Arrhenius.toArrheniusEP
+                    A = deepcopy(data.A),
+                    n = deepcopy(data.n),
+                    alpha = 0,
+                    E0 = deepcopy(data.Ea),
+                    Tmin = deepcopy(data.Tmin),
+                    Tmax = deepcopy(data.Tmax)
+                    )
+            else:
+                raise NotImplementedError("Unexpected training kinetics type {} for {}".format(type(data), entry))
+
+            
             new_entry = Entry(
                 index = index,
                 label = ';'.join([g.label for g in template]),
                 item=Reaction(reactants=[g.item for g in template],
                                                    products=[]),
-                data = data.toArrheniusEP(),
+                data=data,
                 rank = entry.rank,
                 reference=entry.reference,
                 shortDesc="Rate rule generated from training reaction {0}. ".format(entry.index) + entry.shortDesc,
@@ -1119,10 +1160,21 @@ class KineticsFamily(Database):
             # trainingSet=True used later to does not allow species to match a liquid phase library and get corrected thermo which will affect reverse rate calculation
             item = Reaction(reactants=[Species(molecule=[m.molecule[0].copy(deep=True)], label=m.label) for m in entry.item.reactants],
                              products=[Species(molecule=[m.molecule[0].copy(deep=True)], label=m.label) for m in entry.item.products])
+
+            if procnum > 1:
+                # If QMTP and multiprocessing write QMTP files here in parallel.
+                from rmgpy.rmg.input import getInput
+                quantumMechanics = getInput('quantumMechanics')
+                if quantumMechanics:
+                    quantumMechanics.runJobs(item.reactants+item.products, procnum=procnum)
+
             for reactant in item.reactants:
+                # Clear atom labels to avoid effects on thermo generation, ok because this is a deepcopy
+                reactant.molecule[0].clearLabeledAtoms()
                 reactant.generate_resonance_structures()
                 reactant.thermo = thermoDatabase.getThermoData(reactant, trainingSet=True)
             for product in item.products:
+                product.molecule[0].clearLabeledAtoms()
                 product.generate_resonance_structures()
                 product.thermo = thermoDatabase.getThermoData(product,trainingSet=True)
             # Now that we have the thermo, we can get the reverse k(T)
@@ -1277,16 +1329,19 @@ class KineticsFamily(Database):
         else:
             self.reverseRecipe.applyForward(reactantStructure, unique)
 
-        if not reactantStructure.props['validAromatic']:
-            if isinstance(reactantStructure, Molecule):
+        # Now that we have applied the recipe, let's start calling
+        # this thing the productStructure (although it's the same object in memory)
+        productStructure = reactantStructure
+
+        if not productStructure.props['validAromatic']:
+            if isinstance(productStructure, Molecule):
                 # For molecules, kekulize the product to redistribute bonds appropriately
-                reactantStructure.kekulize()
+                productStructure.kekulize()
             else:
                 # For groups, we ignore the product template for a purely aromatic group
                 # If there is an analagous aliphatic group in the family, then the product template will be identical
                 # There should NOT be any families that consist solely of aromatic reactant templates
                 return []
-        productStructure = reactantStructure
 
         if not forward:
             # Hardcoding of reaction family for reverse of radical recombination
@@ -1402,11 +1457,16 @@ class KineticsFamily(Database):
             # reaction templates
             return None
 
+        # Remove vdW bonds
+        for struct in productStructures:
+            struct.removeVanDerWaalsBonds()
+
         # Make sure we don't create a different net charge between reactants and products
         reactant_net_charge = product_net_charge = 0
         for struc in reactantStructures:
             struc.update()
             reactant_net_charge += struc.getNetCharge()
+
         for struct in productStructures:
             # If product structures are Molecule objects, update their atom types
             # If product structures are Group objects and the reaction is in certain families
@@ -1416,7 +1476,8 @@ class KineticsFamily(Database):
             elif isinstance(struct, Group):
                 struct.resetRingMembership()
                 if label in ['1,2_insertion_co', 'r_addition_com', 'co_disproportionation',
-                             'intra_no2_ono_conversion', 'lone_electron_pair_bond']:
+                             'intra_no2_ono_conversion', 'lone_electron_pair_bond',
+                             '1,2_nh3_elimination', '1,3_nh3_elimination']:
                     struct.update_charge()
             else:
                 raise TypeError('Expecting Molecule or Group object, not {0}'.format(struct.__class__.__name__))
@@ -1525,7 +1586,7 @@ class KineticsFamily(Database):
         """
 
         # Make sure the products are in fact different than the reactants
-        if isomorphic_species_lists(reactants, products):
+        if same_species_lists(reactants, products):
             return None
 
         # Create and return template reaction object
@@ -1554,15 +1615,25 @@ class KineticsFamily(Database):
         matches the provided template reactant, or an empty list if not.
         """
 
-        if isinstance(templateReactant, list): templateReactant = templateReactant[0]
-        struct = templateReactant.item
-        
+        if isinstance(templateReactant, list):
+            templateReactant = templateReactant[0]
+
+        struct = templateReactant
+
+        reactantContainsSurfaceSite = reactant.containsSurfaceSite()
+
         if isinstance(struct, LogicNode):
             mappings = []
             for child_structure in struct.getPossibleStructures(self.groups.entries):
+                if child_structure.containsSurfaceSite() != reactantContainsSurfaceSite:
+                    # An adsorbed template can't match a gas-phase species and vice versa
+                    continue
                 mappings.extend(reactant.findSubgraphIsomorphisms(child_structure))
             return mappings
         elif isinstance(struct, Group):
+            if struct.containsSurfaceSite() != reactantContainsSurfaceSite:
+                # An adsorbed template can't match a gas-phase species and vice versa
+                return []
             return reactant.findSubgraphIsomorphisms(struct)
         else:
             raise NotImplementedError("Not expecting template of type {}".format(type(struct)))
@@ -1624,6 +1695,8 @@ class KineticsFamily(Database):
                 elif rxn.products[1].isIsomorphic(rxn.products[2]):
                     sameReactants = 2
 
+            ensure_independent_atom_ids(rxn.products)
+
             reactionList = self.__generateReactions([spc.molecule for spc in rxn.products],
                                                     products=rxn.reactants, forward=True,
                                                     react_non_reactive=react_non_reactive)
@@ -1658,7 +1731,7 @@ class KineticsFamily(Database):
                 else:
                     logging.error("Still experiencing error: Expecting one matching reverse reaction, not {0} in reaction family {1} for forward reaction {2}.\n".format(len(reactions), self.label, str(rxn)))
                     raise KineticsError("Did not find reverse reaction in reaction family {0} for reaction {1}.".format(self.label, str(rxn)))
-            elif len(reactions) > 1 and not all([reactions[0].isIsomorphic(other, checkTemplateRxnProducts=True) for other in reactions]):
+            elif len(reactions) > 1 and not all([reactions[0].isIsomorphic(other, strict=False, checkTemplateRxnProducts=True) for other in reactions]):
                 logging.error("Expecting one matching reverse reaction. Recieved {0} reactions with multiple non-isomorphic ones in reaction family {1} for forward reaction {2}.\n".format(len(reactions), self.label, str(rxn)))
                 logging.info("Found the following reverse reactions")
                 for rxn0 in reactions:
@@ -1773,7 +1846,7 @@ class KineticsFamily(Database):
             Degenerate reactions are returned as separate reactions.
         """
 
-        rxnList = []; speciesList = []
+        rxnList = []
 
         # Wrap each reactant in a list if not already done (this is done to 
         # allow for passing multiple resonance structures for each molecule)
@@ -1788,14 +1861,25 @@ class KineticsFamily(Database):
         else:
             template = self.reverseTemplate
 
+        if len(reactants) > len(template.reactants): #if the family has one template and is bimolecular split template into multiple reactants
+            try:
+                grps = template.reactants[0].item.split()
+                template_reactants = []
+                for grp in grps:
+                    template_reactants.append(grp)
+            except AttributeError:
+                template_reactants = [x.item for x in template.reactants]
+        else:
+            template_reactants = [x.item for x in template.reactants]
+
         # Unimolecular reactants: A --> products
-        if len(reactants) == 1 and len(template.reactants) == 1:
+        if len(reactants) == 1 and len(template_reactants) == 1:
 
             # Iterate over all resonance isomers of the reactant
             for molecule in reactants[0]:
                 if molecule.reactive or react_non_reactive:  # don't react non representative resonance isomers unless
                     # explicitly desired (e.g., when called from calculateDegeneracy)
-                    mappings = self.__matchReactantToTemplate(molecule, template.reactants[0])
+                    mappings = self.__matchReactantToTemplate(molecule, template_reactants[0])
                     for map in mappings:
                         reactantStructures = [molecule]
                         try:
@@ -1808,10 +1892,16 @@ class KineticsFamily(Database):
                                 if rxn: rxnList.append(rxn)
 
         # Bimolecular reactants: A + B --> products
-        elif len(reactants) == 2 and len(template.reactants) == 2:
+        elif len(reactants) == 2 and len(template_reactants) == 2:
 
             moleculesA = reactants[0]
             moleculesB = reactants[1]
+            
+            # ToDo: try to remove this hard-coding of reaction family name..
+            if 'adsorption' in self.label.lower() and forward:
+                if moleculesA[0].containsSurfaceSite() and moleculesB[0].containsSurfaceSite():
+                    # Can't adsorb something that's already adsorbed. Both reactants either contain or are a surface site.
+                    return []
 
             # Iterate over all resonance isomers of the reactant
             for moleculeA in moleculesA:
@@ -1819,8 +1909,8 @@ class KineticsFamily(Database):
                     if (moleculeA.reactive and moleculeB.reactive) or react_non_reactive:
 
                         # Reactants stored as A + B
-                        mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[0])
-                        mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[1])
+                        mappingsA = self.__matchReactantToTemplate(moleculeA, template_reactants[0])
+                        mappingsB = self.__matchReactantToTemplate(moleculeB, template_reactants[1])
 
                         # Iterate over each pair of matches (A, B)
                         for mapA in mappingsA:
@@ -1841,8 +1931,8 @@ class KineticsFamily(Database):
                         if reactants[0] is not reactants[1]:
 
                             # Reactants stored as B + A
-                            mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[1])
-                            mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[0])
+                            mappingsA = self.__matchReactantToTemplate(moleculeA, template_reactants[1])
+                            mappingsB = self.__matchReactantToTemplate(moleculeB, template_reactants[0])
 
                             # Iterate over each pair of matches (A, B)
                             for mapA in mappingsA:
@@ -1857,89 +1947,213 @@ class KineticsFamily(Database):
                                             rxn = self.__createReaction(reactantStructures, productStructures, forward)
                                             if rxn: rxnList.append(rxn)
         
-        # Trimolecular reactants: A + B + C --> products
-        elif len(reactants) == 3 and len(template.reactants) == 3:
+        # Termolecular reactants: A + B + C --> products
+        elif len(reactants) == 2 and len(template_reactants) == 3:
+            """
+            Two reactants but a termolecular template.
+            Could be A + X + X <=> BX + CX (dissociative adsorption)
+            or A + X + X <=> AXX (bidentate adsorption)
+            in which case, if one of the two reactants is an X
+            then we have a match and can just use it twice.
+            """
+            templateSites = [r for r in template_reactants if r.isSurfaceSite()]
+            if len(templateSites) == 2:
+                # Two surface sites in template. If there's a site in the reactants, use it twice.
+                if reactants[0][0].isSurfaceSite() and not reactants[1][0].isSurfaceSite():
+                    site1 = reactants[0][0]
+                    site2 = deepcopy(reactants[0][0])
+                    adsorbateMolecules = reactants[1]
+                    reactants.append([site2])
+                elif reactants[1][0].isSurfaceSite() and not reactants[0][0].isSurfaceSite():
+                    site1 = reactants[1][0]
+                    site2 = deepcopy(reactants[1][0])
+                    adsorbateMolecules = reactants[0]
+                    reactants.append([site2])
+                else:
+                    # No reaction with these reactants in this template
+                    return []
 
-            moleculesA = reactants[0]
-            moleculesB = reactants[1]
-            moleculesC = reactants[2]
+                if adsorbateMolecules[0].containsSurfaceSite():
+                    # An adsorbed molecule can't adsorb again
+                    return []
 
-            # Iterate over all resonance isomers of the reactants
-            for moleculeA in moleculesA:
-                for moleculeB in moleculesB:
-                    for moleculeC in moleculesC:
+                for r in template_reactants:
+                    if not r.isSurfaceSite():
+                        templateAdsorbate = r
+                        break
+                else:
+                    raise KineticsError("Couldn't find non-site in template {0!r}".format(template))
 
-                        def generate_products_and_reactions(order):
-                            """
-                            order = (0, 1, 2) corresponds to reactants stored as A + B + C, etc.
-                            """
-                            _mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[order[0]])
-                            _mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[order[1]])
-                            _mappingsC = self.__matchReactantToTemplate(moleculeC, template.reactants[order[2]])
+                mappingsA = self.__matchReactantToTemplate(site1, templateSites[0])
+                mappingsB = self.__matchReactantToTemplate(site2, templateSites[1])
+                for adsorbateMolecule in adsorbateMolecules:
+                    mappingsC = self.__matchReactantToTemplate(adsorbateMolecule, templateAdsorbate)
+                    for mapA, mapB, mapC in itertools.product(mappingsA, mappingsB, mappingsC):
+                        reactantStructures = [site1, site2, adsorbateMolecule]  # should be in same order as reaction template recipe?
+                        try:
+                            productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB, mapC], forward)
+                        except ForbiddenStructureException:
+                            pass
+                        else:
+                            if productStructures is not None:
+                                rxn = self.__createReaction(reactantStructures, productStructures, forward)
+                                if rxn: rxnList.append(rxn)
+            else:
+                # __generateReactions was called with mismatched number of reactants and templates
+                return []
 
-                            # Iterate over each pair of matches (A, B, C)
-                            for _mapA in _mappingsA:
-                                for _mapB in _mappingsB:
-                                    for _mapC in _mappingsC:
-                                        _reactantStructures = [moleculeA, moleculeB, moleculeC]
-                                        _maps = [_mapA, _mapB, _mapC]
-                                        # Reorder reactants in case we have a family with fewer reactant trees than
-                                        # reactants and different reactant orders can produce different products
-                                        _reactantStructures = [_reactantStructures[_i] for _i in order]
-                                        _maps = [_maps[_i] for _i in order]
-                                        try:
-                                            _productStructures = self.__generateProductStructures(_reactantStructures,
-                                                                                                  _maps,
-                                                                                                  forward)
-                                        except ForbiddenStructureException:
-                                            pass
-                                        else:
-                                            if _productStructures is not None:
-                                                _rxn = self.__createReaction(_reactantStructures,
-                                                                             _productStructures,
-                                                                             forward)
-                                                if _rxn: rxnList.append(_rxn)
+        elif len(reactants) == 3 and len(template_reactants) == 3:
+            """
+            This could be a surface reaction
+                A + X + X <=> BX + CX  (dissociative adsorption)
+                A + X + X <=> AXX      (bidentate adsorption)
+            or a termolecular gas phase reaction
+                A + B + C <=> stuff
+            We check the two scenarios in that order.
+            """
+            templateSites = [r for r in template_reactants if r.isSurfaceSite()]
+            if len(templateSites) == 2:
+                """
+                Three reactants and a termolecular template.
+                Could be A + X + X <=> BX + CX (dissociative adsorption)
+                or A + X + X <=> AXX (bidentate adsorption)
+                that was first found in the reverse direction
+                and so is being passed in with all three reactants identified.
+                """
+                # Should be 2 surface sites in reactants too.
+                # Find them, and find mappings of the other
+                m1, m2, m3 = (r[0] for r in reactants)
+                if m1.isSurfaceSite() and m2.isSurfaceSite() and not m3.isSurfaceSite():
+                    site1, site2 = m1, m2
+                    adsorbateMolecules = reactants[2]
+                elif m1.isSurfaceSite() and not m2.isSurfaceSite() and m3.isSurfaceSite():
+                    site1, site2 = m1, m3
+                    adsorbateMolecules = reactants[1]
+                elif not m1.isSurfaceSite() and m2.isSurfaceSite() and m3.isSurfaceSite():
+                    site1, site2 = m2, m3
+                    adsorbateMolecules = reactants[0]
+                else:
+                    # Three reactants not containing two surface sites
+                    return []
 
-                        # Reactants stored as A + B + C
-                        generate_products_and_reactions((0, 1, 2))
+                if adsorbateMolecules[0].containsSurfaceSite():
+                    # An adsorbed molecule can't adsorb again
+                    return []
 
-                        # Only check for swapped reactants if they are different
-                        if reactants[1] is not reactants[2]:
-                            # Reactants stored as A + C + B
-                            generate_products_and_reactions((0, 2, 1))
-                        if reactants[0] is not reactants[1]:
-                            # Reactants stored as B + A + C
-                            generate_products_and_reactions((1, 0, 2))
-                        if reactants[0] is not reactants[2]:
-                            # Reactants stored as C + B + A
-                            generate_products_and_reactions((2, 1, 0))
-                            if reactants[0] is not reactants[1] and reactants[1] is not reactants[2]:
-                                # Reactants stored as C + A + B
-                                generate_products_and_reactions((2, 0, 1))
-                                # Reactants stored as B + C + A
-                                generate_products_and_reactions((1, 2, 0))
+                for r in template_reactants:
+                    if not r.isSurfaceSite():
+                        templateAdsorbate = r
+                        break
+                else:
+                    raise KineticsError("Couldn't find non-site in template {0!r}".format(template))
+
+                mappingsA = self.__matchReactantToTemplate(site1, templateSites[0])
+                mappingsB = self.__matchReactantToTemplate(site2, templateSites[1])
+                for adsorbateMolecule in adsorbateMolecules:
+                    mappingsC = self.__matchReactantToTemplate(adsorbateMolecule, templateAdsorbate)
+                    # this just copied/pasted from above - not checked
+                    for mapA, mapB, mapC in itertools.product(mappingsA, mappingsB, mappingsC):
+                        reactantStructures = [site1, site2, adsorbateMolecule]
+                        try:
+                            productStructures = self.__generateProductStructures(reactantStructures, [mapA, mapB, mapC], forward)
+                        except ForbiddenStructureException:
+                            pass
+                        else:
+                            if productStructures is not None:
+                                rxn = self.__createReaction(reactantStructures, productStructures, forward)
+                                if rxn: rxnList.append(rxn)
+
+            else:
+                """
+                Not a bidentate surface reaction, just a gas-phase
+                Trimolecular reactants: A + B + C --> products
+                """
+                moleculesA = reactants[0]
+                moleculesB = reactants[1]
+                moleculesC = reactants[2]
+
+                # Iterate over all resonance isomers of the reactants
+                for moleculeA in moleculesA:
+                    for moleculeB in moleculesB:
+                        for moleculeC in moleculesC:
+
+                            def generate_products_and_reactions(order):
+                                """
+                                order = (0, 1, 2) corresponds to reactants stored as A + B + C, etc.
+                                """
+                                _mappingsA = self.__matchReactantToTemplate(moleculeA, template_reactants[order[0]])
+                                _mappingsB = self.__matchReactantToTemplate(moleculeB, template_reactants[order[1]])
+                                _mappingsC = self.__matchReactantToTemplate(moleculeC, template_reactants[order[2]])
+
+                                # Iterate over each pair of matches (A, B, C)
+                                for _mapA in _mappingsA:
+                                    for _mapB in _mappingsB:
+                                        for _mapC in _mappingsC:
+                                            _reactantStructures = [moleculeA, moleculeB, moleculeC]
+                                            _maps = [_mapA, _mapB, _mapC]
+                                            # Reorder reactants in case we have a family with fewer reactant trees than
+                                            # reactants and different reactant orders can produce different products
+                                            _reactantStructures = [_reactantStructures[_i] for _i in order]
+                                            _maps = [_maps[_i] for _i in order]
+                                            try:
+                                                _productStructures = self.__generateProductStructures(_reactantStructures,
+                                                                                                      _maps,
+                                                                                                      forward)
+                                            except ForbiddenStructureException:
+                                                pass
+                                            else:
+                                                if _productStructures is not None:
+                                                    _rxn = self.__createReaction(_reactantStructures,
+                                                                                 _productStructures,
+                                                                                 forward)
+                                                    if _rxn: rxnList.append(_rxn)
+
+                            # Reactants stored as A + B + C
+                            generate_products_and_reactions((0, 1, 2))
+
+                            # Only check for swapped reactants if they are different
+                            if reactants[1] is not reactants[2]:
+                                # Reactants stored as A + C + B
+                                generate_products_and_reactions((0, 2, 1))
+                            if reactants[0] is not reactants[1]:
+                                # Reactants stored as B + A + C
+                                generate_products_and_reactions((1, 0, 2))
+                            if reactants[0] is not reactants[2]:
+                                # Reactants stored as C + B + A
+                                generate_products_and_reactions((2, 1, 0))
+                                if reactants[0] is not reactants[1] and reactants[1] is not reactants[2]:
+                                    # Reactants stored as C + A + B
+                                    generate_products_and_reactions((2, 0, 1))
+                                    # Reactants stored as B + C + A
+                                    generate_products_and_reactions((1, 2, 0))
+
+        # ToDo: try to remove this hard-coding of reaction family name..
+        if not forward and 'adsorption' in self.label.lower():
+            # Desorption should have desorbed something (else it was probably bidentate)
+            # so delete reactions that don't make a gas-phase desorbed product
+            prunedList = []
+            for reaction in rxnList:
+                for reactant in reaction.reactants:
+                    if not reactant.containsSurfaceSite():
+                        # found a desorbed species, we're ok
+                        prunedList.append(reaction)
+                        break
+                else:  # didn't break, so all species still adsorbed
+                    logging.debug("Removing {0} reaction {1!s} with no desorbed species".format(self.label, reaction))
+                    continue  # to next reaction immediately
+            rxnList = prunedList
+
 
         # If products is given, remove reactions from the reaction list that
         # don't generate the given products
         if products is not None:
-            ensure_species(products, resonance=prod_resonance)
-
             rxnList0 = rxnList[:]
             rxnList = []
             for reaction in rxnList0:
-            
-                products0 = reaction.products[:] if forward else reaction.reactants[:]
-
-                # For aromatics, generate aromatic resonance structures to accurately identify isomorphic species
-                if prod_resonance:
-                    for i, product in enumerate(products0):
-                        if product.isCyclic:
-                            aromaticStructs = generate_optimal_aromatic_resonance_structures(product)
-                            if aromaticStructs:
-                                products0[i] = aromaticStructs[0]
-
-                # Skip reactions that don't match the given products
-                if isomorphic_species_lists(products, products0):
+                products0 = reaction.products if forward else reaction.reactants
+                # Only keep reactions which give the requested products
+                # If prod_resonance=True, then use strict=False to consider all resonance structures
+                if same_species_lists(products, products0, strict=not prod_resonance):
                     rxnList.append(reaction)
 
         # Determine the reactant-product pairs to use for flux analysis
@@ -2099,7 +2313,34 @@ class KineticsFamily(Database):
                     pairs.append([reaction.reactants[1], reaction.products[0]])
                     pairs.append([reaction.reactants[1], reaction.products[1]])
                     pairs.append([reaction.reactants[0], reaction.products[2]])
-
+        elif reaction.isSurfaceReaction():
+            # remove vacant active sites from consideration
+            reactants = [sp for sp in reaction.reactants if not sp.isSurfaceSite()]
+            products = [sp for sp in reaction.products if not sp.isSurfaceSite()]
+            if len(reactants) == 1 or len(products) == 1:
+                # When there is only one reactant (or one product), it is paired
+                # with each of the products (reactants)
+                for reactant in reactants:
+                    for product in products:
+                        pairs.append([reactant, product])
+            elif self.label.lower() == 'surface_abstraction':
+                # Hardcoding for surface abstraction: pair the reactant containing
+                # *1 with the product containing *3 and vice versa
+                assert len(reaction.reactants) == len(reaction.products) == 2
+                if reaction.reactants[0].containsLabeledAtom('*1'):
+                    if reaction.products[0].containsLabeledAtom('*3'):
+                        pairs.append([reaction.reactants[0], reaction.products[0]])
+                        pairs.append([reaction.reactants[1], reaction.products[1]])
+                    elif reaction.products[1].containsLabeledAtom('*3'):
+                        pairs.append([reaction.reactants[0], reaction.products[1]])
+                        pairs.append([reaction.reactants[1], reaction.products[0]])
+                elif reaction.reactants[1].containsLabeledAtom('*1'):
+                    if reaction.products[1].containsLabeledAtom('*3'):
+                        pairs.append([reaction.reactants[0], reaction.products[0]])
+                        pairs.append([reaction.reactants[1], reaction.products[1]])
+                    elif reaction.products[0].containsLabeledAtom('*3'):
+                        pairs.append([reaction.reactants[0], reaction.products[1]])
+                        pairs.append([reaction.reactants[1], reaction.products[0]])
         if not pairs:
             logging.debug('Preset mapping missing for determining reaction pairs for family {0!s}, falling back to Reaction.generatePairs'.format(self.label))
 
@@ -2314,7 +2555,7 @@ class KineticsFamily(Database):
 
         if len(reactants0) == 1:
             molecule = reactants0[0]
-            mappings = self.__matchReactantToTemplate(molecule, template.reactants[0])
+            mappings = self.__matchReactantToTemplate(molecule, template.reactants[0].item)
             mappings = [[map0] for map0 in mappings]
             num_mappings = len(mappings)
             reactant_structures = [molecule]
@@ -2322,12 +2563,12 @@ class KineticsFamily(Database):
             moleculeA = reactants0[0]
             moleculeB = reactants0[1]
             # get mappings in forward direction
-            mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[0])
-            mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[1])
+            mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[0].item)
+            mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[1].item)
             mappings = list(itertools.product(mappingsA, mappingsB))
             # get mappings in the reverse direction
-            mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[1])
-            mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[0])
+            mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[1].item)
+            mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[0].item)
             mappings.extend(list(itertools.product(mappingsA, mappingsB)))
 
             reactant_structures = [moleculeA, moleculeB]
@@ -2339,9 +2580,9 @@ class KineticsFamily(Database):
             # Get mappings for all permutations of reactants
             mappings = []
             for order in itertools.permutations(range(3), 3):
-                mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[order[0]])
-                mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[order[1]])
-                mappingsC = self.__matchReactantToTemplate(moleculeC, template.reactants[order[2]])
+                mappingsA = self.__matchReactantToTemplate(moleculeA, template.reactants[order[0]].item)
+                mappingsB = self.__matchReactantToTemplate(moleculeB, template.reactants[order[1]].item)
+                mappingsC = self.__matchReactantToTemplate(moleculeC, template.reactants[order[2]].item)
                 mappings.extend(list(itertools.product(mappingsA, mappingsB, mappingsC)))
 
             reactant_structures = [moleculeA, moleculeB, moleculeC]
@@ -2356,7 +2597,7 @@ class KineticsFamily(Database):
                 pass
             else:
                 if product_structures is not None:
-                    if isomorphic_species_lists(list(products), list(product_structures)):
+                    if same_species_lists(list(products), list(product_structures)):
                         return reactant_structures, product_structures
                     else:
                         continue
@@ -2432,6 +2673,63 @@ class KineticsFamily(Database):
             for species in reaction.reactants + reaction.products:
                 species.generate_resonance_structures()
 
+    def getw0(self, rxn):
+        """
+        calculates the w0 for Blower Masel kinetics by calculating wf (total bond energy of bonds formed)
+        and wb (total bond energy of bonds broken) with w0 = (wf+wb)/2
+        """
+        mol = None
+        aDict = {}
+        for r in rxn.reactants:
+            m = r.molecule[0]
+            aDict.update(m.getLabeledAtoms())
+            if mol:
+                mol = mol.merge(m)
+            else:
+                mol = m.copy(deep=True)
+            
+        recipe = self.forwardRecipe.actions
+        
+        wb = 0.0
+        wf = 0.0
+        for act in recipe:
+
+            if act[0] == 'BREAK_BOND':
+                bd = mol.getBond(aDict[act[1]],aDict[act[3]])
+                wb += bd.getBDE()
+            elif act[0] == 'FORM_BOND':
+                bd = Bond(aDict[act[1]],aDict[act[3]],act[2])
+                wf += bd.getBDE()
+            elif act[0] == 'CHANGE_BOND':
+                bd1 = mol.getBond(aDict[act[1]],aDict[act[3]])
+                    
+                if act[2]+bd1.order == 0.5:
+                    mol2 = None
+                    for r in rxn.products:
+                        m = r.molecule[0]
+                        if mol2:
+                            mol2 = mol2.merge(m)
+                        else:
+                            mol2 = m.copy(deep=True)
+                    bd2 = mol2.getBond(aDict[act[1]],aDict[act[3]])
+                else:
+                    bd2 = Bond(aDict[act[1]],aDict[act[3]],bd1.order+act[2])
+                        
+                if bd2.order == 0:
+                    bd2bde = 0.0
+                else:
+                    bd2bde = bd2.getBDE()
+                bdediff = bd2bde-bd1.getBDE()
+                if bdediff > 0:
+                    wf += abs(bdediff)
+                else:
+                    wb += abs(bdediff)
+
+        return (wf+wb)/2.0
+
+    def getw0s(self, rxns):
+        return map(self.getw0,rxns)
+    
     def getTrainingDepository(self):
         """
         Returns the `training` depository from self.depositories
@@ -2442,8 +2740,8 @@ class KineticsFamily(Database):
         else:
             raise DatabaseError('Could not find training depository in family {0}.'.format(self.label))
 
-            
-    def addEntry(self,parent,grp,name):
+
+    def addEntry(self, parent, grp, name):
         """
         Adds a group entry with parent parent
         group structure grp
@@ -2455,27 +2753,8 @@ class KineticsFamily(Database):
         self.rules.entries[name] = []
         if entry.parent:
             entry.parent.children.append(entry)
-    
-    def getEntriesReactions(self,template):
-        """
-        retrieves all training reactions whose kinetics
-        are associated with the entry template
-        """
-        entries = self.rules.entries[template]
-        tentries = self.getTrainingDepository().entries
-        rxnEntries = []
-        for entry in entries:
-            rxnEntries.append(tentries[entry.index].item)
-        return rxnEntries
-    
-    def getTemplateKinetics(self,template):
-        """
-        retrives a list of all the kinetics objects
-        associated with a given template
-        """
-        return [entry.data for entry in self.rules.entries[template]]
-    
-    def splitReactions(self,rxns,oldlabel,newgrp):
+
+    def splitReactions(self, rxns, newgrp):
         """
         divides the reactions in rxns between the new
         group structure newgrp and the old structure with 
@@ -2488,29 +2767,29 @@ class KineticsFamily(Database):
         new = []
         comp = []
         newInds = []
-        kinetics = self.getTemplateKinetics(oldlabel)
         
         for i,rxn in enumerate(rxns):
-            reactants = rxn.reactants if rxn.is_forward else rxn.products
-            rmol = reactants[0].molecule[0]
-            for r in reactants[1:]:
-                rmol.merge(r.molecule[0])
+            rmol = rxn.reactants[0].molecule[0]
+            for r in rxn.reactants[1:]:
+                rmol = rmol.merge(r.molecule[0])
+
+            rmol.identifyRingMembership()
             
             if rmol.isSubgraphIsomorphic(newgrp,generateInitialMap=True, saveOrder=True):
-                new.append(kinetics[i])
+                new.append(rxn)
                 newInds.append(i)
             else:
-                comp.append(kinetics[i])
-        
-        return new,comp,newInds    
-    
-    def evalExt(self,parent,ext,extname,obj=None,T=1000.0):
+                comp.append(rxn)
+
+        return new,comp,newInds
+
+    def evalExt(self, parent, ext, extname, templateRxnMap, obj=None, T=1000.0):
         """
         evaluates the objective function obj
         for the extension ext with name extname to the parent entry parent
         """
-        rxns = self.getEntriesReactions(parent.label)
-        new,old,newInds = self.splitReactions(rxns,parent.label,ext)
+        rxns = templateRxnMap[parent.label]
+        new,old,newInds = self.splitReactions(rxns,ext)
         if len(new) == 0:
             return np.inf,False
         elif len(old) == 0:
@@ -2521,8 +2800,8 @@ class KineticsFamily(Database):
             else:
                 ob,boo = getObjectiveFunction(new,old,T=T)
             return ob,True
-    
-    def getExtensionEdge(self,parent,obj,T):
+
+    def getExtensionEdge(self, parent, templateRxnMap, obj, T):
         """
         finds the set of all extension groups to parent such that
         1) the extension group divides the set of reactions under parent
@@ -2541,26 +2820,22 @@ class KineticsFamily(Database):
         outExts = [[]]
         grps = [parent.item]
         names = [parent.label]
-        atmInds = [None]
+        firstTime = True
+        
+        Nsplits = len(templateRxnMap[parent.label][0].reactants)
         
         while grps != []:
             grp = grps[-1]
-            
-            if atmInds[-1]:
-                if len(atmInds[-1]) == 1:
-                    exts = grp.getExtensions(basename=names[-1],atmInd=atmInds[-1][0])
-                elif len(atmInds[-1]) == 2:
-                    exts = grp.getExtensions(basename=names[-1],atmInd=atmInds[-1][0],atmInd2=atmInds[-1][1])
-            else:
-                exts = grp.getExtensions(basename=names[-1])
+
+            exts = grp.getExtensions(basename=names[-1],Nsplits=Nsplits)
             
             regDict = dict()
             extInds = []
             for i,(grp2,grpc,name,typ,indc) in enumerate(exts):
 
                 if typ != 'intNewBondExt' and typ != 'extNewBondExt' and (typ,indc) not in regDict.keys():
-                    regDict[(typ,indc)] = ([],[])
-                val,boo = self.evalExt(parent,grp2,name,obj,T)
+                    regDict[(typ,indc)] = ([],[]) #first list is all extensions that match at least one reaction, second is extensions that match all reactions
+                val,boo = self.evalExt(parent,grp2,name,templateRxnMap,obj,T)
                     
                 if val != np.inf:
                     outExts[-1].append(exts[i]) #this extension splits reactions (optimization dim)
@@ -2576,106 +2851,156 @@ class KineticsFamily(Database):
                         extInds.append(i)  #these are bond formation extensions, we want to expand these until we get splits 
                     elif typ == 'atomExt':
                         regDict[(typ,indc)][0].extend(grp2.atoms[indc[0]].atomType)
-                    elif typ == 'elExt':
-                        regDict[(typ,indc)][0].extend(grp2.atoms[indc[0]].radicalElectrons)
-                    elif typ == 'bondExt':
-                        regDict[(typ,indc)][0].extend(grp2.getBond(grp2.atoms[indc[0]],grp2.atoms[indc[1]]).order)
-
-                else:                    
-                    #this extension matches no reactions
-                    if typ == 'atomExt':
                         regDict[(typ,indc)][1].extend(grp2.atoms[indc[0]].atomType)
                     elif typ == 'elExt':
+                        regDict[(typ,indc)][0].extend(grp2.atoms[indc[0]].radicalElectrons)
                         regDict[(typ,indc)][1].extend(grp2.atoms[indc[0]].radicalElectrons)
                     elif typ == 'bondExt':
+                        regDict[(typ,indc)][0].extend(grp2.getBond(grp2.atoms[indc[0]],grp2.atoms[indc[1]]).order)
                         regDict[(typ,indc)][1].extend(grp2.getBond(grp2.atoms[indc[0]],grp2.atoms[indc[1]]).order)
-            
+                    elif typ == 'ringExt':
+                        regDict[(typ,indc)][1].append(True)
+                else:                    
+                    #this extension matches no reactions
+                    if typ == 'ringExt':
+                        regDict[(typ,indc)][0].append(False)
+                        regDict[(typ,indc)][1].append(False)
                     
             for typr,indcr in regDict.keys(): #have to label the regularization dimensions in all relevant groups
-                regVal = regDict[(typr,indcr)][0]
-                #parent
-                if typr != 'intNewBondExt' and typr != 'extNewBondExt': #these dimensions should be regularized
-                    if typr == 'atomExt':
-                        grp.atoms[indcr[0]].reg_dim_atm = regVal
-                    elif typr == 'elExt':
-                        grp.atoms[indcr[0]].reg_dim_u = regVal
-                    elif typr == 'bondExt':
-                        atms = grp.atoms
-                        bd = grp.getBond(atms[indcr[0]],atms[indcr[1]])
-                        bd.reg_dim = regVal
+                regVal = regDict[(typr,indcr)]
+                
+                if firstTime and parent.children == []:
+                    #parent
+                    if typr != 'intNewBondExt' and typr != 'extNewBondExt': #these dimensions should be regularized
+                        if typr == 'atomExt':
+                            grp.atoms[indcr[0]].reg_dim_atm = list(regVal)
+                        elif typr == 'elExt':
+                            grp.atoms[indcr[0]].reg_dim_u = list(regVal)
+                        elif typr == 'ringExt':
+                            grp.atoms[indcr[0]].reg_dim_r = list(regVal)
+                        elif typr == 'bondExt':
+                            atms = grp.atoms
+                            bd = grp.getBond(atms[indcr[0]],atms[indcr[1]])
+                            bd.reg_dim = list(regVal)
                             
                 #extensions being sent out
                 if typr != 'intNewBondExt' and typr != 'extNewBondExt': #these dimensions should be regularized
                     for grp2,grpc,name,typ,indc in outExts[-1]: #returned groups
                         if typr == 'atomExt':
-                            grp2.atoms[indcr[0]].reg_dim_atm = regVal
+                            grp2.atoms[indcr[0]].reg_dim_atm = list(regVal)
                             if grpc:
-                                grpc.atoms[indcr[0]].reg_dim_atm = regVal
+                                grpc.atoms[indcr[0]].reg_dim_atm = list(regVal)
                         elif typr == 'elExt':
-                            grp2.atoms[indcr[0]].reg_dim_u = regVal
+                            grp2.atoms[indcr[0]].reg_dim_u = list(regVal)
                             if grpc:
-                                grpc.atoms[indcr[0]].reg_dim_u = regVal
+                                grpc.atoms[indcr[0]].reg_dim_u = list(regVal)
+                        elif typr == 'ringExt':
+                            grp2.atoms[indcr[0]].reg_dim_r = list(regVal)
+                            if grpc:
+                                grpc.atoms[indcr[0]].reg_dim_r = list(regVal)
                         elif typr == 'bondExt':
                             atms = grp2.atoms
                             bd = grp2.getBond(atms[indcr[0]],atms[indcr[1]])
-                            bd.reg_dim = regVal
+                            bd.reg_dim = list(regVal)
                             if grpc:
                                 atms = grpc.atoms
                                 bd = grp2.getBond(atms[indcr[0]],atms[indcr[1]])
-                                bd.reg_dim = regVal
+                                bd.reg_dim = list(regVal)
             
             #extensions being expanded
             for typr,indcr in regDict.keys(): #have to label the regularization dimensions in all relevant groups
-                regVal = regDict[(typr,indcr)][0]
+                regVal = regDict[(typr,indcr)]
                 if typr != 'intNewBondExt' and typr != 'extNewBondExt': #these dimensions should be regularized
                     for ind2 in extInds: #groups for expansion
                         grp2,grpc,name,typ,indc = exts[ind2]
                         if typr == 'atomExt':
-                            grp2.atoms[indcr[0]].reg_dim_atm = regVal
+                            grp2.atoms[indcr[0]].reg_dim_atm = list(regVal)
                             if grpc:
-                                grpc.atoms[indcr[0]].reg_dim_atm = regVal
+                                grpc.atoms[indcr[0]].reg_dim_atm = list(regVal)
                         elif typr == 'elExt':
-                            grp2.atoms[indcr[0]].reg_dim_u = regVal
+                            grp2.atoms[indcr[0]].reg_dim_u = list(regVal)
                             if grpc:
-                                grpc.atoms[indcr[0]].reg_dim_u = regVal
+                                grpc.atoms[indcr[0]].reg_dim_u = list(regVal)
+                        elif typr == 'ringExt':
+                            grp2.atoms[indcr[0]].reg_dim_r = list(regVal)
+                            if grpc:
+                                grpc.atoms[indcr[0]].reg_dim_r = list(regVal)
                         elif typr == 'bondExt':
                             atms = grp2.atoms
                             bd = grp2.getBond(atms[indcr[0]],atms[indcr[1]])
-                            bd.reg_dim = regVal
+                            bd.reg_dim = list(regVal)
                             if grpc:
                                 atms = grpc.atoms
                                 bd = grp2.getBond(atms[indcr[0]],atms[indcr[1]])
-                                bd.reg_dim = regVal
+                                bd.reg_dim = list(regVal)
             
             outExts.append([])
             grps.pop()
             names.pop()
-            atmInds.pop()
             
             for ind in extInds: #collect the groups to be expanded
                 grpr,grpcr,namer,typr,indcr = exts[ind]
                 grps.append(grpr)
                 names.append(namer)
-                atmInds.append(indcr)
+            
+            if firstTime:
+                firstTime=False
         
         out = []
         for x in outExts: #compile all of the valid extensions together, may be some duplicates here, but I don't think it's currently worth identifying them
             out.extend(x)
         
         return out
-            
-                    
-    def extendNode(self,parent,thermoDatabase=None,obj=None,T=1000.0):
+
+
+    def extendNode(self, parent, templateRxnMap, thermoDatabase=None, obj=None, T=1000.0,):
         """
         Constructs an extension to the group parent based on evaluation 
         of the objective function obj
         """
         
-        exts = self.getExtensionEdge(parent,obj=obj,T=T)
+        exts = self.getExtensionEdge(parent,templateRxnMap,obj=obj,T=T)
+        
+        if exts == []: #should only occur when all reactions at this node are identical
+            rs = templateRxnMap[parent.label]
+            for q,rxn in enumerate(rs):
+                for j in xrange(q):
+                    if not isomorphic_species_lists(rxn.reactants,rs[j].reactants,generateInitialMap=True):
+                        for p,atm in enumerate(parent.item.atoms):
+                            if atm.reg_dim_atm[0] != atm.reg_dim_atm[1]:
+                                logging.error('atom violation')
+                                logging.error(atm.reg_dim_atm)
+                                logging.error(parent.label)
+                                logging.error('Regularization dimension suggest this node can be expanded, but extension generation has failed')
+                            if atm.reg_dim_u[0] != atm.reg_dim_u[1]:
+                                logging.error('radical violation')
+                                logging.error(atm.reg_dim_u)
+                                logging.error(parent.label)
+                                logging.error('Regularization dimension suggest this node can be expanded, but extension generation has failed')
+                        for p,bd in enumerate(parent.item.getAllEdges()):
+                            if bd.reg_dim[0] != bd.reg_dim[1]:
+                                logging.error('bond violation')
+                                logging.error(bd.order)
+                                logging.error(bd.reg_dim)
+                                logging.error(parent.label)
+                                logging.error('Regularization dimension suggest this node can be expanded, but extension generation has failed')
+                        
+                        logging.error('split violation')
+                        logging.error('parent')
+                        logging.error(parent.item.toAdjacencyList())
+                        for c,atm in enumerate(parent.item.atoms):
+                            logging.error(c)
+                            logging.error(atm.reg_dim_atm)
+                            logging.error(atm.reg_dim_u)
+                        for rxn in rs:
+                            for react in rxn.reactants:
+                                logging.error(react.toAdjacencyList())
+                        raise ValueError('this implies that extensions could not be generated that split at least two different reactions, which should not be possible') #If family.getExtensionEdge and Group.getExtensions operate properly this should always pass
+            return False
         
         vals = []
         for grp,grpc,name,typ,einds in exts:
-            val,boo = self.evalExt(parent,grp,name,obj,T)
+            val,boo = self.evalExt(parent,grp,name,templateRxnMap,obj,T)
             vals.append(val) 
             
         min_val = min(vals)
@@ -2685,6 +3010,11 @@ class KineticsFamily(Database):
         ext = exts[min_ind]
         
         extname = ext[2]
+        
+        if ext[3] == 'atomExt':
+            ext[0].atoms[ext[4][0]].reg_dim_atm = [ext[0].atoms[ext[4][0]].atomType,ext[0].atoms[ext[4][0]].atomType]
+        elif ext[3] == 'elExt':
+            ext[0].atoms[ext[4][0]].reg_dim_u = [ext[0].atoms[ext[4][0]].radicalElectrons,ext[0].atoms[ext[4][0]].radicalElectrons]
         
         self.addEntry(parent,ext[0],extname)
         
@@ -2701,32 +3031,32 @@ class KineticsFamily(Database):
     
             self.addEntry(parent,ext[1],cextname)
         
-        rxns = self.getEntriesReactions(parent.label)
-        new,left,newInds = self.splitReactions(rxns,parent.label,ext[0])
+        rxns = templateRxnMap[parent.label]
+        
+        
+        new,left,newInds = self.splitReactions(rxns,ext[0])
         
         compEntries = []
         newEntries = []
 
-        for i,entry in enumerate(self.rules.entries[parent.label]):
+        for i,entry in enumerate(templateRxnMap[parent.label]):
             if i in newInds:
-                entry.label = extname
                 newEntries.append(entry)
             else:
-                if complement:
-                    entry.label = cextname
                 compEntries.append(entry)
         
-        self.rules.entries[extname] = newEntries
+            
+        templateRxnMap[extname] = newEntries
         
         if complement:
-            self.rules.entries[parent.label] = []
-            self.rules.entries[cextname] = compEntries
+            templateRxnMap[parent.label] = []
+            templateRxnMap[cextname] = compEntries
         else:
-            self.rules.entries[parent.label] = compEntries
+            templateRxnMap[parent.label] = compEntries
             
-        return
-    
-    def generateTree(self,obj=None,thermoDatabase=None,T=1000.0):
+        return True
+
+    def generateTree(self, obj=None, thermoDatabase=None, T=1000.0):
         """
         Generate a tree by greedy optimization based on the objective function obj
         the optimization is done by iterating through every group and if the group has
@@ -2739,39 +3069,20 @@ class KineticsFamily(Database):
         have two children one of which has no kinetics data and no children
         (its parent becomes the parent of its only relevant child node)
         """
+        templateRxnMap = self.getReactionMatches(thermoDatabase=thermoDatabase,removeDegeneracy=True,fixLabels=True,exactMatchesOnly=True,getReverse=True)
+        
+        multCompletedNodes = [] #nodes containing multiple identical training reactions
         boo = True #if the for loop doesn't break becomes false and the while loop terminates
         while boo:
             for entry in self.groups.entries.itervalues():
                 if not isinstance(entry.item, Group): #skip logic nodes
                     continue
-                if entry.index != -1 and len(self.rules.entries[entry.label])>1:
-                    self.extendNode(entry,thermoDatabase,obj,T)
-                    break
-                elif entry.parent is None or entry.parent.parent is None or not isinstance(entry.parent.item,Group) or not isinstance(entry.parent.parent.item,Group):
-                    pass
-                elif len(self.rules.entries[entry.parent.label])>0 or len(self.rules.entries[entry.label])>0:
-                    pass
-                elif len(entry.parent.children) == 1:
-                    label = entry.parent.label
-                    entry.parent.parent.children.remove(entry.parent)
-                    entry.parent = entry.parent.parent
-                    entry.parent.children.append(entry)
-                    del self.groups.entries[label]   
-                    del self.rules.entries[label]
-                    break
-                elif len(entry.parent.children) == 2: 
-                    child = [c for c in entry.parent.children if c != entry][0]
-                    if len(self.rules.entries[child.label]) == 0 and len(child.children) == 0:
-                        label = entry.parent.label
-                        entry.parent.parent.children.remove(entry.parent)
-                        entry.parent.parent.children.append(entry)
-                        entry.parent = entry.parent.parent
-                        del self.groups.entries[label]   
-                        del self.rules.entries[label]
-                        clabel = child.label
-                        del self.groups.entries[clabel]
-                        del self.rules.entries[clabel]
-                        break
+                if entry.index != -1 and len(templateRxnMap[entry.label])>1 and entry not in multCompletedNodes:
+                    boo2 = self.extendNode(entry,templateRxnMap,thermoDatabase,obj,T)
+                    if boo2: #extended node so restart while loop
+                        break 
+                    else: #no extensions could be generated since all reactions were identical
+                        multCompletedNodes.append(entry)
             else:
                 boo = False
             
@@ -2783,6 +3094,142 @@ class KineticsFamily(Database):
                     iters += 1
         
         return
+
+
+    def makeBMRulesFromTemplateRxnMap(self, templateRxnMap):
+
+        index = max([e.index for e in self.rules.getEntries()] or [0]) + 1
+        
+        for entry in self.groups.entries.values():
+            if entry.index == -1 or self.rules.entries[entry.label] != []:
+                continue
+            rxns = templateRxnMap[entry.label]
+            descendants = getAllDescendants(entry)
+            for entry2 in descendants:
+                rxns.extend(templateRxnMap[entry2.label])
+            
+            assert rxns != [], entry.label
+            kinetics = ArrheniusBM().fitToReactions(rxns,family=self)
+            
+            new_entry = Entry(
+                index = index,
+                label = entry.label,
+                item = self.forwardTemplate,
+                data = kinetics,
+                rank = 11,
+                reference=None,
+                shortDesc="BM rule fitted to {0} training reactions at node {1}".format(len(rxns),entry.label),
+                longDesc="BM rule fitted to {0} training reactions at node {1}".format(len(rxns),entry.label),
+            )
+            new_entry.data.comment = "BM rule fitted to {0} training reactions at node {1}".format(len(rxns),entry.label)
+
+            self.rules.entries[entry.label].append(new_entry)
+            
+            index += 1
+
+
+
+    def crossValidate(self, folds=5, templateRxnMap=None, T=1000.0, iters=0, random_state=1):
+        """
+        Perform K-fold cross validation on an automatically generated tree at temperature T
+        after finding an appropriate node for kinetics estimation it will move up the tree
+        iters times.  
+        Returns a dictionary mapping {rxn:Ln(k_Est/k_Train)}
+        """
+        
+        if templateRxnMap is None:
+            templateRxnMap = self.getReactionMatches(removeDegeneracy=True,getReverse=True)
+        
+        rxns = np.array(templateRxnMap['Root'])
+        
+        kf = KFold(folds,shuffle=True,random_state=random_state)
+        errors = {}
+        
+        for train_index, test_index in kf.split(rxns):
+
+            rxns_test = rxns[test_index]
+            
+            for rxn in rxns_test:
+                    
+                krxn = rxn.kinetics.getRateCoefficient(T)
+                
+                entry = self.getRootTemplate()[0]
+                
+                boo = True
+                while boo: #find the entry it matches
+                    for child in entry.children:
+                        rs = templateRxnMap[child.label]
+                        if rxn in rs:
+                            entry = child
+                            break
+                    else:
+                        boo = False
+                
+                
+                while entry.parent and len(set(templateRxnMap[entry.label])-set(rxns_test)) <= 1:
+                    if entry.parent:
+                        entry = entry.parent
+                
+                for q in xrange(iters):
+                    if entry.parent:
+                        entry = entry.parent 
+                  
+                L = list(set(templateRxnMap[entry.label])-set(rxns_test))
+                
+                if L != []: 
+                    kinetics = ArrheniusBM().fitToReactions(L,family=self)
+                    kinetics = kinetics.toArrhenius(rxn.getEnthalpyOfReaction(T))
+                    k = kinetics.getRateCoefficient(T)
+                    errors[rxn] = np.log(k/krxn)
+                else:
+                    raise ValueError('only one piece of kinetics information in the tree?')  
+        
+        return errors
+
+    def crossValidateOld(self, folds=5, T=1000.0, random_state=1, estimator='rate rules', thermoDatabase=None):
+        """
+        Perform K-fold cross validation on an automatically generated tree at temperature T
+        Returns a dictionary mapping {rxn:Ln(k_Est/k_Train)}
+        """
+        
+        kf = KFold(folds,shuffle=True,random_state=random_state)
+        errors = {}
+        rxns = np.array(self.getTrainingSet(removeDegeneracy=True))
+        
+        if thermoDatabase is None:
+            from rmgpy.data.rmg import getDB
+            tdb = getDB('thermo')
+        else:
+            tdb = thermoDatabase
+        
+        for train_index, test_index in kf.split(rxns):
+            
+            self.rules.entries = {} #clear rules each iteration
+            
+            self.addKineticsRulesFromTrainingSet(trainIndices=train_index,thermoDatabase=tdb)
+            self.fillKineticsRulesByAveragingUp()
+            rxns_test = rxns[test_index]
+            
+            for rxn in rxns_test:
+                
+                krxn = rxn.kinetics.getRateCoefficient(T)
+                
+                templateLabels = self.getReactionTemplateLabels(rxn)
+                template = self.retrieveTemplate(templateLabels)
+                if estimator == 'rate rules':
+                    kinetics,entry = self.estimateKineticsUsingRateRules(template, degeneracy=1)
+                elif estimator == 'group additivity':
+                    kinetics = self.estimateKineticsUsingGroupAdditivity(template, degeneracy=1)
+                else:
+                    raise ValueError('{0} is not a valid value for input `estimator`'.format(estimator))
+                    
+                k = kinetics.getRateCoefficient(T)
+                
+                errors[rxn] = np.log(k/krxn)
+        
+        return errors
+            
+            
     
     def simpleRegularization(self, node):
         """
@@ -2794,53 +3241,119 @@ class KineticsFamily(Database):
         unless it is the top node even if the tree did not split on the identity 
         of that atom
         """
-        grp = node.item
-        
-        if isinstance(node.item,Group):
-            for i,atm1 in enumerate(grp.atoms):
-                if atm1.reg_dim_atm != [] and set(atm1.reg_dim_atm) != set(atm1.atomType):
-                    self.extendRegularization(node,[i],atm1.reg_dim_atm,'atomtype')
-                if atm1.reg_dim_u != [] and set(atm1.reg_dim_u) != set(atm1.radicalElectrons):
-                    self.extendRegularization(node,[i],atm1.reg_dim_u,'unpaired')
-                for j,atm2 in enumerate(grp.atoms[i:]):
-                    if grp.hasBond(atm1,atm2):
-                        bd = grp.getBond(atm1,atm2)
-                        if bd.reg_dim != [] and set(bd.reg_dim) != set(bd.order):
-                            self.extendRegularization(node,[i,j],bd.reg_dim,'bond')    
         
         for child in node.children:
             self.simpleRegularization(child)
             
-    def extendRegularization(self, node, inds, regs, typ):
-        """
-        Applies a regularization down the tree from a given parent node
-        """
         grp = node.item
+
+        R = ['H','C','N','O','Si','S','Cl'] #set of possible R elements/atoms
+        R = [atomTypes[x] for x in R]
         
-        if isinstance(grp,Group):
-            if typ == 'atomtype':
-                grp.atoms[inds[0]].atomType = list(set(grp.atoms[inds[0]].atomType) & set(regs))
-                for child in node.children:
-                    self.extendRegularization(child,inds,regs,typ)
-            elif typ == 'unpaired':
-                grp.atoms[inds[0]].radicalElectrons = list(set(grp.atoms[inds[0]].radicalElectrons) & set(regs))
-                for child in node.children:
-                    self.extendRegularization(child,inds,regs,typ)
-            elif typ == 'bond':
-                bd = grp.getBond(grp.atoms[inds[0]],grp.atoms[inds[1]])
-                bd.order = list(set(bd.order) & set(regs))
-                for child in node.children:
-                    self.extendRegularization(child,inds,regs,typ)
-            else:
-                raise ValueError('regularization type of {0} is unimplemented'.format(typ))
-    
-    def regularize(self, regularization=simpleRegularization):
+        RnH = R[:]
+        RnH.remove(atomTypes['H'])
+        
+        Run = [0,1,2,3]
+        
+        atmDict = {'R':R,'R!H':RnH}
+        
+        if isinstance(node.item,Group):
+            indistinguishable = []
+            for i,atm1 in enumerate(grp.atoms):
+                
+                skip = False
+                if node.children == []: #if the atoms or bonds are graphically indistinguishable don't regularize
+                    bdpairs = {(atm,tuple(bd.order)) for atm,bd in atm1.bonds.iteritems()}
+                    for atm2 in grp.atoms:
+                        if atm1 is not atm2 and atm1.atomType == atm2.atomType and len(atm1.bonds) == len(atm2.bonds):
+                            bdpairs2 = {(atm,tuple(bd.order)) for atm,bd in atm2.bonds.iteritems()}
+                            if bdpairs == bdpairs2:
+                                skip = True
+                                indistinguishable.append(i)
+                                
+                if not skip and atm1.reg_dim_atm[1] != [] and set(atm1.reg_dim_atm[1]) != set(atm1.atomType):
+                    atyp = atm1.atomType
+                    if len(atyp) == 1 and atyp[0] in R:
+                        pass
+                    else:
+                        if len(atyp) == 1 and atyp[0].label in atmDict.keys():
+                            atyp = atmDict[atyp[0].label]
+                        
+                        vals = list(set(atyp) & set(atm1.reg_dim_atm[1]))
+                        assert vals != [], 'cannot regularize to empty'
+                        if all([set(child.item.atoms[i].atomType) <= set(vals) for child in node.children]):
+                            atm1.atomType = vals
+                        
+                if not skip and atm1.reg_dim_u[1] != [] and set(atm1.reg_dim_u[1]) != set(atm1.radicalElectrons):
+                    if len(atm1.radicalElectrons) == 1:
+                        pass
+                    else:
+                        relist = atm1.radicalElectrons
+                        if relist == []: 
+                            relist = Run
+                        vals = list(set(relist) & set(atm1.reg_dim_u[1]))
+                        assert vals != [], 'cannot regularize to empty'
+                        
+                        if all([set(child.item.atoms[i].radicalElectrons) <= set(vals) if child.item.atoms[i].radicalElectrons != [] else False for child in node.children]):
+                            atm1.radicalElectrons = vals
+                        
+                if not skip and atm1.reg_dim_r[1] != [] and (not 'inRing' in atm1.props.keys() or atm1.reg_dim_r[1][0] != atm1.props['inRing']):
+                    if not 'inRing' in atm1.props.keys():
+                        if all(['inRing' in child.item.atoms[i].props.keys() for child in node.children]) and all([child.item.atoms[i].props['inRing'] == atm1.reg_dim_r[1] for child in node.children]):
+                            atm1.props['inRing'] = atm1.reg_dim_r[1][0]
+                    
+                if not skip:  
+                    for j,atm2 in enumerate(grp.atoms[:i]):
+                        if j in indistinguishable: #skip graphically indistinguishable atoms
+                            continue
+                        if grp.hasBond(atm1,atm2):
+                            bd = grp.getBond(atm1,atm2)
+                            if len(bd.order) == 1:
+                                pass
+                            else:
+                                vals = list(set(bd.order) & set(bd.reg_dim[1]))
+                                if vals != [] and all([set(child.item.getBond(child.item.atoms[i],child.item.atoms[j]).order) <= set(vals) for child in node.children]):
+                                    bd.order = vals
+
+    def regularize(self, regularization=simpleRegularization, keepRoot=True):
         """
         Regularizes the tree according to the regularization function regularization
         """
-        regularization(self,self.getRootTemplate()[0])
-        
-    def prepareTreeForGeneration(self,thermoDatabase=None):
+        if keepRoot:
+            for child in self.getRootTemplate()[0].children: #don't regularize the root
+                regularization(self,child)
+        else:
+            regularization(self,self.getRootTemplate()[0])
+    
+    def checkTree(self, entry=None):
+        if entry is None:
+            entry = self.getRootTemplate()[0]
+        for child in entry.children:
+            if not child.item.isSubgraphIsomorphic(entry.item,generateInitialMap=True,saveOrder=True):
+                logging.error('child: ')
+                logging.error(child.label)
+                logging.error(child.item.toAdjacencyList())
+                logging.error('parent: ')
+                logging.error(entry.label)
+                logging.error(entry.item.toAdjacencyList())
+                raise ValueError('Child not subgraph isomorphic to parent')
+            self.checkTree(child)
+
+    def makeTree(self, obj=None, regularization=simpleRegularization, thermoDatabase=None, T=1000.0):
+        """
+        generates tree structure and then generates rules for the tree
+        """
+        self.generateTree(obj=obj,thermoDatabase=thermoDatabase,T=T)
+        self.regularize(regularization=regularization)
+        templateRxnMap = self.getReactionMatches(thermoDatabase=thermoDatabase,removeDegeneracy=True,getReverse=True)
+        self.makeBMRulesFromTemplateRxnMap(templateRxnMap)
+        self.checkTree()
+    
+    def cleanTreeRules(self):
+        self.rules.entries = OrderedDict()
+        self.rules.entries['Root'] = []
+
+    def cleanTreeGroups(self, thermoDatabase=None):
         """
         clears groups and rules in the tree, generates an appropriate
         root group to start from and then reads training reactions
@@ -2859,24 +3372,24 @@ class KineticsFamily(Database):
             if grp is None:
                 grp = ent.item
             else:
-                grp.mergeGroups(ent.item)
-        
+                grp = grp.mergeGroups(ent.item)
         
         #clear everything
         self.groups.entries = {x.label:x for x in self.groups.entries.itervalues() if x.index == -1}
-        self.rules.entries = OrderedDict()
         
         #add the starting node
         self.addEntry(None,grp,'Root')
+        self.groups.entries['Root'].index = 1
         self.groups.top = [self.groups.entries['Root']]
         self.forwardTemplate.reactants = [self.groups.entries['Root']]
 
-        #fill with training reactions
-        self.addKineticsRulesFromTrainingSet(thermoDatabase)
-        
         return
-    
-    def saveGeneratedTree(self,path=None):
+
+    def cleanTree(self, thermoDatabase=None):
+        self.cleanTreeRules()
+        self.cleanTreeGroups(thermoDatabase=thermoDatabase)
+
+    def saveGeneratedTree(self, path=None):
         """
         clears the rules and saves the family to its 
         current location in database
@@ -2885,10 +3398,216 @@ class KineticsFamily(Database):
             path = settings['database.directory']
             path = os.path.join(path,'kinetics','families',self.label)
         
-        self.rules.entries = OrderedDict() #have to clear the new rules made
-        
         self.save(path)
     
+    def getTrainingSet(self, thermoDatabase=None, removeDegeneracy=False, estimateThermo=True, fixLabels=False, getReverse=False):
+        """
+        retrieves all reactions in the training set, assigns thermo to the species objects
+        reverses reactions as necessary so that all reactions are in the forward direction
+        and returns the resulting list of reactions in the forward direction with thermo 
+        assigned
+        """
+        if self.ownReverse and getReverse:
+            revRxns = []
+            rkeys = self.reverseMap.keys()
+            reverseMap = self.reverseMap
+            
+        if estimateThermo:
+            if thermoDatabase is None:
+                from rmgpy.data.rmg import getDB
+                tdb = getDB('thermo')
+            else:
+                tdb = thermoDatabase
+        
+        try:
+            dep = self.getTrainingDepository()
+        except:
+            logging.info('Could not find training depository in family {0}.'.format(self.label))
+            logging.info('Must be because you turned off the training depository.')
+            return
+        
+        rxns = deepcopy([i.item for i in dep.entries.values()])
+        entries = deepcopy([i for i in dep.entries.values()])
+        
+        roots = [x.item for x in self.getRootTemplate()]
+        root = None
+        for r in roots:
+            if root:
+                root = root.mergeGroups(r)
+            else:
+                root = deepcopy(r)
+        
+        if fixLabels:
+            rootLabels = [x.label for x in root.atoms if x.label != '']
+        
+        for i,r in enumerate(entries):
+            if estimateThermo:
+                for j,react in enumerate(r.item.reactants):
+                    if rxns[i].reactants[j].thermo is None:
+                        rxns[i].reactants[j].thermo = tdb.getThermoData(react)
+        
+                for j,react in enumerate(r.item.products):
+                    if rxns[i].products[j].thermo is None:
+                        rxns[i].products[j].thermo = tdb.getThermoData(react)
+    
+            rxns[i].kinetics = r.data
+            rxns[i].rank = r.rank
+            
+            if removeDegeneracy:#adjust for degeneracy
+                rxns[i].kinetics.A.value_si /= rxns[i].degeneracy
+            
+            mol = None
+            for react in rxns[i].reactants:
+                if mol:
+                    mol = mol.merge(react.molecule[0])
+                else:
+                    mol = deepcopy(react.molecule[0])
+            
+            if fixLabels:
+                for atm in mol.atoms:
+                    if atm.label not in rootLabels:
+                        atm.label = ''
+            
+            
+            if mol.isSubgraphIsomorphic(root,generateInitialMap=True):
+                rxns[i].is_forward = True
+                if self.ownReverse and getReverse:
+                    mol = None
+                    for react in rxns[i].products:
+                        if mol:
+                            mol = mol.merge(react.molecule[0])
+                        else:
+                            mol = deepcopy(react.molecule[0])
+                    
+                            
+                    if mol.isSubgraphIsomorphic(root,generateInitialMap=True): #try product structures
+                        products = rxns[i].products
+                    else:
+                        products = self.applyRecipe([s.molecule[0] for s in rxns[i].reactants],forward=True)
+                        products = [Species(molecule=[p]) for p in products]
+                    
+                    prods = []
+                    for p in products: 
+                        for atm in p.molecule[0].atoms:
+                            if atm.label in rkeys:
+                                atm.label = reverseMap[atm.label]
+                    
+                        prods.append(Species(molecule=[p.molecule[0]]))
+                        
+                    rrev = Reaction(reactants=prods,products=rxns[i].reactants,kinetics=rxns[i].generateReverseRateCoefficient(),rank=rxns[i].rank)
+                    
+                    rrev.is_forward = False
+                    
+                    
+                    if estimateThermo:
+                        for r in rrev.reactants:
+                            if r.thermo is None:
+                                r.thermo = tdb.getThermoData(deepcopy(r))
+                    
+                        
+                    revRxns.append(rrev)
+                    
+                continue
+            else:
+                assert not self.ownReverse
+                
+                mol = None
+                for react in rxns[i].products:
+                    if mol:
+                        mol = mol.merge(react.molecule[0])
+                    else:
+                        mol = deepcopy(react.molecule[0])
+                
+                if mol.isSubgraphIsomorphic(root,generateInitialMap=True): #try product structures
+                    products = rxns[i].products
+                else:
+                    products = self.applyRecipe([s.molecule[0] for s in rxns[i].reactants],forward=True)
+                    products = [Species(molecule=[p]) for p in products]
+                
+                rrev = Reaction(reactants=products,products=rxns[i].reactants,kinetics=rxns[i].generateReverseRateCoefficient(),rank=rxns[i].rank)
+                
+                rrev.is_forward = False
+                
+                if estimateThermo:
+                    for r in rrev.reactants:
+                        if r.thermo is None:
+                            r.thermo = tdb.getThermoData(deepcopy(r))
+                rxns[i] = rrev
+        
+        if self.ownReverse and getReverse:
+            return rxns+revRxns
+        else:
+            return rxns
+
+    def getReactionMatches(self, rxns=None, thermoDatabase=None, removeDegeneracy=False, estimateThermo=True, fixLabels=False, exactMatchesOnly=False, getReverse=False):
+        """
+        returns a dictionary mapping for each entry in the tree:  
+        (entry.label,entry.item) : list of all training reactions (or the list given) that match that entry
+        """
+        if rxns is None:
+            rxns = self.getTrainingSet(thermoDatabase=thermoDatabase,removeDegeneracy=removeDegeneracy,estimateThermo=estimateThermo,fixLabels=fixLabels,getReverse=getReverse)
+        
+        entries = self.groups.entries
+        
+        assert len(set(entries.keys())) == len(entries.keys()), 'there are duplicate indices in family.group.entries'
+        
+        rxnLists = {entry.label:[] for entry in entries.values()}
+        
+        root = self.getRootTemplate()[0]
+        
+        for rxn in rxns:
+            mol = None
+            for r in rxn.reactants:
+                if mol is None:
+                    mol = deepcopy(r.molecule[0])
+                else:
+                    mol = mol.merge(r.molecule[0])
+                    
+            if not self.isEntryMatch(mol,root):
+                logging.error(root.item.toAdjacencyList())
+                logging.error(mol.toAdjacencyList())
+                for r in rxn.reactants:
+                    logging.error(r.molecule[0].toAdjacencyList())
+                for r in rxn.products:
+                    logging.error(r.molecule[0].toAdjacencyList())
+                raise ValueError('reaction: {0} does not match root template in family {1}'.format(rxn,self.label))
+            
+            rxnLists[root.label].append(rxn)
+            
+            entry = root
+            
+            while entry.children != []:
+                for child in entry.children:
+                    if self.isEntryMatch(mol,child):
+                        entry = child
+                        rxnLists[child.label].append(rxn)
+                        break
+                else:
+                    break
+        
+        if exactMatchesOnly:
+            newLists = dict()
+            for key,rs in rxnLists.iteritems():
+                newrs = set(rs)
+                for child in self.groups.entries[key].children:
+                    newrs -= set(rxnLists[child.label])
+                newLists[key] = list(newrs)
+            rxnLists = newLists
+                    
+        return rxnLists
+
+
+    def isEntryMatch(self, mol, entry):
+        """
+        determines if the labeled molecule object of reactants matches the entry entry
+        """
+        if isinstance(entry.item,Group):
+            structs = mol.generate_resonance_structures()
+            return any([mol.isSubgraphIsomorphic(entry.item,generateInitialMap=True) for mol in structs])
+        elif isinstance(entry.item,LogicOr):
+            return any([self.isEntryMatch(mol,self.groups.entries[c]) for c in entry.item.components])
+        
+
     def retrieveOriginalEntry(self, templateLabel):
         """
         Retrieves the original entry, be it a rule or training reaction, given

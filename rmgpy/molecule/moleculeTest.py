@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -98,16 +98,104 @@ class TestAtom(unittest.TestCase):
             else:
                 self.assertFalse(atom.isCarbon())
 
+    def testIsSilicon(self):
+        """
+        Test the Atom.isSilicon() method.
+        """
+        for element in elementList:
+            atom = Atom(element=element, radicalElectrons=1, charge=0, label='*1', lonePairs=0)
+            if element.symbol == 'Si':
+                self.assertTrue(atom.isSilicon())
+            else:
+                self.assertFalse(atom.isSilicon())
+
     def testIsOxygen(self):
         """
         Test the Atom.isOxygen() method.
         """
         for element in elementList:
-            atom = Atom(element=element, radicalElectrons=1, charge=0, label='*1', lonePairs=2)
+            atom = Atom(element=element, radicalElectrons=2, charge=0, label='*1', lonePairs=2)
             if element.symbol == 'O':
                 self.assertTrue(atom.isOxygen())
             else:
                 self.assertFalse(atom.isOxygen())
+
+    def testIsNitrogen(self):
+        """
+        Test the Atom.isNitrogen() method.
+        """
+        for element in elementList:
+            atom = Atom(element=element, radicalElectrons=1, charge=0, label='*1', lonePairs=1)
+            if element.symbol == 'N':
+                self.assertTrue(atom.isNitrogen())
+            else:
+                self.assertFalse(atom.isNitrogen())
+
+    def testIsSulfur(self):
+        """
+        Test the Atom.isSulfur() method.
+        """
+        for element in elementList:
+            atom = Atom(element=element, radicalElectrons=1, charge=0, label='*1', lonePairs=2)
+            if element.symbol == 'S':
+                self.assertTrue(atom.isSulfur())
+            else:
+                self.assertFalse(atom.isSulfur())
+
+    def testIsFluorine(self):
+        """
+        Test the Atom.isFluorine() method.
+        """
+        for element in elementList:
+            atom = Atom(element=element, radicalElectrons=1, charge=0, label='*1', lonePairs=3)
+            if element.symbol == 'F':
+                self.assertTrue(atom.isFluorine())
+            else:
+                self.assertFalse(atom.isFluorine())
+
+    def testIsChlorine(self):
+        """
+        Test the Atom.isChlorine() method.
+        """
+        for element in elementList:
+            atom = Atom(element=element, radicalElectrons=1, charge=0, label='*1', lonePairs=3)
+            if element.symbol == 'Cl':
+                self.assertTrue(atom.isChlorine())
+            else:
+                self.assertFalse(atom.isChlorine())
+
+    def testIsIodine(self):
+        """
+        Test the Atom.isIodine() method.
+        """
+        for element in elementList:
+            atom = Atom(element=element, radicalElectrons=1, charge=0, label='*1', lonePairs=3)
+            if element.symbol == 'I':
+                self.assertTrue(atom.isIodine())
+            else:
+                self.assertFalse(atom.isIodine())
+
+    def testIsNOS(self):
+        """
+        Test the Atom.isNOS() method.
+        """
+        for element in elementList:
+            atom = Atom(element=element, radicalElectrons=1, charge=0, label='*1', lonePairs=2)
+            if element.symbol in ['N', 'O', 'S']:
+                self.assertTrue(atom.isNOS())
+            else:
+                self.assertFalse(atom.isNOS())
+
+    def testIsSurfaceSite(self):
+        """
+        Test the Atom.isSurfaceSite() method.
+        """
+        for element in elementList:
+            atom = Atom(element=element, radicalElectrons=0, charge=0, label='*1', lonePairs=0)
+            if element.symbol == 'X':
+                self.assertTrue(atom.isSurfaceSite())
+            else:
+                self.assertFalse(atom.isSurfaceSite())
 
     def testIncrementRadical(self):
         """
@@ -298,7 +386,7 @@ class TestBond(unittest.TestCase):
         A method called before each unit test in this class.
         """
         self.bond = Bond(atom1=None, atom2=None, order=2)
-        self.orderList = [1,2,3,1.5, 0.30000000000000004]
+        self.orderList = [1,2,3,4,1.5, 0.30000000000000004]
     
     def testGetOrderStr(self):
         """
@@ -394,6 +482,17 @@ class TestBond(unittest.TestCase):
             else:
                 self.assertFalse(bond.isBenzene())
 
+    def testIsQuadruple(self):
+        """
+        Test the Bond.isQuadruple() method.
+        """
+        for order in self.orderList:
+            bond = Bond(None, None, order=order)
+            if order == 4:
+                self.assertTrue(bond.isQuadruple())
+            else:
+                self.assertFalse(bond.isQuadruple())
+                
     def testIncrementOrder(self):
         """
         Test the Bond.incrementOrder() method.
@@ -406,8 +505,10 @@ class TestBond(unittest.TestCase):
                     self.assertTrue(bond.isDouble())
                 elif order == 2: 
                     self.assertTrue(bond.isTriple())
+                elif order == 3:
+                    self.assertTrue(bond.isQuadruple())
             except ActionError:
-                self.assertTrue(order >= 3)
+                self.assertTrue(order >= 4) # or benzene??
         
     def testDecrementOrder(self):
         """
@@ -421,6 +522,8 @@ class TestBond(unittest.TestCase):
                     self.assertTrue(bond.isSingle())
                 elif order == 3: 
                     self.assertTrue(bond.isDouble())
+                elif order == 'Q':
+                    self.assertTrue(bond.isTriple())
             except ActionError:
                 self.assertTrue(order < 1)
                 
@@ -463,7 +566,7 @@ class TestBond(unittest.TestCase):
             try:
                 bond.applyAction(action)
             except ActionError:
-                self.assertTrue(3 <= order0,'Test failed with order {0}'.format(order0))
+                self.assertTrue(4 <= order0,'Test failed with order {0}'.format(order0))
                 
     def testApplyActionDecrementBond(self):
         """
@@ -631,6 +734,11 @@ class TestBond(unittest.TestCase):
         self.assertEqual(mol_CH2_S.atoms[0].lonePairs, 1)
         self.assertEqual(mol_carbonyl.atoms[0].lonePairs, 2)
         self.assertEqual(mol_carbonyl.atoms[1].lonePairs, 0)
+
+    def test_get_bond_string(self):
+        """Test that bond objects can return a bond string"""
+        bond = Bond(atom1=Atom(element=getElement(1)), atom2=Atom(element=getElement(6)), order=1)
+        self.assertEqual(bond.get_bond_string(), 'C-H')
         
 ################################################################################
 
@@ -868,7 +976,46 @@ class TestMolecule(unittest.TestCase):
         molecule2 = Molecule().fromSMILES('C[CH]C=CC=C')
         self.assertTrue(molecule1.isIsomorphic(molecule2))
         self.assertTrue(molecule2.isIsomorphic(molecule1))
-
+        
+        molecule1 = Molecule().fromAdjacencyList("""
+multiplicity 2
+1  *1 C u0 p0 c0 {2,D} {8,S} {9,S}
+2  C u0 p0 c0 {1,D} {3,S} {10,S}
+3  C u0 p0 c0 {2,S} {4,D} {11,S}
+4  C u0 p0 c0 {3,D} {5,S} {12,S}
+5  C u1 p0 c0 {4,S} {6,S} {7,S}
+6  H u0 p0 c0 {5,S}
+7  C u0 p0 c0 {5,S} {13,S} {14,S} {15,S}
+8  *2 H u0 p0 c0 {1,S}
+9  H u0 p0 c0 {1,S}
+10 H u0 p0 c0 {2,S}
+11 H u0 p0 c0 {3,S}
+12 H u0 p0 c0 {4,S}
+13 H u0 p0 c0 {7,S}
+14 H u0 p0 c0 {7,S}
+15 H u0 p0 c0 {7,S}""")
+        molecule2 = Molecule().fromAdjacencyList("""
+multiplicity 2
+1  *1 C u0 p0 c0 {2,D} {13,S} {9,S}
+2  C u0 p0 c0 {1,D} {3,S} {10,S}
+3  C u0 p0 c0 {2,S} {4,D} {11,S}
+4  C u0 p0 c0 {3,D} {5,S} {12,S}
+5  C u1 p0 c0 {4,S} {6,S} {7,S}
+6  H u0 p0 c0 {5,S}
+7  C u0 p0 c0 {5,S} {8,S} {14,S} {15,S}
+8  H u0 p0 c0 {7,S}
+9  H u0 p0 c0 {1,S}
+10 H u0 p0 c0 {2,S}
+11 H u0 p0 c0 {3,S}
+12 H u0 p0 c0 {4,S}
+13 *2 H u0 p0 c0 {1,S}
+14 H u0 p0 c0 {7,S}
+15 H u0 p0 c0 {7,S}""")
+        
+        self.assertTrue(molecule1.isIsomorphic(molecule2,generateInitialMap=True))
+        self.assertTrue(molecule2.isIsomorphic(molecule1,generateInitialMap=True))
+    
+        
     def testSubgraphIsomorphism(self):
         """
         Check the graph isomorphism functions.
@@ -983,6 +1130,30 @@ class TestMolecule(unittest.TestCase):
         mapping = molecule.findSubgraphIsomorphisms(groupRing)
         self.assertEqual(len(mapping), 5)
 
+    def test_lax_isomorphism(self):
+        """Test that we can do isomorphism comparison with strict=False"""
+        mol1 = Molecule().fromAdjacencyList("""
+multiplicity 2
+1 O u0 p2 c0 {3,D}
+2 C u1 p0 c0 {3,S} {4,S} {5,S}
+3 C u0 p0 c0 {1,D} {2,S} {6,S}
+4 H u0 p0 c0 {2,S}
+5 H u0 p0 c0 {2,S}
+6 H u0 p0 c0 {3,S}
+        """)
+
+        mol2 = Molecule().fromAdjacencyList("""
+multiplicity 2
+1 O u1 p2 c0 {3,S}
+2 C u0 p0 c0 {3,D} {4,S} {5,S}
+3 C u0 p0 c0 {1,S} {2,D} {6,S}
+4 H u0 p0 c0 {2,S}
+5 H u0 p0 c0 {2,S}
+6 H u0 p0 c0 {3,S}
+        """)
+
+        self.assertTrue(mol1.isIsomorphic(mol2, strict=False))
+
     def testAdjacencyList(self):
         """
         Check the adjacency list read/write functions for a full molecule.
@@ -1033,7 +1204,7 @@ class TestMolecule(unittest.TestCase):
             for j,atm2 in enumerate(testMol.atoms):
                 if j<i and testMol.hasBond(atm1,atm2):
                     bd = testMol.getBond(atm1,atm2)
-                    self.assertNotAlmostEqual(bd.order,0)
+                    self.assertNotAlmostEqual(bd.order,0.1)
                     
     def testSSSR(self):
         """
@@ -1516,7 +1687,29 @@ multiplicity 2
         saturated_molecule = indenyl.copy(deep=True)
         saturated_molecule.saturate_radicals()
         self.assertTrue(saturated_molecule.isIsomorphic(indene))
-        
+
+    def testSurfaceMolecules(self):
+        """
+        Test that we can identify surface molecules.
+        """
+        adsorbed = Molecule().fromAdjacencyList("""
+                                                1 H u0 p0 c0 {2,S}
+                                                2 X u0 p0 c0 {1,S}
+                                                """)
+        self.assertTrue(adsorbed.containsSurfaceSite())
+        gas = Molecule().fromAdjacencyList("""
+                                        1 H u0 p0 c0 {2,S}
+                                        2 H u0 p0 c0 {1,S}
+                                        """)
+        self.assertFalse(gas.containsSurfaceSite())
+
+        surface_site = Molecule().fromAdjacencyList("""
+                                                1 X u0 p0 c0
+                                                """)
+        self.assertTrue((surface_site.isSurfaceSite()))
+        self.assertFalse((adsorbed.isSurfaceSite()))
+        self.assertFalse((gas.isSurfaceSite()))
+
     def testMalformedAugmentedInChI(self):
         """Test that augmented inchi without InChI layer raises Exception."""
         from .inchi import InchiException
@@ -2098,6 +2291,18 @@ multiplicity 2
         self.assertTrue(mol.isIsomorphic(molCopy))
         self.assertTrue(mol.isIdentical(molCopy))
 
+    def testIdenticalTrue2(self):
+        """Test that isIdentical with strict=False returns True with allyl"""
+        mol = Molecule(SMILES='C=C[CH2]')
+        mol.assignAtomIDs()
+        res = mol.generate_resonance_structures(keep_isomorphic=True)
+        self.assertEqual(len(res), 2)
+
+        mol2 = res[1]
+        self.assertTrue(mol.isIsomorphic(mol2))
+        self.assertFalse(mol.isIdentical(mol2))
+        self.assertTrue(mol.isIdentical(mol2, strict=False))
+
     def testIdenticalFalse(self):
         """Test that the isIdentical returns False with butane"""
         mol = Molecule(SMILES='CCCC')
@@ -2248,6 +2453,45 @@ multiplicity 2
                 self.assertTrue(atom.props['inRing'])
             elif atom.element == 'H':
                 self.assertFalse(atom.props['inRing'])
+
+    def test_enumerate_bonds(self):
+        """Test that generating a count of bond labels works properly."""
+        adj_list = '''
+        1  O u0 p2 c0 {4,S} {23,S} {24,H}
+        2  O u0 p2 c0 {8,S} {23,H} {24,S}
+        3  C u0 p0 c0 {4,S} {6,S} {14,S} {15,S}
+        4  C u0 p0 c0 {1,S} {3,S} {16,S} {17,S}
+        5  C u0 p0 c0 {7,S} {12,S} {18,S} {19,S}
+        6  C u0 p0 c0 {3,S} {8,B} {9,B}
+        7  C u0 p0 c0 {5,S} {9,B} {10,B}
+        8  C u0 p0 c0 {2,S} {6,B} {11,B}
+        9  C u0 p0 c0 {6,B} {7,B} {22,S}
+        10 C u0 p0 c0 {7,B} {11,B} {20,S}
+        11 C u0 p0 c0 {8,B} {10,B} {21,S}
+        12 C u0 p0 c0 {5,S} {13,T}
+        13 C u0 p0 c0 {12,T} {25,S}
+        14 H u0 p0 c0 {3,S}
+        15 H u0 p0 c0 {3,S}
+        16 H u0 p0 c0 {4,S}
+        17 H u0 p0 c0 {4,S}
+        18 H u0 p0 c0 {5,S}
+        19 H u0 p0 c0 {5,S}
+        20 H u0 p0 c0 {10,S}
+        21 H u0 p0 c0 {11,S}
+        22 H u0 p0 c0 {9,S}
+        23 H u0 p0 c0 {1,S} {2,H}
+        24 H u0 p0 c0 {1,H} {2,S}
+        25 H u0 p0 c0 {13,S}
+        '''
+        mol = Molecule().fromAdjacencyList(adj_list)
+        bonds = mol.enumerate_bonds()
+        self.assertEqual(bonds['C#C'], 1)
+        self.assertEqual(bonds['C-C'], 4)
+        self.assertEqual(bonds['C-H'], 10)
+        self.assertEqual(bonds['C-O'], 2)
+        self.assertEqual(bonds['C:C'], 6)
+        self.assertEqual(bonds['H-O'], 2)
+        self.assertEqual(bonds['H~O'], 2)
 
 ################################################################################
 

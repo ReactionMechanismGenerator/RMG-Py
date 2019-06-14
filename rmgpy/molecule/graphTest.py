@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -426,6 +426,47 @@ class TestGraph(unittest.TestCase):
         self.assertTrue(graph1.isSubgraphIsomorphic(graph2))
         self.assertTrue(graph2.isIsomorphic(graph1))
         self.assertTrue(graph2.isSubgraphIsomorphic(graph1))
+
+
+    def test_isomorphism_disconnected(self):
+        """
+        Check the graph isomorphism for broken graphs.
+        
+        This tries to match graphs with a missing bond, 
+        eg. [ 0-1-2-3-4  5 ] should match [ 0-1-2-3-4  5 ]
+        """
+
+        vertices1 = [Vertex() for i in range(6)]
+        edges1 = [
+            Edge(vertices1[0], vertices1[1]),
+            Edge(vertices1[1], vertices1[2]),
+            Edge(vertices1[2], vertices1[3]),
+            Edge(vertices1[3], vertices1[4]),
+            #Edge(vertices1[4], vertices1[5]),
+        ]
+
+        vertices2 = [Vertex() for i in range(6)]
+        edges2 = [
+            Edge(vertices2[0], vertices2[1]),
+            Edge(vertices2[1], vertices2[2]),
+            Edge(vertices2[2], vertices2[3]),
+            Edge(vertices2[3], vertices2[4]),
+            #Edge(vertices2[4], vertices2[5]),
+        ]
+
+        graph1 = Graph()
+        for vertex in vertices1: graph1.addVertex(vertex)
+        for edge in edges1: graph1.addEdge(edge)
+
+        graph2 = Graph()
+        for vertex in vertices2: graph2.addVertex(vertex)
+        for edge in edges2: graph2.addEdge(edge)
+
+        self.assertTrue(graph1.isIsomorphic(graph2))
+        self.assertTrue(graph1.isSubgraphIsomorphic(graph2))
+        self.assertTrue(graph2.isIsomorphic(graph1))
+        self.assertTrue(graph2.isSubgraphIsomorphic(graph1))
+        self.assertTrue(len(graph1.findSubgraphIsomorphisms(graph2)) > 0)
 
     def test_subgraphIsomorphism(self):
         """

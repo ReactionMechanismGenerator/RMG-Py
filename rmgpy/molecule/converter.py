@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -68,7 +68,10 @@ def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
     rdAtomIndices = {} # dictionary of RDKit atom indices
     rdkitmol = Chem.rdchem.EditableMol(Chem.rdchem.Mol())
     for index, atom in enumerate(mol.vertices):
-        rdAtom = Chem.rdchem.Atom(atom.element.symbol)
+        if atom.element.symbol == 'X':
+            rdAtom = Chem.rdchem.Atom('Pt')  # not sure how to do this with linear scaling when this might not be Pt
+        else:
+            rdAtom = Chem.rdchem.Atom(atom.element.symbol)
         if atom.element.isotope != -1:
             rdAtom.SetIsotope(atom.element.isotope)
         rdAtom.SetNumRadicalElectrons(atom.radicalElectrons)
@@ -81,10 +84,12 @@ def toRDKitMol(mol, removeHs=True, returnMapping=False, sanitize=True):
             rdAtomIndices[atom] = index
 
     rdBonds = Chem.rdchem.BondType
-    orders = {'S': rdBonds.SINGLE, 'D': rdBonds.DOUBLE, 'T': rdBonds.TRIPLE, 'B': rdBonds.AROMATIC}
+    orders = {'S': rdBonds.SINGLE, 'D': rdBonds.DOUBLE, 'T': rdBonds.TRIPLE, 'B': rdBonds.AROMATIC, 'Q': rdBonds.QUADRUPLE}
     # Add the bonds
     for atom1 in mol.vertices:
         for atom2, bond in atom1.edges.iteritems():
+            if bond.isHydrogenBond():
+                continue
             index1 = atoms.index(atom1)
             index2 = atoms.index(atom2)
             if index1 < index2:
@@ -154,6 +159,7 @@ def fromRDKitMol(mol, rdkitmol):
                 if rdbondtype.name == 'SINGLE': order = 1
                 elif rdbondtype.name == 'DOUBLE': order = 2
                 elif rdbondtype.name == 'TRIPLE': order = 3
+                elif rdbondtype.name == 'QUADRUPLE': order = 4
                 elif rdbondtype.name == 'AROMATIC': order = 1.5
 
                 bond = mm.Bond(mol.vertices[i], mol.vertices[j], order)
@@ -221,9 +227,11 @@ def toOBMol(mol, returnMapping=False):
             a.SetIsotope(atom.element.isotope)
         a.SetFormalCharge(atom.charge)
         obAtomIds[atom] = a.GetId()
-    orders = {1: 1, 2: 2, 3: 3, 1.5: 5}
+    orders = {1: 1, 2: 2, 3: 3, 4: 4, 1.5: 5}
     for atom1 in mol.vertices:
         for atom2, bond in atom1.edges.iteritems():
+            if bond.isHydrogenBond():
+                continue
             index1 = atoms.index(atom1)
             index2 = atoms.index(atom2)
             if index1 < index2:
@@ -274,7 +282,7 @@ def fromOBMol(mol, obmol):
     for obbond in openbabel.OBMolBondIter(obmol):
         # Process bond type
         oborder = obbond.GetBondOrder()
-        if oborder not in [1,2,3] and obbond.IsAromatic() :
+        if oborder not in [1,2,3,4] and obbond.IsAromatic() :
             oborder = 1.5
 
         bond = mm.Bond(mol.vertices[obbond.GetBeginAtomIdx() - 1], mol.vertices[obbond.GetEndAtomIdx() - 1], oborder)#python array indices start at 0

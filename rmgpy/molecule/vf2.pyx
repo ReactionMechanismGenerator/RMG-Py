@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -27,7 +27,7 @@
 
 """
 This module contains graph ismorphism functions that implement the VF2
-algorithm of Vento and Foggia.
+algorithm of Vento and Foggia.  http://dx.doi.org/10.1109/TPAMI.2004.75
 """
 
 cimport cython
@@ -63,22 +63,22 @@ cdef class VF2:
         self.graph2 = value
         self.graph2.sortVertices()
 
-    cpdef bint isIsomorphic(self, Graph graph1, Graph graph2, dict initialMapping, bint saveOrder=False) except -2:
+    cpdef bint isIsomorphic(self, Graph graph1, Graph graph2, dict initialMapping, bint saveOrder=False, bint strict=True) except -2:
         """
         Return ``True`` if graph `graph1` is isomorphic to graph `graph2` with
         the optional initial mapping `initialMapping`, or ``False`` otherwise.
         """
-        self.isomorphism(graph1, graph2, initialMapping, False, False, saveOrder)
+        self.isomorphism(graph1, graph2, initialMapping, False, False, saveOrder=saveOrder, strict=strict)
         return self.isMatch
         
-    cpdef list findIsomorphism(self, Graph graph1, Graph graph2, dict initialMapping, bint saveOrder=False):
+    cpdef list findIsomorphism(self, Graph graph1, Graph graph2, dict initialMapping, bint saveOrder=False, bint strict=True):
         """
         Return a list of dicts of all valid isomorphism mappings from graph
         `graph1` to graph `graph2` with the optional initial mapping 
         `initialMapping`. If no valid isomorphisms are found, an empty list is
         returned.
         """
-        self.isomorphism(graph1, graph2, initialMapping, False, True, saveOrder)
+        self.isomorphism(graph1, graph2, initialMapping, False, True, saveOrder=saveOrder, strict=strict)
         return self.mappingList
 
     cpdef bint isSubgraphIsomorphic(self, Graph graph1, Graph graph2, dict initialMapping, bint saveOrder=False) except -2:
@@ -100,7 +100,7 @@ cdef class VF2:
         self.isomorphism(graph1, graph2, initialMapping, True, True, saveOrder)
         return self.mappingList
         
-    cdef isomorphism(self, Graph graph1, Graph graph2, dict initialMapping, bint subgraph, bint findAll, bint saveOrder=False):
+    cdef isomorphism(self, Graph graph1, Graph graph2, dict initialMapping, bint subgraph, bint findAll, bint saveOrder=False, bint strict=True):
         """
         Evaluate the isomorphism relationship between graphs `graph1` and
         `graph2` with optional initial mapping `initialMapping`. If `subgraph`
@@ -121,6 +121,7 @@ cdef class VF2:
         self.initialMapping = initialMapping
         self.subgraph = subgraph
         self.findAll = findAll
+        self.strict = strict
     
         # Clear previous result
         self.isMatch = False
@@ -203,6 +204,17 @@ cdef class VF2:
             return True
 
         # Create list of pairs of candidates for inclusion in mapping
+        """
+        10.1109/TPAMI.2004.75 says:
+        "The set P(s) will be made of all the node pairs (n,m),
+        with n belonging to T1out(s) and m to T2out(s),
+        unless one of these two sets is empty. In this case,
+        the set P(s) is likewise obtained by considering
+        T1in(s) and T2in(s), respectively."
+
+        But: for us, bonds are not directional, so ignore Tin(s)
+        and just use Tout(s) which is what we call "terminals".
+        """
         hasTerminals = False
         for vertex2 in self.graph2.vertices:
             if vertex2.ignore:
@@ -212,14 +224,32 @@ cdef class VF2:
                 hasTerminals = True
                 break
         else:
-            vertex2 = self.graph2.vertices[0]
-            
+            """
+            "In presence of not connected graphs, for some state s,
+            all of the above sets may be empty. In this case,
+            the set of candidate pairs making up P(s) will be
+            the set Pd(s) of all the pairs of nodes not contained
+            neither in G1(s) nor in G2(s)."
+
+            So: use nodes not yet mapped.
+            """
+            # Take first unmapped vertex
+            for vertex2 in self.graph2.vertices:
+                if vertex2.mapping is None:
+                    break
+            else:
+                raise VF2Error("Still seeking candidate pairs but all nodes in graph2 are already mapped.")
+
         for vertex1 in self.graph1.vertices:
             if vertex1.ignore:
                 continue
             # If terminals are available, then skip vertices in the first
             # graph that are not terminals
-            if hasTerminals and not vertex1.terminal: continue
+            if hasTerminals and not vertex1.terminal:
+                continue
+            # Otherwise take any node that is not already matched
+            if vertex1.mapping is not None:
+                continue
             # Propose a pairing
             if self.feasible(vertex1, vertex2):
                 # Add proposed match to mapping
@@ -230,7 +260,7 @@ cdef class VF2:
                     return True
                 # Undo proposed match
                 self.removeFromMapping(vertex1, vertex2)
-                
+
         # None of the proposed matches led to a complete isomorphism, so return False
         return False     
         
@@ -256,7 +286,7 @@ cdef class VF2:
         if self.subgraph:
             if not vertex1.isSpecificCaseOf(vertex2): return False
         else:
-            if not vertex1.equivalent(vertex2): return False
+            if not vertex1.equivalent(vertex2, strict=self.strict): return False
         
         # Semantic check #2: adjacent vertices to vertex1 and vertex2 that are
         # already mapped should be connected by equivalent edges
@@ -266,12 +296,15 @@ cdef class VF2:
                 if vert1 not in vertex1.edges:
                     # The vertices are joined in graph2, but not in graph1
                     return False
-                edge1 = vertex1.edges[vert1]
-                edge2 = vertex2.edges[vert2]
-                if self.subgraph:
-                    if not edge1.isSpecificCaseOf(edge2): return False
-                else:
-                    if not edge1.equivalent(edge2): return False
+                if self.strict:
+                    # Check that the edges are equivalent
+                    # If self.strict=False, we only care that the edge exists
+                    edge1 = vertex1.edges[vert1]
+                    edge2 = vertex2.edges[vert2]
+                    if self.subgraph:
+                        if not edge1.isSpecificCaseOf(edge2): return False
+                    else:
+                        if not edge1.equivalent(edge2): return False
 
         # There could still be edges in graph1 that aren't in graph2; this is okay
         # for subgraph matching, but not for exact matching

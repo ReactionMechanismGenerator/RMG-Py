@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -69,7 +69,24 @@ cdef class ArrheniusEP(KineticsModel):
     cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
     
     cpdef changeRate(self, double factor)
+################################################################################
+
+cdef class ArrheniusBM(KineticsModel):
     
+    cdef public ScalarQuantity _A
+    cdef public ScalarQuantity _n
+    cdef public ScalarQuantity _w0
+    cdef public ScalarQuantity _E0
+    
+    cpdef double getRateCoefficient(self, double T, double dHrxn=?) except -1
+
+    cpdef double getActivationEnergy(self, double dHrxn) except -1
+    
+    cpdef Arrhenius toArrhenius(self, double dHrxn)
+
+    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
+    
+    cpdef changeRate(self, double factor)
 ################################################################################
 
 cdef class PDepArrhenius(PDepKineticsModel):

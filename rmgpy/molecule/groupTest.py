@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -354,13 +354,16 @@ class TestGroupAtom(unittest.TestCase):
 3    C ux     {1,S} {5,D}
 4    C u[0,1] {2,B}
 5    O u0     {3,D}
+6    C u0     {7,Q}
+7    C u0     {6,Q}
 """
         test = Group().fromAdjacencyList(adjlist)
-        #returns a list of [single, allDouble, rDouble, oDouble, sDouble, triple, benzene]
-        self.assertListEqual([1,0,0,0,0,0,0], test.atoms[0].countBonds())
-        self.assertListEqual([1,1,1,0,0,1,0], test.atoms[0].countBonds(wildcards = True))
-        self.assertListEqual([0,0,0,0,0,0,1], test.atoms[3].countBonds())
-        self.assertListEqual([1,1,0,1,0,0,0], test.atoms[2].countBonds())
+        #returns a list of [single, allDouble, rDouble, oDouble, sDouble, triple, quadruple, benzene]
+        self.assertListEqual([1,0,0,0,0,0,0,0], test.atoms[0].countBonds())
+        self.assertListEqual([1,1,1,0,0,1,0,0], test.atoms[0].countBonds(wildcards = True))
+        self.assertListEqual([0,0,0,0,0,0,0,1], test.atoms[3].countBonds())
+        self.assertListEqual([1,1,0,1,0,0,0,0], test.atoms[2].countBonds())
+        self.assertListEqual([0,0,0,0,0,0,1,0], test.atoms[5].countBonds())
 
     def testHasWildcards(self):
         """
@@ -400,7 +403,7 @@ class TestGroupBond(unittest.TestCase):
         A method called before each unit test in this class.
         """
         self.bond = GroupBond(None, None, order=[2])
-        self.orderList = [[1], [2], [3], [1.5], [1,2], [2,1], [2,3], [1,2,3]]
+        self.orderList = [[1], [2], [3], [1.5], [1,2], [2,1], [2,3], [1,2,3]]  # todo : unit tests for vdw
     
     def testGetOrderStr(self):
         """
@@ -496,6 +499,9 @@ class TestGroupBond(unittest.TestCase):
     def testApplyActionFormBond(self):
         """
         Test the GroupBond.applyAction() method for a FORM_BOND action.
+
+        Tests that forming a bond between things already bonded, raises
+        an ActionError
         """
         action = ['FORM_BOND', '*1', 1, '*2']
         for order0 in self.orderList:
@@ -642,6 +648,30 @@ class TestGroup(unittest.TestCase):
         self.assertFalse(self.group.containsLabeledAtom('*5'))
         self.assertFalse(self.group.containsLabeledAtom('*6'))
         
+    def testContainsSurfaceSite(self):
+        """
+        Test the Group.containsSurfaceSite() method.
+        """
+        self.assertFalse(self.group.containsSurfaceSite())
+        surfaceGroup = Group().fromAdjacencyList("""
+1 *1 X u0 {2,[S,D]}
+2 *2 R u0 {1,[S,D]}
+""")
+        self.assertTrue(surfaceGroup.containsSurfaceSite())
+
+    def testIsSurfaceSite(self):
+        """
+        Test the Group.isSurfaceSite() method.
+        """
+        self.assertFalse(self.group.isSurfaceSite())
+        surfaceGroup = Group().fromAdjacencyList("""
+1 *1 X u0 {2,[S,D]}
+2 *2 R u0 {1,[S,D]}
+""")
+        self.assertFalse(surfaceGroup.isSurfaceSite())
+        surfaceSite = Group().fromAdjacencyList("1 *1 X u0")
+        self.assertTrue(surfaceSite.isSurfaceSite())
+
     def testGetLabeledAtom(self):
         """
         Test the Group.getLabeledAtom() method.
@@ -772,28 +802,30 @@ class TestGroup(unittest.TestCase):
         """
         
         testGrp = Group().fromAdjacencyList("""
-1 *2 C u0 {2,[S,D]} 
+1 *2 C u0 r0 {2,[S,D]} 
 2 *1 C u[0,1] {1,[S,D]} {3,S}
-3    R!H     u0 {2,S}
+3    R!H     u0 r1 {2,S}
             """)
+        
+        ans = ['1 *2 C   u0     r0 {2,[S,D]} {4,[S,D,T,B]}\n2 *1 C   u[0,1] {1,[S,D]} {3,S}\n3    R!H u0     r1 {2,S}\n4    R!H ux     {1,[S,D,T,B]}\n',
+ '1 *2 C   u0 r0 {2,[S,D]}\n2 *1 C   u0 {1,[S,D]} {3,S}\n3    R!H u0 r1 {2,S}\n',
+ '1 *2 C   u0 r0 {2,[S,D]}\n2 *1 C   u1 {1,[S,D]} {3,S}\n3    R!H u0 r1 {2,S}\n',
+ '1 *2 C   u0     r0 {2,[S,D]}\n2 *1 C   u[0,1] r1 {1,[S,D]} {3,S}\n3    R!H u0     r1 {2,S}\n',
+ '1 *2 C   u0     r0 {2,[S,D]}\n2 *1 C   u[0,1] {1,[S,D]} {3,S} {4,[S,D,T,B]}\n3    R!H u0     r1 {2,S}\n4    R!H ux     {2,[S,D,T,B]}\n',
+ '1 *2 C   u0     r0 {2,S}\n2 *1 C   u[0,1] {1,S} {3,S}\n3    R!H u0     r1 {2,S}\n',
+ '1 *2 C   u0     r0 {2,D}\n2 *1 C   u[0,1] {1,D} {3,S}\n3    R!H u0     r1 {2,S}\n',
+ '1 *2 C u0     r0 {2,[S,D]}\n2 *1 C u[0,1] {1,[S,D]} {3,S}\n3    C u0     r1 {2,S}\n',
+ '1 *2 C u0     r0 {2,[S,D]}\n2 *1 C u[0,1] {1,[S,D]} {3,S}\n3    O u0     r1 {2,S}\n',
+ '1 *2 C   u0     r0 {2,[S,D]}\n2 *1 C   u[0,1] {1,[S,D]} {3,S}\n3    R!H u0     r1 {2,S} {4,[S,D,T,B]}\n4    R!H ux     {3,[S,D,T,B]}\n',
+ '1 *2 C   u0     r0 {2,[S,D]} {3,[S,D,T,B]}\n2 *1 C   u[0,1] {1,[S,D]} {3,S}\n3    R!H u0     r1 {1,[S,D,T,B]} {2,S}\n']
+        ans = [Group().fromAdjacencyList(k) for k in ans]
+        
         
         extensions = testGrp.getExtensions(R=[atomTypes[i] for i in ['C','O','H']])
         extensions = [a[0] for a in extensions]
         
-        ans = ['1 *2 C   u0     {2,[S,D]} {4,[S,D,T,B]}\n2 *1 C   u[0,1] {1,[S,D]} {3,S}\n3    R!H u0     {2,S}\n4    R!H ux     {1,[S,D,T,B]}\n',
- '1 *2 C   u0     {2,S}\n2 *1 C   u[0,1] {1,S} {3,S}\n3    R!H u0     {2,S}\n',
- '1 *2 C   u0     {2,D}\n2 *1 C   u[0,1] {1,D} {3,S}\n3    R!H u0     {2,S}\n',
- '1 *2 C   u0 {2,[S,D]}\n2 *1 C   u0 {1,[S,D]} {3,S}\n3    R!H u0 {2,S}\n',
- '1 *2 C   u0 {2,[S,D]}\n2 *1 C   u1 {1,[S,D]} {3,S}\n3    R!H u0 {2,S}\n',
- '1 *2 C   u0     {2,[S,D]}\n2 *1 C   u[0,1] {1,[S,D]} {3,S} {4,[S,D,T,B]}\n3    R!H u0     {2,S}\n4    R!H ux     {2,[S,D,T,B]}\n',
- '1 *2 C   u0     {2,S}\n2 *1 C   u[0,1] {1,S} {3,S}\n3    R!H u0     {2,S}\n',
- '1 *2 C   u0     {2,D}\n2 *1 C   u[0,1] {1,D} {3,S}\n3    R!H u0     {2,S}\n',
- '1 *2 C u0     {2,[S,D]}\n2 *1 C u[0,1] {1,[S,D]} {3,S}\n3    C u0     {2,S}\n',
- '1 *2 C u0     {2,[S,D]}\n2 *1 C u[0,1] {1,[S,D]} {3,S}\n3    O u0     {2,S}\n',
- '1 *2 C   u0     {2,[S,D]}\n2 *1 C   u[0,1] {1,[S,D]} {3,S}\n3    R!H u0     {2,S} {4,[S,D,T,B]}\n4    R!H ux     {3,[S,D,T,B]}\n',
- '1 *2 C   u0     {2,[S,D]} {3,[S,D,T,B]}\n2 *1 C   u[0,1] {1,[S,D]} {3,S}\n3    R!H u0     {1,[S,D,T,B]} {2,S}\n']
-        ans = [Group().fromAdjacencyList(k) for k in ans]
-
+        self.assertEqual(len(extensions),len(ans))
+        
         for v in ans:
             boos = [ext.isIdentical(v) and ext.isSubgraphIsomorphic(v,generateInitialMap=True) for ext in extensions]
             self.assertTrue(any(boos),'generated extensions did not match expected extensions')

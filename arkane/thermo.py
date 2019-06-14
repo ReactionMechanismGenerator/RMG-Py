@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -34,7 +34,7 @@ thermodynamics information for a single species.
 """
 
 import os.path
-import numpy.linalg
+import numpy as np
 import logging
 import string
 
@@ -53,6 +53,8 @@ from rmgpy.molecule import Molecule
 from rmgpy.molecule.util import retrieveElementCount
 
 from arkane.output import prettify
+from arkane.common import ArkaneSpecies
+
 
 ################################################################################
 
@@ -62,11 +64,12 @@ class ThermoJob(object):
     A representation of an Arkane thermodynamics job. This job is used to
     compute and save the thermodynamics information for a single species.
     """
-    
+
     def __init__(self, species, thermoClass):
         self.species = species
         self.thermoClass = thermoClass
-    
+        self.arkane_species = ArkaneSpecies(species=species)
+
     def execute(self, outputFile=None, plot=False):
         """
         Execute the thermodynamics job, saving the results to the
@@ -74,10 +77,17 @@ class ThermoJob(object):
         """
         self.generateThermo()
         if outputFile is not None:
-            self.save(outputFile)
+            self.arkane_species.chemkin_thermo_string = self.save(outputFile)
+            if self.species.molecule is None or len(self.species.molecule) == 0:
+                logging.debug("Not generating a YAML file for species {0}, since its structure wasn't"
+                              " specified".format(self.species.label))
+            else:
+                # We're saving a YAML file for species iff Thermo is called and they're structure is known
+                self.arkane_species.update_species_attributes(self.species)
+                self.arkane_species.save_yaml(path=os.path.dirname(outputFile))
             if plot:
                 self.plot(os.path.dirname(outputFile))
-    
+
     def generateThermo(self):
         """
         Generate the thermodynamic data for the species and fit it to the
@@ -86,17 +96,17 @@ class ThermoJob(object):
         """
         if self.thermoClass.lower() not in ['wilhoit', 'nasa']:
             raise Exception('Unknown thermodynamic model "{0}".'.format(self.thermoClass))
-    
+
         species = self.species
-    
-        logging.info('Generating {0} thermo model for {1}...'.format(self.thermoClass, species))
-        
+
+        logging.debug('Generating {0} thermo model for {1}...'.format(self.thermoClass, species))
+
         if species.thermo is not None:
             logging.info("Thermo already generated for species {}. Skipping thermo generation.".format(species))
             return None
-        
-        Tlist = numpy.arange(10.0, 3001.0, 10.0, numpy.float64)
-        Cplist = numpy.zeros_like(Tlist)
+
+        Tlist = np.arange(10.0, 3001.0, 10.0, np.float64)
+        Cplist = np.zeros_like(Tlist)
         H298 = 0.0
         S298 = 0.0
         conformer = self.species.conformer
@@ -104,7 +114,7 @@ class ThermoJob(object):
             Cplist[i] += conformer.getHeatCapacity(Tlist[i])
         H298 += conformer.getEnthalpy(298.) + conformer.E0.value_si
         S298 += conformer.getEntropy(298.)
-        
+
         if not any([isinstance(mode, (LinearRotor, NonlinearRotor)) for mode in conformer.modes]):
             # Monatomic species
             linear = False
@@ -119,19 +129,19 @@ class ThermoJob(object):
             Nrotors = len(conformer.modes[3:])
             Cp0 = (3.5 if linear else 4.0) * constants.R
             CpInf = Cp0 + (Nfreq + 0.5 * Nrotors) * constants.R
-    
+
         wilhoit = Wilhoit()
         if Nfreq == 0 and Nrotors == 0:
-            wilhoit.Cp0 = (Cplist[0],"J/(mol*K)") 
-            wilhoit.CpInf = (Cplist[0],"J/(mol*K)")
-            wilhoit.B = (500.,"K") 
-            wilhoit.H0 = (0.0,"J/mol")
-            wilhoit.S0 = (0.0,"J/(mol*K)") 
-            wilhoit.H0 =  (H298 -wilhoit.getEnthalpy(298.15), "J/mol") 
-            wilhoit.S0 = (S298 - wilhoit.getEntropy(298.15),"J/(mol*K)")
+            wilhoit.Cp0 = (Cplist[0], "J/(mol*K)")
+            wilhoit.CpInf = (Cplist[0], "J/(mol*K)")
+            wilhoit.B = (500., "K")
+            wilhoit.H0 = (0.0, "J/mol")
+            wilhoit.S0 = (0.0, "J/(mol*K)")
+            wilhoit.H0 = (H298 - wilhoit.getEnthalpy(298.15), "J/mol")
+            wilhoit.S0 = (S298 - wilhoit.getEntropy(298.15), "J/(mol*K)")
         else:
             wilhoit.fitToData(Tlist, Cplist, Cp0, CpInf, H298, S298, B0=500.0)
-        
+
         if self.thermoClass.lower() == 'nasa':
             species.thermo = wilhoit.toNASA(Tmin=10.0, Tmax=3000.0, Tint=500.0)
         else:
@@ -144,9 +154,9 @@ class ThermoJob(object):
         """
         species = self.species
         logging.info('Saving thermo for {0}...'.format(species.label))
-        
+
         f = open(outputFile, 'a')
-    
+
         f.write('# Thermodynamics for {0}:\n'.format(species.label))
         H298 = species.getThermoData().getEnthalpy(298) / 4184.
         S298 = species.getThermoData().getEntropy(298) / 4.184
@@ -156,7 +166,7 @@ class ThermoJob(object):
         f.write('#    Temperature Heat cap.   Enthalpy    Entropy     Free energy\n')
         f.write('#    (K)         (cal/mol*K) (kcal/mol)  (cal/mol*K) (kcal/mol)\n')
         f.write('#    =========== =========== =========== =========== ===========\n')
-        for T in [300,400,500,600,800,1000,1500,2000,2400]:
+        for T in [300, 400, 500, 600, 800, 1000, 1500, 2000, 2400]:
             try:
                 Cp = species.getThermoData().getHeatCapacity(T) / 4.184
                 H = species.getThermoData().getEnthalpy(T) / 4184.
@@ -164,12 +174,12 @@ class ThermoJob(object):
                 G = species.getThermoData().getFreeEnergy(T) / 4184.
                 f.write('#    {0:11g} {1:11.3f} {2:11.3f} {3:11.3f} {4:11.3f}\n'.format(T, Cp, H, S, G))
             except ValueError:
-                logging.debug("Valid thermo for {0} is outside range for temperature {1}".format(species,T))
+                logging.debug("Valid thermo for {0} is outside range for temperature {1}".format(species, T))
         f.write('#    =========== =========== =========== =========== ===========\n')
-        
-        string = 'thermo(label={0!r}, thermo={1!r})'.format(species.label, species.getThermoData())
-        f.write('{0}\n\n'.format(prettify(string)))
-        
+
+        thermo_string = 'thermo(label={0!r}, thermo={1!r})'.format(species.label, species.getThermoData())
+        f.write('{0}\n\n'.format(prettify(thermo_string)))
+
         f.close()
         # write chemkin file
         f = open(os.path.join(os.path.dirname(outputFile), 'chem.inp'), 'a')
@@ -183,17 +193,17 @@ class ThermoJob(object):
                     elementCounts = {'C': 0, 'H': 0}
         else:
             elementCounts = {'C': 0, 'H': 0}
-        string = writeThermoEntry(species, elementCounts=elementCounts, verbose=True)
-        f.write('{0}\n'.format(string))
+        chemkin_thermo_string = writeThermoEntry(species, elementCounts=elementCounts, verbose=True)
+        f.write('{0}\n'.format(chemkin_thermo_string))
         f.close()
 
         # write species dictionary
-        f = open(os.path.join(os.path.dirname(outputFile), 'species_dictionary.txt'), 'a')
         if isinstance(species, Species):
             if species.molecule and isinstance(species.molecule[0], Molecule):
-                f.write(species.molecule[0].toAdjacencyList(removeH=False,label=species.label))
-                f.write('\n')
-        f.close()
+                with open(os.path.join(os.path.dirname(outputFile), 'species_dictionary.txt'), 'a') as f:
+                    f.write(species.molecule[0].toAdjacencyList(removeH=False, label=species.label))
+                    f.write('\n')
+        return chemkin_thermo_string
 
     def plot(self, outputDirectory):
         """
@@ -208,17 +218,17 @@ class ThermoJob(object):
             import matplotlib.pyplot as plt
         except ImportError:
             return
-        
-        Tlist = numpy.arange(10.0, 2501.0, 10.0)
-        Cplist = numpy.zeros_like(Tlist)
-        Cplist1 = numpy.zeros_like(Tlist)
-        Hlist = numpy.zeros_like(Tlist)
-        Hlist1 = numpy.zeros_like(Tlist)
-        Slist = numpy.zeros_like(Tlist)
-        Slist1 = numpy.zeros_like(Tlist)
-        Glist = numpy.zeros_like(Tlist)
-        Glist1 = numpy.zeros_like(Tlist)
-        
+
+        Tlist = np.arange(10.0, 2501.0, 10.0)
+        Cplist = np.zeros_like(Tlist)
+        Cplist1 = np.zeros_like(Tlist)
+        Hlist = np.zeros_like(Tlist)
+        Hlist1 = np.zeros_like(Tlist)
+        Slist = np.zeros_like(Tlist)
+        Slist1 = np.zeros_like(Tlist)
+        Glist = np.zeros_like(Tlist)
+        Glist1 = np.zeros_like(Tlist)
+
         conformer = self.species.conformer
         thermo = self.species.getThermoData()
         for i in range(Tlist.shape[0]):
@@ -231,28 +241,28 @@ class ThermoJob(object):
                 Slist1[i] = thermo.getEntropy(Tlist[i])
                 Hlist1[i] = thermo.getEnthalpy(Tlist[i]) * 0.001
                 Glist1[i] = thermo.getFreeEnergy(Tlist[i]) * 0.001
-            except (ValueError,AttributeError):
+            except (ValueError, AttributeError):
                 continue
 
-        fig = plt.figure(figsize=(10,8))
+        fig = plt.figure(figsize=(10, 8))
         fig.suptitle('{0}'.format(self.species.label))
-        plt.subplot(2,2,1)
+        plt.subplot(2, 2, 1)
         plt.plot(Tlist, Cplist / 4.184, '-r', Tlist, Cplist1 / 4.184, '-b')
         plt.xlabel('Temperature (K)')
         plt.ylabel('Heat capacity (cal/mol*K)')
         plt.legend(['statmech', 'fitted'], loc=4)
 
-        plt.subplot(2,2,2)
+        plt.subplot(2, 2, 2)
         plt.plot(Tlist, Slist / 4.184, '-r', Tlist, Slist1 / 4.184, '-b')
         plt.xlabel('Temperature (K)')
         plt.ylabel('Entropy (cal/mol*K)')
 
-        plt.subplot(2,2,3)
+        plt.subplot(2, 2, 3)
         plt.plot(Tlist, Hlist / 4.184, '-r', Tlist, Hlist1 / 4.184, '-b')
         plt.xlabel('Temperature (K)')
         plt.ylabel('Enthalpy (kcal/mol)')
 
-        plt.subplot(2,2,4)
+        plt.subplot(2, 2, 4)
         plt.plot(Tlist, Glist / 4.184, '-r', Tlist, Glist1 / 4.184, '-b')
         plt.xlabel('Temperature (K)')
         plt.ylabel('Gibbs free energy (kcal/mol)')

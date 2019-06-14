@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -40,7 +40,7 @@ from external.wip import work_in_progress
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.molecule.group import Group
 
-molecule_atom_types           = [ 'C', 'O', 'N', 'S', 'Si', 'Cl', 'I']
+molecule_atom_types           = [ 'C', 'O', 'N', 'S', 'Si', 'Cl', 'I', 'F']
 group_atomtypes = {}
 
 for item in create_atom_types() :
@@ -140,7 +140,7 @@ def load_cases_molecule_atom_types():
     '''
     output = []
     a_types           = list(itertools.product(molecule_atom_types, repeat=2))
-    uncharged_a_types = ['Cl','I']
+    uncharged_a_types = ['Cl','I', 'F']
     unpaired_electrons = list(itertools.product(range(3), repeat=2))
     cross_element_unpaired = list(itertools.product(a_types,unpaired_electrons))
     for item in cross_element_unpaired:

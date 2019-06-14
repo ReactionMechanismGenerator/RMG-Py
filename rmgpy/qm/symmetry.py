@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -221,7 +221,7 @@ class SymmetryJob:
         """
         try:
             pp = Popen(command, stdout=PIPE, stderr=PIPE)
-        except OSError, e:
+        except OSError as e:
             logging.error(e)
             raise Exception('Running symmetry on the point group calculation has failed.  Please check if symmetry program is installed on your system in RMG-Py/bin/symmetry or on your path.')
         stdout, stderr = pp.communicate()

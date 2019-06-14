@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -32,10 +32,8 @@ import numpy
 import math
 
 import logging as logging
-from rmgpy.scoop_framework.util import submit_
 from rmgpy.data.rmg import getDB
 import rmgpy.constants as constants
-from rmgpy.molecule import Molecule
 from rmgpy.statmech import Conformer
 from rmgpy.thermo import Wilhoit, NASA, ThermoData
 import rmgpy.data.rmg
@@ -131,7 +129,7 @@ def generateThermoData(spc, thermoClass=NASA, solventName=''):
     try:
         thermodb = getDB('thermo')
         if not thermodb: raise Exception
-    except Exception, e:
+    except Exception:
         logging.debug('Could not obtain the thermo database. Not generating thermo...')
         return None
     
@@ -145,7 +143,7 @@ def generateThermoData(spc, thermoClass=NASA, solventName=''):
     
     try:
         thermoCentralDatabase = getInput('thermoCentralDatabase')
-    except Exception, e:
+    except Exception:
         logging.debug('thermoCentralDatabase could not be found.')
         thermoCentralDatabase = None
     
@@ -185,4 +183,5 @@ def submit(spc, solventName = ''):
     the result.
 
     """
-    spc.thermo = submit_(evaluator, spc, solventName= solventName)
+    spc.thermo = evaluator(spc, solventName= solventName)
+

@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -37,7 +37,7 @@ from .model import Species
 from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.molecule import Molecule
-from rmgpy.rmg.react import react
+from rmgpy.rmg.react import react_species
 from rmgpy.restart import saveRestartFile
 import rmgpy
 from rmgpy.data.base import ForbiddenStructures
@@ -97,7 +97,7 @@ class TestRMGWorkFlow(unittest.TestCase):
         # react
         spc = Species().fromSMILES("O=C[C]=C")
         spc.generate_resonance_structures()
-        newReactions = react((spc,))
+        newReactions = react_species((spc,))
 
         # try to pick out the target reaction 
         mol_H = Molecule().fromSMILES("[H]")
@@ -111,7 +111,7 @@ class TestRMGWorkFlow(unittest.TestCase):
 
         # react again
         newReactions_reverse = []
-        newReactions_reverse.extend(react((spc,)))
+        newReactions_reverse.extend(react_species((spc,)))
 
         # try to pick out the target reaction 
         target_rxns_reverse = findTargetRxnsContaining(mol_H, mol_C3H2O, newReactions_reverse)
@@ -172,8 +172,8 @@ class TestRMGWorkFlow(unittest.TestCase):
 30    H u0 p0 c0 {14,S}
 31    H u0 p0 c0 {15,S}
 """)
-        found, reactive, spec = rmg_test.reactionModel.checkForExistingSpecies(mol_test)
-        assert found == True
+        spec = rmg_test.reactionModel.checkForExistingSpecies(mol_test)
+        self.assertIsNotNone(spec)
 
     def testRestartFileGenerationAndParsing(self):
         
@@ -185,7 +185,7 @@ class TestRMGWorkFlow(unittest.TestCase):
         self.rmg.reactionModel.core.species.append(spc2)
 
         newReactions = []
-        newReactions.extend(react((spc1,spc2)))
+        newReactions.extend(react_species((spc1, spc2)))
 
         # process newly generated reactions to make sure no duplicated reactions
         self.rmg.reactionModel.processNewReactions(newReactions, spc2, None)

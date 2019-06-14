@@ -43,3 +43,6 @@ dependencies:
   - pymongo
   - mpmath
   - dde
+  - pyyaml
+  - textgenrnn
+  - scikit-learn

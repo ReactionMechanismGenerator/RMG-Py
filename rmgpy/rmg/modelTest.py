@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -41,7 +41,6 @@ from rmgpy.data.base import ForbiddenStructures
 from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.thermo import *
 ###################################################
-
 
 class TestSpecies(unittest.TestCase):
     """
@@ -135,15 +134,16 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         P.value_si = 101000.0
         rsys.T = T
         rsys.P = P
+        procnum = 2
         
         cerm = CoreEdgeReactionModel()
         
         spcA = Species().fromSMILES('[OH]')
         spcs = [Species().fromSMILES('CC'), Species().fromSMILES('[CH3]')]
-        spcTuples = [(spcA, spc) for spc in spcs]
+        spcTuples = [((spcA, spc), ['H_Abstraction']) for spc in spcs]
         
-        rxns = list(react(*spcTuples))
-        rxns += list(react(*[(spcs[0],spcs[1])]))
+        rxns = list(react(spcTuples, procnum))
+        rxns += list(react([((spcs[0], spcs[1]), ['H_Abstraction'])], procnum))
         
         for rxn in rxns:
             cerm.makeNewReaction(rxn)
@@ -215,9 +215,7 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
 
     def test_append_unreactive_structure(self):
         """
-        Test that the CoreEdgeReactionModel.makeNewSpecies method correctly appends a non-representative resonance
-        structure to the correct Species containing the representative resonance structures.
-        The non-representative structure should be marked as `.reactive=False`.
+        Test that CERM.makeNewSpecies correctly recognizes a non-representative resonance structure
         """
 
         cerm = CoreEdgeReactionModel()
@@ -233,20 +231,22 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
 
         self.assertEquals(len(cerm.speciesDict), 2)
         self.assertEquals(len(cerm.indexSpeciesDict), 2)
+        self.assertEquals(len(cerm.indexSpeciesDict[1].molecule), 1)
         self.assertTrue(cerm.indexSpeciesDict[1].molecule[0].reactive)
-        self.assertNotEquals(cerm.indexSpeciesDict[2].molecule[0].reactive,
-                             cerm.indexSpeciesDict[2].molecule[1].reactive)  # only one should be reactive
+        self.assertEquals(len(cerm.indexSpeciesDict[2].molecule), 1)
+        self.assertTrue(cerm.indexSpeciesDict[2].molecule[0].reactive)
 
     def testMakeNewReaction(self):
         """
         Test that CoreEdgeReactionModel.makeNewReaction method correctly works.
         """
 
+        procnum = 2
         spcA = Species().fromSMILES('[OH]')
         spcs = [Species().fromSMILES('CC'), Species().fromSMILES('[CH3]')]
-        spcTuples = [(spcA, spc) for spc in spcs]
+        spcTuples = [((spcA, spc), ['H_Abstraction']) for spc in spcs]
 
-        rxns = list(react(*spcTuples))
+        rxns = list(react(spcTuples, procnum))
 
         cerm = CoreEdgeReactionModel()
 
@@ -391,33 +391,6 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         
         self.assertEquals(len(difset),1) #should be one because we thermo filtered down to one edge species
         
-    def testInflate(self):
-        """
-        Test that CoreEdgeReactionModel.inflate method correctly works.
-        """
-        spcA = Species().fromSMILES('[OH]')
-        spcs = [Species().fromSMILES('CC'), Species().fromSMILES('[CH3]')]
-        spcTuples = [(spcA, spc) for spc in spcs]
-
-        rxns = list(react(*spcTuples))
-
-        cerm = CoreEdgeReactionModel()
-
-        for rxn in rxns:
-            cerm.makeNewReaction(rxn)
-
-        """
-        3 expected H-abstraction reactions:
-            OH + CC = H2O + C[CH2]
-            OH + [CH3] = H2O + [CH2]
-            OH + [CH3] = [O] + C
-        """
-        for i, rxn in enumerate(rxns):
-            rxns[i] = cerm.inflate(rxn)
-
-        for rxn in rxns:
-            self.assertTrue(rxn.isBalanced())
-
     def test_checkForExistingReaction_eliminates_identical_reactions(self):
         """
         Test that checkForExistingReaction catches identical reactions.

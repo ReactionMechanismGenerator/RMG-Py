@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -49,6 +49,7 @@ class TestElement(unittest.TestCase):
         A function run before each unit test in this class.
         """
         self.element = rmgpy.molecule.element.C
+        self.element_x = rmgpy.molecule.element.X
         
     def testPickle(self):
         """
@@ -79,6 +80,8 @@ class TestElement(unittest.TestCase):
         """
         self.assertTrue(rmgpy.molecule.element.getElement(6) is self.element)
         self.assertTrue(rmgpy.molecule.element.getElement('C') is self.element)
+        self.assertTrue(rmgpy.molecule.element.getElement(0) is self.element_x)
+        self.assertTrue(rmgpy.molecule.element.getElement('X') is self.element_x)
 
     def testGetElementIsotope(self):
         """

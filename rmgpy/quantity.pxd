@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -38,6 +38,8 @@ cdef class Units(object):
     cpdef double getConversionFactorToSI(self) except -1
 
     cpdef double getConversionFactorFromSI(self) except -1
+
+    cpdef double getConversionFactorFromSItoCmMolS(self) except -1
     
 ################################################################################
 
@@ -46,7 +48,11 @@ cdef class ScalarQuantity(Units):
     cdef public double value_si
     cdef        str _uncertaintyType
     cdef public double uncertainty_si
-    
+
+    cpdef dict as_dict(self)
+
+    cpdef make_object(self, dict data, dict class_dict)
+
     cpdef str getUncertaintyType(self)
     cpdef     setUncertaintyType(self, str v)
     
@@ -63,6 +69,10 @@ cdef class ArrayQuantity(Units):
     cdef public numpy.ndarray value_si
     cdef public str _uncertaintyType
     cdef public numpy.ndarray uncertainty_si
+
+    cpdef dict as_dict(self)
+
+    cpdef make_object(self, dict data, dict class_dict)
 
     cpdef str getUncertaintyType(self)
     cpdef     setUncertaintyType(self, str v)

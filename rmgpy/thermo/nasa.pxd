@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -58,6 +58,10 @@ cdef class NASA(HeatCapacityModel):
     cdef public NASAPolynomial poly1, poly2, poly3
     
     cpdef NASAPolynomial selectPolynomial(self, double T)
+
+    cpdef dict as_dict(self)
+
+    cpdef make_object(self, dict data, dict class_dict)
 
     cpdef double getHeatCapacity(self, double T) except -1000000000
 

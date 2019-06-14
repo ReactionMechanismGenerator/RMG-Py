@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -47,7 +47,7 @@ cdef class Atom(Vertex):
     cdef public int id
     cdef public dict props
     
-    cpdef bint equivalent(self, Vertex other) except -2
+    cpdef bint equivalent(self, Vertex other, bint strict=?) except -2
 
     cpdef bint isSpecificCaseOf(self, Vertex other) except -2
 
@@ -72,6 +72,8 @@ cdef class Atom(Vertex):
     cpdef bint isIodine(self)
 
     cpdef bint isNOS(self)
+    
+    cpdef bint isSurfaceSite(self)
     
     cpdef incrementRadical(self)
 
@@ -109,17 +111,23 @@ cdef class Bond(Edge):
     
     cpdef bint isOrder(self, float otherOrder)
 
+    cpdef bint isVanDerWaals(self) except -2
+
     cpdef bint isSingle(self) except -2
 
     cpdef bint isDouble(self) except -2
 
     cpdef bint isTriple(self) except -2
     
+    cpdef bint isQuadruple(self) except -2
+    
     cpdef bint isBenzene(self) except -2
 
     cpdef incrementOrder(self)
 
     cpdef decrementOrder(self)
+
+    cpdef str get_bond_string(self)
 
 ################################################################################
 
@@ -131,10 +139,11 @@ cdef class Molecule(Graph):
     cdef public bint reactive
     cdef public object rdMol
     cdef public int rdMolConfId
-    cdef str _fingerprint
-    cdef public str InChI
     cdef public dict props
-    
+    cdef str _fingerprint
+    cdef str _inchi
+    cdef str _smiles
+
     cpdef addAtom(self, Atom atom)
 
     cpdef addBond(self, Bond bond)
@@ -147,9 +156,15 @@ cdef class Molecule(Graph):
 
     cpdef bint hasBond(self, Atom atom1, Atom atom2)
 
+    cpdef bint containsSurfaceSite(self)
+    
+    cpdef bint isSurfaceSite(self)
+
     cpdef removeAtom(self, Atom atom)
 
     cpdef removeBond(self, Bond bond)
+
+    cpdef removeVanDerWaalsBonds(self)
 
     cpdef sortAtoms(self)
     
@@ -177,9 +192,9 @@ cdef class Molecule(Graph):
 
     cpdef dict get_element_count(self)
 
-    cpdef bint isIsomorphic(self, Graph other, dict initialMap=?, bint saveOrder=?) except -2
+    cpdef bint isIsomorphic(self, Graph other, dict initialMap=?, bint generateInitialMap=?, bint saveOrder=?, bint strict=?) except -2
 
-    cpdef list findIsomorphism(self, Graph other, dict initialMap=?, bint saveOrder=?)
+    cpdef list findIsomorphism(self, Graph other, dict initialMap=?, bint saveOrder=?, bint strict=?)
 
     cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=?, bint generateInitialMap=?, bint saveOrder=?) except -2
 
@@ -243,6 +258,8 @@ cdef class Molecule(Graph):
 
     cpdef bint atomIDValid(self)
 
-    cpdef bint isIdentical(self, Molecule other) except -2
+    cpdef bint isIdentical(self, Molecule other, bint strict=?) except -2
+
+    cpdef dict enumerate_bonds(self)
 
 cdef atom_id_counter

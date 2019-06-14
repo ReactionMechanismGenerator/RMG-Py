@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -82,6 +82,10 @@ def parse_command_line_arguments(command_line_args=None):
     parser.add_argument('-t', '--walltime', type=str, nargs=1, default='00:00:00:00',
                         metavar='DD:HH:MM:SS', help='set the maximum execution time')
 
+    # Add option to select max number of processes for reaction generation
+    parser.add_argument('-n', '--maxproc', type=int, nargs=1, default=1,
+                        help='max number of processes used during reaction generation')
+
     # Add option to output a folder that stores the details of each kinetic database entry source
     parser.add_argument('-k', '--kineticsdatastore', action='store_true',
                         help='output a folder, kinetics_database, that contains a .txt file for each reaction family '
@@ -98,6 +102,9 @@ def parse_command_line_arguments(command_line_args=None):
     # If walltime was specified, retrieve this string from the element 1 list
     if args.walltime != '00:00:00:00':
         args.walltime = args.walltime[0]
+
+    if args.maxproc != 1:
+        args.maxproc = args.maxproc[0]
 
     # Set directories
     input_directory = os.path.abspath(os.path.dirname(args.file))
@@ -119,7 +126,7 @@ def main():
     args = parse_command_line_arguments()
 
     if args.postprocess:
-        print "Postprocessing the profiler statistics (will be appended to RMG.log)"
+        logging.info("Postprocessing the profiler statistics (will be appended to RMG.log)")
     else:
         # Initialize the logging system (resets the RMG.log file)
         level = logging.INFO
@@ -136,6 +143,7 @@ def main():
     kwargs = {
         'restart': args.restart,
         'walltime': args.walltime,
+        'maxproc': args.maxproc,
         'kineticsdatastore': args.kineticsdatastore
     }
 
