@@ -58,8 +58,8 @@ class TestWilhoit(unittest.TestCase):
         self.a2 = 26.2524
         self.a3 = -12.6785
         self.B = 1068.68
-        self.H0 = -94088. # -782.292 kJ/mol / constants.R
-        self.S0 = -118.46 # -984.932 J/mol*K / constants.R
+        self.H0 = -1000 * 782.292 / constants.R  # -782.292 kJ/mol / constants.R
+        self.S0 = -984.932 / constants.R  # -984.932 J/mol*K / constants.R
         self.Tmin = 300.
         self.Tmax = 3000.
         self.comment = 'C2H6'

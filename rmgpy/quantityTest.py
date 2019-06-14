@@ -211,7 +211,7 @@ class TestEnergy(unittest.TestCase):
         Test the creation of an energy quantity with units of K (not really an energy!).
         """
         q = quantity.Energy(10.0,"K")
-        self.assertAlmostEqual(q.value, 10*8.314472, delta=1e-6)
+        self.assertAlmostEqual(q.value, 10 * constants.R, delta=1e-6)
         self.assertEqual(q.units, "J/mol")
 
 ################################################################################

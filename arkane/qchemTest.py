@@ -62,11 +62,11 @@ class QChemTest(unittest.TestCase):
         molecular energies can be properly read.
         """
         log = QChemLog(os.path.join(os.path.dirname(__file__), 'data', 'npropyl.out'))
-        self.assertAlmostEqual(log.loadEnergy(), -310896203.5432524, delta=1e-5)
+        self.assertAlmostEqual(log.loadEnergy(), -310896177.6243986, delta=1e-5)
         log = QChemLog(os.path.join(os.path.dirname(__file__), 'data', 'co.out'))
-        self.assertAlmostEqual(log.loadEnergy(), -297402545.0217114, delta=1e-5)
+        self.assertAlmostEqual(log.loadEnergy(), -297402520.22779953, delta=1e-5)
         log = QChemLog(os.path.join(os.path.dirname(__file__), 'data', 'CH4_sp_qchem.out'))
-        self.assertAlmostEqual(log.loadEnergy(), -106356735.53661588, delta=1e-5)
+        self.assertAlmostEqual(log.loadEnergy(), -106356726.66984732, delta=1e-5)
 
     def testLoadVibrationsFromQChemLog(self):
         """

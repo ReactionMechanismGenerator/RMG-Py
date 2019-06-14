@@ -96,8 +96,8 @@ class GaussianTest(unittest.TestCase):
         rot = [mode for mode in conformer.modes if isinstance(mode, LinearRotor)][0]
         vib = [mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)][0]
         Tlist = numpy.array([298.15], numpy.float64)
-        self.assertAlmostEqual(trans.getPartitionFunction(Tlist), 7.11169e6, delta=1e1)
-        self.assertAlmostEqual(rot.getPartitionFunction(Tlist), 7.13316e1, delta=1e-4)
+        self.assertAlmostEqual(trans.getPartitionFunction(Tlist), 7.111673e6, delta=1e1)
+        self.assertAlmostEqual(rot.getPartitionFunction(Tlist), 7.13315e1, delta=1e-4)
         self.assertAlmostEqual(vib.getPartitionFunction(Tlist), 1.00037e0, delta=1e-4)
 
         self.assertAlmostEqual(E0 / constants.Na / constants.E_h, -150.3784877, 4)

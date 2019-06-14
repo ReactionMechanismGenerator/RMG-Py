@@ -510,7 +510,9 @@ class TestReaction(unittest.TestCase):
         Test the Reaction.getEquilibriumConstant() method.
         """
         Tlist = numpy.arange(200.0, 2001.0, 200.0, numpy.float64)
-        Kalist0 = [float(v) for v in ['8.75951e+29', '7.1843e+10', '34272.7', '26.1877', '0.378696', '0.0235579', '0.00334673', '0.000792389', '0.000262777', '0.000110053']]
+        Kalist0 = [8.75880596e+29, 7.18388385e+10, 3.42710001e+04, 2.61864574e+01,
+                   3.78679351e-01, 2.35568712e-02, 3.34658978e-03, 7.92357444e-04,
+                   2.62766697e-04, 1.10048401e-04]
         Kalist = self.reaction2.getEquilibriumConstants(Tlist, type='Ka')
         for i in range(len(Tlist)):
             self.assertAlmostEqual(Kalist[i] / Kalist0[i], 1.0, 4)
@@ -520,7 +522,9 @@ class TestReaction(unittest.TestCase):
         Test the Reaction.getEquilibriumConstant() method.
         """
         Tlist = numpy.arange(200.0, 2001.0, 200.0, numpy.float64)
-        Kclist0 = [float(v) for v in ['1.45661e+28', '2.38935e+09', '1709.76', '1.74189', '0.0314866', '0.00235045', '0.000389568', '0.000105413', '3.93273e-05', '1.83006e-05']]
+        Kclist0 = [1.45649529e+28, 2.38920535e+09, 1.70966970e+03, 1.74181057e+00,
+                   3.14851531e-02, 2.35035270e-03, 3.89551339e-04, 1.05408422e-04,
+                   3.93257498e-05, 1.82998663e-05]
         Kclist = self.reaction2.getEquilibriumConstants(Tlist, type='Kc')
         for i in range(len(Tlist)):
             self.assertAlmostEqual(Kclist[i] / Kclist0[i], 1.0, 4)
@@ -530,7 +534,9 @@ class TestReaction(unittest.TestCase):
         Test the Reaction.getEquilibriumConstant() method.
         """
         Tlist = numpy.arange(200.0, 2001.0, 200.0, numpy.float64)
-        Kplist0 = [float(v) for v in ['8.75951e+24', '718430', '0.342727', '0.000261877', '3.78696e-06', '2.35579e-07', '3.34673e-08', '7.92389e-09', '2.62777e-09', '1.10053e-09']]
+        Kplist0 = [8.75880596e+24, 7.18388385e+05, 3.42710001e-01, 2.61864574e-04,
+                   3.78679351e-06, 2.35568712e-07, 3.34658978e-08, 7.92357444e-09,
+                   2.62766697e-09, 1.10048401e-09]
         Kplist = self.reaction2.getEquilibriumConstants(Tlist, type='Kp')
         for i in range(len(Tlist)):
             self.assertAlmostEqual(Kplist[i] / Kplist0[i], 1.0, 4)

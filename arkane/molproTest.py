@@ -99,8 +99,8 @@ class MolproTest(unittest.TestCase):
         vib = [mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)][0]
         t_list = numpy.array([298.15], numpy.float64)
 
-        self.assertAlmostEqual(trans.getPartitionFunction(t_list), 9.175364e7, delta=1e1)
-        self.assertAlmostEqual(rot.getPartitionFunction(t_list), 1.00005557e5, delta=1e-2)
+        self.assertAlmostEqual(trans.getPartitionFunction(t_list), 9.1753359e7, delta=1e1)
+        self.assertAlmostEqual(rot.getPartitionFunction(t_list), 1.00005389e5, delta=1e-2)
         self.assertAlmostEqual(vib.getPartitionFunction(t_list), 1.9734989e0, delta=1e-4)
 
         self.assertAlmostEqual(e0 / constants.Na / constants.E_h, -768.275662, 4)
@@ -113,7 +113,7 @@ class MolproTest(unittest.TestCase):
         """
         molpro_log = MolproLog(os.path.join(os.path.dirname(__file__), 'data', 'TS_CCSD(T)_no_F12_sp_molpro.out'))
         e0 = molpro_log.loadEnergy()
-        self.assertAlmostEqual(e0, -301585968.58196217, places=7)
+        self.assertAlmostEqual(e0, -301585943.43928576, places=7)
 
     def test_load_mrci_e0(self):
         """
@@ -123,8 +123,8 @@ class MolproTest(unittest.TestCase):
         mrciq_log = MolproLog(os.path.join(os.path.dirname(__file__), 'data', 'molpro_mrci+q.out'))
         mrci_e0 = mrci_log.loadEnergy()
         mrciq_e0 = mrciq_log.loadEnergy()
-        self.assertAlmostEqual(mrci_e0, -293217091.0381712, places=7)
-        self.assertAlmostEqual(mrciq_e0, -293284017.3925107, places=7)
+        self.assertAlmostEqual(mrci_e0, -293217066.59319293, places=7)
+        self.assertAlmostEqual(mrciq_e0, -293283992.94195294, places=7)
 
     def test_load_negative_frequency(self):
         """
