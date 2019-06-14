@@ -1517,18 +1517,33 @@ class ThermoDatabase(object):
                 assert len(data) == 3, "thermoData should be a tuple at this point"
                 data[0].comment += label
                 thermoDataList.append(data)
+
         # Last entry is always the estimate from group additivity
         # Make it a tuple
-        try:
-            data = (self.getThermoDataFromGroups(species), None, None)
-        except DatabaseError:
-            # We don't have a GAV estimate, e.g. unsupported element
+        # Distinguish surface species, as orignial getThermoDataFromGroups does
+        # not work for surface sites or surface species
+        if species.isSurfaceSite():
+            # Cannot estimate thermo of vacant site. Thermo stores in library
             pass
+        elif species.containsSurfaceSite():
+            try:
+                # Estimate thermo of surface species based on modfied GA method
+                data = (self.getThermoDataForSurfaceSpecies(species), None, None)
+            except DatabaseError:
+                 # We don't have a GAV estimate, e.g. unsupported element
+                pass
+            else:
+                thermoDataList.append(data)
         else:
-            # update group activity for symmetry
-            data[0].S298.value_si -= constants.R * math.log(species.getSymmetryNumber())
-            thermoDataList.append(data)
-
+            try:
+                data = (self.getThermoDataFromGroups(species), None, None)
+            except DatabaseError:
+                # We don't have a GAV estimate, e.g. unsupported element
+                pass
+            else:
+                # update group activity for symmetry
+                data[0].S298.value_si -= constants.R * math.log(species.getSymmetryNumber())
+                thermoDataList.append(data)
         # Return all of the resulting thermo parameters
         return thermoDataList
 
