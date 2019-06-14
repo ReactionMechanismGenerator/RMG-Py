@@ -41,28 +41,27 @@ The constants defined in this module are listed in the table below:
 
 .. table:: Physical constants defined in the :mod:`rmgpy.constants` module
     
-    ======================= =================== =========================================================== ============================================================
-    Symbol                  Constant            Value                                                       Description
-    ======================= =================== =========================================================== ============================================================
-    :math:`E_\mathrm{h}`    :data:`E_h`         :math:`4.35974434 \times 10^{-18} \ \mathrm{J}`             Hartree energy
-    :math:`F`               :data:`F`           :math:`96485.3365 \ \mathrm{C/mol}`                         Faraday constant
-    :math:`G`               :data:`G`           :math:`6.67384 \times 10^{-11} \ \mathrm{m^3/kg \cdot s^2}` Newtonian gravitational constant
-    :math:`N_\mathrm{A}`    :data:`Na`          :math:`6.02214179 \times 10^{23} \ \mathrm{mol^{-1}}`       Avogadro constant
-    :math:`R`               :data:`R`           :math:`8.314472 \ \mathrm{J/mol \cdot K}`                   gas law constant
-    :math:`a_0`             :data:`a0`          :math:`5.2917721092 \times 10^{-11} \ \mathrm{m}`           Bohr radius
-    :math:`c`               :data:`c`           :math:`299792458 \ \mathrm{m/s}`                            speed of light in a vacuum
-    :math:`e`               :data:`e`           :math:`1.602176565 \times 10^{-19} \ \mathrm{C}`            elementary charge
-    :math:`g`               :data:`g`           :math:`9.80665 \ \mathrm{m/s^2}`                            standard acceleration due to gravity
-    :math:`h`               :data:`h`           :math:`6.62606896 \times 10^{-34} \ \mathrm{J \cdot s}`     Planck constant
-    :math:`\hbar`           :data:`hbar`        :math:`1.054571726 \times 10^{-34} \ \mathrm{J \cdot s}`    reduced Planck constant
-    :math:`k_\mathrm{B}`    :data:`kB`          :math:`1.3806504 \times 10^{-23} \ \mathrm{J/K}`            Boltzmann constant
-    :math:`m_\mathrm{e}`    :data:`m_e`         :math:`9.10938291 \times 10^{-31} \ \mathrm{kg}`            electron rest mass
-    :math:`m_\mathrm{n}`    :data:`m_n`         :math:`1.674927351 \times 10^{-27} \ \mathrm{kg}`           neutron rest mass
-    :math:`m_\mathrm{p}`    :data:`m_p`         :math:`1.672621777 \times 10^{-27} \ \mathrm{kg}`           proton rest mass
-    :math:`m_\mathrm{u}`    :data:`amu`         :math:`1.660538921 \times 10^{-27} \ \mathrm{kg}`           atomic mass unit
-    :math:`\pi`             :data:`pi`          :math:`3.14159 \ldots`      
-    ======================= =================== =========================================================== ============================================================
+    ==================== ============ ======================================================== ========================
+    Symbol               Constant     Value                                                    Description
+    ==================== ============ ======================================================== ========================
+    :math:`E_\mathrm{h}` :data:`E_h`  :math:`4.3597447222071 \times 10^{-18} \ \mathrm{J}`     Hartree energy
+    :math:`N_\mathrm{A}` :data:`Na`   :math:`6.02214076 \times 10^{23} \ \mathrm{mol^{-1}}`    Avogadro constant
+    :math:`R`            :data:`R`    :math:`8.314462618 \ \mathrm{J/mol \cdot K}`             molar gas constant
+    :math:`a_0`          :data:`a0`   :math:`5.29177210903 \times 10^{-11} \ \mathrm{m}`       Bohr radius
+    :math:`c`            :data:`c`    :math:`299792458 \ \mathrm{m/s}`                         speed of light in vacuum
+    :math:`e`            :data:`e`    :math:`1.602176634 \times 10^{-19} \ \mathrm{C}`         elementary charge
+    :math:`h`            :data:`h`    :math:`6.62607015 \times 10^{-34} \ \mathrm{J \cdot s}`  Planck constant
+    :math:`\hbar`        :data:`hbar` :math:`1.054571817 \times 10^{-34} \ \mathrm{J \cdot s}` reduced Planck constant
+    :math:`k_\mathrm{B}` :data:`kB`   :math:`1.380649 \times 10^{-23} \ \mathrm{J/K}`          Boltzmann constant
+    :math:`m_\mathrm{e}` :data:`m_e`  :math:`9.1093837015 \times 10^{-31} \ \mathrm{kg}`       electron rest mass
+    :math:`m_\mathrm{n}` :data:`m_n`  :math:`1.67492749804 \times 10^{-27} \ \mathrm{kg}`      neutron rest mass
+    :math:`m_\mathrm{p}` :data:`m_p`  :math:`1.67262192369 \times 10^{-27} \ \mathrm{kg}`      proton rest mass
+    :math:`m_\mathrm{u}` :data:`amu`  :math:`1.66053906660 \times 10^{-27} \ \mathrm{kg}`      atomic mass unit
+    :math:`\pi`          :data:`pi`   :math:`3.14159 \ldots`
+    ==================== ============ ======================================================== ========================
 
+These values have been updated following CODATA 2018 recommendations.
+https://physics.nist.gov/cuu/Constants/Table/allascii.txt
 """
 
 import math
@@ -70,45 +69,45 @@ import math
 ################################################################################
 
 #: The Hartree energy :math:`E_\mathrm{h}` in :math:`\mathrm{J}`
-E_h = 4.35974434e-18
+E_h = 4.3597447222071e-18
 
-#: The Avogadro constant :math:`N_\mathrm{A}` in :math:`\mathrm{mol^{-1}}`       
-Na = 6.02214179e23
+#: The Avogadro constant :math:`N_\mathrm{A}` in :math:`\mathrm{mol^{-1}}`
+Na = 6.02214076e23
 
 #: The gas law constant :math:`R` in :math:`\mathrm{J/mol \cdot K}`
-R = 8.314472
+R = 8.314462618
 
 #: The Bohr radius :math:`a_0` in :math:`\mathrm{m}`
-a0 = 5.2917721092e-11
+a0 = 5.29177210903e-11
 
 #: The atomic mass unit in :math:`\mathrm{kg}`
-amu = 1.660538921e-27
+amu = 1.66053906660e-27
 
 #: The speed of light in a vacuum :math:`c` in :math:`\mathrm{m/s}`
-c = 299792458
+c = 299792458.
 
 #: The elementary charge :math:`e` in :math:`\mathrm{C}`
-e = 1.602176565e-19
+e = 1.602176634e-19
 
 #: The Planck constant :math:`h` in :math:`\mathrm{J \cdot s}`
-h = 6.62606896e-34
+h = 6.62607015e-34
 
 #: The reduced Planck constant :math:`\hbar` in :math:`\mathrm{J \cdot s}`
-hbar = 1.054571726e-34
+hbar = 1.054571817e-34
 
 #: The Boltzmann constant :math:`k_\mathrm{B}` in :math:`\mathrm{J/K}`
-kB = 1.3806504e-23
+kB = 1.380649e-23
 
 #: The mass of an electron :math:`m_\mathrm{e}` in :math:`\mathrm{kg}`
-m_e = 9.10938291e-31
+m_e = 9.1093837015e-31
 
 #: The mass of a neutron :math:`m_\mathrm{n}` in :math:`\mathrm{kg}`
-m_n = 1.674927351e-27
+m_n = 1.67492749804e-27
 
 #: The mass of a proton :math:`m_\mathrm{p}` in :math:`\mathrm{kg}`
-m_p = 1.672621777e-27
+m_p = 1.67262192369e-27
 
-#: :math:`\pi = 3.14159 \ldots`      
+#: :math:`\pi = 3.14159 \ldots`
 pi = float(math.pi)
 
 ################################################################################
