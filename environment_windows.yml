@@ -1,46 +1,47 @@
 name: rmg_env
 channels:
-  - rmg
   - defaults
+  - rmg
+  - rdkit
+  - cantera
 dependencies:
-  - mingwpy
-  - python
-  - numpy >=1.10.0
-  - cantera >=2.3.0a3
-  - coolprop
-  - cython >=0.25.2
-  - matplotlib >=1.5
-  - rdkit >=2015.09.2
-  - lpsolve55
-  - quantities
-  - scipy
-  - xlwt
-  - markupsafe
-  - jinja2
-  - pyparsing
-  - pydas
-  - pydot ==1.2.2
-  - pydqed
-  - pyrdl
-  - nose
-  - coverage
-  - gprof2dot
   - cairo
   - cairocffi
+  - cantera >=2.3.0
+  - coolprop
+  - coverage
+  - cython >=0.25.2
+  - dde
+  - ffmpeg
+  - gprof2dot
+  - graphviz
+  - jinja2
+  - jupyter
+  - lpsolve55
+  - markupsafe
+  - matplotlib >=1.5
+  - mingwpy
+  - mock
+  - mopac
+  - mpmath
+#  - muq
+  - networkx
+  - nose
+  - numpy >=1.10.0
   - openbabel
   - psutil
-  - symmetry
-  - mopac
-  - graphviz
-  - scoop
-  - ffmpeg
-  - jupyter
-  - networkx
-  - mock
-  # - muq
+  - pydas >=1.0.1
+  - pydot ==1.2.2
+  - pydqed >=1.0.0
   - pymongo
-  - mpmath
-  - dde
+  - pyparsing
+  - pyrdl
+  - python >=2.7
   - pyyaml
-  - textgenrnn
+  - quantities
+  - rdkit >=2018
   - scikit-learn
+  - scipy
+  - symmetry
+  - textgenrnn
+  - xlwt

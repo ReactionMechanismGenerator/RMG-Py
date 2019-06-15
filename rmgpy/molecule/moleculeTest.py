@@ -1351,72 +1351,74 @@ multiplicity 2
         The first two are different Kekule forms of the same thing.
         """
         test_cases = {
-                    "CC1C=CC=CC=1O":"""
-                        1 C u0 p0 c0 {2,S} {9,S} {10,S} {11,S}
-                        2 C u0 p0 c0 {1,S} {3,D} {4,S}
-                        3 C u0 p0 c0 {2,D} {5,S} {8,S}
-                        4 C u0 p0 c0 {2,S} {7,D} {12,S}
-                        5 C u0 p0 c0 {3,S} {6,D} {13,S}
-                        6 C u0 p0 c0 {5,D} {7,S} {14,S}
-                        7 C u0 p0 c0 {4,D} {6,S} {15,S}
-                        8 O u0 p2 c0 {3,S} {16,S}
-                        9 H u0 p0 c0 {1,S}
-                        10 H u0 p0 c0 {1,S}
-                        11 H u0 p0 c0 {1,S}
-                        12 H u0 p0 c0 {4,S}
-                        13 H u0 p0 c0 {5,S}
-                        14 H u0 p0 c0 {6,S}
-                        15 H u0 p0 c0 {7,S}
-                        16 H u0 p0 c0 {8,S}""",
-                    "CC1=CC=CC=C1O":"""
-                        1 C u0 p0 c0 {2,S} {9,S} {10,S} {11,S}
-                        2 C u0 p0 c0 {1,S} {3,S} {4,D}
-                        3 C u0 p0 c0 {2,S} {5,D} {8,S}
-                        4 C u0 p0 c0 {2,D} {7,S} {15,S}
-                        5 C u0 p0 c0 {3,D} {6,S} {12,S}
-                        6 C u0 p0 c0 {5,S} {7,D} {13,S}
-                        7 C u0 p0 c0 {4,S} {6,D} {14,S}
-                        8 O u0 p2 c0 {3,S} {16,S}
-                        9 H u0 p0 c0 {1,S}
-                        10 H u0 p0 c0 {1,S}
-                        11 H u0 p0 c0 {1,S}
-                        12 H u0 p0 c0 {5,S}
-                        13 H u0 p0 c0 {6,S}
-                        14 H u0 p0 c0 {7,S}
-                        15 H u0 p0 c0 {4,S}
-                        16 H u0 p0 c0 {8,S}""",
-                    "CC1C=CC=CC=1":"""
-                        1  C u0 p0 c0 {2,D} {6,S} {7,S}
-                        2  C u0 p0 c0 {1,D} {3,S} {8,S}
-                        3  C u0 p0 c0 {2,S} {4,D} {9,S}
-                        4  C u0 p0 c0 {3,D} {5,S} {10,S}
-                        5  C u0 p0 c0 {4,S} {6,D} {11,S}
-                        6  C u0 p0 c0 {1,S} {5,D} {12,S}
-                        7  C u0 p0 c0 {1,S} {13,S} {14,S} {15,S}
-                        8  H u0 p0 c0 {2,S}
-                        9  H u0 p0 c0 {3,S}
-                        10 H u0 p0 c0 {4,S}
-                        11 H u0 p0 c0 {5,S}
-                        12 H u0 p0 c0 {6,S}
-                        13 H u0 p0 c0 {7,S}
-                        14 H u0 p0 c0 {7,S}
-                        15 H u0 p0 c0 {7,S}"""
-                    }
+            "CC1=C(O)C=CC=C1": """
+1 C u0 p0 c0 {2,S} {9,S} {10,S} {11,S}
+2 C u0 p0 c0 {1,S} {3,D} {4,S}
+3 C u0 p0 c0 {2,D} {5,S} {8,S}
+4 C u0 p0 c0 {2,S} {7,D} {12,S}
+5 C u0 p0 c0 {3,S} {6,D} {13,S}
+6 C u0 p0 c0 {5,D} {7,S} {14,S}
+7 C u0 p0 c0 {4,D} {6,S} {15,S}
+8 O u0 p2 c0 {3,S} {16,S}
+9 H u0 p0 c0 {1,S}
+10 H u0 p0 c0 {1,S}
+11 H u0 p0 c0 {1,S}
+12 H u0 p0 c0 {4,S}
+13 H u0 p0 c0 {5,S}
+14 H u0 p0 c0 {6,S}
+15 H u0 p0 c0 {7,S}
+16 H u0 p0 c0 {8,S}
+""",
+            "CC1=CC=CC=C1O": """
+1 C u0 p0 c0 {2,S} {9,S} {10,S} {11,S}
+2 C u0 p0 c0 {1,S} {3,S} {4,D}
+3 C u0 p0 c0 {2,S} {5,D} {8,S}
+4 C u0 p0 c0 {2,D} {7,S} {15,S}
+5 C u0 p0 c0 {3,D} {6,S} {12,S}
+6 C u0 p0 c0 {5,S} {7,D} {13,S}
+7 C u0 p0 c0 {4,S} {6,D} {14,S}
+8 O u0 p2 c0 {3,S} {16,S}
+9 H u0 p0 c0 {1,S}
+10 H u0 p0 c0 {1,S}
+11 H u0 p0 c0 {1,S}
+12 H u0 p0 c0 {5,S}
+13 H u0 p0 c0 {6,S}
+14 H u0 p0 c0 {7,S}
+15 H u0 p0 c0 {4,S}
+16 H u0 p0 c0 {8,S}
+""",
+            "CC1=CC=CC=C1": """
+1  C u0 p0 c0 {2,D} {6,S} {7,S}
+2  C u0 p0 c0 {1,D} {3,S} {8,S}
+3  C u0 p0 c0 {2,S} {4,D} {9,S}
+4  C u0 p0 c0 {3,D} {5,S} {10,S}
+5  C u0 p0 c0 {4,S} {6,D} {11,S}
+6  C u0 p0 c0 {1,S} {5,D} {12,S}
+7  C u0 p0 c0 {1,S} {13,S} {14,S} {15,S}
+8  H u0 p0 c0 {2,S}
+9  H u0 p0 c0 {3,S}
+10 H u0 p0 c0 {4,S}
+11 H u0 p0 c0 {5,S}
+12 H u0 p0 c0 {6,S}
+13 H u0 p0 c0 {7,S}
+14 H u0 p0 c0 {7,S}
+15 H u0 p0 c0 {7,S}
+""",
+        }
         for smiles, adjlist in test_cases.iteritems():
             m = Molecule().fromAdjacencyList(adjlist)
             s = m.toSMILES()
             self.assertEqual(s, smiles, "Generated SMILES string {0} instead of {1}".format(s, smiles))
-        
 
     def testKekuleRoundTripSMILES(self):
         """
         Test that we can round-trip SMILES strings of Kekulized aromatics
         """
-        import rmgpy.molecule
         test_strings = [
-                       'CC1=CC=CC=C1O', 'CC1C=CC=CC=1O',
-                       # 'Cc1ccccc1O', # this will fail because it is Kekulized during fromSMILES()
-                       ]
+            'CC1=CC=CC=C1O',
+            'CC1=C(O)C=CC=C1',
+            # 'Cc1ccccc1O',  # this will fail because it is Kekulized during fromSMILES()
+        ]
         for s in test_strings:
             molecule = Molecule(SMILES=s)
             self.assertEqual(s, molecule.toSMILES(), "Started with {0} but ended with {1}".format(s, molecule.toSMILES()))
