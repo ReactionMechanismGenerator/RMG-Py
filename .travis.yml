@@ -11,10 +11,6 @@ env:
 
 stages:
   - test
-  - name: documentation
-    if: branch = master AND type = push
-  - name: deploy
-    if: branch = stable AND type = push
 
 before_install:
   - cd ..
@@ -26,62 +22,32 @@ before_install:
   # Update conda
   - conda update --yes conda
   - conda info -a
-  # Set git info
-  - git config --global user.name "Travis Deploy"
-  - git config --global user.email "rmg_dev@mit.edu"
 
 jobs:
   include:
     - stage: test
       install:
-        # Clone RMG-database
-        - git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
-        - cd RMG-Py
-        - conda env create -q -f environment_linux.yml
+        - conda create -y -c rmg -n rmg_env rmg
         - source activate rmg_env
-        # Install codecov for coverage report
-        - conda install -y -c conda-forge codecov
-        - conda list
-        # Setup MOPAC license key
-        - yes 'Yes' | $HOME/miniconda/envs/rmg_env/bin/mopac $MOPACKEY > /dev/null
-        - make
+        - which rmg.py
       script:
-        - make test-unittests
-        - make test-functional
-        - make test-database
-      after_success:
-        - codecov
-        - bash ./deploy.sh
-    - stage: documentation
-      install:
-        - cd RMG-Py
-        - conda env create -q -f environment_linux.yml
-        - source activate rmg_env
-        # Install sphinx for building documentation
-        - conda install -y sphinx
-        - conda list
-        # Modify setup.py
-        - sed -i '/embedsignature/s/^#//g' setup.py
-        - make
-        - cd documentation
-        - export COMMITMESSAGE="Automatic documentation rebuild"
-      script:
-        - make travis_setup clean html publish
-    - stage: deploy
-      install:
-        # Setup conda build
-        - conda install -y conda-build
-        - conda install -y anaconda-client
-        - conda config --add channels rmg
-        - conda config --set anaconda_upload yes
-      script:
-        - conda build --token $CONDA_TOKEN --user rmg RMG-Py/.conda
+        - rmg.py RMG-Py/examples/rmg/minimal/input.py
+        - rmg.py RMG-Py/examples/rmg/1,3-hexadiene/input.py
+        - rmg.py RMG-Py/examples/rmg/liquid_phase/input.py
+        - thermoEstimator.py RMG-Py/examples/thermoEstimator/input.py
+        - rmg.py RMG-Py/examples/rmg/heptane-eg5/input.py
+        - rmg.py RMG-Py/examples/rmg/ethane-oxidation/input.py
+        - rmg.py RMG-Py/examples/rmg/gri_mech_rxn_lib/input.py
     - os: osx
       install:
-        # Setup conda build
-        - conda install -y conda-build
-        - conda install -y anaconda-client
-        - conda config --add channels rmg
-        - conda config --set anaconda_upload yes
+        - conda create -y -c rmg -n rmg_env rmg
+        - source activate rmg_env
+        - which rmg.py
       script:
-        - conda build --token $CONDA_TOKEN --user rmg RMG-Py/.conda
+        - rmg.py RMG-Py/examples/rmg/minimal/input.py
+        - rmg.py RMG-Py/examples/rmg/1,3-hexadiene/input.py
+        - rmg.py RMG-Py/examples/rmg/liquid_phase/input.py
+        - thermoEstimator.py RMG-Py/examples/thermoEstimator/input.py
+        - rmg.py RMG-Py/examples/rmg/heptane-eg5/input.py
+        - rmg.py RMG-Py/examples/rmg/ethane-oxidation/input.py
+        - rmg.py RMG-Py/examples/rmg/gri_mech_rxn_lib/input.py
