@@ -90,7 +90,7 @@ the result of a MolPro “Freq” quantum chemistry calculation with the thermo 
 
 <dl class="method">
 <dt id="arkane.molpro.MolproLog.loadEnergy">
-<code class="descname">loadEnergy</code><span class="sig-paren">(</span><em>frequencyScaleFactor=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.molpro.MolproLog.loadEnergy" title="Permalink to this definition">¶</a></dt>
+<code class="descname">loadEnergy</code><span class="sig-paren">(</span><em>zpe_scale_factor=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.molpro.MolproLog.loadEnergy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return either the f12 or MRCI energy in J/mol from a Molpro Logfile.
 If the MRCI job outputted the MRCI+Davidson energy, the latter is returned.
 For CCSD(T)-f12, the function determines which energy (f12a or f12b) to use based on the basis set,
