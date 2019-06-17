@@ -288,7 +288,7 @@ class StatMechJob(object):
             except KeyError:
                 raise InputError('Model chemistry {0!r} not found in from dictionary of energy values in species file '
                                  '{1!r}.'.format(self.modelChemistry, path))
-        E0_withZPE, E0 = None, None
+        e0, e_electronic = None, None  # E0 = e_electronic + ZPE
         energyLog = None
         if isinstance(energy, Log) and not isinstance(energy, (GaussianLog, QChemLog, MolproLog)):
             energyLog = determine_qm_software(os.path.join(directory, energy.path))
@@ -296,21 +296,21 @@ class StatMechJob(object):
             energyLog = energy
             energyLog.path = os.path.join(directory, energyLog.path)
         elif isinstance(energy, float):
-            E0 = energy
+            e_electronic = energy
         elif isinstance(energy, tuple) and len(energy) == 2:
             # this is likely meant to be a quantity object with ZPE already accounted for
-            energy_temp = Quantity(energy)
-            E0_withZPE = energy_temp.value_si  # in J/mol
+            energy = Quantity(energy)
+            e_0 = energy.value_si  # in J/mol
         elif isinstance(energy, tuple) and len(energy) == 3:
-            if energy[2] == 'E0':
-                energy_temp = Quantity(energy[:2])
-                E0 = energy_temp.value_si / constants.E_h / constants.Na  # convert J/mol to Hartree
-            elif energy[2] == 'E0-ZPE':
-                energy_temp = Quantity(energy[:2])
-                E0_withZPE = energy_temp.value_si  # in J/mol
+            if energy[2].lower() == 'e_electronic':
+                energy = Quantity(energy[:2])
+                e_electronic = energy.value_si / constants.E_h / constants.Na  # convert J/mol to Hartree
+            elif energy[2].lower() in ['e0']:
+                energy = Quantity(energy[:2])
+                e0 = energy.value_si  # in J/mol
             else:
-                raise InputError('The third argument for E0 energy value should be E0 (for energy w/o ZPE) or E0-ZPE. '
-                                 'Value entered: {0}'.format(energy[2]))
+                raise InputError('The third argument for E0 energy value should be e_elect (for energy w/o ZPE) '
+                                 'or E0 (including the ZPE). Got: {0}'.format(energy[2]))
         try:
             geomLog = local_context['geometry']
         except KeyError:
@@ -403,36 +403,35 @@ class StatMechJob(object):
         conformer.number = number
         conformer.mass = (mass, "amu")
 
+        # The 1.014 factor represents the relationship between the harmonic frequencies scaling factor
+        # and the zero point energy scaling factor, see https://pubs.acs.org/doi/10.1021/ct100326h Section 3.1.3.
+        zpe_scale_factor = self.frequencyScaleFactor / 1.014
+
         logging.debug('    Reading energy...')
-        if E0_withZPE is None:
-            # The E0 that is read from the log file is without the ZPE and corresponds to E_elec
-            if E0 is None:
-                E0 = energyLog.loadEnergy(self.frequencyScaleFactor)
+        if e0 is None:
+            if e_electronic is None:
+                # The energy read from the log file is without the ZPE
+                e_electronic = energyLog.loadEnergy(zpe_scale_factor)  # in J/mol
             else:
-                E0 = E0 * constants.E_h * constants.Na  # Hartree/particle to J/mol
+                e_electronic *= constants.E_h * constants.Na  # convert Hartree/particle into J/mol
             if not self.applyAtomEnergyCorrections:
                 logging.warning('Atom corrections are not being used. Do not trust energies and thermo.')
-            E0 = applyEnergyCorrections(E0,
-                                        self.modelChemistry,
-                                        atoms,
-                                        self.bonds,
-                                        atomEnergies=self.atomEnergies,
-                                        applyAtomEnergyCorrections=self.applyAtomEnergyCorrections,
-                                        applyBondEnergyCorrections=self.applyBondEnergyCorrections)
-            if len(number) > 1:
-                ZPE = statmechLog.loadZeroPointEnergy() * self.frequencyScaleFactor
-            else:
-                # Monoatomic species don't have frequencies
-                ZPE = 0.0
-            logging.debug('Corrected minimum energy is {0} J/mol'.format(E0))
-            # The E0_withZPE at this stage contains the ZPE
-            E0_withZPE = E0 + ZPE
+            e_electronic = applyEnergyCorrections(e_electronic, self.modelChemistry, atoms, self.bonds,
+                                                  atomEnergies=self.atomEnergies,
+                                                  applyAtomEnergyCorrections=self.applyAtomEnergyCorrections,
+                                                  applyBondEnergyCorrections=self.applyBondEnergyCorrections)
+            # Get ZPE only for polyatomic species (monoatomic species don't have frequencies, so ZPE = 0)
+            zpe = statmechLog.loadZeroPointEnergy() * zpe_scale_factor if len(number) > 1 else 0
+            logging.debug('Scaled zero point energy (ZPE) is {0} J/mol'.format(zpe))
 
-            logging.debug('         Scaling factor used = {0:g}'.format(self.frequencyScaleFactor))
-            logging.debug('         ZPE (0 K) = {0:g} kcal/mol'.format(ZPE / 4184.))
-            logging.debug('         E0 (0 K) = {0:g} kcal/mol'.format(E0_withZPE / 4184.))
+            e0 = e_electronic + zpe
 
-        conformer.E0 = (E0_withZPE * 0.001, "kJ/mol")
+            logging.debug('         Harmonic frequencies scaling factor used = {0:g}'.format(self.frequencyScaleFactor))
+            logging.debug('         Zero point energy scaling factor used = {0:g}'.format(zpe_scale_factor))
+            logging.debug('         Scaled ZPE (0 K) = {0:g} kcal/mol'.format(zpe / 4184.))
+            logging.debug('         E0 (0 K) = {0:g} kcal/mol'.format(e0 / 4184.))
+
+        conformer.E0 = (e0 * 0.001, "kJ/mol")
 
         # If loading a transition state, also read the imaginary frequency
         if is_ts:
@@ -1228,79 +1227,79 @@ def projectRotors(conformer, F, rotors, linear, is_ts, label):
     return np.sqrt(eig[-Nvib:]) / (2 * math.pi * constants.c * 100)
 
 
-def assign_frequency_scale_factor(model_chemistry):
+def assign_frequency_scale_factor(freq_level):
     """
     Assign the frequency scaling factor according to the model chemistry.
     Refer to https://comp.chem.umn.edu/freqscale/index.html for future updates of these factors
 
+    Sources:
+        [1] I.M. Alecu, J. Zheng, Y. Zhao, D.G. Truhlar, J. Chem. Theory Comput. 2010, 6, 2872, DOI: 10.1021/ct100326h
+        [2] http://cccbdb.nist.gov/vibscalejust.asp
+        [3] http://comp.chem.umn.edu/freqscale/190107_Database_of_Freq_Scale_Factors_v4.pdf
+        [4] Calculated as described in 10.1021/ct100326h
+        [5] J.A. Montgomery, M.J. Frisch, J. Chem. Phys. 1999, 110, 2822–2827, DOI: 10.1063/1.477924
+
     Args:
-        model_chemistry (str, unicode): The frequency level of theory.
+        freq_level (str, unicode): The frequency level of theory.
 
     Returns:
         float: The frequency scaling factor (1 by default).
     """
-    freq_dict = {'cbs-qb3': 0.99,  # J. Chem. Phys. 1999, 110, 2822–2827
-                 'cbs-qb3-paraskevas': 0.99,
-                 # 'g3': ,
-                 'm08so/mg3s*': 0.983,  # DOI: 10.1021/ct100326h, taken as 'M08-SO/MG3S'
-                 'm06-2x/cc-pvtz': 0.955,  # http://cccbdb.nist.gov/vibscalejust.asp
-                 # 'klip_1': ,
-                 # 'klip_2': ,
-                 # 'klip_3': ,
-                 # 'klip_2_cc': ,
-                 # 'ccsd(t)-f12/cc-pvdz-f12_h-tz': ,
-                 # 'ccsd(t)-f12/cc-pvdz-f12_h-qz': ,
-                 'ccsd(t)-f12/cc-pvdz-f12': 0.979,
-                 # http://cccbdb.nist.gov/vibscalejust.asp, taken as 'ccsd(t)/cc-pvdz'
-                 'ccsd(t)-f12/cc-pvtz-f12': 0.984,
-                 # Taken from https://comp.chem.umn.edu/freqscale/version3b2.htm as CCSD(T)-F12a/cc-pVTZ-F12
-                 'ccsd(t)-f12/cc-pvqz-f12': 0.970,
-                 # http://cccbdb.nist.gov/vibscalejust.asp, taken as 'ccsd(t)/cc-pvqz'
-                 'ccsd(t)-f12/cc-pcvdz-f12': 0.971,
-                 # http://cccbdb.nist.gov/vibscalejust.asp, taken as 'ccsd(t)/cc-pcvdz'
-                 'ccsd(t)-f12/cc-pcvtz-f12': 0.966,
-                 # 'ccsd(t)-f12/cc-pcvqz-f12': ,
-                 # 'ccsd(t)-f12/cc-pvtz-f12(-pp)': ,
-                 # 'ccsd(t)/aug-cc-pvtz(-pp)': ,
-                 'ccsd(t)-f12/aug-cc-pvdz': 0.963,
-                 # http://cccbdb.nist.gov/vibscalejust.asp, taken as 'ccsd(t)/aug-cc-pvdz'
-                 'ccsd(t)-f12/aug-cc-pvtz': 0.970,
-                 # http://cccbdb.nist.gov/vibscalejust.asp, taken as 'ccsd(t)/aug-cc-pvtz'
-                 'ccsd(t)-f12/aug-cc-pvqz': 0.975,
-                 # http://cccbdb.nist.gov/vibscalejust.asp, taken as 'ccsd(t)/aug-cc-pvqz'
-                 # 'b-ccsd(t)-f12/cc-pvdz-f12': ,
-                 # 'b-ccsd(t)-f12/cc-pvtz-f12': ,
-                 # 'b-ccsd(t)-f12/cc-pvqz-f12': ,
-                 # 'b-ccsd(t)-f12/cc-pcvdz-f12': ,
-                 # 'b-ccsd(t)-f12/cc-pcvtz-f12': ,
-                 # 'b-ccsd(t)-f12/cc-pcvqz-f12': ,
-                 # 'b-ccsd(t)-f12/aug-cc-pvdz': ,
-                 # 'b-ccsd(t)-f12/aug-cc-pvtz': ,
-                 # 'b-ccsd(t)-f12/aug-cc-pvqz': ,
-                 'mp2_rmp2_pvdz': 0.953,  # http://cccbdb.nist.gov/vibscalejust.asp, taken as ',p2/cc-pvdz'
-                 'mp2_rmp2_pvtz': 0.950,  # http://cccbdb.nist.gov/vibscalejust.asp, taken as ',p2/cc-pvdz'
-                 'mp2_rmp2_pvqz': 0.962,  # http://cccbdb.nist.gov/vibscalejust.asp, taken as ',p2/cc-pvdz'
-                 'ccsd-f12/cc-pvdz-f12': 0.947,  # http://cccbdb.nist.gov/vibscalejust.asp, taken as ccsd/cc-pvdz
-                 # 'ccsd(t)-f12/cc-pvdz-f12_noscale': ,
-                 # 'g03_pbepbe_6-311++g_d_p': ,
-                 # 'fci/cc-pvdz': ,
-                 # 'fci/cc-pvtz': ,
-                 # 'fci/cc-pvqz': ,
-                 # 'bmk/cbsb7': ,
-                 # 'bmk/6-311g(2d,d,p)': ,
-                 'b3lyp/6-31g**': 0.961,  # http://cccbdb.nist.gov/vibscalejust.asp
-                 'b3lyp/6-311+g(3df,2p)': 0.967,  # http://cccbdb.nist.gov/vibscalejust.asp
-                 'wb97x-d/aug-cc-pvtz': 0.974,
-                 # Taken from https://comp.chem.umn.edu/freqscale/version3b2.htm as ωB97X-D/maug-cc-pVTZ
+    freq_dict = {'hf/sto-3g': 0.817,  # [2]
+                 'hf/6-31g': 0.903,  # [2]
+                 'hf/6-31g(d)': 0.899,  # [2]
+                 'hf/6-31g(d,p)': 0.903,  # [2]
+                 'hf/6-31g+(d,p)': 0.904,  # [2]
+                 'hf/6-31+g(d,p)': 0.915 * 1.014,  # [1] Table 7
+                 'pm3': 0.940 * 1.014,  # [1] Table 7, the 0.940 value is the ZPE scale factor
+                 'pm6': 1.078 * 1.014,  # [1] Table 7, the 1.078 value is the ZPE scale factor
+                 'b3lyp/6-31g(d,p)': 0.961,  # [2]
+                 'b3lyp/6-311g(d,p)': 0.967,  # [2]
+                 'b3lyp/6-311+g(3df,2p)': 0.967,  # [2]
+                 'b3lyp/6-311+g(3df,2pd)': 0.970,  # [2]
+                 'm06-2x/6-31g(d,p)': 0.952,  # [2]
+                 'm06-2x/6-31+g(d,p)': 0.979,  # [3]
+                 'm06-2x/6-311+g(d,p)': 0.983,  # [3]
+                 'm06-2x/6-311++g(d,p)': 0.983,  # [3]
+                 'm06-2x/cc-pvtz': 0.955,  # [2]
+                 'm06-2x/aug-cc-pvdz': 0.993,  # [3]
+                 'm06-2x/aug-cc-pvtz': 0.985,  # [1] Table 3, [3]
+                 'm06-2x/def2-tzvp': 0.984,  # [3]
+                 'm06-2x/def2-qzvp': 0.983,  # [3]
+                 'm06-2x/def2-tzvpp': 0.983,  # [1] Table 3, [3]
+                 'm08so/mg3s*': 0.995,  # [1] Table 3, taken as 'M08-SO/MG3S'
+                 'wb97x-d/aug-cc-pvtz': 0.988,  # [3], taken as 'ωB97X-D/maug-cc-pVTZ'
+                 'wb97xd/6-311++g(d,p)': 0.988,  # [4]
+                 'mp2_rmp2_pvdz': 0.953,  # [2], taken as 'MP2/cc-pVDZ'
+                 'mp2_rmp2_pvtz': 0.950,  # [2], taken as 'MP2/cc-pVTZ'
+                 'mp2_rmp2_pvqz': 0.962,  # [2], taken as 'MP2/cc-pVQZ'
+                 'cbs-qb3': 0.99 * 1.014,  # [5], the 0.99 value is the ZPE scale factor of CBS-QB3
+                 'cbs-qb3-paraskevas': 0.99 * 1.014,  # [5], the 0.99 value is the ZPE scale factor of CBS-QB3
+                 'ccsd-f12/cc-pvdz-f12': 0.947,  # [2], taken as 'CCSD/cc-pVDZ'
+                 'ccsd(t)/cc-pvdz': 0.979,  # [2]
+                 'ccsd(t)/cc-pvtz': 0.975,  # [2]
+                 'ccsd(t)/cc-pvqz': 0.970,  # [2]
+                 'ccsd(t)/aug-cc-pvdz': 0.963,  # [2]
+                 'ccsd(t)/aug-cc-pvtz': 1.001,  # [3]
+                 'ccsd(t)/aug-cc-pvqz': 0.975,  # [2]
+                 'ccsd(t)/cc-pv(t+d)z': 0.965,  # [2]
+                 'ccsd(t)-f12/cc-pvdz-f12': 0.997,  # [3], taken as 'CCSD(T)-F12a/cc-pVDZ-F12'
+                 'ccsd(t)-f12/cc-pvtz-f12': 0.998,  # [3], taken as 'CCSD(T)-F12a/cc-pVTZ-F12'
+                 'ccsd(t)-f12/cc-pvqz-f12': 0.998,  # [3], taken as 'CCSD(T)-F12b/VQZF12//CCSD(T)-F12a/TZF'
+                 'ccsd(t)-f12/cc-pcvdz-f12': 0.997,  # [3], taken as 'CCSD(T)-F12a/cc-pVDZ-F12'
+                 'ccsd(t)-f12/cc-pcvtz-f12': 0.998,  # [3], taken as 'CCSD(T)-F12a/cc-pVTZ-F12'
+                 'ccsd(t)-f12/aug-cc-pvdz': 0.997,  # [3], taken as 'CCSD(T)/cc-pVDZ'
+                 'ccsd(t)-f12/aug-cc-pvtz': 0.998,  # [3], taken as CCSD(T)-F12a/cc-pVTZ-F12
+                 'ccsd(t)-f12/aug-cc-pvqz': 0.998,  # [3], taken as 'CCSD(T)-F12b/VQZF12//CCSD(T)-F12a/TZF'
                  }
-    scaling_factor = freq_dict.get(model_chemistry.lower(), 1)
+    scaling_factor = freq_dict.get(freq_level.lower(), 1)
     if scaling_factor == 1:
         logging.warning('No frequency scaling factor found for model chemistry {0}. Assuming a value of unity. '
                         'This will affect the partition function and all quantities derived from it '
-                        '(thermo quantities and rate coefficients).'.format(model_chemistry))
+                        '(thermo quantities and rate coefficients).'.format(freq_level))
     else:
-        logging.info('Assigned a frequency scale factor of {0} for model chemistry {1}'.format(
-            scaling_factor, model_chemistry))
+        logging.info('Assigned a frequency scale factor of {0} for the frequency level of theory {1}'.format(
+            scaling_factor, freq_level))
     return scaling_factor
 
 

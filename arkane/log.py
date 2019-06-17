@@ -86,7 +86,7 @@ class Log(object):
         raise NotImplementedError("loadConformer is not implemented for the Log class. "
                                   "This method should be implemented by a subclass.")
 
-    def loadEnergy(self, frequencyScaleFactor=1.):
+    def loadEnergy(self, zpe_scale_factor=1.):
         """
         Load the energy in J/mol from a QChem log file. Only the last energy
         in the file is returned. The zero-point energy is *not* included in
