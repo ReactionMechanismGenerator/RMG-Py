@@ -256,11 +256,16 @@ cdef class NASA(HeatCapacityModel):
                     poly_dict[key]['coeffs'] = poly.coeffs.tolist()
             i = i + 1
         output_dict['polynomials'] = poly_dict
-        output_dict['Tmin'] = self.Tmin.as_dict()
-        output_dict['Tmax'] = self.Tmax.as_dict()
-        output_dict['E0'] = self.E0.as_dict()
-        output_dict['Cp0'] = self.Cp0.as_dict()
-        output_dict['CpInf'] = self.CpInf.as_dict()
+        if self.Tmin:
+            output_dict['Tmin'] = self.Tmin.as_dict()
+        if self.Tmax:
+            output_dict['Tmax'] = self.Tmax.as_dict()
+        if self.E0:
+            output_dict['E0'] = self.E0.as_dict()
+        if self.Cp0:
+            output_dict['Cp0'] = self.Cp0.as_dict()
+        if self.CpInf:
+            output_dict['CpInf'] = self.CpInf.as_dict()
         if self.label != '':
             output_dict['label'] = self.label
         if self.comment != '':
