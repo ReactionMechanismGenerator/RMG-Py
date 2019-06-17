@@ -213,206 +213,242 @@ Each reaction family contains the files:
 
 There are currently 58 reaction families in RMG:
 
+.. |f00| image:: images/kinetics_families/1+2_Cycloaddition.png
+    :scale: 40%
 .. |f01| image:: images/kinetics_families/1,2-Birad_to_alkene.png
-    :scale: 25%
-.. |f02| image:: images/kinetics_families/1,2_Insertion_carbene.png
-    :scale: 25%
-.. |f03| image:: images/kinetics_families/1,2_Insertion_CO.png
-    :scale: 25%
-.. |f04| image:: images/kinetics_families/1,2_shiftC.png
-    :scale: 25%
-.. |f05| image:: images/kinetics_families/1,2_shiftS.png
-    :scale: 25%
-.. |f06| image:: images/kinetics_families/1,3_Insertion_CO2.png
-    :scale: 25%
-.. |f07| image:: images/kinetics_families/1,3_Insertion_ROR.png
-    :scale: 25%
-.. |f08| image:: images/kinetics_families/1,3_Insertion_RSR.png
-    :scale: 25%
-.. |f09| image:: images/kinetics_families/1,4_Cyclic_birad_scission.png
-    :scale: 25%
-.. |f10| image:: images/kinetics_families/1,4_Linear_birad_scission.png
-    :scale: 25%
-.. |f11| image:: images/kinetics_families/1+2_Cycloaddition.png
-    :scale: 25%
-.. |f12| image:: images/kinetics_families/2+2_cycloaddition_CCO.png
-    :scale: 25%
-.. |f13| image:: images/kinetics_families/2+2_cycloaddition_Cd.png
-    :scale: 25%
+    :scale: 40%
+.. |f02| image:: images/kinetics_families/1,2_Insertion_CO.png
+    :scale: 40%
+.. |f03| image:: images/kinetics_families/1,2_Insertion_carbene.png
+    :scale: 40%
+.. |f04| image:: images/kinetics_families/1,2_NH3_elimination.png
+    :scale: 40%
+.. |f05| image:: images/kinetics_families/1,2_shiftC.png
+    :scale: 40%
+.. |f06| image:: images/kinetics_families/1,2_shiftS.png
+    :scale: 40%
+.. |f07| image:: images/kinetics_families/1,3_Insertion_CO2.png
+    :scale: 40%
+.. |f08| image:: images/kinetics_families/1,3_Insertion_ROR.png
+    :scale: 40%
+.. |f09| image:: images/kinetics_families/1,3_Insertion_RSR.png
+    :scale: 40%
+.. |f10| image:: images/kinetics_families/1,3_NH3_elimination.png
+    :scale: 40%
+.. |f11| image:: images/kinetics_families/1,4_Cyclic_birad_scission.png
+    :scale: 40%
+.. |f12| image:: images/kinetics_families/1,4_Linear_birad_scission.png
+    :scale: 40%
+.. |f13| image:: images/kinetics_families/2+2_cycloaddition_CCO.png
+    :scale: 40%
 .. |f14| image:: images/kinetics_families/2+2_cycloaddition_CO.png
-    :scale: 25%
+    :scale: 40%
 .. |f15| image:: images/kinetics_families/2+2_cycloaddition_CS.png
-    :scale: 25%
-.. |f16| image:: images/kinetics_families/6_membered_central_C-C_shift.png
-    :scale: 25%
-.. |f17| image:: images/kinetics_families/Birad_recombination.png
-    :scale: 25%
-.. |f18| image:: images/kinetics_families/Birad_R_Recombination.png
-    :scale: 25%
-.. |f19| image:: images/kinetics_families/CO_Disproportionation.png
-    :scale: 25%
-.. |f20| image:: images/kinetics_families/Concerted_Intra_Diels_alder_monocyclic_1,2_shiftH.png
-    :scale: 25%
-.. |f21| image:: images/kinetics_families/Cyclic_Ether_Formation.png
-    :scale: 25%
-.. |f22| image:: images/kinetics_families/Cyclic_Thioether_Formation.png
-    :scale: 25%
-.. |f23| image:: images/kinetics_families/Cyclopentadiene_scission.png
-    :scale: 25%
-.. |f24| image:: images/kinetics_families/Diels_alder_addition.png
-    :scale: 25%
-.. |f25| image:: images/kinetics_families/Disproportionation.png
-    :scale: 25%
-.. |f26| image:: images/kinetics_families/H_Abstraction.png
-    :scale: 25%
-.. |f27| image:: images/kinetics_families/HO2_Elimination_from_PeroxyRadical.png
-    :scale: 25%
-.. |f28| image:: images/kinetics_families/Intra_2+2_cycloaddition_Cd.png
-    :scale: 25%
-.. |f29| image:: images/kinetics_families/Intra_5_membered_conjugated_C=C_C=C_addition.png
-    :scale: 25%
-.. |f30| image:: images/kinetics_families/Intra_Diels_alder_monocyclic.png
-    :scale: 25%
-.. |f31| image:: images/kinetics_families/Intra_Disproportionation.png
-    :scale: 25%
-.. |f32| image:: images/kinetics_families/Intra_ene_reaction.png
-    :scale: 25%
-.. |f33| image:: images/kinetics_families/intra_H_migration.png
-    :scale: 25%
-.. |f34| image:: images/kinetics_families/intra_NO2_ONO_conversion.png
-    :scale: 25%
-.. |f35| image:: images/kinetics_families/intra_OH_migration.png
-    :scale: 25%
-.. |f36| image:: images/kinetics_families/Intra_R_Add_Endocyclic.png
-    :scale: 25%
-.. |f37| image:: images/kinetics_families/Intra_R_Add_Exocyclic.png
-    :scale: 25%
-.. |f38| image:: images/kinetics_families/Intra_R_Add_Exo_scission.png
-    :scale: 25%
-.. |f39| image:: images/kinetics_families/Intra_R_Add_ExoTetCyclic.png
-    :scale: 25%
-.. |f40| image:: images/kinetics_families/Intra_Retro_Diels_alder_bicyclic.png
-    :scale: 25%
-.. |f41| image:: images/kinetics_families/Intra_RH_Add_Endocyclic.png
-    :scale: 25%
-.. |f42| image:: images/kinetics_families/Intra_RH_Add_Exocyclic.png
-    :scale: 25%
-.. |f43| image:: images/kinetics_families/intra_substitutionCS_cyclization.png
-    :scale: 25%
-.. |f44| image:: images/kinetics_families/intra_substitutionCS_isomerization.png
-    :scale: 25%
-.. |f45| image:: images/kinetics_families/intra_substitutionS_cyclization.png
-    :scale: 25%
-.. |f46| image:: images/kinetics_families/intra_substitutionS_isomerization.png
-    :scale: 25%
-.. |f47| image:: images/kinetics_families/ketoenol.png
-    :scale: 25%
-.. |f48| image:: images/kinetics_families/Korcek_step1.png
-    :scale: 25%
-.. |f49| image:: images/kinetics_families/Korcek_step2.png
-    :scale: 25%
-.. |f50| image:: images/kinetics_families/lone_electron_pair_bond.png
-    :scale: 25%
-.. |f51| image:: images/kinetics_families/R_Addition_COm.png
-    :scale: 25%
-.. |f52| image:: images/kinetics_families/R_Addition_CSm.png
-    :scale: 25%
-.. |f53| image:: images/kinetics_families/R_Addition_MultipleBond.png
-    :scale: 25%
-.. |f54| image:: images/kinetics_families/R_Recombination.png
-    :scale: 25%
-.. |f55| image:: images/kinetics_families/Singlet_Carbene_Intra_Disproportionation.png
-    :scale: 25%
-.. |f56| image:: images/kinetics_families/Singlet_Val6_to_triplet.png
-    :scale: 25%
+    :scale: 40%
+.. |f16| image:: images/kinetics_families/2+2_cycloaddition_Cd.png
+    :scale: 40%
+.. |f17| image:: images/kinetics_families/6_membered_central_C-C_shift.png
+    :scale: 40%
+.. |f18| image:: images/kinetics_families/Baeyer-Villiger_step1_cat.png
+    :scale: 40%
+.. |f19| image:: images/kinetics_families/Baeyer-Villiger_step2.png
+    :scale: 40%
+.. |f20| image:: images/kinetics_families/Baeyer-Villiger_step2_cat.png
+    :scale: 40%
+.. |f21| image:: images/kinetics_families/Bimolec_Hydroperoxide_Decomposition.png
+    :scale: 40%
+.. |f22| image:: images/kinetics_families/Birad_R_Recombination.png
+    :scale: 40%
+.. |f23| image:: images/kinetics_families/Birad_recombination.png
+    :scale: 40%
+.. |f24| image:: images/kinetics_families/CO_Disproportionation.png
+    :scale: 40%
+.. |f25| image:: images/kinetics_families/Concerted_Intra_Diels_alder_monocyclic_1,2_shiftH.png
+    :scale: 40%
+.. |f26| image:: images/kinetics_families/Cyclic_Ether_Formation.png
+    :scale: 40%
+.. |f27| image:: images/kinetics_families/Cyclic_Thioether_Formation.png
+    :scale: 40%
+.. |f28| image:: images/kinetics_families/Cyclopentadiene_scission.png
+    :scale: 40%
+.. |f29| image:: images/kinetics_families/Diels_alder_addition.png
+    :scale: 40%
+.. |f30| image:: images/kinetics_families/Disproportionation.png
+    :scale: 40%
+.. |f31| image:: images/kinetics_families/HO2_Elimination_from_PeroxyRadical.png
+    :scale: 40%
+.. |f32| image:: images/kinetics_families/H_Abstraction.png
+    :scale: 40%
+.. |f33| image:: images/kinetics_families/Intra_2+2_cycloaddition_Cd.png
+    :scale: 40%
+.. |f34| image:: images/kinetics_families/Intra_5_membered_conjugated_C=C_C=C_addition.png
+    :scale: 40%
+.. |f35| image:: images/kinetics_families/Intra_Diels_alder_monocyclic.png
+    :scale: 40%
+.. |f36| image:: images/kinetics_families/Intra_Disproportionation.png
+    :scale: 40%
+.. |f37| image:: images/kinetics_families/Intra_RH_Add_Endocyclic.png
+    :scale: 40%
+.. |f38| image:: images/kinetics_families/Intra_RH_Add_Exocyclic.png
+    :scale: 40%
+.. |f39| image:: images/kinetics_families/Intra_R_Add_Endocyclic.png
+    :scale: 40%
+.. |f40| image:: images/kinetics_families/Intra_R_Add_ExoTetCyclic.png
+    :scale: 40%
+.. |f41| image:: images/kinetics_families/Intra_R_Add_Exo_scission.png
+    :scale: 40%
+.. |f42| image:: images/kinetics_families/Intra_R_Add_Exocyclic.png
+    :scale: 40%
+.. |f43| image:: images/kinetics_families/Intra_Retro_Diels_alder_bicyclic.png
+    :scale: 40%
+.. |f44| image:: images/kinetics_families/Intra_ene_reaction.png
+    :scale: 40%
+.. |f45| image:: images/kinetics_families/Korcek_step1.png
+    :scale: 40%
+.. |f46| image:: images/kinetics_families/Korcek_step1_cat.png
+    :scale: 40%
+.. |f47| image:: images/kinetics_families/Korcek_step2.png
+    :scale: 40%
+.. |f48| image:: images/kinetics_families/Peroxyl_Disproportionation.png
+    :scale: 40%
+.. |f49| image:: images/kinetics_families/Peroxyl_Termination.png
+    :scale: 40%
+.. |f50| image:: images/kinetics_families/R_Addition_COm.png
+    :scale: 40%
+.. |f51| image:: images/kinetics_families/R_Addition_CSm.png
+    :scale: 40%
+.. |f52| image:: images/kinetics_families/R_Addition_MultipleBond.png
+    :scale: 40%
+.. |f53| image:: images/kinetics_families/R_Recombination.png
+    :scale: 40%
+.. |f54| image:: images/kinetics_families/Singlet_Carbene_Intra_Disproportionation.png
+    :scale: 40%
+.. |f55| image:: images/kinetics_families/Singlet_Val6_to_triplet.png
+    :scale: 40%
+.. |f56| image:: images/kinetics_families/SubstitutionS.png
+    :scale: 40%
 .. |f57| image:: images/kinetics_families/Substitution_O.png
-    :scale: 25%
-.. |f58| image:: images/kinetics_families/SubstitutionS.png
-    :scale: 25%
-.. |f59| image:: images/kinetics_families/Baeyer-Villiger_step1_cat.png
-    :scale: 25%
-.. |f60| image:: images/kinetics_families/Baeyer-Villiger_step2.png
-    :scale: 25%
-.. |f61| image:: images/kinetics_families/Baeyer-Villiger_step2_cat.png
-    :scale: 25%
-.. |f62| image:: images/kinetics_families/Bimolec_Hydroperoxide_Decomposition.png
-    :scale: 25%
-.. |f63| image:: images/kinetics_families/Korcek_step1_cat.png
-    :scale: 25%
-.. |f64| image:: images/kinetics_families/Peroxyl_Disproportionation.png
-    :scale: 25%
-.. |f65| image:: images/kinetics_families/Peroxyl_Termination.png
-    :scale: 25%
+    :scale: 40%
+.. |f58| image:: images/kinetics_families/Surface_Abstraction.png
+    :scale: 40%
+.. |f59| image:: images/kinetics_families/Surface_Adsorption_Bidentate.png
+    :scale: 40%
+.. |f60| image:: images/kinetics_families/Surface_Adsorption_Dissociative.png
+    :scale: 40%
+.. |f61| image:: images/kinetics_families/Surface_Adsorption_Double.png
+    :scale: 40%
+.. |f62| image:: images/kinetics_families/Surface_Adsorption_Single.png
+    :scale: 40%
+.. |f63| image:: images/kinetics_families/Surface_Adsorption_vdW.png
+    :scale: 40%
+.. |f64| image:: images/kinetics_families/Surface_Bidentate_Dissociation.png
+    :scale: 40%
+.. |f65| image:: images/kinetics_families/Surface_Dissociation.png
+    :scale: 40%
+.. |f66| image:: images/kinetics_families/Surface_Dissociation_vdW.png
+    :scale: 40%
+.. |f67| image:: images/kinetics_families/Surface_Recombination.png
+    :scale: 40%
+.. |f68| image:: images/kinetics_families/intra_H_migration.png
+    :scale: 40%
+.. |f69| image:: images/kinetics_families/intra_NO2_ONO_conversion.png
+    :scale: 40%
+.. |f70| image:: images/kinetics_families/intra_OH_migration.png
+    :scale: 40%
+.. |f71| image:: images/kinetics_families/intra_substitutionCS_cyclization.png
+    :scale: 40%
+.. |f72| image:: images/kinetics_families/intra_substitutionCS_isomerization.png
+    :scale: 40%
+.. |f73| image:: images/kinetics_families/intra_substitutionS_cyclization.png
+    :scale: 40%
+.. |f74| image:: images/kinetics_families/intra_substitutionS_isomerization.png
+    :scale: 40%
+.. |f75| image:: images/kinetics_families/ketoenol.png
+    :scale: 40%
+.. |f76| image:: images/kinetics_families/lone_electron_pair_bond.png
+    :scale: 40%
 
 .. table::
-    :widths: 50 50
+    :widths: 40 60
 
     ===================================================== =====
+    **1+2_Cycloaddition**                                 |f00|
     **1,2-Birad_to_alkene**                               |f01|
-    **1,2_Insertion_carbene**                             |f02|
-    **1,2_Insertion_CO**                                  |f03|
-    **1,2_shiftC**                                        |f04|
-    **1,2_shiftS**                                        |f05|
-    **1,3_Insertion_CO2**                                 |f06|
-    **1,3_Insertion_ROR**                                 |f07|
-    **1,3_Insertion_RSR**                                 |f08|
-    **1,4_Cyclic_birad_scission**                         |f09|
-    **1,4_Linear_birad_scission**                         |f10|
-    **1+2_Cycloaddition**                                 |f11|
-    **2+2_cycloaddition_CCO**                             |f12|
-    **2+2_cycloaddition_Cd**                              |f13|
+    **1,2_Insertion_CO**                                  |f02|
+    **1,2_Insertion_carbene**                             |f03|
+    **1,2_NH3_elimination**                               |f04|
+    **1,2_shiftC**                                        |f05|
+    **1,2_shiftS**                                        |f06|
+    **1,3_Insertion_CO2**                                 |f07|
+    **1,3_Insertion_ROR**                                 |f08|
+    **1,3_Insertion_RSR**                                 |f09|
+    **1,3_NH3_elimination**                               |f10|
+    **1,4_Cyclic_birad_scission**                         |f11|
+    **1,4_Linear_birad_scission**                         |f12|
+    **2+2_cycloaddition_CCO**                             |f13|
     **2+2_cycloaddition_CO**                              |f14|
     **2+2_cycloaddition_CS**                              |f15|
-    **6_membered_central_C-C_shift**                      |f16|
-    **Baeyer-Villiger_step1_cat**                         |f59|
-    **Baeyer-Villiger_step2**                             |f60|
-    **Baeyer-Villiger_step2_cat**                         |f61|
-    **Bimolec_Hydroperoxide_Decomposition**               |f62|
-    **Birad_recombination**                               |f17|
-    **Birad_R_Recombination**                             |f18|
-    **CO_Disproportionation**                             |f19|
-    **Concerted_Intra_Diels_alder_monocyclic_1,2_shiftH** |f20|
-    **Cyclic_Ether_Formation**                            |f21|
-    **Cyclic_Thioether_Formation**                        |f22|
-    **Cyclopentadiene_scission**                          |f23|
-    **Diels_alder_addition**                              |f24|
-    **Disproportionation**                                |f25|
-    **H_Abstraction**                                     |f26|
-    **HO2_Elimination_from_PeroxyRadical**                |f27|
-    **Intra_2+2_cycloaddition_Cd**                        |f28|
-    **Intra_5_membered_conjugated_C=C_C=C_addition**      |f29|
-    **Intra_Diels_alder_monocyclic**                      |f30|
-    **Intra_Disproportionation**                          |f31|
-    **Intra_ene_reaction**                                |f32|
-    **intra_H_migration**                                 |f33|
-    **intra_NO2_ONO_conversion**                          |f34|
-    **intra_OH_migration**                                |f35|
-    **Intra_R_Add_Endocyclic**                            |f36|
-    **Intra_R_Add_Exocyclic**                             |f37|
-    **Intra_R_Add_Exo_scission**                          |f38|
-    **Intra_R_Add_ExoTetCyclic**                          |f39|
-    **Intra_Retro_Diels_alder_bicyclic**                  |f40|
-    **Intra_RH_Add_Endocyclic**                           |f41|
-    **Intra_RH_Add_Exocyclic**                            |f42|
-    **intra_substitutionCS_cyclization**                  |f43|
-    **intra_substitutionCS_isomerization**                |f44|
-    **intra_substitutionS_cyclization**                   |f45|
-    **intra_substitutionS_isomerization**                 |f46|
-    **ketoenol**                                          |f47|
-    **Korcek_step1**                                      |f48|
-    **Korcek_step1_cat**                                  |f63|
-    **Korcek_step2**                                      |f49|
-    **lone_electron_pair_bond**                           |f50|
-    **Peroxyl_Disproportionation**                        |f64|
-    **Peroxyl_Termination**                               |f65|
-    **R_Addition_COm**                                    |f51|
-    **R_Addition_CSm**                                    |f52|
-    **R_Addition_MultipleBond**                           |f53|
-    **R_Recombination**                                   |f54|
-    **Singlet_Carbene_Intra_Disproportionation**          |f55|
-    **Singlet_Val6_to_triplet**                           |f56|
+    **2+2_cycloaddition_Cd**                              |f16|
+    **6_membered_central_C-C_shift**                      |f17|
+    **Baeyer-Villiger_step1_cat**                         |f18|
+    **Baeyer-Villiger_step2**                             |f19|
+    **Baeyer-Villiger_step2_cat**                         |f20|
+    **Bimolec_Hydroperoxide_Decomposition**               |f21|
+    **Birad_R_Recombination**                             |f22|
+    **Birad_recombination**                               |f23|
+    **CO_Disproportionation**                             |f24|
+    **Concerted_Intra_Diels_alder_monocyclic_1,2_shiftH** |f25|
+    **Cyclic_Ether_Formation**                            |f26|
+    **Cyclic_Thioether_Formation**                        |f27|
+    **Cyclopentadiene_scission**                          |f28|
+    **Diels_alder_addition**                              |f29|
+    **Disproportionation**                                |f30|
+    **HO2_Elimination_from_PeroxyRadical**                |f31|
+    **H_Abstraction**                                     |f32|
+    **Intra_2+2_cycloaddition_Cd**                        |f33|
+    **Intra_5_membered_conjugated_C=C_C=C_addition**      |f34|
+    **Intra_Diels_alder_monocyclic**                      |f35|
+    **Intra_Disproportionation**                          |f36|
+    **Intra_RH_Add_Endocyclic**                           |f37|
+    **Intra_RH_Add_Exocyclic**                            |f38|
+    **Intra_R_Add_Endocyclic**                            |f39|
+    **Intra_R_Add_ExoTetCyclic**                          |f40|
+    **Intra_R_Add_Exo_scission**                          |f41|
+    **Intra_R_Add_Exocyclic**                             |f42|
+    **Intra_Retro_Diels_alder_bicyclic**                  |f43|
+    **Intra_ene_reaction**                                |f44|
+    **Korcek_step1**                                      |f45|
+    **Korcek_step1_cat**                                  |f46|
+    **Korcek_step2**                                      |f47|
+    **Peroxyl_Disproportionation**                        |f48|
+    **Peroxyl_Termination**                               |f49|
+    **R_Addition_COm**                                    |f50|
+    **R_Addition_CSm**                                    |f51|
+    **R_Addition_MultipleBond**                           |f52|
+    **R_Recombination**                                   |f53|
+    **Singlet_Carbene_Intra_Disproportionation**          |f54|
+    **Singlet_Val6_to_triplet**                           |f55|
+    **SubstitutionS**                                     |f56|
     **Substitution_O**                                    |f57|
-    **SubstitutionS**                                     |f58|
+    **Surface_Abstraction**                               |f58|
+    **Surface_Adsorption_Bidentate**                      |f59|
+    **Surface_Adsorption_Dissociative**                   |f60|
+    **Surface_Adsorption_Double**                         |f61|
+    **Surface_Adsorption_Single**                         |f62|
+    **Surface_Adsorption_vdW**                            |f63|
+    **Surface_Bidentate_Dissociation**                    |f64|
+    **Surface_Dissociation**                              |f65|
+    **Surface_Dissociation_vdW**                          |f66|
+    **Surface_Recombination**                             |f67|
+    **intra_H_migration**                                 |f68|
+    **intra_NO2_ONO_conversion**                          |f69|
+    **intra_OH_migration**                                |f70|
+    **intra_substitutionCS_cyclization**                  |f71|
+    **intra_substitutionCS_isomerization**                |f72|
+    **intra_substitutionS_cyclization**                   |f73|
+    **intra_substitutionS_isomerization**                 |f74|
+    **ketoenol**                                          |f75|
+    **lone_electron_pair_bond**                           |f76|
     ===================================================== =====
 
 
