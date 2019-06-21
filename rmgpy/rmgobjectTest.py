@@ -252,6 +252,15 @@ class TestRMGObject(unittest.TestCase):
         self.assertEqual(obj.a[1].c, 5.0)
         self.assertEqual(obj.b, [])
 
+    def test_save_1_nested_dict(self):
+        """Test saving dictionaries"""
+        obj = PseudoRMGObject(a={'foo': {'bar': 'chocolate', 'chang': 'burger'}})
+        result = obj.as_dict()
+
+        expected = {'class': 'PseudoRMGObject', 'a': {'foo': {'bar': 'chocolate', 'chang': 'burger'}}}
+
+        self.assertEqual(result, expected)
+
 ################################################################################
 
 if __name__ == '__main__':

@@ -53,7 +53,7 @@ cdef class RMGObject(object):
         for attr in all_attributes:
             val = getattr(self, attr)
             if val is not None and not callable(val) and val != '':
-                output_dict[attr] = val
+                output_dict[attr] = expand_to_dictionaries(val)
         for key, val in output_dict.iteritems():
             if isinstance(val, list) and val:
                 if isinstance(val[0], RMGObject):
@@ -115,3 +115,18 @@ cdef class RMGObject(object):
                 except ValueError:
                     pass
         self.__init__(**data)
+
+cpdef expand_to_dictionaries(obj):
+    if isinstance(obj, list):
+        return [expand_to_dictionaries(x) for x in obj]
+
+    elif isinstance(obj, dict):
+        for key, value in obj.iteritems():
+            obj[key] = expand_to_dictionaries(value)
+        return obj
+
+    else:
+        try:
+            return obj.as_dict()
+        except:
+            return obj

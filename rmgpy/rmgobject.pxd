@@ -31,3 +31,5 @@ cdef class RMGObject(object):
     cpdef dict as_dict(self)
 
     cpdef make_object(self, dict data, dict class_dict)
+
+cpdef expand_to_dictionaries(obj)
