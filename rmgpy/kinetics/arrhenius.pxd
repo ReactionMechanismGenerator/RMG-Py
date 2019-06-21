@@ -33,7 +33,8 @@ from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
 ################################################################################
 
 cdef class Arrhenius(KineticsModel):
-    
+
+    cpdef dict as_dict(self)
     cdef public ScalarQuantity _A
     cdef public ScalarQuantity _n
     cdef public ScalarQuantity _Ea

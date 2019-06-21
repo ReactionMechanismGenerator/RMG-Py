@@ -86,6 +86,22 @@ cdef class Arrhenius(KineticsModel):
         """
         return (Arrhenius, (self.A, self.n, self.Ea, self.T0, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
 
+    cpdef dict as_dict(self):
+       """
+       A helper function for YAML dumping
+       """
+       output_dict = dict()
+       output_dict['class'] = self.__class__.__name__
+       output_dict['A'] = self.A.as_dict()
+       output_dict['n'] = self.n.as_dict()
+       output_dict['Ea'] = self.Ea.as_dict()
+       output_dict['T0'] = self.T0.as_dict()
+       output_dict['Tmin'] = self.Tmin.as_dict()
+       output_dict['Tmax'] = self.Tmax.as_dict()
+       if self.comment != '':
+           output_dict['comment'] = self.comment
+       return output_dict
+
     property A:
         """The preexponential factor."""
         def __get__(self):
