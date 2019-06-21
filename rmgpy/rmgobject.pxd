@@ -33,3 +33,5 @@ cdef class RMGObject(object):
     cpdef make_object(self, dict data, dict class_dict)
 
 cpdef expand_to_dictionaries(obj)
+
+cpdef recursive_make_object(obj, class_dictionary)

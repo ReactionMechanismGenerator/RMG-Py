@@ -130,3 +130,28 @@ cpdef expand_to_dictionaries(obj):
             return obj.as_dict()
         except:
             return obj
+
+cpdef recursive_make_object(obj, class_dictionary):
+    if isinstance(obj, dict):
+        if 'class' in obj:  # This is a dictionary of an object to be created
+            class_to_make = class_dictionary[obj['class']]
+
+            for key, val in obj.iteritems():
+                if key == 'class':
+                    continue
+                obj[key] = recursive_make_object(val, class_dictionary)
+
+            args = {key:obj[key] for key in obj if key != 'class'}
+            created_obj = class_to_make(**args)
+            return created_obj
+        else:
+            for key, val in obj.iteritems():
+                obj[key] = recursive_make_object(val, class_dictionary)
+            return obj
+
+    elif isinstance(obj, list):
+        return [recursive_make_object(x, class_dictionary) for x in obj]
+
+    else:
+        return obj
+
