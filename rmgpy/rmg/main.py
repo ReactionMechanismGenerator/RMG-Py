@@ -721,6 +721,8 @@ class RMG(util.Subject):
 
             # Main RMG loop
             while not self.done:
+                if self.generateSeedEachIteration:
+                    self.makeSeedMech()
                 
                 self.reactionModel.iterationNum += 1
                 self.done = True
@@ -771,19 +773,14 @@ class RMG(util.Subject):
                             else:
                                 from arkane.output import prettify
                                 logging.error(prettify(repr(self.reactionModel.core.reactions)))
-                            if self.generateSeedEachIteration:
-                                self.makeSeedMech()
-                            else:
-                                self.makeSeedMech(firstTime=True)
+                            if not self.generateSeedEachIteration:  # Then we haven't saved the seed mechanism yet
+                                self.makeSeedMech(firstTime=True)  # Just in case the user wants to restart from this
                             raise
                         
                         self.rmg_memories[index].add_t_conv_N(t,x,len(obj))
                         self.rmg_memories[index].generate_cond()
                         log_conditions(self.rmg_memories,index)
-                        
-                        if self.generateSeedEachIteration:
-                            self.makeSeedMech()
-                            
+
                         reactorDone = self.reactionModel.addNewSurfaceObjects(obj,newSurfaceSpecies,newSurfaceReactions,reactionSystem)
                         
                         allTerminated = allTerminated and terminated
@@ -915,7 +912,10 @@ class RMG(util.Subject):
                 maxNumSpcsHit = False
                 continue
         
-        if not self.generateSeedEachIteration:
+        # Save the final seed mechanism
+        if self.generateSeedEachIteration:
+            self.makeSeedMech()
+        else:
             self.makeSeedMech(firstTime=True)
 
         self.run_model_analysis()
