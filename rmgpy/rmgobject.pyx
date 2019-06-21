@@ -155,3 +155,78 @@ cpdef expand_to_dict(obj):
             return expand_to_dict(obj.as_dict())
         else:
             return obj
+
+cpdef recursive_make_object(obj, class_dictionary, make_final_object=True):
+    """
+    Takes a dictionary representation of an object and recreates the object from the mapping of class strings to classes
+    provided in class_dictionary. This operates recursively to recreate objects that were nested inside other objects.
+    The function can either return the arguments for the make_object method to make the final (topmost) object or can 
+    return the recreated final object.
+
+    Args:
+        obj (Any): dictionary representation of an object to be recreated
+        class_dictionary (dict): a dictionary mapping of class strings to classes
+        make_final_object (bool): If True (default) the topmost object will be created and returned. Else, all nested
+                                  objects will be recreated but only the keyword arguments needed to recreate the
+                                  topmost object will be returned.
+
+    Returns: 
+        Any: recreated object (default) or dictionary of keyword arguments to recreate the final (topmost) object
+
+    """
+    if isinstance(obj, dict):
+
+        # Create a new dictionary object to store recreated keys and values
+        new_obj = dict()
+
+        for key, value in obj.iteritems():
+            if key != 'class':
+                new_key = recursive_make_object(key, class_dictionary)
+                new_value = recursive_make_object(value, class_dictionary)
+                new_obj[new_key] = new_value
+
+        if 'class' in obj:  # This is a dictionary of an object to be created
+            try:
+                class_to_make = class_dictionary[obj['class']]
+            except KeyError:
+                raise KeyError('Class {0} must be provided in the class_dictionary: {1}'.format(obj['class'],
+                                                                                                class_dictionary))
+
+            args = {key:new_obj[key] for key in new_obj if key != 'class'}
+            if make_final_object:
+                if hasattr(class_to_make, 'make_object'):
+                    created_obj = class_to_make.__new__(class_to_make)
+                    created_obj.make_object(args, class_dictionary)
+                else:
+                    created_obj = class_to_make(**args)
+                return created_obj
+            else:
+                return args
+
+        else:  # Not a dictionary of an object that needs reconstructing, so just return the new dictionary
+            return new_obj
+
+    elif isinstance(obj, list):
+        return [recursive_make_object(x, class_dictionary) for x in obj]
+
+    elif isinstance(obj, str):
+        # First check if the string is a boolean, as these otherwise convert to floats
+        if obj == 'True':
+            return True
+
+        elif obj == 'False':
+            return False
+
+        # Next, check to see if the string needs to be converted to a float or int
+        else:
+            try:
+                if '.' in obj:  # This is could be a float, but can't be an integer
+                    return float(obj)
+                else:
+                    return int(obj)
+
+            except (ValueError, TypeError):  # If we made it here then obj must be just a string
+                return obj
+
+    else:
+        return obj
