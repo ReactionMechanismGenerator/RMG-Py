@@ -219,6 +219,12 @@ class RMG(util.Subject):
         self.wallTime = '00:00:00:00'
         self.initializationTime = 0
         self.kineticsdatastore = None
+        self.restart = False
+        self.coreSeedPath = None
+        self.edgeSeedPath = None
+        self.filtersPath = None
+        self.speciesMapPath = None
+        self.familyMapPath = None
         
         self.name = 'Seed'
         self.generateSeedEachIteration = True

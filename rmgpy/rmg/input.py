@@ -770,6 +770,45 @@ def uncertainty(localAnalysis=False, globalAnalysis=False, uncorrelated=True, co
     }
 
 
+def restartFromSeed(path=None, coreSeed=None, edgeSeed=None, filters=None, speciesMap=None, familyMap=None):
+    parentDir = os.path.dirname(rmg.inputFile)
+    rmg.restart = True
+
+    if path:
+        if any((coreSeed, edgeSeed, filters, speciesMap, familyMap)):
+            raise InputError('For restarting an RMG job from a seed mechanism, either the path to the RMG generated '
+                             'seed mechanism should be given as `path`, or the path for each of the required files '
+                             'should be explicitly given, but not both. Please take one approach or the other. For '
+                             'further information see the RMG documentation on restarting from a seed mechanism.')
+
+        if not os.path.isabs(path):
+            path = os.path.join(parentDir, path)
+
+        if not os.path.exists(path):
+            raise ValueError('Unable to find the path to the restart seed folder. {0} does not exist'.format(path))
+
+        # Try to find the paths for all of the required modules
+        rmg.coreSeedPath = os.path.join(path, 'Seed')
+        rmg.edgeSeedPath = os.path.join(path, 'Seed_edge')
+        rmg.filtersPath = os.path.join(path, 'Filters', 'filters.h5')
+        rmg.speciesMapPath = os.path.join(path, 'Filters', 'species_map.yml')
+        rmg.familyMapPath = os.path.join(path, 'Filters', 'family_map.yml')
+
+        if any([not os.path.exists(file_path) for file_path in [rmg.coreSeedPath, rmg.edgeSeedPath,
+                                                                rmg.filtersPath, rmg.speciesMapPath, rmg.familyMapPath]]
+               ):
+            raise InputError('Could not find one or more of the required files for restarting from a seed mechanism at '
+                             'the specified path {0}. Try specifying the file paths individually. See the RMG '
+                             'documentation for restarting from a seed mechanism for more information'.format(path))
+
+    else:  # The user has specified each of the paths individually
+        rmg.coreSeedPath = coreSeed
+        rmg.edgeSeedPath = edgeSeed
+        rmg.filtersPath = filters
+        rmg.speciesMapPath = speciesMap
+        rmg.familyMapPath = familyMap
+
+
 ################################################################################
 
 def setGlobalRMG(rmg0):
@@ -831,6 +870,7 @@ def readInputFile(path, rmg0):
         'generatedSpeciesConstraints': generatedSpeciesConstraints,
         'thermoCentralDatabase': thermoCentralDatabase,
         'uncertainty': uncertainty,
+        'restartFromSeed': restartFromSeed,
     }
 
     try:
