@@ -42,8 +42,20 @@ from rmgpy.solver.liquid import LiquidReactor
 from rmgpy.solver.base import TerminationTime
 from rmgpy.rmg.main import RMG
 from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
+from rmgpy.data.rmg import RMGDatabase
+from rmgpy.rmg.main import RMG
+from rmgpy import settings
+from rmgpy.data.kinetics.family import LoadFilterFits
+from rmgpy.tools.loader import loadRMGPyJob
 
 ################################################################################
+class ConcentrationPrinter:
+    def __init__(self):
+        self.species_names = []
+        self.data = []
+
+    def update(self, subject):
+        self.data.append((subject.t , subject.coreSpeciesConcentrations))
 
 class LiquidReactorCheck(unittest.TestCase):
 
@@ -57,6 +69,32 @@ class LiquidReactorCheck(unittest.TestCase):
 
         import rmgpy.data.rmg
         rmgpy.data.rmg.database = None
+
+        self.listener = ConcentrationPrinter()
+
+        folder = os.path.join(os.path.dirname(rmgpy.__file__),'solver/files/listener/')
+        inputFile = os.path.join(folder, 'input.py')
+        chemkinFile = os.path.join(folder, 'chemkin/chem.inp')
+        spc_dict = os.path.join(folder, 'chemkin/species_dictionary.txt')
+
+        # set-up RMG object
+        self.rmg = RMG()
+
+        # load kinetic database and forbidden structures
+        self.rmg.database = RMGDatabase()
+        path = os.path.join(settings['database.directory'])
+
+        # forbidden structure loading
+        self.rmg.database.loadForbiddenStructures(os.path.join(path, 'forbiddenStructures.py'))
+        # kinetics family loading
+        self.rmg.database.loadKinetics(os.path.join(path, 'kinetics'),
+                                       kineticsFamilies=['H_Abstraction'],
+                                       reactionLibraries=[])
+
+        self.rmg = loadRMGPyJob(inputFile, chemkinFile, spc_dict, generateImages=False, checkDuplicates=False)
+
+        # Read custom reaction filtering YAML file here and store content as lists
+        LoadFilterFits(self.rmg)
 
         Tlist = [300, 400, 500, 600, 800, 1000, 1500]
         self.CH4 = Species(
@@ -119,11 +157,26 @@ class LiquidReactorCheck(unittest.TestCase):
         coreReactions = [rxn1]
         edgeReactions = []
 
+        surfaceSpecies = []
+        surfaceReactions = []
+        pdepNetworks = []
+        atol = 1e-16
+        rtol = 1e-8
+        sensitivity = False
+        sens_atol = 1e-6
+        sens_rtol = 1e-4
+        filterReactions = False
+        unimolecularFilterFit = self.rmg.reactionSystems[0].unimolecularFilterFit
+        bimolecularFilterFit = self.rmg.reactionSystems[0].bimolecularFilterFit
+        conditions = {}
+
         c0 = {self.C2H5: 0.1, self.CH3: 0.1, self.CH4: 0.4, self.C2H6: 0.4}
 
         rxnSystem = LiquidReactor(self.T, c0, 1, termination=[])
 
-        rxnSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
+        rxnSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions, surfaceSpecies,
+                                       surfaceReactions, pdepNetworks, atol, rtol, sensitivity, sens_atol, sens_rtol,
+                                       filterReactions, unimolecularFilterFit, bimolecularFilterFit, conditions)
 
         tlist = numpy.array([10**(i/10.0) for i in xrange(-130, -49)], numpy.float64)
 
@@ -315,11 +368,25 @@ class LiquidReactorCheck(unittest.TestCase):
         coreReactions = rxnList
         edgeReactions = []
         numCoreSpecies = len(coreSpecies)
+        surfaceSpecies = []
+        surfaceReactions = []
+        pdepNetworks = []
+        atol = 1e-16
+        rtol = 1e-8
+        sensitivity = False
+        sens_atol = 1e-6
+        sens_rtol = 1e-4
+        filterReactions = False
+        unimolecularFilterFit = self.rmg.reactionSystems[0].unimolecularFilterFit
+        bimolecularFilterFit = self.rmg.reactionSystems[0].bimolecularFilterFit
+        conditions = {}
         
         c0 = {self.CH4: 0.2, self.CH3: 0.1, self.C2H6: 0.35, self.C2H5: 0.15, self.H2: 0.2}
 
         rxnSystem0 = LiquidReactor(self.T, c0, 1, termination=[])
-        rxnSystem0.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
+        rxnSystem0.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions, surfaceSpecies,
+                        surfaceReactions, pdepNetworks, atol, rtol, sensitivity, sens_atol, sens_rtol,
+                        filterReactions, unimolecularFilterFit, bimolecularFilterFit, conditions)
         dfdt0 = rxnSystem0.residual(0.0, rxnSystem0.y, numpy.zeros(rxnSystem0.y.shape))[0]
         solver_dfdk = rxnSystem0.computeRateDerivative()
         # print 'Solver d(dy/dt)/dk'

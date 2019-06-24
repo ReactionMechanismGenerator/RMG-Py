@@ -36,6 +36,10 @@ from rmgpy.tools.loader import loadRMGPyJob
 import rmgpy
 from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
 from rmgpy.solver.base import *
+from rmgpy.data.rmg import RMGDatabase
+from rmgpy.rmg.main import RMG
+from rmgpy import settings
+from rmgpy.data.kinetics.family import LoadFilterFits
 
 class ConcentrationPrinter:
     def __init__(self):
@@ -55,7 +59,25 @@ class ReactionSystemTest(unittest.TestCase):
         chemkinFile = os.path.join(folder, 'chemkin/chem.inp')
         spc_dict = os.path.join(folder, 'chemkin/species_dictionary.txt')
 
+        # set-up RMG object
+        self.rmg = RMG()
+
+        # load kinetic database and forbidden structures
+        self.rmg.database = RMGDatabase()
+        path = os.path.join(settings['database.directory'])
+
+        # forbidden structure loading
+        self.rmg.database.loadForbiddenStructures(os.path.join(path, 'forbiddenStructures.py'))
+        # kinetics family loading
+        self.rmg.database.loadKinetics(os.path.join(path, 'kinetics'),
+                                       kineticsFamilies=['H_Abstraction'],
+                                       reactionLibraries=[]
+                                       )
+
         self.rmg = loadRMGPyJob(inputFile, chemkinFile, spc_dict, generateImages=False, checkDuplicates=False)
+
+        # Read custom reaction filtering YAML file here and store content as lists
+        LoadFilterFits(self.rmg)
 
     def testSurfaceInitialization(self):
         """
@@ -66,15 +88,28 @@ class ReactionSystemTest(unittest.TestCase):
         reactionSystem = self.rmg.reactionSystems[0]
         reactionSystem.attach(self.listener)
         reactionModel = self.rmg.reactionModel
-        
+
         coreSpecies = reactionModel.core.species
         coreReactions = reactionModel.core.reactions
         surfaceSpecies = [coreSpecies[7],coreSpecies[6]] 
         surfaceReactions = [coreReactions[0],coreReactions[2],coreReactions[3]]
-        
-        reactionSystem.initializeModel(coreSpecies,coreReactions,
-                                       reactionModel.edge.species,reactionModel.edge.reactions,surfaceSpecies,surfaceReactions)
-        
+        edgeSpecies = []
+        edgeReactions = []
+        pdepNetworks = []
+        atol = 1e-16
+        rtol = 1e-8
+        sensitivity = False
+        sens_atol = 1e-6
+        sens_rtol = 1e-4
+        filterReactions = False
+        unimolecularFilterFit = self.rmg.reactionSystems[0].unimolecularFilterFit
+        bimolecularFilterFit = self.rmg.reactionSystems[0].bimolecularFilterFit
+        conditions = {}
+
+        reactionSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions, surfaceSpecies,
+                                       surfaceReactions, pdepNetworks, atol, rtol, sensitivity, sens_atol, sens_rtol,
+                                       filterReactions, unimolecularFilterFit, bimolecularFilterFit, conditions)
+
         self.assertEquals(len(surfaceSpecies),1) #only H should be left
         self.assertEquals(len(surfaceReactions),2) #all the reactions with H should stay
         
@@ -98,10 +133,21 @@ class ReactionSystemTest(unittest.TestCase):
         coreReactions = surfaceReactions[:]
         reactionSystem.numCoreReactions = 1
         reactionSystem.numCoreSpecies = 7
-        
-        reactionSystem.initializeModel(coreSpecies,coreReactions,
-                                       edgeSpecies,edgeReactions,surfaceSpecies,surfaceReactions)
-        
+        pdepNetworks = []
+        atol = 1e-16
+        rtol = 1e-8
+        sensitivity = False
+        sens_atol = 1e-6
+        sens_rtol = 1e-4
+        filterReactions = False
+        unimolecularFilterFit = self.rmg.reactionSystems[0].unimolecularFilterFit
+        bimolecularFilterFit = self.rmg.reactionSystems[0].bimolecularFilterFit
+        conditions = {}
+
+        reactionSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions, surfaceSpecies,
+                                       surfaceReactions, pdepNetworks, atol, rtol, sensitivity, sens_atol, sens_rtol,
+                                       filterReactions, unimolecularFilterFit, bimolecularFilterFit, conditions)
+
         self.assertEquals(len(reactionSystem.surfaceSpeciesIndices),1) #surfaceSpeciesIndices calculated correctly
         self.assertEquals(reactionSystem.surfaceSpeciesIndices[0],5) #surfaceSpeciesIndices calculated correctly
 
@@ -126,10 +172,21 @@ class ReactionSystemTest(unittest.TestCase):
         surfaceReactions = []
         edgeSpecies = species[6:]
         edgeReactions = reactions[1:]
-        
-        reactionSystem.initializeModel(coreSpecies,coreReactions,
-                                       edgeSpecies,edgeReactions,surfaceSpecies,surfaceReactions)
-        
+        pdepNetworks = []
+        atol = 1e-16
+        rtol = 1e-8
+        sensitivity = False
+        sens_atol = 1e-6
+        sens_rtol = 1e-4
+        filterReactions = False
+        unimolecularFilterFit = self.rmg.reactionSystems[0].unimolecularFilterFit
+        bimolecularFilterFit = self.rmg.reactionSystems[0].bimolecularFilterFit
+        conditions = {}
+
+        reactionSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions, surfaceSpecies,
+                                       surfaceReactions, pdepNetworks, atol, rtol, sensitivity, sens_atol, sens_rtol,
+                                       filterReactions, unimolecularFilterFit, bimolecularFilterFit, conditions)
+
         newSurfaceReactions = edgeReactions
         newSurfaceReactionInds = [edgeReactions.index(i) for i in newSurfaceReactions]
         
@@ -161,6 +218,9 @@ class ReactionSystemTest(unittest.TestCase):
 
         reactionModel = self.rmg.reactionModel
 
+        unimolecularFilterFit = self.rmg.reactionSystems[0].unimolecularFilterFit
+        bimolecularFilterFit = self.rmg.reactionSystems[0].bimolecularFilterFit
+
         self.assertEqual(self.listener.data, [])
         
         modelSettings = ModelSettings(toleranceMoveToCore=1,toleranceKeepInEdge=0,toleranceInterruptSimulation=1)
@@ -176,6 +236,8 @@ class ReactionSystemTest(unittest.TestCase):
             surfaceReactions = [],
             modelSettings = modelSettings,
             simulatorSettings = simulatorSettings,
+            unimolecularFilterFit = unimolecularFilterFit,
+            bimolecularFilterFit = bimolecularFilterFit
         ) 
 
         self.assertNotEqual(self.listener.data, [])

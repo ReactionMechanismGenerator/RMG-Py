@@ -40,6 +40,18 @@ from rmgpy.rmg.settings import ModelSettings
 from rmgpy.solver.liquid import LiquidReactor
 from rmgpy.tools.loader import loadRMGJob
 from rmgpy.tools.plot import plot_sensitivity
+from rmgpy.data.rmg import RMGDatabase
+from rmgpy.rmg.main import RMG
+from rmgpy import settings
+from rmgpy.data.kinetics.family import LoadFilterFits
+
+class ConcentrationPrinter:
+    def __init__(self):
+        self.species_names = []
+        self.data = []
+
+    def update(self, subject):
+        self.data.append((subject.t , subject.coreSpeciesConcentrations))
 
 
 def simulate(rmg, diffusionLimited=True):
@@ -103,6 +115,8 @@ def simulate(rmg, diffusionLimited=True):
             sensWorksheet=sensWorksheet,
             modelSettings=modelSettings,
             simulatorSettings=simulatorSettings,
+            unimolecularFilterFit=[],
+            bimolecularFilterFit=[],
         )
         
         if reactionSystem.sensitiveSpecies:
@@ -121,11 +135,25 @@ def run_simulation(inputFile, chemkinFile, dictFile, diffusionLimited=True, chec
     output_dir = os.path.abspath(os.path.dirname(inputFile))
     initializeLog(logging.INFO, os.path.join(output_dir, 'simulate.log'))
 
+    # set-up RMG object
+    rmg = RMG()
+
+    # load kinetic database and forbidden structures
+    rmg.database = RMGDatabase()
+    path = os.path.join(settings['database.directory'])
+    # kinetics family loading
+    rmg.database.loadKinetics(os.path.join(path, 'kinetics'),
+                                   kineticsFamilies=['H_Abstraction'],
+                                   reactionLibraries=[])
+
     rmg = loadRMGJob(inputFile, chemkinFile, dictFile, generateImages=False, checkDuplicates=checkDuplicates)
-    
+
+    # Read custom reaction filtering YAML file here and store content as lists
+    LoadFilterFits(rmg)
+
     start_time = time()
     # conduct simulation
-    simulate(rmg,diffusionLimited)
+    simulate(rmg, diffusionLimited)
     end_time = time()
     time_taken = end_time - start_time
     logging.info("Simulation took {0} seconds".format(time_taken))

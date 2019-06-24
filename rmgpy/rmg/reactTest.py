@@ -34,7 +34,7 @@ import numpy as np
 
 from rmgpy import settings
 from rmgpy.data.kinetics import TemplateReaction
-from rmgpy.data.rmg import RMGDatabase
+from rmgpy.data.rmg import RMGDatabase, getDB
 from rmgpy.species import Species
 
 from rmgpy.rmg.main import RMG
@@ -98,11 +98,16 @@ class TestReact(unittest.TestCase):
         self.assertEqual(len(reaction_list), 3)
         self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in reaction_list]))
 
-    def testReactAll(self):
+    def test_react_all(self):
         """
         Test that the ``react_all`` function works in serial
         """
+
+        # Number of processes used for reaction generation
         procnum = 1
+
+        # Number of families in RMG
+        len_families = len(getDB('kinetics').families.keys())
 
         spcs = [
                 Species().fromSMILES('C=C'),
@@ -112,7 +117,8 @@ class TestReact(unittest.TestCase):
                 ]
 
         n = len(spcs)
-        reaction_list = react_all(spcs, n, np.ones(n), np.ones([n, n]), np.ones([n, n, n]), procnum)
+        reaction_list = react_all(spcs, n, np.ones([n, len_families]), np.ones([n, n, len_families]),
+                                  np.ones([n, n, n, len_families]), procnum)
         self.assertIsNotNone(reaction_list)
         self.assertEqual(len(reaction_list), 44)
         self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in reaction_list]))
@@ -125,6 +131,9 @@ class TestReact(unittest.TestCase):
         rmgpy.rmg.main.maxproc = 2
         procnum = 2
 
+        # Number of families in RMG
+        len_families = len(getDB('kinetics').families.keys())
+
         spcs = [
                 Species().fromSMILES('C=C'),
                 Species().fromSMILES('[CH3]'),
@@ -133,7 +142,8 @@ class TestReact(unittest.TestCase):
                 ]
 
         n = len(spcs)
-        reaction_list = react_all(spcs, n, np.ones(n), np.ones([n, n]), np.ones([n, n, n]), procnum)
+        reaction_list = react_all(spcs, n, np.ones([n, len_families]), np.ones([n, n, len_families]),
+                                  np.ones([n, n, n, len_families]), procnum)
         self.assertIsNotNone(reaction_list)
         self.assertEqual(len(reaction_list), 44)
         self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in reaction_list]))

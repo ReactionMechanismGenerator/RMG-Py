@@ -30,6 +30,7 @@
 
 import unittest
 import numpy
+import os
 
 import rmgpy.quantity
 
@@ -41,11 +42,56 @@ from rmgpy.thermo import ThermoData, NASA, NASAPolynomial
 from rmgpy.solver.surface import SurfaceReactor
 from rmgpy.solver.base import TerminationTime, TerminationConversion
 import rmgpy.constants as constants
+from rmgpy.data.rmg import RMGDatabase
+from rmgpy.rmg.main import RMG
+from rmgpy import settings
+from rmgpy.data.kinetics.family import LoadFilterFits
+from rmgpy.tools.loader import loadRMGPyJob
 
 ################################################################################
 
+class ConcentrationPrinter:
+    def __init__(self):
+        self.species_names = []
+        self.data = []
+
+    def update(self, subject):
+        self.data.append((subject.t , subject.coreSpeciesConcentrations))
 
 class SurfaceReactorCheck(unittest.TestCase):
+
+
+    def setUp(self):
+        """
+        Load an RMG job to run testcase for custom filter criteria
+        """
+        self.listener = ConcentrationPrinter()
+
+        folder = os.path.join(os.path.dirname(rmgpy.__file__),'solver/files/listener/')
+        inputFile = os.path.join(folder, 'input.py')
+        chemkinFile = os.path.join(folder, 'chemkin/chem.inp')
+        spc_dict = os.path.join(folder, 'chemkin/species_dictionary.txt')
+
+        # set-up RMG object
+        self.rmg = RMG()
+
+        # load kinetic database and forbidden structures
+        self.rmg.database = RMGDatabase()
+        path = os.path.join(settings['database.directory'])
+
+        # forbidden structure loading
+        self.rmg.database.loadForbiddenStructures(os.path.join(path, 'forbiddenStructures.py'))
+        # kinetics family loading
+        self.rmg.database.loadKinetics(os.path.join(path, 'kinetics'),
+                                       kineticsFamilies=['H_Abstraction'],
+                                       reactionLibraries=[])
+
+        self.rmg = loadRMGPyJob(inputFile, chemkinFile, spc_dict, generateImages=False, checkDuplicates=False)
+
+        # Read custom reaction filtering YAML file here and store content as lists
+        LoadFilterFits(self.rmg)
+
+
     def testSolveH2(self):
         """
         Test the surface batch reactor with a dissociative adsorption of H2
@@ -100,7 +146,22 @@ class SurfaceReactorCheck(unittest.TestCase):
             surfaceSiteDensity=(2.72e-9, 'mol/cm^2'),
             termination=[])
 
-        rxnSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
+        surfaceSpecies = []
+        surfaceReactions = []
+        pdepNetworks = []
+        atol = 1e-16
+        rtol = 1e-8
+        sensitivity = False
+        sens_atol = 1e-6
+        sens_rtol = 1e-4
+        filterReactions = False
+        unimolecularFilterFit = self.rmg.reactionSystems[0].unimolecularFilterFit
+        bimolecularFilterFit = self.rmg.reactionSystems[0].bimolecularFilterFit
+        conditions = {}
+
+        rxnSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions, surfaceSpecies,
+                                       surfaceReactions, pdepNetworks, atol, rtol, sensitivity, sens_atol, sens_rtol,
+                                       filterReactions, unimolecularFilterFit, bimolecularFilterFit, conditions)
 
         tlist = numpy.logspace(-13, -5, 81, dtype=numpy.float64)
 

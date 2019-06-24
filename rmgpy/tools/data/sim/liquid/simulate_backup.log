@@ -1,0 +1,83 @@
+Reading input file "/Users/agnes/PycharmProjects/RMG-Py/rmgpy/tools/data/sim/liquid/input.py"...
+# Data sources
+database(
+    thermoLibraries = ['primaryThermoLibrary'],
+    reactionLibraries = [],
+    seedMechanisms = [],
+    kineticsDepositories = ['training'],
+    kineticsFamilies = 'default',
+    kineticsEstimator = 'rate rules',
+)
+
+# Constraints on generated species
+generatedSpeciesConstraints(
+    maximumRadicalElectrons = 3,
+)
+
+# List of species
+species(
+    label='octane',
+    reactive=True,
+    structure=SMILES("C(CCCCC)CC"),
+)
+
+species(
+    label='oxygen',
+    reactive=True,
+    structure=SMILES("[O][O]"),
+)
+
+# Reaction systems
+liquidReactor(
+    temperature=(450,'K'),
+    initialConcentrations={
+        "octane": (6.154e-3,'mol/cm^3'),
+        "oxygen": (4.953e-6,'mol/cm^3'),
+    },
+    terminationTime=(1e5,'s'),
+#    terminationConversion={'octane': 0.9},
+    constantSpecies=['oxygen'],
+    sensitivity=['octane'],
+    sensitivityThreshold=1e-4,
+)
+
+solvation(
+	solvent='octane'
+)
+
+simulator(
+    atol=1e-16,
+    rtol=1e-8,
+    sens_atol=1e-6,
+    sens_rtol=1e-4,
+)
+
+model(
+    toleranceKeepInEdge=1E-20,
+    toleranceMoveToCore=0.5,
+    toleranceInterruptSimulation=0.7,
+    maximumEdgeSpecies=50000
+)
+
+
+options(
+    units='si',
+    saveRestartPeriod=None,
+    generateOutputHTML=False,
+    generatePlots=False,
+    saveEdgeSpecies=False,
+    saveSimulationProfiles=True,
+)
+
+
+
+Thermo file has no default temperature ranges
+(The line it would be on is '    300.000  1000.000  5000.000\n' but that is not formatted as such)
+(It should have Tmin in columns 1-10, Tmid in columns 11-20, and Tmax in columns 21-30)
+Ignoring short but non-empty line: '    300.000  1000.000  5000.000\n'
+Conducting simulation and sensitivity analysis of reaction system 1...
+At time 1.0000e+05 s, reached target termination time.
+Simulation took 3.27111792564 seconds
+Removing old /Users/agnes/PycharmProjects/RMG-Py/rmgpy/tools/data/sim/simple/simulate_backup.log
+Moving /Users/agnes/PycharmProjects/RMG-Py/rmgpy/tools/data/sim/simple/simulate.log to /Users/agnes/PycharmProjects/RMG-Py/rmgpy/tools/data/sim/simple/simulate_backup.log
+
