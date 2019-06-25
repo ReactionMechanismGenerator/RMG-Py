@@ -40,7 +40,9 @@ import yaml
 from arkane.common import ArkaneSpecies, ARKANE_CLASS_DICT
 from rmgpy.rmgobject import RMGObject
 from rmgpy.species import Species
+from rmgpy.statmech import Conformer
 from rmgpy.thermo import ThermoData
+from rmgpy.thermo.model import HeatCapacityModel
 
 
 class ReferenceSpecies(ArkaneSpecies):
@@ -193,9 +195,72 @@ class CalculatedDataEntry(RMGObject):
     A class for storing a single entry of statistical mechanical and thermochemistry information calculated at a single
     model chemistry or level of theory
     """
-    def __init__(self):
+    def __init__(self, conformer, thermo, thermo_data, t1_diagnotic=None, fod=None):
+        """
+
+        Args:
+            conformer (rmgpy.statmech.Conformer): Conformer object generated from an Arkane job. Stores many peices of
+                information gained from quantum chemistry calculations, including coordinates, frequencies etc.
+            thermo (HeatCapacityModel): `NASA` or `Wilhoit` thermo object to store the fitted polynomials
+            thermo_data (rmgpy.thermo.ThermoData): Actual thermochemistry values calculated using statistical mechanics
+                at select points. Arkane fits a heat capacity model to this data
+            t1_diagnotic (float): T1 diagnostic for coupled cluster calculations to check if single reference methods
+                are suitable
+            fod (float): Fractional Occupation number weighted electron Density
+        """
         super(CalculatedDataEntry, self).__init__()
-        pass
+        self._conformer = None
+        self._thermo = None
+        self._thermo_data = None
+        self.conformer = conformer
+        self.thermo = thermo
+        self.thermo_data = thermo_data
+        self.t1_diagnostic = t1_diagnotic
+        self.fod = fod
+
+    def __repr__(self):
+        return str(self.as_dict())
+
+    @property
+    def conformer(self):
+        return self._conformer
+
+    @conformer.setter
+    def conformer(self, value):
+        if value:
+            if isinstance(value, Conformer):
+                self._conformer = value
+            else:
+                raise ValueError('conformer for a CalculatedDataEntry object must be an rmgpy Conformer instance')
+        else:
+            self._conformer = None
+
+    @property
+    def thermo(self):
+        return self._thermo
+
+    @thermo.setter
+    def thermo(self, value):
+        if value:
+            if issubclass(type(value), HeatCapacityModel):
+                self._thermo = value
+            else:
+                raise ValueError('thermo for a CalculatedDataEntry object must be an object of a subclass of'
+                                 'an rmgpy HeatCapacityModel class')
+        else:
+            self._thermo = None
+
+    @property
+    def thermo_data(self):
+        return self._thermo_data
+
+    @thermo_data.setter
+    def thermo_data(self, value):
+        if value:
+            if isinstance(value, ThermoData):
+                self._thermo_data = value
+            else:
+                raise ValueError('thermo_data for a CalculatedDataEntry object must be an rmgpy ThermoData object')
 
 
 if __name__ == '__main__':

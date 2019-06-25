@@ -35,9 +35,12 @@ This script contains unit tests of the :mod:`arkane.reference` module.
 import os
 import unittest
 
-from arkane.reference import ReferenceSpecies, ReferenceDataEntry
+from arkane.reference import ReferenceSpecies, ReferenceDataEntry, CalculatedDataEntry
 from rmgpy.species import Species
+from rmgpy.statmech import Conformer
 from rmgpy.thermo import ThermoData
+from rmgpy.thermo.nasa import NASA
+from rmgpy.thermo.wilhoit import Wilhoit
 
 
 ################################################################################
@@ -81,6 +84,17 @@ class TestReferenceSpecies(unittest.TestCase):
         with self.assertRaises(ValueError):
             _ = ReferenceSpecies()
 
+    def load_ref_from_yaml(self):
+        """
+        Test that the example ReferenceSpecies YAML file can be loaded
+        """
+        ref_spcs = ReferenceSpecies.__new__(ReferenceSpecies)
+        ref_spcs.load_yaml(os.path.join(FILE_DIR, 'data', 'species', 'reference_species_example.yml'))
+
+        self.assertEqual(ref_spcs.smiles, 'C#C[CH2]')
+        self.assertEqual(ref_spcs.label, 'example_reference_species')
+        self.assertIsInstance(ref_spcs.calculated_data, CalculatedDataEntry)
+
     def test_save_ref_to_yaml(self):
         """
         Test that a ReferenceSpecies object can be saved to a YAML file successfully
@@ -109,6 +123,25 @@ class TestReferenceSpecies(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             _ = ReferenceDataEntry({'H298': (100.0, 'kJ/mol')})
+
+    def test_calculated_data_entry(self):
+        """
+        Test that the CalculatedDataEntry class functions properly and enforces the standard for storing data
+        """
+        data_entry = CalculatedDataEntry(Conformer(), NASA(), self.thermo_data)
+        self.assertEqual(data_entry.thermo_data.H298.value_si, 100000.0)
+
+        data_entry = CalculatedDataEntry(Conformer(), Wilhoit(), self.thermo_data)
+        self.assertEqual(data_entry.thermo_data.H298.value_si, 100000.0)
+
+        with self.assertRaises(ValueError):
+            _ = CalculatedDataEntry({'xyz': '0 0 0'}, NASA(), self.thermo_data)
+
+        with self.assertRaises(ValueError):
+            _ = CalculatedDataEntry(Conformer(), {'coeffs': []}, self.thermo_data)
+
+        with self.assertRaises(ValueError):
+            _ = CalculatedDataEntry(Conformer(), NASA(), {'H298': (100.0, 'kJ/mol')})
 
 
 if __name__ == '__main__':
