@@ -52,7 +52,7 @@ from rmgpy.statmech.translation import IdealGasTranslation
 from rmgpy.statmech.vibration import HarmonicOscillator
 from rmgpy.pdep.collision import SingleExponentialDown
 from rmgpy.transport import TransportData
-from rmgpy.thermo import NASA, Wilhoit
+from rmgpy.thermo import NASA, Wilhoit, ThermoData
 from rmgpy.species import Species, TransitionState
 import rmgpy.constants as constants
 
@@ -180,16 +180,19 @@ class ArkaneSpecies(RMGObject):
                 self.energy_transfer_model = species.energyTransferModel
             if species.thermo is not None:
                 self.thermo = species.thermo.as_dict()
-                thermo_data = species.getThermoData()
-                h298 = thermo_data.getEnthalpy(298) / 4184.
-                s298 = thermo_data.getEntropy(298) / 4.184
-                cp = dict()
-                for t in [300, 400, 500, 600, 800, 1000, 1500, 2000, 2400]:
-                    temp_str = '{0} K'.format(t)
-                    cp[temp_str] = '{0:.2f}'.format(thermo_data.getHeatCapacity(t) / 4.184)
-                self.thermo_data = {'H298': '{0:.2f} kcal/mol'.format(h298),
-                                    'S298': '{0:.2f} cal/mol*K'.format(s298),
-                                    'Cp (cal/mol*K)': cp}
+                data = species.getThermoData()
+                h298 = data.getEnthalpy(298) / 4184.
+                s298 = data.getEntropy(298) / 4.184
+                temperatures = numpy.array([300, 400, 500, 600, 800, 1000, 1500, 2000, 2400])
+                cp = []
+                for t in temperatures:
+                    cp.append(data.getHeatCapacity(t) / 4.184)
+
+                self.thermo_data = ThermoData(H298=(h298, 'kcal/mol'),
+                                              S298=(s298, 'cal/(mol*K)'),
+                                              Tdata=(temperatures, 'K'),
+                                              Cpdata=(cp, 'cal/(mol*K)'),
+                                              )
 
     def update_xyz_string(self):
         """
@@ -265,6 +268,8 @@ class ArkaneSpecies(RMGObject):
                       'SingleExponentialDown': SingleExponentialDown,
                       'Wilhoit': Wilhoit,
                       'NASA': NASA,
+                      'NASAPolynomial': NASAPolynomial,
+                      'ThermoData': ThermoData,
                       }
         freq_data = None
         if 'imaginary_frequency' in data:
