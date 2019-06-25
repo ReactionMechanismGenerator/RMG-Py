@@ -1270,6 +1270,7 @@ def assign_frequency_scale_factor(freq_level):
                  'm08so/mg3s*': 0.995,  # [1] Table 3, taken as 'M08-SO/MG3S'
                  'wb97x-d/aug-cc-pvtz': 0.988,  # [3], taken as 'ωB97X-D/maug-cc-pVTZ'
                  'wb97xd/6-311++g(d,p)': 0.988,  # [4]
+                 'wb97xd/cc-pvtz': 0.987,  # [4]
                  'mp2_rmp2_pvdz': 0.953,  # [2], taken as 'MP2/cc-pVDZ'
                  'mp2_rmp2_pvtz': 0.950,  # [2], taken as 'MP2/cc-pVTZ'
                  'mp2_rmp2_pvqz': 0.962,  # [2], taken as 'MP2/cc-pVQZ'
