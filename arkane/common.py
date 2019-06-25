@@ -85,7 +85,7 @@ class ArkaneSpecies(RMGObject):
                  chemkin_thermo_string='', smiles=None, adjacency_list=None, inchi=None, inchi_key=None, xyz=None,
                  molecular_weight=None, symmetry_number=None, transport_data=None, energy_transfer_model=None,
                  thermo=None, thermo_data=None, label=None, datetime=None, RMG_version=None, reactants=None,
-                 products=None, reaction_label=None, is_ts=None):
+                 products=None, reaction_label=None, is_ts=None, charge=None, formula=None):
         # reactants/products/reaction_label need to be in the init() to avoid error when loading a TS YAML file,
         # but we don't use them
         super(ArkaneSpecies, self).__init__()
@@ -120,6 +120,8 @@ class ArkaneSpecies(RMGObject):
             self.energy_transfer_model = energy_transfer_model
             self.thermo = thermo
             self.thermo_data = thermo_data
+            self.charge = charge
+            self.formula = formula
         else:
             # initialize TS-related attributes
             self.imaginary_frequency = None
@@ -160,6 +162,8 @@ class ArkaneSpecies(RMGObject):
         elif species.molecule is not None and len(species.molecule) > 0:
             self.smiles = species.molecule[0].toSMILES()
             self.adjacency_list = species.molecule[0].toAdjacencyList()
+            self.charge = species.molecule[0].getNetCharge()
+            self.formula = species.molecule[0].getFormula()
             try:
                 inchi = toInChI(species.molecule[0], backend='try-all', aug_level=0)
             except ValueError:
@@ -264,25 +268,6 @@ class ArkaneSpecies(RMGObject):
         if class_name != 'ArkaneSpecies':
             raise KeyError("Expected a ArkaneSpecies object, but got {0}".format(class_name))
         del data['class']
-        class_dict = {'ScalarQuantity': ScalarQuantity,
-                      'ArrayQuantity': ArrayQuantity,
-                      'Conformer': Conformer,
-                      'LinearRotor': LinearRotor,
-                      'NonlinearRotor': NonlinearRotor,
-                      'KRotor': KRotor,
-                      'SphericalTopRotor': SphericalTopRotor,
-                      'HinderedRotor': HinderedRotor,
-                      'FreeRotor': FreeRotor,
-                      'IdealGasTranslation': IdealGasTranslation,
-                      'HarmonicOscillator': HarmonicOscillator,
-                      'TransportData': TransportData,
-                      'SingleExponentialDown': SingleExponentialDown,
-                      'Wilhoit': Wilhoit,
-                      'NASA': NASA,
-                      'NASAPolynomial': NASAPolynomial,
-                      'ThermoData': ThermoData,
-                      'np_array': numpy.array,
-                      }
         freq_data = None
         if 'imaginary_frequency' in data:
             freq_data = data['imaginary_frequency']
@@ -300,10 +285,10 @@ class ArkaneSpecies(RMGObject):
             # Finally, set the species label so that the special attributes are updated properly
             data['species'].label = data['label']
 
-        self.make_object(data=data, class_dict=class_dict)
+        self.make_object(data=data, class_dict=ARKANE_CLASS_DICT)
         if freq_data is not None:
             self.imaginary_frequency = ScalarQuantity()
-            self.imaginary_frequency.make_object(data=freq_data, class_dict=class_dict)
+            self.imaginary_frequency.make_object(data=freq_data, class_dict=ARKANE_CLASS_DICT)
 
         if pdep and not self.is_ts and (self.transport_data is None or self.energy_transfer_model is None):
             raise ValueError('Transport data and an energy transfer model must be given if pressure-dependent '
@@ -317,6 +302,27 @@ class ArkaneSpecies(RMGObject):
 
 
 ################################################################################
+
+# Class dictionary for recreating objects from YAML files. This is needed elsewhere, so store as a module level variable
+ARKANE_CLASS_DICT = {'ScalarQuantity': ScalarQuantity,
+                     'ArrayQuantity': ArrayQuantity,
+                     'Conformer': Conformer,
+                     'LinearRotor': LinearRotor,
+                     'NonlinearRotor': NonlinearRotor,
+                     'KRotor': KRotor,
+                     'SphericalTopRotor': SphericalTopRotor,
+                     'HinderedRotor': HinderedRotor,
+                     'FreeRotor': FreeRotor,
+                     'IdealGasTranslation': IdealGasTranslation,
+                     'HarmonicOscillator': HarmonicOscillator,
+                     'TransportData': TransportData,
+                     'SingleExponentialDown': SingleExponentialDown,
+                     'Wilhoit': Wilhoit,
+                     'NASA': NASA,
+                     'NASAPolynomial': NASAPolynomial,
+                     'ThermoData': ThermoData,
+                     'np_array': numpy.array,
+                     }
 
 
 def is_pdep(jobList):
