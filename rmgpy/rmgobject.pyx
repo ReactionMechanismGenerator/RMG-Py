@@ -25,7 +25,6 @@
 #                                                                             #
 ###############################################################################
 
-import logging
 import numpy as np
 
 ################################################################################
@@ -42,6 +41,9 @@ cdef class RMGObject(object):
     cpdef dict as_dict(self):
         """
         A helper function for dumping objects as dictionaries for YAML files
+        
+        Returns: 
+            dict: A dictionary representation of the object
         """
         cdef dict output_dict
         cdef list all_attributes
@@ -53,68 +55,23 @@ cdef class RMGObject(object):
         for attr in all_attributes:
             val = getattr(self, attr)
             if val is not None and not callable(val) and val != '':
-                output_dict[attr] = expand_to_dictionaries(val)
-        for key, val in output_dict.iteritems():
-            if isinstance(val, list) and val:
-                if isinstance(val[0], RMGObject):
-                    output_dict[key] = [v.as_dict() for v in val]
-                else:
-                    output_dict[key] = val
-            elif isinstance(val, np.ndarray):
-                output_dict[key] = val.tolist()
-            elif not isinstance(val, (int, float, str, dict)) and val:
-                # this is an object, call as_dict() again
-                output_dict[key] = val.as_dict()
+                output_dict[attr] = expand_to_dict(val)
+
         return output_dict
 
     cpdef make_object(self, dict data, dict class_dict):
         """
         A helper function for constructing objects from a dictionary (used when loading YAML files)
+        
+        Args:
+            data (dict): The dictionary representation of the object
+            class_dict (dict): A mapping of class names to the classes themselves
+
+        Returns: 
+            None
         """
-        for key, val in data.iteritems():
-            if isinstance(val, dict) and 'class' in val:
-                # Call make_object to make another object within the parent object
-                class_name = val['class']
-                del val['class']
-                try:
-                    class_to_make = class_dict[class_name]
-                except KeyError:
-                    raise KeyError("Class {0} must be provided in the 'class_dict' parameter "
-                                   "to make the object.".format(class_name))
-                obj = class_to_make()
-                obj.make_object(val, class_dict)
-                logging.debug("made object {0}".format(class_name))
-                data[key] = obj
-            elif isinstance(val, list) and val:
-                if isinstance(val[0], dict) and 'class' in val[0]:
-                    # Call make_object to make a list of objects within the parent object (as in Conformer.Modes)
-                    data[key] = list()
-                    for entry in val:
-                        class_name = entry['class']
-                        del entry['class']
-                        try:
-                            class_to_make = class_dict[class_name]
-                        except KeyError:
-                            raise KeyError("Class {0} must be provided in the 'class_dict' parameter "
-                                           "to make the object.".format(class_name))
-                        obj = class_to_make()
-                        if class_name in ['LinearRotor', 'NonlinearRotor', 'KRotor', 'SphericalTopRotor', 'HinderedRotor',
-                                          'FreeRotor'] and 'rotationalConstant' in entry and 'inertia' in entry:
-                                # Either `rotationalConstant` or `inertia` should be specified for a rotor.
-                                # Here both are specified, so we delete `inertia`.
-                                del entry['inertia']
-                        obj.make_object(entry, class_dict)
-                        logging.debug("made object {0}".format(class_name))
-                        data[key].append(obj)
-                else:
-                    # print 'not a class dict', val
-                    data[key] = val
-            elif isinstance(val, str):
-                try:
-                    float(val)
-                except ValueError:
-                    pass
-        self.__init__(**data)
+        kwargs = recursive_make_object(data, class_dict, make_final_object=False)
+        self.__init__(**kwargs)
 
 cpdef expand_to_dict(obj):
     """

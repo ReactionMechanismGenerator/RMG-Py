@@ -37,6 +37,7 @@ import numpy
 import os.path
 
 from rmgpy.thermo.nasa import NASA, NASAPolynomial
+from rmgpy.quantity import ScalarQuantity
 import rmgpy.constants as constants
 
 ################################################################################
@@ -295,8 +296,8 @@ class TestNASA(unittest.TestCase):
         self.assertEqual(nasa_dict['Tmin']['value'], self.Tmin)
         self.assertEqual(nasa_dict['Tmax']['value'], self.Tmax)
         self.assertEqual(nasa_dict['comment'], self.comment)
-        self.assertTupleEqual(tuple(nasa_dict['polynomials']['polynomial1']['coeffs']), tuple(self.coeffs_low))
-        self.assertTupleEqual(tuple(nasa_dict['polynomials']['polynomial2']['coeffs']), tuple(self.coeffs_high))
+        self.assertTupleEqual(tuple(nasa_dict['polynomials']['polynomial1']['coeffs']['object']), tuple(self.coeffs_low))
+        self.assertTupleEqual(tuple(nasa_dict['polynomials']['polynomial2']['coeffs']['object']), tuple(self.coeffs_high))
         self.assertEqual(nasa_dict['polynomials']['polynomial1']['Tmin']['value'], self.Tmin)
         self.assertEqual(nasa_dict['polynomials']['polynomial1']['Tmax']['value'], self.Tint)
         self.assertEqual(nasa_dict['polynomials']['polynomial2']['Tmin']['value'], self.Tint)
@@ -315,3 +316,36 @@ class TestNASA(unittest.TestCase):
         self.assertNotIn('CpInf', keys)
         self.assertNotIn('label', keys)
         self.assertNotIn('comment', keys)
+
+    def test_nasa_polynomial_as_dict(self):
+        """
+        Test that NASAPolynomial.as_dict returns all non-empty, non-redundant attributes properly.
+        """
+        nasa_poly_dict = self.nasa.polynomials[0].as_dict()
+        self.assertEqual(nasa_poly_dict, {'coeffs': {'object': [4.03055, -0.00214171, 4.90611e-05, -5.99027e-08,
+                                                                2.38945e-11, -11257.6, 3.5613],
+                                                     'class': 'np_array'},
+                                          'Tmax': {'units': 'K', 'class': 'ScalarQuantity', 'value': 650.73},
+                                          'Tmin': {'units': 'K', 'class': 'ScalarQuantity', 'value': 300.0},
+                                          'class': 'NASAPolynomial'}
+                         )
+
+    def test_make_nasa(self):
+        """
+        Test that a NASA object can be reconstructed from a dictionary (also test NASAPolynomial by extension)
+        """
+        nasa_dict = self.nasa.as_dict()
+        new_nasa = NASA.__new__(NASA)
+        class_dictionary = {'ScalarQuantity': ScalarQuantity,
+                            'np_array': numpy.array,
+                            'NASA': NASA,
+                            'NASAPolynomial': NASAPolynomial,
+                            }
+
+        new_nasa.make_object(nasa_dict, class_dictionary)
+
+################################################################################
+
+
+if __name__ == '__main__':
+    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

@@ -52,7 +52,7 @@ from rmgpy.statmech.translation import IdealGasTranslation
 from rmgpy.statmech.vibration import HarmonicOscillator
 from rmgpy.pdep.collision import SingleExponentialDown
 from rmgpy.transport import TransportData
-from rmgpy.thermo import NASA, Wilhoit, ThermoData
+from rmgpy.thermo import NASA, Wilhoit, ThermoData, NASAPolynomial
 from rmgpy.species import Species, TransitionState
 import rmgpy.constants as constants
 
@@ -231,21 +231,30 @@ class ArkaneSpecies(RMGObject):
             yaml.dump(data=self.as_dict(), stream=f)
         logging.debug('Dumping species {0} data as {1}'.format(self.label, filename))
 
-    def load_yaml(self, path, species, pdep=False):
+    def load_yaml(self, path, label=None, pdep=False):
         """
         Load the all statMech data from the .yml file in `path` into `species`
         `pdep` is a boolean specifying whether or not jobList includes a pressureDependentJob.
         """
-        logging.info('Loading statistical mechanics parameters for {0} from .yml file...'.format(species.label))
+        yml_file = os.path.basename(path)
+        if label:
+            logging.info('Loading statistical mechanics parameters for {0} from {1} file...'.format(label, yml_file))
+        else:
+            logging.info('Loading statistical mechanics parameters from {0} file...'.format(yml_file))
         with open(path, 'r') as f:
             data = yaml.safe_load(stream=f)
-        try:
-            if species.label != data['label']:
-                logging.debug('Found different labels for species: {0} in input file, and {1} in the .yml file. '
-                              'Using the label "{0}" for this species.'.format(species.label, data['label']))
-        except KeyError:
-            # Lacking label in the YAML file is strange, but accepted
-            logging.debug('Did not find label for species {0} in .yml file.'.format(species.label))
+        if label:
+            # First, warn the user if the label doesn't match
+            try:
+                if label != data['label']:
+                    logging.debug('Found different labels for species: {0} in input file, and {1} in the .yml file. '
+                                  'Using the label "{0}" for this species.'.format(label, data['label']))
+            except KeyError:
+                # Lacking label in the YAML file is strange, but accepted
+                logging.debug('Did not find label for species {0} in .yml file.'.format(label))
+
+            # Then, set the ArkaneSpecies label to the user supplied label
+            data['label'] = label
         try:
             class_name = data['class']
         except KeyError:
@@ -270,19 +279,30 @@ class ArkaneSpecies(RMGObject):
                       'NASA': NASA,
                       'NASAPolynomial': NASAPolynomial,
                       'ThermoData': ThermoData,
+                      'np_array': numpy.array,
                       }
         freq_data = None
         if 'imaginary_frequency' in data:
             freq_data = data['imaginary_frequency']
             del data['imaginary_frequency']
+        if not data['is_ts']:
+            if 'smiles' in data:
+                data['species'] = Species(SMILES=data['smiles'])
+            elif 'adjacency_list' in data:
+                data['species'] = Species().fromAdjacencyList(data['adjacency_list'])
+            elif 'inchi' in data:
+                data['species'] = Species(InChI=data['inchi'])
+            else:
+                raise ValueError('Cannot load ArkaneSpecies from YAML file {0}. Either `smiles`, `adjacency_list`, or '
+                                 'InChI must be specified'.format(path))
+            # Finally, set the species label so that the special attributes are updated properly
+            data['species'].label = data['label']
+
         self.make_object(data=data, class_dict=class_dict)
         if freq_data is not None:
             self.imaginary_frequency = ScalarQuantity()
-            self.imaginary_frequency.make_object(data=freq_data, class_dict=dict())
-        self.adjacency_list = data['adjacency_list'] if 'adjacency_list' in data else None
-        self.inchi = data['inchi'] if 'inchi' in data else None
-        self.smiles = data['smiles'] if 'smiles' in data else None
-        self.is_ts = data['is_ts'] if 'is_ts' in data else False
+            self.imaginary_frequency.make_object(data=freq_data, class_dict=class_dict)
+
         if pdep and not self.is_ts and (self.transport_data is None or self.energy_transfer_model is None):
             raise ValueError('Transport data and an energy transfer model must be given if pressure-dependent '
                              'calculations are requested. Check file {0}'.format(path))

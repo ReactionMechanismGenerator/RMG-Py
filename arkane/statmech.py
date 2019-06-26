@@ -209,7 +209,7 @@ class StatMechJob(object):
         is_ts = isinstance(self.species, TransitionState)
         _, file_extension = os.path.splitext(path)
         if file_extension in ['.yml', '.yaml']:
-            self.arkane_species.load_yaml(path=path, species=self.species, pdep=pdep)
+            self.arkane_species.load_yaml(path=path, label=self.species.label, pdep=pdep)
             self.species.conformer = self.arkane_species.conformer
             if is_ts:
                 self.species.frequency = self.arkane_species.imaginary_frequency
