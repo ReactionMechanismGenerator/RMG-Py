@@ -54,6 +54,7 @@ class SimulateTest(unittest.TestCase):
         self.assertTrue(os.path.isfile(sensfile))
         
         shutil.rmtree(os.path.join(folder, 'solver'))
+        os.remove(os.path.join(folder, 'simulate.log'))
 
     def test_liquid(self):
         folder = os.path.join(os.path.dirname(rmgpy.__file__), 'tools/data/sim/liquid')
@@ -71,6 +72,7 @@ class SimulateTest(unittest.TestCase):
         self.assertTrue(os.path.isfile(sensfile))
 
         shutil.rmtree(os.path.join(folder, 'solver'))
+        os.remove(os.path.join(folder, 'simulate.log'))
 
     def tearDown(self):
         import rmgpy.data.rmg
