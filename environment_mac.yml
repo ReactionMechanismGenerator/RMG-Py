@@ -4,6 +4,7 @@ channels:
   - rmg
   - rdkit
   - cantera
+  - anaconda
 dependencies:
   - cairo
   - cairocffi
@@ -31,7 +32,9 @@ dependencies:
   - psutil
   - pydas >=1.0.1
   - pydot ==1.2.2
+  - pydot-ng
   - pydqed >=1.0.0
+  - pygpu
   - pymongo
   - pyparsing
   - pyrdl
