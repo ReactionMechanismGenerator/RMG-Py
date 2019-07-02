@@ -1053,4 +1053,160 @@ class TestQuantity(unittest.TestCase):
         self.assertEqual(repr(self.v),repr(self.v_array))
 
 
+class TestQuantityDictionaryConversion(unittest.TestCase):
+    """
+    Test that Scalar and Array Quantity objects can be represented and reconstructed from dictionaries
+    """
+    def setUp(self):
+        """
+        Initialize necessary variables for the TestQuantityDictionaryConversion unit test
+        """
+        self.class_dict = {'ScalarQuantity': quantity.ScalarQuantity,
+                           'ArrayQuantity': quantity.ArrayQuantity,
+                           'np_array': numpy.array
+                           }
 
+        self.empty_scalar = quantity.ScalarQuantity()
+        self.minimal_scalar = quantity.ScalarQuantity(value=5)
+        self.know_scalar = quantity.ScalarQuantity(value=2.4, units='kcal/mol')
+        self.uncertain_scalar = quantity.ScalarQuantity(value=3, uncertainty=0.2)
+
+        self.empty_array = quantity.ArrayQuantity()
+        self.minimal_array = quantity.ArrayQuantity(value=numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
+        self.known_array = quantity.ArrayQuantity(value=numpy.array([[1.2, 2.4, 3.4], [4.8, 5.0, 6.0], [7.4, 8.6, 9]]),
+                                                  units='kcal/mol')
+        self.uncertain_array = quantity.ArrayQuantity(value=numpy.array([[1.2, 2.4, 3.4],
+                                                                         [4.8, 5.0, 6.0],
+                                                                         [7.4, 8.6, 9.0]]
+                                                                        ),
+                                                      uncertainty=numpy.array([[0.2, 0.4, 0.6],
+                                                                               [0.6, 0.4, 0.2],
+                                                                               [0.8, 0.2, 0.4]])
+                                                      )
+
+    def test_scalar_as_dict(self):
+        """
+        Test the `as_dict` method of ScalarQuantity objects
+        """
+        self.assertEqual(self.empty_scalar.as_dict(), {'class': 'ScalarQuantity', 'value': 0.0})
+        self.assertEqual(self.minimal_scalar.as_dict(), {'class': 'ScalarQuantity', 'value': 5})
+        self.assertEqual(self.know_scalar.as_dict(), {'class': 'ScalarQuantity', 'value': 2.4, 'units': 'kcal/mol'})
+        self.assertEqual(self.uncertain_scalar.as_dict(), {'class': 'ScalarQuantity', 'value': 3,
+                                                           'uncertainty': 0.2, 'uncertaintyType': '+|-'}
+                         )
+
+    def test_scalar_make_object(self):
+        """
+        Test the `make_object` method of ScalarQuantity objects
+        """
+        empty_scalar = quantity.ScalarQuantity()
+        minimal_scalar = quantity.ScalarQuantity()
+        known_scalar = quantity.ScalarQuantity()
+        uncertain_scalar = quantity.ScalarQuantity()
+
+        empty_scalar.make_object({}, self.class_dict)
+        minimal_scalar.make_object({'value': 5}, self.class_dict)
+        known_scalar.make_object({'value': 2.4, 'units': 'kcal/mol'}, self.class_dict)
+        uncertain_scalar.make_object({'class': 'ScalarQuantity', 'value': 3, 'uncertainty': 0.2,
+                                      'uncertaintyType': '+|-'
+                                      },
+                                     self.class_dict
+                                     )
+
+        self.assertEqual(empty_scalar.as_dict(), self.empty_scalar.as_dict())
+        self.assertEqual(minimal_scalar.as_dict(), self.minimal_scalar.as_dict())
+        self.assertEqual(known_scalar.as_dict(), self.know_scalar.as_dict())
+        self.assertEqual(uncertain_scalar.as_dict(), self.uncertain_scalar.as_dict())
+
+    def test_array_as_dict(self):
+        """
+        Test the `as_dict` method of ArrayQuantity objects
+        """
+        self.assertEqual(self.empty_array.as_dict(), {'class': 'ArrayQuantity',
+                                                      'value': {'class': 'np_array', 'object': [0.0]}
+                                                      }
+                         )
+
+        self.assertEqual(self.minimal_array.as_dict(), {'class': 'ArrayQuantity',
+                                                        'value': {'class': 'np_array', 'object': [[1, 2, 3],
+                                                                                                  [4, 5, 6],
+                                                                                                  [7, 8, 9]]
+                                                                  }
+                                                        }
+                         )
+
+        self.assertEqual(self.known_array.as_dict(), {'class': 'ArrayQuantity',
+                                                      'value': {'class': 'np_array', 'object': [[1.2, 2.4, 3.4],
+                                                                                                [4.8, 5.0, 6.0],
+                                                                                                [7.4, 8.6, 9]]
+                                                                },
+                                                      'units': 'kcal/mol'
+                                                      }
+                         )
+
+        self.assertEqual(self.uncertain_array.as_dict(), {'class': 'ArrayQuantity',
+                                                          'value': {'class': 'np_array', 'object': [[1.2, 2.4, 3.4],
+                                                                                                    [4.8, 5.0, 6.0],
+                                                                                                    [7.4, 8.6, 9.0]]
+                                                                    },
+                                                          'uncertainty': {'class': 'np_array',
+                                                                          'object': [[0.2, 0.4, 0.6],
+                                                                                     [0.6, 0.4, 0.2],
+                                                                                     [0.8, 0.2, 0.4]]
+                                                                          },
+                                                          'uncertaintyType': '+|-'
+                                                          }
+                         )
+
+    def test_array_make_object(self):
+        """
+        Test the `make_object` method of ArrayQuantity objects
+        """
+        empty_array = quantity.ArrayQuantity()
+        minimal_array = quantity.ArrayQuantity()
+        known_array = quantity.ArrayQuantity()
+        uncertain_array = quantity.ArrayQuantity()
+
+        minimal_dict = {'class': 'ArrayQuantity', 'value': {'class': 'np_array', 'object': [[1, 2, 3],
+                                                                                            [4, 5, 6],
+                                                                                            [7, 8, 9]]
+                                                            }
+                        }
+
+        known_dict = {'class': 'ArrayQuantity',
+                      'value': {'class': 'np_array', 'object': [[1.2, 2.4, 3.4],
+                                                                [4.8, 5.0, 6.0],
+                                                                [7.4, 8.6, 9]]
+                                },
+                      'units': 'kcal/mol'
+                      }
+
+        uncertain_dict = {'class': 'ArrayQuantity',
+                          'value': {'class': 'np_array', 'object': [[1.2, 2.4, 3.4],
+                                                                    [4.8, 5.0, 6.0],
+                                                                    [7.4, 8.6, 9.0]]
+                                    },
+                          'uncertainty': {'class': 'np_array',
+                                          'object': [[0.2, 0.4, 0.6],
+                                                     [0.6, 0.4, 0.2],
+                                                     [0.8, 0.2, 0.4]]
+                                          },
+                          'uncertaintyType': '+|-'
+                          }
+
+        empty_array.make_object({}, self.class_dict)
+        minimal_array.make_object(minimal_dict, self.class_dict)
+        known_array.make_object(known_dict, self.class_dict)
+        uncertain_array.make_object(uncertain_dict, self.class_dict)
+
+        self.assertEqual(empty_array.as_dict(), self.empty_array.as_dict())
+        self.assertEqual(minimal_array.as_dict(), self.minimal_array.as_dict())
+        self.assertEqual(known_array.as_dict(), self.known_array.as_dict())
+        self.assertEqual(uncertain_array.as_dict(), self.uncertain_array.as_dict())
+
+
+################################################################################
+
+
+if __name__ == '__main__':
+    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
