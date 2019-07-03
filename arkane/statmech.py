@@ -328,14 +328,6 @@ class StatMechJob(object):
             else:
                 raise InputError('The third argument for E0 energy value should be e_elect (for energy w/o ZPE) '
                                  'or E0 (including the ZPE). Got: {0}'.format(energy[2]))
-        try:
-            geomLog = local_context['geometry']
-        except KeyError:
-            raise InputError('Required attribute "geometry" not found in species file {0!r}.'.format(path))
-        if isinstance(geomLog, Log) and not isinstance(energy, (GaussianLog, QChemLog, MolproLog)):
-            geomLog = determine_qm_software(os.path.join(directory, geomLog.path))
-        else:
-            geomLog.path = os.path.join(directory, geomLog.path)
 
         try:
             statmechLog = local_context['frequencies']
@@ -345,6 +337,15 @@ class StatMechJob(object):
             statmechLog = determine_qm_software(os.path.join(directory, statmechLog.path))
         else:
             statmechLog.path = os.path.join(directory, statmechLog.path)
+        try:
+            geomLog = local_context['geometry']
+            if isinstance(geomLog, Log) and not isinstance(energy, (GaussianLog, QChemLog, MolproLog)):
+                geomLog = determine_qm_software(os.path.join(directory, geomLog.path))
+            else:
+                geomLog.path = os.path.join(directory, geomLog.path)
+        except KeyError:
+            geomLog = statmechLog
+            logging.debug("Reading geometry from the specified frequencies file.")
 
         if 'frequencyScaleFactor' in local_context:
             logging.warning('Ignoring frequency scale factor in species file {0!r}.'.format(path))

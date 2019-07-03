@@ -188,7 +188,7 @@ Parameter               Required?                   Description
 ``energy``              yes                         The ground-state 0 K atomization energy in Hartree
                                                     (without zero-point energy) **or**
                                                     The path to the quantum chemistry output file containing the energy
-``geometry``            yes                         The path to the quantum chemistry output file containing the optimized geometry
+``geometry``            optional                    The path to the quantum chemistry output file containing the optimized geometry
 ``frequencies``         yes                         The path to the quantum chemistry output file containing the computed frequencies
 ``rotors``              optional                    A list of :class:`HinderedRotor()` and/or :class:`FreeRotor()` objects describing the hindered/free rotors
 ======================= =========================== ====================================
@@ -244,7 +244,7 @@ directly. The energy used will depend on what ``modelChemistry`` was specified i
 energy from a Gaussian, Molpro, or QChem log file, all using the same ``Log`` class, as shown below.
 
 The input to the remaining parameters, ``geometry``, ``frequencies`` and ``rotors``, will depend on if hindered/free
-rotors are included.
+rotors are included. If ``geometry`` is not set, then Arkane will read the geometry from the ``frequencies`` file.
 Both cases are described below.
 
 Without Hindered/Free Rotors
