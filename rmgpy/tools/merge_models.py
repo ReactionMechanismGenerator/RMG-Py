@@ -136,6 +136,7 @@ def get_models_to_merge(input_model_files):
 def combine_models(models):
     """
     Takes in a list of ReactionModels and and merges them into a single ReactionModel
+    Reindexes species with the same label and index
     """
     final_model = ReactionModel()
     for i, model in enumerate(models):        
@@ -160,4 +161,17 @@ def combine_models(models):
                   '#{0:d}.'.format(i+1, Nrxn - Nrxn0, len(model.reactions)))
     print('The merged model has {0:d} species and {1:d} reactions'
           ''.format(len(final_model.species), len(final_model.reactions)))
+
+    # ensure no species with same name and index
+    label_index_dict = {}
+    for s in final_model.species:
+        if s.label not in label_index_dict:
+            label_index_dict[s.label] = [s.index]
+        else:
+            if s.index in label_index_dict[s.label]:
+                # obtained a duplicate
+                s.index = max(label_index_dict[s.label]) + 1
+                print("Reindexed {0} due to dublicate labels and index".format(s.label))
+            label_index_dict[s.label].append(s.index)
+
     return final_model
