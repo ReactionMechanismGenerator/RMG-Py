@@ -105,23 +105,46 @@ def execute(inputModelFiles, **kwargs):
     outputChemkinFile = os.path.join(wd, 'chem.inp')
     outputSpeciesDictionary = os.path.join(wd, 'species_dictionary.txt')
     outputTransportFile = os.path.join(wd, 'tran.dat') if transport else None
-    
-    # Load the models to merge
+
+    models = get_models_to_merge(inputModelFiles)
+
+    finalModel = combine_models(models)
+
+    # Save the merged model to disk
+    saveChemkinFile(outputChemkinFile, finalModel.species, finalModel.reactions)
+    saveSpeciesDictionary(outputSpeciesDictionary, finalModel.species)
+    if transport:
+        saveTransportFile(outputTransportFile, finalModel.species)
+
+    print 'Merged Chemkin file saved to {0}'.format(outputChemkinFile)
+    print 'Merged species dictionary saved to {0}'.format(outputSpeciesDictionary)
+    if transport:
+        print 'Merged transport file saved to {0}'.format(outputTransportFile)
+
+def get_models_to_merge(input_model_files):
+    """
+    Reads input file paths and creates a list of ReactionModel
+    """
     models = []
-    for chemkin, speciesPath, transportPath in inputModelFiles:
+    for chemkin, speciesPath, transportPath in input_model_files:
         print 'Loading model #{0:d}...'.format(len(models)+1)
         model = ReactionModel()
         model.species, model.reactions = loadChemkinFile(chemkin, speciesPath, transportPath=transportPath)
         models.append(model)
+    return models
 
-    finalModel = ReactionModel()
+def combine_models(models):
+    """
+    Takes in a list of ReactionModels and and merges them into a single ReactionModel
+    """
+    final_model = ReactionModel()
     for i, model in enumerate(models):        
         print 'Ignoring common species and reactions from model #{0:d}...'.format(i+1)
-        Nspec0 = len(finalModel.species)
-        Nrxn0 = len(finalModel.reactions)
-        finalModel = finalModel.merge(model)
-        Nspec = len(finalModel.species)
-        Nrxn = len(finalModel.reactions)
+        Nspec0 = len(final_model.species)
+        Nrxn0 = len(final_model.reactions)
+        final_model = final_model.merge(model)
+        Nspec = len(final_model.species)
+        Nrxn = len(final_model.reactions)
         if  len(model.species) > 0:
             print('Added {1:d} out of {2:d} ({3:.1f}%) unique species from model '
                   '#{0:d}.'.format(i+1, Nspec - Nspec0, len(model.species), (Nspec - Nspec0) * 100. / len(model.species)))
@@ -136,16 +159,5 @@ def execute(inputModelFiles, **kwargs):
             print('Added {1:d} out of {2:d} unique reactions from model '
                   '#{0:d}.'.format(i+1, Nrxn - Nrxn0, len(model.reactions)))
     print('The merged model has {0:d} species and {1:d} reactions'
-          ''.format(len(finalModel.species), len(finalModel.reactions)))
-        
-    # Save the merged model to disk
-    saveChemkinFile(outputChemkinFile, finalModel.species, finalModel.reactions)
-    saveSpeciesDictionary(outputSpeciesDictionary, finalModel.species)
-    if transport:
-        saveTransportFile(outputTransportFile, finalModel.species)
-        
-    print 'Merged Chemkin file saved to {0}'.format(outputChemkinFile)
-    print 'Merged species dictionary saved to {0}'.format(outputSpeciesDictionary)
-    if transport:
-        print 'Merged transport file saved to {0}'.format(outputTransportFile)
-    
+          ''.format(len(final_model.species), len(final_model.reactions)))
+    return final_model
