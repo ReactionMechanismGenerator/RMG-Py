@@ -429,20 +429,27 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         if len(b) == 1:
             return np.array([b[0]/A[0,0]])
         
-        con = np.linalg.cond(A) #this matrix can be very ill-conditioned so we enhance precision accordingly
-        mp.dps = 30+int(np.log10(con))
-        Amp = mp.matrix(A.tolist())
-        bmp = mp.matrix(b.tolist())
+        con = np.linalg.cond(A)
         
-        c = mp.qr_solve(Amp,bmp)
-        
-        c = np.array(list(c[0]))
-         
-        if any(c<=0.0):
-            c, rnorm = opt.nnls(A,b)
+        if np.log10(con) < 15:
+            c = np.linalg.solve(A,b)
+        else:
+            logging.warn("Matrix Ill-conditioned, attempting to use Arbitrary Precision Arithmetic")
+            mp.dps = 30+int(np.log10(con))
+            Amp = mp.matrix(A.tolist())
+            bmp = mp.matrix(b.tolist())
             
-        c = c.astype(np.float64)
-        
+            try:
+                c = mp.qr_solve(Amp,bmp)
+
+                c = np.array(list(c[0]))
+
+                if any(c<=0.0):
+                    c, rnorm = opt.nnls(A,b)
+
+                c = c.astype(np.float64)
+            except: #fall back to raw flux analysis rather than solve steady state problem
+                return None
         return c
                 
     
