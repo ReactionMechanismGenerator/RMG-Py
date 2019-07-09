@@ -354,7 +354,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                 
         return filtered_rxns
 
-    def get_rate_filtered_reactions(self,T,P,tol):
+    def get_rate_filtered_products(self,T,P,tol):
         """
         determines the set of pathReactions that have fluxes less than
         tol at steady state where all A => B + C reactions are irreversible
@@ -362,24 +362,34 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         """
         c = self.solve_SS_network(T,P)
         isomerSpcs = [iso.species[0] for iso in self.isomers]
-        filtered_rxns = []
-        for rxn in self.pathReactions:
-            val = 0.0
-            val2 = 0.0
-            if rxn.reactants[0] in isomerSpcs:
-                ind = isomerSpcs.index(rxn.reactants[0])
-                kf = rxn.getRateCoefficient(T,P)
-                val = kf*c[ind]
-            if rxn.products[0] in isomerSpcs:
-                ind2 = isomerSpcs.index(rxn.products[0])
-                kr = rxn.getRateCoefficient(T,P)/rxn.getEquilibriumConstant(T)
-                val2 = kr*c[ind2]
-    
-            if max(val,val2) < tol:
-                filtered_rxns.append(rxn)
-        
-        return filtered_rxns
-    
+        filtered_prod = []
+        if c is not None:
+            for rxn in self.netReactions:
+                val = 0.0
+                val2 = 0.0
+                if rxn.reactants[0] in isomerSpcs:
+                    ind = isomerSpcs.index(rxn.reactants[0])
+                    kf = rxn.getRateCoefficient(T,P)
+                    val = kf*c[ind]
+                if rxn.products[0] in isomerSpcs:
+                    ind2 = isomerSpcs.index(rxn.products[0])
+                    kr = rxn.getRateCoefficient(T,P)/rxn.getEquilibriumConstant(T)
+                    val2 = kr*c[ind2]
+
+                if max(val,val2) < tol:
+                    filtered_prod.append(rxn.products)
+
+            return filtered_prod
+
+        else:
+            logging.warn("Falling back flux reduction from Steady State analysis to rate coefficient analysis")
+            ks = np.array([rxn.getRateCoefficient(T,P) for rxn in self.netReactions])
+            frs = ks/ks.sum()
+            inds = [i for i in xrange(len(frs)) if frs[i] < tol]
+            filtered_prod = [self.netReactions[i].products for i in inds]
+            return filtered_prod
+
+
     def solve_SS_network(self,T,P):
         """
         calculates the steady state concentrations if all A => B + C
