@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -37,10 +37,11 @@ import numpy
 import rmgpy.constants as constants
 from rmgpy.kinetics import Arrhenius, ArrheniusEP, ThirdBody, Lindemann, Troe, \
                            PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, \
-                           Chebyshev, KineticsData
+                           Chebyshev, KineticsData, StickingCoefficient, \
+                           StickingCoefficientBEP, SurfaceArrhenius, SurfaceArrheniusBEP
 from rmgpy.molecule import Molecule, Group
 from rmgpy.species import Species
-from rmgpy.reaction import Reaction, isomorphic_species_lists
+from rmgpy.reaction import Reaction, same_species_lists
 from rmgpy.data.base import LogicNode
 
 from .family import  KineticsFamily
@@ -73,6 +74,10 @@ class KineticsDatabase(object):
             'ThirdBody': ThirdBody,
             'Lindemann': Lindemann,
             'Troe': Troe,
+            'StickingCoefficient': StickingCoefficient,
+            'StickingCoefficientBEP': StickingCoefficientBEP,
+            'SurfaceArrhenius': SurfaceArrhenius,
+            'SurfaceArrheniusBEP': SurfaceArrheniusBEP,
             'R': constants.R,
         }
         self.global_context = {}
@@ -209,8 +214,8 @@ class KineticsDatabase(object):
             family = KineticsFamily(label=label)
             try:
                 family.load(familyPath, self.local_context, self.global_context, depositoryLabels=depositories)
-            except Exception as e:
-                logging.error("Error when loading family {}".format(familyPath))
+            except:
+                logging.error("Error when loading reaction family {!r}".format(familyPath))
                 raise
             self.families[label] = family
 
@@ -248,7 +253,11 @@ library instead, depending on the main bath gas (N2 or Ar/He, respectively)\n"""
                         label=os.path.dirname(library_file)[len(path)+1:]
                         logging.info('Loading kinetics library {0} from {1}...'.format(label, library_file))
                         library = KineticsLibrary(label=label)
-                        library.load(library_file, self.local_context, self.global_context)
+                        try:
+                            library.load(library_file, self.local_context, self.global_context)
+                        except:
+                            logging.error("Problem loading reaction library {0!r}".format(library_file))
+                            raise
                         self.libraries[library.label] = library
                         self.libraryOrder.append((library.label,'Reaction Library'))
 
@@ -469,6 +478,8 @@ and immediately used in input files without any additional changes.
         # Check if the reactants are the same
         # If they refer to the same memory address, then make a deep copy so
         # they can be manipulated independently
+        if isinstance(reactants, tuple):
+            reactants = list(reactants)
         same_reactants = 0
         if len(reactants) == 2:
             if reactants[0] is reactants[1]:
@@ -503,8 +514,6 @@ and immediately used in input files without any additional changes.
                     same_reactants = 2
 
         # Label reactant atoms for proper degeneracy calculation (cannot be in tuple)
-        if isinstance(reactants, tuple):
-            reactants = list(reactants)
         ensure_independent_atom_ids(reactants, resonance=resonance)
 
         combos = generate_molecule_combos(reactants)
@@ -536,7 +545,12 @@ and immediately used in input files without any additional changes.
         reaction_list = []
         for label, family in self.families.iteritems():
             if only_families is None or label in only_families:
-                reaction_list.extend(family.generateReactions(molecules, products=products, prod_resonance=prod_resonance))
+                try:
+                    reaction_list.extend(family.generateReactions(molecules, products=products, prod_resonance=prod_resonance))
+                except:
+                    logging.error("Problem family: {}".format(label))
+                    logging.error("Problem reactants: {}".format(molecules))
+                    raise
 
         for reactant in molecules:
             reactant.clearLabeledAtoms()
@@ -606,11 +620,11 @@ and immediately used in input files without any additional changes.
             # Remove from that set any reactions that don't produce the desired reactants and products
             forward = []; reverse = []
             for rxn in generatedReactions:
-                if (isomorphic_species_lists(reaction.reactants, rxn.reactants)
-                        and isomorphic_species_lists(reaction.products, rxn.products)):
+                if (same_species_lists(reaction.reactants, rxn.reactants)
+                        and same_species_lists(reaction.products, rxn.products)):
                     forward.append(rxn)
-                if (isomorphic_species_lists(reaction.reactants, rxn.products)
-                        and isomorphic_species_lists(reaction.products, rxn.reactants)):
+                if (same_species_lists(reaction.reactants, rxn.products)
+                        and same_species_lists(reaction.products, rxn.reactants)):
                     reverse.append(rxn)
 
             # We should now know whether the reaction is given in the forward or

@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -38,10 +38,11 @@ from copy import deepcopy
 from rmgpy import settings
 
 from rmgpy.molecule import Molecule
-from rmgpy.quantity import Quantity
+from rmgpy.quantity import Quantity, Energy, SurfaceConcentration
 from rmgpy.solver.base import TerminationTime, TerminationConversion, TerminationRateRatio
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.solver.liquid import LiquidReactor
+from rmgpy.solver.surface import SurfaceReactor
 from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
 from model import CoreEdgeReactionModel
 
@@ -103,6 +104,51 @@ def database(
         if not isinstance(kineticsFamilies,list):
             raise InputError("kineticsFamilies should be either 'default', 'all', 'none', or a list of names eg. ['H_Abstraction','R_Recombination'] or ['!Intra_Disproportionation'].")
         rmg.kineticsFamilies = kineticsFamilies
+
+
+def catalystProperties(bindingEnergies = None,
+                       surfaceSiteDensity = None,):
+    """
+    Specify the properties of the catalyst.
+    Binding energies of C,H,O,N atoms, and the surface site density.
+    Defaults to Pt(111) if not specified.
+    """
+    rmg.bindingEnergies = convertBindingEnergies(bindingEnergies)
+
+    if surfaceSiteDensity is None:
+        surfaceSiteDensity = (2.72e-9, 'mol/cm^2')
+        logging.info("Using default surface site density of {0!r}".format(surfaceSiteDensity))
+    surfaceSiteDensity = SurfaceConcentration(*surfaceSiteDensity)
+    rmg.surfaceSiteDensity = surfaceSiteDensity
+
+
+def convertBindingEnergies(bindingEnergies):
+    """
+    Process the bindingEnergies from the input file.
+    If "None" is passed, then it returns Pt(111) values.
+
+    :param bindingEnergies: a dictionary of element symbol: binding energy pairs (or None)
+    :return: the processed and checked dictionary
+    """
+    if bindingEnergies is None:
+        bindingEnergies = { # default values for Pt(111)
+                       'C':(-6.750, 'eV/molecule'),
+                       'H':(-2.479, 'eV/molecule'),
+                       'O':(-3.586, 'eV/molecule'),
+                       'N':(-4.352, 'eV/molecule'),
+                       }
+        logging.info("Using default binding energies for Pt(111):\n{0!r}".format(bindingEnergies))
+    if not isinstance(bindingEnergies, dict): raise InputError("bindingEnergies should be None (for default) or a dict.")
+    newDict = {}
+    for element in 'CHON':
+        try:
+            newDict[element] = Energy(bindingEnergies[element])
+        except KeyError:
+            logging.error('Element {} missing from bindingEnergies dictionary'.format(element))
+            raise
+    return newDict
+
+
 
 def species(label, structure, reactive=True):
     logging.debug('Found {0} species "{1}" ({2})'.format('reactive' if reactive else 'nonreactive', label, structure.toSMILES()))
@@ -305,6 +351,102 @@ def liquidReactor(temperature,
     system = LiquidReactor(T, initialConcentrations, nSims, termination, sensitiveSpecies, sensitivityThreshold, sensConditions, constantSpecies)
     rmg.reactionSystems.append(system)
     
+# Reaction systems
+def surfaceReactor(temperature,
+                   initialPressure,
+                  initialGasMoleFractions,
+                  initialSurfaceCoverages,
+                  surfaceVolumeRatio,
+                  nSims=4,
+                  terminationConversion=None,
+                  terminationTime=None,
+                  terminationRateRatio=None,
+                  sensitivity=None,
+                  sensitivityThreshold=1e-3):
+
+    logging.debug('Found SurfaceReactor reaction system')
+
+    for value in initialGasMoleFractions.values():
+        if value < 0:
+            raise InputError('Initial mole fractions cannot be negative.')
+    totalInitialMoles = sum(initialGasMoleFractions.values())
+    if totalInitialMoles != 1:
+        logging.warning('Initial gas mole fractions do not sum to one; renormalizing.')
+        logging.debug('')
+        logging.debug('Original composition:')
+        for spec, molfrac in initialGasMoleFractions.iteritems():
+            logging.debug("{0} = {1}".format(spec, molfrac))
+        for spec in initialGasMoleFractions:
+            initialGasMoleFractions[spec] /= totalInitialMoles
+        logging.info('')
+        logging.debug('Normalized mole fractions:')
+        for spec, molfrac in initialGasMoleFractions.iteritems():
+            logging.debug("{0} = {1}".format(spec, molfrac))
+
+    if not isinstance(temperature, list):
+        T = Quantity(temperature)
+    else:
+        if len(temperature) != 2:
+            raise InputError('Temperature ranges can either be in the form '
+                'of (number,units) or a list with 2 entries of the same format')
+        T = [Quantity(t) for t in temperature]
+
+    if not isinstance(initialPressure, list):
+        initialP = Quantity(initialPressure)
+    else:
+        if len(initialPressure) != 2:
+            raise InputError('Initial pressure ranges can either be in the form '
+                'of (number,units) or a list with 2 entries of the same format')
+        initialP = [Quantity(p) for p in initialPressure]
+
+    if not isinstance(temperature, list) and not isinstance(initialPressure, list):
+        nSims = 1
+    if any([isinstance(x, list) for x in initialGasMoleFractions.values()]) or \
+       any([isinstance(x, list) for x in initialSurfaceCoverages.values()]):
+        raise NotImplementedError("Can't do ranges on species concentrations for surface reactors yet.")
+
+    termination = []
+    if terminationConversion is not None:
+        for spec, conv in terminationConversion.iteritems():
+            termination.append(TerminationConversion(speciesDict[spec], conv))
+    if terminationTime is not None:
+        termination.append(TerminationTime(Quantity(terminationTime)))
+    if terminationRateRatio is not None:
+        termination.append(TerminationRateRatio(terminationRateRatio))
+    if len(termination) == 0:
+        raise InputError('No termination conditions specified for reaction system #{0}.'.format(len(rmg.reactionSystems) + 2))
+
+    sensitiveSpecies = []
+    if sensitivity:
+        for spec in sensitivity:
+            sensitiveSpecies.append(speciesDict[spec])
+    if not isinstance(T, list):
+        sensitivityTemperature = T
+    if not isinstance(initialPressure, list):
+        sensitivityPressure = initialPressure
+    sensConditions = None
+    if sensitivity:
+        raise NotImplementedError("Can't currently do sensitivity with surface reactors.")
+        """
+        The problem is inside base.pyx it reads the dictionary 'sensConditions'
+        and guesses whether they're all concentrations (liquid reactor) or 
+        mole fractions (simple reactor). In fact, some may be surface coverages.
+        """
+
+    system = SurfaceReactor(T=T,
+                            initialP=initialP,
+                            initialGasMoleFractions=initialGasMoleFractions,
+                            initialSurfaceCoverages=initialSurfaceCoverages,
+                            surfaceVolumeRatio=surfaceVolumeRatio,
+                            surfaceSiteDensity=rmg.surfaceSiteDensity,
+                            nSims=nSims,
+                            termination=termination,
+                            sensitiveSpecies=sensitiveSpecies,
+                            sensitivityThreshold=sensitivityThreshold,
+                            sensConditions=sensConditions)
+    rmg.reactionSystems.append(system)
+    system.log_initial_conditions(number=len(rmg.reactionSystems))
+
 def simulator(atol, rtol, sens_atol=1e-6, sens_rtol=1e-4):
     rmg.simulatorSettingsList.append(SimulatorSettings(atol, rtol, sens_atol, sens_rtol))
     
@@ -533,6 +675,25 @@ def thermoCentralDatabase(host,
                                                             application)
                     
 
+def uncertainty(localAnalysis=False, globalAnalysis=False, uncorrelated=True, correlated=True,
+                localNumber=10, globalNumber=5, terminationTime=None, pceRunTime=1800, logx=True):
+
+    if not localAnalysis and globalAnalysis:
+        logging.info('Enabling local uncertainty analysis as prerequisite for running global uncertainty analysis.')
+
+    rmg.uncertainty = {
+        'local': localAnalysis if not globalAnalysis else True,  # Must run local before global
+        'global': globalAnalysis,
+        'uncorrelated': uncorrelated,
+        'correlated': correlated,
+        'localnum': localNumber,
+        'globalnum': globalNumber,
+        'time': terminationTime,
+        'pcetime': pceRunTime,
+        'logx': logx,
+    }
+
+
 ################################################################################
 
 def setGlobalRMG(rmg0):
@@ -553,10 +714,10 @@ def readInputFile(path, rmg0):
     full_path = os.path.abspath(os.path.expandvars(path))
     try:
         f = open(full_path)
-    except IOError, e:
+    except IOError:
         logging.error('The input file "{0}" could not be opened.'.format(full_path))
         logging.info('Check that the file exists and that you have read access.')
-        raise e
+        raise
 
     logging.info('Reading input file "{0}"...'.format(full_path))
     logging.info(f.read())
@@ -574,6 +735,7 @@ def readInputFile(path, rmg0):
         'True': True,
         'False': False,
         'database': database,
+        'catalystProperties': catalystProperties,
         'species': species,
         'SMARTS': SMARTS,
         'SMILES': SMILES,
@@ -581,6 +743,7 @@ def readInputFile(path, rmg0):
         'adjacencyList': adjacencyList,
         'simpleReactor': simpleReactor,
         'liquidReactor': liquidReactor,
+        'surfaceReactor': surfaceReactor,
         'simulator': simulator,
         'solvation': solvation,
         'model': model,
@@ -589,12 +752,13 @@ def readInputFile(path, rmg0):
         'pressureDependence': pressureDependence,
         'options': options,
         'generatedSpeciesConstraints': generatedSpeciesConstraints,
-        'thermoCentralDatabase': thermoCentralDatabase
+        'thermoCentralDatabase': thermoCentralDatabase,
+        'uncertainty': uncertainty,
     }
 
     try:
         exec f in global_context, local_context
-    except (NameError, TypeError, SyntaxError), e:
+    except (NameError, TypeError, SyntaxError) as e:
         logging.error('The input file "{0}" was invalid:'.format(full_path))
         logging.exception(e)
         raise
@@ -628,10 +792,10 @@ def readThermoInputFile(path, rmg0):
     full_path = os.path.abspath(os.path.expandvars(path))
     try:
         f = open(full_path)
-    except IOError, e:
+    except IOError:
         logging.error('The input file "{0}" could not be opened.'.format(full_path))
         logging.info('Check that the file exists and that you have read access.')
-        raise e
+        raise
 
     logging.info('Reading input file "{0}"...'.format(full_path))
 
@@ -647,6 +811,7 @@ def readThermoInputFile(path, rmg0):
         'True': True,
         'False': False,
         'database': database,
+        'catalystProperties': catalystProperties,
         'species': species,
         'SMARTS': SMARTS,
         'SMILES': SMILES,
@@ -659,7 +824,7 @@ def readThermoInputFile(path, rmg0):
 
     try:
         exec f in global_context, local_context
-    except (NameError, TypeError, SyntaxError), e:
+    except (NameError, TypeError, SyntaxError) as e:
         logging.error('The input file "{0}" was invalid:'.format(full_path))
         logging.exception(e)
         raise
@@ -693,6 +858,14 @@ def saveInputFile(path, rmg):
     f.write('    kineticsFamilies = {0!r},\n'.format(rmg.kineticsFamilies))
     f.write('    kineticsEstimator = {0!r},\n'.format(rmg.kineticsEstimator))
     f.write(')\n\n')
+
+    if rmg.surfaceSiteDenisty or rmg.bindingEnergies:
+        f.write('catalystProperties(\n')
+        if rmg.surfaceSiteDenisty:
+            f.write('    surfaceSiteDensity = {0!r},'.format(rmg.surfaceSiteDensity))
+        if rmg.bindingEnergies:
+            f.write('    bindingEnergies = {0!r},'.format(rmg.bindingEnergies))
+        f.write(')\n\n')
 
     # Species
     for species in rmg.initialSpecies:
@@ -866,8 +1039,8 @@ def getInput(name):
                 return obj
             else:
                 raise Exception
-        except Exception, e:
+        except Exception:
             logging.debug("Did not find a way to obtain the variable for {}.".format(name))
-            raise e
+            raise
 
     raise Exception('Could not get variable with name: {}'.format(name))

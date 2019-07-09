@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -377,19 +377,19 @@ class Database:
         # Load dictionary, library, and (optionally) tree
         try:
             self.loadOldDictionary(dictstr, pattern)
-        except Exception, e:
+        except Exception:
             logging.error('Error while reading database {0!r}.'.format(os.path.dirname(dictstr)))
             raise
         
         try:
             if treestr != '': self.loadOldTree(treestr)
-        except Exception, e:
+        except Exception:
             logging.error('Error while reading database {0!r}.'.format(os.path.dirname(treestr)))
             raise
         
         try:
             self.loadOldLibrary(libstr, numParameters, numLabels)
-        except Exception, e:
+        except Exception:
             logging.error('Error while reading database {0!r}.'.format(os.path.dirname(libstr)))
             raise
           
@@ -436,10 +436,10 @@ class Database:
                 label = record.splitlines()[0]
                 # Add record to dictionary
                 self.entries[label] = Entry(label=label, item=record)
-        except DatabaseError, e:
+        except DatabaseError as e:
             logging.exception(str(e))
             raise
-        except IOError, e:
+        except IOError as e:
             logging.exception('Database dictionary file "' + e.filename + '" not found.')
             raise
         finally:
@@ -459,7 +459,7 @@ class Database:
                     self.entries[label].item = Group().fromAdjacencyList(record)
                 else:
                     self.entries[label].item = Molecule().fromAdjacencyList(record,saturateH=True)
-        except InvalidAdjacencyListError, e:
+        except InvalidAdjacencyListError:
             logging.error('Error while loading old-style dictionary "{0}"'.format(path))
             logging.error('Error occurred while parsing adjacency list "{0}"'.format(label))
             raise
@@ -532,7 +532,7 @@ class Database:
             ftree = open(path, 'r')
             tree = ftree.read()
 
-        except IOError, e:
+        except IOError:
             logging.exception('Database tree file "' + e.filename + '" not found.')
         finally:
             ftree.close()
@@ -618,7 +618,7 @@ class Database:
                         try:
                             parameters = self.processOldLibraryEntry(info[offset:offset+numParameters])
                             offset += numParameters
-                        except (IndexError, ValueError), e:
+                        except (IndexError, ValueError):
                             parameters = info[offset]
                             offset += 1
                         # Remaining part of string is comment
@@ -627,12 +627,12 @@ class Database:
 
                     entries.append((index, label, parameters, comment))
 
-        except DatabaseError, e:
+        except DatabaseError as e:
             logging.exception(str(e))
             logging.exception("path = '{0}'".format(path))
             logging.exception("line = '{0}'".format(line))
             raise
-        except IOError, e:
+        except IOError as e:
             logging.exception('Database library file "' + e.filename + '" not found.')
             raise
         finally:
@@ -756,7 +756,7 @@ class Database:
            
            
             f.close()
-        except IOError, e:
+        except IOError:
             logging.exception('Unable to save old-style dictionary to "{0}".'.format(os.path.abspath(path)))
             raise
 
@@ -788,7 +788,7 @@ class Database:
             f.write('\n')
             f.write(self.generateOldTree(self.top, 1))
             f.close()
-        except IOError, e:
+        except IOError:
             logging.exception('Unable to save old-style tree to "{0}".'.format(os.path.abspath(path)))
             raise
 
@@ -829,7 +829,7 @@ class Database:
                     f.write('{:s} '.format(' '.join(['{:<10g}'.format(d) for d in data])))
                 f.write(u'    {:s}\n'.format(comment))
             f.close()
-        except IOError, e:
+        except IOError:
             logging.exception('Unable to save old-style library to "{0}".'.format(os.path.abspath(path)))
             raise
 

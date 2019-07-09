@@ -5,7 +5,7 @@ modelChemistry = "CBS-QB3"
 useHinderedRotors = True
 useBondCorrections = False
 
-species('C2H4', 'ethene.py')
+species('C2H4', 'ethene.py',
+        structure=SMILES('C=C'))
 
-statmech('C2H4')
 thermo('C2H4', 'NASA')

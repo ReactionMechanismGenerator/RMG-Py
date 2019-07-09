@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -50,7 +50,7 @@ from rmgpy.rmg.react import *
 
 try:
     from scoop import futures, _control, shared
-except ImportError, e:
+except ImportError:
     import logging as logging
     logging.debug("Could not properly import SCOOP.")
 
@@ -91,8 +91,9 @@ def generate():
     spcA = Species().fromSMILES('[OH]')
     spcs = [Species().fromSMILES('CC'), Species().fromSMILES('[CH3]')]
     spcTuples = [(spcA, spc) for spc in spcs]
+    procnum = 2
 
-    reactionList = list(react(*spcTuples))
+    reactionList = list(react(spcTuples, procnum))
 
     if not reactionList: return False
 

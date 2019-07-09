@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -235,6 +235,62 @@ cdef class NASA(HeatCapacityModel):
         """
         return (NASA, (self.polynomials, self.Tmin, self.Tmax, self.E0, self.Cp0, self.CpInf, self.label, self.comment))
 
+    cpdef dict as_dict(self):
+        """
+        A helper function for YAML dumping
+        """
+        output_dict = dict()
+        output_dict['class'] = self.__class__.__name__
+        poly_dict = dict()
+        i = 1
+        for poly in self.polynomials:
+            if poly is not None:
+                key = 'polynomial{0}'.format(i)
+                poly_dict[key] = dict()
+                poly_dict[key]['class'] = poly.__class__.__name__
+                if poly.Tmin is not None:
+                    poly_dict[key]['Tmin'] = poly.Tmin.as_dict()
+                if poly.Tmax is not None:
+                    poly_dict[key]['Tmax'] = poly.Tmax.as_dict()
+                if poly.coeffs is not None:
+                    poly_dict[key]['coeffs'] = poly.coeffs.tolist()
+            i = i + 1
+        output_dict['polynomials'] = poly_dict
+        if self.Tmin:
+            output_dict['Tmin'] = self.Tmin.as_dict()
+        if self.Tmax:
+            output_dict['Tmax'] = self.Tmax.as_dict()
+        if self.E0:
+            output_dict['E0'] = self.E0.as_dict()
+        if self.Cp0:
+            output_dict['Cp0'] = self.Cp0.as_dict()
+        if self.CpInf:
+            output_dict['CpInf'] = self.CpInf.as_dict()
+        if self.label != '':
+            output_dict['label'] = self.label
+        if self.comment != '':
+            output_dict['comment'] = self.comment
+        return output_dict
+
+    cpdef make_object(self, dict data, dict class_dict):
+        """
+        A helper function for YAML parsing
+        """
+        data['Tmin'] = quantity.ScalarQuantity().make_object(data['Tmin'], class_dict)
+        data['Tmax'] = quantity.ScalarQuantity().make_object(data['Tmax'], class_dict)
+        data['E0'] = quantity.ScalarQuantity().make_object(data['E0'], class_dict)
+        data['Cp0'] = quantity.ScalarQuantity().make_object(data['Cp0'], class_dict)
+        data['CpInf'] = quantity.ScalarQuantity().make_object(data['CpInf'], class_dict)
+        polynomials = []
+        for key, poly in data['polynomials'].iteritems():
+            poly = NASAPolynomial(
+                coeffs=poly['coeffs'],
+                Tmin=quantity.ScalarQuantity().make_object(poly['Tmin'], class_dict),
+                Tmax=quantity.ScalarQuantity().make_object(poly['Tmax'], class_dict))
+            polynomials.append(poly)
+        data['polynomials'] = polynomials
+        self.__init__(**data)
+
     property polynomials:
         """The set of one, two, or three NASA polynomials."""
         def __get__(self):
@@ -300,7 +356,9 @@ cdef class NASA(HeatCapacityModel):
 
     cpdef ThermoData toThermoData(self):
         """
-        Convert the Wilhoit model to a :class:`ThermoData` object.
+        Convert the NASAPolynomial model to a :class:`ThermoData` object.
+        
+        If Cp0 and CpInf are omitted or 0, they are None in the returned ThermoData.
         """
         from rmgpy.thermo.thermodata import ThermoData
         

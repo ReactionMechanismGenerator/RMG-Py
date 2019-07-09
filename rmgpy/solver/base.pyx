@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -207,6 +207,8 @@ cdef class ReactionSystem(DASx):
             
         if conditions:
             isConc = hasattr(self,'initialConcentrations')
+            isSurf = hasattr(self,'initialGasMoleFractions')
+            # ToDo: I think this block is incompatible with surface.pyx catalyst reactors
             keys = conditions.keys()
             if 'T' in keys and hasattr(self,'T'):
                 self.T = Quantity(conditions['T'],'K')
@@ -216,10 +218,15 @@ cdef class ReactionSystem(DASx):
                 if isConc:
                     if k in self.initialConcentrations.keys():
                         self.initialConcentrations[k] = conditions[k] #already in SI units
+                elif isSurf:
+                  if k in self.initialGasMoleFractions.keys():
+                      self.initialGasMoleFractions[k] = conditions[k] #already in SI units
+                  if k in self.initialSurfaceCoverages.keys():
+                      self.initialSurfaceCoverages[k] = conditions[k] #already in SI units
                 else:
                     if k in self.initialMoleFractions.keys():
-                        self.initialMoleFractions[k] = conditions[k]              
-                    
+                        self.initialMoleFractions[k] = conditions[k]
+
         self.numCoreSpecies = len(coreSpecies)
         self.numCoreReactions = len(coreReactions)
         self.numEdgeSpecies = len(edgeSpecies)
@@ -697,7 +704,7 @@ cdef class ReactionSystem(DASx):
         # Copy the initial conditions to use in evaluating conversions
         y0 = self.y.copy()
         
-        # a list with the time, Volume, mole fractions of core species
+        # a list with the time, Volume, number of moles of core species
         self.snapshots = []
 
         if sensitivity:
@@ -719,7 +726,7 @@ cdef class ReactionSystem(DASx):
             if not firstTime:
                 try:
                     self.step(stepTime)
-                except DASxError as e:
+                except DASxError:
                     logging.error("Trying to step from time {} to {} resulted in a solver (DASPK) error".format(prevTime, stepTime))
                     
                     logging.info('Resurrecting Model...')
@@ -785,7 +792,7 @@ cdef class ReactionSystem(DASx):
 
 
             snapshot = [self.t, self.V]
-            snapshot.extend(y_coreSpecies / numpy.sum(y_coreSpecies))
+            snapshot.extend(y_coreSpecies)
             self.snapshots.append(snapshot)            
 
             # Get the characteristic flux

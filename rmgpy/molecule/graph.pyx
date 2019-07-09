@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -95,7 +95,7 @@ cdef class Vertex(object):
         new = Vertex()
         return new
 
-    cpdef bint equivalent(self, Vertex other) except -2:
+    cpdef bint equivalent(self, Vertex other, bint strict=True) except -2:
         """
         Return :data:`True` if two vertices `self` and `other` are semantically
         equivalent, or :data:`False` if not. You should reimplement this
@@ -205,7 +205,7 @@ cdef  Vertex _getEdgeVertex1(Edge edge):
 cdef Vertex _getEdgeVertex2(Edge edge):
     return edge.vertex2
 
-cdef class Graph:
+cdef class Graph(object):
     """
     A graph data type. The vertices of the graph are stored in a list
     `vertices`; this provides a consistent traversal order. A single edge can
@@ -495,20 +495,30 @@ cdef class Graph:
         else:
             self.vertices = self.ordered_vertices
             
-    cpdef bint isIsomorphic(self, Graph other, dict initialMap=None, bint saveOrder=False) except -2:
+    cpdef bint isIsomorphic(self, Graph other, dict initialMap=None, bint saveOrder=False, bint strict=True) except -2:
         """
         Returns :data:`True` if two graphs are isomorphic and :data:`False`
         otherwise. Uses the VF2 algorithm of Vento and Foggia.
-        """
-        return vf2.isIsomorphic(self, other, initialMap, saveOrder=saveOrder)
 
-    cpdef list findIsomorphism(self, Graph other, dict initialMap=None, bint saveOrder=False):
+        Args:
+            initialMap (dict, optional): initial atom mapping to use
+            saveOrder (bool, optional):  if ``True``, reset atom order after performing atom isomorphism
+            strict (bool, optional):     if ``False``, perform isomorphism ignoring electrons
+        """
+        return vf2.isIsomorphic(self, other, initialMap, saveOrder=saveOrder, strict=strict)
+
+    cpdef list findIsomorphism(self, Graph other, dict initialMap=None, bint saveOrder=False, bint strict=True):
         """
         Returns :data:`True` if `other` is subgraph isomorphic and :data:`False`
         otherwise, and the matching mapping.
         Uses the VF2 algorithm of Vento and Foggia.
+
+        Args:
+            initialMap (dict, optional): initial atom mapping to use
+            saveOrder (bool, optional):  if ``True``, reset atom order after performing atom isomorphism
+            strict (bool, optional):     if ``False``, perform isomorphism ignoring electrons
         """
-        return vf2.findIsomorphism(self, other, initialMap, saveOrder=saveOrder)
+        return vf2.findIsomorphism(self, other, initialMap, saveOrder=saveOrder, strict=strict)
 
     cpdef bint isSubgraphIsomorphic(self, Graph other, dict initialMap=None, bint saveOrder=False) except -2:
         """
@@ -1065,25 +1075,28 @@ cdef class Graph:
         return longest_cycle
         
         
-    cpdef bint isMappingValid(self, Graph other, dict mapping, bint equivalent=True) except -2:
+    cpdef bint isMappingValid(self, Graph other, dict mapping, bint equivalent=True, bint strict=True) except -2:
         """
         Check that a proposed `mapping` of vertices from `self` to `other`
         is valid by checking that the vertices and edges involved in the
-        mapping are mutually equivalent.  If equivalent is true it checks
-        if atoms and edges are equivalent, if false it checks if they 
-        are specific cases of each other.  
+        mapping are mutually equivalent.  If equivalent is ``True`` it checks
+        if atoms and edges are equivalent, if ``False`` it checks if they
+        are specific cases of each other. If strict is ``True``, electrons
+        and bond orders are considered, and ignored if ``False``.
         """
         cdef Vertex vertex1, vertex2
         cdef list vertices1, vertices2
         cdef bint selfHasEdge, otherHasEdge
         cdef int i, j
-        
-        method = 'equivalent' if equivalent else 'isSpecificCaseOf'
-        
+
         # Check that the mapped pairs of vertices compare True
         for vertex1, vertex2 in mapping.items():
-            if not getattr(vertex1,method)(vertex2):
-                return False
+            if equivalent:
+                if not vertex1.equivalent(vertex2, strict=strict):
+                    return False
+            else:
+                if not vertex1.isSpecificCaseOf(vertex2):
+                    return False
             
         # Check that any edges connected mapped vertices are equivalent
         vertices1 = mapping.keys()
@@ -1094,10 +1107,18 @@ cdef class Graph:
                 otherHasEdge = other.hasEdge(vertices2[i], vertices2[j])
                 if selfHasEdge and otherHasEdge:
                     # Both graphs have the edge, so we must check it for equivalence
-                    edge1 = self.getEdge(vertices1[i], vertices1[j])
-                    edge2 = other.getEdge(vertices2[i], vertices2[j])
-                    if not getattr(edge1,method)(edge2):
-                        return False
+                    if strict:
+                        edge1 = self.getEdge(vertices1[i], vertices1[j])
+                        edge2 = other.getEdge(vertices2[i], vertices2[j])
+                        if equivalent:
+                            if not edge1.equivalent(edge2):
+                                return False
+                        else:
+                            if not edge1.isSpecificCaseOf(edge2):
+                                return False
+                elif not equivalent and selfHasEdge and not otherHasEdge: 
+                    #in the subgraph case self can have edges other doesn't have
+                    continue
                 elif selfHasEdge or otherHasEdge:
                     # Only one of the graphs has the edge, so the mapping must be invalid
                     return False

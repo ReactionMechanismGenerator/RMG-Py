@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -277,28 +277,26 @@ class SolventLibrary(Database):
                   shortDesc='',
                   longDesc='',
                   ):
-        spc = molecule
         if molecule is not None:
-            try:
-                spc = Species().fromSMILES(molecule)
-            except:
-                logging.debug("Solvent '{0}' does not have a valid SMILES '{1}'" .format(label, molecule))
-                try:
-                    spc = Species().fromAdjacencyList(molecule)
-                except:
-                    logging.error("Can't understand '{0}' in solute library '{1}'".format(molecule, self.name))
-                    raise
-            spc.generate_resonance_structures()
+            if not isinstance(molecule, list):
+                molecule = [molecule]
+            spc_list = []
+            for mol in molecule:
+                spc0 = Species(label=label)
+                spc0.set_structure(mol)
+                spc_list.append(spc0)
+        else:
+            spc_list = None
 
         self.entries[label] = Entry(
-            index = index,
-            label = label,
-            item = spc,
-            data = solvent,
-            reference = reference,
-            referenceType = referenceType,
-            shortDesc = shortDesc,
-            longDesc = longDesc.strip(),
+            index=index,
+            label=label,
+            item=spc_list,
+            data=solvent,
+            reference=reference,
+            referenceType=referenceType,
+            shortDesc=shortDesc,
+            longDesc=longDesc.strip(),
         )
 
     def load(self, path):
@@ -324,7 +322,8 @@ class SolventLibrary(Database):
         Get a solvent's molecular structure as SMILES or adjacency list from its name
         """
         return self.entries[label].item
-        
+
+
 class SoluteLibrary(Database):
     """
     A class for working with a RMG solute library. Not currently used.

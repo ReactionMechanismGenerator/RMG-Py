@@ -7,5 +7,4 @@ useBondCorrections = True
 
 species('C2H5', 'ethyl.py')
 
-statmech('C2H5')
 thermo('C2H5', 'Wilhoit')

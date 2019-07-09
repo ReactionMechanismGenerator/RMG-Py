@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -680,7 +680,7 @@ class TestTreeGeneration(unittest.TestCase):
         """
         Test that the tree was properly cleared before generation
         """
-        self.family.prepareTreeForGeneration(self.thermoDatabase)
+        self.family.cleanTree(self.thermoDatabase)
         ents = [ent for ent in self.family.groups.entries.itervalues() if ent.index != -1]
         self.assertEquals(len(ents),1,'more than one relevant group left in groups after preparing tree for generation')
         self.assertEquals(len(self.family.rules.entries),1,'more than one group in rules.entries after preparing tree for generation' )
@@ -697,7 +697,7 @@ class TestTreeGeneration(unittest.TestCase):
         
         self.family.generateTree(thermoDatabase=self.thermoDatabase,obj=objective) #test input objective function
         
-        self.family.prepareTreeForGeneration(self.thermoDatabase) #reclear
+        self.family.cleanTree(self.thermoDatabase) #reclear
         
         self.family.generateTree(thermoDatabase=self.thermoDatabase) #test that default objective works
         
@@ -713,22 +713,26 @@ class TestTreeGeneration(unittest.TestCase):
         
         self.assertTrue(self.family.groups.entries['Root'].parent is None)
                 
-    def test_DRules(self):
+    def test_FRules(self):
         """
-        test that there are four rules and each is under a different group
+        test that there are six rules and each is under a different group
         """
+        templateRxnMap = self.family.getReactionMatches(thermoDatabase=self.thermoDatabase,removeDegeneracy=True)
+        self.family.makeBMRulesFromTemplateRxnMap(templateRxnMap)
+        
         c = 0
         for rs in self.family.rules.entries.itervalues():
             self.assertLess(len(rs),2,'more than one training reaction at a node')
             if len(rs) == 1:
                 c += 1
         
-        self.assertEquals(c,4,'incorrect number of kinetics information, expected 4 found {0}'.format(c))
+        self.assertEquals(c,6,'incorrect number of kinetics information, expected 6 found {0}'.format(c))
     
-    def test_ERegularizationDims(self):
+    def test_DRegularizationDims(self):
         """
         test that appropriate regularization dimensions have been identified
         """
+        templateRxnMap = self.family.getReactionMatches(thermoDatabase=self.database.thermo,estimateThermo=False)
         
         for entry in self.family.groups.entries.itervalues():
             if entry.children == []:
@@ -740,41 +744,51 @@ class TestTreeGeneration(unittest.TestCase):
                 if typ == 'intNewBondExt' or typ =='extNewBondExt':
                     continue
                 else:
-                    val,boo = self.family.evalExt(entry,grp,name)
+                    val,boo = self.family.evalExt(entry,grp,name,templateRxnMap)
                     if val != np.inf:
                         continue
                     atms = grp.atoms
                     if typ == 'bondExt':
                         bd = grp.getBond(atms[indc[0]],atms[indc[1]])
-                        bds = bd.reg_dim
+                        bds = bd.reg_dim[1]
                         if boo and bds != [] and not (set(bd.order) <= set(bds)):
                             logging.error('bond regularization dimension missed')
                             vioObj.add((tuple(indc),tuple(bds),tuple(bd.order),typ))
                     elif typ == 'atomExt':
-                        atypes = atms[indc[0]].reg_dim_atm
+                        atypes = atms[indc[0]].reg_dim_atm[1]
                         atype = atms[indc[0]].atomType
                         if boo and atypes != [] and not (set(atype) <= set(atypes)):
                             logging.error('atomtype regularization dimension missed')
                             vioObj.add((tuple(indc),tuple(atypes),tuple(atype),typ))
                     elif typ == 'elExt':
-                        us = atms[indc[0]].reg_dim_u
+                        us = atms[indc[0]].reg_dim_u[1]
                         u = atms[indc[0]].radicalElectrons
                         if boo and us != [] and not (set(u) <= set(us)):
                             logging.error('unpaired electron regularization dimension missed')
                             vioObj.add((tuple(indc),tuple(us),tuple(u),typ))
+                    elif typ == 'ringExt':
+                        rs = atms[indc[0]].reg_dim_r[1]
+                        if 'inRing' in atms[indc[0]].props.keys():
+                            r = atms[indc[0]].props['inRing']
+                        else:
+                            r = [True,False]
+                        if boo and rs != [] and not (set(r) <= set(rs)):
+                            logging.error('in ring regularization dimension missed')
+                            vioObj.add((tuple(indc),tuple(rs),tuple(r),typ))
+                    else:
+                        raise ValueError('extension type {0} not identified within test'.format(typ))
+                        
             self.assertTrue(len(vioObj) <= 1,'there were {0} regularization violations at, {1}'.format(len(vioObj),vioObj))
     
-    def test_FRegularizationStructure(self):
+    def test_ERegularizationStructure(self):
         """
         test that the tree is structured properly after regularization
         """
+        self.family.cleanTree(self.thermoDatabase)
+        self.family.generateTree(thermoDatabase=self.thermoDatabase)
         self.family.regularize()
-        for entry in self.family.groups.entries.itervalues():
-            if isinstance(entry.item,Group):
-                for child in entry.children:
-                    if isinstance(child.item,Group):
-                        self.assertTrue(child.item.isSubgraphIsomorphic(entry.item,generateInitialMap=True,saveOrder=True))
-    
+        self.family.checkTree()
+        
 class TestGenerateReactions(unittest.TestCase):
 
     @classmethod
@@ -786,7 +800,8 @@ class TestGenerateReactions(unittest.TestCase):
             path=os.path.join(settings['test_data.directory'], 'testing_database'),
             thermoLibraries=[],
             reactionLibraries=[],
-            kineticsFamilies=['H_Abstraction', 'R_Addition_MultipleBond','Singlet_Val6_to_triplet', 'R_Recombination'],
+            kineticsFamilies=['H_Abstraction', 'R_Addition_MultipleBond', 'Singlet_Val6_to_triplet', 'R_Recombination',
+                              'Baeyer-Villiger_step1_cat', 'Surface_Adsorption_Dissociative', 'Surface_Dissociation_vdW'],
             depository=False,
             solvation=False,
             testing=True,
@@ -888,4 +903,30 @@ multiplicity 2
 
         reactant = [Molecule(SMILES='[O-][N+]#N')]
         reactionList = self.database.kinetics.families['R_Recombination'].generateReactions(reactant)
+        self.assertEquals(len(reactionList), 0)
+
+    def test_reactant_num_mismatch(self):
+        """Test that we get no reactions for reactant/template size mismatch
+
+        This happens often because we test every combo of molecules against all families."""
+        reactants = [Molecule(SMILES='C'), Molecule(SMILES='[OH]')]
+        reactionList = self.database.kinetics.families['Singlet_Val6_to_triplet'].generateReactions(reactants)
+        self.assertEquals(len(reactionList), 0)
+        reactionList = self.database.kinetics.families['Baeyer-Villiger_step1_cat'].generateReactions(reactants)
+        self.assertEquals(len(reactionList), 0)
+        reactionList = self.database.kinetics.families['Surface_Adsorption_Dissociative'].generateReactions(reactants)
+        self.assertEquals(len(reactionList), 0)
+
+    def test_reactant_num_mismatch_2(self):
+        """Test that we get no reactions for reactant/template size mismatch
+
+        This happens often because we test every combo of molecules against all families."""
+        reactants = [
+            Molecule().fromSMILES('CC'),
+            Molecule().fromAdjacencyList('1 X u0'),
+            Molecule().fromAdjacencyList('1 X u0'),
+        ]
+        # reactionList = self.database.kinetics.families['Surface_Adsorption_Dissociative'].generateReactions(reactants)
+        # self.assertEquals(len(reactionList), 14)
+        reactionList = self.database.kinetics.families['Surface_Dissociation_vdW'].generateReactions(reactants)
         self.assertEquals(len(reactionList), 0)

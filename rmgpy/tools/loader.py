@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -37,6 +37,7 @@ import os.path
 import warnings
 from rmgpy.chemkin import loadChemkinFile
 from rmgpy.solver.liquid import LiquidReactor
+from rmgpy.solver.surface import SurfaceReactor
 from rmgpy.solver.base import TerminationConversion
 
 def loadRMGJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=True, useJava=False,
@@ -103,8 +104,14 @@ def loadRMGPyJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=T
                 reactionSystem.constSPCNames = [constSpeciesDict[sname] for sname in reactionSystem.constSPCNames]
 
             reactionSystem.initialConcentrations = dict([(speciesDict[spec], conc) for spec, conc in reactionSystem.initialConcentrations.iteritems()])
+        elif isinstance(reactionSystem, SurfaceReactor):
+            reactionSystem.initialGasMoleFractions = dict([(speciesDict[spec], frac) for spec, frac in reactionSystem.initialGasMoleFractions.iteritems()])
+            reactionSystem.initialSurfaceCoverages = dict([(speciesDict[spec], frac) for spec, frac in reactionSystem.initialSurfaceCoverages.iteritems()])
         else:
             reactionSystem.initialMoleFractions = dict([(speciesDict[spec], frac) for spec, frac in reactionSystem.initialMoleFractions.iteritems()])
+
+
+
         for t in reactionSystem.termination:
             if isinstance(t, TerminationConversion):
                 t.species = speciesDict[t.species]

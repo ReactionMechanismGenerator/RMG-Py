@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -258,13 +258,37 @@ class ResonanceTest(unittest.TestCase):
         molList = generate_resonance_structures(Molecule(SMILES="c1ccccc1CC=N[O]"))
         self.assertEqual(len(molList), 4)
 
-    @work_in_progress
     def testAromaticWithNResonance(self):
-        """Test resonance structure generation for aromatic species with N5ddc <=> N5tc resonance"""
-        # WIP: currently generate_N5dc_resonance_structures does not apply for aromatic structures
+        """Test resonance structure generation for aromatic species with lone pair resonance"""
         molList = generate_resonance_structures(Molecule(SMILES="c1ccccc1CCN=[N+]=[N-]"))
-        self.assertEqual(len(molList), 4)
-        # TODO: this test cannot be run because RDKit (which checks for aromaticity) cannot process hyper-valence N
+        self.assertEqual(len(molList), 2)
+
+    def testAromaticWithONResonance(self):
+        """Test resonance structure generation for aromatic species with heteroatoms
+
+        This test was specifically designed to recreate RMG-Py issue #1598.
+        Key conditions: having heteroatoms, starting with aromatic structure, and keep_isomorphic=True
+        """
+        molList = generate_resonance_structures(Molecule().fromAdjacencyList("""
+multiplicity 2
+1 O u0 p2 c0 {4,S} {16,S}
+2 O u1 p2 c0 {4,S}
+3 O u0 p3 c-1 {4,S}
+4 N u0 p0 c+1 {1,S} {2,S} {3,S} {5,S}
+5 C u0 p0 c0 {4,S} {6,B} {7,B}
+6 C u0 p0 c0 {5,B} {8,B} {11,S}
+7 C u0 p0 c0 {5,B} {10,B} {15,S}
+8 C u0 p0 c0 {6,B} {9,B} {12,S}
+9 C u0 p0 c0 {8,B} {10,B} {13,S}
+10 C u0 p0 c0 {7,B} {9,B} {14,S}
+11 H u0 p0 c0 {6,S}
+12 H u0 p0 c0 {8,S}
+13 H u0 p0 c0 {9,S}
+14 H u0 p0 c0 {10,S}
+15 H u0 p0 c0 {7,S}
+16 H u0 p0 c0 {1,S}
+"""), keep_isomorphic=True)
+        self.assertEqual(len(molList), 1)
 
     def testNoClarStructures(self):
         """Test that we can turn off Clar structure generation."""
@@ -1141,6 +1165,59 @@ multiplicity 2
         self.assertEqual(len(out), 7)
         self.assertTrue(any([m.isIsomorphic(aromatic) for m in out]))
 
+    @work_in_progress
+    def testInconsistentAromaticStructureGeneration(self):
+        """Test an unusual case of inconsistent aromaticity perception."""
+        mol1 = Molecule().fromAdjacencyList("""
+multiplicity 2
+1  C u0 p0 c0 {2,S} {6,S} {11,S} {12,S}
+2  C u0 p0 c0 {1,S} {3,D} {4,S}
+3  C u0 p0 c0 {2,D} {5,S} {7,S}
+4  C u0 p0 c0 {2,S} {7,D} {10,S}
+5  C u1 p0 c0 {3,S} {8,S} {9,S}
+6  C u0 p0 c0 {1,S} {8,D} {13,S}
+7  C u0 p0 c0 {3,S} {4,D} {17,S}
+8  C u0 p0 c0 {5,S} {6,D} {14,S}
+9  C u0 p0 c0 {5,S} {10,D} {15,S}
+10 C u0 p0 c0 {4,S} {9,D} {16,S}
+11 H u0 p0 c0 {1,S}
+12 H u0 p0 c0 {1,S}
+13 H u0 p0 c0 {6,S}
+14 H u0 p0 c0 {8,S}
+15 H u0 p0 c0 {9,S}
+16 H u0 p0 c0 {10,S}
+17 H u0 p0 c0 {7,S}
+""")
+
+        mol2 = Molecule().fromAdjacencyList("""
+multiplicity 2
+1  C u0 p0 c0 {2,S} {6,S} {11,S} {12,S}
+2  C u0 p0 c0 {1,S} {3,D} {4,S}
+3  C u0 p0 c0 {2,D} {5,S} {7,S}
+4  C u0 p0 c0 {2,S} {7,D} {9,S}
+5  C u1 p0 c0 {3,S} {8,S} {10,S}
+6  C u0 p0 c0 {1,S} {8,D} {13,S}
+7  C u0 p0 c0 {3,S} {4,D} {16,S}
+8  C u0 p0 c0 {5,S} {6,D} {15,S}
+9  C u0 p0 c0 {4,S} {10,D} {17,S}
+10 C u0 p0 c0 {5,S} {9,D} {14,S}
+11 H u0 p0 c0 {1,S}
+12 H u0 p0 c0 {1,S}
+13 H u0 p0 c0 {6,S}
+14 H u0 p0 c0 {10,S}
+15 H u0 p0 c0 {8,S}
+16 H u0 p0 c0 {7,S}
+17 H u0 p0 c0 {9,S}
+""")
+
+        # These two slightly different adjlists should be the same structure
+        self.assertTrue(mol1.isIsomorphic(mol2))
+
+        # However, they give different resonance structures
+        res1 = generate_resonance_structures(mol1)
+        res2 = generate_resonance_structures(mol2)
+        self.assertEqual(res1, res2)
+
 
 class ClarTest(unittest.TestCase):
     """
@@ -1332,3 +1409,13 @@ class ClarTest(unittest.TestCase):
         newmol = generate_clar_structures(mol)
 
         self.assertEquals(len(newmol), 0)
+
+    def testSurfaceO(self):
+        """Test resonance structure generation for surface adsorbed O=X
+
+        Should not crash."""
+        # See https://github.com/cfgoldsmith/RMG-Py/issues/43
+        mol_list = generate_resonance_structures(Molecule().fromAdjacencyList("""OX
+1 X u0 p0 c0 {2,D}
+2 O u0 p2 c0 {1,D}"""))
+        self.assertEquals(len(mol_list), 1)

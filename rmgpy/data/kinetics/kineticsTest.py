@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -590,6 +590,19 @@ class TestReactionDegeneracy(unittest.TestCase):
 
         self.assertFalse(reaction_list[0].duplicate)
 
+    def test_degeneracy_resonance_keep_isomorphic(self):
+        """Test that we get the correct degeneracy for [CH2]C=C[CH2] + [H].
+
+        Incorrect results would be obtained if isomorphic resonance structures are not kept."""
+        family_label = 'R_Recombination'
+        reactants = ['[CH2]C=C[CH2]', '[OH]']
+        products = ['[CH2]C(O)C=C']
+
+        correct_rxn_num = 1
+        correct_degeneracy = {2}
+
+        self.assert_correct_reaction_degeneracy(reactants, correct_rxn_num, correct_degeneracy, family_label, products)
+
 
 class TestKineticsCommentsParsing(unittest.TestCase):
 
@@ -915,8 +928,6 @@ class TestKinetics(unittest.TestCase):
         self.assertEqual(len(reaction_list), 1)
         self.assertEqual(reaction_list[0].degeneracy, 2)
 
-
-
     def test_generate_reactions_from_families_product_resonance2(self):
         """Test that we can specify the no product resonance structure when generating reactions"""
         reactants = [
@@ -930,9 +941,6 @@ class TestKinetics(unittest.TestCase):
 
         reaction_list = self.database.kinetics.generate_reactions_from_families(reactants, products, only_families=['H_Abstraction'], resonance=False)
         self.assertEqual(len(reaction_list), 0)
-
-        self.assertTrue(isinstance(products[0],Species))
-        self.assertEqual(len(products[0].molecule),1)
 
     def test_generate_reactions_from_libraries(self):
         """Test that we can generate reactions from libraries"""

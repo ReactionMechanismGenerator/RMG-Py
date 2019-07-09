@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -53,12 +53,15 @@ cdef class Species:
     cdef public bint isSolvent
     cdef public int creationIteration
     cdef public bint explicitlyAllowed
+    cdef str _fingerprint
+    cdef str _inchi
+    cdef str _smiles
 
     cpdef generate_resonance_structures(self, bint keep_isomorphic=?, bint filter_structures=?)
     
-    cpdef bint isIsomorphic(self, other, bint generate_res=?) except -2
+    cpdef bint isIsomorphic(self, other, bint generateInitialMap=?, bint strict=?) except -2
 
-    cpdef bint isIdentical(self, other) except -2
+    cpdef bint isIdentical(self, other, bint strict=?) except -2
 
     cpdef bint is_structure_in_list(self, list species_list) except -2
     
@@ -66,6 +69,10 @@ cdef class Species:
     cpdef fromSMILES(self, smiles)
     
     cpdef toAdjacencyList(self)
+    
+    cpdef bint containsSurfaceSite(self) except -2
+
+    cpdef bint isSurfaceSite(self) except -2
 
     cpdef bint hasStatMech(self) except -2
 
@@ -92,6 +99,8 @@ cdef class Species:
     cpdef bint has_reactive_molecule(self) except -1
 
     cpdef Species copy(self, bint deep=?)
+
+    cpdef set_structure(self, str structure)
     
 ################################################################################
 

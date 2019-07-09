@@ -12,7 +12,7 @@ pressure-dependent calculation input file you append an explorer block.  For exa
 
     explorer(
         source=['methoxy'],
-        explore_tol=(1e-2,'s^-1'),
+        explore_tol=0.01,
         energy_tol=1e4,
         flux_tol=1e-6,
     )
@@ -23,11 +23,10 @@ source channel.  The network is expanded starting from this starting isomer/chan
 Network Exploration
 ===================
 
-The ``explore_tol`` is largest acceptable total rate at which isomers inside the network isomerize to become 
-isomers that are not part of the network.  Network expansion is done starting from just the network source using
+The ``explore_tol`` is a fraction of the flux from all net reactions from the source to the other channels in the network.  Network expansion is done starting from just the network source using
 values from the rest of the Arkane job when available, otherwise from RMG.  It cycles through all of the
 temperature and pressure points specified for fitting in the pressure dependence job and checks the total network
-leak rate at each one.  Whenever this rate is greater than ``explore_tol`` the outside isomer with the most leak is
+leak rate at each one.  Whenever this rate is greater than ``explore_tol*kchar``, where ``kchar`` is the total flux from all net reactions away from the source, the outside isomer with the most leak is
 added to the network and reacted and the loop is flagged to cycle through all of the temperatures and pressures
 again.  Once this loop is finished a network_full.py file is generated in the pdep directory that has the full
 explored network.  

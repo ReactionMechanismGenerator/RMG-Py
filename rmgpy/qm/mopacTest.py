@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -45,7 +45,7 @@ from rmgpy.exceptions import DependencyError
 NO_MOPAC = NO_LICENCE = False
 try:
     Mopac().testReady()
-except DependencyError, e:
+except DependencyError as e:
     if "Couldn't find MOPAC executable" in e.message:
         NO_MOPAC = NO_LICENCE = True
     elif 'To install the MOPAC license' in e.message or 'MOPAC_LICENSE' in e.message:

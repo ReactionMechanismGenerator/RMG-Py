@@ -4,11 +4,8 @@
 Installation
 ************
 
-
-
 .. NOTE::
     It is recommended that RMG be installed with Python 2.7, although it has been previously tested that Python 2.5 and 2.6 may also work. Dependency issues render it incompatible with Python 3.x releases.
-
 
 For any questions related to RMG and its usage and installation, please
 post an issue at https://github.com/ReactionMechanismGenerator/RMG-Py/issues and the RMG
@@ -21,12 +18,19 @@ Installation on a Windows Platform
 
 Due to difficulties with dependencies, installation on Windows directly is no longer supported. Instead, it is
 recommended to run a Linux virtual machine from Windows and follow either the instructions for basic users
-(binary installation using Anaconda) or the instructions for developers.
+(binary installation using Anaconda) or the instructions for developers. Alternatively, it is also possible to install
+RMG in the Ubuntu subsystem now available on Windows 10.
 
 .. toctree::
     :maxdepth: 1
 
     virtualMachineSetup
+    linuxSubsystem
+
+For users unfamiliar with bash or Linux, we recommend looking at online tutorials such as the one
+`here <https://www.guru99.com/unix-linux-tutorial.html>`_. To start out
+with, we recommend looking at the following tutorials: Linux vs. Windows, Terminal vs File Manager, and Must Know
+Linux/Unix Commands.
 
 
 For Basic Users: Binary Installation Using Anaconda
@@ -82,13 +86,3 @@ Please visit the page below for detailed information on all of RMG's dependencie
     :maxdepth: 1
     
     dependencies
-
-Installation FAQ
-================
-
-This section collects frequently asked questions on installation of RMG.
-
-.. toctree::
-    :maxdepth: 1
-    
-    faq

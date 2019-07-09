@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -33,6 +33,7 @@ This script contains unit tests of the :mod:`arkane.main` module.
 """
 
 import unittest
+import logging
 import os
 import shutil
 from nose.plugins.attrib import attr
@@ -53,15 +54,16 @@ class TestArkaneExamples(unittest.TestCase):
         """A function that is run ONCE before all unit tests in this class."""
         cls.base_path = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)), 'examples', 'arkane')
         cls.failed = []
-        cls.example_types = ['species', 'reactions', 'networks']
+        cls.example_types = ['species', 'reactions', 'explorer', 'networks']
 
     def test_arkane_examples(self):
         for example_type in self.example_types:
             example_type_path = os.path.join(self.base_path, example_type)
-            for example in os.listdir(example_type_path):
+            for example in sorted(os.listdir(example_type_path)):
                 path = os.path.join(example_type_path, example)
                 arkane = Arkane(inputFile=os.path.join(path, 'input.py'), outputDirectory=path)
                 arkane.plot = True
+                logging.info("running {}".format(example))
                 arkane.execute()
                 with open(os.path.join(path, 'arkane.log'), 'r') as f:
                     log = f.readlines()

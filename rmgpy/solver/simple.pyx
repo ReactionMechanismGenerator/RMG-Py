@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -154,6 +154,15 @@ cdef class SimpleReactor(ReactionSystem):
             initialMoleFractions[speciesDict[label]] = moleFrac
         self.initialMoleFractions = initialMoleFractions
 
+        conditions = {}
+        if self.sensConditions is not None:
+            for label, value in self.sensConditions.iteritems():
+                if label == 'T' or label == 'P':
+                    conditions[label] = value
+                else:
+                    conditions[speciesDict[label]] = value
+        self.sensConditions = conditions
+
     cpdef initializeModel(self, list coreSpecies, list coreReactions, list edgeSpecies, list edgeReactions,
                           list surfaceSpecies=None, list surfaceReactions=None, list pdepNetworks=None,
                           atol=1e-16, rtol=1e-8, sensitivity=False, sens_atol=1e-6, sens_rtol=1e-4,
@@ -171,11 +180,10 @@ cdef class SimpleReactor(ReactionSystem):
         
         # First call the base class version of the method
         # This initializes the attributes declared in the base class
-        ReactionSystem.initializeModel(self, coreSpecies, coreReactions, edgeSpecies, edgeReactions,
-                                       surfaceSpecies=surfaceSpecies, surfaceReactions=surfaceReactions,
-                                       pdepNetworks=pdepNetworks, atol=atol, rtol=rtol,
-                                       sensitivity=sensitivity, sens_atol=sens_atol, sens_rtol=sens_rtol,
-                                       filterReactions=filterReactions, conditions=conditions)
+        ReactionSystem.initializeModel(self, coreSpecies=coreSpecies, coreReactions=coreReactions, edgeSpecies=edgeSpecies,
+                                       edgeReactions=edgeReactions, surfaceSpecies=surfaceSpecies, surfaceReactions=surfaceReactions,
+                                       pdepNetworks=pdepNetworks, atol=atol, rtol=rtol, sensitivity=sensitivity, sens_atol=sens_atol,
+                                       sens_rtol=sens_rtol, filterReactions=filterReactions, conditions=conditions)
 
         # Set initial conditions
         self.set_initial_conditions()

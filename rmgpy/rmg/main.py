@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -39,6 +39,8 @@ import time
 import logging
 import os
 import shutil
+import resource
+import psutil
 
 import numpy as np
 import gc
@@ -58,7 +60,6 @@ from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
 from rmgpy.rmg.pdep import PDepReaction
 
-from rmgpy.data.thermo import ThermoLibrary
 from rmgpy.data.base import Entry
 from rmgpy import settings
 
@@ -70,16 +71,22 @@ from pdep import PDepNetwork
 import rmgpy.util as util
 
 from rmgpy.chemkin import ChemkinWriter
+from rmgpy.yml import RMSWriter
 from rmgpy.rmg.output import OutputHTMLWriter
 from rmgpy.rmg.listener import SimulationProfileWriter, SimulationProfilePlotter
 from rmgpy.restart import RestartWriter
 from rmgpy.qm.main import QMDatabaseWriter
 from rmgpy.stats import ExecutionStatsWriter
 from rmgpy.thermo.thermoengine import submit
-from rmgpy.tools.simulate import plot_sensitivity
+from rmgpy.tools.plot import plot_sensitivity
+from rmgpy.tools.uncertainty import Uncertainty, process_local_results
+
 ################################################################################
 
 solvent = None
+
+# Maximum number of user defined processors
+maxproc = 1 
 
 class RMG(util.Subject):
     """
@@ -168,6 +175,8 @@ class RMG(util.Subject):
         self.kineticsEstimator = 'group additivity'
         self.solvent = None
         self.diffusionLimiter = None
+        self.surfaceSiteDensity = None
+        self.bindingEnergies = None
         
         self.reactionModel = None
         self.reactionSystems = None
@@ -214,6 +223,7 @@ class RMG(util.Subject):
         self.saveSeedToDatabase = False
 
         self.thermoCentralDatabase = None
+        self.uncertainty = None
 
         self.execTime = []
     
@@ -235,6 +245,9 @@ class RMG(util.Subject):
             self.reactionModel.pressureDependence = self.pressureDependence
         if self.solvent:
             self.reactionModel.solventName = self.solvent
+
+        if self.surfaceSiteDensity:
+            self.reactionModel.surfaceSiteDensity = self.surfaceSiteDensity
 
         self.reactionModel.verboseComments = self.verboseComments
         self.reactionModel.saveEdgeSpecies = self.saveEdgeSpecies
@@ -364,6 +377,9 @@ class RMG(util.Subject):
         #check libraries
         self.checkLibraries()
         
+        if self.bindingEnergies:
+            self.database.thermo.setDeltaAtomicAdsorptionEnergies(self.bindingEnergies)
+
         #set global variable solvent
         if self.solvent:
             global solvent
@@ -432,13 +448,6 @@ class RMG(util.Subject):
         if len(self.modelSettingsList) > 0:
             self.filterReactions = self.modelSettingsList[0].filterReactions
         
-        # See if memory profiling package is available
-        try:
-            import psutil
-        except ImportError:
-            logging.info('Optional package dependency "psutil" not found; memory profiling information will not be saved.')
-    
-        
         # Make output subdirectories
         util.makeOutputSubdirectory(self.outputDirectory, 'pdep')
         util.makeOutputSubdirectory(self.outputDirectory, 'solver')
@@ -449,6 +458,17 @@ class RMG(util.Subject):
             self.kineticsdatastore = kwargs['kineticsdatastore']
         except KeyError:
             self.kineticsdatastore = False
+
+        global maxproc
+        try:
+            maxproc = kwargs['maxproc']
+        except KeyError:
+            pass
+
+        if maxproc > psutil.cpu_count():
+            raise ValueError("""Invalid input for user defined maximum number of processes {0}; 
+            should be an integer and smaller or equal to your available number of 
+            processors {1}""".format(maxproc, psutil.cpu_count()))
 
         # Load databases
         self.loadDatabase()
@@ -510,14 +530,14 @@ class RMG(util.Subject):
                 if failsSpeciesConstraints(spec):
                     if 'allowed' in self.speciesConstraints and 'input species' in self.speciesConstraints['allowed']:
                         self.speciesConstraints['explicitlyAllowedMolecules'].append(spec.molecule[0])
-                        pass
                     else:
                         raise ForbiddenStructureException("Species constraints forbids input species {0}. Please reformulate constraints, remove the species, or explicitly allow it.".format(spec.label))
 
             # For liquidReactor, checks whether the solvent is listed as one of the initial species.
             if self.solvent:
-                solventStructure = self.database.solvation.getSolventStructure(self.solvent)
-                self.database.solvation.checkSolventinInitialSpecies(self,solventStructure)
+                solvent_structure_list = self.database.solvation.getSolventStructure(self.solvent)
+                for spc in solvent_structure_list:
+                    self.database.solvation.checkSolventinInitialSpecies(self, spc)
 
             #Check to see if user has input Singlet O2 into their input file or libraries
             #This constraint is special in that we only want to check it once in the input instead of every time a species is made
@@ -571,6 +591,7 @@ class RMG(util.Subject):
         """
 
         self.attach(ChemkinWriter(self.outputDirectory))
+        self.attach(RMSWriter(self.outputDirectory))
 
         if self.generateOutputHTML:
             self.attach(OutputHTMLWriter(self.outputDirectory))
@@ -894,47 +915,25 @@ class RMG(util.Subject):
         
         if not self.generateSeedEachIteration:
             self.makeSeedMech(firstTime=True)
-            
-        # Run sensitivity analysis post-model generation if sensitivity analysis is on
-        for index, reactionSystem in enumerate(self.reactionSystems):
-            
-            if reactionSystem.sensitiveSpecies and reactionSystem.sensConditions:
-                logging.info('Conducting sensitivity analysis of reaction system %s...' % (index+1))
 
-                if reactionSystem.sensitiveSpecies == ['all']:
-                    reactionSystem.sensitiveSpecies = self.reactionModel.core.species
-                    
-                sensWorksheet = []
-                for spec in reactionSystem.sensitiveSpecies:
-                    csvfilePath = os.path.join(self.outputDirectory, 'solver', 'sensitivity_{0}_SPC_{1}.csv'.format(index+1, spec.index))
-                    sensWorksheet.append(csvfilePath)
-                
-                terminated, resurrected,obj, surfaceSpecies, surfaceReactions,t,x = reactionSystem.simulate(
-                    coreSpecies = self.reactionModel.core.species,
-                    coreReactions = self.reactionModel.core.reactions,
-                    edgeSpecies = self.reactionModel.edge.species,
-                    edgeReactions = self.reactionModel.edge.reactions,
-                    surfaceSpecies = [],
-                    surfaceReactions = [],
-                    pdepNetworks = self.reactionModel.networkList,
-                    sensitivity = True,
-                    sensWorksheet = sensWorksheet,
-                    modelSettings = ModelSettings(toleranceMoveToCore=1e8,toleranceInterruptSimulation=1e8),
-                    simulatorSettings = self.simulatorSettingsList[-1],
-                    conditions = reactionSystem.sensConditions,
-                )
-                
-                plot_sensitivity(self.outputDirectory, index, reactionSystem.sensitiveSpecies)
+        self.run_model_analysis()
 
         # generate Cantera files chem.cti & chem_annotated.cti in a designated `cantera` output folder
         try:
-            self.generateCanteraFiles(os.path.join(self.outputDirectory, 'chemkin', 'chem.inp'))
-            self.generateCanteraFiles(os.path.join(self.outputDirectory, 'chemkin', 'chem_annotated.inp'))
+            if any([s.containsSurfaceSite() for s in self.reactionModel.core.species]):
+                self.generateCanteraFiles(os.path.join(self.outputDirectory, 'chemkin', 'chem-gas.inp'),
+                                          surfaceFile=(os.path.join(self.outputDirectory, 'chemkin', 'chem-surface.inp')))
+                self.generateCanteraFiles(os.path.join(self.outputDirectory, 'chemkin', 'chem_annotated-gas.inp'),
+                                      surfaceFile=(os.path.join(self.outputDirectory, 'chemkin', 'chem_annotated-surface.inp')))
+            else:  # gas phase only
+                self.generateCanteraFiles(os.path.join(self.outputDirectory, 'chemkin', 'chem.inp'))
+                self.generateCanteraFiles(os.path.join(self.outputDirectory, 'chemkin', 'chem_annotated.inp'))
         except EnvironmentError:
-            logging.error('Could not generate Cantera files due to EnvironmentError. Check read\write privileges in output directory.')
+            logging.exception('Could not generate Cantera files due to EnvironmentError. Check read\write privileges in output directory.')
+        except Exception:
+            logging.exception('Could not generate Cantera files for some reason.')
         
         self.check_model()
-        
         # Write output file
         logging.info('')
         logging.info('MODEL GENERATION COMPLETED')
@@ -944,7 +943,174 @@ class RMG(util.Subject):
         logging.info('The final model edge has %s species and %s reactions' % (edgeSpec, edgeReac))
         
         self.finish()
-    
+
+    def run_model_analysis(self, number=10):
+        """
+        Run sensitivity and uncertainty analysis if requested.
+        """
+        # Run sensitivity analysis post-model generation if sensitivity analysis is on
+        for index, reactionSystem in enumerate(self.reactionSystems):
+
+            if reactionSystem.sensitiveSpecies and reactionSystem.sensConditions:
+                logging.info('Conducting sensitivity analysis of reaction system {0}...'.format(index + 1))
+
+                if reactionSystem.sensitiveSpecies == ['all']:
+                    reactionSystem.sensitiveSpecies = self.reactionModel.core.species
+
+                sensWorksheet = []
+                for spec in reactionSystem.sensitiveSpecies:
+                    csvfilePath = os.path.join(self.outputDirectory, 'solver',
+                                               'sensitivity_{0}_SPC_{1}.csv'.format(index + 1, spec.index))
+                    sensWorksheet.append(csvfilePath)
+
+                terminated, resurrected, obj, surfaceSpecies, surfaceReactions, t, x = reactionSystem.simulate(
+                    coreSpecies=self.reactionModel.core.species,
+                    coreReactions=self.reactionModel.core.reactions,
+                    edgeSpecies=self.reactionModel.edge.species,
+                    edgeReactions=self.reactionModel.edge.reactions,
+                    surfaceSpecies=[],
+                    surfaceReactions=[],
+                    pdepNetworks=self.reactionModel.networkList,
+                    sensitivity=True,
+                    sensWorksheet=sensWorksheet,
+                    modelSettings=ModelSettings(toleranceMoveToCore=1e8, toleranceInterruptSimulation=1e8),
+                    simulatorSettings=self.simulatorSettingsList[-1],
+                    conditions=reactionSystem.sensConditions,
+                )
+
+                plot_sensitivity(self.outputDirectory, index, reactionSystem.sensitiveSpecies, number=number)
+
+        self.run_uncertainty_analysis()
+
+    def run_uncertainty_analysis(self):
+        """
+        Run uncertainty analysis if proper settings are available.
+        """
+        if self.uncertainty is not None and self.uncertainty['global']:
+            try:
+                import libmuqModelling
+            except ImportError:
+                logging.error('Unable to import MUQ. Skipping global uncertainty analysis.')
+                self.uncertainty['global'] = False
+            else:
+                import re
+                import random
+                from rmgpy.tools.canteraModel import Cantera
+                from rmgpy.tools.muq import ReactorPCEFactory
+
+        if self.uncertainty is not None and self.uncertainty['local']:
+            correlation = []
+            if self.uncertainty['uncorrelated']: correlation.append(False)
+            if self.uncertainty['correlated']: correlation.append(True)
+
+            # Set up Uncertainty object
+            uncertainty = Uncertainty(outputDirectory=self.outputDirectory)
+            uncertainty.database = self.database
+            uncertainty.speciesList, uncertainty.reactionList = self.reactionModel.core.species, self.reactionModel.core.reactions
+            uncertainty.extractSourcesFromModel()
+
+            # Reload reaction families with verbose comments if necessary
+            if not self.verboseComments:
+                logging.info('Reloading kinetics families with verbose comments for uncertainty analysis...')
+                self.database.kinetics.loadFamilies(os.path.join(self.databaseDirectory, 'kinetics', 'families'),
+                                                    self.kineticsFamilies, self.kineticsDepositories)
+                # Temporarily remove species constraints for the training reactions
+                self.speciesConstraints, speciesConstraintsCopy = {}, self.speciesConstraints
+                for family in self.database.kinetics.families.itervalues():
+                    family.addKineticsRulesFromTrainingSet(thermoDatabase=self.database.thermo)
+                    family.fillKineticsRulesByAveragingUp(verbose=True)
+                self.speciesConstraints = speciesConstraintsCopy
+
+            for correlated in correlation:
+                uncertainty.assignParameterUncertainties(correlated=correlated)
+
+                for index, reactionSystem in enumerate(self.reactionSystems):
+                    if reactionSystem.sensitiveSpecies and reactionSystem.sensConditions:
+                        logging.info('Conducting {0}correlated local uncertainty analysis for '
+                                     'reaction system {1}...\n'.format('un' if not correlated else '', index + 1))
+                        results = uncertainty.localAnalysis(reactionSystem.sensitiveSpecies,
+                                                            reactionSystemIndex=index,
+                                                            correlated=correlated,
+                                                            number=self.uncertainty['localnum'])
+                        logging.info('Local uncertainty analysis results for reaction system {0}:\n'.format(index + 1))
+                        local_result, local_result_str = process_local_results(results, reactionSystem.sensitiveSpecies,
+                                                                               number=self.uncertainty['localnum'])
+                        logging.info(local_result_str)
+
+                        if self.uncertainty['global']:
+                            logging.info('Conducting {0}correlated global uncertainty analysis for '
+                                         'reaction system {1}...'.format('un' if not correlated else '', index + 1))
+                            # Get simulation conditions
+                            for criteria in reactionSystem.termination:
+                                if isinstance(criteria, TerminationTime):
+                                    time = ([criteria.time.value], criteria.time.units)
+                                    break
+                            else:
+                                time = self.uncertainty['time']
+                            Tlist = ([reactionSystem.sensConditions['T']], 'K')
+                            Plist = ([reactionSystem.sensConditions['P']], 'Pa')
+                            molFracList = [reactionSystem.sensConditions.copy()]
+                            del molFracList[0]['T']
+                            del molFracList[0]['P']
+
+                            # Set up Cantera reactor
+                            job = Cantera(speciesList=uncertainty.speciesList, reactionList=uncertainty.reactionList,
+                                          outputDirectory=os.path.join(self.outputDirectory, 'global_uncertainty'))
+                            job.loadModel()
+                            job.generateConditions(
+                                reactorTypeList=['IdealGasConstPressureTemperatureReactor'],
+                                reactionTimeList=time,
+                                molFracList=molFracList,
+                                Tlist=Tlist,
+                                Plist=Plist,
+                            )
+
+                            # Extract uncertain parameters from local analysis
+                            kParams = []
+                            gParams = []
+                            for spc in reactionSystem.sensitiveSpecies:
+                                _, reaction_c, thermo_c = local_result[spc]
+                                for label, _, _ in reaction_c[:self.uncertainty['globalnum']]:
+                                    if correlated:
+                                        kParam = label
+                                    else:
+                                        # For uncorrelated, we need the reaction index
+                                        k_index = label.split(':')[0]  # Looks like 'k1234: A+B=C+D'
+                                        kParam = int(k_index[1:])
+                                    if kParam not in kParams:
+                                        kParams.append(kParam)
+                                for label, _, _ in thermo_c[:self.uncertainty['globalnum']]:
+                                    if correlated:
+                                        gParam = label
+                                    else:
+                                        # For uncorrelated, we need the species index
+                                        match = re.search(r'dG\[\S+\((\d+)\)\]', label)
+                                        gParam = int(match.group(1))
+                                    if gParam not in gParams:
+                                        gParams.append(gParam)
+
+                            reactorPCEFactory = ReactorPCEFactory(
+                                cantera=job,
+                                outputSpeciesList=reactionSystem.sensitiveSpecies,
+                                kParams=kParams,
+                                kUncertainty=uncertainty.kineticInputUncertainties,
+                                gParams=gParams,
+                                gUncertainty=uncertainty.thermoInputUncertainties,
+                                correlated=correlated,
+                                logx=self.uncertainty['logx'],
+                            )
+
+                            logging.info('Generating PCEs...')
+                            reactorPCEFactory.generatePCE(runTime=self.uncertainty['pcetime'])
+
+                            # Try a test point to see how well the PCE performs
+                            reactorPCEFactory.compareOutput([random.uniform(-1.0,1.0) for i in range(len(kParams)+len(gParams))])
+
+                            # Analyze results and save statistics
+                            reactorPCEFactory.analyzeResults()
+                    else:
+                        logging.info('Unable to run uncertainty analysis. Must specify sensitivity analysis options in reactor options.')
+
     def check_model(self):
         """
         Run checks on the RMG model
@@ -977,6 +1143,9 @@ class RMG(util.Subject):
         violators = []
         num_rxn_violators = 0
         for rxn in self.reactionModel.core.reactions:
+            if rxn.isSurfaceReaction():
+                # Don't check collision limits for surface reactions.
+                continue
             violator_list = rxn.check_collision_limit_violation(t_min=self.Tmin, t_max=self.Tmax,
                                                             p_min=self.Pmin, p_max=self.Pmax)
             if violator_list:
@@ -1225,6 +1394,8 @@ class RMG(util.Subject):
         transportFile = os.path.join(os.path.dirname(chemkinFile), 'tran.dat')
         fileName = os.path.splitext(os.path.basename(chemkinFile))[0] + '.cti'
         outName = os.path.join(self.outputDirectory, 'cantera', fileName)
+        if kwargs.has_key('surfaceFile'):
+            outName = outName.replace('-gas.', '.')
         canteraDir = os.path.dirname(outName)
         try:
             os.makedirs(canteraDir)
@@ -1234,7 +1405,13 @@ class RMG(util.Subject):
         if os.path.exists(outName):
             os.remove(outName)
         parser = ck2cti.Parser()
-        parser.convertMech(chemkinFile, transportFile=transportFile, outName=outName, quiet=True, permissive=True, **kwargs)
+        try:
+            parser.convertMech(chemkinFile, transportFile=transportFile, outName=outName, quiet=True, permissive=True, **kwargs)
+        except ck2cti.InputParseError:
+            logging.exception("Error converting to Cantera format.")
+            logging.info("Trying again without transport data file.")
+            parser.convertMech(chemkinFile, outName=outName, quiet=True, permissive=True, **kwargs)
+
 
     def initializeReactionThresholdAndReactFlags(self):
         numCoreSpecies = len(self.reactionModel.core.species)
@@ -1363,6 +1540,21 @@ class RMG(util.Subject):
         """
         Complete the model generation.
         """
+        # Print neural network-generated quote
+        import datetime
+        import textwrap
+        try:
+            from textgenrnn.quotes import get_quote
+        except ImportError:
+            pass
+        else:
+            quote = '"' + get_quote() + '"'
+            logging.info('')
+            logging.info(textwrap.fill(quote, subsequent_indent=' '))
+            logging.info('             ---Quote-generating neural network, {}'.format(
+                datetime.datetime.now().strftime("%B %Y")
+            ))
+
         # Log end timestamp
         logging.info('')
         logging.info('RMG execution terminated at ' + time.asctime())
@@ -1650,8 +1842,10 @@ class RMG(util.Subject):
         assert len(Tlist) > 0
         assert len(Plist) > 0
         concentrationList = np.array(concentrationList)
-        assert concentrationList.shape[1] > 0  # An arbitrary number of concentrations is acceptable, and should be run for each reactor system 
-        
+        # An arbitrary number of concentrations is acceptable, and should be run for each reactor system
+        if not concentrationList.shape[1] > 0:
+            raise AssertionError()
+
         # Make a reaction system for each (T,P) combination
         for T in Tlist:
             for P in Plist:
@@ -1681,6 +1875,31 @@ class RMG(util.Subject):
         return line
     
 ################################################################################
+
+def determine_procnum_from_RAM():
+    """
+    Get available RAM (GB)and procnum dependent on OS.
+    """
+    if sys.platform.startswith('linux'):
+        # linux
+        memory_available = psutil.virtual_memory().free / (1000.0 ** 3)
+        memory_use = psutil.Process(os.getpid()).memory_info()[0]/(1000.0 ** 3)
+        tmp = divmod(memory_available, memory_use)
+        tmp2 = min(maxproc, tmp[0])
+        procnum = max(1, int(tmp2))
+    elif sys.platform == "darwin":
+        # OS X
+        memory_available = psutil.virtual_memory().available/(1000.0 ** 3)
+        memory_use = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/(1000.0 ** 3)
+        tmp = divmod(memory_available, memory_use)
+        tmp2 = min(maxproc, tmp[0])
+        procnum = max(1, int(tmp2))
+    else:
+        # Everything else
+        procnum = 1
+
+    # Return the maximal number of processes for multiprocessing
+    return procnum
 
 def initializeLog(verbose, log_file_name):
     """
@@ -1712,7 +1931,8 @@ def initializeLog(verbose, log_file_name):
 
     # create file handler
     if os.path.exists(log_file_name):
-        backup = os.path.join(log_file_name[:-7], 'RMG_backup.log')
+        name, ext = os.path.splitext(log_file_name)
+        backup = name + '_backup' + ext
         if os.path.exists(backup):
             logging.info("Removing old "+backup)
             os.remove(backup)

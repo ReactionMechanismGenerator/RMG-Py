@@ -4,6 +4,132 @@
 Release Notes
 *************
 
+
+RMG-Py Version 2.4.0
+====================
+Date: June 14, 2019
+
+- Heterogeneous catalysis!
+    - RMG-cat fork has been merged #1573
+        - Introduce SurfaceReactor
+        - Thermo estimation for adsorbed species
+        - Surface reaction generation and kinetics estimation
+    - Introduce Van der Waals bonds (order 0) and quadruple bonds (order 4) #1542
+- Arkane
+    - Automatically detect rotor symmetry #1526
+    - Introduce new YAML files for storing and loading species statmech data #1402, #1551
+    - Don't create species dictionary file if there are no structures #1528
+    - Improvements to network explorer tool #1545
+    - Improved class inheritance for quantum log file classes #1571
+    - Automatic determination of optical isomers and symmetry using ``symmetry`` package #1571
+    - Parse CCSD(T) energies from Molpro output #1592
+    - Automatically determine molecule linearity #1601
+    - Determine frequency scaling factor based on geom/freq method rather than sp method #1612
+    - Improve logging related to energy barriers #1575
+    - Ensure that translational mode is calculated for atoms #1620
+- Miscellaneous features
+    - New ``enumerate_bonds`` method of Molecule to generate dictionary of bond types #1525
+    - Introduce ``RMGObject`` parent class to support YAML dumping and loading #1402, #1540
+    - Add support for fluorine atomtypes #1543
+    - Introduce ``ArrheniusBM`` class for Blower-Masel kinetics #1461
+    - Allow defining and using co-solvents for solvent libraries #1558
+    - Introduce ``strict`` option to perform isomorphism between species/molecules while ignoring electrons and bond orders #1329
+    - Molecule and Species objects can be instantiated by providing ``SMILES`` or ``InChI`` argument directly, and the identifiers can be accessed via the ``SMILES`` and ``InChI`` attributes #1329
+    - Parallelization has been completely refactored using Python multiprocessing module in replacement of scoop, currently supports parallel reaction generation and QMTP #1459
+    - Improvements to usability of uncertainty analysis functionality #1593
+- Bug fixes
+    - Various fixes for supporting mono-atomic molecules in Arkane #1513, #1521
+    - Ensure ``keras_backend`` is set consistently #1535
+    - Fix handling of disconnected graphs in VF2 isomorphism algorithm #1538
+    - Ignore hydrogen bonds when converting to RDKit molecule #1552
+    - Other miscellaneous bugs #1546, #1556, #1593, #1600, #1622
+- Backward incompatible changes
+    - Hydrogen bonds are now order 0.1 (instead of 0) #1542
+- New dependencies
+    - pyyaml (required) #1402
+    - scikit-learn (required) #1461
+    - textgenrnn (optional) #1573
+- Other
+    - Windows binaries are no longer officially supported. The new recommended way to use RMG on Windows computers is via a virtual machine or through the Linux subsystem. See documentation for updated installation instructions. #1531, #1534
+    - Documentation updates #1544, #1567
+    - Logging/exception improvements #1538, #1562
+    - PEP-8 improvements #1566, #1592, #1596
+    - Solver output files (png/csv) now report moles instead of mole fractions #1542
+    - Replace global RMGDatabase object if the database is reloaded #1565
+    - Print ML generated quote upon completion of RMG jobs #1573
+    - Infrastructure for automatically generated reaction rate trees #1461
+    - Testing related changes #1597, #1599
+    - Updates to example Jupyter notebooks #1541, #1593
+
+RMG-database Version 2.4.0
+==========================
+Date: June 14, 2019
+
+- Heterogeneous catalysis!
+    - RMG-cat fork has been merged #309
+    - New kinetics families
+        - Surface_Adsorption_Single
+        - Surface_Adsorption_vdW
+        - Surface_Adsorption_Dissociative
+        - Surface_Dissociation
+        - Surface_Abstraction
+        - Surface_Adsorption_Double
+        - Surface_Dissociation_vdW
+        - Surface_Adsorption_Bidentate
+        - Surface_Bidentate_Dissociation
+        - Surface_Recombination (deprecated, use Surface_Dissociation instead)
+    - New thermo group types
+        - adsorptionNi
+        - adsorptionPt
+    - New thermo libraries
+        - surfaceThermoNi
+        - surfaceThermoPt
+- New kinetics families
+    - 1,2_NH3_elimination #326
+    - 1,3_NH3_elimination #326
+- New kinetics libraries
+    - HydrazinePDep #326
+- New transport libraries
+    - OneDMinN2 #326
+- Kinetics training reaction additions
+    - 1,2_shiftC #306
+    - Intra_R_Add_Endocyclic #306, #258
+    - Intra_R_Add_Exocyclic #306, #258, #331
+    - Intra_ene_reaction #306
+    - R_Addition_COm #306
+    - R_Addition_MultipleBond #306, #258
+    - R_Recombination #306,  #326
+    - Intra_H_migration #306
+    - H_Abstraction #326
+- Kinetics library additions
+    - primaryNitrogenLibrary #326
+    - Lai_Hexylbenzene #258
+- Thermo library additions
+    - CBS_QB3_1dHR, thermo_DFT_CCSDTF12_BAC #319
+    - primaryNS #326
+    - Lai_Hexylbenzene #258
+- Thermo group additions
+    - ring, polycyclic, radical #258
+- Changes
+    - [adjlist] kinetics/libraries/Klippenstein_Glarborg2016 #308
+    - [labels] thermo/libraries/CBS_QB3_1dHR, Narayanaswamy #306
+    - [units] kinetics/libraries/Sulfur/GlarborgMarhsall, Nitrogen_Dean_and_Bozzelli, primaryNitrogenLibrary, primarySulfurLibrary #311
+    - [units] R_Addition_MultipleBond/training, R_Recombination/training #312
+    - [adjlist] kinetics/libraries/GRI-Mech3.0-N #313
+    - [adjlist] thermo/libraries/GRI-Mech3.0-N, GRI-Mech3.0 #313
+    - [rates] Disproportionation/training, R_Addition_MultipleBond/training #326
+    - [labels] kinetics/libraries/NOx2018 #326
+    - [labels, attributes] kinetics/libraries/Nitrogen_Dean_and_Bozelli #326
+    - [labels] kinetics/librariesNitrogen_Glarbog_Gimenez_et_al, Nitrogen_Glarborg_Zhang_et_al  #326
+    - [labels, adjlist] thermo/libraries/BurcatNS #326
+    - [labels] thermo/libraries/NOx2018, NitrogenCurran #326
+    - [labels] transport/libraries/NOx2018 #326
+    - [adjlist] Intra_R_Add_Endocyclic/training #332
+    - [value] thermo/groups/ring/12dioxetane #327
+    - [adjlist] thermo/libraries/GRI-Mech3.0 #336
+    - [value] thermo/libraries/primaryThermoLibrary #338
+
+
 RMG-Py Version 2.3.0
 ====================
 Date: Dec 20, 2018

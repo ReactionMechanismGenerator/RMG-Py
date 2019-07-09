@@ -7,6 +7,8 @@ import logging
 from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase
 from copy import copy
+import rmgpy.kinetics
+import quantities as pq
 from rmgpy.data.base import LogicOr
 from rmgpy.molecule import Group, ImplicitBenzeneError, UnexpectedChargeError
 from rmgpy.molecule.atomtype import atomTypes
@@ -101,7 +103,13 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             for depository in family.depositories:
 
                 test = lambda x: self.kinetics_checkAdjlistsNonidentical(depository)
-                test_name = "Kinetics {1} Depository: check adjacency lists are nonidentical?".format(family_name, depository.label)
+                test_name = "Kinetics depository {0}: check adjacency lists are nonidentical?".format(depository.label)
+                test.description = test_name
+                self.compat_func_name = test_name
+                yield test, depository.label
+
+                test = lambda x: self.kinetics_checkRateUnitsAreCorrect(depository, tag='depository')
+                test_name = "Kinetics depository {0}: check rates have correct units?".format(depository.label)
                 test.description = test_name
                 self.compat_func_name = test_name
                 yield test, depository.label
@@ -113,9 +121,15 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             test.description = test_name
             self.compat_func_name = test_name
             yield test, library_name
-            
+
+            test = lambda x: self.kinetics_checkRateUnitsAreCorrect(library)
+            test_name = "Kinetics library {0}: check rates have correct units?".format(library_name)
+            test.description = test_name
+            self.compat_func_name = test_name
+            yield test, library_name
+
             test = lambda x: self.kinetics_checkLibraryRatesAreReasonable(library)
-            test_name = "Kinetics library {0}: check rates can be evaluated?".format(library_name)
+            test_name = "Kinetics library {0}: check rates are reasonable?".format(library_name)
             test.description = test_name
             self.compat_func_name = test_name
             yield test, library_name
@@ -280,10 +294,19 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
         """
         family = self.database.kinetics.families[family_name]
         expectedNumberNodes = len(family.getRootTemplate())
+        tst = []
         for label, entries in family.rules.entries.iteritems():
             for entry in entries:
                 nodes = label.split(';')
-                nose.tools.assert_equal(len(nodes), expectedNumberNodes, "Wrong number of groups or semicolons in family {family} rule {entry}.  Should be {num_nodes}".format(family=family_name, entry=entry, num_nodes=expectedNumberNodes))
+                tst.append((len(nodes), expectedNumberNodes, "Wrong number of groups or semicolons in family {family} rule {entry}.  Should be {num_nodes}".format(family=family_name, entry=entry, num_nodes=expectedNumberNodes)))
+
+        boo = False
+        for item in tst:
+            if item[0] != item[1]:
+                boo = True
+                logging.error(item[2])
+        if boo:
+            raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
     def kinetics_checkNodesInRulesFoundInGroups(self, family_name):
         """
@@ -299,29 +322,65 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             topDescendants.append(nodes)
 
         topGroupOrder = ';'.join(topNode.label for topNode in family.getRootTemplate())
-
+        tst1 = []
+        tst2 = []
         for label, entries in family.rules.entries.iteritems():
             for entry in entries:
                 nodes = label.split(';')
                 for i, node in enumerate(nodes):
-                    nose.tools.assert_true(node in family.groups.entries, "In {family} family, no group definition found for label {label} in rule {entry}".format(family=family_name, label=node, entry=entry))
-                    nose.tools.assert_true(family.groups.entries[node] in topDescendants[i], "In {family} family, rule {entry} was found with groups out of order.  The correct order for a rule should be subgroups of {top}.".format(family=family_name, entry=entry, top=topGroupOrder))
+                    tst1.append((node in family.groups.entries, "In {family} family, no group definition found for label {label} in rule {entry}".format(family=family_name, label=node, entry=entry)))
+                    tst2.append((family.groups.entries[node] in topDescendants[i], "In {family} family, rule {entry} was found with groups out of order.  The correct order for a rule should be subgroups of {top}.".format(family=family_name, entry=entry, top=topGroupOrder)))
+        boo = False
+        for i in range(len(tst1)):
+            if not tst1[i][0]:
+                logging.error(tst1[i][1])
+                boo = True
+            if not tst2[i][0]:
+                logging.error(tst2[i][1])
+                boo = True
+
+        if boo:
+            raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
     def kinetics_checkGroupsFoundInTree(self, family_name):
         """
         This test checks whether groups are found in the tree, with proper parents.
         """
         family = self.database.kinetics.families[family_name]
+        tst = []
+        tst1 = []
+        tst2 = []
+        tst3 = []
         for nodeName, nodeGroup in family.groups.entries.iteritems():
-            nose.tools.assert_false('[' in nodeName or ']' in nodeName, "Group {group} in {family} family contains square brackets [ ] in the label, which are not allowed.".format(group=nodeName, family=family_name))
+            tst.append(('[' in nodeName or ']' in nodeName, "Group {group} in {family} family contains square brackets [ ] in the label, which are not allowed.".format(group=nodeName, family=family_name)))
             ascendParent = nodeGroup
+
             # Check whether the node has proper parents unless it is the top reactant or product node
             while ascendParent not in family.groups.top and ascendParent not in family.forwardTemplate.products:
                 child = ascendParent
                 ascendParent = ascendParent.parent
-                nose.tools.assert_true(ascendParent is not None, "Group {group} in {family} family was found in the tree without a proper parent.".format(group=child, family=family_name))
-                nose.tools.assert_true(child in ascendParent.children, "Group {group} in {family} family was found in the tree without a proper parent.".format(group=nodeName, family=family_name))
-                nose.tools.assert_false(child is ascendParent, "Group {group} in {family} family is a parent to itself".format(group=nodeName, family=family_name))
+                tst1.append((ascendParent is not None, "Group {group} in {family} family was found in the tree without a proper parent.".format(group=child, family=family_name)))
+                tst2.append((child in ascendParent.children, "Group {group} in {family} family was found in the tree without a proper parent.".format(group=nodeName, family=family_name)))
+                tst3.append((child is ascendParent, "Group {group} in {family} family is a parent to itself".format(group=nodeName, family=family_name)))
+
+        boo = False
+        for i in range(len(tst)):
+            if tst[i][0]:
+                logging.error(tst[i][1])
+                boo = True
+        for i in range(len(tst1)):
+            if not tst1[i][0]:
+                logging.error(tst1[i][1])
+                boo = True
+            if not tst2[i][0]:
+                logging.error(tst2[i][1])
+                boo = True
+            if tst3[i][0]:
+                logging.error(tst3[i][1])
+                boo = True
+
+        if boo:
+            raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
     def kinetics_checkGroupsNonidentical(self, family_name):
         """
@@ -332,10 +391,20 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
         family = Database()
         family.entries = originalFamily.groups.entries
         entriesCopy = copy(family.entries)
+        tst = []
         for nodeName, nodeGroup in family.entries.iteritems():
             del entriesCopy[nodeName]
             for nodeNameOther, nodeGroupOther in entriesCopy.iteritems():
-                nose.tools.assert_false(family.matchNodeToNode(nodeGroup, nodeGroupOther), "Group {group} in {family} family was found to be identical to group {groupOther}".format(group=nodeName, family=family_name, groupOther=nodeNameOther))
+                tst.append((family.matchNodeToNode(nodeGroup, nodeGroupOther), "Group {group} in {family} family was found to be identical to group {groupOther}".format(group=nodeName, family=family_name, groupOther=nodeNameOther)))
+
+        boo = False
+        for i in range(len(tst)):
+            if tst[i][0]:
+                logging.error(tst[i][1])
+                boo = True
+
+        if boo:
+            raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
     def kinetics_checkChildParentRelationships(self, family_name):
         """
@@ -345,6 +414,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
         originalFamily = self.database.kinetics.families[family_name]
         family = Database()
         family.entries = originalFamily.groups.entries
+        tst = []
         for nodeName, childNode in family.entries.iteritems():
             #top nodes and product nodes don't have parents by definition, so they get an automatic pass:
             if childNode in originalFamily.groups.top or childNode in originalFamily.forwardTemplate.products: continue
@@ -359,9 +429,9 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                 continue
             # Check whether the node has proper parents unless it is the top reactant or product node
             # The parent should be more general than the child
-            nose.tools.assert_true(family.matchNodeToChild(parentNode, childNode),
+            tst.append((family.matchNodeToChild(parentNode, childNode),
                             "In {family} family, group {parent} is not a proper parent of its child {child}.".format(family=family_name, parent=parentNode, child=nodeName))
-
+)
             #check that parentNodes which are LogicOr do not have an ancestor that is a Group
             #If it does, then the childNode must also be a child of the ancestor
             if isinstance(parentNode.item, LogicOr):
@@ -369,8 +439,17 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                 while ancestorNode not in originalFamily.groups.top and isinstance(ancestorNode.item, LogicOr):
                     ancestorNode = ancestorNode.parent
                 if isinstance(ancestorNode.item, Group):
-                    nose.tools.assert_true(family.matchNodeToChild(ancestorNode, childNode),
-                                    "In {family} family, group {ancestor} is not a proper ancestor of its child {child}.".format(family=family_name, ancestor=ancestorNode, child=nodeName))
+                    tst.append((family.matchNodeToChild(ancestorNode, childNode),
+                                    "In {family} family, group {ancestor} is not a proper ancestor of its child {child}.".format(family=family_name, ancestor=ancestorNode, child=nodeName)))
+
+        boo = False
+        for i in range(len(tst)):
+            if not tst[i][0]:
+                logging.error(tst[i][1])
+                boo = True
+
+        if boo:
+            raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
     def kinetics_checkSiblingsForParents(self, family_name):
         """
@@ -383,6 +462,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
         originalFamily = self.database.kinetics.families[family_name]
         family = Database()
         family.entries = originalFamily.groups.entries
+        tst = []
         for nodeName, node in family.entries.iteritems():
             #Some families also construct a 2-level trees for the products
             #(root with all entries down one level) We don't care about this
@@ -390,8 +470,16 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             if node in originalFamily.forwardTemplate.products: continue
             for index, child1 in enumerate(node.children):
                 for child2 in node.children[index+1:]:
-                    nose.tools.assert_false(family.matchNodeToChild(child1, child2),
-                                            "In family {0}, node {1} is a parent of {2}, but they are written as siblings.".format(family_name, child1, child2))
+                    tst.append((family.matchNodeToChild(child1, child2),
+                                            "In family {0}, node {1} is a parent of {2}, but they are written as siblings.".format(family_name, child1, child2)))
+        boo = False
+        for i in range(len(tst)):
+            if tst[i][0]:
+                logging.error(tst[i][1])
+                boo = True
+
+        if boo:
+            raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
     def kinetics_checkAdjlistsNonidentical(self, database):
         """
@@ -408,6 +496,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                 if product.label not in speciesDict:
                     speciesDict[product.label] = product
 
+        tst = []
         # Go through all species to make sure they are nonidentical
         speciesList = speciesDict.values()
         labeledAtoms = [species.molecule[0].getLabeledAtoms() for species in speciesList]
@@ -422,9 +511,149 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                     except KeyError:
                         # atom labels did not match, therefore not a match
                         continue
+                    tst.append((speciesList[i].molecule[0].isIsomorphic(speciesList[j].molecule[0], initialMap), "Species {0} and species {1} in {2} database were found to be identical.".format(speciesList[i].label,speciesList[j].label,database.label)))
 
-                    nose.tools.assert_false(speciesList[i].molecule[0].isIsomorphic(speciesList[j].molecule[0], initialMap), "Species {0} and species {1} in {2} database were found to be identical.".format(speciesList[i].label,speciesList[j].label,database.label))
-    
+        boo = False
+        for i in range(len(tst)):
+            if tst[i][0]:
+                logging.error(tst[i][1])
+                boo = True
+
+        if boo:
+            raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
+
+    def kinetics_checkRateUnitsAreCorrect(self, database, tag='library'):
+        """
+        This test ensures that every reaction has acceptable units on the A factor.
+        """
+        boo = False
+
+        dimensionalities = {
+            1: (1 / pq.s).dimensionality ,
+            2: (pq.m**3 / pq.mole / pq.s).dimensionality,
+            3: ((pq.m**6) / (pq.mole**2) / pq.s).dimensionality,
+        }
+
+        for entry in database.entries.values():
+            k = entry.data
+            rxn = entry.item
+            molecularity = len(rxn.reactants)
+            surface_reactants = sum([1 for s in rxn.reactants if s.containsSurfaceSite()])
+            try:
+
+                if isinstance(k, rmgpy.kinetics.StickingCoefficient):
+                    "Should be dimensionless"
+                    A = k.A
+                    if A.units:
+                        boo = True
+                        logging.error('Reaction {0} from {1} {2}, has invalid units {3}'.format(rxn, tag, database.label, A.units))
+                elif isinstance(k, rmgpy.kinetics.SurfaceArrhenius):
+                    A = k.A
+                    expected = copy(dimensionalities[molecularity])
+                    # for each surface reactant but one, switch from (m3/mol) to (m2/mol)
+                    expected[pq.m] -= (surface_reactants-1)
+                    if pq.Quantity(1.0, A.units).simplified.dimensionality != expected :
+                        boo = True
+                        logging.error('Reaction {0} from {1} {2}, has invalid units {3}'.format(rxn, tag, database.label, A.units))
+                elif isinstance(k, rmgpy.kinetics.Arrhenius): # (but not SurfaceArrhenius, which came first)
+                    A = k.A
+                    if pq.Quantity(1.0, A.units).simplified.dimensionality != dimensionalities[molecularity]:
+                        boo = True
+                        logging.error('Reaction {0} from {1} {2}, has invalid units {3}'.format(rxn, tag, database.label, A.units))
+                elif isinstance(k, (rmgpy.kinetics.Lindemann, rmgpy.kinetics.Troe )):
+                    A = k.arrheniusHigh.A
+                    if pq.Quantity(1.0, A.units).simplified.dimensionality != dimensionalities[molecularity]:
+                        boo = True
+                        logging.error('Reaction {0} from {1} {2}, has invalid high-pressure limit units {3}'.format(rxn, tag, database.label, A.units))
+                elif isinstance(k, (rmgpy.kinetics.Lindemann, rmgpy.kinetics.Troe, rmgpy.kinetics.ThirdBody)):
+                    A = k.arrheniusLow.A
+                    if pq.Quantity(1.0, A.units).simplified.dimensionality != dimensionalities[molecularity+1]:
+                        boo = True
+                        logging.error('Reaction {0} from {1} {2}, has invalid low-pressure limit units {3}'.format(rxn, tag, database.label, A.units))
+                elif hasattr(k, 'highPlimit') and k.highPlimit is not None:
+                    A = k.highPlimit.A
+                    if pq.Quantity(1.0, A.units).simplified.dimensionality != dimensionalities[molecularity-1]:
+                        boo = True
+                        logging.error(
+                            'Reaction {0} from {1} {2}, has invalid high-pressure limit units {3}'.format(rxn, tag, database.label, A.units))
+                elif isinstance(k, rmgpy.kinetics.MultiArrhenius):
+                    for num, arrhenius in enumerate(k.arrhenius):
+                        A = arrhenius.A
+                        if pq.Quantity(1.0, A.units).simplified.dimensionality != dimensionalities[molecularity]:
+                            boo = True
+                            logging.error(
+                                'Reaction {0} from {1} {2}, has invalid units {3} on rate expression {4}'.format(
+                                    rxn, tag, database.label, A.units, num + 1)
+                            )
+
+                elif isinstance(k, rmgpy.kinetics.PDepArrhenius):
+                    for pa, arrhenius in zip(k.pressures.value_si, k.arrhenius):
+                        P = rmgpy.quantity.Pressure(1, k.pressures.units)
+                        P.value_si = pa
+
+                        if isinstance(arrhenius, rmgpy.kinetics.MultiArrhenius):
+                            # A PDepArrhenius may have MultiArrhenius within it
+                            # which is distinct (somehow) from MultiPDepArrhenius
+                            for num, arrhenius2 in enumerate(arrhenius.arrhenius):
+                                A = arrhenius2.A
+                                if pq.Quantity(1.0, A.units).simplified.dimensionality != dimensionalities[molecularity]:
+                                    boo = True
+                                    logging.error(
+                                        'Reaction {0} from {1} {2}, has invalid units {3} on {4!r} rate expression {5}'.format(
+                                            rxn, tag, database.label, A.units, P, num + 1)
+                                    )
+                        else:
+                            A = arrhenius.A
+                            if pq.Quantity(1.0, A.units).simplified.dimensionality != dimensionalities[molecularity]:
+                                boo = True
+                                logging.error(
+                                    'Reaction {0} from {1} {2}, has invalid {3!r} units {4}'.format(
+                                        rxn, tag, database.label, P, A.units)
+                                )
+
+                elif isinstance(k, rmgpy.kinetics.MultiPDepArrhenius):
+                    for num, k2 in enumerate(k.arrhenius):
+                        for pa, arrhenius in zip(k2.pressures.value_si, k2.arrhenius):
+                            P = rmgpy.quantity.Pressure(1, k2.pressures.units)
+                            P.value_si = pa
+                            if isinstance(arrhenius, rmgpy.kinetics.MultiArrhenius):
+                                # A MultiPDepArrhenius may have MultiArrhenius within it
+                                for arrhenius2 in arrhenius.arrhenius:
+                                    A = arrhenius2.A
+                                    if pq.Quantity(1.0, A.units).simplified.dimensionality != dimensionalities[
+                                        molecularity]:
+                                        boo = True
+                                        logging.error(
+                                            'Reaction {0} from {1} {2}, has invalid units {3} on {4!r} rate expression {5!r}'.format(
+                                                rxn, tag, database.label, A.units, P, arrhenius2)
+                                        )
+                            else:
+                                A = arrhenius.A
+                                if pq.Quantity(1.0, A.units).simplified.dimensionality != dimensionalities[
+                                    molecularity]:
+                                    boo = True
+                                    logging.error(
+                                        'Reaction {0} from {1} {2}, has invalid {3!r} units {4} in rate expression {5}'.format(
+                                        rxn, tag, database.label, P, A.units, num)
+                                    )
+
+
+                elif isinstance(k, rmgpy.kinetics.Chebyshev):
+                    if pq.Quantity(1.0, k.kunits).simplified.dimensionality != dimensionalities[molecularity]:
+                        boo = True
+                        logging.error(
+                            'Reaction {0} from {1} {2}, has invalid units {3}'.format(
+                                rxn, tag, database.label, k.kunits)
+                        )
+
+                else:
+                    logging.warning('Reaction {0} from {1} {2}, did not have units checked.'.format(rxn, tag, database.label))
+            except:
+                logging.error("Error when checking units on reaction {0} from {1} {2} with rate expression {3!r}.".format(rxn, tag, database.label, k))
+                raise
+        if boo:
+            raise ValueError('{0} {1} has some incorrect units'.format(tag.capitalize(), database.label))
+
     def kinetics_checkLibraryRatesAreReasonable(self, library):
         """
         This test ensures that every library reaction has reasonable kinetics at 1000 K, 1 bar
@@ -440,6 +669,9 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
         TST_limit = (kB*T)/h
         collision_limit = Na*np.pi*Hrad_diam**2*np.sqrt(8*kB*T/(np.pi*mHrad/2))
         for entry in library.entries.values():
+            if entry.item.isSurfaceReaction():
+                # Don't check surface reactions
+                continue
             k = entry.data.getRateCoefficient(T,P)
             rxn = entry.item
             if k < 0:
@@ -466,11 +698,21 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
         if family.ownReverse:
             nose.tools.assert_equal(family.forwardTemplate.reactants, family.forwardTemplate.products)
         else:
+            tst = []
             reactant_labels = [reactant.label for reactant in family.forwardTemplate.reactants]
             product_labels = [product.label for product in family.forwardTemplate.products]
             for reactant_label in reactant_labels:
                 for product_label in product_labels:
-                    nose.tools.assert_false(reactant_label==product_label, "Reactant label {0} matches that of product label {1} in a non-reversible family template.  Please rename product label.".format(reactant_label,product_label))
+                    tst.append((reactant_label==product_label, "Reactant label {0} matches that of product label {1} in a non-reversible family template.  Please rename product label.".format(reactant_label,product_label)))
+
+            boo = False
+            for i in range(len(tst)):
+                if tst[i][0]:
+                    logging.error(tst[i][1])
+                    boo = True
+
+            if boo:
+                raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
     def kinetics_checkCdAtomType(self, family_name):
         """
@@ -488,7 +730,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                 ignore.append(product)
                 ignore.extend(product.children)
         else: ignore=[]
-
+        tst = []
         for entryName, entry in family.groups.entries.iteritems():
             #ignore products
             if entry in ignore: continue
@@ -516,11 +758,20 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                     #remove duplicates from correctAtom:
                     correctAtomList=list(set(correctAtomList))
                     for correctAtom in correctAtomList:
-                        nose.tools.assert_true(atomTypes[correctAtom] in atom.atomType,
+                        tst.append((atomTypes[correctAtom] in atom.atomType,
                                                """In family {0}, node {1} is missing the atomtype {2} in atom {3} and may be misusing the atomtype Cd, CO, CS, or Cdd.
 The following adjList may have atoms in a different ordering than the input file:
 {4}
-                                            """.format(family_name, entry, correctAtom, index+1, entry.item.toAdjacencyList()))
+                                            """.format(family_name, entry, correctAtom, index+1, entry.item.toAdjacencyList())))
+
+        boo = False
+        for i in range(len(tst)):
+            if not tst[i][0]:
+                logging.error(tst[i][1])
+                boo = True
+
+        if boo:
+            raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
     def kinetics_checkUnimolecularGroups(self,family_name):
         """
@@ -646,31 +897,41 @@ The following adjList may have atoms in a different ordering than the input file
 
 
         #print outputs
+        tst = []
         if A != []:
             s = "These end groups have extra labels that their top level end group do not have:"+"\n [root group, error group]"
             for x in A:
                 s += '\n'+str(x)
-            nose.tools.assert_true(False,s)
+            tst.append((False,s))
         if B != []:
             s = "These end groups are missing labels that their top level end group have:"+"\n [root group, error group]"
             for x in B:
                 s += '\n'+str(x)
-            nose.tools.assert_true(False,s)
+            tst.append((False,s))
         if C != []:
             s = "These backbone groups are missing labels that are in the end groups:"+"\n [root group, error group]"
             for x in C:
                 s += '\n'+str(x)
-            nose.tools.assert_true(False,s)
+            tst.append((False,s))
         if D != []:
             s = "These backbone groups are missing labels along the path atoms:"+"\n [root group, error group]"
             for x in D:
                 s += '\n'+str(x)
-            nose.tools.assert_true(False,s)
+            tst.append((False,s))
         if E != []:
             s = "These backbone have end subgraphs that don't match a root:"+"\n [root group, error group]"
             for x in E:
                 s += '\n'+str(x)
-            nose.tools.assert_true(False,s)
+            tst.append((False,s))
+
+        boo = False
+        for i in range(len(tst)):
+            if not tst[i][0]:
+                logging.error(tst[i][1])
+                boo = True
+
+        if boo:
+            raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
 
     def kinetics_checkSampleDescendsToGroup(self, family_name):
         """
@@ -679,6 +940,9 @@ The following adjList may have atoms in a different ordering than the input file
         """
         family = self.database.kinetics.families[family_name]
 
+        tst1 = []
+        tst2 = []
+        tst3 = []
         #ignore any products
         ignore=[]
         if not family.ownReverse:
@@ -708,7 +972,6 @@ The following adjList may have atoms in a different ordering than the input file
 
         #If atom has too many benzene rings, we currently have trouble making sample atoms
         skipped = []
-
         for entryName, entry in family.groups.entries.iteritems():
             if entry in ignore: continue
             elif isinstance(entry.item, Group):
@@ -725,8 +988,9 @@ The following adjList may have atoms in a different ordering than the input file
                     #test accessibility here
                     atoms = sampleMolecule.getLabeledAtoms()
                     match = family.groups.descendTree(sampleMolecule, atoms, strict=True, root = root)
-                    nose.tools.assert_is_not_none(match, "Group {0} does not match its root node, {1}".format(entryName, root.label))
-                    nose.tools.assert_in(entry, [match]+family.groups.ancestors(match), """In group {0}, a sample molecule made from node {1} returns node {2} when descending the tree.
+                    tst1.append((match, "Group {0} does not match its root node, {1}".format(entryName, root.label)))
+                    if tst1[-1][0] is not None:
+                        tst2.append((entry, [match]+family.groups.ancestors(match), """In group {0}, a sample molecule made from node {1} returns node {2} when descending the tree.
 Sample molecule AdjList:
 {3}
 
@@ -742,10 +1006,10 @@ Matched group AdjList:
                    entry.item.toAdjacencyList(),
                    "\n\nBackbone Group Adjlist:\n" + backboneSample.label +'\n' if mergesNecessary and root not in backboneRoots else '',
                    backboneSample.item.toAdjacencyList() if mergesNecessary and root not in backboneRoots else '',
-                   match.item.toAdjacencyList()))
+                   match.item.toAdjacencyList())))
 
-                except UnexpectedChargeError, e:
-                     nose.tools.assert_true(False, """In family {0}, a sample molecule made from node {1} returns an unexpectedly charged molecule:
+                except UnexpectedChargeError as e:
+                    tst3.append((False, """In family {0}, a sample molecule made from node {1} returns an unexpectedly charged molecule:
 Sample molecule AdjList:
 {2}
 
@@ -756,7 +1020,7 @@ Origin Group AdjList:
                     entry.item.toAdjacencyList(),
                     "\n\nBackbone Group Adjlist:\n" + backboneSample.label +'\n' if mergesNecessary and root not in backboneRoots else '',
                     backboneSample.item.toAdjacencyList() if mergesNecessary and root not in backboneRoots else '')
-                    )
+                   ))
 
                 except ImplicitBenzeneError:
                     skipped.append(entryName)
@@ -767,6 +1031,23 @@ Origin Group AdjList:
             for entryName in skipped:
                 print entryName
 
+        boo = False
+        for i in range(len(tst1)):
+            if tst1[i][0] is None:
+                logging.error(tst1[i][1])
+                boo = True
+        for i in range(len(tst2)):
+            if tst2[i][0] not in tst2[i][1]:
+                logging.error(tst2[i][2])
+                boo = True
+        for i in range(len(tst3)):
+            if not tst3[i][0]:
+                logging.error(tst3[i][1])
+                boo = True
+
+        if boo:
+            raise ValueError("Error Occurred")
+
     def general_checkNodesFoundInTree(self, group_name, group):
         """
         This test checks whether nodes are found in the tree, with proper parents.
@@ -774,36 +1055,69 @@ Origin Group AdjList:
         for nodeName, nodeGroup in group.entries.iteritems():
             ascendParent = nodeGroup
             # Check whether the node has proper parents unless it is the top reactant or product node
+            tst1 = []
+            tst2 = []
+            tst3 = []
             while ascendParent not in group.top:
                 child = ascendParent
                 ascendParent = ascendParent.parent
-                nose.tools.assert_true(ascendParent is not None, "Node {node} in {group} group was found in the tree without a proper parent.".format(node=child, group=group_name))
-                nose.tools.assert_true(child in ascendParent.children, "Node {node} in {group} group was found in the tree without a proper parent.".format(node=nodeName, group=group_name))
-                nose.tools.assert_false(child is ascendParent, "Node {node} in {group} is a parent to itself".format(node=nodeName, group=group_name))
+                tst1.append((ascendParent is not None, "Node {node} in {group} group was found in the tree without a proper parent.".format(node=child, group=group_name)))
+                if tst1[-1] is not None:
+                    tst2.append((child in ascendParent.children, "Node {node} in {group} group was found in the tree without a proper parent.".format(node=nodeName, group=group_name)))
+                    tst3.append((child is ascendParent, "Node {node} in {group} is a parent to itself".format(node=nodeName, group=group_name)))
+
+        boo = False
+        for i in range(len(tst1)):
+            if not tst1[i][0]:
+                logging.error(tst1[i][1])
+                boo = True
+        for i in range(len(tst2)):
+            if not tst2[i][0]:
+                logging.error(tst2[i][1])
+                boo = True
+            if tst3[i][0]:
+                logging.error(tst3[i][1])
+                boo = True
+
+        if boo:
+            raise ValueError("Error Occurred")
 
     def general_checkGroupsNonidentical(self, group_name, group):
         """
         This test checks whether nodes found in the group are nonidentical.
         """
         entriesCopy = copy(group.entries)
+        tst = []
         for nodeName, nodeGroup in group.entries.iteritems():
             del entriesCopy[nodeName]
             for nodeNameOther, nodeGroupOther in entriesCopy.iteritems():
                 group.matchNodeToNode(nodeGroup,nodeGroupOther)
-                nose.tools.assert_false(group.matchNodeToNode(nodeGroup, nodeGroupOther), "Node {node} in {group} group was found to be identical to node {nodeOther}".format(node=nodeName, group=group_name, nodeOther=nodeNameOther))
+                tst.append((group.matchNodeToNode(nodeGroup, nodeGroupOther), "Node {node} in {group} group was found to be identical to node {nodeOther}".format(node=nodeName, group=group_name, nodeOther=nodeNameOther)))
+
+        boo = False
+        for i in range(len(tst)):
+            if tst[i][0]:
+                logging.error(tst[i][1])
+                boo = True
+
+        if boo:
+            raise ValueError("Error Occurred")
 
     def general_checkChildParentRelationships(self, group_name, group):
         """
         This test checks that nodes' parent-child relationships are correct in the database.
         """
+        tst1 = []
+        tst2 = []
         for nodeName, childNode in group.entries.iteritems():
             #top nodes and product nodes don't have parents by definition, so they get an automatic pass:
             if childNode in group.top: continue
             parentNode = childNode.parent
             # Check whether the node has proper parents unless it is the top reactant or product node
             # The parent should be more general than the child
-            nose.tools.assert_true(group.matchNodeToChild(parentNode, childNode),
+            tst1.append((group.matchNodeToChild(parentNode, childNode),
                             "In {group} group, node {parent} is not a proper parent of its child {child}.".format(group=group_name, parent=parentNode, child=nodeName))
+)
 
             #check that parentNodes which are LogicOr do not have an ancestor that is a Group
             #If it does, then the childNode must also be a child of the ancestor
@@ -811,9 +1125,23 @@ Origin Group AdjList:
                 ancestorNode = parentNode
                 while ancestorNode not in group.top and isinstance(ancestorNode.item, LogicOr):
                     ancestorNode = ancestorNode.parent
-                if isinstance(ancestorNode.item, Group):
-                    nose.tools.assert_true(group.matchNodeToChild(ancestorNode, childNode),
+                if isinstance(ancestorNode.item, Group) and tst1[-1][0]:
+                    tst2.append((group.matchNodeToChild(ancestorNode, childNode),
                                     "In {group} group, node {ancestor} is not a proper ancestor of its child {child}.".format(group=group_name, ancestor=ancestorNode, child=nodeName))
+)
+
+        boo = False
+        for i in range(len(tst1)):
+            if not tst1[i][0]:
+                logging.error(tst1[i][1])
+                boo = True
+        for i in range(len(tst2)):
+            if not tst2[i][0]:
+                logging.error(tst2[i][1])
+                boo = True
+
+        if boo:
+            raise ValueError("Error Occurred")
 
     def general_checkSiblingsForParents(self, group_name, group):
         """
@@ -833,11 +1161,22 @@ Origin Group AdjList:
         thermo groups B might be a tricyclic and C a bicyclic parent. Currently there is no
         way to writes a bicyclic group that excludes an analogous tricyclic.
         """
+        tst = []
         for nodeName, node in group.entries.iteritems():
             for index, child1 in enumerate(node.children):
                 for child2 in node.children[index+1:]:
-                    nose.tools.assert_false(group.matchNodeToChild(child1, child2),
-                                            "In {0} group, node {1} is a parent of {2}, but they are written as siblings.".format(group_name, child1, child2))
+                    tst.append((group.matchNodeToChild(child1, child2),
+                                            "In {0} group, node {1} is a parent of {2}, but they are written as siblings.".format(group_name, child1, child2)))
+
+        boo = False
+        for i in range(len(tst)):
+            if tst[i][0]:
+                logging.error(tst[i][1])
+                boo = True
+
+        if boo:
+            raise ValueError("Error Occurred")
+
     def general_checkCdAtomType(self, group_name, group):
         """
         This test checks that groups containing Cd, CO, CS and Cdd atomtypes are used
@@ -845,7 +1184,7 @@ Origin Group AdjList:
         """
         targetLabel=['Cd', 'CO', 'CS', 'Cdd']
         targetAtomTypes=[atomTypes[x] for x in targetLabel]
-
+        tst = []
         for entryName, entry in group.entries.iteritems():
             if isinstance(entry.item, Group):
                 for index, atom in enumerate(entry.item.atoms):
@@ -870,11 +1209,20 @@ Origin Group AdjList:
                     #remove duplicates from correctAtom:
                     correctAtomList=list(set(correctAtomList))
                     for correctAtom in correctAtomList:
-                        nose.tools.assert_true(atomTypes[correctAtom] in atom.atomType,
+                        tst.append((atomTypes[correctAtom] in atom.atomType,
                                                 """In group {0}, node {1} is missing the atomtype {2} in atom {3} and may be misusing the atomtype Cd, CO, CS, or Cdd.
 The following adjList may have atoms in a different ordering than the input file:
 {4}
-                                            """.format(group_name, entry, correctAtom, index+1, entry.item.toAdjacencyList()))
+                                            """.format(group_name, entry, correctAtom, index+1, entry.item.toAdjacencyList())))
+
+        boo = False
+        for i in range(len(tst)):
+            if not tst[i][0]:
+                logging.error(tst[i][1])
+                boo = True
+
+        if boo:
+            raise ValueError("Error Occurred")
 
     def general_checkSampleDescendsToGroup(self, group_name, group):
         """
@@ -883,11 +1231,17 @@ The following adjList may have atoms in a different ordering than the input file
         """
 
         skipped = []
+        tst1 = []
+        tst2 = []
+        tst3 = []
         for entryName, entry in group.entries.iteritems():
             try:
                 if isinstance(entry.item, Group):
-                    sampleMolecule = entry.item.makeSampleMolecule()
-
+                    try:
+                        sampleMolecule = entry.item.makeSampleMolecule()
+                    except:
+                        logging.error("Problem making sample molecule for group {}\n{}".format(entryName, entry.item.toAdjacencyList()))
+                        raise
                     #for now ignore sample atoms that use nitrogen types
                     nitrogen = False
                     for atom in sampleMolecule.atoms:
@@ -898,8 +1252,8 @@ The following adjList may have atoms in a different ordering than the input file
 
                     atoms = sampleMolecule.getLabeledAtoms()
                     match = group.descendTree(sampleMolecule, atoms, strict=True)
-                    nose.tools.assert_is_not_none(match, "Group {0} does not match its root node, {1}".format(entryName, group.top[0]))
-                    nose.tools.assert_in(entry, [match]+group.ancestors(match), """In group {0}, a sample molecule made from node {1} returns node {2} when descending the tree.
+                    tst1.append((match, "Group {0} does not match its root node, {1}".format(entryName, group.top[0])))
+                    tst2.append((entry, [match]+group.ancestors(match), """In group {0}, a sample molecule made from node {1} returns node {2} when descending the tree.
 Sample molecule AdjList:
 {3}
 
@@ -913,9 +1267,10 @@ Matched group AdjList:
            match,
            sampleMolecule.toAdjacencyList(),
            entry.item.toAdjacencyList(),
-           match.item.toAdjacencyList()))
-            except UnexpectedChargeError, e:
-                nose.tools.assert_true(False, """In family {0}, a sample molecule made from node {1} returns an unexpectedly charged molecule:
+           match.item.toAdjacencyList())))
+
+            except UnexpectedChargeError as e:
+                tst3.append((False, """In family {0}, a sample molecule made from node {1} returns an unexpectedly charged molecule:
 Sample molecule AdjList:
 {2}
 
@@ -923,7 +1278,7 @@ Origin Group AdjList:
 {3}""".format(group_name,
                     entry.label,
                     e.graph.toAdjacencyList(),
-                    entry.item.toAdjacencyList()))
+                    entry.item.toAdjacencyList())))
 
             except ImplicitBenzeneError:
                 skipped.append(entryName)
@@ -933,6 +1288,22 @@ Origin Group AdjList:
             print "These entries were skipped because too big benzene rings or has nitrogen sample atom:"
             for entryName in skipped:
                 print entryName
+
+        boo = False
+        for i in range(len(tst1)):
+            if tst1[i][0] is None:
+                logging.error(tst1[i][1])
+                boo = True
+            if tst2[i][0] not in tst2[i][1]:
+                logging.error(tst2[i][2])
+                boo = True
+        for i in range(len(tst3)):
+            if not tst3[i][0]:
+                logging.error(tst3[i][1])
+                boo = True
+
+        if boo:
+            raise ValueError("Error Occurred")
 
 if __name__ == '__main__':
     nose.run(argv=[__file__, '-v', '--nologcapture'], defaultTest=__name__)

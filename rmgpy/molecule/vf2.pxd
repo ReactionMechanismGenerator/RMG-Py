@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -36,19 +36,20 @@ cdef class VF2:
     cdef dict initialMapping
     cdef bint subgraph
     cdef bint findAll
+    cdef bint strict
     
     cdef bint isMatch
     cdef list mappingList
     
-    cpdef bint isIsomorphic(self, Graph graph1, Graph graph2, dict initialMapping, bint saveOrder=?) except -2
+    cpdef bint isIsomorphic(self, Graph graph1, Graph graph2, dict initialMapping, bint saveOrder=?, bint strict=?) except -2
         
-    cpdef list findIsomorphism(self, Graph graph1, Graph graph2, dict initialMapping, bint saveOrder=?)
+    cpdef list findIsomorphism(self, Graph graph1, Graph graph2, dict initialMapping, bint saveOrder=?, bint strict=?)
 
     cpdef bint isSubgraphIsomorphic(self, Graph graph1, Graph graph2, dict initialMapping, bint saveOrder=?) except -2
 
     cpdef list findSubgraphIsomorphisms(self, Graph graph1, Graph graph2, dict initialMapping, bint saveOrder=?)
     
-    cdef isomorphism(self, Graph graph1, Graph graph2, dict initialMapping, bint subgraph, bint findAll, bint saveOrder=?)
+    cdef isomorphism(self, Graph graph1, Graph graph2, dict initialMapping, bint subgraph, bint findAll, bint saveOrder=?, bint strict=?)
 
     cdef bint match(self, int callDepth) except -2
         

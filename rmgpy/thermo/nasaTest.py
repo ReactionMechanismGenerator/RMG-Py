@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -285,3 +285,33 @@ class TestNASA(unittest.TestCase):
         self.assertEqual(wilhoit.comment,nasa.comment)
 
         # nasa to wilhoi performed in wilhoitTest
+
+    def test_nasa_as_dict_full(self):
+        """
+        Test that NASA.as_dict functions properly with all attributes
+        """
+        nasa_dict = self.nasa.as_dict()
+        self.assertEqual(nasa_dict['E0']['value'], self.E0)
+        self.assertEqual(nasa_dict['Tmin']['value'], self.Tmin)
+        self.assertEqual(nasa_dict['Tmax']['value'], self.Tmax)
+        self.assertEqual(nasa_dict['comment'], self.comment)
+        self.assertTupleEqual(tuple(nasa_dict['polynomials']['polynomial1']['coeffs']), tuple(self.coeffs_low))
+        self.assertTupleEqual(tuple(nasa_dict['polynomials']['polynomial2']['coeffs']), tuple(self.coeffs_high))
+        self.assertEqual(nasa_dict['polynomials']['polynomial1']['Tmin']['value'], self.Tmin)
+        self.assertEqual(nasa_dict['polynomials']['polynomial1']['Tmax']['value'], self.Tint)
+        self.assertEqual(nasa_dict['polynomials']['polynomial2']['Tmin']['value'], self.Tint)
+        self.assertEqual(nasa_dict['polynomials']['polynomial2']['Tmax']['value'], self.Tmax)
+
+    def test_nasa_as_dict_minimal(self):
+        """
+        Test that NASA.as_dict does not contain empty, optional attributes
+        """
+        nasa_dict = NASA().as_dict()
+        keys = nasa_dict.keys()
+        self.assertNotIn('Tmin', keys)
+        self.assertNotIn('Tmax', keys)
+        self.assertNotIn('E0', keys)
+        self.assertNotIn('Cp0', keys)
+        self.assertNotIn('CpInf', keys)
+        self.assertNotIn('label', keys)
+        self.assertNotIn('comment', keys)

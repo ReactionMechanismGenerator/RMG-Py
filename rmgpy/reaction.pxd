@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -56,6 +56,7 @@ cdef class Reaction:
     cdef public dict k_effective_cache
     cdef public bint is_forward
     cdef public bint allow_max_rate_violation
+    cdef public object rank
     
     cpdef bint isIsomerization(self)
 
@@ -65,11 +66,14 @@ cdef class Reaction:
     
     cpdef bint isUnimolecular(self)
 
+    cpdef bint isSurfaceReaction(self)
+
     cpdef bint hasTemplate(self, list reactants, list products)
     
     cpdef bint matchesSpecies(self, list reactants, list products=?)
 
-    cpdef bint isIsomorphic(self, Reaction other, bint eitherDirection=?, bint checkIdentical=?, bint checkOnlyLabel=?, bint checkTemplateRxnProducts=?)
+    cpdef bint isIsomorphic(self, Reaction other, bint eitherDirection=?, bint checkIdentical=?, bint checkOnlyLabel=?,
+                            bint checkTemplateRxnProducts=?, bint generateInitialMap=?, bint strict=?) except -2
 
     cpdef double getEnthalpyOfReaction(self, double T)
 
@@ -90,6 +94,8 @@ cdef class Reaction:
     cpdef int getStoichiometricCoefficient(self, Species spec)
 
     cpdef double getRateCoefficient(self, double T, double P=?)
+
+    cpdef double getSurfaceRateCoefficient(self, double T, double surfaceSiteDensity) except -2
 
     cpdef fixBarrierHeight(self, bint forcePositive=?)
 
@@ -121,4 +127,4 @@ cdef class Reaction:
 
     cpdef get_mean_sigma_and_epsilon(self, bint reverse=?)
 
-cpdef bint isomorphic_species_lists(list list1, list list2, bint check_identical=?, bint only_check_label=?)
+cpdef bint same_species_lists(list list1, list list2, bint check_identical=?, bint only_check_label=?, bint generate_initial_map=?, bint strict=?) except -2

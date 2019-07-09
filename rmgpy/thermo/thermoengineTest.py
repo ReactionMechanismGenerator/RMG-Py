@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -33,22 +33,19 @@ This module contains unit tests of the rmgpy.parallel module.
 """
 
 import os
-import sys
 import unittest
 import random
-from external.wip import work_in_progress
 
 from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.rmg.main import RMG
-from rmgpy.scoop_framework.framework import TestScoopCommon
 
 from rmgpy.species import Species
 from rmgpy.thermo.thermoengine import submit
 
 try:
     from scoop import futures, _control, shared
-except ImportError, e:
+except ImportError:
     import logging as logging
     logging.debug("Could not properly import SCOOP.")
 
@@ -138,34 +135,6 @@ def funcSubmitGet():
 
     return True
 
-@work_in_progress
-class AsyncThermoTest(TestScoopCommon):
-
-    def __init__(self, *args, **kwargs):
-        # Parent initialization
-        super(self.__class__, self).__init__(*args, **kwargs)
-        
-        # Only setup the scoop framework once, and not in every test method:
-        super(self.__class__, self).setUp()
-
-    @unittest.skipUnless(sys.platform.startswith("linux"),
-                         "test currently only runs on linux")
-    def testSubmit(self):
-        """
-        Test that we can submit a request to generate
-        thermo/transport for a number of species.
-        """
-        result = futures._startup(funcSubmit)
-        self.assertEquals(result, True)
-
-    @unittest.skipUnless(sys.platform.startswith("linux"),
-                         "test currently only runs on linux")
-    def testGet(self):
-        """
-        Test that we can get the data of a number of species.
-        """
-        result = futures._startup(funcGet)
-        self.assertEquals(result, True)
 
 if __name__ == '__main__' and os.environ.get('IS_ORIGIN', "1") == "1":
     unittest.main()

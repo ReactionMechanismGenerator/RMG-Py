@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -92,7 +92,8 @@ def saveOutputHTML(path, reactionModel, partCoreEdge='core'):
             try:
                 MoleculeDrawer().draw(spec.molecule[0], 'png', fstr)
             except IndexError:
-                raise OutputError("{0} species could not be drawn because it did not contain a molecular structure. Please recheck your files.".format(getSpeciesIdentifier(spec)))
+                logging.error("{0} species could not be drawn because it did not contain a molecular structure. Please recheck your files.".format(getSpeciesIdentifier(spec)))
+                raise
         #spec.thermo.comment=
         # Text wrap the thermo comments
     # We want to keep species sorted in the original order in which they were added to the RMG core.
@@ -183,6 +184,10 @@ def saveOutputHTML(path, reactionModel, partCoreEdge='core'):
     }
     td.species img, td.reactants img, td.products img {
         vertical-align: middle;
+    }
+    
+    img.surface_species {
+        vertical-align: bottom;
     }
     
     tr.species{
@@ -471,9 +476,9 @@ $(document).ready(function() {
 <tbody class="reaction">
 <tr class="{{ rxn.getSource()|csssafe }} rxnStart">
     <td class="index"><a href="{{ rxn.getURL() }}" title="Search on RMG website" class="searchlink">{{ rxn.index }}.</a></td>
-    <td class="reactants">{% for reactant in rxn.reactants %}<a href="{{ reactant.molecule[0].getURL() }}"><img src="species/{{ reactant|replace('#','%23') }}.png" alt="{{ getSpeciesIdentifier(reactant) }}" title="{{ getSpeciesIdentifier(reactant) }}, MW = {{ "%.2f g/mol"|format(reactant.molecule[0].getMolecularWeight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
+    <td class="reactants">{% for reactant in rxn.reactants %}<a href="{{ reactant.molecule[0].getURL() }}"><img src="species/{{ reactant|replace('#','%23') }}.png" alt="{{ getSpeciesIdentifier(reactant) }}" title="{{ getSpeciesIdentifier(reactant) }}, MW = {{ "%.2f g/mol"|format(reactant.molecule[0].getMolecularWeight() * 1000) }}" {% if reactant.containsSurfaceSite() %}class="surface_species" {% endif %}></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
     <td class="reactionArrow">{% if rxn.reversible %}&hArr;{% else %}&rarr;{% endif %}</td>
-    <td class="products">{% for product in rxn.products %}<a href="{{ product.molecule[0].getURL() }}"><img src="species/{{ product|replace('#','%23') }}.png" alt="{{ getSpeciesIdentifier(product) }}" title="{{ getSpeciesIdentifier(product) }}, MW = {{ "%.2f g/mol"|format(product.molecule[0].getMolecularWeight() * 1000) }}"></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
+    <td class="products">{% for product in rxn.products %}<a href="{{ product.molecule[0].getURL() }}"><img src="species/{{ product|replace('#','%23') }}.png" alt="{{ getSpeciesIdentifier(product) }}" title="{{ getSpeciesIdentifier(product) }}, MW = {{ "%.2f g/mol"|format(product.molecule[0].getMolecularWeight() * 1000) }}" {% if product.containsSurfaceSite() %}class="surface_species" {% endif %}></a>{% if not loop.last %} + {% endif %}{% endfor %}</td>
     <td class="family">{{ rxn.getSource() }}</td>
 </tr>
 <tr class="kinetics {{ rxn.getSource()|csssafe }} hide_kinetics">

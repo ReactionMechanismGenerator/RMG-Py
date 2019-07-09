@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -95,7 +95,16 @@ cdef class LiquidReactor(ReactionSystem):
                 continue
             initialConcentrations[speciesDict[label]] = moleFrac
         self.initialConcentrations = initialConcentrations
-    
+
+        conditions = {}
+        if self.sensConditions is not None:
+            for label, value in self.sensConditions.iteritems():
+                if label == 'T':
+                    conditions[label] = value
+                else:
+                    conditions[speciesDict[label]] = value
+        self.sensConditions = conditions
+
     def get_constSPCIndices (self, coreSpecies):
         "Allow to identify constant Species position in solver"
         for spc in self.constSPCNames:

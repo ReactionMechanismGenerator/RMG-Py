@@ -38,6 +38,7 @@ requirements:
     - coolprop
     - coverage
     - cython >=0.25.2
+    - dde
     - ffmpeg
     - gprof2dot
     - graphviz
@@ -63,13 +64,12 @@ requirements:
     - pyzmq
     - quantities
     - rdkit >=2015.09.2
-    - rmgdatabase >=2.3.0
+    - rmgdatabase >=2.4.0
+    - scikit-learn
     - scipy
     - scoop
     - symmetry
     - xlwt
-    - dde
-
 test:
   source_files:
     - 'examples/rmg/superminimal'

@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -486,6 +486,21 @@ class TestGetAtomType(unittest.TestCase):
         self.mol74 = Molecule().fromAdjacencyList('''1 H  u0 p0 c0 {2,S}
                                                      2 I  u0 p3 c0 {1,S}''')
 
+        self.mol75 = Molecule().fromAdjacencyList('''1 H  u0 p0 c0 {2,S}
+                                                     2 F  u0 p3 c0 {1,S}''')
+
+        self.mol76 = Molecule().fromAdjacencyList('''1 H u0 p0 c0 {2,S}
+                                                     2 X u0 p0 c0 {1,S}''')
+
+        self.mol77 = Molecule().fromAdjacencyList('''1 C u0 p0 c0 {2,S} {3,S} {5,S} {6,S}
+                                                     2 H u0 p0 c0 {1,S}
+                                                     3 H u0 p0 c0 {1,S}
+                                                     4 X u0 p0 c0
+                                                     5 H u0 p0 c0 {1,S}
+                                                     6 H u0 p0 c0 {1,S}''')
+
+        self.mol78 = Molecule().fromAdjacencyList('''1 X u0 p0 c0''')
+
     def atomType(self, mol, atomID):
         atom = mol.atoms[atomID]
         type = getAtomType(atom, mol.getBonds(atom))
@@ -520,7 +535,7 @@ class TestGetAtomType(unittest.TestCase):
         self.assertEqual(self.atomType(self.mol59, 0), 'C2dc')
         self.assertEqual(self.atomType(self.mol60, 2), 'C2dc')
         self.assertEqual(self.atomType(self.mol20, 0), 'C2tc')
-        self.assertEqual(self.atomType(self.mol29, 0), 'C2tc')
+        self.assertEqual(self.atomType(self.mol29, 0), 'C2tc')  # todo: add in a ciq unit test?
     
     def testNitrogenTypes(self):
         """
@@ -568,7 +583,7 @@ class TestGetAtomType(unittest.TestCase):
         self.assertEqual(self.atomType(self.mol4, 1), 'SiO')
         self.assertEqual(self.atomType(self.mol4, 5), 'Sid')
         self.assertEqual(self.atomType(self.mol4, 4), 'Sidd')
-        self.assertEqual(self.atomType(self.mol4, 7), 'Sit')
+        self.assertEqual(self.atomType(self.mol4, 7), 'Sit')  #todo: add in Siq unit test?
     
     def testSulfurTypes(self):
         """
@@ -616,6 +631,12 @@ class TestGetAtomType(unittest.TestCase):
         """
         self.assertEqual(self.atomType(self.mol74, 1), 'I1s')
 
+    def testFluorineTypes(self):
+        """
+        Test that getAtomType() returns appropriate fluorine atom types.
+        """
+        self.assertEqual(self.atomType(self.mol75, 1), 'F1s')
+
     def testOtherTypes(self):
         """
         Test that getAtomType() returns appropriate types for other misc inerts.
@@ -624,7 +645,24 @@ class TestGetAtomType(unittest.TestCase):
         self.assertEqual(self.atomType(self.mol7, 0), 'He')
         self.assertEqual(self.atomType(self.mol8, 0), 'Ne')
 
+    def testOccupiedSurfaceAtomType(self):
+        """
+        Test that getAtomType() works for occupied surface sites and for regular atoms in the complex.
+        """
+        self.assertEqual(self.atomType(self.mol76, 0), 'H')
+        self.assertEqual(self.atomType(self.mol76, 1), 'Xo')
+
+    def testVacantSurfaceSiteAtomType(self):
+        """
+        Test that getAtomType() works for vacant surface sites and for regular atoms in the complex.
+        """
+        self.assertEqual(self.atomType(self.mol77, 0), 'Cs')
+        self.assertEqual(self.atomType(self.mol77, 1), 'H')
+        self.assertEqual(self.atomType(self.mol77, 3), 'Xv')
+        self.assertEqual(self.atomType(self.mol78, 0), 'Xv')
+
 ################################################################################
+
 
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))

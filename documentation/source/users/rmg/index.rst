@@ -22,7 +22,7 @@ rmg_dev@mit.edu.
     installation/index
     input
     examples
-    running    
+    running
     output
     guidelines
     modules/index
@@ -31,11 +31,12 @@ rmg_dev@mit.edu.
     database/index
     thermo
     kinetics
-    liquids 
+    liquids
+    surfaces
     faq
     releaseNotes
     credits
-    
+
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`

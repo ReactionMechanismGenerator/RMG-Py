@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -34,11 +34,12 @@ Used in isomorphismTest.py to create group_atomtypes
 """
 
 class AbstractAtomType(object):
-    def __init__(self, element = None, label=None, double=-1, triple=-1, benzene=-1, lp=-1, chrg=-1):
+    def __init__(self, element = None, label=None, double=-1, triple=-1, quadruple=-1, benzene=-1, lp=-1, chrg=-1):
         self.element = element
         self.label = label
         self.double = double
         self.triple = triple
+        self.quadruple = quadruple
         self.benzene = benzene
         self.lp = lp
         self.chrg = chrg
@@ -61,37 +62,43 @@ class Column6(AbstractAtomType): # O, S
 class Xs(AbstractAtomType):
     def __init__(self, *args, **kwargs):
             super(self.__class__, self).__init__(*args, **kwargs)
-            self.double, self.triple, self.benzene = 0, 0, 0
+            self.double, self.triple, self.benzene, self.quadruple = 0, 0, 0, 0
             self.label = 's'
             
 class Xd(AbstractAtomType):
     def __init__(self, *args, **kwargs):
             super(self.__class__, self).__init__(*args, **kwargs)
-            self.double, self.triple, self.benzene = 1, 0, 0
+            self.double, self.triple, self.benzene, self.quadruple = 1, 0, 0, 0
             self.label = 'd'
             
 class Xdd(AbstractAtomType):
     def __init__(self, *args, **kwargs):
             super(self.__class__, self).__init__(*args, **kwargs)
-            self.double, self.triple, self.benzene = 2, 0, 0
+            self.double, self.triple, self.benzene, self.quadruple = 2, 0, 0, 0
             self.label = 'dd'
             
 class Xt(AbstractAtomType):
     def __init__(self, *args, **kwargs):
             super(self.__class__, self).__init__(*args, **kwargs)
-            self.double, self.triple, self.benzene = 0, 1, 0
+            self.double, self.triple, self.benzene, self.quadruple = 0, 1, 0, 0
             self.label = 't'
+                        
+class Xq(AbstractAtomType):
+    def __init__(self, *args, **kwargs):
+            super(self.__class__, self).__init__(*args, **kwargs)
+            self.double, self.triple, self.benzene, self.quadruple = 0, 0, 0, 1
+            self.label = 'q'
                         
 class Xb(AbstractAtomType):
     def __init__(self, *args, **kwargs):
             super(self.__class__, self).__init__(*args, **kwargs)
-            self.double, self.triple, self.benzene = 0, 0, 2
+            self.double, self.triple, self.benzene, self.quadruple = 0, 0, 2, 0
             self.label = 'b'            
 
 class Xbf(AbstractAtomType):
     def __init__(self, *args, **kwargs):
             super(self.__class__, self).__init__(*args, **kwargs)
-            self.double, self.triple, self.benzene = 0, 0, 3
+            self.double, self.triple, self.benzene, self.quadruple = 0, 0, 3, 0
             self.label = 'bf'
                             
 def create_atom_types():

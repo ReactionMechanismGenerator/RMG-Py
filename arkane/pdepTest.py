@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -52,18 +52,18 @@ class ArkaneTest(unittest.TestCase):
     """
 
     @classmethod
-    def setUp(self):
+    def setUp(cls):
         """A function that is run ONCE before all unit tests in this class."""
-        self.directory = os.path.join(settings['test_data.directory'], 'arkane', 'tst1', '')
-        self.input_file = os.path.join(self.directory, 'pdep_sa.py')
+        cls.directory = os.path.join(settings['test_data.directory'], 'arkane', 'tst1', '')
+        cls.input_file = os.path.join(cls.directory, 'pdep_sa.py')
 
         # clean working folder from all previous test output
-        dirs = [d for d in os.listdir(self.directory) if not os.path.isfile(os.path.join(self.directory, d))]
+        dirs = [d for d in os.listdir(cls.directory) if not os.path.isfile(os.path.join(cls.directory, d))]
         for d in dirs:
             shutil.rmtree(os.path.join(settings['test_data.directory'], 'arkane', 'tst1', d, ''))
-        files = [f for f in os.listdir(self.directory) if os.path.isfile(os.path.join(self.directory, f))]
+        files = [f for f in os.listdir(cls.directory) if os.path.isfile(os.path.join(cls.directory, f))]
         for f in files:
-            if not 'pdep_sa' in f:
+            if 'pdep_sa' not in f:
                 os.remove(os.path.join(settings['test_data.directory'], 'arkane', 'tst1', f))
 
     def testPDepJob(self):
@@ -84,9 +84,9 @@ class ArkaneTest(unittest.TestCase):
         self.assertEquals(job.minimumGrainCount, 100)
         self.assertFalse(job.rmgmode)
         self.assertTrue(job.activeJRotor)
-        self.assertEquals(job.network.pathReactions[0].label,'acetylperoxy <=> hydroperoxylvinoxy')
-        self.assertAlmostEquals(job.network.pathReactions[0].transitionState.tunneling.E0_TS.value_si,-24267.2)
-        self.assertAlmostEquals(job.network.pathReactions[0].transitionState.tunneling.frequency.value_si,-1679.04)
+        self.assertEquals(job.network.pathReactions[0].label, 'acetylperoxy <=> hydroperoxylvinoxy')
+        self.assertAlmostEquals(job.network.pathReactions[0].transitionState.tunneling.E0_TS.value_si, -24267.2)
+        self.assertAlmostEquals(job.network.pathReactions[0].transitionState.tunneling.frequency.value_si, -1679.04)
         self.assertEquals(len(job.network.netReactions[0].reactants[0].conformer.modes), 6)
         # self.assertEquals(self.tst1.frequencyScaleFactor, 0.947)
 
@@ -96,7 +96,7 @@ class ArkaneTest(unittest.TestCase):
 
         # Test the generated network reaction
         dictionary = {'hydroperoxylvinoxy': Species().fromSMILES('[CH2]C(=O)OO'),
-        'acetylperoxy': Species().fromSMILES('CC(=O)O[O]')}
+                      'acetylperoxy': Species().fromSMILES('CC(=O)O[O]')}
         with open(os.path.join(self.directory, 'chem.inp'), 'r') as chem:
             reaction_list = readReactionsBlock(chem, dictionary)
         rxn = reaction_list[0]
@@ -116,16 +116,16 @@ class ArkaneTest(unittest.TestCase):
         self.assertEquals(float(sa_coeff), -8.24e-6)
 
     @classmethod
-    def tearDown(self):
+    def tearDown(cls):
         """A function that is run ONCE after all unit tests in this class."""
-        self.directory = os.path.join(settings['test_data.directory'], 'arkane', 'tst1', '')
-        self.input_file = os.path.join(self.directory, 'pdep_sa.py')
+        cls.directory = os.path.join(settings['test_data.directory'], 'arkane', 'tst1', '')
+        cls.input_file = os.path.join(cls.directory, 'pdep_sa.py')
 
         # clean working folder from all previous test output
-        dirs = [d for d in os.listdir(self.directory) if not os.path.isfile(os.path.join(self.directory, d))]
+        dirs = [d for d in os.listdir(cls.directory) if not os.path.isfile(os.path.join(cls.directory, d))]
         for d in dirs:
             shutil.rmtree(os.path.join(settings['test_data.directory'], 'arkane', 'tst1', d, ''))
-        files = [f for f in os.listdir(self.directory) if os.path.isfile(os.path.join(self.directory, f))]
+        files = [f for f in os.listdir(cls.directory) if os.path.isfile(os.path.join(cls.directory, f))]
         for f in files:
-            if not 'pdep_sa' in f:
+            if 'pdep_sa' not in f:
                 os.remove(os.path.join(settings['test_data.directory'], 'arkane', 'tst1', f))

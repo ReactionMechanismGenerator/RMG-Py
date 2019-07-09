@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -52,6 +52,12 @@ def retrieveElementCount(obj):
                     element_count[element] += int(count)
                 else:
                     element_count[element] = int(count)
+
+        # For surface species, replace Pt with X again
+        if 'Pt' in element_count:
+            element_count['X'] = element_count['Pt']
+            del element_count['Pt']
+
         return element_count
     
     elif isinstance(obj, Molecule):

@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -695,6 +695,7 @@ class TestRateCoefficient(unittest.TestCase):
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0, delta=1e-6)
         self.assertEqual(q.units, "s^-1")
+        self.assertAlmostEqual(q.getConversionFactorFromSItoCmMolS(), 1.0, places=1) # 1 /s  =  1 /s
 
     def test_m3permols(self):
         """
@@ -704,6 +705,7 @@ class TestRateCoefficient(unittest.TestCase):
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0, delta=1e-6)
         self.assertEqual(q.units, "m^3/(mol*s)")
+        self.assertAlmostEqual(q.getConversionFactorFromSItoCmMolS(), 1e6, places=1) # 1 m3/mol/s  =  1e6  cm3/mol/s
 
     def test_m6permol2s(self):
         """
@@ -713,6 +715,7 @@ class TestRateCoefficient(unittest.TestCase):
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0, delta=1e-6)
         self.assertEqual(q.units, "m^6/(mol^2*s)")
+        self.assertAlmostEqual(q.getConversionFactorFromSItoCmMolS(), 1e12, places=1) # 1 m6/mol2/s  =  1e12  cm6/mol2/s
 
     def test_m9permol3s(self):
         """
@@ -722,6 +725,7 @@ class TestRateCoefficient(unittest.TestCase):
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si, 1.0, delta=1e-6)
         self.assertEqual(q.units, "m^9/(mol^3*s)")
+        self.assertAlmostEqual(q.getConversionFactorFromSItoCmMolS(), 1e18, delta=1e3) # 1 m9/mol3/s  =  1e18  cm9/mol3/s
 
     def test_cm3permols(self):
         """
@@ -731,6 +735,7 @@ class TestRateCoefficient(unittest.TestCase):
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si*1e6, 1.0, delta=1e-6)
         self.assertEqual(q.units, "cm^3/(mol*s)")
+        self.assertAlmostEqual(q.getConversionFactorFromSItoCmMolS(), 1e6, places=1) # 1 m3/mol/s  =  1 cm3/mol/s
 
     def test_cm6permol2s(self):
         """
@@ -740,6 +745,7 @@ class TestRateCoefficient(unittest.TestCase):
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si*(1e6)**2, 1.0, delta=1e-6)
         self.assertEqual(q.units, "cm^6/(mol^2*s)")
+        self.assertAlmostEqual(q.getConversionFactorFromSItoCmMolS(), 1e12, places=1)  # 1 m6/mol2/s  =  1e12  cm6/mol2/s
 
     def test_cm9permol3s(self):
         """
@@ -749,6 +755,7 @@ class TestRateCoefficient(unittest.TestCase):
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si*(1e6)**3, 1.0, delta=1e-6)
         self.assertEqual(q.units, "cm^9/(mol^3*s)")
+        self.assertAlmostEqual(q.getConversionFactorFromSItoCmMolS(), 1e18, delta=1e3)  # 1 m9/mol3/s  =  1e18  cm9/mol3/s
 
     def test_cm3permolecules(self):
         """
@@ -758,6 +765,7 @@ class TestRateCoefficient(unittest.TestCase):
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si*1e6/constants.Na, 1.0, delta=1e-6)
         self.assertEqual(q.units, "cm^3/(molecule*s)")
+        self.assertAlmostEqual(q.getConversionFactorFromSItoCmMolS(), 1e6, delta=1e0)  # 1 m3/mol/s  =  1e6 cm3/mol/s
 
     def test_cm6permolecule2s(self):
         """
@@ -767,6 +775,7 @@ class TestRateCoefficient(unittest.TestCase):
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si*(1e6/constants.Na)**2, 1.0, delta=1e-6)
         self.assertEqual(q.units, "cm^6/(molecule^2*s)")
+        self.assertAlmostEqual(q.getConversionFactorFromSItoCmMolS(), 1e12 , delta=1e0)  # 1 m6/mol2/s  =  1e12 cm6/mol2/s
 
     def test_cm9permolecule3s(self):
         """
@@ -776,6 +785,8 @@ class TestRateCoefficient(unittest.TestCase):
         self.assertAlmostEqual(q.value, 1.0, 6)
         self.assertAlmostEqual(q.value_si*(1e6/constants.Na)**3, 1.0, delta=1e-6)
         self.assertEqual(q.units, "cm^9/(molecule^3*s)")
+        print q.units
+        self.assertAlmostEqual(q.getConversionFactorFromSItoCmMolS(), 1e18 , delta=1e3)  # 1 m9/mole3/s  =  1e18 cm9/mol3/s
 
 ################################################################################
 
@@ -1040,3 +1051,6 @@ class TestQuantity(unittest.TestCase):
         self.assertEqual(repr(self.Cp),repr(self.Cp_array))
         self.assertEqual(repr(v),repr(self.v))
         self.assertEqual(repr(self.v),repr(self.v_array))
+
+
+

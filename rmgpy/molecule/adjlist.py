@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -35,6 +35,7 @@ adjacency list format used by Reaction Mechanism Generator (RMG).
 import logging
 import warnings
 import re
+import numpy as np
 from .molecule import Atom, Bond, getAtomType
 from .group import GroupAtom, GroupBond
 from .element import getElement, PeriodicSystem
@@ -84,12 +85,16 @@ class ConsistencyChecker(object):
             the theoretical one:
             
             '''
+            if atom.symbol == 'X':
+                return  # because we can't check it.
+        
             valence = PeriodicSystem.valence_electrons[atom.symbol]
             order = atom.getBondOrdersForAtom()
                 
             theoretical = valence - order - atom.radicalElectrons - 2*atom.lonePairs
 
-            if atom.charge != theoretical:
+            if not (-0.301 < atom.charge - theoretical < 0.301):
+                # It should be 0, but -0.1 is caused by a Hydrogen bond
                 raise InvalidAdjacencyListError(
                     ('Invalid valency for atom {symbol} ({type}) with {radicals} unpaired electrons, '
                     '{lonePairs} pairs of electrons, {charge} charge, and bonds [{bonds}].'

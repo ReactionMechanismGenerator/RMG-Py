@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -55,7 +55,7 @@ from rmgpy.data.thermo import findCp0andCpInf
 from rmgpy.data.rmg import getDB
 import rmgpy.molecule.element
 from rmgpy.kinetics.arrhenius import MultiArrhenius
-from rmgpy.reaction import isomorphic_species_lists
+from rmgpy.reaction import same_species_lists
 
 def initialize_isotope_model(rmg, isotopes):
     """
@@ -179,9 +179,8 @@ def generate_isotope_reactions(isotopeless_reactions, isotopes):
         rxns_w_same_reactants = [rxn]
         rxn_index2 = rxn_index + 1
         while rxn_index2 < len(isotopeless_reactions):
-            if isomorphic_species_lists(isotopeless_reactions[rxn_index].reactants,
-                                      isotopeless_reactions[rxn_index2].reactants,
-                                     ):
+            if same_species_lists(isotopeless_reactions[rxn_index].reactants,
+                                  isotopeless_reactions[rxn_index2].reactants,):
                 rxns_w_same_reactants.append(isotopeless_reactions[rxn_index2])
                 del isotopeless_reactions[rxn_index2]
             else:
@@ -210,8 +209,8 @@ def generate_isotope_reactions(isotopeless_reactions, isotopes):
         while rxn_index3 < len(reactant_pairs):
             rxn_index4 = rxn_index3 + 1
             while rxn_index4 < len(reactant_pairs):
-                if isomorphic_species_lists(reactant_pairs[rxn_index3],
-                                          reactant_pairs[rxn_index4]):
+                if same_species_lists(reactant_pairs[rxn_index3],
+                                      reactant_pairs[rxn_index4]):
                     del reactant_pairs[rxn_index4]
                 else:
                     rxn_index4 += 1

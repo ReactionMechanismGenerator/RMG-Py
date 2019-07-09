@@ -42,3 +42,4 @@ network.
 The Solver Folder
 ------------------ 
 RMG currently includes a solver for isothermal batch reactors. This is in fact a critical part of the model enlargement algorithm. If you have included simulations in your input file, the solutions will be located in ``/solver``. You will probably only be interested in the files with the largest number tags.  
+Please note that up to and including RMG-Py version 2.3.0 these files showed mole fraction of each species at each step, but they now show amount (number of moles) of each species; you must divide by the sum if you wish to get a mole fraction.

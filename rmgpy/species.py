@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -81,16 +81,16 @@ class Species(object):
                                 always considered regardless of this variable
     `props`                 A generic 'properties' dictionary to store user-defined flags
     `aug_inchi`             Unique augmented inchi
-    `isSolvent`             Boolean describing whether this species is the solvent
+    `symmetryNumber`        Estimated symmetry number of the species, using the resonance hybrid
     `creationIteration`     Iteration which the species is created within the reaction mechanism generation algorithm
+    `explicitlyAllowed`     Flag to exempt species from forbidden structure checks
     ======================= ====================================================
 
     """
 
-    def __init__(self, index=-1, label='', thermo=None, conformer=None, 
-                 molecule=None, transportData=None, molecularWeight=None, 
-                 energyTransferModel=None, reactive=True, props=None, aug_inchi=None,
-                 symmetryNumber = -1, creationIteration = 0, explicitlyAllowed=False):
+    def __init__(self, index=-1, label='', thermo=None, conformer=None, molecule=None, transportData=None,
+                 molecularWeight=None, energyTransferModel=None, reactive=True, props=None, SMILES='', InChI='',
+                 aug_inchi=None, symmetryNumber = -1, creationIteration = 0, explicitlyAllowed=False):
         self.index = index
         self.label = label
         self.thermo = thermo
@@ -106,14 +106,25 @@ class Species(object):
         self.isSolvent = False
         self.creationIteration = creationIteration
         self.explicitlyAllowed = explicitlyAllowed
+        self._fingerprint = None
+        self._inchi = None
+        self._smiles = None
+
+        if InChI and SMILES:
+            logging.warning('Both InChI and SMILES provided for Species instantiation, using InChI and ignoring SMILES.')
+        if InChI:
+            self.molecule = [Molecule(InChI=InChI)]
+            self._inchi = InChI
+        elif SMILES:
+            self.molecule = [Molecule(SMILES=SMILES)]
+            self._smiles = SMILES
+
         # Check multiplicity of each molecule is the same
         if molecule is not None and len(molecule)>1:
             mult = molecule[0].multiplicity
             for m in molecule[1:]:
                 if mult != m.multiplicity:
                     raise SpeciesError('Multiplicities of molecules in species {species} do not match.'.format(species=label))
-        
-
 
     def __repr__(self):
         """
@@ -155,6 +166,42 @@ class Species(object):
         return (Species, (self.index, self.label, self.thermo, self.conformer, self.molecule, self.transportData, self.molecularWeight, self.energyTransferModel, self.reactive, self.props))
 
     @property
+    def fingerprint(self):
+        """Fingerprint of this species, taken from molecule attribute. Read-only."""
+        if self._fingerprint is None:
+            if self.molecule:
+                self._fingerprint = self.molecule[0].fingerprint
+        return self._fingerprint
+
+    @property
+    def InChI(self):
+        """InChI string representation of this species. Read-only."""
+        if self._inchi is None:
+            if self.molecule:
+                self._inchi = self.molecule[0].InChI
+        return self._inchi
+
+    @property
+    def SMILES(self):
+        """
+        SMILES string representation of this species. Read-only.
+
+        Note that SMILES representations for different resonance structures of the same species may be different.
+        """
+        if self._smiles is None:
+            if self.molecule:
+                self._smiles = self.molecule[0].SMILES
+        return self._smiles
+
+    @property
+    def multiplicity(self):
+        """Fingerprint of this species, taken from molecule attribute. Read-only."""
+        if self.molecule:
+            return self.molecule[0].multiplicity
+        else:
+            return None
+
+    @property
     def molecularWeight(self):
         """The molecular weight of the species. (Note: value_si is in kg/molecule not kg/mol)"""
         if self._molecularWeight is None and self.molecule is not None and len(self.molecule) > 0:
@@ -172,59 +219,49 @@ class Species(object):
         `molecule` is already greater than one, it is assumed that all of the
         resonance structures have already been generated.
         """
-        if len(self.molecule) == 1:
+        if len(self.molecule) == 1 or not self.molecule[0].atomIDValid():
             if not self.molecule[0].atomIDValid():
                 self.molecule[0].assignAtomIDs()
             self.molecule = self.molecule[0].generate_resonance_structures(keep_isomorphic=keep_isomorphic,
                                                                            filter_structures=filter_structures)
     
-    def isIsomorphic(self, other, generate_res=False):
+    def isIsomorphic(self, other, generateInitialMap=False, strict=True):
         """
         Return ``True`` if the species is isomorphic to `other`, which can be
         either a :class:`Molecule` object or a :class:`Species` object.
-        If generate_res is ``True`` and other is a :class:`Species` object, the resonance structures of other will
-        be generated and isomorphically compared against self. This is useful for situations where a
-        "non-representative" resonance structure of self is generated, and it should be identified as the same Species,
-        and be assigned a reactive=False flag.
+
+        Args:
+            generateInitialMap (bool, optional): If ``True``, make initial map by matching labeled atoms
+            strict (bool, optional):             If ``False``, perform isomorphism ignoring electrons.
         """
         if isinstance(other, Molecule):
             for molecule in self.molecule:
-                if molecule.isIsomorphic(other):
+                if molecule.isIsomorphic(other, generateInitialMap=generateInitialMap, strict=strict):
                     return True
         elif isinstance(other, Species):
             for molecule1 in self.molecule:
                 for molecule2 in other.molecule:
-                    if molecule1.isIsomorphic(molecule2):
+                    if molecule1.isIsomorphic(molecule2, generateInitialMap=generateInitialMap, strict=strict):
                         return True
-            if generate_res:
-                other_copy = other.copy(deep=True)
-                other_copy.generate_resonance_structures(keep_isomorphic=False)
-                for molecule1 in self.molecule:
-                    for molecule2 in other_copy.molecule:
-                        if molecule1.isIsomorphic(molecule2):
-                            # If they are isomorphic and this was found only by generating resonance structures, append
-                            # the structure in other to self.molecule as unreactive, since it is a non-representative
-                            # resonance structure of it, and return `True`.
-                            other_copy.molecule[0].reactive = False
-                            self.molecule.append(other_copy.molecule[0])
-                            return True
         else:
             raise ValueError('Unexpected value "{0!r}" for other parameter; should be a Molecule or Species object.'.format(other))
         return False
 
-    def isIdentical(self, other):
+    def isIdentical(self, other, strict=True):
         """
         Return ``True`` if at least one molecule of the species is identical to `other`,
         which can be either a :class:`Molecule` object or a :class:`Species` object.
+
+        If ``strict=False``, performs the check ignoring electrons and resonance structures.
         """
         if isinstance(other, Molecule):
             for molecule in self.molecule:
-                if molecule.isIdentical(other):
+                if molecule.isIdentical(other, strict=strict):
                     return True
         elif isinstance(other, Species):
             for molecule1 in self.molecule:
                 for molecule2 in other.molecule:
-                    if molecule1.isIdentical(molecule2):
+                    if molecule1.isIdentical(molecule2, strict=strict):
                         return True
         else:
             raise ValueError('Unexpected value "{0!r}" for other parameter;'
@@ -341,6 +378,16 @@ class Species(object):
         ``False`` otherwise.
         """
         return self.thermo is not None
+
+    def containsSurfaceSite(self):
+        """
+        Return ``True`` if the species is adsorbed on a surface (or is itself a site), else ``False``.
+        """
+        return self.molecule[0].containsSurfaceSite()
+
+    def isSurfaceSite(self):
+        "Return ``True`` if the species is a vacant surface site."
+        return self.molecule[0].isSurfaceSite()
 
     def getPartitionFunction(self, T):
         """
@@ -635,9 +682,9 @@ class Species(object):
         try:
             transportDB = getDB('transport')        
             if not transportDB: raise Exception
-        except Exception, e:
+        except Exception:
             logging.debug('Could not obtain the transport database. Not generating transport...')
-            raise e
+            raise
 
         #count = sum([1 for atom in self.molecule[0].vertices if atom.isNonHydrogen()])
         self.transportData = transportDB.getTransportProperties(self)[0]
@@ -665,9 +712,9 @@ class Species(object):
         try:
             statmechDB = getDB('statmech')        
             if not statmechDB: raise Exception
-        except Exception, e:
+        except Exception:
             logging.debug('Could not obtain the stat. mech database. Not generating stat. mech...')
-            raise e
+            raise
 
         molecule = self.molecule[0]
         conformer = statmechDB.getStatmechData(molecule, self.getThermoData())
@@ -707,8 +754,26 @@ class Species(object):
             alpha0 = (300*0.011962,"kJ/mol"),
             T0 = (300,"K"),
             n = 0.85,
-        ) 
+        )
+
+    def set_structure(self, structure):
+        """
+        Set self.molecule from `structure` which could be either a SMILES string or an adjacency list multi-line string
+        """
+        if not self.molecule:
+            try:
+                self.molecule = [Molecule(SMILES=structure)]
+            except ValueError:
+                try:
+                    self.molecule = [Molecule().fromAdjacencyList(structure)]
+                except ValueError:
+                    logging.error("Cannot understand the given structure '{0}' of species {1}. Could not "
+                                  "interpret it as SMILES nor as adjacency list".format(structure, self.label))
+                    raise
+            self.generate_resonance_structures()
+
 ################################################################################
+
 
 class TransitionState():
     """
@@ -753,11 +818,14 @@ class TransitionState():
         """
         return (TransitionState, (self.label, self.conformer, self.frequency, self.tunneling, self.degeneracy))
 
-    def getFrequency(self):
+    @property
+    def frequency(self):
+        """The negative frequency of the first-order saddle point."""
         return self._frequency
-    def setFrequency(self, value):
+
+    @frequency.setter
+    def frequency(self, value):
         self._frequency = quantity.Frequency(value)
-    frequency = property(getFrequency, setFrequency, """The negative frequency of the first-order saddle point.""")
 
     def getPartitionFunction(self, T):
         """
