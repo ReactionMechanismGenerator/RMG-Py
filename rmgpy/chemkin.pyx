@@ -205,10 +205,16 @@ def read_kinetics_entry(entry, species_dict, Aunits, Eunits):
 
         # Note that the subsequent lines could be in any order
         for line in lines[1:]:
-            kinetics = _read_kinetics_line(
-                line=line, reaction=reaction, species_dict=species_dict, Eunits=Eunits,
-                kunits=k_units, klow_units=k_low_units,
-                kinetics=kinetics)
+            try:
+                kinetics = _read_kinetics_line(
+                    line=line, reaction=reaction, species_dict=species_dict, Eunits=Eunits,
+                    kunits=k_units, klow_units=k_low_units,
+                    kinetics=kinetics)
+            except ChemkinError as e:
+                logging.error("Could not read kinetics for {0}".format(reaction))
+                # Could raise an error beginning with "Skip reaction!"
+                e.message = "Skip reaction! "+e.message
+                raise e
 
         # Decide which kinetics to keep and store them on the reaction object
         # Only one of these should be true at a time!
@@ -356,7 +362,7 @@ def _read_kinetics_reaction(line, species_dict, Aunits, Eunits):
         if collider.upper().strip() != "(+M)":  # the collider is a specific species, not (+M) or (+m)
             if collider.strip()[2:-1] not in species_dict:  # stripping spaces, '(+' and ')'
                 raise ChemkinError(
-                    'Unexpected third body collider "{0}" in reaction {1}.'.format(collider.strip()[2:-1], reaction))
+                    'Unexpected third body collider "{0}" in reaction {1}. Ensure case is preserved'.format(collider.strip()[2:-1], reaction))
             specific_collider = species_dict[collider.strip()[2:-1]]
 
     # Create a new Reaction object for this reaction
@@ -560,8 +566,9 @@ def _read_kinetics_line(line, reaction, species_dict, Eunits, kunits, klow_units
                     kinetics['efficiencies'][species_dict[collider.strip()].molecule[0]] = efficiency
                 else:  # try it with capital letters? Not sure whose malformed chemkin files this is needed for.
                     kinetics['efficiencies'][species_dict[collider.strip().upper()].molecule[0]] = efficiency
-        except IndexError:
+        except (IndexError, KeyError): # IndexError if there is no molecule[0], KeyError if the key does not exist in the species dict
             error_msg = 'Could not read collider efficiencies for reaction: {0}.\n'.format(reaction)
+            error_msg += 'Collider {!r} structure not known.\n'.format(collider)
             error_msg += 'The following line was parsed incorrectly:\n{0}'.format(line)
             error_msg += "\n(Case-preserved tokens: {0!r} )".format(case_preserved_tokens)
             raise ChemkinError(error_msg)
