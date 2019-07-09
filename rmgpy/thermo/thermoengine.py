@@ -123,7 +123,7 @@ def generateThermoData(spc, thermoClass=NASA, solventName=''):
     It then calls :meth:`processThermoData`, to convert (via Wilhoit) to NASA
     and set the E0.
     
-    Result stored in `spc.thermo` and returned.
+    Result returned but not stored in `spc.thermo`.
     """
     
     try:
