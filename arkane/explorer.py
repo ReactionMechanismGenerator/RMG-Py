@@ -282,6 +282,7 @@ class ExplorerJob(object):
             if self.energy_tol != np.inf or self.flux_tol != 0.0:
 
                 rxnSet = None
+                productSet = None
 
                 for T in Tlist:
                     if self.energy_tol != np.inf:
@@ -293,17 +294,26 @@ class ExplorerJob(object):
 
                     for P in Plist:
                         if self.flux_tol != 0.0:
-                            rxns = network.get_rate_filtered_reactions(T, P, self.flux_tol)
-                            if rxnSet is not None:
-                                rxnSet &= set(rxns)
+                            products = network.get_rate_filtered_products(T, P, self.flux_tol)
+                            products = [tuple(x) for x in products]
+                            if productSet is not None:
+                                productSet &= set(products)
                             else:
-                                rxnSet = set(rxns)
+                                productSet = set(products)
 
-                logging.info('removing reactions during reduction:')
-                for rxn in rxnSet:
-                    logging.info(rxn)
 
-                network.remove_reactions(reaction_model, list(rxnSet))
+                if rxnSet:
+                    logging.info('removing reactions during reduction:')
+                    for rxn in rxnSet:
+                        logging.info(rxn)
+                    rxnSet = list(rxnSet)
+                if productSet:
+                    logging.info('removing products during reduction:')
+                    for prod in productSet:
+                        logging.info([x.label for x in prod])
+                    productSet = list(productSet)
+
+                network.remove_reactions(reaction_model, rxns=rxnSet, prods=productSet)
 
                 for rxn in jobRxns:
                     if rxn not in network.pathReactions:

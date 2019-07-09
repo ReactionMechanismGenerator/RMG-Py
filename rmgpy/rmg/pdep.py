@@ -402,8 +402,8 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         
         isomerSpcs = [iso.species[0] for iso in self.isomers]
         
-        for rxn in self.pathReactions:
 
+        for rxn in self.netReactions:
             if rxn.reactants[0] in isomerSpcs:
                 ind = isomerSpcs.index(rxn.reactants[0])
                 kf = rxn.getRateCoefficient(T,P)
@@ -416,16 +416,16 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                 A[ind2,ind2] -= kr
             else:
                 ind2 = None
-            
-            if ind and ind2:
+
+            if ind is not None and ind2 is not None:
                 A[ind,ind2] += kr
                 A[ind2,ind] += kf
-            
+
             if bimolecular:
-                if rxn.reactants[0].species == self.source:
+                if rxn.reactants[0] == self.source:
                     kf = rxn.getRateCoefficient(T,P)
                     b[ind2] += kf
-                elif rxn.products[0].species == self.source:
+                elif rxn.products[0] == self.source:
                     kr = rxn.getRateCoefficient(T,P)/rxn.getEquilibriumConstant(T)
                     b[ind] += kr
         
@@ -532,16 +532,45 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         self.Nreac = len(self.reactants)
         self.Nprod = len(self.products)
 
-    def remove_reactions(self,reactionModel,rxns):
+    def remove_reactions(self,reactionModel,rxns=None,prods=None):
         """
         removes a list of reactions from the network and all reactions/products
         left disconnected by removing those reactions
         """
-        for rxn in rxns:
-            self.pathReactions.remove(rxn)
-            
+        if rxns:
+            for rxn in rxns:
+                self.pathReactions.remove(rxn)
+
+        if prods:
+            isomers = [x.species[0] for x in self.isomers]
+
+            for prod in prods:
+                prod = [x for x in prod]
+                if prod[0] in isomers: #skip isomers
+                    continue
+                for rxn in self.pathReactions:
+                    if rxn.products == prod or rxn.reactants == prod:
+                        self.pathReactions.remove(rxn)
+
+            prodspc = [x[0] for x in prods]
+            for prod in prods:
+                prod = [x for x in prod]
+                if prod[0] in isomers: #deal with isomers
+                    for rxn in self.pathReactions:
+                        if rxn.reactants == prod and rxn.products[0] not in isomers and rxn.products[0] not in prodspc:
+                            break
+                        if rxn.products == prod and rxn.reactants[0] not in isomers and rxn.reactants not in prodspc:
+                            break
+                    else:
+                        for rxn in self.pathReactions:
+                            if rxn.reactants == prod or rxn.products == prod:
+                                self.pathReactions.remove(rxn)
+
+
         self.remove_disconnected_reactions()
-        
+
+        self.cleanup()
+
         self.invalidate()
         
         assert self.pathReactions != [], 'Reduction process removed all reactions, cannot update network with no reactions'
