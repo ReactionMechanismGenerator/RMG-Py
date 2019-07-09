@@ -513,7 +513,7 @@ class ModelMatcher():
                 logging.info("Blocking {0} from being {1}".format(species_label, smiles))
 
                 rmg_species, wasNew = self.rmg_object.reactionModel.makeNewSpecies(molecule)
-                rmg_species.generateResonanceIsomers()
+                rmg_species.generate_resonance_structures()
                 if wasNew:
                     self.drawSpecies(rmg_species)
                     rmg_species.generateThermoData(self.rmg_object.database)
@@ -602,7 +602,7 @@ class ModelMatcher():
 
             species = self.speciesDict[species_label]
             species.molecule = [molecule]
-            species.generateResonanceIsomers()
+            species.generate_resonance_structures()
             identified_labels.append(species_label)
 
         logging.info("Identified {0} species:".format(len(identified_labels)))
@@ -1003,7 +1003,7 @@ class ModelMatcher():
                 species.molecule = [Molecule().fromAdjacencyList('1 C u0 p2 c0')]
             else:
                 species.molecule = [Molecule(SMILES=smiles)]
-            species.generateResonanceIsomers()
+            species.generate_resonance_structures()
             identified_labels.append(species_label)
             self.saveMatchToFile(species_label, species)
 
@@ -1023,7 +1023,7 @@ class ModelMatcher():
             self.smilesDict[species_label] = smiles
             species = self.speciesDict[species_label]
             species.molecule = [Molecule(SMILES=smiles)]
-            species.generateResonanceIsomers()
+            species.generate_resonance_structures()
             self.identified_labels.append(species_label)
 
     def askForMatchID(self, speciesLabel, possibleMatches):
@@ -1840,7 +1840,7 @@ class ModelMatcher():
         rm.processNewReactions(newReactions, newSpecies, pdepNetwork)
         # this will call rm.checkForExistingSpecies to see if it already
         # exists in rm.speciesDict and if not there, will add to rm.newSpeciesList
-        # and call .generateResonanceIsomers on each Species.
+        # and call .generate_resonance_structures on each Species.
 
         if objectWasInEdge:
             # moved one species from edge to core
@@ -1989,7 +1989,7 @@ class ModelMatcher():
                 rmg_species.reactive = False
                 old_species.reactive = False
                 # when this occurs in collider lists it's still the old species?
-            rmg_species.generateResonanceIsomers()
+            rmg_species.generate_resonance_structures()
             try:
                 rmg_species.generateThermoData(self.rmg_object.database)
             except:
@@ -2009,7 +2009,7 @@ class ModelMatcher():
         votes = self.votes
 
         # Now would be a good time to save identified reactions?
-        # All the species in self.identified_labels should have been through generateResonanceIsomers and generateThermoData
+        # All the species in self.identified_labels should have been through generate_resonance_structures and generateThermoData
         for chemkinReaction in chemkinReactionsUnmatched[:]:  # iterate over a copy of the list, so you can modify the list itself
             if self.reagentsAreAllIdentified(chemkinReaction):
                 chemkinReactionsUnmatched.remove(chemkinReaction)
@@ -2895,7 +2895,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
         smiles = str(SMILES)
         proposal = Molecule(SMILES=str(smiles))
         species, isnew = self.rmg_object.reactionModel.makeNewSpecies(proposal)
-        species.generateResonanceIsomers()
+        species.generate_resonance_structures()
         self.drawSpecies(species)
         if isnew:
             species.generateThermoData(self.rmg_object.database)
