@@ -657,6 +657,7 @@ class ModelMatcher():
         if not Chem.inchi.INCHI_AVAILABLE:
             logging.warning("RDKit installed without InChI support so running without QM calculations!")
         elif args.mopac:
+            logging.info("Using MOPAC semiemprical quantum calculations for cyclic species.")
             rmgpy.rmg.input.quantumMechanics(
                 software='mopac',
                 method='pm3',
