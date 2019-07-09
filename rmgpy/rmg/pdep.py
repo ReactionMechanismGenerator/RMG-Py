@@ -472,22 +472,48 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                 logging.info('Removing rxn: {}'.format(rxn))
                 self.pathReactions.remove(rxn)
                 
+        nrxns = []
+        for nrxn in self.netReactions:
+           if nrxn.products not in keptProducts or nrxn.reactants not in keptProducts:
+               logging.info('Removing net rxn: {}'.format(nrxn))
+           else:
+               logging.info('Keeping net rxn: {}'.format(nrxn))
+               nrxns.append(nrxn)
+        self.netReactions = nrxns
+
+        prods = []
         for prod in self.products:
             if prod.species not in keptProducts:
                 logging.info('Removing product: {}'.format(prod))
-                self.products.remove(prod)
-            
+            else:
+                logging.info("Keeping product: {}".format(prod))
+                prods.append(prod)
+
+        self.products = prods
+
+        rcts = []
         for rct in self.reactants:
             if rct.species not in keptProducts:
                 logging.info('Removing product: {}'.format(rct))
-                self.reactants.remove(react)
-        
+            else:
+                logging.info("Keeping product: {}".format(rct))
+                rcts.append(rct)
+        self.reactants = rcts
+
+        isos = []
         for iso in self.isomers:
             if iso.species not in keptProducts:
                 logging.info('Removing isomer: {}'.format(iso))
-                self.isomers.remove(iso)
-                if iso in self.explored:
-                    self.explored.remove(iso)
+            else:
+                logging.info("Keeping isomer: {}".format(iso))
+                isos.append(iso)
+
+        self.isomers = isos
+        self.explored = [iso.species[0] for iso in isos]
+
+        self.Nisom = len(self.isomers)
+        self.Nreac = len(self.reactants)
+        self.Nprod = len(self.products)
 
     def remove_reactions(self,reactionModel,rxns):
         """
