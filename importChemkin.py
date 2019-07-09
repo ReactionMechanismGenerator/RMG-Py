@@ -1318,7 +1318,9 @@ class ModelMatcher():
             thermo.selectPolynomial(thermo.Tmin.value_si).Tmin.value_si = min(298.0, thermo.Tmin.value_si)
             thermo.Tmin.value_si = min(298.0, thermo.Tmin.value_si)
             thermo.comment += "\nLow T polynomial Tmin changed from {0} to {1} K when importing to RMG".format(oldLowT, 298.0)
-        newThermo = thermo.toWilhoit(Cp0=Cp0, CpInf=CpInf)
+        thermo.Cp0 = Cp0
+        thermo.CpInf = CpInf
+        newThermo = thermo.toWilhoit()
         # thermo.selectPolynomial(thermo.Tmin.value_si).Tmin.value_si = oldLowT  # put it back
         self.thermoDict[chemkinLabel].E0 = newThermo.E0
 
