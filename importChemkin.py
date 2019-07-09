@@ -40,6 +40,7 @@ import rmgpy.data.kinetics
 from rmgpy.chemkin import loadChemkinFile, readSpeciesBlock, readThermoBlock, readReactionsBlock, removeCommentFromLine
 from rmgpy.rmg.model import ReactionModel
 
+from rmgpy.thermo.thermoengine import generateThermoData
 from rmgpy.data.thermo import Entry, saveEntry
 from rmgpy.data.base import Entry as kinEntry
 from rmgpy.data.kinetics.common import saveEntry as kinSaveEntry
@@ -187,9 +188,14 @@ def parseCommandLineArguments():
         action='store_true',
         help='run pressure-dependence calculations')
     parser.add_argument(
+        '--mopac',
+        action='store_true',
+        help='do run QM thermo calculations using MOPAC for cyclic species')
+    parser.add_argument(
         '--noqm',
         action='store_true',
-        help='do NOT run QM thermo calculations')
+        help="Deprecated. See --mopac argument.",
+    )
 
     # Options for controlling the amount of information printed to the console
     # By default a moderate level of information is printed; you can either
@@ -513,10 +519,10 @@ class ModelMatcher():
                 logging.info("Blocking {0} from being {1}".format(species_label, smiles))
 
                 rmg_species, wasNew = self.rmg_object.reactionModel.makeNewSpecies(molecule)
-                rmg_species.generateResonanceIsomers()
+                rmg_species.generate_resonance_structures()
                 if wasNew:
                     self.drawSpecies(rmg_species)
-                    rmg_species.generateThermoData(self.rmg_object.database)
+                    rmg_species.thermo = generateThermoData(rmg_species)
 
                 if species_label not in self.blockedMatches:
                     self.blockedMatches[species_label] = dict()
@@ -602,7 +608,7 @@ class ModelMatcher():
 
             species = self.speciesDict[species_label]
             species.molecule = [molecule]
-            species.generateResonanceIsomers()
+            species.generate_resonance_structures()
             identified_labels.append(species_label)
 
         logging.info("Identified {0} species:".format(len(identified_labels)))
@@ -626,12 +632,12 @@ class ModelMatcher():
         rmgpy.util.makeOutputSubdirectory(rmg.outputDirectory, 'species')
         rmg.databaseDirectory = databaseDirectory
         rmg.thermoLibraries = ['primaryThermoLibrary',
-                               'KlippensteinH2O2',
+                               'BurkeH2O2',
                                'DFT_QCI_thermo',
                                'CBS_QB3_1dHR',
                                'GRI-Mech3.0', ]
-        rmg.kineticsFamilies = ['!Substitution_O']
-        rmg.reactionLibraries = [('KlippensteinH2O2', False),
+        rmg.kineticsFamilies = ['default','fake_for_importer']
+        rmg.reactionLibraries = [('BurkeH2O2inN2', False),
                                  ('Glarborg/C3', False),
                                  ('Glarborg/highP', False),
                                  ('GRI-Mech3.0', False), ]
@@ -651,7 +657,8 @@ class ModelMatcher():
         from rdkit import Chem
         if not Chem.inchi.INCHI_AVAILABLE:
             logging.warning("RDKit installed without InChI support so running without QM calculations!")
-        elif not args.noqm:
+        elif args.mopac:
+            logging.info("Using MOPAC semiemprical quantum calculations for cyclic species.")
             rmgpy.rmg.input.quantumMechanics(
                 software='mopac',
                 method='pm3',
@@ -1003,7 +1010,7 @@ class ModelMatcher():
                 species.molecule = [Molecule().fromAdjacencyList('1 C u0 p2 c0')]
             else:
                 species.molecule = [Molecule(SMILES=smiles)]
-            species.generateResonanceIsomers()
+            species.generate_resonance_structures()
             identified_labels.append(species_label)
             self.saveMatchToFile(species_label, species)
 
@@ -1023,7 +1030,7 @@ class ModelMatcher():
             self.smilesDict[species_label] = smiles
             species = self.speciesDict[species_label]
             species.molecule = [Molecule(SMILES=smiles)]
-            species.generateResonanceIsomers()
+            species.generate_resonance_structures()
             self.identified_labels.append(species_label)
 
     def askForMatchID(self, speciesLabel, possibleMatches):
@@ -1201,8 +1208,8 @@ class ModelMatcher():
                             else:
                                 pass
                                 # logging.info("Thermo matches {0}, from {1}, but it's already in the model.".format(ck_label, library_name))
+                            rmg_species.thermo = generateThermoData(rmg_species)
 
-                            rmg_species.generateThermoData(self.rmg_object.database)
                             logging.info("Thermo match found for chemkin species {0} in thermo library {1}".format(ck_label, library_name))
                             self.setThermoMatch(ck_label, rmg_species, library_name, entry.label)
 
@@ -1311,7 +1318,9 @@ class ModelMatcher():
             thermo.selectPolynomial(thermo.Tmin.value_si).Tmin.value_si = min(298.0, thermo.Tmin.value_si)
             thermo.Tmin.value_si = min(298.0, thermo.Tmin.value_si)
             thermo.comment += "\nLow T polynomial Tmin changed from {0} to {1} K when importing to RMG".format(oldLowT, 298.0)
-        newThermo = thermo.toWilhoit(Cp0=Cp0, CpInf=CpInf)
+        thermo.Cp0 = Cp0
+        thermo.CpInf = CpInf
+        newThermo = thermo.toWilhoit()
         # thermo.selectPolynomial(thermo.Tmin.value_si).Tmin.value_si = oldLowT  # put it back
         self.thermoDict[chemkinLabel].E0 = newThermo.E0
 
@@ -1840,7 +1849,7 @@ class ModelMatcher():
         rm.processNewReactions(newReactions, newSpecies, pdepNetwork)
         # this will call rm.checkForExistingSpecies to see if it already
         # exists in rm.speciesDict and if not there, will add to rm.newSpeciesList
-        # and call .generateResonanceIsomers on each Species.
+        # and call .generate_resonance_structures on each Species.
 
         if objectWasInEdge:
             # moved one species from edge to core
@@ -1855,6 +1864,7 @@ class ModelMatcher():
         logging.info('Generating thermodynamics for new species...')
         for spec in newSpeciesList:
             try:
+                spec.thermo = generateThermoData(spec,)
                 spec.generateThermoData(database, quantumMechanics=rm.quantumMechanics)
             except:
                 logging.exception("Error generating thermo for species:\n{0!s}".format(spec.toAdjacencyList()))
@@ -1989,9 +1999,9 @@ class ModelMatcher():
                 rmg_species.reactive = False
                 old_species.reactive = False
                 # when this occurs in collider lists it's still the old species?
-            rmg_species.generateResonanceIsomers()
+            rmg_species.generate_resonance_structures()
             try:
-                rmg_species.generateThermoData(self.rmg_object.database)
+                rmg_species.thermo = generateThermoData(rmg_species)
             except:
                 logging.error("Couldn't generate thermo for RMG species {}".format(rmg_species))
                 raise
@@ -2009,7 +2019,7 @@ class ModelMatcher():
         votes = self.votes
 
         # Now would be a good time to save identified reactions?
-        # All the species in self.identified_labels should have been through generateResonanceIsomers and generateThermoData
+        # All the species in self.identified_labels should have been through generate_resonance_structures and generateThermoData
         for chemkinReaction in chemkinReactionsUnmatched[:]:  # iterate over a copy of the list, so you can modify the list itself
             if self.reagentsAreAllIdentified(chemkinReaction):
                 chemkinReactionsUnmatched.remove(chemkinReaction)
@@ -2895,10 +2905,10 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
         smiles = str(SMILES)
         proposal = Molecule(SMILES=str(smiles))
         species, isnew = self.rmg_object.reactionModel.makeNewSpecies(proposal)
-        species.generateResonanceIsomers()
+        species.generate_resonance_structures()
         self.drawSpecies(species)
         if isnew:
-            species.generateThermoData(self.rmg_object.database)
+            species.thermo = generateThermoData(species)
 
         # get a list of names from Cactus
         url = "http://cactus.nci.nih.gov/chemical/structure/{0}/names".format(urllib2.quote(smiles))
