@@ -40,6 +40,7 @@ import rmgpy.data.kinetics
 from rmgpy.chemkin import loadChemkinFile, readSpeciesBlock, readThermoBlock, readReactionsBlock, removeCommentFromLine
 from rmgpy.rmg.model import ReactionModel
 
+from rmgpy.thermo.thermoengine import generateThermoData
 from rmgpy.data.thermo import Entry, saveEntry
 from rmgpy.data.base import Entry as kinEntry
 from rmgpy.data.kinetics.common import saveEntry as kinSaveEntry
@@ -521,7 +522,7 @@ class ModelMatcher():
                 rmg_species.generate_resonance_structures()
                 if wasNew:
                     self.drawSpecies(rmg_species)
-                    rmg_species.generateThermoData(self.rmg_object.database)
+                    rmg_species.thermo = generateThermoData(rmg_species)
 
                 if species_label not in self.blockedMatches:
                     self.blockedMatches[species_label] = dict()
@@ -1207,8 +1208,8 @@ class ModelMatcher():
                             else:
                                 pass
                                 # logging.info("Thermo matches {0}, from {1}, but it's already in the model.".format(ck_label, library_name))
+                            rmg_species.thermo = generateThermoData(rmg_species)
 
-                            rmg_species.generateThermoData(self.rmg_object.database)
                             logging.info("Thermo match found for chemkin species {0} in thermo library {1}".format(ck_label, library_name))
                             self.setThermoMatch(ck_label, rmg_species, library_name, entry.label)
 
@@ -1861,6 +1862,7 @@ class ModelMatcher():
         logging.info('Generating thermodynamics for new species...')
         for spec in newSpeciesList:
             try:
+                spec.thermo = generateThermoData(spec,)
                 spec.generateThermoData(database, quantumMechanics=rm.quantumMechanics)
             except:
                 logging.exception("Error generating thermo for species:\n{0!s}".format(spec.toAdjacencyList()))
@@ -1997,7 +1999,7 @@ class ModelMatcher():
                 # when this occurs in collider lists it's still the old species?
             rmg_species.generate_resonance_structures()
             try:
-                rmg_species.generateThermoData(self.rmg_object.database)
+                rmg_species.thermo = generateThermoData(rmg_species)
             except:
                 logging.error("Couldn't generate thermo for RMG species {}".format(rmg_species))
                 raise
@@ -2904,7 +2906,7 @@ $('#thermomatches_count').html("("+json.thermomatches+")");
         species.generate_resonance_structures()
         self.drawSpecies(species)
         if isnew:
-            species.generateThermoData(self.rmg_object.database)
+            species.thermo = generateThermoData(species)
 
         # get a list of names from Cactus
         url = "http://cactus.nci.nih.gov/chemical/structure/{0}/names".format(urllib2.quote(smiles))
