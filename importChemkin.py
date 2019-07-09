@@ -635,7 +635,7 @@ class ModelMatcher():
                                'DFT_QCI_thermo',
                                'CBS_QB3_1dHR',
                                'GRI-Mech3.0', ]
-        rmg.kineticsFamilies = ['!Substitution_O']
+        rmg.kineticsFamilies = ['default','fake_for_importer']
         rmg.reactionLibraries = [('BurkeH2O2inN2', False),
                                  ('Glarborg/C3', False),
                                  ('Glarborg/highP', False),
