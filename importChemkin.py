@@ -187,9 +187,14 @@ def parseCommandLineArguments():
         action='store_true',
         help='run pressure-dependence calculations')
     parser.add_argument(
+        '--mopac',
+        action='store_true',
+        help='do run QM thermo calculations using MOPAC for cyclic species')
+    parser.add_argument(
         '--noqm',
         action='store_true',
-        help='do NOT run QM thermo calculations')
+        help="Deprecated. See --mopac argument.",
+    )
 
     # Options for controlling the amount of information printed to the console
     # By default a moderate level of information is printed; you can either
@@ -651,7 +656,7 @@ class ModelMatcher():
         from rdkit import Chem
         if not Chem.inchi.INCHI_AVAILABLE:
             logging.warning("RDKit installed without InChI support so running without QM calculations!")
-        elif not args.noqm:
+        elif args.mopac:
             rmgpy.rmg.input.quantumMechanics(
                 software='mopac',
                 method='pm3',
