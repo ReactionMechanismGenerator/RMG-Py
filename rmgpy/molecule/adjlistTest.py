@@ -821,6 +821,42 @@ class TestMoleculeAdjLists(unittest.TestCase):
 6 C 0 {5,S}"""
         self.assertEqual(molecule2.to_adjacency_list(remove_h=True, old_style=True).strip(), string.strip())
 
+    def test_molecular_term_symbol1(self):
+        """
+        adjlist: Test that the molecular_term_symbol attribute is generated correctly.
+        """
+        OH_ground = Molecule().from_adjacency_list("""multiplicity 2
+1 O u1 p2 c0 {2,S}
+2 H u0 p0 c0 {1,S}
+""")
+        OH_excited = Molecule().from_adjacency_list("""multiplicity 2
+molecular_term_symbol A^2S+
+1 O u1 p2 c0 {2,S}
+2 H u0 p0 c0 {1,S}
+""")
+
+        self.assertEqual(OH_ground.molecular_term_symbol, '')
+        self.assertEqual(OH_excited.molecular_term_symbol, 'A^2S+')
+
+    def test_molecular_term_symbol2(self):
+        """
+        adjlist: Test that the molecular_term_symbol attribute is generated correctly.
+        """
+        string1 = """
+multiplicity 2
+molecular_term_symbol A^2S+
+1 O u1 p2 c0 {2,S}
+2 H u0 p0 c0 {1,S}
+"""
+        string2 = """multiplicity 2
+molecular_term_symbol A^2S+
+1 O u1 p2 c0 {2,S}
+2 H u0 p0 c0 {1,S}
+"""
+        OH_excited1 = Molecule().from_adjacency_list(string1)
+        OH_excited2 = Molecule().from_adjacency_list(string2)
+        self.assertEqual(OH_excited1.molecular_term_symbol, 'A^2S+')
+        self.assertTrue(OH_excited1.is_isomorphic(OH_excited2))
 
 ################################################################################
 class TestConsistencyChecker(unittest.TestCase):
