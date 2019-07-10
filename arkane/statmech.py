@@ -435,7 +435,9 @@ class StatMechJob(object):
                 atom_corrections = 0
                 logging.warning('Atom corrections are not being used. Do not trust energies and thermo.')
             if self.applyBondEnergyCorrections:
-                bond_corrections = get_bac(self.modelChemistry, bonds, coordinates, number,
+                if not self.bonds and hasattr(self.species, 'molecule') and self.species.molecule:
+                    self.bonds = self.species.molecule[0].enumerate_bonds()
+                bond_corrections = get_bac(self.modelChemistry, self.bonds, coordinates, number,
                                            bac_type=self.bondEnergyCorrectionType, multiplicity=conformer.spinMultiplicity)
             else:
                 bond_corrections = 0

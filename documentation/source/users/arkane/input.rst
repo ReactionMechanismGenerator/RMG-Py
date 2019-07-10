@@ -199,7 +199,10 @@ to apply atomization energy corrections (AEC) and spin orbit corrections (SOC) f
 atom corrections can be turned off by setting ``useAtomCorrections`` to ``False``.
 
 The ``bonds`` parameter is used to apply bond additivity corrections (BACs) for a given ``modelChemistry`` if using
-Petersson-type BACs (``bondCorrectionType = 'p'``). When using Melius-type BACs (``bondCorrectionType = 'm'``),
+Petersson-type BACs (``bondCorrectionType = 'p'``).
+If the species' structure is specified in the Arkane input file, then the `bonds` attribute
+can be automatically populated. Including this parameter in this case will overwrite
+the automatically generated bonds. When using Melius-type BACs (``bondCorrectionType = 'm'``),
 specifying ``bonds`` is not required because the molecular connectivity is automatically inferred from the output of the
 quantum chemistry calculation.
 For a description of Petersson-type BACs, see Petersson et al., J. Chem. Phys. 1998, 109, 10570-10579.
