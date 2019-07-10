@@ -59,7 +59,7 @@ from arkane.molpro import MolproLog
 from arkane.qchem import QChemLog
 from arkane.common import symbol_by_number
 from arkane.common import ArkaneSpecies
-from arkane.encorr.corr import get_energy_correction
+from arkane.encorr.corr import get_atom_correction, get_bac
 
 
 ################################################################################
@@ -427,15 +427,19 @@ class StatMechJob(object):
                 e_electronic = energyLog.loadEnergy(zpe_scale_factor)  # in J/mol
             else:
                 e_electronic *= constants.E_h * constants.Na  # convert Hartree/particle into J/mol
-            if not self.applyAtomEnergyCorrections:
+            if self.applyAtomEnergyCorrections:
+                atom_corrections = get_atom_correction(self.modelChemistry,
+                                                       atoms, self.atomEnergies)
+                
+            else:
+                atom_corrections = 0
                 logging.warning('Atom corrections are not being used. Do not trust energies and thermo.')
-            corrections = get_energy_correction(
-                self.modelChemistry, atoms, self.bonds, coordinates, number,
-                multiplicity=conformer.spinMultiplicity, atom_energies=self.atomEnergies,
-                apply_atom_corrections=self.applyAtomEnergyCorrections, apply_bac=self.applyBondEnergyCorrections,
-                bac_type=self.bondEnergyCorrectionType
-            )
-            e_electronic_with_corrections = e_electronic + corrections
+            if self.applyBondEnergyCorrections:
+                bond_corrections = get_bac(self.modelChemistry, bonds, coordinates, number,
+                                           bac_type=self.bondEnergyCorrectionType, multiplicity=conformer.spinMultiplicity)
+            else:
+                bond_corrections = 0
+            e_electronic_with_corrections = e_electronic + atom_corrections + bond_corrections
             # Get ZPE only for polyatomic species (monoatomic species don't have frequencies, so ZPE = 0)
             zpe = statmechLog.loadZeroPointEnergy() * zpe_scale_factor if len(number) > 1 else 0
             logging.debug('Scaled zero point energy (ZPE) is {0} J/mol'.format(zpe))
