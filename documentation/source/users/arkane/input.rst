@@ -210,7 +210,8 @@ Allowed bond types for the ``bonds`` parameter are, e.g., ``'C-H'``, ``'C-C'``, 
 
 ``'O=S=O'`` is also allowed.
 
-The order of elements in the bond correction label is not important. Use ``-``/``=``/``#`` to denote a
+The order of elements in the bond correction label is important. The first atom
+should follow this priority: 'C', 'N', 'O', 'S', 'P', and 'H'. For bonds, use ``-``/``=``/``#`` to denote a
 single/double/triple bond, respectively. For example, for formaldehyde we would write::
 
     bonds = {'C=O': 1, 'C-H': 2}
