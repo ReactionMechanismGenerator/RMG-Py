@@ -425,11 +425,20 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
     atomdict = {}
     bonds = {}
     multiplicity = None
+    molecularTermSymbol = ''
     
     adjlist = adjlist.strip()
     lines = adjlist.splitlines()
     if adjlist == '' or len(lines) == 0:
         raise InvalidAdjacencyListError('Empty adjacency list.')
+
+    if lines[0].split()[0] == 'molecularTermSymbol':
+        line = lines.pop(0)
+        match = re.match('\s*molecularTermSymbol\s+\S+\s*$', line)
+        assert match, "Invalid molecularTermSymbol line '{0}'. Should be a string like 'molecularTermSymbol A^2S+'".format(line)
+        molecularTermSymbol = line.split()[1]
+        if len(lines) == 0:
+            raise InvalidAdjacencyListError('No atoms specified in adjacency list: \n{0}'.format(adjlist))
 
     # Detect old-style adjacency lists by looking at the last line's syntax
     lastLine = lines[-1].strip()
@@ -494,9 +503,15 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
         # Skip if blank line
         if len(data) == 0: continue
 
+        # The first like is the if molecularTermSymbol, reading in it's info
+        if "molecularTermSymbol" == data[0]:
+            molecularTermSymbol = data[1]
+            continue
+
         # First item is index for atom
         # Sometimes these have a trailing period (as if in a numbered list),
         # so remove it just in case
+        
         aid = int(data[0].strip('.'))
 
         # If second item starts with '*', then atom is labeled
@@ -715,13 +730,13 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
             
         ConsistencyChecker.check_multiplicity(nRad, multiplicity)
         for atom in atoms: ConsistencyChecker.check_hund_rule(atom, multiplicity)
-        return atoms, multiplicity
+        return atoms, multiplicity, molecularTermSymbol
     else:
         # Currently no group consistency check
-        return atoms, multiplicity
+        return atoms, multiplicity, molecularTermSymbol
 
 
-def toAdjacencyList(atoms, multiplicity, label=None, group=False, removeH=False, removeLonePairs=False, oldStyle=False):
+def toAdjacencyList(atoms, multiplicity, molecularTermSymbol= '', label=None, group=False, removeH=False, removeLonePairs=False, oldStyle=False):
     """
     Convert a chemical graph defined by a list of `atoms` into a string
     adjacency list.
@@ -747,10 +762,14 @@ def toAdjacencyList(atoms, multiplicity, label=None, group=False, removeH=False,
             # Functional group should have a list of possible multiplicities.  
             # If the list is empty, then it does not need to be written
             adjlist += 'multiplicity [{0!s}]\n'.format(','.join(str(i) for i in multiplicity))
+        if molecularTermSymbol:
+            adjlist += 'molecularTermSymbol [{0!s}]\n'.format(','.join(str(i) for i in molecularTermSymbol))
     else:
         assert isinstance(multiplicity, int), "Molecule should have an integer multiplicity"
         if multiplicity != 1 or any( atom.radicalElectrons for atom in atoms ):
             adjlist += 'multiplicity {0!r}\n'.format(multiplicity)
+        if molecularTermSymbol and (molecularTermSymbol != ''):
+            adjlist += 'molecularTermSymbol {0!s}\n'.format(molecularTermSymbol)
 
     # Determine the numbers to use for each atom
     atomNumbers = {}

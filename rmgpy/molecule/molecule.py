@@ -801,15 +801,17 @@ class Molecule(Graph):
     `InChI` string representing the molecular structure.
     """
 
-    def __init__(self, atoms=None, symmetry=-1, multiplicity=-187, reactive=True, props=None, InChI='', SMILES=''):
+    def __init__(self, atoms=None, symmetry=-1, multiplicity=-187, molecularTermSymbol='', reactive=True, props=None, InChI='', SMILES=''):
         Graph.__init__(self, atoms)
         self.symmetryNumber = symmetry
         self.multiplicity = multiplicity
+        self.molecularTermSymbol = molecularTermSymbol
         self.reactive = reactive
         self._fingerprint = None
         self._inchi = None
         self._smiles = None
         self.props = props or {}
+        
 
         if InChI and SMILES:
             logging.warning('Both InChI and SMILES provided for Molecule instantiation, using InChI and ignoring SMILES.')
@@ -1331,7 +1333,7 @@ class Molecule(Graph):
         mapping from `self` to `other` (i.e. the atoms of `self` are the keys,
         while the atoms of `other` are the values). The `other` parameter must
         be a :class:`Molecule` object, or a :class:`TypeError` is raised.
-        Also ensures multiplicities are also equal.
+        Also ensures multiplicities and molecularTermSymbol are also equal.
 
         Args:
             initialMap (dict, optional):         initial atom mapping to use
@@ -1350,6 +1352,9 @@ class Molecule(Graph):
             return False
         # check multiplicity
         if self.multiplicity != other.multiplicity:
+            return False
+        # check molecularTermSymbol
+        if self.molecularTermSymbol != other.molecularTermSymbol:
             return False
         
         if generateInitialMap:
@@ -1566,7 +1571,7 @@ class Molecule(Graph):
         """
         from .adjlist import fromAdjacencyList
         
-        self.vertices, self.multiplicity = fromAdjacencyList(adjlist, group=False, saturateH=saturateH)
+        self.vertices, self.multiplicity, self.molecularTermSymbol = fromAdjacencyList(adjlist, group=False, saturateH=saturateH)
         self.updateAtomTypes()
         self.identifyRingMembership()
         
@@ -1699,7 +1704,7 @@ class Molecule(Graph):
         Convert the molecular structure to a string adjacency list.
         """
         from .adjlist import toAdjacencyList
-        result = toAdjacencyList(self.vertices, self.multiplicity,  label=label, group=False, removeH=removeH, removeLonePairs=removeLonePairs, oldStyle=oldStyle)
+        result = toAdjacencyList(self.vertices, self.multiplicity, molecularTermSymbol=self.molecularTermSymbol, label=label, group=False, removeH=removeH, removeLonePairs=removeLonePairs, oldStyle=oldStyle)
         return result
     
     def find_H_bonds(self):

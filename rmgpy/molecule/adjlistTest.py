@@ -820,6 +820,25 @@ class TestMoleculeAdjLists(unittest.TestCase):
 5 C 1 {4,S} {6,S}
 6 C 0 {5,S}"""
         self.assertEqual(molecule2.toAdjacencyList(removeH=True,oldStyle=True).strip(),string.strip())
+        
+    def testMolecularTermSymbol(self):
+	        """
+	        adjlist: Test that the MolecularTermSymbol attribute is generated correctly.
+	        """
+	        OH_ground = Molecule().fromAdjacencyList("""
+	                        multiplicity 2
+	                        1 O u1 p2 c0 {2,S}
+	                        2 H u0 p0 c0 {1,S}
+	                        """)
+	        OH_excited = Molecule().fromAdjacencyList("""
+	                        multiplicity 2
+	                        MolecularTermSymbol A^2S+
+	                        1 O u1 p2 c0 {2,S}
+	                        2 H u0 p0 c0 {1,S}
+	                        """)
+	
+	        self.assertEqual(OH_ground.molecularTermSymbol,'')
+	        self.assertEqual(OH_excited.molecularTermSymbol,'A^2S+')
 ################################################################################
 class TestConsistencyChecker(unittest.TestCase):
     def test_check_hund_rule_fail(self):
