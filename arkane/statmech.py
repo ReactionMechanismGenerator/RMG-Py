@@ -607,6 +607,11 @@ class StatMechJob(object):
         except (NotImplementedError, AttributeError):
             t1d = None
         self.supporting_info.append(t1d)
+        try:
+            d1d = energyLog.get_D1_diagnostic()
+        except (NotImplementedError, AttributeError):
+            d1d = None
+        self.supporting_info.append(d1d)
         #save conformer
         self.species.conformer = conformer
 

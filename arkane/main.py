@@ -294,7 +294,7 @@ class Arkane:
                                  'Rotational constant (cm-1)','Calculated Frequencies (unscaled and prior to projection, cm^-1)',
                                  'Electronic energy (J/mol)','E0 (electronic energy + ZPE, J/mol)',
                                  'E0 with atom and bond corrections (J/mol)','Atom XYZ coordinates (angstrom)',
-                                 'T1 diagnostic'])
+                                 'T1 diagnostic', 'D1 diagnostic'])
                 for row in supporting_info:
                     label = row[0]
                     rot = '-'
@@ -310,7 +310,8 @@ class Arkane:
                             freq = '{0:.1f}'.format(abs(row[6])) + 'i, '
                         freq += ', '.join(['{0:.1f}'.format(s) for s in row[5]])
                     atoms = ', '.join(["{0}    {1}".format(atom,"    ".join([str(c) for c in coords])) for atom, coords in zip(row[10], row[11])])
-                    writer.writerow([label, row[1], row[2], row[3], rot, freq, row[7], row[8], row[9], atoms, row[12]])
+                    writer.writerow([label, row[1], row[2], row[3], rot, freq, row[7], row[8], row[9], atoms, row[12],
+                                     row[13]])
         if hindered_rotor_info:
             hr_file = os.path.join(self.outputDirectory, 'hindered_rotor_scan_data.csv')
             # find longest length to set column number for energies
