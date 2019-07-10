@@ -134,6 +134,13 @@ class MolproTest(unittest.TestCase):
         imaginary_freq = freq_log.loadNegativeFrequency()
         self.assertEqual(imaginary_freq, -1997.98)
 
+    def test_get_D1_diagnostic(self):
+        """
+        Ensure molpro can retrieve the T1 diagnostic from CCSD calculations
+        """
+        log=MolproLog(os.path.join(os.path.dirname(__file__),'data','ethylene_f12_dz.out'))
+        d1_diagnostic = log.get_D1_diagnostic()
+        self.assertAlmostEqual(d1_diagnostic, 0.03369031)
 
     def test_get_T1_diagnostic(self):
         """

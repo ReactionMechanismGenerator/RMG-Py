@@ -176,6 +176,12 @@ class Log(object):
         finally:
             shutil.rmtree(scr_dir)
 
+    def get_D1_diagnostic(self):
+        """
+        This method returns the D1 diagnostic for certain quantum jobs
+        """
+        raise NotImplementedError("get_D1_diagnostic is not implemented for all Log subclasses.")
+
     def get_T1_diagnostic(self):
         """
         This method returns the T1 diagnostic for certain quantum jobs

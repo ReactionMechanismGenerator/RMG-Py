@@ -409,3 +409,17 @@ class MolproLog(Log):
                 items = line.split()
                 return float(items[-1])
         raise ValueError('Unable to find T1 diagnostic in energy file: {}'.format(self.path))
+
+    def get_D1_diagnostic(self):
+        """
+        Returns the D1 diagnostic from output log.
+        If multiple occurrences exist, returns the last occurence
+        """
+        with open(self.path) as f:
+            log = f.readlines()
+
+        for line in reversed(log):
+            if 'D1 diagnostic:  ' in line:
+                items = line.split()
+                return float(items[-1])
+        raise ValueError('Unable to find D1 diagnostic in energy file: {}'.format(self.path))
