@@ -177,7 +177,7 @@ class TestRMGObject(unittest.TestCase):
         obj = PseudoRMGObject(a=np.array([1.0, 2.0, 3.0]))
         result = obj.as_dict()
 
-        expected = {'class': 'PseudoRMGObject', 'a': [1.0, 2.0, 3.0]}
+        expected = {'class': 'PseudoRMGObject', 'a': {'object': [1.0, 2.0, 3.0], 'class': 'np_array'}}
 
         self.assertEqual(result, expected)
 

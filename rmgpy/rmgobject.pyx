@@ -53,7 +53,7 @@ cdef class RMGObject(object):
         for attr in all_attributes:
             val = getattr(self, attr)
             if val is not None and not callable(val) and val != '':
-                output_dict[attr] = val
+                output_dict[attr] = expand_to_dictionaries(val)
         for key, val in output_dict.iteritems():
             if isinstance(val, list) and val:
                 if isinstance(val[0], RMGObject):
@@ -115,3 +115,43 @@ cdef class RMGObject(object):
                 except ValueError:
                     pass
         self.__init__(**data)
+
+cpdef expand_to_dict(obj):
+    """
+    Takes an object of any type (list, dict, str, int, float, RMGObject, etc.) and returns a dictionary representation 
+    of the object (useful for __repr__ methods and outputting to YAML). The function works recursively to all objects
+    nested in the original object.
+    
+    Args:
+        obj (Any): Object to be represented by a dictionary
+
+    Returns: 
+        Any: dictionary representation of the object (dict, unless str, int, or float, which are returned as themselves)
+
+    """
+    if isinstance(obj, list):
+        return [expand_to_dict(x) for x in obj]
+
+    elif isinstance(obj, dict):
+        # Create a new dictionary to store the expanded objects
+        new_obj = dict()
+
+        for key, value in obj.iteritems():
+            new_key = expand_to_dict(key)
+            new_value = expand_to_dict(value)
+            try:
+                new_obj[new_key] = new_value
+            except TypeError:
+                raise NotImplementedError('Cannot expand objects that are serving as dictionary keys ({0} is serving as'
+                                          'a key). The returned dictionary would not be hashable'.format(key))
+        return new_obj
+
+    elif isinstance(obj, np.ndarray):
+        # Output as a list, but add a class entry so that it can be recreated
+        return {'class': 'np_array', 'object':obj.tolist()}
+
+    else:
+        if hasattr(obj, 'as_dict'):
+            return expand_to_dict(obj.as_dict())
+        else:
+            return obj
