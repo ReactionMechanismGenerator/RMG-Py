@@ -3332,11 +3332,17 @@ class KineticsFamily(Database):
 
         entries = self.groups.entries.values()
         rxnlists = [(templateRxnMap[entry.label],entry.label) if entry.label in templateRxnMap.keys() else [] for entry in entries]
-        inputs = [(self.forwardRecipe.actions,rxns,Tref,fmax,label,[r.rank for r in rxns]) for rxns,label in rxnlists]
+        inputs = np.array([(self.forwardRecipe.actions,rxns,Tref,fmax,label,[r.rank for r in rxns]) for rxns,label in rxnlists])
+
+        inds = np.arange(len(inputs))
+        np.random.shuffle(inds) #want to parallelize in random order
+        inds = inds.tolist()
+        revinds = [inds.index(x) for x in np.arange(len(inputs))]
 
         pool = mp.Pool(nprocs)
 
-        kineticsList = pool.map(makeRule,inputs)
+        kineticsList = np.array(pool.map(makeRule,inputs[inds]))
+        kineticsList = kineticsList[revinds] #fix order
 
         for i,kinetics in enumerate(kineticsList):
             if kinetics is not None:
