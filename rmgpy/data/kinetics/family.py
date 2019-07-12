@@ -3165,6 +3165,22 @@ class KineticsFamily(Database):
 
         return batches
 
+    def pruneTree(self,rxns,thermoDatabase=None,maxRxnsToReoptNode=100,fixLabels=True,exactMatchesOnly=True,getReverse=True):
+        """
+        Remove nodes that have less than maxRxnToReoptNode reactions that match
+        and clear the regularization dimensions of their parent
+        This is used to remove smaller easier to optimize and more likely to change nodes
+        before adding a new batch in cascade model generation
+        """
+        templateRxnMap = self.getReactionMatches(rxns=rxns,thermoDatabase=thermoDatabase,fixLabels=fixLabels,
+                                             exactMatchesOnly=False,getReverse=getReverse)
+        for key,item in templateRxnMap.iteritems():
+            entry = self.groups.entries[key]
+            parent = entry.parent
+            if parent and len(templateRxnMap[parent.label]) < maxRxnsToReoptNode:
+                parent.children.remove(entry)
+                del self.groups.entries[key]
+                parent.item.clearRegDims()
 
         self.makeTreeNodes(templateRxnMap=templateRxnMap,obj=obj,T=T,nprocs=nprocs-1,depth=0,
                            minSplitableEntryNum=minSplitableEntryNum,minRxnsToSpawn=minRxnsToSpawn)
