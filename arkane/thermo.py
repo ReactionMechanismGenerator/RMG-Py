@@ -53,7 +53,7 @@ from rmgpy.molecule import Molecule
 from rmgpy.molecule.util import retrieveElementCount
 
 from arkane.output import prettify
-from arkane.common import ArkaneSpecies
+from arkane.common import ArkaneSpecies, symbol_by_number
 
 
 ################################################################################
@@ -183,15 +183,15 @@ class ThermoJob(object):
         with open(os.path.join(os.path.dirname(outputFile), 'chem.inp'), 'a') as f:
             if isinstance(species, Species):
                 if species.molecule and isinstance(species.molecule[0], Molecule):
-                    element_count = retrieveElementCount(species.molecule[0])
+                    element_counts = retrieveElementCount(species.molecule[0])
                 else:
                     try:
-                        element_count = species.props['element_count']
+                        element_counts = species.props['element_counts']
                     except KeyError:
-                        element_count = {'C': 0, 'H': 0}
+                        element_counts = self.element_count_from_conformer()
             else:
-                element_count = {'C': 0, 'H': 0}
-            chemkin_thermo_string = writeThermoEntry(species, element_count=element_count, verbose=True)
+                element_counts = {'C': 0, 'H': 0}
+            chemkin_thermo_string = writeThermoEntry(species, elementCounts=element_counts, verbose=True)
             f.write('{0}\n'.format(chemkin_thermo_string))
 
         # write species dictionary
@@ -211,6 +211,23 @@ class ThermoJob(object):
                         f.write(species.molecule[0].toAdjacencyList(removeH=False, label=species.label))
                         f.write('\n')
         return chemkin_thermo_string
+
+    def element_count_from_conformer(self):
+        """
+        Get an element count in a dictionary form (e.g.,  {'C': 3, 'H': 8}) from the species.conformer attribute.
+
+        Returns:
+            dict: Element count, keys are element symbols,
+                  values are number of occurrences of the element in the molecule.
+        """
+        element_counts = dict()
+        for number in self.species.conformer.number.value_si:
+            symbol = symbol_by_number[number]
+            if symbol in element_counts:
+                element_counts[symbol] += 1
+            else:
+                element_counts[symbol] = 1
+        return element_counts
 
     def plot(self, outputDirectory):
         """
