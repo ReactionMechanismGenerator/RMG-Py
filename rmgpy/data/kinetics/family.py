@@ -3112,6 +3112,59 @@ class KineticsFamily(Database):
         """
         templateRxnMap = self.getReactionMatches(rxns=rxns,thermoDatabase=thermoDatabase,removeDegeneracy=True,fixLabels=True,
                                                  exactMatchesOnly=True,getReverse=True)
+    def getRxnBatches(self,rxns,T=1000.0,maxBatchSize=800,outlierFraction=0.02,stratumNum=8):
+        """
+        Breaks reactions into batches based on a modified stratified sampling scheme
+        Effectively:
+        The top and bottom outlierFraction of all reactions are always included in the first batch
+        The remaining reactions are ordered by the rate coefficients at T
+        The list of reactions is then split into stratumNum similarly sized intervals
+        batches sample equally from each interval, but randomly within each interval
+        until they reach maxBatchSize reactions
+        A list of lists of reactions containing the batches is returned
+        """
+        ks = np.array([rxn.kinetics.getRateCoefficient(T=T) for rxn in rxns])
+        inds = np.argsort(ks)
+        outlierNum = int(outlierFraction*len(ks)/2)
+        if outlierNum == 0:
+            lowouts = []
+            highouts = []
+        else:
+            lowouts = inds[:outlierNum].tolist()
+            highouts = inds[-outlierNum:].tolist()
+            inds = inds[outlierNum:-outlierNum]
+        intervalLength = int(len(inds)/stratumNum)
+        strata = []
+        for i in xrange(stratumNum):
+            if i == 0:
+                temp = inds[:intervalLength].tolist()
+                random.shuffle(temp)
+                strata.append(temp)
+            elif i == stratumNum - 1:
+                temp = inds[intervalLength*i:].tolist()
+                random.shuffle(temp)
+                strata.append(temp)
+            else:
+                temp = inds[intervalLength*i:intervalLength*(i+1)].tolist()
+                random.shuffle(temp)
+                strata.append(temp)
+
+        firstBatchStrataNum = maxBatchSize-outlierNum
+        batches = [highouts + lowouts]
+        bind = 0
+        while any([len(stratum) != 0 for stratum in strata]):
+            for stratum in strata:
+                if stratum != []:
+                    batches[bind].append(stratum.pop())
+                    if len(batches[bind]) >= maxBatchSize:
+                        bind += 1
+                        batches.append([])
+
+        rxns = np.array(rxns)
+        batches = [rxns[inds].tolist() for inds in batches if len(inds)>0]
+
+        return batches
+
 
         self.makeTreeNodes(templateRxnMap=templateRxnMap,obj=obj,T=T,nprocs=nprocs-1,depth=0,
                            minSplitableEntryNum=minSplitableEntryNum,minRxnsToSpawn=minRxnsToSpawn)
