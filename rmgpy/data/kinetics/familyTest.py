@@ -668,6 +668,7 @@ class TestTreeGeneration(unittest.TestCase):
             ],
         )
         cls.family = cls.kineticsDatabase.families['Singlet_Carbene_Intra_Disproportionation']
+        cls.treerxns = cls.family.getTrainingSet(thermoDatabase=cls.thermoDatabase,removeDegeneracy=True,estimateThermo=True,fixLabels=True,getReverse=True)
 
     @classmethod
     def tearDownClass(cls):
@@ -694,13 +695,13 @@ class TestTreeGeneration(unittest.TestCase):
         """
         def objective(k1s,k2s):
             return len(k1s)*np.std(k1s)+len(k2s)*np.std(k2s)
-        
-        self.family.generateTree(thermoDatabase=self.thermoDatabase,obj=objective) #test input objective function
-        
+
+        self.family.generateTree(thermoDatabase=self.thermoDatabase,rxns=self.treerxns,obj=objective) #test input objective function
+
         self.family.cleanTree(self.thermoDatabase) #reclear
-        
-        self.family.generateTree(thermoDatabase=self.thermoDatabase) #test that default objective works
-        
+
+        self.family.generateTree(thermoDatabase=self.thermoDatabase,rxns=self.treerxns) #test that default objective works
+
     def test_CParentChild(self):
         """
         test that the tree is structured properly
@@ -784,9 +785,10 @@ class TestTreeGeneration(unittest.TestCase):
         """
         test that the tree is structured properly after regularization
         """
-        self.family.cleanTree(self.thermoDatabase)
-        self.family.generateTree(thermoDatabase=self.thermoDatabase)
-        self.family.regularize()
+        self.family.cleanTree()
+        self.family.generateTree(thermoDatabase=self.thermoDatabase,rxns=self.treerxns)
+        self.family.checkTree()
+        self.family.regularize(thermoDatabase=self.thermoDatabase,rxns=self.treerxns)
         self.family.checkTree()
         
 class TestGenerateReactions(unittest.TestCase):
