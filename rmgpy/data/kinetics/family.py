@@ -3256,6 +3256,8 @@ class KineticsFamily(Database):
                 entry = self.groups.entries[label]
                 if not isinstance(entry.item, Group): #skip logic nodes
                     continue
+                if psize == 0.0:
+                    continue
                 if entry.index != -1 and len(templateRxnMap[entry.label])>1 and entry not in multCompletedNodes:
                     if freeProcs > 0 and splitableEntryNum > minSplitableEntryNum and len(templateRxnMap[entry.label])>minRxnsToSpawn:
                         procsOut = int(len(templateRxnMap[entry.label])/psize*freeProcs)
