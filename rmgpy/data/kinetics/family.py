@@ -3484,7 +3484,7 @@ class KineticsFamily(Database):
         
         return errors
 
-    def simpleRegularization(self, node):
+    def simpleRegularization(self, node, templateRxnMap, test=True):
         """
         Simplest regularization algorithm
         All nodes are made as specific as their descendant reactions
@@ -3493,12 +3493,21 @@ class KineticsFamily(Database):
         descendent reactions a reaction where it is Sulfur will never hit that node
         unless it is the top node even if the tree did not split on the identity 
         of that atom
+        
+        The test option to this function determines whether or not the reactions 
+        under a node match the extended group before adding an extension. 
+        If the test fails the extension is skipped. 
+        
+        In general test=True is needed if the cascade algorithm was used 
+        to generate the tree and test=False is ok if the cascade algorithm
+        wasn't used. 
         """
         
         for child in node.children:
-            self.simpleRegularization(child)
-            
+            self.simpleRegularization(child,templateRxnMap)
+
         grp = node.item
+        rxns = templateRxnMap[node.label]
 
         R = ['H','C','N','O','Si','S','Cl'] #set of possible R elements/atoms
         R = [atomTypes[x] for x in R]
@@ -3535,8 +3544,15 @@ class KineticsFamily(Database):
                         vals = list(set(atyp) & set(atm1.reg_dim_atm[1]))
                         assert vals != [], 'cannot regularize to empty'
                         if all([set(child.item.atoms[i].atomType) <= set(vals) for child in node.children]):
-                            atm1.atomType = vals
-                        
+                            if not test:
+                                atm1.atomType = vals
+                            else:
+                                oldvals = atm1.atomType
+                                atm1.atomType = vals
+                                if not self.rxnsMatchNode(node,rxns):
+                                    atm1.atomType = oldvals
+
+
                 if not skip and atm1.reg_dim_u[1] != [] and set(atm1.reg_dim_u[1]) != set(atm1.radicalElectrons):
                     if len(atm1.radicalElectrons) == 1:
                         pass
@@ -3548,14 +3564,31 @@ class KineticsFamily(Database):
                         assert vals != [], 'cannot regularize to empty'
                         
                         if all([set(child.item.atoms[i].radicalElectrons) <= set(vals) if child.item.atoms[i].radicalElectrons != [] else False for child in node.children]):
-                            atm1.radicalElectrons = vals
-                        
+                            if not test:
+                                atm1.radicalElectrons = vals
+                            else:
+                                oldvals = atm1.radicalElectrons
+                                atm1.radicalElectrons = vals
+                                if not self.rxnsMatchNode(node,rxns):
+                                    atm1.radicalElectrons = oldvals
+
                 if not skip and atm1.reg_dim_r[1] != [] and (not 'inRing' in atm1.props.keys() or atm1.reg_dim_r[1][0] != atm1.props['inRing']):
                     if not 'inRing' in atm1.props.keys():
                         if all(['inRing' in child.item.atoms[i].props.keys() for child in node.children]) and all([child.item.atoms[i].props['inRing'] == atm1.reg_dim_r[1] for child in node.children]):
-                            atm1.props['inRing'] = atm1.reg_dim_r[1][0]
-                    
-                if not skip:  
+                            if not test:
+                                atm1.props['inRing'] = atm1.reg_dim_r[1][0]
+                            else:
+                                if 'inRing' in atm1.props.keys():
+                                    oldvals = atm1.props['inRing']
+                                else:
+                                    oldvals = None
+                                atm1.props['inRing'] = atm1.reg_dim_r[1][0]
+                                if not self.rxnsMatchNode(node,rxns):
+                                    if oldvals:
+                                        atm1.props['inRing'] = oldvals
+                                    else:
+                                        del atm1.props['inRing']
+                if not skip:
                     for j,atm2 in enumerate(grp.atoms[:i]):
                         if j in indistinguishable: #skip graphically indistinguishable atoms
                             continue
@@ -3566,18 +3599,30 @@ class KineticsFamily(Database):
                             else:
                                 vals = list(set(bd.order) & set(bd.reg_dim[1]))
                                 if vals != [] and all([set(child.item.getBond(child.item.atoms[i],child.item.atoms[j]).order) <= set(vals) for child in node.children]):
-                                    bd.order = vals
+                                    if not test:
+                                        bd.order = vals
+                                    else:
+                                        oldvals = bd.order
+                                        bd.order = vals
+                                        if not self.rxnsMatchNode(node,rxns):
+                                            bd.order = oldvals
 
-    def regularize(self, regularization=simpleRegularization, keepRoot=True):
+    def regularize(self, regularization=simpleRegularization, keepRoot=True, thermoDatabase=None, templateRxnMap=None, rxns=None):
         """
         Regularizes the tree according to the regularization function regularization
         """
+        if templateRxnMap is None:
+            if rxns is None:
+                templateRxnMap = self.getReactionMatches(thermoDatabase=thermoDatabase,removeDegeneracy=True,getReverse=True,exactMatchesOnly=False,fixLabels=True)
+            else:
+                templateRxnMap = self.getReactionMatches(rxns=rxns,thermoDatabase=thermoDatabase,removeDegeneracy=True,getReverse=True,exactMatchesOnly=False,fixLabels=True)
+
         if keepRoot:
             for child in self.getRootTemplate()[0].children: #don't regularize the root
-                regularization(self,child)
+                regularization(self,child,templateRxnMap)
         else:
-            regularization(self,self.getRootTemplate()[0])
-    
+            regularization(self,self.getRootTemplate()[0],templateRxnMap)
+
     def checkTree(self, entry=None):
         if entry is None:
             entry = self.getRootTemplate()[0]
