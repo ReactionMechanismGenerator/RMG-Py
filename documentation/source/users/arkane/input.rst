@@ -326,7 +326,9 @@ scan in the following format::
                  .                       .
            6.2831853072            0.0000000000
 
-The ``Energy`` can be in units of ``kJ/mol``, ``J/mol``, ``cal/mol``, ``kcal/mol``, ``cm^-1`` or ``hartree``.
+The ``Energy`` can be in units of ``kJ/mol``, ``J/mol`` (default), ``cal/mol``, ``kcal/mol``, ``cm^-1`` or ``hartree``,
+and the ``Angle`` can be either in ``radians`` (default) or in ``degrees``. Units must be specified in parenthesis
+if different than the default.
 
 The ``symmetry`` parameter will usually equal either 1, 2 or 3. It could be determined automatically by Arkane
 (by simply not specifying it altogether), however it is always better to explicitly specify it if it is known. If it is

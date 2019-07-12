@@ -347,7 +347,7 @@ def get_element_mass(input_element, isotope=None):
     else:
         # no specific isotope is required
         if len(mass_list[0]) == 2:
-            # isotop weight is unavailable, use the first entry
+            # isotope weight is unavailable, use the first entry
             mass = mass_list[0][1]
             logging.warn("Assuming isotop {0} is representative of element {1}".format(mass_list[0][0], symbol))
         else:
