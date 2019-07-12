@@ -3083,7 +3083,8 @@ class KineticsFamily(Database):
             
         return True
 
-    def generateTree(self,rxns=None,obj=None,thermoDatabase=None,T=1000.0,nprocs=1,minSplitableEntryNum=2,minRxnsToSpawn=20):
+    def generateTree(self,rxns=None,obj=None,thermoDatabase=None,T=1000.0,nprocs=1,minSplitableEntryNum=2,
+                     minRxnsToSpawn=20,maxBatchSize=800,outlierFraction=0.02,stratumNum=8,maxRxnsToReoptNode=100):
         """
         Generate a tree by greedy optimization based on the objective function obj
         the optimization is done by iterating through every group and if the group has
@@ -3110,8 +3111,31 @@ class KineticsFamily(Database):
             stratumNum: Number of strata used in stratified sampling scheme 
             maxRxnsToReoptNode: Nodes with more matching reactions than this will not be pruned
         """
-        templateRxnMap = self.getReactionMatches(rxns=rxns,thermoDatabase=thermoDatabase,removeDegeneracy=True,fixLabels=True,
+        if rxns is None:
+            rxns = self.getTrainingSet(thermoDatabase=thermoDatabase,removeDegeneracy=True,estimateThermo=True,fixLabels=True,getReverse=True)
+
+        if len(rxns) <= maxBatchSize:
+            templateRxnMap = self.getReactionMatches(rxns=rxns,thermoDatabase=thermoDatabase,removeDegeneracy=True,fixLabels=True,
                                                  exactMatchesOnly=True,getReverse=True)
+            self.makeTreeNodes(templateRxnMap=templateRxnMap,obj=obj,T=T,nprocs=nprocs-1,depth=0,minSplitableEntryNum=minSplitableEntryNum,minRxnsToSpawn=minRxnsToSpawn)
+        else:
+            random.seed(1)
+            logging.error("dividing into batches")
+            batches = self.getRxnBatches(rxns,T=T,maxBatchSize=maxBatchSize,outlierFraction=outlierFraction,stratumNum=stratumNum)
+            logging.error([len(x) for x in batches])
+            for i,batch in enumerate(batches):
+                if i == 0:
+                    rxns = batch
+                else:
+                    rxns += batch
+                    logging.error("pruning tree")
+                    self.pruneTree(rxns,thermoDatabase=thermoDatabase,maxRxnsToReoptNode=maxRxnsToReoptNode)
+                logging.error("getting reaction matches")
+                templateRxnMap = self.getReactionMatches(rxns=rxns,thermoDatabase=thermoDatabase,fixLabels=True,
+                                                     exactMatchesOnly=True,getReverse=True)
+                logging.error("building tree with {} rxns".format(len(rxns)))
+                self.makeTreeNodes(templateRxnMap=templateRxnMap,obj=obj,T=T,nprocs=nprocs-1,depth=0,minSplitableEntryNum=minSplitableEntryNum,minRxnsToSpawn=minRxnsToSpawn)
+
     def getRxnBatches(self,rxns,T=1000.0,maxBatchSize=800,outlierFraction=0.02,stratumNum=8):
         """
         Breaks reactions into batches based on a modified stratified sampling scheme
@@ -3182,8 +3206,6 @@ class KineticsFamily(Database):
                 del self.groups.entries[key]
                 parent.item.clearRegDims()
 
-        self.makeTreeNodes(templateRxnMap=templateRxnMap,obj=obj,T=T,nprocs=nprocs-1,depth=0,
-                           minSplitableEntryNum=minSplitableEntryNum,minRxnsToSpawn=minRxnsToSpawn)
 
     def makeTreeNodes(self,templateRxnMap=None,obj=None,T=1000.0,nprocs=0,depth=0,minSplitableEntryNum=2,minRxnsToSpawn=20):
 
