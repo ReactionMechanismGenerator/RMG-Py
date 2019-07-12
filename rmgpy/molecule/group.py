@@ -1281,7 +1281,7 @@ class Group(Graph):
                         else:
                             extents.extend(self.specifyUnpairedExtensions(i,basename,atm.radicalElectrons))
                 else:
-                    if len(atm.radicalElectrons) != 1:
+                    if len(atm.radicalElectrons) != 1 and len(atm.reg_dim_u[0]) != 1:
                         if len(atm.radicalElectrons) == 0:
                             extents.extend(self.specifyUnpairedExtensions(i,basename,atm.reg_dim_u[0]))
                         else:
@@ -1297,7 +1297,7 @@ class Group(Graph):
                         bd = self.getBond(atm,atm2)
                         if len(bd.order) > 1 and bd.reg_dim[0] == []:
                             extents.extend(self.specifyBondExtensions(i,j,basename,bd.order))
-                        elif len(bd.order) > 1:
+                        elif len(bd.order) > 1 and len(bd.reg_dim[0]) > 1 and len(bd.reg_dim[0]) > len(bd.reg_dim[1]):
                             extents.extend(self.specifyBondExtensions(i,j,basename,bd.reg_dim[0]))
         
         elif atmInd is not None and atmInd2 is not None: #if both atmInd and atmInd2 are defined only look at the bonds between them
@@ -1311,7 +1311,7 @@ class Group(Graph):
                 bd = self.getBond(atm,atm2)
                 if len(bd.order) > 1 and bd.reg_dim[0] == []:
                     extents.extend(self.specifyBondExtensions(i,j,basename,bd.order))
-                elif len(bd.order) > 1:
+                elif len(bd.order) > 1 and len(bd.reg_dim[0]) > 1 and len(bd.reg_dim[0]) > len(bd.reg_dim[1]):
                     extents.extend(self.specifyBondExtensions(i,j,basename,bd.reg_dim[0]))
                     
         elif atmInd is not None: #look at the atom at atmInd
@@ -1341,7 +1341,7 @@ class Group(Graph):
                     else:
                         extents.extend(self.specifyUnpairedExtensions(i,basename,atm.radicalElectrons))
             else:
-                if len(atm.radicalElectrons) != 1:
+                if len(atm.radicalElectrons) != 1 and len(atm.reg_dim_u[0]) != 1:
                     if len(atm.radicalElectrons) == 0:
                         extents.extend(self.specifyUnpairedExtensions(i,basename,atm.reg_dim_u[0]))
                     else:
@@ -1357,7 +1357,7 @@ class Group(Graph):
                     bd = self.getBond(atm,atm2)
                     if len(bd.order) > 1 and bd.reg_dim == []:
                         extents.extend(self.specifyBondExtensions(i,j,basename,bd.order))
-                    elif len(bd.order) > 1:
+                    elif len(bd.order) > 1 and len(bd.reg_dim[0]) > 1 and len(bd.reg_dim[0]) > len(bd.reg_dim[1]):
                         extents.extend(self.specifyBondExtensions(i,j,basename,bd.reg_dim[0]))
         
         else:

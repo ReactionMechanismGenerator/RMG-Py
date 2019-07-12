@@ -3020,7 +3020,9 @@ class KineticsFamily(Database):
                         for rxn in rs:
                             for react in rxn.reactants:
                                 logging.error(react.toAdjacencyList())
-                        raise ValueError('this implies that extensions could not be generated that split at least two different reactions, which should not be possible') #If family.getExtensionEdge and Group.getExtensions operate properly this should always pass
+                        logging.error("Clearing Regularization Dimensions and Reattempting") #this usually happens when node expansion breaks some symmetry
+                        parent.item.clearRegDims() #this almost always solves the problem
+                        return True
             return False
         
         vals = []
