@@ -106,22 +106,25 @@ computations:</p>
 <tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">useBondCorrections</span></code></td>
 <td><code class="docutils literal notranslate"><span class="pre">True</span></code> if bond corrections are used, <code class="docutils literal notranslate"><span class="pre">False</span></code> (by default) if not</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">species</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">bondCorrectionType</span></code></td>
+<td><code class="docutils literal notranslate"><span class="pre">'p'</span></code> for Petersson-type (default) or <code class="docutils literal notranslate"><span class="pre">'m'</span></code> for Melius-type bond additivity corrections</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">species</span></code></td>
 <td>Contains parameters for non-transition states</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">transitionState</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">transitionState</span></code></td>
 <td>Contains parameters for transition state(s)</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">reaction</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">reaction</span></code></td>
 <td>Required for performing kinetic computations</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">statmech</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">statmech</span></code></td>
 <td>Loads statistical mechanics parameters</td>
 </tr>
-<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">thermo</span></code></td>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">thermo</span></code></td>
 <td>Performs a thermodynamics computation</td>
 </tr>
-<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">kinetics</span></code></td>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">kinetics</span></code></td>
 <td>Performs a high-pressure limit kinetic computation</td>
 </tr>
 </tbody>
@@ -512,7 +515,12 @@ The path to the quantum chemistry output file containing the energy</td>
 to apply atomization energy corrections (AEC) and spin orbit corrections (SOC) for a given <code class="docutils literal notranslate"><span class="pre">modelChemistry</span></code>
 (see <a class="reference internal" href="#model-chemistry">Model Chemistry</a>). If not interested in accurate thermodynamics (e.g., if only using <code class="docutils literal notranslate"><span class="pre">kinetics()</span></code>), then
 atom corrections can be turned off by setting <code class="docutils literal notranslate"><span class="pre">useAtomCorrections</span></code> to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">bond</span></code> parameter is used to apply bond corrections (BC) for a given <code class="docutils literal notranslate"><span class="pre">modelChemistry</span></code>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">bonds</span></code> parameter is used to apply bond additivity corrections (BACs) for a given <code class="docutils literal notranslate"><span class="pre">modelChemistry</span></code> if using
+Petersson-type BACs (<code class="docutils literal notranslate"><span class="pre">bondCorrectionType</span> <span class="pre">=</span> <span class="pre">'p'</span></code>). When using Melius-type BACs (<code class="docutils literal notranslate"><span class="pre">bondCorrectionType</span> <span class="pre">=</span> <span class="pre">'m'</span></code>),
+specifying <code class="docutils literal notranslate"><span class="pre">bonds</span></code> is not required because the molecular connectivity is automatically inferred from the output of the
+quantum chemistry calculation.
+For a description of Petersson-type BACs, see Petersson et al., J. Chem. Phys. 1998, 109, 10570-10579.
+For a description of Melius-type BACs, see Anantharaman and Melius, J. Phys. Chem. A 2005, 109, 1734-1747.</p>
 <p>Allowed bond types for the <code class="docutils literal notranslate"><span class="pre">bonds</span></code> parameter are, e.g., <code class="docutils literal notranslate"><span class="pre">'C-H'</span></code>, <code class="docutils literal notranslate"><span class="pre">'C-C'</span></code>, <code class="docutils literal notranslate"><span class="pre">'C=C'</span></code>, <code class="docutils literal notranslate"><span class="pre">'N-O'</span></code>, <code class="docutils literal notranslate"><span class="pre">'C=S'</span></code>,
 <code class="docutils literal notranslate"><span class="pre">'O=O'</span></code>, <code class="docutils literal notranslate"><span class="pre">'C#N'</span></code>…</p>
 <p><code class="docutils literal notranslate"><span class="pre">'O=S=O'</span></code> is also allowed.</p>
