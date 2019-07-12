@@ -658,7 +658,9 @@ scan in the following format:</p>
  <span class="mf">6.2831853072</span>            <span class="mf">0.0000000000</span>
 </pre></div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">Energy</span></code> can be in units of <code class="docutils literal notranslate"><span class="pre">kJ/mol</span></code>, <code class="docutils literal notranslate"><span class="pre">J/mol</span></code>, <code class="docutils literal notranslate"><span class="pre">cal/mol</span></code>, <code class="docutils literal notranslate"><span class="pre">kcal/mol</span></code>, <code class="docutils literal notranslate"><span class="pre">cm^-1</span></code> or <code class="docutils literal notranslate"><span class="pre">hartree</span></code>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">Energy</span></code> can be in units of <code class="docutils literal notranslate"><span class="pre">kJ/mol</span></code>, <code class="docutils literal notranslate"><span class="pre">J/mol</span></code> (default), <code class="docutils literal notranslate"><span class="pre">cal/mol</span></code>, <code class="docutils literal notranslate"><span class="pre">kcal/mol</span></code>, <code class="docutils literal notranslate"><span class="pre">cm^-1</span></code> or <code class="docutils literal notranslate"><span class="pre">hartree</span></code>,
+and the <code class="docutils literal notranslate"><span class="pre">Angle</span></code> can be either in <code class="docutils literal notranslate"><span class="pre">radians</span></code> (default) or in <code class="docutils literal notranslate"><span class="pre">degrees</span></code>. Units must be specified in parenthesis
+if different than the default.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">symmetry</span></code> parameter will usually equal either 1, 2 or 3. It could be determined automatically by Arkane
 (by simply not specifying it altogether), however it is always better to explicitly specify it if it is known. If it is
 determined by Arkane, the log file will specify the determined value and what it was based on. Below are examples of
