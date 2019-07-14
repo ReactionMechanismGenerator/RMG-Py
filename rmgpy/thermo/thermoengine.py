@@ -168,6 +168,8 @@ def evaluator(spc, solventName = ''):
     """
     logging.debug("Evaluating spc %s ", spc)
 
+    from rmgpy.molecule import Molecule
+
     if isinstance(spc.molecule[0], Molecule):
         spc.generate_resonance_structures()
         thermo = generateThermoData(spc, solventName=solventName)
