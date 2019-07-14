@@ -120,7 +120,13 @@ class Species(object):
             self.molecule = [Molecule(inchi=inchi)]
             self._inchi = inchi
         elif smiles:
-            self.molecule = [Molecule(smiles=smiles)]
+            # check it is fragment or molecule
+            import re
+            from afm.fragment import Fragment
+            if re.findall(r'([LR]\d?)', smiles) != []: # Fragment
+                self.molecule = [Fragment(smiles=smiles)]
+            else: # Molecule
+                self.molecule = [Molecule(smiles=smiles)]
             self._smiles = smiles
 
         # Check multiplicity of each molecule is the same
@@ -322,7 +328,7 @@ class Species(object):
                     return True
         elif isinstance(other, Fragment):
             for molecule in self.molecule:
-                if molecule.isIdentical(other):
+                if molecule.isIdentical(other, strict=strict):
                     return True
         elif isinstance(other, Species):
             for molecule1 in self.molecule:
