@@ -226,6 +226,12 @@ class ReservoirStateError(Exception):
     """
     pass
 
+class SensitivityError(Exception):
+    """
+    An exception raised when dealing with sensitivity calculations.
+    """
+    pass
+
 class SettingsError(Exception):
     """
     An exception raised when dealing with settings.
