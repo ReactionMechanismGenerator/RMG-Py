@@ -667,13 +667,16 @@ def determine_qm_software(fullpath):
 
 def is_linear(coordinates):
     """
-    Determine whether or not the species is linear from its 3D coordinates
-    First, try to reduce the problem into just two dimensions, use 3D if the problem cannot be reduced
-    `coordinates` is a numpy.array of the species' xyz coordinates
+    Determine whether or not the species is linear from its 3D coordinates.
+
+    Args:
+        coordinates (np.array): The species' xyz coordinates.
+
+    Returns:
+        bool: Whether or not the species is linear. True if it is.
     """
-    # epsilon is in degrees
-    # (from our experience, linear molecules have precisely 180.0 degrees between all atom triples)
-    epsilon = 0.1
+    # (from our experience, linear molecules have almost precisely 180.0 degrees between all atom triples)
+    epsilon = 0.1  # in degrees
 
     number_of_atoms = len(coordinates)
     if number_of_atoms == 1:
