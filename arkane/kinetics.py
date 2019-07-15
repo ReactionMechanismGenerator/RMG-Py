@@ -151,8 +151,9 @@ class KineticsJob(object):
                 self.plot(os.path.dirname(outputFile))
             self.draw(os.path.dirname(outputFile))
             if self.sensitivity_conditions is not None:
+                perturbation = 0.1  # kcal/mol
                 logging.info('\n\nRunning sensitivity analysis...')
-                sa(self, os.path.dirname(outputFile))
+                sa(self, os.path.dirname(outputFile), perturbation=perturbation)
         logging.debug('Finished kinetics job for reaction {0}.'.format(self.reaction))
         logging.debug(repr(self.reaction))
 

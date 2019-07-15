@@ -66,7 +66,7 @@ class KineticsSensitivity(object):
     =================== ================================================================================================
     """
 
-    def __init__(self, job, output_directory):
+    def __init__(self, job, output_directory, perturbation):
         self.job = job
         self.output_directory = output_directory
         self.sensitivity_path = os.path.join(output_directory, 'sensitivity')
@@ -79,7 +79,7 @@ class KineticsSensitivity(object):
         self.r_sa_rates = {}
         self.f_sa_coefficients = {}
         self.r_sa_coefficients = {}
-        self.perturbation = quantity.Quantity(1, 'kcal/mol')
+        self.perturbation = quantity.Quantity(perturbation, 'kcal/mol')
         self.execute()
 
     def execute(self):
@@ -96,7 +96,7 @@ class KineticsSensitivity(object):
             self.r_sa_rates[species] = [kr.getRateCoefficient(condition.value_si)
                                         for condition in self.conditions]
             self.unperturb(species)
-            # Calculate the sensitivity coefficients according to dln(r) / dln(E0) = (E0 * dr) / (r * dE0)
+            # Calculate the sensitivity coefficients according to dln(r) / dE0 = dr / (r * dE0)
             self.f_sa_coefficients[species] = [(self.f_sa_rates[species][i] - self.f_rates[i]) /
                                                (self.perturbation.value_si * self.f_rates[i])
                                                for i in xrange(len(self.conditions))]
@@ -282,6 +282,7 @@ class PDepSensitivity(object):
             for rxn in self.job.network.netReactions:
                 self.sa_rates[str(rxn)][entry] = [rxn.kinetics.getRateCoefficient(
                     condition[0].value_si, condition[1].value_si) for condition in self.conditions]
+                # Calculate the sensitivity coefficients according to dln(r) / dE0 = dr / (r * dE0)
                 self.sa_coefficients[str(rxn)][entry] = [((self.sa_rates[str(rxn)][entry][i]
                                                            - self.rates[str(rxn)][i])) /
                                                          (self.perturbation.value_si * self.rates[str(rxn)][i])

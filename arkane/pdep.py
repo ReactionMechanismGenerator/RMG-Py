@@ -45,7 +45,7 @@ from rmgpy.reaction import Reaction
 from rmgpy.kinetics.tunneling import Wigner, Eckart
 from rmgpy.data.kinetics.library import LibraryReaction
 from rmgpy.chemkin import writeKineticsEntry
-from rmgpy.exceptions import InvalidMicrocanonicalRateError, ModifiedStrongCollisionError
+from rmgpy.exceptions import InvalidMicrocanonicalRateError, ModifiedStrongCollisionError, SensitivityError
 
 from arkane.output import prettify
 from arkane.sensitivity import PDepSensitivity as sa
@@ -284,17 +284,16 @@ class PressureDependenceJob(object):
                 for i in xrange(3):
                     try:
                         sa(self, os.path.dirname(outputFile), perturbation=perturbation)
-                    except (InvalidMicrocanonicalRateError, ModifiedStrongCollisionError) as exept:
-                        logging.warn("Could not complete the sensitivity analysis with a perturbation of {0}"
-                                     " kcal/mol, trying {1} kcal/mol instead.".format(
-                                      perturbation, perturbation / 2.0))
+                    except (InvalidMicrocanonicalRateError, ModifiedStrongCollisionError) as e:
+                        logging.warning('Could not complete the sensitivity analysis with a perturbation of {0}'
+                                        ' kcal/mol, trying {1} kcal/mol instead.'.format(
+                                         perturbation, perturbation / 2.0))
                         perturbation /= 2.0
                     else:
                         break
                 else:
-                    logging.error("Could not complete the sensitivity analysis even with a perturbation of {0}"
-                                  " kcal/mol".format(perturbation))
-                    raise exept
+                    raise SensitivityError('Could not complete the sensitivity analysis even with a perturbation of {0}'
+                                           ' kcal/mol. Got the following error:\n{1}'.format(perturbation, e.message))
                 logging.info("Completed the sensitivity analysis using a perturbation of {0} kcal/mol".format(
                     perturbation))
         logging.debug('Finished pdep job for reaction {0}.'.format(self.network.label))
