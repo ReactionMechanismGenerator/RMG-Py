@@ -730,10 +730,10 @@ def fromAdjacencyList(adjlist, group=False, saturateH=False):
             
         ConsistencyChecker.check_multiplicity(nRad, multiplicity)
         for atom in atoms: ConsistencyChecker.check_hund_rule(atom, multiplicity)
-        return atoms, multiplicity, molecularTermSymbol
+        return atoms, multiplicity
     else:
         # Currently no group consistency check
-        return atoms, multiplicity, molecularTermSymbol
+        return atoms, multiplicity
 
 
 def toAdjacencyList(atoms, multiplicity, molecularTermSymbol= '', label=None, group=False, removeH=False, removeLonePairs=False, oldStyle=False):

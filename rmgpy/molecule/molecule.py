@@ -801,7 +801,7 @@ class Molecule(Graph):
     `InChI` string representing the molecular structure.
     """
 
-    def __init__(self, atoms=None, symmetry=-1, multiplicity=-187, molecularTermSymbol='', reactive=True, props=None, InChI='', SMILES=''):
+    def __init__(self, atoms=None, symmetry=-1, multiplicity=-187, reactive=True, props=None, InChI='', SMILES='', molecularTermSymbol=''):
         Graph.__init__(self, atoms)
         self.symmetryNumber = symmetry
         self.multiplicity = multiplicity
@@ -1570,8 +1570,16 @@ class Molecule(Graph):
         ``False``.
         """
         from .adjlist import fromAdjacencyList
-        
-        self.vertices, self.multiplicity, self.molecularTermSymbol = fromAdjacencyList(adjlist, group=False, saturateH=saturateH)
+
+        molecularTermSymbol = ''
+        if "molecularTermSymbol" in adjlist:
+            adjlist = adjlist.strip()
+            lines = adjlist.splitlines()
+            for line in lines:
+                if "molecularTermSymbol" in line:
+                    molecularTermSymbol = line.split()[-1]
+        self.molecularTermSymbol = molecularTermSymbol
+        self.vertices, self.multiplicity = fromAdjacencyList(adjlist, group=False, saturateH=saturateH)
         self.updateAtomTypes()
         self.identifyRingMembership()
         
