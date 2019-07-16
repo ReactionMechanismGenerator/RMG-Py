@@ -363,10 +363,12 @@ multiplicity 2
 
         # Test that an error is raised for reactions with kinetics
         # that cannot be merged
-        self.assertRaisesRegexp(ChemkinError,
+        ### 7.16.19 - Removing this test because the ChemkinError thrown
+        ### during this section was removed @nateharms
+        """self.assertRaisesRegexp(ChemkinError,
                                 'Mixed kinetics for duplicate reaction',
                                 _process_duplicate_reactions,
-                                reaction_list_mixed_kinetics)
+                                reaction_list_mixed_kinetics)"""
 
         # Test that duplicate library reactions are merged successfully
         _process_duplicate_reactions(reaction_list_mergeable)
