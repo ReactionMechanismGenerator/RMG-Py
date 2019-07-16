@@ -390,10 +390,14 @@ def _read_kinetics_reaction(line, species_dict, Aunits, Aunits_surf, Eunits):
             reactants = reactants.replace(collider.lower(),'')
         elif collider.upper() in reactants:
             reactants = reactants.replace(collider.upper(), '')
+        elif collider in reactants:
+            reactants = reactants.replace(collider, '')
         if collider.lower() in products:
             products = products.replace(collider.lower(),'')
         elif collider.upper() in products:
             products = products.replace(collider.upper(), '')
+        elif collider in products:
+            products = products.replace(collider, '')
 
         if collider.upper().strip() != "(+M)": # the collider is a specific species, not (+M) or (+m)
             if collider.strip()[2:-1] not in speciesDict: # stripping spaces, '(+' and ')'
