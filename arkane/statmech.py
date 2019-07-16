@@ -1056,7 +1056,7 @@ def determine_rotor_symmetry(energies, label, pivots):
         symmetry = 1
         reason = '10% of the maximum peak criterion'
     else:
-        # We declare this rotor as symmetric and the symmetry number in the number of peaks (and valleys)
+        # We declare this rotor as symmetric and the symmetry number is the number of peaks (and valleys)
         symmetry = len(peaks)
         reason = 'number of peaks and valleys, all within the determined resolution criteria'
     if symmetry not in [1, 2, 3]:
