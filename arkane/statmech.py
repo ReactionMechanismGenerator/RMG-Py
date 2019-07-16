@@ -960,6 +960,8 @@ def assign_frequency_scale_factor(freq_level):
                  'm08so/mg3s*': 0.995,  # [1] Table 3, taken as 'M08-SO/MG3S'
                  'wb97x-d/aug-cc-pvtz': 0.988,  # [3], taken as 'ωB97X-D/maug-cc-pVTZ'
                  'wb97xd/6-311++g(d,p)': 0.988,  # [4]
+                 'wb97xd/def2tzvp': 0.988,  # [4]
+                 'apfd/def2tzvpp': 0.992,  # [4]
                  'mp2_rmp2_pvdz': 0.953,  # [2], taken as 'MP2/cc-pVDZ'
                  'mp2_rmp2_pvtz': 0.950,  # [2], taken as 'MP2/cc-pVTZ'
                  'mp2_rmp2_pvqz': 0.962,  # [2], taken as 'MP2/cc-pVQZ'
@@ -1054,7 +1056,7 @@ def determine_rotor_symmetry(energies, label, pivots):
         symmetry = 1
         reason = '10% of the maximum peak criterion'
     else:
-        # We declare this rotor as symmetric and the symmetry number in the number of peaks (and valleys)
+        # We declare this rotor as symmetric and the symmetry number is the number of peaks (and valleys)
         symmetry = len(peaks)
         reason = 'number of peaks and valleys, all within the determined resolution criteria'
     if symmetry not in [1, 2, 3]:
