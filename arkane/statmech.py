@@ -307,9 +307,9 @@ class StatMechJob(object):
                                  '{1!r}.'.format(self.modelChemistry, path))
         e0, e_electronic = None, None  # E0 = e_electronic + ZPE
         energyLog = None
-        if isinstance(energy, Log) and not isinstance(energy, (GaussianLog, QChemLog, MolproLog)):
+        if isinstance(energy, Log) and type(energy).__name__ == 'Log':
             energyLog = determine_qm_software(os.path.join(directory, energy.path))
-        elif isinstance(energy, (GaussianLog, QChemLog, MolproLog)):
+        elif isinstance(energy, Log) and type(energy).__name__ != 'Log':
             energyLog = energy
             energyLog.path = os.path.join(directory, energyLog.path)
         elif isinstance(energy, float):
@@ -333,13 +333,13 @@ class StatMechJob(object):
             statmechLog = local_context['frequencies']
         except KeyError:
             raise InputError('Required attribute "frequencies" not found in species file {0!r}.'.format(path))
-        if isinstance(statmechLog, Log) and not isinstance(energy, (GaussianLog, QChemLog, MolproLog)):
+        if isinstance(statmechLog, Log) and type(statmechLog).__name__ == 'Log':
             statmechLog = determine_qm_software(os.path.join(directory, statmechLog.path))
         else:
             statmechLog.path = os.path.join(directory, statmechLog.path)
         try:
             geomLog = local_context['geometry']
-            if isinstance(geomLog, Log) and not isinstance(energy, (GaussianLog, QChemLog, MolproLog)):
+            if isinstance(geomLog, Log) and type(geomLog).__name__ == 'Log':
                 geomLog = determine_qm_software(os.path.join(directory, geomLog.path))
             else:
                 geomLog.path = os.path.join(directory, geomLog.path)
@@ -487,7 +487,7 @@ class StatMechJob(object):
                         # the symmetry number will be derived from the scan
                         scanLog, pivots, top, fit = q
                     # Load the hindered rotor scan energies
-                    if isinstance(scanLog, Log) and not isinstance(energy, (GaussianLog, QChemLog, MolproLog)):
+                    if isinstance(scanLog, Log) and type(scanLog).__name__ == 'Log':
                         scanLog = determine_qm_software(os.path.join(directory, scanLog.path))
                     scanLog.path = os.path.join(directory, scanLog.path)
                     if isinstance(scanLog, (GaussianLog, QChemLog)):
