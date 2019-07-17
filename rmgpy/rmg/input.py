@@ -222,6 +222,10 @@ def fragment_adj(string):
     from afm.fragment import Fragment
     return Fragment().from_adjacency_list(string)
 
+def fragment_SMILES(string):
+    from afm.fragment import Fragment
+    return Fragment().from_SMILES_like_string(string)
+
 # Reaction systems
 def simple_reactor(temperature,
                    pressure,
