@@ -38,18 +38,11 @@ import itertools
 import gc
 import os
 
-import resource
-import psutil
-
-from sys import platform
-from multiprocessing import Pool
-
 from rmgpy.display import display
 from rmgpy import settings
 from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.quantity import Quantity
 from rmgpy.species import Species
-from rmgpy.molecule.molecule import Molecule
 from rmgpy.thermo.thermoengine import submit
 from rmgpy.reaction import Reaction
 from rmgpy.exceptions import ForbiddenStructureException
@@ -63,7 +56,6 @@ from rmgpy.data.rmg import getDB
         
 import rmgpy.data.rmg
 from .react import react_all
-from rmgpy.data.kinetics.common import ensure_independent_atom_ids, find_degenerate_reactions
 
 from pdep import PDepReaction, PDepNetwork
 
