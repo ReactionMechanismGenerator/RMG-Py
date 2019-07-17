@@ -182,6 +182,10 @@ def fragment_adj(string):
     from afm.fragment import Fragment
     return Fragment().fromAdjacencyList(string)
 
+def fragment_SMILES(string):
+    from afm.fragment import Fragment
+    return Fragment().from_SMILES_like_string(string)
+
 # Reaction systems
 def simpleReactor(temperature,
                   pressure,
@@ -868,6 +872,7 @@ def readInputFile(path, rmg0):
         'species': species,
         'SMARTS': SMARTS,
         'fragment_adj': fragment_adj,
+        'fragment_SMILES': fragment_SMILES,
         'SMILES': SMILES,
         'InChI': InChI,
         'adjacencyList': adjacencyList,
