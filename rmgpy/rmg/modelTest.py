@@ -28,6 +28,7 @@
 #                                                                             #
 ###############################################################################
 
+import itertools
 import os
 import unittest 
 
@@ -142,8 +143,8 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         spcs = [Species().fromSMILES('CC'), Species().fromSMILES('[CH3]')]
         spcTuples = [((spcA, spc), ['H_Abstraction']) for spc in spcs]
         
-        rxns = list(react(spcTuples, procnum))
-        rxns += list(react([((spcs[0], spcs[1]), ['H_Abstraction'])], procnum))
+        rxns = list(itertools.chain.from_iterable(react(spcTuples, procnum)))
+        rxns += list(itertools.chain.from_iterable(react([((spcs[0], spcs[1]), ['H_Abstraction'])], procnum)))
         
         for rxn in rxns:
             cerm.makeNewReaction(rxn)
@@ -246,7 +247,7 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         spcs = [Species().fromSMILES('CC'), Species().fromSMILES('[CH3]')]
         spcTuples = [((spcA, spc), ['H_Abstraction']) for spc in spcs]
 
-        rxns = list(react(spcTuples, procnum))
+        rxns = list(itertools.chain.from_iterable(react(spcTuples, procnum)))
 
         cerm = CoreEdgeReactionModel()
 

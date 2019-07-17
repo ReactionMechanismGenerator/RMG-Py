@@ -599,14 +599,19 @@ class CoreEdgeReactionModel:
                 numOldEdgeReactions -= len(reactionsMovedFromEdge)
 
         else:
-            # We are reacting the edge
-            rxns = react_all(self.core.species, numOldCoreSpecies,
-                             unimolecularReact, bimolecularReact, trimolecularReact=trimolecularReact, procnum=procnum)
+            # Generate reactions between all core species which have not been
+            # reacted yet and exceed the reaction filter thresholds
+            rxnLists, spcsTuples = react_all(self.core.species, numOldCoreSpecies,
+                                             unimolecularReact, bimolecularReact,
+                                             trimolecularReact=trimolecularReact,
+                                             procnum=procnum)
 
-            spcs = [self.retrieve_species(rxn) for rxn in rxns]
-
-            for rxn, spc in zip(rxns, spcs):
-                self.processNewReactions([rxn], spc, generateThermo=False)
+            for rxnList, spcTuple in zip(rxnLists, spcsTuples):
+                if rxnList:
+                    # Identify a core species which was used to generate the reaction
+                    # This is only used to determine the reaction direction for processing
+                    spc = spcTuple[0]
+                    self.processNewReactions(rxnList, spc, generateThermo=False)
 
         ################################################################
         # Begin processing the new species and reactions

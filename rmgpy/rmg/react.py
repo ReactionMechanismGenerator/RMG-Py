@@ -31,7 +31,6 @@
 """
 Contains functions for generating reactions.
 """
-import itertools
 import logging
 
 from rmgpy.data.rmg import getDB
@@ -67,7 +66,7 @@ def react(spc_tuples, procnum=1):
         p.close()
         p.join()
 
-    return itertools.chain.from_iterable(reactions)
+    return reactions
 
 
 def _react_species_star(args):
@@ -147,5 +146,5 @@ def react_all(core_spc_list, numOldCoreSpecies, unimolecularReact, bimolecularRe
             else:
                 spc_fam_tuples.append((spc_tuple, ))
 
-    return list(react(spc_fam_tuples, procnum))
+    return react(spc_fam_tuples, procnum), [fam_tuple[0] for fam_tuple in spc_fam_tuples]
 
