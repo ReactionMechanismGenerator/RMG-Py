@@ -52,7 +52,7 @@ and the process continues until the entire molecule can be solved.
 
 import logging
 
-from .graph cimport Graph
+from .graph cimport Graph, Vertex, Edge
 from .molecule cimport Atom, Bond, Molecule
 from .element import PeriodicSystem
 from rmgpy.exceptions import KekulizationError, AtomTypeError
@@ -68,8 +68,8 @@ cpdef kekulize(Graph mol):
     """
     cdef list ring, rings, aromatic_rings, resolved_rings
     cdef set endo_bonds, exo_bonds
-    cdef Atom atom1, atom2, atom
-    cdef Bond bond
+    cdef Vertex atom1, atom2, atom
+    cdef Edge bond
     cdef bint aromatic, successful, bridged
     cdef int itercount, maxiter
     cdef AromaticRing aromatic_ring

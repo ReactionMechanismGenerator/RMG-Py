@@ -38,7 +38,7 @@ import itertools
 from Queue import Queue
 
 from rmgpy.molecule.molecule import Atom, Bond
-
+from rmgpy.molecule.graph import Vertex, Edge
 
 def find_butadiene(start, end):
     """
@@ -283,7 +283,7 @@ def find_lone_pair_multiple_bond_paths(atom1):
     - N[N+]([O-])=O <=> N[N+](=O)[O-], these structures are isomorphic but not identical, this transition is
       important for correct degeneracy calculations
     """
-    cython.declare(paths=list, atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
+    cython.declare(paths=list, atom2=Vertex, atom3=Vertex, bond12=Edge, bond23=Edge)
 
     # No paths if atom1 has no lone pairs, or cannot lose them, or is a carbon atom
     if atom1.lonePairs <= 0 or not is_atom_able_to_lose_lone_pair(atom1) or atom1.isCarbon():
@@ -332,7 +332,7 @@ def find_adj_lone_pair_radical_delocalization_paths(atom1):
     (where ':' denotes a lone pair, '.' denotes a radical, '-' not in [] denotes a single bond, '-'/'+' denote charge)
     The bond between the sites does not have to be single, e.g.: [:O.+]=[::N-] <=> [::O]=[:N.]
     """
-    cython.declare(paths=list, atom2=Atom, bond12=Bond)
+    cython.declare(paths=list, atom2=Vertex, bond12=Edge)
 
     paths = []
     if atom1.radicalElectrons >= 1 and\
@@ -367,7 +367,7 @@ def find_adj_lone_pair_multiple_bond_delocalization_paths(atom1):
     (where ':' denotes a lone pair, '.' denotes a radical, '-' not in [] denotes a single bond, '-'/'+' denote charge)
     (In direction 1 atom1 <losses> a lone pair, in direction 2 atom1 <gains> a lone pair)
     """
-    cython.declare(paths=list, atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
+    cython.declare(paths=list, atom2=Vertex, atom3=Vertex, bond12=Bond, bond23=Edge)
 
     paths = []
 
@@ -409,7 +409,7 @@ def find_adj_lone_pair_radical_multiple_bond_delocalization_paths(atom1):
     (In direction 1 atom1 <losses> a lone pair, gains a radical, and atom2 looses a radical.
     In direction 2 atom1 <gains> a lone pair, looses a radical, and atom2 gains a radical)
     """
-    cython.declare(paths=list, atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
+    cython.declare(paths=list, atom2=Vertex, atom3=Vertex, bond12=Edge, bond23=Edge)
 
     paths = []
 
@@ -445,7 +445,7 @@ def find_N5dc_radical_delocalization_paths(atom1):
     In this transition atom1 is the middle N+ (N5dc), atom2 is the radical site, and atom3 is negatively charged
     A "if atom1.atomType.label == 'N5dc'" check should be done before calling this function
     """
-    cython.declare(paths=list, atom2=Atom, atom3=Atom, bond12=Bond, bond23=Bond)
+    cython.declare(paths=list, atom2=Vertex, atom3=Vertex, bond12=Edge, bond23=Edge)
 
     path = []
 
