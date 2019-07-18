@@ -377,7 +377,22 @@ returned.</p>
 <dl class="method">
 <dt id="rmgpy.thermo.Wilhoit.make_object">
 <code class="descname">make_object</code><span class="sig-paren">(</span><em>self</em>, <em>dict data</em>, <em>dict class_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.thermo.Wilhoit.make_object" title="Permalink to this definition">¶</a></dt>
-<dd><p>A helper function for YAML parsing</p>
+<dd><p>A helper function for constructing objects from a dictionary (used when loading YAML files)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>data</strong> (<em>dict</em>) – The dictionary representation of the object</li>
+<li><strong>class_dict</strong> (<em>dict</em>) – A mapping of class names to the classes themselves</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
