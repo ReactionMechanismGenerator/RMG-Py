@@ -32,6 +32,9 @@ import itertools
 import os
 import unittest 
 
+import numpy as np
+from nose.plugins.attrib import attr
+
 from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase, database
 from rmgpy.rmg.main import RMG
@@ -119,7 +122,7 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         for family in rmg.database.kinetics.families.values():
             family.forbidden = ForbiddenStructures()
         rmg.database.forbiddenStructures = ForbiddenStructures()
-    
+
     def testAddNewSurfaceObjects(self):
         """
         basic test that surface movement object management works properly
@@ -577,6 +580,124 @@ class TestCoreEdgeReactionModel(unittest.TestCase):
         """
         import rmgpy.data.rmg
         rmgpy.data.rmg.database = None
+
+
+@attr('functional')
+class TestEnlarge(unittest.TestCase):
+    """
+    Contains unit tests for CoreEdgeReactionModel.enlarge.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        """
+        A method that is run ONCE before all unit tests in this class.
+        """
+        cls.dirname = os.path.abspath(os.path.join(os.path.dirname(__file__), 'temp'))
+        print cls.dirname
+        os.makedirs(os.path.join(cls.dirname, 'pdep'))
+
+        TESTFAMILY = 'R_Recombination'
+
+        cls.rmg = RMG()
+
+        from rmgpy.rmg.input import setGlobalRMG, pressureDependence
+        setGlobalRMG(cls.rmg)
+
+        pressureDependence(
+            method='modified strong collision',
+            maximumGrainSize=(0.5, 'kcal/mol'),
+            minimumNumberOfGrains=250,
+            temperatures=(300, 2100, 'K', 8),
+            pressures=(0.1, 100, 'bar', 5),
+            interpolation=('Chebyshev', 6, 4),
+            maximumAtoms=10,
+        )
+
+        cls.rmg.outputDirectory = cls.rmg.pressureDependence.outputFile = cls.dirname
+
+        cls.rmg.database = RMGDatabase()
+        cls.rmg.database.load(
+            path=settings['database.directory'],
+            thermoLibraries=['primaryThermoLibrary'],
+            kineticsFamilies=[TESTFAMILY],
+            reactionLibraries=[],
+        )
+
+        cls.rmg.reactionModel = CoreEdgeReactionModel()
+        cls.rmg.reactionModel.pressureDependence = cls.rmg.pressureDependence
+
+    def test_enlarge_1_add_nonreactive_species(self):
+        """Test that we can add a nonreactive species to CERM"""
+        m0 = Molecule(SMILES='[He]')
+        spc0 = self.rmg.reactionModel.makeNewSpecies(m0, label='He', reactive=False)[0]
+        self.rmg.reactionModel.enlarge(spc0)
+
+        self.assertEqual(len(self.rmg.reactionModel.core.species), 1)
+        self.assertFalse(self.rmg.reactionModel.core.species[0].reactive)
+
+    def test_enlarge_2_add_reactive_species(self):
+        """Test that we can add reactive species to CERM"""
+        m1 = Molecule(SMILES='CC')
+        spc1 = self.rmg.reactionModel.makeNewSpecies(m1, label='C2H4')[0]
+        self.rmg.reactionModel.enlarge(spc1)
+
+        self.assertEqual(len(self.rmg.reactionModel.core.species), 2)
+        self.assertTrue(self.rmg.reactionModel.core.species[1].reactive)
+
+        m2 = Molecule(SMILES='[CH3]')
+        spc2 = self.rmg.reactionModel.makeNewSpecies(m2, label='CH3')[0]
+        self.rmg.reactionModel.enlarge(spc2)
+
+        self.assertEqual(len(self.rmg.reactionModel.core.species), 3)
+        self.assertTrue(self.rmg.reactionModel.core.species[2].reactive)
+
+    def test_enlarge_3_react_edge(self):
+        """Test that enlarge properly generated reactions"""
+        self.rmg.reactionModel.enlarge(
+            reactEdge=True,
+            unimolecularReact=np.array([0, 1, 0], bool),
+            bimolecularReact=np.zeros((3, 3), bool),
+        )
+
+        self.assertEqual(len(self.rmg.reactionModel.edge.species), 2)
+        smiles = set([spc.SMILES for spc in self.rmg.reactionModel.edge.species])
+        self.assertEqual(smiles, {'[H]', 'C[CH2]'})
+
+        # We expect either C-C bond scission to be in the core and C-H bond scission to be in the edge
+        self.assertEqual(len(self.rmg.reactionModel.core.reactions), 1)
+        rxn = self.rmg.reactionModel.core.reactions[0]
+        smiles = set([spc.SMILES for spc in rxn.reactants + rxn.products])
+        self.assertEqual(smiles, {'CC', '[CH3]'})
+
+        self.assertEqual(len(self.rmg.reactionModel.edge.reactions), 1)
+        rxn = self.rmg.reactionModel.edge.reactions[0]
+        smiles = set([spc.SMILES for spc in rxn.reactants + rxn.products])
+        self.assertEqual(smiles, {'CC', 'C[CH2]', '[H]'})
+
+    def test_enlarge_4_create_pdep_network(self):
+        """Test that enlarge properly creates a pdep network"""
+        self.assertEqual(len(self.rmg.reactionModel.networkList), 1)
+        self.assertEqual(len(self.rmg.reactionModel.networkList[0].source), 1)
+        self.assertEqual(self.rmg.reactionModel.networkList[0].source[0].label, 'C2H4')
+
+        self.assertEqual(len(self.rmg.reactionModel.networkDict), 1)
+        self.assertEqual(len(self.rmg.reactionModel.networkDict.keys()[0]), 1)
+        self.assertEqual(self.rmg.reactionModel.networkDict.keys()[0][0].label, 'C2H4')
+
+    @classmethod
+    def tearDownClass(cls):
+        """
+        A method that is run ONCE after all unit tests in this class.
+
+        Clear global variables and clean up files.
+        """
+        import rmgpy.data.rmg
+        rmgpy.data.rmg.database = None
+        import rmgpy.rmg.input
+        rmgpy.rmg.input.rmg = None
+        import shutil
+        shutil.rmtree(cls.dirname)
 
 
 if __name__ == '__main__':
