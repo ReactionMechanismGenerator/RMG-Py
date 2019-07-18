@@ -32,7 +32,7 @@ This module contains unit tests of the rmgpy.molecule.atomtype module.
 """
 
 import unittest
-
+import logging
 import rmgpy.molecule
 from rmgpy.molecule import Molecule
 from rmgpy.molecule.atomtype import get_atomtype
@@ -128,6 +128,22 @@ class TestAtomType(unittest.TestCase):
         self.assertEqual(self.atomtype.increment_radical, other.increment_radical)
         self.assertEqual(self.atomtype.decrement_radical, other.decrement_radical)
 
+
+    def test_make_sample_molecule(self):
+        """
+        Test we can make a sample molecule for every atom type.
+        """
+        failed = []
+        for name, atom_type in rmgpy.molecule.atomtype.ATOMTYPES.items():
+            adjlist = f"1 {name} ux"
+            group = rmgpy.molecule.Group().from_adjacency_list(adjlist)
+            try:
+                result = group.make_sample_molecule()
+                # logging.info(f"For {name} made\n{result.to_adjacency_list()}")
+            except:
+                logging.exception(f"Couldn't make sample molecule for atomType {name}")
+                failed.append(name)
+        self.assertFalse(failed, f"Couldn't make sample molecules for types {', '.join(failed)}")
 
 ################################################################################
 
