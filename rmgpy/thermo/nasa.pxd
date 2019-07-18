@@ -61,8 +61,6 @@ cdef class NASA(HeatCapacityModel):
 
     cpdef dict as_dict(self)
 
-    cpdef make_object(self, dict data, dict class_dict)
-
     cpdef double getHeatCapacity(self, double T) except -1000000000
 
     cpdef double getEnthalpy(self, double T) except 1000000000

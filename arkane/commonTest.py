@@ -40,9 +40,10 @@ import logging
 
 import rmgpy
 import rmgpy.constants as constants
+from rmgpy.pdep.collision import SingleExponentialDown
 from rmgpy.species import Species, TransitionState
 from rmgpy.quantity import ScalarQuantity
-from rmgpy.thermo import NASA
+from rmgpy.thermo import NASA, ThermoData
 
 from arkane import Arkane, input
 from arkane.common import ArkaneSpecies, get_element_mass
@@ -334,25 +335,65 @@ class TestArkaneSpecies(unittest.TestCase):
             job.execute(outputFile=self.dump_output_file)
         self.assertTrue(os.path.isfile(self.dump_yaml_file))
 
-    def test_load_yaml(self):
+    def test_create_and_load_yaml(self):
         """
         Test properly loading the ArkaneSpecies object and respective sub-objects
         """
-        jobList = self.arkane.loadInputFile(self.load_input_path)
+        # Create YAML file by running Arkane
+        jobList = self.arkane.loadInputFile(self.dump_input_path)
         for job in jobList:
-            job.execute(outputFile=self.load_output_file)
-        arkane_spc = jobList[0].arkane_species
+            job.execute(outputFile=self.dump_output_file)
+
+        # Load in newly created YAML file
+        arkane_spc_old = jobList[0].arkane_species
+        arkane_spc = ArkaneSpecies.__new__(ArkaneSpecies)
+        arkane_spc.load_yaml(path=os.path.join(self.dump_path, 'species', arkane_spc_old.label + '.yml'))
+
         self.assertIsInstance(arkane_spc, ArkaneSpecies)  # checks make_object
         self.assertIsInstance(arkane_spc.molecular_weight, ScalarQuantity)
         self.assertIsInstance(arkane_spc.thermo, NASA)
         self.assertNotEqual(arkane_spc.author, '')
         self.assertEqual(arkane_spc.inchi, 'InChI=1S/C2H6/c1-2/h1-2H3')
+        self.assertEqual(arkane_spc.inchi_key, 'OTMSDBZUPAUEDD-UHFFFAOYSA-N')
+        self.assertEqual(arkane_spc.smiles, 'CC')
+        self.assertTrue('8 H u0 p0 c0 {2,S}' in arkane_spc.adjacency_list)
+        self.assertEqual(arkane_spc.label, 'C2H6')
+        self.assertEqual(arkane_spc.frequency_scale_factor, 1.00386)  # checks float conversion
+        self.assertFalse(arkane_spc.use_bond_corrections)
+        self.assertAlmostEqual(arkane_spc.conformer.modes[2].frequencies.value_si[0], 830.38202, 4)  # HarmonicOsc.
+        self.assertIsInstance(arkane_spc.energy_transfer_model, SingleExponentialDown)
+        self.assertFalse(arkane_spc.is_ts)
+        self.assertEqual(arkane_spc.level_of_theory, 'cbs-qb3')
+        self.assertIsInstance(arkane_spc.thermo_data, ThermoData)
+        self.assertTrue(arkane_spc.use_hindered_rotors)
+        self.assertTrue('C 7.54e-14 1.193e-13 5.52e-14' in arkane_spc.xyz)
+        self.assertIsInstance(arkane_spc.chemkin_thermo_string, str)
+
+    def test_load_existing_yaml(self):
+        """
+        Test that existing Arkane YAML files can still be loaded
+        """
+        # Load in YAML file
+        arkane_spc = ArkaneSpecies.__new__(ArkaneSpecies)
+        arkane_spc.load_yaml(path=os.path.join(self.load_path, 'C2H6.yml'))
+
+        self.assertIsInstance(arkane_spc, ArkaneSpecies)  # checks make_object
+        self.assertIsInstance(arkane_spc.molecular_weight, ScalarQuantity)
+        self.assertIsInstance(arkane_spc.thermo, NASA)
+        self.assertNotEqual(arkane_spc.author, '')
+        self.assertEqual(arkane_spc.inchi, 'InChI=1S/C2H6/c1-2/h1-2H3')
+        self.assertEqual(arkane_spc.inchi_key, 'OTMSDBZUPAUEDD-UHFFFAOYSA-N')
         self.assertEqual(arkane_spc.smiles, 'CC')
         self.assertTrue('8 H u0 p0 c0 {2,S}' in arkane_spc.adjacency_list)
         self.assertEqual(arkane_spc.label, 'C2H6')
         self.assertEqual(arkane_spc.frequency_scale_factor, 0.99)  # checks float conversion
         self.assertFalse(arkane_spc.use_bond_corrections)
         self.assertAlmostEqual(arkane_spc.conformer.modes[2].frequencies.value_si[0], 818.91718, 4)  # HarmonicOsc.
+        self.assertIsInstance(arkane_spc.energy_transfer_model, SingleExponentialDown)
+        self.assertFalse(arkane_spc.is_ts)
+        self.assertTrue(arkane_spc.use_hindered_rotors)
+        self.assertTrue('C 7.54e-14 1.193e-13 5.52e-14' in arkane_spc.xyz)
+        self.assertIsInstance(arkane_spc.chemkin_thermo_string, str)
 
     @classmethod
     def tearDownClass(cls):

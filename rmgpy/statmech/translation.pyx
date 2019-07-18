@@ -107,7 +107,10 @@ cdef class IdealGasTranslation(Translation):
         def __get__(self):
             return self._mass
         def __set__(self, value):
-            self._mass = quantity.Mass(value)
+            if isinstance(value, quantity.ScalarQuantity):
+                self._mass = value
+            else:
+                self._mass = quantity.Mass(value)
     
     cpdef double getPartitionFunction(self, double T) except -1:
         """

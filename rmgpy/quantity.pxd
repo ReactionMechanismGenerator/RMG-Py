@@ -29,9 +29,11 @@ cimport numpy
 
 cpdef list NOT_IMPLEMENTED_UNITS
 
+from rmgpy.rmgobject cimport RMGObject
+
 ################################################################################
 
-cdef class Units(object):
+cdef class Units(RMGObject):
 
     cdef public str units
 
@@ -51,8 +53,6 @@ cdef class ScalarQuantity(Units):
 
     cpdef dict as_dict(self)
 
-    cpdef make_object(self, dict data, dict class_dict)
-
     cpdef str getUncertaintyType(self)
     cpdef     setUncertaintyType(self, str v)
     
@@ -71,8 +71,6 @@ cdef class ArrayQuantity(Units):
     cdef public numpy.ndarray uncertainty_si
 
     cpdef dict as_dict(self)
-
-    cpdef make_object(self, dict data, dict class_dict)
 
     cpdef str getUncertaintyType(self)
     cpdef     setUncertaintyType(self, str v)
