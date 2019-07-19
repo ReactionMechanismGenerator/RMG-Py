@@ -322,7 +322,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
             self.pathReactions.append(newReaction)
             self.invalidate()
 
-    def get_energy_filtered_reactions(self,T,tol):
+    def get_energy_filtered_reactions(self, T, tol):
         """
         Returns a list of products and isomers that are greater in Free Energy
         than a*R*T + Gfsource(T)
@@ -354,7 +354,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                 
         return filtered_rxns
 
-    def get_rate_filtered_products(self,T,P,tol):
+    def get_rate_filtered_products(self, T, P, tol):
         """
         determines the set of pathReactions that have fluxes less than
         tol at steady state where all A => B + C reactions are irreversible
@@ -390,7 +390,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
             return filtered_prod
 
 
-    def solve_SS_network(self,T,P):
+    def solve_SS_network(self, T, P):
         """
         calculates the steady state concentrations if all A => B + C
         reactions are irreversible and the flux from/to the source
@@ -532,7 +532,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         self.Nreac = len(self.reactants)
         self.Nprod = len(self.products)
 
-    def remove_reactions(self,reactionModel,rxns=None,prods=None):
+    def remove_reactions(self, reactionModel, rxns=None, prods=None):
         """
         removes a list of reactions from the network and all reactions/products
         left disconnected by removing those reactions
