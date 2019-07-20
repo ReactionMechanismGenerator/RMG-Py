@@ -16,8 +16,6 @@ energy = {
 geometry = Log('dimetpropoxy_betasci.out')
 frequencies = Log('dimetpropoxy_betasci.out')
 
-frequencyScaleFactor = 0.983
-
 """pivot are the two atoms that are attached to the rotor                                                                                      
 top contains the atoms that are being rotated including one of the atoms from pivots                                                           
 symmetry is the symmetry number of the scan                                                                                                    

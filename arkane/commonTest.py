@@ -358,7 +358,7 @@ class TestArkaneSpecies(unittest.TestCase):
         self.assertEqual(arkane_spc.smiles, 'CC')
         self.assertTrue('8 H u0 p0 c0 {2,S}' in arkane_spc.adjacency_list)
         self.assertEqual(arkane_spc.label, 'C2H6')
-        self.assertEqual(arkane_spc.frequency_scale_factor, 1.00386)  # checks float conversion
+        self.assertEqual(arkane_spc.frequency_scale_factor, 0.99*1.014)  # checks float conversion
         self.assertFalse(arkane_spc.use_bond_corrections)
         self.assertAlmostEqual(arkane_spc.conformer.modes[2].frequencies.value_si[0], 830.38202, 4)  # HarmonicOsc.
         self.assertIsInstance(arkane_spc.energy_transfer_model, SingleExponentialDown)
