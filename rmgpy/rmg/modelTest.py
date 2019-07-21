@@ -594,10 +594,9 @@ class TestEnlarge(unittest.TestCase):
         A method that is run ONCE before all unit tests in this class.
         """
         cls.dirname = os.path.abspath(os.path.join(os.path.dirname(__file__), 'temp'))
-        print cls.dirname
         os.makedirs(os.path.join(cls.dirname, 'pdep'))
 
-        TESTFAMILY = 'R_Recombination'
+        test_family = 'R_Recombination'
 
         cls.rmg = RMG()
 
@@ -620,7 +619,7 @@ class TestEnlarge(unittest.TestCase):
         cls.rmg.database.load(
             path=settings['database.directory'],
             thermoLibraries=['primaryThermoLibrary'],
-            kineticsFamilies=[TESTFAMILY],
+            kineticsFamilies=[test_family],
             reactionLibraries=[],
         )
 
