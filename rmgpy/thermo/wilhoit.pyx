@@ -277,7 +277,7 @@ cdef class Wilhoit(HeatCapacityModel):
                 for j in range(4):
                     A[i,j] = (y*y*y - y*y) * y**j
                 b[i] = ((Cpdata[i] - Cp0) / (CpInf - Cp0) - y*y)
-            x, residues, rank, s = numpy.linalg.lstsq(A, b)
+            x, residues, rank, s = numpy.linalg.lstsq(A, b, rcond=None)
             
             self.B = (float(B),"K")
             self.a0 = float(x[0])

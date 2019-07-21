@@ -217,7 +217,7 @@ cdef class Chebyshev(PDepKineticsModel):
                 b[p1*nT+t1] = log10(K[t1,p1])
 
         # Do linear least-squares fit to get coefficients
-        x, residues, rank, s = numpy.linalg.lstsq(A, b)
+        x, residues, rank, s = numpy.linalg.lstsq(A, b, rcond=None)
 
         # Extract coefficients
         coeffs = numpy.zeros((degreeT,degreeP), numpy.float64)
