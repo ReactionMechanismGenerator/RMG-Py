@@ -249,9 +249,9 @@ class TestArkaneInput(unittest.TestCase):
         job.includeHinderedRotors = self.useHinderedRotors
         job.applyBondEnergyCorrections = self.useBondCorrections
         job.load()
-        self.assertTrue(isinstance(job.species.props['elementCounts'], dict))
-        self.assertEqual(job.species.props['elementCounts']['C'], 2)
-        self.assertEqual(job.species.props['elementCounts']['H'], 4)
+        self.assertTrue(isinstance(job.species.props['element_counts'], dict))
+        self.assertEqual(job.species.props['element_counts']['C'], 2)
+        self.assertEqual(job.species.props['element_counts']['H'], 4)
 
     def testSpeciesThermo(self):
         """Test thermo job execution for species from separate input file."""

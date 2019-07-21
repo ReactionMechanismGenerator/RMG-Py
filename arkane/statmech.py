@@ -399,7 +399,7 @@ class StatMechJob(object):
 
         # Save atoms for use in writing thermo output
         if isinstance(self.species, Species):
-            self.species.props['elementCounts'] = atoms
+            self.species.props['element_counts'] = atoms
 
         conformer.coordinates = (coordinates, "angstroms")
         conformer.number = number
