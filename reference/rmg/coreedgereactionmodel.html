@@ -285,13 +285,6 @@ corresponding species and reaction lists.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.getSpecies">
-<code class="descname">getSpecies</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.getSpecies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Retrieve species object, by
-polling the index species dictionary.</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="rmgpy.rmg.model.CoreEdgeReactionModel.getStoichiometryMatrix">
 <code class="descname">getStoichiometryMatrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.getStoichiometryMatrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the stoichiometry matrix for all generated species and reactions.
@@ -412,15 +405,6 @@ list.</p>
 <dd><p>Returns a list of reactions from the reaction database with the
 same keys as the parameters.</p>
 <p>Returns an empty list when one of the keys could not be found.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.rmg.model.CoreEdgeReactionModel.retrieve_species">
-<code class="descname">retrieve_species</code><span class="sig-paren">(</span><em>rxn</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.CoreEdgeReactionModel.retrieve_species" title="Permalink to this definition">¶</a></dt>
-<dd><p>Searches for the first reactant or product in the reaction that is
-a core species, which was used to generate the reaction in the first
-place. Reactants or products not represented in the core will be
-a newly-generated structure.</p>
 </dd></dl>
 
 <dl class="method">
