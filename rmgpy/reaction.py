@@ -761,7 +761,7 @@ class Reaction:
                              " kJ/mol.".format(self.kinetics.Ea.value_si / 1000.,self))
                 self.kinetics.Ea.value_si = 0
 
-    def reverseThisArrheniusRate(self, kForward, reverseUnits):
+    def reverseThisArrheniusRate(self, kForward, reverseUnits, Tmin=None, Tmax=None):
         """
         Reverses the given kForward, which must be an Arrhenius type.
         You must supply the correct units for the reverse rate.
@@ -771,7 +771,10 @@ class Reaction:
         cython.declare(Tlist=numpy.ndarray, klist=numpy.ndarray, i=cython.int)
         kf = kForward
         assert isinstance(kf, Arrhenius), "Only reverses Arrhenius rates"
-        Tlist = 1.0 / numpy.arange(0.0005, 0.0034, 0.0001)  # 294 K to 2000 K
+        if Tmin is not None and Tmax is not None:
+            Tlist = 1.0 / numpy.linspace(1.0 / Tmax.value, 1.0 / Tmin.value, 50)
+        else:
+            Tlist = 1.0 / numpy.arange(0.0005, 0.0034, 0.0001)
         # Determine the values of the reverse rate coefficient k_r(T) at each temperature
         klist = numpy.zeros_like(Tlist)
         for i in range(len(Tlist)):
@@ -780,7 +783,7 @@ class Reaction:
         kr.fitToData(Tlist, klist, reverseUnits, kf.T0.value_si)
         return kr
         
-    def generateReverseRateCoefficient(self, network_kinetics=False):
+    def generateReverseRateCoefficient(self, network_kinetics=False, Tmin=None, Tmax=None):
         """
         Generate and return a rate coefficient model for the reverse reaction. 
         Currently this only works if the `kinetics` attribute is one of several
@@ -817,7 +820,7 @@ class Reaction:
             return kr
             
         elif isinstance(kf, Arrhenius):
-            return self.reverseThisArrheniusRate(kf, kunits)
+            return self.reverseThisArrheniusRate(kf, kunits, Tmin, Tmax)
 
         elif network_kinetics and self.network_kinetics is not None:
             kf = self.network_kinetics
@@ -834,19 +837,15 @@ class Reaction:
             kr.fitToData(Tlist, Plist, K, kunits, kf.degreeT, kf.degreeP, kf.Tmin.value, kf.Tmax.value, kf.Pmin.value, kf.Pmax.value)
             return kr
         
-        elif isinstance(kf, PDepArrhenius):  
-            if kf.Tmin is not None and kf.Tmax is not None:
-                Tlist = 1.0/numpy.linspace(1.0/kf.Tmax.value, 1.0/kf.Tmin.value, 50)
-            else:
-                Tlist = 1.0/numpy.arange(0.0005, 0.0035, 0.0001)
-            Plist = kf.pressures.value_si
-            K = numpy.zeros((len(Tlist), len(Plist)), numpy.float64)
-            for Tindex, T in enumerate(Tlist):
-                for Pindex, P in enumerate(Plist):
-                    K[Tindex, Pindex] = kf.getRateCoefficient(T, P) / self.getEquilibriumConstant(T)
+        elif isinstance(kf, PDepArrhenius):
             kr = PDepArrhenius()
-            kr.fitToData(Tlist, Plist, K, kunits, kf.arrhenius[0].T0.value)
-            return kr       
+            kr.pressures = kf.pressures
+            kr.arrhenius = []
+            rxn = Reaction(reactants=self.reactants, products=self.products)
+            for kinetics in kf.arrhenius:
+                rxn.kinetics = kinetics
+                kr.arrhenius.append(rxn.generateReverseRateCoefficient(kf.Tmin, kf.Tmax))
+            return kr
         
         elif isinstance(kf, MultiArrhenius):
             kr = MultiArrhenius()
