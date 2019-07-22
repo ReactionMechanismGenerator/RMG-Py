@@ -208,6 +208,6 @@ cdef class Group(Graph):
 
     cpdef bint isBenzeneExplicit(self)
 
-    cpdef Group mergeGroups(self, Group other)
+    cpdef Group mergeGroups(self, Group other, bint keepIdenticalLabels=?)
 
     cpdef resetRingMembership(self)
