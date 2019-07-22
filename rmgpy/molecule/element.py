@@ -319,7 +319,7 @@ elementList = [
 #Bond Dissociation Energies
 #Reference: Huheey, pps. A-21 to A-34; T.L. Cottrell, "The Strengths of Chemical Bonds," 2nd ed., Butterworths, London, 1958; B. deB. Darwent, "National Standard Reference Data Series," National Bureau of Standards, No. 31, Washington, DC, 1970; S.W. Benson, J. Chem. Educ., 42, 502 (1965).
 #(C,C,1.5) was taken from an unsourced table that had similar values to those used below, should be replaced if a sourced value becomes available
-
+#(C,C,2.5) is C#C - (CbenzeneC - C-C)
 BDE_elements = ['C','N','H','O','S','Cl','Si'] # elements supported by BDE
 BDEDict = {('H','H',1.0):(432.0,'kJ/mol'),('H','C',1):(411.0,'kJ/mol'),
           ('H','N',1):(386.0,'kJ/mol'), ('H','O',1.0):(459.0,'kJ/mol'),
@@ -340,7 +340,7 @@ BDEDict = {('H','H',1.0):(432.0,'kJ/mol'),('H','C',1):(411.0,'kJ/mol'),
           ('S','O',2) : (522.0, 'kJ/mol'), ('S','S',1) : (226.0,'kJ/mol'),
           ('S','S',2) : (425.0,'kJ/mol'), ('S','Cl',1) : (255.0,'kJ/mol'),
           ('Cl','Cl',1) : (240.0, 'kJ/mol'), ('C','C',1.5): (518.0,'kJ/mol'),
-          ('O','S',1): (265.0,'kJ/mol')}
+          ('O','S',1): (265.0,'kJ/mol'),('C','C',2.5): (663.0,'kJ/mol')}
 
 BDEs = {}
 for key,value in BDEDict.iteritems():
