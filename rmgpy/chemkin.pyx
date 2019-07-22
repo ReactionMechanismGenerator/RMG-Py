@@ -470,6 +470,7 @@ def _readKineticsLine(line, reaction, speciesDict, Eunits, kunits, klow_units, k
 
     elif 'TROE' in line:
         # Troe falloff parameters
+        tokens[1] = tokens[1].replace(",","")
         tokens = tokens[1].split()
         alpha = float(tokens[0].strip())
         T3 = float(tokens[1].strip())
@@ -1788,9 +1789,9 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
             if isinstance(kinetics, _kinetics.Troe):
                 # Write Troe parameters
                 if kinetics.T2 is None:
-                    string += '    TROE/ {0:<9.3e} {1:<9.3g} {2:<9.3g}/\n'.format(kinetics.alpha, kinetics.T3.value_si, kinetics.T1.value_si)
+                    string += '    TROE/ {0:<9e} {1:<9g} {2:<9g}/\n'.format(kinetics.alpha, kinetics.T3.value_si, kinetics.T1.value_si)
                 else:
-                    string += '    TROE/ {0:<9.3e} {1:<9.3g} {2:<9.3g} {3:<9.3g}/\n'.format(kinetics.alpha, kinetics.T3.value_si, kinetics.T1.value_si, kinetics.T2.value_si)
+                    string += '    TROE/ {0:<9e} {1:<9g} {2:<9g} {3:<9g}/\n'.format(kinetics.alpha, kinetics.T3.value_si, kinetics.T1.value_si, kinetics.T2.value_si)
     elif isinstance(kinetics, _kinetics.PDepArrhenius):
         for P, arrhenius in zip(kinetics.pressures.value_si, kinetics.arrhenius):
             if isinstance(arrhenius, _kinetics.MultiArrhenius):
