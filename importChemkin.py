@@ -1595,7 +1595,7 @@ class ModelMatcher():
         """
         Output to the kinetics.py information file
         """
-        from rmgpy.cantherm.output import prettify
+        from arkane.output import prettify
         with open(filePath, 'a') as f:
             f.write('{\n')
             f.write(' "reaction": {!r},\n'.format(str(chemkinReaction)))
@@ -1607,7 +1607,7 @@ class ModelMatcher():
             f.flush()
             # logging.info("Trying to generate reactions for " + str(chemkinReaction))
             try:
-                generated_reactions = self.rmg_object.database.kinetics.generateReactionsFromFamilies(reactant_molecules, product_molecules)
+                generated_reactions = self.rmg_object.database.kinetics.generate_reactions_from_families(reactant_molecules, product_molecules)
             except KineticsError as e:
                 f.write('{0!r}'.format('Bug!: ' + str(e)))
                 generated_reactions = []
