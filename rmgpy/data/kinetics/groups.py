@@ -41,7 +41,7 @@ from copy import deepcopy
 
 from rmgpy.data.base import Database, Entry, Group, LogicNode, getAllCombinations, makeLogicNode
 
-from rmgpy.kinetics import Arrhenius, ArrheniusEP, KineticsData
+from rmgpy.kinetics import Arrhenius, ArrheniusEP, KineticsData, ArrheniusBM
 from rmgpy.species import Species
 from rmgpy.quantity import constants
 from rmgpy.exceptions import KineticsError, UndeterminableKineticsError, DatabaseError
