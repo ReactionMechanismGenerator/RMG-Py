@@ -42,6 +42,7 @@ cimport rmgpy.constants as constants
 import rmgpy.statmech.schrodinger as schrodinger 
 cimport rmgpy.statmech.schrodinger as schrodinger 
 import rmgpy.quantity as quantity
+from rmgpy.rmgobject import recursive_make_object
 
 ################################################################################
 
@@ -82,6 +83,12 @@ cdef class Rotation(Mode):
         A helper function used when pickling a Rotation object.
         """
         return (Rotation, (self.symmetry, self.quantum))
+
+    def make_object(self, data, class_dict):
+        kwargs = recursive_make_object(data, class_dict, make_final_object=False)
+        if ('inertia' in kwargs) and ('rotationalConstant' in kwargs):  # Only one of these can be specified
+            kwargs = {key: kwargs[key] for key in kwargs.iterkeys() if key != 'inertia'}
+        self.__init__(**kwargs)
 
 ################################################################################
 

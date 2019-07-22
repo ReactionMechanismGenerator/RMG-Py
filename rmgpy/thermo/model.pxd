@@ -26,8 +26,9 @@
 ###############################################################################
 
 from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
+from rmgpy.rmgobject cimport RMGObject
 
-cdef class HeatCapacityModel:
+cdef class HeatCapacityModel(RMGObject):
     
     cdef public ScalarQuantity _Tmin, _Tmax, _E0, _Cp0, _CpInf
     cdef public str comment,label

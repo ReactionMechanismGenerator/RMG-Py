@@ -28,6 +28,7 @@
 ###############################################################################
 
 import rmgpy.quantity as quantity
+from rmgpy.rmgobject cimport RMGObject
 
 """
 This module contains base classes that represent various thermodynamic
@@ -37,7 +38,7 @@ property calculation methods.
 
 ################################################################################
 
-cdef class HeatCapacityModel:
+cdef class HeatCapacityModel(RMGObject):
     """
     A base class for heat capacity models, containing several attributes
     common to all models:

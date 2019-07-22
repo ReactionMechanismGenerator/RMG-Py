@@ -83,6 +83,13 @@ cdef class NASAPolynomial(HeatCapacityModel):
         """
         return (NASAPolynomial, ([self.cm2, self.cm1, self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6], self.Tmin, self.Tmax, self.E0, self.label, self.comment))
 
+    def as_dict(self):
+        output_dictionary = super(NASAPolynomial, self).as_dict()
+
+        # Remove redundant entries for the coefficients
+        redundant_keys = ('cm2', 'cm1', 'c0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6')
+        return {key: output_dictionary[key] for key in output_dictionary if key not in redundant_keys}
+
     property coeffs:
         """The set of seven or nine NASA polynomial coefficients."""
         def __get__(self):
@@ -210,7 +217,10 @@ cdef class NASA(HeatCapacityModel):
     
     def __init__(self, polynomials=None, Tmin=None, Tmax=None, E0=None, Cp0=None, CpInf=None, label='', comment=''):
         HeatCapacityModel.__init__(self, Tmin=Tmin, Tmax=Tmax, E0=E0, Cp0=Cp0, CpInf=CpInf, label=label, comment=comment)
-        self.polynomials = polynomials
+        if isinstance(polynomials, dict):
+            self.polynomials = polynomials.values()
+        else:
+            self.polynomials = polynomials
     
     def __repr__(self):
         """
@@ -239,57 +249,21 @@ cdef class NASA(HeatCapacityModel):
         """
         A helper function for YAML dumping
         """
-        output_dict = dict()
-        output_dict['class'] = self.__class__.__name__
-        poly_dict = dict()
-        i = 1
-        for poly in self.polynomials:
-            if poly is not None:
-                key = 'polynomial{0}'.format(i)
-                poly_dict[key] = dict()
-                poly_dict[key]['class'] = poly.__class__.__name__
-                if poly.Tmin is not None:
-                    poly_dict[key]['Tmin'] = poly.Tmin.as_dict()
-                if poly.Tmax is not None:
-                    poly_dict[key]['Tmax'] = poly.Tmax.as_dict()
-                if poly.coeffs is not None:
-                    poly_dict[key]['coeffs'] = poly.coeffs.tolist()
-            i = i + 1
-        output_dict['polynomials'] = poly_dict
-        if self.Tmin:
-            output_dict['Tmin'] = self.Tmin.as_dict()
-        if self.Tmax:
-            output_dict['Tmax'] = self.Tmax.as_dict()
-        if self.E0:
-            output_dict['E0'] = self.E0.as_dict()
-        if self.Cp0:
-            output_dict['Cp0'] = self.Cp0.as_dict()
-        if self.CpInf:
-            output_dict['CpInf'] = self.CpInf.as_dict()
-        if self.label != '':
-            output_dict['label'] = self.label
-        if self.comment != '':
-            output_dict['comment'] = self.comment
-        return output_dict
+        output_dict = super(NASA, self).as_dict()
 
-    cpdef make_object(self, dict data, dict class_dict):
-        """
-        A helper function for YAML parsing
-        """
-        data['Tmin'] = quantity.ScalarQuantity().make_object(data['Tmin'], class_dict)
-        data['Tmax'] = quantity.ScalarQuantity().make_object(data['Tmax'], class_dict)
-        data['E0'] = quantity.ScalarQuantity().make_object(data['E0'], class_dict)
-        data['Cp0'] = quantity.ScalarQuantity().make_object(data['Cp0'], class_dict)
-        data['CpInf'] = quantity.ScalarQuantity().make_object(data['CpInf'], class_dict)
-        polynomials = []
-        for key, poly in data['polynomials'].iteritems():
-            poly = NASAPolynomial(
-                coeffs=poly['coeffs'],
-                Tmin=quantity.ScalarQuantity().make_object(poly['Tmin'], class_dict),
-                Tmax=quantity.ScalarQuantity().make_object(poly['Tmax'], class_dict))
-            polynomials.append(poly)
-        data['polynomials'] = polynomials
-        self.__init__(**data)
+        # Output NASA polynomials as a dictionary instead of as a list
+        output_dict = {key: output_dict[key] for key in output_dict if key not in ['poly1', 'poly2', 'poly3']}
+
+        if 'polynomials' in output_dict:
+            poly_dict = dict()
+            for i, poly in enumerate(self.polynomials):
+                poly_dict['polynomial{0}'.format(i+1)] = poly.as_dict()
+
+            output_dict['polynomials'] = poly_dict
+
+
+
+        return output_dict
 
     property polynomials:
         """The set of one, two, or three NASA polynomials."""
