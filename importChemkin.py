@@ -1797,8 +1797,6 @@ class ModelMatcher():
         # Add new species
         reactionsMovedFromEdge = rm.addSpeciesToCore(newSpecies)
 
-        # "inflate" the new reactions to turn them into species not integers
-        newReactions = [rm.inflate(rxn) for rxn in newReactions]
         # Process the new reactions
         # While adding to core/edge/pdep network, this clears atom labels:
         rm.processNewReactions(newReactions, newSpecies, pdepNetwork)
