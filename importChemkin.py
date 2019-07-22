@@ -1479,8 +1479,6 @@ class ModelMatcher():
         """
         Save the thermo and kinetics libraries in new and old format
         """
-        self.saveJavaThermoLibrary()
-        self.saveJavaKineticsLibrary()
         self.savePyThermoLibrary()
         self.savePyKineticsLibrary()
 
@@ -1553,54 +1551,6 @@ class ModelMatcher():
                 self.saveReactionToKineticsInfoFile(reaction, extraInfoFilePath)
             with open(extraInfoFilePath, 'a') as out_file:
                 out_file.write(']\n\n')
-
-    def saveJavaThermoLibrary(self):
-        """
-        Save an RMG-Java style thermo library
-        """
-        library_path = os.path.join(self.outputPath, 'RMG-Java-thermo-library')
-        makeOrEmptyDirectory(library_path)
-        self.thermoLibrary.saveOld(
-                dictstr=os.path.join(library_path, 'Dictionary.txt'),
-                treestr='',
-                libstr=os.path.join(library_path, 'Library.txt'),
-            )
-
-    def saveJavaKineticsLibrary(self):
-        """
-        Save an RMG-Java style kinetics library
-        """
-        library_path = os.path.join(self.outputPath, 'RMG-Java-kinetics-library')
-        makeOrEmptyDirectory(library_path)
-
-        reactionsToSave = []
-        reactionsCantYetSave = []
-        for chemkinReaction in self.chemkinReactions:
-            for reagents in (chemkinReaction.reactants, chemkinReaction.products):
-                for reagent in reagents:
-                    if not reagent.molecule:
-                        break  # if something hasn't been identified
-                else:  # didn't break inner loop so these reagents have all been identified
-                    continue  # to the other side of the reaction
-                reactionsCantYetSave.append(chemkinReaction)
-                break  # did break inner loop, so break outer loop as there's an unidentified species
-            else:  # didn't break outer loop, so all species have been identified
-                reactionsToSave.append(chemkinReaction)
-
-        speciesToSave = [s for s in self.speciesList if s.molecule]
-
-        rmgpy.chemkin.saveJavaKineticsLibrary(os.path.join(library_path, 'put_it_here'),
-                                              speciesToSave,
-                                              reactionsToSave)
-        with open(os.path.join(library_path, 'unidentified_reactions.txt'), 'w') as out_file:
-            out_file.write("// Couldn't use these {0} reactions because not yet identified all species\n".format(len(reactionsCantYetSave)))
-            for reaction in reactionsCantYetSave:
-                out_file.write(rmgpy.chemkin.writeKineticsEntry(reaction,
-                                                                speciesList=speciesToSave,
-                                                                verbose=False,
-                                                                javaLibrary=True))
-                out_file.write('\n')
-
 
     def reagentsAreAllIdentified(self, chemkinReaction, require_molecules=False):
         """
