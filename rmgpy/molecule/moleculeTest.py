@@ -1691,7 +1691,7 @@ multiplicity 2
         self.assertTrue(saturated_molecule.isIsomorphic(indene))
 
     def testFusedAromatic(self):
-        """Test we can make aromatic perylene from both adjlist and SMILES"""
+        """Test we can make perylene from both adjlist and SMILES"""
         perylene = Molecule().fromAdjacencyList("""
 1  C u0 p0 c0 {3,B} {6,B} {7,B}
 2  C u0 p0 c0 {4,B} {5,B} {8,B}
@@ -1727,7 +1727,9 @@ multiplicity 2
 32 H u0 p0 c0 {16,S}
 """)
         perylene2 = Molecule().fromSMILES('c1cc2cccc3c4cccc5cccc(c(c1)c23)c54')
-        self.assertTrue(perylene.isIsomorphic(perylene2))
+        self.assertTrue(perylene.isIsomorphic(perylene2,strict=False)) # doesn't actually check you can make aromatic form from SMILES
+        perylene3 = perylene2.generate_resonance_structures()[0]
+        self.assertTrue(perylene.isIsomorphic(perylene3,strict=True))
 
     def testSurfaceMolecules(self):
         """
