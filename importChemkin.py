@@ -1314,8 +1314,8 @@ class ModelMatcher():
         # This allows us to extrapolating H to 298 to find deltaH rxn
         # for ArrheniusEP kinetics,
         # and to 0K so we can do barrier height checks with E0.
-        Cp0 = rmgSpecies.calculateCp0()
-        CpInf = rmgSpecies.calculateCpInf()
+        Cp0 = rmgSpecies.calculateCp0(), 'J/mol/K'
+        CpInf = rmgSpecies.calculateCpInf(), 'J/mol/K'
         thermo = self.thermoDict[chemkinLabel]
         # pretend it was valid down to 298 K
         oldLowT = thermo.Tmin.value_si
