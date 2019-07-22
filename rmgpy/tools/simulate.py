@@ -84,13 +84,13 @@ def simulate(rmg, diffusion_limited=True):
                 rmg.load_database()
                 solvent_data = rmg.database.solvation.get_solvent_data(rmg.solvent)
                 diffusion_limiter.enable(solvent_data, rmg.database.solvation)
-
-            # Store constant species indices
-            if reaction_system.const_spc_names is not None:
-                reaction_system.get_const_spc_indices(rmg.reaction_model.core.species)
         elif rmg.uncertainty is not None:
             rmg.verbose_comments = True
             rmg.load_database()
+
+        # Store constant species indices
+        if reaction_system.const_spc_names is not None:
+            reaction_system.get_const_spc_indices(rmg.reaction_model.core.species)
 
         reaction_system.simulate(
             core_species=rmg.reaction_model.core.species,

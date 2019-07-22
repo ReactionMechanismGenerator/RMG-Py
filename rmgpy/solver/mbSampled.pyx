@@ -64,6 +64,7 @@ cdef class MBSampledReactor(ReactionSystem):
     cdef public bint constant_volume
     cdef public dict initial_mole_fractions
     cdef public list constantSpeciesList
+    cdef public list const_spc_names 
 
     # collider variables
 
@@ -112,13 +113,14 @@ cdef class MBSampledReactor(ReactionSystem):
     cdef public np.ndarray pdep_specific_collider_reaction_indices
 
     def __init__(self, T, P, initial_mole_fractions, k_sampling, constantSpeciesList, termination, sensitive_species=None,
-                 sensitivity_threshold=1e-3):
+                 sensitivity_threshold=1e-3, const_spc_names=None):
         ReactionSystem.__init__(self, termination, sensitive_species, sensitivity_threshold)
         self.T = Quantity(T)
         self.P = Quantity(P)
         self.initial_mole_fractions = initial_mole_fractions
         self.k_sampling = RateCoefficient(k_sampling)
         self.constantSpeciesList = constantSpeciesList
+        self.const_spc_names = const_spc_names
 
         self.V = 0  # will be set in initialize_model
         self.constant_volume = False
