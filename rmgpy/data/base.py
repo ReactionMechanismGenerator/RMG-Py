@@ -130,6 +130,23 @@ class Entry(object):
         else:
             self._shortDesc = unicode(value)
 
+    def getAllDescendants(self):
+        """
+        retrieve all the descendants of entry
+        """
+        newNodes = [self]
+        totNodes = []
+        tempNodes = []
+        while newNodes != []:
+            for entry in newNodes:
+                tempNodes.extend(entry.children)
+            totNodes.extend(newNodes)
+            newNodes = tempNodes
+            tempNodes = []
+
+        totNodes.remove(self)
+        return totNodes
+
 ################################################################################
 
 class Database:

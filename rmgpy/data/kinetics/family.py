@@ -62,7 +62,7 @@ from rmgpy.species import Species
 from rmgpy.molecule.atomtype import atomTypes
 
 from .common import saveEntry, ensure_species, find_degenerate_reactions, generate_molecule_combos,\
-                    ensure_independent_atom_ids, getAllDescendants
+                    ensure_independent_atom_ids
 from .depository import KineticsDepository
 from .groups import KineticsGroups
 from .rules import KineticsRules
