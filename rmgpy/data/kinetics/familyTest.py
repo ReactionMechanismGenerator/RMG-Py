@@ -265,7 +265,7 @@ multiplicity 2
 
         mapping = {}
         for label, atom in expectedProduct.getLabeledAtoms().iteritems():
-            mapping[atom] = products[0].getLabeledAtom(label)
+            mapping[atom] = products[0].getLabeledAtom(label)[0]
 
         self.assertTrue(expectedProduct.isIsomorphic(products[0], mapping))
 
@@ -306,13 +306,13 @@ multiplicity 2
 
         mapping1 = {}
         for label, atom in expectedProducts[0].getLabeledAtoms().iteritems():
-            mapping1[atom] = products[0].getLabeledAtom(label)
+            mapping1[atom] = products[0].getLabeledAtom(label)[0]
 
         self.assertTrue(expectedProducts[0].isIsomorphic(products[0], mapping1))
 
         mapping2 = {}
         for label, atom in expectedProducts[1].getLabeledAtoms().iteritems():
-            mapping2[atom] = products[1].getLabeledAtom(label)
+            mapping2[atom] = products[1].getLabeledAtom(label)[0]
 
         self.assertTrue(expectedProducts[1].isIsomorphic(products[1], mapping2))
 
@@ -365,7 +365,7 @@ multiplicity 2
 
         mapping = {}
         for label, atom in expectedProduct.getLabeledAtoms().iteritems():
-            mapping[atom] = products[0].getLabeledAtom(label)
+            mapping[atom] = products[0].getLabeledAtom(label)[0]
 
         self.assertTrue(expectedProduct.isIsomorphic(products[0], mapping))
 
@@ -408,7 +408,7 @@ multiplicity 2
 
         mapping = {}
         for label, atom in expectedProduct.getLabeledAtoms().iteritems():
-            mapping[atom] = products[0].getLabeledAtom(label)
+            mapping[atom] = products[0].getLabeledAtom(label)[0]
 
         self.assertTrue(expectedProduct.isIsomorphic(products[0], mapping))
 
@@ -461,7 +461,7 @@ multiplicity 2
 
         mapping = {}
         for label, atom in expectedProduct.getLabeledAtoms().iteritems():
-            mapping[atom] = products[0].getLabeledAtom(label)
+            mapping[atom] = products[0].getLabeledAtom(label)[0]
 
         self.assertTrue(expectedProduct.isIsomorphic(products[0], mapping))
 
@@ -520,7 +520,7 @@ multiplicity 2
 
         mapping = {}
         for label, atom in expectedProduct.getLabeledAtoms().iteritems():
-            mapping[atom] = products[0].getLabeledAtom(label)
+            mapping[atom] = products[0].getLabeledAtom(label)[0]
 
         self.assertTrue(expectedProduct.isIsomorphic(products[0], mapping))
 
@@ -563,7 +563,7 @@ multiplicity 2
 
         mapping = {}
         for label, atom in expectedProduct.getLabeledAtoms().iteritems():
-            mapping[atom] = products[0].getLabeledAtom(label)
+            mapping[atom] = products[0].getLabeledAtom(label)[0]
 
         self.assertTrue(expectedProduct.isIsomorphic(products[0], mapping))
 
@@ -874,14 +874,14 @@ multiplicity 2
         for i, reactant in enumerate(reaction.reactants):
             mapping = {}
             for label, atom in expected_reactants[i].getLabeledAtoms().iteritems():
-                mapping[atom] = reactant.molecule[0].getLabeledAtom(label)
+                mapping[atom] = reactant.molecule[0].getLabeledAtom(label)[0]
 
             self.assertTrue(expected_reactants[i].isIsomorphic(reactant.molecule[0], mapping))
 
         for i, product in enumerate(reaction.products):
             mapping = {}
             for label, atom in expected_products[i].getLabeledAtoms().iteritems():
-                mapping[atom] = product.molecule[0].getLabeledAtom(label)
+                mapping[atom] = product.molecule[0].getLabeledAtom(label)[0]
 
             self.assertTrue(expected_products[i].isIsomorphic(product.molecule[0], mapping))
 
