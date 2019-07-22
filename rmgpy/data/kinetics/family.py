@@ -3231,6 +3231,10 @@ class KineticsFamily(Database):
         
         rxns = np.array(templateRxnMap['Root'])
         
+
+        if folds == 0:
+            folds = len(rxns)
+
         kf = KFold(folds,shuffle=True,random_state=random_state)
         errors = {}
         
@@ -3280,11 +3284,14 @@ class KineticsFamily(Database):
         Perform K-fold cross validation on an automatically generated tree at temperature T
         Returns a dictionary mapping {rxn:Ln(k_Est/k_Train)}
         """
-        
-        kf = KFold(folds,shuffle=True,random_state=random_state)
         errors = {}
         rxns = np.array(self.getTrainingSet(removeDegeneracy=True))
-        
+
+        if folds == 0:
+            folds = len(rxns)
+
+        kf = KFold(folds,shuffle=True,random_state=random_state)
+
         if thermoDatabase is None:
             from rmgpy.data.rmg import getDB
             tdb = getDB('thermo')
