@@ -27,12 +27,49 @@
 # DEALINGS IN THE SOFTWARE.                                                   #
 #                                                                             #
 ###############################################################################
+import numpy as np
+from libc.math cimport exp, log, sqrt, log10
+from rmgpy.constants import R
+from rmgpy.quantity import Quantity
+import logging
 
 """
 This module contains information related to kinetic uncertainties
 """
 
-from rmgpy.quantity import Quantity
+cdef class RateUncertainty(object):
+    """
+    Class for storing kinetic uncertainty information describes identically a normal distribution 
+    on Log(k) and a lognormal distribution on k by mu and var at a single temperature Tref also 
+    includes potentially useful uncertainty treatment variables
+    N = number of samples used to generate the distribution 
+    correlation = label identifying source of estimate for correlated error treatment
+    Note that correlated errors are expected to be associated only with mu (the bias of the distribution)
+    """
+
+    def __init__(self,mu,var,Tref,N=None,correlation=None):
+        self.Tref = Tref
+        self.correlation = correlation
+        self.mu = mu
+        self.var = var
+        self.N = N
+
+    def __repr__(self):
+        s = "RateUncertainty(mu={mu}, var={var}, Tref={Tref},".format(mu=self.mu,var=self.var,Tref=self.Tref)
+        if self.N is not None:
+            s += " N={0!r},".format(self.N)
+        if self.correlation is not None:
+            s += " correlation={0!r},".format(self.correlation)
+        s += ")"
+        return s
+
+    cpdef double getExpectedLogUncertainty(self):
+        """
+        The expected uncertainty in Log(k) at Tref
+        """
+        return np.sqrt(self.var*2.0/np.pi)+abs(self.mu)
+
+
 
 rank_accuracy_map ={1:(0.0,'kcal/mol'),
                   2:(0.5,'kcal/mol'),
@@ -49,4 +86,4 @@ rank_accuracy_map ={1:(0.0,'kcal/mol'),
                   '':(14.0,'kcal/mol'),
                   11:(14.0,'kcal/mol'),
                   }
-rank_accuracy_map = {key:Quantity(value) for key,value in rank_accuracy_map.iteritems()}
+rank_accuracy_map = {i:Quantity(rank_accuracy_map[i]) for i in rank_accuracy_map.keys()}
