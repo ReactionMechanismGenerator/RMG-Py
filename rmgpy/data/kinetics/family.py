@@ -3250,7 +3250,7 @@ class KineticsFamily(Database):
 
                 index += 1
 
-    def crossValidate(self,folds=5,templateRxnMap=None,T=1000.0,iters=0,random_state=1):
+    def crossValidate(self,folds=5,templateRxnMap=None,testRxnInds=None,T=1000.0,iters=0,random_state=1):
         """
         Perform K-fold cross validation on an automatically generated tree at temperature T
         after finding an appropriate node for kinetics estimation it will move up the tree
@@ -3264,16 +3264,25 @@ class KineticsFamily(Database):
         rxns = np.array(templateRxnMap['Root'])
         
 
-        if folds == 0:
-            folds = len(rxns)
+        if testRxnInds is None:
+            if folds == 0:
+                folds = len(rxns)
 
-        kf = KFold(folds,shuffle=True,random_state=random_state)
+            kf = KFold(folds,shuffle=True,random_state=random_state)
+            kfsplits = kf.split(rxns)
+        else:
+            kfsplits = [([0,],[0,])]
+
         errors = {}
-        
-        for train_index, test_index in kf.split(rxns):
+        uncertainties = {}
 
-            rxns_test = rxns[test_index]
-            
+        for train_index, test_index in kfsplits:
+
+            if testRxnInds is None:
+                rxns_test = rxns[test_index]
+            else:
+                rxns_test = rxns[testRxnInds]
+
             for rxn in rxns_test:
                     
                 krxn = rxn.kinetics.getRateCoefficient(T)
