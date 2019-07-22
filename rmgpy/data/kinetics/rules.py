@@ -441,16 +441,6 @@ class KineticsRules(Database):
         except KeyError:
             pass
         
-        family = os.path.split(self.label)[0]   # i.e. self.label = 'R_Recombination/rules'
-        if family.lower() == 'r_recombination':
-            template.reverse()
-            templateLabels = ';'.join([group.label for group in template])
-            try:
-                entries.extend(self.entries[templateLabels])
-            except KeyError:
-                pass
-            template.reverse()
-        
         return entries
 
     def fillRulesByAveragingUp(self, rootTemplate, alreadyDone, verbose=False):
