@@ -539,7 +539,7 @@ cdef class HinderedRotor(Torsion):
             # This row forces dV/dangle = 0 at angle = 0
             for m in range(numterms):
                 A[N,m+numterms] = 1
-            x, residues, rank, s = numpy.linalg.lstsq(A, b)
+            x, residues, rank, s = numpy.linalg.lstsq(A, b, rcond=None)
             fit = numpy.dot(A,x)
             x *= 0.001
             # This checks if there are any negative values in the forier fit.

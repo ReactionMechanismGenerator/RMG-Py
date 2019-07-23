@@ -32,23 +32,26 @@
 This module contains unit tests of the rmgpy.reaction module.
 """
 
-import numpy
 import unittest
+
+import cantera as ct
+import numpy
 from external.wip import work_in_progress
 
-from rmgpy.quantity import Quantity
-from rmgpy.species import Species, TransitionState
-from rmgpy.molecule import Molecule
-from rmgpy.reaction import Reaction
-from rmgpy.quantity import Quantity
-from rmgpy.statmech.translation import Translation, IdealGasTranslation
-from rmgpy.statmech.rotation import Rotation, LinearRotor, NonlinearRotor, KRotor, SphericalTopRotor
-from rmgpy.statmech.vibration import Vibration, HarmonicOscillator
-from rmgpy.statmech.torsion import Torsion, HinderedRotor
-from rmgpy.statmech.conformer import Conformer
-from rmgpy.kinetics import Arrhenius, ArrheniusEP, SurfaceArrhenius, StickingCoefficient
-from rmgpy.thermo import Wilhoit, ThermoData, NASA, NASAPolynomial
 import rmgpy.constants as constants
+from rmgpy.kinetics import Arrhenius, ArrheniusEP, MultiArrhenius, PDepArrhenius, MultiPDepArrhenius, \
+                           ThirdBody, Troe, Lindemann, Chebyshev, SurfaceArrhenius, StickingCoefficient
+from rmgpy.molecule import Molecule
+from rmgpy.quantity import Quantity
+from rmgpy.reaction import Reaction
+from rmgpy.species import Species, TransitionState
+from rmgpy.statmech.conformer import Conformer
+from rmgpy.statmech.rotation import NonlinearRotor
+from rmgpy.statmech.torsion import HinderedRotor
+from rmgpy.statmech.translation import IdealGasTranslation
+from rmgpy.statmech.vibration import HarmonicOscillator
+from rmgpy.thermo import Wilhoit, ThermoData, NASA, NASAPolynomial
+
 
 ################################################################################
 
@@ -689,7 +692,6 @@ class TestReaction(unittest.TestCase):
         """
         Test the Reaction.generateReverseRateCoefficient() method works for the PDepArrhenius format.
         """
-        from rmgpy.kinetics import PDepArrhenius
 
         arrhenius0 = Arrhenius(
             A = (1.0e6,"s^-1"),
@@ -746,12 +748,66 @@ class TestReaction(unittest.TestCase):
             krevrev = reversereverseKinetics.getRateCoefficient(T, P)
             self.assertAlmostEqual(korig / krevrev, 1.0, 0)
 
+    def testGenerateReverseRateCoefficientPDepMultiArrhenius(self):
+        """
+        Test the Reaction.generateReverseRateCoefficient() method works for the PDepArrhenius format with MultiArrhenius rates.
+        """
+
+        arrhenius0 = MultiArrhenius(
+            arrhenius=[
+                Arrhenius(A=(1.0e6, "s^-1"), n=1.0, Ea=(10.0, "kJ/mol"), T0=(300.0, "K"), Tmin=(300.0, "K"), Tmax=(2000.0, "K")),
+                Arrhenius(A=(1.0e6, "s^-1"), n=1.0, Ea=(10.0, "kJ/mol"), T0=(300.0, "K"), Tmin=(300.0, "K"), Tmax=(2000.0, "K")),
+            ],
+            comment="""This data is completely made up""",
+        )
+
+        arrhenius1 = MultiArrhenius(
+            arrhenius=[
+                Arrhenius(A=(1.0e12, "s^-1"), n=1.0, Ea=(10.0, "kJ/mol"), T0=(300.0, "K"), Tmin=(300.0, "K"), Tmax=(2000.0, "K")),
+                Arrhenius(A=(1.0e12, "s^-1"), n=1.0, Ea=(10.0, "kJ/mol"), T0=(300.0, "K"), Tmin=(300.0, "K"), Tmax=(2000.0, "K")),
+            ],
+            comment="""This data is completely made up""",
+        )
+
+        pressures = numpy.array([0.1, 10.0])
+        arrhenius = [arrhenius0, arrhenius1]
+        Tmin = 300.0
+        Tmax = 2000.0
+        Pmin = 0.1
+        Pmax = 10.0
+        comment = """This data is completely made up"""
+
+        original_kinetics = PDepArrhenius(
+            pressures=(pressures, "bar"),
+            arrhenius=arrhenius,
+            Tmin=(Tmin, "K"),
+            Tmax=(Tmax, "K"),
+            Pmin=(Pmin, "bar"),
+            Pmax=(Pmax, "bar"),
+            comment=comment,
+        )
+
+        self.reaction2.kinetics = original_kinetics
+
+        reverseKinetics = self.reaction2.generateReverseRateCoefficient()
+
+        self.reaction2.kinetics = reverseKinetics
+        # reverse reactants, products to ensure Keq is correctly computed
+        self.reaction2.reactants, self.reaction2.products = self.reaction2.products, self.reaction2.reactants
+        reversereverseKinetics = self.reaction2.generateReverseRateCoefficient()
+
+        # check that reverting the reverse yields the original
+        Tlist = numpy.arange(Tmin, Tmax, 200.0, numpy.float64)
+        P = 1e5
+        for T in Tlist:
+            korig = original_kinetics.getRateCoefficient(T, P)
+            krevrev = reversereverseKinetics.getRateCoefficient(T, P)
+            self.assertAlmostEqual(korig / krevrev, 1.0, 0)
 
     def testGenerateReverseRateCoefficientMultiArrhenius(self):
         """
         Test the Reaction.generateReverseRateCoefficient() method works for the MultiArrhenius format.
         """
-        from rmgpy.kinetics import MultiArrhenius
 
         pressures = numpy.array([0.1, 10.0])
         Tmin = 300.0
@@ -809,7 +865,6 @@ class TestReaction(unittest.TestCase):
         """
         Test the Reaction.generateReverseRateCoefficient() method works for the MultiPDepArrhenius format.
         """
-        from rmgpy.kinetics import PDepArrhenius, MultiPDepArrhenius
 
         Tmin = 350.
         Tmax = 1500.
@@ -907,8 +962,6 @@ class TestReaction(unittest.TestCase):
         Test the Reaction.generateReverseRateCoefficient() method works for the ThirdBody format.
         """
 
-        from rmgpy.kinetics import ThirdBody
-
         arrheniusLow = Arrhenius(
             A = (2.62e+33,"cm^6/(mol^2*s)"), 
             n = -4.76, 
@@ -954,8 +1007,6 @@ class TestReaction(unittest.TestCase):
         """
         Test the Reaction.generateReverseRateCoefficient() method works for the Lindemann format.
         """
-
-        from rmgpy.kinetics import Lindemann
 
         arrheniusHigh = Arrhenius(
             A = (1.39e+16,"cm^3/(mol*s)"), 
@@ -1010,8 +1061,6 @@ class TestReaction(unittest.TestCase):
         """
         Test the Reaction.generateReverseRateCoefficient() method works for the Troe format.
         """
-
-        from rmgpy.kinetics import Troe
 
         arrheniusHigh = Arrhenius(
             A = (1.39e+16,"cm^3/(mol*s)"), 
@@ -1184,11 +1233,6 @@ class TestReactionToCantera(unittest.TestCase):
         """
         A method that is called prior to each unit test in this class.
         """
-        from rmgpy.kinetics import Arrhenius, MultiArrhenius, PDepArrhenius, MultiPDepArrhenius, ThirdBody, Troe, Lindemann, Chebyshev
-        from rmgpy.molecule import Molecule
-        from rmgpy.thermo import NASA, NASAPolynomial
-        import cantera as ct
-        
         # define some species:
         ch3 = Species(index=13, label="CH3", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[3.91547,0.00184154,3.48744e-06,-3.3275e-09,8.49964e-13,16285.6,0.351739], Tmin=(100,'K'), Tmax=(1337.62,'K')), NASAPolynomial(coeffs=[3.54145,0.00476788,-1.82149e-06,3.28878e-10,-2.22547e-14,16224,1.6604], Tmin=(1337.62,'K'), Tmax=(5000,'K'))], Tmin=(100,'K'), Tmax=(5000,'K'), comment="""
 Thermo library: primaryThermoLibrary + radical(CH3)
