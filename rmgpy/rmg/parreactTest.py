@@ -32,6 +32,7 @@
 This module contains unit tests of the rmgpy.parallel module.
 """
 
+import itertools
 import os
 import sys
 import unittest
@@ -93,7 +94,7 @@ def generate():
     spcTuples = [(spcA, spc) for spc in spcs]
     procnum = 2
 
-    reactionList = list(react(spcTuples, procnum))
+    reactionList = list(itertools.chain.from_iterable(react(spcTuples, procnum)))
 
     if not reactionList: return False
 

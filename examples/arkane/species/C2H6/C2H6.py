@@ -23,8 +23,6 @@ geometry = Log('ethane_cbsqb3.log')
 
 frequencies = Log('ethane_cbsqb3.log')
 
-frequencyScaleFactor = 0.99
-
 """pivot are the two atoms that are attached to the rotor
 top contains the atoms that are being rotated including one of the atoms from pivots
 symmetry is the symmetry number of the scan

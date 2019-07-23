@@ -38,6 +38,7 @@ import os.path
 import logging
 
 from rmgpy.thermo.wilhoit import Wilhoit
+from rmgpy.quantity import ScalarQuantity
 import rmgpy.constants as constants
 
 ################################################################################
@@ -360,3 +361,42 @@ class TestWilhoit(unittest.TestCase):
 
         self.assertAlmostEqual(Std, Swh, -1)
         self.assertEqual(td.comment,wilhoit.comment)
+
+    def testWilhoitAsDict(self):
+        """
+        Test that a Wilhoit object can be converted to a dictionary representation properly
+        """
+        wilhoit_dict = self.wilhoit.as_dict()
+        self.assertEqual(wilhoit_dict, {'comment': 'C2H6',
+                                        'B': {'units': 'K', 'class': 'ScalarQuantity', 'value': 1068.68},
+                                        'Tmin': {'units': 'K', 'class': 'ScalarQuantity', 'value': 300.0},
+                                        'H0': {'units': 'kJ/mol', 'class': 'ScalarQuantity', 'value': -782.292041536},
+                                        'Tmax': {'units': 'K', 'class': 'ScalarQuantity', 'value': 3000.0},
+                                        'S0': {'units': 'J/(mol*K)', 'class': 'ScalarQuantity', 'value': -984.93235312},
+                                        'a1': -16.3067,
+                                        'a0': 0.0977518,
+                                        'a3': -12.6785,
+                                        'a2': 26.2524,
+                                        'Cp0': {'units': 'J/(mol*K)', 'class': 'ScalarQuantity', 'value': 33.257888},
+                                        'CpInf': {'units': 'J/(mol*K)', 'class': 'ScalarQuantity',
+                                                  'value': 178.76114800000002},
+                                        'class': 'Wilhoit'}
+                         )
+
+    def testMakeWilhoit(self):
+        """
+        Test that a Wilhoit object can be created from a dictionary representation
+        """
+        wilhoit_dict = self.wilhoit.as_dict()
+        new_wilhoit = Wilhoit.__new__(Wilhoit)
+        class_dictionary = {'ScalarQuantity': ScalarQuantity,
+                            'Wilhoit': Wilhoit}
+
+        new_wilhoit.make_object(wilhoit_dict, class_dictionary)
+
+################################################################################
+
+
+if __name__ == '__main__':
+    unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
+

@@ -71,6 +71,7 @@ from pdep import PDepNetwork
 import rmgpy.util as util
 
 from rmgpy.chemkin import ChemkinWriter
+from rmgpy.yml import RMSWriter
 from rmgpy.rmg.output import OutputHTMLWriter
 from rmgpy.rmg.listener import SimulationProfileWriter, SimulationProfilePlotter
 from rmgpy.restart import RestartWriter
@@ -590,6 +591,7 @@ class RMG(util.Subject):
         """
 
         self.attach(ChemkinWriter(self.outputDirectory))
+        self.attach(RMSWriter(self.outputDirectory))
 
         if self.generateOutputHTML:
             self.attach(OutputHTMLWriter(self.outputDirectory))

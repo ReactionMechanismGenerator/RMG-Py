@@ -43,6 +43,8 @@ from rmgpy.statmech.translation import IdealGasTranslation
 from rmgpy.statmech.rotation import NonlinearRotor
 from rmgpy.kinetics.tunneling import Eckart
 from rmgpy.exceptions import InputError
+from rmgpy.thermo.nasa import NASAPolynomial, NASA
+from rmgpy.molecule import Molecule
 
 from arkane.input import species, transitionState, reaction, SMILES, loadInputFile, process_model_chemistry
 
@@ -80,6 +82,37 @@ class InputTest(unittest.TestCase):
         self.assertEqual(len(spc0.conformer.modes), 3)
         self.assertIsInstance(spc0.transportData, TransportData)
         self.assertIsInstance(spc0.energyTransferModel, SingleExponentialDown)
+
+    def test_species_atomic_NASA_polynomial(self):
+        """
+        Test loading a atom with NASA polynomials
+        """
+        label0 = "H(1)"
+        kwargs = {"structure": SMILES('[H]'),
+                  "thermo": NASA(polynomials=[NASAPolynomial(coeffs=[2.5, 0, 0, 0, 0, 25473.7, -0.446683], Tmin=(200, 'K'), Tmax=(1000, 'K')),
+                                              NASAPolynomial(coeffs=[2.5, 0, 0, 0, 0, 25473.7, -0.446683], Tmin=(1000, 'K'), Tmax=(6000, 'K'))],
+                                 Tmin=(200, 'K'), Tmax=(6000, 'K'), comment="""Thermo library: FFCM1(-)"""),
+                  "energyTransferModel": SingleExponentialDown(alpha0=(3.5886, 'kJ/mol'), T0=(300, 'K'), n=0.85)}
+        spc0 = species(label0, **kwargs)
+        self.assertEqual(spc0.label, label0)
+        self.assertEqual(spc0.SMILES, '[H]')
+        self.assertTrue(spc0.hasStatMech())
+        self.assertEqual(spc0.thermo, kwargs['thermo'])
+
+    def test_species_polyatomic_NASA_polynomial(self):
+        """
+        Test loading a species with NASA polynomials
+        """
+        label0 = "benzyl"
+        kwargs = {"structure": SMILES('[c]1ccccc1'),
+                  "thermo": NASA(polynomials=[NASAPolynomial(coeffs=[2.78632, 0.00784632, 7.97887e-05, -1.11617e-07, 4.39429e-11, 39695, 11.5114], Tmin=(100, 'K'), Tmax=(943.73, 'K')),
+                                              NASAPolynomial(coeffs=[13.2455, 0.0115667, -2.49996e-06, 4.66496e-10, -4.12376e-14, 35581.1, -49.6793], Tmin=(943.73, 'K'), Tmax=(5000, 'K'))],
+                                 Tmin=(100, 'K'), Tmax=(5000, 'K'), comment="""Thermo library: Fulvene_H + radical(CbJ)"""),
+                  "energyTransferModel": SingleExponentialDown(alpha0=(3.5886, 'kJ/mol'), T0=(300, 'K'), n=0.85)}
+        spc0 = species(label0, **kwargs)
+        self.assertEqual(spc0.label, label0)
+        self.assertTrue(spc0.hasStatMech())
+        self.assertEqual(spc0.thermo, kwargs['thermo'])
 
     def test_transitionState(self):
         """

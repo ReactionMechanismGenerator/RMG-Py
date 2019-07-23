@@ -41,6 +41,7 @@ import re
 
 import rmgpy.constants as constants
 from rmgpy.exceptions import QuantityError
+from rmgpy.rmgobject import RMGObject, expand_to_dict
 
 ################################################################################
 
@@ -70,7 +71,7 @@ NOT_IMPLEMENTED_UNITS = [
 
 ################################################################################
 
-class Units(object):
+class Units(RMGObject):
     """
     The :class:`Units` class provides a representation of the units of a
     physical quantity. The attributes are:
@@ -227,19 +228,6 @@ class ScalarQuantity(Units):
             output_dict['uncertainty'] = self.uncertainty
             output_dict['uncertaintyType'] = self.uncertaintyType
         return output_dict
-
-    def make_object(self, data, class_dict):
-        """
-        A helper function for YAML parsing
-        """
-        # the `class_dict` parameter isn't used here, it is passed by default when calling the `make_object()` methods
-        if 'units' in data:
-            self.units = data['units']
-        self.value = data['value']
-        if 'uncertaintyType' in data:
-            self.uncertaintyType = data['uncertaintyType']
-        if 'uncertainty' in data:
-            self.uncertainty = data['uncertainty']
     
     def copy(self):
         """
@@ -461,28 +449,15 @@ class ArrayQuantity(Units):
         """
         output_dict = dict()
         output_dict['class'] = self.__class__.__name__
-        output_dict['value'] = self.value.tolist()
+        output_dict['value'] = expand_to_dict(self.value)
         if self.units != '':
             output_dict['units'] = self.units
         if self.uncertainty is not None and any([val != 0.0 for val in numpy.nditer(self.uncertainty)]):
             logging.info(self.uncertainty)
             logging.info(type(self.uncertainty))
-            output_dict['uncertainty'] = self.uncertainty.tolist()
+            output_dict['uncertainty'] = expand_to_dict(self.uncertainty)
             output_dict['uncertaintyType'] = self.uncertaintyType
         return output_dict
-
-    def make_object(self, data, class_dict):
-        """
-        A helper function for YAML parsing
-        """
-        # the `class_dict` parameter isn't used here, it is passed by default when calling the `make_object()` methods
-        if 'units' in data:
-            self.units = data['units']
-        self.value = data['value']
-        if 'uncertaintyType' in data:
-            self.uncertaintyType = data['uncertaintyType']
-        if 'uncertainty' in data:
-            self.uncertainty = data['uncertainty']
 
     def copy(self):
         """

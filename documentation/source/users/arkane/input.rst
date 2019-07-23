@@ -28,6 +28,7 @@ Component                   Description
 ``useHinderedRotors``       ``True`` (by default) if hindered rotors are used, ``False`` if not
 ``useAtomCorrections``      ``True`` (by default) if atom corrections are used, ``False`` if not
 ``useBondCorrections``      ``True`` if bond corrections are used, ``False`` (by default) if not
+``bondCorrectionType``      ``'p'`` for Petersson-type (default) or ``'m'`` for Melius-type bond additivity corrections
 ``species``                 Contains parameters for non-transition states
 ``transitionState``         Contains parameters for transition state(s)
 ``reaction``                Required for performing kinetic computations
@@ -192,7 +193,12 @@ to apply atomization energy corrections (AEC) and spin orbit corrections (SOC) f
 (see `Model Chemistry`_). If not interested in accurate thermodynamics (e.g., if only using ``kinetics()``), then
 atom corrections can be turned off by setting ``useAtomCorrections`` to ``False``.
 
-The ``bond`` parameter is used to apply bond corrections (BC) for a given ``modelChemistry``.
+The ``bonds`` parameter is used to apply bond additivity corrections (BACs) for a given ``modelChemistry`` if using
+Petersson-type BACs (``bondCorrectionType = 'p'``). When using Melius-type BACs (``bondCorrectionType = 'm'``),
+specifying ``bonds`` is not required because the molecular connectivity is automatically inferred from the output of the
+quantum chemistry calculation.
+For a description of Petersson-type BACs, see Petersson et al., J. Chem. Phys. 1998, 109, 10570-10579.
+For a description of Melius-type BACs, see Anantharaman and Melius, J. Phys. Chem. A 2005, 109, 1734-1747.
 
 Allowed bond types for the ``bonds`` parameter are, e.g., ``'C-H'``, ``'C-C'``, ``'C=C'``, ``'N-O'``, ``'C=S'``,
 ``'O=O'``, ``'C#N'``...
@@ -326,7 +332,9 @@ scan in the following format::
                  .                       .
            6.2831853072            0.0000000000
 
-The ``Energy`` can be in units of ``kJ/mol``, ``J/mol``, ``cal/mol``, ``kcal/mol``, ``cm^-1`` or ``hartree``.
+The ``Energy`` can be in units of ``kJ/mol``, ``J/mol`` (default), ``cal/mol``, ``kcal/mol``, ``cm^-1`` or ``hartree``,
+and the ``Angle`` can be either in ``radians`` (default) or in ``degrees``. Units must be specified in parenthesis
+if different than the default.
 
 The ``symmetry`` parameter will usually equal either 1, 2 or 3. It could be determined automatically by Arkane
 (by simply not specifying it altogether), however it is always better to explicitly specify it if it is known. If it is
@@ -517,19 +525,18 @@ states, intermediates and products are reported relative to that.
 Also note that the value of ``E0`` provided here will be used directly, i.e., no atom or bond corrections will be applied.
 
 If you want Arkane to correct for zero point energy, you can either just place
-the raw units in Hartree (as if it were read directly from quantum):
+the raw units in Hartree (as if it were read directly from quantum): ::
 
     E0 = 547.6789753223456
 
 Or you can add a third argument to the Quantity specified whether zero-point
-energy is included or not:
+energy is included or not: ::
 
-    E0 = (95.1, 'kJ/mol', 'E0') # when ZPE is not included
-    E0 = (95.1, 'kJ/mol', 'E0-ZPE') # when ZPE is already included
+    E0 = (95.1, 'kJ/mol', 'e_electronic')  # when zero point energy (ZPE) is not included - Arkane will add it
+    E0 = (95.1, 'kJ/mol', 'E0')  # when ZPE is already included - Arkane will not add it
 
-When specifying the ``modes`` parameter, define a list
-with the following types of degrees of freedom.  To understand how to define these
-degrees of freedom, please click on the links below:
+When specifying the ``modes`` parameter, define a list with the following types of degrees of freedom.
+To understand how to define these degrees of freedom, please click on the links below:
 
 **Translational degrees of freedom**
 

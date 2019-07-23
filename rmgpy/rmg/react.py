@@ -31,43 +31,47 @@
 """
 Contains functions for generating reactions.
 """
-import itertools
 import logging
 
 from rmgpy.data.rmg import getDB
 from multiprocessing import Pool
 
 ################################################################################
-def react(spc_tuples, procnum=1):
+
+
+def react(spc_fam_tuples, procnum=1):
     """
-    Generate reactions between the species in the
-    list of species tuples for all the reaction families available.
+    Generate reactions between the species in the list of species-family tuples
+    for the optionally specified reaction families.
 
-    For each tuple of one or more Species objects [(spc1,), (spc2, spc3), ...]
-    the following is done:
+    Each item should be a tuple of a species tuple and an optional family list:
+        [((spc1,), [family1, ...]), ((spc2, spc3), [family2, ...]), ...]
+            OR
+        [((spc1,),), ((spc2, spc3),), ...]
 
-    A list of tuples is created for each resonance isomer of the species.
-    Each tuple consists of (Molecule, index) with the index the species index of the Species object.
+    If no family list is provided, all of the loaded families are considered.
 
-    Possible combinations between the first spc in the tuple, and the second species in the tuple
-    is obtained by taking the combinatorial product of the two generated [(Molecule, index)] lists.
+    Args:
+        spc_fam_tuples (list): list of tuples for reaction generation
+        procnum (int, optional): number of processors used for reaction generation
 
-    Returns a flat generator object containing the generated Reaction objects.
+    Returns:
+        list of lists of reactions generated from each species tuple (note: empty lists are possible)
     """
     # Execute multiprocessing map. It blocks until the result is ready.
     # This method chops the iterable into a number of chunks which it
     # submits to the process pool as separate tasks.
     if procnum == 1:
         logging.info('For reaction generation {0} process is used.'.format(procnum))
-        reactions = map(_react_species_star, spc_tuples)
+        reactions = map(_react_species_star, spc_fam_tuples)
     else:
         logging.info('For reaction generation {0} processes are used.'.format(procnum))
         p = Pool(processes=procnum)
-        reactions = p.map(_react_species_star, spc_tuples)
+        reactions = p.map(_react_species_star, spc_fam_tuples)
         p.close()
         p.join()
 
-    return itertools.chain.from_iterable(reactions)
+    return reactions
 
 
 def _react_species_star(args):
@@ -79,6 +83,13 @@ def react_species(species_tuple, only_families=None):
     """
     Given a tuple of Species objects, generates all possible reactions
     from the loaded reaction families and combines degenerate reactions.
+
+    Args:
+        species_tuple (tuple): tuple of 1-3 Species objects to react together
+        only_families (list, optional): list of reaction families to consider
+
+    Returns:
+        list of generated reactions
     """
 
     species_tuple = tuple([spc.copy(deep=True) for spc in species_tuple])
@@ -90,8 +101,22 @@ def react_species(species_tuple, only_families=None):
 
 def react_all(core_spc_list, numOldCoreSpecies, unimolecularReact, bimolecularReact, trimolecularReact=None, procnum=1):
     """
-    Reacts the core species list via uni-, bi-, and trimolecular
-    reactions and splits reaction families per task for improved load balancing in parallel runs.
+    Reacts the core species list via uni-, bi-, and trimolecular reactions.
+
+    For parallel processing, reaction families are split per task for improved
+    load balancing. This is currently hard-coded using reaction family labels.
+
+    Args:
+        core_spc_list (list): list of all core species
+        numOldCoreSpecies (int): current number of core species in the model
+        unimolecularReact (np.ndarray): reaction filter flags indicating which species to react unimolecularly
+        bimolecularReact (np.ndarray): reaction filter flags indicating which species to react bimolecularly
+        trimolecularReact (np.ndarray, optional): reaction filter flags indicating which species to react trimolecularly
+        procnum (int, optional): number of processors used for reaction generation
+
+    Returns:
+        a list of lists of reactions generated from each species tuple
+        a list of species tuples corresponding to each list of reactions
     """
     # Select reactive species that can undergo unimolecular reactions:
     spc_tuples = [(core_spc_list[i],)
@@ -147,5 +172,5 @@ def react_all(core_spc_list, numOldCoreSpecies, unimolecularReact, bimolecularRe
             else:
                 spc_fam_tuples.append((spc_tuple, ))
 
-    return list(react(spc_fam_tuples, procnum))
+    return react(spc_fam_tuples, procnum), [fam_tuple[0] for fam_tuple in spc_fam_tuples]
 

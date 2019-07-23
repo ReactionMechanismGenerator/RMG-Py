@@ -162,7 +162,7 @@ cdef class Arrhenius(KineticsModel):
             for n in range(b.size):
                 A[n,:] *= weights[n]
                 b[n] *= weights[n]
-        x, residues, rank, s = numpy.linalg.lstsq(A,b)
+        x, residues, rank, s = numpy.linalg.lstsq(A, b, rcond=None)
 
         # Determine covarianace matrix to obtain parameter uncertainties
         count = klist.size

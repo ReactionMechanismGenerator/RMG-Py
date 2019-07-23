@@ -59,6 +59,7 @@ from arkane.molpro import MolproLog
 from arkane.qchem import QChemLog
 from arkane.common import symbol_by_number
 from arkane.common import ArkaneSpecies
+from arkane.encorr.corr import get_energy_correction
 
 
 ################################################################################
@@ -180,6 +181,7 @@ class StatMechJob(object):
         self.includeHinderedRotors = True
         self.applyAtomEnergyCorrections = True
         self.applyBondEnergyCorrections = True
+        self.bondEnergyCorrectionType = 'p'
         self.atomEnergies = None
         self.supporting_info = [self.species.label]
         self.bonds = None
@@ -207,7 +209,7 @@ class StatMechJob(object):
         is_ts = isinstance(self.species, TransitionState)
         _, file_extension = os.path.splitext(path)
         if file_extension in ['.yml', '.yaml']:
-            self.arkane_species.load_yaml(path=path, species=self.species, pdep=pdep)
+            self.arkane_species.load_yaml(path=path, label=self.species.label, pdep=pdep)
             self.species.conformer = self.arkane_species.conformer
             if is_ts:
                 self.species.frequency = self.arkane_species.imaginary_frequency
@@ -288,7 +290,7 @@ class StatMechJob(object):
             except KeyError:
                 raise InputError('Model chemistry {0!r} not found in from dictionary of energy values in species file '
                                  '{1!r}.'.format(self.modelChemistry, path))
-        E0_withZPE, E0 = None, None
+        e0, e_electronic = None, None  # E0 = e_electronic + ZPE
         energyLog = None
         if isinstance(energy, Log) and not isinstance(energy, (GaussianLog, QChemLog, MolproLog)):
             energyLog = determine_qm_software(os.path.join(directory, energy.path))
@@ -296,21 +298,21 @@ class StatMechJob(object):
             energyLog = energy
             energyLog.path = os.path.join(directory, energyLog.path)
         elif isinstance(energy, float):
-            E0 = energy
+            e_electronic = energy
         elif isinstance(energy, tuple) and len(energy) == 2:
             # this is likely meant to be a quantity object with ZPE already accounted for
-            energy_temp = Quantity(energy)
-            E0_withZPE = energy_temp.value_si  # in J/mol
+            energy = Quantity(energy)
+            e_0 = energy.value_si  # in J/mol
         elif isinstance(energy, tuple) and len(energy) == 3:
-            if energy[2] == 'E0':
-                energy_temp = Quantity(energy[:2])
-                E0 = energy_temp.value_si / constants.E_h / constants.Na  # convert J/mol to Hartree
-            elif energy[2] == 'E0-ZPE':
-                energy_temp = Quantity(energy[:2])
-                E0_withZPE = energy_temp.value_si  # in J/mol
+            if energy[2].lower() == 'e_electronic':
+                energy = Quantity(energy[:2])
+                e_electronic = energy.value_si / constants.E_h / constants.Na  # convert J/mol to Hartree
+            elif energy[2].lower() in ['e0']:
+                energy = Quantity(energy[:2])
+                e0 = energy.value_si  # in J/mol
             else:
-                raise InputError('The third argument for E0 energy value should be E0 (for energy w/o ZPE) or E0-ZPE. '
-                                 'Value entered: {0}'.format(energy[2]))
+                raise InputError('The third argument for E0 energy value should be e_elect (for energy w/o ZPE) '
+                                 'or E0 (including the ZPE). Got: {0}'.format(energy[2]))
         try:
             geomLog = local_context['geometry']
         except KeyError:
@@ -397,42 +399,43 @@ class StatMechJob(object):
 
         # Save atoms for use in writing thermo output
         if isinstance(self.species, Species):
-            self.species.props['elementCounts'] = atoms
+            self.species.props['element_counts'] = atoms
 
         conformer.coordinates = (coordinates, "angstroms")
         conformer.number = number
         conformer.mass = (mass, "amu")
 
+        # The 1.014 factor represents the relationship between the harmonic frequencies scaling factor
+        # and the zero point energy scaling factor, see https://pubs.acs.org/doi/10.1021/ct100326h Section 3.1.3.
+        zpe_scale_factor = self.frequencyScaleFactor / 1.014
+
         logging.debug('    Reading energy...')
-        if E0_withZPE is None:
-            # The E0 that is read from the log file is without the ZPE and corresponds to E_elec
-            if E0 is None:
-                E0 = energyLog.loadEnergy(self.frequencyScaleFactor)
+        if e0 is None:
+            if e_electronic is None:
+                # The energy read from the log file is without the ZPE
+                e_electronic = energyLog.loadEnergy(zpe_scale_factor)  # in J/mol
             else:
-                E0 = E0 * constants.E_h * constants.Na  # Hartree/particle to J/mol
+                e_electronic *= constants.E_h * constants.Na  # convert Hartree/particle into J/mol
             if not self.applyAtomEnergyCorrections:
                 logging.warning('Atom corrections are not being used. Do not trust energies and thermo.')
-            E0 = applyEnergyCorrections(E0,
-                                        self.modelChemistry,
-                                        atoms,
-                                        self.bonds,
-                                        atomEnergies=self.atomEnergies,
-                                        applyAtomEnergyCorrections=self.applyAtomEnergyCorrections,
-                                        applyBondEnergyCorrections=self.applyBondEnergyCorrections)
-            if len(number) > 1:
-                ZPE = statmechLog.loadZeroPointEnergy() * self.frequencyScaleFactor
-            else:
-                # Monoatomic species don't have frequencies
-                ZPE = 0.0
-            logging.debug('Corrected minimum energy is {0} J/mol'.format(E0))
-            # The E0_withZPE at this stage contains the ZPE
-            E0_withZPE = E0 + ZPE
+            e_electronic += get_energy_correction(
+                self.modelChemistry, atoms, self.bonds, coordinates, number,
+                multiplicity=conformer.spinMultiplicity, atom_energies=self.atomEnergies,
+                apply_atom_corrections=self.applyAtomEnergyCorrections, apply_bac=self.applyBondEnergyCorrections,
+                bac_type=self.bondEnergyCorrectionType
+            )
+            # Get ZPE only for polyatomic species (monoatomic species don't have frequencies, so ZPE = 0)
+            zpe = statmechLog.loadZeroPointEnergy() * zpe_scale_factor if len(number) > 1 else 0
+            logging.debug('Scaled zero point energy (ZPE) is {0} J/mol'.format(zpe))
 
-            logging.debug('         Scaling factor used = {0:g}'.format(self.frequencyScaleFactor))
-            logging.debug('         ZPE (0 K) = {0:g} kcal/mol'.format(ZPE / 4184.))
-            logging.debug('         E0 (0 K) = {0:g} kcal/mol'.format(E0_withZPE / 4184.))
+            e0 = e_electronic + zpe
 
-        conformer.E0 = (E0_withZPE * 0.001, "kJ/mol")
+            logging.debug('         Harmonic frequencies scaling factor used = {0:g}'.format(self.frequencyScaleFactor))
+            logging.debug('         Zero point energy scaling factor used = {0:g}'.format(zpe_scale_factor))
+            logging.debug('         Scaled ZPE (0 K) = {0:g} kcal/mol'.format(zpe / 4184.))
+            logging.debug('         E0 (0 K) = {0:g} kcal/mol'.format(e0 / 4184.))
+
+        conformer.E0 = (e0 * 0.001, "kJ/mol")
 
         # If loading a transition state, also read the imaginary frequency
         if is_ts:
@@ -633,320 +636,6 @@ class StatMechJob(object):
 
 
 ################################################################################
-
-
-def applyEnergyCorrections(E0, modelChemistry, atoms, bonds,
-                           atomEnergies=None, applyAtomEnergyCorrections=True, applyBondEnergyCorrections=False):
-    """
-    Given an energy `E0` in J/mol as read from the output of a quantum chemistry
-    calculation at a given `modelChemistry`, adjust the energy such that it
-    is consistent with the normal gas-phase reference states. `atoms` is a
-    dictionary associating element symbols with the number of that element in
-    the molecule. The atom energies are in Hartrees, which are from single
-    atom calculations using corresponding model chemistries.
-
-    The assumption for the multiplicity of each atom is:
-    H doublet, C triplet, O triplet, N quartet, S triplet, P quartet, I doublet.
-
-    `bonds` is a dictionary associating bond types with the number
-    of that bond in the molecule.
-    """
-
-    if applyAtomEnergyCorrections:
-        # Spin orbit correction (SOC) in Hartrees
-        # Values taken from ref 22 of http://dx.doi.org/10.1063/1.477794 and converted to Hartrees
-        # Values in milli-Hartree are also available (with fewer significant figures) from table VII of
-        # http://dx.doi.org/10.1063/1.473182
-        # Iodine SOC calculated as a weighted average of the electronic spin splittings of the lowest energy state.
-        # The splittings are obtained from Huber, K.P.; Herzberg, G., Molecular Spectra and Molecular Structure. IV.
-        # Constants of Diatomic Molecules, Van Nostrand Reinhold Co., 1979
-        SOC = {'H': 0.0, 'N': 0.0, 'O': -0.000355, 'C': -0.000135, 'S': -0.000893, 'P': 0.0, 'I': -0.011547226, }
-
-        # Step 1: Reference all energies to a model chemistry-independent basis
-        # by subtracting out that model chemistry's atomic energies
-        # All model chemistries here should be lower-case because the user input is changed to lower-case
-        if atomEnergies is None:
-            # Note: If your model chemistry does not include spin orbit coupling, you should add the corrections
-            # to the energies here
-            if modelChemistry.startswith('cbs-qb3'):
-                # only check start of string to allow different bond corrections (see below)
-                atomEnergies = {'H': -0.499818 + SOC['H'], 'N': -54.520543 + SOC['N'], 'O': -74.987624 + SOC['O'],
-                                'C': -37.785385 + SOC['C'], 'P': -340.817186 + SOC['P'], 'S': -397.657360 + SOC['S']}
-            elif modelChemistry == 'm06-2x/cc-pvtz':
-                atomEnergies = {'H': -0.498135 + SOC['H'], 'N': -54.586780 + SOC['N'], 'O': -75.064242 + SOC['O'],
-                                'C': -37.842468 + SOC['C'], 'P': -341.246985 + SOC['P'], 'S': -398.101240 + SOC['S']}
-            elif modelChemistry == 'g3':
-                atomEnergies = {'H': -0.5010030, 'N': -54.564343, 'O': -75.030991, 'C': -37.827717, 'P': -341.116432,
-                                'S': -397.961110}
-            elif modelChemistry == 'm08so/mg3s*':
-                # * indicates that the grid size used in the [QChem] electronic
-                # structure calculation utilized 75 radial points and 434 angular points
-                # (i.e,, this is specified in the $rem section of the [qchem] input file as: XC_GRID 000075000434)
-                atomEnergies = {'H': -0.5017321350 + SOC['H'], 'N': -54.5574039365 + SOC['N'],
-                                'O': -75.0382931348 + SOC['O'], 'C': -37.8245648740 + SOC['C'],
-                                'P': -341.2444299005 + SOC['P'], 'S': -398.0940312227 + SOC['S']}
-            elif modelChemistry == 'klip_1':
-                atomEnergies = {'H': -0.50003976 + SOC['H'], 'N': -54.53383153 + SOC['N'], 'O': -75.00935474 + SOC['O'],
-                                'C': -37.79266591 + SOC['C']}
-            elif modelChemistry == 'klip_2':
-                # Klip QCI(tz,qz)
-                atomEnergies = {'H': -0.50003976 + SOC['H'], 'N': -54.53169400 + SOC['N'], 'O': -75.00714902 + SOC['O'],
-                                'C': -37.79060419 + SOC['C']}
-            elif modelChemistry == 'klip_3':
-                # Klip QCI(dz,tz)
-                atomEnergies = {'H': -0.50005578 + SOC['H'], 'N': -54.53128140 + SOC['N'], 'O': -75.00356581 + SOC['O'],
-                                'C': -37.79025175 + SOC['C']}
-
-            elif modelChemistry == 'klip_2_cc':
-                # Klip CCSD(T)(tz,qz)
-                atomEnergies = {'H': -0.50003976 + SOC['H'], 'O': -75.00681155 + SOC['O'], 'C': -37.79029443 + SOC['C']}
-
-            elif modelChemistry == 'ccsd(t)-f12/cc-pvdz-f12_h-tz':
-                atomEnergies = {'H': -0.499946213243 + SOC['H'], 'N': -54.526406291655 + SOC['N'],
-                                'O': -74.995458316117 + SOC['O'], 'C': -37.788203485235 + SOC['C']}
-            elif modelChemistry == 'ccsd(t)-f12/cc-pvdz-f12_h-qz':
-                atomEnergies = {'H': -0.499994558325 + SOC['H'], 'N': -54.526406291655 + SOC['N'],
-                                'O': -74.995458316117 + SOC['O'], 'C': -37.788203485235 + SOC['C']}
-
-            # We are assuming that SOC is included in the Bond Energy Corrections
-            elif modelChemistry == 'ccsd(t)-f12/cc-pvdz-f12':
-                atomEnergies = {'H': -0.499811124128, 'N': -54.526406291655, 'O': -74.995458316117,
-                                'C': -37.788203485235, 'S': -397.663040369707}
-            elif modelChemistry == 'ccsd(t)-f12/cc-pvtz-f12':
-                atomEnergies = {'H': -0.499946213243, 'N': -54.53000909621, 'O': -75.004127673424,
-                                'C': -37.789862146471, 'S': -397.675447487865}
-            elif modelChemistry == 'ccsd(t)-f12/cc-pvqz-f12':
-                atomEnergies = {'H': -0.499994558325, 'N': -54.530515226371, 'O': -75.005600062003,
-                                'C': -37.789961656228, 'S': -397.676719774973}
-            elif modelChemistry == 'ccsd(t)-f12/cc-pcvdz-f12':
-                atomEnergies = {'H': -0.499811124128 + SOC['H'], 'N': -54.582137180344 + SOC['N'],
-                                'O': -75.053045547421 + SOC['O'], 'C': -37.840869118707 + SOC['C']}
-            elif modelChemistry == 'ccsd(t)-f12/cc-pcvtz-f12':
-                atomEnergies = {'H': -0.499946213243 + SOC['H'], 'N': -54.588545831900 + SOC['N'],
-                                'O': -75.065995072347 + SOC['O'], 'C': -37.844662139972 + SOC['C']}
-            elif modelChemistry == 'ccsd(t)-f12/cc-pcvqz-f12':
-                atomEnergies = {'H': -0.499994558325 + SOC['H'], 'N': -54.589137594139 + SOC['N'],
-                                'O': -75.067412234737 + SOC['O'], 'C': -37.844893820561 + SOC['C']}
-            elif modelChemistry == 'ccsd(t)-f12/cc-pvtz-f12(-pp)':
-                atomEnergies = {'H': -0.499946213243 + SOC['H'], 'N': -54.53000909621 + SOC['N'],
-                                'O': -75.004127673424 + SOC['O'], 'C': -37.789862146471 + SOC['C'],
-                                'S': -397.675447487865 + SOC['S'], 'I': -294.81781766 + SOC['I']}
-            # ccsd(t)/aug-cc-pvtz(-pp) atomic energies were fit to a set of 8 small molecules:
-            # CH4, CH3OH, H2S, H2O, SO2, HI, I2, CH3I
-            elif modelChemistry == 'ccsd(t)/aug-cc-pvtz(-pp)':
-                atomEnergies = {'H': -0.499821176024 + SOC['H'], 'O': -74.96738492 + SOC['O'],
-                                'C': -37.77385697 + SOC['C'], 'S': -397.6461604 + SOC['S'],
-                                'I': -294.7958443 + SOC['I']}
-
-            elif modelChemistry == 'ccsd(t)-f12/aug-cc-pvdz':
-                # note that all atom corrections but S are fitted, the correction for S is calculated
-                atomEnergies = {'H': -0.499459066131 + SOC['H'], 'N': -54.524279516472 + SOC['N'],
-                                'O': -74.992097308083 + SOC['O'], 'C': -37.786694171716 + SOC['C'],
-                                'S': -397.648733842400 + SOC['S']}
-            elif modelChemistry == 'ccsd(t)-f12/aug-cc-pvtz':
-                atomEnergies = {'H': -0.499844820798 + SOC['H'], 'N': -54.527419359906 + SOC['N'],
-                                'O': -75.000001429806 + SOC['O'], 'C': -37.788504810868 + SOC['C'],
-                                'S': -397.666903000231 + SOC['S']}
-            elif modelChemistry == 'ccsd(t)-f12/aug-cc-pvqz':
-                atomEnergies = {'H': -0.499949526073 + SOC['H'], 'N': -54.529569719016 + SOC['N'],
-                                'O': -75.004026586610 + SOC['O'], 'C': -37.789387892348 + SOC['C'],
-                                'S': -397.671214204994 + SOC['S']}
-
-            elif modelChemistry == 'b-ccsd(t)-f12/cc-pvdz-f12':
-                atomEnergies = {'H': -0.499811124128 + SOC['H'], 'N': -54.523269942190 + SOC['N'],
-                                'O': -74.990725918500 + SOC['O'], 'C': -37.785409916465 + SOC['C'],
-                                'S': -397.658155086033 + SOC['S']}
-            elif modelChemistry == 'b-ccsd(t)-f12/cc-pvtz-f12':
-                atomEnergies = {'H': -0.499946213243 + SOC['H'], 'N': -54.528135889213 + SOC['N'],
-                                'O': -75.001094055506 + SOC['O'], 'C': -37.788233578503 + SOC['C'],
-                                'S': -397.671745425929 + SOC['S']}
-            elif modelChemistry == 'b-ccsd(t)-f12/cc-pvqz-f12':
-                atomEnergies = {'H': -0.499994558325 + SOC['H'], 'N': -54.529425753163 + SOC['N'],
-                                'O': -75.003820485005 + SOC['O'], 'C': -37.789006506290 + SOC['C'],
-                                'S': -397.674145126931 + SOC['S']}
-            elif modelChemistry == 'b-ccsd(t)-f12/cc-pcvdz-f12':
-                atomEnergies = {'H': -0.499811124128 + SOC['H'], 'N': -54.578602780288 + SOC['N'],
-                                'O': -75.048064317367 + SOC['O'], 'C': -37.837592033417 + SOC['C']}
-            elif modelChemistry == 'b-ccsd(t)-f12/cc-pcvtz-f12':
-                atomEnergies = {'H': -0.499946213243 + SOC['H'], 'N': -54.586402551258 + SOC['N'],
-                                'O': -75.062767632757 + SOC['O'], 'C': -37.842729156944 + SOC['C']}
-            elif modelChemistry == 'b-ccsd(t)-f12/cc-pcvqz-f12':
-                atomEnergies = {'H': -0.49999456 + SOC['H'], 'N': -54.587781507581 + SOC['N'],
-                                'O': -75.065397706471 + SOC['O'], 'C': -37.843634971592 + SOC['C']}
-
-            elif modelChemistry == 'b-ccsd(t)-f12/aug-cc-pvdz':
-                atomEnergies = {'H': -0.499459066131 + SOC['H'], 'N': -54.520475581942 + SOC['N'],
-                                'O': -74.986992215049 + SOC['O'], 'C': -37.783294495799 + SOC['C']}
-            elif modelChemistry == 'b-ccsd(t)-f12/aug-cc-pvtz':
-                atomEnergies = {'H': -0.499844820798 + SOC['H'], 'N': -54.524927371700 + SOC['N'],
-                                'O': -74.996328829705 + SOC['O'], 'C': -37.786320700792 + SOC['C']}
-            elif modelChemistry == 'b-ccsd(t)-f12/aug-cc-pvqz':
-                atomEnergies = {'H': -0.499949526073 + SOC['H'], 'N': -54.528189769291 + SOC['N'],
-                                'O': -75.001879610563 + SOC['O'], 'C': -37.788165047059 + SOC['C']}
-
-            elif modelChemistry == 'mp2_rmp2_pvdz':
-                atomEnergies = {'H': -0.49927840 + SOC['H'], 'N': -54.46141996 + SOC['N'], 'O': -74.89408254 + SOC['O'],
-                                'C': -37.73792713 + SOC['C']}
-            elif modelChemistry == 'mp2_rmp2_pvtz':
-                atomEnergies = {'H': -0.49980981 + SOC['H'], 'N': -54.49615972 + SOC['N'], 'O': -74.95506980 + SOC['O'],
-                                'C': -37.75833104 + SOC['C']}
-            elif modelChemistry == 'mp2_rmp2_pvqz':
-                atomEnergies = {'H': -0.49994557 + SOC['H'], 'N': -54.50715868 + SOC['N'], 'O': -74.97515364 + SOC['O'],
-                                'C': -37.76533215 + SOC['C']}
-
-            elif modelChemistry == 'ccsd-f12/cc-pvdz-f12':
-                atomEnergies = {'H': -0.499811124128 + SOC['H'], 'N': -54.524325513811 + SOC['N'],
-                                'O': -74.992326577897 + SOC['O'], 'C': -37.786213495943 + SOC['C']}
-
-            elif modelChemistry == 'ccsd(t)-f12/cc-pvdz-f12_noscale':
-                atomEnergies = {'H': -0.499811124128 + SOC['H'], 'N': -54.526026290887 + SOC['N'],
-                                'O': -74.994751897699 + SOC['O'], 'C': -37.787881871511 + SOC['C']}
-
-            elif modelChemistry == 'g03_pbepbe_6-311++g_d_p':
-                atomEnergies = {'H': -0.499812273282 + SOC['H'], 'N': -54.5289567564 + SOC['N'],
-                                'O': -75.0033596764 + SOC['O'], 'C': -37.7937388736 + SOC['C']}
-
-            elif modelChemistry == 'fci/cc-pvdz':
-                atomEnergies = {'C': -37.789527 + SOC['C']}
-            elif modelChemistry == 'fci/cc-pvtz':
-                atomEnergies = {'C': -37.781266669684 + SOC['C']}
-            elif modelChemistry == 'fci/cc-pvqz':
-                atomEnergies = {'C': -37.787052110598 + SOC['C']}
-
-            elif modelChemistry in ['bmk/cbsb7', 'bmk/6-311g(2d,d,p)']:
-                atomEnergies = {'H': -0.498618853119 + SOC['H'], 'N': -54.5697851544 + SOC['N'],
-                                'O': -75.0515210278 + SOC['O'], 'C': -37.8287310027 + SOC['C'],
-                                'P': -341.167615941 + SOC['P'], 'S': -398.001619915 + SOC['S']}
-            elif modelChemistry == 'b3lyp/6-31g**':  # Fitted to small molecules
-                atomEnergies = {'H': -0.500426155, 'C': -37.850331697831, 'O': -75.0535872748806,
-                                'S': -398.100820107242}
-            elif modelChemistry == 'b3lyp/6-311+g(3df,2p)':  # Calculated atomic energies
-                atomEnergies = {'H': -0.502155915123 + SOC['H'], 'C': -37.8574709934 + SOC['C'],
-                                'N': -54.6007233609 + SOC['N'], 'O': -75.0909131284 + SOC['O'],
-                                'P': -341.281730319 + SOC['P'], 'S': -398.134489850 + SOC['S']}
-            elif modelChemistry == 'wb97x-d/aug-cc-pvtz':
-                atomEnergies = {'H': -0.502803 + SOC['H'], 'N': -54.585652 + SOC['N'], 'O': -75.068286 + SOC['O'],
-                                'C': -37.842014 + SOC['C']}
-
-            elif modelChemistry == 'MRCI+Davidson/aug-cc-pV(T+d)Z':  # Calculated atomic energies (unfitted)
-                atomEnergies = {'H': -0.49982118 + SOC['H'], 'C': -37.78321274 + SOC['C'], 'N': -54.51729444 + SOC['N'],
-                                'O': -74.97847534 + SOC['O'], 'S': -397.6571654 + SOC['S']}
-
-            else:
-                raise Exception('Unknown model chemistry "{}".'.format(modelChemistry))
-
-        for symbol, count in atoms.items():
-            if symbol in atomEnergies:
-                E0 -= count * atomEnergies[symbol] * 4.35974394e-18 * constants.Na
-            else:
-                raise Exception(
-                    'Unknown element "{}". Turn off atom corrections if only running a kinetics jobs '
-                    'or supply a dictionary of atom energies.'.format(symbol)
-                )
-
-        # Step 2: Atom energy corrections to reach gas-phase reference state
-        # Experimental enthalpy of formation at 0 K, 1 bar for gas phase
-        # See Gaussian thermo whitepaper at http://www.gaussian.com/g_whitepap/thermo.htm)
-        # Note: These values are relatively old and some improvement may be possible by using newer values
-        # (particularly for carbon).
-        # However, care should be taken to ensure that they are compatible with the BAC values (if BACs are used)
-        # He, Ne, K, Ca, Ti, Cu, Zn, Ge, Br, Kr, Rb, Ag, Cd, Sn, I, Xe, Cs, Hg, and Pb are taken from CODATA
-        # Codata: Cox, J. D., Wagman, D. D., and Medvedev, V. A., CODATA Key Values for Thermodynamics, Hemisphere
-        # Publishing Corp., New York, 1989. (http://www.science.uwaterloo.ca/~cchieh/cact/tools/thermodata.html)
-        atom_hf = {'H': 51.63, 'He': -1.481,
-                   'Li': 37.69, 'Be': 76.48, 'B': 136.2, 'C': 169.98, 'N': 112.53, 'O': 58.99, 'F': 18.47, 'Ne': -1.481,
-                   'Na': 25.69, 'Mg': 34.87, 'Al': 78.23, 'Si': 106.6, 'P': 75.42, 'S': 65.66, 'Cl': 28.59,
-                   'K': 36.841, 'Ca': 41.014, 'Ti': 111.2, 'Cu': 79.16, 'Zn': 29.685, 'Ge': 87.1, 'Br': 25.26,
-                   'Kr': -1.481,
-                   'Rb': 17.86, 'Ag': 66.61, 'Cd': 25.240, 'Sn': 70.50, 'I': 24.04, 'Xe': -1.481,
-                   'Cs': 16.80, 'Hg': 13.19, 'Pb': 15.17}
-        # Thermal contribution to enthalpy Hss(298 K) - Hss(0 K) reported by Gaussian thermo whitepaper
-        # This will be subtracted from the corresponding value in atom_hf to produce an enthalpy used in calculating
-        # the enthalpy of formation at 298 K
-        atom_thermal = {'H': 1.01, 'He': 1.481,
-                        'Li': 1.1, 'Be': 0.46, 'B': 0.29, 'C': 0.25, 'N': 1.04, 'O': 1.04, 'F': 1.05, 'Ne': 1.481,
-                        'Na': 1.54, 'Mg': 1.19, 'Al': 1.08, 'Si': 0.76, 'P': 1.28, 'S': 1.05, 'Cl': 1.1,
-                        'K': 1.481, 'Ca': 1.481, 'Ti': 1.802, 'Cu': 1.481, 'Zn': 1.481, 'Ge': 1.768, 'Br': 1.481,
-                        'Kr': 1.481,
-                        'Rb': 1.481, 'Ag': 1.481, 'Cd': 1.481, 'Sn': 1.485, 'I': 1.481, 'Xe': 1.481,
-                        'Cs': 1.481, 'Hg': 1.481, 'Pb': 1.481}
-        # Total energy correction used to reach gas-phase reference state
-        # Note: Spin orbit coupling is no longer included in these energies, since some model chemistries include it
-        # automatically
-        atom_enthalpy_corrections = {element: atom_hf[element] - atom_thermal[element] for element in atom_hf}
-        for symbol, count in atoms.items():
-            if symbol in atom_enthalpy_corrections:
-                E0 += count * atom_enthalpy_corrections[symbol] * 4184.
-            else:
-                raise Exception('Element "{0}" is not yet supported in Arkane.'
-                                ' To include it, add its experimental heat of formation'.format(symbol))
-
-    if applyBondEnergyCorrections:
-        # Step 3: Bond energy corrections
-        # The order of elements in the bond correction label is important and should follow the order specified below:
-        # 'C', 'N', 'O', 'S', 'P', and 'H'
-        # Use ``-``/``=``/``#`` to denote a single/double/triple bond, respectively.
-        # For example, ``'C=N'`` is correct while ``'N=C'`` is incorrect
-        bondEnergies = {}
-        # 'S-H', 'C-S', 'C=S', 'S-S', 'O-S', 'O=S', 'O=S=O' taken from http://hdl.handle.net/1721.1/98155 (both for
-        # 'CCSD(T)-F12/cc-pVDZ-F12' and 'CCSD(T)-F12/cc-pVTZ-F12')
-        if modelChemistry == 'ccsd(t)-f12/cc-pvdz-f12':
-            bondEnergies = {'C-H': -0.46, 'C-C': -0.68, 'C=C': -1.90, 'C#C': -3.13,
-                            'O-H': -0.51, 'C-O': -0.23, 'C=O': -0.69, 'O-O': -0.02, 'C-N': -0.67,
-                            'C=N': -1.46, 'C#N': -2.79, 'N-O': 0.74, 'N_O': -0.23, 'N=O': -0.51,
-                            'N-H': -0.69, 'N-N': -0.47, 'N=N': -1.54, 'N#N': -2.05, 'S-H': 0.87,
-                            'C-S': 0.42, 'C=S': 0.51, 'S-S': 0.86, 'O-S': 0.23, 'O=S': -0.53,
-                            'O=S=O': 1.95, }
-        elif modelChemistry == 'ccsd(t)-f12/cc-pvtz-f12':
-            bondEnergies = {'C-H': -0.09, 'C-C': -0.27, 'C=C': -1.03, 'C#C': -1.79,
-                            'O-H': -0.06, 'C-O': 0.14, 'C=O': -0.19, 'O-O': 0.16, 'C-N': -0.18,
-                            'C=N': -0.41, 'C#N': -1.41, 'N-O': 0.87, 'N_O': -0.09, 'N=O': -0.23,
-                            'N-H': -0.01, 'N-N': -0.21, 'N=N': -0.44, 'N#N': -0.76, 'S-H': 0.52,
-                            'C-S': 0.13, 'C=S': -0.12, 'S-S': 0.30, 'O-S': 0.15, 'O=S': -2.61,
-                            'O=S=O': 0.27, }
-        elif modelChemistry == 'ccsd(t)-f12/cc-pvqz-f12':
-            bondEnergies = {'C-H': -0.08, 'C-C': -0.26, 'C=C': -1.01, 'C#C': -1.66,
-                            'O-H': 0.07, 'C-O': 0.25, 'C=O': -0.03, 'O-O': 0.26, 'C-N': -0.20,
-                            'C=N': -0.30, 'C#N': -1.33, 'N-O': 1.01, 'N_O': -0.03, 'N=O': -0.26,
-                            'N-H': 0.06, 'N-N': -0.23, 'N=N': -0.37, 'N#N': -0.64, }
-        elif modelChemistry == 'cbs-qb3':
-            bondEnergies = {
-                'C-H': -0.11, 'C-C': -0.30, 'C=C': -0.08, 'C#C': -0.64, 'O-H': 0.02, 'C-O': 0.33, 'C=O': 0.55,
-                # Table IX: Petersson GA (1998) J. of Chemical Physics, DOI: 10.1063/1.477794
-                'N-H': -0.42, 'C-N': -0.13, 'C#N': -0.89, 'C-F': 0.55, 'C-Cl': 1.29, 'S-H': 0.0, 'C-S': 0.43,
-                'O=S': -0.78,
-                'N=O': 1.11, 'N-N': -1.87, 'N=N': -1.58, 'N-O': 0.35,
-                # Table 2: Ashcraft R (2007) J. Phys. Chem. B; DOI: 10.1021/jp073539t
-                'N#N': -2.0, 'O=O': -0.2, 'H-H': 1.1,  # Unknown source
-            }
-        elif modelChemistry == 'cbs-qb3-paraskevas':
-            # NOTE: The Paraskevas corrections are inaccurate for non-oxygenated hydrocarbons,
-            # and may do poorly in combination with the Petersson corrections
-            bondEnergies = {
-                'C-C': -0.495, 'C-H': -0.045, 'C=C': -0.825, 'C-O': 0.378, 'C=O': 0.743, 'O-H': -0.423,
-                # Table2: Paraskevas, PD (2013). Chemistry-A European J., DOI: 10.1002/chem.201301381
-                'C#C': -0.64, 'C#N': -0.89, 'C-S': 0.43, 'O=S': -0.78, 'S-H': 0.0, 'C-N': -0.13, 'C-Cl': 1.29,
-                'C-F': 0.55,  # Table IX: Petersson GA (1998) J. of Chemical Physics, DOI: 10.1063/1.477794
-                'N-H': -0.42, 'N=O': 1.11, 'N-N': -1.87, 'N=N': -1.58, 'N-O': 0.35,
-                # Table 2: Ashcraft R (2007) J. Phys. Chem. B; DOI: 10.1021/jp073539t
-                'N#N': -2.0, 'O=O': -0.2, 'H-H': 1.1,  # Unknown source
-            }
-        elif modelChemistry in ['b3lyp/cbsb7', 'b3lyp/6-311g(2d,d,p)', 'b3lyp/6-311+g(3df,2p)', 'b3lyp/6-31g**']:
-            bondEnergies = {'C-H': 0.25, 'C-C': -1.89, 'C=C': -0.40, 'C#C': -1.50,
-                            'O-H': -1.09, 'C-O': -1.18, 'C=O': -0.01, 'N-H': 1.36, 'C-N': -0.44,
-                            'C#N': 0.22, 'C-S': -2.35, 'O=S': -5.19, 'S-H': -0.52, }
-        else:
-            logging.warning('No bond energy correction found for model chemistry: {0}'.format(modelChemistry))
-
-        for symbol, count in bonds.items():
-            if symbol in bondEnergies:
-                E0 += count * bondEnergies[symbol] * 4184.
-            elif symbol[::-1] in bondEnergies:
-                E0 += count * bondEnergies[symbol[::-1]] * 4184.
-            else:
-                logging.warning('Ignored unknown bond type {0!r}.'.format(symbol))
-
-    return E0
 
 
 def determine_qm_software(fullpath):
@@ -1228,79 +917,81 @@ def projectRotors(conformer, F, rotors, linear, is_ts, label):
     return np.sqrt(eig[-Nvib:]) / (2 * math.pi * constants.c * 100)
 
 
-def assign_frequency_scale_factor(model_chemistry):
+def assign_frequency_scale_factor(freq_level):
     """
     Assign the frequency scaling factor according to the model chemistry.
     Refer to https://comp.chem.umn.edu/freqscale/index.html for future updates of these factors
 
+    Sources:
+        [1] I.M. Alecu, J. Zheng, Y. Zhao, D.G. Truhlar, J. Chem. Theory Comput. 2010, 6, 2872, DOI: 10.1021/ct100326h
+        [2] http://cccbdb.nist.gov/vibscalejust.asp
+        [3] http://comp.chem.umn.edu/freqscale/190107_Database_of_Freq_Scale_Factors_v4.pdf
+        [4] Calculated as described in 10.1021/ct100326h
+        [5] J.A. Montgomery, M.J. Frisch, J. Chem. Phys. 1999, 110, 2822–2827, DOI: 10.1063/1.477924
+
     Args:
-        model_chemistry (str, unicode): The frequency level of theory.
+        freq_level (str, unicode): The frequency level of theory.
 
     Returns:
         float: The frequency scaling factor (1 by default).
     """
-    freq_dict = {'cbs-qb3': 0.99,  # J. Chem. Phys. 1999, 110, 2822–2827
-                 'cbs-qb3-paraskevas': 0.99,
-                 # 'g3': ,
-                 'm08so/mg3s*': 0.983,  # DOI: 10.1021/ct100326h, taken as 'M08-SO/MG3S'
-                 'm06-2x/cc-pvtz': 0.955,  # http://cccbdb.nist.gov/vibscalejust.asp
-                 # 'klip_1': ,
-                 # 'klip_2': ,
-                 # 'klip_3': ,
-                 # 'klip_2_cc': ,
-                 # 'ccsd(t)-f12/cc-pvdz-f12_h-tz': ,
-                 # 'ccsd(t)-f12/cc-pvdz-f12_h-qz': ,
-                 'ccsd(t)-f12/cc-pvdz-f12': 0.979,
-                 # http://cccbdb.nist.gov/vibscalejust.asp, taken as 'ccsd(t)/cc-pvdz'
-                 'ccsd(t)-f12/cc-pvtz-f12': 0.984,
-                 # Taken from https://comp.chem.umn.edu/freqscale/version3b2.htm as CCSD(T)-F12a/cc-pVTZ-F12
-                 'ccsd(t)-f12/cc-pvqz-f12': 0.970,
-                 # http://cccbdb.nist.gov/vibscalejust.asp, taken as 'ccsd(t)/cc-pvqz'
-                 'ccsd(t)-f12/cc-pcvdz-f12': 0.971,
-                 # http://cccbdb.nist.gov/vibscalejust.asp, taken as 'ccsd(t)/cc-pcvdz'
-                 'ccsd(t)-f12/cc-pcvtz-f12': 0.966,
-                 # 'ccsd(t)-f12/cc-pcvqz-f12': ,
-                 # 'ccsd(t)-f12/cc-pvtz-f12(-pp)': ,
-                 # 'ccsd(t)/aug-cc-pvtz(-pp)': ,
-                 'ccsd(t)-f12/aug-cc-pvdz': 0.963,
-                 # http://cccbdb.nist.gov/vibscalejust.asp, taken as 'ccsd(t)/aug-cc-pvdz'
-                 'ccsd(t)-f12/aug-cc-pvtz': 0.970,
-                 # http://cccbdb.nist.gov/vibscalejust.asp, taken as 'ccsd(t)/aug-cc-pvtz'
-                 'ccsd(t)-f12/aug-cc-pvqz': 0.975,
-                 # http://cccbdb.nist.gov/vibscalejust.asp, taken as 'ccsd(t)/aug-cc-pvqz'
-                 # 'b-ccsd(t)-f12/cc-pvdz-f12': ,
-                 # 'b-ccsd(t)-f12/cc-pvtz-f12': ,
-                 # 'b-ccsd(t)-f12/cc-pvqz-f12': ,
-                 # 'b-ccsd(t)-f12/cc-pcvdz-f12': ,
-                 # 'b-ccsd(t)-f12/cc-pcvtz-f12': ,
-                 # 'b-ccsd(t)-f12/cc-pcvqz-f12': ,
-                 # 'b-ccsd(t)-f12/aug-cc-pvdz': ,
-                 # 'b-ccsd(t)-f12/aug-cc-pvtz': ,
-                 # 'b-ccsd(t)-f12/aug-cc-pvqz': ,
-                 'mp2_rmp2_pvdz': 0.953,  # http://cccbdb.nist.gov/vibscalejust.asp, taken as ',p2/cc-pvdz'
-                 'mp2_rmp2_pvtz': 0.950,  # http://cccbdb.nist.gov/vibscalejust.asp, taken as ',p2/cc-pvdz'
-                 'mp2_rmp2_pvqz': 0.962,  # http://cccbdb.nist.gov/vibscalejust.asp, taken as ',p2/cc-pvdz'
-                 'ccsd-f12/cc-pvdz-f12': 0.947,  # http://cccbdb.nist.gov/vibscalejust.asp, taken as ccsd/cc-pvdz
-                 # 'ccsd(t)-f12/cc-pvdz-f12_noscale': ,
-                 # 'g03_pbepbe_6-311++g_d_p': ,
-                 # 'fci/cc-pvdz': ,
-                 # 'fci/cc-pvtz': ,
-                 # 'fci/cc-pvqz': ,
-                 # 'bmk/cbsb7': ,
-                 # 'bmk/6-311g(2d,d,p)': ,
-                 'b3lyp/6-31g**': 0.961,  # http://cccbdb.nist.gov/vibscalejust.asp
-                 'b3lyp/6-311+g(3df,2p)': 0.967,  # http://cccbdb.nist.gov/vibscalejust.asp
-                 'wb97x-d/aug-cc-pvtz': 0.974,
-                 # Taken from https://comp.chem.umn.edu/freqscale/version3b2.htm as ωB97X-D/maug-cc-pVTZ
+    freq_dict = {'hf/sto-3g': 0.817,  # [2]
+                 'hf/6-31g': 0.903,  # [2]
+                 'hf/6-31g(d)': 0.899,  # [2]
+                 'hf/6-31g(d,p)': 0.903,  # [2]
+                 'hf/6-31g+(d,p)': 0.904,  # [2]
+                 'hf/6-31+g(d,p)': 0.915 * 1.014,  # [1] Table 7
+                 'pm3': 0.940 * 1.014,  # [1] Table 7, the 0.940 value is the ZPE scale factor
+                 'pm6': 1.078 * 1.014,  # [1] Table 7, the 1.078 value is the ZPE scale factor
+                 'b3lyp/6-31g(d,p)': 0.961,  # [2]
+                 'b3lyp/6-311g(d,p)': 0.967,  # [2]
+                 'b3lyp/6-311+g(3df,2p)': 0.967,  # [2]
+                 'b3lyp/6-311+g(3df,2pd)': 0.970,  # [2]
+                 'm06-2x/6-31g(d,p)': 0.952,  # [2]
+                 'm06-2x/6-31+g(d,p)': 0.979,  # [3]
+                 'm06-2x/6-311+g(d,p)': 0.983,  # [3]
+                 'm06-2x/6-311++g(d,p)': 0.983,  # [3]
+                 'm06-2x/cc-pvtz': 0.955,  # [2]
+                 'm06-2x/aug-cc-pvdz': 0.993,  # [3]
+                 'm06-2x/aug-cc-pvtz': 0.985,  # [1] Table 3, [3]
+                 'm06-2x/def2-tzvp': 0.984,  # [3]
+                 'm06-2x/def2-qzvp': 0.983,  # [3]
+                 'm06-2x/def2-tzvpp': 0.983,  # [1] Table 3, [3]
+                 'm08so/mg3s*': 0.995,  # [1] Table 3, taken as 'M08-SO/MG3S'
+                 'wb97x-d/aug-cc-pvtz': 0.988,  # [3], taken as 'ωB97X-D/maug-cc-pVTZ'
+                 'wb97xd/6-311++g(d,p)': 0.988,  # [4]
+                 'wb97xd/def2tzvp': 0.988,  # [4]
+                 'apfd/def2tzvpp': 0.992,  # [4]
+                 'mp2_rmp2_pvdz': 0.953,  # [2], taken as 'MP2/cc-pVDZ'
+                 'mp2_rmp2_pvtz': 0.950,  # [2], taken as 'MP2/cc-pVTZ'
+                 'mp2_rmp2_pvqz': 0.962,  # [2], taken as 'MP2/cc-pVQZ'
+                 'cbs-qb3': 0.99 * 1.014,  # [5], the 0.99 value is the ZPE scale factor of CBS-QB3
+                 'cbs-qb3-paraskevas': 0.99 * 1.014,  # [5], the 0.99 value is the ZPE scale factor of CBS-QB3
+                 'ccsd-f12/cc-pvdz-f12': 0.947,  # [2], taken as 'CCSD/cc-pVDZ'
+                 'ccsd(t)/cc-pvdz': 0.979,  # [2]
+                 'ccsd(t)/cc-pvtz': 0.975,  # [2]
+                 'ccsd(t)/cc-pvqz': 0.970,  # [2]
+                 'ccsd(t)/aug-cc-pvdz': 0.963,  # [2]
+                 'ccsd(t)/aug-cc-pvtz': 1.001,  # [3]
+                 'ccsd(t)/aug-cc-pvqz': 0.975,  # [2]
+                 'ccsd(t)/cc-pv(t+d)z': 0.965,  # [2]
+                 'ccsd(t)-f12/cc-pvdz-f12': 0.997,  # [3], taken as 'CCSD(T)-F12a/cc-pVDZ-F12'
+                 'ccsd(t)-f12/cc-pvtz-f12': 0.998,  # [3], taken as 'CCSD(T)-F12a/cc-pVTZ-F12'
+                 'ccsd(t)-f12/cc-pvqz-f12': 0.998,  # [3], taken as 'CCSD(T)-F12b/VQZF12//CCSD(T)-F12a/TZF'
+                 'ccsd(t)-f12/cc-pcvdz-f12': 0.997,  # [3], taken as 'CCSD(T)-F12a/cc-pVDZ-F12'
+                 'ccsd(t)-f12/cc-pcvtz-f12': 0.998,  # [3], taken as 'CCSD(T)-F12a/cc-pVTZ-F12'
+                 'ccsd(t)-f12/aug-cc-pvdz': 0.997,  # [3], taken as 'CCSD(T)/cc-pVDZ'
+                 'ccsd(t)-f12/aug-cc-pvtz': 0.998,  # [3], taken as CCSD(T)-F12a/cc-pVTZ-F12
+                 'ccsd(t)-f12/aug-cc-pvqz': 0.998,  # [3], taken as 'CCSD(T)-F12b/VQZF12//CCSD(T)-F12a/TZF'
                  }
-    scaling_factor = freq_dict.get(model_chemistry.lower(), 1)
+    scaling_factor = freq_dict.get(freq_level.lower(), 1)
     if scaling_factor == 1:
         logging.warning('No frequency scaling factor found for model chemistry {0}. Assuming a value of unity. '
                         'This will affect the partition function and all quantities derived from it '
-                        '(thermo quantities and rate coefficients).'.format(model_chemistry))
+                        '(thermo quantities and rate coefficients).'.format(freq_level))
     else:
-        logging.info('Assigned a frequency scale factor of {0} for model chemistry {1}'.format(
-            scaling_factor, model_chemistry))
+        logging.info('Assigned a frequency scale factor of {0} for the frequency level of theory {1}'.format(
+            scaling_factor, freq_level))
     return scaling_factor
 
 
@@ -1365,7 +1056,7 @@ def determine_rotor_symmetry(energies, label, pivots):
         symmetry = 1
         reason = '10% of the maximum peak criterion'
     else:
-        # We declare this rotor as symmetric and the symmetry number in the number of peaks (and valleys)
+        # We declare this rotor as symmetric and the symmetry number is the number of peaks (and valleys)
         symmetry = len(peaks)
         reason = 'number of peaks and valleys, all within the determined resolution criteria'
     if symmetry not in [1, 2, 3]:

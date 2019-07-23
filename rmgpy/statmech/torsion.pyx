@@ -44,6 +44,7 @@ from libc.math cimport log, exp, sqrt, sin, cos
 
 cimport rmgpy.constants as constants
 import rmgpy.quantity as quantity
+from rmgpy.rmgobject import recursive_make_object
 cimport rmgpy.statmech.schrodinger as schrodinger 
 import rmgpy.statmech.schrodinger as schrodinger 
 from rmgpy.exceptions import NegativeBarrierException
@@ -87,6 +88,12 @@ cdef class Torsion(Mode):
         A helper function used when pickling a Rotation object.
         """
         return (Torsion, (self.symmetry, self.quantum))
+
+    def make_object(self, data, class_dict):
+        kwargs = recursive_make_object(data, class_dict, make_final_object=False)
+        if ('inertia' in kwargs) and ('rotationalConstant' in kwargs):  # Only one of these can be specified
+            kwargs = {key: kwargs[key] for key in kwargs.iterkeys() if key != 'inertia'}
+        self.__init__(**kwargs)
 
 ################################################################################
 
@@ -532,7 +539,7 @@ cdef class HinderedRotor(Torsion):
             # This row forces dV/dangle = 0 at angle = 0
             for m in range(numterms):
                 A[N,m+numterms] = 1
-            x, residues, rank, s = numpy.linalg.lstsq(A, b)
+            x, residues, rank, s = numpy.linalg.lstsq(A, b, rcond=None)
             fit = numpy.dot(A,x)
             x *= 0.001
             # This checks if there are any negative values in the forier fit.
