@@ -318,7 +318,7 @@ some cases.</p>
 
 <dl class="method">
 <dt id="rmgpy.data.kinetics.DepositoryReaction.generateReverseRateCoefficient">
-<code class="descname">generateReverseRateCoefficient</code><span class="sig-paren">(</span><em>self</em>, <em>bool network_kinetics=False</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction.generateReverseRateCoefficient" title="Permalink to this definition">¶</a></dt>
+<code class="descname">generateReverseRateCoefficient</code><span class="sig-paren">(</span><em>self</em>, <em>bool network_kinetics=False</em>, <em>Tmin=None</em>, <em>Tmax=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction.generateReverseRateCoefficient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate and return a rate coefficient model for the reverse reaction.
 Currently this only works if the <cite>kinetics</cite> attribute is one of several
 (but not necessarily all) kinetics types.</p>
@@ -680,7 +680,7 @@ and products of this reaction. Both directions are checked.</p>
 
 <dl class="method">
 <dt id="rmgpy.data.kinetics.DepositoryReaction.reverseThisArrheniusRate">
-<code class="descname">reverseThisArrheniusRate</code><span class="sig-paren">(</span><em>self</em>, <em>Arrhenius kForward</em>, <em>str reverseUnits</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction.reverseThisArrheniusRate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">reverseThisArrheniusRate</code><span class="sig-paren">(</span><em>self</em>, <em>Arrhenius kForward</em>, <em>str reverseUnits</em>, <em>Tmin=None</em>, <em>Tmax=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction.reverseThisArrheniusRate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reverses the given kForward, which must be an Arrhenius type.
 You must supply the correct units for the reverse rate.
 The equilibrium constant is evaluated from the current reaction instance (self).</p>
