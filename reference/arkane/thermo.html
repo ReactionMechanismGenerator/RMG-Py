@@ -66,6 +66,26 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <dd><p>A representation of an Arkane thermodynamics job. This job is used to
 compute and save the thermodynamics information for a single species.</p>
 <dl class="method">
+<dt id="arkane.ThermoJob.element_count_from_conformer">
+<code class="descname">element_count_from_conformer</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ThermoJob.element_count_from_conformer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an element count in a dictionary form (e.g.,  {‘C’: 3, ‘H’: 8}) from the species.conformer attribute.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="docutils">
+<dt>Element count, keys are element symbols,</dt>
+<dd>values are number of occurrences of the element in the molecule.</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="arkane.ThermoJob.execute">
 <code class="descname">execute</code><span class="sig-paren">(</span><em>outputFile=None</em>, <em>plot=False</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ThermoJob.execute" title="Permalink to this definition">¶</a></dt>
 <dd><p>Execute the thermodynamics job, saving the results to the
