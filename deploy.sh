@@ -2,31 +2,24 @@
 
 set -e # exit with nonzero exit code if anything fails
 
-echo 'Travis Build Dir: '$TRAVIS_BUILD_DIR
-
 if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-  DEPLOY_BRANCH=$TRAVIS_PULL_REQUEST
+  echo "RMG-tests should not deploy from pull requests"
+  exit 0
+elif [ "$TRAVIS_BRANCH" == "master" ]; then
+  echo "RMG-tests should not deploy from the master branch"
+  exit 0
+elif [ "$TRAVIS_BRANCH" == "stable" ]; then
+  echo "RMG-tests should not deploy from the stable branch"
+  exit 0
 else
   DEPLOY_BRANCH=$TRAVIS_BRANCH
 fi
 
-# Deploy built site to this branch
+echo "TRAVIS_BUILD_DIR: $TRAVIS_BUILD_DIR"
 echo "DEPLOY_BRANCH: $DEPLOY_BRANCH"
 
 # URL for the official RMG-tests repository
 REPO=https://${GH_TOKEN}@github.com/ReactionMechanismGenerator/RMG-tests.git
-
-if [ -n "$TRAVIS_BUILD_ID" ]; then
-
-  if [ "$TRAVIS_BRANCH" != "$DEPLOY_BRANCH" ]; then
-    echo "Travis should only deploy from the DEPLOY_BRANCH ($DEPLOY_BRANCH) branch"
-    exit 0
-  elif [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-    echo "Travis should not deploy from pull requests"
-    exit 0
-  fi
-
-fi
 
 # create a temporary folder:
 REPO_NAME=$(basename $REPO)
