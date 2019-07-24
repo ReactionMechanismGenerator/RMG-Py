@@ -4,6 +4,30 @@
 Release Notes
 *************
 
+RMG-Py Version 2.4.1
+====================
+Date: July 23, 2019
+
+- Bugfixes
+    - Improve error handling in NASA as_dict method #1630
+    - Fixes to Fluorine atomtypes #1656
+    - Fix pressure dependent network generation #1658
+    - Add support for reversing PDepArrhenius with MultiArrhenius rates #1659
+
+- Arkane
+    - Implement ZPE scaling factor #1619
+    - Refactor infrastructure for bond additivity corrections #1605
+    - Add frequency scale factors for wb97xd/def2tzvp and apfd/def2tzvpp #1653
+    - Fix frequency scale factors in example files #1657
+    - Get element counts from conformers #1651
+
+- Miscellaneous
+    - Update conda environment files #1623, #1644
+    - Output RMS (Reaction Mechanism Simulator) format mechanism files #1629
+    - Properly clean up files after running tests #1645
+    - Documentation fixes #1650
+    - Improve as_dict and make_object by making them recursive #1643
+
 
 RMG-Py Version 2.4.0
 ====================

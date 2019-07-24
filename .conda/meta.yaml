@@ -26,15 +26,14 @@ requirements:
     - python
     - pyzmq
     - quantities
-    - rdkit >=2015.09.2
+    - rdkit >=2018
     - scipy
-    - scoop
     - setuptools
   run:
     - argparse # [py26]
     - cairo
     - cairocffi
-    - cantera >=2.3.0a3
+    - cantera >=2.3.0
     - coolprop
     - coverage
     - cython >=0.25.2
@@ -63,12 +62,12 @@ requirements:
     - python
     - pyzmq
     - quantities
-    - rdkit >=2015.09.2
+    - rdkit >=2018
     - rmgdatabase >=2.4.0
     - scikit-learn
     - scipy
-    - scoop
     - symmetry
+    - textgenrnn
     - xlwt
 test:
   source_files:
