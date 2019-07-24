@@ -7,6 +7,13 @@ env:
     - secure: "cfosGf5hvUhIlPoGJu0d/HFddrMwIFU7FfLwd8yRrMGkYv0ePOwAW9kmhFSxUYvuXkxzgD75cIICMFY2fSm6VXBXXzfPQD7vwzoApXf7a8vi0C64XhinXhdEyUYb5/v8fswa0zheUENYhUS1tOqDXT/h8EPNZT5wKizaA3O2Wa8="
     - secure: "QXuqKYuwCocqsTMePBc5OugBbQC4/t+335TYLdkletiateP/rF/eDsVRG792/BVq5gKRZgz3NH9ipTNm5pZoCbAEPt9+eDpfts8WeAbxmjdcEjfBxxwZ69wUTPAVrezTGn2k7W2UBdFrWeUNKPAVCKIkoviXqOHFitqJEC+c6JY="
     - secure: "jIyBEzR10l5SWvY5ouEYzA8YzPHIZNMXMBdcXwuwte8NCU8GBYUqhHA1L67nTaBdLhWbrZ2NireVKPQWJp3ctcI0IB6xZzaYlVpgN/udGPO+1MZd9Xhp9TWuJWrGZ9EoWGB9L5H+O7RYwcDMVH5CUrCIBdsSJuyE8aDpky1/IVE="
+  matrix:
+    - ENV_FILE='environment_linux.yml'
+    - ENV_FILE='environment_py3.yml'
+
+matrix:
+  allow_failures:
+    - env: ENV_FILE='environment_py3.yml'
 
 stages:
   - test
@@ -37,7 +44,7 @@ install:
   - git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
   - cd RMG-Py
   # Create and activate environment
-  - conda env create -q -f environment_linux.yml
+  - conda env create -q -f $ENV_FILE
   - source activate rmg_env
   # Install codecov for coverage report
   - conda install -y -c conda-forge codecov
