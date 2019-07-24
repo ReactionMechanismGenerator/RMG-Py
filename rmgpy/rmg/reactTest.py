@@ -99,6 +99,9 @@ class TestReact(unittest.TestCase):
         self.assertEqual(len(reaction_list), 3)
         self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in reaction_list]))
 
+        # Reset module level maxproc back to default
+        rmgpy.rmg.main.maxproc = 1
+
     def testReactAll(self):
         """
         Test that the ``react_all`` function works in serial
@@ -146,6 +149,9 @@ class TestReact(unittest.TestCase):
         flat_rxn_list = list(itertools.chain.from_iterable(reaction_list))
         self.assertEqual(len(flat_rxn_list), 44)
         self.assertTrue(all([isinstance(rxn, TemplateReaction) for rxn in flat_rxn_list]))
+
+        # Reset module level maxproc back to default
+        rmgpy.rmg.main.maxproc = 1
 
     def tearDown(self):
         """
