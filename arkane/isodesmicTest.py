@@ -34,7 +34,9 @@ This script contains unit tests of the :mod:`arkane.isodesmic` module.
 
 import unittest
 
-from arkane.isodesmic import ErrorCancelingSpecies, ErrorCancelingReaction
+import numpy as np
+
+from arkane.isodesmic import ErrorCancelingSpecies, ErrorCancelingReaction, SpeciesConstraints
 from rmgpy.molecule import Molecule
 from rmgpy.species import Species
 
@@ -96,6 +98,83 @@ class TestErrorCancelingReactionAndSpecies(unittest.TestCase):
         # This should throw an exception because the model chemistry is different
         with self.assertRaises(ValueError):
             _ = ErrorCancelingReaction(ethane, {methyl: 2})
+
+
+class TestSpeciesConstraints(unittest.TestCase):
+    """
+    A class for testing that the SpeciesConstraint class functions properly
+    """
+
+    def setUp(self):
+        """
+        A method called before each unit test in this class.
+        """
+        # Give all species a low level Hf298 of 100 J/mol--this is not important for this test
+        hf = (100.0, 'J/mol')
+
+        self.propene = ErrorCancelingSpecies(Molecule(SMILES='CC=C'), hf, 'test')
+        self.butane = ErrorCancelingSpecies(Molecule(SMILES='CCCC'), hf, 'test')
+        self.benzene = ErrorCancelingSpecies(Molecule(SMILES='c1ccccc1'), hf, 'test')
+        self.caffeine = ErrorCancelingSpecies(Molecule(SMILES='CN1C=NC2=C1C(=O)N(C(=O)N2C)C'), hf, 'test')
+        self.ethyne = ErrorCancelingSpecies(Molecule(SMILES='C#C'), hf, 'test')
+
+    def test_initializing_constraint_map(self):
+        """
+        Test that the constraint map is properly initialized when a SpeciesConstraints object is initialized
+        """
+        caffeine_consts = SpeciesConstraints(self.caffeine, [self.butane, self.benzene])
+        self.assertEqual(caffeine_consts.constraint_map, {'H': 0, 'C': 1, 'O': 2, 'N': 3,
+                                                          'C=O': 4, 'C-N': 5, 'C-H': 6, 'C=C': 7, 'C=N': 8, 'C-C': 9,
+                                                          '5_ring': 10, '6_ring': 11})
+
+        no_rings = SpeciesConstraints(self.caffeine, [self.butane, self.benzene], conserve_ring_size=False)
+        self.assertEqual(no_rings.constraint_map, {'H': 0, 'C': 1, 'O': 2, 'N': 3,
+                                                   'C=O': 4, 'C-N': 5, 'C-H': 6, 'C=C': 7, 'C=N': 8, 'C-C': 9})
+
+        atoms_only = SpeciesConstraints(self.caffeine, [self.butane], conserve_ring_size=False, conserve_bonds=False)
+        self.assertEqual(atoms_only.constraint_map, {'H': 0, 'C': 1, 'O': 2, 'N': 3})
+
+    def test_enumerating_constraints(self):
+        """
+        Test that a SpeciesConstraints object can properly enumerate the constraints of a given ErrorCancelingSpecies
+        """
+        spcs_consts = SpeciesConstraints(self.benzene, [])
+        self.assertEqual(set(spcs_consts.constraint_map.keys()), {'C', 'H', 'C=C', 'C-C', 'C-H', '6_ring'})
+
+        # Now that we have confirmed that the correct keys are present, overwrite the constraint map to set the order
+        spcs_consts.constraint_map = {'H': 0, 'C': 1, 'C=C': 2, 'C-C': 3, 'C-H': 4, '6_ring': 5}
+
+        self.assertTrue(np.array_equal(spcs_consts._enumerate_constraints(self.propene), np.array([6, 3, 1, 1, 6, 0])))
+        self.assertTrue(np.array_equal(spcs_consts._enumerate_constraints(self.butane), np.array([10, 4, 0, 3, 10, 0])))
+        self.assertTrue(np.array_equal(spcs_consts._enumerate_constraints(self.benzene), np.array([6, 6, 3, 3, 6, 1])))
+
+        # Caffeine and ethyne should return None since they have features not found in benzene
+        self.assertIs(spcs_consts._enumerate_constraints(self.caffeine), None)
+        self.assertIs(spcs_consts._enumerate_constraints(self.ethyne), None)
+
+    def test_calculating_constraints(self):
+        """
+        Test that a SpeciesConstraints object can properly return the target constraint vector and the constraint matrix
+        """
+        spcs_consts = SpeciesConstraints(self.caffeine, [self.propene, self.butane, self.benzene, self.ethyne])
+        self.assertEqual(set(spcs_consts.constraint_map.keys()), {'H', 'C', 'O', 'N', 'C=O', 'C-N', 'C-H', 'C=C', 'C=N',
+                                                                  'C-C', '5_ring', '6_ring'})
+
+        # Now that we have confirmed that the correct keys are present, overwrite the constraint map to set the order
+        spcs_consts.constraint_map = ({'H': 0, 'C': 1, 'O': 2, 'N': 3,
+                                       'C=O': 4, 'C-N': 5, 'C-H': 6, 'C=C': 7, 'C=N': 8, 'C-C': 9,
+                                       '5_ring': 10, '6_ring': 11})
+
+        target_consts, consts_matrix = spcs_consts.calculate_constraints()
+
+        # First, test that ethyne is not included in the reference set
+        self.assertEqual(spcs_consts.reference_species, [self.propene, self.butane, self.benzene])
+
+        # Then, test the output of the calculation
+        self.assertTrue(np.array_equal(target_consts, np.array([10, 8, 2, 4, 2, 10, 10, 1, 1, 1, 1, 1])))
+        self.assertTrue(np.array_equal(consts_matrix, np.array([[6, 3, 0, 0, 0, 0, 6, 1, 0, 1, 0, 0],
+                                                                [10, 4, 0, 0, 0, 0, 10, 0, 0, 3, 0, 0],
+                                                                [6, 6, 0, 0, 0, 0, 6, 3, 0, 3, 0, 1]])))
 
 
 if __name__ == '__main__':
