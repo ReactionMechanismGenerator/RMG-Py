@@ -1,5 +1,4 @@
-language: c
-sudo: false
+language: minimal
 
 env:
   global:
@@ -33,31 +32,34 @@ before_install:
   - git config --global user.name "Travis Deploy"
   - git config --global user.email "rmg_dev@mit.edu"
 
+install:
+  # Clone RMG-database
+  - git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
+  - cd RMG-Py
+  # Create and activate environment
+  - conda env create -q -f environment_linux.yml
+  - source activate rmg_env
+  # Install codecov for coverage report
+  - conda install -y -c conda-forge codecov
+  - conda list
+  # Setup MOPAC license key
+  - yes 'Yes' | $HOME/miniconda/envs/rmg_env/bin/mopac $MOPACKEY > /dev/null
+  # Install Q2DTor
+  - git clone -b arkane https://github.com/mjohnson541/Q2DTor.git external/Q2DTor
+  # Compile RMG
+  - make
+
+script:
+  - make test-unittests
+  - make test-functional
+  - make test-database
+
+after_success:
+  - codecov
+  - bash ./deploy.sh
+
 jobs:
   include:
-    - stage: test
-      install:
-        # Clone RMG-database
-        - git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
-        # install Q2DTor
-        - git clone https://github.com/mjohnson541/Q2DTor.git RMG-Py/external/Q2DTor --branch arkane
-        # build environment and activate
-        - cd RMG-Py
-        - conda env create -q -f environment_linux.yml
-        - source activate rmg_env
-        # Install codecov for coverage report
-        - conda install -y -c conda-forge codecov
-        - conda list
-        # Setup MOPAC license key
-        - yes 'Yes' | $HOME/miniconda/envs/rmg_env/bin/mopac $MOPACKEY > /dev/null
-        - make
-      script:
-        - make test-unittests
-        - make test-functional
-        - make test-database
-      after_success:
-        - codecov
-        - bash ./deploy.sh
     - stage: documentation
       install:
         - cd RMG-Py
@@ -73,6 +75,7 @@ jobs:
         - export COMMITMESSAGE="Automatic documentation rebuild"
       script:
         - make travis_setup clean html publish
+      after_success: skip
     - stage: deploy
       install:
         # Setup conda build
@@ -85,6 +88,7 @@ jobs:
         - conda config --set anaconda_upload yes
       script:
         - conda build --token $CONDA_TOKEN --user rmg RMG-Py/.conda
+      after_success: skip
     - os: osx
       install:
         # Setup conda build
@@ -97,3 +101,4 @@ jobs:
         - conda config --set anaconda_upload yes
       script:
         - conda build --token $CONDA_TOKEN --user rmg RMG-Py/.conda
+      after_success: skip
