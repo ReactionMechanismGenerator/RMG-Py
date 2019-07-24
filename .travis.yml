@@ -14,7 +14,7 @@ stages:
   - name: documentation
     if: branch = master AND type = push
   - name: deploy
-    if: branch = stable AND type = push
+    if: branch = debug_mac_build AND type = push
 
 before_install:
   - cd ..
@@ -46,12 +46,7 @@ jobs:
         - yes 'Yes' | $HOME/miniconda/envs/rmg_env/bin/mopac $MOPACKEY > /dev/null
         - make
       script:
-        - make test-unittests
-        - make test-functional
-        - make test-database
-      after_success:
-        - codecov
-        - bash ./deploy.sh
+        - echo 'done'
     - stage: documentation
       install:
         - cd RMG-Py
@@ -68,6 +63,7 @@ jobs:
       script:
         - make travis_setup clean html publish
     - stage: deploy
+      os: osx
       install:
         # Setup conda build
         - conda install -y conda-build
@@ -77,17 +73,6 @@ jobs:
         - conda config --append channels cantera
         - conda config --append channels anaconda
         - conda config --set anaconda_upload yes
-      script:
-        - conda build --token $CONDA_TOKEN --user rmg RMG-Py/.conda
-    - os: osx
-      install:
-        # Setup conda build
-        - conda install -y conda-build
-        - conda install -y anaconda-client
-        - conda config --append channels rmg
-        - conda config --append channels rdkit
-        - conda config --append channels cantera
-        - conda config --append channels anaconda
-        - conda config --set anaconda_upload yes
+        - find /Applications -path '*/usr/include/stdio.h'
       script:
         - conda build --token $CONDA_TOKEN --user rmg RMG-Py/.conda
