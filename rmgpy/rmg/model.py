@@ -118,14 +118,7 @@ class ReactionModel:
         
         # Add the unique species from other to the final model
         finalModel.species.extend(uniqueSpecies)
-    
-        # Renumber the unique species (to avoid name conflicts on save)
-        speciesIndex = 0
-        for spec in finalModel.species:
-            if spec.label not in ['Ar','N2','Ne','He']:
-                spec.index = speciesIndex + 1
-                speciesIndex += 1
-        
+
         # Make sure unique reactions only refer to species in the final model
         for rxn in uniqueReactions:
             for i, reactant in enumerate(rxn.reactants):
