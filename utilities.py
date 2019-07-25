@@ -31,6 +31,7 @@
 """
 This module contains utilities related to compilation and code maintenance.
 """
+from __future__ import print_function
 
 import argparse
 import os
@@ -45,14 +46,14 @@ def check_dependencies():
     """
     missing = install_rdkit = False
 
-    print '\nChecking vital dependencies...\n'
-    print '{0:<15}{1:<15}{2}'.format('Package', 'Version', 'Location')
+    print('\nChecking vital dependencies...\n')
+    print('{0:<15}{1:<15}{2}'.format('Package', 'Version', 'Location'))
 
     # Check for symmetry
     try:
         result = subprocess.check_output('symmetry -h', stderr=subprocess.STDOUT, shell=True)
     except subprocess.CalledProcessError:
-        print '{0:<30}{1}'.format('symmetry', 'Not found. Please install in order to use QM.')
+        print('{0:<30}{1}'.format('symmetry', 'Not found. Please install in order to use QM.'))
         missing = True
     else:
         match = re.search(r'\$Revision: (\S*) \$', result)
@@ -62,15 +63,15 @@ def check_dependencies():
         else:
             location = subprocess.check_output('which symmetry', shell=True)
 
-        print '{0:<15}{1:<15}{2}'.format('symmetry', version, location.strip())
+        print('{0:<15}{1:<15}{2}'.format('symmetry', version, location.strip()))
 
     # Check for RDKit
     try:
         import rdkit
         from rdkit import Chem
     except ImportError:
-        print '{0:<30}{1}'.format('RDKit',
-                                  'Not found. Please install RDKit version 2015.03.1 or later with InChI support.')
+        print('{0:<30}{1}'.format('RDKit',
+                                  'Not found. Please install RDKit version 2015.03.1 or later with InChI support.'))
         missing = install_rdkit = True
     else:
         try:
@@ -81,49 +82,49 @@ def check_dependencies():
         inchi = Chem.inchi.INCHI_AVAILABLE
 
         if version:
-            print '{0:<15}{1:<15}{2}'.format('RDKit', version, location)
+            print('{0:<15}{1:<15}{2}'.format('RDKit', version, location))
             if not inchi:
-                print '    !!! RDKit installed without InChI Support. Please install with InChI.'
+                print('    !!! RDKit installed without InChI Support. Please install with InChI.')
                 missing = install_rdkit = True
         else:
-            print '    !!! RDKit version out of date, please install RDKit version 2015.03.1 or later with InChI support.'
+            print('    !!! RDKit version out of date, please install RDKit version 2015.03.1 or later with InChI support.')
             missing = install_rdkit = True
 
     # Check for OpenBabel
     try:
         import openbabel
     except ImportError:
-        print '{0:<30}{1}'.format('OpenBabel',
-                                  'Not found. Necessary for SMILES/InChI functionality for nitrogen compounds.')
+        print('{0:<30}{1}'.format('OpenBabel',
+                                  'Not found. Necessary for SMILES/InChI functionality for nitrogen compounds.'))
         missing = True
     else:
         version = openbabel.OBReleaseVersion()
         location = openbabel.__file__
-        print '{0:<15}{1:<15}{2}'.format('OpenBabel', version, location)
+        print('{0:<15}{1:<15}{2}'.format('OpenBabel', version, location))
 
     # Check for lpsolve
     try:
         import lpsolve55
     except ImportError:
-        print '{0:<30}{1}'.format('lpsolve55',
-                                  'Not found. Necessary for generating Clar structures for aromatic species.')
+        print('{0:<30}{1}'.format('lpsolve55',
+                                  'Not found. Necessary for generating Clar structures for aromatic species.'))
         missing = True
     else:
         location = lpsolve55.__file__
-        print '{0:<30}{1}'.format('lpsolve55', location)
+        print('{0:<30}{1}'.format('lpsolve55', location))
 
     # Check for pyrdl
     try:
         import py_rdl
     except ImportError:
-        print '{0:<30}{1}'.format('pyrdl', 'Not found. Necessary for ring perception algorithms.')
+        print('{0:<30}{1}'.format('pyrdl', 'Not found. Necessary for ring perception algorithms.'))
         missing = True
     else:
         location = py_rdl.__file__
-        print '{0:<30}{1}'.format('pyrdl', location)
+        print('{0:<30}{1}'.format('pyrdl', location))
 
     if missing:
-        print """
+        print("""
 There are missing dependencies as listed above. Please install them before proceeding.
 
 Using Anaconda, these dependencies can be individually installed from the RMG channel as follows:
@@ -139,11 +140,11 @@ Be sure to activate your conda environment (rmg_env by default) before installin
 RDKit should be installed from the RDKit channel instead:
 
     conda install -c rdkit rdkit
-""" if install_rdkit else '')
+""" if install_rdkit else ''))
     else:
-        print """
+        print("""
 Everything was found :)
-"""
+""")
 
 
 def clean(subdirectory=''):
@@ -204,7 +205,7 @@ def update_headers():
 ###############################################################################
 """
 
-    print header
+    print(header)
 
     def replace_header(oldfile):
         newfile = os.path.join('tmp', 'tempfile')
@@ -263,16 +264,16 @@ def update_headers():
     for root_dir in root_dirs:
         for root, dirs, files in os.walk(root_dir):
             if 'test_data' in root or 'files' in root or '/tools/data' in root or 'arkane/data' in root:
-                print 'Skipping ' + root
+                print('Skipping ' + root)
                 continue
-            print root
+            print(root)
             for f in files:
                 ext = os.path.splitext(f)[1]
                 if ext in ['.py', '.pyx', '.pxd']:
                     filelist.append(os.path.join(root, f))
 
     for f in filelist:
-        print 'Updating {0} ...'.format(f)
+        print('Updating {0} ...'.format(f))
         replace_header(f)
 
     # Remove temporary directory
