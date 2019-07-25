@@ -35,8 +35,9 @@ This script contains unit tests of the :mod:`arkane.reference` module.
 import os
 import unittest
 
-from arkane.reference import ReferenceSpecies
+from arkane.reference import ReferenceSpecies, ReferenceDataEntry
 from rmgpy.species import Species
+from rmgpy.thermo import ThermoData
 
 
 ################################################################################
@@ -52,6 +53,8 @@ class TestReferenceSpecies(unittest.TestCase):
         self.methane = Species(SMILES='C')
         self.ethane = Species(SMILES='CC')
         self.propane = Species(SMILES='CCC')
+
+        self.thermo_data = ThermoData(H298=(100.0, 'kJ/mol'), S298=(100.0, 'J/(mol*K)'))
 
     def test_instantiate_reference_species(self):
         """
@@ -95,6 +98,17 @@ class TestReferenceSpecies(unittest.TestCase):
 
         # Finally, delete this newly created file
         os.remove(load_path)
+
+    def test_reference_data_entry(self):
+        """
+        Test that the ReferenceDataEntry class functions properly and enforces the standard for storing data
+        """
+        data_entry = ReferenceDataEntry(self.thermo_data)
+        self.assertIsInstance(data_entry.thermo_data, ThermoData)
+        self.assertEqual(data_entry.thermo_data.H298.value_si, 100000.0)
+
+        with self.assertRaises(ValueError):
+            _ = ReferenceDataEntry({'H298': (100.0, 'kJ/mol')})
 
 
 if __name__ == '__main__':
