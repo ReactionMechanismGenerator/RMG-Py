@@ -228,6 +228,8 @@ cdef class Molecule(Graph):
 
     cpdef bint isLinear(self) except -2
 
+    cpdef bint isHeterocyclic(self) except -2
+
     cpdef int countInternalRotors(self) except -2
 
     cpdef double calculateCp0(self) except -1

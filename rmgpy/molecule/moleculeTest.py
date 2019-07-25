@@ -1530,7 +1530,25 @@ multiplicity 2
         m = Molecule().fromSMILES('C1CCCCC1')
         isomers = m.generate_resonance_structures()
         self.assertFalse(any(isomer.isAromatic() for isomer in isomers))
-         
+
+    def testHeterocyclicCyclohexanol(self):
+        """
+        Test the Molecule.isHeterocyclic() method for Cyclohexanol.
+        """
+        self.assertFalse(Molecule().fromSMILES('OC1CCCCC1').isHeterocyclic())
+
+    def testHeterocyclicFuran(self):
+        """
+        Test the Molecule.isHeterocyclic() method for Furan.
+        """
+        self.assertTrue(Molecule().fromSMILES('C1C=COC=1').isHeterocyclic())
+
+    def testHeterocyclicPyridine(self):
+        """
+        Test the Molecule.isHeterocyclic() method for Pyridine.
+        """
+        self.assertTrue(Molecule().fromSMILES('c1cccnc1').isHeterocyclic())
+
     def testCountInternalRotorsEthane(self):
         """
         Test the Molecule.countInternalRotors() method.

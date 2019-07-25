@@ -532,6 +532,7 @@ def mlEstimator(thermo=True,
                 minNitrogenAtoms=0,
                 maxNitrogenAtoms=None,
                 onlyCyclics=False,
+                onlyHeterocyclics=False,
                 minCycleOverlap=0,
                 H298UncertaintyCutoff=(3.0, 'kcal/mol'),
                 S298UncertaintyCutoff=(2.0, 'cal/(mol*K)'),
@@ -563,10 +564,21 @@ def mlEstimator(thermo=True,
             min_nitrogen_atoms=minNitrogenAtoms,
             max_nitrogen_atoms=maxNitrogenAtoms,
             only_cyclics=onlyCyclics,
+            only_heterocyclics=onlyHeterocyclics,
             min_cycle_overlap=minCycleOverlap,
             uncertainty_cutoffs=uncertainty_cutoffs,
         )
-                    
+
+    # Shows warning when onlyCyclics is False and onlyHeterocyclics is True
+    if minCycleOverlap > 0 and not onlyCyclics and not onlyHeterocyclics:
+        logging.warning('"onlyCyclics" should be True when "minCycleOverlap" is greater than zero.'
+                        ' Machine learning estimator is restricted to only cyclic species thermo with the specified minimum cycle overlap')
+    elif minCycleOverlap > 0 and not onlyCyclics and onlyHeterocyclics:
+        logging.warning('"onlyCyclics" should be True when "onlyHeterocyclics" is True and "minCycleOverlap" is greater than zero.'
+                        ' Machine learning estimator is restricted to only heterocyclic species thermo with the specified minimum cycle overlap')
+    elif onlyHeterocyclics and not onlyCyclics:
+        logging.warning('"onlyCyclics" should be True when "onlyHeterocyclics" is True.'
+                        ' Machine learning estimator is restricted to only heterocyclic species thermo')
 
 def pressureDependence(
                        method,
