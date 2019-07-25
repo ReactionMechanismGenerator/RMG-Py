@@ -43,7 +43,7 @@ def check_dependencies():
     """
     Checks for and locates major dependencies that RMG requires.
     """
-    missing = False
+    missing = install_rdkit = False
 
     print '\nChecking vital dependencies...\n'
     print '{0:<15}{1:<15}{2}'.format('Package', 'Version', 'Location')
@@ -71,7 +71,7 @@ def check_dependencies():
     except ImportError:
         print '{0:<30}{1}'.format('RDKit',
                                   'Not found. Please install RDKit version 2015.03.1 or later with InChI support.')
-        missing = True
+        missing = install_rdkit = True
     else:
         try:
             version = rdkit.__version__
@@ -83,11 +83,11 @@ def check_dependencies():
         if version:
             print '{0:<15}{1:<15}{2}'.format('RDKit', version, location)
             if not inchi:
-                print 'RDKit installed without InChI Support. Please install with InChI.'
-                missing = True
+                print '    !!! RDKit installed without InChI Support. Please install with InChI.'
+                missing = install_rdkit = True
         else:
-            print 'RDKit version out of date, please install RDKit version 2015.03.1 or later with InChI support.'
-            missing = True
+            print '    !!! RDKit version out of date, please install RDKit version 2015.03.1 or later with InChI support.'
+            missing = install_rdkit = True
 
     # Check for OpenBabel
     try:
@@ -129,13 +129,17 @@ There are missing dependencies as listed above. Please install them before proce
 Using Anaconda, these dependencies can be individually installed from the RMG channel as follows:
 
     conda install -c rmg [package name]
-
+{0}
 You can alternatively update your environment and install all missing dependencies as follows:
 
     conda env update -f environment_[linux/mac/windows].yml  # Choose the correct file for your OS
 
 Be sure to activate your conda environment (rmg_env by default) before installing or updating.
-"""
+""".format("""
+RDKit should be installed from the RDKit channel instead:
+
+    conda install -c rdkit rdkit
+""" if install_rdkit else '')
     else:
         print """
 Everything was found :)
