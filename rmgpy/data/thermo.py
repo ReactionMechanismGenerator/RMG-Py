@@ -1662,7 +1662,8 @@ class ThermoDatabase(object):
             return None
         if not(min_nitrogen <= element_count.get('N', 0) <= max_nitrogen):
             return None
-
+        if ml_settings['only_heterocyclics'] and not molecule.isHeterocyclic():
+            return None
         if ml_settings['only_cyclics'] and not molecule.isCyclic():
             return None
         min_cycle_overlap = ml_settings['min_cycle_overlap']
