@@ -36,6 +36,9 @@ cimport rmgpy.constants as constants
 import rmgpy.quantity as quantity
 import scipy.linalg
 
+# Prior to numpy 1.14, `numpy.linalg.lstsq` does not accept None as a value
+RCOND = -1 if int(numpy.__version__.split('.')[1]) < 14 else None
+
 ################################################################################
 
 cdef class Wilhoit(HeatCapacityModel):
@@ -277,7 +280,7 @@ cdef class Wilhoit(HeatCapacityModel):
                 for j in range(4):
                     A[i,j] = (y*y*y - y*y) * y**j
                 b[i] = ((Cpdata[i] - Cp0) / (CpInf - Cp0) - y*y)
-            x, residues, rank, s = numpy.linalg.lstsq(A, b, rcond=None)
+            x, residues, rank, s = numpy.linalg.lstsq(A, b, rcond=RCOND)
             
             self.B = (float(B),"K")
             self.a0 = float(x[0])
