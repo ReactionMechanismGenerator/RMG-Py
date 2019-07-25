@@ -5,6 +5,7 @@ channels:
   - rdkit
   - cantera
   - anaconda
+  - conda-forge
 dependencies:
   - cairo
   - cairocffi
