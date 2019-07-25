@@ -499,7 +499,13 @@ for new users to better understand the options of rmg input files</p>
 <span class="c1">#     maxNitrogenAtoms=None,</span>
 <span class="c1">#     # Limits on cycles</span>
 <span class="c1">#     onlyCyclics=False,</span>
-<span class="c1">#     minCycleOverlap=0,  # specifies the minimum number of atoms that must be shared between any two cycles</span>
+<span class="c1">#     onlyHeterocyclics=False, # If onlyHeterocyclics is True, the machine learning estimator is restricted to only</span>
+<span class="c1">#                                heterocyclics species regardless of onlyCyclics setting.</span>
+<span class="c1">#                                But onlyCyclics should also be True if onlyHeterocyclics is True.</span>
+<span class="c1">#     minCycleOverlap=0,  # specifies the minimum number of atoms that must be shared between any two cycles.</span>
+<span class="c1">#                           If minCycleOverlap is greater than zero, the machine learning estimator is restricted to</span>
+<span class="c1">#                           only cyclic species with the specified minimum cyclic overlap regardless of onlyCyclics</span>
+<span class="c1">#                           setting.</span>
 <span class="c1">#     # If the estimated uncertainty of the thermo prediction is greater than</span>
 <span class="c1">#     # any of these values, then don&#39;t use the ML estimate</span>
 <span class="c1">#     H298UncertaintyCutoff=(3.0, &#39;kcal/mol&#39;),</span>

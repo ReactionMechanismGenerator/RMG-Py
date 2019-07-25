@@ -620,6 +620,7 @@ group additivity.</p>
     <span class="n">minNitrogenAtoms</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
     <span class="n">maxNitrogenAtoms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">onlyCyclics</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">onlyHeterocyclics</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">minCycleOverlap</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
     <span class="n">H298UncertaintyCutoff</span><span class="o">=</span><span class="p">(</span><span class="mf">3.0</span><span class="p">,</span> <span class="s1">&#39;kcal/mol&#39;</span><span class="p">),</span>
     <span class="n">S298UncertaintyCutoff</span><span class="o">=</span><span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="s1">&#39;cal/(mol*K)&#39;</span><span class="p">),</span>
@@ -629,11 +630,18 @@ group additivity.</p>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">name</span></code> is the name of the folder containing the machine learning model architecture and parameters in the RMG
 database. The next several options allow setting limits on the numbers of atoms. <code class="docutils literal notranslate"><span class="pre">onlyCyclics</span></code> means that only cyclic
-species will be estimated. <code class="docutils literal notranslate"><span class="pre">minCycleOverlap</span></code> specified the minimum number of atoms that must be shared between any
-two cycles. For example, if there are only disparate monocycles or no cycles in a species, the overlap is zero;
-“spiro” cycles have an overlap of one; “fused” cycles have an overlap of two; and “bridged” cycles have an overlap of
-at least three. Note that specifying any value greater than zero will automatically restrict the machine learning
-estimator to only consider cyclic species regardless of the <code class="docutils literal notranslate"><span class="pre">onlyCyclics</span></code> setting.</p>
+species will be estimated. <code class="docutils literal notranslate"><span class="pre">onlyHeterocyclics</span></code> means that only heterocyclic species will be estimated. Note that
+if <code class="docutils literal notranslate"><span class="pre">onlyHeterocyclics</span></code> setting is set to True, the machine learning estimator will be restricted to heterocyclic
+species regardless of the <code class="docutils literal notranslate"><span class="pre">onlyCyclics</span></code> setting. If <code class="docutils literal notranslate"><span class="pre">onlyCyclics</span></code> is False and <code class="docutils literal notranslate"><span class="pre">onlyHeterocyclics</span></code> is True,
+RMG will log a warning that <code class="docutils literal notranslate"><span class="pre">onlyCyclics</span></code> should also be True and the machine learning estimator will be
+restricted to heterocyclic species because they are a subset of cyclics.
+<code class="docutils literal notranslate"><span class="pre">minCycleOverlap</span></code> specifies the minimum number of atoms that must be shared between any two cycles. For example,
+if there are only disparate monocycles or no cycles in a species, the overlap is zero; “spiro” cycles have an overlap
+of one; “fused” cycles have an overlap of two; and “bridged” cycles have an overlap of at least three. Note that
+specifying any value greater than zero will automatically restrict the machine learning estimator to only consider
+cyclic species regardless of the <code class="docutils literal notranslate"><span class="pre">onlyCyclics</span></code> setting. If <code class="docutils literal notranslate"><span class="pre">onlyCyclics</span></code> is False and <code class="docutils literal notranslate"><span class="pre">minCycleOverlap</span></code> is greater
+than zero, RMG will log a warning that <code class="docutils literal notranslate"><span class="pre">onlyCyclics</span></code> should also be True and the machine learning estimator will be
+restricted to only cyclic species with the specified minimum cycle overlap.</p>
 <p>If the estimated uncertainty of the thermo prediction is greater than any of the <code class="docutils literal notranslate"><span class="pre">UncertaintyCutoff</span></code> values, then
 machine learning estimation is not used for that species.</p>
 </div>
