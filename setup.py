@@ -35,18 +35,18 @@ try:
     from distutils.core import setup
     from distutils.extension import Extension
 except ImportError:
-    print 'The distutils package is required to build or install RMG Py.'
+    print('The distutils package is required to build or install RMG Py.')
     
 try:
     from Cython.Distutils import build_ext
     import Cython.Compiler.Options
 except ImportError:
-    print 'Cython (http://www.cython.org/) is required to build or install RMG Py.'
+    print('Cython (http://www.cython.org/) is required to build or install RMG Py.')
     
 try:
     import numpy
 except ImportError:
-    print 'NumPy (http://numpy.scipy.org/) is required to build or install RMG Py.'
+    print('NumPy (http://numpy.scipy.org/) is required to build or install RMG Py.')
 
 # Create annotated HTML files for each of the Cython modules
 Cython.Compiler.Options.annotate = True

@@ -4,8 +4,8 @@
 #
 ################################################################################
 
-DASPK=$(shell python -c 'import pydas.daspk; print pydas.daspk.__file__')
-DASSL=$(shell python -c 'import pydas.dassl; print pydas.dassl.__file__')
+DASPK=$(shell python -c 'import pydas.daspk; print(pydas.daspk.__file__)')
+DASSL=$(shell python -c 'import pydas.dassl; print(pydas.dassl.__file__)')
 
 .PHONY : all minimal main solver check cantherm clean install decython documentation mopac_travis
 
@@ -16,7 +16,7 @@ minimal:
 
 main:
 	@ echo "Checking you have PyDQED..."
-	@ python -c 'import pydqed; print pydqed.__file__'
+	@ python -c 'import pydqed; print(pydqed.__file__)'
 	python setup.py build_ext main --build-lib . --build-temp build --pyrex-c-in-temp
 
 solver:
@@ -65,7 +65,7 @@ endif
 
 install:
 	@ echo "Checking you have PyDQED..."
-	@ python -c 'import pydqed; print pydqed.__file__'
+	@ python -c 'import pydqed; print(pydqed.__file__)'
 ifneq ($(DASPK),)
 	@ echo "DASPK solver found. Compiling with DASPK and sensitivity analysis capability..."
 	@ (echo DEF DASPK = 1) > rmgpy/solver/settings.pxi
