@@ -75,11 +75,24 @@ the Gaussian log file.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.gaussian.GaussianLog.get_optical_isomers_and_symmetry_number">
-<code class="descname">get_optical_isomers_and_symmetry_number</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.gaussian.GaussianLog.get_optical_isomers_and_symmetry_number" title="Permalink to this definition">¶</a></dt>
+<dt id="arkane.gaussian.GaussianLog.get_D1_diagnostic">
+<code class="descname">get_D1_diagnostic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.gaussian.GaussianLog.get_D1_diagnostic" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method returns the D1 diagnostic for certain quantum jobs</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.gaussian.GaussianLog.get_T1_diagnostic">
+<code class="descname">get_T1_diagnostic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.gaussian.GaussianLog.get_T1_diagnostic" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method returns the T1 diagnostic for certain quantum jobs</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.gaussian.GaussianLog.get_symmetry_properties">
+<code class="descname">get_symmetry_properties</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.gaussian.GaussianLog.get_symmetry_properties" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method uses the symmetry package from RMG’s QM module
 and returns a tuple where the first element is the number
-of optical isomers and the second element is the symmetry number.</p>
+of optical isomers, the second element is the symmetry number,
+and the third element is the point group identified.</p>
 </dd></dl>
 
 <dl class="method">
@@ -142,6 +155,24 @@ result of a Gaussian “Scan” quantum chemistry calculation.</p>
 <dt id="arkane.gaussian.GaussianLog.loadZeroPointEnergy">
 <code class="descname">loadZeroPointEnergy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.gaussian.GaussianLog.loadZeroPointEnergy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the unscaled zero-point energy in J/mol from a Gaussian log file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.gaussian.GaussianLog.load_scan_frozen_atoms">
+<code class="descname">load_scan_frozen_atoms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.gaussian.GaussianLog.load_scan_frozen_atoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract the atom numbers which were frozen during the scan
+Return a list of list of atom numbers starting with the first atom as 1
+Each element of the outer lists represents a frozen bond
+Inner lists with length 2 represent frozen bond lengths
+Inner lists with length 3 represent frozen bond angles
+Inner lists with length 4 represent frozen dihedral angles</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.gaussian.GaussianLog.load_scan_pivot_atoms">
+<code class="descname">load_scan_pivot_atoms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.gaussian.GaussianLog.load_scan_pivot_atoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract the atom numbers which the rotor scan pivots around
+Return a list of atom numbers starting with the first atom as 1</p>
 </dd></dl>
 
 </dd></dl>

@@ -451,8 +451,12 @@ molecular properties.
         <span class="n">structure</span> <span class="o">=</span> <span class="n">SMILES</span><span class="p">(</span><span class="s1">&#39;CC&#39;</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>The first parameter (<code class="docutils literal notranslate"><span class="pre">'C2H6'</span></code> above) is the species label, which can be referenced later in the input file. The second
-parameter (<code class="docutils literal notranslate"><span class="pre">'C2H6.py'</span></code> above) points to the location of another python file containing details of the species. This file
+<p>The first required parameter (<code class="docutils literal notranslate"><span class="pre">'C2H6'</span></code> above) is the species label, which can be
+referenced later in the input file and is used when constructing output files.
+For chemkin output to run properly, limit names to alphanumeric characters
+with approximately 13 characters or less.</p>
+<p>The second parameter (<code class="docutils literal notranslate"><span class="pre">'C2H6.py'</span></code> above) points to the location of another
+python file containing details of the species. This file
 will be referred to as the species input file. The third parameter (<code class="docutils literal notranslate"><span class="pre">'structure</span> <span class="pre">=</span> <span class="pre">SMILES('CC')'</span></code> above)
 gives the species structure (either SMILES, adjacencyList, or InChI could be used). The structure parameter isn’t
 necessary for the calculation, however if it is not specified a .yml file representing an ArkaneSpecies will not be
@@ -480,7 +484,7 @@ generated.</p>
 <td><code class="docutils literal notranslate"><span class="pre">True</span></code> if the molecule is linear, <code class="docutils literal notranslate"><span class="pre">False</span></code> if not</td>
 </tr>
 <tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">externalSymmetry</span></code></td>
-<td>yes</td>
+<td>optional</td>
 <td>The external symmetry number for rotation</td>
 </tr>
 <tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">spinMultiplicity</span></code></td>
@@ -488,7 +492,7 @@ generated.</p>
 <td>The ground-state spin multiplicity (degeneracy)</td>
 </tr>
 <tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">opticalIsomers</span></code></td>
-<td>yes</td>
+<td>optional</td>
 <td>The number of optical isomers of the species</td>
 </tr>
 <tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">energy</span></code></td>
@@ -498,7 +502,7 @@ generated.</p>
 The path to the quantum chemistry output file containing the energy</td>
 </tr>
 <tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">geometry</span></code></td>
-<td>yes</td>
+<td>optional</td>
 <td>The path to the quantum chemistry output file containing the optimized geometry</td>
 </tr>
 <tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">frequencies</span></code></td>
@@ -516,7 +520,10 @@ to apply atomization energy corrections (AEC) and spin orbit corrections (SOC) f
 (see <a class="reference internal" href="#model-chemistry">Model Chemistry</a>). If not interested in accurate thermodynamics (e.g., if only using <code class="docutils literal notranslate"><span class="pre">kinetics()</span></code>), then
 atom corrections can be turned off by setting <code class="docutils literal notranslate"><span class="pre">useAtomCorrections</span></code> to <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">bonds</span></code> parameter is used to apply bond additivity corrections (BACs) for a given <code class="docutils literal notranslate"><span class="pre">modelChemistry</span></code> if using
-Petersson-type BACs (<code class="docutils literal notranslate"><span class="pre">bondCorrectionType</span> <span class="pre">=</span> <span class="pre">'p'</span></code>). When using Melius-type BACs (<code class="docutils literal notranslate"><span class="pre">bondCorrectionType</span> <span class="pre">=</span> <span class="pre">'m'</span></code>),
+Petersson-type BACs (<code class="docutils literal notranslate"><span class="pre">bondCorrectionType</span> <span class="pre">=</span> <span class="pre">'p'</span></code>).
+If the species’ structure is specified in the Arkane input file, then the <cite>bonds</cite> attribute
+can be automatically populated. Including this parameter in this case will overwrite
+the automatically generated bonds. When using Melius-type BACs (<code class="docutils literal notranslate"><span class="pre">bondCorrectionType</span> <span class="pre">=</span> <span class="pre">'m'</span></code>),
 specifying <code class="docutils literal notranslate"><span class="pre">bonds</span></code> is not required because the molecular connectivity is automatically inferred from the output of the
 quantum chemistry calculation.
 For a description of Petersson-type BACs, see Petersson et al., J. Chem. Phys. 1998, 109, 10570-10579.
@@ -524,7 +531,8 @@ For a description of Melius-type BACs, see Anantharaman and Melius, J. Phys. Che
 <p>Allowed bond types for the <code class="docutils literal notranslate"><span class="pre">bonds</span></code> parameter are, e.g., <code class="docutils literal notranslate"><span class="pre">'C-H'</span></code>, <code class="docutils literal notranslate"><span class="pre">'C-C'</span></code>, <code class="docutils literal notranslate"><span class="pre">'C=C'</span></code>, <code class="docutils literal notranslate"><span class="pre">'N-O'</span></code>, <code class="docutils literal notranslate"><span class="pre">'C=S'</span></code>,
 <code class="docutils literal notranslate"><span class="pre">'O=O'</span></code>, <code class="docutils literal notranslate"><span class="pre">'C#N'</span></code>…</p>
 <p><code class="docutils literal notranslate"><span class="pre">'O=S=O'</span></code> is also allowed.</p>
-<p>The order of elements in the bond correction label is not important. Use <code class="docutils literal notranslate"><span class="pre">-</span></code>/<code class="docutils literal notranslate"><span class="pre">=</span></code>/<code class="docutils literal notranslate"><span class="pre">#</span></code> to denote a
+<p>The order of elements in the bond correction label is important. The first atom
+should follow this priority: ‘C’, ‘N’, ‘O’, ‘S’, ‘P’, and ‘H’. For bonds, use <code class="docutils literal notranslate"><span class="pre">-</span></code>/<code class="docutils literal notranslate"><span class="pre">=</span></code>/<code class="docutils literal notranslate"><span class="pre">#</span></code> to denote a
 single/double/triple bond, respectively. For example, for formaldehyde we would write:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bonds</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;C=O&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;C-H&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
 </pre></div>
@@ -557,7 +565,7 @@ they can specify the path to a quantum chemistry calculation output file that co
 directly. The energy used will depend on what <code class="docutils literal notranslate"><span class="pre">modelChemistry</span></code> was specified in the input file. Arkane can parse the
 energy from a Gaussian, Molpro, or QChem log file, all using the same <code class="docutils literal notranslate"><span class="pre">Log</span></code> class, as shown below.</p>
 <p>The input to the remaining parameters, <code class="docutils literal notranslate"><span class="pre">geometry</span></code>, <code class="docutils literal notranslate"><span class="pre">frequencies</span></code> and <code class="docutils literal notranslate"><span class="pre">rotors</span></code>, will depend on if hindered/free
-rotors are included.
+rotors are included. If <code class="docutils literal notranslate"><span class="pre">geometry</span></code> is not set, then Arkane will read the geometry from the <code class="docutils literal notranslate"><span class="pre">frequencies</span></code> file.
 Both cases are described below.</p>
 <div class="section" id="without-hindered-free-rotors">
 <h4>3.4.1.1. Without Hindered/Free Rotors<a class="headerlink" href="#without-hindered-free-rotors" title="Permalink to this headline">¶</a></h4>
@@ -628,28 +636,35 @@ Therefore, the proper workflow for generating the <code class="docutils literal 
 object requires the following parameters:</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="20%" />
-<col width="80%" />
+<col width="16%" />
+<col width="19%" />
+<col width="64%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Required?</th>
 <th class="head">Description</th>
 </tr>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">scanLog</span></code></td>
+<td>yes</td>
 <td>The path to the Gaussian/Qchem log file, or a text file containing the scan energies</td>
 </tr>
 <tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">pivots</span></code></td>
+<td>yes</td>
 <td>The indices of the atoms in the hindered rotor torsional bond</td>
 </tr>
 <tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">top</span></code></td>
+<td>yes</td>
 <td>The indices of all atoms on one side of the torsional bond (including the pivot atom)</td>
 </tr>
 <tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">symmetry</span></code></td>
+<td>optional</td>
 <td>The symmetry number for the torsional rotation (number of indistinguishable energy minima)</td>
 </tr>
 <tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">fit</span></code></td>
+<td>optional</td>
 <td>Fit to the scan data. Can be either <code class="docutils literal notranslate"><span class="pre">fourier</span></code>, <code class="docutils literal notranslate"><span class="pre">cosine</span></code> or <code class="docutils literal notranslate"><span class="pre">best</span></code> (default).</td>
 </tr>
 </tbody>

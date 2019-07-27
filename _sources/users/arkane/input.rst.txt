@@ -163,8 +163,13 @@ For this option, the ``species()`` function only requires two parameters, as in 
     species('C2H6', 'C2H6.py',
             structure = SMILES('CC'))
 
-The first parameter (``'C2H6'`` above) is the species label, which can be referenced later in the input file. The second
-parameter (``'C2H6.py'`` above) points to the location of another python file containing details of the species. This file
+The first required parameter (``'C2H6'`` above) is the species label, which can be
+referenced later in the input file and is used when constructing output files.
+For chemkin output to run properly, limit names to alphanumeric characters
+with approximately 13 characters or less.
+
+The second parameter (``'C2H6.py'`` above) points to the location of another
+python file containing details of the species. This file
 will be referred to as the species input file. The third parameter (``'structure = SMILES('CC')'`` above)
 gives the species structure (either SMILES, adjacencyList, or InChI could be used). The structure parameter isn't
 necessary for the calculation, however if it is not specified a .yml file representing an ArkaneSpecies will not be
@@ -177,13 +182,13 @@ Parameter               Required?                   Description
 ======================= =========================== ====================================
 ``bonds``               optional                    Type and number of bonds in the species
 ``linear``              optional                    ``True`` if the molecule is linear, ``False`` if not
-``externalSymmetry``    yes                         The external symmetry number for rotation
+``externalSymmetry``    optional                    The external symmetry number for rotation
 ``spinMultiplicity``    yes                         The ground-state spin multiplicity (degeneracy)
-``opticalIsomers``      yes                         The number of optical isomers of the species
+``opticalIsomers``      optional                    The number of optical isomers of the species
 ``energy``              yes                         The ground-state 0 K atomization energy in Hartree
                                                     (without zero-point energy) **or**
                                                     The path to the quantum chemistry output file containing the energy
-``geometry``            yes                         The path to the quantum chemistry output file containing the optimized geometry
+``geometry``            optional                    The path to the quantum chemistry output file containing the optimized geometry
 ``frequencies``         yes                         The path to the quantum chemistry output file containing the computed frequencies
 ``rotors``              optional                    A list of :class:`HinderedRotor()` and/or :class:`FreeRotor()` objects describing the hindered/free rotors
 ======================= =========================== ====================================
@@ -194,7 +199,10 @@ to apply atomization energy corrections (AEC) and spin orbit corrections (SOC) f
 atom corrections can be turned off by setting ``useAtomCorrections`` to ``False``.
 
 The ``bonds`` parameter is used to apply bond additivity corrections (BACs) for a given ``modelChemistry`` if using
-Petersson-type BACs (``bondCorrectionType = 'p'``). When using Melius-type BACs (``bondCorrectionType = 'm'``),
+Petersson-type BACs (``bondCorrectionType = 'p'``).
+If the species' structure is specified in the Arkane input file, then the `bonds` attribute
+can be automatically populated. Including this parameter in this case will overwrite
+the automatically generated bonds. When using Melius-type BACs (``bondCorrectionType = 'm'``),
 specifying ``bonds`` is not required because the molecular connectivity is automatically inferred from the output of the
 quantum chemistry calculation.
 For a description of Petersson-type BACs, see Petersson et al., J. Chem. Phys. 1998, 109, 10570-10579.
@@ -205,7 +213,8 @@ Allowed bond types for the ``bonds`` parameter are, e.g., ``'C-H'``, ``'C-C'``, 
 
 ``'O=S=O'`` is also allowed.
 
-The order of elements in the bond correction label is not important. Use ``-``/``=``/``#`` to denote a
+The order of elements in the bond correction label is important. The first atom
+should follow this priority: 'C', 'N', 'O', 'S', 'P', and 'H'. For bonds, use ``-``/``=``/``#`` to denote a
 single/double/triple bond, respectively. For example, for formaldehyde we would write::
 
     bonds = {'C=O': 1, 'C-H': 2}
@@ -239,7 +248,7 @@ directly. The energy used will depend on what ``modelChemistry`` was specified i
 energy from a Gaussian, Molpro, or QChem log file, all using the same ``Log`` class, as shown below.
 
 The input to the remaining parameters, ``geometry``, ``frequencies`` and ``rotors``, will depend on if hindered/free
-rotors are included.
+rotors are included. If ``geometry`` is not set, then Arkane will read the geometry from the ``frequencies`` file.
 Both cases are described below.
 
 Without Hindered/Free Rotors
@@ -310,15 +319,15 @@ The output of step 2 is the correct log file to use for ``geometry/frequencies``
 ``rotors`` is a list of :class:`HinderedRotor()` and/or :class:`FreeRotor()` objects. Each :class:`HinderedRotor()`
 object requires the following parameters:
 
-====================== ==========================================================================================
-Parameter              Description
-====================== ==========================================================================================
-``scanLog``            The path to the Gaussian/Qchem log file, or a text file containing the scan energies
-``pivots``             The indices of the atoms in the hindered rotor torsional bond
-``top``                The indices of all atoms on one side of the torsional bond (including the pivot atom)
-``symmetry``           The symmetry number for the torsional rotation (number of indistinguishable energy minima)
-``fit``                Fit to the scan data. Can be either ``fourier``, ``cosine`` or ``best`` (default).
-====================== ==========================================================================================
+======================= =========================== ====================================
+Parameter               Required?                   Description
+======================= =========================== ====================================
+``scanLog``             yes                         The path to the Gaussian/Qchem log file, or a text file containing the scan energies
+``pivots``              yes                         The indices of the atoms in the hindered rotor torsional bond
+``top``                 yes                         The indices of all atoms on one side of the torsional bond (including the pivot atom)
+``symmetry``            optional                    The symmetry number for the torsional rotation (number of indistinguishable energy minima)
+``fit``                 optional                    Fit to the scan data. Can be either ``fourier``, ``cosine`` or ``best`` (default).
+======================= =========================== ====================================
 
 ``scanLog`` can either point to a ``Log`` file, or simply a ``ScanLog``, with the path to a text file summarizing the
 scan in the following format::

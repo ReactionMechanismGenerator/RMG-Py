@@ -87,9 +87,12 @@ compute and save the thermodynamics information for a single species.</p>
 
 <dl class="method">
 <dt id="arkane.ThermoJob.execute">
-<code class="descname">execute</code><span class="sig-paren">(</span><em>outputFile=None</em>, <em>plot=False</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ThermoJob.execute" title="Permalink to this definition">¶</a></dt>
-<dd><p>Execute the thermodynamics job, saving the results to the
-given <cite>outputFile</cite> on disk.</p>
+<code class="descname">execute</code><span class="sig-paren">(</span><em>output_directory=None</em>, <em>plot=False</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ThermoJob.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute the thermodynamics job, saving the results within
+the <cite>output_directory</cite>.</p>
+<p>If <cite>plot</cite> is true, then plots of the raw and fitted values for heat
+capacity, entropy, enthalpy, gibbs free energy, and hindered rotors
+will be saved.</p>
 </dd></dl>
 
 <dl class="method">
@@ -111,10 +114,17 @@ directory. The plot is not generated if <code class="docutils literal notranslat
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.ThermoJob.save">
-<code class="descname">save</code><span class="sig-paren">(</span><em>outputFile</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ThermoJob.save" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save the results of the thermodynamics job to the file located
-at <cite>path</cite> on disk.</p>
+<dt id="arkane.ThermoJob.write_chemkin">
+<code class="descname">write_chemkin</code><span class="sig-paren">(</span><em>output_directory</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ThermoJob.write_chemkin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Appends the thermo block to <cite>chem.inp</cite> and species name to
+<cite>species_dictionary.txt</cite> within the <cite>outut_directory</cite> specified</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.ThermoJob.write_output">
+<code class="descname">write_output</code><span class="sig-paren">(</span><em>output_directory</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ThermoJob.write_output" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the results of the thermodynamics job to the <cite>output.py</cite> file located
+in <cite>output_directory</cite>.</p>
 </dd></dl>
 
 </dd></dl>

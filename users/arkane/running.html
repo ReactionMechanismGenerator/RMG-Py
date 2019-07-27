@@ -65,7 +65,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </pre></div>
 </div>
 <p>The absolute or relative paths to the Arkane.py file as well as to the input file must be given.</p>
-<p>The job will run and the results will be saved to <code class="docutils literal notranslate"><span class="pre">output.py</span></code> in the same
+<p>The job will run and the results will be saved in the same
 directory as the input file. If you wish to save the output elsewhere, use
 the <code class="docutils literal notranslate"><span class="pre">-o</span></code>/<code class="docutils literal notranslate"><span class="pre">--output</span></code> option, e.g.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python Arkane.py INPUTFILE -o OUTPUTFILE
@@ -80,12 +80,19 @@ and outputted in pdf format to a file called <code class="docutils literal notra
 <div class="section" id="log-verbosity">
 <h2>5.2. Log Verbosity<a class="headerlink" href="#log-verbosity" title="Permalink to this headline">¶</a></h2>
 <p>You can manipulate the amount of information logged to the console window using
-the <code class="docutils literal notranslate"><span class="pre">-q</span></code>/<code class="docutils literal notranslate"><span class="pre">--quiet</span></code> flag (for quiet mode) or the <code class="docutils literal notranslate"><span class="pre">-v</span></code>/<code class="docutils literal notranslate"><span class="pre">--verbose</span></code> flag
-(for verbose mode). The former causes the amount of logging information shown
-to decrease; the latter causes it to increase.</p>
+the <code class="docutils literal notranslate"><span class="pre">-q</span></code>/<code class="docutils literal notranslate"><span class="pre">--quiet</span></code> flag (for quiet mode), the <code class="docutils literal notranslate"><span class="pre">-v</span></code>/<code class="docutils literal notranslate"><span class="pre">--verbose</span></code> flag
+(for verbose mode), or the <code class="docutils literal notranslate"><span class="pre">-d</span></code>/<code class="docutils literal notranslate"><span class="pre">--debug</span></code> flag (for debug mode).
+The former causes the amount of logging information shown
+to decrease; the latter two cause it to increase.</p>
+</div>
+<div class="section" id="suppressing-plot-creation">
+<h2>5.3. Suppressing plot creation<a class="headerlink" href="#suppressing-plot-creation" title="Permalink to this headline">¶</a></h2>
+<p>Arkane by default will generate many plot files. By adding the <code class="docutils literal notranslate"><span class="pre">-p</span></code>/<code class="docutils literal notranslate"><span class="pre">--no-plot</span></code>
+flag, Arkane will not generate any plots, reducing file size of output and
+increasing the calculation speed.</p>
 </div>
 <div class="section" id="help">
-<h2>5.3. Help<a class="headerlink" href="#help" title="Permalink to this headline">¶</a></h2>
+<h2>5.4. Help<a class="headerlink" href="#help" title="Permalink to this headline">¶</a></h2>
 <p>To view help information and all available options, use the <code class="docutils literal notranslate"><span class="pre">-h</span></code>/<code class="docutils literal notranslate"><span class="pre">--help</span></code>
 flag, e.g.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python Arkane.py -h
@@ -126,7 +133,8 @@ flag, e.g.</p>
 <li><a class="reference internal" href="#">5. Running Arkane</a><ul>
 <li><a class="reference internal" href="#drawing-potential-energy-surface">5.1. Drawing Potential Energy Surface</a></li>
 <li><a class="reference internal" href="#log-verbosity">5.2. Log Verbosity</a></li>
-<li><a class="reference internal" href="#help">5.3. Help</a></li>
+<li><a class="reference internal" href="#suppressing-plot-creation">5.3. Suppressing plot creation</a></li>
+<li><a class="reference internal" href="#help">5.4. Help</a></li>
 </ul>
 </li>
 </ul>

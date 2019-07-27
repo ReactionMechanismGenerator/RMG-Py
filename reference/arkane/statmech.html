@@ -67,15 +67,23 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 to compute and save the statistical mechanics information for a single
 species or transition state.</p>
 <dl class="method">
+<dt id="arkane.StatMechJob.create_hindered_rotor_figure">
+<code class="descname">create_hindered_rotor_figure</code><span class="sig-paren">(</span><em>angle</em>, <em>v_list</em>, <em>cosineRotor</em>, <em>fourierRotor</em>, <em>rotor</em>, <em>rotorIndex</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob.create_hindered_rotor_figure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the potential for the rotor, along with its cosine and Fourier
+series potential fits, and save it in the <cite>hindered_rotor_plots</cite> attribute.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="arkane.StatMechJob.execute">
-<code class="descname">execute</code><span class="sig-paren">(</span><em>outputFile=None</em>, <em>plot=False</em>, <em>pdep=False</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob.execute" title="Permalink to this definition">¶</a></dt>
-<dd><p>Execute the statistical mechanics job, saving the results to the
-given <cite>outputFile</cite> on disk.</p>
+<code class="descname">execute</code><span class="sig-paren">(</span><em>output_directory=None</em>, <em>plot=False</em>, <em>pdep=False</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute the statmech job, saving the results within
+the <cite>output_directory</cite>.</p>
+<p>If <cite>plot</cite> is True, then plots of the hindered rotor fits will be saved.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="arkane.StatMechJob.load">
-<code class="descname">load</code><span class="sig-paren">(</span><em>pdep=False</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob.load" title="Permalink to this definition">¶</a></dt>
+<code class="descname">load</code><span class="sig-paren">(</span><em>pdep=False</em>, <em>plot=False</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob.load" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the statistical mechanics parameters for each conformer from
 the associated files on disk. Creates <code class="xref py py-class docutils literal notranslate"><span class="pre">Conformer</span></code> objects for
 each conformer and appends them to the list of conformers on the
@@ -83,18 +91,17 @@ species object.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.StatMechJob.plotHinderedRotor">
-<code class="descname">plotHinderedRotor</code><span class="sig-paren">(</span><em>angle</em>, <em>v_list</em>, <em>cosineRotor</em>, <em>fourierRotor</em>, <em>rotor</em>, <em>rotorIndex</em>, <em>directory</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob.plotHinderedRotor" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plot the potential for the rotor, along with its cosine and Fourier
-series potential fits. The plot is saved to a set of files of the form
-<code class="docutils literal notranslate"><span class="pre">hindered_rotor_1.pdf</span></code>.</p>
+<dt id="arkane.StatMechJob.save_hindered_rotor_figures">
+<code class="descname">save_hindered_rotor_figures</code><span class="sig-paren">(</span><em>directory</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob.save_hindered_rotor_figures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save hindered rotor plots as set of files of the form
+<code class="docutils literal notranslate"><span class="pre">rotor_[species_label]_0.pdf</span></code> in the specified directory</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.StatMechJob.save">
-<code class="descname">save</code><span class="sig-paren">(</span><em>outputFile</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob.save" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save the results of the statistical mechanics job to the file located
-at <cite>path</cite> on disk.</p>
+<dt id="arkane.StatMechJob.write_output">
+<code class="descname">write_output</code><span class="sig-paren">(</span><em>output_directory</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob.write_output" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the results of the statmech job to the <cite>output.py</cite> file located
+in <cite>output_directory</cite>.</p>
 </dd></dl>
 
 </dd></dl>

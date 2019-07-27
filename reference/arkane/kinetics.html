@@ -89,7 +89,7 @@ and save the high-pressure-limit kinetics information for a single reaction.</p>
 
 <dl class="method">
 <dt id="arkane.KineticsJob.draw">
-<code class="descname">draw</code><span class="sig-paren">(</span><em>outputDirectory</em>, <em>format='pdf'</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.KineticsJob.draw" title="Permalink to this definition">¶</a></dt>
+<code class="descname">draw</code><span class="sig-paren">(</span><em>output_directory</em>, <em>format='pdf'</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.KineticsJob.draw" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a PDF drawing of the reaction.
 This requires that Cairo and its Python wrapper be available; if not,
 the drawing is not generated.</p>
@@ -99,8 +99,11 @@ one of the following: <cite>pdf</cite>, <cite>svg</cite>, <cite>png</cite>.</p>
 
 <dl class="method">
 <dt id="arkane.KineticsJob.execute">
-<code class="descname">execute</code><span class="sig-paren">(</span><em>outputFile=None</em>, <em>plot=True</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.KineticsJob.execute" title="Permalink to this definition">¶</a></dt>
-<dd><p>Execute the kinetics job, saving the results to the given <cite>outputFile</cite> on disk.</p>
+<code class="descname">execute</code><span class="sig-paren">(</span><em>output_directory=None</em>, <em>plot=True</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.KineticsJob.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute the kinetics job, saving the results within
+the <cite>output_directory</cite>.</p>
+<p>If <cite>plot</cite> is True, then plots of the raw and fitted values for the kinetics
+will be saved.</p>
 </dd></dl>
 
 <dl class="method">
@@ -111,7 +114,7 @@ one of the following: <cite>pdf</cite>, <cite>svg</cite>, <cite>png</cite>.</p>
 
 <dl class="method">
 <dt id="arkane.KineticsJob.plot">
-<code class="descname">plot</code><span class="sig-paren">(</span><em>outputDirectory</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.KineticsJob.plot" title="Permalink to this definition">¶</a></dt>
+<code class="descname">plot</code><span class="sig-paren">(</span><em>output_directory</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.KineticsJob.plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot both the raw kinetics data and the Arrhenius fit versus
 temperature. The plot is saved to the file <code class="docutils literal notranslate"><span class="pre">kinetics.pdf</span></code> in the
 output directory. The plot is not generated if <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> is not
@@ -119,10 +122,22 @@ installed.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="arkane.KineticsJob.save">
-<code class="descname">save</code><span class="sig-paren">(</span><em>outputFile</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.KineticsJob.save" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save the results of the kinetics job to the file located
-at <cite>path</cite> on disk.</p>
+<dt id="arkane.KineticsJob.save_yaml">
+<code class="descname">save_yaml</code><span class="sig-paren">(</span><em>output_directory</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.KineticsJob.save_yaml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a YAML file for TSs if structures of the respective reactant/s and product/s are known</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.KineticsJob.write_chemkin">
+<code class="descname">write_chemkin</code><span class="sig-paren">(</span><em>output_directory</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.KineticsJob.write_chemkin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Appends the kinetics rates to <cite>chem.inp</cite> in <cite>outut_directory</cite></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="arkane.KineticsJob.write_output">
+<code class="descname">write_output</code><span class="sig-paren">(</span><em>output_directory</em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.KineticsJob.write_output" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the results of the kinetics job to the <cite>output.py</cite> file located
+in <cite>output_directory</cite>.</p>
 </dd></dl>
 
 </dd></dl>
