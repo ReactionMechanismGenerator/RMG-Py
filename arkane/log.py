@@ -110,6 +110,25 @@ class Log(object):
         raise NotImplementedError("loadScanEnergies is not implemented for the Log class. "
                                   "This method should be implemented by a subclass.")
 
+    def load_scan_pivot_atoms(self):
+        """
+        Extract the atom numbers which the rotor scan pivots around
+        Return a list of atom numbers starting with the first atom as 1
+        """
+        raise NotImplementedError("load_scan_pivot_atoms is not implemented for the Log class")
+
+    def load_scan_frozen_atoms(self):
+        """
+        Extract the atom numbers which were frozen during the scan
+        Return a list of list of atom numbers starting with the first atom as 1
+        Each element of the outer lists represents a frozen bond
+        Inner lists with length 2 represent frozen bond lengths
+        Inner lists with length 3 represent frozen bond angles
+        Inner lists with length 4 represent frozen dihedral angles
+        """
+        raise NotImplementedError("load_scan_frozen_atoms is not implemented for the Log class")
+
+
     def loadNegativeFrequency(self):
         """
         Return the imaginary frequency from a transition state frequency
@@ -118,11 +137,12 @@ class Log(object):
         raise NotImplementedError("loadNegativeFrequency is not implemented for the Log class. "
                                   "This method should be implemented by a subclass.")
 
-    def get_optical_isomers_and_symmetry_number(self):
+    def get_symmetry_properties(self):
         """
         This method uses the symmetry package from RMG's QM module
         and returns a tuple where the first element is the number
-        of optical isomers and the second element is the symmetry number.
+        of optical isomers, the second element is the symmetry number,
+        and the third element is the point group identified.
         """
         coordinates, atom_numbers, _ = self.loadGeometry()
         unique_id = '0'  # Just some name that the SYMMETRY code gives to one of its jobs
@@ -152,6 +172,18 @@ class Log(object):
             else:
                 logging.error('Symmetry algorithm errored when computing point group\nfor log file located at{0}.\n'
                               'Manually provide values in Arkane input.'.format(self.path))
-            return optical_isomers, symmetry
+            return optical_isomers, symmetry, pg.pointGroup
         finally:
             shutil.rmtree(scr_dir)
+
+    def get_D1_diagnostic(self):
+        """
+        This method returns the D1 diagnostic for certain quantum jobs
+        """
+        raise NotImplementedError("get_D1_diagnostic is not implemented for all Log subclasses.")
+
+    def get_T1_diagnostic(self):
+        """
+        This method returns the T1 diagnostic for certain quantum jobs
+        """
+        raise NotImplementedError("get_T1_diagnostic is not implemented for all Log subclasses.")

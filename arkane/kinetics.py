@@ -137,22 +137,42 @@ class KineticsJob(object):
     def Tlist(self, value):
         self._Tlist = quantity.Temperature(value)
 
-    def execute(self, outputFile=None, plot=True):
+    def execute(self, output_directory=None, plot=True):
         """
-        Execute the kinetics job, saving the results to the given `outputFile` on disk.
+        Execute the kinetics job, saving the results within
+        the `output_directory`.
+
+        If `plot` is True, then plots of the raw and fitted values for the kinetics
+        will be saved.
         """
         if self.Tlist is not None:
             self.generateKinetics(self.Tlist.value_si)
         else:
             self.generateKinetics()
-        if outputFile is not None:
-            self.save(outputFile)
+        if output_directory is not None:
+            try:
+                self.write_output(output_directory)
+            except Exception as e:
+                logging.warning("Could not write kinetics output file due to error: "
+                                "{0} in reaction {1}".format(e, self.reaction.label))
+            try:
+                self.write_chemkin(output_directory)
+            except Exception as e:
+                logging.warning("Could not write kinetics chemkin output due to error: "
+                                "{0} in reaction {1}".format(e, self.reaction.label))
             if plot:
-                self.plot(os.path.dirname(outputFile))
-            self.draw(os.path.dirname(outputFile))
+                try:
+                    self.plot(output_directory)
+                except Exception as e:
+                    logging.warning("Could not plot kinetics due to error: "
+                                    "{0} in reaction {1}".format(e, self.reaction.label))
+                try:
+                    self.draw(output_directory)
+                except:
+                    logging.warning("Could not draw reaction {1} due to error: {0}".format(e, self.reaction.label))
             if self.sensitivity_conditions is not None:
                 logging.info('\n\nRunning sensitivity analysis...')
-                sa(self, os.path.dirname(outputFile))
+                sa(self, output_directory)
         logging.debug('Finished kinetics job for reaction {0}.'.format(self.reaction))
         logging.debug(repr(self.reaction))
 
@@ -198,10 +218,10 @@ class KineticsJob(object):
         self.reaction.kinetics = Arrhenius().fitToData(Tlist, klist, kunits=self.kunits)
         self.reaction.elementary_high_p = True
 
-    def save(self, outputFile):
+    def write_output(self, output_directory):
         """
-        Save the results of the kinetics job to the file located
-        at `path` on disk.
+        Save the results of the kinetics job to the `output.py` file located
+        in `output_directory`.
         """
         reaction = self.reaction
 
@@ -213,9 +233,10 @@ class KineticsJob(object):
         logging.info('Saving kinetics for {0}...'.format(reaction))
 
         order = len(self.reaction.reactants)
+
         factor = 1e6 ** (order - 1)
 
-        f = open(outputFile, 'a')
+        f = open(os.path.join(output_directory, 'output.py'), 'a')
 
         if self.usedTST:
             # If TST is not used, eg. it was given in 'reaction', then this will throw an error.
@@ -281,19 +302,23 @@ class KineticsJob(object):
 
             f.write('# krev (TST) = {0} \n'.format(kinetics0rev))
             f.write('# krev (TST+T) = {0} \n\n'.format(kineticsrev))
-
         # Reaction path degeneracy is INCLUDED in the kinetics itself!
         rxn_str = 'kinetics(label={0!r}, kinetics={1!r})'.format(reaction.label, reaction.kinetics)
         f.write('{0}\n\n'.format(prettify(rxn_str)))
 
         f.close()
 
-        # Also save the result to chem.inp
-        f = open(os.path.join(os.path.dirname(outputFile), 'chem.inp'), 'a')
+    def write_chemkin(self, output_directory):
+        """
+        Appends the kinetics rates to `chem.inp` in `outut_directory`
+        """
+
+        # obtain a unit conversion factor
+        order = len(self.reaction.reactants)
+        factor = 1e6 ** (order - 1)
 
         reaction = self.reaction
         kinetics = reaction.kinetics
-
         rxn_str = ''
         if reaction.kinetics.comment:
             for line in reaction.kinetics.comment.split("\n"):
@@ -305,33 +330,33 @@ class KineticsJob(object):
             kinetics.Ea.value_si / 4184.,
         )
 
-        f.write('{0}\n'.format(rxn_str))
+        with open(os.path.join(output_directory, 'chem.inp'), 'a') as f:
+            f.write('{0}\n'.format(rxn_str))
 
-        f.close()
-
-        # We're saving a YAML file for TSs iff structures of the respective reactant/s and product/s are known
-        if all([spc.molecule is not None and len(spc.molecule)
-                for spc in self.reaction.reactants + self.reaction.products]):
+    def save_yaml(self, output_directory):
+        """
+        Save a YAML file for TSs if structures of the respective reactant/s and product/s are known
+        """
+        if all ([spc.molecule is not None and len(spc.molecule)
+                 for spc in self.reaction.reactants + self.reaction.products]):
             self.arkane_species.update_species_attributes(self.reaction.transitionState)
-            self.arkane_species.reaction_label = reaction.label
+            self.arkane_species.reaction_label = self.reaction.label
             self.arkane_species.reactants = [{'label': spc.label, 'adjacency_list': spc.molecule[0].toAdjacencyList()}
                                              for spc in self.reaction.reactants]
             self.arkane_species.products = [{'label': spc.label, 'adjacency_list': spc.molecule[0].toAdjacencyList()}
-                                            for spc in self.reaction.products]
-            self.arkane_species.save_yaml(path=os.path.dirname(outputFile))
+                                             for spc in self.reaction.products]
+            self.arkane_species.save_yaml(path=output_directory)
 
-    def plot(self, outputDirectory):
+    def plot(self, output_directory):
         """
         Plot both the raw kinetics data and the Arrhenius fit versus 
         temperature. The plot is saved to the file ``kinetics.pdf`` in the
         output directory. The plot is not generated if ``matplotlib`` is not
         installed.
         """
-        # Skip this step if matplotlib is not installed
-        try:
-            import matplotlib.pyplot as plt
-        except ImportError:
-            return
+        import matplotlib.pyplot as plt
+
+        f, ax = plt.subplots()
         if self.Tlist is not None:
             t_list = [t for t in self.Tlist.value_si]
         else:
@@ -356,7 +381,7 @@ class KineticsJob(object):
         plt.xlabel('1000 / Temperature (K^-1)')
         plt.ylabel('Rate coefficient ({0})'.format(self.kunits))
 
-        plot_path = os.path.join(outputDirectory, 'plots')
+        plot_path = os.path.join(output_directory, 'plots')
 
         if not os.path.exists(plot_path):
             os.mkdir(plot_path)
@@ -365,7 +390,7 @@ class KineticsJob(object):
         plt.savefig(os.path.join(plot_path, filename))
         plt.close()
 
-    def draw(self, outputDirectory, format='pdf'):
+    def draw(self, output_directory, format='pdf'):
         """
         Generate a PDF drawing of the reaction.
         This requires that Cairo and its Python wrapper be available; if not,
@@ -375,7 +400,7 @@ class KineticsJob(object):
         one of the following: `pdf`, `svg`, `png`.
         """
 
-        drawing_path = os.path.join(outputDirectory, 'paths')
+        drawing_path = os.path.join(output_directory, 'paths')
 
         if not os.path.exists(drawing_path):
             os.mkdir(drawing_path)

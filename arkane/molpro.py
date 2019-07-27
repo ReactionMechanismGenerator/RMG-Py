@@ -174,7 +174,7 @@ class MolproLog(Log):
         unscaled_frequencies = []
         e0 = 0.0
         if opticalIsomers is None or symmetry is None:
-            _opticalIsomers, _symmetry = self.get_optical_isomers_and_symmetry_number()
+            _opticalIsomers, _symmetry, _ = self.get_symmetry_properties()
             if opticalIsomers is None:
                 opticalIsomers = _opticalIsomers
             if symmetry is None:
@@ -395,3 +395,31 @@ class MolproLog(Log):
         Rotor scans are not implemented in Molpro
         """
         raise NotImplementedError('Rotor scans not implemented in Molpro')
+
+    def get_T1_diagnostic(self):
+        """
+        Returns the T1 diagnostic from output log.
+        If multiple occurrences exist, returns the last occurence
+        """
+        with open(self.path) as f:
+            log = f.readlines()
+
+        for line in reversed(log):
+            if 'T1 diagnostic:  ' in line:
+                items = line.split()
+                return float(items[-1])
+        raise ValueError('Unable to find T1 diagnostic in energy file: {}'.format(self.path))
+
+    def get_D1_diagnostic(self):
+        """
+        Returns the D1 diagnostic from output log.
+        If multiple occurrences exist, returns the last occurence
+        """
+        with open(self.path) as f:
+            log = f.readlines()
+
+        for line in reversed(log):
+            if 'D1 diagnostic:  ' in line:
+                items = line.split()
+                return float(items[-1])
+        raise ValueError('Unable to find D1 diagnostic in energy file: {}'.format(self.path))
