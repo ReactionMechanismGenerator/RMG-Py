@@ -36,6 +36,7 @@ import os
 import unittest
 import shutil
 
+from arkane.isodesmic import ErrorCancelingSpecies
 from arkane.reference import ReferenceSpecies, ReferenceDataEntry, CalculatedDataEntry, ReferenceDatabase
 from rmgpy.species import Species
 from rmgpy.statmech import Conformer
@@ -176,6 +177,48 @@ class TestReferenceDatabase(unittest.TestCase):
 
         # Finally, remove the testing directory
         shutil.rmtree(testing_dir)
+
+    def test_extract_model_chemistry(self):
+        """
+        Test that a given model chemistry can be extracted from the reference set database
+        """
+        # Create a quick example database
+        ref_data_1 = ReferenceDataEntry(ThermoData(H298=(100, 'kJ/mol', '+|-', 2)))
+        ref_data_2 = ReferenceDataEntry(ThermoData(H298=(25, 'kcal/mol', '+|-', 1)))
+
+        calc_data_1 = CalculatedDataEntry(Conformer(), NASA(), ThermoData(H298=(110, 'kJ/mol')))
+        calc_data_2 = CalculatedDataEntry(Conformer(), NASA(), ThermoData(H298=(120, 'kJ/mol')))
+
+        ethane = ReferenceSpecies(smiles='CC',
+                                  reference_data={'precise': ref_data_1, 'less_precise': ref_data_2},
+                                  calculated_data={'good_chem': calc_data_1, 'bad_chem': calc_data_2},
+                                  preferred_reference='less_precise')
+
+        propane = ReferenceSpecies(smiles='CCC',
+                                   reference_data={'precise': ref_data_1, 'less_precise': ref_data_2},
+                                   calculated_data={'good_chem': calc_data_1, 'bad_chem': calc_data_2})
+
+        butane = ReferenceSpecies(smiles='CCCC',
+                                  reference_data={'precise': ref_data_1, 'less_precise': ref_data_2},
+                                  calculated_data={'bad_chem': calc_data_2})
+
+        database = ReferenceDatabase()
+        database.reference_sets = {'testing_1': [ethane, butane], 'testing_2': [propane]}
+
+        model_chem_list = database.extract_model_chemistry('good_chem')
+        self.assertEqual(len(model_chem_list), 2)
+        self.assertIsInstance(model_chem_list[0], ErrorCancelingSpecies)
+
+        for spcs in model_chem_list:
+            smiles = spcs.molecule.toSMILES()
+            self.assertNotIn(smiles, ['CCCC'])
+            self.assertIn(smiles, ['CC', 'CCC'])
+
+            if smiles == 'CC':  # Test that `less_precise` is the source since it was set manually as preferred
+                self.assertAlmostEqual(spcs.high_level_hf298.value_si, 25.0*4184.0)
+
+            if smiles == 'CCC':  # Test that `precise` is the source since it has the lowest uncertainty
+                self.assertAlmostEqual(spcs.high_level_hf298.value_si, 100.0*1000.0)
 
 
 if __name__ == '__main__':
