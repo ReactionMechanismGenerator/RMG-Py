@@ -35,6 +35,9 @@ This module defines the ReferenceSpecies class, which are used in isodesmic reac
 
 from __future__ import print_function, division
 
+import logging
+import os
+
 import yaml
 
 from arkane.common import ArkaneSpecies, ARKANE_CLASS_DICT
@@ -261,6 +264,63 @@ class CalculatedDataEntry(RMGObject):
                 self._thermo_data = value
             else:
                 raise ValueError('thermo_data for a CalculatedDataEntry object must be an rmgpy ThermoData object')
+
+
+class ReferenceDatabase(object):
+    """
+    A class for loading and working with database of reference species, located at RMG-database/input/reference_sets/
+    """
+    def __init__(self):
+        """
+        Attributes:
+            self.reference_sets (dict): {'set name': [ReferenceSpecies, ...], ...}
+        """
+        self.reference_sets = {}
+
+    def load(self, paths=''):
+        """
+        Load one or more set of reference species and append it on to the database
+
+        Args:
+            paths (Union[list, str]): A single path string, or a list of path strings pointing to a set of reference
+                species to be loaded into the database. The string should point to the folder that has the name of the
+                reference set. The name of sub-folders in a reference set directory should be indices starting from 0
+                and should contain a YAML file that defines the ReferenceSpecies object of that index, named {index}.yml
+        """
+        if not paths:  # Default to the main reference set in RMG-database
+            file_dir = os.path.dirname(os.path.abspath(__file__))
+            rmg_database_dir = os.path.join(os.path.dirname(os.path.dirname(file_dir)), 'RMG-database')
+            paths = [os.path.join(rmg_database_dir, 'input/reference_sets/main')]
+
+        if isinstance(paths, str):  # Convert to a list with one element
+            paths = [paths]
+
+        molecule_list = []
+        for path in paths:
+            set_name = os.path.basename(path)
+            logging.info('Loading in reference set `{0}` from {1} ...'.format(set_name, path))
+            spcs_dirs = os.listdir(path)
+            reference_set = []
+            for spcs in spcs_dirs:
+                ref_spcs = ReferenceSpecies.__new__(ReferenceSpecies)
+                ref_spcs.load_yaml(os.path.join(path, spcs, '{0}.yml'.format(spcs)))
+                molecule = Molecule(SMILES=ref_spcs.smiles)
+                if (len(ref_spcs.calculated_data) == 0) or (len(ref_spcs.reference_data) == 0):
+                    logging.warning('Molecule {0} from reference set `{1}` does not have any reference data and/or '
+                                    'calculated data. This entry will not be added'.format(ref_spcs.smiles, set_name))
+                    continue
+                # perform isomorphism checks to prevent duplicate species
+                for mol in molecule_list:
+                    if molecule.isIsomorphic(mol):
+                        logging.warning('Molecule {0} from reference set `{1}` already exists in the reference '
+                                        'database. The entry from this reference set will not '
+                                        'be added'.format(ref_spcs.smiles, set_name))
+                        break
+                else:
+                    molecule_list.append(molecule)
+                    reference_set.append(ref_spcs)
+
+            self.reference_sets[set_name] = reference_set
 
 
 if __name__ == '__main__':
