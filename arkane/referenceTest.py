@@ -34,8 +34,9 @@ This script contains unit tests of the :mod:`arkane.reference` module.
 
 import os
 import unittest
+import shutil
 
-from arkane.reference import ReferenceSpecies, ReferenceDataEntry, CalculatedDataEntry
+from arkane.reference import ReferenceSpecies, ReferenceDataEntry, CalculatedDataEntry, ReferenceDatabase
 from rmgpy.species import Species
 from rmgpy.statmech import Conformer
 from rmgpy.thermo import ThermoData
@@ -142,6 +143,39 @@ class TestReferenceSpecies(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             _ = CalculatedDataEntry(Conformer(), NASA(), {'H298': (100.0, 'kJ/mol')})
+
+
+class TestReferenceDatabase(unittest.TestCase):
+    """
+    Test that the ReferenceDatabase class functions properly
+    """
+
+    def test_load_main_reference_set(self):
+        """
+        Test that the main reference set can be loaded properly
+        """
+        database = ReferenceDatabase()
+        database.load()
+        self.assertIn('main', database.reference_sets)
+        self.assertIsInstance(database.reference_sets['main'][0], ReferenceSpecies)
+
+        # Also test that calling load again appends a new set in the database
+        data_dir = os.path.join(FILE_DIR, 'data')
+        testing_dir = os.path.join(data_dir, 'testing_set')
+        example_ref_file = os.path.join(data_dir, 'species', 'reference_species_example.yml')
+        spcs_dir = os.path.join(testing_dir, '0')
+        spcs_file = os.path.join(spcs_dir, '0.yml')
+        if os.path.exists(testing_dir):  # Delete the testing directory if it existed previously
+            shutil.rmtree(testing_dir)
+        os.mkdir(testing_dir)
+        os.mkdir(spcs_dir)
+        shutil.copyfile(example_ref_file, spcs_file)
+        database.load(paths=[testing_dir])
+        self.assertIn('main', database.reference_sets)
+        self.assertIn('testing_set', database.reference_sets)
+
+        # Finally, remove the testing directory
+        shutil.rmtree(testing_dir)
 
 
 if __name__ == '__main__':
