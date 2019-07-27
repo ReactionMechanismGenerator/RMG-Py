@@ -41,7 +41,8 @@ git checkout $RMGTESTSBRANCH
 
 # create an empty commit with the SHA-ID of the 
 # tested commit of the RMG-Py branch:
-git commit --allow-empty -m rmgpy-$REV
+DB_DEPLOY_BRANCH="reference_yaml"
+git commit --allow-empty -m rmgpydb-$REV-${DB_DEPLOY_BRANCH}
 
 # push to the branch to the RMG/RMG-tests repo:
 git push -f $REPO $RMGTESTSBRANCH > /dev/null
