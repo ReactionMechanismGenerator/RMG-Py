@@ -70,35 +70,19 @@ class KineticsJob(object):
                  Tcount=0,
                  sensitivity_conditions=None):
         self.usedTST = False
-        if Tmin is not None:
-            self.Tmin = quantity.Quantity(Tmin)
-        else:
-            self.Tmin = None
-
-        if Tmax is not None:
-            self.Tmax = quantity.Quantity(Tmax)
-        else:
-            self.Tmax = None
-
-        self.Tcount = Tcount
+        self.Tmin = Tmin if Tmin is not None else (298, 'K')
+        self.Tmax = Tmax if Tmax is not None else (2500, 'K')
+        self.Tcount = Tcount if Tcount > 3 else 50
 
         if Tlist is not None:
-            self.Tlist = quantity.Quantity(Tlist)
-            self.Tmin = quantity.Quantity(numpy.min(self.Tlist.value_si), "K")
-            self.Tmax = quantity.Quantity(numpy.max(self.Tlist.value_si), "K")
+            self.Tlist = Tlist
+            self.Tmin = (min(self.Tlist.value_si), 'K')
+            self.Tmax = (max(self.Tlist.value_si), 'K')
             self.Tcount = len(self.Tlist.value_si)
         else:
-            if Tmin and Tmax is not None:
-
-                if self.Tcount <= 3.:
-                    self.Tcount = 50
-
-                stepsize = (self.Tmax.value_si - self.Tmin.value_si) / self.Tcount
-
-                self.Tlist = quantity.Quantity(numpy.arange(self.Tmin.value_si,
-                                                            self.Tmax.value_si + stepsize, stepsize), 'K')
-            else:
-                self.Tlist = None
+            self.Tlist = (1 / numpy.linspace(1 / self.Tmax.value_si,
+                                            1 / self.Tmin.value_si,
+                                            self.Tcount), 'K')
 
         self.reaction = reaction
         self.kunits = None
@@ -145,10 +129,7 @@ class KineticsJob(object):
         If `plot` is True, then plots of the raw and fitted values for the kinetics
         will be saved.
         """
-        if self.Tlist is not None:
-            self.generateKinetics(self.Tlist.value_si)
-        else:
-            self.generateKinetics()
+        self.generateKinetics()
         if output_directory is not None:
             try:
                 self.write_output(output_directory)
@@ -176,7 +157,7 @@ class KineticsJob(object):
         logging.debug('Finished kinetics job for reaction {0}.'.format(self.reaction))
         logging.debug(repr(self.reaction))
 
-    def generateKinetics(self, Tlist=None):
+    def generateKinetics(self):
         """
         Generate the kinetics data for the reaction and fit it to a modified Arrhenius model.
         """
@@ -203,19 +184,16 @@ class KineticsJob(object):
             else:
                 raise ValueError('Unknown tunneling model {0!r} for reaction {1}.'.format(tunneling, self.reaction))
         logging.debug('Generating {0} kinetics model for {1}...'.format(kineticsClass, self.reaction))
-        if Tlist is None:
-            Tlist = 1000.0 / numpy.arange(0.4, 3.35, 0.05)
-        klist = numpy.zeros_like(Tlist)
-        for i in range(Tlist.shape[0]):
-            klist[i] = self.reaction.calculateTSTRateCoefficient(Tlist[i])
-
+        klist = numpy.zeros_like(self.Tlist.value_si)
+        for i, t in enumerate(self.Tlist.value_si):
+            klist[i] = self.reaction.calculateTSTRateCoefficient(t)
         order = len(self.reaction.reactants)
         klist *= 1e6 ** (order - 1)
         self.kunits = {1: 's^-1', 2: 'cm^3/(mol*s)', 3: 'cm^6/(mol^2*s)'}[order]
         self.Kequnits = {2: 'mol^2/cm^6', 1: 'mol/cm^3', 0: '       ', -1: 'cm^3/mol', -2: 'cm^6/mol^2'}[
             len(self.reaction.products) - len(self.reaction.reactants)]
         self.krunits = {1: 's^-1', 2: 'cm^3/(mol*s)', 3: 'cm^6/(mol^2*s)'}[len(self.reaction.products)]
-        self.reaction.kinetics = Arrhenius().fitToData(Tlist, klist, kunits=self.kunits)
+        self.reaction.kinetics = Arrhenius().fitToData(self.Tlist.value_si, klist, kunits=self.kunits)
         self.reaction.elementary_high_p = True
 
     def write_output(self, output_directory):

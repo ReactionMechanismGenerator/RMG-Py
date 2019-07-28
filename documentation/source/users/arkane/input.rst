@@ -818,24 +818,28 @@ High Pressure Limit Kinetics
 
 Use a ``kinetics()`` function to make Arkane execute the high-pressure limit kinetic
 parameters computation for a reaction. The ``'label'`` string must correspond to that of
-a defined ``reaction()`` function. If desired, define a temperature range and number
-of temperatures at which the high-pressure rate coefficient will be tabulated and saved to
-the outupt file. The 3-parameter modified Arrhenius coefficients will automatically be fit
-to the computed rate coefficients. The quantum tunneling factor will also be displayed.
+a defined ``reaction()`` function.
 
-Below is a typical ``kinetics()`` function::
+You have three options for specifying the temperature to which a modified Arrhenius
+expression will be fit.
+
+Give an explicit list of temperatures to fit::
+
+    kinetics(
+    label = 'H + C2H4 <=> C2H5',
+    Tlist = ([400,500,700,900,1100,1200],'K'),
+    )
+
+Give minimmum and maximum temperatures to fit::
 
     kinetics(
     label = 'H + C2H4 <=> C2H5',
     Tmin = (400,'K'), Tmax = (1200,'K'), Tcount = 6,
     )
 
-If specific temperatures are desired, you may specify a list
-(``Tlist = ([400,500,700,900,1100,1200],'K')``) instead of Tmin, Tmax, and Tcount.
+Use the default range to fit (298 K to 2500 K at 50 points spaced equally in 1/T space)::
 
-This is also acceptable::
-
-    kinetics('H + C2H4 <=> C2H5')
+    kinetics(label = 'H + C2H4 <=> C2H5')
 
 If a sensitivity analysis is desired, simply add the conditions at which to calculate sensitivity coefficients
 in the following format, e.g.::
@@ -845,6 +849,9 @@ in the following format, e.g.::
         Tmin = (500,'K'), Tmax = (3000,'K'), Tcount = 15,
         sensitivity_conditions = [(1000, 'K'), (2000, 'K')]
     )
+
+The ``output.py`` file will show the rates at various temperatures including the quantum tunneling factor.
+Kinetic rates will also be added to the ``chem.inp`` file.
 
 The output of a sensitivity analysis is saved into a ``sensitivity`` folder in the output directory. A text file, named
 with the reaction label, delineates the semi-normalized sensitivity coefficients ``dln(k)/dE0`` in units of ``mol/J``
