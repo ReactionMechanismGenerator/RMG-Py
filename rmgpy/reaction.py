@@ -48,6 +48,7 @@ import re
 import os.path
 from copy import copy, deepcopy
 import urllib
+from functools import reduce
 
 import rmgpy.constants as constants
 from rmgpy.molecule.molecule import Molecule, Atom
