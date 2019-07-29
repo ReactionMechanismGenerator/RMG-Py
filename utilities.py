@@ -56,14 +56,14 @@ def check_dependencies():
         print('{0:<30}{1}'.format('symmetry', 'Not found. Please install in order to use QM.'))
         missing = True
     else:
-        match = re.search(r'\$Revision: (\S*) \$', result)
+        match = re.search(r'\$Revision: (\S*) \$', result.decode())
         version = match.group(1)
         if platform.system() == 'Windows':
             location = subprocess.check_output('where symmetry', shell=True)
         else:
             location = subprocess.check_output('which symmetry', shell=True)
 
-        print('{0:<15}{1:<15}{2}'.format('symmetry', version, location.strip()))
+        print('{0:<15}{1:<15}{2}'.format('symmetry', version, location.strip().decode()))
 
     # Check for RDKit
     try:
