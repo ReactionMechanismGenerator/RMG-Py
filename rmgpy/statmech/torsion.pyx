@@ -50,6 +50,9 @@ import rmgpy.statmech.schrodinger as schrodinger
 from rmgpy.exceptions import NegativeBarrierException
 import logging
 
+# Prior to numpy 1.14, `numpy.linalg.lstsq` does not accept None as a value
+RCOND = -1 if int(numpy.__version__.split('.')[1]) < 14 else None
+
 ################################################################################
 
 cdef class Torsion(Mode):
@@ -539,7 +542,7 @@ cdef class HinderedRotor(Torsion):
             # This row forces dV/dangle = 0 at angle = 0
             for m in range(numterms):
                 A[N,m+numterms] = 1
-            x, residues, rank, s = numpy.linalg.lstsq(A, b, rcond=None)
+            x, residues, rank, s = numpy.linalg.lstsq(A, b, rcond=RCOND)
             fit = numpy.dot(A,x)
             x *= 0.001
             # This checks if there are any negative values in the forier fit.

@@ -36,6 +36,10 @@ cimport rmgpy.constants as constants
 import rmgpy.quantity as quantity
 from rmgpy.exceptions import KineticsError
 from rmgpy.kinetics.uncertainies import rank_accuracy_map
+
+# Prior to numpy 1.14, `numpy.linalg.lstsq` does not accept None as a value
+RCOND = -1 if int(numpy.__version__.split('.')[1]) < 14 else None
+
 ################################################################################
 
 cdef class Arrhenius(KineticsModel):
@@ -162,7 +166,7 @@ cdef class Arrhenius(KineticsModel):
             for n in range(b.size):
                 A[n,:] *= weights[n]
                 b[n] *= weights[n]
-        x, residues, rank, s = numpy.linalg.lstsq(A, b, rcond=None)
+        x, residues, rank, s = numpy.linalg.lstsq(A, b, rcond=RCOND)
 
         # Determine covarianace matrix to obtain parameter uncertainties
         count = klist.size
