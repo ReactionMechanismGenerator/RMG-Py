@@ -2064,7 +2064,8 @@ class Molecule(Graph):
             groupAtoms[atom] = gr.GroupAtom(atomType=[atom.atomType],
                                          radicalElectrons=[atom.radicalElectrons],
                                          charge=[atom.charge],
-                                         lonePairs=[atom.lonePairs]
+                                         lonePairs=[atom.lonePairs],
+                                         label = atom.label
                                          )
                     
         group = gr.Group(atoms=groupAtoms.values(), multiplicity=[self.multiplicity])
