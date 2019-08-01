@@ -45,6 +45,7 @@ https://doi.org/10.1021/jp404158v
 from __future__ import division
 
 import signal
+from collections import deque
 
 from lpsolve55 import lpsolve, EQ, LE
 import numpy as np
@@ -281,6 +282,7 @@ class ErrorCancelingScheme(object):
 
         Returns:
             ErrorCancelingReaction: reaction with the target species (if a valid reaction is found, else `None`)
+            np.ndarray: indices (of the subset) for the species that participated in the return reaction
         """
         # Define the constraints based on the provided subset
         c_matrix = np.take(self.constraint_matrix, reference_subset, axis=0)
@@ -321,7 +323,7 @@ class ErrorCancelingScheme(object):
 
             # Return None if a valid reaction is not found
             if results.solver.status != pyo.SolverStatus.ok:
-                return None
+                return None, None
 
             # Extract the solution and find the species with non-zero stoichiometric coefficients
             solution = lp_model.v.extract_values().values()
@@ -341,7 +343,7 @@ class ErrorCancelingScheme(object):
                         targets[j])
 
             lpsolve('add_constraint', lp, np.ones(m), LE, 20)  # Use at most 20 species (including replicates)
-            lpsolve('set_timeout', lp, 5)  # Move on if lpsolve can't find a solution quickly
+            lpsolve('set_timeout', lp, 1)  # Move on if lpsolve can't find a solution quickly
 
             # Constrain v_i to be 4 or less
             for i in range(m):
@@ -360,20 +362,57 @@ class ErrorCancelingScheme(object):
                 pass
 
             if status != 0:
-                return None
+                return None, None
 
             else:
                 _, solution = lpsolve('get_solution', lp)[:2]
 
         reaction = ErrorCancelingReaction(self.target, dict())
+        subset_indices = []
         for index, v in enumerate(solution):
             if v > 0:
+                subset_indices.append(index % split)
                 if index < split:
                     reaction.species.update({self.reference_species[reference_subset[index]]: -v})
                 else:
                     reaction.species.update({self.reference_species[reference_subset[index % split]]: v})
 
-        return reaction
+        return reaction, np.array(subset_indices)
+
+    def multiple_error_canceling_reaction_search(self, n_reactions_max=20, milp_software='lpsolve'):
+        """
+        Generate multiple error canceling reactions involving the target and a subset of the reference species.
+
+        To do this, a rudimentary search is implemented whereby all possible combinations of the species participating
+        in the previously found reaction are excluded from the reference species subset for the next generation process.
+        This is implemented using a FIFO queue structure.
+
+        Args:
+            n_reactions_max (int, optional): The maximum number of found reactions that will returned, after which no
+                further searching will occur even if there are possible subsets left in the queue.
+            milp_software (str, optional): 'lpsolve' (default) or 'pyomo'. lpsolve is usually faster.
+
+        Returns:
+            :obj:list of :obj:ErrorCancelingReaction: A list of the found error canceling reactions
+        """
+        subset_queue = deque()
+        subset_queue.append(np.arange(0, len(self.reference_species)))
+        reaction_list = []
+
+        while (len(subset_queue) != 0) and (len(reaction_list) < n_reactions_max):
+            subset = subset_queue.popleft()
+            if len(subset) == 0:
+                continue
+            reaction, subset_indices = self._find_error_canceling_reaction(subset, milp_software=milp_software)
+            if reaction is None:
+                continue
+            else:
+                reaction_list.append(reaction)
+
+                for index in subset_indices:
+                    subset_queue.append(np.delete(subset, index))
+
+        return reaction_list
 
 
 class IsodesmicScheme(ErrorCancelingScheme):
