@@ -185,7 +185,9 @@ class TestErrorCancelingScheme(unittest.TestCase):
 
     def setUp(self):
         self.propene = ErrorCancelingSpecies(Molecule(SMILES='CC=C'), (100, 'kJ/mol'), 'test')
+        self.propane = ErrorCancelingSpecies(Molecule(SMILES='CCC'), (75, 'kJ/mol'), 'test')
         self.butane = ErrorCancelingSpecies(Molecule(SMILES='CCCC'), (150, 'kJ/mol'), 'test')
+        self.butene = ErrorCancelingSpecies(Molecule(SMILES='C=CCC'), (175, 'kJ/mol'), 'test')
         self.benzene = ErrorCancelingSpecies(Molecule(SMILES='c1ccccc1'), (-50, 'kJ/mol'), 'test')
         self.caffeine = ErrorCancelingSpecies(Molecule(SMILES='CN1C=NC2=C1C(=O)N(C(=O)N2C)C'), (300, 'kJ/mol'), 'test')
         self.ethyne = ErrorCancelingSpecies(Molecule(SMILES='C#C'), (200, 'kJ/mol'), 'test')
@@ -198,6 +200,23 @@ class TestErrorCancelingScheme(unittest.TestCase):
         isodesmic_scheme = IsodesmicScheme(self.propene, [self.butane, self.benzene, self.caffeine, self.ethyne])
 
         self.assertEqual(isodesmic_scheme.reference_species, [self.butane, self.benzene])
+
+    def test_find_error_canceling_reaction(self):
+        """
+        Test that the MILP problem can be solved to find a single isodesmic reaction
+        """
+        scheme = IsodesmicScheme(self.propene, [self.propane, self.butane, self.butene, self.caffeine, self.ethyne])
+
+        # Note that caffeine and ethyne will not be allowed, so for the full set the indices are [0, 1, 2]
+        rxn = scheme._find_error_canceling_reaction([0, 1, 2], milp_software='lpsolve')
+        self.assertEqual(rxn.species[self.butane], -1)
+        self.assertEqual(rxn.species[self.propane], 1)
+        self.assertEqual(rxn.species[self.butene], 1)
+
+        rxn = scheme._find_error_canceling_reaction([0, 1, 2], milp_software='pyomo')
+        self.assertEqual(rxn.species[self.butane], -1)
+        self.assertEqual(rxn.species[self.propane], 1)
+        self.assertEqual(rxn.species[self.butene], 1)
 
 
 if __name__ == '__main__':
