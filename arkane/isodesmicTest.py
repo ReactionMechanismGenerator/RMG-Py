@@ -188,6 +188,10 @@ class TestErrorCancelingScheme(unittest.TestCase):
         self.propane = ErrorCancelingSpecies(Molecule(SMILES='CCC'), (75, 'kJ/mol'), 'test')
         self.butane = ErrorCancelingSpecies(Molecule(SMILES='CCCC'), (150, 'kJ/mol'), 'test')
         self.butene = ErrorCancelingSpecies(Molecule(SMILES='C=CCC'), (175, 'kJ/mol'), 'test')
+        self.pentane = ErrorCancelingSpecies(Molecule(SMILES='CCCCC'), (200, 'kJ/mol'), 'test')
+        self.pentene = ErrorCancelingSpecies(Molecule(SMILES='C=CCCC'), (225, 'kJ/mol'), 'test')
+        self.hexane = ErrorCancelingSpecies(Molecule(SMILES='CCCCCC'), (250, 'kJ/mol'), 'test')
+        self.hexene = ErrorCancelingSpecies(Molecule(SMILES='C=CCCCC'), (275, 'kJ/mol'), 'test')
         self.benzene = ErrorCancelingSpecies(Molecule(SMILES='c1ccccc1'), (-50, 'kJ/mol'), 'test')
         self.caffeine = ErrorCancelingSpecies(Molecule(SMILES='CN1C=NC2=C1C(=O)N(C(=O)N2C)C'), (300, 'kJ/mol'), 'test')
         self.ethyne = ErrorCancelingSpecies(Molecule(SMILES='C#C'), (200, 'kJ/mol'), 'test')
@@ -208,15 +212,36 @@ class TestErrorCancelingScheme(unittest.TestCase):
         scheme = IsodesmicScheme(self.propene, [self.propane, self.butane, self.butene, self.caffeine, self.ethyne])
 
         # Note that caffeine and ethyne will not be allowed, so for the full set the indices are [0, 1, 2]
-        rxn = scheme._find_error_canceling_reaction([0, 1, 2], milp_software='lpsolve')
+        rxn, _ = scheme._find_error_canceling_reaction([0, 1, 2], milp_software='lpsolve')
         self.assertEqual(rxn.species[self.butane], -1)
         self.assertEqual(rxn.species[self.propane], 1)
         self.assertEqual(rxn.species[self.butene], 1)
 
-        rxn = scheme._find_error_canceling_reaction([0, 1, 2], milp_software='pyomo')
+        rxn, _ = scheme._find_error_canceling_reaction([0, 1, 2], milp_software='pyomo')
         self.assertEqual(rxn.species[self.butane], -1)
         self.assertEqual(rxn.species[self.propane], 1)
         self.assertEqual(rxn.species[self.butene], 1)
+
+    def test_multiple_error_canceling_reactions(self):
+        """
+        Test that multiple error canceling reactions can be found
+        """
+        scheme = IsodesmicScheme(self.propene, [self.propane, self.butane, self.butene, self.pentane, self.pentene,
+                                                self.hexane, self.hexene, self.benzene])
+
+        reaction_list = scheme.multiple_error_canceling_reaction_search(n_reactions_max=20)
+        self.assertEqual(len(reaction_list), 20)
+        reaction_string = reaction_list.__repr__()
+        self.assertIn('<ErrorCancelingReaction 1.0*C=CC + 1.0*CCCC == 1.0*CCC + 1.0*C=CCC >', reaction_string)
+        self.assertIn('<ErrorCancelingReaction 1.0*C=CC + 1.0*CCCCC == 1.0*C=CCCC + 1.0*CCC >', reaction_string)
+        self.assertIn('<ErrorCancelingReaction 1.0*C=CC + 2.0*C=CCCCC == 1.0*C1=CC=CC=C1 + 3.0*CCC >', reaction_string)
+
+        # pyomo is slower, so don't test as many
+        reaction_list = scheme.multiple_error_canceling_reaction_search(n_reactions_max=5, milp_software='pyomo')
+        self.assertEqual(len(reaction_list), 5)
+        reaction_string = reaction_list.__repr__()
+        self.assertIn('<ErrorCancelingReaction 1.0*C=CC + 1.0*CCCC == 1.0*CCC + 1.0*C=CCC >', reaction_string)
+        self.assertIn('<ErrorCancelingReaction 1.0*C=CC + 1.0*C=CCCC == 2.0*C=CCC >', reaction_string)
 
 
 if __name__ == '__main__':
