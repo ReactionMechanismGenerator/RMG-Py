@@ -184,15 +184,15 @@ class TestErrorCancelingScheme(unittest.TestCase):
     """
 
     def setUp(self):
-        self.propene = ErrorCancelingSpecies(Molecule(SMILES='CC=C'), (100, 'kJ/mol'), 'test')
-        self.propane = ErrorCancelingSpecies(Molecule(SMILES='CCC'), (75, 'kJ/mol'), 'test')
-        self.butane = ErrorCancelingSpecies(Molecule(SMILES='CCCC'), (150, 'kJ/mol'), 'test')
-        self.butene = ErrorCancelingSpecies(Molecule(SMILES='C=CCC'), (175, 'kJ/mol'), 'test')
-        self.pentane = ErrorCancelingSpecies(Molecule(SMILES='CCCCC'), (200, 'kJ/mol'), 'test')
-        self.pentene = ErrorCancelingSpecies(Molecule(SMILES='C=CCCC'), (225, 'kJ/mol'), 'test')
-        self.hexane = ErrorCancelingSpecies(Molecule(SMILES='CCCCCC'), (250, 'kJ/mol'), 'test')
-        self.hexene = ErrorCancelingSpecies(Molecule(SMILES='C=CCCCC'), (275, 'kJ/mol'), 'test')
-        self.benzene = ErrorCancelingSpecies(Molecule(SMILES='c1ccccc1'), (-50, 'kJ/mol'), 'test')
+        self.propene = ErrorCancelingSpecies(Molecule(SMILES='CC=C'), (100, 'kJ/mol'), 'test', (105, 'kJ/mol'))
+        self.propane = ErrorCancelingSpecies(Molecule(SMILES='CCC'), (75, 'kJ/mol'), 'test', (80, 'kJ/mol'))
+        self.butane = ErrorCancelingSpecies(Molecule(SMILES='CCCC'), (150, 'kJ/mol'), 'test', (145, 'kJ/mol'))
+        self.butene = ErrorCancelingSpecies(Molecule(SMILES='C=CCC'), (175, 'kJ/mol'), 'test', (180, 'kJ/mol'))
+        self.pentane = ErrorCancelingSpecies(Molecule(SMILES='CCCCC'), (200, 'kJ/mol'), 'test', (190, 'kJ/mol'))
+        self.pentene = ErrorCancelingSpecies(Molecule(SMILES='C=CCCC'), (225, 'kJ/mol'), 'test', (220, 'kJ/mol'))
+        self.hexane = ErrorCancelingSpecies(Molecule(SMILES='CCCCCC'), (250, 'kJ/mol'), 'test', (260, 'kJ/mol'))
+        self.hexene = ErrorCancelingSpecies(Molecule(SMILES='C=CCCCC'), (275, 'kJ/mol'), 'test', (275, 'kJ/mol'))
+        self.benzene = ErrorCancelingSpecies(Molecule(SMILES='c1ccccc1'), (-50, 'kJ/mol'), 'test', (-80, 'kJ/mol'))
         self.caffeine = ErrorCancelingSpecies(Molecule(SMILES='CN1C=NC2=C1C(=O)N(C(=O)N2C)C'), (300, 'kJ/mol'), 'test')
         self.ethyne = ErrorCancelingSpecies(Molecule(SMILES='C#C'), (200, 'kJ/mol'), 'test')
 
@@ -232,16 +232,28 @@ class TestErrorCancelingScheme(unittest.TestCase):
         reaction_list = scheme.multiple_error_canceling_reaction_search(n_reactions_max=20)
         self.assertEqual(len(reaction_list), 20)
         reaction_string = reaction_list.__repr__()
-        self.assertIn('<ErrorCancelingReaction 1.0*C=CC + 1.0*CCCC == 1.0*CCC + 1.0*C=CCC >', reaction_string)
-        self.assertIn('<ErrorCancelingReaction 1.0*C=CC + 1.0*CCCCC == 1.0*C=CCCC + 1.0*CCC >', reaction_string)
-        self.assertIn('<ErrorCancelingReaction 1.0*C=CC + 2.0*C=CCCCC == 1.0*C1=CC=CC=C1 + 3.0*CCC >', reaction_string)
+        rxn_str1 = '<ErrorCancelingReaction 1.0*C=CC + 1.0*CCCC == 1.0*CCC + 1.0*C=CCC >'
+        rxn_str2 = '<ErrorCancelingReaction 1.0*C=CC + 1.0*CCCC == 1.0*C=CCC + 1.0*CCC >'
+        self.assertTrue(any(rxn_string in reaction_string for rxn_string in [rxn_str1, rxn_str2]))
 
         # pyomo is slower, so don't test as many
         reaction_list = scheme.multiple_error_canceling_reaction_search(n_reactions_max=5, milp_software='pyomo')
         self.assertEqual(len(reaction_list), 5)
         reaction_string = reaction_list.__repr__()
-        self.assertIn('<ErrorCancelingReaction 1.0*C=CC + 1.0*CCCC == 1.0*CCC + 1.0*C=CCC >', reaction_string)
-        self.assertIn('<ErrorCancelingReaction 1.0*C=CC + 1.0*C=CCCC == 2.0*C=CCC >', reaction_string)
+        self.assertTrue(any(rxn_string in reaction_string for rxn_string in [rxn_str1, rxn_str2]))
+
+    def test_calculate_target_enthalpy(self):
+        """
+        Test that ErrorCancelingScheme is able to calculate thermochemistry for the target species
+        """
+        scheme = IsodesmicScheme(self.propene, [self.propane, self.butane, self.butene, self.pentane, self.pentene,
+                                                self.hexane, self.hexene, self.benzene])
+
+        target_thermo = scheme.calculate_target_enthalpy(n_reactions_max=3, milp_software='lpsolve')
+        self.assertEqual(target_thermo.value_si, 115000.0)
+
+        target_thermo = scheme.calculate_target_enthalpy(n_reactions_max=3, milp_software='pyomo')
+        self.assertEqual(target_thermo.value_si, 115000.0)
 
 
 if __name__ == '__main__':
