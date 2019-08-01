@@ -9,11 +9,13 @@ dependencies:
   - cairo
   - cairocffi
   - cantera >=2.3.0
+  - coincbc
   - coolprop
   - coverage
   - cython >=0.25.2
   - dde
   - ffmpeg
+  - glpk
   - gprof2dot
   - graphviz
   - jinja2
@@ -37,6 +39,7 @@ dependencies:
   - pydqed >=1.0.0
   - pygpu
   - pymongo
+  - pyomo
   - pyparsing
   - pyrdl
   - python >=2.7
