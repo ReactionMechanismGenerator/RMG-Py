@@ -414,6 +414,28 @@ class ErrorCancelingScheme(object):
 
         return reaction_list
 
+    def calculate_target_enthalpy(self, n_reactions_max=20, milp_software='lpsolve'):
+        """
+        Perform a multiple error canceling reactions search and calculate hf298 for the target species by taking the
+        median hf298 value from among the error canceling reactions found
+
+        Args:
+            n_reactions_max (int, optional): The maximum number of found reactions that will returned, after which no
+                further searching will occur even if there are possible subsets left in the queue.
+            milp_software (str, optional): 'lpsolve' (default) or 'pyomo'. lpsolve is usually faster.
+
+        Returns:
+            ScalarQuantity: Standard heat of formation at 298 K calculated for the target species
+
+        """
+        reaction_list = self.multiple_error_canceling_reaction_search(n_reactions_max, milp_software)
+        h298_list = np.zeros(len(reaction_list))
+
+        for i, rxn in enumerate(reaction_list):
+            h298_list[i] = rxn.calculate_target_thermo().value_si
+
+        return ScalarQuantity(np.median(h298_list), 'J/mol')
+
 
 class IsodesmicScheme(ErrorCancelingScheme):
     """
@@ -421,6 +443,14 @@ class IsodesmicScheme(ErrorCancelingScheme):
     """
     def __init__(self, target, reference_set):
         super(IsodesmicScheme, self).__init__(target, reference_set, conserve_bonds=True, conserve_ring_size=False)
+
+
+class IsodesmicRingScheme(ErrorCancelingScheme):
+    """
+    A stricter form of the traditional isodesmic reaction scheme where the number of each ring size is also conserved
+    """
+    def __init__(self, target, reference_set):
+        super(IsodesmicRingScheme, self).__init__(target, reference_set, conserve_bonds=True, conserve_ring_size=True)
 
 
 if __name__ == '__main__':
