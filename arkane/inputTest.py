@@ -46,7 +46,7 @@ from rmgpy.exceptions import InputError
 from rmgpy.thermo.nasa import NASAPolynomial, NASA
 from rmgpy.molecule import Molecule
 
-from arkane.input import species, transitionState, reaction, SMILES, loadInputFile, process_model_chemistry
+from arkane.input import species, transitionState, reaction, SMILES, loadInputFile, process_model_chemistry, speciesDict
 
 ################################################################################
 
@@ -193,6 +193,18 @@ class InputTest(unittest.TestCase):
         tunneling = 'Eckart'
 
         rxn = reaction('CH2O+H=Methoxy', reactants, products, 'TS3', tunneling=tunneling)
+
+        print 'rxn: {0}'.format(rxn)
+        print 'speciesDict: {0}'.format(speciesDict)
+        print 'rxn.reactants: {0}'.format(rxn.reactants)
+        print 'rxn.products: {0}'.format(rxn.products)
+        print 'rxn.reactants[0].conformer.E0.value_si: {0}'.format(rxn.reactants[0].conformer.E0.value_si)
+        print 'rxn.reactants[1].conformer.E0.value_si: {0}'.format(rxn.reactants[1].conformer.E0.value_si)
+        print 'rxn.products[0].conformer.E0.value_si: {0}'.format(rxn.products[0].conformer.E0.value_si)
+        print 'rxn.transitionState.conformer.E0.value_si: {0}'.format(rxn.transitionState.conformer.E0.value_si)
+        print 'rxn.transitionState.frequency.value_si: {0}'.format(rxn.transitionState.frequency.value_si)
+        print 'rxn.transitionState.tunneling, Eckart: {0}'.format(rxn.transitionState.tunneling, Eckart)
+
         self.assertEqual(rxn.label, 'CH2O+H=Methoxy')
         self.assertEqual(len(rxn.reactants), 2)
         self.assertEqual(len(rxn.products), 1)
