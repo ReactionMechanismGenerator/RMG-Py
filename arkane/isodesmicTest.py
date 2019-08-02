@@ -249,10 +249,11 @@ class TestErrorCancelingScheme(unittest.TestCase):
         scheme = IsodesmicScheme(self.propene, [self.propane, self.butane, self.butene, self.pentane, self.pentene,
                                                 self.hexane, self.hexene, self.benzene])
 
-        target_thermo = scheme.calculate_target_enthalpy(n_reactions_max=3, milp_software='lpsolve')
+        target_thermo, rxn_list = scheme.calculate_target_enthalpy(n_reactions_max=3, milp_software='lpsolve')
         self.assertEqual(target_thermo.value_si, 115000.0)
+        self.assertIsInstance(rxn_list[0], ErrorCancelingReaction)
 
-        target_thermo = scheme.calculate_target_enthalpy(n_reactions_max=3, milp_software='pyomo')
+        target_thermo, _ = scheme.calculate_target_enthalpy(n_reactions_max=3, milp_software='pyomo')
         self.assertEqual(target_thermo.value_si, 115000.0)
 
 
