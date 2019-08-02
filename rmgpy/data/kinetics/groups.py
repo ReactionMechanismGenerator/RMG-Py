@@ -46,6 +46,9 @@ from rmgpy.species import Species
 from rmgpy.quantity import constants
 from rmgpy.exceptions import KineticsError, UndeterminableKineticsError, DatabaseError
 
+# Prior to numpy 1.14, `numpy.linalg.lstsq` does not accept None as a value
+RCOND = -1 if int(numpy.__version__.split('.')[1]) < 14 else None
+
 ################################################################################
 
 class KineticsGroups(Database):
@@ -409,7 +412,7 @@ class KineticsGroups(Database):
             b = numpy.array(b)
             kdata = numpy.array(kdata)
             
-            x, residues, rank, s = numpy.linalg.lstsq(A, b)
+            x, residues, rank, s = numpy.linalg.lstsq(A, b, rcond=RCOND)
             
             for t, T in enumerate(Tdata):
                 
@@ -513,7 +516,7 @@ class KineticsGroups(Database):
             b = numpy.array(b)
             kdata = numpy.array(kdata)
             
-            x, residues, rank, s = numpy.linalg.lstsq(A, b)
+            x, residues, rank, s = numpy.linalg.lstsq(A, b, rcond=RCOND)
             
             # Store the results
             self.top[0].data = Arrhenius(
@@ -564,7 +567,7 @@ class KineticsGroups(Database):
             A = numpy.array(A)
             b = numpy.array(b)
             
-            x, residues, rank, s = numpy.linalg.lstsq(A, b)
+            x, residues, rank, s = numpy.linalg.lstsq(A, b, rcond=RCOND)
             
             # Store the results
             self.top[0].data = Arrhenius(

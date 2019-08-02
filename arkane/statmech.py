@@ -59,7 +59,7 @@ from arkane.molpro import MolproLog
 from arkane.qchem import QChemLog
 from arkane.common import symbol_by_number
 from arkane.common import ArkaneSpecies
-from arkane.encorr.corr import get_energy_correction
+from arkane.encorr.corr import get_atom_correction, get_bac
 
 
 ################################################################################
@@ -183,22 +183,37 @@ class StatMechJob(object):
         self.applyBondEnergyCorrections = True
         self.bondEnergyCorrectionType = 'p'
         self.atomEnergies = None
-        self.supporting_info = [self.species.label]
         self.bonds = None
         self.arkane_species = ArkaneSpecies(species=species)
+        self.hindered_rotor_plots = []
 
-    def execute(self, outputFile=None, plot=False, pdep=False):
+    def execute(self, output_directory=None, plot=False, pdep=False):
         """
-        Execute the statistical mechanics job, saving the results to the
-        given `outputFile` on disk.
+        Execute the statmech job, saving the results within
+        the `output_directory`.
+
+        If `plot` is True, then plots of the hindered rotor fits will be saved.
         """
-        self.load(pdep)
-        if outputFile is not None:
-            self.save(outputFile)
+        self.load(pdep, plot)
+        if output_directory is not None:
+            try:
+                self.write_output(output_directory)
+            except Exception as e:
+                logging.warning("Could not write statmech output file due to error: "
+                                "{0} in species {1}".format(e, self.species.label))
+            if plot:
+                hr_dir = os.path.join(output_directory, 'plots')
+                if not os.path.exists(hr_dir):
+                    os.mkdir(hr_dir)
+                try:
+                    self.save_hindered_rotor_figures(hr_dir)
+                except Exception as e:
+                    logging.warning("Could not save hindered rotor scans due to error: "
+                                    "{0} in species {1}".format(e, self.species.label))
         logging.debug('Finished statmech job for species {0}.'.format(self.species))
         logging.debug(repr(self.species))
 
-    def load(self, pdep=False):
+    def load(self, pdep=False, plot=False):
         """
         Load the statistical mechanics parameters for each conformer from
         the associated files on disk. Creates :class:`Conformer` objects for
@@ -292,9 +307,9 @@ class StatMechJob(object):
                                  '{1!r}.'.format(self.modelChemistry, path))
         e0, e_electronic = None, None  # E0 = e_electronic + ZPE
         energyLog = None
-        if isinstance(energy, Log) and not isinstance(energy, (GaussianLog, QChemLog, MolproLog)):
+        if isinstance(energy, Log) and type(energy).__name__ == 'Log':
             energyLog = determine_qm_software(os.path.join(directory, energy.path))
-        elif isinstance(energy, (GaussianLog, QChemLog, MolproLog)):
+        elif isinstance(energy, Log) and type(energy).__name__ != 'Log':
             energyLog = energy
             energyLog.path = os.path.join(directory, energyLog.path)
         elif isinstance(energy, float):
@@ -302,7 +317,7 @@ class StatMechJob(object):
         elif isinstance(energy, tuple) and len(energy) == 2:
             # this is likely meant to be a quantity object with ZPE already accounted for
             energy = Quantity(energy)
-            e_0 = energy.value_si  # in J/mol
+            e0 = energy.value_si  # in J/mol
         elif isinstance(energy, tuple) and len(energy) == 3:
             if energy[2].lower() == 'e_electronic':
                 energy = Quantity(energy[:2])
@@ -313,29 +328,31 @@ class StatMechJob(object):
             else:
                 raise InputError('The third argument for E0 energy value should be e_elect (for energy w/o ZPE) '
                                  'or E0 (including the ZPE). Got: {0}'.format(energy[2]))
-        try:
-            geomLog = local_context['geometry']
-        except KeyError:
-            raise InputError('Required attribute "geometry" not found in species file {0!r}.'.format(path))
-        if isinstance(geomLog, Log) and not isinstance(energy, (GaussianLog, QChemLog, MolproLog)):
-            geomLog = determine_qm_software(os.path.join(directory, geomLog.path))
-        else:
-            geomLog.path = os.path.join(directory, geomLog.path)
 
         try:
             statmechLog = local_context['frequencies']
         except KeyError:
             raise InputError('Required attribute "frequencies" not found in species file {0!r}.'.format(path))
-        if isinstance(statmechLog, Log) and not isinstance(energy, (GaussianLog, QChemLog, MolproLog)):
+        if isinstance(statmechLog, Log) and type(statmechLog).__name__ == 'Log':
             statmechLog = determine_qm_software(os.path.join(directory, statmechLog.path))
         else:
             statmechLog.path = os.path.join(directory, statmechLog.path)
+        try:
+            geomLog = local_context['geometry']
+            if isinstance(geomLog, Log) and type(geomLog).__name__ == 'Log':
+                geomLog = determine_qm_software(os.path.join(directory, geomLog.path))
+            else:
+                geomLog.path = os.path.join(directory, geomLog.path)
+        except KeyError:
+            geomLog = statmechLog
+            logging.debug("Reading geometry from the specified frequencies file.")
 
         if 'frequencyScaleFactor' in local_context:
             logging.warning('Ignoring frequency scale factor in species file {0!r}.'.format(path))
 
         rotors = []
         if self.includeHinderedRotors:
+            self.raw_hindered_rotor_data = []
             try:
                 rotors = local_context['rotors']
             except KeyError:
@@ -367,17 +384,11 @@ class StatMechJob(object):
                                                                     spinMultiplicity=spinMultiplicity,
                                                                     opticalIsomers=opticalIsomers,
                                                                     label=self.species.label)
-        translational_mode_exists = False
-        for mode in conformer.modes:
-            if isinstance(mode, (LinearRotor, NonlinearRotor)):
-                self.supporting_info.append(mode)
-                break
-            if isinstance(mode, (Translation, IdealGasTranslation)):
-                translational_mode_exists = True
-        if unscaled_frequencies:
-            self.supporting_info.append(unscaled_frequencies)
 
-        if not translational_mode_exists:
+        for mode in conformer.modes:
+            if isinstance(mode, (Translation, IdealGasTranslation)):
+                break
+        else:
             # Sometimes the translational mode is not appended to modes for monoatomic species
             conformer.modes.append(IdealGasTranslation(mass=self.species.molecularWeight))
 
@@ -399,7 +410,7 @@ class StatMechJob(object):
 
         # Save atoms for use in writing thermo output
         if isinstance(self.species, Species):
-            self.species.props['elementCounts'] = atoms
+            self.species.props['element_counts'] = atoms
 
         conformer.coordinates = (coordinates, "angstroms")
         conformer.number = number
@@ -416,19 +427,26 @@ class StatMechJob(object):
                 e_electronic = energyLog.loadEnergy(zpe_scale_factor)  # in J/mol
             else:
                 e_electronic *= constants.E_h * constants.Na  # convert Hartree/particle into J/mol
-            if not self.applyAtomEnergyCorrections:
+            if self.applyAtomEnergyCorrections:
+                atom_corrections = get_atom_correction(self.modelChemistry,
+                                                       atoms, self.atomEnergies)
+                
+            else:
+                atom_corrections = 0
                 logging.warning('Atom corrections are not being used. Do not trust energies and thermo.')
-            e_electronic += get_energy_correction(
-                self.modelChemistry, atoms, self.bonds, coordinates, number,
-                multiplicity=conformer.spinMultiplicity, atom_energies=self.atomEnergies,
-                apply_atom_corrections=self.applyAtomEnergyCorrections, apply_bac=self.applyBondEnergyCorrections,
-                bac_type=self.bondEnergyCorrectionType
-            )
+            if self.applyBondEnergyCorrections:
+                if not self.bonds and hasattr(self.species, 'molecule') and self.species.molecule:
+                    self.bonds = self.species.molecule[0].enumerate_bonds()
+                bond_corrections = get_bac(self.modelChemistry, self.bonds, coordinates, number,
+                                           bac_type=self.bondEnergyCorrectionType, multiplicity=conformer.spinMultiplicity)
+            else:
+                bond_corrections = 0
+            e_electronic_with_corrections = e_electronic + atom_corrections + bond_corrections
             # Get ZPE only for polyatomic species (monoatomic species don't have frequencies, so ZPE = 0)
             zpe = statmechLog.loadZeroPointEnergy() * zpe_scale_factor if len(number) > 1 else 0
             logging.debug('Scaled zero point energy (ZPE) is {0} J/mol'.format(zpe))
 
-            e0 = e_electronic + zpe
+            e0 = e_electronic_with_corrections + zpe
 
             logging.debug('         Harmonic frequencies scaling factor used = {0:g}'.format(self.frequencyScaleFactor))
             logging.debug('         Zero point energy scaling factor used = {0:g}'.format(zpe_scale_factor))
@@ -441,7 +459,6 @@ class StatMechJob(object):
         if is_ts:
             neg_freq = statmechLog.loadNegativeFrequency()
             self.species.frequency = (neg_freq * self.frequencyScaleFactor, "cm^-1")
-            self.supporting_info.append(neg_freq)
 
         # Read and fit the 1D hindered rotors if applicable
         # If rotors are found, the vibrational frequencies are also
@@ -470,28 +487,33 @@ class StatMechJob(object):
                         # the symmetry number will be derived from the scan
                         scanLog, pivots, top, fit = q
                     # Load the hindered rotor scan energies
-                    if isinstance(scanLog, Log) and not isinstance(energy, (GaussianLog, QChemLog, MolproLog)):
+                    if isinstance(scanLog, Log) and type(scanLog).__name__ == 'Log':
                         scanLog = determine_qm_software(os.path.join(directory, scanLog.path))
-                    if isinstance(scanLog, GaussianLog):
-                        scanLog.path = os.path.join(directory, scanLog.path)
+                    scanLog.path = os.path.join(directory, scanLog.path)
+                    if isinstance(scanLog, (GaussianLog, QChemLog)):
                         v_list, angle = scanLog.loadScanEnergies()
-                        scanLogOutput = ScanLog(os.path.join(directory, '{0}_rotor_{1}.txt'.format(
-                            self.species.label, rotorCount + 1)))
-                        scanLogOutput.save(angle, v_list)
-                    elif isinstance(scanLog, QChemLog):
-                        scanLog.path = os.path.join(directory, scanLog.path)
-                        v_list, angle = scanLog.loadScanEnergies()
-                        scanLogOutput = ScanLog(os.path.join(directory, '{0}_rotor_{1}.txt'.format(
-                            self.species.label, rotorCount + 1)))
-                        scanLogOutput.save(angle, v_list)
+                        try:
+                            pivot_atoms = scanLog.load_scan_pivot_atoms()
+                        except Exception as e:
+                            logging.warning("Unable to find pivot atoms in scan due to error: {}".format(e))
+                            pivot_atoms = 'N/A'
+                        try:
+                            frozen_atoms = scanLog.load_scan_frozen_atoms()
+                        except Exception as e:
+                            logging.warning("Unable to find pivot atoms in scan due to error: {}".format(e))
+                            frozen_atoms = 'N/A'
                     elif isinstance(scanLog, ScanLog):
-                        scanLog.path = os.path.join(directory, scanLog.path)
                         angle, v_list = scanLog.load()
+                        # no way to find pivot atoms or frozen atoms from ScanLog
+                        pivot_atoms = 'N/A'
+                        frozen_atoms = 'N/A'
                     else:
                         raise InputError('Invalid log file type {0} for scan log.'.format(scanLog.__class__))
 
                     if symmetry is None:
                         symmetry = determine_rotor_symmetry(v_list, self.species.label, pivots)
+                    self.raw_hindered_rotor_data.append((self.species.label, rotorCount, symmetry, angle,
+                                                         v_list, pivot_atoms, frozen_atoms))
                     inertia = conformer.getInternalReducedMomentOfInertia(pivots, top) * constants.Na * 1e23
 
                     cosineRotor = HinderedRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
@@ -529,8 +551,11 @@ class StatMechJob(object):
                             rotor = cosineRotor
 
                         conformer.modes.append(rotor)
-
-                        self.plotHinderedRotor(angle, v_list, cosineRotor, fourierRotor, rotor, rotorCount, directory)
+                        if plot:
+                            try:
+                                self.create_hindered_rotor_figure(angle, v_list, cosineRotor, fourierRotor, rotor, rotorCount)
+                            except Exception as e:
+                                logging.warning("Could not plot hindered rotor graph due to error: {0}".format(e))
 
                         rotorCount += 1
 
@@ -558,14 +583,51 @@ class StatMechJob(object):
             if isinstance(mode, HarmonicOscillator):
                 mode.frequencies = (frequencies * self.frequencyScaleFactor, "cm^-1")
 
+        ##save supporting information for calculation
+        self.supporting_info = [self.species.label]
+        symmetry_read, optical_isomers_read, point_group_read = statmechLog.get_symmetry_properties()
+        self.supporting_info.append(externalSymmetry if externalSymmetry else symmetry_read)
+        self.supporting_info.append(opticalIsomers if opticalIsomers else optical_isomers_read)
+        self.supporting_info.append(point_group_read)
+        for mode in conformer.modes:
+            if isinstance(mode, (LinearRotor, NonlinearRotor)):
+                self.supporting_info.append(mode)
+                break
+        else:
+            self.supporting_info.append(None)
+        if unscaled_frequencies:
+            self.supporting_info.append(unscaled_frequencies)
+        else:
+            self.supporting_info.append(None)
+        if is_ts:
+            self.supporting_info.append(neg_freq)
+        else:
+            self.supporting_info.append(None)
+        self.supporting_info.append(e_electronic)
+        self.supporting_info.append(e_electronic + zpe)
+        self.supporting_info.append(e0)
+        self.supporting_info.append(list(map(lambda x: symbol_by_number[x],number))) #atom symbols
+        self.supporting_info.append(coordinates)
+        try:
+            t1d = energyLog.get_T1_diagnostic()
+        except (NotImplementedError, AttributeError):
+            t1d = None
+        self.supporting_info.append(t1d)
+        try:
+            d1d = energyLog.get_D1_diagnostic()
+        except (NotImplementedError, AttributeError):
+            d1d = None
+        self.supporting_info.append(d1d)
+        #save conformer
         self.species.conformer = conformer
 
-    def save(self, outputFile):
+    def write_output(self, output_directory):
         """
-        Save the results of the statistical mechanics job to the file located
-        at `path` on disk.
+        Save the results of the statmech job to the `output.py` file located
+        in `output_directory`.
         """
 
+        outputFile = os.path.join(output_directory, 'output.py')
         logging.info('Saving statistical mechanics parameters for {0}...'.format(self.species.label))
         f = open(outputFile, 'a')
 
@@ -595,17 +657,16 @@ class StatMechJob(object):
         f.write('{0}\n\n'.format(prettify(result)))
         f.close()
 
-    def plotHinderedRotor(self, angle, v_list, cosineRotor, fourierRotor, rotor, rotorIndex, directory):
+    def create_hindered_rotor_figure(self, angle, v_list, cosineRotor, fourierRotor, rotor, rotorIndex):
         """
         Plot the potential for the rotor, along with its cosine and Fourier
-        series potential fits. The plot is saved to a set of files of the form
-        ``hindered_rotor_1.pdf``.
+        series potential fits, and save it in the `hindered_rotor_plots` attribute.
         """
         try:
             import pylab
-        except ImportError:
+        except:
+            logging.warning("Unable to import pylab. not generating hindered rotor figures")
             return
-
         phi = np.arange(0, 6.3, 0.02, np.float64)
         Vlist_cosine = np.zeros_like(phi)
         Vlist_fourier = np.zeros_like(phi)
@@ -631,8 +692,16 @@ class StatMechJob(object):
         axes.set_xticklabels(
             ['$0$', '$\pi/4$', '$\pi/2$', '$3\pi/4$', '$\pi$', '$5\pi/4$', '$3\pi/2$', '$7\pi/4$', '$2\pi$'])
 
-        pylab.savefig(os.path.join(directory, '{0}_rotor_{1:d}.pdf'.format(self.species.label, rotorIndex + 1)))
-        pylab.close()
+        self.hindered_rotor_plots.append((fig,rotorIndex))
+
+    def save_hindered_rotor_figures(self, directory):
+        """
+        Save hindered rotor plots as set of files of the form
+        ``rotor_[species_label]_0.pdf`` in the specified directory
+        """
+        if hasattr(self, 'hindered_rotor_plots'):
+            for fig, rotor_index in self.hindered_rotor_plots:
+                fig.savefig(os.path.join(directory, 'rotor_{0}_{1:d}.pdf'.format(self.species.label, rotor_index)))
 
 
 ################################################################################

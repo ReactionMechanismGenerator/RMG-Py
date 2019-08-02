@@ -274,7 +274,13 @@ generatedSpeciesConstraints(
 #     maxNitrogenAtoms=None,
 #     # Limits on cycles
 #     onlyCyclics=False,
-#     minCycleOverlap=0,  # specifies the minimum number of atoms that must be shared between any two cycles
+#     onlyHeterocyclics=False, # If onlyHeterocyclics is True, the machine learning estimator is restricted to only
+#                                heterocyclics species regardless of onlyCyclics setting.
+#                                But onlyCyclics should also be True if onlyHeterocyclics is True.
+#     minCycleOverlap=0,  # specifies the minimum number of atoms that must be shared between any two cycles.
+#                           If minCycleOverlap is greater than zero, the machine learning estimator is restricted to
+#                           only cyclic species with the specified minimum cyclic overlap regardless of onlyCyclics
+#                           setting.
 #     # If the estimated uncertainty of the thermo prediction is greater than
 #     # any of these values, then don't use the ML estimate
 #     H298UncertaintyCutoff=(3.0, 'kcal/mol'),

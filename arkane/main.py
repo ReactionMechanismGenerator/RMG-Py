@@ -39,6 +39,7 @@ import logging
 import argparse
 import time
 import csv
+import numpy as np
 
 try:
     import matplotlib
@@ -125,7 +126,8 @@ class Arkane:
                             metavar='DIR', help='use DIR as output directory')
 
         # Add options for controlling generation of plots
-        parser.add_argument('-p', '--plot', action='store_true', default=True, help='generate plots of results')
+        parser.add_argument('-p', '--no-plot', action='store_false', default=True,
+                            help='prevent generating plots', dest='plot')
 
         args = parser.parse_args()
 
@@ -266,42 +268,66 @@ class Arkane:
 
         # run thermo and statmech jobs (also writes thermo blocks to Chemkin file)
         supporting_info = []
+        hindered_rotor_info = []
         for job in self.jobList:
             if isinstance(job, ThermoJob):
-                job.execute(outputFile=outputFile, plot=self.plot)
+                job.execute(output_directory=self.outputDirectory, plot=self.plot)
             if isinstance(job, StatMechJob):
-                job.execute(outputFile=outputFile, plot=self.plot, pdep=is_pdep(self.jobList))
-                supporting_info.append(job.supporting_info)
+                job.execute(output_directory=self.outputDirectory, plot=self.plot, pdep=is_pdep(self.jobList))
+                if hasattr(job, 'supporting_info'):
+                    supporting_info.append(job.supporting_info)
+                if hasattr(job, 'raw_hindered_rotor_data'):
+                    for hr_info in job.raw_hindered_rotor_data:
+                        hindered_rotor_info.append(hr_info)
 
         with open(chemkinFile, 'a') as f:
             f.write('\n')
             f.write('END\n\n\n\n')
             f.write('REACTIONS    KCAL/MOLE   MOLES\n\n')
 
-        supporting_info_file = os.path.join(self.outputDirectory, 'supporting_information.csv')
-        with open(supporting_info_file, 'wb') as csvfile:
-            writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-            writer.writerow(['Label', 'Rotational constant (cm-1)', 'Unscaled frequencies (cm-1)'])
-            for row in supporting_info:
-                label = row[0]
-                rot = '-'
-                freq = '-'
-                if len(row) > 1:  # monoatomic species have no frequencies nor rotational constants
-                    if isinstance(row[1].rotationalConstant.value, float):
+        if supporting_info:
+            # write supporting_info.csv for statmech jobs
+            supporting_info_file = os.path.join(self.outputDirectory, 'supporting_information.csv')
+            with open(supporting_info_file, 'wb') as csvfile:
+                writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                writer.writerow(['Label','Symmetry Number','Number of optical isomers','Symmetry Group',
+                                 'Rotational constant (cm-1)','Calculated Frequencies (unscaled and prior to projection, cm^-1)',
+                                 'Electronic energy (J/mol)','E0 (electronic energy + ZPE, J/mol)',
+                                 'E0 with atom and bond corrections (J/mol)','Atom XYZ coordinates (angstrom)',
+                                 'T1 diagnostic', 'D1 diagnostic'])
+                for row in supporting_info:
+                    label = row[0]
+                    rot = '-'
+                    freq = '-'
+                    if row[4] is not None and isinstance(row[4].rotationalConstant.value, float):
                         # diatomic species have a single rotational constant
-                        rot = '{0:.2f}'.format(row[1].rotationalConstant.value)
-                    else:
-                        rot = ', '.join(['{0:.2f}'.format(s) for s in row[1].rotationalConstant.value])
-                    freq = ''
-                    if len(row) == 4:
-                        freq = '{0:.1f}'.format(abs(row[3])) + 'i, '
-                    freq += ', '.join(['{0:.1f}'.format(s) for s in row[2]])
-                writer.writerow([label, rot, freq])
-
+                        rot = '{0:.2f}'.format(row[4].rotationalConstant.value)
+                    elif row[4] is not None:
+                        rot = ', '.join(['{0:.2f}'.format(s) for s in row[4].rotationalConstant.value])
+                    if row[5] is not None:
+                        freq = ''
+                        if row[6] is not None: #there is a negative frequency
+                            freq = '{0:.1f}'.format(abs(row[6])) + 'i, '
+                        freq += ', '.join(['{0:.1f}'.format(s) for s in row[5]])
+                    atoms = ', '.join(["{0}    {1}".format(atom,"    ".join([str(c) for c in coords])) for atom, coords in zip(row[10], row[11])])
+                    writer.writerow([label, row[1], row[2], row[3], rot, freq, row[7], row[8], row[9], atoms, row[12],
+                                     row[13]])
+        if hindered_rotor_info:
+            hr_file = os.path.join(self.outputDirectory, 'hindered_rotor_scan_data.csv')
+            # find longest length to set column number for energies
+            max_energy_length = max([len(hr[4]) for hr in hindered_rotor_info])
+            with open(hr_file, 'wb') as csvfile:
+                writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                writer.writerow(['species', 'rotor_number', 'symmetry', 'resolution (degrees)',
+                                'pivot_atoms', 'frozen_atoms'] +
+                                ['energy (J/mol) {}'.format(i) for i in range(max_energy_length)])
+                for row in hindered_rotor_info:
+                    writer.writerow([row[0], row[1], row[2], row[3][1] * 180 / np.pi,
+                                    row[5], row[6]] + [a for a in row[4]])
         # run kinetics and pdep jobs (also writes reaction blocks to Chemkin file)
         for job in self.jobList:
             if isinstance(job, KineticsJob):
-                job.execute(outputFile=outputFile, plot=self.plot)
+                job.execute(output_directory=self.outputDirectory, plot=self.plot)
             elif isinstance(job, PressureDependenceJob) and not any([isinstance(job, ExplorerJob) for job in
                                                                      self.jobList]):
                 # if there is an explorer job the pdep job will be run in the explorer job

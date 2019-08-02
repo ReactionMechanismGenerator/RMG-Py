@@ -34,6 +34,10 @@ cimport rmgpy.constants as constants
 import rmgpy.quantity as quantity
 import logging
 from rmgpy.exceptions import KineticsError
+
+# Prior to numpy 1.14, `numpy.linalg.lstsq` does not accept None as a value
+RCOND = -1 if int(numpy.__version__.split('.')[1]) < 14 else None
+
 ################################################################################
 
 cdef class Chebyshev(PDepKineticsModel):
@@ -217,7 +221,7 @@ cdef class Chebyshev(PDepKineticsModel):
                 b[p1*nT+t1] = log10(K[t1,p1])
 
         # Do linear least-squares fit to get coefficients
-        x, residues, rank, s = numpy.linalg.lstsq(A, b)
+        x, residues, rank, s = numpy.linalg.lstsq(A, b, rcond=RCOND)
 
         # Extract coefficients
         coeffs = numpy.zeros((degreeT,degreeP), numpy.float64)

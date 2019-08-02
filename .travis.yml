@@ -18,6 +18,9 @@ stages:
 
 before_install:
   - cd ..
+  # Display CPU and memory information on the Linux builds
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then lscpu; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then free -m; fi
   # Install miniconda
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then wget http://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then wget http://repo.continuum.io/miniconda/Miniconda2-latest-MacOSX-x86_64.sh -O miniconda.sh; fi
@@ -72,7 +75,10 @@ jobs:
         # Setup conda build
         - conda install -y conda-build
         - conda install -y anaconda-client
-        - conda config --add channels rmg
+        - conda config --append channels rmg
+        - conda config --append channels rdkit
+        - conda config --append channels cantera
+        - conda config --append channels anaconda
         - conda config --set anaconda_upload yes
       script:
         - conda build --token $CONDA_TOKEN --user rmg RMG-Py/.conda
@@ -81,7 +87,10 @@ jobs:
         # Setup conda build
         - conda install -y conda-build
         - conda install -y anaconda-client
-        - conda config --add channels rmg
+        - conda config --append channels rmg
+        - conda config --append channels rdkit
+        - conda config --append channels cantera
+        - conda config --append channels anaconda
         - conda config --set anaconda_upload yes
       script:
         - conda build --token $CONDA_TOKEN --user rmg RMG-Py/.conda

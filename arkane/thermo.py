@@ -53,7 +53,7 @@ from rmgpy.molecule import Molecule
 from rmgpy.molecule.util import retrieveElementCount
 
 from arkane.output import prettify
-from arkane.common import ArkaneSpecies
+from arkane.common import ArkaneSpecies, symbol_by_number
 
 
 ################################################################################
@@ -70,23 +70,40 @@ class ThermoJob(object):
         self.thermoClass = thermoClass
         self.arkane_species = ArkaneSpecies(species=species)
 
-    def execute(self, outputFile=None, plot=False):
+    def execute(self, output_directory=None, plot=False):
         """
-        Execute the thermodynamics job, saving the results to the
-        given `outputFile` on disk.
+        Execute the thermodynamics job, saving the results within
+        the `output_directory`.
+
+        If `plot` is true, then plots of the raw and fitted values for heat
+        capacity, entropy, enthalpy, gibbs free energy, and hindered rotors
+        will be saved.
         """
         self.generateThermo()
-        if outputFile is not None:
-            self.arkane_species.chemkin_thermo_string = self.save(outputFile)
+        if output_directory is not None:
+            try:
+                self.write_output(output_directory)
+            except Exception as e:
+                logging.warning("Could not write output file due to error: "
+                                "{0} for species {1}".format(e, self.species.label))
+            try:
+                self.arkane_species.chemkin_thermo_string = self.write_chemkin(output_directory)
+            except Exception as e:
+                logging.warning("Could not write chemkin output due to error: "
+                                "{0} for species {1}".format(e, self.species.label))
             if self.species.molecule is None or len(self.species.molecule) == 0:
                 logging.debug("Not generating a YAML file for species {0}, since its structure wasn't"
                               " specified".format(self.species.label))
             else:
                 # We're saving a YAML file for species iff Thermo is called and they're structure is known
                 self.arkane_species.update_species_attributes(self.species)
-                self.arkane_species.save_yaml(path=os.path.dirname(outputFile))
+                self.arkane_species.save_yaml(path=output_directory)
             if plot:
-                self.plot(os.path.dirname(outputFile))
+                try:
+                    self.plot(output_directory)
+                except Exception as e:
+                    logging.warning("Could not create plots due to error: "
+                                    "{0} for species {1}".format(e, self.species.label))
 
     def generateThermo(self):
         """
@@ -147,63 +164,93 @@ class ThermoJob(object):
         else:
             species.thermo = wilhoit
 
-    def save(self, outputFile):
+    def write_output(self, output_directory):
         """
-        Save the results of the thermodynamics job to the file located
-        at `path` on disk.
+        Save the results of the thermodynamics job to the `output.py` file located
+        in `output_directory`.
         """
         species = self.species
+        outputFile = os.path.join(output_directory, 'output.py')
         logging.info('Saving thermo for {0}...'.format(species.label))
 
-        f = open(outputFile, 'a')
-
-        f.write('# Thermodynamics for {0}:\n'.format(species.label))
-        H298 = species.getThermoData().getEnthalpy(298) / 4184.
-        S298 = species.getThermoData().getEntropy(298) / 4.184
-        f.write('#   Enthalpy of formation (298 K)   = {0:9.3f} kcal/mol\n'.format(H298))
-        f.write('#   Entropy of formation (298 K)    = {0:9.3f} cal/(mol*K)\n'.format(S298))
-        f.write('#    =========== =========== =========== =========== ===========\n')
-        f.write('#    Temperature Heat cap.   Enthalpy    Entropy     Free energy\n')
-        f.write('#    (K)         (cal/mol*K) (kcal/mol)  (cal/mol*K) (kcal/mol)\n')
-        f.write('#    =========== =========== =========== =========== ===========\n')
-        for T in [300, 400, 500, 600, 800, 1000, 1500, 2000, 2400]:
-            try:
-                Cp = species.getThermoData().getHeatCapacity(T) / 4.184
-                H = species.getThermoData().getEnthalpy(T) / 4184.
-                S = species.getThermoData().getEntropy(T) / 4.184
-                G = species.getThermoData().getFreeEnergy(T) / 4184.
-                f.write('#    {0:11g} {1:11.3f} {2:11.3f} {3:11.3f} {4:11.3f}\n'.format(T, Cp, H, S, G))
-            except ValueError:
-                logging.debug("Valid thermo for {0} is outside range for temperature {1}".format(species, T))
-        f.write('#    =========== =========== =========== =========== ===========\n')
-
-        thermo_string = 'thermo(label={0!r}, thermo={1!r})'.format(species.label, species.getThermoData())
-        f.write('{0}\n\n'.format(prettify(thermo_string)))
-
-        f.close()
-        # write chemkin file
-        f = open(os.path.join(os.path.dirname(outputFile), 'chem.inp'), 'a')
-        if isinstance(species, Species):
-            if species.molecule and isinstance(species.molecule[0], Molecule):
-                elementCounts = retrieveElementCount(species.molecule[0])
-            else:
+        with open(outputFile, 'a') as f:
+            f.write('# Thermodynamics for {0}:\n'.format(species.label))
+            H298 = species.getThermoData().getEnthalpy(298) / 4184.
+            S298 = species.getThermoData().getEntropy(298) / 4.184
+            f.write('#   Enthalpy of formation (298 K)   = {0:9.3f} kcal/mol\n'.format(H298))
+            f.write('#   Entropy of formation (298 K)    = {0:9.3f} cal/(mol*K)\n'.format(S298))
+            f.write('#    =========== =========== =========== =========== ===========\n')
+            f.write('#    Temperature Heat cap.   Enthalpy    Entropy     Free energy\n')
+            f.write('#    (K)         (cal/mol*K) (kcal/mol)  (cal/mol*K) (kcal/mol)\n')
+            f.write('#    =========== =========== =========== =========== ===========\n')
+            for T in [300, 400, 500, 600, 800, 1000, 1500, 2000, 2400]:
                 try:
-                    elementCounts = species.props['elementCounts']
-                except KeyError:
-                    elementCounts = {'C': 0, 'H': 0}
-        else:
-            elementCounts = {'C': 0, 'H': 0}
-        chemkin_thermo_string = writeThermoEntry(species, elementCounts=elementCounts, verbose=True)
-        f.write('{0}\n'.format(chemkin_thermo_string))
-        f.close()
+                    Cp = species.getThermoData().getHeatCapacity(T) / 4.184
+                    H = species.getThermoData().getEnthalpy(T) / 4184.
+                    S = species.getThermoData().getEntropy(T) / 4.184
+                    G = species.getThermoData().getFreeEnergy(T) / 4184.
+                    f.write('#    {0:11g} {1:11.3f} {2:11.3f} {3:11.3f} {4:11.3f}\n'.format(T, Cp, H, S, G))
+                except ValueError:
+                    logging.debug("Valid thermo for {0} is outside range for temperature {1}".format(species, T))
+            f.write('#    =========== =========== =========== =========== ===========\n')
+
+            thermo_string = 'thermo(label={0!r}, thermo={1!r})'.format(species.label, species.getThermoData())
+            f.write('{0}\n\n'.format(prettify(thermo_string)))
+
+    def write_chemkin(self, output_directory):
+        """
+        Appends the thermo block to `chem.inp` and species name to
+        `species_dictionary.txt` within the `outut_directory` specified
+        """
+        species = self.species
+        with open(os.path.join(output_directory, 'chem.inp'), 'a') as f:
+            if isinstance(species, Species):
+                if species.molecule and isinstance(species.molecule[0], Molecule):
+                    element_counts = retrieveElementCount(species.molecule[0])
+                else:
+                    try:
+                        element_counts = species.props['element_counts']
+                    except KeyError:
+                        element_counts = self.element_count_from_conformer()
+            else:
+                element_counts = {'C': 0, 'H': 0}
+            chemkin_thermo_string = writeThermoEntry(species, elementCounts=element_counts, verbose=True)
+            f.write('{0}\n'.format(chemkin_thermo_string))
 
         # write species dictionary
         if isinstance(species, Species):
             if species.molecule and isinstance(species.molecule[0], Molecule):
-                with open(os.path.join(os.path.dirname(outputFile), 'species_dictionary.txt'), 'a') as f:
-                    f.write(species.molecule[0].toAdjacencyList(removeH=False, label=species.label))
-                    f.write('\n')
+                spec_dict_path = os.path.join(output_directory, 'species_dictionary.txt')
+                is_species_in_dict = False
+                if os.path.isfile(spec_dict_path):
+                    with open(spec_dict_path, 'r') as f:
+                        # check whether the species dictionary contains this species, in which case do not re-append
+                        for line in f.readlines():
+                            if species.label == line.strip():
+                                is_species_in_dict = True
+                                break
+                if not is_species_in_dict:
+                    with open(spec_dict_path, 'a') as f:
+                        f.write(species.molecule[0].toAdjacencyList(removeH=False, label=species.label))
+                        f.write('\n')
         return chemkin_thermo_string
+
+    def element_count_from_conformer(self):
+        """
+        Get an element count in a dictionary form (e.g.,  {'C': 3, 'H': 8}) from the species.conformer attribute.
+
+        Returns:
+            dict: Element count, keys are element symbols,
+                  values are number of occurrences of the element in the molecule.
+        """
+        element_counts = dict()
+        for number in self.species.conformer.number.value_si:
+            symbol = symbol_by_number[number]
+            if symbol in element_counts:
+                element_counts[symbol] += 1
+            else:
+                element_counts[symbol] = 1
+        return element_counts
 
     def plot(self, outputDirectory):
         """

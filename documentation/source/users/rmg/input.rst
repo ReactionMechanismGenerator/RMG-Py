@@ -640,6 +640,7 @@ The available options with their default values are ::
         minNitrogenAtoms=0,
         maxNitrogenAtoms=None,
         onlyCyclics=False,
+        onlyHeterocyclics=False,
         minCycleOverlap=0,
         H298UncertaintyCutoff=(3.0, 'kcal/mol'),
         S298UncertaintyCutoff=(2.0, 'cal/(mol*K)'),
@@ -648,11 +649,18 @@ The available options with their default values are ::
 
 ``name`` is the name of the folder containing the machine learning model architecture and parameters in the RMG
 database. The next several options allow setting limits on the numbers of atoms. ``onlyCyclics`` means that only cyclic
-species will be estimated. ``minCycleOverlap`` specified the minimum number of atoms that must be shared between any
-two cycles. For example, if there are only disparate monocycles or no cycles in a species, the overlap is zero;
-"spiro" cycles have an overlap of one; "fused" cycles have an overlap of two; and "bridged" cycles have an overlap of
-at least three. Note that specifying any value greater than zero will automatically restrict the machine learning
-estimator to only consider cyclic species regardless of the ``onlyCyclics`` setting.
+species will be estimated. ``onlyHeterocyclics`` means that only heterocyclic species will be estimated. Note that
+if ``onlyHeterocyclics`` setting is set to True, the machine learning estimator will be restricted to heterocyclic
+species regardless of the ``onlyCyclics`` setting. If ``onlyCyclics`` is False and ``onlyHeterocyclics`` is True,
+RMG will log a warning that ``onlyCyclics`` should also be True and the machine learning estimator will be
+restricted to heterocyclic species because they are a subset of cyclics.
+``minCycleOverlap`` specifies the minimum number of atoms that must be shared between any two cycles. For example,
+if there are only disparate monocycles or no cycles in a species, the overlap is zero; "spiro" cycles have an overlap
+of one; "fused" cycles have an overlap of two; and "bridged" cycles have an overlap of at least three. Note that
+specifying any value greater than zero will automatically restrict the machine learning estimator to only consider
+cyclic species regardless of the ``onlyCyclics`` setting. If ``onlyCyclics`` is False and ``minCycleOverlap`` is greater
+than zero, RMG will log a warning that ``onlyCyclics`` should also be True and the machine learning estimator will be
+restricted to only cyclic species with the specified minimum cycle overlap.
 
 If the estimated uncertainty of the thermo prediction is greater than any of the ``UncertaintyCutoff`` values, then
 machine learning estimation is not used for that species.

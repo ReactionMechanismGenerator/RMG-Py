@@ -319,6 +319,7 @@ multiplicity 2
             min_nitrogen_atoms=0,
             max_nitrogen_atoms=None,
             only_cyclics=False,
+            only_heterocyclics=False,
             min_cycle_overlap=0,
         )
 
@@ -368,6 +369,7 @@ multiplicity 2
             min_nitrogen_atoms=0,
             max_nitrogen_atoms=None,
             only_cyclics=False,
+            only_heterocyclics=False,
             min_cycle_overlap=0,
             uncertainty_cutoffs=dict(
                 H298=Quantity(1e8, 'kcal/mol'),
@@ -393,7 +395,28 @@ multiplicity 2
         thermo = self.database.get_thermo_data_from_ml(spec2, self.ml_estimator, ml_settings)
         self.assertIsNone(thermo)
 
+        # Test cyclic species whether it outputs None when_both onlycyclics and heterocyclics are both True.
+        ml_settings['only_heterocyclics'] = True
+        thermo = self.database.get_thermo_data_from_ml(spec3, self.ml_estimator, ml_settings)
+        self.assertIsNone(thermo)
+
+        # Test heterocyclic species when both onlycyclics and heterocyclics are both True.
+        thermo = self.database.get_thermo_data_from_ml(spec4, self.ml_estimator, ml_settings)
+        self.assertIsInstance(thermo, ThermoData)
+        self.assertTrue('ML Estimation' in thermo.comment, 'Thermo not from ML estimation, test purpose not fulfilled')
+
+        # Test cyclic species whether it outputs None when_only heterocyclics is True
+        ml_settings['only_cyclics'] = False
+        thermo = self.database.get_thermo_data_from_ml(spec3, self.ml_estimator, ml_settings)
+        self.assertIsNone(thermo)
+
+        # Test heterocyclic species when_only heterocyclics is True
+        thermo = self.database.get_thermo_data_from_ml(spec4, self.ml_estimator, ml_settings)
+        self.assertIsInstance(thermo, ThermoData)
+        self.assertTrue('ML Estimation' in thermo.comment, 'Thermo not from ML estimation, test purpose not fulfilled')
+
         # Test spiro species
+        ml_settings['only_heterocyclics'] = False
         ml_settings['min_cycle_overlap'] = 1
         thermo = self.database.get_thermo_data_from_ml(spec3, self.ml_estimator, ml_settings)
         self.assertIsInstance(thermo, ThermoData)
