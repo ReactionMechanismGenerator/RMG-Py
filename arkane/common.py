@@ -133,6 +133,10 @@ class ArkaneSpecies(RMGObject):
         self.RMG_version = RMG_version if RMG_version is not None else __version__
         self.datetime = datetime if datetime is not None else time.strftime("%Y-%m-%d %H:%M")
 
+        # Define which attributes are identifiers and which are properties
+        self._identifiers = ['smiles', 'adjacency_list', 'inchi', 'inchi_key', 'label', 'formula']
+        self._properties = ['molecular_weight', 'symmetry_number', 'charge', 'multiplicity']
+
     def __repr__(self):
         """
         Return a string representation that can be used to reconstruct the object
@@ -144,6 +148,29 @@ class ArkaneSpecies(RMGObject):
                 result += '{0!r}: {1!r}'.format(str(key), str(value))
         result += '}'
         return result
+
+    def as_dict(self):
+        dictionary = super(ArkaneSpecies, self).as_dict()
+        new_dictionary = {'Identifiers': {}, 'Properties': {}}
+
+        # Add additional formatting for identifiers, and properties
+        for attr, value in dictionary.items():
+            if attr in self._identifiers:
+                new_dictionary['Identifiers'].update({attr: value})
+            elif attr in self._properties:
+                new_dictionary['Properties'].update({attr: value})
+            else:
+                new_dictionary.update({attr: value})
+
+        return new_dictionary
+
+    def make_object(self, data, class_dict):
+        new_data = {attr: value for attr, value in data.items() if attr not in ['Identifiers', 'Properties']}
+        if 'Identifiers' in data:
+            new_data.update(data['Identifiers'])
+        if 'Properties' in data:
+            new_data.update(data['Properties'])
+        super(ArkaneSpecies, self).make_object(new_data, class_dict)
 
     def update_species_attributes(self, species=None):
         """
@@ -248,7 +275,13 @@ class ArkaneSpecies(RMGObject):
         else:
             logging.info('Loading statistical mechanics parameters from {0} file...'.format(yml_file))
         with open(path, 'r') as f:
-            data = yaml.safe_load(stream=f)
+            prelim_data = yaml.safe_load(stream=f)
+            data = {attr: value for attr, value in prelim_data.items() if attr not in ['Identifiers', 'Properties']}
+            if 'Identifiers' in prelim_data:
+                data.update(prelim_data['Identifiers'])
+            if 'Properties' in prelim_data:
+                data.update(prelim_data['Properties'])
+            
         if label:
             # First, warn the user if the label doesn't match
             try:
