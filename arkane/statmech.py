@@ -184,6 +184,7 @@ class StatMechJob(object):
         self.includeHinderedRotors = True
         self.useIsodesmicReactions = False
         self.isodesmicCorrection = None
+        self.isodesmicReactionList = None
         self.referenceSets = ''
         self.applyAtomEnergyCorrections = True
         self.applyBondEnergyCorrections = True
@@ -667,7 +668,7 @@ class StatMechJob(object):
                                                                       (uncorrected_thermo, 'J/mol'),
                                                                       self.modelChemistry),
                                          reference_set=reference_db.extract_model_chemistry(self.modelChemistry))
-            isodesmic_thermo = scheme.calculate_target_enthalpy()
+            isodesmic_thermo, self.isodesmicReactionList = scheme.calculate_target_enthalpy()
 
             # Set the difference as the isodesmic EO correction and re-run the statmech job
             self.isodesmicCorrection = isodesmic_thermo.value_si - uncorrected_thermo
@@ -707,6 +708,23 @@ class StatMechJob(object):
             pass
         result += ')'
         f.write('{0}\n\n'.format(prettify(result)))
+
+        if self.useIsodesmicReactions:
+            f.write('\n\n#Isodesmic Reactions Used:\n#------------------------\n#')
+            for i, rxn in enumerate(self.isodesmicReactionList):
+                thermo = rxn.calculate_target_thermo()
+                f.write('Reaction {0}: {1:9.3f} kcal/mol\n#'.format(i+1, thermo.value_si/4184.0))
+                reactant_string = '\tReactants:\n#\t\t1*{0}\n#'.format(rxn.target.molecule.toSMILES())
+                product_string = '\tProducts:\n#'
+                for spcs, v in rxn.species.items():
+                    if v > 0:  # Product
+                        product_string += '\t\t{0}*{1}\n#'.format(v, spcs.molecule.toSMILES())
+                    else:  # Reactant
+                        reactant_string += '\t\t{0}*{1}\n#'.format(abs(v), spcs.molecule.toSMILES())
+                f.write(reactant_string + product_string + '\n#')
+
+            f.write('\n\n')
+
         f.close()
 
     def create_hindered_rotor_figure(self, angle, v_list, cosineRotor, fourierRotor, rotor, rotorIndex):
