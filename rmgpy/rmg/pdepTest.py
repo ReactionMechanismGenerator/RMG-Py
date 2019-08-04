@@ -162,19 +162,14 @@ class TestPdep(unittest.TestCase):
         self.pdepnetwork.index = 1
         self.pdepnetwork.explored = []
 
-    
-    def test_SS_solver(self):
-        c = self.pdepnetwork.solve_SS_network(1000.0,100000.0)
-        self.assertAlmostEquals(c[0],4.791463e-06,2)
-        
     def test_energy_filter(self):
         rxns = self.pdepnetwork.get_energy_filtered_reactions(1000.0,0.0)
         self.assertEquals(len(rxns),1)
         self.assertEquals(rxns[0],self.pdepnetwork.pathReactions[0])
-        
+
     def test_flux_filter(self):
-        rxns = self.pdepnetwork.get_rate_filtered_reactions(1000.0,100000.0,1.0)
-        self.assertEquals(len(rxns),0)
-        
+        prods = self.pdepnetwork.get_rate_filtered_products(1000.0,100000.0,1.0)
+        self.assertEquals(len(prods),0)
+
 if __name__ == '__main__':
     unittest.main()

@@ -238,5 +238,5 @@ explorer(
 	source=['methoxy'],
 	explore_tol=0.01,
 	energy_tol=4.5e1,
-	flux_tol=1e-10,
+	flux_tol=1e-15,
 )

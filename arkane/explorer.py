@@ -206,6 +206,7 @@ class ExplorerJob(object):
 
         forbiddenStructures = getDB('forbidden')
         incomplete = True
+        checkedSpecies = []
 
         while incomplete:
             incomplete = False
@@ -214,6 +215,15 @@ class ExplorerJob(object):
                     for network in self.networks:
                         # compute the characteristic rate coefficient by summing all rate coefficients
                         # from the reactant channel
+                        for spc in reaction_model.edge.species:
+                            if spc in checkedSpecies:
+                                continue
+                            if forbiddenStructures.isMoleculeForbidden(spc.molecule[0]):
+                                reaction_model.removeSpeciesFromEdge(reaction_model.reactionSystems, spc)
+                                reaction_model.removeEmptyPdepNetworks()
+                            else:
+                                checkedSpecies.append(spc)
+
                         kchar = 0.0
                         for rxn in network.netReactions:  # reaction_model.core.reactions+reaction_model.edge.reactions:
                             if (set(rxn.reactants) == set(self.source)
@@ -227,21 +237,14 @@ class ExplorerJob(object):
                         if network.getLeakCoefficient(T=T, P=P) > self.explore_tol * kchar:
                             incomplete = True
                             spc = network.getMaximumLeakSpecies(T=T, P=P)
-                            if forbiddenStructures.isMoleculeForbidden(spc.molecule[0]):
-                                reaction_model.removeSpeciesFromEdge(reaction_model.reactionSystems, spc)
-                                reaction_model.removeEmptyPdepNetworks()
-                                logging.error(spc.label)
-                            else:
-                                logging.info('adding new isomer {0} to network'.format(spc))
-                                flags = np.array([s.molecule[0].getFormula() == form
-                                                  for s in reaction_model.core.species])
-                                reaction_model.enlarge((network, spc), reactEdge=False, unimolecularReact=flags,
+                            logging.info('adding new isomer {0} to network'.format(spc))
+                            flags = np.array([s.molecule[0].getFormula() == form for s in reaction_model.core.species])
+                            reaction_model.enlarge((network, spc), reactEdge=False, unimolecularReact=flags,
                                                        bimolecularReact=np.zeros((len(reaction_model.core.species),
                                                                                   len(reaction_model.core.species))))
 
-                                flags = np.array(
-                                    [s.molecule[0].getFormula() == form for s in reaction_model.core.species])
-                                reaction_model.enlarge(reactEdge=True, unimolecularReact=flags,
+                            flags = np.array([s.molecule[0].getFormula() == form for s in reaction_model.core.species])
+                            reaction_model.enlarge(reactEdge=True, unimolecularReact=flags,
                                                        bimolecularReact=np.zeros((len(reaction_model.core.species),
                                                                                   len(reaction_model.core.species))))
         for network in self.networks:
@@ -279,6 +282,7 @@ class ExplorerJob(object):
             if self.energy_tol != np.inf or self.flux_tol != 0.0:
 
                 rxnSet = None
+                productSet = None
 
                 for T in Tlist:
                     if self.energy_tol != np.inf:
@@ -290,17 +294,26 @@ class ExplorerJob(object):
 
                     for P in Plist:
                         if self.flux_tol != 0.0:
-                            rxns = network.get_rate_filtered_reactions(T, P, self.flux_tol)
-                            if rxnSet is not None:
-                                rxnSet &= set(rxns)
+                            products = network.get_rate_filtered_products(T, P, self.flux_tol)
+                            products = [tuple(x) for x in products]
+                            if productSet is not None:
+                                productSet &= set(products)
                             else:
-                                rxnSet = set(rxns)
+                                productSet = set(products)
 
-                logging.info('removing reactions during reduction:')
-                for rxn in rxnSet:
-                    logging.info(rxn)
 
-                network.remove_reactions(reaction_model, list(rxnSet))
+                if rxnSet:
+                    logging.info('removing reactions during reduction:')
+                    for rxn in rxnSet:
+                        logging.info(rxn)
+                    rxnSet = list(rxnSet)
+                if productSet:
+                    logging.info('removing products during reduction:')
+                    for prod in productSet:
+                        logging.info([x.label for x in prod])
+                    productSet = list(productSet)
+
+                network.remove_reactions(reaction_model, rxns=rxnSet, prods=productSet)
 
                 for rxn in jobRxns:
                     if rxn not in network.pathReactions:

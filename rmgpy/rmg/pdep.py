@@ -322,7 +322,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
             self.pathReactions.append(newReaction)
             self.invalidate()
 
-    def get_energy_filtered_reactions(self,T,tol):
+    def get_energy_filtered_reactions(self, T, tol):
         """
         Returns a list of products and isomers that are greater in Free Energy
         than a*R*T + Gfsource(T)
@@ -354,7 +354,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                 
         return filtered_rxns
 
-    def get_rate_filtered_reactions(self,T,P,tol):
+    def get_rate_filtered_products(self, T, P, tol):
         """
         determines the set of pathReactions that have fluxes less than
         tol at steady state where all A => B + C reactions are irreversible
@@ -362,25 +362,35 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         """
         c = self.solve_SS_network(T,P)
         isomerSpcs = [iso.species[0] for iso in self.isomers]
-        filtered_rxns = []
-        for rxn in self.pathReactions:
-            val = 0.0
-            val2 = 0.0
-            if rxn.reactants[0] in isomerSpcs:
-                ind = isomerSpcs.index(rxn.reactants[0])
-                kf = rxn.getRateCoefficient(T,P)
-                val = kf*c[ind]
-            if rxn.products[0] in isomerSpcs:
-                ind2 = isomerSpcs.index(rxn.products[0])
-                kr = rxn.getRateCoefficient(T,P)/rxn.getEquilibriumConstant(T)
-                val2 = kr*c[ind2]
-    
-            if max(val,val2) < tol:
-                filtered_rxns.append(rxn)
-        
-        return filtered_rxns
-    
-    def solve_SS_network(self,T,P):
+        filtered_prod = []
+        if c is not None:
+            for rxn in self.netReactions:
+                val = 0.0
+                val2 = 0.0
+                if rxn.reactants[0] in isomerSpcs:
+                    ind = isomerSpcs.index(rxn.reactants[0])
+                    kf = rxn.getRateCoefficient(T,P)
+                    val = kf*c[ind]
+                if rxn.products[0] in isomerSpcs:
+                    ind2 = isomerSpcs.index(rxn.products[0])
+                    kr = rxn.getRateCoefficient(T,P)/rxn.getEquilibriumConstant(T)
+                    val2 = kr*c[ind2]
+
+                if max(val,val2) < tol:
+                    filtered_prod.append(rxn.products)
+
+            return filtered_prod
+
+        else:
+            logging.warn("Falling back flux reduction from Steady State analysis to rate coefficient analysis")
+            ks = np.array([rxn.getRateCoefficient(T,P) for rxn in self.netReactions])
+            frs = ks/ks.sum()
+            inds = [i for i in xrange(len(frs)) if frs[i] < tol]
+            filtered_prod = [self.netReactions[i].products for i in inds]
+            return filtered_prod
+
+
+    def solve_SS_network(self, T, P):
         """
         calculates the steady state concentrations if all A => B + C
         reactions are irreversible and the flux from/to the source
@@ -392,8 +402,8 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         
         isomerSpcs = [iso.species[0] for iso in self.isomers]
         
-        for rxn in self.pathReactions:
 
+        for rxn in self.netReactions:
             if rxn.reactants[0] in isomerSpcs:
                 ind = isomerSpcs.index(rxn.reactants[0])
                 kf = rxn.getRateCoefficient(T,P)
@@ -406,16 +416,16 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                 A[ind2,ind2] -= kr
             else:
                 ind2 = None
-            
-            if ind and ind2:
+
+            if ind is not None and ind2 is not None:
                 A[ind,ind2] += kr
                 A[ind2,ind] += kf
-            
+
             if bimolecular:
-                if rxn.reactants[0].species == self.source:
+                if rxn.reactants[0] == self.source:
                     kf = rxn.getRateCoefficient(T,P)
                     b[ind2] += kf
-                elif rxn.products[0].species == self.source:
+                elif rxn.products[0] == self.source:
                     kr = rxn.getRateCoefficient(T,P)/rxn.getEquilibriumConstant(T)
                     b[ind] += kr
         
@@ -429,20 +439,27 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         if len(b) == 1:
             return np.array([b[0]/A[0,0]])
         
-        con = np.linalg.cond(A) #this matrix can be very ill-conditioned so we enhance precision accordingly
-        mp.dps = 30+int(np.log10(con))
-        Amp = mp.matrix(A.tolist())
-        bmp = mp.matrix(b.tolist())
+        con = np.linalg.cond(A)
         
-        c = mp.qr_solve(Amp,bmp)
-        
-        c = np.array(list(c[0]))
-         
-        if any(c<=0.0):
-            c, rnorm = opt.nnls(A,b)
+        if np.log10(con) < 15:
+            c = np.linalg.solve(A,b)
+        else:
+            logging.warn("Matrix Ill-conditioned, attempting to use Arbitrary Precision Arithmetic")
+            mp.dps = 30+int(np.log10(con))
+            Amp = mp.matrix(A.tolist())
+            bmp = mp.matrix(b.tolist())
             
-        c = c.astype(np.float64)
-        
+            try:
+                c = mp.qr_solve(Amp,bmp)
+
+                c = np.array(list(c[0]))
+
+                if any(c<=0.0):
+                    c, rnorm = opt.nnls(A,b)
+
+                c = c.astype(np.float64)
+            except: #fall back to raw flux analysis rather than solve steady state problem
+                return None
         return c
                 
     
@@ -472,33 +489,88 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                 logging.info('Removing rxn: {}'.format(rxn))
                 self.pathReactions.remove(rxn)
                 
+        nrxns = []
+        for nrxn in self.netReactions:
+           if nrxn.products not in keptProducts or nrxn.reactants not in keptProducts:
+               logging.info('Removing net rxn: {}'.format(nrxn))
+           else:
+               logging.info('Keeping net rxn: {}'.format(nrxn))
+               nrxns.append(nrxn)
+        self.netReactions = nrxns
+
+        prods = []
         for prod in self.products:
             if prod.species not in keptProducts:
                 logging.info('Removing product: {}'.format(prod))
-                self.products.remove(prod)
-            
+            else:
+                logging.info("Keeping product: {}".format(prod))
+                prods.append(prod)
+
+        self.products = prods
+
+        rcts = []
         for rct in self.reactants:
             if rct.species not in keptProducts:
                 logging.info('Removing product: {}'.format(rct))
-                self.reactants.remove(react)
-        
+            else:
+                logging.info("Keeping product: {}".format(rct))
+                rcts.append(rct)
+        self.reactants = rcts
+
+        isos = []
         for iso in self.isomers:
             if iso.species not in keptProducts:
                 logging.info('Removing isomer: {}'.format(iso))
-                self.isomers.remove(iso)
-                if iso in self.explored:
-                    self.explored.remove(iso)
+            else:
+                logging.info("Keeping isomer: {}".format(iso))
+                isos.append(iso)
 
-    def remove_reactions(self,reactionModel,rxns):
+        self.isomers = isos
+        self.explored = [iso.species[0] for iso in isos]
+
+        self.Nisom = len(self.isomers)
+        self.Nreac = len(self.reactants)
+        self.Nprod = len(self.products)
+
+    def remove_reactions(self, reactionModel, rxns=None, prods=None):
         """
         removes a list of reactions from the network and all reactions/products
         left disconnected by removing those reactions
         """
-        for rxn in rxns:
-            self.pathReactions.remove(rxn)
-            
+        if rxns:
+            for rxn in rxns:
+                self.pathReactions.remove(rxn)
+
+        if prods:
+            isomers = [x.species[0] for x in self.isomers]
+
+            for prod in prods:
+                prod = [x for x in prod]
+                if prod[0] in isomers: #skip isomers
+                    continue
+                for rxn in self.pathReactions:
+                    if rxn.products == prod or rxn.reactants == prod:
+                        self.pathReactions.remove(rxn)
+
+            prodspc = [x[0] for x in prods]
+            for prod in prods:
+                prod = [x for x in prod]
+                if prod[0] in isomers: #deal with isomers
+                    for rxn in self.pathReactions:
+                        if rxn.reactants == prod and rxn.products[0] not in isomers and rxn.products[0] not in prodspc:
+                            break
+                        if rxn.products == prod and rxn.reactants[0] not in isomers and rxn.reactants not in prodspc:
+                            break
+                    else:
+                        for rxn in self.pathReactions:
+                            if rxn.reactants == prod or rxn.products == prod:
+                                self.pathReactions.remove(rxn)
+
+
         self.remove_disconnected_reactions()
-        
+
+        self.cleanup()
+
         self.invalidate()
         
         assert self.pathReactions != [], 'Reduction process removed all reactions, cannot update network with no reactions'
