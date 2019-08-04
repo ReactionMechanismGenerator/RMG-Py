@@ -210,8 +210,8 @@ than a*R*T + Gfsource(T)</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.rmg.pdep.PDepNetwork.get_rate_filtered_reactions">
-<code class="descname">get_rate_filtered_reactions</code><span class="sig-paren">(</span><em>T</em>, <em>P</em>, <em>tol</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.get_rate_filtered_reactions" title="Permalink to this definition">¶</a></dt>
+<dt id="rmgpy.rmg.pdep.PDepNetwork.get_rate_filtered_products">
+<code class="descname">get_rate_filtered_products</code><span class="sig-paren">(</span><em>T</em>, <em>P</em>, <em>tol</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.get_rate_filtered_products" title="Permalink to this definition">¶</a></dt>
 <dd><p>determines the set of pathReactions that have fluxes less than
 tol at steady state where all A =&gt; B + C reactions are irreversible
 and there is a constant flux from/to the source configuration of 1.0</p>
@@ -277,7 +277,7 @@ default.</p>
 
 <dl class="method">
 <dt id="rmgpy.rmg.pdep.PDepNetwork.remove_reactions">
-<code class="descname">remove_reactions</code><span class="sig-paren">(</span><em>reactionModel</em>, <em>rxns</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.remove_reactions" title="Permalink to this definition">¶</a></dt>
+<code class="descname">remove_reactions</code><span class="sig-paren">(</span><em>reactionModel</em>, <em>rxns=None</em>, <em>prods=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepNetwork.remove_reactions" title="Permalink to this definition">¶</a></dt>
 <dd><p>removes a list of reactions from the network and all reactions/products
 left disconnected by removing those reactions</p>
 </dd></dl>
