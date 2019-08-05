@@ -94,10 +94,9 @@ class TestThermoDatabase(unittest.TestCase):
 
         # Set up ML estimator
         models_path = os.path.join(settings['database.directory'], 'thermo', 'ml', 'main')
-        Hf298_path = os.path.join(models_path, 'H298')
-        S298_path = os.path.join(models_path, 'S298')
-        Cp_path = os.path.join(models_path, 'Cp')
-        self.ml_estimator = MLEstimator(Hf298_path, S298_path, Cp_path)
+        hf298_path = os.path.join(models_path, 'hf298')
+        s298_cp_path = os.path.join(models_path, 's298_cp')
+        self.ml_estimator = MLEstimator(hf298_path, s298_cp_path)
 
     def testPickle(self):
         """
