@@ -1411,7 +1411,11 @@ def getSpeciesIdentifier(species):
             # Try the chemical formula
             name = '{0}({1:d})'.format(species.molecule[0].getFormula(), species.index)
             if len(name) <= 10:
-                return name
+                if 'obs' in label:
+                    # For MBSampledReactor, keep observed species tag
+                    return name + '_obs'
+                else:
+                    return name
     
         # As a last resort, just use the index
         if species.index >= 0:
@@ -1421,7 +1425,11 @@ def getSpeciesIdentifier(species):
             else:
                 name = 'S({0:d})'.format(species.index)
             if len(name) <= 10:
-                return name
+                if 'obs' in label:
+                    # For MBSampledReactor, keep observed species tag
+                    return name + '_obs'
+                else:
+                    return name
 
     # If we're here then we just can't come up with a valid Chemkin name
     # for this species, so raise an exception
