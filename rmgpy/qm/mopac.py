@@ -30,7 +30,7 @@
 
 import os
 import re
-import external.cclib as cclib
+import cclib as cclib
 import logging
 from subprocess import Popen, PIPE
 import distutils.spawn

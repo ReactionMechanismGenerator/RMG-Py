@@ -15,6 +15,7 @@ MarkupSafe # this makes Jinja2 faster
 Jinja2 # this is for rendering the HTML output files
 cairocffi
 yaml
+cclib # needs to be 1.6.1.rmg
 
 # For postprocessing the profiling data
 argparse

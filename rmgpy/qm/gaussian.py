@@ -31,7 +31,7 @@
 import os
 
 import distutils.spawn
-import external.cclib as cclib
+import cclib as cclib
 import itertools
 import logging
 from subprocess import Popen
