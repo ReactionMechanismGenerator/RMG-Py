@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 ###############################################################################
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
@@ -28,17 +25,24 @@
 #                                                                             #
 ###############################################################################
 
+import contextlib
 import os
+from argparse import Namespace
+from typing import Callable, Union
+
+try:
+    import chemprop
+except ImportError as e:
+    chemprop = None
+    chemprop_exception = e
 import numpy as np
 
-os.environ['KERAS_BACKEND'] = 'theano'
-from dde.predictor import Predictor
-
+from rmgpy.molecule import Molecule
+from rmgpy.species import Species
 from rmgpy.thermo import ThermoData
 
 
-class MLEstimator():
-
+class MLEstimator:
     """
     A machine learning based estimator for thermochemistry prediction.
 
@@ -48,55 +52,41 @@ class MLEstimator():
     Attribute            Type                    Description
     ==================== ======================= =======================
     `hf298_estimator`    :class:`Predictor`      Hf298 estimator
-    `hf298_uncertainty`  ``bool``                Hf298 uncertainty flag
-    `s298_estimator`     :class:`Predictor`      S298 estimator
-    `s298_uncertainty`   ``bool``                S298 uncertainty flag
-    `cp_estimator`       :class:`Predictor`      Cp estimator
-    `cp_uncertainty`     ``bool``                Cp uncertainty flag
+    `s298_cp_estimator`  :class:`Predictor`      S298 and Cp estimator
+    `temps`              ``list``                Cp temperatures
     ==================== ======================= =======================
-
     """
 
-    def __init__(self, hf298_path, s298_path, cp_path):
-        self.hf298_estimator, self.hf298_uncertainty = load_estimator(hf298_path)
-        self.s298_estimator, self.s298_uncertainty = load_estimator(s298_path)
-        self.cp_estimator, self.cp_uncertainty = load_estimator(cp_path)
+    # These should correspond to the temperatures that the ML model was
+    # trained on for Cp.
+    temps = [300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0]
 
-    def get_thermo_data(self, molecule):
+    def __init__(self, hf298_path: str, s298_cp_path: str):
+        self.hf298_estimator = load_estimator(hf298_path)
+        self.s298_cp_estimator = load_estimator(s298_cp_path)
+
+    def get_thermo_data(self, molecule: Union[Molecule, str]) -> ThermoData:
         """
         Return thermodynamic parameters corresponding to a given
-        :class:`Molecule` object `molecule`. Also set the
-        uncertainties estimated by the ML model if available.
+        :class:`Molecule` object `molecule` or a SMILES string.
 
         Returns: ThermoData
         """
+        molecule = Molecule(SMILES=molecule) if isinstance(molecule, str) else molecule
 
-        # These should correspond to the temperatures that the ML model was
-        # trained on for Cp.
-        temps = [300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0]
-
-        hf298 = self.hf298_estimator.predict(molecule=molecule, sigma=self.hf298_uncertainty)
-        s298 = self.s298_estimator.predict(molecule=molecule, sigma=self.s298_uncertainty)
-        cp = self.cp_estimator.predict(molecule=molecule, sigma=self.cp_uncertainty)
-
-        # If uncertainty is available for the ML model, a tuple of predicted
-        # value and estimated uncertainty is returned. An uncertainty of None
-        # gets set to a valua of 0 by :class:`Quantity`.
-        hf298, hf298u = hf298 if isinstance(hf298, tuple) else (hf298, None)
-        s298, s298u = s298 if isinstance(s298, tuple) else (s298, None)
-        cp, cpu = cp if isinstance(cp, tuple) else (cp, None)
-
-        cp = [np.float64(cp_i) for cp_i in cp]
-        if cpu is not None:
-            cpu = [np.float64(cpu_i) for cpu_i in cpu]
+        hf298 = self.hf298_estimator(molecule.SMILES)[0][0]
+        s298_cp = self.s298_cp_estimator(molecule.SMILES)[0]
+        s298, cp = s298_cp[0], s298_cp[1:]
 
         cp0 = molecule.calculateCp0()
         cpinf = molecule.calculateCpInf()
+
+        # Set uncertainties to 0 because the current model cannot estimate them
         thermo = ThermoData(
-            Tdata=(temps, 'K'),
-            Cpdata=(cp, 'cal/(mol*K)', cpu),
-            H298=(hf298, 'kcal/mol', hf298u),
-            S298=(s298, 'cal/(mol*K)', s298u),
+            Tdata=(self.temps, 'K'),
+            Cpdata=(cp, 'cal/(mol*K)', np.zeros(len(self.temps))),
+            H298=(hf298, 'kcal/mol', 0),
+            S298=(s298, 'cal/(mol*K)', 0),
             Cp0=(cp0, 'J/(mol*K)'),
             CpInf=(cpinf, 'J/(mol*K)'),
             Tmin=(300.0, 'K'),
@@ -106,7 +96,7 @@ class MLEstimator():
 
         return thermo
 
-    def get_thermo_data_for_species(self, species):
+    def get_thermo_data_for_species(self, species: Species) -> ThermoData:
         """
         Return the set of thermodynamic parameters corresponding to a
         given :class:`Species` object `species`.
@@ -119,21 +109,62 @@ class MLEstimator():
         return self.get_thermo_data(species.molecule[0])
 
 
-def load_estimator(model_path):
-    estimator = Predictor()
+def load_estimator(model_dir: str) -> Callable[[str], np.ndarray]:
+    """
+    Load chemprop model and return function for evaluating it.
+    """
+    if chemprop is None:
+        # Delay chemprop ImportError until we actually try to use it
+        # so that RMG can load successfully without chemprop.
+        raise chemprop_exception
 
-    input_file = os.path.join(model_path, 'predictor_input.py')
-    weights_file = os.path.join(model_path, 'full_train.h5')
-    model_file = os.path.join(model_path, 'full_train.json')
-    mean_and_std_file = os.path.join(model_path, 'full_train_mean_std.npz')
+    args = Namespace()  # Simple class to hold attributes
 
-    estimator.load_input(input_file)
-    if os.path.exists(model_file):
-        estimator.load_architecture(model_file)
-        uncertainty = True
-    else:
-        uncertainty = False
-    mean_and_std_file = mean_and_std_file if os.path.exists(mean_and_std_file) else None
-    estimator.load_parameters(param_path=weights_file, mean_and_std_path=mean_and_std_file)
+    # Set up chemprop predict arguments
+    args.checkpoint_dir = model_dir
+    args.checkpoint_path = None
+    chemprop.parsing.update_checkpoint_args(args)
+    args.cuda = False
 
-    return estimator, uncertainty
+    scaler, features_scaler = chemprop.utils.load_scalers(args.checkpoint_paths[0])
+    train_args = chemprop.utils.load_args(args.checkpoint_paths[0])
+
+    # Update args with training arguments
+    for key, value in vars(train_args).items():
+        if not hasattr(args, key):
+            setattr(args, key, value)
+
+    # Load models in ensemble
+    models = []
+    for checkpoint_path in args.checkpoint_paths:
+        models.append(chemprop.utils.load_checkpoint(checkpoint_path, cuda=args.cuda))
+
+    # Set up estimator
+    def estimator(smi: str):
+        # Make dataset
+        data = chemprop.data.MoleculeDataset(
+            [chemprop.data.MoleculeDatapoint(line=[smi], args=args)]
+        )
+
+        # Normalize features
+        if train_args.features_scaling:
+            data.normalize_features(features_scaler)
+
+        # Redirect chemprop stderr to null device so that it doesn't
+        # print progress bars every time a prediction is made
+        with open(os.devnull, 'w') as f, contextlib.redirect_stderr(f):
+            # Predict with each model individually and sum predictions
+            sum_preds = np.zeros((len(data), args.num_tasks))
+            for model in models:
+                model_preds = chemprop.train.predict(
+                    model=model,
+                    data=data,
+                    batch_size=1,  # We'll only predict one molecule at a time
+                    scaler=scaler
+                )
+                sum_preds += np.array(model_preds)
+
+        avg_preds = sum_preds / len(models)
+        return avg_preds
+
+    return estimator

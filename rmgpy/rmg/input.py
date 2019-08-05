@@ -641,10 +641,9 @@ def mlEstimator(thermo=True,
         models_path = os.path.join(settings['database.directory'], 'thermo', 'ml', name)
         if not os.path.exists(models_path):
             raise InputError('Cannot find ML models folder {}'.format(models_path))
-        H298_path = os.path.join(models_path, 'H298')
-        S298_path = os.path.join(models_path, 'S298')
-        Cp_path = os.path.join(models_path, 'Cp')
-        rmg.ml_estimator = MLEstimator(H298_path, S298_path, Cp_path)
+        hf298_path = os.path.join(models_path, 'hf298')
+        s298_cp_path = os.path.join(models_path, 's298_cp')
+        rmg.ml_estimator = MLEstimator(hf298_path, s298_cp_path)
 
         uncertainty_cutoffs = dict(
             H298=Quantity(*H298UncertaintyCutoff),
