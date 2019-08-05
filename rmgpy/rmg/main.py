@@ -1745,10 +1745,15 @@ class RMG(util.Subject):
         Complete the model generation.
         """
         # Print neural network-generated quote
+        import contextlib
         import datetime
         import textwrap
         try:
-            from textgenrnn.quotes import get_quote
+            # Disable all tensorflow logging
+            os.environ['KMP_WARNINGS'] = 'off'
+            os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+            with open(os.devnull, 'w') as f, contextlib.redirect_stdout(f), contextlib.redirect_stderr(f):
+                from textgenrnn.quotes import get_quote
         except ImportError:
             pass
         else:
