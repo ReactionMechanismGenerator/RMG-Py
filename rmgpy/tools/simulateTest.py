@@ -39,7 +39,8 @@ import rmgpy
 class SimulateTest(unittest.TestCase):
 
     def test_minimal(self):
-        folder = os.path.join(os.path.dirname(rmgpy.__file__), 'tools/data/sim/simple')
+        """Test that we can simlulate a SimpleReactor with sensitivity"""
+        folder = os.path.join(os.path.dirname(rmgpy.__file__), 'tools', 'data', 'sim', 'simple')
         
         inputFile = os.path.join(folder, 'input.py')
         chemkinFile = os.path.join(folder, 'chem.inp')
@@ -57,7 +58,8 @@ class SimulateTest(unittest.TestCase):
         os.remove(os.path.join(folder, 'simulate.log'))
 
     def test_liquid(self):
-        folder = os.path.join(os.path.dirname(rmgpy.__file__), 'tools/data/sim/liquid')
+        """Test that we can simulate a LiquidReactor with sensitivity"""
+        folder = os.path.join(os.path.dirname(rmgpy.__file__), 'tools', 'data', 'sim', 'liquid')
 
         inputFile = os.path.join(folder, 'input.py')
         chemkinFile = os.path.join(folder, 'chem.inp')
@@ -70,6 +72,23 @@ class SimulateTest(unittest.TestCase):
 
         self.assertTrue(os.path.isfile(simfile))
         self.assertTrue(os.path.isfile(sensfile))
+
+        shutil.rmtree(os.path.join(folder, 'solver'))
+        os.remove(os.path.join(folder, 'simulate.log'))
+
+    def test_mbSampled(self):
+        """Test that we can simulate an MBSampledReactor"""
+        folder = os.path.join(os.path.dirname(rmgpy.__file__), 'tools', 'data', 'sim', 'mbSampled')
+
+        inputFile = os.path.join(folder, 'input.py')
+        chemkinFile = os.path.join(folder, 'chem.inp')
+        dictFile = os.path.join(folder, 'species_dictionary.txt')
+
+        run_simulation(inputFile, chemkinFile, dictFile)
+
+        simfile = os.path.join(folder, 'solver', 'simulation_1_30.csv')
+
+        self.assertTrue(os.path.isfile(simfile))
 
         shutil.rmtree(os.path.join(folder, 'solver'))
         os.remove(os.path.join(folder, 'simulate.log'))
