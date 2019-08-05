@@ -28,6 +28,7 @@
 #                                                                             #
 ###############################################################################
 
+import logging
 import unittest
 import os
 import os.path
@@ -36,7 +37,13 @@ import shutil
 from rmgpy.tools.simulate import run_simulation
 import rmgpy
 
+
 class SimulateTest(unittest.TestCase):
+
+    def setUp(self):
+        """This method is run once before each unit test"""
+        # Disable logging
+        logging.disable(logging.WARNING)
 
     def test_minimal(self):
         """Test that we can simlulate a SimpleReactor with sensitivity"""
@@ -96,3 +103,6 @@ class SimulateTest(unittest.TestCase):
     def tearDown(self):
         import rmgpy.data.rmg
         rmgpy.data.rmg.database = None
+
+        # Reset logging
+        logging.disable(logging.NOTSET)
