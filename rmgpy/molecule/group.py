@@ -1215,8 +1215,19 @@ class Group(Graph):
             molecule = Group(atoms=g.vertices)
             molecules.append(molecule)
         return molecules
-                
-                               
+
+    def clearRegDims(self):
+        """
+        clear regularization dimensions
+        """
+        cython.declare(atm=GroupAtom)
+        for atm in self.atoms:
+            atm.reg_dim_atm = [[],[]]
+            atm.reg_dim_u = [[],[]]
+            atm.reg_dim_r = [[],[]]
+        for bd in self.getAllEdges():
+            bd.reg_dim = [[],[]]
+
     def getExtensions(self,R=None,basename='',atmInd=None, atmInd2=None, Nsplits=None):
         """
         generate all allowed group extensions and their complements
