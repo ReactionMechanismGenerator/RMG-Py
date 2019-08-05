@@ -2774,7 +2774,7 @@ class KineticsFamily(Database):
         if entry.parent:
             entry.parent.children.append(entry)
 
-    def splitReactions(self, rxns, newgrp):
+    def _splitReactions(self, rxns, newgrp):
         """
         divides the reactions in rxns between the new
         group structure newgrp and the old structure with 
@@ -2809,7 +2809,7 @@ class KineticsFamily(Database):
         for the extension ext with name extname to the parent entry parent
         """
         rxns = templateRxnMap[parent.label]
-        new,old,newInds = self.splitReactions(rxns,ext)
+        new,old,newInds = self._splitReactions(rxns,ext)
         if len(new) == 0:
             return np.inf,False
         elif len(old) == 0:
@@ -3061,7 +3061,7 @@ class KineticsFamily(Database):
         rxns = templateRxnMap[parent.label]
         
         
-        new,left,newInds = self.splitReactions(rxns,ext[0])
+        new,left,newInds = self._splitReactions(rxns,ext[0])
         
         compEntries = []
         newEntries = []
@@ -3234,7 +3234,7 @@ class KineticsFamily(Database):
             removeInds = []
             for k,p in enumerate(activeProcs): #check if any processes have finished
                 if activeConns[k].poll():
-                    newEntries = self.absorbProcess(p,activeConns[k],procNames[k])
+                    newEntries = self._absorbProcess(p,activeConns[k],procNames[k])
                     extraEntries += newEntries
                     removeInds.append(k)
 
@@ -3263,7 +3263,7 @@ class KineticsFamily(Database):
                         procsOut = int(len(templateRxnMap[entry.label])/psize*freeProcs)
                         freeProcs -= procsOut
                         assert freeProcs >= 0
-                        conn,p,name = spawnTreeProcess(family=self, templateRxnMap={entry.label:templateRxnMap[entry.label]},
+                        conn,p,name = _spawnTreeProcess(family=self, templateRxnMap={entry.label:templateRxnMap[entry.label]},
                                             obj=obj, T=T, nprocs=procsOut-1, depth=depth, minSplitableEntryNum=minSplitableEntryNum,
                                             minRxnsToSpawn=minRxnsToSpawn)
                         activeProcs.append(p)
@@ -3312,7 +3312,7 @@ class KineticsFamily(Database):
 
         return
 
-    def absorbProcess(self,p,conn,name):
+    def _absorbProcess(self,p,conn,name):
         try:
             grps = conn.recv()
             p.terminate()
@@ -3341,7 +3341,7 @@ class KineticsFamily(Database):
 
         pool = mp.Pool(nprocs)
 
-        kineticsList = np.array(pool.map(makeRule,inputs[inds]))
+        kineticsList = np.array(pool.map(_makeRule,inputs[inds]))
         kineticsList = kineticsList[revinds] #fix order
 
         for i,kinetics in enumerate(kineticsList):
@@ -4228,7 +4228,7 @@ def getObjectiveFunction(kinetics1,kinetics2,obj=informationGain,T=1000.0):
     
     return obj(ks1,ks2), N1 == 0
 
-def makeRule(rr):
+def _makeRule(rr):
     """
     function for parallelization of rule and uncertainty calculation
     Errors in Ln(k) at each reaction are treated as samples from a weighted normal distribution
@@ -4259,14 +4259,14 @@ def makeRule(rr):
     else:
         return None
 
-def spawnTreeProcess(family,templateRxnMap,obj,T,nprocs,depth,minSplitableEntryNum,minRxnsToSpawn):
+def _spawnTreeProcess(family,templateRxnMap,obj,T,nprocs,depth,minSplitableEntryNum,minRxnsToSpawn):
     parentConn, childConn = mp.Pipe()
     name = templateRxnMap.keys()[0]
-    p = mp.Process(target=childMakeTreeNodes,args=(family,childConn,templateRxnMap,obj,T,nprocs,depth,name,minSplitableEntryNum,minRxnsToSpawn))
+    p = mp.Process(target=_childMakeTreeNodes,args=(family,childConn,templateRxnMap,obj,T,nprocs,depth,name,minSplitableEntryNum,minRxnsToSpawn))
     p.start()
     return parentConn,p,name
 
-def childMakeTreeNodes(family,childConn,templateRxnMap,obj,T,nprocs,depth,name,minSplitableEntryNum,minRxnsToSpawn):
+def _childMakeTreeNodes(family,childConn,templateRxnMap,obj,T,nprocs,depth,name,minSplitableEntryNum,minRxnsToSpawn):
     delLabels = []
     rootlabel = templateRxnMap.keys()[0]
     for label in family.groups.entries.keys():
