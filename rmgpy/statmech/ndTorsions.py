@@ -409,3 +409,46 @@ end_temperatures                   #
            self.fitFourier()
            self.getSplistfile()
            self.getEigvals()
+
+class HinderedRotorClassicalND(Mode):
+    """
+    A statistical mechanical model of a ND-dimensional classical hindered rotor.
+
+    The attributes are:
+
+    ======================== ===================================================
+    Attribute                Description
+    ======================== ===================================================
+    `calcPath`               Location of the folder or file containing scan points
+    `pivots`                 list of 1-Indexed indices of the pairs of atoms involved in the rotors
+    `tops`                   list of the 1-Indexed indices of the atoms on one side of the corresponding rotor and the associated pivot atom
+    `sigmas`                 list of the symmetry numbers for each rotor
+    `conformer`              Conformer object corresponding to the lowest energy conformer of the species
+    `F`                      Force constant matrix of the conformer at the lowest energy conformer of the species
+    `semiclassical`          Turns on/off the semi-classical correction (recommended)
+    `isLinear`               whether the conformer is linear or not
+    `isTS`                   whether the conformer is a TS or not
+    ======================== ===================================================
+    """
+
+    def __init__(self, pivots, tops, sigmas, calcPath, conformer=None, F=None,
+                 semiclassical=False, isLinear=False, isTS=False):
+        Mode.__init__(self, False)
+        self.dof = len(sigmas)
+        self.calcPath = calcPath
+
+        self.pivots = pivots
+        self.tops = tops
+        self.sigmas = np.array(sigmas)
+        self.conformer = conformer
+        self.F = F
+        self.semiclassical= semiclassical
+        self.isLinear = isLinear
+        self.isTS = isTS
+        self.freqs = None
+
+        self.xyzs = []
+        self.phis = []
+        self.Es = []
+        self.atnums = []
+
