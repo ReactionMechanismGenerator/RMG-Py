@@ -72,7 +72,8 @@ def parse_command_line_arguments(command_line_args=None):
                         metavar='DIR', help='use DIR as output directory')
 
     # Add restart option
-    parser.add_argument('-r', '--restart', action='store_true', help='restart an incomplete job')
+    parser.add_argument('-r', '--restart', type=str, nargs=1, metavar='path/to/seed/', help='restart RMG from a seed',
+                        default='')
 
     parser.add_argument('-p', '--profile', action='store_true',
                         help='run under cProfile to gather profiling statistics, and postprocess them if job completes')
@@ -102,6 +103,9 @@ def parse_command_line_arguments(command_line_args=None):
     # If walltime was specified, retrieve this string from the element 1 list
     if args.walltime != '00:00:00:00':
         args.walltime = args.walltime[0]
+
+    if args.restart:
+        args.restart = args.restart[0]
 
     if args.maxproc != 1:
         args.maxproc = args.maxproc[0]

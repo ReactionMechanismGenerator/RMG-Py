@@ -697,11 +697,16 @@ def pressureDependence(
 def options(name='Seed', generateSeedEachIteration=True, saveSeedToDatabase=False, units='si', saveRestartPeriod=None,
             generateOutputHTML=False, generatePlots=False, saveSimulationProfiles=False, verboseComments=False, 
             saveEdgeSpecies=False, keepIrreversible=False, trimolecularProductReversible=True, wallTime='00:00:00:00'):
+    if saveRestartPeriod:
+        logging.warning("`saveRestartPeriod` flag was set in the input file, but this feature has been removed. Please "
+                        "remove this line from the input file. This will throw an error after RMG-Py 3.1. For "
+                        "restarting an RMG job see the documentation for restarting from a seed mechanism at "
+                        "http://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/input.html#restarting-from-a-seed-mechanism")
+
     rmg.name = name
     rmg.generateSeedEachIteration=generateSeedEachIteration
     rmg.saveSeedToDatabase=saveSeedToDatabase
     rmg.units = units
-    rmg.saveRestartPeriod = Quantity(saveRestartPeriod) if saveRestartPeriod else None
     if generateOutputHTML:
         logging.warning('Generate Output HTML option was turned on. Note that this will slow down model generation.')
     rmg.generateOutputHTML = generateOutputHTML 
@@ -1115,12 +1120,6 @@ def saveInputFile(path, rmg):
     # Options
     f.write('options(\n')
     f.write('    units = "{0}",\n'.format(rmg.units))
-    if rmg.saveRestartPeriod:
-        warnings.warn("The option saveRestartPeriod is no longer supported and may be"
-                      " removed in version 2.3.", DeprecationWarning)
-        f.write('    saveRestartPeriod = ({0},"{1}"),\n'.format(rmg.saveRestartPeriod.getValue(), rmg.saveRestartPeriod.units))
-    else:
-        f.write('    saveRestartPeriod = None,\n')
     f.write('    generateOutputHTML = {0},\n'.format(rmg.generateOutputHTML))
     f.write('    generatePlots = {0},\n'.format(rmg.generatePlots))
     f.write('    saveSimulationProfiles = {0},\n'.format(rmg.saveSimulationProfiles))

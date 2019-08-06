@@ -48,7 +48,6 @@ model(
 
 options(
     units='si',
-    saveRestartPeriod=None,
     generateOutputHTML=True,
     generatePlots=False,
     saveEdgeSpecies=True,
