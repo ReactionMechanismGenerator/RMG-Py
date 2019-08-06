@@ -322,3 +322,36 @@ end_temperatures                   #
        f = open(os.path.join(self.q2dtor_dir,self.name+".inp"),'w')
        f.write(inp)
        f.close()
+
+   def getIcsFile(self):
+       """
+       use Q2DTor to generate a .ics file the Q2DTor file that
+       has torsional information
+       """
+       out = subprocess.check_call(['python2',self.q2dtor_path,self.name,'--init'],
+                       cwd=self.q2dtor_dir)
+
+   def fitFourier(self):
+       """
+       use Q2DTor to fit fourier coefficients
+       to the potential
+       """
+       out = subprocess.check_call(['python2',self.q2dtor_path,self.name,'--fourier'],
+                       cwd=self.q2dtor_dir)
+
+   def getSplistfile(self):
+       """
+       use Q2DTor to generate a .splist file
+       """
+       out = subprocess.check_call(['python2',self.q2dtor_path,self.name,'--findsp'],
+                       cwd=self.q2dtor_dir)
+
+   def getEigvals(self):
+       """
+       use Q2DTor to determine the QM energy levels for the 2D-NS
+       rotors
+       writes a .evals file and reads it to fill self.evals and self.energy
+       """
+       out = subprocess.check_call(['python2',self.q2dtor_path,self.name,'--tor2dns'],
+                       cwd=self.q2dtor_dir)
+       self.readEigvals()
