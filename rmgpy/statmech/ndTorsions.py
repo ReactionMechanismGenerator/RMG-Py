@@ -366,3 +366,27 @@ end_temperatures                   #
            evals = [float(x.split()[1]) for x in out[2:]]  # cm^-1
            self.evals = np.array(evals)*10**2*constants.c*constants.h*constants.Na  # J/mol
            self.energy = lambda x: self.evals[x]
+
+   def getPartitionFunction(self, T):
+       return schrodinger.getPartitionFunction(T,self.energy,nmax=len(self.evals))
+
+   def getHeatCapacity(self, T):
+       return schrodinger.getHeatCapacity(T,self.energy,nmax=len(self.evals))
+
+   def getEnthalpy(self, T):
+       return schrodinger.getEnthalpy(T,self.energy,nmax=len(self.evals))
+
+   def getEntropy(self, T):
+       return schrodinger.getEntropy(T,self.energy,nmax=len(self.evals))
+
+   def getSumOfStates(self, Elist, sumStates0=None):
+       if sumStates0:
+           return schrodinger.getSumOfStates(Elist,self.energy,sumStates0=sumStates0,nmax=len(self.evals))
+       else:
+           return schrodinger.getSumOfStates(Elist,self.energy,nmax=len(self.evals))
+
+   def getDensityOfStates(self, Elist, densStates0=None):
+       if densStates0:
+           return schrodinger.getDensityOfStates(Elist,self.energy,densStates0=densStates0,nmax=len(self.evals))
+       else:
+           return schrodinger.getDensityOfStates(Elist,self.energy,nmax=len(self.evals))
