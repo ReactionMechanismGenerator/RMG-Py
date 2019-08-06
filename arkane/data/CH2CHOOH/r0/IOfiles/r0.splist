@@ -1,0 +1,23 @@
+#                                                                   
+#  List of stationary points (SP) in the 2D-PES                     
+# ---------------------------------------------                     
+#         * Type = 0 for minima                                     
+#         * Type = 1 for saddle points                              
+#         * Type = 2 for maxima                                     
+#         * Phi1 and Phi2 in [degrees]                              
+#         * Energy in [1/cm] with regard to global the minimum      
+#                                                                   
+#  Type     Phi1     Phi2        Energy          opt OK?            SP name      
+# ------ | ------ | ------ | ---------------- | ---------- | --------------------
+    0        3.31   214.80             -7.61        NO               S02_003_215  
+    1        0.00   180.00            +14.06        NO               S02_000_180  
+    0      149.00   156.25           +460.71        NO               S02_149_156  
+    1      180.00   180.00           +569.99        NO               S02_180_180  
+    1       74.00   174.00          +1365.16        NO               S02_074_174  
+    1        2.00     0.00          +3719.51        NO               S02_002_000  
+    1      114.00     7.00          +3802.02        NO               S02_114_007  
+    2      320.42    19.19          +3807.82        NO               S02_320_019  
+    2       84.64     5.85          +3856.83        NO               S02_085_006  
+    2      180.00     0.00          +4542.54        NO               S02_180_000  
+
+# Number of stationary points: 10

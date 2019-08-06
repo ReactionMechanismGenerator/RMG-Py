@@ -61,6 +61,7 @@ from arkane.qchem import QChemLog
 from arkane.common import symbol_by_number
 from arkane.common import ArkaneSpecies
 from arkane.encorr.corr import get_atom_correction, get_bac
+from arkane.util import determine_qm_software
 
 
 ################################################################################
@@ -717,33 +718,6 @@ class StatMechJob(object):
 
 
 ################################################################################
-
-
-def determine_qm_software(fullpath):
-    """
-    Given a path to the log file of a QM software, determine whether it is Gaussian, Molpro, or QChem
-    """
-    with open(fullpath, 'r') as f:
-        line = f.readline()
-        software_log = None
-        while line != '':
-            if 'gaussian' in line.lower():
-                f.close()
-                software_log = GaussianLog(fullpath)
-                break
-            elif 'qchem' in line.lower():
-                f.close()
-                software_log = QChemLog(fullpath)
-                break
-            elif 'molpro' in line.lower():
-                f.close()
-                software_log = MolproLog(fullpath)
-                break
-            line = f.readline()
-        else:
-            raise InputError(
-                "File at {0} could not be identified as a Gaussian, QChem or Molpro log file.".format(fullpath))
-    return software_log
 
 
 def is_linear(coordinates):
