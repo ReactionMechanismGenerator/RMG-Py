@@ -71,7 +71,38 @@ class TestHinderedRotor2D(unittest.TestCase):
     def test_partition_function_calc(self):
         self.hd2d.readEigvals()
         self.assertAlmostEqual(self.hd2d.getPartitionFunction(300.0),3.29752, 4)
-
+        
+class TestHinderedRotorClassicalND(unittest.TestCase):
+    """
+    Contains unit tests of the StatmechJob class.
+    """
+    @classmethod
+    def setUp(cls):
+        """A method that is run before each unit test in this class"""
+        freqpath = os.path.join(os.path.dirname(os.path.split(os.path.split(os.path.abspath(__file__))[0])[0]),
+                                                         'arkane', 'data', 'TolueneFreq.log')
+        rotpath = os.path.join(os.path.dirname(os.path.split(os.path.split(os.path.abspath(__file__))[0])[0]),
+                                                         'arkane', 'data', 'TolueneRot1.log')
+        lg = determine_qm_software(freqpath)
+        
+        conf,unscaled_freqs = lg.loadConformer(symmetry=1,spinMultiplicity=1,
+                                                                    opticalIsomers=1,
+                                                                    label='Toulene')
+        coordinates, number, mass = lg.loadGeometry()
+        conf.coordinates = (coordinates, "angstroms")
+        conf.number = number
+        conf.mass = (mass, "amu")
+        
+        F = lg.loadForceConstantMatrix()
+        
+        cls.hdnd= HinderedRotorClassicalND(pivots=[[3,12]],tops=[[12,13,14,15]],sigmas=[6.0],
+                                           calcPath=rotpath,conformer=conf,F=F,semiclassical=True)
+        
+    def test_hindered_rotor_ND(self):
+        self.hdnd.readScan()
+        self.assertAlmostEqual(self.hdnd.Es[0],20.048316823666962,4)
+        self.hdnd.fit()
+        self.assertAlmostEqual(self.hdnd.calcPartitionFunction(300.0),2.85254214434672,5)
         
 if __name__ == '__main__':
     unittest.main(testRunner=unittest.TextTestRunner(verbosity=2))
