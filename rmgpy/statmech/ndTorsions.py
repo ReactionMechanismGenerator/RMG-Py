@@ -632,6 +632,49 @@ class HinderedRotorClassicalND(Mode):
         """
         return constants.R*(np.log(self.Q(T))+T*self.dQdT(T)/self.Q(T))
 
+    def getFrequencies(self):
+        """
+        get the frequencies corresponding to the internal rotors
+        this is done by projecting their frequencies out of the force constant matrix
+        """
+        phis = self.phis
+        if isinstance(phis[0],float):
+            Ndims = 1
+            phis = np.array([np.array([x]) for x in phis])
+        else:
+            Ndims = len(phis[0])
+
+        zs = np.zeros(Ndims)
+        Npts = 3**Ndims
+
+        norms = np.array([np.linalg.norm(phi) for phi in phis])
+        inds = norms.argsort()[:Npts]
+        phistars = phis[inds]
+        Estars = self.Es[inds]
+
+        poly = PolynomialFeatures(degree=2)
+        phisfit = poly.fit_transform(phistars)
+        clf = linear_model.LinearRegression()
+        clf.fit(phisfit,Estars)
+
+        def f(x):
+            for i in xrange(Ndims-1):
+                x = np.expand_dims(x, axis=0)
+            xp = poly.fit_transform(x)
+            return clf.predict(xp)
+
+        if Ndims == 1:
+            hes = nd.Hessian(lambda x: f([x]))
+        else:
+            hes = nd.Hessian(f)
+
+        H = hes(zs)
+        eigs = np.linalg.eigvals(hes(zs))
+
+        I = self.rootD(*zs)**(2.0/Ndims)*constants.Na*1e23*1.66053904e-47
+        freq = np.sqrt(eigs/(I*constants.Na))/(2.0*np.pi)/(constants.c*100.0)
+        return freq
+
     def run(self):
         """
         ready object for t property
