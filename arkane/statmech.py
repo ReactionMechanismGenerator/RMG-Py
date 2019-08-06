@@ -762,6 +762,8 @@ def projectRotors(conformer, F, rotors, linear, is_ts, label):
     for rotor in rotors:
         if len(rotor) == 8:
             Nrotors += 2
+        elif len(rotor) == 5 and isinstance(rotor[1][0],list):
+            Nrotors += len(rotor[1])
         else:
             Nrotors += 1
 
@@ -898,7 +900,9 @@ def projectRotors(conformer, F, rotors, linear, is_ts, label):
 
     counter = 0
     for i, rotor in enumerate(rotors):
-        if len(rotor) == 5:
+        if len(rotor) == 5 and isinstance(rotor[1][0],list):
+            scandir,pivotss,tops,sigmas,semiclassical = rotor
+        elif len(rotor) == 5:
             scanLog, pivots, top, symmetry, fit = rotor
             pivotss = [pivots]
             tops = [top]
@@ -906,6 +910,10 @@ def projectRotors(conformer, F, rotors, linear, is_ts, label):
             pivots, top, symmetry = rotor
             pivotss = [pivots]
             tops = [top]
+        elif len(rotor) == 8:
+            scandir,pivots1,top1,symmetry1,pivots2,top2,symmetry2,symmetry = rotor
+            pivotss = [pivots1,pivots2]
+            tops = [top1,top2]
         else:
             raise ValueError("{} not a proper rotor format".format(rotor))
         for i in xrange(len(tops)):
