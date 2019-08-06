@@ -605,6 +605,30 @@ class HinderedRotorClassicalND(Mode):
 
         return Q
 
+    def getPartitionFunction(self, T):
+        """
+        calculate the partition function
+        """
+        return self.Q(T)
+
+    def getEnthalpy(self, T):
+        """
+        calculate the enthalpy
+        """
+        return self.dQdT(T)/self.Q(T)*constants.R*T**2
+
+    def getHeatCapacity(self, T):
+        """
+        calculate the heat capacity
+        """
+        return constants.R*(self.d2QdT2(T)/self.Q(T)*T**2-(T*self.dQdT(T)/self.Q(T))**2+2.0*T*self.dQdT(T)/self.Q(T))
+
+    def getEntropy(self, T):
+        """
+        calculate the entropy
+        """
+        return constants.R*(np.log(self.Q(T))+T*self.dQdT(T)/self.Q(T))
+
 def fill360s(vec):
     """
     fill in periodic scan points
