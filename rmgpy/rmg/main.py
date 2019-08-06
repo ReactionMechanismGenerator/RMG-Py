@@ -76,7 +76,6 @@ from rmgpy.chemkin import ChemkinWriter
 from rmgpy.yml import RMSWriter
 from rmgpy.rmg.output import OutputHTMLWriter
 from rmgpy.rmg.listener import SimulationProfileWriter, SimulationProfilePlotter
-from rmgpy.restart import RestartWriter
 from rmgpy.qm.main import QMDatabaseWriter
 from rmgpy.stats import ExecutionStatsWriter
 from rmgpy.thermo.thermoengine import submit
@@ -128,8 +127,6 @@ class RMG(util.Subject):
     ----------------------------------- ------------------------------------------------
     `outputDirectory`                   The directory used to save output files
     `verbosity`                         The level of logging verbosity for console output
-    `loadRestart`                       ``True`` if restarting a previous job, ``False`` otherwise
-    `saveRestartPeriod`                 The time period to periodically save a restart file (:class:`Quantity`), or ``None`` for never.
     `units`                             The unit system to use to save output files (currently must be 'si')
     `generateOutputHTML`                ``True`` to draw pictures of the species and reactions, saving a visualized model in an output HTML file.  ``False`` otherwise
     `generatePlots`                     ``True`` to generate plots of the job execution statistics after each iteration, ``False`` otherwise
@@ -201,8 +198,6 @@ class RMG(util.Subject):
         
         self.done = False
         self.verbosity = logging.INFO
-        self.loadRestart = None
-        self.saveRestartPeriod = None
         self.units = 'si'
         self.generateOutputHTML = None
         self.generatePlots = None
@@ -439,14 +434,9 @@ class RMG(util.Subject):
         self.logHeader()
         
         try:
-            restart = kwargs['restart']
+            self.restart_seed_path = kwargs['restart']
         except KeyError:
-            restart = False
-
-        if restart:
-            if not os.path.exists(os.path.join(self.outputDirectory,'restart.pkl')):
-                logging.error("Could not find restart file (restart.pkl). Please run without --restart option.")
-                raise Exception("No restart file")
+            pass
             
         # Read input file
         self.loadInput(self.inputFile)
@@ -529,88 +519,83 @@ class RMG(util.Subject):
         self.wallTime = int(data[-1]) + 60 * int(data[-2]) + 3600 * int(data[-3]) + 86400 * int(data[-4])
 
         # Initialize reaction model
-        if restart:
-            self.initializeRestartRun(os.path.join(self.outputDirectory,'restart.pkl'))
-        else:
     
-            # Seed mechanisms: add species and reactions from seed mechanism
-            # DON'T generate any more reactions for the seed species at this time
-            for seedMechanism in self.seedMechanisms:
-                self.reactionModel.addSeedMechanismToCore(seedMechanism, react=False)
+        # Seed mechanisms: add species and reactions from seed mechanism
+        # DON'T generate any more reactions for the seed species at this time
+        for seedMechanism in self.seedMechanisms:
+            self.reactionModel.addSeedMechanismToCore(seedMechanism, react=False)
 
-            # Reaction libraries: add species and reactions from reaction library to the edge so
-            # that RMG can find them if their rates are large enough
-            for library, option in self.reactionLibraries:
-                self.reactionModel.addReactionLibraryToEdge(library)
-                
-            # Also always add in a few bath gases (since RMG-Java does)
-            for label, smiles in [('Ar','[Ar]'), ('He','[He]'), ('Ne','[Ne]'), ('N2','N#N')]:
-                molecule = Molecule().fromSMILES(smiles)
-                spec, isNew = self.reactionModel.makeNewSpecies(molecule, label=label, reactive=False)
-                if isNew:
-                    self.initialSpecies.append(spec)
-            
-            # Perform species constraints and forbidden species checks on input species
-            for spec in self.initialSpecies:
-                if self.database.forbiddenStructures.isMoleculeForbidden(spec.molecule[0]):
-                    if 'allowed' in self.speciesConstraints and 'input species' in self.speciesConstraints['allowed']:
-                        logging.warning('Input species {0} is globally forbidden.  It will behave as an inert unless found in a seed mechanism or reaction library.'.format(spec.label))
-                    else:
-                        raise ForbiddenStructureException("Input species {0} is globally forbidden. You may explicitly allow it, but it will remain inert unless found in a seed mechanism or reaction library.".format(spec.label))
-                if failsSpeciesConstraints(spec):
-                    if 'allowed' in self.speciesConstraints and 'input species' in self.speciesConstraints['allowed']:
-                        self.speciesConstraints['explicitlyAllowedMolecules'].append(spec.molecule[0])
-                    else:
-                        raise ForbiddenStructureException("Species constraints forbids input species {0}. Please reformulate constraints, remove the species, or explicitly allow it.".format(spec.label))
+        # Reaction libraries: add species and reactions from reaction library to the edge so
+        # that RMG can find them if their rates are large enough
+        for library, option in self.reactionLibraries:
+            self.reactionModel.addReactionLibraryToEdge(library)
 
-            # For liquidReactor, checks whether the solvent is listed as one of the initial species.
-            if self.solvent:
-                solvent_structure_list = self.database.solvation.getSolventStructure(self.solvent)
-                for spc in solvent_structure_list:
-                    self.database.solvation.checkSolventinInitialSpecies(self, spc)
+        # Also always add in a few bath gases (since RMG-Java does)
+        for label, smiles in [('Ar','[Ar]'), ('He','[He]'), ('Ne','[Ne]'), ('N2','N#N')]:
+            molecule = Molecule().fromSMILES(smiles)
+            spec, isNew = self.reactionModel.makeNewSpecies(molecule, label=label, reactive=False)
+            if isNew:
+                self.initialSpecies.append(spec)
 
-            #Check to see if user has input Singlet O2 into their input file or libraries
-            #This constraint is special in that we only want to check it once in the input instead of every time a species is made
-            if 'allowSingletO2' in self.speciesConstraints and self.speciesConstraints['allowSingletO2']:
-                pass
-            else:
-                #Here we get a list of all species that from the user input
-                allInputtedSpecies=[spec for spec in self.initialSpecies]
-                #Because no iterations have taken place, the only things in the core are from seed mechanisms
-                allInputtedSpecies.extend(self.reactionModel.core.species)
-                #Because no iterations have taken place, the only things in the edge are from reaction libraries
-                allInputtedSpecies.extend(self.reactionModel.edge.species)
-                
-                O2Singlet=Molecule().fromSMILES('O=O')
-                for spec in allInputtedSpecies:
-                    if spec.isIsomorphic(O2Singlet):
-                        raise ForbiddenStructureException("""Species constraints forbids input species {0}
-                        RMG expects the triplet form of oxygen for correct usage in reaction families. Please change your input to SMILES='[O][O]'
-                        If you actually want to use the singlet state, set the allowSingletO2=True inside of the Species Constraints block in your input file.
-                        """.format(spec.label))
+        # Perform species constraints and forbidden species checks on input species
+        for spec in self.initialSpecies:
+            if self.database.forbiddenStructures.isMoleculeForbidden(spec.molecule[0]):
+                if 'allowed' in self.speciesConstraints and 'input species' in self.speciesConstraints['allowed']:
+                    logging.warning('Input species {0} is globally forbidden.  It will behave as an inert unless found in a seed mechanism or reaction library.'.format(spec.label))
+                else:
+                    raise ForbiddenStructureException("Input species {0} is globally forbidden. You may explicitly allow it, but it will remain inert unless found in a seed mechanism or reaction library.".format(spec.label))
+            if failsSpeciesConstraints(spec):
+                if 'allowed' in self.speciesConstraints and 'input species' in self.speciesConstraints['allowed']:
+                    self.speciesConstraints['explicitlyAllowedMolecules'].append(spec.molecule[0])
+                else:
+                    raise ForbiddenStructureException("Species constraints forbids input species {0}. Please reformulate constraints, remove the species, or explicitly allow it.".format(spec.label))
 
-            for spec in self.initialSpecies:
-                submit(spec,self.solvent)
-                
-            # Add nonreactive species (e.g. bath gases) to core first
-            # This is necessary so that the PDep algorithm can identify the bath gas            
-            for spec in self.initialSpecies:
-                if not spec.reactive:
-                    self.reactionModel.enlarge(spec)
-            for spec in self.initialSpecies:
-                if spec.reactive:
-                    self.reactionModel.enlarge(spec)
-            
-            #chatelak: store constant SPC indices in the reactor attributes if any constant SPC provided in the input file
-            #advantages to write it here: this is run only once (as species indexes does not change over the generation)
-            if self.solvent is not None:
-                for index, reactionSystem in enumerate(self.reactionSystems):
-                    if reactionSystem.constSPCNames is not None: #if no constant species provided do nothing
-                        reactionSystem.get_constSPCIndices(self.reactionModel.core.species)  ##call the function to identify indices in the solver         
-                                  
-            self.initializeReactionThresholdAndReactFlags()
+        # For liquidReactor, checks whether the solvent is listed as one of the initial species.
+        if self.solvent:
+            solvent_structure_list = self.database.solvation.getSolventStructure(self.solvent)
+            for spc in solvent_structure_list:
+                self.database.solvation.checkSolventinInitialSpecies(self, spc)
 
+        #Check to see if user has input Singlet O2 into their input file or libraries
+        #This constraint is special in that we only want to check it once in the input instead of every time a species is made
+        if 'allowSingletO2' in self.speciesConstraints and self.speciesConstraints['allowSingletO2']:
+            pass
+        else:
+            #Here we get a list of all species that from the user input
+            allInputtedSpecies=[spec for spec in self.initialSpecies]
+            #Because no iterations have taken place, the only things in the core are from seed mechanisms
+            allInputtedSpecies.extend(self.reactionModel.core.species)
+            #Because no iterations have taken place, the only things in the edge are from reaction libraries
+            allInputtedSpecies.extend(self.reactionModel.edge.species)
 
+            O2Singlet=Molecule().fromSMILES('O=O')
+            for spec in allInputtedSpecies:
+                if spec.isIsomorphic(O2Singlet):
+                    raise ForbiddenStructureException("""Species constraints forbids input species {0}
+                    RMG expects the triplet form of oxygen for correct usage in reaction families. Please change your input to SMILES='[O][O]'
+                    If you actually want to use the singlet state, set the allowSingletO2=True inside of the Species Constraints block in your input file.
+                    """.format(spec.label))
+
+        for spec in self.initialSpecies:
+            submit(spec,self.solvent)
+
+        # Add nonreactive species (e.g. bath gases) to core first
+        # This is necessary so that the PDep algorithm can identify the bath gas
+        for spec in self.initialSpecies:
+            if not spec.reactive:
+                self.reactionModel.enlarge(spec)
+        for spec in self.initialSpecies:
+            if spec.reactive:
+                self.reactionModel.enlarge(spec)
+
+        #chatelak: store constant SPC indices in the reactor attributes if any constant SPC provided in the input file
+        #advantages to write it here: this is run only once (as species indexes does not change over the generation)
+        if self.solvent is not None:
+            for index, reactionSystem in enumerate(self.reactionSystems):
+                if reactionSystem.constSPCNames is not None: #if no constant species provided do nothing
+                    reactionSystem.get_constSPCIndices(self.reactionModel.core.species)  ##call the function to identify indices in the solver
+
+        self.initializeReactionThresholdAndReactFlags()
         self.reactionModel.initializeIndexSpeciesDict()
             
 
@@ -625,11 +610,6 @@ class RMG(util.Subject):
 
         if self.generateOutputHTML:
             self.attach(OutputHTMLWriter(self.outputDirectory))
-
-        if self.saveRestartPeriod:
-            warnings.warn("The option saveRestartPeriod is no longer supported and may be"
-                          " removed in version 2.3.", DeprecationWarning)
-            self.attach(RestartWriter()) 
 
         if self.quantumMechanics:
             self.attach(QMDatabaseWriter()) 
@@ -1734,9 +1714,7 @@ class RMG(util.Subject):
         
     def saveEverything(self):
         """
-        Saves the output HTML, the Chemkin file, and the Restart file (if appropriate).
-        
-        The restart file is only saved if self.saveRestartPeriod or self.done.
+        Saves the output HTML and the Chemkin file
         """
         # If the user specifies it, add unused reaction library reactions to
         # an additional output species and reaction list which is written to the ouput HTML
@@ -1831,94 +1809,6 @@ class RMG(util.Subject):
                 logging.log(level, 'The current anaconda package for RMG-database is:')
                 logging.log(level, databaseCondaPackage)
                 logging.log(level,'')
-
-    def initializeRestartRun(self, path):
-
-        from rmgpy.rmg.model import getFamilyLibraryObject
-
-        # read restart file
-        self.loadRestartFile(path)
-
-        # A few things still point to the species in the input file, so update
-        # those to point to the equivalent species loaded from the restart file
-    
-        # The termination conversions still point to the old species
-        from rmgpy.solver.base import TerminationConversion
-        for reactionSystem in self.reactionSystems:
-            for term in reactionSystem.termination:
-                if isinstance(term, TerminationConversion):
-                    term.species, isNew = self.reactionModel.makeNewSpecies(term.species.molecule[0], term.species.label, term.species.reactive)
-    
-        # The initial mole fractions in the reaction systems still point to the old species
-        for reactionSystem in self.reactionSystems:
-            initialMoleFractions = {}
-            for spec0, moleFrac in reactionSystem.initialMoleFractions.iteritems():
-                spec, isNew = self.reactionModel.makeNewSpecies(spec0.molecule[0], spec0.label, spec0.reactive)
-                initialMoleFractions[spec] = moleFrac
-            reactionSystem.initialMoleFractions = initialMoleFractions
-    
-        # The reactions and reactionDict still point to the old reaction families
-        reactionDict = {}
-        for family0_label in self.reactionModel.reactionDict:
-    
-            # Find the equivalent library or family in the newly-loaded kinetics database
-            family_label = None
-            family0_obj = getFamilyLibraryObject(family0_label)
-            if isinstance(family0_obj, KineticsLibrary):
-                for label, database in self.database.kinetics.libraries.iteritems():
-                    if database.label == family0_label:
-                        family_label = database.label
-                        break
-            elif isinstance(family0_obj, KineticsFamily):
-                for label, database in self.database.kinetics.families.iteritems():
-                    if database.label == family0_label:
-                        family_label = database.label
-                        break    
-            else:
-                import pdb; pdb.set_trace()
-            if family_label is None:
-                raise Exception("Unable to find matching reaction family for %s" % family0_label)
-    
-            # Update each affected reaction to point to that new family
-            # Also use that new family in a duplicate reactionDict
-            reactionDict[family_label] = {}
-            for reactant1 in self.reactionModel.reactionDict[family0_label]:
-                reactionDict[family_label][reactant1] = {}
-                for reactant2 in self.reactionModel.reactionDict[family0_label][reactant1]:
-                    reactionDict[family_label][reactant1][reactant2] = []
-                    if isinstance(family0_obj, KineticsLibrary):
-                        for rxn in self.reactionModel.reactionDict[family0_label][reactant1][reactant2]:
-                            assert isinstance(rxn, LibraryReaction)
-                            rxn.library = family_label
-                            reactionDict[family_label][reactant1][reactant2].append(rxn)
-                    elif isinstance(family0_obj, KineticsFamily):
-                        for rxn in self.reactionModel.reactionDict[family0_label][reactant1][reactant2]:
-                            assert isinstance(rxn, TemplateReaction)
-                            rxn.family_label = family_label
-                            reactionDict[family_label][reactant1][reactant2].append(rxn)
-        
-        self.reactionModel.reactionDict = reactionDict
-    
-    def loadRestartFile(self, path):
-        """
-        Load a restart file at `path` on disk.
-        """
-        import cPickle
-    
-        # Unpickle the reaction model from the specified restart file
-        logging.info('Loading previous restart file...')
-        f = open(path, 'rb')
-        rmg_restart = cPickle.load(f)
-        f.close()
-
-        self.reactionModel = rmg_restart.reactionModel
-        self.unimolecularReact = rmg_restart.unimolecularReact
-        self.bimolecularReact = rmg_restart.bimolecularReact
-        self.trimolecularReact = rmg_restart.trimolecularReact
-        if self.filterReactions:
-            self.unimolecularThreshold = rmg_restart.unimolecularThreshold
-            self.bimolecularThreshold = rmg_restart.bimolecularThreshold
-            self.trimolecularThreshold = rmg_restart.trimolecularThreshold
         
     def loadRMGJavaInput(self, path):
         """

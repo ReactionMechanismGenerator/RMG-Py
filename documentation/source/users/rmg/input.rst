@@ -855,7 +855,6 @@ Miscellaneous options::
         generateSeedEachIteration=True,
         saveSeedToDatabase=True,
         units='si',
-        saveRestartPeriod=(1,'hour'),
         generateOutputHTML=True,
         generatePlots=False,
         saveSimulationProfiles=True,
@@ -872,8 +871,6 @@ Setting ``generateSeedEachIteration`` to ``True`` (default) tells RMG to save an
 Setting ``saveSeedToDatabase`` to ``True`` tells RMG (if generating a seed) to also save that seed mechanism and thermo library directly into the database
 
 The ``units`` field is set to ``si``.  Currently there are no other unit options.
-
-The ``saveRestartPeriod`` indictes how frequently you wish to save restart files. For very large/long RMG jobs, this process can take a significant amount of time. In such cases, the user may wish to increase the time period for saving these restart files.
 
 Setting ``generateOutputHTML`` to ``True`` will let RMG know that you want to save 2-D images (png files in the local ``species`` folder) of all species in the generated core model.  It will save a visualized
 HTML file for your model containing all the species and reactions.  Turning this feature off by setting it to ``False`` may save memory if running large jobs.
@@ -946,9 +943,9 @@ For example ::
 
 Restarting from a Seed Mechanism
 =================================
-The preferred method for restarting an RMG-Py job is to restart the job from a seed mechanism. There are many scenarios
-when the user might want to do this, including continuing on a job that ran out of time or crashed as the result of a
-now fixed bug. To restart from a seed mechanism, the block below must be added on to the input file.  ::
+The preferred (and now only) method for restarting an RMG-Py job is to restart the job from a seed mechanism. There are
+many scenarios when the user might want to do this, including continuing on a job that ran out of time or crashed as the
+result of a now fixed bug. To restart from a seed mechanism, the block below must be added on to the input file.  ::
 
     restartFromSeed(path='seed')
 

@@ -51,7 +51,6 @@ model(
 
 options(
     units='si',
-    saveRestartPeriod=None,
     saveSimulationProfiles=False,
     generateOutputHTML=False,
     generatePlots=False,

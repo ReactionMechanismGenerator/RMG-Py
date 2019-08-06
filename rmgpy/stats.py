@@ -78,7 +78,6 @@ class ExecutionStatsWriter(object):
         self.coreReactionCount = []
         self.edgeSpeciesCount = []
         self.edgeReactionCount = []
-        self.restartSize = []
         self.memoryUse = []
     
     def update(self, rmg):
@@ -109,11 +108,7 @@ class ExecutionStatsWriter(object):
         except:
             logging.info('    Memory used: memory usage was unable to be logged')
             self.memoryUse.append(0.0)
-        if os.path.exists(os.path.join(rmg.outputDirectory,'restart.pkl.gz')):
-            self.restartSize.append(os.path.getsize(os.path.join(rmg.outputDirectory,'restart.pkl.gz')) / 1.0e6)
-            logging.info('    Restart file size: %.2f MB' % (self.restartSize[-1]))
-        else:
-            self.restartSize.append(0.0)
+
         self.saveExecutionStatistics(rmg)
         if rmg.generatePlots:
             self.generateExecutionPlots(rmg)
@@ -170,11 +165,6 @@ class ExecutionStatsWriter(object):
         for i, memory in enumerate(self.memoryUse):
             sheet.write(i+1,5,memory)
 
-        # Seventh column is restart file size
-        sheet.write(0,6,'Restart file size (MB)')
-        for i, memory in enumerate(self.restartSize):
-            sheet.write(i+1,6,memory)
-
         # Save workbook to file
         fstr = os.path.join(rmg.outputDirectory, 'statistics.xls')
         workbook.save(fstr)
@@ -220,9 +210,8 @@ class ExecutionStatsWriter(object):
         fig = plt.figure()
         ax1 = fig.add_subplot(111)
         ax1.semilogx(rmg.execTime, self.memoryUse, 'o-k')
-        ax1.semilogx(rmg.execTime, self.restartSize, 'o-g')
         ax1.set_xlabel('Execution time (s)')
         ax1.set_ylabel('Memory (MB)')
-        ax1.legend(['RAM', 'Restart file'], loc=2)
+        ax1.legend(['RAM'], loc=2)
         plt.savefig(os.path.join(rmg.outputDirectory, 'plot/memoryUse.svg'))
         plt.clf()
