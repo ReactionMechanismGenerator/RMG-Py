@@ -204,3 +204,121 @@ class HinderedRotor2D(Mode):
                              len(lines[i+1].split()) == 4 and len(lines[i+1].split()[0]) <= 2:
                            self.charge = int(split_line[0])
                            self.multiplicity = int(split_line[1])
+
+   def writeXYZ(self):
+       """
+       write an .xyz file for Q2DTor
+       done based on the angle coordinates (0.0,0.0)
+       """
+       for i in xrange(len(self.phi1s)):
+           if self.phi1s[i] == 0.0 and self.phi2s[i] == 0.0:
+               with open(os.path.join(self.q2dtor_dir,self.name+".xyz"),'w') as f:
+                   f.write(str(len(self.atnums))+'\n')
+                   f.write("reference geometry for {0}\n".format(self.name))
+                   for j,ename in enumerate(self.element_names):
+                       f.write('{ename}    {x}   {y}   {z}\n'.format(ename=ename,
+                               x=self.xyzs[i][j][0],y=self.xyzs[i][j][1],z=self.xyzs[i][j][2]))
+                   break
+
+   def writePes(self):
+       """
+       write a .pes file for Q2DTor based on the
+       read in scans
+       """
+       if not len(self.Es) > 0:
+           raise ValueError("Cannot write PES file with no scan information")
+       with open(os.path.join(self.q2dtor_dir,'IOfiles',self.name+".pes"),'w') as f:
+           for i in xrange(len(self.phi1s)):
+               f.write(str(len(self.atnums))+'\n')
+               f.write("Geometry   {E}   {phi1}   {phi2}  {name}_{phi1}_{phi2}  YES\n".format(E=self.Es[i]/(constants.E_h*constants.Na),
+                       phi1=self.phi1s[i],phi2=self.phi2s[i],name=self.name))
+               for j,ename in enumerate(self.element_names):
+                   f.write('{ename}    {x}   {y}   {z}\n'.format(ename=ename,
+                               x=self.xyzs[i][j][0],y=self.xyzs[i][j][1],z=self.xyzs[i][j][2]))
+
+   def writeInp(self):
+       """
+       Write an input file for Q2DTor based on object
+       information
+       """
+       inp = """#----------------------------------#
+# Torsional information            #
+#----------------------------------#
+start_torsions
+   torsion1         {tor1}         # atoms involved in torsion 1
+   torsion2         {tor2}         # atoms involved in torsion 2
+   tsigma1          {torsigma1}               # torsional symmetry number of hindered rotor 1
+   tsigma2          {torsigma2}               # torsional symmetry number of hindered rotor 2
+end_torsions
+#----------------------------------#
+# Calculations                     #
+#----------------------------------#
+start_calcs
+   level            hf 3-21g        # the calculation level
+   charge           0               # charge
+   multiplicity     0               # spin multiplicity, shouldn't matter in context of Arkane
+end_calcs
+#----------------------------------#
+# Torsional PES                    #
+#----------------------------------#
+start_pes
+   t1step           10.0            # step in phi1 for scan calculation [degrees]
+   t2step           10.0            # step in phi2 for scan calculation [degrees]
+   symmetry         {symmetry}               # Symmetry condition for PES: [a,b,c,ab,ac,bc,abc] or none
+end_pes
+#----------------------------------#
+# Fitting details                  #
+#----------------------------------#
+start_fourier
+   weight           0.9             #
+   ignore           0.0             # Set to zero coefficients with smaller absolute value (in cm^-1)
+   # Fourier Terms (Even)           #
+   cos1             1-9             # i values in cos(i*Phi_1)
+   cos2             1-9             # j values in cos(j*Phi_2)
+   cos1cos2         1-7 , 1-7       # i,j values in cos(i*Phi_1) * cos(j*Phi_2)
+   sin1sin2         1-7 , 1-7       # i,j values in sin(i*Phi_1) * sin(j*Phi_2)
+   # Fourier Terms (Odd)            #
+   sin1             1-9            # i values in sin(i*Phi_1)
+   sin2             1-9            # j values in sin(j*Phi_2)
+   cos1sin2         1-7 , 1-7            # i,j values in cos(i*Phi_1) * sin(j*Phi_2)
+   sin1cos2         1-7 , 1-7            # i,j values in sin(i*Phi_1) * cos(j*Phi_2)
+end_fourier
+#----------------------------------#
+# Search and Opt stationary points #
+#----------------------------------#
+start_statpoint
+   tolerance        1.0             # step (in degrees) to explore torsional PES when looking for CPs
+   freqscal         1.000           # scaling factor for frequencies
+end_statpoint
+#----------------------------------#
+# 2D-NS Hamiltonian                #
+#----------------------------------#
+start_tor2dns
+   dijvar           yes             # yes (dij not constant) or no (dij constant)
+   kmax             100             # check 2013-JChemPhys_138_134112, eq (14)
+   maxeigen         1e4             # threshold for H eigenvalues (in cm^-1)
+end_tor2dns
+#----------------------------------#
+# Partition functions              #
+#----------------------------------#
+start_rovibpf
+   interpolation    fourier         # fourier or spline order (1,3,5)
+   integrationstep  1.0             # integration dphi
+end_rovibpf
+#----------------------------------#
+# Working temperatures             #
+#----------------------------------#
+start_temperatures                 #
+   100.0   150.0   200.0          #
+   250.0   300.0   400.0          #
+   500.0   700.0  1000.0          #
+   1500.0  2000.0  2500.0         #
+end_temperatures                   #
+#----------------------------------#""".format(tor1="-".join([str(x) for x in self.torsion1]),
+                  tor2="-".join([str(x) for x in self.torsion2]),
+           torsigma1=self.torsigma1,torsigma2=self.torsigma2,
+           charge=self.charge,multiplicity=self.multiplicity,
+           symmetry=self.symmetry)
+       f = open(os.path.join(self.q2dtor_dir,self.name+".inp"),'w')
+       f.write(inp)
+       f.close()
