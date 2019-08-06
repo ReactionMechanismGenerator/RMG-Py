@@ -262,6 +262,8 @@ cdef class Conformer(RMGObject):
                 N += 1
             elif type(mode) == SphericalTopRotor:
                 N += 3
+            elif hasattr(mode, 'dof'):
+                N += mode.dof
             else:
                 raise TypeError("Mode type {0!r} not supported".format(mode))
         
