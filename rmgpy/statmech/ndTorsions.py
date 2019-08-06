@@ -126,4 +126,85 @@ class HinderedRotor2D(Mode):
        except OSError:
            pass
 
- 
+   def getTorsions(self):
+       """
+       determine torsions, not entirely necessary for 2D-NS (2D rotor not separated), but important for E2DT (couples frequencies with a 2D-NS rotor)
+       """
+       if not self.torsion1:
+           self.readGjf()  # check if there is a gaussian format file
+
+       Natoms = len(self.xyzs[0])  # define a feasible torsion from pivots and tops
+       aset = set(list(xrange(1,Natoms+1)))
+       if not self.torsion1 and self.pivots1 and self.top1:
+           if self.pivots1[0] in self.top1:
+               self.torsion1 = [list(aset-set(self.top1))[0],self.pivots1[0],self.pivots1[1],self.top1[0]]
+           else:
+               self.torsion1 = [list(aset-set(self.top1))[0],self.pivots1[1],self.pivots1[0],self.top1[0]]
+
+       if not self.torsion2 and self.pivots2 and self.top2:
+           if self.pivots2[0] in self.top2:
+               self.torsion2 = [list(aset-set(self.top2))[0],self.pivots2[0],self.pivots2[1],self.top2[0]]
+           else:
+               self.torsion2 = [list(aset-set(self.top2))[0],self.pivots2[1],self.pivots2[0],self.top2[0]]
+
+   def readScan(self):
+       """
+       Read quantum optimization job files at self.calcPath to determine
+       vectors of angles (self.phi1s, self.phi2s), xyz coordinates (self.xyzs)
+       energies (self.Es) and atom numbers (self.atnums) for each point
+       """
+       phi1s = []
+       phi2s = []
+       xyzs = []
+       Es = []
+       atnums = []
+       for f in os.listdir(self.calcPath):
+           if len(f.split('_')) != 4:
+               continue
+           s, name, phi1, phi2 = f.split('_') # scangeom_r0_0.0_360.0.log
+           phi2,identifier = '.'.join(phi2.split('.')[:-1]),phi2.split('.')[-1]
+           if identifier != 'out':
+               continue
+           phi1s.append(float(phi1))
+           phi2s.append(float(phi2.split(".")[0]))
+
+           fpath = os.path.join(self.calcPath,f)
+           lg = determine_qm_software(fpath)
+           
+           Es.append(lg.loadEnergy())
+           xyz,atnums,_ = lg.loadGeometry()
+           xyzs.append(xyz)
+
+       self.xyzs = xyzs
+       self.phi1s = phi1s
+       self.phi2s = phi2s
+       self.Es = Es
+       self.atnums = atnums
+       self.element_names = [symbol_by_number[k] for k in self.atnums]
+       
+   def readGjf(self):
+       """
+       read gaussian input file to determine torsions, charge and multiplicity
+       unnecessary for 2D-NS
+       """
+       for f in os.listdir(self.calcPath):
+           if len(f.split('_')) != 4:
+               continue
+           s, name, phi1, phi2 = f.split('_') # scangeom_r0_0.0_360.0.log
+           phi2,identifier = phi2.split('.')
+           if identifier == 'gjf' and float(phi1) == 0.0 and float(phi2) == 0.0:
+               with open(os.path.join(self.calcPath,f), 'r') as fop:
+                   lines = fop.readlines()
+                   for i,line in enumerate(lines):
+                       split_line = line.split()
+                       if len(split_line) < 2:
+                           continue
+                       elif split_line[-1] == 'F' and len(split_line) == 5: # F 1 2 11 14
+                           if not self.torsion1:
+                               self.torsion1 = [int(split_line[i]) for i in xrange(4)]
+                           elif not self.torsion2:
+                               self.torsion2 = [int(split_line[i]) for i in xrange(4)]
+                       elif (not self.charge or not self.multiplicity) and len(split_line) == 2 and \
+                             len(lines[i+1].split()) == 4 and len(lines[i+1].split()[0]) <= 2:
+                           self.charge = int(split_line[0])
+                           self.multiplicity = int(split_line[1])
