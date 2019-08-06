@@ -632,6 +632,13 @@ class HinderedRotorClassicalND(Mode):
         """
         return constants.R*(np.log(self.Q(T))+T*self.dQdT(T)/self.Q(T))
 
+    def run(self):
+        """
+        ready object for t property
+        """
+        self.readScan()
+        self.fit()
+
 def fill360s(vec):
     """
     fill in periodic scan points
