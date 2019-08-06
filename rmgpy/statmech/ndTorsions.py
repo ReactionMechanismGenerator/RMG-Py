@@ -452,3 +452,130 @@ class HinderedRotorClassicalND(Mode):
         self.Es = []
         self.atnums = []
 
+
+    def readScan(self):
+        """
+        Read quantum optimization job files at self.calcPath to determine
+        vectors of angles self.phis, xyz coordinates (self.xyzs)
+        energies (self.Es) and atom numbers (self.atnums) for each point
+        """
+        from arkane.util import determine_qm_software
+        if os.path.isdir(self.calcPath):
+            massdict = {el.number:el.mass for el in elementList if el.isotope == -1}
+            N = len(self.pivots)
+            phis = []
+            xyzs = []
+            Es = []
+            atnums = []
+            for f in os.listdir(self.calcPath):
+                name,identifier = '.'.join(f.split('.')[:-1]), f.split('.')[-1]
+                if identifier != 'out':
+                    continue
+                outs = name.split('_')
+                phivals = [float(x) for x in outs[-N:]]
+                phivals = fill360s(phivals)
+
+                fpath = os.path.join(self.calcPath,f)
+                lg = determine_qm_software(fpath)
+                E = lg.loadEnergy()
+                xyz,atnum,_ = lg.loadGeometry()
+
+                for phival in phivals:
+                    phis.append(np.array(phival))
+                    Es.append(lg.loadEnergy())
+                    xyzs.append(xyz)
+                    if self.atnums == []:
+                        atnums.append(atnum)
+            
+            if atnums:
+                self.atnums = atnums
+
+            q = len(phis)
+            for i in xrange(N): #add the negative values to improve fit near 0.0
+                for j in xrange(q):
+                    phi = phis[j]
+                    if np.isclose(phi[i],360.0):
+                        continue
+                    nvec = deepcopy(phi)
+                    nvec[i] = nvec[i]-360.0
+                    if any([np.array_equal(nvec, x) for x in phis]):
+                        continue
+                    phis.append(nvec)
+                    Es.append(Es[j])
+                    xyzs.append(xyzs[j])
+                    atnums.append(atnums[j])
+
+            self.xyzs = np.array(xyzs)
+
+            self.Es = np.array(Es)
+            self.E0 = self.Es.min()
+            self.Es -= self.E0
+
+            self.phis = np.array(phis)
+            self.phis *= np.pi/180.0
+
+            inds = None
+            if len(self.phis[0]) == 1:
+                self.phis = np.array([phi[0] for phi in self.phis])
+                inds = np.argsort(self.phis)
+
+            self.confs = [Conformer(number=self.atnums,coordinates=(self.xyzs[k], "angstrom"),
+                               mass=(np.array([massdict[x] for x in self.atnums]), "amu")) for k in xrange(len(self.xyzs))]
+
+            self.rootDs = np.array([np.prod([conf.getInternalReducedMomentOfInertia(self.pivots[k],
+                        self.tops[k], option=3) for k in xrange(len(self.pivots))])**0.5 for conf in self.confs])
+            if inds is not None:
+                self.rootDs = self.rootDs[inds]
+                self.phis = self.phis[inds]
+                self.Es = self.Es[inds]
+                self.xyzs = self.xyzs[inds]
+        elif os.path.isfile(self.calcPath):  # reading a 1-D scan file, assume internal reduced moment of inertia is constant
+            N = len(self.pivots)
+            lg = determine_qm_software(self.calcPath)
+            self.Es,self.phis = lg.loadScanEnergies()
+            self.atnums = self.conformer.number
+            rootD = self.conformer.getInternalReducedMomentOfInertia(self.pivots[0], self.tops[0])**0.5
+            self.rootDs = [rootD for i in xrange(len(self.Es))]
+            
+            phis = self.phis.tolist()
+            
+            for j,phi in enumerate(self.phis):  # add the negative values to improve fit near 0.0
+                if phi != 2.0*np.pi:
+                    phis.append(phi-2.0*np.pi)
+
+            phis = np.array(phis)
+            inds = np.argsort(phis)
+            self.phis = phis[inds]
+            Es = self.Es.tolist()
+            Es.extend(Es[1:])
+            self.Es = np.array(Es)[inds]
+            self.rootDs.extend(self.rootDs[1:])
+            self.rootDs = np.array(self.rootDs)[inds].tolist()
+
+        else:
+            raise IOError("path {} is not a file or a directory".format(self.calcPath))
+def fill360s(vec):
+    """
+    fill in periodic scan points
+    for example [0.0,1.0,0.0] => [[0.0,1.0,0.0],[360.0,1.0,0.0],[360.0,1.0,360.0],[0.0,1.0,360.0]]
+    """
+    if not 0.0 in vec:
+        return [vec]
+    vecs = [vec]
+    breakout = True
+    while breakout:
+        breakout = False
+        for vec in vecs:
+            for i,v in enumerate(vec):
+                if v == 0.0:
+                    nvec = vec[:]
+                    nvec[i] = 360.0
+                    if nvec not in vecs:
+                        vecs.append(nvec)
+                        breakout = True
+                if breakout:
+                    break
+            if breakout:
+                break
+
+    return [np.array(x) for x in vecs]
