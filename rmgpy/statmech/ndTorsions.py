@@ -583,6 +583,28 @@ class HinderedRotorClassicalND(Mode):
         self.dQdT = self.Q.derivative()
         self.d2QdT2 = self.dQdT.derivative()
         
+    def calcPartitionFunction(self, T):
+        """
+        calculate the classical/semiclassical partition function at a given temperature
+        """
+        rngs = [(0.0,2.0*np.pi) for x in xrange(len(self.pivots))]
+
+        def f(*phis):
+            return self.rootD(*phis)*np.exp(-self.V(*phis)/(constants.R*T))
+
+        intg = inte.nquad(f,ranges=rngs)[0]
+        Q = intg*(2.0*np.pi*constants.kB*T/constants.h**2)**(len(self.pivots)/2.0)/np.prod(self.sigmas)
+
+        if self.semiclassical:
+            if self.freqs is None:
+                self.freqs = self.getFrequencies()
+            freqs = self.freqs*constants.c*100.0
+            x = constants.h*freqs/(constants.kB*T)
+            out = x/(1.0-np.exp(-x))
+            Q *= np.prod(out)
+
+        return Q
+
 def fill360s(vec):
     """
     fill in periodic scan points
