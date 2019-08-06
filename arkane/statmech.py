@@ -48,6 +48,7 @@ from rmgpy.statmech.rotation import Rotation, LinearRotor, NonlinearRotor, KRoto
 from rmgpy.statmech.vibration import Vibration, HarmonicOscillator
 from rmgpy.statmech.torsion import Torsion, HinderedRotor, FreeRotor
 from rmgpy.statmech.conformer import Conformer
+from rmgpy.statmech.ndTorsions import HinderedRotor2D
 from rmgpy.exceptions import InputError, StatmechError
 from rmgpy.quantity import Quantity
 from rmgpy.molecule.molecule import Molecule
@@ -165,6 +166,8 @@ def freeRotor(pivots, top, symmetry):
     """Read a free rotor directive, and return the attributes in a list"""
     return [pivots, top, symmetry]
 
+def hinderedRotor2D(scandir,pivots1,top1,symmetry1,pivots2,top2,symmetry2,symmetry='none'):
+    return [scandir,pivots1,top1,symmetry1,pivots2,top2,symmetry2,symmetry]
 
 class StatMechJob(object):
     """
@@ -250,6 +253,7 @@ class StatMechJob(object):
             'False': False,
             'HinderedRotor': hinderedRotor,
             'FreeRotor': freeRotor,
+            'HinderedRotor2D' : hinderedRotor2D,
             # File formats
             'GaussianLog': GaussianLog,
             'QChemLog': QChemLog,
@@ -470,7 +474,7 @@ class StatMechJob(object):
 
             logging.debug('    Fitting {0} hindered rotors...'.format(len(rotors)))
             rotorCount = 0
-            for q in rotors:
+            for j,q in enumerate(rotors):
                 symmetry = None
                 if len(q) == 3:
                     # No potential scan is given, this is a free rotor
@@ -479,6 +483,14 @@ class StatMechJob(object):
                     rotor = FreeRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
                     conformer.modes.append(rotor)
                     rotorCount += 1
+                elif len(q) == 8:
+                    scandir,pivots1,top1,symmetry1,pivots2,top2,symmetry2,symmetry = q
+                    logging.info("Calculating energy levels for 2D-HR, may take a while...")
+                    rotor = HinderedRotor2D(name='r'+str(j),torsigma1=symmetry1,torsigma2=symmetry2,symmetry=symmetry,
+                                            calcPath=os.path.join(directory,scandir),pivots1=pivots1,pivots2=pivots2,top1=top1,top2=top2)
+                    rotor.run()
+                    conformer.modes.append(rotor)
+                    rotorCount += 2
                 elif len(q) in [4, 5]:
                     # This is a hindered rotor
                     if len(q) == 5:
