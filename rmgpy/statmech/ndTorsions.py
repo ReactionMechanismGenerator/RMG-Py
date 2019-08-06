@@ -390,3 +390,22 @@ end_temperatures                   #
            return schrodinger.getDensityOfStates(Elist,self.energy,densStates0=densStates0,nmax=len(self.evals))
        else:
            return schrodinger.getDensityOfStates(Elist,self.energy,nmax=len(self.evals))
+
+   def run(self):
+       """
+       determines the eigenvalues and energy function for the
+       2D-NS rotors either by reading in a finished .evals file
+       or running Q2DTor
+       """
+       try:
+           self.readEigvals()
+       except IOError:
+           self.readScan()
+           self.writeXYZ()
+           self.getTorsions()
+           self.writeInp()
+           self.writePes()
+           self.getIcsFile()
+           self.fitFourier()
+           self.getSplistfile()
+           self.getEigvals()
