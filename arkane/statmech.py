@@ -784,13 +784,19 @@ def projectRotors(conformer, F, rotors, linear, is_ts, label):
     Refer to Gaussian whitepaper (http://gaussian.com/vib/) for procedure to calculate
     harmonic oscillator vibrational frequencies using the force constant matrix.
     """
+    Nrotors = 0
+    for rotor in rotors:
+        if len(rotor) == 8:
+            Nrotors += 2
+        else:
+            Nrotors += 1
+
     mass = conformer.mass.value_si
     coordinates = conformer.coordinates.getValue()
     if linear is None:
         linear = is_linear(coordinates)
         if linear:
             logging.info('Determined species {0} to be linear.'.format(label))
-    Nrotors = len(rotors)
     Natoms = len(conformer.mass.value)
     Nvib = 3 * Natoms - (5 if linear else 6) - Nrotors - (1 if is_ts else 0)
 
