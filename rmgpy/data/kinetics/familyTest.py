@@ -68,7 +68,8 @@ class TestFamily(unittest.TestCase):
                 '1,2_shiftC',
                 'Intra_R_Add_Exo_scission',
                 'intra_substitutionS_isomerization',
-                'R_Addition_COm'
+                'R_Addition_COm',
+                'R_Recombination'
             ],
         )
         cls.family = cls.database.families['intra_H_migration']
@@ -637,7 +638,16 @@ multiplicity 2
                                  os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_copy/training/dictionary.txt')))
         finally:
             shutil.rmtree(os.path.join(settings['test_data.directory'], 'testing_database/kinetics/families/intra_H_copy'))
-
+    
+    def testReactantNumID(self):
+        """
+        Tests that templates aren't applied to the incorrect
+        number of reactants
+        """
+        family = self.database.families['R_Recombination']
+        spc = Molecule().fromSMILES("[CH2]CC[CH2]")
+        out = family._KineticsFamily__generateReactions(reactants=[spc],forward=True)
+        self.assertEqual(out,[])
 
 class TestTreeGeneration(unittest.TestCase):
 
