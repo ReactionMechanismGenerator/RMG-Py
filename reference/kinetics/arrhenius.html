@@ -62,7 +62,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.kinetics.Arrhenius<a class="headerlink" href="#rmgpy-kinetics-arrhenius" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="rmgpy.kinetics.Arrhenius">
-<em class="property">class </em><code class="descclassname">rmgpy.kinetics.</code><code class="descname">Arrhenius</code><span class="sig-paren">(</span><em>A=None</em>, <em>n=0.0</em>, <em>Ea=None</em>, <em>T0=(1.0</em>, <em>'K')</em>, <em>Tmin=None</em>, <em>Tmax=None</em>, <em>Pmin=None</em>, <em>Pmax=None</em>, <em>comment=''</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">rmgpy.kinetics.</code><code class="descname">Arrhenius</code><span class="sig-paren">(</span><em>A=None</em>, <em>n=0.0</em>, <em>Ea=None</em>, <em>T0=(1.0</em>, <em>'K')</em>, <em>Tmin=None</em>, <em>Tmax=None</em>, <em>Pmin=None</em>, <em>Pmax=None</em>, <em>uncertainty=None</em>, <em>comment=''</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius" title="Permalink to this definition">¶</a></dt>
 <dd><p>A kinetics model based on the (modified) Arrhenius equation. The attributes
 are:</p>
 <table border="1" class="docutils">
@@ -267,6 +267,20 @@ in J/mol (and vise versa).</p>
 <dt id="rmgpy.kinetics.Arrhenius.toHTML">
 <code class="descname">toHTML</code><span class="sig-paren">(</span><em>self</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.toHTML" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return an HTML rendering.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="rmgpy.kinetics.Arrhenius.uncertainty">
+<code class="descname">uncertainty</code><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.uncertainty" title="Permalink to this definition">¶</a></dt>
+<dd><p>rmgpy.kinetics.uncertainties.RateUncertainty</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">uncertainty</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>

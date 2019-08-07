@@ -790,6 +790,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.clearLabeledAtoms">(rmgpy.molecule.Molecule method)</a>
 </li>
       </ul></li>
+      <li><a href="reference/molecule/group.html#rmgpy.molecule.Group.clearRegDims">clearRegDims() (rmgpy.molecule.Group method)</a>
+</li>
       <li><a href="reference/rmg/coreedgereactionmodel.html#rmgpy.rmg.model.CoreEdgeReactionModel.clearSurfaceAdjustments">clearSurfaceAdjustments() (rmgpy.rmg.model.CoreEdgeReactionModel method)</a>
 </li>
       <li><a href="reference/thermo/nasapolynomial.html#rmgpy.thermo.NASAPolynomial.cm1">cm1 (rmgpy.thermo.NASAPolynomial attribute)</a>
@@ -2088,6 +2090,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.getAllCyclicVertices">(rmgpy.molecule.Molecule method)</a>
 </li>
       </ul></li>
+      <li><a href="reference/data/entry.html#rmgpy.data.base.Entry.getAllDescendants">getAllDescendants() (rmgpy.data.base.Entry method)</a>
+</li>
       <li><a href="reference/molecule/graph.html#rmgpy.molecule.graph.Graph.getAllEdges">getAllEdges() (rmgpy.molecule.graph.Graph method)</a>
 
       <ul>
@@ -2869,6 +2873,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       <li><a href="reference/data/kineticsfamily.html#rmgpy.data.kinetics.KineticsFamily.getRootTemplate">getRootTemplate() (rmgpy.data.kinetics.KineticsFamily method)</a>
 </li>
       <li><a href="reference/data/kineticsrules.html#rmgpy.data.kinetics.KineticsRules.getRule">getRule() (rmgpy.data.kinetics.KineticsRules method)</a>
+</li>
+      <li><a href="reference/data/kineticsfamily.html#rmgpy.data.kinetics.KineticsFamily.getRxnBatches">getRxnBatches() (rmgpy.data.kinetics.KineticsFamily method)</a>
 </li>
       <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.getSingletCarbeneCount">getSingletCarbeneCount() (rmgpy.molecule.Molecule method)</a>
 </li>
@@ -5134,6 +5140,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/data/thermodatabase.html#rmgpy.data.thermo.ThermoDatabase.pruneHeteroatoms">pruneHeteroatoms() (rmgpy.data.thermo.ThermoDatabase method)</a>
 </li>
+      <li><a href="reference/data/kineticsfamily.html#rmgpy.data.kinetics.KineticsFamily.pruneTree">pruneTree() (rmgpy.data.kinetics.KineticsFamily method)</a>
+</li>
       <li><a href="reference/data/statmechfit.html#rmgpy.data.statmechfit.PseudoFit">PseudoFit (class in rmgpy.data.statmechfit)</a>
 </li>
       <li><a href="reference/data/statmechfit.html#rmgpy.data.statmechfit.PseudoRotorFit">PseudoRotorFit (class in rmgpy.data.statmechfit)</a>
@@ -6136,8 +6144,6 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.split">(rmgpy.molecule.Molecule method)</a>
 </li>
       </ul></li>
-      <li><a href="reference/data/kineticsfamily.html#rmgpy.data.kinetics.KineticsFamily.splitReactions">splitReactions() (rmgpy.data.kinetics.KineticsFamily method)</a>
-</li>
       <li><a href="reference/molecule/group.html#rmgpy.molecule.Group.standardizeAtomType">standardizeAtomType() (rmgpy.molecule.Group method)</a>
 </li>
       <li><a href="reference/molecule/group.html#rmgpy.molecule.Group.standardizeGroup">standardizeGroup() (rmgpy.molecule.Group method)</a>
@@ -6564,9 +6570,29 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h2 id="U">U</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference/quantity/arrayquantity.html#rmgpy.quantity.ArrayQuantity.uncertainty">uncertainty (rmgpy.quantity.ArrayQuantity attribute)</a>
+      <li><a href="reference/kinetics/arrhenius.html#rmgpy.kinetics.Arrhenius.uncertainty">uncertainty (rmgpy.kinetics.Arrhenius attribute)</a>
 
       <ul>
+        <li><a href="reference/kinetics/chebyshev.html#rmgpy.kinetics.Chebyshev.uncertainty">(rmgpy.kinetics.Chebyshev attribute)</a>
+</li>
+        <li><a href="reference/kinetics/kineticsdata.html#rmgpy.kinetics.KineticsData.uncertainty">(rmgpy.kinetics.KineticsData attribute)</a>
+</li>
+        <li><a href="reference/kinetics/lindemann.html#rmgpy.kinetics.Lindemann.uncertainty">(rmgpy.kinetics.Lindemann attribute)</a>
+</li>
+        <li><a href="reference/kinetics/multiarrhenius.html#rmgpy.kinetics.MultiArrhenius.uncertainty">(rmgpy.kinetics.MultiArrhenius attribute)</a>
+</li>
+        <li><a href="reference/kinetics/multipdeparrhenius.html#rmgpy.kinetics.MultiPDepArrhenius.uncertainty">(rmgpy.kinetics.MultiPDepArrhenius attribute)</a>
+</li>
+        <li><a href="reference/kinetics/pdeparrhenius.html#rmgpy.kinetics.PDepArrhenius.uncertainty">(rmgpy.kinetics.PDepArrhenius attribute)</a>
+</li>
+        <li><a href="reference/kinetics/pdepkineticsdata.html#rmgpy.kinetics.PDepKineticsData.uncertainty">(rmgpy.kinetics.PDepKineticsData attribute)</a>
+</li>
+        <li><a href="reference/kinetics/thirdbody.html#rmgpy.kinetics.ThirdBody.uncertainty">(rmgpy.kinetics.ThirdBody attribute)</a>
+</li>
+        <li><a href="reference/kinetics/troe.html#rmgpy.kinetics.Troe.uncertainty">(rmgpy.kinetics.Troe attribute)</a>
+</li>
+        <li><a href="reference/quantity/arrayquantity.html#rmgpy.quantity.ArrayQuantity.uncertainty">(rmgpy.quantity.ArrayQuantity attribute)</a>
+</li>
         <li><a href="reference/quantity/scalarquantity.html#rmgpy.quantity.ScalarQuantity.uncertainty">(rmgpy.quantity.ScalarQuantity attribute)</a>
 </li>
       </ul></li>
@@ -6600,6 +6626,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/qm/symmetry.html#rmgpy.qm.symmetry.SymmetryJob.uniqueID">(rmgpy.qm.symmetry.SymmetryJob attribute)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/qm/molecule.html#rmgpy.qm.molecule.Geometry.uniqueIDlong">uniqueIDlong (rmgpy.qm.molecule.Geometry attribute)</a>
 </li>
       <li><a href="reference/statmech/schrodinger.html#rmgpy.statmech.schrodinger.unitDegeneracy">unitDegeneracy() (in module rmgpy.statmech.schrodinger)</a>
@@ -6612,8 +6640,6 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       </ul></li>
       <li><a href="reference/molecule/kekulize.html#rmgpy.molecule.kekulize.AromaticRing.unresolved">unresolved (rmgpy.molecule.kekulize.AromaticRing attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/molecule/group.html#rmgpy.molecule.Group.update">update() (rmgpy.molecule.Group method)</a>
 
       <ul>

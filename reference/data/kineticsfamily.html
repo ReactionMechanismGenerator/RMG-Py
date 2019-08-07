@@ -216,7 +216,7 @@ can be generated</p>
 
 <dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.crossValidate">
-<code class="descname">crossValidate</code><span class="sig-paren">(</span><em>folds=5</em>, <em>templateRxnMap=None</em>, <em>T=1000.0</em>, <em>iters=0</em>, <em>random_state=1</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.crossValidate" title="Permalink to this definition">¶</a></dt>
+<code class="descname">crossValidate</code><span class="sig-paren">(</span><em>folds=5</em>, <em>templateRxnMap=None</em>, <em>testRxnInds=None</em>, <em>T=1000.0</em>, <em>iters=0</em>, <em>random_state=1</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.crossValidate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform K-fold cross validation on an automatically generated tree at temperature T
 after finding an appropriate node for kinetics estimation it will move up the tree
 iters times.
@@ -283,7 +283,7 @@ for the extension ext with name extname to the parent entry parent</p>
 
 <dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.extendNode">
-<code class="descname">extendNode</code><span class="sig-paren">(</span><em>parent</em>, <em>templateRxnMap</em>, <em>thermoDatabase=None</em>, <em>obj=None</em>, <em>T=1000.0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.extendNode" title="Permalink to this definition">¶</a></dt>
+<code class="descname">extendNode</code><span class="sig-paren">(</span><em>parent</em>, <em>templateRxnMap</em>, <em>obj=None</em>, <em>T=1000.0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.extendNode" title="Permalink to this definition">¶</a></dt>
 <dd><p>Constructs an extension to the group parent based on evaluation
 of the objective function obj</p>
 </dd></dl>
@@ -366,7 +366,7 @@ Degenerate reactions are returned as separate reactions.</p>
 
 <dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.generateTree">
-<code class="descname">generateTree</code><span class="sig-paren">(</span><em>obj=None</em>, <em>thermoDatabase=None</em>, <em>T=1000.0</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.generateTree" title="Permalink to this definition">¶</a></dt>
+<code class="descname">generateTree</code><span class="sig-paren">(</span><em>rxns=None</em>, <em>obj=None</em>, <em>thermoDatabase=None</em>, <em>T=1000.0</em>, <em>nprocs=1</em>, <em>minSplitableEntryNum=2</em>, <em>minRxnsToSpawn=20</em>, <em>maxBatchSize=800</em>, <em>outlierFraction=0.02</em>, <em>stratumNum=8</em>, <em>maxRxnsToReoptNode=100</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.generateTree" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a tree by greedy optimization based on the objective function obj
 the optimization is done by iterating through every group and if the group has
 more than one training reaction associated with it a set of potential more specific extensions
@@ -376,6 +376,28 @@ and the iteration starts over at the beginning</p>
 if their parent has no kinetics data associated and they either have only one child or
 have two children one of which has no kinetics data and no children
 (its parent becomes the parent of its only relevant child node)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>rxns</strong> – List of reactions to generate tree from (if None pull the whole training set)</li>
+<li><strong>obj</strong> – Object to expand tree from (if None uses top node)</li>
+<li><strong>thermoDatabase</strong> – Thermodynamic database used for reversing training reactions</li>
+<li><strong>T</strong> – Temperature the tree is optimized for</li>
+<li><strong>nprocs</strong> – Number of process for parallel tree generation</li>
+<li><strong>minSplitableEntryNum</strong> – the minimum number of splitable reactions at a node in order to spawn a new process solving that node</li>
+<li><strong>minRxnsToSpawn</strong> – the minimum number of reactions at a node to spawn a new process solving that node</li>
+<li><strong>maxBatchSize</strong> – the maximum number of reactions allowed in a batch, most batches will be this size the last will be smaller,
+if the # of reactions &lt; maxBatchSize the cascade algorithm is not used</li>
+<li><strong>outlierFraction</strong> – Fraction of reactions that are fastest/slowest and will be automatically included in the first batch</li>
+<li><strong>stratumNum</strong> – Number of strata used in stratified sampling scheme</li>
+<li><strong>maxRxnsToReoptNode</strong> – Nodes with more matching reactions than this will not be pruned</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -515,6 +537,19 @@ R_Recombination).</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.getRxnBatches">
+<code class="descname">getRxnBatches</code><span class="sig-paren">(</span><em>rxns</em>, <em>T=1000.0</em>, <em>maxBatchSize=800</em>, <em>outlierFraction=0.02</em>, <em>stratumNum=8</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.getRxnBatches" title="Permalink to this definition">¶</a></dt>
+<dd><p>Breaks reactions into batches based on a modified stratified sampling scheme
+Effectively:
+The top and bottom outlierFraction of all reactions are always included in the first batch
+The remaining reactions are ordered by the rate coefficients at T
+The list of reactions is then split into stratumNum similarly sized intervals
+batches sample equally from each interval, but randomly within each interval
+until they reach maxBatchSize reactions
+A list of lists of reactions containing the batches is returned</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.getSourcesForTemplate">
 <code class="descname">getSourcesForTemplate</code><span class="sig-paren">(</span><em>template</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.getSourcesForTemplate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the set of rate rules and training reactions used to average this <cite>template</cite>.  Note that the tree must be
@@ -573,7 +608,7 @@ exists, or <code class="docutils literal notranslate"><span class="pre">False</s
 
 <dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.isEntryMatch">
-<code class="descname">isEntryMatch</code><span class="sig-paren">(</span><em>mol</em>, <em>entry</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.isEntryMatch" title="Permalink to this definition">¶</a></dt>
+<code class="descname">isEntryMatch</code><span class="sig-paren">(</span><em>mol</em>, <em>entry</em>, <em>resonance=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.isEntryMatch" title="Permalink to this definition">¶</a></dt>
 <dd><p>determines if the labeled molecule object of reactants matches the entry entry</p>
 </dd></dl>
 
@@ -721,8 +756,17 @@ not discard duplicate entries.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="rmgpy.data.kinetics.KineticsFamily.pruneTree">
+<code class="descname">pruneTree</code><span class="sig-paren">(</span><em>rxns</em>, <em>thermoDatabase=None</em>, <em>maxRxnsToReoptNode=100</em>, <em>fixLabels=True</em>, <em>exactMatchesOnly=True</em>, <em>getReverse=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.pruneTree" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove nodes that have less than maxRxnToReoptNode reactions that match
+and clear the regularization dimensions of their parent
+This is used to remove smaller easier to optimize and more likely to change nodes
+before adding a new batch in cascade model generation</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.regularize">
-<code class="descname">regularize</code><span class="sig-paren">(</span><em>regularization=&lt;function simpleRegularization&gt;</em>, <em>keepRoot=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.regularize" title="Permalink to this definition">¶</a></dt>
+<code class="descname">regularize</code><span class="sig-paren">(</span><em>regularization=&lt;function simpleRegularization&gt;</em>, <em>keepRoot=True</em>, <em>thermoDatabase=None</em>, <em>templateRxnMap=None</em>, <em>rxns=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.regularize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Regularizes the tree according to the regularization function regularization</p>
 </dd></dl>
 
@@ -836,7 +880,7 @@ for those reactions.</p>
 
 <dl class="method">
 <dt id="rmgpy.data.kinetics.KineticsFamily.simpleRegularization">
-<code class="descname">simpleRegularization</code><span class="sig-paren">(</span><em>node</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.simpleRegularization" title="Permalink to this definition">¶</a></dt>
+<code class="descname">simpleRegularization</code><span class="sig-paren">(</span><em>node</em>, <em>templateRxnMap</em>, <em>test=True</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.simpleRegularization" title="Permalink to this definition">¶</a></dt>
 <dd><p>Simplest regularization algorithm
 All nodes are made as specific as their descendant reactions
 Training reactions are assumed to not generalize
@@ -844,18 +888,12 @@ For example if an particular atom at a node is Oxygen for all of its
 descendent reactions a reaction where it is Sulfur will never hit that node
 unless it is the top node even if the tree did not split on the identity
 of that atom</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="rmgpy.data.kinetics.KineticsFamily.splitReactions">
-<code class="descname">splitReactions</code><span class="sig-paren">(</span><em>rxns</em>, <em>newgrp</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.KineticsFamily.splitReactions" title="Permalink to this definition">¶</a></dt>
-<dd><p>divides the reactions in rxns between the new
-group structure newgrp and the old structure with
-label oldlabel
-returns a list of reactions associated with the new group
-the list of reactions associated with the old group
-and a list of the indices of all of the reactions
-associated with the new group</p>
+<p>The test option to this function determines whether or not the reactions
+under a node match the extended group before adding an extension.
+If the test fails the extension is skipped.</p>
+<p>In general test=True is needed if the cascade algorithm was used
+to generate the tree and test=False is ok if the cascade algorithm
+wasn’t used.</p>
 </dd></dl>
 
 </dd></dl>
