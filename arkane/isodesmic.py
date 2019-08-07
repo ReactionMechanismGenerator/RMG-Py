@@ -153,7 +153,7 @@ class SpeciesConstraints(object):
     A class for defining and enumerating constraints to ReferenceSpecies objects for error canceling reactions
     """
 
-    def __init__(self, target, reference_species, conserve_bonds=True, conserve_ring_size=True):
+    def __init__(self, target, reference_list, conserve_bonds=True, conserve_ring_size=True):
         """
         Define the constraints that will be enforced, and determine the mapping of indices in the constraint vector to
         the labels for these constraints.
@@ -164,14 +164,14 @@ class SpeciesConstraints(object):
 
         Args:
             target (ErrorCancelingSpecies): Molecule object for the target of the error canceling reaction scheme
-            reference_species(:obj:`list` of :obj:`ErrorCancelingSpecies`): A list of molecule objects for the reference
+            reference_list(:obj:`list` of :obj:`ErrorCancelingSpecies`): A list of molecule objects for the reference
                 species that can participate in the error canceling reaction scheme
             conserve_bonds (bool, optional): Enforce the number of each bond type be conserved
             conserve_ring_size (bool, optional): Enforce that the number of each ring size be conserved
         """
 
         self.target = target
-        self.all_reference_species = reference_species
+        self.all_reference_species = reference_list
         self.reference_species = []
         self.conserve_bonds = conserve_bonds
         self.conserve_ring_size = conserve_ring_size
