@@ -30,7 +30,7 @@
 
 from .model import KineticsModel, PDepKineticsModel, TunnelingModel, \
                    getRateCoefficientUnitsFromReactionOrder, getReactionOrderFromRateCoefficientUnits
-from .arrhenius import Arrhenius, ArrheniusEP, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius
+from .arrhenius import Arrhenius, ArrheniusEP, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, ArrheniusBM
 from .chebyshev import Chebyshev
 from .falloff import ThirdBody, Lindemann, Troe
 from .kineticsdata import KineticsData, PDepKineticsData

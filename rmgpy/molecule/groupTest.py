@@ -678,9 +678,9 @@ class TestGroup(unittest.TestCase):
         """
         for atom in self.group.atoms:
             if atom.label != '':
-                self.assertEqual(atom, self.group.getLabeledAtom(atom.label))
+                self.assertEqual(atom, self.group.getLabeledAtom(atom.label)[0])
         try:
-            self.group.getLabeledAtom('*3')
+            self.group.getLabeledAtom('*3')[0]
             self.fail('Unexpected successful return from Group.getLabeledAtom() with invalid atom label.')
         except ValueError:
             pass
@@ -874,7 +874,7 @@ class TestGroup(unittest.TestCase):
 
         group1 = Group().fromAdjacencyList(adjlist1)
         answer1 = Group().fromAdjacencyList(answer1)
-        atom1 = group1.getLabeledAtom("*1")
+        atom1 = group1.getLabeledAtom("*1")[0]
         newAtom = group1.createAndConnectAtom(atomtypes = ["Cb"], connectingAtom = atom1, bondOrders = ["B"])
         self.assertTrue(group1.isIsomorphic(answer1))
 
@@ -887,7 +887,7 @@ class TestGroup(unittest.TestCase):
         #Test that wildcards work alright
         group2 = Group().fromAdjacencyList(adjlist1)
         answer2 = Group().fromAdjacencyList(answer2)
-        atom1 = group2.getLabeledAtom("*1")
+        atom1 = group2.getLabeledAtom("*1")[0]
         newAtom = group2.createAndConnectAtom(atomtypes = ["Cs", "Cd"], connectingAtom = atom1, bondOrders = ["S","D"])
         self.assertTrue(group2.isIsomorphic(answer2))
 
@@ -1042,9 +1042,9 @@ class TestGroup(unittest.TestCase):
         self.assertEquals(len(cbAtomList), 5)
 
         #Tests that we can classify connected Cbfs correctly. *1 should be connected to both *2 and *3
-        atom1 = group5.getLabeledAtom("*1")
-        atom2 = group5.getLabeledAtom("*2")
-        atom3 = group5.getLabeledAtom("*3")
+        atom1 = group5.getLabeledAtom("*1")[0]
+        atom2 = group5.getLabeledAtom("*2")[0]
+        atom3 = group5.getLabeledAtom("*3")[0]
         self.assertIn(atom2, connectedCbfs[atom1])
         self.assertIn(atom3, connectedCbfs[atom1])
         self.assertIn(atom1, connectedCbfs[atom2])

@@ -35,6 +35,7 @@ reaction sites).
 """
 
 import cython
+import itertools
 
 from .graph import Vertex, Edge, Graph
 from .atomtype import atomTypes, allElements, nonSpecifics, getFeatures, AtomType
@@ -1215,8 +1216,19 @@ class Group(Graph):
             molecule = Group(atoms=g.vertices)
             molecules.append(molecule)
         return molecules
-                
-                               
+
+    def clearRegDims(self):
+        """
+        clear regularization dimensions
+        """
+        cython.declare(atm=GroupAtom)
+        for atm in self.atoms:
+            atm.reg_dim_atm = [[],[]]
+            atm.reg_dim_u = [[],[]]
+            atm.reg_dim_r = [[],[]]
+        for bd in self.getAllEdges():
+            bd.reg_dim = [[],[]]
+
     def getExtensions(self,R=None,basename='',atmInd=None, atmInd2=None, Nsplits=None):
         """
         generate all allowed group extensions and their complements
@@ -1232,7 +1244,7 @@ class Group(Graph):
             
         #generate appropriate R and R!H
         if R is None:
-            R = ['H','C','N','O','Si','S','Cl'] #set of possible R elements/atoms
+            R = elements.BDE_elements #set of possible R elements/atoms
             R = [atomTypes[x] for x in R]
         
         Rbonds = [1,2,3,1.5]
@@ -1269,7 +1281,7 @@ class Group(Graph):
                         else:
                             extents.extend(self.specifyUnpairedExtensions(i,basename,atm.radicalElectrons))
                 else:
-                    if len(atm.radicalElectrons) != 1:
+                    if len(atm.radicalElectrons) != 1 and len(atm.reg_dim_u[0]) != 1:
                         if len(atm.radicalElectrons) == 0:
                             extents.extend(self.specifyUnpairedExtensions(i,basename,atm.reg_dim_u[0]))
                         else:
@@ -1285,7 +1297,7 @@ class Group(Graph):
                         bd = self.getBond(atm,atm2)
                         if len(bd.order) > 1 and bd.reg_dim[0] == []:
                             extents.extend(self.specifyBondExtensions(i,j,basename,bd.order))
-                        elif len(bd.order) > 1:
+                        elif len(bd.order) > 1 and len(bd.reg_dim[0]) > 1 and len(bd.reg_dim[0]) > len(bd.reg_dim[1]):
                             extents.extend(self.specifyBondExtensions(i,j,basename,bd.reg_dim[0]))
         
         elif atmInd is not None and atmInd2 is not None: #if both atmInd and atmInd2 are defined only look at the bonds between them
@@ -1299,7 +1311,7 @@ class Group(Graph):
                 bd = self.getBond(atm,atm2)
                 if len(bd.order) > 1 and bd.reg_dim[0] == []:
                     extents.extend(self.specifyBondExtensions(i,j,basename,bd.order))
-                elif len(bd.order) > 1:
+                elif len(bd.order) > 1 and len(bd.reg_dim[0]) > 1 and len(bd.reg_dim[0]) > len(bd.reg_dim[1]):
                     extents.extend(self.specifyBondExtensions(i,j,basename,bd.reg_dim[0]))
                     
         elif atmInd is not None: #look at the atom at atmInd
@@ -1329,7 +1341,7 @@ class Group(Graph):
                     else:
                         extents.extend(self.specifyUnpairedExtensions(i,basename,atm.radicalElectrons))
             else:
-                if len(atm.radicalElectrons) != 1:
+                if len(atm.radicalElectrons) != 1 and len(atm.reg_dim_u[0]) != 1:
                     if len(atm.radicalElectrons) == 0:
                         extents.extend(self.specifyUnpairedExtensions(i,basename,atm.reg_dim_u[0]))
                     else:
@@ -1345,7 +1357,7 @@ class Group(Graph):
                     bd = self.getBond(atm,atm2)
                     if len(bd.order) > 1 and bd.reg_dim == []:
                         extents.extend(self.specifyBondExtensions(i,j,basename,bd.order))
-                    elif len(bd.order) > 1:
+                    elif len(bd.order) > 1 and len(bd.reg_dim[0]) > 1 and len(bd.reg_dim[0]) > len(bd.reg_dim[1]):
                         extents.extend(self.specifyBondExtensions(i,j,basename,bd.reg_dim[0]))
         
         else:
@@ -1361,8 +1373,6 @@ class Group(Graph):
         cython.declare(grps=list,labelList=list,Rset=set,item=AtomType,grp=Group,grpc=Group,k=AtomType,p=str)
         
         grps = []
-        labelList = []
-        
         Rset = set(R)
         for item in R:
             grp = deepcopy(self)
@@ -1370,9 +1380,9 @@ class Group(Graph):
             old_atom_type = grp.atoms[i].atomType
             grp.atoms[i].atomType = [item]
             grpc.atoms[i].atomType = list(Rset-{item})
-            
-            
+
             if len(old_atom_type ) > 1:
+                labelList = []
                 old_atom_type_str = ''
                 for k in old_atom_type:
                     labelList.append(k.label)
@@ -1571,11 +1581,12 @@ class Group(Graph):
         Return the atom in the group that is labeled with the given `label`.
         Raises :class:`ValueError` if no atom in the group has that label.
         """
-        cython.declare(atom=GroupAtom)
-        for atom in self.vertices:
-            if atom.label == label: return atom
-        raise ValueError('No atom in the functional group has the label "{0}".'.format(label))
-
+        cython.declare(atom=GroupAtom,alist=list)
+        alist = [atom for atom in self.vertices if atom.label == label]
+        if alist == []:
+            raise ValueError('No atom in the functional group \n{1}\n has the label "{0}".'.format(label,self.toAdjacencyList()))
+        return alist
+    
     def getLabeledAtoms(self):
         """
         Return the labeled atoms as a ``dict`` with the keys being the labels
@@ -1714,17 +1725,37 @@ class Group(Graph):
         # isomorphism, so raise an exception if this is not what was requested
         if not isinstance(other, Group):
             raise TypeError('Got a {0} object for parameter "other", when a Group object is required.'.format(other.__class__))
+
         group = other
         
         if generateInitialMap:
+            keys = []
+            atms = []
             initialMap = dict()
             for atom in self.atoms:
                 if atom.label and atom.label != '':
                     L = [a for a in other.atoms if a.label == atom.label]
-                    initialMap[atom] = L[0]
-            if not self.isMappingValid(other,initialMap,equivalent=False):
-                return False
-                
+                    if L == []:
+                        return False
+                    elif len(L) == 1:
+                        initialMap[atom] = L[0]
+                    else:
+                        keys.append(atom)
+                        atms.append(L)
+            if atms:
+                for atmlist in itertools.product(*atms):
+                    if len(set(atmlist)) != len(atmlist): #skip entries that map multiple graph atoms to the same subgraph atom
+                        continue
+                    for i,key in enumerate(keys):
+                        initialMap[key] = atmlist[i]
+                    if self.isMappingValid(other,initialMap,equivalent=False) and Graph.isSubgraphIsomorphic(self, other, initialMap, saveOrder=saveOrder):
+                        return True
+                else:
+                    return False
+            else:
+                if not self.isMappingValid(other,initialMap,equivalent=False):
+                    return False
+
         if self.multiplicity:
             for mult1 in self.multiplicity:
                 if group.multiplicity:
@@ -2597,12 +2628,13 @@ class Group(Graph):
             if not inRing: return False
         else: return True
 
-    def mergeGroups(self, other):
+    def mergeGroups(self, other, keepIdenticalLabels=False):
         """
         This function takes `other` :class:Group object and returns a merged :class:Group object based
         on overlapping labeled atoms between self and other
 
         Currently assumes `other` can be merged at the closest labelled atom
+        if keepIdenticalLabels=True mergeGroups will not try to merge atoms with the same labels
         """
         labeled1 = self.getLabeledAtoms()
         labeled2 = other.getLabeledAtoms()
@@ -2628,25 +2660,26 @@ class Group(Graph):
         *2. We need to remove the bond between atomA and atomB. Then we need to add a bond
         between atomA and atomC.
         """
-        bondsToRemove = []
-        for label in overlappingLabels:
-            oldAtomB = self.getLabeledAtom(label)
-            for oldAtomA, oldBondAB in oldAtomB.bonds.iteritems():
-                if not oldAtomA.label in overlappingLabels: #this is bond we need to transfer over
-                    #find and record bondAB from new backbone for later removal
-                    newAtomA = selfDict[oldAtomA]
-                    newAtomB = selfDict[oldAtomB]
-                    newAtomC = mergedGroup.getLabeledAtom(oldAtomB.label)
-                    for atom, newBondAB in newAtomA.bonds.iteritems():
-                        if atom is newAtomB:
-                            bondsToRemove.append(newBondAB)
-                            break
-                    #add bond between atomA and AtomC
-                    newBondAC = GroupBond(newAtomA, newAtomC, order= oldBondAB.order)
-                    mergedGroup.addBond(newBondAC)
-        #remove bonds from mergedGroup
-        for bond in bondsToRemove:
-            mergedGroup.removeBond(bond)
+        if not keepIdenticalLabels:
+            bondsToRemove = []
+            for label in overlappingLabels:
+                oldAtomB = self.getLabeledAtom(label)[0]
+                for oldAtomA, oldBondAB in oldAtomB.bonds.iteritems():
+                    if not oldAtomA.label in overlappingLabels: #this is bond we need to transfer over
+                        #find and record bondAB from new backbone for later removal
+                        newAtomA = selfDict[oldAtomA]
+                        newAtomB = selfDict[oldAtomB]
+                        newAtomC = mergedGroup.getLabeledAtom(oldAtomB.label)[0]
+                        for atom, newBondAB in newAtomA.bonds.iteritems():
+                            if atom is newAtomB:
+                                bondsToRemove.append(newBondAB)
+                                break
+                        #add bond between atomA and AtomC
+                        newBondAC = GroupBond(newAtomA, newAtomC, order= oldBondAB.order)
+                        mergedGroup.addBond(newBondAC)
+            #remove bonds from mergedGroup
+            for bond in bondsToRemove:
+                mergedGroup.removeBond(bond)
 
         return mergedGroup
 

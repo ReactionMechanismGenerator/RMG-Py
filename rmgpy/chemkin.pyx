@@ -551,7 +551,8 @@ def _removeLineBreaks(comments):
     """
     comments = comments.replace('\n',' ')
     new_statement_indicators = ['Reaction index','Template reaction','Library reaction',
-                                'PDep reaction','Flux pairs',
+                                'PDep reaction','Flux pairs','BM rule fitted to',
+                                'Uncertainty in Total Std:',
                                 'Estimated using','Exact match found','Average of ',
                                 'Euclidian distance','Matched node ','Matched reaction ',
                                 'Multiplied by reaction path degeneracy ',
@@ -677,6 +678,12 @@ def readReactionComments(reaction, comments, read = True):
                 reaction.kinetics.changeRate(1./degen)
             # do not add comment because setting degeneracy does so already
             reaction.kinetics.comment += "\n"
+
+        elif 'BM rule fitted to' in line:
+            reaction.kinetics.comment += line.strip() + "\n"
+
+        elif 'Uncertainty in Total Std:' in line:
+            reaction.kinetics.comment += line.strip() + "\n"
 
         elif line.strip() != '':
             # Any lines which are commented out but don't have any specific flag are simply kinetics comments
@@ -2257,6 +2264,3 @@ class ChemkinWriter(object):
     
     def update(self, rmg):
         saveChemkinFiles(rmg)
-
-        
-    

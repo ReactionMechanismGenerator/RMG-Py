@@ -25,69 +25,15 @@
 #                                                                             #
 ###############################################################################
 
-cimport numpy
-
-from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
-from rmgpy.kinetics.uncertainties cimport RateUncertainty
 
 ################################################################################
 
-cpdef str getRateCoefficientUnitsFromReactionOrder(order)
+cdef class RateUncertainty(object):
 
-cpdef int getReactionOrderFromRateCoefficientUnits(kunits) except -1
+    cdef public double Tref
+    cdef public double mu
+    cdef public double var
+    cdef public int N
+    cdef public str correlation
 
-################################################################################
-
-cdef class KineticsModel:
-    
-    cdef public ScalarQuantity _Tmin, _Tmax
-    cdef public ScalarQuantity _Pmin, _Pmax
-    cdef public RateUncertainty uncertainty
-
-    cdef public str comment
-    
-    cpdef bint isPressureDependent(self) except -2
-    
-    cpdef bint isTemperatureValid(self, double T) except -2
-
-    cpdef double getRateCoefficient(self, double T, double P=?) except -1
-    
-    cpdef toHTML(self)
-
-    cpdef bint isSimilarTo(self, KineticsModel otherKinetics) except -2
-
-    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
-    
-    cpdef double discrepancy(self, KineticsModel otherKinetics) except -2
-    
-
-cdef class PDepKineticsModel(KineticsModel):
-    
-    cdef public dict efficiencies
-    cdef public KineticsModel highPlimit
-    
-    cpdef bint isPressureDependent(self) except -2
-    
-    cpdef bint isPressureValid(self, double P) except -2
-
-    cpdef double getEffectivePressure(self, double P, list species, numpy.ndarray fractions) except -1
-    
-    cpdef numpy.ndarray getEffectiveColliderEfficiencies(self, list species)
-
-    cpdef double getRateCoefficient(self, double T, double P=?) except -1
-
-    cpdef toHTML(self)
-
-    cpdef bint isSimilarTo(self, KineticsModel otherKinetics) except -2
-
-    cpdef bint isIdenticalTo(self, KineticsModel otherKinetics) except -2
-
-################################################################################
-
-cdef class TunnelingModel:
-
-    cdef public ScalarQuantity _frequency
-
-    cpdef double calculateTunnelingFactor(self, double T) except -100000000
-
-    cpdef numpy.ndarray calculateTunnelingFunction(self, numpy.ndarray Elist)
+    cpdef double getExpectedLogUncertainty(self)

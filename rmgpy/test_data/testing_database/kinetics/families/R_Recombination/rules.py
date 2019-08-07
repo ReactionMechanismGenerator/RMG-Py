@@ -20,7 +20,7 @@ is apparently not causing a problem
 """
 entry(
     index = 424,
-    label = "Y_rad;Y_rad",
+    label = "Y_rad",
     kinetics = ArrheniusEP(
         A = (1e+13, 'cm^3/(mol*s)'),
         n = 0,

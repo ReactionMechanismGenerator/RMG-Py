@@ -109,7 +109,7 @@ def saveEntry(f, entry):
         if hasattr(entry.data, 'efficiencies'):
             efficiencies = entry.data.efficiencies
             entry.data.efficiencies = dict(sortEfficiencies(entry.data.efficiencies))
-        kinetics = prettify(repr(entry.data))
+        kinetics = repr(entry.data) # todo prettify currently does not support uncertainty attribute
         kinetics = '    kinetics = {0},\n'.format(kinetics.replace('\n', '\n    '))
         f.write(kinetics)
         if hasattr(entry.data, 'efficiencies'):
@@ -401,21 +401,3 @@ def reduce_same_reactant_degeneracy(reaction, same_reactants=None):
                         'Degeneracy of reaction {} was decreased by 50% to {} since two of the reactants '
                         'are identical'.format(reaction, reaction.degeneracy)
                     )
-
-def getAllDescendants(entry):
-    """
-    retrieve all the descendants of entry
-    """
-    newNodes = [entry]
-    totNodes = []
-    tempNodes = []
-    while newNodes != []:
-        for entry2 in newNodes:
-            for child in entry2.children:
-                tempNodes.append(child)
-        totNodes.extend(newNodes)
-        newNodes = tempNodes
-        tempNodes = []
-
-    totNodes.remove(entry)
-    return totNodes

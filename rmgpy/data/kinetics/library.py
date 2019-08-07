@@ -122,6 +122,28 @@ class LibraryReaction(Reaction):
                                   self.entry
                                   ))
 
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the
+        object.
+        """
+        string = 'LibraryReaction('
+        if self.index != -1: string += 'index={0:d}, '.format(self.index)
+        if self.reactants is not None: string += 'reactants={0!r}, '.format(self.reactants)
+        if self.products is not None: string += 'products={0!r}, '.format(self.products)
+        if self.specificCollider is not None: string += 'specificCollider={0!r}, '.format(self.specificCollider)
+        if self.kinetics is not None: string += 'kinetics={0!r}, '.format(self.kinetics)
+        if not self.reversible: string += 'reversible={0}, '.format(self.reversible)
+        if self.transitionState is not None: string += 'transitionState={0!r}, '.format(self.transitionState)
+        if self.duplicate: string += 'duplicate={0}, '.format(self.duplicate)
+        if self.degeneracy != 1: string += 'degeneracy={0:.1f}, '.format(self.degeneracy)
+        if self.pairs is not None: string += 'pairs={0}, '.format(self.pairs)
+        if self.allow_pdep_route: string += "allow_pdep_route={}, ".format(self.allow_pdep_route)
+        if self.elementary_high_p: string += "elementary_high_p={}, ".format(self.elementary_high_p)
+        if self.allow_max_rate_violation: string += "allow_max_rate_violation={}, ".format(self.allow_max_rate_violation)
+        string = string[:-2] + ')'
+        return string
+
     def getSource(self):
         """
         Return the database that was the source of this reaction. For a
