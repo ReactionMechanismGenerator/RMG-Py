@@ -105,6 +105,14 @@ class ReferenceSpecies(ArkaneSpecies):
         if symmetry_number:
             self.symmetry_number = symmetry_number
 
+    def __repr__(self):
+        if self.index:
+            label = '{0}({1})'.format(self.smiles, self.index)
+        else:
+            label = '{0}'.format(self.smiles)
+
+        return '<ReferenceSpecies {0}>'.format(label)
+
     @property
     def reference_data(self):
         return self._reference_data
