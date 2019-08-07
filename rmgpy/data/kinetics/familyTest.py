@@ -265,7 +265,7 @@ multiplicity 2
 
         mapping = {}
         for label, atom in expectedProduct.getLabeledAtoms().iteritems():
-            mapping[atom] = products[0].getLabeledAtom(label)
+            mapping[atom] = products[0].getLabeledAtom(label)[0]
 
         self.assertTrue(expectedProduct.isIsomorphic(products[0], mapping))
 
@@ -306,13 +306,13 @@ multiplicity 2
 
         mapping1 = {}
         for label, atom in expectedProducts[0].getLabeledAtoms().iteritems():
-            mapping1[atom] = products[0].getLabeledAtom(label)
+            mapping1[atom] = products[0].getLabeledAtom(label)[0]
 
         self.assertTrue(expectedProducts[0].isIsomorphic(products[0], mapping1))
 
         mapping2 = {}
         for label, atom in expectedProducts[1].getLabeledAtoms().iteritems():
-            mapping2[atom] = products[1].getLabeledAtom(label)
+            mapping2[atom] = products[1].getLabeledAtom(label)[0]
 
         self.assertTrue(expectedProducts[1].isIsomorphic(products[1], mapping2))
 
@@ -365,7 +365,7 @@ multiplicity 2
 
         mapping = {}
         for label, atom in expectedProduct.getLabeledAtoms().iteritems():
-            mapping[atom] = products[0].getLabeledAtom(label)
+            mapping[atom] = products[0].getLabeledAtom(label)[0]
 
         self.assertTrue(expectedProduct.isIsomorphic(products[0], mapping))
 
@@ -408,7 +408,7 @@ multiplicity 2
 
         mapping = {}
         for label, atom in expectedProduct.getLabeledAtoms().iteritems():
-            mapping[atom] = products[0].getLabeledAtom(label)
+            mapping[atom] = products[0].getLabeledAtom(label)[0]
 
         self.assertTrue(expectedProduct.isIsomorphic(products[0], mapping))
 
@@ -461,7 +461,7 @@ multiplicity 2
 
         mapping = {}
         for label, atom in expectedProduct.getLabeledAtoms().iteritems():
-            mapping[atom] = products[0].getLabeledAtom(label)
+            mapping[atom] = products[0].getLabeledAtom(label)[0]
 
         self.assertTrue(expectedProduct.isIsomorphic(products[0], mapping))
 
@@ -520,7 +520,7 @@ multiplicity 2
 
         mapping = {}
         for label, atom in expectedProduct.getLabeledAtoms().iteritems():
-            mapping[atom] = products[0].getLabeledAtom(label)
+            mapping[atom] = products[0].getLabeledAtom(label)[0]
 
         self.assertTrue(expectedProduct.isIsomorphic(products[0], mapping))
 
@@ -563,7 +563,7 @@ multiplicity 2
 
         mapping = {}
         for label, atom in expectedProduct.getLabeledAtoms().iteritems():
-            mapping[atom] = products[0].getLabeledAtom(label)
+            mapping[atom] = products[0].getLabeledAtom(label)[0]
 
         self.assertTrue(expectedProduct.isIsomorphic(products[0], mapping))
 
@@ -668,6 +668,7 @@ class TestTreeGeneration(unittest.TestCase):
             ],
         )
         cls.family = cls.kineticsDatabase.families['Singlet_Carbene_Intra_Disproportionation']
+        cls.treerxns = cls.family.getTrainingSet(thermoDatabase=cls.thermoDatabase,removeDegeneracy=True,estimateThermo=True,fixLabels=True,getReverse=True)
 
     @classmethod
     def tearDownClass(cls):
@@ -694,13 +695,13 @@ class TestTreeGeneration(unittest.TestCase):
         """
         def objective(k1s,k2s):
             return len(k1s)*np.std(k1s)+len(k2s)*np.std(k2s)
-        
-        self.family.generateTree(thermoDatabase=self.thermoDatabase,obj=objective) #test input objective function
-        
+
+        self.family.generateTree(thermoDatabase=self.thermoDatabase,rxns=self.treerxns,obj=objective) #test input objective function
+
         self.family.cleanTree(self.thermoDatabase) #reclear
-        
-        self.family.generateTree(thermoDatabase=self.thermoDatabase) #test that default objective works
-        
+
+        self.family.generateTree(thermoDatabase=self.thermoDatabase,rxns=self.treerxns) #test that default objective works
+
     def test_CParentChild(self):
         """
         test that the tree is structured properly
@@ -784,9 +785,10 @@ class TestTreeGeneration(unittest.TestCase):
         """
         test that the tree is structured properly after regularization
         """
-        self.family.cleanTree(self.thermoDatabase)
-        self.family.generateTree(thermoDatabase=self.thermoDatabase)
-        self.family.regularize()
+        self.family.cleanTree()
+        self.family.generateTree(thermoDatabase=self.thermoDatabase,rxns=self.treerxns)
+        self.family.checkTree()
+        self.family.regularize(thermoDatabase=self.thermoDatabase,rxns=self.treerxns)
         self.family.checkTree()
         
 class TestGenerateReactions(unittest.TestCase):
@@ -874,14 +876,14 @@ multiplicity 2
         for i, reactant in enumerate(reaction.reactants):
             mapping = {}
             for label, atom in expected_reactants[i].getLabeledAtoms().iteritems():
-                mapping[atom] = reactant.molecule[0].getLabeledAtom(label)
+                mapping[atom] = reactant.molecule[0].getLabeledAtom(label)[0]
 
             self.assertTrue(expected_reactants[i].isIsomorphic(reactant.molecule[0], mapping))
 
         for i, product in enumerate(reaction.products):
             mapping = {}
             for label, atom in expected_products[i].getLabeledAtoms().iteritems():
-                mapping[atom] = product.molecule[0].getLabeledAtom(label)
+                mapping[atom] = product.molecule[0].getLabeledAtom(label)[0]
 
             self.assertTrue(expected_products[i].isIsomorphic(product.molecule[0], mapping))
 

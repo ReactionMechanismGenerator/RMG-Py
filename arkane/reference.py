@@ -105,6 +105,14 @@ class ReferenceSpecies(ArkaneSpecies):
         if symmetry_number:
             self.symmetry_number = symmetry_number
 
+    def __repr__(self):
+        if self.index:
+            label = '{0}({1})'.format(self.smiles, self.index)
+        else:
+            label = '{0}'.format(self.smiles)
+
+        return '<ReferenceSpecies {0}>'.format(label)
+
     @property
     def reference_data(self):
         return self._reference_data
@@ -159,6 +167,70 @@ class ReferenceSpecies(ArkaneSpecies):
         class_dict['CalculatedDataEntry'] = CalculatedDataEntry
 
         self.make_object(data, class_dict)
+
+    def update_from_arkane_spcs(self, arkane_species):
+        """
+        Add in calculated data from an existing ArkaneSpecies object.
+
+        Notes:
+            If the model chemistry already exists then this calculated data will be overwritten by the data contained
+            in arkane_species
+
+        Args:
+            arkane_species (ArkaneSpecies):  Matching Arkane species that was run at the desired model chemistry
+        """
+        conformer = arkane_species.conformer
+        thermo = arkane_species.thermo
+        thermo_data = arkane_species.thermo_data
+        calc_data = CalculatedDataEntry(conformer, thermo, thermo_data,)
+        self.calculated_data[arkane_species.model_chemistry] = calc_data
+
+    def to_error_canceling_spcs(self, model_chemistry, source=None):
+        """
+        Extract calculated and reference data from a specified model chemistry and source and return as a new
+        ErrorCancelingSpecies object
+
+        Notes:
+            If no source is given, the preferred source for this species. If the `preferred_source` attribute is not set
+            then the preferred source is taken as the source with the lowest non-zero uncertainty
+
+        Args:
+            model_chemistry (str): Model chemistry (level of theory) to use as the low level data
+            source (str): Reference data source to take the high level data from
+
+        Raises:
+            KeyError: If `model_chemistry` is not available for this reference species
+            ValueError: If there is no reference data for this reference species
+
+        Returns:
+            ErrorCancelingSpecies
+        """
+        if model_chemistry not in self.calculated_data:
+            raise KeyError('Model chemistry `{0}` not available for species {1}'.format(model_chemistry, self))
+        if not self.reference_data:
+            raise ValueError('No reference data is included for species {0}'.format(self))
+
+        molecule = Molecule(SMILES=self.smiles)
+        preferred_source = source
+
+        if not preferred_source:
+            # Find the preferred source
+            if self.preferred_reference is not None:
+                preferred_source = self.preferred_reference
+            else:  # Choose the source that has the smallest uncertainty
+                sources = self.reference_data.keys()
+                data = self.reference_data.values()
+                preferred_source = sources[0]  # If all else fails, use the first source as the preferred one
+                uncertainty = data[0].thermo_data.H298.uncertainty_si
+                for i, entry in enumerate(data):
+                    if (entry.thermo_data.H298.uncertainty_si > 0) and \
+                            (entry.thermo_data.H298.uncertainty_si < uncertainty):
+                        uncertainty = entry.thermo_data.H298.uncertainty_si
+                        preferred_source = sources[i]
+        high_level_h298 = self.reference_data[preferred_source].thermo_data.H298.__reduce__()[1]
+        low_level_h298 = self.calculated_data[model_chemistry].thermo_data.H298.__reduce__()[1]
+
+        return ErrorCancelingSpecies(molecule, low_level_h298, model_chemistry, high_level_h298, preferred_source)
 
 
 class ReferenceDataEntry(RMGObject):
@@ -347,27 +419,9 @@ class ReferenceDatabase(object):
             for ref_spcs in current_set:
                 if model_chemistry not in ref_spcs.calculated_data:  # Move on to the next reference species
                     continue
-                molecule = Molecule(SMILES=ref_spcs.smiles)
-                # Find the preferred source
-                if ref_spcs.preferred_reference is not None:
-                    preferred_source = ref_spcs.preferred_reference
-                elif ref_spcs.reference_data is not None:  # Choose the source that has the smallest uncertainty
-                    sources = ref_spcs.reference_data.keys()
-                    data = ref_spcs.reference_data.values()
-                    preferred_source = sources[0]  # If all else fails, use the first source as the preferred one
-                    uncertainty = data[0].thermo_data.H298.uncertainty_si
-                    for i, entry in enumerate(data):
-                        if (entry.thermo_data.H298.uncertainty_si > 0) and \
-                                (entry.thermo_data.H298.uncertainty_si < uncertainty):
-
-                            uncertainty = entry.thermo_data.H298.uncertainty_si
-                            preferred_source = sources[i]
-                else:  # This reference species does not have any sources, continue on
+                if not ref_spcs.reference_data:  # This reference species does not have any sources, continue on
                     continue
-                high_level_h298 = ref_spcs.reference_data[preferred_source].thermo_data.H298.__reduce__()[1]
-                low_level_h298 = ref_spcs.calculated_data[model_chemistry].thermo_data.H298.__reduce__()[1]
-                reference_list.append(ErrorCancelingSpecies(molecule, low_level_h298, model_chemistry, high_level_h298,
-                                                            preferred_source))
+                reference_list.append(ref_spcs.to_error_canceling_spcs(model_chemistry))
 
         return reference_list
 

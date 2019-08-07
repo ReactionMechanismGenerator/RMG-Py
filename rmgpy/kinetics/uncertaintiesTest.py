@@ -5,7 +5,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2019 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2018 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -29,23 +29,22 @@
 ###############################################################################
 
 """
-This module contains information related to kinetic uncertainties
+This script contains unit tests of the :mod:`rmgpy.kinetics.arrhenius` module.
 """
 
-from rmgpy.quantity import Quantity
+import unittest
+import numpy as np
+from rmgpy.kinetics.uncertainties import RateUncertainty
+from rmgpy.constants import R
 
-rank_accuracy_map ={1:(0.0,'kcal/mol'),
-                  2:(0.5,'kcal/mol'),
-                  3:(1.0,'kcal/mol'),
-                  4:(1.5,'kcal/mol'),
-                  5:(2.5,'kcal/mol'),
-                  6:(3.5,'kcal/mol'),
-                  7:(4.0,'kcal/mol'),
-                  8:(5.0,'kcal/mol'),
-                  9:(14.0,'kcal/mol'),
-                  10:(14.0,'kcal/mol'),
-                  None:(14.0,'kcal/mol'),
-                  0:(14.0,'kcal/mol'),
-                  11:(14.0,'kcal/mol'),
-                  }
-rank_accuracy_map = {key:Quantity(value) for key,value in rank_accuracy_map.iteritems()}
+class TestUncertainties(unittest.TestCase):
+    """
+    Contains unit tests for the RateUncertainty class
+    """
+    def testExpectedUncertainty(self):
+        """
+        Test RateUncertainty constructed from factor
+        """
+        unc = RateUncertainty(mu=0.3,var=0.6,Tref=1000.0,N=1,correlation="ab")
+        u = unc.getExpectedLogUncertainty()
+        self.assertAlmostEqual(u,0.3+np.sqrt(0.6*2.0/np.pi))
