@@ -91,9 +91,6 @@ def react_species(species_tuple, only_families=None):
     Returns:
         list of generated reactions
     """
-
-    species_tuple = tuple([spc.copy(deep=True) for spc in species_tuple])
-
     reactions = getDB('kinetics').generate_reactions_from_families(species_tuple, only_families=only_families)
 
     return reactions
