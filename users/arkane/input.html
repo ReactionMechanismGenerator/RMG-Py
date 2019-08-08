@@ -763,8 +763,48 @@ for specifying the same <code class="docutils literal notranslate"><span class="
 </div>
 <p>Note that the atom labels identified within the rotor section should correspond to the indicated geometry.</p>
 </div>
+<div class="section" id="multidimensional-hindered-rotors">
+<h4>3.4.1.3. Multidimensional Hindered Rotors<a class="headerlink" href="#multidimensional-hindered-rotors" title="Permalink to this headline">¶</a></h4>
+<p>For multidimensional hindered rotors, <code class="docutils literal notranslate"><span class="pre">geometry</span></code>, <code class="docutils literal notranslate"><span class="pre">frequencies</span></code> need to be specified in the same way described in detail in the last section. However,
+rotor files may be specified by either a 1D rotor scan file as in the last section (1D rotors only) or as a directory.
+The directory must contain a list of energy files in the format <code class="docutils literal notranslate"><span class="pre">something_name_rotorAngle1_rotorAngle2_rotorAngle3(...).log</span></code>.</p>
+<p>For HinderedRotor2D (Quantum Mechanical 2D using Q2DTor):
+======================= ====================================
+Parameter               Description
+======================= ====================================
+<code class="docutils literal notranslate"><span class="pre">scandir</span></code>             file or directory containing scan energies
+<code class="docutils literal notranslate"><span class="pre">pivots1</span></code>             The indices of the atoms in the first rotor torsional bond
+<code class="docutils literal notranslate"><span class="pre">top1</span></code>                The indices of all atoms on one side of the first torsional bond (including the pivot atom)
+<code class="docutils literal notranslate"><span class="pre">symmetry1</span></code>           The symmetry number of the first rotor
+<code class="docutils literal notranslate"><span class="pre">pivots2</span></code>             The indices of the atoms in the second rotor torsional bond
+<code class="docutils literal notranslate"><span class="pre">top2</span></code>                The indices of all atoms on one side of the second torsional bond (including the pivot atom)
+<code class="docutils literal notranslate"><span class="pre">symmetry2</span></code>           The symmetry number of the second rotor
+<code class="docutils literal notranslate"><span class="pre">symmetry</span></code>            Q2DTor simplifying symmetry code, default is <code class="docutils literal notranslate"><span class="pre">none</span></code>
+======================= ===================================</p>
+<p>For HinderedRotorClassicalND (Classical and Semiclassical ND rotors):
+======================= ====================================
+Parameter               Description
+======================= ====================================
+<code class="docutils literal notranslate"><span class="pre">scandir</span></code>             file or directory containing scan energies
+<code class="docutils literal notranslate"><span class="pre">pivots</span></code>              The list of the indices of the atoms in each rotor torsional bond
+<code class="docutils literal notranslate"><span class="pre">tops</span></code>                The list of the indices of all atoms on one side of each torsional bond (including the pivot atom)
+<code class="docutils literal notranslate"><span class="pre">sigmas</span></code>              The list of symmetry numbers for each torsional bond
+<code class="docutils literal notranslate"><span class="pre">semiclassical</span></code>       Indicates whether to use the semiclassical rotor correction (highly recommended)
+======================= ====================================</p>
+<p>The inputs are mostly the same as the last section except that HinderedRotorClassicalND takes lists of pivots,
+tops and sigmas instead of individual values. These rotor objects enable calculation of partition functions for
+multidimensional torsions that are particularly important for QOOH molecules and molecules involving intramolecular hydrogen
+bonding. It is worth noting that HinderedRotor2D can take on the order of hours to run. To mitigate this the
+.evals file in the directories Q2DTor directories are searched for automatically and used if present to reduce runtime to seconds.
+This means if you have run a system with HinderedRotor2D and wish to rerun the system and recalculate the HinderedRotor2D</p>
+<div class="system-message">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">/home/travis/build/ReactionMechanismGenerator/RMG-Py/documentation/source/users/arkane/input.rst</tt>, line 461)</p>
+Unexpected indentation.</div>
+<blockquote>
+<div>you should delete the .evals file. HinderedRotorClassicalND usually runs quickly for lower dimensional torsions.</div></blockquote>
+</div>
 <div class="section" id="additional-parameters-for-pressure-dependent-networks">
-<h4>3.4.1.3. Additional parameters for pressure dependent networks<a class="headerlink" href="#additional-parameters-for-pressure-dependent-networks" title="Permalink to this headline">¶</a></h4>
+<h4>3.4.1.4. Additional parameters for pressure dependent networks<a class="headerlink" href="#additional-parameters-for-pressure-dependent-networks" title="Permalink to this headline">¶</a></h4>
 <p>Additional parameters apply only to molecules in pressure depedent networks</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -1557,7 +1597,8 @@ Arkane point to a ‘ScanLog’ file. Another problem can arise when the potenti
 <li><a class="reference internal" href="#option-1-automatically-parse-quantum-chemistry-calculation-output">3.4.1. Option #1: Automatically Parse Quantum Chemistry Calculation Output</a><ul>
 <li><a class="reference internal" href="#without-hindered-free-rotors">3.4.1.1. Without Hindered/Free Rotors</a></li>
 <li><a class="reference internal" href="#with-hindered-free-rotors">3.4.1.2. With Hindered/Free Rotors</a></li>
-<li><a class="reference internal" href="#additional-parameters-for-pressure-dependent-networks">3.4.1.3. Additional parameters for pressure dependent networks</a></li>
+<li><a class="reference internal" href="#multidimensional-hindered-rotors">3.4.1.3. Multidimensional Hindered Rotors</a></li>
+<li><a class="reference internal" href="#additional-parameters-for-pressure-dependent-networks">3.4.1.4. Additional parameters for pressure dependent networks</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#option-2-directly-enter-molecular-properties">3.4.2. Option #2: Directly Enter Molecular Properties</a><ul>
