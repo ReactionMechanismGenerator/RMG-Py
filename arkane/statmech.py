@@ -48,6 +48,7 @@ from rmgpy.statmech.rotation import Rotation, LinearRotor, NonlinearRotor, KRoto
 from rmgpy.statmech.vibration import Vibration, HarmonicOscillator
 from rmgpy.statmech.torsion import Torsion, HinderedRotor, FreeRotor
 from rmgpy.statmech.conformer import Conformer
+from rmgpy.statmech.ndTorsions import HinderedRotor2D, HinderedRotorClassicalND
 from rmgpy.exceptions import InputError, StatmechError
 from rmgpy.quantity import Quantity
 from rmgpy.molecule.molecule import Molecule
@@ -60,6 +61,7 @@ from arkane.qchem import QChemLog
 from arkane.common import symbol_by_number
 from arkane.common import ArkaneSpecies
 from arkane.encorr.corr import get_atom_correction, get_bac
+from arkane.util import determine_qm_software
 
 
 ################################################################################
@@ -165,6 +167,11 @@ def freeRotor(pivots, top, symmetry):
     """Read a free rotor directive, and return the attributes in a list"""
     return [pivots, top, symmetry]
 
+def hinderedRotor2D(scandir,pivots1,top1,symmetry1,pivots2,top2,symmetry2,symmetry='none'):
+    return [scandir,pivots1,top1,symmetry1,pivots2,top2,symmetry2,symmetry]
+
+def hinderedRotorClassicalND(calcPath,pivots,tops,sigmas,semiclassical):
+    return [calcPath,pivots,tops,sigmas,semiclassical]
 
 class StatMechJob(object):
     """
@@ -250,6 +257,8 @@ class StatMechJob(object):
             'False': False,
             'HinderedRotor': hinderedRotor,
             'FreeRotor': freeRotor,
+            'HinderedRotor2D' : hinderedRotor2D,
+            'HinderedRotorClassicalND': hinderedRotorClassicalND,
             # File formats
             'GaussianLog': GaussianLog,
             'QChemLog': QChemLog,
@@ -470,7 +479,7 @@ class StatMechJob(object):
 
             logging.debug('    Fitting {0} hindered rotors...'.format(len(rotors)))
             rotorCount = 0
-            for q in rotors:
+            for j,q in enumerate(rotors):
                 symmetry = None
                 if len(q) == 3:
                     # No potential scan is given, this is a free rotor
@@ -479,6 +488,21 @@ class StatMechJob(object):
                     rotor = FreeRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
                     conformer.modes.append(rotor)
                     rotorCount += 1
+                elif len(q) == 8:
+                    scandir,pivots1,top1,symmetry1,pivots2,top2,symmetry2,symmetry = q
+                    logging.info("Calculating energy levels for 2D-HR, may take a while...")
+                    rotor = HinderedRotor2D(name='r'+str(j),torsigma1=symmetry1,torsigma2=symmetry2,symmetry=symmetry,
+                                            calcPath=os.path.join(directory,scandir),pivots1=pivots1,pivots2=pivots2,top1=top1,top2=top2)
+                    rotor.run()
+                    conformer.modes.append(rotor)
+                    rotorCount += 2
+                elif len(q) == 5 and isinstance(q[1][0],list):
+                    scandir,pivots,tops,sigmas,semiclassical = q
+                    rotor = HinderedRotorClassicalND(pivots,tops,sigmas,calcPath=os.path.join(directory,scandir),conformer=conformer,F=F,
+                                                     semiclassical=semiclassical,isLinear=linear,isTS=is_ts)
+                    rotor.run()
+                    conformer.modes.append(rotor)
+                    rotorCount += len(pivots)
                 elif len(q) in [4, 5]:
                     # This is a hindered rotor
                     if len(q) == 5:
@@ -560,7 +584,7 @@ class StatMechJob(object):
                         rotorCount += 1
 
             logging.debug('    Determining frequencies from reduced force constant matrix...')
-            frequencies = np.array(projectRotors(conformer, F, rotors, linear, is_ts, label=self.species.label))
+            frequencies = np.array(projectRotors(conformer, F, rotors, linear, is_ts))
 
         elif len(conformer.modes) > 2:
             if len(rotors) > 0:
@@ -707,33 +731,6 @@ class StatMechJob(object):
 ################################################################################
 
 
-def determine_qm_software(fullpath):
-    """
-    Given a path to the log file of a QM software, determine whether it is Gaussian, Molpro, or QChem
-    """
-    with open(fullpath, 'r') as f:
-        line = f.readline()
-        software_log = None
-        while line != '':
-            if 'gaussian' in line.lower():
-                f.close()
-                software_log = GaussianLog(fullpath)
-                break
-            elif 'qchem' in line.lower():
-                f.close()
-                software_log = QChemLog(fullpath)
-                break
-            elif 'molpro' in line.lower():
-                f.close()
-                software_log = MolproLog(fullpath)
-                break
-            line = f.readline()
-        else:
-            raise InputError(
-                "File at {0} could not be identified as a Gaussian, QChem or Molpro log file.".format(fullpath))
-    return software_log
-
-
 def is_linear(coordinates):
     """
     Determine whether or not the species is linear from its 3D coordinates
@@ -760,8 +757,7 @@ def is_linear(coordinates):
             return False
     return True
 
-
-def projectRotors(conformer, F, rotors, linear, is_ts, label):
+def projectRotors(conformer, F, rotors, linear, is_ts, getProjectedOutFreqs=False):
     """
     For a given `conformer` with associated force constant matrix `F`, lists of
     rotor information `rotors`, `pivots`, and `top1`, and the linearity of the
@@ -772,13 +768,21 @@ def projectRotors(conformer, F, rotors, linear, is_ts, label):
     Refer to Gaussian whitepaper (http://gaussian.com/vib/) for procedure to calculate
     harmonic oscillator vibrational frequencies using the force constant matrix.
     """
+    Nrotors = 0
+    for rotor in rotors:
+        if len(rotor) == 8:
+            Nrotors += 2
+        elif len(rotor) == 5 and isinstance(rotor[1][0],list):
+            Nrotors += len(rotor[1])
+        else:
+            Nrotors += 1
+
     mass = conformer.mass.value_si
     coordinates = conformer.coordinates.getValue()
     if linear is None:
         linear = is_linear(coordinates)
         if linear:
             logging.info('Determined species {0} to be linear.'.format(label))
-    Nrotors = len(rotors)
     Natoms = len(conformer.mass.value)
     Nvib = 3 * Natoms - (5 if linear else 6) - Nrotors - (1 if is_ts else 0)
 
@@ -906,30 +910,45 @@ def projectRotors(conformer, F, rotors, linear, is_ts, label):
 
     counter = 0
     for i, rotor in enumerate(rotors):
-        if len(rotor) == 5:
+        if len(rotor) == 5 and isinstance(rotor[1][0],list):
+            scandir,pivotss,tops,sigmas,semiclassical = rotor
+        elif len(rotor) == 5:
             scanLog, pivots, top, symmetry, fit = rotor
+            pivotss = [pivots]
+            tops = [top]
         elif len(rotor) == 3:
             pivots, top, symmetry = rotor
-        # Determine pivot atom
-        if pivots[0] in top:
-            pivot1 = pivots[0]
-            pivot2 = pivots[1]
-        elif pivots[1] in top:
-            pivot1 = pivots[1]
-            pivot2 = pivots[0]
+            pivotss = [pivots]
+            tops = [top]
+        elif len(rotor) == 8:
+            scandir,pivots1,top1,symmetry1,pivots2,top2,symmetry2,symmetry = rotor
+            pivotss = [pivots1,pivots2]
+            tops = [top1,top2]
         else:
-            raise Exception('Could not determine pivot atom.')
-        # Projection vectors for internal rotation
-        e12 = coordinates[pivot1 - 1, :] - coordinates[pivot2 - 1, :]
-        for j in range(Natoms):
-            atom = j + 1
-            if atom in top:
-                e31 = coordinates[atom - 1, :] - coordinates[pivot1 - 1, :]
-                Dint[3 * (atom - 1):3 * (atom - 1) + 3, counter] = np.cross(e31, e12) * amass[atom - 1]
-            else:
-                e31 = coordinates[atom - 1, :] - coordinates[pivot2 - 1, :]
-                Dint[3 * (atom - 1):3 * (atom - 1) + 3, counter] = np.cross(e31, -e12) * amass[atom - 1]
-        counter += 1
+            raise ValueError("{} not a proper rotor format".format(rotor))
+        for i in xrange(len(tops)):
+            top = tops[i]
+            pivots = pivotss[i]
+            # Determine pivot atom
+            if pivots[0] in top:
+                pivot1 = pivots[0]
+                pivot2 = pivots[1]
+            elif pivots[1] in top:
+                pivot1 = pivots[1]
+                pivot2 = pivots[0]
+            else: 
+                raise ValueError('Could not determine pivot atom for rotor {}.'.format(label))
+            # Projection vectors for internal rotation
+            e12 = coordinates[pivot1-1,:] - coordinates[pivot2-1,:]
+            for j in range(Natoms):
+                atom=j+1
+                if atom in top:
+                    e31 = coordinates[atom-1,:] - coordinates[pivot1-1,:]
+                    Dint[3*(atom-1):3*(atom-1)+3,counter] = np.cross(e31, e12)*amass[atom-1]
+                else:
+                    e31 = coordinates[atom-1,:] - coordinates[pivot2-1,:]
+                    Dint[3*(atom-1):3*(atom-1)+3,counter] = np.cross(e31, -e12)*amass[atom-1]
+            counter+=1
 
     # Normal modes in mass weighted cartesian coordinates
     Vmw = np.dot(T, V)
@@ -953,19 +972,28 @@ def projectRotors(conformer, F, rotors, linear, is_ts, label):
 
     # Ortho normalize
     for i in range(Nrotors):
-        norm = 0.0
-        for j in range(3 * Natoms):
-            norm += Dint[j, i] * Dint[j, i]
-        for j in range(3 * Natoms):
-            Dint[j, i] /= np.sqrt(norm)
-        for j in range(i + 1, Nrotors):
-            proj = 0.0
-            for k in range(3 * Natoms):
-                proj += Dint[k, i] * Dint[k, j]
-            for k in range(3 * Natoms):
-                Dint[k, j] -= proj * Dint[k, i]
+        norm=0.0
+        for j in range(3*Natoms):
+            norm+=Dint[j,i]*Dint[j,i]
+        for j in range(3*Natoms):
+            Dint[j,i]/=np.sqrt(norm)
+        for j in range(i+1,Nrotors):
+            proj=0.0
+            for k in range (3*Natoms):
+                proj+=Dint[k,i]*Dint[k,j]
+            for k in range(3*Natoms):
+                Dint[k,j]-=proj*Dint[k,i]
 
-    Dintproj = np.dot(Vmw.T, Dint)
+    #calculate the frequencies correspondinng to the internal rotors
+    intProj = np.dot(Fm,Dint)
+    kmus = np.array([np.linalg.norm(intProj[:,i]) for i in xrange(intProj.shape[1])])
+    intRotorFreqs = np.sqrt(kmus) / (2.0 * math.pi * constants.c * 100.0)
+
+    if getProjectedOutFreqs:
+        return intRotorFreqs
+
+    #Do the projection
+    Dintproj=np.dot(Vmw.T,Dint)
     Proj = np.dot(Dint, Dint.T)
     I = np.identity(Natoms * 3, np.float64)
     Proj = I - Proj

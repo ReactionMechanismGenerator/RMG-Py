@@ -5,6 +5,7 @@ channels:
   - rdkit
   - cantera
   - anaconda
+  - omnia
 dependencies:
   - cairo
   - cairocffi
@@ -48,3 +49,4 @@ dependencies:
   - symmetry
   - textgenrnn
   - xlwt
+  - numdifftools

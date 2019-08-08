@@ -37,6 +37,7 @@ import logging
 import os
 import shutil
 from nose.plugins.attrib import attr
+import zipfile
 
 import rmgpy
 from arkane import Arkane
@@ -55,6 +56,11 @@ class TestArkaneExamples(unittest.TestCase):
         cls.base_path = os.path.join(os.path.dirname(os.path.dirname(rmgpy.__file__)), 'examples', 'arkane')
         cls.failed = []
         cls.example_types = ['species', 'reactions', 'explorer', 'networks']
+        ch2ooh_path = os.path.join(cls.base_path, 'species', 'CH2CHOOH', 'CH2CHOOHscans')
+        if not os.path.exists(ch2ooh_path):
+            ch2ooh_path = os.path.join(cls.base_path, 'species', 'CH2CHOOH', 'CH2CHOOHscans.zip')
+            zip_ref = zipfile.ZipFile(ch2ooh_path, 'r')
+            zip_ref.extractall()
 
     def test_arkane_examples(self):
         for example_type in self.example_types:
@@ -97,6 +103,8 @@ class TestArkaneExamples(unittest.TestCase):
                                 (extension in cls.extensions_to_delete and name not in cls.files_to_keep):
                             os.remove(item_path)
                     else:
+                        if os.path.split(item_path)[-1] in ['r0']:
+                            continue
                         # This is a sub-directory. remove.
                         shutil.rmtree(item_path)
 
