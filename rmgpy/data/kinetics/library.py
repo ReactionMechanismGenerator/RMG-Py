@@ -245,6 +245,7 @@ class KineticsLibrary(Database):
                                       duplicate=entry.item.duplicate, reversible=entry.item.reversible,
                                       allow_pdep_route=entry.item.allow_pdep_route,
                                       elementary_high_p=entry.item.elementary_high_p)
+                rxn.family = self.label #the library the reaction was loaded from (opposed to originally from)
             elif entry._longDesc and 'rate rule' in entry._longDesc: #template reaction
                 c = entry._longDesc.split('\n')
                 family_comments = [i for i in c if 'family: ' in i]
