@@ -198,7 +198,7 @@ def ensure_independent_atom_ids(input_species, resonance=True):
     Modifies the list in place (replacing :class:`Molecule` with :class:`Species`).
     Returns None.
     """
-    ensure_species(input_species, resonance=resonance, keep_isomorphic=True)
+    ensure_species(input_species)  # do not generate resonance structures since we do so below
     # Method to check that all species' atom ids are different
     def independent_ids():
         num_atoms = 0
