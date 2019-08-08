@@ -45,9 +45,11 @@ import psutil
 import numpy as np
 import gc
 import copy
+import h5py
 from copy import deepcopy
 from scipy.optimize import brute
 from cantera import ck2cti
+import yaml
 
 from rmgpy.rmg.settings import ModelSettings
 from rmgpy.constraints import failsSpeciesConstraints
@@ -1201,6 +1203,8 @@ class RMG(util.Subject):
         
         if run with firstTime=True it will change self.name to be unique within the thermo/kinetics libraries
         by adding integers to the end of the name to prevent overwritting
+
+        This also writes the filter tensors to the `Filters` sub-folder for restarting an RMG job from a seed mechanism
         """
         
         logging.info('Making seed mechanism...')
@@ -1218,6 +1222,7 @@ class RMG(util.Subject):
                 self.name = name + str(q)
         
         seedDir = os.path.join(self.outputDirectory,'seed')
+        filterDir = os.path.join(seedDir, 'Filters')
         tempSeedDir = os.path.join(self.outputDirectory, 'seed_tmp')
         
         if firstTime:
@@ -1300,6 +1305,23 @@ class RMG(util.Subject):
 
             edgeKineticsLibrary.save(os.path.join(seedDir, name+'_edge', 'reactions.py'))
             edgeKineticsLibrary.saveDictionary(os.path.join(seedDir, name+'_edge', 'dictionary.txt'))
+
+            # Save the filter tensors
+            if not os.path.exists(filterDir):
+                os.mkdir(filterDir)
+            with h5py.File(os.path.join(filterDir, 'filters.h5'), 'w') as f:
+                if self.unimolecularThreshold is not None:
+                    f.create_dataset('unimolecularThreshold', data=self.unimolecularThreshold)
+                if self.bimolecularThreshold is not None:
+                    f.create_dataset('bimolecularThreshold', data=self.bimolecularThreshold)
+                if self.trimolecularThreshold is not None:
+                    f.create_dataset('trimolecularThreshold', data=self.trimolecularThreshold)
+
+            # Save a map of species indices
+            spcsMap = [spc.molecule[0].toAdjacencyList() for spc in self.reactionModel.core.species]
+
+            with open(os.path.join(filterDir, 'species_map.yml'), 'w') as f:
+                yaml.dump(data=spcsMap, stream=f)
 
             # Finally, delete the seed mechanism from the previous iteration (if it exists)
             if os.path.exists(tempSeedDir):
