@@ -1347,6 +1347,13 @@ class RMG(util.Subject):
             with open(os.path.join(filterDir, 'species_map.yml'), 'w') as f:
                 yaml.dump(data=spcsMap, stream=f)
 
+            # Generate a file for restarting from a seed mechanism if this is not a restart job
+            if firstTime and (not self.restart):
+                with open(os.path.join(self.outputDirectory, 'restart_from_seed.py'), 'w') as f:
+                    f.write('restartFromSeed(path=\'seed\')\n\n')
+                    with open(self.inputFile, 'r') as inputFile:
+                        f.write(''.join(inputFile.readlines()))
+
             # Finally, delete the seed mechanism from the previous iteration (if it exists)
             if os.path.exists(tempSeedDir):
                 shutil.rmtree(tempSeedDir)
