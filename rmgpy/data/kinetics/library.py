@@ -240,6 +240,8 @@ class KineticsLibrary(Database):
                 lib = [line for line in entry.longDesc.split('\n') if 'Originally from reaction library: ' in line]
                 lib = lib[0].replace('Originally from reaction library: ','')
                 lib = lib.replace('\n','')
+                # Clean up any leading indents in kinetics comment
+                entry.data.comment = '\n'.join([line.strip() for line in entry.data.comment.split('\n')])
                 rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],
                                       library=lib, specificCollider=entry.item.specificCollider, kinetics=entry.data,
                                       duplicate=entry.item.duplicate, reversible=entry.item.reversible,
@@ -256,6 +258,8 @@ class KineticsLibrary(Database):
                         template = re.split(r'\[(.*)\]', rule_part)[1]  # Remove outer brackets and trailing text
                     elif 'family:' in line:
                         family = line.split('family:')[1].strip()
+                # Clean up any leading indents in kinetics comment
+                entry.data.comment = '\n'.join([line.strip() for line in entry.data.comment.split('\n')])
                 rxn = TemplateReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],
                                        specificCollider=entry.item.specificCollider, kinetics=entry.data,
                                        duplicate=entry.item.duplicate, reversible=entry.item.reversible,
