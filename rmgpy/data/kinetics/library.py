@@ -259,7 +259,7 @@ class KineticsLibrary(Database):
                 rxn = TemplateReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],
                                        specificCollider=entry.item.specificCollider, kinetics=entry.data,
                                        duplicate=entry.item.duplicate, reversible=entry.item.reversible,
-                                       family=familyname, template=tstrings)
+                                       family=familyname, template=tstrings, degeneracy=entry.item.degeneracy)
             else:  # pdep or standard library reaction
                 rxn = LibraryReaction(reactants=entry.item.reactants[:], products=entry.item.products[:],
                                       library=self.label, specificCollider=entry.item.specificCollider,
