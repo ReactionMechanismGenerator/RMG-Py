@@ -482,6 +482,25 @@ class RMG(util.Subject):
         # Load databases
         self.loadDatabase()
 
+        # Load restart seed mechanism (if specified)
+        if self.restart:
+            # Copy the restart files to a separate folder so that the job does not overwrite it
+            restartDir = os.path.join(self.outputDirectory, 'previous_restart')
+            coreRestart = os.path.join(restartDir, 'restart')
+            edgeRestart = os.path.join(restartDir, 'restart_edge')
+            filtersRestart = os.path.join(restartDir, 'Filters')
+            util.makeOutputSubdirectory(self.outputDirectory, 'previous_restart')
+            shutil.copytree(self.coreSeedPath, coreRestart)
+            shutil.copytree(self.edgeSeedPath, edgeRestart)
+            os.mkdir(filtersRestart)
+            shutil.copyfile(self.filtersPath, os.path.join(filtersRestart, 'filters.h5'))
+            shutil.copyfile(self.speciesMapPath, os.path.join(filtersRestart, 'species_map.yml'))
+
+            # Load the seed mechanism to get the core and edge species
+            self.database.kinetics.loadLibraries(restartDir, libraries=['restart', 'restart_edge'])
+            self.seedMechanisms.append('restart')
+            self.reactionLibraries.append(('restart_edge', False))
+
         # Set trimolecular reactant flags of reaction systems
         if self.trimolecular:
             for reactionSystem in self.reactionSystems:
@@ -1462,21 +1481,120 @@ class RMG(util.Subject):
 
     def initializeReactionThresholdAndReactFlags(self):
         numCoreSpecies = len(self.reactionModel.core.species)
-        if self.filterReactions:
-            self.unimolecularReact = np.zeros((numCoreSpecies),bool)
-            self.bimolecularReact = np.zeros((numCoreSpecies, numCoreSpecies),bool)
-            self.unimolecularThreshold = np.zeros((numCoreSpecies),bool)
-            self.bimolecularThreshold = np.zeros((numCoreSpecies, numCoreSpecies),bool)
+
+        # Initialize everything to react by default, but we will handle the restart and filtering case immediately after
+        self.unimolecularReact = np.ones(numCoreSpecies, bool)
+        self.bimolecularReact = np.ones((numCoreSpecies, numCoreSpecies), bool)
+        if self.trimolecular:
+            self.trimolecularReact = np.ones((numCoreSpecies, numCoreSpecies, numCoreSpecies), bool)
+
+        if self.filterReactions or self.restart:  # Otherwise no need to initialize thresholds or fix react flags
+            self.unimolecularThreshold = np.zeros(numCoreSpecies, bool)
+            self.bimolecularThreshold = np.zeros((numCoreSpecies, numCoreSpecies), bool)
             if self.trimolecular:
-                self.trimolecularReact = np.zeros((numCoreSpecies, numCoreSpecies, numCoreSpecies), bool)
                 self.trimolecularThreshold = np.zeros((numCoreSpecies, numCoreSpecies, numCoreSpecies), bool)
-        else:
-            # By default, react everything
-            self.unimolecularReact = np.ones((numCoreSpecies),bool)
-            self.bimolecularReact = np.ones((numCoreSpecies, numCoreSpecies),bool)
-            if self.trimolecular:
-                self.trimolecularReact = np.ones((numCoreSpecies, numCoreSpecies, numCoreSpecies),bool)
-            # No need to initialize reaction threshold arrays in this case
+
+            if self.restart:
+                # Load in the restart mapping
+                with open(os.path.join(self.speciesMapPath), 'r') as f:
+                    restartSpeciesList = yaml.safe_load(stream=f)
+
+                numRestartSpcs = len(restartSpeciesList)
+                restartSpeciesList = [Species().fromAdjacencyList(adj_list) for adj_list in restartSpeciesList]
+
+                # Load in the restart filter tensors
+                with h5py.File(self.filtersPath, 'r') as f:
+                    try:
+                        unimolecularThreshold_restart = f.get('unimolecularThreshold').value
+                        bimolecularThreshold_restart = f.get('bimolecularThreshold').value
+                        if self.trimolecular:
+                            trimolecularThreshold_restart = f.get('trimolecularThreshold').value
+
+                        # Expand Thresholds to match number of species in the current model.
+                        # Note that we are about to reorder the core species to match the order in the restart seed
+                        # mechanism, so we only need to broadcast to the indices up to numRestartSpcs. Any indices after
+                        # this are additional species that should have `False` for their threshold
+                        unimolecularThreshold = np.zeros(numCoreSpecies, bool)
+                        unimolecularThreshold[:numRestartSpcs] = unimolecularThreshold_restart
+
+                        bimolecularThreshold = np.zeros((numCoreSpecies, numCoreSpecies), bool)
+                        bimolecularThreshold[:numRestartSpcs, :numRestartSpcs] = bimolecularThreshold_restart
+
+                        if self.trimolecular:
+                            trimolecularThreshold = np.zeros((numCoreSpecies, numCoreSpecies, numCoreSpecies), bool)
+                            trimolecularThreshold[:numRestartSpcs, :numRestartSpcs, :numRestartSpcs] = \
+                                trimolecularThreshold_restart
+
+                        filters_found = True
+
+                    except KeyError:  # If we can't find the filters then this is because filtering was not used
+                        logging.warning('No filters were found in file {0}. This is to be expected if the restart '
+                                        'files specified are from an RMG job without reaction filtering. Therefore, '
+                                        'RMG will assume that all of the core species from the restart core seed have '
+                                        'already been reacted and will not react them again. Additional species added '
+                                        'to the input file but not in the restart core seed WILL be reacted with the '
+                                        'rest of the core.'.format(self.filtersPath))
+
+                        filters_found = False
+
+                # Reorder the core species to match the indices of the restart filter tensors
+                reordered_core_species = []
+                for spc in restartSpeciesList:
+                    for j, oldCoreSpc in enumerate(self.reactionModel.core.species):
+                        if oldCoreSpc.isIsomorphic(spc, strict=False):
+                            reordered_core_species.append(self.reactionModel.core.species.pop(j))
+                            break
+                    else:
+                        raise RuntimeError('Species {0} was defined in the restart file, but was not included in the'
+                                           'core.'.format(spc))
+
+                # Append the remaining species left in the core to the very end
+                self.reactionModel.core.species = reordered_core_species + self.reactionModel.core.species
+
+                # If we are restarting we must be able to handle all four possible combinations of whether or not
+                # filtering was used in the restart job or if filtering is used in the current job. To summarize:
+                #
+                # If filtering is being used in this job, we only need to set the threshold flags properly because the
+                # react flags are updated based on this before the first enlarge. Otherwise, we need to explicitly set
+                # the react flags properly because the thresholds will not be used.
+                #
+                # If filtering was used in the job we are restarting from, we can load these values in for all of the
+                # species present in that job to help us set the current threshold or react flags.
+                # Otherwise, if filtering was not used in the previous job then we can assume that all species
+                # present in the job we are restarting from have already reacted, and thus either set their
+                # filters to be True or their react flags to be false.
+
+                # Fill in the filter tensors.
+                if filters_found:  # Add in the filter data where we have it.
+                    # Note that additional species that have been defined in the input file but were not
+                    # present in the restart core seed will be reacted.
+
+                    if self.filterReactions:  # Filling in the filter thresholds will suffice
+                        # Fill in the newly initialized filter tensors
+                        self.unimolecularThreshold = unimolecularThreshold
+                        self.bimolecularThreshold = bimolecularThreshold
+                        if self.trimolecular:
+                            self.trimolecularThreshold = trimolecularThreshold
+
+                    else:  # We must set the react flags instead. If it was `True` in the threshold, it should not react
+                        self.unimolecularReact = np.logical_not(unimolecularThreshold)
+                        self.bimolecularReact = np.logical_not(bimolecularThreshold)
+                        if self.trimolecular:
+                            self.trimolecularReact = np.logical_not(trimolecularThreshold)
+
+                else:  # Assume that all species found in the restart core seed have already been reacted
+                    if self.filterReactions:  # Filling in the filter thresholds will suffice
+                        self.unimolecularThreshold[:numRestartSpcs] = True
+                        self.bimolecularThreshold[:numRestartSpcs, :numRestartSpcs] = True
+                        if self.trimolecular:
+                            self.trimolecularThreshold[:numRestartSpcs, :numRestartSpcs, :numRestartSpcs] = True
+
+                    else:  # We must set the react flags instead.
+                        # Don't react any species that were present in the restart core seed
+                        self.unimolecularReact[:numRestartSpcs] = False
+                        self.bimolecularReact[:numRestartSpcs, :numRestartSpcs] = False
+                        if self.trimolecular:
+                            self.trimolecularReact[:numRestartSpcs, :numRestartSpcs, :numRestartSpcs] = False
     
     def updateReactionThresholdAndReactFlags(self,
                                              rxnSysUnimolecularThreshold=None,
