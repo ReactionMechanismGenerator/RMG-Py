@@ -605,10 +605,8 @@ class Uncertainty:
         T = Quantity(T)
         P = Quantity(P)
         
-        specDict = {spc.label:spc for spc in self.speciesList}
-        
         if terminationConversions:
-            termination = [TerminationConversion(spec=specDict[spec],conv=conv) for spec,conv in terminationConversions.items()]
+            termination = [TerminationConversion(spec=spec,conv=conv) for spec,conv in terminationConversions.items()]
         else:
             termination = []
         
