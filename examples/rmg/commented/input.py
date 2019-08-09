@@ -2,13 +2,13 @@
 #
 # # Option 1: Specify the path to an RMG (version > 2.4.1) generated seed mechanism folder, which contains all of the
 # # required files (core and edge seed, filters and mappings) in their default locations and names in the seed folder.
-# restartFromSeed(path='seed')  # Location of the seed mechanism (with `Filters` subfolder) to load for restarting
+# restartFromSeed(path='seed')  # Location of the seed mechanism (with `filters` subfolder) to load for restarting
 #
 # # Option 2: Specify the paths of each of the required files individually.
-# restartFromSeed(coreSeed='seed/Seed'  # Path to core seed folder. Must contain `reactions.py` and `dictionary.txt`
-#                 edgeSeed='seed/Seed_edge'  # Path to edge seed folder containing `reactions.py` and `dictionary.txt`
-#                 filters='seed/Filters/filters.h5',
-#                 speciesMap='seed/Filters/species_map.yml')
+# restartFromSeed(coreSeed='seed/seed'  # Path to core seed folder. Must contain `reactions.py` and `dictionary.txt`
+#                 edgeSeed='seed/seed_edge'  # Path to edge seed folder containing `reactions.py` and `dictionary.txt`
+#                 filters='seed/filters/filters.h5',
+#                 speciesMap='seed/filters/species_map.yml')
 
 # Data sources
 database(

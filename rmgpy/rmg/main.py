@@ -477,7 +477,7 @@ class RMG(util.Subject):
             restartDir = os.path.join(self.outputDirectory, 'previous_restart')
             coreRestart = os.path.join(restartDir, 'restart')
             edgeRestart = os.path.join(restartDir, 'restart_edge')
-            filtersRestart = os.path.join(restartDir, 'Filters')
+            filtersRestart = os.path.join(restartDir, 'filters')
             util.makeOutputSubdirectory(self.outputDirectory, 'previous_restart')
             shutil.copytree(self.coreSeedPath, coreRestart)
             shutil.copytree(self.edgeSeedPath, edgeRestart)
@@ -1207,7 +1207,7 @@ class RMG(util.Subject):
         if run with firstTime=True it will change self.name to be unique within the thermo/kinetics libraries
         by adding integers to the end of the name to prevent overwritting
 
-        This also writes the filter tensors to the `Filters` sub-folder for restarting an RMG job from a seed mechanism
+        This also writes the filter tensors to the `filters` sub-folder for restarting an RMG job from a seed mechanism
         """
         
         logging.info('Making seed mechanism...')
@@ -1225,7 +1225,7 @@ class RMG(util.Subject):
                 self.name = name + str(q)
         
         seedDir = os.path.join(self.outputDirectory,'seed')
-        filterDir = os.path.join(seedDir, 'Filters')
+        filterDir = os.path.join(seedDir, 'filters')
         tempSeedDir = os.path.join(self.outputDirectory, 'seed_tmp')
         
         if firstTime:
@@ -1303,11 +1303,14 @@ class RMG(util.Subject):
                 edgeKineticsLibrary.saveDictionary(os.path.join(databaseDirectory, 'kinetics', 'libraries', name+'_edge', 'dictionary.txt'))
 
             #save in output directory
-            kineticsLibrary.save(os.path.join(seedDir, name, 'reactions.py'))
-            kineticsLibrary.saveDictionary(os.path.join(seedDir, name, 'dictionary.txt'))
+            # Rename for the output directory, as these names should not be dynamic
+            kineticsLibrary.name = 'seed'
+            kineticsLibrary.save(os.path.join(seedDir, 'seed', 'reactions.py'))
+            kineticsLibrary.saveDictionary(os.path.join(seedDir, 'seed', 'dictionary.txt'))
 
-            edgeKineticsLibrary.save(os.path.join(seedDir, name+'_edge', 'reactions.py'))
-            edgeKineticsLibrary.saveDictionary(os.path.join(seedDir, name+'_edge', 'dictionary.txt'))
+            edgeKineticsLibrary.name = 'seed_edge'
+            edgeKineticsLibrary.save(os.path.join(seedDir, 'seed_edge', 'reactions.py'))
+            edgeKineticsLibrary.saveDictionary(os.path.join(seedDir, 'seed_edge', 'dictionary.txt'))
 
             # Save the filter tensors
             if not os.path.exists(filterDir):

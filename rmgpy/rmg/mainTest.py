@@ -92,22 +92,20 @@ class TestMain(unittest.TestCase):
         seedDir = os.path.join(self.testDir, self.outputDir, 'seed')
         self.assertTrue(os.path.exists)
 
-        self.assertTrue(os.path.exists(os.path.join(seedDir, self.rmg.name)))  # kinetics library folder made
+        self.assertTrue(os.path.exists(os.path.join(seedDir, 'seed')))  # kinetics library folder made
 
-        self.assertTrue(os.path.exists(os.path.join(seedDir, self.rmg.name, 'dictionary.txt')))  # dictionary file made
-        self.assertTrue(os.path.exists(os.path.join(seedDir, self.rmg.name, 'reactions.py')))  # reactions file made
+        self.assertTrue(os.path.exists(os.path.join(seedDir, 'seed', 'dictionary.txt')))  # dictionary file made
+        self.assertTrue(os.path.exists(os.path.join(seedDir, 'seed', 'reactions.py')))  # reactions file made
 
     def testRMGSeedEdgeMechanismCreation(self):
         """Test that the expected seed mechanisms are created in output directory."""
         seedDir = os.path.join(self.testDir, self.outputDir, 'seed')
         self.assertTrue(os.path.exists)
 
-        name = self.rmg.name + '_edge'
+        self.assertTrue(os.path.exists(os.path.join(seedDir, 'seed_edge')))  # kinetics library folder made
 
-        self.assertTrue(os.path.exists(os.path.join(seedDir, name)))  # kinetics library folder made
-
-        self.assertTrue(os.path.exists(os.path.join(seedDir, name, 'dictionary.txt')))  # dictionary file made
-        self.assertTrue(os.path.exists(os.path.join(seedDir, name, 'reactions.py')))  # reactions file made
+        self.assertTrue(os.path.exists(os.path.join(seedDir, 'seed_edge', 'dictionary.txt')))  # dictionary file made
+        self.assertTrue(os.path.exists(os.path.join(seedDir, 'seed_edge', 'reactions.py')))  # reactions file made
 
     def testRMGSeedLibraryCreation(self):
         """Test that seed mechanisms are created in the correct database locations."""

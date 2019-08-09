@@ -795,10 +795,10 @@ def restartFromSeed(path=None, coreSeed=None, edgeSeed=None, filters=None, speci
             raise ValueError('Unable to find the path to the restart seed folder. {0} does not exist'.format(path))
 
         # Try to find the paths for all of the required modules
-        rmg.coreSeedPath = os.path.join(path, 'Seed')
-        rmg.edgeSeedPath = os.path.join(path, 'Seed_edge')
-        rmg.filtersPath = os.path.join(path, 'Filters', 'filters.h5')
-        rmg.speciesMapPath = os.path.join(path, 'Filters', 'species_map.yml')
+        rmg.coreSeedPath = os.path.join(path, 'seed')
+        rmg.edgeSeedPath = os.path.join(path, 'seed_edge')
+        rmg.filtersPath = os.path.join(path, 'filters', 'filters.h5')
+        rmg.speciesMapPath = os.path.join(path, 'filters', 'species_map.yml')
 
     else:  # The user has specified each of the paths individually
         rmg.coreSeedPath = coreSeed
