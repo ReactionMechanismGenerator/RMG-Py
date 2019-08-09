@@ -726,6 +726,8 @@ cdef class ReactionSystem(DASx):
             if not firstTime:
                 try:
                     self.step(stepTime)
+                    if numpy.isnan(self.y).any():
+                        raise DASxError("nans in moles")
                 except DASxError:
                     logging.error("Trying to step from time {} to {} resulted in a solver (DASPK) error".format(prevTime, stepTime))
                     
