@@ -1356,6 +1356,15 @@ class RMG(util.Subject):
             with open(os.path.join(filterDir, 'family_map.yml'), 'w') as f:
                 yaml.dump(data=familyMap, stream=f)
 
+            # Generate a file for restarting from a seed mechanism if this is not a restart job
+            if firstTime and (not self.restart):
+                with open(self.inputFile, 'r') as f:
+                    input_text = f.readlines()
+
+                with open(os.path.join(self.outputDirectory, 'restart_from_seed.py'), 'w') as f:
+                    f.write('restartFromSeed(path=\'seed\')\n\n')
+                    f.write(''.join(input_text))
+
             # Finally, delete the seed mechanism from the previous iteration (if it exists)
             if os.path.exists(tempSeedDir):
                 shutil.rmtree(tempSeedDir)
