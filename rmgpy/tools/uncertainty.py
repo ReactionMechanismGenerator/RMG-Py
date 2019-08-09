@@ -587,7 +587,7 @@ class Uncertainty:
 
                 self.kineticInputUncertainties.append(dlnk)
 
-    def sensitivityAnalysis(self, initialMoleFractions, sensitiveSpecies, T, P, terminationTime,
+    def sensitivityAnalysis(self, initialMoleFractions, sensitiveSpecies, T, P, terminationTime=None, terminationConversions=None,
                             sensitivityThreshold=1e-3, number=10, fileformat='.png'):
         """
         Run sensitivity analysis using the RMG solver in a single ReactionSystem object
@@ -595,16 +595,26 @@ class Uncertainty:
         initialMoleFractions is a dictionary with Species objects as keys and mole fraction initial conditions
         sensitiveSpecies is a list of sensitive Species objects
         number is the number of top species thermo or reaction kinetics desired to be plotted
+        terimationConversions is a dictionary mapping species to termination conversions
         """
 
-        from rmgpy.solver import SimpleReactor, TerminationTime
+        from rmgpy.solver import SimpleReactor, TerminationTime, TerminationConversion
         from rmgpy.quantity import Quantity
         from rmgpy.rmg.listener import SimulationProfileWriter, SimulationProfilePlotter
         from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
         T = Quantity(T)
         P = Quantity(P)
-        termination = [TerminationTime(Quantity(terminationTime))]
-
+        
+        specDict = {spc.label:spc for spc in self.speciesList}
+        
+        if terminationConversions:
+            termination = [TerminationConversion(spec=specDict[spec],conv=conv) for spec,conv in terminationConversions.items()]
+        else:
+            termination = []
+        
+        if terminationTime:
+            termination = [TerminationTime(Quantity(terminationTime))] + termination
+        
         reactionSystem = SimpleReactor(T=T,
                                        P=P,
                                        initialMoleFractions=initialMoleFractions,
