@@ -120,7 +120,7 @@ class ReferenceSpecies(ArkaneSpecies):
     @reference_data.setter
     def reference_data(self, value):
         if not value:
-            self._reference_data = None
+            self._reference_data = {}
         elif isinstance(value, dict):
             if all(isinstance(source, str) for source in value.keys()):
                 if all(isinstance(data_entry, ReferenceDataEntry) for data_entry in value.values()):
@@ -136,7 +136,7 @@ class ReferenceSpecies(ArkaneSpecies):
     @calculated_data.setter
     def calculated_data(self, value):
         if not value:
-            self._calculated_data = None
+            self._calculated_data = {}
         elif isinstance(value, dict):
             if all(isinstance(source, str) for source in value.keys()):
                 if all(isinstance(data_entry, CalculatedDataEntry) for data_entry in value.values()):
@@ -272,7 +272,7 @@ class CalculatedDataEntry(RMGObject):
     A class for storing a single entry of statistical mechanical and thermochemistry information calculated at a single
     model chemistry or level of theory
     """
-    def __init__(self, conformer, thermo, thermo_data, t1_diagnotic=None, fod=None):
+    def __init__(self, conformer=None, thermo=None, thermo_data=None, t1_diagnostic=None, fod=None):
         """
 
         Args:
@@ -281,7 +281,7 @@ class CalculatedDataEntry(RMGObject):
             thermo (HeatCapacityModel): `NASA` or `Wilhoit` thermo object to store the fitted polynomials
             thermo_data (rmgpy.thermo.ThermoData): Actual thermochemistry values calculated using statistical mechanics
                 at select points. Arkane fits a heat capacity model to this data
-            t1_diagnotic (float): T1 diagnostic for coupled cluster calculations to check if single reference methods
+            t1_diagnostic (float): T1 diagnostic for coupled cluster calculations to check if single reference methods
                 are suitable
             fod (float): Fractional Occupation number weighted electron Density
         """
@@ -292,7 +292,7 @@ class CalculatedDataEntry(RMGObject):
         self.conformer = conformer
         self.thermo = thermo
         self.thermo_data = thermo_data
-        self.t1_diagnostic = t1_diagnotic
+        self.t1_diagnostic = t1_diagnostic
         self.fod = fod
 
     def __repr__(self):
