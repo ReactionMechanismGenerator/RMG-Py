@@ -179,16 +179,25 @@ class SpeciesConstraints(object):
 
     def _get_constraint_map(self):
         # Enumerate all of the constraints in the target molecule to initialize the constraint mapping
-        constraint_map = {label: i for i, label in enumerate(self.target.molecule.get_element_count().keys())}
-        if self.conserve_bonds:
-            j = len(constraint_map)
-            constraint_map.update(
-                {label: j + i for i, label in enumerate(self.target.molecule.enumerate_bonds().keys())})
-        if self.conserve_ring_size:
-            j = len(constraint_map)
-            possible_rings_sizes = set(map(lambda x: '{0}_ring'.format(len(x)),
-                                           self.target.molecule.getSmallestSetOfSmallestRings()))
-            constraint_map.update({label: j + i for i, label in enumerate(possible_rings_sizes)})
+
+        # constraint_map = {label: i for i, label in enumerate(self.target.molecule.get_element_count().keys())}
+
+        # if self.conserve_bonds:
+        #     j = len(constraint_map)
+        #     constraint_map.update(
+        #         {label: j + i for i, label in enumerate(self.target.molecule.enumerate_bonds().keys())})
+        # if self.conserve_ring_size:
+        #     j = len(constraint_map)
+        #     possible_rings_sizes = set(map(lambda x: '{0}_ring'.format(len(x)),
+        #                                    self.target.molecule.getSmallestSetOfSmallestRings()))
+        #     constraint_map.update({label: j + i for i, label in enumerate(possible_rings_sizes)})
+
+        constraint_map = []
+        for spcs in self.all_reference_species:
+            for atom in spcs.molecule.atoms:
+                descriptor = atom.get_descriptor()
+                if descriptor not in constraint_map:
+                    constraint_map.append(descriptor)
 
         return constraint_map
 
@@ -202,26 +211,33 @@ class SpeciesConstraints(object):
         Returns:
             np.ndarray: vector of the number of instances of each constraining feature e.g. number of carbon atoms
         """
+        # constraint_vector = np.zeros(len(self.constraint_map))
+        # molecule = species.molecule
+
+        # try:
+        #     atoms = molecule.get_element_count()
+        #     for atom_label, count in atoms.items():
+        #         constraint_vector[self.constraint_map[atom_label]] += count
+
+        #     if self.conserve_bonds:
+        #         bonds = molecule.enumerate_bonds()
+        #         for bond_label, count in bonds.items():
+        #             constraint_vector[self.constraint_map[bond_label]] += count
+
+        #     if self.conserve_ring_size:
+        #         rings = molecule.getSmallestSetOfSmallestRings()
+        #         if len(rings) > 0:
+        #             for ring in rings:
+        #                 constraint_vector[self.constraint_map['{0}_ring'.format(len(ring))]] += 1
+        # except KeyError:  # This molecule has a feature not found in the target molecule. Return None to exclude this
+        #     return None
+
         constraint_vector = np.zeros(len(self.constraint_map))
         molecule = species.molecule
 
-        try:
-            atoms = molecule.get_element_count()
-            for atom_label, count in atoms.items():
-                constraint_vector[self.constraint_map[atom_label]] += count
-
-            if self.conserve_bonds:
-                bonds = molecule.enumerate_bonds()
-                for bond_label, count in bonds.items():
-                    constraint_vector[self.constraint_map[bond_label]] += count
-
-            if self.conserve_ring_size:
-                rings = molecule.getSmallestSetOfSmallestRings()
-                if len(rings) > 0:
-                    for ring in rings:
-                        constraint_vector[self.constraint_map['{0}_ring'.format(len(ring))]] += 1
-        except KeyError:  # This molecule has a feature not found in the target molecule. Return None to exclude this
-            return None
+        for atom in molecule.atoms:
+            descriptor = atom.get_descriptor()
+            constraint_vector[self.constraint_map.index(descriptor)] += 1
 
         return constraint_vector
 
