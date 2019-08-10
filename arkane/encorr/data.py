@@ -68,7 +68,8 @@ atom_thermal = {'H': 1.01, 'He': 1.481,
 # Iodine SOC calculated as a weighted average of the electronic spin splittings of the lowest energy state.
 # The splittings are obtained from Huber, K.P.; Herzberg, G., Molecular Spectra and Molecular Structure. IV.
 # Constants of Diatomic Molecules, Van Nostrand Reinhold Co., 1979
-SOC = {'H': 0.0, 'N': 0.0, 'O': -0.000355, 'C': -0.000135, 'S': -0.000893, 'P': 0.0, 'I': -0.011547226}
+SOC = {'H': 0.0, 'N': 0.0, 'O': -0.000355, 'C': -0.000135, 'S': -0.000893, 'P': 0.0, 'I': -0.011547226,
+        'Cl':-0.001338}
 
 
 # Atomic energies
@@ -89,7 +90,8 @@ atom_energies = {
 
     'm06-2x/cc-pvtz': {
         'H': -0.498135 + SOC['H'], 'N': -54.586780 + SOC['N'], 'O': -75.064242 + SOC['O'],
-        'C': -37.842468 + SOC['C'], 'P': -341.246985 + SOC['P'], 'S': -398.101240 + SOC['S']
+        'C': -37.842468 + SOC['C'], 'P': -341.246985 + SOC['P'], 'S': -398.101240 + SOC['S'],
+        'Cl': -460.140693 + SOC['Cl'], 'F': -99.730200, 'Br': -2574.198266
     },
 
     'g3': {
