@@ -35,6 +35,7 @@ This script contains unit tests of the :mod:`arkane.multidimensionalTorsions` mo
 import unittest
 import os
 import zipfile
+import shutil
 
 from rmgpy.statmech.ndTorsions import HinderedRotor2D, HinderedRotorClassicalND
 from arkane.util import determine_qm_software
@@ -46,15 +47,15 @@ class TestHinderedRotor2D(unittest.TestCase):
     @classmethod
     def setUp(cls):
         """A method that is run before each unit test in this class"""
-        path = os.path.join(os.path.dirname(os.path.split(os.path.split(os.path.abspath(__file__))[0])[0]),
+        cls.path = os.path.join(os.path.dirname(os.path.split(os.path.split(os.path.abspath(__file__))[0])[0]),
                                                          'arkane', 'data', 'CH2CHOOH', 'CH2CHOOHscans')
-        if not os.path.exists(path):
+        if not os.path.exists(cls.path):
             zippath = os.path.join(os.path.dirname(os.path.split(os.path.split(os.path.abspath(__file__))[0])[0]),
                                                              'arkane', 'data', 'CH2CHOOH', 'CH2CHOOHscans.zip')
             with zipfile.ZipFile(zippath,'r') as zip_ref:
-                zip_ref.extractall(os.path.split(path)[0])
+                zip_ref.extractall(os.path.split(cls.path)[0])
         
-        cls.hd2d= HinderedRotor2D(calcPath=path,name="r0",torsigma1=1,
+        cls.hd2d= HinderedRotor2D(calcPath=cls.path,name="r0",torsigma1=1,
                       torsigma2=1,symmetry='b',pivots1=[6,7],pivots2=[1,6],top1=[7,8],top2=[6,7,8])
     
     @unittest.skipIf(not os.path.isfile(os.path.join(os.path.split(os.path.split(os.path.abspath(os.path.dirname(__file__)))[0])[0], 'external', 'Q2DTor', 'src', 'Q2DTor.py')),
@@ -71,6 +72,14 @@ class TestHinderedRotor2D(unittest.TestCase):
     def test_partition_function_calc(self):
         self.hd2d.readEigvals()
         self.assertAlmostEqual(self.hd2d.getPartitionFunction(300.0),3.29752, 4)
+        
+    @classmethod
+    def tearDownClass(cls):
+        """A function that is run ONCE after all unit tests in this class."""
+        if os.path.exists(cls.path):
+            shutil.rmtree(cls.path) #delete unzipped and created files
+            os.remove(os.path.join(os.path.dirname(cls.path),'r0','IOfiles','r0.pes'))
+            os.remove(os.path.join(os.path.dirname(cls.path),'r0','r0.out'))
         
 class TestHinderedRotorClassicalND(unittest.TestCase):
     """
