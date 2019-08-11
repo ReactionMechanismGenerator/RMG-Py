@@ -68,9 +68,11 @@ def simulate(rmg, diffusionLimited=True):
             
         sensWorksheet = []
         for spec in reactionSystem.sensitiveSpecies:
+            if spec.index == -1:
+                spec.index = rmg.reactionModel.core.species.index(spec)
             csvfilePath = os.path.join(rmg.outputDirectory, 'solver', 'sensitivity_{0}_SPC_{1}.csv'.format(index+1, spec.index))
             sensWorksheet.append(csvfilePath)
-
+            
         pdepNetworks = []
         for source, networks in rmg.reactionModel.networkDict.items():
             pdepNetworks.extend(networks)
