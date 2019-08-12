@@ -1,3 +1,5 @@
+restartFromSeed(path='seed')
+
 # Data sources
 database(
     thermoLibraries = ['primaryThermoLibrary'],

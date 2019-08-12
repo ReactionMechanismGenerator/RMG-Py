@@ -74,7 +74,6 @@ options(
     units='si',
     generateSeedEachIteration=True,
     saveSeedToDatabase=True,
-    saveRestartPeriod=None,
     generateOutputHTML=False,
     generatePlots=False,
     saveEdgeSpecies=False,

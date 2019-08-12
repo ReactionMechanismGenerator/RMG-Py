@@ -161,7 +161,6 @@ pressureDependence(
 
 options(
     units='si',
-    saveRestartPeriod=(1,'hour'),
     generateOutputHTML=False,
     generatePlots=False,
     saveSimulationProfiles=False,

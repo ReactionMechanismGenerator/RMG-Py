@@ -12,9 +12,9 @@ Basic run::
 
 	python rmg.py input.py
 
-Run with a restart file (restart file should be located in same folder as input.py)::
+Run by restarting from a seed mechanism ::
 
-    python rmg.py input.py -r
+    python rmg.py input.py -r path/to/seed/
 
 Run with CPU profiling::
 

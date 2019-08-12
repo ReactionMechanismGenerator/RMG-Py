@@ -38,7 +38,6 @@ from rmgpy import settings
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.molecule import Molecule
 from rmgpy.rmg.react import react_species
-from rmgpy.restart import saveRestartFile
 import rmgpy
 from rmgpy.data.base import ForbiddenStructures
 
@@ -175,52 +174,6 @@ class TestRMGWorkFlow(unittest.TestCase):
         spec = rmg_test.reactionModel.checkForExistingSpecies(mol_test)
         self.assertIsNotNone(spec)
 
-    def testRestartFileGenerationAndParsing(self):
-        
-        # react
-        spc1 = Species().fromSMILES("[H]")
-        spc2 = Species().fromSMILES("C=C=C=O")
-
-        self.rmg.reactionModel.core.species.append(spc1)
-        self.rmg.reactionModel.core.species.append(spc2)
-
-        newReactions = []
-        newReactions.extend(react_species((spc1, spc2)))
-
-        # process newly generated reactions to make sure no duplicated reactions
-        self.rmg.reactionModel.processNewReactions(newReactions, spc2, None)
-
-        # save restart file
-        restart_folder = os.path.join(os.path.dirname(rmgpy.__file__),'rmg/test_data/restartFile')
-        if not os.path.exists(restart_folder):
-            os.mkdir(restart_folder)
-
-        restart_path = os.path.join(restart_folder, 'restart.pkl')
-        saveRestartFile(restart_path, self.rmg)
-
-        # load the generated restart file
-        rmg_load = RMG()
-        rmg_load.loadRestartFile(restart_path)
-
-        core_species_num_orig = len(self.rmg.reactionModel.core.species)
-        core_rxn_num_orig = len(self.rmg.reactionModel.core.reactions)
-        core_species_num_load = len(rmg_load.reactionModel.core.species)
-        core_rxn_num_load = len(rmg_load.reactionModel.core.reactions)
-
-        edge_species_num_orig = len(self.rmg.reactionModel.edge.species)
-        edge_rxn_num_orig = len(self.rmg.reactionModel.edge.reactions)
-        edge_species_num_load = len(rmg_load.reactionModel.edge.species)
-        edge_rxn_num_load = len(rmg_load.reactionModel.edge.reactions)
-
-        self.assertEqual(core_species_num_orig, core_species_num_load)
-        self.assertEqual(core_rxn_num_orig, core_rxn_num_load)
-
-        self.assertEqual(edge_species_num_orig, edge_species_num_load)
-        self.assertEqual(edge_rxn_num_orig, edge_rxn_num_load)
-
-        import shutil
-        shutil.rmtree(restart_folder)
-
 
 def findTargetRxnsContaining(mol1, mol2, reactions):
     target_rxns = []
@@ -258,7 +211,7 @@ class TestRMGScript(unittest.TestCase):
         self.assertEqual(args.postprocess, False)
         self.assertEqual(args.profile, False)
         self.assertEqual(args.quiet, False)
-        self.assertEqual(args.restart, False)
+        self.assertEqual(args.restart, '')
         self.assertEqual(args.verbose, False)
 
     def test_parse_command_line_non_defaults(self):
@@ -267,7 +220,7 @@ class TestRMGScript(unittest.TestCase):
         """
 
         # Acquire arguments
-        args = parse_command_line_arguments(['other_name.py', '-d', '-o', '/test/output/dir/', '-r', '-P',
+        args = parse_command_line_arguments(['other_name.py', '-d', '-o', '/test/output/dir/', '-r', 'test/seed/', '-P',
                                             '-t', '01:20:33:45', '-k'])
 
         # Test expected values
@@ -278,4 +231,4 @@ class TestRMGScript(unittest.TestCase):
         self.assertEqual(args.kineticsdatastore, True)
         self.assertEqual(args.postprocess, True)
         self.assertEqual(args.profile, True)
-        self.assertEqual(args.restart, True)
+        self.assertEqual(args.restart, 'test/seed/')

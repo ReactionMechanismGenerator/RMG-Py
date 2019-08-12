@@ -11,7 +11,6 @@ You will see that a sucessfully executed RMG job will create multiple output fil
 ``/plot``
 ``/solver``
 ``/species``  
-``restart.pkl``  
 ``RMG.log``
 
 ------------------

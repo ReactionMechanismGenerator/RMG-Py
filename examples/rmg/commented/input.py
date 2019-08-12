@@ -1,3 +1,15 @@
+# Uncomment either of the blocks below to restart from a seed mechanism
+#
+# # Option 1: Specify the path to an RMG (version > 2.4.1) generated seed mechanism folder, which contains all of the
+# # required files (core and edge seed, filters and mappings) in their default locations and names in the seed folder.
+# restartFromSeed(path='seed')  # Location of the seed mechanism (with `filters` subfolder) to load for restarting
+#
+# # Option 2: Specify the paths of each of the required files individually.
+# restartFromSeed(coreSeed='seed/seed'  # Path to core seed folder. Must contain `reactions.py` and `dictionary.txt`
+#                 edgeSeed='seed/seed_edge'  # Path to edge seed folder containing `reactions.py` and `dictionary.txt`
+#                 filters='seed/filters/filters.h5',
+#                 speciesMap='seed/filters/species_map.yml')
+
 # Data sources
 database(
     # overrides RMG thermo calculation of RMG with these values.
@@ -156,7 +168,7 @@ model(
 options(
     # provides a name for the seed mechanism produced at the end of an rmg run default is 'Seed'
     name='SeedName',
-    # if True every iteration it saves the current model as libraries/seeds
+    # if True (default) every iteration it saves the current model as libraries/seeds
     # (and deletes the old one)
     # Unlike HTML this is inexpensive time-wise
     # note a seed mechanism will be generated at the end of a completed run and some incomplete
@@ -166,9 +178,6 @@ options(
     saveSeedToDatabase=False,
     # only option is 'si'
     units='si',
-    # how often you want to save restart files.
-    # takes significant amount of time. comment out if you don't want to save
-    saveRestartPeriod=None,
     # Draws images of species and reactions and saves the model output to HTML.
     # May consume extra memory when running large models.
     generateOutputHTML=True,
