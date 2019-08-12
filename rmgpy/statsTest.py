@@ -32,14 +32,14 @@
 This script contains unit tests of the :mod:`rmgpy.stats` module.
 """
 
-import unittest
 import os
 import os.path
 import shutil
+import unittest
 
 from rmgpy.rmg.main import RMG, CoreEdgeReactionModel
+from rmgpy.stats import ExecutionStatsWriter
 
-from rmgpy.stats import *
 
 ################################################################################
 
@@ -53,7 +53,7 @@ class TestExecutionStatsWriter(unittest.TestCase):
         Set up an RMG object
         """
 
-        folder = os.path.join(os.getcwd(),'rmgpy/output')
+        folder = os.path.join(os.getcwd(), 'rmgpy/output')
         if not os.path.isdir(folder):
             os.mkdir(folder)
 
@@ -66,13 +66,13 @@ class TestExecutionStatsWriter(unittest.TestCase):
         """
         Tests if the statistics output file can be found.
         """
-        
+
         folder = self.rmg.outputDirectory
-        
+
         writer = ExecutionStatsWriter(folder)
         writer.update(self.rmg)
 
-        statsfile = os.path.join(folder,'statistics.xls')
+        statsfile = os.path.join(folder, 'statistics.xls')
 
         self.assertTrue(os.path.isfile(statsfile))
 

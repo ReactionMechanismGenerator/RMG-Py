@@ -32,6 +32,8 @@
 This module contains unit tests of the rmgpy.species module.
 """
 
+from __future__ import division
+
 import unittest
 
 from rmgpy.species import Species
@@ -40,13 +42,14 @@ from rmgpy.molecule import Molecule
 from rmgpy.thermo import ThermoData
 from rmgpy.statmech import Conformer, IdealGasTranslation, NonlinearRotor, HarmonicOscillator
 
+
 ################################################################################
 
 class TestSpecies(unittest.TestCase):
     """
     Contains unit tests for the Species class.
     """
-    
+
     def setUp(self):
         """
         A method that is run before each unit test in this class.
@@ -55,26 +58,28 @@ class TestSpecies(unittest.TestCase):
             index=1,
             label='C2H4',
             thermo=ThermoData(
-                Tdata=([300.0,400.0,500.0,600.0,800.0,1000.0,1500.0],'K'),
-                Cpdata=([3.0,4.0,5.0,6.0,8.0,10.0,15.0],'cal/(mol*K)'),
-                H298=(-20.0,'kcal/mol'),
-                S298=(50.0,'cal/(mol*K)'),
-                Tmin=(300.0,'K'),
-                Tmax=(2000.0,'K'),
+                Tdata=([300.0, 400.0, 500.0, 600.0, 800.0, 1000.0, 1500.0], 'K'),
+                Cpdata=([3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 15.0], 'cal/(mol*K)'),
+                H298=(-20.0, 'kcal/mol'),
+                S298=(50.0, 'cal/(mol*K)'),
+                Tmin=(300.0, 'K'),
+                Tmax=(2000.0, 'K'),
             ),
             conformer=Conformer(
-                E0=(0.0,'kJ/mol'),
+                E0=(0.0, 'kJ/mol'),
                 modes=[
-                    IdealGasTranslation(mass=(28.03,'amu')),
-                    NonlinearRotor(inertia=([5.6952e-47, 2.7758e-46, 3.3454e-46],'kg*m^2'), symmetry=1),
-                    HarmonicOscillator(frequencies=([834.50, 973.31, 975.37, 1067.1, 1238.5, 1379.5, 1472.3, 1691.3, 3121.6, 3136.7, 3192.5, 3221.0],'cm^-1')),
+                    IdealGasTranslation(mass=(28.03, 'amu')),
+                    NonlinearRotor(inertia=([5.6952e-47, 2.7758e-46, 3.3454e-46], 'kg*m^2'), symmetry=1),
+                    HarmonicOscillator(frequencies=(
+                    [834.50, 973.31, 975.37, 1067.1, 1238.5, 1379.5, 1472.3, 1691.3, 3121.6, 3136.7, 3192.5, 3221.0],
+                    'cm^-1')),
                 ],
                 spinMultiplicity=1,
                 opticalIsomers=1,
             ),
             molecule=[Molecule().fromSMILES('C=C')],
             transportData=TransportData(sigma=(1, 'angstrom'), epsilon=(100, 'K')),
-            molecularWeight=(28.03,'amu'),
+            molecularWeight=(28.03, 'amu'),
             reactive=True,
         )
 
@@ -100,8 +105,8 @@ class TestSpecies(unittest.TestCase):
         
         ...with no loss of information.
         """
-        import cPickle
-        species = cPickle.loads(cPickle.dumps(self.species,-1))
+        import pickle
+        species = pickle.loads(pickle.dumps(self.species, -1))
         self.assertEqual(self.species.index, species.index)
         self.assertEqual(self.species.label, species.label)
         self.assertEqual(self.species.molecule[0].multiplicity, species.molecule[0].multiplicity)
@@ -114,7 +119,8 @@ class TestSpecies(unittest.TestCase):
         self.assertEqual(self.species.conformer.E0.units, species.conformer.E0.units)
         self.assertEqual(self.species.transportData.sigma.value_si, species.transportData.sigma.value_si)
         self.assertEqual(self.species.transportData.sigma.units, species.transportData.sigma.units)
-        self.assertAlmostEqual(self.species.transportData.epsilon.value_si / 1.381e-23, species.transportData.epsilon.value_si / 1.381e-23, 4)
+        self.assertAlmostEqual(self.species.transportData.epsilon.value_si / 1.381e-23,
+                               species.transportData.epsilon.value_si / 1.381e-23, 4)
         self.assertEqual(self.species.transportData.epsilon.units, species.transportData.epsilon.units)
         self.assertEqual(self.species.molecularWeight.value_si, species.molecularWeight.value_si)
         self.assertEqual(self.species.molecularWeight.units, species.molecularWeight.units)
@@ -145,14 +151,16 @@ class TestSpecies(unittest.TestCase):
         self.assertEqual(self.species.molecularWeight.value_si, species.molecularWeight.value_si)
         self.assertEqual(self.species.molecularWeight.units, species.molecularWeight.units)
         self.assertEqual(self.species.reactive, species.reactive)
-        
+
     def testToAdjacencyList(self):
         """
         Test that toAdjacencyList() works as expected.
         """
         string = self.species.toAdjacencyList()
-        self.assertTrue(string.startswith(self.species.molecule[0].toAdjacencyList(label=self.species.label,removeH=False)),string)
-    
+        self.assertTrue(
+            string.startswith(self.species.molecule[0].toAdjacencyList(label=self.species.label, removeH=False)),
+            string)
+
     def testSpeciesProps(self):
         """
         Test a key-value pair is added to the props attribute of Species.
@@ -160,7 +168,7 @@ class TestSpecies(unittest.TestCase):
         self.species.props['foo'] = 'bar'
         self.assertIsInstance(self.species.props, dict)
         self.assertEquals(self.species.props['foo'], 'bar')
-        
+
     def testSpeciesProps_object_attribute(self):
         """
         Test that Species's props dictionaries are independent of each other.
@@ -177,20 +185,22 @@ class TestSpecies(unittest.TestCase):
         self.assertDictEqual(spc3.props, {'foo': 'bla'})
 
     def testResonanceIsomersGenerated(self):
-        "Test that 1-penten-3-yl makes 2-penten-1-yl resonance isomer"
+        """Test that 1-penten-3-yl makes 2-penten-1-yl resonance isomer"""
         spec = Species().fromSMILES('C=C[CH]CC')
         spec.generate_resonance_structures()
         self.assertEquals(len(spec.molecule), 2)
         self.assertEquals(spec.molecule[1].toSMILES(), "[CH2]C=CCC")
 
     def testResonaceIsomersRepresented(self):
-        "Test that both resonance forms of 1-penten-3-yl are printed by __repr__"
+        """Test that both resonance forms of 1-penten-3-yl are printed by __repr__"""
         spec = Species().fromSMILES('C=C[CH]CC')
         spec.generate_resonance_structures()
         exec('spec2 = {0!r}'.format(spec))
         self.assertEqual(len(spec.molecule), len(spec2.molecule))
         for i, j in zip(spec.molecule, spec2.molecule):
-            self.assertTrue(j.isIsomorphic(i), msg='i is not isomorphic with j, where i is {} and j is {}'.format(i.toSMILES(), j.toSMILES()))
+            self.assertTrue(j.isIsomorphic(i),
+                            msg='i is not isomorphic with j, where i is {} and j is {}'.format(i.toSMILES(),
+                                                                                               j.toSMILES()))
 
     def test_is_isomorphic_to_filtered_resonance_structure(self):
         """
@@ -262,25 +272,26 @@ class TestSpecies(unittest.TestCase):
         C~C~CC, where '~' is a hybrid bond of order 1.5. 
         """
         spec = Species().fromSMILES('C=C[CH]CC')
-        hybridMol = spec.getResonanceHybrid()
-        
-        self.assertTrue(hybridMol.toSingleBonds().isIsomorphic(spec.molecule[0].toSingleBonds()))
-        
+        hybrid_mol = spec.getResonanceHybrid()
+
+        self.assertTrue(hybrid_mol.toSingleBonds().isIsomorphic(spec.molecule[0].toSingleBonds()))
+
         # a rough check for intermediate bond orders
-        expected_orders = [1,1.5]
+        expected_orders = [1, 1.5]
         bonds = []
         # ensure all bond orders are expected
-        for atom in hybridMol.atoms:
+        for atom in hybrid_mol.atoms:
             for atom2 in atom.bonds:
-                bond = hybridMol.getBond(atom,atom2)
-                self.assertTrue(any([bond.isOrder(otherOrder) for otherOrder in expected_orders]), 'Unexpected bond order {}'.format(bond.getOrderNum()))
+                bond = hybrid_mol.getBond(atom, atom2)
+                self.assertTrue(any([bond.isOrder(otherOrder) for otherOrder in expected_orders]),
+                                'Unexpected bond order {}'.format(bond.getOrderNum()))
                 bonds.append(bond)
-                
+
         # ensure all expected orders are present
         for expected_order in expected_orders:
-            self.assertTrue(any([bond.isOrder(expected_order) for bond in bonds]),'No bond of order {} found'.format(expected_order))
-            
-            
+            self.assertTrue(any([bond.isOrder(expected_order) for bond in bonds]),
+                            'No bond of order {} found'.format(expected_order))
+
     def testCopy(self):
         """Test that we can make a copy of a Species object."""
 
@@ -293,20 +304,26 @@ class TestSpecies(unittest.TestCase):
 
         self.assertTrue(self.species.molecularWeight.equals(spc_cp.molecularWeight))
         self.assertEquals(self.species.reactive, spc_cp.reactive)
-        
+
     def testCantera(self):
         """
         Test that a Cantera Species object is created correctly.
         """
         from rmgpy.thermo import NASA, NASAPolynomial
         import cantera as ct
-        rmgSpecies = Species(label="Ar", thermo=NASA(polynomials=[NASAPolynomial(coeffs=[2.5,0,0,0,0,-745.375,4.37967], Tmin=(200,'K'), Tmax=(1000,'K')), NASAPolynomial(coeffs=[2.5,0,0,0,0,-745.375,4.37967], Tmin=(1000,'K'), Tmax=(6000,'K'))], Tmin=(200,'K'), Tmax=(6000,'K'), comment="""
+        rmg_species = Species(label="Ar", thermo=NASA(
+            polynomials=[NASAPolynomial(coeffs=[2.5, 0, 0, 0, 0, -745.375, 4.37967], Tmin=(200, 'K'), Tmax=(1000, 'K')),
+                         NASAPolynomial(coeffs=[2.5, 0, 0, 0, 0, -745.375, 4.37967], Tmin=(1000, 'K'),
+                                        Tmax=(6000, 'K'))], Tmin=(200, 'K'), Tmax=(6000, 'K'), comment="""
 Thermo library: primaryThermoLibrary
-"""), molecule=[Molecule(SMILES="[Ar]")], transportData=TransportData(shapeIndex=0, epsilon=(1134.93,'J/mol'), sigma=(3.33,'angstrom'), dipoleMoment=(2,'De'), polarizability=(1,'angstrom^3'), rotrelaxcollnum=15.0, comment="""GRI-Mech"""))
-        
-        rmg_ctSpecies = rmgSpecies.toCantera(useChemkinIdentifier = True)
-        
-        ctSpecies = ct.Species.fromCti("""species(name=u'Ar',
+"""), molecule=[Molecule(SMILES="[Ar]")], transportData=TransportData(shapeIndex=0, epsilon=(1134.93, 'J/mol'),
+                                                                      sigma=(3.33, 'angstrom'), dipoleMoment=(2, 'De'),
+                                                                      polarizability=(1, 'angstrom^3'),
+                                                                      rotrelaxcollnum=15.0, comment="""GRI-Mech"""))
+
+        rmg_ct_species = rmg_species.toCantera(useChemkinIdentifier=True)
+
+        ct_species = ct.Species.fromCti("""species(name=u'Ar',
         atoms='Ar:1',
         thermo=(NASA([200.00, 1000.00],
                      [ 2.50000000E+00,  0.00000000E+00,  0.00000000E+00,
@@ -322,19 +339,22 @@ Thermo library: primaryThermoLibrary
                                 dipole=2.0,
                                 polar=1.0,
                                 rot_relax=15.0))""")
-        self.assertEqual(type(rmg_ctSpecies),type(ctSpecies))
-        self.assertEqual(rmg_ctSpecies.name, ctSpecies.name)
-        self.assertEqual(rmg_ctSpecies.composition, ctSpecies.composition)
-        self.assertEqual(rmg_ctSpecies.size, ctSpecies.size)
-        self.assertEqual(type(rmg_ctSpecies.thermo), type(ctSpecies.thermo))
-        self.assertEqual(type(rmg_ctSpecies.transport), type(ctSpecies.transport))
+        self.assertEqual(type(rmg_ct_species), type(ct_species))
+        self.assertEqual(rmg_ct_species.name, ct_species.name)
+        self.assertEqual(rmg_ct_species.composition, ct_species.composition)
+        self.assertEqual(rmg_ct_species.size, ct_species.size)
+        self.assertEqual(type(rmg_ct_species.thermo), type(ct_species.thermo))
+        self.assertEqual(type(rmg_ct_species.transport), type(ct_species.transport))
 
     def testGetTransportData(self):
         """
         Test that transport data can be retrieved correctly via the getTransportData method.
         """
 
-        spc = Species(label="Ar", molecule=[Molecule(SMILES="[Ar]")], transportData=TransportData(shapeIndex=0, epsilon=(1134.93,'J/mol'), sigma=(3.33,'angstrom'), dipoleMoment=(2,'De'), polarizability=(1,'angstrom^3'), rotrelaxcollnum=15.0, comment="""GRI-Mech"""))
+        spc = Species(label="Ar", molecule=[Molecule(SMILES="[Ar]")],
+                      transportData=TransportData(shapeIndex=0, epsilon=(1134.93, 'J/mol'), sigma=(3.33, 'angstrom'),
+                                                  dipoleMoment=(2, 'De'), polarizability=(1, 'angstrom^3'),
+                                                  rotrelaxcollnum=15.0, comment="""GRI-Mech"""))
 
         self.assertTrue(spc.getTransportData() is spc.transportData)
 
