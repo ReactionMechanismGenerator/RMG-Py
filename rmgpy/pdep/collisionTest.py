@@ -31,6 +31,7 @@
 """
 This module contains unit tests of the :mod:`rmgpy.pdep.collision` module.
 """
+from __future__ import division
 
 import numpy
 import unittest
@@ -87,8 +88,8 @@ class TestSingleExponentialDown(unittest.TestCase):
         Test that a SingleExponentialDown object can be successfully pickled
         and unpickled with no loss of information.
         """
-        import cPickle
-        singleExponentialDown = cPickle.loads(cPickle.dumps(self.singleExponentialDown,-1))
+        import pickle
+        singleExponentialDown = pickle.loads(pickle.dumps(self.singleExponentialDown,-1))
         self.assertAlmostEqual(self.singleExponentialDown.alpha0.value, singleExponentialDown.alpha0.value, 6)
         self.assertEqual(self.singleExponentialDown.alpha0.units, singleExponentialDown.alpha0.units)
         self.assertAlmostEqual(self.singleExponentialDown.T0.value, singleExponentialDown.T0.value, 6)

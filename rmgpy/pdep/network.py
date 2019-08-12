@@ -32,6 +32,7 @@
 This module contains the :class:`Network` class, a representation of a 
 pressure-dependent unimolecular reaction network
 """
+from __future__ import division
 
 import math
 import numpy
@@ -43,7 +44,7 @@ from rmgpy.exceptions import NetworkError, InvalidMicrocanonicalRateError
 
 ################################################################################
 
-class Network:
+class Network(object):
     """
     A representation of a unimolecular reaction network. The attributes are:
 
