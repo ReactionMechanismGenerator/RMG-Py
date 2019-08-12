@@ -577,10 +577,27 @@ class ModelMatcher():
                 f.write('\n')
 
         special_smiles_to_adj_list = {
-            'singlet[CH2]': "1 C 2S",
-            'triplet[CH2]': "1 C 2T",
-            'singletC=[C]': "1 C 0 {2,D}\n2 C 2S {1,D}",
-            'tripletC=[C]': "1 C 0 {2,D}\n2 C 2T {1,D}",
+            'singlet[CH2]': """multiplicity 1
+1 C u0 p1 {2,S} {3,S}
+2 H u0 {1,S}
+3 H u0 {1,S}
+""",
+            'triplet[CH2]': """multiplicity 3
+1 C u2 {2,S} {3,S}
+2 H u0 {1,S}
+3 H u0 {1,S}
+""",
+            'singletC=[C]': """multiplicity 1
+1 C u0 {2,D} {3,S} {4,S}
+2 C u0 p1 {1,D}
+3 H u0 {1,S}
+4 H u0 {1,S}
+""",
+            'tripletC=[C]': """multiplicity 3
+1 C u0 {2,D} {3,S} {4,S}
+2 C u2 {1,D}
+3 H u0 {1,S}
+4 H u0 {1,S}""",
             'singlet[CH]O': "1 C 2S {2,S}\n2 O 0  {1,S}",
             'triplet[CH]O': "1 C 2T {2,S}\n2 O 0  {1,S}",
             '[C]': "1 C u0 p2 c0",
