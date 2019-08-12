@@ -603,11 +603,14 @@ class ModelMatcher():
             if smiles in special_smiles_to_adj_list:
                 adjlist = special_smiles_to_adj_list[smiles]
                 molecule = Molecule()
-                molecule.fromAdjacencyList(adjlist)
+                try:
+                    molecule.fromAdjacencyList(adjlist)
+                except:
+                    logging.exception(adjlist)
             else:
                 molecule = Molecule(SMILES=smiles)
             if formula != molecule.getFormula():
-                raise Exception("{0} cannot be {1} because the SMILES formula is {2} not required formula {3}.".format(species_label, smiles, molecule.getFormula(), formula))
+                raise Exception("{0} cannot be {1} because the SMILES formula is {2} not required formula {3}. \n{4}".format(species_label, smiles, molecule.getFormula(), formula, molecule.toAdjacencyList()))
             logging.info("I think {0} is {1} based on its label".format(species_label, smiles))
             self.smilesDict[species_label] = smiles
 
