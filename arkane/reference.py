@@ -41,7 +41,7 @@ import os
 import yaml
 
 from arkane.common import ArkaneSpecies, ARKANE_CLASS_DICT
-from arkane.isodesmic import ErrorCancelingSpecies
+from arkane.isodesmic import SpeciesConstraints,ErrorCancelingSpecies,ErrorCancelingReaction,ErrorCancelingScheme
 from rmgpy.molecule import Molecule
 from rmgpy.rmgobject import RMGObject
 from rmgpy.species import Species
@@ -424,6 +424,49 @@ class ReferenceDatabase(object):
                 reference_list.append(ref_spcs.to_error_canceling_spcs(model_chemistry))
 
         return reference_list
+
+    def get_constraint_map(self, model_chemistry, sets=None):
+
+        reference_list = self.extract_model_chemistry(model_chemistry)
+        constraint = SpeciesConstraints(target=None, reference_list=reference_list, 
+        constraint_class=None,conserve_bonds=True, conserve_ring_size=True)
+        
+        return constraint.constraint_map
+
+    def test(self, model_chemistry, constraint_class = None, iterate_constraint_classes = True, number_of_reactions=5, sets=None):
+
+        import pandas as pd
+        
+        reference_list = self.extract_model_chemistry(model_chemistry)
+        
+        data = []
+        for i,error_canceling_spcs in enumerate(reference_list):
+            print('calculating thermo for {}, {} of {}'.format(error_canceling_spcs.molecule.toSMILES(),i+1,len(reference_list)))
+            reference_set = reference_list[:]
+            target_spcs = error_canceling_spcs
+            reference_set.remove(target_spcs)
+
+            high_level_hf298 = target_spcs.high_level_hf298
+            ref_h298 = high_level_hf298.value_si/high_level_hf298.conversionFactors['kcal/mol']
+            ref_h298_uncertainty = high_level_hf298.uncertainty_si/high_level_hf298.conversionFactors['kcal/mol']
+
+            
+            for constraint in ['class_1','class_2','class_3']:
+                if not iterate_constraint_classes:
+                    if constraint != constraint_class:
+                        continue
+                isodesmic_scheme = ErrorCancelingScheme(target=target_spcs,reference_set=reference_set,constraint_class=constraint,
+                conserve_bonds=True,conserve_ring_size=True)
+                h298_mean, reaction_list = isodesmic_scheme.calculate_target_enthalpy(n_reactions_max=5, milp_software='lpsolve')
+                h298 = h298_mean.value_si/h298_mean.conversionFactors['kcal/mol']
+                species_data = [target_spcs.molecule.toSMILES(),constraint,reaction_list,h298,ref_h298,ref_h298_uncertainty,h298-ref_h298]
+                data.append(species_data)
+
+        columns = ['SMILES','constraint_class','Reactions','H298_mean(kcal/mol)','H298_ref(kcal/mol)','uncertainty','calculated-ref']
+        df = pd.DataFrame(data,columns=columns)
+
+        return df
+
 
 
 if __name__ == '__main__':
