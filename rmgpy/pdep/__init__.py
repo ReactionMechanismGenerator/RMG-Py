@@ -28,8 +28,8 @@
 #                                                                             #
 ###############################################################################
 
-from .collision import *
-from .reaction import *
-from .configuration import *
-from .network import *
-from .draw import *
+from rmgpy.pdep.collision import *
+from rmgpy.pdep.reaction import *
+from rmgpy.pdep.configuration import *
+from rmgpy.pdep.network import *
+from rmgpy.pdep.draw import *
