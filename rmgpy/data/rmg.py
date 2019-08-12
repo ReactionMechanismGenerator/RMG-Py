@@ -43,7 +43,6 @@ from rmgpy.data.kinetics.database import KineticsDatabase
 from statmech import StatmechDatabase
 from solvation import SolvationDatabase
 from rmgpy.exceptions import DatabaseError
-from rmgpy.scoop_framework.util import get, broadcast
 
 # Module-level variable to store the (only) instance of RMGDatabase in use.
 database = None
@@ -114,7 +113,6 @@ class RMGDatabase(object):
         """
         self.thermo = ThermoDatabase()
         self.thermo.load(path, thermoLibraries, depository)
-        broadcast(self.thermo, 'thermo')
 
     def loadTransport(self, path, transportLibraries=None):
         """
@@ -123,8 +121,7 @@ class RMGDatabase(object):
         """
         self.transport = TransportDatabase()
         self.transport.load(path, transportLibraries)
-        broadcast(self.transport, 'transport')
-        
+
     def loadForbiddenStructures(self, path = None):
         """
         Load the RMG forbidden structures from the given `path` on disk, where
@@ -135,7 +132,6 @@ class RMGDatabase(object):
         self.forbiddenStructures = ForbiddenStructures()
         if path is not None:
             self.forbiddenStructures.load(path)
-        broadcast(self.forbiddenStructures, 'forbidden')
 
     def loadKinetics(self,
                      path,
@@ -169,8 +165,6 @@ class RMGDatabase(object):
                            depositories=kineticsDepositories
                            )
 
-        broadcast(self.kinetics, 'kinetics')
-
     def loadSolvation(self, path):
         """
         Load the RMG solvation database from the given `path` on disk, where
@@ -178,8 +172,7 @@ class RMGDatabase(object):
         """
         self.solvation = SolvationDatabase()
         self.solvation.load(path)
-        broadcast(self.solvation, 'solvation')
-        
+
     def loadStatmech(self, path, statmechLibraries=None, depository=True):
         """
         Load the RMG statmech database from the given `path` on disk, where
@@ -187,7 +180,6 @@ class RMGDatabase(object):
         """
         self.statmech = StatmechDatabase()
         self.statmech.load(path, statmechLibraries, depository)
-        broadcast(self.statmech, 'statmech')
 
     def loadOld(self, path):
         """
@@ -259,15 +251,5 @@ def getDB(name=''):
             return database.forbiddenStructures
         else:
             raise Exception('Unrecognized database keyword: {}'.format(name))
-    else:
-        try:
-            db = get(name)
-            if db:
-                return db
-            else:
-                raise DatabaseError
-        except DatabaseError:
-            logging.debug("Did not find a way to obtain the broadcasted database for {}.".format(name))
-            raise
 
     raise DatabaseError('Could not get database with name: {}'.format(name))

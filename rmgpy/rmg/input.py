@@ -47,7 +47,6 @@ from rmgpy.solver.surface import SurfaceReactor
 from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
 from model import CoreEdgeReactionModel
 
-from rmgpy.scoop_framework.util import broadcast, get
 from rmgpy.exceptions import InputError
 ################################################################################
 
@@ -893,7 +892,6 @@ def readInputFile(path, rmg0):
         f.close()
     
     rmg.speciesConstraints['explicitlyAllowedMolecules'] = []         
-    broadcast(rmg.speciesConstraints, 'speciesConstraints')
 
     # convert keys from species names into species objects.
     for reactionSystem in rmg.reactionSystems:
@@ -902,7 +900,6 @@ def readInputFile(path, rmg0):
     if rmg.quantumMechanics:
         rmg.quantumMechanics.setDefaultOutputDirectory(rmg.outputDirectory)
         rmg.quantumMechanics.initialize()
-    broadcast(rmg.quantumMechanics, 'quantumMechanics')
 
     logging.info('')
     
@@ -961,8 +958,7 @@ def readThermoInputFile(path, rmg0):
     if rmg.quantumMechanics:
         rmg.quantumMechanics.setDefaultOutputDirectory(rmg.outputDirectory)
         rmg.quantumMechanics.initialize()
-    broadcast(rmg.quantumMechanics, 'quantumMechanics')
-    
+
     logging.info('')    
 
 ################################################################################
@@ -1153,15 +1149,5 @@ def getInput(name):
             return rmg.thermoCentralDatabase
         else:
             raise Exception('Unrecognized keyword: {}'.format(name))
-    else:
-        try:
-            obj = get(name)
-            if obj:
-                return obj
-            else:
-                raise Exception
-        except Exception:
-            logging.debug("Did not find a way to obtain the variable for {}.".format(name))
-            raise
 
     raise Exception('Could not get variable with name: {}'.format(name))
