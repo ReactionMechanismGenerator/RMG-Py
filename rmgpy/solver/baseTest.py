@@ -37,7 +37,7 @@ import rmgpy
 from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
 from rmgpy.solver.base import *
 
-class ConcentrationPrinter:
+class ConcentrationPrinter(object):
     def __init__(self):
         self.species_names = []
         self.data = []
