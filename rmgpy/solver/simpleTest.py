@@ -28,6 +28,7 @@
 #                                                                             #
 ###############################################################################
 
+from __future__ import division
 import unittest
 import numpy
 import os
@@ -258,7 +259,7 @@ class SimpleReactorCheck(unittest.TestCase):
         
         smilesDict = {'H':'[H]','HO2':'[O]O','O2':'[O][O]','Ar':'[Ar]','N2':'N#N','CO2':'O=C=O','CH3':'[CH3]','CH4':'C'}
         speciesDict = {}
-        for name, smiles in smilesDict.iteritems():
+        for name, smiles in smilesDict.items():
             mol = Molecule(SMILES=smiles)
             for species in speciesList:
                 if species.isIsomorphic(mol):
@@ -326,7 +327,7 @@ class SimpleReactorCheck(unittest.TestCase):
 
         smilesDict = {'Ar':'[Ar]','N2(1)':'N#N','O2':'[O][O]','H':'[H]','CH3':'[CH3]','CH4':'C'}
         speciesDict = {}
-        for name, smiles in smilesDict.iteritems():
+        for name, smiles in smilesDict.items():
             mol = Molecule(SMILES=smiles)
             for species in speciesList:
                 if species.isIsomorphic(mol):
@@ -351,7 +352,7 @@ class SimpleReactorCheck(unittest.TestCase):
         # Compare simulated mole fractions with expected mole fractions from CHEMKIN
         simulatedMoleFracs = rxnSystem.y/numpy.sum(rxnSystem.y)
         expectedMoleFracs = numpy.array([0.540394532, 0.270197216, 0.135098608, 0.027019722, 0.027019722, 0.000270202]) # order: Ar, N2, O2, H, CH3, CH4
-        for i in xrange(len(simulatedMoleFracs)):
+        for i in range(len(simulatedMoleFracs)):
             self.assertAlmostEqual(simulatedMoleFracs[i],expectedMoleFracs[i],6)
 
         # Advance to time = 5 s

@@ -28,6 +28,7 @@
 #                                                                             #
 ###############################################################################
 
+from __future__ import division
 import unittest
 import numpy
 import os
@@ -125,7 +126,7 @@ class LiquidReactorCheck(unittest.TestCase):
 
         rxnSystem.initializeModel(coreSpecies, coreReactions, edgeSpecies, edgeReactions)
 
-        tlist = numpy.array([10**(i/10.0) for i in xrange(-130, -49)], numpy.float64)
+        tlist = numpy.array([10**(i/10.0) for i in range(-130, -49)], numpy.float64)
 
         # Integrate to get the solution at each time point
         t, y, reactionRates, speciesRates = [], [], [], []
@@ -144,7 +145,7 @@ class LiquidReactorCheck(unittest.TestCase):
         speciesRates = numpy.array(speciesRates, numpy.float64)
 
         # Check that we're computing the species fluxes correctly
-        for i in xrange(t.shape[0]):
+        for i in range(t.shape[0]):
             self.assertAlmostEqual(reactionRates[i, 0], speciesRates[i, 0], delta=1e-6*reactionRates[i, 0])
             self.assertAlmostEqual(reactionRates[i, 0], -speciesRates[i, 1], delta=1e-6*reactionRates[i, 0])
             self.assertAlmostEqual(reactionRates[i, 0], -speciesRates[i, 2], delta=1e-6*reactionRates[i, 0])
@@ -264,15 +265,15 @@ class LiquidReactorCheck(unittest.TestCase):
 
             if rxn_num not in (6, 7):
                 dydt = []
-                for i in xrange(numCoreSpecies):
+                for i in range(numCoreSpecies):
                     rxnSystem0.y[i] += dN
                     dydt.append(rxnSystem0.residual(0.0, rxnSystem0.y, numpy.zeros(rxnSystem0.y.shape))[0])
                     rxnSystem0.y[i] -= dN  # reset y
 
                 # Compute the jacobian using finite differences
                 jacobian = numpy.zeros((numCoreSpecies, numCoreSpecies))
-                for i in xrange(numCoreSpecies):
-                    for j in xrange(numCoreSpecies):
+                for i in range(numCoreSpecies):
+                    for j in range(numCoreSpecies):
                         jacobian[i, j] = (dydt[j][i]-dydt0[i])/dN
                         self.assertAlmostEqual(jacobian[i, j], solverJacobian[i, j], delta=abs(1e-4*jacobian[i, j]))
             # The forward finite difference is very unstable for reactions
@@ -281,15 +282,15 @@ class LiquidReactorCheck(unittest.TestCase):
                 kforward = rxn.getRateCoefficient(self.T)
                 kreverse = kforward / rxn.getEquilibriumConstant(self.T)
                 jacobian = jacobian_rxn6(c0, kforward, kreverse, coreSpecies)
-                for i in xrange(numCoreSpecies):
-                    for j in xrange(numCoreSpecies):
+                for i in range(numCoreSpecies):
+                    for j in range(numCoreSpecies):
                         self.assertAlmostEqual(jacobian[i, j], solverJacobian[i, j], delta=abs(1e-4*jacobian[i, j]))
             elif rxn_num == 7:
                 kforward = rxn.getRateCoefficient(self.T)
                 kreverse = kforward / rxn.getEquilibriumConstant(self.T)
                 jacobian = jacobian_rxn7(c0, kforward, kreverse, coreSpecies)
-                for i in xrange(numCoreSpecies):
-                    for j in xrange(numCoreSpecies):
+                for i in range(numCoreSpecies):
+                    for j in range(numCoreSpecies):
                         self.assertAlmostEqual(jacobian[i, j], solverJacobian[i, j], delta=abs(1e-4*jacobian[i, j]))
      
     def test_compute_derivative(self):
@@ -341,7 +342,7 @@ class LiquidReactorCheck(unittest.TestCase):
         
         c0 = {self.CH4: 0.2, self.CH3: 0.1, self.C2H6: 0.35, self.C2H5: 0.15, self.H2: 0.2}
 
-        for i in xrange(len(rxnList)):
+        for i in range(len(rxnList)):
             k0 = rxnList[i].getRateCoefficient(self.T)
             rxnList[i].kinetics.A.value_si = rxnList[i].kinetics.A.value_si*(1+1e-3)               
             dk = rxnList[i].getRateCoefficient(self.T) - k0
@@ -360,8 +361,8 @@ class LiquidReactorCheck(unittest.TestCase):
             
             rxnList[i].kinetics.A.value_si = rxnList[i].kinetics.A.value_si/(1+1e-3)  # reset A factor
             
-        for i in xrange(numCoreSpecies):
-            for j in xrange(len(rxnList)):
+        for i in range(numCoreSpecies):
+            for j in range(len(rxnList)):
                 self.assertAlmostEqual(dfdk[i, j], solver_dfdk[i, j], delta=abs(1e-3*dfdk[i, j]))
                 
     def test_storeConstantSpeciesNames(self):
