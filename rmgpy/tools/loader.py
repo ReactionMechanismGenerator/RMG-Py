@@ -37,6 +37,7 @@ import os.path
 import warnings
 from rmgpy.chemkin import loadChemkinFile
 from rmgpy.solver.liquid import LiquidReactor
+from rmgpy.solver.mbSampled import MBSampledReactor
 from rmgpy.solver.surface import SurfaceReactor
 from rmgpy.solver.base import TerminationConversion
 
@@ -77,6 +78,27 @@ def loadRMGPyJob(inputFile, chemkinFile=None, speciesDict=None, generateImages=T
     speciesList, reactionList = loadChemkinFile(chemkinFile, speciesDict,
                                                 useChemkinNames=useChemkinNames, checkDuplicates=checkDuplicates)
     
+    # Created "observed" versions of all reactive species that are not explicitly
+    # identified as  "constant" species
+    for reactionSystem in rmg.reactionSystems:
+        if isinstance(reactionSystem, MBSampledReactor):
+            observedspeciesList = []
+            for species in speciesList:
+                if '_obs' not in species.label and species.reactive:
+                    for constantSpecies in reactionSystem.constantSpeciesList:
+                        if species.isIsomorphic(constantSpecies):
+                            break
+                    else:
+                        for species2 in speciesList:
+                            if species2.label == species.label + '_obs':
+                                break
+                        else:
+                            observedspecies = species.copy(deep=True)
+                            observedspecies.label = species.label + '_obs'
+                            observedspeciesList.append(observedspecies)
+
+            speciesList.extend(observedspeciesList)
+
     # Map species in input file to corresponding species in Chemkin file
     speciesDict = {}
     for spec0 in rmg.initialSpecies:
@@ -210,4 +232,3 @@ def loadRMGJavaJob(inputFile, chemkinFile=None, speciesDict=None, generateImages
                 species.molecule[0].draw(str(path))
     
     return rmg
-

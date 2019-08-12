@@ -137,10 +137,10 @@ html_style = 'custom.css'
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-html_title = 'RMG-Py 2.1.0 Documentation'
+html_title = 'RMG-Py {} Documentation'.format(release)
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
-html_short_title = '2.1.0 Documentation'
+html_short_title = '{} Documentation'.format(release)
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.

@@ -37,10 +37,14 @@ import numpy as np
 import logging
 import warnings
 import codecs
+import random
+import multiprocessing as mp
+
 from copy import deepcopy
 import itertools
 from collections import OrderedDict
 from sklearn.model_selection import KFold
+from scipy import stats
 
 from rmgpy.constraints import failsSpeciesConstraints
 from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStructures,\
@@ -48,16 +52,17 @@ from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStruct
 from rmgpy.reaction import Reaction, same_species_lists
 from rmgpy import settings
 from rmgpy.reaction import Reaction
+from rmgpy.kinetics.uncertainties import rank_accuracy_map
 from rmgpy.kinetics import Arrhenius, SurfaceArrhenius,\
-                    SurfaceArrheniusBEP, StickingCoefficient, StickingCoefficientBEP
-from rmgpy.kinetics.arrhenius import ArrheniusBM
+                    SurfaceArrheniusBEP, StickingCoefficient, StickingCoefficientBEP, ArrheniusBM
+from rmgpy.kinetics.uncertainties import RateUncertainty
 from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.molecule.resonance import generate_optimal_aromatic_resonance_structures
 from rmgpy.species import Species
 from rmgpy.molecule.atomtype import atomTypes
 
 from .common import saveEntry, ensure_species, find_degenerate_reactions, generate_molecule_combos,\
-                    ensure_independent_atom_ids, getAllDescendants
+                    ensure_independent_atom_ids
 from .depository import KineticsDepository
 from .groups import KineticsGroups
 from .rules import KineticsRules
@@ -283,9 +288,16 @@ class ReactionRecipe:
 
                 label1, info, label2 = action[1:]
 
-                # Find associated atoms
-                atom1 = struct.getLabeledAtom(label1)
-                atom2 = struct.getLabeledAtom(label2)
+                if label1 != label2:
+                    # Find associated atoms
+                    atom1 = struct.getLabeledAtom(label1)[0]
+                    atom2 = struct.getLabeledAtom(label2)[0]
+                else:
+                    atoms = struct.getLabeledAtom(label1) #should never have more than two if this action is valid
+                    if len(atoms) > 2:
+                        raise InvalidActionError('Invalid atom labels encountered.')
+                    atom1,atom2 = atoms
+                    
                 if atom1 is None or atom2 is None or atom1 is atom2:
                     raise InvalidActionError('Invalid atom labels encountered.')
 
@@ -326,33 +338,36 @@ class ReactionRecipe:
                 change = int(change)
 
                 # Find associated atom
-                atom = struct.getLabeledAtom(label)
-                if atom is None:
-                    raise InvalidActionError('Unable to find atom with label "{0}" while applying reaction recipe.'.format(label))
+                atoms = struct.getLabeledAtom(label)
+                for atom in atoms:
+                    if atom is None:
+                        raise InvalidActionError('Unable to find atom with label "{0}" while applying reaction recipe.'.format(label))
 
-                # Apply the action
-                for i in range(change):
-                    if (action[0] == 'GAIN_RADICAL' and doForward) or (action[0] == 'LOSE_RADICAL' and not doForward):
-                        atom.applyAction(['GAIN_RADICAL', label, 1])
-                    elif (action[0] == 'LOSE_RADICAL' and doForward) or (action[0] == 'GAIN_RADICAL' and not doForward):
-                        atom.applyAction(['LOSE_RADICAL', label, 1])
-                        
+                    # Apply the action
+                    for i in range(change):
+                        if (action[0] == 'GAIN_RADICAL' and doForward) or (action[0] == 'LOSE_RADICAL' and not doForward):
+                            atom.applyAction(['GAIN_RADICAL', label, 1])
+                        elif (action[0] == 'LOSE_RADICAL' and doForward) or (action[0] == 'GAIN_RADICAL' and not doForward):
+                            atom.applyAction(['LOSE_RADICAL', label, 1])
+
             elif action[0] in ['LOSE_PAIR', 'GAIN_PAIR']:
 
                 label, change = action[1:]
                 change = int(change)
 
                 # Find associated atom
-                atom = struct.getLabeledAtom(label)
-                if atom is None:
-                    raise InvalidActionError('Unable to find atom with label "{0}" while applying reaction recipe.'.format(label))
+                atoms = struct.getLabeledAtom(label)
 
-                # Apply the action
-                for i in range(change):
-                    if (action[0] == 'GAIN_PAIR' and doForward) or (action[0] == 'LOSE_PAIR' and not doForward):
-                        atom.applyAction(['GAIN_PAIR', label, 1])
-                    elif (action[0] == 'LOSE_PAIR' and doForward) or (action[0] == 'GAIN_PAIR' and not doForward):
-                        atom.applyAction(['LOSE_PAIR', label, 1])
+                for atom in atoms:
+                    if atom is None:
+                        raise InvalidActionError('Unable to find atom with label "{0}" while applying reaction recipe.'.format(label))
+
+                    # Apply the action
+                    for i in range(change):
+                        if (action[0] == 'GAIN_PAIR' and doForward) or (action[0] == 'LOSE_PAIR' and not doForward):
+                            atom.applyAction(['GAIN_PAIR', label, 1])
+                        elif (action[0] == 'LOSE_PAIR' and doForward) or (action[0] == 'GAIN_PAIR' and not doForward):
+                            atom.applyAction(['LOSE_PAIR', label, 1])
 
             else:
                 raise InvalidActionError('Unknown action "' + action[0] + '" encountered.')
@@ -484,7 +499,7 @@ class KineticsFamily(Database):
             self.forwardTemplate = Reaction(reactants=reactants, products=products)
             self.reverseTemplate = Reaction(reactants=reactants, products=products)
 
-        self.groups.numReactants = len(self.forwardTemplate.reactants)
+        self.groups.reactantNum = len(self.forwardTemplate.reactants)
 
         # Load forbidden structures if present
         try:
@@ -644,6 +659,9 @@ class KineticsFamily(Database):
         local_context['boundaryAtoms'] = None
         local_context['treeDistances'] = None
         local_context['reverseMap'] = None
+        local_context['reactantNum'] = None
+        local_context['productNum'] = None
+        local_context['autoGenerated'] = False
         self.groups = KineticsGroups(label='{0}/groups'.format(self.label))
         logging.debug("Loading kinetics family groups from {0}".format(os.path.join(path, 'groups.py')))
         Database.load(self.groups, os.path.join(path, 'groups.py'), local_context, global_context)
@@ -651,6 +669,17 @@ class KineticsFamily(Database):
         self.boundaryAtoms = local_context.get('boundaryAtoms', None)
         self.treeDistances = local_context.get('treeDistances',None)
         self.reverseMap = local_context.get('reverseMap',None)
+
+        self.reactantNum = local_context.get('reactantNum',None)
+        self.productNum = local_context.get('productNum',None)
+        
+        self.autoGenerated = local_context.get('autoGenerated',False)
+        
+        if self.reactantNum:
+            self.groups.reactantNum = self.reactantNum
+        else:
+            self.groups.reactantNum = len(self.forwardTemplate.reactants)
+
         # Generate the reverse template if necessary
         self.forwardTemplate.reactants = [self.groups.entries[label] for label in self.forwardTemplate.reactants]
         if self.ownReverse:
@@ -666,9 +695,7 @@ class KineticsFamily(Database):
                 self.reverseRecipe = self.forwardRecipe.getReverse()
                 if self.reverse is None:
                     self.reverse = '{0}_reverse'.format(self.label)
-        
-        self.groups.numReactants = len(self.forwardTemplate.reactants)
-            
+
         self.rules = KineticsRules(label='{0}/rules'.format(self.label))
         logging.debug("Loading kinetics family rules from {0}".format(os.path.join(path, 'rules.py')))
         self.rules.load(os.path.join(path, 'rules.py'), local_context, global_context)
@@ -916,6 +943,14 @@ class KineticsFamily(Database):
                 f.write('reverse = None\n')
         
         f.write('reversible = {0}\n\n'.format(self.reversible))
+
+        if self.reverseMap is not None:
+            f.write('reverseMap = {0}\n\n'.format(self.reverseMap))
+
+        if self.reactantNum is not None:
+            f.write('reactantNum = {0}\n\n'.format(self.reactantNum))
+        if self.productNum is not None:
+            f.write('productNum = {0}\n\n'.format(self.productNum))
 
         # Write the recipe
         f.write('recipe(actions=[\n')
@@ -1254,23 +1289,9 @@ class KineticsFamily(Database):
             reactantStructure = reactantStructure.merge(s.copy(deep=True))
 
         if forward:
-            # Hardcoding of reaction family for radical recombination (colligation)
-            # because the two reactants are identical, they have the same tags
-            # In this case, we must change the labels from '*' and '*' to '*1' and
-            # '*2'
-            if label == 'r_recombination':
-                identicalCenterCounter = 0
-                for atom in reactantStructure.atoms:
-                    if atom.label == '*':
-                        identicalCenterCounter += 1
-                        atom.label = '*' + str(identicalCenterCounter)
-                if identicalCenterCounter != 2:
-                    raise KineticsError(
-                        'Trying to apply recipe for reaction family {}: Only one occurrence of "*" found.'.format(label)
-                    )
             # Hardcoding of reaction family for peroxyl disproportionation
             # '*1' and '*2' have to be changed to '*3' and '*4' for the second reactant
-            elif label == 'peroxyl_disproportionation':
+            if label == 'peroxyl_disproportionation':
                 identicalCenterCounter1 = identicalCenterCounter2 = 0
                 for atom in reactantStructure.atoms:
                     if atom.label == '*1':
@@ -1345,18 +1366,9 @@ class KineticsFamily(Database):
                 return []
 
         if not forward:
-            # Hardcoding of reaction family for reverse of radical recombination
-            # (Unimolecular homolysis)
-            # Because the two products are identical, they should the same tags
-            # In this case, we must change the labels from '*1' and '*2' to '*' and
-            # '*'
-            if label == 'r_recombination':
-                for atom in productStructure.atoms:
-                    if atom.label == '*1' or atom.label == '*2':
-                        atom.label = '*'
             # Hardcoding of reaction family for reverse of peroxyl disproportionation
             # Labels '*3' and '*4' have to be changed back to '*1' and '*2'
-            elif label == 'peroxyl_disproportionation':
+            if label == 'peroxyl_disproportionation':
                 for atom in productStructure.atoms:
                     if atom.label == '*3':
                         atom.label = '*1'
@@ -1439,14 +1451,17 @@ class KineticsFamily(Database):
 
         if not forward:
             template = self.reverseTemplate
+            productNum = self.reactantNum or len(template.products)
         else:
             template = self.forwardTemplate
+            productNum = self.productNum or len(template.products)
+
 
         # Split product structure into multiple species if necessary
         productStructures = productStructure.split()
 
         # Make sure we've made the expected number of products
-        if len(template.products) != len(productStructures):
+        if productNum != len(productStructures):
             # We have a different number of products than expected by the template.
             # By definition this means that the template is not a match, so
             # we return None to indicate that we could not generate the product
@@ -1618,8 +1633,10 @@ class KineticsFamily(Database):
 
         if isinstance(templateReactant, list):
             templateReactant = templateReactant[0]
-
-        struct = templateReactant
+        if isinstance(templateReactant,Entry):
+            struct = templateReactant.item
+        else:
+            struct = templateReactant
 
         reactantContainsSurfaceSite = reactant.containsSurfaceSite()
 
@@ -1857,11 +1874,16 @@ class KineticsFamily(Database):
 
         if forward:
             template = self.forwardTemplate
+            reactantNum = self.reactantNum
         elif self.reverseTemplate is None:
             return []
         else:
             template = self.reverseTemplate
-
+            reactantNum = self.productNum
+        
+        if self.autoGenerated and reactantNum != len(reactants):
+            return []
+        
         if len(reactants) > len(template.reactants): #if the family has one template and is bimolecular split template into multiple reactants
             try:
                 grps = template.reactants[0].item.split()
@@ -2165,8 +2187,12 @@ class KineticsFamily(Database):
             for reactant in reaction.reactants:
                 reactant.clearLabeledAtoms()
             for label, atom in reaction.labeledAtoms:
-                atom.label = label
-            
+                if isinstance(atom,list):
+                    for atm in atom:
+                        atm.label = label
+                else:
+                    atom.label = label
+
             # Generate metadata about the reaction that we will need later
             reaction.pairs = self.getReactionPairs(reaction)
             reaction.template = self.getReactionTemplateLabels(reaction)
@@ -2519,7 +2545,6 @@ class KineticsFamily(Database):
                 
         return kinetics, entry
 
-
     def getReactionTemplateLabels(self, reaction):
         """
         Retrieve the template for the reaction and 
@@ -2758,7 +2783,7 @@ class KineticsFamily(Database):
         if entry.parent:
             entry.parent.children.append(entry)
 
-    def splitReactions(self, rxns, newgrp):
+    def _splitReactions(self, rxns, newgrp):
         """
         divides the reactions in rxns between the new
         group structure newgrp and the old structure with 
@@ -2793,7 +2818,7 @@ class KineticsFamily(Database):
         for the extension ext with name extname to the parent entry parent
         """
         rxns = templateRxnMap[parent.label]
-        new,old,newInds = self.splitReactions(rxns,ext)
+        new,old,newInds = self._splitReactions(rxns,ext)
         if len(new) == 0:
             return np.inf,False
         elif len(old) == 0:
@@ -2905,11 +2930,12 @@ class KineticsFamily(Database):
                         elif typr == 'bondExt':
                             atms = grp2.atoms
                             bd = grp2.getBond(atms[indcr[0]],atms[indcr[1]])
-                            bd.reg_dim = list(regVal)
+                            bd.reg_dim = [list(set(bd.order) & set(regVal[0])),list(set(bd.order) & set(regVal[1]))]
                             if grpc:
                                 atms = grpc.atoms
-                                bd = grp2.getBond(atms[indcr[0]],atms[indcr[1]])
-                                bd.reg_dim = list(regVal)
+                                bd = grpc.getBond(atms[indcr[0]],atms[indcr[1]])
+                                bd.reg_dim = [list(set(bd.order) & set(regVal[0])),list(set(bd.order) & set(regVal[1]))]
+
             
             #extensions being expanded
             for typr,indcr in regDict.keys(): #have to label the regularization dimensions in all relevant groups
@@ -2932,11 +2958,11 @@ class KineticsFamily(Database):
                         elif typr == 'bondExt':
                             atms = grp2.atoms
                             bd = grp2.getBond(atms[indcr[0]],atms[indcr[1]])
-                            bd.reg_dim = list(regVal)
+                            bd.reg_dim = [list(set(bd.order) & set(regVal[0])),list(set(bd.order) & set(regVal[1]))]
                             if grpc:
                                 atms = grpc.atoms
-                                bd = grp2.getBond(atms[indcr[0]],atms[indcr[1]])
-                                bd.reg_dim = list(regVal)
+                                bd = grpc.getBond(atms[indcr[0]],atms[indcr[1]])
+                                bd.reg_dim = [list(set(bd.order) & set(regVal[0])),list(set(bd.order) & set(regVal[1]))]
             
             outExts.append([])
             grps.pop()
@@ -2956,8 +2982,7 @@ class KineticsFamily(Database):
         
         return out
 
-
-    def extendNode(self, parent, templateRxnMap, thermoDatabase=None, obj=None, T=1000.0,):
+    def extendNode(self,parent,templateRxnMap,obj=None,T=1000.0,):
         """
         Constructs an extension to the group parent based on evaluation 
         of the objective function obj
@@ -2969,7 +2994,7 @@ class KineticsFamily(Database):
             rs = templateRxnMap[parent.label]
             for q,rxn in enumerate(rs):
                 for j in xrange(q):
-                    if not isomorphic_species_lists(rxn.reactants,rs[j].reactants,generateInitialMap=True):
+                    if not same_species_lists(rxn.reactants,rs[j].reactants,generate_initial_map=True):
                         for p,atm in enumerate(parent.item.atoms):
                             if atm.reg_dim_atm[0] != atm.reg_dim_atm[1]:
                                 logging.error('atom violation')
@@ -2996,10 +3021,17 @@ class KineticsFamily(Database):
                             logging.error(c)
                             logging.error(atm.reg_dim_atm)
                             logging.error(atm.reg_dim_u)
+                        logging.error("bonds:")
+                        for bd in parent.item.getAllEdges():
+                            ind1 = parent.item.atoms.index(bd.vertex1)
+                            ind2 = parent.item.atoms.index(bd.vertex2)
+                            logging.error(((ind1,ind2),bd.order,bd.reg_dim))
                         for rxn in rs:
                             for react in rxn.reactants:
                                 logging.error(react.toAdjacencyList())
-                        raise ValueError('this implies that extensions could not be generated that split at least two different reactions, which should not be possible') #If family.getExtensionEdge and Group.getExtensions operate properly this should always pass
+                        logging.error("Clearing Regularization Dimensions and Reattempting") #this usually happens when node expansion breaks some symmetry
+                        parent.item.clearRegDims() #this almost always solves the problem
+                        return True
             return False
         
         vals = []
@@ -3038,7 +3070,7 @@ class KineticsFamily(Database):
         rxns = templateRxnMap[parent.label]
         
         
-        new,left,newInds = self.splitReactions(rxns,ext[0])
+        new,left,newInds = self._splitReactions(rxns,ext[0])
         
         compEntries = []
         newEntries = []
@@ -3060,7 +3092,8 @@ class KineticsFamily(Database):
             
         return True
 
-    def generateTree(self, obj=None, thermoDatabase=None, T=1000.0):
+    def generateTree(self,rxns=None,obj=None,thermoDatabase=None,T=1000.0,nprocs=1,minSplitableEntryNum=2,
+                     minRxnsToSpawn=20,maxBatchSize=800,outlierFraction=0.02,stratumNum=8,maxRxnsToReoptNode=100):
         """
         Generate a tree by greedy optimization based on the objective function obj
         the optimization is done by iterating through every group and if the group has
@@ -3072,68 +3105,277 @@ class KineticsFamily(Database):
         if their parent has no kinetics data associated and they either have only one child or
         have two children one of which has no kinetics data and no children
         (its parent becomes the parent of its only relevant child node)
+        
+        Args:
+            rxns: List of reactions to generate tree from (if None pull the whole training set)
+            obj: Object to expand tree from (if None uses top node)
+            thermoDatabase: Thermodynamic database used for reversing training reactions 
+            T: Temperature the tree is optimized for
+            nprocs: Number of process for parallel tree generation 
+            minSplitableEntryNum: the minimum number of splitable reactions at a node in order to spawn a new process solving that node
+            minRxnsToSpawn: the minimum number of reactions at a node to spawn a new process solving that node
+            maxBatchSize: the maximum number of reactions allowed in a batch, most batches will be this size the last will be smaller, 
+                if the # of reactions < maxBatchSize the cascade algorithm is not used
+            outlierFraction: Fraction of reactions that are fastest/slowest and will be automatically included in the first batch 
+            stratumNum: Number of strata used in stratified sampling scheme 
+            maxRxnsToReoptNode: Nodes with more matching reactions than this will not be pruned
         """
-        templateRxnMap = self.getReactionMatches(thermoDatabase=thermoDatabase,removeDegeneracy=True,fixLabels=True,exactMatchesOnly=True,getReverse=True)
+        if rxns is None:
+            rxns = self.getTrainingSet(thermoDatabase=thermoDatabase,removeDegeneracy=True,estimateThermo=True,fixLabels=True,getReverse=True)
+
+        if len(rxns) <= maxBatchSize:
+            templateRxnMap = self.getReactionMatches(rxns=rxns,thermoDatabase=thermoDatabase,removeDegeneracy=True,fixLabels=True,
+                                                 exactMatchesOnly=True,getReverse=True)
+            self.makeTreeNodes(templateRxnMap=templateRxnMap,obj=obj,T=T,nprocs=nprocs-1,depth=0,minSplitableEntryNum=minSplitableEntryNum,minRxnsToSpawn=minRxnsToSpawn)
+        else:
+            random.seed(1)
+            logging.error("dividing into batches")
+            batches = self.getRxnBatches(rxns,T=T,maxBatchSize=maxBatchSize,outlierFraction=outlierFraction,stratumNum=stratumNum)
+            logging.error([len(x) for x in batches])
+            for i,batch in enumerate(batches):
+                if i == 0:
+                    rxns = batch
+                else:
+                    rxns += batch
+                    logging.error("pruning tree")
+                    self.pruneTree(rxns,thermoDatabase=thermoDatabase,maxRxnsToReoptNode=maxRxnsToReoptNode)
+                logging.error("getting reaction matches")
+                templateRxnMap = self.getReactionMatches(rxns=rxns,thermoDatabase=thermoDatabase,fixLabels=True,
+                                                     exactMatchesOnly=True,getReverse=True)
+                logging.error("building tree with {} rxns".format(len(rxns)))
+                self.makeTreeNodes(templateRxnMap=templateRxnMap,obj=obj,T=T,nprocs=nprocs-1,depth=0,minSplitableEntryNum=minSplitableEntryNum,minRxnsToSpawn=minRxnsToSpawn)
+
+    def getRxnBatches(self,rxns,T=1000.0,maxBatchSize=800,outlierFraction=0.02,stratumNum=8):
+        """
+        Breaks reactions into batches based on a modified stratified sampling scheme
+        Effectively:
+        The top and bottom outlierFraction of all reactions are always included in the first batch
+        The remaining reactions are ordered by the rate coefficients at T
+        The list of reactions is then split into stratumNum similarly sized intervals
+        batches sample equally from each interval, but randomly within each interval
+        until they reach maxBatchSize reactions
+        A list of lists of reactions containing the batches is returned
+        """
+        ks = np.array([rxn.kinetics.getRateCoefficient(T=T) for rxn in rxns])
+        inds = np.argsort(ks)
+        outlierNum = int(outlierFraction*len(ks)/2)
+        if outlierNum == 0:
+            lowouts = []
+            highouts = []
+        else:
+            lowouts = inds[:outlierNum].tolist()
+            highouts = inds[-outlierNum:].tolist()
+            inds = inds[outlierNum:-outlierNum]
+        intervalLength = int(len(inds)/stratumNum)
+        strata = []
+        for i in xrange(stratumNum):
+            if i == 0:
+                temp = inds[:intervalLength].tolist()
+                random.shuffle(temp)
+                strata.append(temp)
+            elif i == stratumNum - 1:
+                temp = inds[intervalLength*i:].tolist()
+                random.shuffle(temp)
+                strata.append(temp)
+            else:
+                temp = inds[intervalLength*i:intervalLength*(i+1)].tolist()
+                random.shuffle(temp)
+                strata.append(temp)
+
+        firstBatchStrataNum = maxBatchSize-outlierNum
+        batches = [highouts + lowouts]
+        bind = 0
+        while any([len(stratum) != 0 for stratum in strata]):
+            for stratum in strata:
+                if stratum != []:
+                    batches[bind].append(stratum.pop())
+                    if len(batches[bind]) >= maxBatchSize:
+                        bind += 1
+                        batches.append([])
+
+        rxns = np.array(rxns)
+        batches = [rxns[inds].tolist() for inds in batches if len(inds)>0]
+
+        return batches
+
+    def pruneTree(self,rxns,thermoDatabase=None,maxRxnsToReoptNode=100,fixLabels=True,exactMatchesOnly=True,getReverse=True):
+        """
+        Remove nodes that have less than maxRxnToReoptNode reactions that match
+        and clear the regularization dimensions of their parent
+        This is used to remove smaller easier to optimize and more likely to change nodes
+        before adding a new batch in cascade model generation
+        """
+        templateRxnMap = self.getReactionMatches(rxns=rxns,thermoDatabase=thermoDatabase,fixLabels=fixLabels,
+                                             exactMatchesOnly=False,getReverse=getReverse)
+        for key,item in templateRxnMap.iteritems():
+            entry = self.groups.entries[key]
+            parent = entry.parent
+            if parent and len(templateRxnMap[parent.label]) < maxRxnsToReoptNode:
+                parent.children.remove(entry)
+                del self.groups.entries[key]
+                parent.item.clearRegDims()
+
+
+    def makeTreeNodes(self,templateRxnMap=None,obj=None,T=1000.0,nprocs=0,depth=0,minSplitableEntryNum=2,minRxnsToSpawn=20):
+
+        if depth > 0:
+            root = self.groups.entries[templateRxnMap.keys()[0]]
+        else:
+            for entry in self.groups.entries.values(): #find the root entry for this branch
+                if entry.index != -1:
+                    root = entry
+                    break
+            while root.parent is not None:
+                root = root.parent
+                
+        psize = float(len(templateRxnMap[root.label]))
         
         multCompletedNodes = [] #nodes containing multiple identical training reactions
         boo = True #if the for loop doesn't break becomes false and the while loop terminates
+        activeProcs = []
+        activeConns = []
+        activeProcNum = []
+        procNames = []
+        freeProcs = nprocs
+        extraEntries = []
+
         while boo:
-            for entry in self.groups.entries.itervalues():
+            removeInds = []
+            for k,p in enumerate(activeProcs): #check if any processes have finished
+                if activeConns[k].poll():
+                    newEntries = self._absorbProcess(p,activeConns[k],procNames[k])
+                    extraEntries += newEntries
+                    removeInds.append(k)
+
+            removeInds.reverse()
+            for ind in removeInds: #remove finished process objects
+                freeProcs += activeProcNum[ind]
+                del activeProcNum[ind]
+                del activeProcs[ind]
+                del activeConns[ind]
+                del procNames[ind]
+
+            splitableEntryNum = 0
+            for label,items in templateRxnMap.iteritems(): #figure out how many splitable objects there are
+                entry = self.groups.entries[label]
+                if len(items) > 1 and entry not in multCompletedNodes:
+                    splitableEntryNum += 1
+
+            for label in templateRxnMap.keys():
+                entry = self.groups.entries[label]
                 if not isinstance(entry.item, Group): #skip logic nodes
                     continue
+                if psize == 0.0:
+                    continue
                 if entry.index != -1 and len(templateRxnMap[entry.label])>1 and entry not in multCompletedNodes:
-                    boo2 = self.extendNode(entry,templateRxnMap,thermoDatabase,obj,T)
+                    if freeProcs > 0 and splitableEntryNum > minSplitableEntryNum and len(templateRxnMap[entry.label])>minRxnsToSpawn:
+                        procsOut = int(len(templateRxnMap[entry.label])/psize*freeProcs)
+                        freeProcs -= procsOut
+                        assert freeProcs >= 0
+                        conn,p,name = _spawnTreeProcess(family=self, templateRxnMap={entry.label:templateRxnMap[entry.label]},
+                                            obj=obj, T=T, nprocs=procsOut-1, depth=depth, minSplitableEntryNum=minSplitableEntryNum,
+                                            minRxnsToSpawn=minRxnsToSpawn)
+                        activeProcs.append(p)
+                        activeConns.append(conn)
+                        procNames.append(name)
+                        activeProcNum.append(procsOut)
+                        L = entry.label
+                        self.groups.entries[L].parent.children.remove(entry)
+                        del templateRxnMap[L] #prevents this process from recreating work done by another process
+                        del self.groups.entries[L]
+
+                        splitableEntryNum -= 1
+                        continue
+                    boo2 = self.extendNode(entry,templateRxnMap,obj,T)
                     if boo2: #extended node so restart while loop
                         break 
                     else: #no extensions could be generated since all reactions were identical
                         multCompletedNodes.append(entry)
             else:
-                boo = False
-            
+                if len(activeProcs)==0:
+                    boo = False
+
             #fix indicies
             iters = 0
             for entry in self.groups.entries.itervalues():
                 if entry.index != -1:
                     entry.index = iters
                     iters += 1
-        
+
+        #add the entries generated on other processors
+        index = max([ent.index for ent in self.groups.entries.values()])+1
+        for item in extraEntries:
+            if item.label in self.groups.entries.keys():
+                continue
+            item.index = index
+            index += 1
+            self.groups.entries[item.label] = item
+
+        for label,entry in self.groups.entries.iteritems():
+            if entry.index != -1 and entry.parent is None and entry.label != root.label:
+                pname = "_".join(label.split('_')[:-1])
+                while pname not in self.groups.entries.keys():
+                    pname = "_".join(label.split('_')[:-1])
+                entry.parent = self.groups.entries[pname]
+                entry.parent.children.append(entry)
+
         return
 
+    def _absorbProcess(self,p,conn,name):
+        try:
+            grps = conn.recv()
+            p.terminate()
+        except Exception as e:
+            logging.error('failed to absorb process {}'.format(name))
+            raise e
+        return grps
 
-    def makeBMRulesFromTemplateRxnMap(self, templateRxnMap):
+    def makeBMRulesFromTemplateRxnMap(self,templateRxnMap,nprocs=1,Tref=1000.0,fmax=1.0e5):
+
+        ruleKeys = self.rules.entries.keys()
+        for entry in self.groups.entries.values():
+            if entry.label not in ruleKeys:
+                self.rules.entries[entry.label] = []
 
         index = max([e.index for e in self.rules.getEntries()] or [0]) + 1
-        
-        for entry in self.groups.entries.values():
-            if entry.index == -1 or self.rules.entries[entry.label] != []:
-                continue
-            rxns = templateRxnMap[entry.label]
-            descendants = getAllDescendants(entry)
-            for entry2 in descendants:
-                rxns.extend(templateRxnMap[entry2.label])
-            
-            assert rxns != [], entry.label
-            kinetics = ArrheniusBM().fitToReactions(rxns,family=self)
-            
-            new_entry = Entry(
-                index = index,
-                label = entry.label,
-                item = self.forwardTemplate,
-                data = kinetics,
-                rank = 11,
-                reference=None,
-                shortDesc="BM rule fitted to {0} training reactions at node {1}".format(len(rxns),entry.label),
-                longDesc="BM rule fitted to {0} training reactions at node {1}".format(len(rxns),entry.label),
-            )
-            new_entry.data.comment = "BM rule fitted to {0} training reactions at node {1}".format(len(rxns),entry.label)
 
-            self.rules.entries[entry.label].append(new_entry)
-            
-            index += 1
+        entries = self.groups.entries.values()
+        rxnlists = [(templateRxnMap[entry.label],entry.label) if entry.label in templateRxnMap.keys() else [] for entry in entries]
+        inputs = np.array([(self.forwardRecipe.actions,rxns,Tref,fmax,label,[r.rank for r in rxns]) for rxns,label in rxnlists])
 
+        inds = np.arange(len(inputs))
+        np.random.shuffle(inds) #want to parallelize in random order
+        inds = inds.tolist()
+        revinds = [inds.index(x) for x in np.arange(len(inputs))]
 
+        pool = mp.Pool(nprocs)
 
-    def crossValidate(self, folds=5, templateRxnMap=None, T=1000.0, iters=0, random_state=1):
+        kineticsList = np.array(pool.map(_makeRule,inputs[inds]))
+        kineticsList = kineticsList[revinds] #fix order
+
+        for i,kinetics in enumerate(kineticsList):
+            if kinetics is not None:
+                entry = entries[i]
+                std = kinetics.uncertainty.getExpectedLogUncertainty()/0.398 # expected uncertainty is std * 0.398
+                st = "BM rule fitted to {0} training reactions at node {1}".format(len(rxnlists[i]),entry.label)
+                st += "\nTotal Standard Deviation in ln(k): {0}".format(std)
+                new_entry = Entry(
+                    index = index,
+                    label = entry.label,
+                    item = self.forwardTemplate,
+                    data = kinetics,
+                    rank = 11,
+                    reference=None,
+                    shortDesc=st,
+                    longDesc=st,
+                )
+                new_entry.data.comment = st
+
+                self.rules.entries[entry.label].append(new_entry)
+
+                index += 1
+
+    def crossValidate(self,folds=5,templateRxnMap=None,testRxnInds=None,T=1000.0,iters=0,random_state=1):
         """
         Perform K-fold cross validation on an automatically generated tree at temperature T
         after finding an appropriate node for kinetics estimation it will move up the tree
@@ -3142,17 +3384,30 @@ class KineticsFamily(Database):
         """
         
         if templateRxnMap is None:
-            templateRxnMap = self.getReactionMatches(removeDegeneracy=True,getReverse=True)
-        
+            templateRxnMap = self.getReactionMatches(removeDegeneracy=True,getReverse=True,fixLabels=True)
+
         rxns = np.array(templateRxnMap['Root'])
         
-        kf = KFold(folds,shuffle=True,random_state=random_state)
-        errors = {}
-        
-        for train_index, test_index in kf.split(rxns):
 
-            rxns_test = rxns[test_index]
-            
+        if testRxnInds is None:
+            if folds == 0:
+                folds = len(rxns)
+
+            kf = KFold(folds,shuffle=True,random_state=random_state)
+            kfsplits = kf.split(rxns)
+        else:
+            kfsplits = [([0,],[0,])]
+
+        errors = {}
+        uncertainties = {}
+
+        for train_index, test_index in kfsplits:
+
+            if testRxnInds is None:
+                rxns_test = rxns[test_index]
+            else:
+                rxns_test = rxns[testRxnInds]
+
             for rxn in rxns_test:
                     
                 krxn = rxn.kinetics.getRateCoefficient(T)
@@ -3176,30 +3431,35 @@ class KineticsFamily(Database):
                 
                 for q in xrange(iters):
                     if entry.parent:
-                        entry = entry.parent 
-                  
+                        entry = entry.parent
+
+                uncertainties[rxn] = self.rules.entries[entry.label][0].data.uncertainty
+
                 L = list(set(templateRxnMap[entry.label])-set(rxns_test))
-                
-                if L != []: 
-                    kinetics = ArrheniusBM().fitToReactions(L,family=self)
+
+                if L != []:
+                    kinetics = ArrheniusBM().fitToReactions(L,recipe=self.forwardRecipe.actions)
                     kinetics = kinetics.toArrhenius(rxn.getEnthalpyOfReaction(T))
                     k = kinetics.getRateCoefficient(T)
                     errors[rxn] = np.log(k/krxn)
                 else:
-                    raise ValueError('only one piece of kinetics information in the tree?')  
-        
-        return errors
+                    raise ValueError('only one piece of kinetics information in the tree?')
+
+        return errors,uncertainties
 
     def crossValidateOld(self, folds=5, T=1000.0, random_state=1, estimator='rate rules', thermoDatabase=None):
         """
         Perform K-fold cross validation on an automatically generated tree at temperature T
         Returns a dictionary mapping {rxn:Ln(k_Est/k_Train)}
         """
-        
-        kf = KFold(folds,shuffle=True,random_state=random_state)
         errors = {}
         rxns = np.array(self.getTrainingSet(removeDegeneracy=True))
-        
+
+        if folds == 0:
+            folds = len(rxns)
+
+        kf = KFold(folds,shuffle=True,random_state=random_state)
+
         if thermoDatabase is None:
             from rmgpy.data.rmg import getDB
             tdb = getDB('thermo')
@@ -3232,10 +3492,8 @@ class KineticsFamily(Database):
                 errors[rxn] = np.log(k/krxn)
         
         return errors
-            
-            
-    
-    def simpleRegularization(self, node):
+
+    def simpleRegularization(self, node, templateRxnMap, test=True):
         """
         Simplest regularization algorithm
         All nodes are made as specific as their descendant reactions
@@ -3244,12 +3502,21 @@ class KineticsFamily(Database):
         descendent reactions a reaction where it is Sulfur will never hit that node
         unless it is the top node even if the tree did not split on the identity 
         of that atom
+        
+        The test option to this function determines whether or not the reactions 
+        under a node match the extended group before adding an extension. 
+        If the test fails the extension is skipped. 
+        
+        In general test=True is needed if the cascade algorithm was used 
+        to generate the tree and test=False is ok if the cascade algorithm
+        wasn't used. 
         """
         
         for child in node.children:
-            self.simpleRegularization(child)
-            
+            self.simpleRegularization(child,templateRxnMap)
+
         grp = node.item
+        rxns = templateRxnMap[node.label]
 
         R = ['H','C','N','O','Si','S','Cl'] #set of possible R elements/atoms
         R = [atomTypes[x] for x in R]
@@ -3286,8 +3553,15 @@ class KineticsFamily(Database):
                         vals = list(set(atyp) & set(atm1.reg_dim_atm[1]))
                         assert vals != [], 'cannot regularize to empty'
                         if all([set(child.item.atoms[i].atomType) <= set(vals) for child in node.children]):
-                            atm1.atomType = vals
-                        
+                            if not test:
+                                atm1.atomType = vals
+                            else:
+                                oldvals = atm1.atomType
+                                atm1.atomType = vals
+                                if not self.rxnsMatchNode(node,rxns):
+                                    atm1.atomType = oldvals
+
+
                 if not skip and atm1.reg_dim_u[1] != [] and set(atm1.reg_dim_u[1]) != set(atm1.radicalElectrons):
                     if len(atm1.radicalElectrons) == 1:
                         pass
@@ -3299,14 +3573,31 @@ class KineticsFamily(Database):
                         assert vals != [], 'cannot regularize to empty'
                         
                         if all([set(child.item.atoms[i].radicalElectrons) <= set(vals) if child.item.atoms[i].radicalElectrons != [] else False for child in node.children]):
-                            atm1.radicalElectrons = vals
-                        
+                            if not test:
+                                atm1.radicalElectrons = vals
+                            else:
+                                oldvals = atm1.radicalElectrons
+                                atm1.radicalElectrons = vals
+                                if not self.rxnsMatchNode(node,rxns):
+                                    atm1.radicalElectrons = oldvals
+
                 if not skip and atm1.reg_dim_r[1] != [] and (not 'inRing' in atm1.props.keys() or atm1.reg_dim_r[1][0] != atm1.props['inRing']):
                     if not 'inRing' in atm1.props.keys():
                         if all(['inRing' in child.item.atoms[i].props.keys() for child in node.children]) and all([child.item.atoms[i].props['inRing'] == atm1.reg_dim_r[1] for child in node.children]):
-                            atm1.props['inRing'] = atm1.reg_dim_r[1][0]
-                    
-                if not skip:  
+                            if not test:
+                                atm1.props['inRing'] = atm1.reg_dim_r[1][0]
+                            else:
+                                if 'inRing' in atm1.props.keys():
+                                    oldvals = atm1.props['inRing']
+                                else:
+                                    oldvals = None
+                                atm1.props['inRing'] = atm1.reg_dim_r[1][0]
+                                if not self.rxnsMatchNode(node,rxns):
+                                    if oldvals:
+                                        atm1.props['inRing'] = oldvals
+                                    else:
+                                        del atm1.props['inRing']
+                if not skip:
                     for j,atm2 in enumerate(grp.atoms[:i]):
                         if j in indistinguishable: #skip graphically indistinguishable atoms
                             continue
@@ -3317,18 +3608,30 @@ class KineticsFamily(Database):
                             else:
                                 vals = list(set(bd.order) & set(bd.reg_dim[1]))
                                 if vals != [] and all([set(child.item.getBond(child.item.atoms[i],child.item.atoms[j]).order) <= set(vals) for child in node.children]):
-                                    bd.order = vals
+                                    if not test:
+                                        bd.order = vals
+                                    else:
+                                        oldvals = bd.order
+                                        bd.order = vals
+                                        if not self.rxnsMatchNode(node,rxns):
+                                            bd.order = oldvals
 
-    def regularize(self, regularization=simpleRegularization, keepRoot=True):
+    def regularize(self, regularization=simpleRegularization, keepRoot=True, thermoDatabase=None, templateRxnMap=None, rxns=None):
         """
         Regularizes the tree according to the regularization function regularization
         """
+        if templateRxnMap is None:
+            if rxns is None:
+                templateRxnMap = self.getReactionMatches(thermoDatabase=thermoDatabase,removeDegeneracy=True,getReverse=True,exactMatchesOnly=False,fixLabels=True)
+            else:
+                templateRxnMap = self.getReactionMatches(rxns=rxns,thermoDatabase=thermoDatabase,removeDegeneracy=True,getReverse=True,exactMatchesOnly=False,fixLabels=True)
+
         if keepRoot:
             for child in self.getRootTemplate()[0].children: #don't regularize the root
-                regularization(self,child)
+                regularization(self,child,templateRxnMap)
         else:
-            regularization(self,self.getRootTemplate()[0])
-    
+            regularization(self,self.getRootTemplate()[0],templateRxnMap)
+
     def checkTree(self, entry=None):
         if entry is None:
             entry = self.getRootTemplate()[0]
@@ -3342,8 +3645,15 @@ class KineticsFamily(Database):
                 logging.error(entry.item.toAdjacencyList())
                 raise ValueError('Child not subgraph isomorphic to parent')
             self.checkTree(child)
+        for entry in self.groups.entries.values():
+            if entry.index == -1:
+                continue
+            parent = entry
+            while parent.parent is not None:
+                parent = parent.parent
+            assert parent.label == 'Root', parent.label
 
-    def makeTree(self, obj=None, regularization=simpleRegularization, thermoDatabase=None, T=1000.0):
+    def makeTree(self,obj=None,regularization=simpleRegularization,thermoDatabase=None,T=1000.0):
         """
         generates tree structure and then generates rules for the tree
         """
@@ -3376,8 +3686,12 @@ class KineticsFamily(Database):
             if grp is None:
                 grp = ent.item
             else:
-                grp = grp.mergeGroups(ent.item)
-        
+                if any([isinstance(x,list) for x in ent.item.getLabeledAtoms().values()]):
+                    grp = grp.mergeGroups(ent.item, keepIdenticalLabels=True)
+                else:
+                    grp = grp.mergeGroups(ent.item)
+
+
         #clear everything
         self.groups.entries = {x.label:x for x in self.groups.entries.itervalues() if x.index == -1}
         
@@ -3411,6 +3725,19 @@ class KineticsFamily(Database):
         and returns the resulting list of reactions in the forward direction with thermo 
         assigned
         """
+
+        def getLabelFixedMol(mol,rootLabels):
+            nmol = mol.copy(deep=True)
+            for atm in nmol.atoms:
+                if atm.label not in rootLabels:
+                    atm.label = ''
+            return nmol
+
+        def fixLabelsMol(mol,rootLabels):
+            for atm in mol.atoms:
+                if atm.label not in rootLabels:
+                    atm.label = ''
+
         if self.ownReverse and getReverse:
             revRxns = []
             rkeys = self.reverseMap.keys()
@@ -3440,10 +3767,9 @@ class KineticsFamily(Database):
                 root = root.mergeGroups(r)
             else:
                 root = deepcopy(r)
-        
-        if fixLabels:
-            rootLabels = [x.label for x in root.atoms if x.label != '']
-        
+
+        rootLabels = [x.label for x in root.atoms if x.label != '']
+
         for i,r in enumerate(entries):
             if estimateThermo:
                 for j,react in enumerate(r.item.reactants):
@@ -3462,18 +3788,21 @@ class KineticsFamily(Database):
             
             mol = None
             for react in rxns[i].reactants:
+                if fixLabels:
+                    fixLabelsMol(react.molecule[0],rootLabels)
                 if mol:
                     mol = mol.merge(react.molecule[0])
                 else:
                     mol = deepcopy(react.molecule[0])
             
             if fixLabels:
+                for prod in rxns[i].products:
+                    fixLabelsMol(prod.molecule[0],rootLabels)
                 for atm in mol.atoms:
                     if atm.label not in rootLabels:
                         atm.label = ''
-            
-            
-            if mol.isSubgraphIsomorphic(root,generateInitialMap=True):
+
+            if mol.isSubgraphIsomorphic(root,generateInitialMap=True) or (not fixLabels and getLabelFixedMol(mol,rootLabels).isSubgraphIsomorphic(root,generateInitialMap=True)):
                 rxns[i].is_forward = True
                 if self.ownReverse and getReverse:
                     mol = None
@@ -3482,48 +3811,64 @@ class KineticsFamily(Database):
                             mol = mol.merge(react.molecule[0])
                         else:
                             mol = deepcopy(react.molecule[0])
-                    
-                            
-                    if mol.isSubgraphIsomorphic(root,generateInitialMap=True): #try product structures
-                        products = rxns[i].products
+
+                    if mol.isSubgraphIsomorphic(root,generateInitialMap=True) or (not fixLabels and getLabelFixedMol(mol,rootLabels).isSubgraphIsomorphic(root,generateInitialMap=True)): #try product structures
+                        products = [Species(molecule=[getLabelFixedMol(x.molecule[0],rootLabels)],thermo=x.thermo) for x in rxns[i].products]
                     else:
                         products = self.applyRecipe([s.molecule[0] for s in rxns[i].reactants],forward=True)
                         products = [Species(molecule=[p]) for p in products]
-                    
-                    prods = []
-                    for p in products: 
-                        for atm in p.molecule[0].atoms:
-                            if atm.label in rkeys:
-                                atm.label = reverseMap[atm.label]
-                    
-                        prods.append(Species(molecule=[p.molecule[0]]))
-                        
-                    rrev = Reaction(reactants=prods,products=rxns[i].reactants,kinetics=rxns[i].generateReverseRateCoefficient(),rank=rxns[i].rank)
-                    
+
+                    prodmol = None
+                    for react in rxns[i].products:
+                        if prodmol:
+                            prodmol = prodmol.merge(react.molecule[0])
+                        else:
+                            prodmol = deepcopy(react.molecule[0])
+
+                    if not prodmol.isSubgraphIsomorphic(root,generateInitialMap=True):
+                        mol = None
+                        for react in products:
+                            if mol:
+                                mol = mol.merge(react.molecule[0])
+                            else:
+                                mol = deepcopy(react.molecule[0])
+                        if not mol.isSubgraphIsomorphic(root,generateInitialMap=True):
+                            for p in products:
+                                for atm in p.molecule[0].atoms:
+                                    if atm.label in rkeys:
+                                        atm.label = reverseMap[atm.label]
+
+                    reacts = [Species(molecule=[getLabelFixedMol(x.molecule[0],rootLabels)],thermo=x.thermo) for x in rxns[i].reactants]
+                    rrev = Reaction(reactants=products,products=reacts,kinetics=rxns[i].generateReverseRateCoefficient(),rank=rxns[i].rank)
                     rrev.is_forward = False
-                    
-                    
+
                     if estimateThermo:
                         for r in rrev.reactants:
                             if r.thermo is None:
                                 r.thermo = tdb.getThermoData(deepcopy(r))
-                    
-                        
+
                     revRxns.append(rrev)
                     
                 continue
             else:
-                assert not self.ownReverse
-                
+                if self.ownReverse:
+                    logging.error("rxn")
+                    logging.error(str(rxns[i]))
+                    logging.error("root")
+                    logging.error(root.toAdjacencyList())
+                    logging.error("mol")
+                    logging.error(mol.toAdjacencyList())
+                    raise ValueError("couldn't match reaction")
+
                 mol = None
                 for react in rxns[i].products:
                     if mol:
                         mol = mol.merge(react.molecule[0])
                     else:
                         mol = deepcopy(react.molecule[0])
-                
-                if mol.isSubgraphIsomorphic(root,generateInitialMap=True): #try product structures
-                    products = rxns[i].products
+
+                if mol.isSubgraphIsomorphic(root,generateInitialMap=True) or (not fixLabels and getLabelFixedMol(mol,rootLabels).isSubgraphIsomorphic(root,generateInitialMap=True)): #try product structures
+                    products = [Species(molecule=[getLabelFixedMol(x.molecule[0],rootLabels)],thermo=x.thermo) for x in rxns[i].products]
                 else:
                     products = self.applyRecipe([s.molecule[0] for s in rxns[i].reactants],forward=True)
                     products = [Species(molecule=[p]) for p in products]
@@ -3566,8 +3911,12 @@ class KineticsFamily(Database):
                     mol = deepcopy(r.molecule[0])
                 else:
                     mol = mol.merge(r.molecule[0])
-                    
-            if not self.isEntryMatch(mol,root):
+            try:
+                flag = not self.isEntryMatch(mol,root,resonance=True)
+            except:
+                flag = not self.isEntryMatch(mol,root,resonance=False)
+
+            if flag:
                 logging.error(root.item.toAdjacencyList())
                 logging.error(mol.toAdjacencyList())
                 for r in rxn.reactants:
@@ -3582,7 +3931,7 @@ class KineticsFamily(Database):
             
             while entry.children != []:
                 for child in entry.children:
-                    if self.isEntryMatch(mol,child):
+                    if self.isEntryMatch(mol,child,resonance=False):
                         entry = child
                         rxnLists[child.label].append(rxn)
                         break
@@ -3601,16 +3950,32 @@ class KineticsFamily(Database):
         return rxnLists
 
 
-    def isEntryMatch(self, mol, entry):
+    def isEntryMatch(self, mol, entry, resonance=True):
         """
         determines if the labeled molecule object of reactants matches the entry entry
         """
         if isinstance(entry.item,Group):
-            structs = mol.generate_resonance_structures()
+            if resonance:
+                structs = mol.generate_resonance_structures()
+            else:
+                structs = [mol]
             return any([mol.isSubgraphIsomorphic(entry.item,generateInitialMap=True) for mol in structs])
         elif isinstance(entry.item,LogicOr):
-            return any([self.isEntryMatch(mol,self.groups.entries[c]) for c in entry.item.components])
-        
+            return any([self.isEntryMatch(mol,self.groups.entries[c],resonance=resonance) for c in entry.item.components])
+
+    def rxnsMatchNode(self, node, rxns):
+        for rxn in rxns:
+            mol = None
+            for r in rxn.reactants:
+                if mol is None:
+                    mol = deepcopy(r.molecule[0])
+                else:
+                    mol = mol.merge(r.molecule[0])
+
+            if not self.isEntryMatch(mol,node,resonance=False):
+                return False
+
+        return True
 
     def retrieveOriginalEntry(self, templateLabel):
         """
@@ -3872,3 +4237,55 @@ def getObjectiveFunction(kinetics1,kinetics2,obj=informationGain,T=1000.0):
     
     return obj(ks1,ks2), N1 == 0
 
+def _makeRule(rr):
+    """
+    function for parallelization of rule and uncertainty calculation
+    Errors in Ln(k) at each reaction are treated as samples from a weighted normal distribution
+    weights are inverse variance weights based on estimates of the error in Ln(k) for each individual reaction
+    """
+    recipe,rxns,Tref,fmax,label,ranks = rr
+    N = len(rxns)
+    for i,rxn in enumerate(rxns):
+        rxn.rank = ranks[i]
+    rxns = np.array(rxns)
+    if N > 0:
+        kin = ArrheniusBM().fitToReactions(rxns,recipe=recipe)
+        if N == 1:
+            kin.uncertainty = RateUncertainty(mu=0.0,var=(np.log(fmax)/2.0)**2,N=1,Tref=Tref,correlation=label)
+        else:
+            dlnks = np.array([np.log(ArrheniusBM().fitToReactions(rxns[list(set(xrange(len(rxns)))-set([i,]))],
+                    recipe=recipe).toArrhenius(rxn.getEnthalpyOfReaction(Tref)).getRateCoefficient(T=Tref)/rxn.getRateCoefficient(T=Tref)) for i,
+                    rxn in enumerate(rxns)]) # 1)fit to set of reactions without the current reaction (k)  2)compute log(kfit/kactual) at Tref
+            varis = (np.array([rank_accuracy_map[rxn.rank].value_si for rxn in rxns])/(2.0*8.314*Tref))**2
+            #weighted average calculations
+            ws = 1.0/varis
+            V1  = ws.sum()
+            V2 = (ws**2).sum()
+            mu = np.dot(ws,dlnks)/V1
+            s = np.sqrt(np.dot(ws,(dlnks-mu)**2)/(V1-V2/V1))
+            kin.uncertainty = RateUncertainty(mu=mu,var=s**2,N=N,Tref=Tref,correlation=label)
+        return kin
+    else:
+        return None
+
+def _spawnTreeProcess(family,templateRxnMap,obj,T,nprocs,depth,minSplitableEntryNum,minRxnsToSpawn):
+    parentConn, childConn = mp.Pipe()
+    name = templateRxnMap.keys()[0]
+    p = mp.Process(target=_childMakeTreeNodes,args=(family,childConn,templateRxnMap,obj,T,nprocs,depth,name,minSplitableEntryNum,minRxnsToSpawn))
+    p.start()
+    return parentConn,p,name
+
+def _childMakeTreeNodes(family,childConn,templateRxnMap,obj,T,nprocs,depth,name,minSplitableEntryNum,minRxnsToSpawn):
+    delLabels = []
+    rootlabel = templateRxnMap.keys()[0]
+    for label in family.groups.entries.keys():
+        if label != rootlabel:
+            delLabels.append(label)
+    for label in delLabels:
+        del family.groups.entries[label]
+
+    family.groups.entries[rootlabel].parent = None
+
+    family.makeTreeNodes(templateRxnMap=templateRxnMap,obj=obj,T=T,nprocs=nprocs,depth=depth+1,minSplitableEntryNum=minSplitableEntryNum,minRxnsToSpawn=minRxnsToSpawn)
+
+    childConn.send(family.groups.entries.values())

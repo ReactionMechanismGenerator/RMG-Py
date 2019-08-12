@@ -1287,10 +1287,11 @@ class Molecule(Graph):
         """
         Return the atoms in the molecule that are labeled.
         """
-        for atom in self.vertices:
-            if atom.label == label: return atom
-        raise ValueError('No atom in the molecule has the label "{0}".'.format(label))
-
+        alist = [atom for atom in self.vertices if atom.label==label]
+        if alist == []:
+            raise ValueError('No atom in the molecule \n{1}\n has the label "{0}".'.format(label,self.toAdjacencyList()))
+        return alist
+    
     def getLabeledAtoms(self):
         """
         Return the labeled atoms as a ``dict`` with the keys being the labels
@@ -1438,19 +1439,35 @@ class Molecule(Graph):
                 return False
             elif element_count[element] < count:
                 return False
-        
+
         if generateInitialMap:
+            keys = []
+            atms = []
             initialMap = dict()
             for atom in self.atoms:
                 if atom.label and atom.label != '':
                     L = [a for a in other.atoms if a.label == atom.label]
                     if L == []:
                         return False
-                    else:
+                    elif len(L) == 1:
                         initialMap[atom] = L[0]
-            if not self.isMappingValid(other,initialMap,equivalent=False):
-                return False
-            
+                    else:
+                        keys.append(atom)
+                        atms.append(L)
+            if atms:
+                for atmlist in itertools.product(*atms):
+                    if len(set(atmlist)) != len(atmlist): #skip entries that map multiple graph atoms to the same subgraph atom
+                        continue
+                    for i,key in enumerate(keys):
+                        initialMap[key] = atmlist[i]
+                    if self.isMappingValid(other,initialMap,equivalent=False) and Graph.isSubgraphIsomorphic(self, other, initialMap, saveOrder=saveOrder):
+                        return True
+                else:
+                    return False
+            else:
+                if not self.isMappingValid(other,initialMap,equivalent=False):
+                    return False
+
         # Do the isomorphism comparison
         result = Graph.isSubgraphIsomorphic(self, other, initialMap, saveOrder=saveOrder)
         return result

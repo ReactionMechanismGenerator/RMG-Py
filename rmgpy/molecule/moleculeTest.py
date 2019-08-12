@@ -795,9 +795,9 @@ class TestMolecule(unittest.TestCase):
         """
         for atom in self.molecule[0].atoms:
             if atom.label != '':
-                self.assertEqual(atom, self.molecule[0].getLabeledAtom(atom.label))
+                self.assertEqual(atom, self.molecule[0].getLabeledAtom(atom.label)[0])
         try:
-            self.molecule[0].getLabeledAtom('*3')
+            self.molecule[0].getLabeledAtom('*3')[0]
             self.fail('Unexpected successful return from Molecule.getLabeledAtom() with invalid atom label.')
         except ValueError:
             pass

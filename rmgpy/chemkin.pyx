@@ -584,7 +584,8 @@ def _removeLineBreaks(comments):
     """
     comments = comments.replace('\n',' ')
     new_statement_indicators = ['Reaction index','Template reaction','Library reaction',
-                                'PDep reaction','Flux pairs',
+                                'PDep reaction','Flux pairs','BM rule fitted to',
+                                'Uncertainty in Total Std:',
                                 'Estimated using','Exact match found','Average of ',
                                 'Euclidian distance','Matched node ','Matched reaction ',
                                 'Multiplied by reaction path degeneracy ',
@@ -710,6 +711,12 @@ def readReactionComments(reaction, comments, read = True):
                 reaction.kinetics.changeRate(1./degen)
             # do not add comment because setting degeneracy does so already
             reaction.kinetics.comment += "\n"
+
+        elif 'BM rule fitted to' in line:
+            reaction.kinetics.comment += line.strip() + "\n"
+
+        elif 'Uncertainty in Total Std:' in line:
+            reaction.kinetics.comment += line.strip() + "\n"
 
         elif line.strip() != '':
             # Any lines which are commented out but don't have any specific flag are simply kinetics comments
@@ -1459,8 +1466,12 @@ def getSpeciesIdentifier(species):
             # Try the chemical formula
             name = '{0}({1:d})'.format(species.molecule[0].getFormula(), species.index)
             if len(name) <= 10:
-                return name
-
+                if 'obs' in label:
+                    # For MBSampledReactor, keep observed species tag
+                    return name + '_obs'
+                else:
+                    return name
+    
         # As a last resort, just use the index
         if species.index >= 0:
             if 'X' in name:
@@ -1469,7 +1480,11 @@ def getSpeciesIdentifier(species):
             else:
                 name = 'S({0:d})'.format(species.index)
             if len(name) <= 10:
-                return name
+                if 'obs' in label:
+                    # For MBSampledReactor, keep observed species tag
+                    return name + '_obs'
+                else:
+                    return name
 
     # If we're here then we just can't come up with a valid Chemkin name
     # for this species, so raise an exception

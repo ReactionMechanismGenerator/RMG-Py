@@ -45,7 +45,7 @@ from rmgpy.data.base import Database, Entry, getAllCombinations
 
 from rmgpy.quantity import Quantity, ScalarQuantity
 from rmgpy.reaction import Reaction
-from rmgpy.kinetics import ArrheniusEP, Arrhenius, StickingCoefficientBEP, SurfaceArrheniusBEP
+from rmgpy.kinetics import ArrheniusEP, Arrhenius, StickingCoefficientBEP, SurfaceArrheniusBEP, ArrheniusBM
 from .common import saveEntry
 from rmgpy.exceptions import KineticsError, DatabaseError
 
@@ -312,7 +312,7 @@ class KineticsRules(Database):
                       " removed in version 2.3.", DeprecationWarning)
         # This is hardcoding of reaction families!
         label = os.path.split(self.label)[-2]
-        reactionOrder = groups.groups.numReactants
+        reactionOrder = groups.groups.reactantNum
         if reactionOrder == 2:
             factor = 1.0e6
         elif reactionOrder == 1:
@@ -440,16 +440,6 @@ class KineticsRules(Database):
             entries.extend(self.entries[templateLabels])
         except KeyError:
             pass
-        
-        family = os.path.split(self.label)[0]   # i.e. self.label = 'R_Recombination/rules'
-        if family.lower() == 'r_recombination':
-            template.reverse()
-            templateLabels = ';'.join([group.label for group in template])
-            try:
-                entries.extend(self.entries[templateLabels])
-            except KeyError:
-                pass
-            template.reverse()
         
         return entries
 

@@ -59,7 +59,6 @@ model( #second stage
 
 options(
     units='si',
-    saveRestartPeriod=None,
     generateOutputHTML=True,
     generatePlots=False,
     saveEdgeSpecies=True,

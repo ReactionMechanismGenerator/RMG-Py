@@ -41,7 +41,7 @@ from copy import deepcopy
 
 from rmgpy.data.base import Database, Entry, Group, LogicNode, getAllCombinations, makeLogicNode
 
-from rmgpy.kinetics import Arrhenius, ArrheniusEP, KineticsData
+from rmgpy.kinetics import Arrhenius, ArrheniusEP, KineticsData, ArrheniusBM
 from rmgpy.species import Species
 from rmgpy.quantity import constants
 from rmgpy.exceptions import KineticsError, UndeterminableKineticsError, DatabaseError
@@ -70,7 +70,7 @@ class KineticsGroups(Database):
                  forbidden=None
                  ):
         Database.__init__(self, entries, top, label, name, shortDesc, longDesc)
-        self.numReactants = 0
+        self.reactantNum = 0
         
     def __repr__(self):
         return '<KineticsGroups "{0}">'.format(self.label)
@@ -122,7 +122,7 @@ class KineticsGroups(Database):
 
         # Descend reactant trees as far as possible
         template = []
-        specialCases = ['peroxyl_disproportionation','bimolec_hydroperoxide_decomposition','r_recombination']
+        specialCases = ['peroxyl_disproportionation','bimolec_hydroperoxide_decomposition']
         if len(forwardTemplate) == 1 and len(reaction.reactants) > len(forwardTemplate) and self.label.lower().split('/')[0] not in specialCases:
             entry = forwardTemplate[0]
             group = entry.item
@@ -173,9 +173,7 @@ class KineticsGroups(Database):
     
             # Get fresh templates (with duplicate nodes back in)
             forwardTemplate = self.top[:]
-            if (self.label.lower().startswith('r_recombination')
-                or self.label.lower().startswith('peroxyl_disproportionation')
-                or self.label.lower().startswith('bimolec_hydroperoxide_decomposition')):
+            if self.label.lower().startswith('peroxyl_disproportionation') or self.label.lower().startswith('bimolec_hydroperoxide_decomposition'):
                 forwardTemplate.append(forwardTemplate[0])
                 
             

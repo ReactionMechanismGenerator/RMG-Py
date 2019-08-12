@@ -386,6 +386,10 @@ cdef class Graph(object):
             edges = vertex.edges
             new.addVertex(vertex)
             vertex.edges = edges
+
+        if self is other:
+            other = other.copy(deep=True)
+
         for vertex in other.vertices:
             edges = vertex.edges
             new.addVertex(vertex)

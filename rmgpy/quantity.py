@@ -405,7 +405,7 @@ class ArrayQuantity(Units):
             uncertainty = '[{0}]'.format(','.join(uncertainty))
         
         result = '{0}'.format(value)
-        if any(self.uncertainty != 0.0):
+        if (self.uncertainty>0).any():
             result += ' {0} {1}'.format(self.uncertaintyType, uncertainty)
         if self.units != '':
             result += ' {0}'.format(self.units)

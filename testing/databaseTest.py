@@ -85,6 +85,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
 
             #these families have some sort of difficulty which prevents us from testing accessibility right now
             difficultFamilies = ['Diels_alder_addition', 'Intra_R_Add_Exocyclic', 'Intra_R_Add_Endocyclic']
+            generatedTrees = ["R_Recombination"]
 
             if len(family.forwardTemplate.reactants) < len(family.groups.top) and family_name not in difficultFamilies:
                 test = lambda x: self.kinetics_checkUnimolecularGroups(family_name)
@@ -93,7 +94,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
                 self.compat_func_name = test_name
                 yield test, family_name
 
-            if family_name not in difficultFamilies:
+            if family_name not in difficultFamilies and family_name not in generatedTrees:
                 test = lambda x: self.kinetics_checkSampleDescendsToGroup(family_name)
                 test_name = "Kinetics family {0}: Entry is accessible?".format(family_name)
                 test.description = test_name
@@ -504,7 +505,7 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             for j in range(i+1,len(speciesList)):
                     initialMap = {}
                     try:
-                        atom_labels = set(list(labeledAtoms[i].keys()) + 
+                        atom_labels = set(list(labeledAtoms[i].keys()) +
                                                 list(labeledAtoms[j].keys()))
                         for atomLabel in atom_labels:
                             initialMap[labeledAtoms[i][atomLabel]] = labeledAtoms[j][atomLabel]
@@ -684,10 +685,10 @@ class TestDatabase():  # cannot inherit from unittest.TestCase if we want to use
             elif len(rxn.reactants) == 2 and not rxn.allow_max_rate_violation:
                 if k > collision_limit:
                     boo = True
-                    logging.error('library reaction {0} from library {1}, exceeds the collision limit at 1000 K, 1 bar of {2} mol/(m3*s) at {3} mol/(m3*s) and did not have allow_max_rate_violation=True'.format(rxn,library.label,collision_limit,k)) 
+                    logging.error('library reaction {0} from library {1}, exceeds the collision limit at 1000 K, 1 bar of {2} mol/(m3*s) at {3} mol/(m3*s) and did not have allow_max_rate_violation=True'.format(rxn,library.label,collision_limit,k))
         if boo:
             raise ValueError('library {0} has unreasonable rates'.format(library.label))
-                
+
     def kinetics_checkReactantAndProductTemplate(self, family_name):
         """
         This test checks whether the reactant and product templates within a family are correctly defined.
@@ -866,7 +867,7 @@ The following adjList may have atoms in a different ordering than the input file
                         if not labels.issubset(presentLabels):
                             C.append([endGroup, entry])
                     #check D
-                    midAtoms = [group.getLabeledAtom(x) for x in family.boundaryAtoms]
+                    midAtoms = [group.getLabeledAtom(x)[0] for x in family.boundaryAtoms]
                     pathAtoms = find_shortest_path(midAtoms[0], midAtoms[1])
                     for atom in pathAtoms:
                         if not atom.label:

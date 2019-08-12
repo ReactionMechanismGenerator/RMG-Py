@@ -35,11 +35,10 @@ from scipy.optimize import curve_fit
 cimport rmgpy.constants as constants
 import rmgpy.quantity as quantity
 from rmgpy.exceptions import KineticsError
-from rmgpy.kinetics.uncertainies import rank_accuracy_map
-
+from rmgpy.kinetics.uncertainties import rank_accuracy_map
+from rmgpy.molecule.molecule import Bond
 # Prior to numpy 1.14, `numpy.linalg.lstsq` does not accept None as a value
 RCOND = -1 if int(numpy.__version__.split('.')[1]) < 14 else None
-
 ################################################################################
 
 cdef class Arrhenius(KineticsModel):
@@ -63,8 +62,8 @@ cdef class Arrhenius(KineticsModel):
 
     """
 
-    def __init__(self, A=None, n=0.0, Ea=None, T0=(1.0,"K"), Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
-        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
+    def __init__(self, A=None, n=0.0, Ea=None, T0=(1.0,"K"), Tmin=None, Tmax=None, Pmin=None, Pmax=None, uncertainty=None, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, uncertainty=uncertainty, comment=comment)
         self.A = A
         self.n = n
         self.Ea = Ea
@@ -80,6 +79,7 @@ cdef class Arrhenius(KineticsModel):
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
         if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
         if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
+        if self.uncertainty: string += ', uncertainty={0!r}'.format(self.uncertainty)
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
@@ -88,7 +88,7 @@ cdef class Arrhenius(KineticsModel):
         """
         A helper function used when pickling an Arrhenius object.
         """
-        return (Arrhenius, (self.A, self.n, self.Ea, self.T0, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
+        return (Arrhenius, (self.A, self.n, self.Ea, self.T0, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.uncertainty, self.comment))
 
     property A:
         """The preexponential factor."""
@@ -281,6 +281,7 @@ cdef class Arrhenius(KineticsModel):
                           Tmax = self.Tmax,
                           Pmin = self.Pmin,
                           Pmax = self.Pmax,
+                          uncertainty = self.uncertainty,
                           comment = self.comment)
         return aep
 ################################################################################
@@ -307,8 +308,8 @@ cdef class ArrheniusEP(KineticsModel):
 
     """
 
-    def __init__(self, A=None, n=0.0, alpha=0.0, E0=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
-        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
+    def __init__(self, A=None, n=0.0, alpha=0.0, E0=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, uncertainty=None, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, uncertainty=uncertainty, comment=comment)
         self.A = A
         self.n = n
         self.alpha = alpha
@@ -324,6 +325,7 @@ cdef class ArrheniusEP(KineticsModel):
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
         if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
         if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
+        if self.uncertainty is not None: string += ', uncertainty={0!r}'.format(self.uncertainty)
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
@@ -332,7 +334,7 @@ cdef class ArrheniusEP(KineticsModel):
         """
         A helper function used when pickling an ArrheniusEP object.
         """
-        return (ArrheniusEP, (self.A, self.n, self.alpha, self.E0, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
+        return (ArrheniusEP, (self.A, self.n, self.alpha, self.E0, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.uncertainty, self.comment))
 
     property A:
         """The preexponential factor."""
@@ -402,6 +404,7 @@ cdef class ArrheniusEP(KineticsModel):
             Tmax = self.Tmax,
             Pmin = self.Pmin,
             Pmax = self.Pmax,
+            uncertainty = self.uncertainty,
             comment = self.comment,
         )
 
@@ -460,8 +463,8 @@ cdef class ArrheniusBM(KineticsModel):
 
     """
 
-    def __init__(self, A=None, n=0.0, w0=(0.0,'J/mol'), E0=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, comment=''):
-        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
+    def __init__(self, A=None, n=0.0, w0=(0.0,'J/mol'), E0=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, uncertainty=None, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, uncertainty=uncertainty, comment=comment)
         self.A = A
         self.n = n
         self.w0 = w0
@@ -477,6 +480,7 @@ cdef class ArrheniusBM(KineticsModel):
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
         if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
         if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
+        if self.uncertainty is not None: string += ', uncertainty={0!r}'.format(self.uncertainty)
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
@@ -485,7 +489,7 @@ cdef class ArrheniusBM(KineticsModel):
         """
         A helper function used when pickling an ArrheniusEP object.
         """
-        return (ArrheniusBM, (self.A, self.n, self.w0, self.E0, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.comment))
+        return (ArrheniusBM, (self.A, self.n, self.w0, self.E0, self.Tmin, self.Tmax, self.Pmin, self.Pmax, self.uncertainty, self.comment))
 
     property A:
         """The preexponential factor."""
@@ -555,21 +559,22 @@ cdef class ArrheniusBM(KineticsModel):
             T0 = (1,"K"),
             Tmin = self.Tmin,
             Tmax = self.Tmax,
+            uncertainty=self.uncertainty,
             comment = self.comment,
         )
 
-    def fitToReactions(self,rxns,w0=None,family=None,Ts=None):
+    def fitToReactions(self,rxns,w0=None,recipe=None,Ts=None):
         """
         Fit an ArrheniusBM model to a list of reactions at the given temperatures,
         w0 must be either given or estimated using the family object
         """
-        assert w0 is not None or family is not None, 'either w0 or family must be specified'
+        assert w0 is not None or recipe is not None, 'either w0 or recipe must be specified'
 
         if Ts is None:
             Ts = [300.0,500.0,600.0,700.0,800.0,900.0,1000.0,1100.0,1200.0,1500.0]
         if w0 is None:
             #estimate w0
-            w0s = family.getw0s(rxns)
+            w0s = getw0s(recipe,rxns)
             w0 = sum(w0s)/len(w0s)
 
         #define optimization function
@@ -605,8 +610,20 @@ cdef class ArrheniusBM(KineticsModel):
         ydata = np.array(ydata)
 
         #fit parmeters
-
-        params = curve_fit(kfcn,xdata,ydata,sigma=sigmas,p0=[1.0,1.0,w0/10.0])
+        boo = True
+        xtol = 1e-8
+        ftol = 1e-8
+        while boo:
+            boo = False
+            try:
+                params = curve_fit(kfcn,xdata,ydata,sigma=sigmas,p0=[1.0,1.0,w0/10.0],xtol=xtol,ftol=ftol)
+            except RuntimeError:
+                if xtol < 1.0:
+                    boo = True
+                    xtol *= 10.0
+                    ftol *= 10.0
+                else:
+                    raise ValueError("Could not fit BM arrhenius to reactions with xtol<1.0")
 
         lnA,n,E0 = params[0].tolist()
         A = np.exp(lnA)
@@ -1032,3 +1049,59 @@ cdef class MultiPDepArrhenius(PDepKineticsModel):
 
         for i, arr in enumerate(self.arrhenius):
             arr.setCanteraKinetics(ctReaction[i], speciesList)
+
+def getw0(actions,rxn):
+    """
+    calculates the w0 for Blower Masel kinetics by calculating wf (total bond energy of bonds formed)
+    and wb (total bond energy of bonds broken) with w0 = (wf+wb)/2
+    """
+    mol = None
+    aDict = {}
+    for r in rxn.reactants:
+        m = r.molecule[0]
+        aDict.update(m.getLabeledAtoms())
+        if mol:
+            mol = mol.merge(m)
+        else:
+            mol = m.copy(deep=True)
+
+    recipe = actions
+
+    wb = 0.0
+    wf = 0.0
+    for act in recipe:
+
+        if act[0] == 'BREAK_BOND':
+            bd = mol.getBond(aDict[act[1]],aDict[act[3]])
+            wb += bd.getBDE()
+        elif act[0] == 'FORM_BOND':
+            bd = Bond(aDict[act[1]],aDict[act[3]],act[2])
+            wf += bd.getBDE()
+        elif act[0] == 'CHANGE_BOND':
+            bd1 = mol.getBond(aDict[act[1]],aDict[act[3]])
+
+            if act[2]+bd1.order == 0.5:
+                mol2 = None
+                for r in rxn.products:
+                    m = r.molecule[0]
+                    if mol2:
+                        mol2 = mol2.merge(m)
+                    else:
+                        mol2 = m.copy(deep=True)
+                bd2 = mol2.getBond(aDict[act[1]],aDict[act[3]])
+            else:
+                bd2 = Bond(aDict[act[1]],aDict[act[3]],bd1.order+act[2])
+
+            if bd2.order == 0:
+                bd2bde = 0.0
+            else:
+                bd2bde = bd2.getBDE()
+            bdediff = bd2bde-bd1.getBDE()
+            if bdediff > 0:
+                wf += abs(bdediff)
+            else:
+                wb += abs(bdediff)
+    return (wf+wb)/2.0
+
+def getw0s(actions, rxns):
+    return [getw0(actions,rxn) for rxn in rxns]

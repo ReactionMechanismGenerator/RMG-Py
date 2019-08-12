@@ -122,8 +122,9 @@ cdef class HinderedRotor(Torsion):
     independently.
     """
     
-    def __init__(self, inertia=None, symmetry=1, barrier=None, fourier=None, rotationalConstant=None, quantum=False,
-                 semiclassical=True, frequency=None):
+
+    def __init__(self, inertia=None, symmetry=1, barrier=None, fourier=None, rotationalConstant=None, quantum=True,
+                 semiclassical=True, frequency=None, energies=None):
         Torsion.__init__(self, symmetry, quantum)
         if inertia is not None and rotationalConstant is not None:
             raise ValueError('Only one of moment of inertia and rotational constant can be specified.')
@@ -136,6 +137,7 @@ cdef class HinderedRotor(Torsion):
         self.semiclassical = False if quantum else semiclassical
         self.quantum = quantum
         self.frequency = frequency if frequency is not None else 0.0
+        self.energies = energies
         
     def __repr__(self):
         """

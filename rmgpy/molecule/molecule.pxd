@@ -187,7 +187,7 @@ cdef class Molecule(Graph):
 
     cpdef bint containsLabeledAtom(self, str label) except -2
 
-    cpdef Atom getLabeledAtom(self, str label)
+    cpdef list getLabeledAtom(self, str label)
 
     cpdef dict getLabeledAtoms(self)
 

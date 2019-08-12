@@ -38,10 +38,11 @@ from copy import deepcopy
 from rmgpy import settings
 
 from rmgpy.molecule import Molecule
-from rmgpy.quantity import Quantity, Energy, SurfaceConcentration
+from rmgpy.quantity import Quantity, Energy, RateCoefficient, SurfaceConcentration
 from rmgpy.solver.base import TerminationTime, TerminationConversion, TerminationRateRatio
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.solver.liquid import LiquidReactor
+from rmgpy.solver.mbSampled import MBSampledReactor
 from rmgpy.solver.surface import SurfaceReactor
 from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
 from model import CoreEdgeReactionModel
@@ -447,6 +448,69 @@ def surfaceReactor(temperature,
     rmg.reactionSystems.append(system)
     system.log_initial_conditions(number=len(rmg.reactionSystems))
 
+
+# Reaction systems
+def mbsampledReactor(temperature,
+                     pressure,
+                     initialMoleFractions,
+                     mbsamplingRate,
+                     terminationConversion=None,
+                     terminationTime=None,
+                     sensitivity=None,
+                     sensitivityThreshold=1e-3,
+                     constantSpecies=None,
+                     ):
+    logging.debug('Found MBSampledReactor reaction system')
+
+    for value in initialMoleFractions.values():
+        if value < 0:
+            raise InputError('Initial mole fractions cannot be negative.')
+
+    for spec in initialMoleFractions:
+        initialMoleFractions[spec] = float(initialMoleFractions[spec])
+
+    totalInitialMoles = sum(initialMoleFractions.values())
+    if totalInitialMoles != 1:
+        logging.warning('Initial mole fractions do not sum to one; normalizing.')
+        logging.info('')
+        logging.info('Original composition:')
+        for spec, molfrac in initialMoleFractions.iteritems():
+            logging.info("{0} = {1}".format(spec, molfrac))
+        for spec in initialMoleFractions:
+            initialMoleFractions[spec] /= totalInitialMoles
+        logging.info('')
+        logging.info('Normalized mole fractions:')
+        for spec, molfrac in initialMoleFractions.iteritems():
+            logging.info("{0} = {1}".format(spec, molfrac))
+
+    T = Quantity(temperature)
+    P = Quantity(pressure)
+
+    k_sampling = RateCoefficient(mbsamplingRate, 's^-1')
+
+    constantSpeciesList = []
+
+    for spec in constantSpecies:
+        constantSpeciesList.append(speciesDict[spec])
+
+    termination = []
+    if terminationConversion is not None:
+        for spec, conv in terminationConversion.iteritems():
+            termination.append(TerminationConversion(speciesDict[spec], conv))
+    if terminationTime is not None:
+        termination.append(TerminationTime(Quantity(terminationTime)))
+    if len(termination) == 0:
+        raise InputError(
+            'No termination conditions specified for reaction system #{0}.'.format(len(rmg.reactionSystems) + 2))
+
+    sensitiveSpecies = []
+    if sensitivity:
+        if isinstance(sensitivity, str): sensitivity = [sensitivity]
+        for spec in sensitivity:
+            sensitiveSpecies.append(speciesDict[spec])
+    system = MBSampledReactor(T, P, initialMoleFractions, k_sampling, constantSpeciesList, termination, sensitiveSpecies, sensitivityThreshold)
+    rmg.reactionSystems.append(system)
+
 def simulator(atol, rtol, sens_atol=1e-6, sens_rtol=1e-4):
     rmg.simulatorSettingsList.append(SimulatorSettings(atol, rtol, sens_atol, sens_rtol))
     
@@ -630,14 +694,19 @@ def pressureDependence(
     rmg.pressureDependence.activeKRotor = True
     rmg.pressureDependence.rmgmode = True
 
-def options(name='Seed', generateSeedEachIteration=False, saveSeedToDatabase=False, units='si', saveRestartPeriod=None, 
+def options(name='Seed', generateSeedEachIteration=True, saveSeedToDatabase=False, units='si', saveRestartPeriod=None,
             generateOutputHTML=False, generatePlots=False, saveSimulationProfiles=False, verboseComments=False, 
             saveEdgeSpecies=False, keepIrreversible=False, trimolecularProductReversible=True, wallTime='00:00:00:00'):
+    if saveRestartPeriod:
+        logging.warning("`saveRestartPeriod` flag was set in the input file, but this feature has been removed. Please "
+                        "remove this line from the input file. This will throw an error after RMG-Py 3.1. For "
+                        "restarting an RMG job see the documentation for restarting from a seed mechanism at "
+                        "http://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/input.html#restarting-from-a-seed-mechanism")
+
     rmg.name = name
     rmg.generateSeedEachIteration=generateSeedEachIteration
     rmg.saveSeedToDatabase=saveSeedToDatabase
     rmg.units = units
-    rmg.saveRestartPeriod = Quantity(saveRestartPeriod) if saveRestartPeriod else None
     if generateOutputHTML:
         logging.warning('Generate Output HTML option was turned on. Note that this will slow down model generation.')
     rmg.generateOutputHTML = generateOutputHTML 
@@ -706,6 +775,50 @@ def uncertainty(localAnalysis=False, globalAnalysis=False, uncorrelated=True, co
     }
 
 
+def restartFromSeed(path=None, coreSeed=None, edgeSeed=None, filters=None, speciesMap=None):
+    parentDir = os.path.dirname(rmg.inputFile)
+    rmg.restart = True
+    docLink = 'http://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/input.html#restarting-from-a-seed-mechanism.'
+
+    if path:
+        if any((coreSeed, edgeSeed, filters, speciesMap)):
+            raise InputError('For restarting an RMG job from a seed mechanism, either the path to the RMG generated '
+                             'seed mechanism should be given as `path`, or the path for each of the required files '
+                             'should be explicitly given, but not both. Please take one approach or the other. For '
+                             'further information see the RMG documentation on restarting from a seed mechanism at '
+                             '{0}.'.format(docLink))
+
+        if not os.path.isabs(path):
+            path = os.path.join(parentDir, path)
+
+        if not os.path.exists(path):
+            raise ValueError('Unable to find the path to the restart seed folder. {0} does not exist'.format(path))
+
+        # Try to find the paths for all of the required modules
+        rmg.coreSeedPath = os.path.join(path, 'seed')
+        rmg.edgeSeedPath = os.path.join(path, 'seed_edge')
+        rmg.filtersPath = os.path.join(path, 'filters', 'filters.h5')
+        rmg.speciesMapPath = os.path.join(path, 'filters', 'species_map.yml')
+
+    else:  # The user has specified each of the paths individually
+        rmg.coreSeedPath = coreSeed
+        rmg.edgeSeedPath = edgeSeed
+        rmg.filtersPath = filters
+        rmg.speciesMapPath = speciesMap
+
+    rmgPaths = [rmg.coreSeedPath, rmg.edgeSeedPath, rmg.filtersPath, rmg.speciesMapPath]
+    pathErrors = [filePath for filePath in rmgPaths if not os.path.exists(filePath)]
+
+    if pathErrors:
+        if path:
+            raise InputError('Could not find one or more of the required files/directories for restarting from a seed ' 
+                             'mechanism: {0}. Try specifying the file paths individually. See the RMG documentation '
+                             'at {1} for more information'.format(pathErrors, docLink))
+        else:
+            raise InputError('Could not find one or more of the required files/directories for restarting from a seed '
+                             'mechanism: {0}. See the RMG documentation at {1} for more information'.format(pathErrors,
+                                                                                                            docLink))
+
 ################################################################################
 
 def setGlobalRMG(rmg0):
@@ -756,6 +869,7 @@ def readInputFile(path, rmg0):
         'simpleReactor': simpleReactor,
         'liquidReactor': liquidReactor,
         'surfaceReactor': surfaceReactor,
+        'mbsampledReactor': mbsampledReactor,
         'simulator': simulator,
         'solvation': solvation,
         'model': model,
@@ -766,6 +880,7 @@ def readInputFile(path, rmg0):
         'generatedSpeciesConstraints': generatedSpeciesConstraints,
         'thermoCentralDatabase': thermoCentralDatabase,
         'uncertainty': uncertainty,
+        'restartFromSeed': restartFromSeed,
     }
 
     try:
@@ -1005,12 +1120,6 @@ def saveInputFile(path, rmg):
     # Options
     f.write('options(\n')
     f.write('    units = "{0}",\n'.format(rmg.units))
-    if rmg.saveRestartPeriod:
-        warnings.warn("The option saveRestartPeriod is no longer supported and may be"
-                      " removed in version 2.3.", DeprecationWarning)
-        f.write('    saveRestartPeriod = ({0},"{1}"),\n'.format(rmg.saveRestartPeriod.getValue(), rmg.saveRestartPeriod.units))
-    else:
-        f.write('    saveRestartPeriod = None,\n')
     f.write('    generateOutputHTML = {0},\n'.format(rmg.generateOutputHTML))
     f.write('    generatePlots = {0},\n'.format(rmg.generatePlots))
     f.write('    saveSimulationProfiles = {0},\n'.format(rmg.saveSimulationProfiles))
