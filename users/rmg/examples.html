@@ -107,11 +107,11 @@ calculation of pressure-dependent reaction rates.</p>
     <span class="n">toleranceMoveToCore</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
     <span class="n">toleranceInterruptSimulation</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
     <span class="n">maximumEdgeSpecies</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
+    <span class="n">filterReactions</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="n">options</span><span class="p">(</span>
     <span class="n">units</span><span class="o">=</span><span class="s1">&#39;si&#39;</span><span class="p">,</span>
-    <span class="n">saveRestartPeriod</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">generateOutputHTML</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">generatePlots</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">saveEdgeSpecies</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -212,7 +212,6 @@ calculation of pressure-dependent reaction rates.</p>
 
 <span class="n">options</span><span class="p">(</span>
     <span class="n">units</span><span class="o">=</span><span class="s1">&#39;si&#39;</span><span class="p">,</span>
-    <span class="n">saveRestartPeriod</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;hour&#39;</span><span class="p">),</span>
     <span class="n">generateOutputHTML</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">generatePlots</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span>
@@ -223,7 +222,19 @@ calculation of pressure-dependent reaction rates.</p>
 <h2>5.3. Commented input file<a class="headerlink" href="#commented-input-file" title="Permalink to this headline">¶</a></h2>
 <p>This is a fully commented input file with all optional blocks
 for new users to better understand the options of rmg input files</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Data sources</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Uncomment either of the blocks below to restart from a seed mechanism</span>
+<span class="c1">#</span>
+<span class="c1"># # Option 1: Specify the path to an RMG (version &gt; 2.4.1) generated seed mechanism folder, which contains all of the</span>
+<span class="c1"># # required files (core and edge seed, filters and mappings) in their default locations and names in the seed folder.</span>
+<span class="c1"># restartFromSeed(path=&#39;seed&#39;)  # Location of the seed mechanism (with `filters` subfolder) to load for restarting</span>
+<span class="c1">#</span>
+<span class="c1"># # Option 2: Specify the paths of each of the required files individually.</span>
+<span class="c1"># restartFromSeed(coreSeed=&#39;seed/seed&#39;  # Path to core seed folder. Must contain `reactions.py` and `dictionary.txt`</span>
+<span class="c1">#                 edgeSeed=&#39;seed/seed_edge&#39;  # Path to edge seed folder containing `reactions.py` and `dictionary.txt`</span>
+<span class="c1">#                 filters=&#39;seed/filters/filters.h5&#39;,</span>
+<span class="c1">#                 speciesMap=&#39;seed/filters/species_map.yml&#39;)</span>
+
+<span class="c1"># Data sources</span>
 <span class="n">database</span><span class="p">(</span>
     <span class="c1"># overrides RMG thermo calculation of RMG with these values.</span>
     <span class="c1"># libraries found at http://rmg.mit.edu/database/thermo/libraries/</span>
@@ -381,7 +392,7 @@ for new users to better understand the options of rmg input files</p>
 <span class="n">options</span><span class="p">(</span>
     <span class="c1"># provides a name for the seed mechanism produced at the end of an rmg run default is &#39;Seed&#39;</span>
     <span class="n">name</span><span class="o">=</span><span class="s1">&#39;SeedName&#39;</span><span class="p">,</span>
-    <span class="c1"># if True every iteration it saves the current model as libraries/seeds</span>
+    <span class="c1"># if True (default) every iteration it saves the current model as libraries/seeds</span>
     <span class="c1"># (and deletes the old one)</span>
     <span class="c1"># Unlike HTML this is inexpensive time-wise</span>
     <span class="c1"># note a seed mechanism will be generated at the end of a completed run and some incomplete</span>
@@ -391,9 +402,6 @@ for new users to better understand the options of rmg input files</p>
     <span class="n">saveSeedToDatabase</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="c1"># only option is &#39;si&#39;</span>
     <span class="n">units</span><span class="o">=</span><span class="s1">&#39;si&#39;</span><span class="p">,</span>
-    <span class="c1"># how often you want to save restart files.</span>
-    <span class="c1"># takes significant amount of time. comment out if you don&#39;t want to save</span>
-    <span class="n">saveRestartPeriod</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="c1"># Draws images of species and reactions and saves the model output to HTML.</span>
     <span class="c1"># May consume extra memory when running large models.</span>
     <span class="n">generateOutputHTML</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>

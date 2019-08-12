@@ -833,7 +833,6 @@ chemical kinetics, thermodynamics, and transport processes; <a class="reference 
     <span class="n">generateSeedEachIteration</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">saveSeedToDatabase</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">units</span><span class="o">=</span><span class="s1">&#39;si&#39;</span><span class="p">,</span>
-    <span class="n">saveRestartPeriod</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39;hour&#39;</span><span class="p">),</span>
     <span class="n">generateOutputHTML</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">generatePlots</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">saveSimulationProfiles</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -845,10 +844,9 @@ chemical kinetics, thermodynamics, and transport processes; <a class="reference 
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">name</span></code> field is the name of any generated seed mechanisms</p>
-<p>Setting <code class="docutils literal notranslate"><span class="pre">generateSeedEachIteration</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code> tells RMG to save and update a seed mechanism and thermo library during the current run</p>
+<p>Setting <code class="docutils literal notranslate"><span class="pre">generateSeedEachIteration</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code> (default) tells RMG to save and update a seed mechanism and thermo library during the current run</p>
 <p>Setting <code class="docutils literal notranslate"><span class="pre">saveSeedToDatabase</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code> tells RMG (if generating a seed) to also save that seed mechanism and thermo library directly into the database</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">units</span></code> field is set to <code class="docutils literal notranslate"><span class="pre">si</span></code>.  Currently there are no other unit options.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">saveRestartPeriod</span></code> indictes how frequently you wish to save restart files. For very large/long RMG jobs, this process can take a significant amount of time. In such cases, the user may wish to increase the time period for saving these restart files.</p>
 <p>Setting <code class="docutils literal notranslate"><span class="pre">generateOutputHTML</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code> will let RMG know that you want to save 2-D images (png files in the local <code class="docutils literal notranslate"><span class="pre">species</span></code> folder) of all species in the generated core model.  It will save a visualized
 HTML file for your model containing all the species and reactions.  Turning this feature off by setting it to <code class="docutils literal notranslate"><span class="pre">False</span></code> may save memory if running large jobs.</p>
 <p>Setting <code class="docutils literal notranslate"><span class="pre">generatePlots</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code> will generate a number of plots describing the statistics of the RMG job, including the reaction model core and edge size and memory use versus  execution time. These will be placed in the output directory in the plot/ folder.</p>
@@ -903,6 +901,42 @@ forbidden groups.</p>
 <span class="p">)</span>
 </pre></div>
 </div>
+</div>
+<div class="section" id="restarting-from-a-seed-mechanism">
+<h2>4.14. Restarting from a Seed Mechanism<a class="headerlink" href="#restarting-from-a-seed-mechanism" title="Permalink to this headline">¶</a></h2>
+<p>The only method for restarting an RMG-Py job is to restart the job from a seed mechanism. There are
+many scenarios when the user might want to do this, including continuing on a job that ran out of time or crashed as the
+result of a now fixed bug. To restart from a seed mechanism, the block below must be added on to the input file.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">restartFromSeed</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s1">&#39;seed&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">path</span></code> flag is the path to the seed mechanism folder, which contains three subfolders that must be titled as
+follows: filters, seed, seed_edge. The path can be a relative path from the input.py file or an absolute path on disk</p>
+<p>Alternatively, you may also specify the paths to each of the following files/directories: coreSeed (path to seed
+mechanism folder containing files named <code class="docutils literal notranslate"><span class="pre">reactions.py</span></code> and <code class="docutils literal notranslate"><span class="pre">`dictionary.txt`</span></code> that will go into the model core),
+edgeSeed (path to edge seed mechanism folder containing files named <code class="docutils literal notranslate"><span class="pre">reactions.py</span></code> and <code class="docutils literal notranslate"><span class="pre">`dictionary.txt`</span></code> that will
+go into the model edge), filters (an h5 binary file storing the uni-, bi-, and optionally tri-molecular thresholds
+generated by RMG from previous run (must be RMG version &gt; 2.4.1)), speciesMap (a YAML file specifying what species are
+at each index in the filters).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">restartFromSeed</span><span class="p">(</span><span class="n">coreSeed</span><span class="o">=</span><span class="s1">&#39;seed/seed&#39;</span>  <span class="c1"># Path to core seed folder. Must contain `reactions.py` and `dictionary.txt`</span>
+                <span class="n">edgeSeed</span><span class="o">=</span><span class="s1">&#39;seed/seed_edge&#39;</span>  <span class="c1"># Path to edge seed folder containing `reactions.py` and `dictionary.txt`</span>
+                <span class="n">filters</span><span class="o">=</span><span class="s1">&#39;seed/filters/filters.h5&#39;</span><span class="p">,</span>
+                <span class="n">speciesMap</span><span class="o">=</span><span class="s1">&#39;seed/filters/species_map.yml&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Then, to restart from the seed mechanism the input file is submitted as normal.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">rmg</span><span class="o">.</span><span class="n">py</span> <span class="nb">input</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>Once the restart job has begun, RMG will move the seed mechanism files to a new subfolder in the output directory
+entitled <code class="docutils literal notranslate"><span class="pre">previous_restart</span></code>. This is to back-up the seed mechanism used for restarting, as everything in the <code class="docutils literal notranslate"><span class="pre">seed</span></code>
+subfolder of the output directory is overwritten by RMG during the course of mechanism generation.</p>
+<p>RMG also outputs a file entitled <code class="docutils literal notranslate"><span class="pre">restart_from_seed.py</span></code> the first time a seed mechanism is generated during the course
+of an RMG job (so long as the RMG job was not itself a restarted job). This file is an exact duplicate of the original
+input file with the exception that the restart block has been added on automatically for convenience. In this way this
+file is treated in the exact way as a normal input file.</p>
+<p>Finally, <strong>note that it is advised to turn on generating the seed each iteration so that you can restart an RMG job right where it left off</strong>.
+This can be done by setting <code class="docutils literal notranslate"><span class="pre">generateSeedEachIteration=True</span></code> in the options block of the input file.</p>
 </div>
 </div>
 
@@ -975,6 +1009,7 @@ forbidden groups.</p>
 <li><a class="reference internal" href="#miscellaneous-options">4.11. Miscellaneous Options</a></li>
 <li><a class="reference internal" href="#species-constraints">4.12. Species Constraints</a></li>
 <li><a class="reference internal" href="#staging">4.13. Staging</a></li>
+<li><a class="reference internal" href="#restarting-from-a-seed-mechanism">4.14. Restarting from a Seed Mechanism</a></li>
 </ul>
 </li>
 </ul>

@@ -154,12 +154,6 @@ attributes are:</p>
 <tr class="row-odd"><td><cite>verbosity</cite></td>
 <td>The level of logging verbosity for console output</td>
 </tr>
-<tr class="row-even"><td><cite>loadRestart</cite></td>
-<td><code class="docutils literal notranslate"><span class="pre">True</span></code> if restarting a previous job, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise</td>
-</tr>
-<tr class="row-odd"><td><cite>saveRestartPeriod</cite></td>
-<td>The time period to periodically save a restart file (<code class="xref py py-class docutils literal notranslate"><span class="pre">Quantity</span></code>), or <code class="docutils literal notranslate"><span class="pre">None</span></code> for never.</td>
-</tr>
 <tr class="row-even"><td><cite>units</cite></td>
 <td>The unit system to use to save output files (currently must be ‘si’)</td>
 </tr>
@@ -276,12 +270,6 @@ from the <cite>inputFile</cite> attribute if not given as a parameter.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="rmgpy.rmg.main.RMG.loadRestartFile">
-<code class="descname">loadRestartFile</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.loadRestartFile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load a restart file at <cite>path</cite> on disk.</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="rmgpy.rmg.main.RMG.loadThermoInput">
 <code class="descname">loadThermoInput</code><span class="sig-paren">(</span><em>path=None</em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.loadThermoInput" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load an Thermo Estimation job from a thermo input file located at <cite>inputFile</cite>, or
@@ -302,6 +290,7 @@ this seed mechanism is outputted in a seed folder within the run directory and a
 added to as the (or replaces the current) ‘Seed’ thermo and kinetics libraries in database</p>
 <p>if run with firstTime=True it will change self.name to be unique within the thermo/kinetics libraries
 by adding integers to the end of the name to prevent overwritting</p>
+<p>This also writes the filter tensors to the <cite>filters</cite> sub-folder for restarting an RMG job from a seed mechanism</p>
 </dd></dl>
 
 <dl class="method">
@@ -360,8 +349,7 @@ found in the RMG input file.</p>
 <dl class="method">
 <dt id="rmgpy.rmg.main.RMG.saveEverything">
 <code class="descname">saveEverything</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.saveEverything" title="Permalink to this definition">¶</a></dt>
-<dd><p>Saves the output HTML, the Chemkin file, and the Restart file (if appropriate).</p>
-<p>The restart file is only saved if self.saveRestartPeriod or self.done.</p>
+<dd><p>Saves the output HTML and the Chemkin file</p>
 </dd></dl>
 
 <dl class="method">
