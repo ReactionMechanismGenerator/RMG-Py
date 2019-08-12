@@ -170,6 +170,11 @@ def parseCommandLineArguments():
               "Can also be enabled by setting the environment "
               "variable RMG_QUIT_WHEN_EXHAUSTED"))
     parser.add_argument(
+        '--minimal',
+        action='store_true',
+        help=("Just do a minimal read of the chemkin files to detect errors, then quit.")
+    )
+    parser.add_argument(
         '-o', '--output-directory',
         type=str,
         nargs='?',
@@ -1879,6 +1884,34 @@ class ModelMatcher():
 
         logging.info('')
 
+    def minimal(self):
+        """
+        This does a minimal reading of the chemkin files just to detect errors in them.
+        """
+        args = self.args
+        species_file = args.species
+        reactions_file = args.reactions or species_file
+        thermo_file = args.thermo
+        known_species_file = args.known or species_file + '.SMILES.txt'
+        self.known_species_file = known_species_file
+        self.blocked_matches_file = os.path.splitext(known_species_file)[0] + '-BLOCKED.txt'
+        self.outputPath = os.path.dirname(os.path.abspath(reactions_file))
+
+        self.loadSpecies(species_file)
+        self.loadThermo(thermo_file)
+        self.loadKnownSpecies(known_species_file)
+
+        for species in self.speciesList:
+            if species.label not in self.thermoDict or self.thermoDict[species.label] is None:
+                message = ("Species {sp} in the species file {spf} does not have a valid thermo entry "
+                           "in the thermo file {th}").format(sp=species.label, spf=species_file, th=thermo_file)
+                logging.error(message)
+                raise Exception(message)
+
+        self.loadReactions(reactions_file)
+
+
+
     def main(self):
         """This is the main matcher function that does the whole thing"""
         args = self.args
@@ -3177,6 +3210,11 @@ if __name__ == '__main__':
 #     t = threading.Thread(target=mm.main)
 #     t.daemon = False
 #     t.start()
+
+    if args.minimal:
+        mm.minimal()
+        print "Done"
+        exit()
 
     t2 = threading.Thread(target=runCherryPyServer, args=(args, ))
     t2.daemon = True
