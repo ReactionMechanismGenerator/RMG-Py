@@ -28,6 +28,7 @@
 #                                                                             #
 ###############################################################################
 
+from __future__ import division
 import os.path
 import numpy as np
 import logging
@@ -128,7 +129,7 @@ class HinderedRotor2D(Mode):
            self.readGjf()  # check if there is a gaussian format file
 
        Natoms = len(self.xyzs[0])  # define a feasible torsion from pivots and tops
-       aset = set(list(xrange(1,Natoms+1)))
+       aset = set(list(range(1,Natoms+1)))
        if not self.torsion1 and self.pivots1 and self.top1:
            if self.pivots1[0] in self.top1:
                self.torsion1 = [list(aset-set(self.top1))[0],self.pivots1[0],self.pivots1[1],self.top1[0]]
@@ -197,9 +198,9 @@ class HinderedRotor2D(Mode):
                            continue
                        elif split_line[-1] == 'F' and len(split_line) == 5: # F 1 2 11 14
                            if not self.torsion1:
-                               self.torsion1 = [int(split_line[i]) for i in xrange(4)]
+                               self.torsion1 = [int(split_line[i]) for i in range(4)]
                            elif not self.torsion2:
-                               self.torsion2 = [int(split_line[i]) for i in xrange(4)]
+                               self.torsion2 = [int(split_line[i]) for i in range(4)]
                        elif (not self.charge or not self.multiplicity) and len(split_line) == 2 and \
                              len(lines[i+1].split()) == 4 and len(lines[i+1].split()[0]) <= 2:
                            self.charge = int(split_line[0])
@@ -210,7 +211,7 @@ class HinderedRotor2D(Mode):
        write an .xyz file for Q2DTor
        done based on the angle coordinates (0.0,0.0)
        """
-       for i in xrange(len(self.phi1s)):
+       for i in range(len(self.phi1s)):
            if self.phi1s[i] == 0.0 and self.phi2s[i] == 0.0:
                with open(os.path.join(self.q2dtor_dir,self.name+".xyz"),'w') as f:
                    f.write(str(len(self.atnums))+'\n')
@@ -228,7 +229,7 @@ class HinderedRotor2D(Mode):
        if not len(self.Es) > 0:
            raise ValueError("Cannot write PES file with no scan information")
        with open(os.path.join(self.q2dtor_dir,'IOfiles',self.name+".pes"),'w') as f:
-           for i in xrange(len(self.phi1s)):
+           for i in range(len(self.phi1s)):
                f.write(str(len(self.atnums))+'\n')
                f.write("Geometry   {E}   {phi1}   {phi2}  {name}_{phi1}_{phi2}  YES\n".format(E=self.Es[i]/(constants.E_h*constants.Na),
                        phi1=self.phi1s[i],phi2=self.phi2s[i],name=self.name))
@@ -491,8 +492,8 @@ class HinderedRotorClassicalND(Mode):
                 self.atnums = atnums
 
             q = len(phis)
-            for i in xrange(N): #add the negative values to improve fit near 0.0
-                for j in xrange(q):
+            for i in range(N): #add the negative values to improve fit near 0.0
+                for j in range(q):
                     phi = phis[j]
                     if np.isclose(phi[i],360.0):
                         continue
@@ -520,10 +521,10 @@ class HinderedRotorClassicalND(Mode):
                 inds = np.argsort(self.phis)
 
             self.confs = [Conformer(number=self.atnums,coordinates=(self.xyzs[k], "angstrom"),
-                               mass=(np.array([massdict[x] for x in self.atnums]), "amu")) for k in xrange(len(self.xyzs))]
+                               mass=(np.array([massdict[x] for x in self.atnums]), "amu")) for k in range(len(self.xyzs))]
 
             self.rootDs = np.array([np.prod([conf.getInternalReducedMomentOfInertia(self.pivots[k],
-                        self.tops[k], option=3) for k in xrange(len(self.pivots))])**0.5 for conf in self.confs])
+                        self.tops[k], option=3) for k in range(len(self.pivots))])**0.5 for conf in self.confs])
             if inds is not None:
                 self.rootDs = self.rootDs[inds]
                 self.phis = self.phis[inds]
@@ -535,7 +536,7 @@ class HinderedRotorClassicalND(Mode):
             self.Es,self.phis = lg.loadScanEnergies()
             self.atnums = self.conformer.number
             rootD = self.conformer.getInternalReducedMomentOfInertia(self.pivots[0], self.tops[0])**0.5
-            self.rootDs = [rootD for i in xrange(len(self.Es))]
+            self.rootDs = [rootD for i in range(len(self.Es))]
             
             phis = self.phis.tolist()
             
@@ -587,7 +588,7 @@ class HinderedRotorClassicalND(Mode):
         """
         calculate the classical/semiclassical partition function at a given temperature
         """
-        rngs = [(0.0,2.0*np.pi) for x in xrange(len(self.pivots))]
+        rngs = [(0.0,2.0*np.pi) for x in range(len(self.pivots))]
 
         def f(*phis):
             return self.rootD(*phis)*np.exp(-self.V(*phis)/(constants.R*T))
@@ -655,7 +656,7 @@ class HinderedRotorClassicalND(Mode):
         clf.fit(phisfit,Estars)
 
         def f(x):
-            for i in xrange(Ndims-1):
+            for i in range(Ndims-1):
                 x = np.expand_dims(x, axis=0)
             xp = poly.fit_transform(x)
             return clf.predict(xp)
