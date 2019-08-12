@@ -31,7 +31,10 @@
 """
 
 """
+from __future__ import division
 
+from builtins import str
+from past.builtins import basestring
 import os.path
 import re
 import math
@@ -312,7 +315,7 @@ def isAromaticRing(submol):
     if ring_size not in [5, 6]:
         return False
     for ringAtom in submol.atoms:
-        for bondedAtom, bond in ringAtom.edges.iteritems():
+        for bondedAtom, bond in ringAtom.edges.items():
             if bondedAtom in submol.atoms:
                 if not bond.isBenzene():
                     return False
@@ -357,10 +360,10 @@ def convertRingToSubMolecule(ring):
     for atom in ring:
         atomsMapping[atom] = atom.copy() # this copy is deep copy of origin atom with empty edges
 
-    mol0 = Molecule(atoms=atomsMapping.values())
+    mol0 = Molecule(atoms=list(atomsMapping.values()))
 
     for atom in ring:
-        for bondedAtom, bond in atom.edges.iteritems():
+        for bondedAtom, bond in atom.edges.items():
             if bondedAtom in ring:
                 if not mol0.hasBond(atomsMapping[atom],atomsMapping[bondedAtom]):
                     mol0.addBond(Bond(atomsMapping[atom],atomsMapping[bondedAtom],order=bond.order))
@@ -382,16 +385,16 @@ def combineTwoRingsIntoSubMolecule(ring1, ring2):
         if atom not in atomsMapping:
             atomsMapping[atom] = atom.copy()
 
-    mol0 = Molecule(atoms=atomsMapping.values())
+    mol0 = Molecule(atoms=list(atomsMapping.values()))
 
     for atom in ring1:
-        for bondedAtom, bond in atom.edges.iteritems():
+        for bondedAtom, bond in atom.edges.items():
             if bondedAtom in ring1:
                 if not mol0.hasBond(atomsMapping[atom],atomsMapping[bondedAtom]):
                     mol0.addBond(Bond(atomsMapping[atom],atomsMapping[bondedAtom],order=bond.order))
     
     for atom in ring2:
-        for bondedAtom, bond in atom.edges.iteritems():
+        for bondedAtom, bond in atom.edges.items():
             if bondedAtom in ring2:
                 if not mol0.hasBond(atomsMapping[atom],atomsMapping[bondedAtom]):
                     mol0.addBond(Bond(atomsMapping[atom],atomsMapping[bondedAtom],order=bond.order))
@@ -529,11 +532,11 @@ def saturate_ring_bonds(ring_submol):
         if atom not in atomsMapping:
             atomsMapping[atom] = atom.copy()
 
-    mol0 = Molecule(atoms=atomsMapping.values())
+    mol0 = Molecule(atoms=list(atomsMapping.values()))
 
     alreadySaturated = True
     for atom in ring_submol.atoms:
-        for bondedAtom, bond in atom.edges.iteritems():
+        for bondedAtom, bond in atom.edges.items():
             if bondedAtom in ring_submol.atoms:
                 if bond.order > 1.0 and not bond.isBenzene(): alreadySaturated = False
                 if not mol0.hasBond(atomsMapping[atom],atomsMapping[bondedAtom]):
@@ -604,7 +607,7 @@ class ThermoLibrary(Database):
         molecule = Molecule().fromAdjacencyList(molecule)
         
         # Internal checks for adding entry to the thermo library
-        if label in self.entries.keys():
+        if label in list(self.entries.keys()):
             raise DatabaseError('Found a duplicate molecule with label {0} in the thermo library {1}.  Please correct your library.'.format(label, self.name))
         
         for entry in self.entries.values():
@@ -737,7 +740,7 @@ class ThermoGroups(Database):
         parentR = groupToRemove.parent
 
         #look for other pointers that point toward entry
-        for entry in self.entries.itervalues():
+        for entry in self.entries.values():
             if isinstance(entry.data, basestring):
                 if entry.data == groupToRemove.label:
                     #if the entryToRemove.data is also a pointer, then copy
@@ -749,7 +752,7 @@ class ThermoGroups(Database):
                         self.copyData(groupToRemove, parentR)
                     #otherwise, point toward entryToRemove's parent
                     else:
-                        entry.data = unicode(parentR.label)
+                        entry.data = str(parentR.label)
 
         return groupToRemove
 ################################################################################
@@ -1083,7 +1086,7 @@ class ThermoDatabase(object):
         Necessary for polycyclic heuristic.
         """
         self.groups['polycyclic'].genericNodes = ['PolycyclicRing']
-        for label, entry in self.groups['polycyclic'].entries.iteritems():
+        for label, entry in self.groups['polycyclic'].entries.items():
             if isinstance(entry.data, ThermoData): 
                 continue
             self.groups['polycyclic'].genericNodes.append(label)
@@ -1098,7 +1101,7 @@ class ThermoDatabase(object):
         Necessary for polycyclic heuristic.
         """
         self.groups['ring'].genericNodes = ['Ring']
-        for label, entry in self.groups['ring'].entries.iteritems():
+        for label, entry in self.groups['ring'].entries.items():
             if isinstance(entry.data, ThermoData): 
                 continue
             self.groups['ring'].genericNodes.append(label)
@@ -1299,7 +1302,7 @@ class ThermoDatabase(object):
             'N': rmgpy.quantity.Energy(0.0, 'eV/molecule'),
         }
 
-        for element, deltaEnergy in self.deltaAtomicAdsorptionEnergy.iteritems():
+        for element, deltaEnergy in self.deltaAtomicAdsorptionEnergy.items():
             deltaEnergy.value_si = bindingEnergies[element].value_si - referenceBindingEnergies[element].value_si
 
     def correctBindingEnergy(self, thermo, species):
@@ -1326,7 +1329,7 @@ class ThermoDatabase(object):
                 pass
             else:
                 assert len(site.bonds) == 1, "Each surface site can only be bonded to 1 atom"
-                bondedAtom = site.bonds.keys()[0]
+                bondedAtom = list(site.bonds.keys())[0]
                 bond = site.bonds[bondedAtom]
                 if bond.isSingle():
                     bondOrder = 1.
@@ -1383,7 +1386,7 @@ class ThermoDatabase(object):
                 pass
             else:
                 assert len(site.bonds) == 1, "Each surface site can only be bonded to 1 atom"
-                bondedAtom = site.bonds.keys()[0]
+                bondedAtom = list(site.bonds.keys())[0]
                 bond = site.bonds[bondedAtom]
                 dummyMolecule.removeBond(bond)
                 if bond.isSingle():
@@ -1556,12 +1559,12 @@ class ThermoDatabase(object):
         Returns: a list of tuples (thermoData, depository, entry) without any Cp0 or CpInf data.
         """
         items = []
-        for entry in self.depository['stable'].entries.itervalues():
+        for entry in self.depository['stable'].entries.values():
             for molecule in species.molecule:
                 if molecule.isIsomorphic(entry.item):
                     items.append((deepcopy(entry.data), self.depository['stable'], entry))
                     break
-        for entry in self.depository['radical'].entries.itervalues():
+        for entry in self.depository['radical'].entries.values():
             for molecule in species.molecule:
                 if molecule.isIsomorphic(entry.item):
                     items.append((deepcopy(entry.data), self.depository['radical'], entry))
@@ -1580,7 +1583,7 @@ class ThermoDatabase(object):
         Returns a tuple: (ThermoData, library, entry)  or None.
         """
         match = None
-        for entry in library.entries.itervalues():
+        for entry in library.entries.values():
             for molecule in species.molecule:
                 if molecule.isIsomorphic(entry.item) and entry.data is not None:
                     thermoData = deepcopy(entry.data)
@@ -1652,7 +1655,7 @@ class ThermoDatabase(object):
         max_nitrogen = ml_settings['max_nitrogen_atoms'] or numpy.inf
 
         element_count = molecule.get_element_count()
-        n_heavy = sum(count for element, count in element_count.iteritems() if element != 'H')
+        n_heavy = sum(count for element, count in element_count.items() if element != 'H')
 
         if not(min_heavy <= n_heavy <= max_heavy):
             return None
@@ -2004,7 +2007,7 @@ class ThermoDatabase(object):
                 thermoData = addThermoData(thermoData, matched_group_thermodata, groupAdditivity=True, verbose=True)
 
         # loop over 1-ring 
-        for singleRingTuple, occurance in ringOccurancesDict.iteritems():
+        for singleRingTuple, occurance in ringOccurancesDict.items():
             singleRing = list(singleRingTuple)
 
             if occurance >= 2:
@@ -2228,7 +2231,7 @@ class ThermoDatabase(object):
                                     " reference may exist. Last node was {0} pointing to group called {1} in "
                                     "database {2}".format(node.label, data, database.label))
 
-            for entry in database.entries.itervalues():
+            for entry in database.entries.values():
                 if entry.label == data:
                     data = entry.data
                     comment = entry.label
@@ -2278,7 +2281,7 @@ class ThermoDatabase(object):
                     "Maximum iterations reached while following thermo group data pointers. A circular"
                     " reference may exist. Last node was {0} pointing to group called {1} in"
                     " database {2}".format(node.label, data, database.label))
-            for entry in database.entries.itervalues():
+            for entry in database.entries.values():
                 if entry.label == data:
                     data = entry.data
                     comment = entry.label
@@ -2368,7 +2371,7 @@ class ThermoDatabase(object):
         tokens = comment.split()
         
         groups = {}
-        groupTypes = self.groups.keys()
+        groupTypes = list(self.groups.keys())
         
         
         regex = "\((.*)\)" #only hit outermost parentheses
@@ -2401,13 +2404,13 @@ class ThermoDatabase(object):
             # Save the groups into the source dictionary
             
             # Convert groups back into tuples 
-            for groupType, groupDict in groups.iteritems():
-                groups[groupType] = groupDict.items()
+            for groupType, groupDict in groups.items():
+                groups[groupType] = list(groupDict.items())
             
             source['GAV'] = groups
             
         # Perform a sanity check that this molecule is estimated by at least one method
-        if not source.keys():
+        if not list(source.keys()):
             raise Exception('Species {0} thermo appears to not be estimated using any methods.'.format(species))
         
         return source

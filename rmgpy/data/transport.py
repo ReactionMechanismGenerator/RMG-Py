@@ -32,6 +32,7 @@
 A class for returning and estimating the transport properties of a species
 
 """
+from __future__ import division
 import os.path
 import logging
 from copy import deepcopy
@@ -383,7 +384,7 @@ class TransportDatabase(object):
         ``None`` is returned. If no corresponding library is found, a
         :class:`DatabaseError` is raised.
         """
-        for label, entry in library.entries.iteritems():
+        for label, entry in library.entries.items():
             for molecule in species.molecule:
                 if molecule.isIsomorphic(entry.item) and entry.data is not None:
                     return (deepcopy(entry.data), library, entry)
@@ -595,7 +596,7 @@ class TransportDatabase(object):
         
         return (transport, None, None)
 
-class CriticalPoint:
+class CriticalPoint(object):
     """
     The critical properties of the species (and structureIndex)
     """
@@ -615,7 +616,7 @@ class CriticalPoint:
         string += ')'
         return string
     
-class CriticalPointGroupContribution:
+class CriticalPointGroupContribution(object):
     """Joback group contribution to estimate critical properties"""
     def __init__(self, Tc=None, Pc=None, Vc=None, Tb=None, structureIndex=None):
         self.Tc = Tc

@@ -46,7 +46,7 @@ import re
 
 ################################################################################
 
-class Reference:
+class Reference(object):
     """
     A base class for representing bibliographic information. The attributes are:
 

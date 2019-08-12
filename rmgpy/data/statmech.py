@@ -28,6 +28,7 @@
 #                                                                             #
 ###############################################################################
 
+from __future__ import division
 import os.path
 import logging
 import numpy
@@ -373,7 +374,7 @@ class StatmechGroups(Database):
         groupCount = self.getFrequencyGroups(molecule)
         logging.debug('Found frequencies from groups {}'.format(groupCount))
         frequencies = []
-        for entry, count in groupCount.iteritems():
+        for entry, count in groupCount.items():
             if count != 0 and entry.data is not None: frequencies.extend(entry.data.generateFrequencies(count))
 
         # Check that we have the right number of degrees of freedom specified
@@ -403,7 +404,7 @@ class StatmechGroups(Database):
                 logging.warning('For {0}, more characteristic frequencies were generated than vibrational modes allowed. Removed {1:d} groups ({2:d} frequencies) to compensate.'.format(molecule.toSMILES(), groupsRemoved, freqsRemoved))
                 # Regenerate characteristic frequencies
                 frequencies = []
-                for entry, count in groupCount.iteritems():
+                for entry, count in groupCount.items():
                     if count != 0: frequencies.extend(entry.data.generateFrequencies(count))
 
         # Subtract out contributions to heat capacity from the group frequencies
@@ -547,7 +548,7 @@ class StatmechDatabase(object):
         points to the top-level folder of the statmech depository.
         """
         if not os.path.exists(path): os.mkdir(path)
-        for name, depository in self.depository.iteritems():
+        for name, depository in self.depository.items():
             depository.save(os.path.join(path, name + '.py'))
 
     def saveLibraries(self, path):
@@ -565,7 +566,7 @@ class StatmechDatabase(object):
         points to the top-level folder of the statmech groups.
         """
         if not os.path.exists(path): os.mkdir(path)
-        for name, groups in self.groups.iteritems():
+        for name, groups in self.groups.items():
             groups.save(os.path.join(path, name + '.py'))
 
     def loadOld(self, path):
@@ -652,8 +653,8 @@ class StatmechDatabase(object):
         Returns a list of tuples  (statmechData, depository, entry).
         """
         items = []
-        for name, depository in self.depository.iteritems():
-            for label, entry in depository.entries.iteritems():
+        for name, depository in self.depository.items():
+            for label, entry in depository.entries.items():
                 if molecule.isIsomorphic(entry.item):
                     items.append((entry.data, self.depository[name], entry))
         return items
@@ -664,7 +665,7 @@ class StatmechDatabase(object):
         by searching the entries in the specified :class:`StatmechLibrary` object
         `library`. Returns ``None`` if no data was found.
         """
-        for label, entry in library.entries.iteritems():
+        for label, entry in library.entries.items():
             if molecule.isIsomorphic(entry.item):
                 return (entry.data, library, entry)
         return None
@@ -680,7 +681,7 @@ class StatmechDatabase(object):
         
 ################################################################################
 
-class GroupFrequencies:
+class GroupFrequencies(object):
     """
     Represent a set of characteristic frequencies for a group in the frequency
     database. These frequencies are stored in the `frequencies` attribute, which

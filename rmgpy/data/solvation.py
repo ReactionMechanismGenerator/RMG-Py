@@ -31,6 +31,7 @@
 """
 
 """
+from __future__ import division
 
 import os.path
 import math
@@ -659,7 +660,7 @@ class SolvationDatabase(object):
         ``None`` is returned. If no corresponding library is found, a
         :class:`DatabaseError` is raised.
         """
-        for label, entry in library.entries.iteritems():
+        for label, entry in library.entries.items():
             if species.isIsomorphic(entry.item) and entry.data is not None:
                 return (deepcopy(entry.data), library, entry)
         return None
@@ -714,7 +715,7 @@ class SolvationDatabase(object):
                 charge = atom.charge # Record this so we can conserve it when checking
                 bonds = saturatedStruct.getBonds(atom)
                 sumBondOrders = 0
-                for key, bond in bonds.iteritems():
+                for key, bond in bonds.items():
                     sumBondOrders += bond.order# We should always have 2 'B' bonds (but what about Cbf?)
                 if atomTypes['Val4'] in atom.atomType.generic: # Carbon, Silicon
                     while(atom.radicalElectrons + charge + sumBondOrders < 4):

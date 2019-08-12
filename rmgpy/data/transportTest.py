@@ -97,8 +97,8 @@ class TestCriticalPointGroupContribution(unittest.TestCase):
         """
         Test that a CriticalPointGroupContribution object can be pickled and unpickled with no loss of information.
         """
-        import cPickle
-        criticalPointContribution = cPickle.loads(cPickle.dumps(self.criticalPointContribution,-1))
+        import pickle
+        criticalPointContribution = pickle.loads(pickle.dumps(self.criticalPointContribution,-1))
         self.assertAlmostEqual(self.criticalPointContribution.Tc, criticalPointContribution.Tc, 4)
         self.assertAlmostEqual(self.criticalPointContribution.Pc, criticalPointContribution.Pc, 4)
         self.assertAlmostEqual(self.criticalPointContribution.Vc, criticalPointContribution.Vc, 4)

@@ -28,6 +28,7 @@
 #                                                                             #
 ###############################################################################
 
+from __future__ import division
 import os
 import unittest
 from external.wip import work_in_progress
@@ -91,8 +92,8 @@ class TestThermoDatabase(unittest.TestCase):
         Test that a ThermoDatabase object can be successfully pickled and
         unpickled with no loss of information.
         """
-        import cPickle
-        thermodb0 = cPickle.loads(cPickle.dumps(self.database))
+        import pickle
+        thermodb0 = pickle.loads(pickle.dumps(self.database))
         
         self.assertEqual(thermodb0.libraryOrder, self.database.libraryOrder)
         self.assertEqual(sorted(thermodb0.depository.keys()),
@@ -103,17 +104,17 @@ class TestThermoDatabase(unittest.TestCase):
         self.assertEqual(sorted(thermodb0.groups.keys()),
                          sorted(self.database.groups.keys()))
 
-        for key, depository0 in thermodb0.depository.iteritems():
+        for key, depository0 in thermodb0.depository.items():
             depository = self.database.depository[key]
             self.assertTrue(type(depository0), type(depository))
             self.assertEqual(sorted(depository0.entries.keys()), sorted(depository.entries.keys()))
 
-        for key, library0 in thermodb0.libraries.iteritems():
+        for key, library0 in thermodb0.libraries.items():
             library = self.database.libraries[key]
             self.assertTrue(type(library0), type(library))
             self.assertEqual(sorted(library0.entries.keys()), sorted(library.entries.keys()))
 
-        for key, group0 in thermodb0.groups.iteritems():
+        for key, group0 in thermodb0.groups.items():
             group = self.database.groups[key]
             self.assertTrue(type(group0), type(group))
             self.assertEqual(sorted(group0.entries.keys()), sorted(group.entries.keys()))
@@ -723,7 +724,7 @@ class TestCyclicThermo(unittest.TestCase):
         radGroup.removeGroup(groupToRemove)
 
         #afterwards groupToRemove should not be in the database or root's children
-        self.assertFalse(groupToRemove in radGroup.entries.values())
+        self.assertFalse(groupToRemove in list(radGroup.entries.values()))
         self.assertFalse(groupToRemove in root.children)
 
         for child in children:
@@ -1059,19 +1060,19 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
 
         bonds1 = []
         for atom in submol1.atoms:
-            for bondAtom, bond in atom.edges.iteritems():
+            for bondAtom, bond in atom.edges.items():
                 if bond not in bonds1:
                     bonds1.append(bond)
 
         bonds2 = []
         for atom in submol2.atoms:
-            for bondAtom, bond in atom.edges.iteritems():
+            for bondAtom, bond in atom.edges.items():
                 if bond not in bonds2:
                     bonds2.append(bond)
 
         bonds3 = []
         for atom in submol3.atoms:
-            for bondAtom, bond in atom.edges.iteritems():
+            for bondAtom, bond in atom.edges.items():
                 if bond not in bonds3:
                     bonds3.append(bond)
 
@@ -1128,7 +1129,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation(unittest.TestCase):
 
         bonds = []
         for atom in submol.atoms:
-            for bondAtom, bond in atom.edges.iteritems():
+            for bondAtom, bond in atom.edges.items():
                 if bond not in bonds:
                     bonds.append(bond)
 
