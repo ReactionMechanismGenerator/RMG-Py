@@ -42,4 +42,5 @@ dependencies:
   - scikit-learn
   - scipy
   - symmetry
+  - textgenrnn
   - xlwt
